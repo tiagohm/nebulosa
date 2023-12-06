@@ -11,7 +11,6 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Scope
-import kotlin.time.Duration.Companion.seconds
 
 @Configuration
 class SequenceJobFactory(
@@ -48,7 +47,7 @@ class SequenceJobFactory(
         val cameraExposureTasklet = sequenceTaskletFactory.cameraExposure(request)
         cameraExposureTasklet.subscribe(cameraCaptureListener)
 
-        val cameraDelayTasklet = sequenceTaskletFactory.delay(request.exposureDelayInSeconds.seconds)
+        val cameraDelayTasklet = sequenceTaskletFactory.delay(request.exposureDelay)
         cameraDelayTasklet.subscribe(cameraExposureTasklet)
 
         val ditherTasklet = sequenceTaskletFactory.ditherAfterExposure(request.dither)

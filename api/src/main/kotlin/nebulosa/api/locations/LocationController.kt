@@ -6,26 +6,31 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("locations")
 class LocationController(
-    private val locationRepository: LocationRepository,
+    private val locationService: LocationService,
 ) {
 
     @GetMapping
-    fun location(): List<LocationEntity> {
-        return locationRepository.findAll()
+    fun locations(): List<LocationEntity> {
+        return locationService.locations()
+    }
+
+    @GetMapping("{id}")
+    fun location(@PathVariable id: Long): LocationEntity {
+        return locationService.location(id)
+    }
+
+    @GetMapping("selected")
+    fun selected(): LocationEntity? {
+        return locationService.selected()
     }
 
     @PutMapping
-    @Synchronized
     fun saveLocation(@RequestBody @Valid body: LocationEntity): LocationEntity {
-        val id = if (body.id <= 0L) System.currentTimeMillis() else body.id
-        return locationRepository.save(body.copy(id = id))
+        return locationService.save(body)
     }
 
-    @Synchronized
     @DeleteMapping("{id}")
     fun deleteLocation(@PathVariable id: Long) {
-        if (id > 0L && locationRepository.count() > 1) {
-            locationRepository.deleteById(id)
-        }
+        locationService.delete(id)
     }
 }

@@ -3,6 +3,7 @@ package nebulosa.api.guiding
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.guide.GuideOutput
 import org.springframework.stereotype.Service
+import java.time.Duration
 
 @Service
 class GuideOutputService {
@@ -15,7 +16,7 @@ class GuideOutputService {
         guideOutput.disconnect()
     }
 
-    fun pulse(guideOutput: GuideOutput, direction: GuideDirection, duration: Int) {
+    fun pulse(guideOutput: GuideOutput, direction: GuideDirection, duration: Duration) {
         if (guideOutput.canPulseGuide) {
             when (direction) {
                 GuideDirection.NORTH -> guideOutput.guideNorth(duration)

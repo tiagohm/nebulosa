@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, O
 import * as L from 'leaflet'
 
 @Component({
-    selector: 'openstreetmap',
+    selector: 'p-openStreetMap',
     templateUrl: './openstreetmap.component.html',
     styleUrls: ['./openstreetmap.component.scss'],
 })

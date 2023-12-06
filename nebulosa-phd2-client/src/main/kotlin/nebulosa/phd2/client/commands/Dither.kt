@@ -1,7 +1,7 @@
 package nebulosa.phd2.client.commands
 
 import nebulosa.guiding.Guider
-import kotlin.time.Duration
+import java.time.Duration
 
 data class Dither(
     val amount: Double,
@@ -16,8 +16,8 @@ data class Dither(
     override val params = mapOf(
         "amount" to amount, "raOnly" to raOnly,
         "settle" to mapOf(
-            "pixels" to settleAmount, "time" to settleTime.inWholeSeconds,
-            "timeout" to settleTimeout.inWholeSeconds,
+            "pixels" to settleAmount, "time" to settleTime.toSeconds(),
+            "timeout" to settleTimeout.toSeconds(),
         )
     )
 

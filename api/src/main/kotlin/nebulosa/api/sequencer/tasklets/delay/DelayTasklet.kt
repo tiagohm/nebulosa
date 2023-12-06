@@ -1,40 +1,36 @@
 package nebulosa.api.sequencer.tasklets.delay
 
-import nebulosa.api.sequencer.SubjectSequenceTasklet
+import nebulosa.api.sequencer.PublishSequenceTasklet
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.StepContribution
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.batch.repeat.RepeatStatus
+import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.min
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
-data class DelayTasklet(private val duration: Duration) : SubjectSequenceTasklet<DelayElapsed>(), JobExecutionListener {
+data class DelayTasklet(val duration: Duration) : PublishSequenceTasklet<DelayEvent>(), JobExecutionListener {
 
     private val aborted = AtomicBoolean()
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
         val stepExecution = contribution.stepExecution
-        val delayTimeInMilliseconds = stepExecution.executionContext
-            .getLong(DELAY_TIME_NAME, duration.inWholeMilliseconds)
-        val delayTime = delayTimeInMilliseconds.milliseconds
+        var remainingTime = duration
 
-        var remainingTime = delayTimeInMilliseconds
+        if (remainingTime > Duration.ZERO) {
+            aborted.set(false)
 
-        if (remainingTime > 0L) {
-            while (!aborted.get() && remainingTime > 0L) {
-                val waitTime = min(remainingTime, DELAY_INTERVAL)
+            while (!aborted.get() && remainingTime > Duration.ZERO) {
+                val waitTime = minOf(remainingTime, DELAY_INTERVAL)
 
-                if (waitTime > 0) {
-                    onNext(DelayElapsed(remainingTime.milliseconds, delayTime, waitTime.milliseconds, stepExecution, this))
-                    Thread.sleep(waitTime)
+                if (waitTime > Duration.ZERO) {
+                    onNext(DelayElapsed(remainingTime, waitTime, stepExecution, this))
+                    Thread.sleep(waitTime.toMillis())
                     remainingTime -= waitTime
                 }
             }
 
-            onNext(DelayElapsed(Duration.ZERO, delayTime, Duration.ZERO, stepExecution, this))
+            onNext(DelayElapsed(Duration.ZERO, Duration.ZERO, stepExecution, this))
         }
 
         return RepeatStatus.FINISHED
@@ -54,7 +50,6 @@ data class DelayTasklet(private val duration: Duration) : SubjectSequenceTasklet
 
     companion object {
 
-        const val DELAY_INTERVAL = 500L
-        const val DELAY_TIME_NAME = "delayTime"
+        @JvmField val DELAY_INTERVAL = Duration.ofMillis(500)!!
     }
 }

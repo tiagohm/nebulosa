@@ -3,14 +3,14 @@ import { Title } from '@angular/platform-browser'
 import { ChartData, ChartOptions } from 'chart.js'
 import { UIChart } from 'primeng/chart'
 import { ApiService } from '../../shared/services/api.service'
-import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
-import { GuideDirection, GuideOutput, GuideStar, GuideState, GuideStep, GuiderStatus, HistoryStep } from '../../shared/types'
+import { GuideDirection, GuideOutput, GuideState, GuideStep, Guider, GuiderPlotMode, GuiderYAxisUnit, HistoryStep } from '../../shared/types'
 
-export type PlotMode = 'RA/DEC' | 'DX/DY'
-
-export type YAxisUnit = 'ARCSEC' | 'PIXEL'
+export interface GuiderPreference {
+    settleAmount?: number
+    settleTime?: number
+    settleTimeout?: number
+}
 
 @Component({
     selector: 'app-guider',
@@ -29,47 +29,46 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     guideWestDuration = 1000
     guideEastDuration = 1000
 
-    phdConnected = false
-    phdHost = 'localhost'
-    phdPort = 4400
-    phdState: GuideState = 'STOPPED'
-    phdGuideStep?: GuideStep
-    phdMessage = ''
+    connected = false
+    host = 'localhost'
+    port = 4400
+    guideState: GuideState = 'STOPPED'
+    guideStep?: GuideStep
+    message = ''
 
-    phdDitherPixels = 5
-    phdDitherRAOnly = false
-    phdSettleAmount = 1.5
-    phdSettleTime = 10
-    phdSettleTimeout = 30
+    settleAmount = 1.5
+    settleTime = 10
+    settleTimeout = 30
     readonly phdGuideHistory: HistoryStep[] = []
     private phdDurationScale = 1.0
 
-    phdPixelScale = 1.0
-    phdRmsRA = 0.0
-    phdRmsDEC = 0.0
-    phdRmsTotal = 0.0
+    pixelScale = 1.0
+    rmsRA = 0.0
+    rmsDEC = 0.0
+    rmsTotal = 0.0
 
-    readonly plotModes: PlotMode[] = ['RA/DEC', 'DX/DY']
-    plotMode: PlotMode = 'RA/DEC'
-    readonly yAxisUnits: YAxisUnit[] = ['ARCSEC', 'PIXEL']
-    yAxisUnit: YAxisUnit = 'ARCSEC'
+    readonly plotModes: GuiderPlotMode[] = ['RA/DEC', 'DX/DY']
+    plotMode = this.plotModes[0]
 
-    @ViewChild('phdChart')
-    private readonly phdChart!: UIChart
+    readonly yAxisUnits: GuiderYAxisUnit[] = ['ARCSEC', 'PIXEL']
+    yAxisUnit = this.yAxisUnits[0]
+
+    @ViewChild('chart')
+    private readonly chart!: UIChart
 
     get stopped() {
-        return this.phdState === 'STOPPED'
+        return this.guideState === 'STOPPED'
     }
 
     get looping() {
-        return this.phdState === 'LOOPING'
+        return this.guideState === 'LOOPING'
     }
 
     get guiding() {
-        return this.phdState === 'GUIDING'
+        return this.guideState === 'GUIDING'
     }
 
-    readonly phdChartData: ChartData = {
+    readonly chartData: ChartData = {
         labels: Array.from({ length: 100 }, (_, i) => `${i}`),
         datasets: [
             // RA.
@@ -107,7 +106,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         ]
     }
 
-    readonly phdChartOptions: ChartOptions = {
+    readonly chartOptions: ChartOptions = {
         responsive: true,
         plugins: {
             legend: {
@@ -216,83 +215,83 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     constructor(
         title: Title,
         private api: ApiService,
-        private browserWindow: BrowserWindowService,
-        private electron: ElectronService,
-        private preference: PreferenceService,
+        electron: ElectronService,
         ngZone: NgZone,
     ) {
         title.setTitle('Guider')
 
         api.startListening('GUIDING')
 
-        electron.on('GUIDE_OUTPUT_UPDATED', (_, event: GuideOutput) => {
-            if (event.name === this.guideOutput?.name) {
+        electron.on('GUIDE_OUTPUT_UPDATED', event => {
+            if (event.device.name === this.guideOutput?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.guideOutput!, event)
+                    Object.assign(this.guideOutput!, event.device)
                     this.update()
                 })
             }
         })
 
-        electron.on('GUIDE_OUTPUT_ATTACHED', (_, event: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_ATTACHED', event => {
             ngZone.run(() => {
-                this.guideOutputs.push(event)
+                this.guideOutputs.push(event.device)
             })
         })
 
-        electron.on('GUIDE_OUTPUT_DETACHED', (_, event: GuideOutput) => {
+        electron.on('GUIDE_OUTPUT_DETACHED', event => {
             ngZone.run(() => {
-                const index = this.guideOutputs.findIndex(e => e.name === event.name)
+                const index = this.guideOutputs.findIndex(e => e.name === event.device.name)
                 if (index >= 0) this.guideOutputs.splice(index, 1)
             })
         })
 
         electron.on('GUIDER_CONNECTED', () => {
             ngZone.run(() => {
-                this.phdConnected = true
+                this.connected = true
             })
         })
 
         electron.on('GUIDER_DISCONNECTED', () => {
             ngZone.run(() => {
-                this.phdConnected = false
+                this.connected = false
             })
         })
 
-        electron.on('GUIDER_UPDATED', (_, event: GuiderStatus) => {
+        electron.on('GUIDER_UPDATED', event => {
             ngZone.run(() => {
-                this.processGuiderStatus(event)
+                this.processGuiderStatus(event.data)
             })
         })
 
-        electron.on('GUIDER_STEPPED', (_, event: HistoryStep | GuideStar) => {
+        electron.on('GUIDER_STEPPED', event => {
             ngZone.run(() => {
-                if ("id" in event) {
-                    if (this.phdGuideHistory.length >= 100) {
-                        this.phdGuideHistory.splice(0, 1)
-                    }
-
-                    this.phdGuideHistory.push(event)
-                    this.updateGuideHistoryChart()
+                if (this.phdGuideHistory.length >= 100) {
+                    this.phdGuideHistory.splice(0, this.phdGuideHistory.length - 99)
                 }
 
-                if ("guideStep" in event && event.guideStep) {
-                    this.phdGuideStep = event.guideStep
+                this.phdGuideHistory.push(event.data)
+                this.updateGuideHistoryChart()
+
+                if (event.data.guideStep) {
+                    this.guideStep = event.data.guideStep
+                } else {
+                    // Dithering.
                 }
             })
         })
 
-        electron.on('GUIDER_MESSAGE_RECEIVED', (_, event: { message: string }) => {
+        electron.on('GUIDER_MESSAGE_RECEIVED', event => {
             ngZone.run(() => {
-                this.phdMessage = event.message
+                this.message = event.data
             })
         })
     }
 
     async ngAfterViewInit() {
-        this.phdSettleAmount = this.preference.get('guiding.settleAmount', 1.5)
-        this.phdSettleTime = this.preference.get('guiding.settleTime', 10)
-        this.phdSettleTimeout = this.preference.get('guiding.settleTimeout', 30)
+        const settle = await this.api.getGuidingSettle()
+
+        this.settleAmount = settle.amount ?? 1.5
+        this.settleTime = settle.time ?? 10
+        this.settleTimeout = settle.timeout ?? 30
 
         this.guideOutputs = await this.api.guideOutputs()
 
@@ -309,10 +308,10 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         this.api.stopListening('GUIDING')
     }
 
-    private processGuiderStatus(event: GuiderStatus) {
-        this.phdConnected = event.connected
-        this.phdState = event.state
-        this.phdPixelScale = event.pixelScale
+    private processGuiderStatus(event: Guider) {
+        this.connected = event.connected
+        this.guideState = event.state
+        this.pixelScale = event.pixelScale
     }
 
     plotModeChanged() {
@@ -326,16 +325,16 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     private updateGuideHistoryChart() {
         if (this.phdGuideHistory.length > 0) {
             const history = this.phdGuideHistory[this.phdGuideHistory.length - 1]
-            this.phdRmsTotal = history.rmsTotal
-            this.phdRmsDEC = history.rmsDEC
-            this.phdRmsRA = history.rmsRA
+            this.rmsTotal = history.rmsTotal
+            this.rmsDEC = history.rmsDEC
+            this.rmsRA = history.rmsRA
         } else {
             return
         }
 
         const startId = this.phdGuideHistory[0].id
         const guideSteps = this.phdGuideHistory.filter(e => e.guideStep)
-        const scale = this.yAxisUnit === 'ARCSEC' ? this.phdPixelScale : 1.0
+        const scale = this.yAxisUnit === 'ARCSEC' ? this.pixelScale : 1.0
 
         let maxDuration = 0
 
@@ -347,14 +346,14 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         this.phdDurationScale = maxDuration / 16.0
 
         if (this.plotMode === 'RA/DEC') {
-            this.phdChartData.datasets[0].data = guideSteps
+            this.chartData.datasets[0].data = guideSteps
                 .map(e => [e.id - startId, -e.guideStep!.raDistance * scale])
-            this.phdChartData.datasets[1].data = guideSteps
+            this.chartData.datasets[1].data = guideSteps
                 .map(e => [e.id - startId, e.guideStep!.decDistance * scale])
         } else {
-            this.phdChartData.datasets[0].data = guideSteps
+            this.chartData.datasets[0].data = guideSteps
                 .map(e => [e.id - startId, -e.guideStep!.dx * scale])
-            this.phdChartData.datasets[1].data = guideSteps
+            this.chartData.datasets[1].data = guideSteps
                 .map(e => [e.id - startId, e.guideStep!.dy * scale])
         }
 
@@ -362,12 +361,12 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             return !direction || direction === 'NORTH' || direction === 'WEST' ? this.phdDurationScale : -this.phdDurationScale
         }
 
-        this.phdChartData.datasets[2].data = this.phdGuideHistory
+        this.chartData.datasets[2].data = this.phdGuideHistory
             .map(e => (e.guideStep?.raDuration ?? 0) / durationScale(e.guideStep?.raDirection))
-        this.phdChartData.datasets[3].data = this.phdGuideHistory
+        this.chartData.datasets[3].data = this.phdGuideHistory
             .map(e => (e.guideStep?.decDuration ?? 0) / durationScale(e.guideStep?.decDirection))
 
-        this.phdChart?.refresh()
+        this.chart?.refresh()
     }
 
     async guideOutputChanged() {
@@ -377,8 +376,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
             this.update()
         }
-
-        this.electron.send('GUIDE_OUTPUT_CHANGED', this.guideOutput)
     }
 
     connectGuideOutput() {
@@ -393,16 +390,16 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         for (const direction of directions) {
             switch (direction) {
                 case 'NORTH':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideNorthDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideNorthDuration * 1000)
                     break
                 case 'SOUTH':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideSouthDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideSouthDuration * 1000)
                     break
                 case 'WEST':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideWestDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideWestDuration * 1000)
                     break
                 case 'EAST':
-                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideEastDuration)
+                    this.api.guideOutputPulse(this.guideOutput!, direction, this.guideEastDuration * 1000)
                     break
             }
         }
@@ -416,10 +413,10 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     guidingConnect() {
-        if (this.phdConnected) {
+        if (this.connected) {
             this.api.guidingDisconnect()
         } else {
-            this.api.guidingConnect(this.phdHost, this.phdPort)
+            this.api.guidingConnect(this.host, this.port)
         }
     }
 
@@ -428,11 +425,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         await this.api.guidingStart(event.shiftKey)
     }
 
-    async guidingSettleChanged() {
-        await this.api.guidingSettle(this.phdSettleAmount, this.phdSettleTime, this.phdSettleTimeout)
-        this.preference.set('guiding.settleAmount', this.phdSettleAmount)
-        this.preference.set('guiding.settleTime', this.phdSettleTime)
-        this.preference.set('guiding.settleTimeout', this.phdSettleTimeout)
+    async settleChanged() {
+        await this.api.setGuidingSettle({ amount: this.settleAmount, time: this.settleTime, timeout: this.settleTimeout })
     }
 
     guidingClearHistory() {

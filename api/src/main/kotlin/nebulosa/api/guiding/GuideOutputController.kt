@@ -5,6 +5,7 @@ import nebulosa.api.connection.ConnectionService
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.guide.GuideOutput
 import org.springframework.web.bind.annotation.*
+import java.time.Duration
 
 @RestController
 @RequestMapping("guide-outputs")
@@ -36,8 +37,8 @@ class GuideOutputController(
     @PutMapping("{guideOutput}/pulse")
     fun pulse(
         @EntityBy guideOutput: GuideOutput,
-        @RequestParam direction: GuideDirection, @RequestParam duration: Int,
+        @RequestParam direction: GuideDirection, @RequestParam duration: Long,
     ) {
-        guideOutputService.pulse(guideOutput, direction, duration)
+        guideOutputService.pulse(guideOutput, direction, Duration.ofNanos(duration * 1000L))
     }
 }

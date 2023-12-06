@@ -1,6 +1,6 @@
 package nebulosa.indi.client.device.camera
 
-import nebulosa.imaging.algorithms.CfaPattern
+import nebulosa.imaging.algorithms.transformation.CfaPattern
 import nebulosa.indi.client.device.AbstractDevice
 import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.camera.*
@@ -8,8 +8,7 @@ import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.protocol.*
 import nebulosa.io.Base64InputStream
 import nebulosa.log.loggerFor
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.microseconds
+import java.time.Duration
 
 internal open class CameraDevice(
     handler: DeviceProtocolHandler,
@@ -118,8 +117,8 @@ internal open class CameraDevice(
                         val element = message["CCD_EXPOSURE_VALUE"]!!
 
                         if (element is DefNumber) {
-                            exposureMin = (element.min * 1000000.0).microseconds
-                            exposureMax = (element.max * 1000000.0).microseconds
+                            exposureMin = Duration.ofNanos((element.min * 1000000000.0).toLong())
+                            exposureMax = Duration.ofNanos((element.max * 1000000000.0).toLong())
                             handler.fireOnEventReceived(CameraExposureMinMaxChanged(this))
                         }
 
@@ -127,7 +126,7 @@ internal open class CameraDevice(
                         exposureState = message.state
 
                         if (exposureState == PropertyState.BUSY || exposureState == PropertyState.OK) {
-                            exposureTime = (element.value * 1000000.0).microseconds
+                            exposureTime = Duration.ofNanos((element.value * 1000000000.0).toLong())
 
                             handler.fireOnEventReceived(CameraExposureProgressChanged(this))
                         }
@@ -304,7 +303,7 @@ internal open class CameraDevice(
     override fun offset(value: Int) = Unit
 
     override fun startCapture(exposureTime: Duration) {
-        val exposureInSeconds = exposureTime.inWholeMicroseconds / 1000000.0
+        val exposureInSeconds = exposureTime.toNanos() / 1000000000.0
         sendNewNumber("CCD_EXPOSURE", "CCD_EXPOSURE_VALUE" to exposureInSeconds)
     }
 
@@ -314,27 +313,27 @@ internal open class CameraDevice(
         }
     }
 
-    override fun guideNorth(duration: Int) {
+    override fun guideNorth(duration: Duration) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toNanos() / 1000.0, "TIMED_GUIDE_S" to 0.0)
         }
     }
 
-    override fun guideSouth(duration: Int) {
+    override fun guideSouth(duration: Duration) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toNanos() / 1000.0, "TIMED_GUIDE_N" to 0.0)
         }
     }
 
-    override fun guideEast(duration: Int) {
+    override fun guideEast(duration: Duration) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toNanos() / 1000.0, "TIMED_GUIDE_W" to 0.0)
         }
     }
 
-    override fun guideWest(duration: Int) {
+    override fun guideWest(duration: Duration) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toDouble())
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toNanos() / 1000.0, "TIMED_GUIDE_E" to 0.0)
         }
     }
 

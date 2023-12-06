@@ -1,11 +1,25 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { MessageService } from 'primeng/api'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { MenuItem, MessageService } from 'primeng/api'
+import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
+import { DialogMenuComponent } from '../../shared/components/dialogmenu/dialogmenu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
 import { AppComponent } from '../app.component'
+
+type MappedDevice = {
+    'CAMERA': Camera
+    'MOUNT': Mount
+    'FOCUSER': Focuser
+    'WHEEL': FilterWheel
+}
+
+export interface HomePreference {
+    host?: string
+    port?: number
+}
 
 @Component({
     selector: 'app-home',
@@ -13,6 +27,12 @@ import { AppComponent } from '../app.component'
     styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements AfterContentInit, OnDestroy {
+
+    @ViewChild('deviceMenu')
+    private readonly deviceMenu!: DialogMenuComponent
+
+    @ViewChild('imageMenu')
+    private readonly imageMenu!: DeviceMenuComponent
 
     host = ''
     port = 7624
@@ -71,24 +91,32 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
     }
 
-    private startListening<T extends Device>(
-        type: 'CAMERA' | 'MOUNT' | 'FOCUSER' | 'WHEEL',
-        onAdd: (device: T) => number,
-        onRemove: (device: T) => number,
+    readonly deviceModel: MenuItem[] = []
+
+    readonly imageModel: MenuItem[] = [
+        {
+            icon: 'mdi mdi-image-plus',
+            label: 'Open new image',
+            command: () => {
+                this.openImage(true)
+            }
+        }
+    ]
+
+    private startListening<K extends keyof MappedDevice>(
+        type: K,
+        onAdd: (device: MappedDevice[K]) => number,
+        onRemove: (device: MappedDevice[K]) => number,
     ) {
-        this.electron.on(`${type}_ATTACHED`, (_, device: T) => {
+        this.electron.on(`${type}_ATTACHED`, event => {
             this.ngZone.run(() => {
-                if (onAdd(device) === 1) {
-                    this.electron.send(`${type}_CHANGED`, device)
-                }
+                onAdd(event.device as any)
             })
         })
 
-        this.electron.on(`${type}_DETACHED`, (_, device: T) => {
+        this.electron.on(`${type}_DETACHED`, event => {
             this.ngZone.run(() => {
-                if (onRemove(device) === 0) {
-                    this.electron.send(`${type}_CHANGED`, undefined)
-                }
+                onRemove(event.device as any)
             })
         })
     }
@@ -99,12 +127,12 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private api: ApiService,
         private message: MessageService,
-        private preference: PreferenceService,
+        private storage: LocalStorageService,
         private ngZone: NgZone,
     ) {
         app.title = 'Nebulosa'
 
-        this.startListening<Camera>('CAMERA',
+        this.startListening('CAMERA',
             (device) => {
                 return this.cameras.push(device)
             },
@@ -114,7 +142,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             },
         )
 
-        this.startListening<Mount>('MOUNT',
+        this.startListening('MOUNT',
             (device) => {
                 return this.mounts.push(device)
             },
@@ -124,7 +152,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             },
         )
 
-        this.startListening<Focuser>('FOCUSER',
+        this.startListening('FOCUSER',
             (device) => {
                 return this.focusers.push(device)
             },
@@ -134,7 +162,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             },
         )
 
-        this.startListening<FilterWheel>('WHEEL',
+        this.startListening('WHEEL',
             (device) => {
                 return this.wheels.push(device)
             },
@@ -143,34 +171,22 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 return this.wheels.length
             },
         )
+
+        electron.on('SKY_ATLAS_UPDATE_FINISHED', () => this.open('SKY_ATLAS'))
     }
 
     async ngAfterContentInit() {
         this.updateConnection()
 
-        this.host = this.preference.get('home.host', 'localhost')
-        this.port = this.preference.get('home.port', 7624)
+        const preference = this.storage.get<HomePreference>('home', {})
+
+        this.host = preference.host ?? 'localhost'
+        this.port = preference.port ?? 7624
 
         this.cameras = await this.api.cameras()
         this.mounts = await this.api.mounts()
         this.focusers = await this.api.focusers()
         this.wheels = await this.api.wheels()
-
-        if (this.cameras.length > 0) {
-            this.electron.send('CAMERA_CHANGED', this.cameras[0])
-        }
-
-        if (this.mounts.length > 0) {
-            this.electron.send('MOUNT_CHANGED', this.mounts[0])
-        }
-
-        if (this.focusers.length > 0) {
-            this.electron.send('FOCUSER_CHANGED', this.focusers[0])
-        }
-
-        if (this.wheels.length > 0) {
-            this.electron.send('WHEEL_CHANGED', this.wheels[0])
-        }
     }
 
     @HostListener('window:unload')
@@ -183,8 +199,12 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             } else {
                 await this.api.connect(this.host || 'localhost', this.port)
 
-                this.preference.set('home.host', this.host)
-                this.preference.set('home.port', this.port)
+                const preference: HomePreference = {
+                    host: this.host,
+                    port: this.port,
+                }
+
+                this.storage.set('home', preference)
             }
         } catch (e) {
             console.error(e)
@@ -195,38 +215,92 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    async open(type: HomeWindowType) {
+    private openDevice<K extends keyof MappedDevice>(type: K) {
+        this.deviceModel.length = 0
+
+        const devices: Device[] = type === 'CAMERA' ? this.cameras
+            : type === 'MOUNT' ? this.mounts
+                : type === 'FOCUSER' ? this.focusers
+                    : type === 'WHEEL' ? this.wheels
+                        : []
+
+        if (devices.length === 0) return
+        if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
+
+        for (const device of devices) {
+            this.deviceModel.push({
+                icon: 'mdi mdi-connection',
+                label: device.name,
+                command: () => {
+                    this.openDeviceWindow(type, device as any)
+                }
+            })
+        }
+
+        this.deviceMenu.show()
+    }
+
+    private openDeviceWindow<K extends keyof MappedDevice>(type: K, device: MappedDevice[K]) {
         switch (type) {
             case 'MOUNT':
-                this.browserWindow.openMount({ bringToFront: true })
+                this.browserWindow.openMount({ bringToFront: true, data: device as Mount })
                 break
             case 'CAMERA':
-                this.browserWindow.openCamera({ bringToFront: true })
+                this.browserWindow.openCamera({ bringToFront: true, data: device as Camera })
                 break
             case 'FOCUSER':
-                this.browserWindow.openFocuser({ bringToFront: true })
+                this.browserWindow.openFocuser({ bringToFront: true, data: device as Focuser })
                 break
             case 'WHEEL':
-                this.browserWindow.openWheel({ bringToFront: true })
+                this.browserWindow.openWheel({ bringToFront: true, data: device as FilterWheel })
+                break
+        }
+    }
+
+    private async openImage(force: boolean = false) {
+        if (force || this.cameras.length === 0) {
+            const path = await this.electron.openFITS()
+
+            if (path) {
+                this.browserWindow.openImage({ path, source: 'PATH' })
+            }
+        } else {
+            const camera = await this.imageMenu.show(this.cameras)
+
+            if (camera) {
+                this.browserWindow.openCameraImage(camera)
+            }
+        }
+    }
+
+    open(type: HomeWindowType) {
+        switch (type) {
+            case 'MOUNT':
+            case 'CAMERA':
+            case 'FOCUSER':
+            case 'WHEEL':
+                this.openDevice(type)
                 break
             case 'GUIDER':
                 this.browserWindow.openGuider({ bringToFront: true })
                 break
-            case 'ATLAS':
+            case 'SKY_ATLAS':
                 this.browserWindow.openSkyAtlas({ bringToFront: true })
                 break
             case 'FRAMING':
-                this.browserWindow.openFraming(undefined, { bringToFront: true })
+                this.browserWindow.openFraming({ bringToFront: true, data: undefined })
                 break
             case 'ALIGNMENT':
                 this.browserWindow.openAlignment({ bringToFront: true })
                 break
             case 'INDI':
-                this.browserWindow.openINDI(undefined, { bringToFront: true })
+                this.browserWindow.openINDI({ data: undefined, bringToFront: true })
                 break
             case 'IMAGE':
-                const path = await this.electron.sendSync('OPEN_FITS')
-                if (path) this.browserWindow.openImage(path, undefined, 'PATH')
+                this.openImage()
+                break
+            case 'SETTINGS':
+                this.browserWindow.openSettings()
                 break
             case 'ABOUT':
                 this.browserWindow.openAbout()

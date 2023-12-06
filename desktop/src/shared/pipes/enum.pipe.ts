@@ -314,6 +314,10 @@ export class EnumPipe implements PipeTransform {
         'LOST_LOCK': 'Lost Lock',
         'PAUSED': 'Paused',
         'LOOPING': 'Looping',
+        'INITIAL_PAUSE': 'Initial Pause',
+        'FORWARD': 'Forward',
+        'BACKWARD': 'Backward',
+        'IDLE': 'Idle',
     }
 
     transform(value: string) {

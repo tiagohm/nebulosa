@@ -4,12 +4,13 @@ import nebulosa.math.Angle
 import nebulosa.math.cos
 import nebulosa.math.sin
 import kotlin.math.acos
+import kotlin.math.max
 
-abstract class SkyCatalog<T : SkyObject>(protected val estimatedSize: Int = 0) : Collection<T> {
+abstract class SkyCatalog<T : SkyObject>(estimatedSize: Int = 0) : Collection<T> {
 
-    private val data = ArrayList<T>(estimatedSize)
+    private val data = ArrayList<T>(max(32, estimatedSize))
 
-    fun searchBy(text: String): List<T> {
+    fun withText(text: String): List<T> {
         return data.filter { it.name.contains(text, true) }
     }
 
@@ -29,9 +30,9 @@ abstract class SkyCatalog<T : SkyObject>(protected val estimatedSize: Int = 0) :
         // val cosAngle = starPos.dot(vector.normalized)
         // val isAround = cosAngle >= limitFOV.cos
 
-        for (it in data) {
-            if (distance(it.rightAscensionJ2000, it.declinationJ2000) <= limitFOV) {
-                res.add(it)
+        for (entry in data) {
+            if (distance(entry.rightAscensionJ2000, entry.declinationJ2000) <= limitFOV) {
+                res.add(entry)
             }
         }
 
@@ -43,37 +44,15 @@ abstract class SkyCatalog<T : SkyObject>(protected val estimatedSize: Int = 0) :
     override val size
         get() = data.size
 
-    operator fun get(index: Int) = data[index]
-
-    override fun isEmpty() = data.isEmpty()
-
-    protected fun removeFirst() = data.removeFirst()
-
-    protected fun removeLast() = data.removeLast()
-
-    protected fun getFirst() = data.first()
-
-    protected fun getLast() = data.last()
+    fun clear() = data.clear()
 
     protected fun add(element: T) = data.add(element)
 
-    protected fun addAll(elements: Collection<T>) = data.addAll(elements)
-
-    protected fun clear() = data.clear()
-
-    override fun iterator() = data.iterator()
-
-    protected fun retainAll(elements: Collection<T>) = data.retainAll(elements.toSet())
-
-    protected fun removeAll(elements: Collection<T>) = data.removeAll(elements.toSet())
-
-    protected fun remove(element: T) = data.remove(element)
-
-    fun lastIndexOf(element: T) = data.lastIndexOf(element)
-
-    fun indexOf(element: T) = data.indexOf(element)
+    override fun isEmpty() = data.isEmpty()
 
     override fun containsAll(elements: Collection<T>) = data.containsAll(elements)
 
     override fun contains(element: T) = element in data
+
+    override fun iterator() = data.iterator()
 }

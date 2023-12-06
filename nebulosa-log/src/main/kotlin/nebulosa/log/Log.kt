@@ -6,10 +6,10 @@ import org.slf4j.LoggerFactory
 inline fun <reified T> loggerFor() = loggerFor(T::class.java)
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun loggerFor(type: Class<*>): Logger = LoggerFactory.getLogger(type) as Logger
+inline fun loggerFor(type: Class<*>) = LoggerFactory.getLogger(type) as Logger
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun loggerFor(name: String): Logger = LoggerFactory.getLogger(name) as Logger
+inline fun loggerFor(name: String) = LoggerFactory.getLogger(name) as Logger
 
 inline fun Logger.info(lazy: () -> String) {
     if (isInfoEnabled) {

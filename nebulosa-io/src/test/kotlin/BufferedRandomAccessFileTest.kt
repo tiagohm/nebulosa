@@ -41,7 +41,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
             val source = file.seekableSource()
 
             val buffer = source.buffer()
-            buffer.readByte().toInt() and 0xff shouldBeExactly 0xab
+            buffer.readUnsignedByte() shouldBeExactly 0xab
             buffer.readShort().toInt() and 0xffff shouldBeExactly 0xabcd
             buffer.readShortLe().toInt() and 0xffff shouldBeExactly 0x2143
             buffer.readInt() shouldBeExactly -0x543210ff
@@ -57,7 +57,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
             buffer.readString(4, Charsets.UTF_32BE) shouldBe "c"
             buffer.readByteArray(3) shouldBe byteArrayOf(1, 2, 3)
             buffer.exhausted().shouldBeFalse()
-            buffer.readByte().toInt() and 0xff shouldBeExactly 0xf9
+            buffer.readUnsignedByte() shouldBeExactly 0xf9
             buffer.exhausted().shouldBeTrue()
         }
         "seek and write" {
@@ -74,7 +74,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
 
             val buffer = source.buffer()
             buffer.exhausted().shouldBeFalse()
-            buffer.readByte().toInt() shouldBeExactly 0x44
+            buffer.readSignedByte() shouldBeExactly 0x44
             buffer.exhausted().shouldBeTrue()
         }
         "seek and read" {
@@ -83,7 +83,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
 
             val buffer = source.buffer()
             buffer.exhausted().shouldBeFalse()
-            buffer.readByte().toInt() shouldBeExactly 0x44
+            buffer.readSignedByte() shouldBeExactly 0x44
             buffer.exhausted().shouldBeTrue()
         }
         "close emits buffered bytes" {
@@ -97,7 +97,7 @@ class BufferedRandomAccessFileTest : StringSpec() {
 
             val source = file.seekableSource()
             val buffer = source.buffer()
-            buffer.readByte().toInt() and 0xff shouldBeExactly 0x99
+            buffer.readUnsignedByte() shouldBeExactly 0x99
         }
     }
 }

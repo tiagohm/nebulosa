@@ -1,18 +1,22 @@
 package nebulosa.api.cameras
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import nebulosa.api.sequencer.SequenceStepEvent
-import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.Camera
 import org.springframework.batch.core.StepExecution
 import java.nio.file.Path
+import java.time.Duration
 
 data class CameraExposureFinished(
     override val camera: Camera,
+    override val exposureCount: Int,
     @JsonIgnore override val stepExecution: StepExecution,
     @JsonIgnore override val tasklet: CameraExposureTasklet,
-    val image: Image?, val savePath: Path?,
-) : CameraCaptureEvent, SequenceStepEvent {
+    val savePath: Path?,
+) : CameraExposureEvent {
 
-    @JsonIgnore override val eventName = "CAMERA_EXPOSURE_FINISHED"
+    override val remainingTime = Duration.ZERO!!
+
+    override val progress = 1.0
+
+    override val eventName = "CAMERA_EXPOSURE_FINISHED"
 }

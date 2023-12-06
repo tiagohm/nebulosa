@@ -4,6 +4,7 @@ import { APP_CONFIG } from '../environments/environment'
 import { AboutComponent } from './about/about.component'
 import { AlignmentComponent } from './alignment/alignment.component'
 import { AtlasComponent } from './atlas/atlas.component'
+import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FocuserComponent } from './focuser/focuser.component'
@@ -13,6 +14,7 @@ import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { MountComponent } from './mount/mount.component'
+import { SettingsComponent } from './settings/settings.component'
 
 const routes: Routes = [
     {
@@ -63,6 +65,14 @@ const routes: Routes = [
     {
         path: 'alignment',
         component: AlignmentComponent,
+    },
+    {
+        path: 'calibration',
+        component: CalibrationComponent,
+    },
+    {
+        path: 'settings',
+        component: SettingsComponent,
     },
     {
         path: 'about',

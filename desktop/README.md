@@ -1,4 +1,4 @@
-# Nebulosa
+# ![](src/assets/icons/nebulosa.png) Nebulosa
 
 The complete integrated solution for all of your astronomical imaging needs.
 
@@ -28,14 +28,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ## Sky Atlas
 
-![](atlas.1.png)
-![](atlas.2.png)
-![](atlas.3.png)
-![](atlas.4.png)
-![](atlas.5.png)
-![](atlas.6.png)
-![](atlas.7.png)
-![](atlas.8.png)
+![](sky-atlas.png)
 
 ## Image
 

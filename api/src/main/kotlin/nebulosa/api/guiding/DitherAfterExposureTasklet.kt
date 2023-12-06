@@ -1,6 +1,7 @@
 package nebulosa.api.guiding
 
 import nebulosa.common.concurrency.CountUpDownLatch
+import nebulosa.guiding.GuideState
 import nebulosa.guiding.Guider
 import nebulosa.guiding.GuiderListener
 import org.springframework.batch.core.StepContribution
@@ -18,7 +19,7 @@ data class DitherAfterExposureTasklet(val request: DitherAfterExposureRequest) :
     private val exposureCount = AtomicInteger()
 
     override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
-        if (request.enabled) {
+        if (guider.canDither && request.enabled && guider.state == GuideState.GUIDING) {
             if (exposureCount.get() < request.afterExposures) {
                 try {
                     guider.registerGuiderListener(this)

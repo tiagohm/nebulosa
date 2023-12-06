@@ -1,66 +1,40 @@
-import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.doubles.plusOrMinus
-import io.kotest.matchers.doubles.shouldBeExactly
-import io.kotest.matchers.ints.shouldBeExactly
+import io.kotest.matchers.floats.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.star.hfd.FindResult
-import nebulosa.imaging.algorithms.star.hfd.HalfFluxDiameter
-import nom.tam.fits.Fits
+import nebulosa.imaging.algorithms.computation.hfd.HFD
+import nebulosa.test.FitsStringSpec
 
-class HFDTest : StringSpec() {
+class HFDTest : FitsStringSpec() {
 
     init {
-        val image1 = Image.openFITS(Fits("src/test/resources/HFD.1.fits"))
-        val image2 = Image.openFITS(Fits("src/test/resources/HFD.2.fits"))
+        "focus" {
+            val starFocus = arrayOf(
+                STAR_FOCUS_1 to floatArrayOf(7.0f, 77.2f, 11950.023f),
+                STAR_FOCUS_2 to floatArrayOf(7.3f, 114.1f, 26055.076f),
+                STAR_FOCUS_3 to floatArrayOf(7.7f, 185.1f, 68531.1f),
+                STAR_FOCUS_4 to floatArrayOf(6.9f, 363.4f, 264183.53f),
+                STAR_FOCUS_5 to floatArrayOf(6.2f, 382.5f, 292700.53f),
+                STAR_FOCUS_6 to floatArrayOf(6.1f, 410.0f, 336331.9f),
+                STAR_FOCUS_7 to floatArrayOf(5.7f, 422.7f, 357451.03f),
+                STAR_FOCUS_8 to floatArrayOf(5.1f, 430.5f, 370737.5f),
+                STAR_FOCUS_9 to floatArrayOf(4.8f, 435.4f, 379284.03f),
+                STAR_FOCUS_10 to floatArrayOf(4.3f, 444.6f, 395406.34f),
+                STAR_FOCUS_11 to floatArrayOf(3.79f, 442.9f, 392338.5f),
+                STAR_FOCUS_12 to floatArrayOf(3.71f, 443.3f, 393080.38f),
+                STAR_FOCUS_13 to floatArrayOf(4.9f, 443.6f, 393603.97f),
+                STAR_FOCUS_14 to floatArrayOf(6.1f, 368.8f, 272057.78f),
+                STAR_FOCUS_15 to floatArrayOf(6.9f, 249.0f, 124078.05f),
+                STAR_FOCUS_16 to floatArrayOf(6.5f, 188.2f, 70905.97f),
+                STAR_FOCUS_17 to floatArrayOf(6.9f, 164.3f, 53994.75f),
+            )
 
-        "ok" {
-            val hfd = HalfFluxDiameter(542.0, 974.0)
-            val star = hfd.compute(image1)
-
-            star.result shouldBe FindResult.OK
-            star.mass shouldBe (13840.811 plusOrMinus 1.0)
-            star.snr shouldBe (82.5 plusOrMinus 1.0)
-            star.hfd shouldBe (2.9 plusOrMinus 1.0)
-            star.peak shouldBe (1240.0 plusOrMinus 1.0)
-            star.x.toInt() shouldBeExactly 544
-            star.y.toInt() shouldBeExactly 974
-        }
-        "faint star" {
-            val hfd = HalfFluxDiameter(981.0, 327.0)
-            val star = hfd.compute(image1)
-
-            star.result shouldBe FindResult.OK
-            star.mass shouldBe (113.0 plusOrMinus 1.0)
-            star.snr shouldBe (6.5 plusOrMinus 1.0)
-            star.hfd shouldBe (2.0 plusOrMinus 1.0)
-            star.peak shouldBe (22.0 plusOrMinus 1.0)
-            star.x.toInt() shouldBeExactly 980
-            star.y.toInt() shouldBeExactly 327
-        }
-        "unfocused star" {
-            val hfd = HalfFluxDiameter(303.0, 177.0)
-            val star = hfd.compute(image2)
-
-            star.result shouldBe FindResult.OK
-            star.mass shouldBe (1260.0212 plusOrMinus 1.0)
-            star.snr shouldBe (17.8989 plusOrMinus 1.0)
-            star.hfd shouldBe (6.52 plusOrMinus 1.0)
-            star.peak shouldBe (71.0 plusOrMinus 1.0)
-            star.x.toInt() shouldBeExactly 305
-            star.y.toInt() shouldBeExactly 178
-        }
-        "low mass" {
-            val hfd = HalfFluxDiameter(827.0, 699.0)
-            val star = hfd.compute(image2)
-
-            star.result shouldBe FindResult.LOWMASS
-            star.mass shouldBeExactly 0.0
-            star.snr shouldBeExactly 0.0
-            star.hfd shouldBeExactly 0.0
-            star.peak shouldBe (10.0 plusOrMinus 1e-8)
-            star.x.toInt() shouldBeExactly 827
-            star.y.toInt() shouldBeExactly 699
+            for ((first, second) in starFocus) {
+                val focusImage = Image.open(first)
+                val star = focusImage.compute(HFD(focusImage.width / 2, focusImage.height / 2, 50))
+                star.hfd shouldBe (second[0] plusOrMinus 0.1f)
+                star.snr shouldBe (second[1] plusOrMinus 0.1f)
+                star.flux shouldBe (second[2] plusOrMinus 0.1f)
+            }
         }
     }
 }

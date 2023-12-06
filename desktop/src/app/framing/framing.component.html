@@ -1,4 +1,4 @@
-<div class="grid px-4 py-3">
+<div class="grid px-4 py-2 mt-1">
     <div class="col-6">
         <span class="p-float-label">
             <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="rightAscension" />
@@ -27,15 +27,15 @@
     </div>
     <div class="col-6">
         <span class="p-float-label">
-            <p-inputNumber [min]="1" [max]="90" [step]="0.1" class="w-full" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
-                           [(ngModel)]="fov" />
+            <p-inputNumber [min]="0.1" [max]="90" [step]="0.1" class="w-full" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
+                           [(ngModel)]="fov" locale="en" [minFractionDigits]="1" />
             <label>FOV (°)</label>
         </span>
     </div>
     <div class="col-6">
         <span class="p-float-label">
             <p-inputNumber [min]="0" [max]="360" [step]="0.1" class="w-full" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
-                           [(ngModel)]="rotation" />
+                           [(ngModel)]="rotation" locale="en" [minFractionDigits]="1" />
             <label>Rotation (°)</label>
         </span>
     </div>

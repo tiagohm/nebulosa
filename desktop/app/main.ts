@@ -1,24 +1,16 @@
 import { Client } from '@stomp/stompjs'
-import { app, BrowserWindow, dialog, ipcMain, Menu, screen, shell } from 'electron'
+import { BrowserWindow, Menu, Notification, app, dialog, ipcMain, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { Camera, FilterWheel, Focuser, INDI_EVENT_TYPES, INTERNAL_EVENT_TYPES, Mount, OpenWindow } from './types'
+import { InternalEventType, MessageEvent, NotificationEvent, OpenDirectory, OpenWindow } from './types'
 
-import { CronJob } from 'cron'
 import { WebSocket } from 'ws'
-import { OpenDirectory } from '../src/shared/types'
 Object.assign(global, { WebSocket })
 
 const browserWindows = new Map<string, BrowserWindow>()
-const cronedWindows = new Map<BrowserWindow, CronJob<null, null>[]>()
 let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
 let wsClient: Client
-
-let selectedCamera: Camera
-let selectedMount: Mount
-let selectedFocuser: Focuser
-let selectedWheel: FilterWheel
 
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
@@ -30,38 +22,48 @@ function createMainWindow() {
     splashWindow?.close()
     browserWindows.delete('splash')
 
-    createWindow({ id: 'home', path: 'home' })
+    createWindow({ id: 'home', path: 'home', data: undefined })
 
     wsClient = new Client({
         brokerURL: `ws://localhost:${apiPort}/ws`,
         onConnect: () => {
-            for (const item of INDI_EVENT_TYPES) {
-                wsClient.subscribe(item, (message) => {
-                    const data = JSON.parse(message.body)
+            wsClient.subscribe('NEBULOSA_EVENT', message => {
+                const event = JSON.parse(message.body) as MessageEvent
 
-                    if (serve) {
-                        console.info(item, message.body)
+                if (event.eventName) {
+                    if (event.eventName === 'NOTIFICATION') {
+                        showNotification(event as NotificationEvent)
+                    } else {
+                        sendToAllWindows(event.eventName, event)
                     }
+                } else {
+                    console.warn('invalid message event', event)
+                }
+            })
 
-                    sendToAllWindows(item, data)
-                })
-            }
+            console.info('Web Socket connected')
         },
-        onDisconnect() {
+        onDisconnect: () => {
             console.warn('Web Socket disconnected')
+        },
+        onWebSocketClose: () => {
+            console.warn('Web Socket closed')
+        },
+        onWebSocketError: (e) => {
+            console.error('Web Socket error', e)
         },
     })
 
     wsClient.activate()
 }
 
-function createWindow(data: OpenWindow<any>) {
-    let window = browserWindows.get(data.id)
+function createWindow(options: OpenWindow<any>) {
+    let window = browserWindows.get(options.id)
 
     if (window) {
-        if (data.params) {
-            console.info('params changed. id=%s, params=%s', data.id, data.params)
-            window.webContents.send('PARAMS_CHANGED', data.params)
+        if (options.data) {
+            console.info('window data changed. id=%s, data=%s', options.id, options.data)
+            window.webContents.send('DATA_CHANGED', options.data)
         }
 
         return window
@@ -79,7 +81,7 @@ function createWindow(data: OpenWindow<any>) {
         }
     }
 
-    const width = data.width ? Math.trunc(computeWidth(data.width)) : 320
+    const width = options.width ? Math.trunc(computeWidth(options.width)) : 320
 
     function computeHeight(value: number | string) {
         if (typeof value === 'number') {
@@ -93,11 +95,11 @@ function createWindow(data: OpenWindow<any>) {
         }
     }
 
-    const height = data.height ? Math.trunc(computeHeight(data.height)) : 420
+    const height = options.height ? Math.trunc(computeHeight(options.height)) : 420
 
-    const resizable = data.resizable ?? false
-    const icon = data.icon ?? 'nebulosa'
-    const params = encodeURIComponent(JSON.stringify(data.params || {}))
+    const resizable = options.resizable ?? false
+    const icon = options.icon ?? 'nebulosa'
+    const data = encodeURIComponent(JSON.stringify(options.data || {}))
 
     window = new BrowserWindow({
         title: 'Nebulosa',
@@ -123,9 +125,9 @@ function createWindow(data: OpenWindow<any>) {
         debug({ showDevTools: false })
 
         require('electron-reloader')(module)
-        window.loadURL(`http://localhost:4200/${data.path}?params=${params}&resizable=${resizable}`)
+        window.loadURL(`http://localhost:4200/${options.path}?data=${data}&resizable=${resizable}`)
     } else {
-        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${data.path}?params=${params}&resizable=${resizable}`)
+        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${options.path}?data=${data}&resizable=${resizable}`)
         window.loadURL(url.href)
     }
 
@@ -157,7 +159,7 @@ function createWindow(data: OpenWindow<any>) {
         }
     })
 
-    browserWindows.set(data.id, window)
+    browserWindows.set(options.id, window)
 
     return window
 }
@@ -183,6 +185,14 @@ function createSplashScreen() {
 
         browserWindows.set('splash', splashWindow)
     }
+}
+
+function showNotification(event: NotificationEvent) {
+    const icon = path.join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
+
+    new Notification({ ...event, icon })
+        .on('click', () => sendToAllWindows(event.type, event))
+        .show()
 }
 
 function findWindowById(id: number) {
@@ -270,17 +280,18 @@ try {
         })
     })
 
-    ipcMain.on('OPEN_FITS', async (event) => {
+    ipcMain.handle('OPEN_FITS', async (event) => {
         const ownerWindow = findWindowById(event.sender.id)
+
         const value = await dialog.showOpenDialog(ownerWindow!, {
             filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }],
             properties: ['openFile'],
         })
 
-        event.returnValue = !value.canceled && value.filePaths[0]
+        return !value.canceled && value.filePaths[0]
     })
 
-    ipcMain.on('SAVE_FITS_AS', async (event) => {
+    ipcMain.handle('SAVE_FITS_AS', async (event) => {
         const ownerWindow = findWindowById(event.sender.id)
         const value = await dialog.showSaveDialog(ownerWindow!, {
             filters: [
@@ -290,124 +301,69 @@ try {
             properties: ['createDirectory', 'showOverwriteConfirmation'],
         })
 
-        event.returnValue = !value.canceled && value.filePath
+        return !value.canceled && value.filePath
     })
 
-    ipcMain.on('OPEN_DIRECTORY', async (event, data?: OpenDirectory) => {
+    ipcMain.handle('OPEN_DIRECTORY', async (event, data?: OpenDirectory) => {
         const ownerWindow = findWindowById(event.sender.id)
         const value = await dialog.showOpenDialog(ownerWindow!, {
             properties: ['openDirectory'],
             defaultPath: data?.defaultPath,
         })
 
-        event.returnValue = !value.canceled && value.filePaths[0]
+        return !value.canceled && value.filePaths[0]
     })
 
-    ipcMain.on('PIN_WINDOW', (event) => {
+    ipcMain.handle('PIN_WINDOW', (event) => {
         const window = findWindowById(event.sender.id)
         window?.setAlwaysOnTop(true)
-        event.returnValue = !!window
+        return !!window
     })
 
-    ipcMain.on('UNPIN_WINDOW', (event) => {
+    ipcMain.handle('UNPIN_WINDOW', (event) => {
         const window = findWindowById(event.sender.id)
         window?.setAlwaysOnTop(false)
-        event.returnValue = !!window
+        return !!window
     })
 
-    ipcMain.on('MINIMIZE_WINDOW', (event) => {
+    ipcMain.handle('MINIMIZE_WINDOW', (event) => {
         const window = findWindowById(event.sender.id)
         window?.minimize()
-        event.returnValue = !!window
+        return !!window
     })
 
-    ipcMain.on('MAXIMIZE_WINDOW', (event) => {
+    ipcMain.handle('MAXIMIZE_WINDOW', (event) => {
         const window = findWindowById(event.sender.id)
 
         if (window?.isMaximized()) window.unmaximize()
         else window?.maximize()
 
-        event.returnValue = window?.isMaximized() ?? false
+        return window?.isMaximized() ?? false
     })
 
-    ipcMain.on('CLOSE_WINDOW', (event, id?: string) => {
+    ipcMain.handle('CLOSE_WINDOW', (event, id?: string) => {
         if (id) {
             for (const [key, value] of browserWindows) {
                 if (key === id) {
                     value.close()
-                    event.returnValue = true
-                    return
+                    return true
                 }
             }
 
-            event.returnValue = false
+            return false
         } else {
             const window = findWindowById(event.sender.id)
             window?.close()
-            event.returnValue = !!window
+            return !!window
         }
     })
 
-    ipcMain.on('REGISTER_CRON', async (event, cronTime: string) => {
-        const window = findWindowById(event.sender.id)
+    const events: InternalEventType[] = ['WHEEL_RENAMED', 'LOCATION_CHANGED']
 
-        if (!window) return
-
-        const cronJobs = cronedWindows.get(window) ?? []
-        cronJobs.forEach(e => e.stop())
-        const cronJob = new CronJob(cronTime, () => window.webContents.send('CRON_TICKED', cronTime))
-        cronJobs.push(cronJob)
-        cronedWindows.set(window, cronJobs)
-
-        event.returnValue = true
-    })
-
-    ipcMain.on('UNREGISTER_CRON', async (event) => {
-        const window = findWindowById(event.sender.id)
-
-        if (!window) return
-
-        const cronJobs = cronedWindows.get(window)
-        cronJobs?.forEach(e => e.stop())
-        cronedWindows.delete(window)
-
-        event.returnValue = true
-    })
-
-    for (const item of INTERNAL_EVENT_TYPES) {
-        ipcMain.on(item, (event, data) => {
-            switch (item) {
-                case 'CAMERA_CHANGED':
-                    selectedCamera = data
-                    break
-                case 'MOUNT_CHANGED':
-                    selectedMount = data
-                    break
-                case 'FOCUSER_CHANGED':
-                    selectedFocuser = data
-                    break
-                case 'WHEEL_CHANGED':
-                    selectedWheel = data
-                    break
-            }
-
-            switch (item) {
-                case 'SELECTED_CAMERA':
-                    event.returnValue = selectedCamera
-                    break
-                case 'SELECTED_MOUNT':
-                    event.returnValue = selectedMount
-                    break
-                case 'SELECTED_FOCUSER':
-                    event.returnValue = selectedFocuser
-                    break
-                case 'SELECTED_WHEEL':
-                    event.returnValue = selectedWheel
-                    break
-                default:
-                    sendToAllWindows(item, data)
-                    break
-            }
+    for (const item of events) {
+        ipcMain.handle(item, (_, data) => {
+            sendToAllWindows(item, data)
+            return true
         })
     }
 } catch (e) {
@@ -424,6 +380,6 @@ function sendToAllWindows(channel: string, data: any, home: boolean = true) {
     }
 
     if (serve) {
-        console.info(channel, data)
+        console.info(data)
     }
 }

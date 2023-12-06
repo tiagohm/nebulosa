@@ -36,16 +36,16 @@ class MountEventHandler(
                 throttler.onNext(event)
             }
             is MountAttached -> {
-                messageService.sendMessage(MOUNT_ATTACHED, event.device)
+                messageService.sendMessage(MountMessageEvent(MOUNT_ATTACHED, event.device))
             }
             is MountDetached -> {
-                messageService.sendMessage(MOUNT_DETACHED, event.device)
+                messageService.sendMessage(MountMessageEvent(MOUNT_DETACHED, event.device))
             }
         }
     }
 
     fun sendUpdate(device: Mount) {
-        messageService.sendMessage(MOUNT_UPDATED, device)
+        messageService.sendMessage(MountMessageEvent(MOUNT_UPDATED, device))
     }
 
     companion object {

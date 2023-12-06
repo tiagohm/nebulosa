@@ -4,6 +4,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import nebulosa.io.resource
 import nebulosa.skycatalog.hyg.HygDatabase
+import nebulosa.test.NonGitHubOnlyCondition
 
 @EnabledIf(NonGitHubOnlyCondition::class)
 class HygDatabaseTest : StringSpec() {
@@ -13,7 +14,7 @@ class HygDatabaseTest : StringSpec() {
             val database = HygDatabase()
             resource("hyg_v35.csv")!!.use(database::load)
             database.size shouldBe 118002
-            database.searchBy("Alp Psc") shouldHaveSize 1
+            database.withText("Alp Psc") shouldHaveSize 1
         }
     }
 }

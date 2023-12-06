@@ -2,12 +2,8 @@
 
 * https://www.flaticon.com/free-icon/galaxy_1534067
 * https://www.flaticon.com/free-icon/information_9195785
-* https://www.flaticon.com/free-icon/gps_856332
-* https://www.flaticon.com/free-icon/clock_3133110
-* https://www.flaticon.com/free-icon/map_854878
 * https://www.flaticon.com/free-icon/remote-control_3567313
 * https://www.flaticon.com/free-icon/sky_3982229
-* https://www.flaticon.com/free-icon/text-box_3815460
 * https://www.flaticon.com/free-icon/histogram_2709742
 * https://www.flaticon.com/free-icon/target_3207593
 * https://www.flaticon.com/free-icon/camera-lens_5708327
@@ -19,12 +15,9 @@
 * https://www.flaticon.com/free-icon/image-processing_6062419
 * https://www.flaticon.com/free-icon/star_740882
 * https://www.flaticon.com/free-icon/rotate_3303063
-* https://www.flaticon.com/free-icon/combination_8654893
-* https://www.flaticon.com/free-icon/rgb-print_4904473
 * https://www.flaticon.com/free-icon/location_4631354
 * https://www.flaticon.com/free-icon/rgb-print_7664547
-* https://www.flaticon.com/free-icon/setting_839374
-* https://www.flaticon.com/free-icon/filter_679991
+* https://www.flaticon.com/free-icon/cogwheel_3953226
 * https://www.flaticon.com/free-icon/target_10542035
 * https://www.flaticon.com/free-icon/contrast_439842
 * https://www.flaticon.com/free-icon/full-moon_9689786
@@ -33,4 +26,7 @@
 * https://www.flaticon.com/free-icon/stars_3266390
 * https://www.flaticon.com/free-icon/milky-way_1086076
 * https://www.flaticon.com/free-icon/satellite_1086093
-* https://www.flaticon.com/free-icon/gear_8753403
+* https://www.flaticon.com/free-icon/schedule_3652191
+* https://www.flaticon.com/free-icon/search_10770011
+* https://www.flaticon.com/free-icon/stack_3342239
+* https://thenounproject.com/icon/random-dither-4259782

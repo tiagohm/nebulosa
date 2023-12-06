@@ -1,17 +1,25 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
-import { CheckboxChangeEvent } from 'primeng/checkbox'
+import { ActivatedRoute } from '@angular/router'
+import { InputSwitchChangeEvent } from 'primeng/inputswitch'
+import { Subject, Subscription, throttleTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { RemoteStorageService } from '../../shared/services/preference.service'
 import { FilterWheel } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
-export interface FilterSlot {
+export interface WheelPreference {
+    shutterPosition?: number
+    names?: string[]
+    offsets?: number[]
+}
+
+export interface Filter {
     position: number
     name: string
-    editing: boolean
-    newName: string
     dark: boolean
+    offset: number
 }
 
 @Component({
@@ -21,50 +29,64 @@ export interface FilterSlot {
 })
 export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
-    wheels: FilterWheel[] = []
     wheel?: FilterWheel
     connected = false
 
     moving = false
     position = 0
+    filters: Filter[] = []
+    filter?: Filter
 
-    filters: FilterSlot[] = []
-
-    get selectedFilter() {
+    get selectedFilter(): Filter | undefined {
         return this.filters[this.position - 1]
     }
 
-    set selectedFilter(value: FilterSlot) {
-        this.moveTo(value)
-    }
+    private readonly filterChangedPublisher = new Subject<Filter>()
+    private subscription?: Subscription
 
     constructor(
         private app: AppComponent,
         private api: ApiService,
         private electron: ElectronService,
-        private preference: PreferenceService,
+        private storage: LocalStorageService,
+        private remoteStorage: RemoteStorageService,
+        private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
         app.title = 'Filter Wheel'
 
-        electron.on('WHEEL_UPDATED', (_, event: FilterWheel) => {
-            if (event.name === this.wheel?.name) {
+        electron.on('WHEEL_UPDATED', event => {
+            if (event.device.name === this.wheel?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.wheel!, event)
+                    Object.assign(this.wheel!, event.device)
                     this.update()
                 })
             }
         })
+
+        this.subscription = this.filterChangedPublisher
+            .pipe(throttleTime(1500))
+            .subscribe((filter) => {
+                this.savePreference()
+                this.electron.send('WHEEL_RENAMED', { wheel: this.wheel!, filter })
+            })
     }
 
     async ngAfterContentInit() {
-        this.wheels = await this.api.wheels()
+        this.route.queryParams.subscribe(e => {
+            const wheel = JSON.parse(decodeURIComponent(e.data)) as FilterWheel
+            this.wheelChanged(wheel)
+        })
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() { }
+    ngOnDestroy() {
+        this.subscription?.unsubscribe()
+    }
 
-    async wheelChanged() {
+    async wheelChanged(wheel?: FilterWheel) {
+        this.wheel = wheel
+
         if (this.wheel) {
             this.app.subTitle = this.wheel.name
 
@@ -73,12 +95,9 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
             this.loadPreference()
             this.update()
-            this.savePreference()
         } else {
             this.app.subTitle = ''
         }
-
-        this.electron.send('WHEEL_CHANGED', this.wheel)
     }
 
     connect() {
@@ -89,30 +108,23 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    showFilterEdit(filter: FilterSlot, event: Event) {
-        filter.editing = true
-        event.stopImmediatePropagation()
-    }
-
-    shutterToggled(filter: FilterSlot, event: CheckboxChangeEvent) {
-        this.filters.forEach(e => e.dark = e === filter ? e.dark : false)
-        this.savePreference()
-        event.originalEvent?.stopImmediatePropagation()
-    }
-
-    moveTo(filter: FilterSlot) {
+    moveTo(filter: Filter) {
         this.api.wheelMoveTo(this.wheel!, filter.position)
     }
 
-    applyFilterName(filter: FilterSlot, event: Event) {
-        filter.name = filter.newName
+    shutterToggled(filter: Filter, event: InputSwitchChangeEvent) {
+        this.filters.forEach(e => e.dark = event.checked && e === filter)
+        this.filterChangedPublisher.next(filter)
+    }
 
-        this.preference.set(`wheel.${this.wheel!.name}.filterName.${filter.position}`, filter.name)
-        this.api.wheelSync(this.wheel!, this.filters.map(e => e.name))
-        this.electron.send('WHEEL_RENAMED', this.wheel)
+    filterNameChanged(filter: Filter) {
+        if (filter.name) {
+            this.filterChangedPublisher.next(filter)
+        }
+    }
 
-        filter.editing = false
-        event.stopImmediatePropagation()
+    focusOffsetChanged(filter: Filter) {
+        this.filterChangedPublisher.next(filter)
     }
 
     private async update() {
@@ -124,32 +136,51 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         this.moving = this.wheel.moving
         this.position = this.wheel.position
 
+        let filters: Filter[] = []
+
         if (this.wheel.count <= 0) {
             this.filters = []
+            return
         } else if (this.wheel.count !== this.filters.length) {
-            this.filters = new Array(this.wheel.count)
+            filters = new Array(this.wheel.count)
+        } else {
+            filters = this.filters
         }
 
-        const darkFilter = this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
+        const preference = this.storage.get<WheelPreference>(`wheel.${this.wheel.name}`, {})
 
-        for (let i = 1; i <= this.filters.length; i++) {
-            const name = this.preference.get(`wheel.${this.wheel.name}.filterName.${i}`, `Filter #${i}`)
-            const filter = { position: i, name, editing: false, newName: name, dark: i === darkFilter }
-            this.filters[i - 1] = filter
+        for (let position = 1; position <= filters.length; position++) {
+            const name = preference.names?.[position - 1] ?? `Filter #${position}`
+            const offset = preference.offsets?.[position - 1] ?? 0
+            const dark = position === preference.shutterPosition
+            const filter = { position, name, dark, offset }
+            filters[position - 1] = filter
         }
+
+        this.filters = filters
+        this.filter = filters[this.position - 1] ?? filters[0]
     }
 
     private loadPreference() {
         if (this.wheel) {
-            const darkFilter = this.preference.get(`wheel.${this.wheel.name}.shutterPosition`, 0)
-            this.filters.forEach(e => e.dark = e.position === darkFilter)
+            const preference = this.storage.get<WheelPreference>(`wheel.${this.wheel.name}`, {})
+            const shutterPosition = preference.shutterPosition ?? 0
+            this.filters.forEach(e => e.dark = e.position === shutterPosition)
         }
     }
 
     private savePreference() {
         if (this.wheel && this.wheel.connected) {
-            const darkFilter = this.filters.find(e => e.dark)
-            this.preference.set(`wheel.${this.wheel.name}.shutterPosition`, darkFilter?.position || 0)
+            const dark = this.filters.find(e => e.dark)
+
+            const preference: WheelPreference = {
+                shutterPosition: dark?.position ?? 0,
+                names: this.filters.map(e => e.name)
+            }
+
+            this.storage.set(`wheel.${this.wheel.name}`, preference)
+            this.remoteStorage.set(`wheel.${this.wheel.name}.shutterPosition`, preference.shutterPosition)
+            this.api.wheelSync(this.wheel, preference.names!)
         }
     }
 }

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS configs(
+CREATE TABLE IF NOT EXISTS preferences(
     key TEXT PRIMARY KEY,
     value TEXT
 );
@@ -60,28 +60,6 @@ CREATE TABLE IF NOT EXISTS locations(
     longitude REAL,
     latitude REAL,
     elevation REAL,
-    offset_in_minutes INT2
+    offset_in_minutes INT2,
+    selected INT1
 );
-
-CREATE TABLE IF NOT EXISTS guide_calibrations(
-    id INT8 PRIMARY KEY,
-    camera TEXT,
-    mount TEXT,
-    guide_output TEXT,
-    saved_at INT8,
-    x_rate REAL,
-    y_rate REAL,
-    x_angle REAL,
-    y_angle REAL,
-    declination REAL,
-    rotator_angle REAL,
-    binning INT1,
-    pier_side_at_east INT1,
-    ra_guide_parity INT1,
-    dec_guide_parity INT1
-);
-
-CREATE INDEX IF NOT EXISTS guide_calibrations_camera_idx ON guide_calibrations(camera);
-CREATE INDEX IF NOT EXISTS guide_calibrations_mount_idx ON guide_calibrations(mount);
-CREATE INDEX IF NOT EXISTS guide_calibrations_guide_output_idx ON guide_calibrations(guide_output);
-CREATE INDEX IF NOT EXISTS guide_calibrations_saved_at_idx ON guide_calibrations(saved_at);

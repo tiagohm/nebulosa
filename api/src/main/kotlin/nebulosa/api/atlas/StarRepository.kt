@@ -8,8 +8,11 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Transactional
 
 @Repository
+@Transactional(readOnly = false, isolation = Isolation.SERIALIZABLE)
 interface StarRepository : JpaRepository<StarEntity, Long> {
 
     @Query(
@@ -21,6 +24,7 @@ interface StarRepository : JpaRepository<StarEntity, Long> {
                 "(:radius <= 0.0 OR acos(sin(star.declinationJ2000) * sin(:declinationJ2000) + cos(star.declinationJ2000) * cos(:declinationJ2000) * cos(star.rightAscensionJ2000 - :rightAscensionJ2000)) <= :radius) " +
                 "ORDER BY star.magnitude ASC"
     )
+    @Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
     fun search(
         text: String? = null,
         rightAscensionJ2000: Angle = 0.0, declinationJ2000: Angle = 0.0, radius: Angle = 0.0,
@@ -31,5 +35,6 @@ interface StarRepository : JpaRepository<StarEntity, Long> {
     ): List<StarEntity>
 
     @Query("SELECT DISTINCT star.type FROM StarEntity star")
+    @Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
     fun types(): List<SkyObjectType>
 }

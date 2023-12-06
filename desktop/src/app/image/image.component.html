@@ -1,6 +1,6 @@
 <div class="inline-block relative">
     <img #image (load)="imageLoaded()" (click)="imageClicked($event, false)" (contextmenu)="imageClicked($event, true)"
-         class="select-none pixelated" (mousemove)="imageMouseMoved($event)" [class.cursor-crosshair]="mouseCoordinate" />
+         class="select-none pixelated" (mousemove)="imageMouseMoved($event)" [class.cursor-crosshair]="isMouseCoordinateVisible" />
 
     <svg *ngIf="crossHair" class="absolute left-0 top-0 w-full h-full pointer-events-none">
         <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#E53935" stroke-width="3"></line>
@@ -10,22 +10,36 @@
         <circle cx="50%" cy="50%" r="32%" stroke="#E53935" stroke-width="3" fill="transparent"></circle>
     </svg>
 
-    <svg *ngIf="!mirrorHorizontal && !mirrorVertical" class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+    <svg *ngIf="!mirrorHorizontal && !mirrorVertical && annotationIsVisible"
+         class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
         <g *ngFor="let a of annotations" (dblclick)="showAnnotationInfo(a)" class="pointer-events-auto cursor-pointer">
             <circle [attr.cx]="a.x" [attr.cy]="a.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"></circle>
-            <text [attr.x]="a.x" [attr.y]="a.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">{{ a.star?.name ??
-                a.dso?.name ??
-                a.minorPlanet?.name }}</text>
+            <text [attr.x]="a.x" [attr.y]="a.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">
+                {{ (a.star ?? a.dso ?? a.minorPlanet) | skyObject:'name' }}
+            </text>
         </g>
     </svg>
 
-    <div #roi [class.hidden]="!roiInteractable" class="roi absolute left-0 top-0" data-x="0" data-y="0" (contextmenu)="imageClicked($event, true)"
-         (onmousewheel)="image.dispatchEvent($event)">
+    <svg *ngIf="!mirrorHorizontal && !mirrorVertical && detectedStarsIsVisible"
+         class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+        <g *ngFor="let s of detectedStars" class="pointer-events-auto cursor-pointer">
+            <circle [attr.cx]="s.x" [attr.cy]="s.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"></circle>
+            <text [attr.x]="s.x" [attr.y]="s.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">
+                {{ s.hfd.toFixed(1) }}
+            </text>
+        </g>
+    </svg>
+
+    <div #roi [class.hidden]="!roiInteractable" class="roi absolute left-0 top-0" data-x="0" data-y="0" (contextmenu)="imageClicked($event, true)">
         <span class="absolute">X: {{ roiX }} Y: {{ roiY }} W: {{ roiWidth }} H: {{ roiHeight }}</span>
     </div>
 </div>
 
-<p-contextMenu #menu [model]="menuItems" />
+<p-contextMenu #menu [model]="contextMenuItems">
+    <ng-template pTemplate="item" let-item>
+        <p-menuItem [item]="item" />
+    </ng-template>
+</p-contextMenu>
 
 <p-dialog header="Annotation" [draggable]="false" [(visible)]="showAnnotationDialog" [modal]="true" [style]="{width: '320px'}">
     <div class="grid">
@@ -38,7 +52,8 @@
 
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!annotateWithMinorPlanets" [min]="-10" [max]="20" class="max-w-10rem w-full" [showButtons]="true"
-                                   inputStyleClass="border-0 w-full" [step]="0.1" [(ngModel)]="annotateWithMinorPlanetsMagLimit" />
+                                   inputStyleClass="border-0 w-full" [step]="0.1" [(ngModel)]="annotateWithMinorPlanetsMagLimit"
+                                   [minFractionDigits]="1" locale="en" />
                     <label>Mag. Limit</label>
                 </span>
             </div>
@@ -62,7 +77,7 @@
         <ng-container *ngIf="annotationInfo">
             <div class="col-12">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" [value]="annotationInfo.name" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly type="text" [value]="annotationInfo | skyObject:'name'" class="border-0 p-inputtext-sm" />
                     <label>Name</label>
                 </span>
             </div>
@@ -108,7 +123,7 @@
             </div>
         </ng-container>
         <div class="col-12 text-center text-sm" *ngIf="annotationInfo?.type">
-            <a target="_blank" href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + annotationInfo?.name }}">Simbad</a>
+            <a target="_blank" href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + (annotationInfo | skyObject:'firstName') }}">Simbad</a>
         </div>
     </div>
     <ng-template pTemplate="footer">
@@ -120,54 +135,32 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Plate Solving" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: '350px'}"
+<p-dialog header="Plate Solver" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: '370px'}"
           class="pointer-events-none">
     <div class="grid pt-2">
-        <div class="col-8 flex align-items-center">
-            <span class="p-float-label w-full">
-                <p-dropdown [(ngModel)]="solverType" [options]="solverTypeOptions" appendTo="body" styleClass="border-0 w-full" />
-                <label>Solver</label>
-            </span>
-        </div>
-        <div class="col-4 flex flex-column align-items-center">
-            Blind <p-inputSwitch styleClass="mt-1" [(ngModel)]="solverBlind" />
-        </div>
         <div class="col-8">
-            <span class="p-float-label">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverPathOrUrl" />
-                <label>Path/URL</label>
-            </span>
+            <div class="grid">
+                <div class="col-6">
+                    <span class="p-float-label">
+                        <input pInputText [disabled]="solverBlind" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterRA" />
+                        <label>Center RA (h)</label>
+                    </span>
+                </div>
+                <div class="col-6">
+                    <span class="p-float-label">
+                        <input pInputText [disabled]="solverBlind" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterDEC" />
+                        <label>Center DEC (°)</label>
+                    </span>
+                </div>
+            </div>
         </div>
-        <div class="col-4">
-            <span class="p-float-label" *ngIf="false">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverApiKey" />
-                <label>API Key</label>
-            </span>
-        </div>
-        <div class="col-6">
+        <div class="col-4 flex flex-row align-items-center gap-2">
             <span class="p-float-label">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterRA" />
-                <label>Center RA (h)</label>
-            </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterDEC" />
-                <label>Center DEC (deg)</label>
-            </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <p-inputNumber [min]="1" [max]="180" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true" [(ngModel)]="solverRadius" />
+                <p-inputNumber [disabled]="solverBlind" [min]="1" [max]="180" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true"
+                               [(ngModel)]="solverRadius" />
                 <label>Radius (°)</label>
             </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <p-inputNumber [min]="1" [max]="8" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
-                               [showButtons]="true" [(ngModel)]="solverDownsampleFactor" />
-                <label>Downsample Factor</label>
-            </span>
+            <p-checkbox [binary]="true" pTooltip="Blind" tooltipPosition="bottom" [(ngModel)]="solverBlind" />
         </div>
     </div>
     <ng-template pTemplate="footer">
@@ -195,7 +188,7 @@
             <div class="col-4">
                 <span class="p-float-label">
                     <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.scale?.toFixed(4) ?? '0.0'" />
-                    <label>Scale ("/px)</label>
+                    <label>Scale (arcsec/px)</label>
                 </span>
             </div>
             <div class="col-4">
@@ -215,61 +208,63 @@
         <div class="grid mb-2">
             <div class="col-12 flex justify-content-center">
                 <p-button [disabled]="solving || !solved" (onClick)="mountSync(solverCalibration!)" icon="mdi mdi-sync" label="Sync"
-                          [text]="true" sevirity="info" />
+                          [text]="true" severity="info" />
                 <p-button [disabled]="solving || !solved" (onClick)="mountGoTo(solverCalibration!)" icon="mdi mdi-telescope" label="Go To"
-                          [text]="true" sevirity="success" />
+                          [text]="true" severity="success" />
                 <p-button [disabled]="solving || !solved" (onClick)="mountSlew(solverCalibration!)" icon="mdi mdi-telescope" label="Slew"
-                          [text]="true" sevirity="success" />
+                          [text]="true" severity="success" />
                 <p-button [disabled]="solving || !solved" (onClick)="frame(solverCalibration!)" icon="mdi mdi-image" label="Frame"
                           [text]="true" />
             </div>
         </div>
 
-        <p-button [disabled]="!solverPathOrUrl || solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" />
+        <p-button [disabled]="solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" />
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Stretching" [draggable]="true" [(visible)]="showStretchingDialog" [modal]="false" [style]="{width: '290px'}"
+<p-dialog header="Stretching" [draggable]="true" [(visible)]="showStretchingDialog" [modal]="false" [style]="{width: '320px'}"
           class="pointer-events-none">
     <div class="grid px-2 pt-2">
-        <div class="col-12 flex flex-column">
+        <div class="col-8 flex flex-column">
             <div class="flex flex-row gap-2 align-items-center justify-content-between">
                 <span class="p-float-label">
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="border-0 w-full"
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
                                    [(ngModel)]="stretchShadowhHighlight[0]" locale="en" />
                     <label>Shadow</label>
                 </span>
                 <span class="p-float-label">
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="border-0 w-full"
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
                                    [(ngModel)]="stretchShadowhHighlight[1]" locale="en" />
                     <label>Highlight</label>
                 </span>
             </div>
 
-            <p-slider class="mt-3" [min]="0" [max]="65536" [(ngModel)]="stretchShadowhHighlight" [range]="true" />
-
-            <div class="mt-5 text-center w-full">
+            <p-slider class="mt-3 px-2" [min]="0" [max]="65536" [(ngModel)]="stretchShadowhHighlight" [range]="true" />
+        </div>
+        <div class="col-4 flex flex-column">
+            <div class="text-center w-full">
                 <span class="p-float-label">
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="border-0 w-full"
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
                                    [(ngModel)]="stretchMidtone" locale="en" />
                     <label>Midtone</label>
                 </span>
             </div>
 
-            <p-slider class="mt-3" [min]="0" [max]="65536" [(ngModel)]="stretchMidtone" />
+            <p-slider class="mt-3 px-2" [min]="0" [max]="65536" [(ngModel)]="stretchMidtone" />
         </div>
     </div>
     <ng-template pTemplate="footer">
+        <p-button icon="mdi mdi-auto-fix" label="Auto" (onClick)="autoStretch()" [text]="true" severity="info" />
         <p-button icon="mdi mdi-restore" label="Reset" (onClick)="resetStretch()" [text]="true" severity="danger" />
         <p-button icon="mdi mdi-check" label="Stretch" (onClick)="stretchImage()" [text]="true" />
     </ng-template>
 </p-dialog>
 
-<p-dialog header="SCNR" [draggable]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '280px'}"
+<p-dialog header="SCNR" [draggable]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '270px'}"
           class="pointer-events-none">
     <div class="grid px-2">
         <div class="col-12 flex align-items-center">
-            <p-selectButton styleClass="border-0" [options]="scnrChannelOptions" [(ngModel)]="scnrChannel" [multiple]="false" />
+            <p-selectButton class="w-full" styleClass="border-0" [options]="scnrChannelOptions" [(ngModel)]="scnrChannel" [multiple]="false" />
         </div>
         <div class="col-7 flex align-items-center">
             <span class="p-float-label w-full max-w-full">
@@ -291,8 +286,8 @@
         </div>
         <div class="col-5 flex align-items-center">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="scnrChannel === 'NONE'" [min]="0" [max]="1" [step]="0.1" [showButtons]="true" class="w-full"
-                               inputStyleClass="border-0 w-full"
+                <p-inputNumber [disabled]="scnrChannel === 'NONE' || !scnrProtectionMethod.endsWith('MASK')" [min]="0" [max]="1" [step]="0.1"
+                               [showButtons]="true" class="w-full" inputStyleClass="border-0 w-full" [minFractionDigits]="1"
                                [(ngModel)]="scnrAmount" locale="en" [allowEmpty]="false" />
                 <label>Amount</label>
             </span>
@@ -323,7 +318,7 @@
     </div>
 </p-dialog>
 
-<div class="grid fixed coordinates monospaced" *ngIf="mouseCoordinate">
+<div class="grid fixed text-sm coordinates monospaced" *ngIf="mouseCoordinate && isMouseCoordinateVisible">
     <div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
     <div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
     <div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
@@ -331,3 +326,5 @@
     <div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
     <div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
 </div>
+
+<p-deviceMenu #deviceMenu />

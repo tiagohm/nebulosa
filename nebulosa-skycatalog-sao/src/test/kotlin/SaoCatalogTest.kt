@@ -3,10 +3,11 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.io.resource
+import nebulosa.io.bufferedResource
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.skycatalog.sao.SaoCatalog
+import nebulosa.test.NonGitHubOnlyCondition
 
 @EnabledIf(NonGitHubOnlyCondition::class)
 class SaoCatalogTest : StringSpec() {
@@ -14,8 +15,7 @@ class SaoCatalogTest : StringSpec() {
     init {
         "load" {
             val catalog = SaoCatalog()
-            val resource = resource("SAO.pc")!!
-            catalog.load(resource)
+            catalog.load(bufferedResource("SAO.pc")!!)
             catalog shouldHaveSize 258997
 
             catalog.first().id shouldBe 1

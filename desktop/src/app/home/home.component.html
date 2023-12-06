@@ -19,101 +19,112 @@
             <p-button *ngIf="!connected" (onClick)="connect()" icon="mdi mdi-connection" severity="info" />
         </div>
     </div>
-    <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 75px);">
+    <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 112px);">
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasCamera" (onClick)="open('CAMERA')"
-                      styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasCamera" (onClick)="open('CAMERA')"
+                      styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/camera.png" />
                 <div class="mt-1 text-sm">Camera</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasMount" (onClick)="open('MOUNT')" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasMount" (onClick)="open('MOUNT')"
+                      styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/telescope.png" />
                 <div class="mt-1 text-sm">Mount</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasGuider" (onClick)="open('GUIDER')" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasGuider" (onClick)="open('GUIDER')"
+                      styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/guider.png" />
                 <div class="mt-1 text-sm">Guider</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasWheel" (onClick)="open('WHEEL')"
-                      styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasWheel" (onClick)="open('WHEEL')"
+                      styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/filter-wheel.png" />
                 <div class="mt-1 text-sm">Filter Wheel</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasFocuser" (onClick)="open('FOCUSER')"
-                      styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasFocuser" (onClick)="open('FOCUSER')"
+                      styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/focus.png" />
                 <div class="mt-1 text-sm">Focuser</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasDome" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasDome" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/observatory.png" />
                 <div class="mt-1 text-sm">Dome</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasRotator" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasRotator" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/rotate.png" />
                 <div class="mt-1 text-sm">Rotator</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasSwitch" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasSwitch" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/switch.png" />
                 <div class="mt-1 text-sm">Switch</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button (onClick)="open('ATLAS')" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" (onClick)="open('SKY_ATLAS')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/atlas.png" />
                 <div class="mt-1 text-sm">Sky Atlas</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasAlignment" (onClick)="open('ALIGNMENT')"
-                      styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasAlignment" (onClick)="open('ALIGNMENT')"
+                      styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/star.png" />
                 <div class="mt-1 text-sm">Alignment</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasSequencer" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasSequencer" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/schedule.png" />
                 <div class="mt-1 text-sm">Sequencer</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button (onClick)="open('IMAGE')" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" (onClick)="open('IMAGE')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/image.png" />
                 <div class="mt-1 text-sm">Image Viewer</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button (onClick)="open('FRAMING')" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" (onClick)="open('FRAMING')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/framing.png" />
                 <div class="mt-1 text-sm">Framing</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [disabled]="!connected || !hasINDI" (onClick)="open('INDI')"
-                      styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasINDI" (onClick)="open('INDI')"
+                      styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/indi.png" />
                 <div class="mt-1 text-sm">INDI</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button (onClick)="open('ABOUT')" styleClass="open min-w-full max-w-full px-1 py-2 flex-column">
+            <p-button [text]="true" (onClick)="open('SETTINGS')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
+                <img src="assets/icons/settings.png" />
+                <div class="mt-1 text-sm">Settings</div>
+            </p-button>
+        </div>
+        <div class="col-4 p-1">
+            <p-button [text]="true" (onClick)="open('ABOUT')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/about.png" />
                 <div class="mt-1 text-sm">About</div>
             </p-button>
         </div>
     </div>
 </div>
+
+<p-dialogMenu #deviceMenu [model]="deviceModel" />
+<p-deviceMenu #imageMenu [model]="imageModel" [disableIfNotConnected]="false" />

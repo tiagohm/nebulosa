@@ -1,32 +1,30 @@
 import { Injectable } from '@angular/core'
+import { ApiService } from './api.service'
+import { StorageService } from './storage.service'
 
 @Injectable({ providedIn: 'root' })
-export class PreferenceService {
+export class RemoteStorageService implements StorageService {
+
+    constructor(private api: ApiService) { }
 
     clear() {
-        localStorage.clear()
+        return this.api.clearPreferences()
     }
 
     delete(key: string) {
-        localStorage.removeItem(key)
-        return true
+        return this.api.deletePreference(key)
     }
 
-    get<T>(key: string, defaultValue: T) {
-        const value = localStorage.getItem(key) ?? undefined
-        return value !== undefined ? JSON.parse(value) as T : defaultValue
+    async get<T>(key: string, defaultValue: T) {
+        return await this.api.getPreference<T>(key) ?? defaultValue
     }
 
-    has(key: string): boolean {
-        return localStorage.getItem(key) !== null
+    has(key: string) {
+        return this.api.hasPreference(key)
     }
 
     set(key: string, value: any) {
-        localStorage.setItem(key, JSON.stringify(value))
-        return this
-    }
-
-    get size() {
-        return localStorage.length
+        if (value === null || value === undefined) return this.delete(key)
+        else return this.api.setPreference(key, value)
     }
 }

@@ -2,14 +2,20 @@ package nebulosa.simbad
 
 import de.siegmar.fastcsv.reader.NamedCsvReader
 import de.siegmar.fastcsv.reader.NamedCsvRow
-import nebulosa.adql.Query
+import nebulosa.adql.*
 import nebulosa.log.loggerFor
+import nebulosa.math.*
 import nebulosa.retrofit.CSVRecordListConverterFactory
 import nebulosa.retrofit.RetrofitService
+import nebulosa.skycatalog.SkyObject
+import nebulosa.skycatalog.SkyObjectType
+import nebulosa.time.UTC
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.create
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * @see <a href="https://simbad.u-strasbg.fr/simbad/tap/tapsearch.html">Tables</a>
@@ -17,7 +23,7 @@ import retrofit2.create
  * @see <a href="http://simbad.u-strasbg.fr/guide/otypes.htx">Object types</a>
  */
 class SimbadService(
-    url: String = "https://simbad.u-strasbg.fr/",
+    url: String = MAIN_URL,
     httpClient: OkHttpClient? = null,
 ) : RetrofitService(url, httpClient) {
 
@@ -42,7 +48,107 @@ class SimbadService(
         return service.query(body)
     }
 
+    fun search(query: Query): List<SimbadEntry> {
+        val rows = query(query).execute().body()
+        if (rows.isNullOrEmpty()) return emptyList()
+        val res = ArrayList<SimbadEntry>(rows.size)
+        val currentTime = UTC.now()
+
+        fun matchName(name: String): String? {
+            for (type in SimbadCatalogType.entries) {
+                return type.match(name) ?: continue
+            }
+
+            return null
+        }
+
+        for (row in rows) {
+            val name = row.getField("ids").split("|").mapNotNull(::matchName)
+            if (name.isEmpty()) continue
+            val id = row.getField("oid").toLong()
+            val type = SkyObjectType.parse(row.getField("otype"))!!
+            val rightAscensionJ2000 = row.getField("ra").deg
+            val declinationJ2000 = row.getField("dec").deg
+            val pmRA = row.getField("pmra").toDoubleOrNull()?.mas ?: 0.0
+            val pmDEC = row.getField("pmdec").toDoubleOrNull()?.mas ?: 0.0
+            val parallax = row.getField("plx_value").toDoubleOrNull() ?: 0.0
+            val radialVelocity = row.getField("rvz_radvel").toDoubleOrNull()?.kms ?: 0.0
+            val redshift = row.getField("rvz_redshift").toDoubleOrNull() ?: 0.0
+            val majorAxis = row.getField("galdim_majaxis").toDoubleOrNull()?.arcmin ?: 0.0
+            val minorAxis = row.getField("galdim_minaxis").toDoubleOrNull()?.arcmin ?: 0.0
+            val orientation = row.getField("galdim_angle").toDoubleOrNull()?.deg ?: 0.0
+            val spType = row.getField("sp_type") ?: ""
+
+            var magnitude = row.getField("V").toDoubleOrNull()
+                ?: row.getField("B").toDoubleOrNull()
+                ?: row.getField("U").toDoubleOrNull()
+                ?: SkyObject.UNKNOWN_MAGNITUDE
+
+            if (magnitude >= SkyObject.UNKNOWN_MAGNITUDE || !magnitude.isFinite()) {
+                magnitude = min(magnitude, row.getField("R").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                magnitude = min(magnitude, row.getField("I").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                magnitude = min(magnitude, row.getField("J").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                magnitude = min(magnitude, row.getField("H").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+                magnitude = min(magnitude, row.getField("K").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+            }
+
+            val distance = if (parallax > 0.0) (1000.0 * ONE_PARSEC) / parallax else 0.0 // AU
+            val constellation = SkyObject.computeConstellation(rightAscensionJ2000, declinationJ2000, currentTime)
+
+            val entity = SimbadEntry(
+                id, name.joinToString("") { "[$it]" }, magnitude,
+                rightAscensionJ2000, declinationJ2000,
+                type, spType, majorAxis, minorAxis, orientation,
+                pmRA, pmDEC, parallax.mas, radialVelocity, redshift,
+                distance.toLightYears, constellation,
+            )
+
+            res.add(entity)
+        }
+
+        return res
+    }
+
+    fun search(search: SimbadSearch): List<SimbadEntry> {
+        val (id, text, rightAscension, declination, radius, types, magnitudeMin, magnitudeMax, constellation, limit) = search
+        val builder = QueryBuilder()
+
+        var join: Table = LeftJoin(BASIC_TABLE, FLUX_TABLE, arrayOf(OID equal FLUX_TABLE.column("oidref")))
+        join = LeftJoin(join, IDS_TABLE, arrayOf(OID equal IDS_TABLE.column("oidref")))
+
+        builder.add(Distinct)
+        builder.add(Limit(max(1, min(limit, 10000))))
+        builder.addAll(arrayOf(OID, MAIN_ID, OTYPE, RA, DEC, PM_RA, PM_DEC, PLX, RAD_VEL, REDSHIFT))
+        builder.addAll(arrayOf(MAG_V, MAG_B, MAG_U, MAG_R, MAG_I, MAG_J, MAG_H, MAG_K))
+        builder.addAll(arrayOf(MAJOR_AXIS, MINOR_AXIS, ORIENT, SP_TYPE, IDS))
+        builder.addAll(arrayOf(RA.isNotNull, DEC.isNotNull))
+
+        if (id > 0) {
+            builder.add(OID equal id)
+        } else {
+            if (!text.isNullOrBlank()) {
+                join = LeftJoin(join, IDENT_TABLE, arrayOf(OID equal IDENT_TABLE.column("oidref")))
+            }
+
+            builder.add(OID greaterThan search.lastID)
+            if (radius > 0.0) builder.add(SkyPoint(RA, DEC) contains Circle(rightAscension, declination, radius))
+            if (!types.isNullOrEmpty()) builder.add(Or(types.map { OTYPE equal "${it.codes[0]}.." }))
+            if (magnitudeMin > -30.0) builder.add((MAG_V greaterOrEqual magnitudeMin) or (MAG_B greaterOrEqual magnitudeMin))
+            if (magnitudeMax < 30.0) builder.add((MAG_V lessOrEqual magnitudeMax) or (MAG_B lessOrEqual magnitudeMax))
+            if (!text.isNullOrBlank()) builder.add(ID equal text.trim())
+            if (constellation != null) builder.add(SkyPoint(RA, DEC) contains ConstellationBoundary(constellation.name))
+            builder.add(SortBy(OID))
+        }
+
+        builder.add(join)
+
+        return search(builder.build())
+    }
+
     companion object {
+
+        const val MAIN_URL = "https://simbad.cds.unistra.fr/"
+        const val ALTERNATIVE_URL = "https://simbad.u-strasbg.fr/"
 
         @JvmStatic private val LOG = loggerFor<SimbadService>()
 
@@ -51,5 +157,34 @@ class SimbadService(
             .quoteCharacter('"')
             .commentCharacter('#')
             .skipComments(true)
+
+        @JvmStatic private val BASIC_TABLE = From("basic").alias("b")
+        @JvmStatic private val FLUX_TABLE = From("allfluxes").alias("f")
+        @JvmStatic private val IDS_TABLE = From("ids").alias("i")
+        @JvmStatic private val IDENT_TABLE = From("ident").alias("id")
+        @JvmStatic private val OID = BASIC_TABLE.column("oid")
+        @JvmStatic private val MAIN_ID = BASIC_TABLE.column("main_id")
+        @JvmStatic private val OTYPE = BASIC_TABLE.column("otype")
+        @JvmStatic private val SP_TYPE = BASIC_TABLE.column("sp_type")
+        @JvmStatic private val RA = BASIC_TABLE.column("ra")
+        @JvmStatic private val DEC = BASIC_TABLE.column("dec")
+        @JvmStatic private val PM_RA = BASIC_TABLE.column("pmra")
+        @JvmStatic private val PM_DEC = BASIC_TABLE.column("pmdec")
+        @JvmStatic private val PLX = BASIC_TABLE.column("plx_value")
+        @JvmStatic private val RAD_VEL = BASIC_TABLE.column("rvz_radvel")
+        @JvmStatic private val REDSHIFT = BASIC_TABLE.column("rvz_redshift")
+        @JvmStatic private val MAJOR_AXIS = BASIC_TABLE.column("galdim_majaxis")
+        @JvmStatic private val MINOR_AXIS = BASIC_TABLE.column("galdim_minaxis")
+        @JvmStatic private val ORIENT = BASIC_TABLE.column("galdim_angle")
+        @JvmStatic private val MAG_V = FLUX_TABLE.column("V")
+        @JvmStatic private val MAG_B = FLUX_TABLE.column("B")
+        @JvmStatic private val MAG_U = FLUX_TABLE.column("U")
+        @JvmStatic private val MAG_R = FLUX_TABLE.column("R")
+        @JvmStatic private val MAG_I = FLUX_TABLE.column("I")
+        @JvmStatic private val MAG_J = FLUX_TABLE.column("J")
+        @JvmStatic private val MAG_H = FLUX_TABLE.column("H")
+        @JvmStatic private val MAG_K = FLUX_TABLE.column("K")
+        @JvmStatic private val IDS = IDS_TABLE.column("ids")
+        @JvmStatic private val ID = IDENT_TABLE.column("id")
     }
 }

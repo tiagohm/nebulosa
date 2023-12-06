@@ -1,13 +1,18 @@
+@import "@fontsource/roboto";
+@import "@mdi/font/scss/materialdesignicons.scss";
+
 html,
 body {
     height: 100%;
     overflow: hidden;
     font-size: 11.5px;
+    border: 1px solid #212121;
+    scroll-behavior: smooth;
 }
 
 body {
     margin: 0;
-    font-family: var(--font-family);
+    font-family: "Roboto";
 }
 
 .invisible {
@@ -63,8 +68,9 @@ p-dropdown,
 
 .p-float-label label {
     border-radius: 4px;
-    padding: 2px 8px !important;
+    padding: 1.5px 6px !important;
     font-size: 9px !important;
+    font-weight: bold;
 }
 
 .p-inputwrapper,
@@ -84,6 +90,11 @@ p-dropdown,
 
 p-calendar.border-0 .p-calendar-w-btn {
     border: 0 !important;
+}
+
+.p-overlaypanel .p-overlaypanel-content {
+    padding-bottom: 10px;
+    padding-top: 10px;
 }
 
 .p-toast {
@@ -125,15 +136,15 @@ i.mdi {
     }
 }
 
-.p-menuitem {
+.p-menuitem-link {
     &.p-menuitem-checked {
         background-color: #C5E1A5;
-
-        .p-menuitem-text,
-        .p-menuitem-icon {
-            color: #212121 !important;
-        }
+        color: #212121 !important;
     }
+}
+
+.p-contextmenu {
+    min-width: 181px;
 }
 
 .p-tabview .p-tabview-nav {
@@ -142,6 +153,12 @@ i.mdi {
 
 .draggable-region {
     -webkit-app-region: drag;
+}
+
+p-contextmenu *,
+p-dropdown *,
+.no-draggable-region {
+    -webkit-app-region: no-drag;
 }
 
 .pixelated {
@@ -169,4 +186,28 @@ i.mdi {
 ::-webkit-scrollbar-track {
     border-radius: 10px;
     background-color: transparent;
+}
+
+@font-face {
+    font-family: 'icomoon';
+    src: url('assets/fonts/icomoon.ttf');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+.icomoon {
+    font-family: 'icomoon' !important;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 1.25rem;
+
+    &.random-dither:before {
+        content: "\e900";
+    }
 }

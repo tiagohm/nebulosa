@@ -8,7 +8,7 @@ interface InternalGuider : Iterable<GuidePoint> {
 
     val lockPosition: GuidePoint
 
-    var searchRegion: Double
+    var searchRegion: Int
 
     var dither: Dither
 

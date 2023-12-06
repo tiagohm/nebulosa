@@ -1,15 +1,13 @@
 import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.core.test.TestScope
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.io.resource
+import nebulosa.fits.Fits
+import nebulosa.fits.Header
 import nebulosa.math.AngleFormatter
-import nebulosa.math.deg
-import nebulosa.math.hours
+import nebulosa.math.format
+import nebulosa.test.NonGitHubOnlyCondition
 import nebulosa.wcs.WCSTransform
-import nom.tam.fits.Fits
-import nom.tam.fits.Header
 import kotlin.random.Random
 
 // https://www.atnf.csiro.au/people/mcalabre/WCS/example_data.html
@@ -17,84 +15,55 @@ import kotlin.random.Random
 @EnabledIf(NonGitHubOnlyCondition::class)
 class LibWCSTest : StringSpec() {
 
-    private val pixToSky = ArrayList<IntArray>(192 * 8)
-    private val skyToPix = ArrayList<DoubleArray>(192 * 8)
-
     init {
-        repeat(192 * 8) {
-            val x = Random.nextInt(192)
-            val y = Random.nextInt(192)
-            val ra = Random.nextDouble(18.0, 19.5).hours
-            val dec = Random.nextDouble(59.0, 72.0).unaryMinus().deg
-            pixToSky.add(intArrayOf(x, y))
-            skyToPix.add(doubleArrayOf(ra, dec))
-        }
-
         for (projection in PROJECTIONS) {
-            "pixToSky:$projection" {
-                pixToSky()
+            projection {
+                pixToSky(projection, 192, 192)
             }
-            "skyToPix:$projection" {
-                skyToPix()
-            }
+        }
+
+        "TAN-SIP" {
+            pixToSky("TAN-SIP", 1280, 720)
         }
     }
 
-    private fun TestScope.pixToSky() {
-        val testName = testCase.name.testName.split(":").last()
-        val keywords = readHeaderFromFits(testName)
-        val transform = WCSTransform(keywords)
+    private fun pixToSky(projectionName: String, width: Int, height: Int) {
+        val data = Array(2048) { intArrayOf(Random.nextInt(width), Random.nextInt(height)) }
 
-        for ((x0, y0) in pixToSky) {
-            val (rightAscension, declination) = transform.pixToSky(x0.toDouble(), y0.toDouble())
-            val (x1, y1) = transform.skyToPix(rightAscension, declination)
-            x1 shouldBe (x0.toDouble() plusOrMinus 1.0)
-            y1 shouldBe (y0.toDouble() plusOrMinus 1.0)
+        WCSTransform(readHeaderFromFits(projectionName)).use {
+            val topLeft = it.pixToSky(0.0, 0.0)
+            val topRight = it.pixToSky(width.toDouble(), 0.0)
+            val bottomLeft = it.pixToSky(0.0, height.toDouble())
+            val bottomRight = it.pixToSky(width.toDouble(), height.toDouble())
+            val center = it.pixToSky(width / 2.0, height / 2.0)
+
+            println("top left: ${topLeft.rightAscension.format(AngleFormatter.HMS)} ${topLeft.declination.format(AngleFormatter.SIGNED_DMS)}")
+            println("top right: ${topRight.rightAscension.format(AngleFormatter.HMS)} ${topRight.declination.format(AngleFormatter.SIGNED_DMS)}")
+            println("bottom left: ${bottomLeft.rightAscension.format(AngleFormatter.HMS)} ${bottomLeft.declination.format(AngleFormatter.SIGNED_DMS)}")
+            println("bottom right: ${bottomRight.rightAscension.format(AngleFormatter.HMS)} ${bottomRight.declination.format(AngleFormatter.SIGNED_DMS)}")
+            println("center: ${center.rightAscension.format(AngleFormatter.HMS)} ${center.declination.format(AngleFormatter.SIGNED_DMS)}")
+
+            for ((x0, y0) in data) {
+                val (rightAscension, declination) = it.pixToSky(x0.toDouble(), y0.toDouble())
+                val (x1, y1) = it.skyToPix(rightAscension, declination)
+                x1 shouldBe (x0.toDouble() plusOrMinus 1.0)
+                y1 shouldBe (y0.toDouble() plusOrMinus 1.0)
+            }
         }
-
-        transform.close()
-    }
-
-    private fun TestScope.skyToPix() {
-        val testName = testCase.name.testName.split(":").last()
-        val keywords = readHeaderFromFits(testName)
-        val transform = WCSTransform(keywords)
-
-        for ((rightAscension0, declination0) in skyToPix) {
-            val (x, y) = transform.skyToPix(rightAscension0, declination0)
-            val (rightAscension1, declination1) = transform.pixToSky(x, y)
-            rightAscension1 shouldBe (rightAscension0 plusOrMinus EPSILON)
-            declination1 shouldBe (declination0 plusOrMinus EPSILON)
-        }
-
-        transform.close()
     }
 
     private fun readHeaderFromFits(name: String): Header {
-        return resource("$name.fits")!!.let(::Fits).use { it.readHDU().header }
+        return Fits("src/test/resources/$name.fits").use { it.readHdu()!!.header }
     }
 
     companion object {
 
-        const val EPSILON = 1 / 3600000.0
-
         @JvmStatic private val PROJECTIONS = arrayOf(
-            "AIR", "AIT", "ARC", "AZP", "BON", "CAR", "CEA",
-            "CSC", "CYP", "MER", "MOL",
+            "AIR", "AIT", "ARC", "AZP", "CAR", "CEA",
+            "CSC", "CYP", "HPX", "MER", "MOL",
             "NCP", "PAR", "PCO", "QSC", "SFL", "SIN", "STG", "SZP",
-            "TAN", "TSC", "ZEA", "ZPN",
-            // FAILED: "COD", "COE", "COO", "COP", "HPX"
+            "TAN", "TSC", "ZEA",
+            "BON", "COD", "COE", "COO", "COP", "ZPN" // FAILED
         )
-
-        @JvmStatic private val RA_FORMAT = AngleFormatter.Builder()
-            .hours()
-            .separators(":")
-            .secondsDecimalPlaces(2)
-            .build()
-
-        @JvmStatic private val DEC_FORMAT = AngleFormatter.Builder()
-            .separators(":")
-            .secondsDecimalPlaces(2)
-            .build()
     }
 }

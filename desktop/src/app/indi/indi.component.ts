@@ -3,12 +3,8 @@ import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Device, INDIDeviceMessage, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
+import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
 import { AppComponent } from '../app.component'
-
-export interface INDIParams {
-    device?: Device
-}
 
 @Component({
     selector: 'app-indi',
@@ -37,15 +33,15 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
         this.api.startListening('INDI')
 
-        electron.on('DEVICE_PROPERTY_CHANGED', (_, event: INDIProperty<any>) => {
+        electron.on('DEVICE_PROPERTY_CHANGED', event => {
             ngZone.run(() => {
-                this.addOrUpdateProperty(event)
+                this.addOrUpdateProperty(event.property!)
                 this.updateGroups()
             })
         })
 
-        electron.on('DEVICE_PROPERTY_DELETED', (_, event: INDIProperty<any>) => {
-            const index = this.properties.findIndex((e) => e.name === event.name)
+        electron.on('DEVICE_PROPERTY_DELETED', event => {
+            const index = this.properties.findIndex((e) => e.name === event.property!.name)
 
             if (index >= 0) {
                 ngZone.run(() => {
@@ -55,10 +51,10 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DEVICE_MESSAGE_RECEIVED', (_, event: INDIDeviceMessage) => {
+        electron.on('DEVICE_MESSAGE_RECEIVED', event => {
             if (this.device && event.device?.name === this.device.name) {
                 ngZone.run(() => {
-                    this.messages.splice(0, 0, event.message)
+                    this.messages.splice(0, 0, event.message!)
                 })
             }
         })
@@ -66,8 +62,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
     async ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
-            const params = JSON.parse(decodeURIComponent(e.params)) as INDIParams
-            this.device = params.device
+            this.device = JSON.parse(decodeURIComponent(e.data)) as Device
         })
 
         this.devices = [

@@ -4,13 +4,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
-import org.hibernate.validator.constraints.Range
+import org.hibernate.validator.constraints.time.DurationMax
+import org.hibernate.validator.constraints.time.DurationMin
+import java.time.Duration
 
 data class DARVStart(
     @JsonIgnore val camera: Camera? = null,
     @JsonIgnore val guideOutput: GuideOutput? = null,
-    @Range(min = 1, max = 600) val exposureInSeconds: Long = 0L,
-    @Range(min = 1, max = 60) val initialPauseInSeconds: Long = 0L,
+    @field:DurationMin(seconds = 1) @field:DurationMax(seconds = 600) val exposureTime: Duration = Duration.ZERO,
+    @field:DurationMin(seconds = 1) @field:DurationMax(seconds = 60) val initialPause: Duration = Duration.ZERO,
     val direction: GuideDirection = GuideDirection.NORTH,
     val reversed: Boolean = false,
 )
