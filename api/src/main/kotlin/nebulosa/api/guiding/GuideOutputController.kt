@@ -4,6 +4,8 @@ import nebulosa.api.beans.annotations.EntityBy
 import nebulosa.api.connection.ConnectionService
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.guide.GuideOutput
+import org.hibernate.validator.constraints.time.DurationMax
+import org.hibernate.validator.constraints.time.DurationMin
 import org.springframework.web.bind.annotation.*
 import java.time.Duration
 
@@ -37,8 +39,9 @@ class GuideOutputController(
     @PutMapping("{guideOutput}/pulse")
     fun pulse(
         @EntityBy guideOutput: GuideOutput,
-        @RequestParam direction: GuideDirection, @RequestParam duration: Long,
+        @RequestParam direction: GuideDirection,
+        @RequestParam @DurationMin(nanos = 0L) @DurationMax(seconds = 60L) duration: Duration,
     ) {
-        guideOutputService.pulse(guideOutput, direction, Duration.ofNanos(duration * 1000L))
+        guideOutputService.pulse(guideOutput, direction, duration)
     }
 }
