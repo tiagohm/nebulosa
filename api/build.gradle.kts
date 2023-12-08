@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.oshi)
     implementation(libs.rx)
     implementation(libs.sqlite)
+    implementation(libs.hikari)
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude(module = "spring-boot-starter-tomcat")

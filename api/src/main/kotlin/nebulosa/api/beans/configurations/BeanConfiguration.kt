@@ -121,16 +121,6 @@ class BeanConfiguration {
         .installDefaultEventBus()!!
 
     @Bean
-    @Primary
-    fun asyncJobLauncher(jobRepository: JobRepository): JobLauncher {
-        val jobLauncher = TaskExecutorJobLauncher()
-        jobLauncher.setJobRepository(jobRepository)
-        jobLauncher.setTaskExecutor(SimpleAsyncTaskExecutor(DaemonThreadFactory))
-        jobLauncher.afterPropertiesSet()
-        return jobLauncher
-    }
-
-    @Bean
     fun flowIncrementer() = Incrementer()
 
     @Bean

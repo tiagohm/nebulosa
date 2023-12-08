@@ -13,8 +13,6 @@ spring:
 
   datasource:
     url: jdbc:sqlite:file:${DATA_PATH}/nebulosa.db
-    username:
-    password:
     driverClassName: org.sqlite.JDBC
 
   jpa:

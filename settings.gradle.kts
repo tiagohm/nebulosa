@@ -35,6 +35,7 @@ dependencyResolutionManagement {
             library("sqlite", "org.xerial:sqlite-jdbc:3.44.1.0")
             library("flyway", "org.flywaydb:flyway-core:9.22.3")
             library("jna", "net.java.dev.jna:jna:5.13.0")
+            library("hikari", "com.zaxxer:HikariCP:5.1.0")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.8.0")
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.8.0")
             bundle("kotest", listOf("kotest-assertions-core", "kotest-runner-junit5"))

@@ -16,7 +16,7 @@ import java.util.*
 @Component
 class CameraCaptureExecutor(
     private val jobOperator: JobOperator,
-    private val asyncJobLauncher: JobLauncher,
+    private val jobLauncher: JobLauncher,
     private val messageService: MessageService,
     private val sequenceJobFactory: SequenceJobFactory,
 ) : SequenceJobExecutor<CameraStartCaptureRequest, CameraSequenceJob>, Consumer<CameraCaptureEvent> {
@@ -38,7 +38,7 @@ class CameraCaptureExecutor(
             sequenceJobFactory.cameraCapture(request, this)
         }
 
-        return asyncJobLauncher
+        return jobLauncher
             .run(cameraCaptureJob, JobParameters())
             .let { CameraSequenceJob(camera, request, cameraCaptureJob, it) }
             .also(runningSequenceJobs::add)
