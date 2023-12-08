@@ -10,20 +10,14 @@ import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.sequencer.*
 import nebulosa.api.sequencer.tasklets.delay.DelayElapsed
 import nebulosa.api.services.MessageService
-import nebulosa.common.concurrency.Incrementer
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.log.loggerFor
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.JobParameters
-import org.springframework.batch.core.configuration.JobRegistry
-import org.springframework.batch.core.configuration.support.ReferenceJobFactory
-import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.batch.core.launch.JobOperator
-import org.springframework.batch.core.repository.JobRepository
-import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.stereotype.Component
 import java.nio.file.Path
 import java.util.*
@@ -33,16 +27,13 @@ import java.util.*
  */
 @Component
 class DARVPolarAlignmentExecutor(
-    private val jobRepository: JobRepository,
     private val jobOperator: JobOperator,
     private val jobLauncher: JobLauncher,
-    private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
-    private val jobIncrementer: Incrementer,
     private val capturesPath: Path,
     private val sequenceFlowFactory: SequenceFlowFactory,
     private val sequenceTaskletFactory: SequenceTaskletFactory,
-    private val simpleAsyncTaskExecutor: SimpleAsyncTaskExecutor,
+    private val sequenceJobFactory: SequenceJobFactory,
 ) : SequenceJobExecutor<DARVStart, DARVSequenceJob>, Consumer<SequenceTaskletEvent>, JobExecutionListener {
 
     private val runningSequenceJobs = LinkedList<DARVSequenceJob>()
@@ -84,20 +75,12 @@ class DARVPolarAlignmentExecutor(
 
         val guidePulseFlow = sequenceFlowFactory.guidePulse(initialPauseDelayTasklet, forwardGuidePulseTasklet, backwardGuidePulseTasklet)
 
-        val darvJob = JobBuilder("DARVPolarAlignment.Job.${jobIncrementer.increment()}", jobRepository)
-            .start(cameraExposureFlow)
-            .split(simpleAsyncTaskExecutor)
-            .add(guidePulseFlow)
-            .end()
-            .listener(this)
-            .listener(cameraExposureTasklet)
-            .build()
+        val darvJob = sequenceJobFactory.darvPolarAlignment(cameraExposureFlow, guidePulseFlow, this, cameraExposureTasklet)
 
         return jobLauncher
             .run(darvJob, JobParameters())
             .let { DARVSequenceJob(camera, guideOutput, request, darvJob, it) }
             .also(runningSequenceJobs::add)
-            .also { jobRegistry.register(ReferenceJobFactory(darvJob)) }
     }
 
     @Synchronized

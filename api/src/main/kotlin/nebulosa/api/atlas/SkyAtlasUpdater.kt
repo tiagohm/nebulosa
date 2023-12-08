@@ -3,6 +3,7 @@ package nebulosa.api.atlas
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import nebulosa.api.beans.annotations.ThreadedTask
+import nebulosa.api.notification.NotificationEvent
 import nebulosa.api.preferences.PreferenceService
 import nebulosa.api.services.MessageService
 import nebulosa.log.loggerFor
@@ -28,6 +29,11 @@ class SkyAtlasUpdater(
     private val messageService: MessageService,
 ) : Runnable {
 
+    data class Finished(override val body: String) : NotificationEvent {
+
+        override val type = "SKY_ATLAS_UPDATE_FINISHED"
+    }
+
     override fun run() {
         satelliteUpdater.run()
 
@@ -36,7 +42,7 @@ class SkyAtlasUpdater(
         if (version != DATABASE_VERSION) {
             LOG.info("Star/DSO database is out of date. currentVersion={}, newVersion={}", version, DATABASE_VERSION)
 
-            messageService.sendMessage(SkyAtlasUpdateFinished("Star/DSO database is being updated."))
+            messageService.sendMessage(Finished("Star/DSO database is being updated."))
 
             starsRepository.deleteAllInBatch()
             deepSkyObjectRepository.deleteAllInBatch()
@@ -46,7 +52,7 @@ class SkyAtlasUpdater(
 
             preferenceService.skyAtlasVersion = DATABASE_VERSION
 
-            messageService.sendMessage(SkyAtlasUpdateFinished("Sky Atlas database was updated to version $DATABASE_VERSION."))
+            messageService.sendMessage(Finished("Sky Atlas database was updated to version $DATABASE_VERSION."))
         } else {
             LOG.info("Star/DSO database is up to date")
         }

@@ -8,8 +8,6 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.log.loggerFor
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobParameters
-import org.springframework.batch.core.configuration.JobRegistry
-import org.springframework.batch.core.configuration.support.ReferenceJobFactory
 import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.batch.core.launch.JobOperator
 import org.springframework.stereotype.Component
@@ -19,7 +17,6 @@ import java.util.*
 class CameraCaptureExecutor(
     private val jobOperator: JobOperator,
     private val asyncJobLauncher: JobLauncher,
-    private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
     private val sequenceJobFactory: SequenceJobFactory,
 ) : SequenceJobExecutor<CameraStartCaptureRequest, CameraSequenceJob>, Consumer<CameraCaptureEvent> {
@@ -45,7 +42,6 @@ class CameraCaptureExecutor(
             .run(cameraCaptureJob, JobParameters())
             .let { CameraSequenceJob(camera, request, cameraCaptureJob, it) }
             .also(runningSequenceJobs::add)
-            .also { jobRegistry.register(ReferenceJobFactory(cameraCaptureJob)) }
     }
 
     fun stop(camera: Camera) {

@@ -18,8 +18,6 @@ data class DelayTasklet(val duration: Duration) : PublishSequenceTasklet<DelayEv
         var remainingTime = duration
 
         if (remainingTime > Duration.ZERO) {
-            aborted.set(false)
-
             while (!aborted.get() && remainingTime > Duration.ZERO) {
                 val waitTime = minOf(remainingTime, DELAY_INTERVAL)
 
