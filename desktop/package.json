@@ -44,7 +44,7 @@
     "@mdi/font": "7.3.67",
     "chart.js": "4.4.1",
     "chartjs-plugin-zoom": "2.0.1",
-    "interactjs": "1.10.23",
+    "interactjs": "1.10.26",
     "leaflet": "1.9.4",
     "moment": "2.29.4",
     "panzoom": "9.4.3",
