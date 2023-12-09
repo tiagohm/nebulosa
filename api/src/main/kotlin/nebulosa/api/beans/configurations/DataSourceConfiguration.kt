@@ -27,7 +27,7 @@ class DataSourceConfiguration {
         val config = HikariConfig()
         config.jdbcUrl = mainDataSourceUrl
         config.driverClassName = DRIVER_CLASS_NAME
-        config.maximumPoolSize = 8
+        config.maximumPoolSize = 1
         config.minimumIdle = 1
         return HikariDataSource(config)
     }
