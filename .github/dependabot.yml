@@ -10,7 +10,6 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-      day: "friday"
     open-pull-requests-limit: 16
     target-branch: "dev"
     commit-message:
@@ -28,6 +27,9 @@ updates:
       okhttp:
         patterns:
           - "com.squareup.okhttp3*"
+      rx:
+        patterns:
+          - "io.reactivex.rxjava3*"
       jackson:
         patterns:
           - "com.fasterxml.jackson*"
@@ -36,7 +38,6 @@ updates:
     directory: "/desktop"
     schedule:
       interval: "monthly"
-      day: "friday"
     open-pull-requests-limit: 64
     target-branch: "dev"
     commit-message:
@@ -45,12 +46,14 @@ updates:
       angular:
         patterns:
           - "@angular*"
+      types:
+        patterns:
+          - "@types*"
 
   - package-ecosystem: "npm"
     directory: "/desktop/app"
     schedule:
       interval: "monthly"
-      day: "friday"
     target-branch: "dev"
     commit-message:
       prefix: "[desktop]"
