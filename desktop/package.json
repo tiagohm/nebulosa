@@ -74,6 +74,9 @@
     "typescript": "5.2.2",
     "wait-on": "7.2.0"
   },
+  "overrides": {
+    "axios": "1.6.2"
+  },
   "engines": {
     "node": ">= 20.9.0"
   },
