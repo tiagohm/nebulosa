@@ -1,7 +1,6 @@
 package nebulosa.api.locations
 
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class LocationService(
@@ -28,7 +27,6 @@ class LocationService(
     }
 
     @Synchronized
-    @Transactional
     fun delete(id: Long) {
         if (id > 0L && locationRepository.count() > 1) {
             var location = location(id)

@@ -4,14 +4,13 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import jakarta.persistence.EntityManagerFactory
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
-import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.transaction.PlatformTransactionManager
 import javax.sql.DataSource
@@ -19,17 +18,24 @@ import javax.sql.DataSource
 @Configuration
 class DataSourceConfiguration {
 
-    @Bean
+    @Value("\${spring.datasource.url}") private lateinit var mainDataSourceUrl: String
+    @Value("\${spring.batch.datasource.url}") private lateinit var batchDataSourceUrl: String
+
     @Primary
-    @ConfigurationProperties(prefix = "spring.datasource")
-    fun dataSource(): DataSource {
-        return DriverManagerDataSource()
+    @Bean("mainDataSource")
+    fun mainDataSource(): DataSource {
+        val config = HikariConfig()
+        config.jdbcUrl = mainDataSourceUrl
+        config.driverClassName = DRIVER_CLASS_NAME
+        config.maximumPoolSize = 8
+        config.minimumIdle = 1
+        return HikariDataSource(config)
     }
 
     @Bean("batchDataSource")
     fun batchDataSource(): DataSource {
         val config = HikariConfig()
-        config.jdbcUrl = JDBC_MEMORY_URL
+        config.jdbcUrl = batchDataSourceUrl
         config.driverClassName = DRIVER_CLASS_NAME
         config.maximumPoolSize = 1
         config.minimumIdle = 1
@@ -39,14 +45,14 @@ class DataSourceConfiguration {
     @Configuration
     @EnableJpaRepositories(
         basePackages = ["nebulosa.api"],
-        entityManagerFactoryRef = "entityManagerFactory",
-        transactionManagerRef = "transactionManager"
+        entityManagerFactoryRef = "mainEntityManagerFactory",
+        transactionManagerRef = "mainTransactionManager"
     )
     class Main {
 
         @Primary
-        @Bean(name = ["entityManagerFactory"])
-        fun entityManagerFactory(
+        @Bean("mainEntityManagerFactory")
+        fun mainEntityManagerFactory(
             builder: EntityManagerFactoryBuilder,
             dataSource: DataSource,
         ) = builder
@@ -55,11 +61,11 @@ class DataSourceConfiguration {
             .persistenceUnit("mainPersistenceUnit")
             .build()!!
 
-        @Bean
         @Primary
-        fun transactionManager(entityManagerFactory: EntityManagerFactory): PlatformTransactionManager {
+        @Bean("mainTransactionManager")
+        fun mainTransactionManager(mainEntityManagerFactory: EntityManagerFactory): PlatformTransactionManager {
             // Fix "no transactions is in progress": https://stackoverflow.com/a/33397173
-            return JpaTransactionManager(entityManagerFactory)
+            return JpaTransactionManager(mainEntityManagerFactory)
         }
     }
 
@@ -71,7 +77,7 @@ class DataSourceConfiguration {
     )
     class Batch {
 
-        @Bean(name = ["batchEntityManagerFactory"])
+        @Bean("batchEntityManagerFactory")
         fun batchEntityManagerFactory(
             builder: EntityManagerFactoryBuilder,
             @Qualifier("batchDataSource") dataSource: DataSource,
@@ -81,7 +87,7 @@ class DataSourceConfiguration {
             .persistenceUnit("batchPersistenceUnit")
             .build()!!
 
-        @Bean
+        @Bean("batchTransactionManager")
         fun batchTransactionManager(@Qualifier("batchDataSource") dataSource: DataSource): PlatformTransactionManager {
             return DataSourceTransactionManager(dataSource)
         }
@@ -90,6 +96,5 @@ class DataSourceConfiguration {
     companion object {
 
         const val DRIVER_CLASS_NAME = "org.sqlite.JDBC"
-        const val JDBC_MEMORY_URL = "jdbc:sqlite:file:nebulosa.db?mode=memory"
     }
 }

@@ -25,7 +25,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -113,7 +112,6 @@ class SkyAtlasService(
         else horizonsEphemerisProvider.compute(target, position, dateTime, zoneId)
     }
 
-    @Transactional(readOnly = true)
     fun searchSatellites(text: String, groups: List<SatelliteGroupType>): List<SatelliteEntity> {
         return satelliteRepository.search(text.ifBlank { null }, groups, Pageable.ofSize(1000))
     }
@@ -205,7 +203,6 @@ class SkyAtlasService(
         ?.let(MinorPlanet::of)
         ?: MinorPlanet.EMPTY
 
-    @Transactional(readOnly = true)
     fun searchStar(
         text: String,
         rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
@@ -220,7 +217,6 @@ class SkyAtlasService(
         Pageable.ofSize(5000),
     )
 
-    @Transactional(readOnly = true)
     fun searchDSO(
         text: String,
         rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
