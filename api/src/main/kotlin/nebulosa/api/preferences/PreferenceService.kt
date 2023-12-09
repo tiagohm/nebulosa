@@ -54,18 +54,4 @@ class PreferenceService(
 
     @Synchronized
     fun delete(key: String) = preferenceRepository.deleteById(key)
-
-    final inline var skyAtlasVersion
-        get() = getText(SKY_ATLAS_VERSION)
-        set(value) = putText(SKY_ATLAS_VERSION, value)
-
-    final inline var satellitesUpdatedAt
-        get() = getLong(SATELLITES_UPDATED_AT) ?: 0L
-        set(value) = putLong(SATELLITES_UPDATED_AT, value)
-
-    companion object {
-
-        const val SKY_ATLAS_VERSION = "SKY_ATLAS_VERSION"
-        const val SATELLITES_UPDATED_AT = "SATELLITES_UPDATED_AT"
-    }
 }

@@ -1,5 +1,6 @@
 package nebulosa.api.services
 
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import org.springframework.context.event.EventListener
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor
@@ -38,7 +39,7 @@ class MessageService(
         if (connected.get()) {
             simpleMessageTemplate.convertAndSend(EVENT_NAME, event)
         } else {
-            LOG.warn("queueing message. event={}", event)
+            LOG.debug { "queueing message. event=$event" }
             messageQueue.offer(event)
         }
     }

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 import java.util.concurrent.CompletableFuture
 
 @Component
-class SatelliteUpdater(
+class SatelliteUpdateTask(
     private val httpClient: OkHttpClient,
     private val preferenceService: PreferenceService,
     private val satelliteRepository: SatelliteRepository,
@@ -19,7 +19,7 @@ class SatelliteUpdater(
     }
 
     private fun isOutOfDate(): Boolean {
-        val updatedAt = preferenceService.satellitesUpdatedAt
+        val updatedAt = preferenceService.getLong(SATELLITES_UPDATED_AT) ?: 0L
         return System.currentTimeMillis() - updatedAt >= UPDATE_INTERVAL
     }
 
@@ -28,7 +28,7 @@ class SatelliteUpdater(
             LOG.info("satellites is out of date")
 
             if (updateTLEs()) {
-                preferenceService.satellitesUpdatedAt = System.currentTimeMillis()
+                preferenceService.putLong(SATELLITES_UPDATED_AT, System.currentTimeMillis())
             } else {
                 LOG.warn("no satellites was updated")
             }
@@ -100,7 +100,8 @@ class SatelliteUpdater(
     companion object {
 
         const val UPDATE_INTERVAL = 1000L * 60 * 60 * 24 // 1 day
+        const val SATELLITES_UPDATED_AT = "SATELLITES_UPDATED_AT"
 
-        @JvmStatic private val LOG = loggerFor<SatelliteUpdater>()
+        @JvmStatic private val LOG = loggerFor<SatelliteUpdateTask>()
     }
 }

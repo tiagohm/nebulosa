@@ -2,30 +2,30 @@ package nebulosa.api.atlas
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import nebulosa.api.beans.annotations.ThreadedTask
 import nebulosa.api.notification.NotificationEvent
 import nebulosa.api.preferences.PreferenceService
 import nebulosa.api.services.MessageService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.io.InputStream
 import java.nio.file.Path
+import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPInputStream
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 
 @Component
-@ThreadedTask
-class SkyAtlasUpdater(
+class SkyAtlasUpdateTask(
     private val objectMapper: ObjectMapper,
     private val preferenceService: PreferenceService,
     private val starsRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val httpClient: OkHttpClient,
     private val dataPath: Path,
-    private val satelliteUpdater: SatelliteUpdater,
+    private val satelliteUpdateTask: SatelliteUpdateTask,
     private val messageService: MessageService,
 ) : Runnable {
 
@@ -34,10 +34,11 @@ class SkyAtlasUpdater(
         override val type = "SKY_ATLAS_UPDATE_FINISHED"
     }
 
+    @Scheduled(initialDelay = 1L, fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
     override fun run() {
-        satelliteUpdater.run()
+        satelliteUpdateTask.run()
 
-        val version = preferenceService.skyAtlasVersion
+        val version = preferenceService.getText(SKY_ATLAS_VERSION)
 
         if (version != DATABASE_VERSION) {
             LOG.info("Star/DSO database is out of date. currentVersion={}, newVersion={}", version, DATABASE_VERSION)
@@ -50,11 +51,11 @@ class SkyAtlasUpdater(
             readStarsAndLoad()
             readDSOsAndLoad()
 
-            preferenceService.skyAtlasVersion = DATABASE_VERSION
+            preferenceService.putText(SKY_ATLAS_VERSION, DATABASE_VERSION)
 
             messageService.sendMessage(Finished("Sky Atlas database was updated to version $DATABASE_VERSION."))
         } else {
-            LOG.info("Star/DSO database is up to date")
+            LOG.info("Star/DSO database is up to date. version={}", version)
         }
     }
 
@@ -115,7 +116,8 @@ class SkyAtlasUpdater(
     companion object {
 
         const val DATABASE_VERSION = "2023.10.18"
+        const val SKY_ATLAS_VERSION = "SKY_ATLAS_VERSION"
 
-        @JvmStatic private val LOG = loggerFor<SkyAtlasUpdater>()
+        @JvmStatic private val LOG = loggerFor<SkyAtlasUpdateTask>()
     }
 }

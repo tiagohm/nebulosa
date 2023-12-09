@@ -23,22 +23,17 @@ import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.greenrobot.eventbus.EventBus
-import org.springframework.batch.core.launch.JobLauncher
-import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher
-import org.springframework.batch.core.repository.JobRepository
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
 import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.nio.file.Path
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 
@@ -107,17 +102,22 @@ class BeanConfiguration {
     fun hips2FitsService(httpClient: OkHttpClient) = Hips2FitsService(httpClient = httpClient)
 
     @Bean
-    fun systemExecutorService(): ExecutorService =
-        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)
+    fun threadPoolTaskExecutor(): ThreadPoolTaskExecutor {
+        val taskExecutor = ThreadPoolTaskExecutor()
+        taskExecutor.corePoolSize = 8
+        taskExecutor.maxPoolSize = 32
+        taskExecutor.initialize()
+        return taskExecutor
+    }
 
     @Bean
-    fun eventBus(systemExecutorService: ExecutorService) = EventBus.builder()
+    fun eventBus(threadPoolTaskExecutor: ThreadPoolTaskExecutor) = EventBus.builder()
         .sendNoSubscriberEvent(false)
         .sendSubscriberExceptionEvent(false)
         .throwSubscriberException(false)
         .logNoSubscriberMessages(false)
         .logSubscriberExceptions(false)
-        .executorService(systemExecutorService)
+        .executorService(threadPoolTaskExecutor.threadPoolExecutor)
         .installDefaultEventBus()!!
 
     @Bean
