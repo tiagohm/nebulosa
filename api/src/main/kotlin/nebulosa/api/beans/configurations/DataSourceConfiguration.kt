@@ -2,6 +2,7 @@ package nebulosa.api.beans.configurations
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import jakarta.persistence.EntityManagerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder
@@ -11,6 +12,7 @@ import org.springframework.context.annotation.Primary
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
+import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.transaction.PlatformTransactionManager
 import javax.sql.DataSource
 
@@ -55,8 +57,9 @@ class DataSourceConfiguration {
 
         @Bean
         @Primary
-        fun transactionManager(dataSource: DataSource): PlatformTransactionManager {
-            return DataSourceTransactionManager(dataSource)
+        fun transactionManager(entityManagerFactory: EntityManagerFactory): PlatformTransactionManager {
+            // Fix "no transactions is in progress": https://stackoverflow.com/a/33397173
+            return JpaTransactionManager(entityManagerFactory)
         }
     }
 
