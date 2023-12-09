@@ -2,7 +2,7 @@ import { Client } from '@stomp/stompjs'
 import { BrowserWindow, Menu, Notification, app, dialog, ipcMain, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { InternalEventType, MessageEvent, NotificationEvent, OpenDirectory, OpenFile, OpenWindow } from './types'
+import { InternalEventType, MessageEvent, NotificationEvent, OpenDirectory, OpenFile, OpenWindow } from '../src/shared/types'
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })

@@ -22,7 +22,7 @@
   },
   "files": [
     "app/main.ts",
-    "app/types.ts"
+    "src/shared/types.ts"
   ],
   "exclude": [
     "node_modules",
