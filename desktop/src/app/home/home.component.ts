@@ -1,4 +1,5 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import path from 'path'
 import { MenuItem, MessageService } from 'primeng/api'
 import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
 import { DialogMenuComponent } from '../../shared/components/dialogmenu/dialogmenu.component'
@@ -7,8 +8,8 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
+import { compareDevice } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
-import path from 'path'
 
 type MappedDevice = {
     'CAMERA': Camera
@@ -228,7 +229,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         if (devices.length === 0) return
         if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
 
-        for (const device of devices) {
+        for (const device of [...devices].sort(compareDevice)) {
             this.deviceModel.push({
                 icon: 'mdi mdi-connection',
                 label: device.name,

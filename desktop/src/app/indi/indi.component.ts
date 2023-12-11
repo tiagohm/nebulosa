@@ -4,6 +4,7 @@ import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
+import { compareDevice, compareText } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -72,7 +73,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
             ...await this.api.mounts(),
             ...await this.api.focusers(),
             ...await this.api.wheels(),
-        ].sort((a, b) => a.name.localeCompare(b.name))
+        ].sort(compareDevice)
 
         this.device = this.devices[0]
     }
@@ -129,7 +130,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
         if (this.groups.length === 0 || groupsChanged) {
             this.groups = Array.from(groups)
-                .sort((a, b) => a.localeCompare(b))
+                .sort(compareText)
                 .map(e => <MenuItem>{
                     icon: 'mdi mdi-sitemap',
                     label: e,
