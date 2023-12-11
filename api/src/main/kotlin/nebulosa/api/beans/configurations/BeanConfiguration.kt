@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import nebulosa.api.beans.DateAndTimeMethodArgumentResolver
-import nebulosa.api.beans.EntityByMethodArgumentResolver
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.concurrency.Incrementer
 import nebulosa.common.json.PathDeserializer
@@ -140,8 +138,9 @@ class BeanConfiguration {
 
     @Bean
     fun webMvcConfigurer(
-        entityByMethodArgumentResolver: EntityByMethodArgumentResolver,
-        dateAndTimeMethodArgumentResolver: DateAndTimeMethodArgumentResolver,
+        entityParamMethodArgumentResolver: HandlerMethodArgumentResolver,
+        dateAndTimeParamMethodArgumentResolver: HandlerMethodArgumentResolver,
+        angleParamMethodArgumentResolver: HandlerMethodArgumentResolver,
     ) = object : WebMvcConfigurer {
 
         override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
@@ -158,8 +157,9 @@ class BeanConfiguration {
         }
 
         override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
-            resolvers.add(entityByMethodArgumentResolver)
-            resolvers.add(dateAndTimeMethodArgumentResolver)
+            resolvers.add(entityParamMethodArgumentResolver)
+            resolvers.add(dateAndTimeParamMethodArgumentResolver)
+            resolvers.add(angleParamMethodArgumentResolver)
         }
     }
 

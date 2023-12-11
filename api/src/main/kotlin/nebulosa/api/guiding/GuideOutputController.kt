@@ -1,6 +1,6 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.beans.annotations.EntityBy
+import nebulosa.api.beans.annotations.EntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.guide.GuideOutput
@@ -22,23 +22,23 @@ class GuideOutputController(
     }
 
     @GetMapping("{guideOutput}")
-    fun guideOutput(@EntityBy guideOutput: GuideOutput): GuideOutput {
+    fun guideOutput(@EntityParam guideOutput: GuideOutput): GuideOutput {
         return guideOutput
     }
 
     @PutMapping("{guideOutput}/connect")
-    fun connect(@EntityBy guideOutput: GuideOutput) {
+    fun connect(@EntityParam guideOutput: GuideOutput) {
         guideOutputService.connect(guideOutput)
     }
 
     @PutMapping("{guideOutput}/disconnect")
-    fun disconnect(@EntityBy guideOutput: GuideOutput) {
+    fun disconnect(@EntityParam guideOutput: GuideOutput) {
         guideOutputService.disconnect(guideOutput)
     }
 
     @PutMapping("{guideOutput}/pulse")
     fun pulse(
-        @EntityBy guideOutput: GuideOutput,
+        @EntityParam guideOutput: GuideOutput,
         @RequestParam direction: GuideDirection,
         @RequestParam @DurationMin(nanos = 0L) @DurationMax(seconds = 60L) duration: Duration,
     ) {

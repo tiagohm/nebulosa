@@ -2,7 +2,7 @@ package nebulosa.api.wheels
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.beans.annotations.EntityBy
+import nebulosa.api.beans.annotations.EntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.filterwheel.FilterWheel
 import org.springframework.web.bind.annotation.*
@@ -20,23 +20,23 @@ class WheelController(
     }
 
     @GetMapping("{wheel}")
-    fun wheel(@EntityBy wheel: FilterWheel): FilterWheel {
+    fun wheel(@EntityParam wheel: FilterWheel): FilterWheel {
         return wheel
     }
 
     @PutMapping("{wheel}/connect")
-    fun connect(@EntityBy wheel: FilterWheel) {
+    fun connect(@EntityParam wheel: FilterWheel) {
         wheelService.connect(wheel)
     }
 
     @PutMapping("{wheel}/disconnect")
-    fun disconnect(@EntityBy wheel: FilterWheel) {
+    fun disconnect(@EntityParam wheel: FilterWheel) {
         wheelService.disconnect(wheel)
     }
 
     @PutMapping("{wheel}/move-to")
     fun moveTo(
-        @EntityBy wheel: FilterWheel,
+        @EntityParam wheel: FilterWheel,
         @RequestParam @Valid @PositiveOrZero position: Int,
     ) {
         wheelService.moveTo(wheel, position)
@@ -44,7 +44,7 @@ class WheelController(
 
     @PutMapping("{wheel}/sync")
     fun sync(
-        @EntityBy wheel: FilterWheel,
+        @EntityParam wheel: FilterWheel,
         @RequestParam @Valid @PositiveOrZero names: String,
     ) {
         wheelService.sync(wheel, names.split(","))
