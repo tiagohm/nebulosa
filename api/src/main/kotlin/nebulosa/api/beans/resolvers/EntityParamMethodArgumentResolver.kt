@@ -6,6 +6,7 @@ import nebulosa.api.beans.converters.parameter
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.locations.LocationEntity
 import nebulosa.api.locations.LocationRepository
+import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
@@ -36,6 +37,7 @@ class EntityParamMethodArgumentResolver(
         StarEntity::class.java to { starRepository.findByIdOrNull(it.toLong()) },
         DeepSkyObjectEntity::class.java to { deepSkyObjectRepository.findByIdOrNull(it.toLong()) },
         SatelliteEntity::class.java to { satelliteRepository.findByIdOrNull(it.toLong()) },
+        Device::class.java to { connectionService.device(it) },
         Camera::class.java to { connectionService.camera(it) },
         Mount::class.java to { connectionService.mount(it) },
         Focuser::class.java to { connectionService.focuser(it) },

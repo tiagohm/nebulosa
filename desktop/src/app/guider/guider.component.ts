@@ -220,8 +220,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     ) {
         title.setTitle('Guider')
 
-        api.startListening('GUIDING')
-
         electron.on('GUIDE_OUTPUT_UPDATED', event => {
             if (event.device.name === this.guideOutput?.name) {
                 ngZone.run(() => {
@@ -304,9 +302,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
-        this.api.stopListening('GUIDING')
-    }
+    ngOnDestroy() { }
 
     private processGuiderStatus(event: Guider) {
         this.connected = event.connected

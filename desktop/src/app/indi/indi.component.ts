@@ -31,7 +31,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'INDI'
 
-        this.api.startListening('INDI')
+        this.api.indiStartListening()
 
         electron.on('DEVICE_PROPERTY_CHANGED', event => {
             ngZone.run(() => {
@@ -62,7 +62,11 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
     async ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
-            this.device = JSON.parse(decodeURIComponent(e.data)) as Device
+            const device = JSON.parse(decodeURIComponent(e.data))
+
+            if ("name" in device && device.name) {
+                this.device = device
+            }
         })
 
         this.devices = [
@@ -70,12 +74,14 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
             ...await this.api.mounts(),
             ...await this.api.focusers(),
             ...await this.api.wheels(),
-        ]
+        ].sort((a, b) => a.name.localeCompare(b.name))
+
+        this.device = this.devices[0]
     }
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.api.stopListening('INDI')
+        this.api.indiStopListening()
     }
 
     async deviceChanged() {
@@ -89,7 +95,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
     }
 
     send(property: INDISendProperty) {
-        this.api.sendIndiProperty(this.device!, property)
+        this.api.indiSendProperty(this.device!, property)
     }
 
     private updateGroups() {

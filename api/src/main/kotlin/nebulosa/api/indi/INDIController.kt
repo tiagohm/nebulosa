@@ -1,36 +1,48 @@
 package nebulosa.api.indi
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
-import nebulosa.api.connection.ConnectionService
+import nebulosa.api.beans.annotations.EntityParam
+import nebulosa.indi.device.Device
 import nebulosa.indi.device.PropertyVector
 import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("indi")
 class INDIController(
-    private val connectionService: ConnectionService,
     private val indiService: INDIService,
+    private val indiEventHandler: INDIEventHandler,
 ) {
 
-    @GetMapping("indiProperties")
-    fun properties(@RequestParam @Valid @NotBlank name: String): Collection<PropertyVector<*, *>> {
-        val device = requireNotNull(connectionService.device(name))
+    @GetMapping("{device}/properties")
+    fun properties(@EntityParam device: Device): Collection<PropertyVector<*, *>> {
         return indiService.properties(device)
     }
 
-    @PostMapping("sendIndiProperty")
+    @PutMapping("{device}/send")
     fun sendProperty(
-        @RequestParam @Valid @NotBlank name: String,
+        @EntityParam device: Device,
         @RequestBody @Valid body: INDISendProperty,
     ) {
-        val device = requireNotNull(connectionService.device(name))
         return indiService.sendProperty(device, body)
     }
 
-    @GetMapping("indiLog")
-    fun indiLog(@RequestParam(required = false) name: String?): List<String> {
-        if (name.isNullOrBlank()) return indiService.messages()
-        val device = connectionService.device(name) ?: return emptyList()
+    @GetMapping("{device}/log")
+    fun log(@EntityParam device: Device): List<String> {
         return device.messages
+    }
+
+    @GetMapping("log")
+    fun log(): List<String> {
+        return indiService.messages()
+    }
+
+    @PutMapping("listener/start")
+    fun startListening() {
+        indiEventHandler.canSendEvents = true
+    }
+
+    @PutMapping("listener/stop")
+    fun stopListening() {
+        indiEventHandler.canSendEvents = false
     }
 }

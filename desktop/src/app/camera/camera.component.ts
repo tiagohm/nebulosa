@@ -229,8 +229,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     ) {
         app.title = 'Camera'
 
-        api.startListening('CAMERA')
-
         electron.on('CAMERA_UPDATED', event => {
             if (event.device.name === this.camera?.name) {
                 ngZone.run(() => {
@@ -326,7 +324,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.api.stopListening('CAMERA')
         this.abortCapture()
     }
 

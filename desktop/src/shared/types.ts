@@ -876,8 +876,6 @@ export const SATELLITE_GROUPS = [
 
 export type SatelliteGroupType = (typeof SATELLITE_GROUPS)[number]
 
-export type ListeningEventType = 'INDI' | 'GUIDING' | 'CAMERA' | 'MOUNT'
-
 export const GUIDER_TYPES = ['PHD2'] as const
 
 export type GuiderType = (typeof GUIDER_TYPES)[number]
