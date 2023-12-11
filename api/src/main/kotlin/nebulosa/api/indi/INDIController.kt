@@ -36,13 +36,15 @@ class INDIController(
         return indiService.messages()
     }
 
-    @PutMapping("listener/start")
-    fun startListening() {
-        indiEventHandler.canSendEvents = true
+    @Synchronized
+    @PutMapping("listener/{device}/start")
+    fun startListening(device: Device) {
+        indiEventHandler.canSendEvents.add(device)
     }
 
-    @PutMapping("listener/stop")
-    fun stopListening() {
-        indiEventHandler.canSendEvents = false
+    @Synchronized
+    @PutMapping("listener/{device}/stop")
+    fun stopListening(device: Device) {
+        indiEventHandler.canSendEvents.remove(device)
     }
 }

@@ -31,8 +31,6 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'INDI'
 
-        this.api.indiStartListening()
-
         electron.on('DEVICE_PROPERTY_CHANGED', event => {
             ngZone.run(() => {
                 this.addOrUpdateProperty(event.property!)
@@ -81,12 +79,21 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.api.indiStopListening()
+        if (this.device) {
+            this.api.indiStopListening(this.device)
+        }
     }
 
-    async deviceChanged() {
+    async deviceChanged(device: Device) {
+        if (this.device) {
+            this.api.indiStopListening(this.device)
+        }
+
+        this.device = device
+
         this.updateProperties()
-        this.messages = await this.api.indiLog(this.device!)
+        this.api.indiStartListening(device)
+        this.messages = await this.api.indiLog(device)
     }
 
     changeGroup(group: string) {
