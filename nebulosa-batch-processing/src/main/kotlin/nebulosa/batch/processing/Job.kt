@@ -1,6 +1,6 @@
 package nebulosa.batch.processing
 
-interface Job : JobListener, Stoppable {
+interface Job : JobExecutionListener, Stoppable {
 
     val id: String
 

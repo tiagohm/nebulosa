@@ -1,24 +1,23 @@
 package nebulosa.api.guiding
 
+import nebulosa.batch.processing.Step
+import nebulosa.batch.processing.StepExecution
+import nebulosa.batch.processing.StepResult
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.guiding.GuideState
 import nebulosa.guiding.Guider
 import nebulosa.guiding.GuiderListener
-import org.springframework.batch.core.StepContribution
-import org.springframework.batch.core.scope.context.ChunkContext
-import org.springframework.batch.core.step.tasklet.StoppableTasklet
-import org.springframework.batch.repeat.RepeatStatus
 import org.springframework.beans.factory.annotation.Autowired
 import java.util.concurrent.atomic.AtomicInteger
 
-data class DitherAfterExposureTasklet(val request: DitherAfterExposureRequest) : StoppableTasklet, GuiderListener {
+data class DitherAfterExposureStep(@JvmField val request: DitherAfterExposureRequest) : Step, GuiderListener {
 
     @Autowired private lateinit var guider: Guider
 
     private val ditherLatch = CountUpDownLatch()
     private val exposureCount = AtomicInteger()
 
-    override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
+    override fun execute(stepExecution: StepExecution): StepResult {
         if (guider.canDither && request.enabled && guider.state == GuideState.GUIDING) {
             if (exposureCount.get() < request.afterExposures) {
                 try {
@@ -36,12 +35,11 @@ data class DitherAfterExposureTasklet(val request: DitherAfterExposureRequest) :
             }
         }
 
-        return RepeatStatus.FINISHED
+        return StepResult.FINISHED
     }
 
-    override fun stop() {
-        ditherLatch.reset(0)
-        guider.unregisterGuiderListener(this)
+    override fun stop(mayInterruptIfRunning: Boolean) {
+        ditherLatch.reset()
     }
 
     override fun onDithered(dx: Double, dy: Double) {

@@ -25,11 +25,3 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
     table: migrations
-
-  batch:
-    job:
-      enabled: false
-    datasource:
-      url: 'jdbc:sqlite:file:nebulosa.db?mode=memory'
-    jdbc:
-      initialize-schema: always

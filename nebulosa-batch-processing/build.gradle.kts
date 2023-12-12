@@ -5,7 +5,6 @@ plugins {
 
 dependencies {
     implementation(project(":nebulosa-log"))
-    testImplementation(project(":nebulosa-common"))
     testImplementation(project(":nebulosa-test"))
 }
 

@@ -12,8 +12,6 @@ data class DARVPolarAlignmentFinished(
     @JsonIgnore override val jobExecution: JobExecution,
 ) : MessageEvent, DARVPolarAlignmentEvent {
 
-    override val progress = 1.0
-
     override val state = DARVPolarAlignmentState.IDLE
 
     override val eventName = "DARV_POLAR_ALIGNMENT_FINISHED"

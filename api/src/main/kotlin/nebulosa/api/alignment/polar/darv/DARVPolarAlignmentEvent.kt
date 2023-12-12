@@ -1,10 +1,9 @@
 package nebulosa.api.alignment.polar.darv
 
-import nebulosa.api.sequencer.SequenceJobEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 
-sealed interface DARVPolarAlignmentEvent : SequenceJobEvent {
+sealed interface DARVPolarAlignmentEvent {
 
     val camera: Camera
 

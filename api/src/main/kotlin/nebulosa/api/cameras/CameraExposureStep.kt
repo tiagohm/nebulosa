@@ -1,8 +1,10 @@
 package nebulosa.api.cameras
 
-import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.sequencer.PublishSequenceTasklet
-import nebulosa.api.sequencer.tasklets.delay.DelayEvent
+import nebulosa.batch.processing.JobExecution
+import nebulosa.batch.processing.StepExecution
+import nebulosa.batch.processing.StepResult
+import nebulosa.batch.processing.delay.DelayListener
+import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
@@ -10,30 +12,23 @@ import nebulosa.log.loggerFor
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.springframework.batch.core.JobExecution
-import org.springframework.batch.core.JobExecutionListener
-import org.springframework.batch.core.StepContribution
-import org.springframework.batch.core.StepExecution
-import org.springframework.batch.core.scope.context.ChunkContext
-import org.springframework.batch.repeat.RepeatStatus
 import java.io.InputStream
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.outputStream
 
-data class CameraExposureTasklet(override val request: CameraStartCaptureRequest) :
-    PublishSequenceTasklet<CameraCaptureEvent>(), CameraStartCaptureTasklet, JobExecutionListener, Consumer<DelayEvent> {
+data class CameraExposureStep(override val request: CameraStartCaptureRequest) : CameraStartCaptureStep, DelayListener {
 
     private val latch = CountUpDownLatch()
-    private val aborted = AtomicBoolean()
+    private val listeners = HashSet<CameraCaptureListener>()
 
+    @Volatile private var aborted = false
     @Volatile private var exposureCount = 0
     @Volatile private var captureElapsedTime = Duration.ZERO!!
-    @Volatile private var stepExecution: StepExecution? = null
+    private lateinit var stepExecution: StepExecution
 
     private val camera = requireNotNull(request.camera)
     private val exposureTime = request.exposureTime
@@ -42,19 +37,27 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
     private val estimatedTime = if (request.isLoop) Duration.ZERO
     else Duration.ofNanos(exposureTime.toNanos() * request.exposureAmount + exposureDelay.toNanos() * (request.exposureAmount - 1))
 
+    override fun registerListener(listener: CameraCaptureListener) {
+        listeners.add(listener)
+    }
+
+    override fun unregisterListener(listener: CameraCaptureListener) {
+        listeners.remove(listener)
+    }
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onCameraEvent(event: CameraEvent) {
         if (event.device === camera) {
             when (event) {
                 is CameraFrameCaptured -> {
-                    save(event.fits, stepExecution!!)
+                    save(event.fits)
                     latch.countDown()
                 }
                 is CameraExposureAborted,
                 is CameraExposureFailed,
                 is CameraDetached -> {
                     latch.reset()
-                    aborted.set(true)
+                    aborted = true
                 }
                 is CameraExposureProgressChanged -> {
                     val exposureRemainingTime = event.device.exposureTime
@@ -69,46 +72,45 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
     override fun beforeJob(jobExecution: JobExecution) {
         camera.enableBlob()
         EventBus.getDefault().register(this)
-        onNext(CameraCaptureStarted(camera, request.isLoop, estimatedTime, jobExecution, this))
+        listeners.forEach { it.onCaptureStarted(this, jobExecution) }
         captureElapsedTime = Duration.ZERO
     }
 
     override fun afterJob(jobExecution: JobExecution) {
         camera.disableBlob()
         EventBus.getDefault().unregister(this)
-        onNext(CameraCaptureFinished(camera, jobExecution, this))
-        close()
+        listeners.forEach { it.onCaptureFinished(this, jobExecution) }
     }
 
-    override fun execute(contribution: StepContribution, chunkContext: ChunkContext): RepeatStatus {
-        executeCapture(contribution)
-        return RepeatStatus.FINISHED
+    override fun execute(stepExecution: StepExecution): StepResult {
+        this.stepExecution = stepExecution
+        LOG.info("starting exposure. camera=${camera.name}")
+        executeCapture(stepExecution)
+        return StepResult.FINISHED
     }
 
-    override fun stop() {
+    override fun stop(mayInterruptIfRunning: Boolean) {
         LOG.info("stopping exposure. camera=${camera.name}")
         camera.abortCapture()
         camera.disableBlob()
-        aborted.set(true)
+        aborted = true
         latch.reset()
     }
 
-    override fun accept(event: DelayEvent) {
-        captureElapsedTime += event.waitDuration
-        onNext(CameraCaptureIsWaiting(camera, event.waitDuration, event.remainingTime, event.progress, event.stepExecution, this))
+    override fun onDelayElapsed(stepExecution: StepExecution) {
+        val waitTime = stepExecution.jobExecution.context[DelayStep.WAIT_TIME] as Duration
+        captureElapsedTime += waitTime
         onCameraExposureElapsed(Duration.ZERO, Duration.ZERO, 1.0)
     }
 
-    private fun executeCapture(contribution: StepContribution) {
-        stepExecution = contribution.stepExecution
-
-        if (camera.connected && !aborted.get()) {
+    private fun executeCapture(stepExecution: StepExecution) {
+        if (camera.connected && !aborted) {
             synchronized(camera) {
                 latch.countUp()
 
-                exposureCount++
+                stepExecution.jobExecution.context[EXPOSURE_AMOUNT] = ++exposureCount
 
-                onNext(CameraExposureStarted(camera, exposureCount, stepExecution!!, this))
+                listeners.forEach { it.onExposureStarted(stepExecution) }
 
                 if (request.width > 0 && request.height > 0) {
                     camera.frame(request.x, request.y, request.width, request.height)
@@ -130,7 +132,7 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
         }
     }
 
-    private fun save(stream: InputStream, stepExecution: StepExecution) {
+    private fun save(stream: InputStream) {
         val savePath = if (request.autoSave) {
             val now = LocalDateTime.now()
             val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), request.frameType)
@@ -146,30 +148,47 @@ data class CameraExposureTasklet(override val request: CameraStartCaptureRequest
             savePath.createParentDirectories()
             stream.transferAndClose(savePath.outputStream())
 
-            onNext(CameraExposureFinished(camera, exposureCount, stepExecution, this, savePath))
+            stepExecution.jobExecution.context[SAVE_PATH] = savePath
+
+            listeners.forEach { it.onExposureFinished(stepExecution) }
         } catch (e: Throwable) {
             LOG.error("failed to save FITS", e)
-            aborted.set(true)
+            aborted = true
         }
     }
 
     private fun onCameraExposureElapsed(elapsedTime: Duration, remainingTime: Duration, progress: Double) {
-        val totalElapsedTime = captureElapsedTime + elapsedTime
+        val captureElapsedTime = captureElapsedTime + elapsedTime
         var captureRemainingTime = Duration.ZERO
         var captureProgress = 0.0
 
         if (!request.isLoop) {
-            captureRemainingTime = if (estimatedTime > totalElapsedTime) estimatedTime - totalElapsedTime else Duration.ZERO
+            captureRemainingTime = if (estimatedTime > captureElapsedTime) estimatedTime - captureElapsedTime else Duration.ZERO
             captureProgress = (estimatedTime - captureRemainingTime).toNanos().toDouble() / estimatedTime.toNanos()
         }
 
-        onNext(CameraExposureElapsed(camera, exposureCount, remainingTime, progress, stepExecution!!, this))
-        onNext(CameraCaptureElapsed(camera, exposureCount, captureRemainingTime, captureProgress, totalElapsedTime, stepExecution!!, this))
+        stepExecution.jobExecution.context[EXPOSURE_ELAPSED_TIME] = elapsedTime
+        stepExecution.jobExecution.context[EXPOSURE_REMAINING_TIME] = remainingTime
+        stepExecution.jobExecution.context[EXPOSURE_PROGRESS] = progress
+        stepExecution.jobExecution.context[CAPTURE_ELAPSED_TIME] = captureElapsedTime
+        stepExecution.jobExecution.context[CAPTURE_REMAINING_TIME] = captureRemainingTime
+        stepExecution.jobExecution.context[CAPTURE_PROGRESS] = captureProgress
+
+        listeners.forEach { it.onExposureElapsed(stepExecution) }
     }
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<CameraExposureTasklet>()
+        const val EXPOSURE_AMOUNT = "CAMERA_EXPOSURE.EXPOSURE_AMOUNT"
+        const val SAVE_PATH = "CAMERA_EXPOSURE.SAVE_PATH"
+        const val EXPOSURE_ELAPSED_TIME = "CAMERA_EXPOSURE.EXPOSURE_ELAPSED_TIME"
+        const val EXPOSURE_REMAINING_TIME = "CAMERA_EXPOSURE.EXPOSURE_REMAINING_TIME"
+        const val EXPOSURE_PROGRESS = "CAMERA_EXPOSURE.EXPOSURE_PROGRESS"
+        const val CAPTURE_ELAPSED_TIME = "CAMERA_EXPOSURE.CAPTURE_ELAPSED_TIME"
+        const val CAPTURE_REMAINING_TIME = "CAMERA_EXPOSURE.CAPTURE_REMAINING_TIME"
+        const val CAPTURE_PROGRESS = "CAMERA_EXPOSURE.CAPTURE_PROGRESS"
+
+        @JvmStatic private val LOG = loggerFor<CameraExposureStep>()
         @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmssSSS")
     }
 }

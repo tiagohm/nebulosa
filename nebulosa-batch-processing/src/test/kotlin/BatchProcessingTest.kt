@@ -3,7 +3,6 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.longs.shouldBeInRange
 import io.kotest.matchers.shouldBe
 import nebulosa.batch.processing.*
-import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.log.loggerFor
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
@@ -11,7 +10,7 @@ import kotlin.concurrent.thread
 class BatchProcessingTest : StringSpec() {
 
     init {
-        val launcher = AsyncJobLauncher(Executors.newSingleThreadExecutor(DaemonThreadFactory))
+        val launcher = AsyncJobLauncher(Executors.newSingleThreadExecutor())
 
         "single" {
             val startedAt = System.currentTimeMillis()
@@ -70,9 +69,10 @@ class BatchProcessingTest : StringSpec() {
 
         protected abstract fun compute(value: Double): Double
 
-        final override fun execute(jobExecution: JobExecution): StepResult {
+        final override fun execute(stepExecution: StepExecution): StepResult {
             var sleepCount = 0
 
+            val jobExecution = stepExecution.jobExecution
             running = jobExecution.canContinue
 
             while (running && sleepCount++ < 100) {

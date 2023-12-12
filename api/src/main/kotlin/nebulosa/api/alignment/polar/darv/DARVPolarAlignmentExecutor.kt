@@ -1,23 +1,22 @@
 package nebulosa.api.alignment.polar.darv
 
-import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.alignment.polar.darv.DARVPolarAlignmentState.BACKWARD
 import nebulosa.api.alignment.polar.darv.DARVPolarAlignmentState.FORWARD
 import nebulosa.api.cameras.CameraCaptureEvent
+import nebulosa.api.cameras.CameraCaptureListener
+import nebulosa.api.cameras.CameraExposureStep
 import nebulosa.api.cameras.CameraStartCaptureRequest
-import nebulosa.api.guiding.GuidePulseEvent
-import nebulosa.api.guiding.GuidePulseRequest
+import nebulosa.api.guiding.GuidePulseListener
 import nebulosa.api.sequencer.*
-import nebulosa.api.sequencer.tasklets.delay.DelayElapsed
 import nebulosa.api.services.MessageService
+import nebulosa.batch.processing.JobExecution
+import nebulosa.batch.processing.JobExecutionListener
+import nebulosa.batch.processing.JobLauncher
+import nebulosa.batch.processing.StepExecution
+import nebulosa.batch.processing.delay.DelayListener
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.log.loggerFor
-import org.springframework.batch.core.JobExecution
-import org.springframework.batch.core.JobExecutionListener
-import org.springframework.batch.core.JobParameters
-import org.springframework.batch.core.launch.JobLauncher
-import org.springframework.batch.core.launch.JobOperator
 import org.springframework.stereotype.Component
 import java.nio.file.Path
 import java.util.*
@@ -27,19 +26,15 @@ import java.util.*
  */
 @Component
 class DARVPolarAlignmentExecutor(
-    private val jobOperator: JobOperator,
     private val jobLauncher: JobLauncher,
     private val messageService: MessageService,
     private val capturesPath: Path,
-    private val sequenceFlowFactory: SequenceFlowFactory,
-    private val sequenceTaskletFactory: SequenceTaskletFactory,
-    private val sequenceJobFactory: SequenceJobFactory,
-) : SequenceJobExecutor<DARVStart, DARVSequenceJob>, Consumer<SequenceTaskletEvent>, JobExecutionListener {
+) : JobExecutionListener, CameraCaptureListener, GuidePulseListener, DelayListener {
 
-    private val runningSequenceJobs = LinkedList<DARVSequenceJob>()
+    private val jobExecutions = HashMap<Pair<Camera, GuideOutput>, JobExecution>(1)
 
     @Synchronized
-    override fun execute(request: DARVStart): DARVSequenceJob {
+    fun execute(request: DARVStart) {
         val camera = requireNotNull(request.camera)
         val guideOutput = requireNotNull(request.guideOutput)
 
@@ -55,47 +50,15 @@ class DARVPolarAlignmentExecutor(
             savePath = Path.of("$capturesPath", "${camera.name}-DARV.fits")
         )
 
-        val cameraExposureTasklet = sequenceTaskletFactory.cameraExposure(cameraRequest)
-        cameraExposureTasklet.subscribe(this)
-        val cameraExposureFlow = sequenceFlowFactory.cameraExposure(cameraExposureTasklet)
-
-        val guidePulseDuration = request.exposureTime.dividedBy(2L)
-        val initialPauseDelayTasklet = sequenceTaskletFactory.delay(request.initialPause)
-        initialPauseDelayTasklet.subscribe(this)
-
-        val direction = if (request.reversed) request.direction.reversed else request.direction
-
-        val forwardGuidePulseRequest = GuidePulseRequest(guideOutput, direction, guidePulseDuration)
-        val forwardGuidePulseTasklet = sequenceTaskletFactory.guidePulse(forwardGuidePulseRequest)
-        forwardGuidePulseTasklet.subscribe(this)
-
-        val backwardGuidePulseRequest = GuidePulseRequest(guideOutput, direction.reversed, guidePulseDuration)
-        val backwardGuidePulseTasklet = sequenceTaskletFactory.guidePulse(backwardGuidePulseRequest)
-        backwardGuidePulseTasklet.subscribe(this)
-
-        val guidePulseFlow = sequenceFlowFactory.guidePulse(initialPauseDelayTasklet, forwardGuidePulseTasklet, backwardGuidePulseTasklet)
-
-        val darvJob = sequenceJobFactory.darvPolarAlignment(cameraExposureFlow, guidePulseFlow, this, cameraExposureTasklet)
-
-        return jobLauncher
-            .run(darvJob, JobParameters())
-            .let { DARVSequenceJob(camera, guideOutput, request, darvJob, it) }
-            .also(runningSequenceJobs::add)
+        val darvJob = DARVPolarAlignmentJob(request, cameraRequest)
+        val jobExecution = jobLauncher.launch(darvJob)
+        jobExecutions[camera to guideOutput] = jobExecution
     }
 
     @Synchronized
     fun stop(camera: Camera, guideOutput: GuideOutput) {
-        val jobExecution = jobExecutionFor(camera, guideOutput) ?: return
-        jobOperator.stop(jobExecution.id)
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun jobExecutionFor(camera: Camera, guideOutput: GuideOutput): JobExecution? {
-        return sequenceJobFor(camera, guideOutput)?.jobExecution
-    }
-
-    fun isRunning(camera: Camera, guideOutput: GuideOutput): Boolean {
-        return sequenceJobFor(camera, guideOutput)?.jobExecution?.isRunning ?: false
+        val jobExecution = jobExecutions[camera to guideOutput] ?: return
+        jobExecution.stop()
     }
 
     override fun accept(event: SequenceTaskletEvent) {
@@ -133,8 +96,32 @@ class DARVPolarAlignmentExecutor(
         messageService.sendMessage(DARVPolarAlignmentFinished(camera, guideOutput, jobExecution))
     }
 
-    override fun iterator(): Iterator<DARVSequenceJob> {
-        return runningSequenceJobs.iterator()
+    override fun onCaptureStarted(step: CameraExposureStep, jobExecution: JobExecution) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onExposureStarted(stepExecution: StepExecution) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onExposureElapsed(stepExecution: StepExecution) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onExposureFinished(stepExecution: StepExecution) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onCaptureFinished(step: CameraExposureStep, jobExecution: JobExecution) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onGuidePulseElapsed(stepExecution: StepExecution) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onDelayElapsed(stepExecution: StepExecution) {
+        TODO("Not yet implemented")
     }
 
     companion object {

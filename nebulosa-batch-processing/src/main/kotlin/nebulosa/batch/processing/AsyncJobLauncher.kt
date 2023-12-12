@@ -5,24 +5,24 @@ import java.util.concurrent.ExecutorService
 
 open class AsyncJobLauncher(private val executor: ExecutorService) : JobLauncher, StepInterceptor {
 
-    private val jobListeners = HashSet<JobListener>()
-    private val stepListeners = HashSet<StepListener>()
+    private val jobListeners = HashSet<JobExecutionListener>()
+    private val stepListeners = HashSet<StepExecutionListener>()
     private val stepInterceptors = HashSet<StepInterceptor>()
     private val jobs = LinkedHashMap<String, JobExecution>()
 
-    fun registerJobListener(listener: JobListener) {
+    fun registerJobListener(listener: JobExecutionListener) {
         jobListeners.add(listener)
     }
 
-    fun unregisterJobListener(listener: JobListener) {
+    fun unregisterJobListener(listener: JobExecutionListener) {
         jobListeners.remove(listener)
     }
 
-    fun registerStepListener(listener: StepListener) {
+    fun registerStepListener(listener: StepExecutionListener) {
         stepListeners.add(listener)
     }
 
-    fun unregisterStepListener(listener: StepListener) {
+    fun unregisterStepListener(listener: StepExecutionListener) {
         stepListeners.remove(listener)
     }
 
@@ -77,16 +77,24 @@ open class AsyncJobLauncher(private val executor: ExecutorService) : JobLauncher
             val interceptors = ArrayList(stepInterceptors)
             interceptors.add(this)
 
+            val stepJobListeners = HashSet<JobExecutionListener>()
+
             try {
                 while (jobExecution.canContinue && job.hasNext(jobExecution)) {
                     val step = job.next(jobExecution)
 
+                    if (step is JobExecutionListener) {
+                        if (stepJobListeners.add(step)) {
+                            step.beforeJob(jobExecution)
+                        }
+                    }
+
                     if (step is FlowStep) {
                         val flow = object : Step {
 
-                            override fun execute(jobExecution: JobExecution): StepResult {
-                                step.toList().parallelStream().forEach { execute(interceptors, it, jobExecution) }
-                                return step.execute(jobExecution)
+                            override fun execute(stepExecution: StepExecution): StepResult {
+                                step.toList().parallelStream().forEach { execute(interceptors, stepExecution) }
+                                return step.execute(stepExecution)
                             }
 
                             override fun stop(mayInterruptIfRunning: Boolean) {
@@ -94,9 +102,9 @@ open class AsyncJobLauncher(private val executor: ExecutorService) : JobLauncher
                             }
                         }
 
-                        execute(interceptors, flow, jobExecution)
+                        execute(interceptors, StepExecution(flow, jobExecution))
                     } else {
-                        execute(interceptors, step, jobExecution)
+                        execute(interceptors, StepExecution(step, jobExecution))
                     }
                 }
 
@@ -111,6 +119,7 @@ open class AsyncJobLauncher(private val executor: ExecutorService) : JobLauncher
 
             job.afterJob(jobExecution)
             jobListeners.forEach { it.afterJob(jobExecution) }
+            stepJobListeners.forEach { it.afterJob(jobExecution) }
         }
 
         return jobExecution
@@ -121,18 +130,20 @@ open class AsyncJobLauncher(private val executor: ExecutorService) : JobLauncher
     }
 
     override fun intercept(chain: StepChain): StepResult {
-        return chain.step.execute(chain.jobExecution)
+        return chain.stepExecution.step.execute(chain.stepExecution)
     }
 
-    private fun execute(interceptors: List<StepInterceptor>, step: Step, jobExecution: JobExecution) {
-        val chain = StepInterceptorChain(interceptors, jobExecution, step)
+    private fun execute(interceptors: List<StepInterceptor>, stepExecution: StepExecution) {
+        val chain = StepInterceptorChain(interceptors, stepExecution)
         var status: RepeatStatus
 
         do {
-            stepListeners.forEach { it.beforeStep(step, jobExecution) }
+            stepListeners.forEach { it.beforeStep(stepExecution) }
             val result = chain.proceed()
-            stepListeners.forEach { it.afterStep(step, jobExecution) }
+            stepListeners.forEach { it.afterStep(stepExecution) }
             status = result.get()
         } while (status == RepeatStatus.CONTINUABLE)
+
+        stepExecution.finishedAt = LocalDateTime.now()
     }
 }

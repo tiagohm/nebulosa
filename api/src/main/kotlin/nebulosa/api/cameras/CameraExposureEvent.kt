@@ -1,13 +1,11 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.sequencer.SequenceStepEvent
-import java.time.Duration
+import nebulosa.batch.processing.StepExecution
 
-sealed interface CameraExposureEvent : CameraCaptureEvent, SequenceStepEvent {
+sealed interface CameraExposureEvent : CameraCaptureEvent {
 
-    override val tasklet: CameraStartCaptureTasklet
+    val stepExecution: StepExecution
 
-    val exposureCount: Int
-
-    val remainingTime: Duration
+    override val jobExecution
+        get() = stepExecution.jobExecution
 }

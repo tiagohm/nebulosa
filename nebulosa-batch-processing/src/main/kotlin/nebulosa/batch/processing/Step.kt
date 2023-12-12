@@ -2,7 +2,7 @@ package nebulosa.batch.processing
 
 interface Step : Stoppable {
 
-    fun execute(jobExecution: JobExecution): StepResult
+    fun execute(stepExecution: StepExecution): StepResult
 
     override fun stop(mayInterruptIfRunning: Boolean) = Unit
 }
