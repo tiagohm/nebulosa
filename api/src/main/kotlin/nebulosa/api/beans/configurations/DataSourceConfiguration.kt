@@ -16,13 +16,13 @@ import javax.sql.DataSource
 @Configuration
 class DataSourceConfiguration {
 
-    @Value("\${spring.datasource.url}") private lateinit var mainDataSourceUrl: String
+    @Value("\${spring.datasource.url}") private lateinit var dataSourceUrl: String
 
+    @Bean
     @Primary
-    @Bean("mainDataSource")
-    fun mainDataSource(): DataSource {
+    fun dataSource(): DataSource {
         val config = HikariConfig()
-        config.jdbcUrl = mainDataSourceUrl
+        config.jdbcUrl = dataSourceUrl
         config.driverClassName = DRIVER_CLASS_NAME
         config.maximumPoolSize = 1
         config.minimumIdle = 1
@@ -32,27 +32,27 @@ class DataSourceConfiguration {
     @Configuration
     @EnableJpaRepositories(
         basePackages = ["nebulosa.api"],
-        entityManagerFactoryRef = "mainEntityManagerFactory",
-        transactionManagerRef = "mainTransactionManager"
+        entityManagerFactoryRef = "entityManagerFactory",
+        transactionManagerRef = "transactionManager"
     )
     class Main {
 
+        @Bean
         @Primary
-        @Bean("mainEntityManagerFactory")
-        fun mainEntityManagerFactory(
+        fun entityManagerFactory(
             builder: EntityManagerFactoryBuilder,
             dataSource: DataSource,
         ) = builder
             .dataSource(dataSource)
             .packages("nebulosa.api")
-            .persistenceUnit("mainPersistenceUnit")
+            .persistenceUnit("persistenceUnit")
             .build()!!
 
+        @Bean
         @Primary
-        @Bean("mainTransactionManager")
-        fun mainTransactionManager(mainEntityManagerFactory: EntityManagerFactory): PlatformTransactionManager {
+        fun transactionManager(entityManagerFactory: EntityManagerFactory): PlatformTransactionManager {
             // Fix "no transactions is in progress": https://stackoverflow.com/a/33397173
-            return JpaTransactionManager(mainEntityManagerFactory)
+            return JpaTransactionManager(entityManagerFactory)
         }
     }
 

@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit
 data class JobExecution(
     val job: Job,
     val context: ExecutionContext,
+    val jobLauncher: JobLauncher,
     val startedAt: LocalDateTime = LocalDateTime.now(),
     var status: BatchStatus = BatchStatus.STARTING,
     var finishedAt: LocalDateTime? = null,

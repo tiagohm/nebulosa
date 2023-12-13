@@ -2,9 +2,8 @@ package nebulosa.api.cameras
 
 import nebulosa.api.guiding.DitherAfterExposureStep
 import nebulosa.api.guiding.WaitForSettleStep
-import nebulosa.batch.processing.SimpleFlowStep
 import nebulosa.batch.processing.SimpleJob
-import nebulosa.batch.processing.Step
+import nebulosa.batch.processing.SimpleSplitStep
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.guiding.Guider
 
@@ -18,27 +17,25 @@ data class CameraCaptureJob(
 
     override val id = "CameraCapture.Job.${System.currentTimeMillis()}"
 
-    override val steps = ArrayList<Step>()
-
     init {
         if (cameraExposureStep is CameraExposureStep) {
             val waitForSettleStep = WaitForSettleStep(guider)
             val ditherStep = DitherAfterExposureStep(request.dither)
             val cameraDelayStep = DelayStep(request.exposureDelay)
-            val delayAndWaitForSettleStep = DelayAndWaitForSettleStep(listOf(cameraDelayStep, waitForSettleStep))
+            val delayAndWaitForSettleStep = SimpleSplitStep(cameraDelayStep, waitForSettleStep)
 
             cameraDelayStep.registerListener(cameraExposureStep)
 
-            steps.add(waitForSettleStep)
-            steps.add(cameraExposureStep)
+            add(waitForSettleStep)
+            add(cameraExposureStep)
 
             repeat(request.exposureAmount - 1) {
-                steps.add(delayAndWaitForSettleStep)
-                steps.add(cameraExposureStep)
-                steps.add(ditherStep)
+                add(delayAndWaitForSettleStep)
+                add(cameraExposureStep)
+                add(ditherStep)
             }
         } else {
-            steps.add(cameraExposureStep)
+            add(cameraExposureStep)
         }
     }
 
@@ -49,6 +46,4 @@ data class CameraCaptureJob(
     fun unregisterListener(listener: CameraCaptureListener) {
         cameraExposureStep.unregisterListener(listener)
     }
-
-    data class DelayAndWaitForSettleStep(override val steps: Collection<Step>) : SimpleFlowStep()
 }

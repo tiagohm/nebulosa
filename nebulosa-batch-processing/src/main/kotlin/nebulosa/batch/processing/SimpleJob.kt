@@ -1,22 +1,26 @@
 package nebulosa.batch.processing
 
-abstract class SimpleJob : Job {
+abstract class SimpleJob : Job, ArrayList<Step> {
+
+    constructor(initialCapacity: Int = 4) : super(initialCapacity)
+
+    constructor(steps: Collection<Step>) : super(steps)
+
+    constructor(vararg steps: Step) : this(steps.toList())
 
     @Volatile private var position = 0
 
-    protected abstract val steps: List<Step>
-
     override fun hasNext(jobExecution: JobExecution): Boolean {
-        return position < steps.size
+        return position < size
     }
 
     override fun next(jobExecution: JobExecution): Step {
-        return steps[position++]
+        return this[position++]
     }
 
     override fun stop(mayInterruptIfRunning: Boolean) {
-        if (position in steps.indices) {
-            steps[position].stop(mayInterruptIfRunning)
+        if (position in indices) {
+            this[position].stop(mayInterruptIfRunning)
         }
     }
 }

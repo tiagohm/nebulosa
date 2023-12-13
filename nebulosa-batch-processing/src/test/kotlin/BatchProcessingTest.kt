@@ -26,12 +26,26 @@ class BatchProcessingTest : StringSpec() {
             jobExecution.context["VALUE"] shouldBe 2.0
             (System.currentTimeMillis() - startedAt) shouldBeInRange (2000L..3000L)
         }
+        "split" {
+            val startedAt = System.currentTimeMillis()
+            val jobExecution = launcher.launch(MathJob(listOf(SplitSumStep())))
+            jobExecution.waitForCompletion()
+            jobExecution.context["VALUE"] shouldBe N.toDouble()
+            (System.currentTimeMillis() - startedAt) shouldBeInRange (1000L..2000L)
+        }
         "flow" {
             val startedAt = System.currentTimeMillis()
-            val jobExecution = launcher.launch(MathJob(listOf(MultipleSumStep())))
+            val jobExecution = launcher.launch(MathJob(listOf(FlowSumStep())))
             jobExecution.waitForCompletion()
-            jobExecution.context["VALUE"] shouldBe NUMBER_OF_PROCESSORS.toDouble()
-            (System.currentTimeMillis() - startedAt) shouldBeInRange (1000L..2000L)
+            jobExecution.context["VALUE"] shouldBe N.toDouble()
+            (System.currentTimeMillis() - startedAt) shouldBeInRange (N * 1000L..(N + 1) * 1000L)
+        }
+        "split flow" {
+            val startedAt = System.currentTimeMillis()
+            val jobExecution = launcher.launch(MathJob(listOf(SimpleSplitStep(FlowSumStep(), FlowSumStep()))))
+            jobExecution.waitForCompletion()
+            jobExecution.context["VALUE"] shouldBe (N * 2).toDouble()
+            (System.currentTimeMillis() - startedAt) shouldBeInRange (N * 1000L..(N + 1) * 1000L)
         }
         "stop" {
             val startedAt = System.currentTimeMillis()
@@ -51,10 +65,10 @@ class BatchProcessingTest : StringSpec() {
         }
     }
 
-    private data class MathJob(
-        override val steps: List<Step>,
+    private class MathJob(
+        steps: List<Step>,
         private val initialValue: Double = 0.0,
-    ) : SimpleJob() {
+    ) : SimpleJob(steps) {
 
         override val id = "Job.Math"
 
@@ -106,14 +120,27 @@ class BatchProcessingTest : StringSpec() {
         }
     }
 
-    private class MultipleSumStep : SimpleFlowStep() {
+    private class SplitSumStep : SimpleSplitStep() {
 
-        override val steps = (0 until NUMBER_OF_PROCESSORS).map { SumStep() }
+        init {
+            repeat(N) {
+                add(SumStep())
+            }
+        }
+    }
+
+    private class FlowSumStep : SimpleFlowStep() {
+
+        init {
+            repeat(N) {
+                add(SumStep())
+            }
+        }
     }
 
     companion object {
 
         @JvmStatic private val LOG = loggerFor<BatchProcessingTest>()
-        @JvmStatic private val NUMBER_OF_PROCESSORS = Runtime.getRuntime().availableProcessors()
+        @JvmStatic private val N = Runtime.getRuntime().availableProcessors()
     }
 }
