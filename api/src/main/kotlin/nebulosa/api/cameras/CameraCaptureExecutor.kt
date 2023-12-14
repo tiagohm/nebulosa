@@ -1,6 +1,6 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.services.MessageService
+import nebulosa.api.messages.MessageService
 import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.JobLauncher
 import nebulosa.batch.processing.StepExecution

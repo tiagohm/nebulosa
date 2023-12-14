@@ -1,6 +1,6 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.services.DeviceMessageEvent
+import nebulosa.api.messages.DeviceMessageEvent
 import nebulosa.indi.device.camera.Camera
 
 data class CameraMessageEvent(

@@ -1,6 +1,6 @@
 package nebulosa.batch.processing
 
-open class SimpleSplitStep : SplitStep, ArrayList<Step> {
+open class SimpleSplitStep : SimpleFlowStep, SplitStep {
 
     constructor(initialCapacity: Int = 4) : super(initialCapacity)
 

@@ -1,6 +1,6 @@
 package nebulosa.api.alignment.polar.darv
 
-import nebulosa.api.services.MessageEvent
+import nebulosa.api.messages.MessageEvent
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput

@@ -1,6 +1,6 @@
-package nebulosa.api.notification
+package nebulosa.api.notifications
 
-import nebulosa.api.services.MessageEvent
+import nebulosa.api.messages.MessageEvent
 
 interface NotificationEvent : MessageEvent {
 

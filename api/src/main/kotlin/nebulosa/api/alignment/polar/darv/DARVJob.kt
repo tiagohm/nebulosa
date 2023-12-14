@@ -8,7 +8,7 @@ import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.guiding.GuidePulseListener
 import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.guiding.GuidePulseStep
-import nebulosa.api.services.MessageEvent
+import nebulosa.api.messages.MessageEvent
 import nebulosa.batch.processing.*
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.batch.processing.delay.DelayStepListener

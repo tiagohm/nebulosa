@@ -496,11 +496,6 @@ export interface DARVEvent extends MessageEvent {
     direction?: GuideDirection
 }
 
-export interface DARVInitialPauseElapsed extends DARVEvent {
-    pauseTime: number
-    state: 'INITIAL_PAUSE'
-}
-
 export interface CoordinateInterpolation {
     ma: number[]
     md: number[]

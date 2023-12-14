@@ -1,8 +1,8 @@
 package nebulosa.api.guiding
 
 import jakarta.annotation.PreDestroy
+import nebulosa.api.messages.MessageService
 import nebulosa.api.preferences.PreferenceService
-import nebulosa.api.services.MessageService
 import nebulosa.guiding.GuideStar
 import nebulosa.guiding.GuideState
 import nebulosa.guiding.Guider

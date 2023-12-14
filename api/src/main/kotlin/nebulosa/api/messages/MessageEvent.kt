@@ -1,4 +1,4 @@
-package nebulosa.api.services
+package nebulosa.api.messages
 
 interface MessageEvent {
 

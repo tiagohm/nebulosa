@@ -1,6 +1,6 @@
 package nebulosa.api.wheels
 
-import nebulosa.api.services.DeviceMessageEvent
+import nebulosa.api.messages.DeviceMessageEvent
 import nebulosa.indi.device.filterwheel.FilterWheel
 
 data class WheelMessageEvent(
