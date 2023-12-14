@@ -4,5 +4,5 @@ import nebulosa.batch.processing.StepExecution
 
 fun interface GuidePulseListener {
 
-    fun onGuidePulseElapsed(stepExecution: StepExecution)
+    fun onGuidePulseElapsed(step: GuidePulseStep, stepExecution: StepExecution)
 }

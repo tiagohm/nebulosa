@@ -44,26 +44,23 @@ class CameraCaptureExecutor(
     }
 
     override fun onCaptureStarted(step: CameraExposureStep, jobExecution: JobExecution) {
-        messageService.sendMessage(CameraCaptureStarted(step.request.camera!!, jobExecution))
+        // TODO: messageService.sendMessage(CameraCaptureStarted(step.request.camera!!, jobExecution))
     }
 
-    override fun onExposureStarted(stepExecution: StepExecution) {
-        val step = stepExecution.step as CameraExposureStep
-        messageService.sendMessage(CameraExposureStarted(step.request.camera!!, stepExecution))
+    override fun onExposureStarted(step: CameraExposureStep, stepExecution: StepExecution) {
+        // TODO: messageService.sendMessage(CameraExposureStarted(step.request.camera!!, stepExecution))
     }
 
-    override fun onExposureElapsed(stepExecution: StepExecution) {
-        val step = stepExecution.step as CameraExposureStep
-        messageService.sendMessage(CameraExposureElapsed(step.request.camera!!, stepExecution))
+    override fun onExposureElapsed(step: CameraExposureStep, stepExecution: StepExecution) {
+        // TODO: messageService.sendMessage(CameraExposureElapsed(step.request.camera!!, stepExecution))
     }
 
-    override fun onExposureFinished(stepExecution: StepExecution) {
-        val step = stepExecution.step as CameraExposureStep
-        messageService.sendMessage(CameraExposureFinished(step.request.camera!!, stepExecution))
+    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution) {
+        // TODO: messageService.sendMessage(CameraExposureFinished(step.request.camera!!, stepExecution))
     }
 
     override fun onCaptureFinished(step: CameraExposureStep, jobExecution: JobExecution) {
-        messageService.sendMessage(CameraCaptureFinished(step.request.camera!!, jobExecution))
+        // TODO: messageService.sendMessage(CameraCaptureFinished(step.request.camera!!, jobExecution))
     }
 
     // TODO: CameraCaptureIsWaiting

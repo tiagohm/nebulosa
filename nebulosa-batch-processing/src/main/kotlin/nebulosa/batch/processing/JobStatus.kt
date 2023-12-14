@@ -1,6 +1,6 @@
 package nebulosa.batch.processing
 
-enum class BatchStatus {
+enum class JobStatus {
     STARTING,
     STARTED,
     STOPPING,

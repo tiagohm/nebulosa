@@ -8,9 +8,9 @@ import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
 import {
     ApiEventType, Camera, CameraCaptureElapsed, CameraCaptureFinished, CameraCaptureIsWaiting, CameraCaptureStarted,
-    CameraExposureElapsed, CameraExposureFinished, CameraExposureStarted, DARVPolarAlignmentEvent, DARVPolarAlignmentGuidePulseElapsed,
-    DARVPolarAlignmentInitialPauseElapsed, DeviceMessageEvent, FilterWheel, Focuser, GuideOutput, Guider,
-    GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Location, Mount, NotificationEvent, NotificationEventType, OpenDirectory, OpenFile
+    CameraExposureElapsed, CameraExposureFinished, CameraExposureStarted, DARVEvent, DeviceMessageEvent, FilterWheel,
+    Focuser, GuideOutput, Guider, GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Location, Mount, NotificationEvent,
+    NotificationEventType, OpenDirectory, OpenFile
 } from '../types'
 import { ApiService } from './api.service'
 
@@ -45,9 +45,7 @@ type EventMappedType = {
     'GUIDER_UPDATED': GuiderMessageEvent<Guider>
     'GUIDER_STEPPED': GuiderMessageEvent<HistoryStep>
     'GUIDER_MESSAGE_RECEIVED': GuiderMessageEvent<string>
-    'DARV_POLAR_ALIGNMENT_STARTED': DARVPolarAlignmentEvent
-    'DARV_POLAR_ALIGNMENT_FINISHED': DARVPolarAlignmentEvent
-    'DARV_POLAR_ALIGNMENT_UPDATED': DARVPolarAlignmentInitialPauseElapsed | DARVPolarAlignmentGuidePulseElapsed
+    'DARV_POLAR_ALIGNMENT_ELAPSED': DARVEvent
     'DATA_CHANGED': any
     'LOCATION_CHANGED': Location
     'SKY_ATLAS_UPDATE_FINISHED': NotificationEvent

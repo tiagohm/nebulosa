@@ -4,23 +4,17 @@ interface JobLauncher : Collection<JobExecution>, Stoppable {
 
     val stepHandler: StepHandler
 
-    val stepInterceptors: Collection<StepInterceptor>
+    fun registerJobExecutionListener(listener: JobExecutionListener): Boolean
 
-    fun registerJobListener(listener: JobExecutionListener)
+    fun unregisterJobExecutionListener(listener: JobExecutionListener): Boolean
 
-    fun unregisterJobListener(listener: JobExecutionListener)
+    fun registerStepExecutionListener(listener: StepExecutionListener): Boolean
 
-    fun registerStepListener(listener: StepExecutionListener)
+    fun unregisterStepExecutionListener(listener: StepExecutionListener): Boolean
 
-    fun unregisterStepListener(listener: StepExecutionListener)
+    fun registerStepInterceptor(interceptor: StepInterceptor): Boolean
 
-    fun registerStepInterceptor(interceptor: StepInterceptor)
-
-    fun unregisterStepInterceptor(interceptor: StepInterceptor)
-
-    fun fireBeforeStep(stepExecution: StepExecution)
-
-    fun fireAfterStep(stepExecution: StepExecution)
+    fun unregisterStepInterceptor(interceptor: StepInterceptor): Boolean
 
     fun launch(job: Job, executionContext: ExecutionContext? = null): JobExecution
 }

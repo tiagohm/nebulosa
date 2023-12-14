@@ -1,11 +1,19 @@
 package nebulosa.batch.processing
 
-import java.time.LocalDateTime
+import nebulosa.log.loggerFor
 
-object DefaultStepHandler : StepHandler, StepInterceptor {
+object DefaultStepHandler : StepHandler {
+
+    @JvmStatic private val LOG = loggerFor<DefaultStepHandler>()
 
     override fun handle(step: Step, stepExecution: StepExecution): StepResult {
         val jobLauncher = stepExecution.jobExecution.jobLauncher
+
+        if (step is JobExecutionListener) {
+            if (jobLauncher.registerJobExecutionListener(step)) {
+                step.beforeJob(stepExecution.jobExecution)
+            }
+        }
 
         when (step) {
             is SplitStep -> {
@@ -19,28 +27,19 @@ object DefaultStepHandler : StepHandler, StepInterceptor {
                 step.afterStep(stepExecution)
             }
             else -> {
-                val interceptors = ArrayList<StepInterceptor>(jobLauncher.stepInterceptors.size + 1)
-                interceptors.addAll(jobLauncher.stepInterceptors)
-                interceptors.add(this)
-
-                val chain = StepInterceptorChain(interceptors, step, stepExecution)
+                val chain = StepInterceptorChain(stepExecution.jobExecution.stepInterceptors, step, stepExecution)
                 var status: RepeatStatus
 
+                LOG.info("step started. step={}, context={}", step, stepExecution.context)
+
                 do {
-                    jobLauncher.fireBeforeStep(stepExecution)
-                    val result = chain.proceed()
-                    jobLauncher.fireAfterStep(stepExecution)
-                    status = result.get()
+                    status = chain.proceed().get()
                 } while (status == RepeatStatus.CONTINUABLE)
 
-                stepExecution.finishedAt = LocalDateTime.now()
+                LOG.info("step finished. step={}, context={}", step, stepExecution.context)
             }
         }
 
         return StepResult.FINISHED
-    }
-
-    override fun intercept(chain: StepChain): StepResult {
-        return chain.step.execute(chain.stepExecution)
     }
 }

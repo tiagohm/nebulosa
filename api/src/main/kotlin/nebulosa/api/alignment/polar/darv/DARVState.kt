@@ -1,6 +1,6 @@
 package nebulosa.api.alignment.polar.darv
 
-enum class DARVPolarAlignmentState {
+enum class DARVState {
     IDLE,
     INITIAL_PAUSE,
     FORWARD,

@@ -7,7 +7,7 @@ sealed interface CameraStartCaptureStep : Step, JobExecutionListener {
 
     val request: CameraStartCaptureRequest
 
-    fun registerListener(listener: CameraCaptureListener)
+    fun registerCameraCaptureListener(listener: CameraCaptureListener): Boolean
 
-    fun unregisterListener(listener: CameraCaptureListener)
+    fun unregisterCameraCaptureListener(listener: CameraCaptureListener): Boolean
 }

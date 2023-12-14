@@ -487,22 +487,18 @@ export interface Satellite {
     groups: SatelliteGroupType[]
 }
 
-export interface DARVPolarAlignmentEvent extends MessageEvent {
+export interface DARVEvent extends MessageEvent {
     camera: Camera
     guideOutput: GuideOutput
     remainingTime: number
     progress: number
-    state: DARVPolarAlignmentState
+    state: DARVState
+    direction?: GuideDirection
 }
 
-export interface DARVPolarAlignmentInitialPauseElapsed extends DARVPolarAlignmentEvent {
+export interface DARVInitialPauseElapsed extends DARVEvent {
     pauseTime: number
     state: 'INITIAL_PAUSE'
-}
-
-export interface DARVPolarAlignmentGuidePulseElapsed extends DARVPolarAlignmentEvent {
-    direction: GuideDirection
-    state: 'FORWARD' | 'BACKWARD'
 }
 
 export interface CoordinateInterpolation {
@@ -783,7 +779,7 @@ export const API_EVENT_TYPES = [
     'GUIDER_CONNECTED', 'GUIDER_DISCONNECTED', 'GUIDER_UPDATED', 'GUIDER_STEPPED',
     'GUIDER_MESSAGE_RECEIVED',
     // Polar Alignment.
-    'DARV_POLAR_ALIGNMENT_STARTED', 'DARV_POLAR_ALIGNMENT_FINISHED', 'DARV_POLAR_ALIGNMENT_UPDATED',
+    'DARV_POLAR_ALIGNMENT_ELAPSED',
 ] as const
 
 export type ApiEventType = (typeof API_EVENT_TYPES)[number]
@@ -890,7 +886,7 @@ export type GuideState = (typeof GUIDE_STATES)[number]
 
 export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
 
-export type DARVPolarAlignmentState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'
+export type DARVState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'
 
 export type GuiderPlotMode = 'RA/DEC' | 'DX/DY'
 

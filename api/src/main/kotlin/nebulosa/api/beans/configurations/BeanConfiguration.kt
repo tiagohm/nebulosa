@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.batch.processing.AsyncJobLauncher
-import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.json.PathDeserializer
 import nebulosa.common.json.PathSerializer
 import nebulosa.guiding.Guider
@@ -31,7 +30,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.nio.file.Path
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 
@@ -102,8 +100,7 @@ class BeanConfiguration {
     @Bean
     fun threadPoolTaskExecutor(): ThreadPoolTaskExecutor {
         val taskExecutor = ThreadPoolTaskExecutor()
-        taskExecutor.corePoolSize = 8
-        taskExecutor.maxPoolSize = 32
+        taskExecutor.corePoolSize = 32
         taskExecutor.initialize()
         return taskExecutor
     }
@@ -125,7 +122,7 @@ class BeanConfiguration {
     fun phd2Guider(phd2Client: PHD2Client): Guider = PHD2Guider(phd2Client)
 
     @Bean
-    fun asyncJobLauncher() = AsyncJobLauncher(Executors.newCachedThreadPool(DaemonThreadFactory))
+    fun asyncJobLauncher(threadPoolTaskExecutor: ThreadPoolTaskExecutor) = AsyncJobLauncher(threadPoolTaskExecutor)
 
     @Bean
     fun webMvcConfigurer(

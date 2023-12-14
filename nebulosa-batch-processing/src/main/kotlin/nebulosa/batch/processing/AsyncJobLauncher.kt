@@ -1,50 +1,39 @@
 package nebulosa.batch.processing
 
 import java.time.LocalDateTime
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executor
 
-open class AsyncJobLauncher(private val executor: ExecutorService) : JobLauncher {
+open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepInterceptor {
 
     private val jobListeners = HashSet<JobExecutionListener>()
     private val stepListeners = HashSet<StepExecutionListener>()
-    private val mStepInterceptors = HashSet<StepInterceptor>()
+    private val stepInterceptors = HashSet<StepInterceptor>()
     private val jobs = LinkedHashMap<String, JobExecution>()
 
-    override val stepHandler: StepHandler = DefaultStepHandler
+    override var stepHandler: StepHandler = DefaultStepHandler
 
-    override val stepInterceptors: Collection<StepInterceptor>
-        get() = mStepInterceptors
-
-    override fun registerJobListener(listener: JobExecutionListener) {
-        jobListeners.add(listener)
+    override fun registerJobExecutionListener(listener: JobExecutionListener): Boolean {
+        return jobListeners.add(listener)
     }
 
-    override fun unregisterJobListener(listener: JobExecutionListener) {
-        jobListeners.remove(listener)
+    override fun unregisterJobExecutionListener(listener: JobExecutionListener): Boolean {
+        return jobListeners.remove(listener)
     }
 
-    override fun registerStepListener(listener: StepExecutionListener) {
-        stepListeners.add(listener)
+    override fun registerStepExecutionListener(listener: StepExecutionListener): Boolean {
+        return stepListeners.add(listener)
     }
 
-    override fun unregisterStepListener(listener: StepExecutionListener) {
-        stepListeners.remove(listener)
+    override fun unregisterStepExecutionListener(listener: StepExecutionListener): Boolean {
+        return stepListeners.remove(listener)
     }
 
-    override fun registerStepInterceptor(interceptor: StepInterceptor) {
-        mStepInterceptors.add(interceptor)
+    override fun registerStepInterceptor(interceptor: StepInterceptor): Boolean {
+        return stepInterceptors.add(interceptor)
     }
 
-    override fun unregisterStepInterceptor(interceptor: StepInterceptor) {
-        mStepInterceptors.remove(interceptor)
-    }
-
-    override fun fireBeforeStep(stepExecution: StepExecution) {
-        stepListeners.forEach { it.beforeStep(stepExecution) }
-    }
-
-    override fun fireAfterStep(stepExecution: StepExecution) {
-        stepListeners.forEach { it.afterStep(stepExecution) }
+    override fun unregisterStepInterceptor(interceptor: StepInterceptor): Boolean {
+        return stepInterceptors.remove(interceptor)
     }
 
     override val size
@@ -76,35 +65,30 @@ open class AsyncJobLauncher(private val executor: ExecutorService) : JobLauncher
             }
         }
 
-        jobExecution = JobExecution(job, executionContext ?: ExecutionContext(), this)
+        val interceptors = ArrayList<StepInterceptor>(stepInterceptors.size + 1)
+        interceptors.addAll(stepInterceptors)
+        interceptors.add(this)
+
+        jobExecution = JobExecution(job, executionContext ?: ExecutionContext(), this, interceptors)
 
         jobs[job.id] = jobExecution
 
-        executor.submit {
-            jobExecution.status = BatchStatus.STARTED
+        executor.execute {
+            jobExecution.status = JobStatus.STARTED
 
             job.beforeJob(jobExecution)
             jobListeners.forEach { it.beforeJob(jobExecution) }
 
-            val stepJobListeners = HashSet<JobExecutionListener>()
-
             try {
                 while (jobExecution.canContinue && job.hasNext(jobExecution)) {
                     val step = job.next(jobExecution)
-
-                    if (step is JobExecutionListener) {
-                        if (stepJobListeners.add(step)) {
-                            step.beforeJob(jobExecution)
-                        }
-                    }
-
                     stepHandler.handle(step, StepExecution(step, jobExecution))
                 }
 
-                jobExecution.status = if (jobExecution.isStopping) BatchStatus.STOPPED else BatchStatus.COMPLETED
+                jobExecution.status = if (jobExecution.isStopping) JobStatus.STOPPED else JobStatus.COMPLETED
                 jobExecution.complete()
             } catch (e: Throwable) {
-                jobExecution.status = BatchStatus.FAILED
+                jobExecution.status = JobStatus.FAILED
                 jobExecution.completeExceptionally(e)
             } finally {
                 jobExecution.finishedAt = LocalDateTime.now()
@@ -112,7 +96,6 @@ open class AsyncJobLauncher(private val executor: ExecutorService) : JobLauncher
 
             job.afterJob(jobExecution)
             jobListeners.forEach { it.afterJob(jobExecution) }
-            stepJobListeners.forEach { it.afterJob(jobExecution) }
         }
 
         return jobExecution
@@ -121,4 +104,13 @@ open class AsyncJobLauncher(private val executor: ExecutorService) : JobLauncher
     override fun stop(mayInterruptIfRunning: Boolean) {
         jobs.forEach { it.value.stop(mayInterruptIfRunning) }
     }
+
+    override fun intercept(chain: StepChain): StepResult {
+        stepListeners.forEach { it.beforeStep(chain.stepExecution) }
+        val result = chain.step.execute(chain.stepExecution)
+        stepListeners.forEach { it.afterStep(chain.stepExecution) }
+        return result
+    }
+
+    override fun toString() = "AsyncJobLauncher"
 }

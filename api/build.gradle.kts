@@ -32,7 +32,6 @@ dependencies {
     implementation(libs.flyway)
     implementation(libs.okhttp)
     implementation(libs.oshi)
-    implementation(libs.rx)
     implementation(libs.sqlite)
     implementation(libs.hikari)
     implementation("org.springframework.boot:spring-boot-starter")

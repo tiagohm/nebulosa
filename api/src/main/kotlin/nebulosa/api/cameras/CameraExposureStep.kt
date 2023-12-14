@@ -3,8 +3,8 @@ package nebulosa.api.cameras
 import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
-import nebulosa.batch.processing.delay.DelayListener
 import nebulosa.batch.processing.delay.DelayStep
+import nebulosa.batch.processing.delay.DelayStepListener
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
@@ -20,7 +20,9 @@ import java.time.format.DateTimeFormatter
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.outputStream
 
-data class CameraExposureStep(override val request: CameraStartCaptureRequest) : CameraStartCaptureStep, DelayListener {
+data class CameraExposureStep(override val request: CameraStartCaptureRequest) : CameraStartCaptureStep, DelayStepListener {
+
+    @JvmField val camera = requireNotNull(request.camera)
 
     private val latch = CountUpDownLatch()
     private val listeners = HashSet<CameraCaptureListener>()
@@ -28,21 +30,21 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     @Volatile private var aborted = false
     @Volatile private var exposureCount = 0
     @Volatile private var captureElapsedTime = Duration.ZERO!!
-    private lateinit var stepExecution: StepExecution
 
-    private val camera = requireNotNull(request.camera)
     private val exposureTime = request.exposureTime
     private val exposureDelay = request.exposureDelay
 
     private val estimatedTime = if (request.isLoop) Duration.ZERO
     else Duration.ofNanos(exposureTime.toNanos() * request.exposureAmount + exposureDelay.toNanos() * (request.exposureAmount - 1))
 
-    override fun registerListener(listener: CameraCaptureListener) {
-        listeners.add(listener)
+    private lateinit var stepExecution: StepExecution
+
+    override fun registerCameraCaptureListener(listener: CameraCaptureListener): Boolean {
+        return listeners.add(listener)
     }
 
-    override fun unregisterListener(listener: CameraCaptureListener) {
-        listeners.remove(listener)
+    override fun unregisterCameraCaptureListener(listener: CameraCaptureListener): Boolean {
+        return listeners.remove(listener)
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -97,8 +99,8 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
         latch.reset()
     }
 
-    override fun onDelayElapsed(stepExecution: StepExecution) {
-        val waitTime = stepExecution.jobExecution.context[DelayStep.WAIT_TIME] as Duration
+    override fun onDelayElapsed(step: DelayStep, stepExecution: StepExecution) {
+        val waitTime = stepExecution.context[DelayStep.WAIT_TIME] as Duration
         captureElapsedTime += waitTime
         onCameraExposureElapsed(Duration.ZERO, Duration.ZERO, 1.0)
     }
@@ -108,9 +110,9 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
             synchronized(camera) {
                 latch.countUp()
 
-                stepExecution.jobExecution.context[EXPOSURE_AMOUNT] = ++exposureCount
+                stepExecution.context[EXPOSURE_AMOUNT] = ++exposureCount
 
-                listeners.forEach { it.onExposureStarted(stepExecution) }
+                listeners.forEach { it.onExposureStarted(this, stepExecution) }
 
                 if (request.width > 0 && request.height > 0) {
                     camera.frame(request.x, request.y, request.width, request.height)
@@ -148,9 +150,9 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
             savePath.createParentDirectories()
             stream.transferAndClose(savePath.outputStream())
 
-            stepExecution.jobExecution.context[SAVE_PATH] = savePath
+            stepExecution.context[SAVE_PATH] = savePath
 
-            listeners.forEach { it.onExposureFinished(stepExecution) }
+            listeners.forEach { it.onExposureFinished(this, stepExecution) }
         } catch (e: Throwable) {
             LOG.error("failed to save FITS", e)
             aborted = true
@@ -167,14 +169,14 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
             captureProgress = (estimatedTime - captureRemainingTime).toNanos().toDouble() / estimatedTime.toNanos()
         }
 
-        stepExecution.jobExecution.context[EXPOSURE_ELAPSED_TIME] = elapsedTime
-        stepExecution.jobExecution.context[EXPOSURE_REMAINING_TIME] = remainingTime
-        stepExecution.jobExecution.context[EXPOSURE_PROGRESS] = progress
-        stepExecution.jobExecution.context[CAPTURE_ELAPSED_TIME] = captureElapsedTime
-        stepExecution.jobExecution.context[CAPTURE_REMAINING_TIME] = captureRemainingTime
-        stepExecution.jobExecution.context[CAPTURE_PROGRESS] = captureProgress
+        stepExecution.context[EXPOSURE_ELAPSED_TIME] = elapsedTime
+        stepExecution.context[EXPOSURE_REMAINING_TIME] = remainingTime
+        stepExecution.context[EXPOSURE_PROGRESS] = progress
+        stepExecution.context[CAPTURE_ELAPSED_TIME] = captureElapsedTime
+        stepExecution.context[CAPTURE_REMAINING_TIME] = captureRemainingTime
+        stepExecution.context[CAPTURE_PROGRESS] = captureProgress
 
-        listeners.forEach { it.onExposureElapsed(stepExecution) }
+        listeners.forEach { it.onExposureElapsed(this, stepExecution) }
     }
 
     companion object {

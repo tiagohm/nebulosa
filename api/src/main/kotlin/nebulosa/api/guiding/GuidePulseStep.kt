@@ -3,26 +3,26 @@ package nebulosa.api.guiding
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
-import nebulosa.batch.processing.delay.DelayListener
 import nebulosa.batch.processing.delay.DelayStep
+import nebulosa.batch.processing.delay.DelayStepListener
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.guide.GuideOutput
 import java.time.Duration
 
-data class GuidePulseStep(val request: GuidePulseRequest) : Step, DelayListener {
+data class GuidePulseStep(@JvmField val request: GuidePulseRequest) : Step, DelayStepListener {
 
     private val listeners = HashSet<GuidePulseListener>()
     private val delayStep = DelayStep(request.duration)
 
     init {
-        delayStep.registerListener(this)
+        delayStep.registerDelayStepListener(this)
     }
 
-    fun registerListener(listener: GuidePulseListener) {
+    fun registerGuidePulseListener(listener: GuidePulseListener) {
         listeners.add(listener)
     }
 
-    fun unregisterListener(listener: GuidePulseListener) {
+    fun unregisterGuidePulseListener(listener: GuidePulseListener) {
         listeners.remove(listener)
     }
 
@@ -44,10 +44,8 @@ data class GuidePulseStep(val request: GuidePulseRequest) : Step, DelayListener 
         delayStep.stop()
     }
 
-    @Suppress("NAME_SHADOWING")
-    override fun onDelayElapsed(stepExecution: StepExecution) {
-        val stepExecution = stepExecution.copy(step = this)
-        listeners.forEach { it.onGuidePulseElapsed(stepExecution) }
+    override fun onDelayElapsed(step: DelayStep, stepExecution: StepExecution) {
+        listeners.forEach { it.onGuidePulseElapsed(this, stepExecution) }
     }
 
     companion object {

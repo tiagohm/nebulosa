@@ -8,7 +8,7 @@ import org.hibernate.validator.constraints.time.DurationMax
 import org.hibernate.validator.constraints.time.DurationMin
 import java.time.Duration
 
-data class DARVStart(
+data class DARVStartRequest(
     @JsonIgnore val camera: Camera? = null,
     @JsonIgnore val guideOutput: GuideOutput? = null,
     @field:DurationMin(seconds = 1) @field:DurationMax(seconds = 600) val exposureTime: Duration = Duration.ZERO,

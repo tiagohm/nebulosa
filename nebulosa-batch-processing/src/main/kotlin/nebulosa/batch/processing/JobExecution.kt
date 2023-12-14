@@ -9,27 +9,31 @@ data class JobExecution(
     val job: Job,
     val context: ExecutionContext,
     val jobLauncher: JobLauncher,
+    val stepInterceptors: List<StepInterceptor>,
     val startedAt: LocalDateTime = LocalDateTime.now(),
-    var status: BatchStatus = BatchStatus.STARTING,
+    var status: JobStatus = JobStatus.STARTING,
     var finishedAt: LocalDateTime? = null,
 ) : Stoppable {
 
     private val completable = CompletableFuture<Boolean>()
 
-    val canContinue
-        get() = status == BatchStatus.STARTED
+    inline val jobId
+        get() = job.id
 
-    val isStopping
-        get() = status == BatchStatus.STOPPING
+    inline val canContinue
+        get() = status == JobStatus.STARTED
 
-    val isStopped
-        get() = status == BatchStatus.STOPPED
+    inline val isStopping
+        get() = status == JobStatus.STOPPING
 
-    val isCompleted
-        get() = status == BatchStatus.COMPLETED
+    inline val isStopped
+        get() = status == JobStatus.STOPPED
 
-    val isFailed
-        get() = status == BatchStatus.FAILED
+    inline val isCompleted
+        get() = status == JobStatus.COMPLETED
+
+    inline val isFailed
+        get() = status == JobStatus.FAILED
 
     val isDone
         get() = isCompleted || isFailed || isStopped
@@ -54,7 +58,7 @@ data class JobExecution(
 
     override fun stop(mayInterruptIfRunning: Boolean) {
         if (!isDone) {
-            status = BatchStatus.STOPPING
+            status = JobStatus.STOPPING
             job.stop(mayInterruptIfRunning)
         }
     }

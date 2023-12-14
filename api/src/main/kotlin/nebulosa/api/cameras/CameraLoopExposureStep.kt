@@ -13,15 +13,15 @@ data class CameraLoopExposureStep(
     private val delayStep = DelayStep(request.exposureDelay)
 
     init {
-        delayStep.registerListener(cameraExposureStep)
+        delayStep.registerDelayStepListener(cameraExposureStep)
     }
 
-    override fun registerListener(listener: CameraCaptureListener) {
-        cameraExposureStep.registerListener(listener)
+    override fun registerCameraCaptureListener(listener: CameraCaptureListener): Boolean {
+        return cameraExposureStep.registerCameraCaptureListener(listener)
     }
 
-    override fun unregisterListener(listener: CameraCaptureListener) {
-        cameraExposureStep.unregisterListener(listener)
+    override fun unregisterCameraCaptureListener(listener: CameraCaptureListener): Boolean {
+        return cameraExposureStep.unregisterCameraCaptureListener(listener)
     }
 
     override fun execute(stepExecution: StepExecution): StepResult {

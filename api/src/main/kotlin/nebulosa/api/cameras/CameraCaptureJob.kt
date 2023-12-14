@@ -24,7 +24,7 @@ data class CameraCaptureJob(
             val cameraDelayStep = DelayStep(request.exposureDelay)
             val delayAndWaitForSettleStep = SimpleSplitStep(cameraDelayStep, waitForSettleStep)
 
-            cameraDelayStep.registerListener(cameraExposureStep)
+            cameraDelayStep.registerDelayStepListener(cameraExposureStep)
 
             add(waitForSettleStep)
             add(cameraExposureStep)
@@ -40,10 +40,10 @@ data class CameraCaptureJob(
     }
 
     fun registerListener(listener: CameraCaptureListener) {
-        cameraExposureStep.registerListener(listener)
+        cameraExposureStep.registerCameraCaptureListener(listener)
     }
 
     fun unregisterListener(listener: CameraCaptureListener) {
-        cameraExposureStep.unregisterListener(listener)
+        cameraExposureStep.unregisterCameraCaptureListener(listener)
     }
 }

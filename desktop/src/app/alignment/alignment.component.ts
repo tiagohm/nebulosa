@@ -2,7 +2,7 @@ import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angu
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Camera, DARVPolarAlignmentState, GuideDirection, GuideOutput, Hemisphere, Union } from '../../shared/types'
+import { Camera, DARVState, GuideDirection, GuideOutput, Hemisphere, Union } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -26,12 +26,9 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     readonly darvHemispheres: Hemisphere[] = ['NORTHERN', 'SOUTHERN']
     darvHemisphere: Hemisphere = 'NORTHERN'
     darvDirection?: GuideDirection
-    darvStatus: Union<DARVPolarAlignmentState, 'IDLE'> = 'IDLE'
-
-    readonly darvCapture = {
-        remainingTime: 0,
-        progress: 0,
-    }
+    darvStatus: Union<DARVState, 'IDLE'> = 'IDLE'
+    darvRemainingTime = 0
+    darvProgress = 0
 
     constructor(
         app: AppComponent,
@@ -73,44 +70,18 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DARV_POLAR_ALIGNMENT_STARTED', event => {
-            if (event.camera.name === this.camera?.name &&
-                event.guideOutput.name === this.guideOutput?.name) {
-                ngZone.run(() => {
-                    this.darvInProgress = true
-                })
-            }
-        })
-
-        electron.on('DARV_POLAR_ALIGNMENT_FINISHED', event => {
-            if (event.camera.name === this.camera?.name &&
-                event.guideOutput.name === this.guideOutput?.name) {
-                ngZone.run(() => {
-                    this.darvInProgress = false
-                    this.darvStatus = 'IDLE'
-                    this.darvDirection = undefined
-                })
-            }
-        })
-
-        electron.on('DARV_POLAR_ALIGNMENT_UPDATED', event => {
+        electron.on('DARV_POLAR_ALIGNMENT_ELAPSED', event => {
             if (event.camera.name === this.camera?.name &&
                 event.guideOutput.name === this.guideOutput?.name) {
                 ngZone.run(() => {
                     this.darvStatus = event.state
+                    this.darvRemainingTime = event.remainingTime
+                    this.darvProgress = event.progress
+                    this.darvInProgress = event.remainingTime > 0
 
                     if (event.state !== 'INITIAL_PAUSE') {
                         this.darvDirection = event.direction
                     }
-                })
-            }
-        })
-
-        electron.on('CAMERA_EXPOSURE_ELAPSED', event => {
-            if (event.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    this.darvCapture.remainingTime = event.remainingTime
-                    this.darvCapture.progress = event.progress
                 })
             }
         })
