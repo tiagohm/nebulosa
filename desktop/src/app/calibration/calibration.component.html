@@ -1,13 +1,17 @@
 <div class="container px-4 py-3">
     <div class="grid">
         <div class="col-12">
+            <p class="m-0">Groups</p>
+        </div>
+        <div class="col-12">
             <p-table [value]="groups" [(selection)]="group" selectionMode="single" (selectionChange)="groupSelected()"
                      dataKey="id" styleClass="p-datatable-sm p-datatable-striped"
-                     [scrollable]="true" scrollHeight="141px" [paginator]="true" [rows]="100"
+                     [scrollable]="true" scrollHeight="118px" [paginator]="true" [rows]="100"
                      [pageLinks]="3" [showCurrentPageReport]="true" currentPageReportTemplate="{first}-{last} / {totalRecords}">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Type</th>
+                        <th>#</th>
                         <th>Filter</th>
                         <th>Duration</th>
                         <th>Size</th>
@@ -19,6 +23,7 @@
                 <ng-template pTemplate="body" let-item>
                     <tr [pSelectableRow]="item">
                         <td>{{ item.key.type }}</td>
+                        <td>{{ item.frames.length }}</td>
                         <td>{{ item.key.filter ?? '' }}</td>
                         <td>{{ item.key.exposureTime | exposureTime }}</td>
                         <td>{{ item.key.width }}x{{ item.key.height }}</td>
@@ -30,11 +35,14 @@
             </p-table>
         </div>
         <div class="col-12">
+            <p class="m-0">Frames</p>
+        </div>
+        <div class="col-12">
             <div class="grid">
                 <div class="col-12">
                     <p-table [value]="group?.frames ?? []" [(selection)]="frame" selectionMode="single"
                              dataKey="id" styleClass="p-datatable-sm p-datatable-striped"
-                             [scrollable]="true" scrollHeight="162px" [paginator]="true" [rows]="100"
+                             [scrollable]="true" scrollHeight="110px" [paginator]="true" [rows]="100"
                              [pageLinks]="3" [showCurrentPageReport]="true" currentPageReportTemplate="{first}-{last} / {totalRecords}">
                         <ng-template pTemplate="header">
                             <tr>
@@ -67,6 +75,8 @@
                         </ng-template>
                     </p-table>
                 </div>
+            </div>
+            <div class="grid mt-2">
                 <div class="col-9">
                     <span class="p-float-label">
                         <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="frame?.path || '-'" />
