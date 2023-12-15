@@ -12,10 +12,7 @@ spring:
     lazy-initialization: true
 
   datasource:
-    url: jdbc:sqlite:file:${DATA_PATH}/nebulosa.db
-    username:
-    password:
-    driverClassName: org.sqlite.JDBC
+    url: 'jdbc:sqlite:file:${DATA_PATH}/nebulosa.db'
 
   jpa:
     database-platform: org.hibernate.community.dialect.SQLiteDialect
@@ -28,9 +25,3 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
     table: migrations
-
-  batch:
-    job:
-      enabled: false
-    jdbc:
-      initialize-schema: always

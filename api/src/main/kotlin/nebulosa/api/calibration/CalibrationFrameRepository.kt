@@ -6,12 +6,14 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @Repository
-@Transactional(readOnly = false, isolation = Isolation.SERIALIZABLE)
+@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
 interface CalibrationFrameRepository : JpaRepository<CalibrationFrameEntity, Long> {
 
+    @Transactional(readOnly = true)
     @Query("SELECT frame FROM CalibrationFrameEntity frame WHERE frame.camera = :#{#camera.name}")
     fun findAll(camera: Camera): List<CalibrationFrameEntity>
 
@@ -28,7 +30,7 @@ interface CalibrationFrameRepository : JpaRepository<CalibrationFrameEntity, Lon
                 "AND (:exposureTime <= 0 OR frame.exposureTime = :exposureTime) " +
                 "AND (:gain < 0.0 OR frame.gain = :gain)"
     )
-    @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
+    @Transactional(readOnly = true)
     fun darkFrames(camera: Camera, width: Int, height: Int, bin: Int, exposureTime: Long, gain: Double): List<CalibrationFrameEntity>
 
     @Query(
@@ -38,7 +40,7 @@ interface CalibrationFrameRepository : JpaRepository<CalibrationFrameEntity, Lon
                 "AND frame.binX = :bin AND frame.binY = :bin " +
                 "AND (:gain < 0.0 OR frame.gain = :gain)"
     )
-    @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
+    @Transactional(readOnly = true)
     fun biasFrames(camera: Camera, width: Int, height: Int, bin: Int, gain: Double): List<CalibrationFrameEntity>
 
     @Query(
@@ -47,6 +49,6 @@ interface CalibrationFrameRepository : JpaRepository<CalibrationFrameEntity, Lon
                 "AND frame.width = :width AND frame.height = :height " +
                 "AND frame.binX = :bin AND frame.binY = :bin"
     )
-    @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
+    @Transactional(readOnly = true)
     fun flatFrames(camera: Camera, filter: String, width: Int, height: Int, bin: Int): List<CalibrationFrameEntity>
 }

@@ -1,7 +1,6 @@
 package nebulosa.watney.star.detection
 
 import kotlin.math.hypot
-import kotlin.math.roundToInt
 
 /**
  * A class representing a "bin" of star pixels, i.e. the list of a single star's pixels

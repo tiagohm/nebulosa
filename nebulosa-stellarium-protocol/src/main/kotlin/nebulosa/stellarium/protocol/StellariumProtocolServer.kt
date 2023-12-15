@@ -71,7 +71,7 @@ class StellariumProtocolServer(
 ) : NettyServer(), CurrentPositionHandler {
 
     private val stellariumMountHandler = AtomicReference<StellariumMountHandler>()
-    private val currentPositionHandlers = hashSetOf<CurrentPositionHandler>()
+    private val currentPositionHandlers = LinkedHashSet<CurrentPositionHandler>()
 
     val rightAscension: Angle?
         get() = stellariumMountHandler.get()?.rightAscension

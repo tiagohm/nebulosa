@@ -3,7 +3,7 @@ package nebulosa.api.focusers
 import io.reactivex.rxjava3.subjects.PublishSubject
 import jakarta.annotation.PostConstruct
 import nebulosa.api.beans.annotations.Subscriber
-import nebulosa.api.services.MessageService
+import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserAttached

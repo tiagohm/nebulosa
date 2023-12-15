@@ -9,10 +9,11 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @Repository
-@Transactional(readOnly = false, isolation = Isolation.SERIALIZABLE)
+@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
 interface DeepSkyObjectRepository : JpaRepository<DeepSkyObjectEntity, Long> {
 
     @Query(
@@ -24,7 +25,7 @@ interface DeepSkyObjectRepository : JpaRepository<DeepSkyObjectEntity, Long> {
                 "(:radius <= 0.0 OR acos(sin(dso.declinationJ2000) * sin(:declinationJ2000) + cos(dso.declinationJ2000) * cos(:declinationJ2000) * cos(dso.rightAscensionJ2000 - :rightAscensionJ2000)) <= :radius) " +
                 "ORDER BY dso.magnitude ASC"
     )
-    @Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
+    @Transactional(readOnly = true)
     fun search(
         text: String? = null,
         rightAscensionJ2000: Angle = 0.0, declinationJ2000: Angle = 0.0, radius: Angle = 0.0,
@@ -35,6 +36,5 @@ interface DeepSkyObjectRepository : JpaRepository<DeepSkyObjectEntity, Long> {
     ): List<DeepSkyObjectEntity>
 
     @Query("SELECT DISTINCT dso.type FROM DeepSkyObjectEntity dso")
-    @Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
     fun types(): List<SkyObjectType>
 }

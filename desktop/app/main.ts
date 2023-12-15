@@ -2,7 +2,7 @@ import { Client } from '@stomp/stompjs'
 import { BrowserWindow, Menu, Notification, app, dialog, ipcMain, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { InternalEventType, MessageEvent, NotificationEvent, OpenDirectory, OpenWindow } from './types'
+import { InternalEventType, MessageEvent, NotificationEvent, OpenDirectory, OpenFile, OpenWindow } from '../src/shared/types'
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })
@@ -280,12 +280,13 @@ try {
         })
     })
 
-    ipcMain.handle('OPEN_FITS', async (event) => {
+    ipcMain.handle('OPEN_FILE', async (event, data?: OpenFile) => {
         const ownerWindow = findWindowById(event.sender.id)
 
         const value = await dialog.showOpenDialog(ownerWindow!, {
-            filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }],
+            filters: data?.filters,
             properties: ['openFile'],
+            defaultPath: data?.defaultPath || undefined,
         })
 
         return !value.canceled && value.filePaths[0]
@@ -308,7 +309,7 @@ try {
         const ownerWindow = findWindowById(event.sender.id)
         const value = await dialog.showOpenDialog(ownerWindow!, {
             properties: ['openDirectory'],
-            defaultPath: data?.defaultPath,
+            defaultPath: data?.defaultPath || undefined,
         })
 
         return !value.canceled && value.filePaths[0]

@@ -1,4 +1,5 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import path from 'path'
 import { MenuItem, MessageService } from 'primeng/api'
 import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
 import { DialogMenuComponent } from '../../shared/components/dialogmenu/dialogmenu.component'
@@ -7,6 +8,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
+import { compareDevice } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 type MappedDevice = {
@@ -227,7 +229,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         if (devices.length === 0) return
         if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
 
-        for (const device of devices) {
+        for (const device of [...devices].sort(compareDevice)) {
             this.deviceModel.push({
                 icon: 'mdi mdi-connection',
                 label: device.name,
@@ -259,10 +261,12 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const path = await this.electron.openFITS()
+            const defaultPath = this.storage.get('home.image.directory', '')
+            const fitsPath = await this.electron.openFITS({ defaultPath })
 
-            if (path) {
-                this.browserWindow.openImage({ path, source: 'PATH' })
+            if (fitsPath) {
+                this.storage.set('home.image.directory', path.dirname(fitsPath))
+                this.browserWindow.openImage({ path: fitsPath, source: 'PATH' })
             }
         } else {
             const camera = await this.imageMenu.show(this.cameras)
@@ -313,7 +317,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             this.connected = await this.api.connectionStatus()
         } catch {
             this.connected = false
+        }
 
+        if (!this.connected) {
             this.cameras = []
             this.mounts = []
             this.focusers = []

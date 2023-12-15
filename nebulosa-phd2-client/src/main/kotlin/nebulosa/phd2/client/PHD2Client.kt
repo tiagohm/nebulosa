@@ -23,7 +23,7 @@ import kotlin.math.max
 
 class PHD2Client : NettyClient() {
 
-    @JvmField internal val listeners = hashSetOf<PHD2EventListener>()
+    @JvmField internal val listeners = LinkedHashSet<PHD2EventListener>()
     @JvmField internal val commands = hashMapOf<String, CompletableCommand<*>>()
 
     override val channelInitialzer = object : ChannelInitializer<SocketChannel>() {

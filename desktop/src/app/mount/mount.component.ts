@@ -156,13 +156,19 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     ) {
         app.title = 'Mount'
 
-        api.startListening('MOUNT')
-
         electron.on('MOUNT_UPDATED', event => {
             if (event.device.name === this.mount?.name) {
                 ngZone.run(() => {
                     Object.assign(this.mount!, event.device)
                     this.update()
+                })
+            }
+        })
+
+        electron.on('MOUNT_DETACHED', event => {
+            if (event.device.name === this.mount?.name) {
+                ngZone.run(() => {
+                    this.connected = false
                 })
             }
         })
@@ -195,8 +201,6 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
         this.computeCoordinateSubscriptions
             .forEach(e => e.unsubscribe())
-
-        this.api.stopListening('MOUNT')
     }
 
     async mountChanged(mount?: Mount) {
@@ -326,7 +330,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    private async update() {
+    private update() {
         if (this.mount) {
             this.connected = this.mount.connected
             this.slewing = this.mount.slewing

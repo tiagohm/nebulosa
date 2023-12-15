@@ -3,9 +3,8 @@ import moment from 'moment'
 import {
     Angle, BodyPosition, CalibrationFrame, CalibrationFrameGroup, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, DetectedStar, Device,
     FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
-    INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
-    ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
-    Mount, PlateSolverOptions, SCNRProtectionMethod, Satellite, SatelliteGroupType,
+    INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo,
+    Location, MinorPlanet, Mount, PlateSolverOptions, SCNRProtectionMethod, Satellite, SatelliteGroupType,
     SettleInfo, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 import { HttpService } from './http.service'
@@ -339,24 +338,26 @@ export class ApiService {
         return this.http.delete<void>(`image?${query}`)
     }
 
+    // INDI
+
     indiProperties(device: Device) {
-        return this.http.get<INDIProperty<any>[]>(`indiProperties?name=${device.name}`)
+        return this.http.get<INDIProperty<any>[]>(`indi/${device.name}/properties`)
     }
 
-    sendIndiProperty(device: Device, property: INDISendProperty) {
-        return this.http.post<void>(`sendIndiProperty?name=${device.name}`, property)
+    indiSendProperty(device: Device, property: INDISendProperty) {
+        return this.http.put<void>(`indi/${device.name}/send`, property)
     }
 
-    startListening(eventType: ListeningEventType) {
-        return this.http.post<void>(`startListening?eventType=${eventType}`)
+    indiStartListening(device: Device) {
+        return this.http.put<void>(`indi/listener/${device.name}/start`)
     }
 
-    stopListening(eventType: ListeningEventType) {
-        return this.http.post<void>(`stopListening?eventType=${eventType}`)
+    indiStopListening(device: Device) {
+        return this.http.put<void>(`indi/listener/${device.name}/stop`)
     }
 
     indiLog(device: Device) {
-        return this.http.get<string[]>(`indiLog?name=${device.name}`)
+        return this.http.get<string[]>(`indi/${device.name}/log`)
     }
 
     // LOCATION
