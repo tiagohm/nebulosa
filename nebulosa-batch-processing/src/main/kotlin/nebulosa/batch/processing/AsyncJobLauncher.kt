@@ -1,10 +1,13 @@
 package nebulosa.batch.processing
 
+import nebulosa.common.concurrency.CancellationListener
+import nebulosa.common.concurrency.CancellationSource
 import nebulosa.log.loggerFor
+import java.io.Closeable
 import java.time.LocalDateTime
 import java.util.concurrent.Executor
 
-open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepInterceptor {
+open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepInterceptor, CancellationListener {
 
     private val jobListeners = LinkedHashSet<JobExecutionListener>()
     private val stepListeners = LinkedHashSet<StepExecutionListener>()
@@ -61,8 +64,10 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
         var jobExecution = jobs[job.id]
 
         if (jobExecution != null) {
-            if (!jobExecution.isDone) {
+            if (!jobExecution.isDone || jobExecution.isStopping) {
                 return jobExecution
+            } else {
+                throw IllegalStateException("job cannot start again")
             }
         }
 
@@ -73,6 +78,8 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
         jobExecution = JobExecution(job, executionContext ?: ExecutionContext(), this, interceptors)
 
         jobs[job.id] = jobExecution
+
+        jobExecution.cancellationToken.listen(this)
 
         executor.execute {
             jobExecution.status = JobStatus.STARTED
@@ -104,11 +111,16 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
                 jobExecution.completeExceptionally(e)
             } finally {
                 jobExecution.finishedAt = LocalDateTime.now()
+                jobExecution.cancellationToken.unlisten(this)
             }
 
             job.afterJob(jobExecution)
             jobListeners.forEach { it.afterJob(jobExecution) }
             stepJobListeners.forEach { it.afterJob(jobExecution) }
+
+            if (job is Closeable) {
+                job.close()
+            }
         }
 
         return jobExecution
@@ -122,6 +134,10 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
         if (!jobExecution.isDone && !jobExecution.isStopping) {
             jobExecution.status = JobStatus.STOPPING
             jobExecution.job.stop(mayInterruptIfRunning)
+
+            if (!jobExecution.cancellationToken.isDone) {
+                jobExecution.cancellationToken.cancel(mayInterruptIfRunning)
+            }
         }
     }
 
@@ -130,6 +146,12 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
         val result = chain.step.execute(chain.stepExecution)
         stepListeners.forEach { it.afterStep(chain.stepExecution) }
         return result
+    }
+
+    override fun accept(source: CancellationSource) {
+        if (source is CancellationSource.Cancel) {
+            stop(source.mayInterruptIfRunning)
+        }
     }
 
     override fun toString() = "AsyncJobLauncher"

@@ -82,11 +82,6 @@ data class DARVJob(
         onNext(DARVInitialPauseElapsed(camera, guideOutput, remainingTime, progress))
     }
 
-    override fun stop(mayInterruptIfRunning: Boolean) {
-        super.stop(mayInterruptIfRunning)
-        close()
-    }
-
     companion object {
 
         @JvmStatic private val ID = Incrementer()

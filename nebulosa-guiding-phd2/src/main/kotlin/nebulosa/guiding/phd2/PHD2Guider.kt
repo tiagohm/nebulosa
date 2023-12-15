@@ -233,16 +233,16 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         }
     }
 
-    override fun waitForSettle(cancellationToken: CancellationToken?) {
+    override fun waitForSettle(cancellationToken: CancellationToken) {
         try {
-            cancellationToken?.listen(settling::reset)
+            cancellationToken.listen(settling)
             settling.await(settleTimeout)
         } catch (e: InterruptedException) {
             LOG.warn("PHD2 did not send SettleDone message in expected time")
         } catch (e: Throwable) {
             LOG.warn("an error occurrs while waiting for settle done", e)
         } finally {
-            cancellationToken?.close()
+            cancellationToken.unlisten(settling)
             settling.reset()
         }
     }

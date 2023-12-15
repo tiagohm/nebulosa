@@ -1,12 +1,10 @@
 package nebulosa.api.guiding
 
 import nebulosa.batch.processing.*
-import nebulosa.common.concurrency.CancellationToken
 import nebulosa.guiding.Guider
 
 data class WaitForSettleStep(@JvmField val guider: Guider) : Step, JobExecutionListener {
 
-    private val cancellationToken = CancellationToken()
     private val listeners = LinkedHashSet<WaitForSettleListener>()
 
     fun registerWaitForSettleListener(listener: WaitForSettleListener) {
@@ -18,17 +16,13 @@ data class WaitForSettleStep(@JvmField val guider: Guider) : Step, JobExecutionL
     }
 
     override fun execute(stepExecution: StepExecution): StepResult {
-        if (guider.isSettling && !cancellationToken.isCancelled) {
+        if (guider.isSettling && !stepExecution.jobExecution.cancellationToken.isDone) {
             listeners.forEach { it.onSettleStarted(this, stepExecution) }
-            guider.waitForSettle(cancellationToken)
+            guider.waitForSettle(stepExecution.jobExecution.cancellationToken)
             listeners.forEach { it.onSettleFinished(this, stepExecution) }
         }
 
         return StepResult.FINISHED
-    }
-
-    override fun stop(mayInterruptIfRunning: Boolean) {
-        cancellationToken.cancel()
     }
 
     override fun afterJob(jobExecution: JobExecution) {
