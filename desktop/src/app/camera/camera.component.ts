@@ -237,6 +237,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
+        electron.on('CAMERA_DETACHED', event => {
+            if (event.device.name === this.camera?.name) {
+                ngZone.run(() => {
+                    this.connected = false
+                })
+            }
+        })
+
         electron.on('CAMERA_CAPTURE_ELAPSED', event => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
@@ -373,18 +381,20 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private updateExposureUnit(unit: ExposureTimeUnit) {
-        const a = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
-        const b = CameraComponent.exposureUnitFactor(unit)
-        const exposureTime = Math.trunc(this.exposureTime * b / a)
-        const exposureTimeMin = Math.trunc(this.camera!.exposureMin * b / 60000000)
-        const exposureTimeMax = Math.trunc(this.camera!.exposureMax * b / 60000000)
-        this.exposureTimeMax = Math.max(1, exposureTimeMax)
-        this.exposureTimeMin = Math.max(1, exposureTimeMin)
-        this.exposureTime = Math.max(this.exposureTimeMin, Math.min(exposureTime, this.exposureTimeMax))
-        this.exposureTimeUnit = unit
+        if (this.camera!.exposureMax) {
+            const a = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
+            const b = CameraComponent.exposureUnitFactor(unit)
+            const exposureTime = Math.trunc(this.exposureTime * b / a)
+            const exposureTimeMin = Math.trunc(this.camera!.exposureMin * b / 60000000)
+            const exposureTimeMax = Math.trunc(this.camera!.exposureMax * b / 60000000)
+            this.exposureTimeMax = Math.max(1, exposureTimeMax)
+            this.exposureTimeMin = Math.max(1, exposureTimeMin)
+            this.exposureTime = Math.max(this.exposureTimeMin, Math.min(exposureTime, this.exposureTimeMax))
+            this.exposureTimeUnit = unit
+        }
     }
 
-    private async update() {
+    private update() {
         if (this.camera) {
             this.connected = this.camera.connected
 

@@ -116,7 +116,7 @@
         <div class="col-6">
             <span class="p-float-label">
                 <p-dropdown [disabled]="!connected || capturing" [options]="frameTypeOptions" [(ngModel)]="frameType"
-                            styleClass="p-inputtext-sm border-0"
+                            styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false"
                             (ngModelChange)="savePreference()" />
                 <label>Frame Type</label>
             </span>

@@ -48,6 +48,28 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             }
         })
 
+        electron.on('CAMERA_ATTACHED', event => {
+            ngZone.run(() => {
+                this.cameras.push(event.device)
+            })
+        })
+
+        electron.on('CAMERA_DETACHED', event => {
+            ngZone.run(() => {
+                const index = this.cameras.findIndex(e => e.name === event.device.name)
+
+                if (index >= 0) {
+                    if (this.cameras[index] === this.camera) {
+                        this.camera = undefined
+                        this.cameraConnected = false
+                    }
+
+                    this.cameras.splice(index, 1)
+
+                }
+            })
+        })
+
         electron.on('GUIDE_OUTPUT_ATTACHED', event => {
             ngZone.run(() => {
                 this.guideOutputs.push(event.device)
@@ -57,7 +79,16 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         electron.on('GUIDE_OUTPUT_DETACHED', event => {
             ngZone.run(() => {
                 const index = this.guideOutputs.findIndex(e => e.name === event.device.name)
-                if (index >= 0) this.guideOutputs.splice(index, 1)
+
+                if (index >= 0) {
+                    if (this.guideOutputs[index] === this.guideOutput) {
+                        this.guideOutput = undefined
+                        this.guideOutputConnected = false
+                    }
+
+                    this.guideOutputs.splice(index, 1)
+
+                }
             })
         })
 
@@ -156,7 +187,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         return this.browserWindow.openCameraImage(this.camera!)
     }
 
-    private async updateCamera() {
+    private updateCamera() {
         if (!this.camera) {
             return
         }
@@ -164,7 +195,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         this.cameraConnected = this.camera.connected
     }
 
-    private async updateGuideOutput() {
+    private updateGuideOutput() {
         if (!this.guideOutput) {
             return
         }

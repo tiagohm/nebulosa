@@ -64,6 +64,14 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             }
         })
 
+        electron.on('WHEEL_DETACHED', event => {
+            if (event.device.name === this.wheel?.name) {
+                ngZone.run(() => {
+                    this.connected = false
+                })
+            }
+        })
+
         this.subscription = this.filterChangedPublisher
             .pipe(throttleTime(1500))
             .subscribe((filter) => {
@@ -127,7 +135,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         this.filterChangedPublisher.next(filter)
     }
 
-    private async update() {
+    private update() {
         if (!this.wheel) {
             return
         }

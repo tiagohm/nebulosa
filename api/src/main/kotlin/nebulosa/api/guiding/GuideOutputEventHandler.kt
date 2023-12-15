@@ -33,17 +33,16 @@ class GuideOutputEventHandler(
     fun onGuideOutputEvent(event: DeviceEvent<GuideOutput>) {
         val device = event.device ?: return
 
-        if (device.canPulseGuide) {
-            when (event) {
-                is PropertyChangedEvent -> {
-                    throttler.onNext(event)
-                }
-                is GuideOutputAttached -> {
-                    messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_ATTACHED, event.device))
-                }
-                is GuideOutputDetached -> {
-                    messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_DETACHED, event.device))
-                }
+        if (device.canPulseGuide && event is PropertyChangedEvent) {
+            throttler.onNext(event)
+        }
+
+        when (event) {
+            is GuideOutputAttached -> {
+                messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_ATTACHED, event.device))
+            }
+            is GuideOutputDetached -> {
+                messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_DETACHED, event.device))
             }
         }
     }
