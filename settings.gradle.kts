@@ -34,7 +34,7 @@ dependencyResolutionManagement {
             library("timeshape", "net.iakovlev:timeshape:2022g.17")
             library("sqlite", "org.xerial:sqlite-jdbc:3.44.1.0")
             library("flyway", "org.flywaydb:flyway-core:10.3.0")
-            library("jna", "net.java.dev.jna:jna:5.13.0")
+            library("jna", "net.java.dev.jna:jna:5.14.0")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.8.0")
             library("kotest-runner-junit5", "io.kotest:kotest-runner-junit5:5.8.0")
             bundle("kotest", listOf("kotest-assertions-core", "kotest-runner-junit5"))
