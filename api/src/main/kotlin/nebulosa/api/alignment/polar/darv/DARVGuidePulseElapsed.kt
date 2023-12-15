@@ -13,7 +13,4 @@ data class DARVGuidePulseElapsed(
     override val progress: Double,
     override val direction: GuideDirection,
     override val state: DARVState,
-) : MessageEvent, DARVEvent {
-
-    override val eventName = "DARV_POLAR_ALIGNMENT_ELAPSED"
-}
+) : MessageEvent, DARVEvent

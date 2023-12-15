@@ -9,12 +9,6 @@ object DefaultStepHandler : StepHandler {
     override fun handle(step: Step, stepExecution: StepExecution): StepResult {
         val jobLauncher = stepExecution.jobExecution.jobLauncher
 
-        if (step is JobExecutionListener) {
-            if (jobLauncher.registerJobExecutionListener(step)) {
-                step.beforeJob(stepExecution.jobExecution)
-            }
-        }
-
         when (step) {
             is SplitStep -> {
                 step.beforeStep(stepExecution)
@@ -28,13 +22,13 @@ object DefaultStepHandler : StepHandler {
             }
             else -> {
                 val chain = StepInterceptorChain(stepExecution.jobExecution.stepInterceptors, step, stepExecution)
-                var status: RepeatStatus
 
                 LOG.info("step started. step={}, context={}", step, stepExecution.context)
 
-                do {
-                    status = chain.proceed().get()
-                } while (status == RepeatStatus.CONTINUABLE)
+                while (stepExecution.jobExecution.canContinue) {
+                    val status = chain.proceed().get()
+                    if (status != RepeatStatus.CONTINUABLE) break
+                }
 
                 LOG.info("step finished. step={}, context={}", step, stepExecution.context)
             }

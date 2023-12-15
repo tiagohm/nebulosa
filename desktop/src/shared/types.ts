@@ -213,41 +213,16 @@ export interface CameraStartCapture {
 
 export interface CameraCaptureEvent extends MessageEvent {
     camera: Camera
-    progress: number
-}
-
-export interface CameraCaptureStarted extends CameraCaptureEvent {
-    looping: boolean
-    exposureAmount: number
-    exposureTime: number
-    estimatedTime: number
-}
-
-export interface CameraCaptureFinished extends CameraCaptureEvent { }
-
-export interface CameraCaptureElapsed extends CameraCaptureEvent {
-    exposureCount: number
-    remainingTime: number
-    elapsedTime: number
-}
-
-export interface CameraCaptureIsWaiting extends CameraCaptureEvent {
-    waitDuration: number
-    remainingTime: number
-}
-
-export interface CameraExposureEvent extends CameraCaptureEvent {
+    state: CameraCaptureState
     exposureAmount: number
     exposureCount: number
-    exposureTime: number
-    remainingTime: number
-}
-
-export interface CameraExposureStarted extends CameraExposureEvent { }
-
-export interface CameraExposureElapsed extends CameraExposureEvent { }
-
-export interface CameraExposureFinished extends CameraExposureEvent {
+    captureElapsedTime: number
+    captureProgress: number
+    captureRemainingTime: number
+    exposureProgress: number
+    exposureRemainingTime: number
+    waitRemainingTime: number
+    waitProgress: number
     savePath?: string
 }
 
@@ -793,7 +768,9 @@ export const NOTIFICATION_EVENT_TYPE = [
 
 export type NotificationEventType = (typeof NOTIFICATION_EVENT_TYPE)[number]
 
-export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA'
+export type ImageSource = 'FRAMING' |
+    'PATH' |
+    'CAMERA'
 
 export const HIPS_SURVEY_TYPES = [
     'CDS_P_DSS2_NIR',
@@ -826,11 +803,18 @@ export const HIPS_SURVEY_TYPES = [
 
 export type HipsSurveyType = (typeof HIPS_SURVEY_TYPES)[number]
 
-export type PierSide = 'EAST' | 'WEST' | 'NEITHER'
+export type PierSide = 'EAST' |
+    'WEST' |
+    'NEITHER'
 
-export type TargetCoordinateType = 'J2000' | 'JNOW'
+export type TargetCoordinateType = 'J2000' |
+    'JNOW'
 
-export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
+export type TrackMode = 'SIDEREAL' |
+    ' LUNAR' |
+    'SOLAR' |
+    'KING' |
+    'CUSTOM'
 
 export type GuideDirection = 'NORTH' | // DEC+
     'SOUTH' | // DEC-
@@ -879,10 +863,24 @@ export const GUIDE_STATES = [
 
 export type GuideState = (typeof GUIDE_STATES)[number]
 
-export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
+export type Hemisphere = 'NORTHERN' |
+    'SOUTHERN'
 
-export type DARVState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'
+export type DARVState = 'IDLE' |
+    'INITIAL_PAUSE' |
+    'FORWARD' |
+    'BACKWARD'
 
-export type GuiderPlotMode = 'RA/DEC' | 'DX/DY'
+export type GuiderPlotMode = 'RA/DEC' |
+    'DX/DY'
 
-export type GuiderYAxisUnit = 'ARCSEC' | 'PIXEL'
+export type GuiderYAxisUnit = 'ARCSEC' |
+    'PIXEL'
+
+export type CameraCaptureState = 'CAPTURE_STARTED' |
+    'EXPOSURE_STARTED' |
+    'EXPOSURING' |
+    'WAITING' |
+    'SETTLING' |
+    'EXPOSURE_FINISHED' |
+    'CAPTURE_FINISHED'

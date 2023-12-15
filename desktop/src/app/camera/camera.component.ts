@@ -179,7 +179,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     readonly wait = {
-        duration: 0,
         remainingTime: 0,
         progress: 0,
     }
@@ -238,78 +237,30 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        electron.on('CAMERA_CAPTURE_STARTED', event => {
-            if (event.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    this.capture.looping = event.looping
-                    this.capture.amount = event.exposureAmount
-                    this.capture.elapsedTime = 0
-                    this.capture.remainingTime = event.estimatedTime
-                    this.capture.progress = event.progress
-                    this.capturing = true
-                    this.waiting = false
-                })
-            }
-        })
-
         electron.on('CAMERA_CAPTURE_ELAPSED', event => {
             if (event.camera.name === this.camera?.name) {
                 ngZone.run(() => {
-                    this.capture.elapsedTime = event.elapsedTime
-                    this.capture.remainingTime = event.remainingTime
-                    this.capture.progress = event.progress
-                })
-            }
-        })
-
-        electron.on('CAMERA_CAPTURE_WAITING', event => {
-            if (event.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    this.wait.duration = event.waitDuration
-                    this.wait.remainingTime = event.remainingTime
-                    this.wait.progress = event.progress
-                    this.capturing = false
-                    this.waiting = true
-                })
-            }
-        })
-
-        electron.on('CAMERA_CAPTURE_FINISHED', event => {
-            if (event.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    this.capturing = false
-                    this.waiting = false
-                })
-            }
-        })
-
-        electron.on('CAMERA_EXPOSURE_STARTED', event => {
-            if (event.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    this.exposure.remainingTime = event.remainingTime
-                    this.exposure.progress = event.progress
+                    this.capture.elapsedTime = event.captureElapsedTime
+                    this.capture.remainingTime = event.captureRemainingTime
+                    this.capture.progress = event.captureProgress
+                    this.exposure.remainingTime = event.exposureRemainingTime
+                    this.exposure.progress = event.exposureProgress
                     this.exposure.count = event.exposureCount
-                    this.capturing = true
-                    this.waiting = false
-                })
-            }
-        })
 
-        electron.on('CAMERA_EXPOSURE_ELAPSED', event => {
-            if (event.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    this.exposure.remainingTime = event.remainingTime
-                    this.exposure.progress = event.progress
-                    this.exposure.count = event.exposureCount
-                })
-            }
-        })
-
-        electron.on('CAMERA_EXPOSURE_FINISHED', event => {
-            if (event.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    this.exposure.remainingTime = event.remainingTime
-                    this.exposure.progress = event.progress
+                    if (event.state === 'WAITING') {
+                        this.wait.remainingTime = event.waitRemainingTime
+                        this.wait.progress = event.waitProgress
+                        this.waiting = true
+                    } else if (event.state === 'CAPTURE_STARTED') {
+                        this.capture.looping = event.exposureAmount <= 0
+                        this.capture.amount = event.exposureAmount
+                        this.capturing = true
+                    } else if (event.state === 'CAPTURE_FINISHED') {
+                        this.capturing = false
+                        this.waiting = false
+                    } else if (event.state === 'EXPOSURE_STARTED') {
+                        this.waiting = false
+                    }
                 })
             }
         })
@@ -336,7 +287,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             const camera = await this.api.camera(this.camera.name)
             Object.assign(this.camera, camera)
 
-            await this.loadPreference()
+            this.loadPreference()
             this.update()
         } else {
             this.app.subTitle = ''

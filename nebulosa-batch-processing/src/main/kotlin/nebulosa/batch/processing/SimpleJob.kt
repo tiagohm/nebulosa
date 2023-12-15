@@ -9,9 +9,10 @@ abstract class SimpleJob : Job, ArrayList<Step> {
     constructor(vararg steps: Step) : this(steps.toList())
 
     @Volatile private var position = 0
+    @Volatile private var stopped = false
 
     override fun hasNext(jobExecution: JobExecution): Boolean {
-        return position < size
+        return !stopped && position < size
     }
 
     override fun next(jobExecution: JobExecution): Step {
@@ -19,8 +20,17 @@ abstract class SimpleJob : Job, ArrayList<Step> {
     }
 
     override fun stop(mayInterruptIfRunning: Boolean) {
-        if (position in indices) {
-            this[position].stop(mayInterruptIfRunning)
+        if (stopped) return
+
+        stopped = true
+
+        if (position in 1..size) {
+            this[position - 1].stop(mayInterruptIfRunning)
         }
+    }
+
+    fun reset() {
+        stopped = false
+        position = 0
     }
 }

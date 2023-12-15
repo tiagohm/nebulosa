@@ -317,7 +317,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             this.connected = await this.api.connectionStatus()
         } catch {
             this.connected = false
+        }
 
+        if (!this.connected) {
             this.cameras = []
             this.mounts = []
             this.focusers = []

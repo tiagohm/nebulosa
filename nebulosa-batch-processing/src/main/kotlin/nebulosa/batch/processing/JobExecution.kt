@@ -13,9 +13,9 @@ data class JobExecution(
     val startedAt: LocalDateTime = LocalDateTime.now(),
     var status: JobStatus = JobStatus.STARTING,
     var finishedAt: LocalDateTime? = null,
-) : Stoppable {
+) {
 
-    private val completable = CompletableFuture<Boolean>()
+    @JvmField internal val completable = CompletableFuture<Boolean>()
 
     inline val jobId
         get() = job.id
@@ -54,12 +54,5 @@ data class JobExecution(
 
     internal fun completeExceptionally(e: Throwable) {
         completable.completeExceptionally(e)
-    }
-
-    override fun stop(mayInterruptIfRunning: Boolean) {
-        if (!isDone) {
-            status = JobStatus.STOPPING
-            job.stop(mayInterruptIfRunning)
-        }
     }
 }

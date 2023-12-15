@@ -11,7 +11,7 @@ import java.time.Duration
 
 data class GuidePulseStep(@JvmField val request: GuidePulseRequest) : Step, DelayStepListener {
 
-    private val listeners = HashSet<GuidePulseListener>()
+    private val listeners = LinkedHashSet<GuidePulseListener>()
     private val delayStep = DelayStep(request.duration)
 
     init {

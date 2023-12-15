@@ -19,4 +19,7 @@ sealed interface DARVEvent : MessageEvent {
     val direction: GuideDirection?
 
     val state: DARVState
+
+    override val eventName
+        get() = "DARV_POLAR_ALIGNMENT_ELAPSED"
 }

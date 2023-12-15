@@ -31,15 +31,17 @@ data class CameraLoopExposureStep(
     }
 
     override fun stop(mayInterruptIfRunning: Boolean) {
-        cameraExposureStep.stop()
-        delayStep.stop()
+        cameraExposureStep.stop(mayInterruptIfRunning)
+        delayStep.stop(mayInterruptIfRunning)
     }
 
     override fun beforeJob(jobExecution: JobExecution) {
         cameraExposureStep.beforeJob(jobExecution)
+        delayStep.beforeJob(jobExecution)
     }
 
     override fun afterJob(jobExecution: JobExecution) {
         cameraExposureStep.afterJob(jobExecution)
+        delayStep.afterJob(jobExecution)
     }
 }

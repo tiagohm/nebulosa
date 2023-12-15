@@ -14,6 +14,4 @@ data class DARVStarted(
 
     override val progress = 0.0
     override val state = DARVState.INITIAL_PAUSE
-
-    override val eventName = "DARV_POLAR_ALIGNMENT_ELAPSED"
 }

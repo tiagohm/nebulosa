@@ -54,12 +54,11 @@ class DARVExecutor(
     @Synchronized
     fun stop(camera: Camera, guideOutput: GuideOutput) {
         val jobExecution = findJobExecution(camera, guideOutput) ?: return
-        jobExecution.stop()
+        jobLauncher.stop(jobExecution)
     }
 
     fun isRunning(camera: Camera, guideOutput: GuideOutput): Boolean {
-        val jobExecution = findJobExecution(camera, guideOutput) ?: return false
-        return !jobExecution.isDone
+        return findJobExecution(camera, guideOutput) != null
     }
 
     override fun accept(event: MessageEvent) {

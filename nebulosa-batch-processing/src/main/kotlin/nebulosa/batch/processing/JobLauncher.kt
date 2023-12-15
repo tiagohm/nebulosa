@@ -17,4 +17,6 @@ interface JobLauncher : Collection<JobExecution>, Stoppable {
     fun unregisterStepInterceptor(interceptor: StepInterceptor): Boolean
 
     fun launch(job: Job, executionContext: ExecutionContext? = null): JobExecution
+
+    fun stop(jobExecution: JobExecution, mayInterruptIfRunning: Boolean = true)
 }

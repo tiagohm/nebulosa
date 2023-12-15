@@ -5,7 +5,7 @@ import java.time.Duration
 
 data class DelayStep(@JvmField val duration: Duration) : Step, JobExecutionListener {
 
-    private val listeners = HashSet<DelayStepListener>()
+    private val listeners = LinkedHashSet<DelayStepListener>()
 
     @Volatile private var aborted = false
 

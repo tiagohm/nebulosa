@@ -1,13 +1,14 @@
 package nebulosa.batch.processing
 
+import nebulosa.log.loggerFor
 import java.time.LocalDateTime
 import java.util.concurrent.Executor
 
 open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepInterceptor {
 
-    private val jobListeners = HashSet<JobExecutionListener>()
-    private val stepListeners = HashSet<StepExecutionListener>()
-    private val stepInterceptors = HashSet<StepInterceptor>()
+    private val jobListeners = LinkedHashSet<JobExecutionListener>()
+    private val stepListeners = LinkedHashSet<StepExecutionListener>()
+    private val stepInterceptors = LinkedHashSet<StepInterceptor>()
     private val jobs = LinkedHashMap<String, JobExecution>()
 
     override var stepHandler: StepHandler = DefaultStepHandler
@@ -79,15 +80,26 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
             job.beforeJob(jobExecution)
             jobListeners.forEach { it.beforeJob(jobExecution) }
 
+            val stepJobListeners = LinkedHashSet<JobExecutionListener>()
+
             try {
                 while (jobExecution.canContinue && job.hasNext(jobExecution)) {
                     val step = job.next(jobExecution)
-                    stepHandler.handle(step, StepExecution(step, jobExecution))
+
+                    if (step is JobExecutionListener) {
+                        if (stepJobListeners.add(step)) {
+                            step.beforeJob(jobExecution)
+                        }
+                    }
+
+                    val result = stepHandler.handle(step, StepExecution(step, jobExecution))
+                    result.get()
                 }
 
                 jobExecution.status = if (jobExecution.isStopping) JobStatus.STOPPED else JobStatus.COMPLETED
                 jobExecution.complete()
             } catch (e: Throwable) {
+                LOG.error("job failed. job=$job, jobExecution=$jobExecution", e)
                 jobExecution.status = JobStatus.FAILED
                 jobExecution.completeExceptionally(e)
             } finally {
@@ -96,13 +108,21 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
 
             job.afterJob(jobExecution)
             jobListeners.forEach { it.afterJob(jobExecution) }
+            stepJobListeners.forEach { it.afterJob(jobExecution) }
         }
 
         return jobExecution
     }
 
     override fun stop(mayInterruptIfRunning: Boolean) {
-        jobs.forEach { it.value.stop(mayInterruptIfRunning) }
+        jobs.forEach { stop(it.value, mayInterruptIfRunning) }
+    }
+
+    override fun stop(jobExecution: JobExecution, mayInterruptIfRunning: Boolean) {
+        if (!jobExecution.isDone && !jobExecution.isStopping) {
+            jobExecution.status = JobStatus.STOPPING
+            jobExecution.job.stop(mayInterruptIfRunning)
+        }
     }
 
     override fun intercept(chain: StepChain): StepResult {
@@ -113,4 +133,9 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
     }
 
     override fun toString() = "AsyncJobLauncher"
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<AsyncJobLauncher>()
+    }
 }

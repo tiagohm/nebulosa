@@ -56,34 +56,30 @@ data class DARVJob(
     }
 
     override fun beforeJob(jobExecution: JobExecution) {
-        val job = jobExecution.job as DARVJob
-        onNext(DARVStarted(job.camera, job.guideOutput, job.request.initialPause, job.direction))
+        onNext(DARVStarted(camera, guideOutput, request.initialPause, direction))
     }
 
     override fun afterJob(jobExecution: JobExecution) {
-        val job = jobExecution.job as DARVJob
-        onNext(DARVFinished(job.camera, job.guideOutput))
+        onNext(DARVFinished(camera, guideOutput))
     }
 
     override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution) {
         val savePath = stepExecution.context[CameraExposureStep.SAVE_PATH] as Path
-        onNext(CameraExposureFinished(step.camera, 1.0, savePath))
+        onNext(CameraExposureFinished(step.camera, 1, 1, Duration.ZERO, 1.0, Duration.ZERO, savePath))
     }
 
     override fun onGuidePulseElapsed(step: GuidePulseStep, stepExecution: StepExecution) {
-        val job = stepExecution.jobExecution.job as DARVJob
         val direction = step.request.direction
         val remainingTime = stepExecution.context[DelayStep.REMAINING_TIME] as Duration
         val progress = stepExecution.context[DelayStep.PROGRESS] as Double
-        val state = if (direction == job.direction) DARVState.FORWARD else DARVState.BACKWARD
-        onNext(DARVGuidePulseElapsed(job.camera, job.guideOutput, remainingTime, progress, direction, state))
+        val state = if (direction == this.direction) DARVState.FORWARD else DARVState.BACKWARD
+        onNext(DARVGuidePulseElapsed(camera, guideOutput, remainingTime, progress, direction, state))
     }
 
     override fun onDelayElapsed(step: DelayStep, stepExecution: StepExecution) {
-        val job = stepExecution.jobExecution.job as DARVJob
         val remainingTime = stepExecution.context[DelayStep.REMAINING_TIME] as Duration
         val progress = stepExecution.context[DelayStep.PROGRESS] as Double
-        onNext(DARVInitialPauseElapsed(job.camera, job.guideOutput, remainingTime, progress))
+        onNext(DARVInitialPauseElapsed(camera, guideOutput, remainingTime, progress))
     }
 
     override fun stop(mayInterruptIfRunning: Boolean) {

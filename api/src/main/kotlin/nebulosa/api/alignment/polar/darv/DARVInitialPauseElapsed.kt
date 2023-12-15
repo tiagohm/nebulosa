@@ -13,6 +13,4 @@ data class DARVInitialPauseElapsed(
 
     override val state = DARVState.INITIAL_PAUSE
     override val direction = null
-
-    override val eventName = "DARV_POLAR_ALIGNMENT_ELAPSED"
 }

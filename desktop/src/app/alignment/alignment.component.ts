@@ -79,8 +79,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     this.darvProgress = event.progress
                     this.darvInProgress = event.remainingTime > 0
 
-                    if (event.state !== 'INITIAL_PAUSE') {
+                    if (event.state === 'FORWARD' || event.state === 'BACKWARD') {
                         this.darvDirection = event.direction
+                    } else {
+                        this.darvDirection = undefined
                     }
                 })
             }

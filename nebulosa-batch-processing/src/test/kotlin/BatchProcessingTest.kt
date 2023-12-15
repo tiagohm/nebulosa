@@ -50,9 +50,9 @@ class BatchProcessingTest : StringSpec() {
         "stop" {
             val startedAt = System.currentTimeMillis()
             val jobExecution = launcher.launch(MathJob((0..7).map { SumStep() }))
-            thread { Thread.sleep(4000); jobExecution.stop() }
+            thread { Thread.sleep(4000); launcher.stop(jobExecution) }
             jobExecution.waitForCompletion()
-            jobExecution.context["VALUE"] shouldBe 4.0
+            jobExecution.context["VALUE"] shouldBe 3.0
             jobExecution.isStopped.shouldBeTrue()
             (System.currentTimeMillis() - startedAt) shouldBeInRange (4000L..5000L)
         }
