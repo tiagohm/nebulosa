@@ -55,6 +55,14 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
                 })
             }
         })
+
+        electron.on('FOCUSER_DETACHED', event => {
+            if (event.device.name === this.focuser?.name) {
+                ngZone.run(() => {
+                    this.connected = false
+                })
+            }
+        })
     }
 
     async ngAfterViewInit() {
@@ -120,7 +128,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         this.api.focuserAbort(this.focuser!)
     }
 
-    private async update() {
+    private update() {
         if (!this.focuser) {
             return
         }

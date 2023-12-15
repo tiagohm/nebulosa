@@ -165,6 +165,14 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             }
         })
 
+        electron.on('MOUNT_DETACHED', event => {
+            if (event.device.name === this.mount?.name) {
+                ngZone.run(() => {
+                    this.connected = false
+                })
+            }
+        })
+
         this.computeCoordinateSubscriptions[0] = this.computeCoordinatePublisher
             .pipe(throttleTime(5000))
             .subscribe(() => this.computeCoordinates())
@@ -322,7 +330,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    private async update() {
+    private update() {
         if (this.mount) {
             this.connected = this.mount.connected
             this.slewing = this.mount.slewing

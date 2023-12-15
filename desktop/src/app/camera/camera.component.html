@@ -38,16 +38,12 @@
             <i class="mdi mdi-information text-blue-600"></i>
             <span style="min-width: 44px" class="text-left mr-2">{{ waiting ? 'waiting' : capturing ? 'capturing' : 'idle' }}</span>
             <ng-container *ngIf="capturing">
-                <ng-container *ngIf="!capture.looping">
-                    <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 46px">
-                        {{ exposure.count }} of {{ capture.amount }}
-                    </span>
-                </ng-container>
-                <ng-container *ngIf="capture.looping">
-                    <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 34px">
-                        {{ exposure.count }}
-                    </span>
-                </ng-container>
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 46px">
+                    {{ exposure.count }}
+                    <span *ngIf="!capture.looping"> of {{ capture.amount }}</span>
+                </span>
+            </ng-container>
+            <ng-container *ngIf="capturing && !waiting">
                 <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
                     {{ exposure.remainingTime | exposureTime }}
                 </span>
@@ -120,7 +116,7 @@
         <div class="col-6">
             <span class="p-float-label">
                 <p-dropdown [disabled]="!connected || capturing" [options]="frameTypeOptions" [(ngModel)]="frameType"
-                            styleClass="p-inputtext-sm border-0"
+                            styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false"
                             (ngModelChange)="savePreference()" />
                 <label>Frame Type</label>
             </span>

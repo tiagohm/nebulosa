@@ -7,10 +7,9 @@ import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
 import {
-    ApiEventType, Camera, CameraCaptureElapsed, CameraCaptureFinished, CameraCaptureIsWaiting, CameraCaptureStarted,
-    CameraExposureElapsed, CameraExposureFinished, CameraExposureStarted, DARVPolarAlignmentEvent, DARVPolarAlignmentGuidePulseElapsed,
-    DARVPolarAlignmentInitialPauseElapsed, DeviceMessageEvent, FilterWheel, Focuser, GuideOutput, Guider,
-    GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Location, Mount, NotificationEvent, NotificationEventType, OpenDirectory, OpenFile
+    ApiEventType, Camera, CameraCaptureEvent, DARVEvent, DeviceMessageEvent, FilterWheel, Focuser,
+    GuideOutput, Guider, GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Location, Mount, NotificationEvent,
+    NotificationEventType, OpenDirectory, OpenFile
 } from '../types'
 import { ApiService } from './api.service'
 
@@ -21,13 +20,7 @@ type EventMappedType = {
     'CAMERA_UPDATED': DeviceMessageEvent<Camera>
     'CAMERA_ATTACHED': DeviceMessageEvent<Camera>
     'CAMERA_DETACHED': DeviceMessageEvent<Camera>
-    'CAMERA_CAPTURE_STARTED': CameraCaptureStarted
-    'CAMERA_CAPTURE_FINISHED': CameraCaptureFinished
-    'CAMERA_CAPTURE_ELAPSED': CameraCaptureElapsed
-    'CAMERA_CAPTURE_WAITING': CameraCaptureIsWaiting
-    'CAMERA_EXPOSURE_ELAPSED': CameraExposureElapsed
-    'CAMERA_EXPOSURE_STARTED': CameraExposureStarted
-    'CAMERA_EXPOSURE_FINISHED': CameraExposureFinished
+    'CAMERA_CAPTURE_ELAPSED': CameraCaptureEvent
     'MOUNT_UPDATED': DeviceMessageEvent<Mount>
     'MOUNT_ATTACHED': DeviceMessageEvent<Mount>
     'MOUNT_DETACHED': DeviceMessageEvent<Mount>
@@ -45,9 +38,7 @@ type EventMappedType = {
     'GUIDER_UPDATED': GuiderMessageEvent<Guider>
     'GUIDER_STEPPED': GuiderMessageEvent<HistoryStep>
     'GUIDER_MESSAGE_RECEIVED': GuiderMessageEvent<string>
-    'DARV_POLAR_ALIGNMENT_STARTED': DARVPolarAlignmentEvent
-    'DARV_POLAR_ALIGNMENT_FINISHED': DARVPolarAlignmentEvent
-    'DARV_POLAR_ALIGNMENT_UPDATED': DARVPolarAlignmentInitialPauseElapsed | DARVPolarAlignmentGuidePulseElapsed
+    'DARV_POLAR_ALIGNMENT_ELAPSED': DARVEvent
     'DATA_CHANGED': any
     'LOCATION_CHANGED': Location
     'SKY_ATLAS_UPDATE_FINISHED': NotificationEvent

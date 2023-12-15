@@ -213,41 +213,16 @@ export interface CameraStartCapture {
 
 export interface CameraCaptureEvent extends MessageEvent {
     camera: Camera
-    progress: number
-}
-
-export interface CameraCaptureStarted extends CameraCaptureEvent {
-    looping: boolean
-    exposureAmount: number
-    exposureTime: number
-    estimatedTime: number
-}
-
-export interface CameraCaptureFinished extends CameraCaptureEvent { }
-
-export interface CameraCaptureElapsed extends CameraCaptureEvent {
-    exposureCount: number
-    remainingTime: number
-    elapsedTime: number
-}
-
-export interface CameraCaptureIsWaiting extends CameraCaptureEvent {
-    waitDuration: number
-    remainingTime: number
-}
-
-export interface CameraExposureEvent extends CameraCaptureEvent {
+    state: CameraCaptureState
     exposureAmount: number
     exposureCount: number
-    exposureTime: number
-    remainingTime: number
-}
-
-export interface CameraExposureStarted extends CameraExposureEvent { }
-
-export interface CameraExposureElapsed extends CameraExposureEvent { }
-
-export interface CameraExposureFinished extends CameraExposureEvent {
+    captureElapsedTime: number
+    captureProgress: number
+    captureRemainingTime: number
+    exposureProgress: number
+    exposureRemainingTime: number
+    waitRemainingTime: number
+    waitProgress: number
     savePath?: string
 }
 
@@ -487,22 +462,13 @@ export interface Satellite {
     groups: SatelliteGroupType[]
 }
 
-export interface DARVPolarAlignmentEvent extends MessageEvent {
+export interface DARVEvent extends MessageEvent {
     camera: Camera
     guideOutput: GuideOutput
     remainingTime: number
     progress: number
-    state: DARVPolarAlignmentState
-}
-
-export interface DARVPolarAlignmentInitialPauseElapsed extends DARVPolarAlignmentEvent {
-    pauseTime: number
-    state: 'INITIAL_PAUSE'
-}
-
-export interface DARVPolarAlignmentGuidePulseElapsed extends DARVPolarAlignmentEvent {
-    direction: GuideDirection
-    state: 'FORWARD' | 'BACKWARD'
+    state: DARVState
+    direction?: GuideDirection
 }
 
 export interface CoordinateInterpolation {
@@ -783,7 +749,7 @@ export const API_EVENT_TYPES = [
     'GUIDER_CONNECTED', 'GUIDER_DISCONNECTED', 'GUIDER_UPDATED', 'GUIDER_STEPPED',
     'GUIDER_MESSAGE_RECEIVED',
     // Polar Alignment.
-    'DARV_POLAR_ALIGNMENT_STARTED', 'DARV_POLAR_ALIGNMENT_FINISHED', 'DARV_POLAR_ALIGNMENT_UPDATED',
+    'DARV_POLAR_ALIGNMENT_ELAPSED',
 ] as const
 
 export type ApiEventType = (typeof API_EVENT_TYPES)[number]
@@ -802,7 +768,9 @@ export const NOTIFICATION_EVENT_TYPE = [
 
 export type NotificationEventType = (typeof NOTIFICATION_EVENT_TYPE)[number]
 
-export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA'
+export type ImageSource = 'FRAMING' |
+    'PATH' |
+    'CAMERA'
 
 export const HIPS_SURVEY_TYPES = [
     'CDS_P_DSS2_NIR',
@@ -835,11 +803,18 @@ export const HIPS_SURVEY_TYPES = [
 
 export type HipsSurveyType = (typeof HIPS_SURVEY_TYPES)[number]
 
-export type PierSide = 'EAST' | 'WEST' | 'NEITHER'
+export type PierSide = 'EAST' |
+    'WEST' |
+    'NEITHER'
 
-export type TargetCoordinateType = 'J2000' | 'JNOW'
+export type TargetCoordinateType = 'J2000' |
+    'JNOW'
 
-export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
+export type TrackMode = 'SIDEREAL' |
+    ' LUNAR' |
+    'SOLAR' |
+    'KING' |
+    'CUSTOM'
 
 export type GuideDirection = 'NORTH' | // DEC+
     'SOUTH' | // DEC-
@@ -888,10 +863,24 @@ export const GUIDE_STATES = [
 
 export type GuideState = (typeof GUIDE_STATES)[number]
 
-export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
+export type Hemisphere = 'NORTHERN' |
+    'SOUTHERN'
 
-export type DARVPolarAlignmentState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'
+export type DARVState = 'IDLE' |
+    'INITIAL_PAUSE' |
+    'FORWARD' |
+    'BACKWARD'
 
-export type GuiderPlotMode = 'RA/DEC' | 'DX/DY'
+export type GuiderPlotMode = 'RA/DEC' |
+    'DX/DY'
 
-export type GuiderYAxisUnit = 'ARCSEC' | 'PIXEL'
+export type GuiderYAxisUnit = 'ARCSEC' |
+    'PIXEL'
+
+export type CameraCaptureState = 'CAPTURE_STARTED' |
+    'EXPOSURE_STARTED' |
+    'EXPOSURING' |
+    'WAITING' |
+    'SETTLING' |
+    'EXPOSURE_FINISHED' |
+    'CAPTURE_FINISHED'

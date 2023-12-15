@@ -1,6 +1,6 @@
 package nebulosa.api.alignment.polar
 
-import nebulosa.api.alignment.polar.darv.DARVStart
+import nebulosa.api.alignment.polar.darv.DARVStartRequest
 import nebulosa.api.beans.annotations.EntityParam
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
@@ -18,7 +18,7 @@ class PolarAlignmentController(
     @PutMapping("darv/{camera}/{guideOutput}/start")
     fun darvStart(
         @EntityParam camera: Camera, @EntityParam guideOutput: GuideOutput,
-        @RequestBody body: DARVStart,
+        @RequestBody body: DARVStartRequest,
     ) {
         polarAlignmentService.darvStart(camera, guideOutput, body)
     }

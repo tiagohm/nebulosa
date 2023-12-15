@@ -3,7 +3,7 @@ package nebulosa.api.guiding
 import io.reactivex.rxjava3.subjects.PublishSubject
 import jakarta.annotation.PostConstruct
 import nebulosa.api.beans.annotations.Subscriber
-import nebulosa.api.services.MessageService
+import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.guide.GuideOutput
@@ -33,17 +33,16 @@ class GuideOutputEventHandler(
     fun onGuideOutputEvent(event: DeviceEvent<GuideOutput>) {
         val device = event.device ?: return
 
-        if (device.canPulseGuide) {
-            when (event) {
-                is PropertyChangedEvent -> {
-                    throttler.onNext(event)
-                }
-                is GuideOutputAttached -> {
-                    messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_ATTACHED, event.device))
-                }
-                is GuideOutputDetached -> {
-                    messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_DETACHED, event.device))
-                }
+        if (device.canPulseGuide && event is PropertyChangedEvent) {
+            throttler.onNext(event)
+        }
+
+        when (event) {
+            is GuideOutputAttached -> {
+                messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_ATTACHED, event.device))
+            }
+            is GuideOutputDetached -> {
+                messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_DETACHED, event.device))
             }
         }
     }

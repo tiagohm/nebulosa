@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import nebulosa.common.concurrency.DaemonThreadFactory
-import nebulosa.common.concurrency.Incrementer
+import nebulosa.batch.processing.AsyncJobLauncher
 import nebulosa.common.json.PathDeserializer
 import nebulosa.common.json.PathSerializer
 import nebulosa.guiding.Guider
@@ -24,7 +23,6 @@ import org.greenrobot.eventbus.EventBus
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
@@ -102,8 +100,7 @@ class BeanConfiguration {
     @Bean
     fun threadPoolTaskExecutor(): ThreadPoolTaskExecutor {
         val taskExecutor = ThreadPoolTaskExecutor()
-        taskExecutor.corePoolSize = 8
-        taskExecutor.maxPoolSize = 32
+        taskExecutor.corePoolSize = 32
         taskExecutor.initialize()
         return taskExecutor
     }
@@ -119,22 +116,13 @@ class BeanConfiguration {
         .installDefaultEventBus()!!
 
     @Bean
-    fun flowIncrementer() = Incrementer()
-
-    @Bean
-    fun stepIncrementer() = Incrementer()
-
-    @Bean
-    fun jobIncrementer() = Incrementer()
-
-    @Bean
     fun phd2Client() = PHD2Client()
 
     @Bean
     fun phd2Guider(phd2Client: PHD2Client): Guider = PHD2Guider(phd2Client)
 
     @Bean
-    fun simpleAsyncTaskExecutor() = SimpleAsyncTaskExecutor(DaemonThreadFactory)
+    fun asyncJobLauncher(threadPoolTaskExecutor: ThreadPoolTaskExecutor) = AsyncJobLauncher(threadPoolTaskExecutor)
 
     @Bean
     fun webMvcConfigurer(

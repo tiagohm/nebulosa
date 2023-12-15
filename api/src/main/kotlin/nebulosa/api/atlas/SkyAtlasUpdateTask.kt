@@ -2,9 +2,9 @@ package nebulosa.api.atlas
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import nebulosa.api.notification.NotificationEvent
+import nebulosa.api.messages.MessageService
+import nebulosa.api.notifications.NotificationEvent
 import nebulosa.api.preferences.PreferenceService
-import nebulosa.api.services.MessageService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request

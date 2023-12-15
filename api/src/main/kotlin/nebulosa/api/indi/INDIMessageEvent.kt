@@ -1,6 +1,6 @@
 package nebulosa.api.indi
 
-import nebulosa.api.services.DeviceMessageEvent
+import nebulosa.api.messages.DeviceMessageEvent
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.DevicePropertyEvent

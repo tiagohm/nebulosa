@@ -11,6 +11,7 @@ plugins {
 dependencies {
     implementation(project(":nebulosa-astap"))
     implementation(project(":nebulosa-astrometrynet"))
+    implementation(project(":nebulosa-batch-processing"))
     implementation(project(":nebulosa-common"))
     implementation(project(":nebulosa-guiding-phd2"))
     implementation(project(":nebulosa-hips2fits"))
@@ -31,7 +32,6 @@ dependencies {
     implementation(libs.flyway)
     implementation(libs.okhttp)
     implementation(libs.oshi)
-    implementation(libs.rx)
     implementation(libs.sqlite)
     implementation(libs.hikari)
     implementation("org.springframework.boot:spring-boot-starter")
@@ -42,7 +42,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket") {
         exclude(module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-batch")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("org.hibernate.orm:hibernate-community-dialects")

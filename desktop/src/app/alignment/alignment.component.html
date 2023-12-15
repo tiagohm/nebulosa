@@ -43,10 +43,10 @@
                     {{ darvDirection }}
                 </span>
                 <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
-                    {{ darvCapture.remainingTime | exposureTime }}
+                    {{ darvRemainingTime | exposureTime }}
                 </span>
                 <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
-                    {{ darvCapture.progress | percent:'1.1-1' }}
+                    {{ darvProgress | percent:'1.1-1' }}
                 </span>
             </ng-container>
         </div>
