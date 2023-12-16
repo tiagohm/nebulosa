@@ -29,7 +29,7 @@ class WheelEventHandler(
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onFocuserEvent(event: FilterWheelEvent) {
+    fun onFilterWheelEvent(event: FilterWheelEvent) {
         when (event) {
             is PropertyChangedEvent -> throttler.onNext(event)
             is FilterWheelAttached -> sendMessage(WHEEL_ATTACHED, event.device)

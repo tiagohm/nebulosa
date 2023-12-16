@@ -297,6 +297,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'ALIGNMENT':
                 this.browserWindow.openAlignment({ bringToFront: true })
                 break
+            case 'SEQUENCER':
+                this.browserWindow.openSequencer({ bringToFront: true })
+                break
             case 'INDI':
                 this.browserWindow.openINDI({ data: undefined, bringToFront: true })
                 break

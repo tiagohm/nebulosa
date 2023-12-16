@@ -12,7 +12,5 @@ class CameraDeserializer : DeviceDeserializer<Camera>(Camera::class.java) {
 
     @Autowired @Lazy private lateinit var connectionService: ConnectionService
 
-    override val names = listOf("camera", "device")
-
-    override fun device(name: String) = connectionService.camera(name)
+    override fun deviceFor(name: String) = connectionService.camera(name)
 }

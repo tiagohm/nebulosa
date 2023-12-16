@@ -12,7 +12,5 @@ class WheelDeserializer : DeviceDeserializer<FilterWheel>(FilterWheel::class.jav
 
     @Autowired @Lazy private lateinit var connectionService: ConnectionService
 
-    override val names = listOf("wheel", "device")
-
-    override fun device(name: String) = connectionService.wheel(name)
+    override fun deviceFor(name: String) = connectionService.wheel(name)
 }

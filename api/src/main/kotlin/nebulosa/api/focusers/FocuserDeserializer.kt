@@ -12,7 +12,5 @@ class FocuserDeserializer : DeviceDeserializer<Focuser>(Focuser::class.java) {
 
     @Autowired @Lazy private lateinit var connectionService: ConnectionService
 
-    override val names = listOf("focuser", "device")
-
-    override fun device(name: String) = connectionService.focuser(name)
+    override fun deviceFor(name: String) = connectionService.focuser(name)
 }

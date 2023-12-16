@@ -1,0 +1,67 @@
+<div class="container px-4 py-3">
+    <div class="grid py-1 flex align-items-center">
+        <p-tabView>
+            <p-tabPanel header="Capture">
+                <div class="grid mt-2">
+                </div>
+            </p-tabPanel>
+            <p-tabPanel header="Dither">
+                <div class="grid mt-2">
+                </div>
+            </p-tabPanel>
+            <p-tabPanel header="Auto Focus">
+                <div class="grid mt-2">
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+    <div class="grid flex align-items-center">
+        <p-scrollPanel class="w-full" [style]="{ width: '100%', height: 'calc(100vh - 168px)' }">
+            <div *ngFor="let slot of slots; index as i" class="col-12">
+                <p-card>
+                    <ng-template pTemplate="header">
+                        <div class="flex align-items-center gap-2 p-3 pb-0">
+                            <p-badge severity="info" value="#{{ i + 1 }}"></p-badge>
+                            <p-checkbox [binary]="true" [(ngModel)]="slot.enabled" />
+                            <span class="p-float-label">
+                                <p-dropdown [disabled]="sequenceInProgress || !slot.enabled" [options]="cameras" [(ngModel)]="slot.camera"
+                                            optionLabel="name"
+                                            styleClass="p-inputtext-sm border-0" emptyMessage="No camera found" />
+                                <label>Camera</label>
+                            </span>
+                            <span class="p-float-label" *ngIf="wheels.length">
+                                <p-dropdown [disabled]="sequenceInProgress || !slot.enabled" [options]="wheels" [(ngModel)]="slot.wheel"
+                                            optionLabel="name"
+                                            styleClass="p-inputtext-sm border-0" emptyMessage="No filter wheel found" />
+                                <label>Filter Wheel</label>
+                            </span>
+                            <span class="p-float-label" *ngIf="focusers.length">
+                                <p-dropdown [disabled]="sequenceInProgress || !slot.enabled" [options]="focusers" [(ngModel)]="slot.focuser"
+                                            optionLabel="name"
+                                            styleClass="p-inputtext-sm border-0" emptyMessage="No focuser found" />
+                                <label>Focuser</label>
+                            </span>
+                        </div>
+                    </ng-template>
+                    <div class="grid">
+                        <div class="col-10 flex">
+                            <div class="flex gap-2 align-items-center">
+                                <p-tag [value]="slot.frameType" severity="success" />
+                                <p-tag value="EXPOSURE: {{ slot.exposureTime | exposureTime }}" />
+                                <p-tag value="AMOUNT: {{ slot.exposureAmount }}" />
+                                <p-tag value="DELAY: {{ slot.exposureDelay | exposureTime }}" />
+                                <p-tag value="ROI: {{ slot.x }} {{ slot.y }} {{ slot.width }}x{{ slot.height }}" />
+                                <p-tag value="BIN: {{ slot.binX }}x{{ slot.binY }}" />
+                                <p-tag value="GAIN: {{ slot.gain }}" />
+                                <p-tag value="OFFSET: {{ slot.offset }}" />
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <p-button [rounded]="true" [text]="true" icon="mdi mdi-24px mdi-menu-down" />
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+        </p-scrollPanel>
+    </div>
+</div>

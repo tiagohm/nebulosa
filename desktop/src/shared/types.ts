@@ -192,6 +192,8 @@ export interface Dither {
 }
 
 export interface CameraStartCapture {
+    enabled?: boolean
+    camera?: Camera
     exposureTime: number
     exposureAmount: number
     exposureDelay: number
@@ -209,6 +211,11 @@ export interface CameraStartCapture {
     savePath?: string
     autoSubFolderMode: AutoSubFolderMode
     dither?: Dither
+    wheel?: FilterWheel
+    wheelPosition?: number
+    shutterPosition?: number
+    focuser?: Focuser
+    focusOffset?: number
 }
 
 export interface CameraCaptureEvent extends MessageEvent {
@@ -377,7 +384,8 @@ export interface Twilight {
     civilDawn: number[]
 }
 
-export type MinorPlanetKind = 'ASTEROID' | 'COMET'
+export type MinorPlanetKind = 'ASTEROID' |
+    'COMET'
 
 export interface MinorPlanet {
     found: boolean
@@ -551,6 +559,27 @@ export interface SettleInfo {
     amount: number
     time: number
     timeout: number
+}
+
+export type SequenceCaptureMode = 'FULLY' |
+    'INTERLEAVED'
+
+export interface AutoFocusAfterConditions {
+    onStart: boolean
+    onFilterChange: boolean
+    afterElapsedTime: number
+    afterExposures: number
+    afterTemperatureChange: number
+    afterHFDIncrease: number
+}
+
+export interface SequencePlan {
+    initialDelay: number
+    captureMode: SequenceCaptureMode
+    savePath?: string
+    slots: CameraStartCapture[]
+    dither?: Dither
+    autoFocus?: AutoFocusAfterConditions
 }
 
 export enum ExposureTimeUnit {

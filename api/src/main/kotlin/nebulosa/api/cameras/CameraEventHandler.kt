@@ -29,7 +29,7 @@ class CameraEventHandler(
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onFocuserEvent(event: CameraEvent) {
+    fun onCameraEvent(event: CameraEvent) {
         when (event) {
             is PropertyChangedEvent -> throttler.onNext(event)
             is CameraAttached -> sendMessage(CAMERA_ATTACHED, event.device)

@@ -92,6 +92,14 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
 
+    openSequencer(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
+        options.icon ||= 'workflow'
+        options.width ||= 760
+        options.height ||= 570
+        options.resizable = true
+        this.openWindow({ ...options, id: 'sequencer', path: 'sequencer', data: undefined })
+    }
+
     openSettings(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'settings'
         options.width ||= 580

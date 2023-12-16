@@ -8,29 +8,17 @@ import com.fasterxml.jackson.databind.node.TextNode
 
 abstract class DeviceDeserializer<T>(type: Class<out T>) : StdDeserializer<T>(type) {
 
-    protected abstract val names: Iterable<String>
-
-    protected abstract fun device(name: String): T?
+    protected abstract fun deviceFor(name: String): T?
 
     final override fun deserialize(p: JsonParser, ctxt: DeserializationContext): T? {
         val node = p.codec.readTree<JsonNode>(p)
 
-        if (node is TextNode) {
-            return device(node.asText())
+        return if (node is TextNode) {
+            deviceFor(node.asText())
+        } else if (node.has("name") && node.get("name") is TextNode) {
+            deviceFor(node.get("name").asText())
+        } else {
+            null
         }
-
-        for (name in names) {
-            if (node.has(name)) {
-                val deviceNode = node.get(name)
-
-                if (deviceNode is TextNode) {
-                    return device(deviceNode.asText()) ?: continue
-                } else if (deviceNode.has("name")) {
-                    return device(deviceNode.get("name").asText()) ?: continue
-                }
-            }
-        }
-
-        return null
     }
 }
