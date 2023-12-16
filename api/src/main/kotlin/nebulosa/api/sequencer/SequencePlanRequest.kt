@@ -1,0 +1,20 @@
+package nebulosa.api.sequencer
+
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotNull
+import nebulosa.api.cameras.CameraStartCaptureRequest
+import nebulosa.api.guiding.DitherAfterExposureRequest
+import org.hibernate.validator.constraints.time.DurationMax
+import org.hibernate.validator.constraints.time.DurationMin
+import java.nio.file.Path
+import java.time.Duration
+
+data class SequencePlanRequest(
+    @field:DurationMin(seconds = 0) @field:DurationMax(minutes = 60) val initialDelay: Duration = Duration.ZERO,
+    @field:Valid val captureMode: SequenceCaptureMode = SequenceCaptureMode.INTERLEAVED,
+    @field:NotNull val savePath: Path? = null,
+    @field:NotEmpty val slots: List<CameraStartCaptureRequest> = emptyList(),
+    @field:Valid val dither: DitherAfterExposureRequest = DitherAfterExposureRequest.DISABLED,
+    @field:Valid val autoFocus: AutoFocusAfterConditions = AutoFocusAfterConditions.DISABLED,
+)

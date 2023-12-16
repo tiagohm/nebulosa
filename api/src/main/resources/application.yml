@@ -25,3 +25,7 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
     table: migrations
+
+logging:
+  level:
+    nebulosa.indi: INFO

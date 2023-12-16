@@ -1,9 +1,12 @@
 package nebulosa.api.cameras
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+import nebulosa.batch.processing.JobExecution
 import nebulosa.indi.device.camera.Camera
 import java.time.Duration
 
 data class CameraExposureStarted(
+    @JsonIgnore override val jobExecution: JobExecution,
     override val camera: Camera,
     override val exposureAmount: Int,
     override val exposureCount: Int,

@@ -23,9 +23,6 @@ class JobExecution(
     @JvmField internal val completable = CompletableFuture<Boolean>()
     @JvmField val cancellationToken = CancellationToken()
 
-    inline val jobId
-        get() = job.id
-
     inline val canContinue
         get() = status == JobStatus.STARTED
 

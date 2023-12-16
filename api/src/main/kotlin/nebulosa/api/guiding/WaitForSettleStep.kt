@@ -17,8 +17,10 @@ data class WaitForSettleStep(@JvmField val guider: Guider) : Step, JobExecutionL
 
     override fun execute(stepExecution: StepExecution): StepResult {
         if (guider.isSettling && !stepExecution.jobExecution.cancellationToken.isDone) {
+            stepExecution.context[WAITING] = true
             listeners.forEach { it.onSettleStarted(this, stepExecution) }
             guider.waitForSettle(stepExecution.jobExecution.cancellationToken)
+            stepExecution.context[WAITING] = false
             listeners.forEach { it.onSettleFinished(this, stepExecution) }
         }
 
@@ -27,5 +29,10 @@ data class WaitForSettleStep(@JvmField val guider: Guider) : Step, JobExecutionL
 
     override fun afterJob(jobExecution: JobExecution) {
         listeners.clear()
+    }
+
+    companion object {
+
+        const val WAITING = "WAIT_FOR_SETTLE.WAITING"
     }
 }

@@ -1,5 +1,6 @@
 package nebulosa.batch.processing
 
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 
 object DefaultStepHandler : StepHandler {
@@ -23,14 +24,14 @@ object DefaultStepHandler : StepHandler {
             else -> {
                 val chain = StepInterceptorChain(stepExecution.jobExecution.stepInterceptors, step, stepExecution)
 
-                LOG.info("step started. step={}, context={}", step, stepExecution.context)
+                LOG.debug { "step started. step=%s, context=%s".format(step, stepExecution.context) }
 
                 while (stepExecution.jobExecution.canContinue) {
                     val status = chain.proceed().get()
                     if (status != RepeatStatus.CONTINUABLE) break
                 }
 
-                LOG.info("step finished. step={}, context={}", step, stepExecution.context)
+                LOG.debug { "step finished. step=%s, context=%s".format(step, stepExecution.context) }
             }
         }
 

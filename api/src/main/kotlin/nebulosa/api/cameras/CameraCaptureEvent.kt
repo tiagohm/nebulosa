@@ -1,11 +1,12 @@
 package nebulosa.api.cameras
 
 import nebulosa.api.messages.MessageEvent
+import nebulosa.api.sequencer.JobExecutionEvent
 import nebulosa.indi.device.camera.Camera
 import java.nio.file.Path
 import java.time.Duration
 
-sealed interface CameraCaptureEvent : MessageEvent {
+sealed interface CameraCaptureEvent : MessageEvent, JobExecutionEvent {
 
     val camera: Camera
 

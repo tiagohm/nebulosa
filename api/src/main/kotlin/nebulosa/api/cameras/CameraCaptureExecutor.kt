@@ -7,6 +7,7 @@ import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.JobLauncher
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import org.springframework.stereotype.Component
 import java.util.*
@@ -27,12 +28,11 @@ class CameraCaptureExecutor(
         check(camera.connected) { "camera is not connected" }
         check(!isCapturing(camera)) { "job is already running for camera: [${camera.name}]" }
 
-        LOG.info("starting camera capture. request={}", request)
+        LOG.debug { "starting camera capture. request=%s".format(request) }
 
         val cameraCaptureJob = CameraCaptureJob(request, guider)
         cameraCaptureJob.subscribe(this)
-        val jobExecution = jobLauncher.launch(cameraCaptureJob)
-        jobExecutions.add(jobExecution)
+        jobExecutions.add(jobLauncher.launch(cameraCaptureJob))
     }
 
     fun findJobExecution(camera: Camera): JobExecution? {

@@ -49,6 +49,9 @@ class BeanConfiguration {
     fun capturesPath(appPath: Path): Path = Path.of("$appPath", "captures").createDirectories()
 
     @Bean
+    fun sequencesPath(appPath: Path): Path = Path.of("$appPath", "sequences").createDirectories()
+
+    @Bean
     fun cachePath(appPath: Path): Path = Path.of("$appPath", "cache").createDirectories()
 
     @Bean

@@ -5,7 +5,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { AutoSubFolderMode, Camera, CameraStartCapture, Dither, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType } from '../../shared/types'
+import { AutoSubFolderMode, Camera, CameraCaptureState, CameraStartCapture, Dither, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
 export interface CameraPreference {
@@ -161,8 +161,19 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     offsetMin = 0
     offsetMax = 0
 
-    capturing = false
-    waiting = false
+    state?: CameraCaptureState
+
+    get capturing() {
+        return this.state === 'EXPOSURING'
+    }
+
+    get waiting() {
+        return this.state === 'WAITING'
+    }
+
+    get settling() {
+        return this.state === 'SETTLING'
+    }
 
     readonly exposure = {
         count: 0,
@@ -258,16 +269,17 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                     if (event.state === 'WAITING') {
                         this.wait.remainingTime = event.waitRemainingTime
                         this.wait.progress = event.waitProgress
-                        this.waiting = true
+                        this.state = event.state
+                    } else if (event.state === 'SETTLING') {
+                        this.state = event.state
                     } else if (event.state === 'CAPTURE_STARTED') {
                         this.capture.looping = event.exposureAmount <= 0
                         this.capture.amount = event.exposureAmount
-                        this.capturing = true
+                        this.state = 'EXPOSURING'
                     } else if (event.state === 'CAPTURE_FINISHED') {
-                        this.capturing = false
-                        this.waiting = false
+                        this.state = undefined
                     } else if (event.state === 'EXPOSURE_STARTED') {
-                        this.waiting = false
+                        this.state = 'EXPOSURING'
                     }
                 })
             }

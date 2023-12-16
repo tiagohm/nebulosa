@@ -1,18 +1,18 @@
-package nebulosa.api.cameras
+package nebulosa.api.focusers
 
 import nebulosa.api.beans.converters.DeviceDeserializer
 import nebulosa.api.connection.ConnectionService
-import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.focuser.Focuser
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 
 @Component
-class CameraDeserializer : DeviceDeserializer<Camera>(Camera::class.java) {
+class FocuserDeserializer : DeviceDeserializer<Focuser>(Focuser::class.java) {
 
     @Autowired @Lazy private lateinit var connectionService: ConnectionService
 
-    override val names = listOf("camera", "device")
+    override val names = listOf("focuser", "device")
 
-    override fun device(name: String) = connectionService.camera(name)
+    override fun device(name: String) = connectionService.focuser(name)
 }

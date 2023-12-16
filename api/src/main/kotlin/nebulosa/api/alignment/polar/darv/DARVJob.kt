@@ -10,11 +10,12 @@ import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.guiding.GuidePulseStep
 import nebulosa.api.messages.MessageEvent
 import nebulosa.batch.processing.*
+import nebulosa.batch.processing.ExecutionContext.Companion.getDouble
+import nebulosa.batch.processing.ExecutionContext.Companion.getDuration
+import nebulosa.batch.processing.ExecutionContext.Companion.getPath
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.batch.processing.delay.DelayStepListener
-import nebulosa.common.concurrency.Incrementer
 import java.nio.file.Files
-import java.nio.file.Path
 import java.time.Duration
 
 data class DARVJob(
@@ -30,8 +31,6 @@ data class DARVJob(
         exposureTime = request.exposureTime + request.initialPause,
         savePath = Files.createTempDirectory("darv"),
     )
-
-    override val id = "DARV.Job.${ID.increment()}"
 
     override val subject = PublishSubject.create<MessageEvent>()
 
@@ -64,26 +63,21 @@ data class DARVJob(
     }
 
     override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution) {
-        val savePath = stepExecution.context[CameraExposureStep.SAVE_PATH] as Path
-        onNext(CameraExposureFinished(step.camera, 1, 1, Duration.ZERO, 1.0, Duration.ZERO, savePath))
+        val savePath = stepExecution.context.getPath(CameraExposureStep.SAVE_PATH)!!
+        onNext(CameraExposureFinished(stepExecution.jobExecution, step.camera, 1, 1, Duration.ZERO, 1.0, Duration.ZERO, savePath))
     }
 
     override fun onGuidePulseElapsed(step: GuidePulseStep, stepExecution: StepExecution) {
         val direction = step.request.direction
-        val remainingTime = stepExecution.context[DelayStep.REMAINING_TIME] as Duration
-        val progress = stepExecution.context[DelayStep.PROGRESS] as Double
+        val remainingTime = stepExecution.context.getDuration(DelayStep.REMAINING_TIME)
+        val progress = stepExecution.context.getDouble(DelayStep.PROGRESS)
         val state = if (direction == this.direction) DARVState.FORWARD else DARVState.BACKWARD
         onNext(DARVGuidePulseElapsed(camera, guideOutput, remainingTime, progress, direction, state))
     }
 
     override fun onDelayElapsed(step: DelayStep, stepExecution: StepExecution) {
-        val remainingTime = stepExecution.context[DelayStep.REMAINING_TIME] as Duration
-        val progress = stepExecution.context[DelayStep.PROGRESS] as Double
+        val remainingTime = stepExecution.context.getDuration(DelayStep.REMAINING_TIME)
+        val progress = stepExecution.context.getDouble(DelayStep.PROGRESS)
         onNext(DARVInitialPauseElapsed(camera, guideOutput, remainingTime, progress))
-    }
-
-    companion object {
-
-        @JvmStatic private val ID = Incrementer()
     }
 }
