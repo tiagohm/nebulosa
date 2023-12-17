@@ -14,7 +14,7 @@
                 <label>Port</label>
             </span>
         </div>
-        <div class="col-2 text-center pr-0">
+        <div class="col-2 justify-content-center px-0">
             <p-button *ngIf="connected" (onClick)="connect()" styleClass="p-button-sm" icon="mdi mdi-close" severity="danger" />
             <p-button *ngIf="!connected" (onClick)="connect()" styleClass="p-button-sm" icon="mdi mdi-connection" severity="info" />
         </div>

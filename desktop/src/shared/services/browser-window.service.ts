@@ -45,7 +45,7 @@ export class BrowserWindowService {
     openGuider(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'guider'
         options.width ||= 425
-        options.height ||= 440
+        options.height ||= 450
         this.openWindow({ ...options, id: 'guider', path: 'guider', data: undefined })
     }
 
@@ -87,7 +87,7 @@ export class BrowserWindowService {
 
     openAlignment(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'star'
-        options.width ||= 470
+        options.width ||= 400
         options.height ||= 280
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
@@ -115,6 +115,6 @@ export class BrowserWindowService {
     }
 
     openAbout() {
-        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 340, height: 243, bringToFront: true, data: undefined })
+        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 480, height: 252, bringToFront: true, data: undefined })
     }
 }

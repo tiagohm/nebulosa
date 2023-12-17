@@ -35,7 +35,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm" style="min-height: 25px;">
+        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-sm" style="min-height: 25px;">
             <i class="mdi mdi-information text-blue-600"></i>
             <span style="min-width: 60px" class="text-left mr-2">{{ darvStatus | enum | lowercase }}</span>
             <ng-container *ngIf="darvInProgress">
@@ -70,7 +70,7 @@
                                 <label>Drift for (s)</label>
                             </span>
                         </div>
-                        <div class="col-4 text-center">
+                        <div class="col-4">
                             <span class="p-float-label">
                                 <p-dropdown [options]="darvHemispheres" [(ngModel)]="darvHemisphere" styleClass="p-inputtext-sm border-0"
                                             [autoDisplayFirst]="false" />

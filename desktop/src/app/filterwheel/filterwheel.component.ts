@@ -122,17 +122,17 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     shutterToggled(filter: Filter, event: InputSwitchChangeEvent) {
         this.filters.forEach(e => e.dark = event.checked && e === filter)
-        this.filterChangedPublisher.next(filter)
+        this.filterChangedPublisher.next(Object.assign({}, filter))
     }
 
     filterNameChanged(filter: Filter) {
         if (filter.name) {
-            this.filterChangedPublisher.next(filter)
+            this.filterChangedPublisher.next(Object.assign({}, filter))
         }
     }
 
     focusOffsetChanged(filter: Filter) {
-        this.filterChangedPublisher.next(filter)
+        this.filterChangedPublisher.next(Object.assign({}, filter))
     }
 
     private update() {
