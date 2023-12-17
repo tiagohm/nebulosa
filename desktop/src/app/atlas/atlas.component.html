@@ -329,13 +329,13 @@
                                 <label>Elongation (°)</label>
                             </span>
                         </div>
-                        <div class="col-3 text-center">
+                        <div class="col-3 justify-content-center">
                             <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-lg mdi-dots-vertical"
                                       (click)="ephemerisMenu.show()" />
                         </div>
                     </div>
                 </div>
-                <div class="col-12 flex justify-content-center">
+                <div class="col-12 pt-0 flex justify-content-center">
                     <p-button [disabled]="!name || refreshing" [text]="true" severity="info" (onClick)="mountSync()" icon="mdi mdi-sync"
                               label="Sync" />
                     <p-button [disabled]="!name || refreshing" [text]="true" severity="success" (onClick)="mountGoTo()" icon="mdi mdi-telescope"
@@ -448,21 +448,25 @@
 <p-overlayPanel #calendarPanel [style]="{width: 'calc(100% - 8px)', marginLeft: '4px'}" appendTo="body">
     <ng-template pTemplate="content">
         <div class="grid">
-            <div class="col-12 flex flex-row align-items-center justify-content-between gap-1">
-                <p-inputSwitch [disabled]="refreshing" [(ngModel)]="useManualDateTime" (ngModelChange)="useManualDateTimeChanged()" />
-
-                <div class="flex align-items-center justify-content-center gap-2">
-                    <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0" [max]="23"
-                                   class="w-fit" [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)"
-                                   styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
-                    <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeMinute" [showButtons]="true" [min]="0"
-                                   [max]="59" class="w-fit" [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)"
-                                   styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
-                </div>
-            </div>
-            <div class="col-12">
+            <div class="col-8 flex-column gap-2">
                 <p-calendar [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTime" (ngModelChange)="dateTimeChanged(true)"
                             [inline]="true" [showIcon]="true" [showWeek]="true" [showButtonBar]="false" dateFormat="yy-mm-dd" styleClass="w-full" />
+            </div>
+            <div class="col-4 flex-column gap-2 align-items-center justify-content-start gap-1">
+                <p-checkbox [binary]="true" label="Enabled" [disabled]="refreshing" [(ngModel)]="useManualDateTime"
+                            (ngModelChange)="useManualDateTimeChanged()" />
+                <div class="flex flex-column align-items-center">
+                    <span>Time</span>
+                    <div class="flex align-items-center justify-content-center gap-2">
+                        <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0"
+                                       [max]="23"
+                                       class="w-fit" [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)"
+                                       styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
+                        <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeMinute" [showButtons]="true" [min]="0"
+                                       [max]="59" class="w-fit" [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)"
+                                       styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
+                    </div>
+                </div>
             </div>
         </div>
     </ng-template>

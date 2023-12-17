@@ -175,6 +175,11 @@ i.mdi {
     border: 0;
 }
 
+.p-overlaypanel:before,
+.p-overlaypanel:after {
+    display: none;
+}
+
 .draggable-region {
     -webkit-app-region: drag;
 }
