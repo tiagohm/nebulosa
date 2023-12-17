@@ -1,6 +1,7 @@
 package nebulosa.api.wheels
 
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.beans.annotations.EntityParam
 import nebulosa.api.connection.ConnectionService
@@ -45,7 +46,7 @@ class WheelController(
     @PutMapping("{wheel}/sync")
     fun sync(
         @EntityParam wheel: FilterWheel,
-        @RequestParam @Valid @PositiveOrZero names: String,
+        @RequestParam @Valid @NotEmpty names: String,
     ) {
         wheelService.sync(wheel, names.split(","))
     }

@@ -1,7 +1,7 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { InputSwitchChangeEvent } from 'primeng/inputswitch'
-import { Subject, Subscription, throttleTime } from 'rxjs'
+import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
@@ -73,7 +73,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         })
 
         this.subscription = this.filterChangedPublisher
-            .pipe(throttleTime(1500))
+            .pipe(debounceTime(1500))
             .subscribe((filter) => {
                 this.savePreference()
                 this.electron.send('WHEEL_RENAMED', { wheel: this.wheel!, filter })
