@@ -49,8 +49,8 @@ function createMainWindow() {
         onWebSocketClose: () => {
             console.warn('Web Socket closed')
         },
-        onWebSocketError: (e) => {
-            console.error('Web Socket error', e)
+        onWebSocketError: () => {
+            console.error('Web Socket error')
         },
     })
 

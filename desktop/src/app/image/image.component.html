@@ -318,13 +318,15 @@
     </div>
 </p-dialog>
 
-<div class="grid fixed text-sm coordinates monospaced" *ngIf="mouseCoordinate && isMouseCoordinateVisible">
-    <div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
-    <div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
-    <div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
-    <div class="col-6 m-0 p-0">δ: {{ mouseCoordinate.delta }}</div>
-    <div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
-    <div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
+<div class="fixed p-3 text-sm coordinates monospaced" *ngIf="mouseCoordinate && isMouseCoordinateVisible">
+    <div class="grid m-0">
+        <div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
+        <div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
+        <div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
+        <div class="col-6 m-0 p-0">δ: {{ mouseCoordinate.delta }}</div>
+        <div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
+        <div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
+    </div>
 </div>
 
 <p-deviceMenu #deviceMenu />
