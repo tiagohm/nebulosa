@@ -363,6 +363,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
                 ngZone.run(() => {
                     this.imageData.path = event.savePath
+                    this.clearOverlay()
                     this.loadImage()
                 })
             }
@@ -462,6 +463,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.disableCalibrate()
         }
 
+        this.clearOverlay()
+
         this.loadImage()
     }
 
@@ -477,8 +480,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private async loadImage() {
         if (this.imageData.path) {
-            this.clearOverlay()
-
             await this.loadImageFromPath(this.imageData.path)
         }
 
