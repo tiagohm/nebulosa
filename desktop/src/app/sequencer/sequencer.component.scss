@@ -1,0 +1,21 @@
+:host {
+    ::ng-deep {
+        .p-card {
+            .p-card-body {
+                padding: 0px;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+
+            .p-card-content {
+                padding: 0px;
+                padding-top: 0.5rem !important;
+                padding-bottom: 0.5rem !important;
+            }
+        }
+
+        .p-orderlist-controls {
+            display: none;
+        }
+    }
+}

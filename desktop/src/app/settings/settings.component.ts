@@ -44,7 +44,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Settings'
 
-        app.extra.push({
+        app.topMenu.push({
             icon: 'mdi mdi-content-save',
             tooltip: 'Save changes',
             command: () => {

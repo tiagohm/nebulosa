@@ -8,8 +8,8 @@ import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
 import {
     ApiEventType, Camera, CameraCaptureEvent, DARVEvent, DeviceMessageEvent, FilterWheel, Focuser,
-    GuideOutput, Guider, GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Location, Mount, NotificationEvent,
-    NotificationEventType, OpenDirectory, OpenFile
+    GuideOutput, Guider, GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, JsonFile, Location, Mount, NotificationEvent,
+    NotificationEventType, OpenDirectory, OpenFile, SaveJson
 } from '../types'
 import { ApiService } from './api.service'
 
@@ -99,5 +99,13 @@ export class ElectronService {
 
     openDirectory(data?: OpenDirectory): Promise<string | false> {
         return this.send('OPEN_DIRECTORY', data)
+    }
+
+    saveJson<T>(data: SaveJson<T>): Promise<JsonFile<T> | false> {
+        return this.send('SAVE_JSON', data)
+    }
+
+    openJson<T>(data?: OpenFile): Promise<JsonFile<T> | false> {
+        return this.send('OPEN_JSON', data)
     }
 }

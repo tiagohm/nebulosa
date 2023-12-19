@@ -1,3 +1,4 @@
+import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import { HttpClientModule } from '@angular/common/http'
 import { LOCALE_ID, NgModule } from '@angular/core'
@@ -115,6 +116,7 @@ import { SettingsComponent } from './settings/settings.component'
         ConfirmDialogModule,
         ContextMenuModule,
         DialogModule,
+        DragDropModule,
         DropdownModule,
         DynamicDialogModule,
         FormsModule,

@@ -171,7 +171,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     showSatelliteFilterDialog = false
     readonly satelliteSearchGroup = new Map<SatelliteGroupType, boolean>()
 
-    name?= 'Sun'
+    name? = 'Sun'
     tags: { title: string, severity: string }[] = []
 
     @ViewChild('imageOfSun')
@@ -482,7 +482,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     ) {
         app.title = 'Sky Atlas'
 
-        app.extra.push({
+        app.topMenu.push({
             icon: 'mdi mdi-calendar',
             tooltip: 'Date & time',
             command: (e) => {

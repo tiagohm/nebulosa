@@ -17,10 +17,10 @@
                       pTooltip="Image viewer" tooltipPosition="bottom" />
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-wrench" (click)="openCameraCalibration()"
                       pTooltip="Calibration" tooltipPosition="bottom" />
-            <p-button [disabled]="!camera || !camera.connected || capturing" [text]="true" [rounded]="true" icon="mdi mdi-dots-vertical"
-                      (click)="cameraMenu.show()" />
+            <p-button *ngIf="!dialogMode" [disabled]="!camera || !camera.connected || capturing" [text]="true" [rounded]="true"
+                      icon="mdi mdi-dots-vertical" (click)="cameraMenu.show()" />
         </div>
-        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
+        <div *ngIf="!dialogMode" class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
             <i *ngIf="request.autoSave" class="mdi mdi-content-save" pTooltip="Auto save: ON" tooltipPosition="bottom"></i>
             <i *ngIf="!request.autoSave" class="mdi mdi-content-save-off" pTooltip="Auto save: OFF" tooltipPosition="bottom"></i>
             <i *ngIf="request.autoSubFolderMode === 'OFF'" class="mdi mdi-folder-off" pTooltip="Auto sub folder: OFF" tooltipPosition="bottom"></i>
@@ -34,7 +34,8 @@
                 <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="clearSavePath()"></i>
             </span>
         </div>
-        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm" style="min-height: 25px;">
+        <div *ngIf="!dialogMode" class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"
+             style="min-height: 25px;">
             <i class="mdi mdi-information text-blue-600"></i>
             <span style="min-width: 44px" class="text-left mr-2">
                 {{ settling ? 'settling' : waiting ? 'waiting' : capturing ? 'capturing' : 'idle' }}
@@ -110,7 +111,7 @@
                                    [allowEmpty]="false" (ngModelChange)="savePreference()" />
                     <label>Exposure Time</label>
                 </span>
-                <p-menu #exposureTimeMenu [model]="exposureTimeUnitModel" [popup]="true" />
+                <p-menu #exposureTimeMenu [model]="exposureTimeUnitModel" [popup]="true" appendTo="body" />
                 <button [disabled]="!camera.connected || capturing" pButton type="button" (click)="exposureTimeMenu.toggle($event)"
                         [label]="exposureTimeUnit"></button>
             </div>
@@ -127,7 +128,7 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6 flex-column">
             <span class="text-sm text-gray-100">Exposure Mode</span>
-            <p-selectButton [disabled]="!camera.connected || capturing" [options]="exposureModeOptions" [(ngModel)]="exposureMode"
+            <p-selectButton [disabled]="dialogMode || !camera.connected || capturing" [options]="exposureModeOptions" [(ngModel)]="exposureMode"
                             styleClass="p-inputtext-sm border-0"
                             (ngModelChange)="savePreference()" />
         </div>
@@ -237,10 +238,12 @@
     </div>
     <div class="grid mt-1">
         <div class="col-12 flex align-items-center justify-content-center gap-1">
-            <p-button [disabled]="!camera.connected || capturing" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
+            <p-button *ngIf="!dialogMode" [disabled]="!camera.connected || capturing" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
                       severity="success" />
-            <p-button [disabled]="!camera.connected || !capturing" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
+            <p-button *ngIf="!dialogMode" [disabled]="!camera.connected || !capturing" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
                       severity="danger" />
+            <p-button *ngIf="dialogMode" [disabled]="!camera.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
+                      severity="info" />
         </div>
     </div>
 </div>

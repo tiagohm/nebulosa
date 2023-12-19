@@ -1,6 +1,7 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, Optional } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -30,6 +31,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     wheel?: FilterWheel
 
     showDitherDialog = false
+    dialogMode = false
 
     readonly cameraModel: MenuItem[] = [
         {
@@ -194,15 +196,17 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     ]
 
     constructor(
-        private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private storage: LocalStorageService,
         private route: ActivatedRoute,
         ngZone: NgZone,
+        @Optional() private app?: AppComponent,
+        @Optional() private dialogRef?: DynamicDialogRef,
+        @Optional() config?: DynamicDialogConfig<CameraStartCapture>,
     ) {
-        app.title = 'Camera'
+        if (app) app.title = 'Camera'
 
         electron.on('CAMERA_UPDATED', event => {
             if (event.device.name === this.camera?.name) {
@@ -249,6 +253,12 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 })
             }
         })
+
+        if (config) {
+            Object.assign(this.request, config.data)
+            this.dialogMode = true
+            this.cameraChanged(this.request.camera)
+        }
     }
 
     async ngAfterContentInit() {
@@ -260,20 +270,22 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.abortCapture()
+        if (!this.dialogMode) {
+            this.abortCapture()
+        }
     }
 
     async cameraChanged(camera?: Camera) {
-        if (camera) {
-            this.app.subTitle = camera.name
-
+        if (camera && camera.name) {
             camera = await this.api.camera(camera.name)
             Object.assign(this.camera, camera)
 
             this.loadPreference()
             this.update()
-        } else {
-            this.app.subTitle = ''
+        }
+
+        if (this.app) {
+            this.app.subTitle = camera?.name ?? ''
         }
     }
 
@@ -382,16 +394,22 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         this.savePreference()
     }
 
+    apply() {
+        this.dialogRef?.close(this.makeCameraStartCapture())
+    }
+
     private loadPreference() {
         if (this.camera) {
-            const preference = this.storage.get<CameraPreference>(`camera.${this.camera.name}`, {})
+            const mode = this.dialogMode ? '.dialog' : ''
+            const preference = this.storage.get<CameraPreference>(`camera.${this.camera.name}${mode}`, {})
+
             this.request.autoSave = preference.autoSave ?? false
             this.savePath = preference.savePath ?? ''
             this.request.autoSubFolderMode = preference.autoSubFolderMode ?? 'OFF'
             this.setpointTemperature = preference.setpointTemperature ?? 0
             this.request.exposureTime = preference.exposureTime ?? this.camera.exposureMin
             this.exposureTimeUnit = preference.exposureTimeUnit ?? ExposureTimeUnit.MICROSECOND
-            this.exposureMode = preference.exposureMode ?? 'SINGLE'
+            this.exposureMode = this.dialogMode ? 'FIXED' : (preference.exposureMode ?? 'SINGLE')
             this.request.exposureDelay = preference.exposureDelay ?? 0
             this.request.exposureAmount = preference.exposureAmount ?? 1
             this.request.x = preference.x ?? this.camera.minX
@@ -439,7 +457,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 dither: this.request.dither,
             }
 
-            this.storage.set(`camera.${this.camera.name}`, preference)
+            const mode = this.dialogMode ? '.dialog' : ''
+            this.storage.set(`camera.${this.camera.name}${mode}`, preference)
         }
     }
 }

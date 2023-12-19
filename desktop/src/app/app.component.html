@@ -6,9 +6,9 @@
     </span>
 
     <p-button [text]="true" [rounded]="true" [icon]="e.icon" [disabled]="e.disabled" [pTooltip]="e.tooltip ?? e.label" tooltipPosition="bottom"
-              (onClick)="e.command?.({originalEvent: $event, item: e, index: i})" size="small" *ngFor="let e of extra; let i = index" />
+              (onClick)="e.command?.({originalEvent: $event, item: e, index: i})" size="small" *ngFor="let e of topMenu; let i = index" />
 
-    <span class="separator flex justify-content-center" *ngIf="extra.length"></span>
+    <span class="separator flex justify-content-center" *ngIf="topMenu.length"></span>
 
     <p-button *ngIf="pinned" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin" (onClick)="pin()"
               styleClass="select-none cursor-pointer"></p-button>

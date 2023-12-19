@@ -34,7 +34,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Calibration'
 
-        app.extra.push({
+        app.topMenu.push({
             icon: 'mdi mdi-image-plus',
             tooltip: 'Add file',
             command: async () => {
@@ -48,7 +48,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             },
         })
 
-        app.extra.push({
+        app.topMenu.push({
             icon: 'mdi mdi-folder-plus',
             tooltip: 'Add folder',
             command: async () => {

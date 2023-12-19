@@ -94,7 +94,7 @@ export class BrowserWindowService {
 
     openSequencer(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'workflow'
-        options.width ||= 760
+        options.width ||= 630
         options.height ||= 570
         options.resizable = true
         this.openWindow({ ...options, id: 'sequencer', path: 'sequencer', data: undefined })

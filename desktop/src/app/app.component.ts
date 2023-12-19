@@ -16,7 +16,7 @@ export class AppComponent implements AfterViewInit {
     maximizable = false
     subTitle = ''
     backgroundColor = '#212121'
-    extra: MenuItem[] = []
+    topMenu: MenuItem[] = []
 
     get title() {
         return this.windowTitle.getTitle()

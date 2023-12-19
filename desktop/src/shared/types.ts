@@ -309,6 +309,13 @@ export interface OpenFile extends OpenDirectory {
     filters?: Electron.FileFilter[]
 }
 
+export interface JsonFile<T = any> {
+    path?: string
+    json: T
+}
+
+export interface SaveJson<T = any> extends OpenFile, JsonFile<T> { }
+
 export interface GuideCaptureEvent {
     camera: Camera
 }
@@ -631,7 +638,7 @@ export interface SequencePlan {
     initialDelay: number
     captureMode: SequenceCaptureMode
     savePath?: string
-    slots: CameraStartCapture[]
+    entries: CameraStartCapture[]
     dither?: Dither
     autoFocus?: AutoFocusAfterConditions
 }
@@ -838,9 +845,9 @@ export const API_EVENT_TYPES = [
 export type ApiEventType = (typeof API_EVENT_TYPES)[number]
 
 export const INTERNAL_EVENT_TYPES = [
-    'SAVE_FITS_AS', 'OPEN_FILE', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
+    'SAVE_FITS', 'OPEN_FILE', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
     'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW',
-    'WHEEL_RENAMED', 'LOCATION_CHANGED',
+    'WHEEL_RENAMED', 'LOCATION_CHANGED', 'SAVE_JSON', 'OPEN_JSON'
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
