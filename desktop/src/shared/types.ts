@@ -596,6 +596,9 @@ export interface NotificationEvent extends MessageEvent {
 
 export interface SequencerEvent extends MessageEvent {
     id: number
+    elapsedTime: number
+    remainingTime: number
+    progress: number
     capture: CameraCaptureEvent
 }
 
@@ -644,8 +647,8 @@ export interface SequencePlan {
     captureMode: SequenceCaptureMode
     savePath?: string
     entries: CameraStartCapture[]
-    dither?: Dither
-    autoFocus?: AutoFocusAfterConditions
+    dither: Dither
+    autoFocus: AutoFocusAfterConditions
 }
 
 export enum ExposureTimeUnit {

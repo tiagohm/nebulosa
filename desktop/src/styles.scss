@@ -76,10 +76,15 @@ p-dropdown,
 .p-inputwrapper,
 .p-inputtext {
     width: 100%;
+    height: 100%;
 }
 
 .p-inputtext:read-only {
     color: rgba(200, 200, 200, 0.87);
+}
+
+p-checkbox {
+    justify-content: center;
 }
 
 .p-checkbox {

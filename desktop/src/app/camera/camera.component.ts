@@ -16,6 +16,44 @@ export interface CameraPreference extends Partial<CameraStartCapture> {
     subFrame?: boolean
 }
 
+export interface CameraExposureInfo {
+    count: number
+    remainingTime: number
+    progress: number
+}
+
+export const EMPTY_CAMERA_EXPOSURE_INFO: CameraExposureInfo = {
+    count: 0,
+    remainingTime: 0,
+    progress: 0,
+}
+
+export interface CameraCaptureInfo {
+    looping: boolean
+    amount: number
+    remainingTime: number
+    elapsedTime: number
+    progress: number
+}
+
+export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
+    looping: false,
+    amount: 0,
+    remainingTime: 0,
+    elapsedTime: 0,
+    progress: 0,
+}
+
+export interface CameraWaitInfo {
+    remainingTime: number
+    progress: number
+}
+
+export const EMPTY_CAMERA_WAIT_INFO: CameraWaitInfo = {
+    remainingTime: 0,
+    progress: 0,
+}
+
 @Component({
     selector: 'app-camera',
     templateUrl: './camera.component.html',
@@ -142,24 +180,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         return this.state === 'SETTLING'
     }
 
-    readonly exposure = {
-        count: 0,
-        remainingTime: 0,
-        progress: 0,
-    }
-
-    readonly capture = {
-        looping: false,
-        amount: 0,
-        remainingTime: 0,
-        elapsedTime: 0,
-        progress: 0,
-    }
-
-    readonly wait = {
-        remainingTime: 0,
-        progress: 0,
-    }
+    readonly exposure = Object.assign({}, EMPTY_CAMERA_EXPOSURE_INFO)
+    readonly capture = Object.assign({}, EMPTY_CAMERA_CAPTURE_INFO)
+    readonly wait = Object.assign({}, EMPTY_CAMERA_WAIT_INFO)
 
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
     readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
@@ -258,6 +281,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             Object.assign(this.request, config.data)
             this.dialogMode = true
             this.cameraChanged(this.request.camera)
+            this.exposureMode = 'FIXED'
         }
     }
 
@@ -399,9 +423,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadPreference() {
-        if (this.camera) {
-            const mode = this.dialogMode ? '.dialog' : ''
-            const preference = this.storage.get<CameraPreference>(`camera.${this.camera.name}${mode}`, {})
+        if (!this.dialogMode && this.camera) {
+            const preference = this.storage.get<CameraPreference>(`camera.${this.camera.name}`, {})
 
             this.request.autoSave = preference.autoSave ?? false
             this.savePath = preference.savePath ?? ''
@@ -409,7 +432,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.setpointTemperature = preference.setpointTemperature ?? 0
             this.request.exposureTime = preference.exposureTime ?? this.camera.exposureMin
             this.exposureTimeUnit = preference.exposureTimeUnit ?? ExposureTimeUnit.MICROSECOND
-            this.exposureMode = this.dialogMode ? 'FIXED' : (preference.exposureMode ?? 'SINGLE')
+            this.exposureMode = preference.exposureMode ?? 'SINGLE'
             this.request.exposureDelay = preference.exposureDelay ?? 0
             this.request.exposureAmount = preference.exposureAmount ?? 1
             this.request.x = preference.x ?? this.camera.minX
@@ -432,7 +455,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     savePreference() {
-        if (this.camera && this.camera.connected) {
+        if (!this.dialogMode && this.camera && this.camera.connected) {
             const preference: CameraPreference = {
                 autoSave: this.request.autoSave,
                 savePath: this.savePath,
@@ -457,8 +480,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 dither: this.request.dither,
             }
 
-            const mode = this.dialogMode ? '.dialog' : ''
-            this.storage.set(`camera.${this.camera.name}${mode}`, preference)
+            this.storage.set(`camera.${this.camera.name}`, preference)
         }
     }
 }

@@ -41,6 +41,7 @@ data class CameraStartCaptureRequest(
     // Focuser.
     val focuser: Focuser? = null,
     val focusOffset: Int = 0,
+    val enabled: Boolean = true,
 ) {
 
     inline val isLoop

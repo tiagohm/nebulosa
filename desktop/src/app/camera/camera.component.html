@@ -45,8 +45,6 @@
                     {{ exposure.count }}
                     <span *ngIf="!capture.looping"> of {{ capture.amount }}</span>
                 </span>
-            </ng-container>
-            <ng-container *ngIf="capturing && !waiting">
                 <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
                     {{ exposure.remainingTime | exposureTime }}
                 </span>

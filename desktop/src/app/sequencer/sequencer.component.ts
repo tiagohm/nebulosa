@@ -8,7 +8,7 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { PrimeService } from '../../shared/services/prime.service'
 import { Camera, CameraCaptureEvent, CameraCaptureState, CameraStartCapture, FilterWheel, Focuser, SequenceCaptureMode, SequencePlan } from '../../shared/types'
 import { AppComponent } from '../app.component'
-import { CameraComponent } from '../camera/camera.component'
+import { CameraCaptureInfo, CameraComponent, CameraExposureInfo, CameraWaitInfo, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_EXPOSURE_INFO, EMPTY_CAMERA_WAIT_INFO } from '../camera/camera.component'
 
 @Component({
     selector: 'app-sequencer',
@@ -26,47 +26,36 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         initialDelay: 0,
         captureMode: 'FULLY',
         entries: [],
+        dither: {
+            enabled: false,
+            amount: 1.5,
+            raOnly: false,
+            afterExposures: 1
+        },
+        autoFocus: {
+            onStart: false,
+            onFilterChange: false,
+            afterElapsedTime: 0,
+            afterExposures: 0,
+            afterTemperatureChange: 0,
+            afterHFDIncrease: 0
+        },
     }
 
     savedPath?: string
     readonly sequenceEvents: CameraCaptureEvent[] = []
 
-    state?: CameraCaptureState
-    sequenceId = 0
+    readonly state = new Array<CameraCaptureState | undefined>(32)
+    readonly exposure = new Array<CameraExposureInfo>(32)
+    readonly capture = new Array<CameraCaptureInfo>(32)
+    readonly wait = new Array<CameraWaitInfo>(32)
 
-    readonly exposure = {
-        count: 0,
-        remainingTime: 0,
-        progress: 0,
+    get canStart() {
+        return !this.plan.entries.find(e => e.enabled && !e.camera?.connected)
     }
 
-    readonly capture = {
-        looping: false,
-        amount: 0,
-        remainingTime: 0,
-        elapsedTime: 0,
-        progress: 0,
-    }
-
-    readonly wait = {
-        remainingTime: 0,
-        progress: 0,
-    }
-
-    get capturing() {
-        return this.state === 'EXPOSURING'
-    }
-
-    get waiting() {
-        return this.state === 'WAITING'
-    }
-
-    get settling() {
-        return this.state === 'SETTLING'
-    }
-
-    canStart() {
-        return !this.plan.entries.find(e => !e.camera || !e.camera.connected)
+    get running() {
+        return !!this.state.find(e => !!e)
     }
 
     constructor(
@@ -125,33 +114,37 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
             }
         })
 
+        // TODO: Sequencer elapsedTime, progress, remainingTime, #
         electron.on('SEQUENCER_ELAPSED', event => {
             ngZone.run(() => {
-                this.sequenceId = event.id
+                const index = event.id - 1
 
                 const captureEvent = event.capture
 
-                this.capture.elapsedTime = captureEvent.captureElapsedTime
-                this.capture.remainingTime = captureEvent.captureRemainingTime
-                this.capture.progress = captureEvent.captureProgress
-                this.exposure.remainingTime = captureEvent.exposureRemainingTime
-                this.exposure.progress = captureEvent.exposureProgress
-                this.exposure.count = captureEvent.exposureCount
+                console.info(event.elapsedTime, event.remainingTime, event.progress)
+
+                this.capture[index].elapsedTime = captureEvent.captureElapsedTime
+                this.capture[index].remainingTime = captureEvent.captureRemainingTime
+                this.capture[index].progress = captureEvent.captureProgress
+                this.exposure[index].remainingTime = captureEvent.exposureRemainingTime
+                this.exposure[index].progress = captureEvent.exposureProgress
+                this.exposure[index].count = captureEvent.exposureCount
 
                 if (captureEvent.state === 'WAITING') {
-                    this.wait.remainingTime = captureEvent.waitRemainingTime
-                    this.wait.progress = captureEvent.waitProgress
-                    this.state = captureEvent.state
+                    this.wait[index].remainingTime = captureEvent.waitRemainingTime
+                    this.wait[index].progress = captureEvent.waitProgress
+                    this.state[index] = 'WAITING'
                 } else if (captureEvent.state === 'SETTLING') {
-                    this.state = captureEvent.state
+                    this.state[index] = 'SETTLING'
                 } else if (captureEvent.state === 'CAPTURE_STARTED') {
-                    this.capture.looping = captureEvent.exposureAmount <= 0
-                    this.capture.amount = captureEvent.exposureAmount
-                    this.state = 'EXPOSURING'
+                    this.capture[index].amount = captureEvent.exposureAmount
+                    this.state[index] = 'EXPOSURING'
                 } else if (captureEvent.state === 'CAPTURE_FINISHED') {
-                    this.state = undefined
+                    this.state[index] = undefined
                 } else if (captureEvent.state === 'EXPOSURE_STARTED') {
-                    this.state = 'EXPOSURING'
+                    this.state[index] = 'EXPOSURING'
+                } else if (captureEvent.state === 'EXPOSURE_FINISHED') {
+                    this.state[index] = undefined
                 }
             })
         })
@@ -204,8 +197,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromCamera(entry: CameraStartCapture, camera?: Camera) {
-        if (camera && camera.connected) {
-            if (entry.camera && entry.camera.name === camera.name) {
+        if (camera && entry.camera && entry.camera.name === camera.name) {
+            Object.assign(entry.camera, camera)
+
+            if (camera.connected) {
                 if (camera.maxX) entry.x = Math.max(camera.minX, Math.min(entry.x, camera.maxX))
                 if (camera.maxY) entry.y = Math.max(camera.minY, Math.min(entry.y, camera.maxY))
 
@@ -264,6 +259,15 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     start() {
+        for (let i = 0; i < this.plan.entries.length; i++) {
+            this.state[i] = undefined
+            this.exposure[i] = Object.assign({}, EMPTY_CAMERA_EXPOSURE_INFO)
+            this.capture[i] = Object.assign({}, EMPTY_CAMERA_CAPTURE_INFO)
+            this.wait[i] = Object.assign({}, EMPTY_CAMERA_WAIT_INFO)
+        }
+
+        this.savePlan()
+
         this.api.sequencerStart(this.plan)
     }
 
