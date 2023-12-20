@@ -30,9 +30,9 @@ typealias CatalogNameProvider = Pair<Regex, (String) -> String?>
 
 object SkyDatabaseGenerator {
 
-    @JvmStatic private val STAR_DATABASE_PATH = Path.of("api/data/stars.json.gz")
-    @JvmStatic private val DSO_DATABASE_PATH = Path.of("api/data/dsos.json.gz")
-    @JvmStatic private val IAU_CSN_PATH = Path.of("api/data/IAU-CSN.txt")
+    @JvmStatic private val STAR_DATABASE_PATH = Path.of("../data/stars.json.gz")
+    @JvmStatic private val DSO_DATABASE_PATH = Path.of("../data/dsos.json.gz")
+    @JvmStatic private val IAU_CSN_PATH = Path.of("../data/IAU-CSN.txt")
 
     @JvmStatic private val LOG = loggerFor<SkyDatabaseGenerator>()
 

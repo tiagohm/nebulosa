@@ -3,16 +3,17 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.io.resource
 import nebulosa.time.*
+import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import kotlin.io.path.inputStream
 
 class TimeTest : StringSpec() {
 
     init {
         val iersa = IERSA()
-        iersa.load(resource("finals2000A.all")!!)
+        iersa.load(Path.of("../data/finals2000A.all").inputStream())
         IERS.attach(iersa)
 
         "convert jd to datetime" {

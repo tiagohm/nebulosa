@@ -12,14 +12,13 @@ class CancellationToken private constructor(private val completable: Completable
     private val listeners = LinkedHashSet<CancellationListener>()
 
     init {
-        completable
-            ?.whenCompleteAsync { source, _ ->
-                if (source != null) {
-                    listeners.forEach { it.accept(source) }
-                }
-
-                listeners.clear()
+        completable?.whenComplete { source, _ ->
+            if (source != null) {
+                listeners.forEach { it.accept(source) }
             }
+
+            listeners.clear()
+        }
     }
 
     fun listen(listener: CancellationListener): Boolean {
