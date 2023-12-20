@@ -616,7 +616,7 @@ export class ApiService {
         return this.http.get<PlateSolverOptions>('plate-solver/settings')
     }
 
-    setPlateSolverSettings(settings: PlateSolverOptions) {
+    updatePlateSolverSettings(settings: PlateSolverOptions) {
         return this.http.put<void>('plate-solver/settings', settings)
     }
 
