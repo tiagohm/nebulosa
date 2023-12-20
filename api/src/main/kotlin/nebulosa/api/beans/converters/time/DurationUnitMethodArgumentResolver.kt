@@ -1,22 +1,22 @@
-package nebulosa.api.beans.resolvers
+package nebulosa.api.beans.converters.time
 
-import nebulosa.api.beans.annotations.AngleParam
 import nebulosa.api.beans.converters.annotation
 import nebulosa.api.beans.converters.hasAnnotation
 import nebulosa.api.beans.converters.parameter
-import nebulosa.math.Angle
+import org.springframework.boot.convert.DurationUnit
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
+import java.time.Duration
 
 @Component
-class AngleParamMethodArgumentResolver : HandlerMethodArgumentResolver {
+class DurationUnitMethodArgumentResolver : HandlerMethodArgumentResolver {
 
     override fun supportsParameter(parameter: MethodParameter): Boolean {
-        return parameter.hasAnnotation<AngleParam>()
+        return parameter.hasAnnotation<DurationUnit>()
     }
 
     override fun resolveArgument(
@@ -25,9 +25,8 @@ class AngleParamMethodArgumentResolver : HandlerMethodArgumentResolver {
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?,
     ): Any? {
-        val param = parameter.annotation<AngleParam>()!!
-        val parameterName = param.name.ifBlank { null } ?: parameter.parameterName!!
-        val parameterValue = webRequest.parameter(parameterName) ?: param.defaultValue
-        return Angle(parameterValue, param.isHours)
+        val unit = parameter.annotation<DurationUnit>()!!.value
+        val value = webRequest.parameter(parameter.parameterName!!) ?: return null
+        return Duration.of(value.toLong(), unit)
     }
 }

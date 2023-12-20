@@ -1,4 +1,4 @@
-package nebulosa.api.beans.converters
+package nebulosa.api.beans.converters.time
 
 import org.springframework.boot.convert.DurationStyle
 import org.springframework.core.convert.converter.Converter

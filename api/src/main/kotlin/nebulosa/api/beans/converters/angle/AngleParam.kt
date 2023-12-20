@@ -1,4 +1,4 @@
-package nebulosa.api.beans.annotations
+package nebulosa.api.beans.converters.angle
 
 @Retention
 @Target(AnnotationTarget.VALUE_PARAMETER)

@@ -1,4 +1,4 @@
-package nebulosa.api.beans.converters
+package nebulosa.api.beans.converters.angle
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider

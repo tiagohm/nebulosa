@@ -1,6 +1,5 @@
-package nebulosa.api.beans.resolvers
+package nebulosa.api.beans.converters.time
 
-import nebulosa.api.beans.annotations.DateAndTimeParam
 import nebulosa.api.beans.converters.annotation
 import nebulosa.api.beans.converters.hasAnnotation
 import nebulosa.api.beans.converters.parameter

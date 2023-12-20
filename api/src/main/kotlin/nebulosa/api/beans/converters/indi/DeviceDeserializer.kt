@@ -1,4 +1,4 @@
-package nebulosa.api.beans.converters
+package nebulosa.api.beans.converters.indi
 
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.node.TextNode
 
-abstract class DeviceDeserializer<T>(type: Class<out T>) : StdDeserializer<T>(type) {
+sealed class DeviceDeserializer<T>(type: Class<out T>) : StdDeserializer<T>(type) {
 
     protected abstract fun deviceFor(name: String): T?
 

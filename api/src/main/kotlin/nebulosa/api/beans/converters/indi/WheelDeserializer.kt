@@ -1,16 +1,15 @@
-package nebulosa.api.cameras
+package nebulosa.api.beans.converters.indi
 
-import nebulosa.api.beans.converters.DeviceDeserializer
 import nebulosa.api.connection.ConnectionService
-import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.filterwheel.FilterWheel
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 
 @Component
-class CameraDeserializer : DeviceDeserializer<Camera>(Camera::class.java) {
+class WheelDeserializer : DeviceDeserializer<FilterWheel>(FilterWheel::class.java) {
 
     @Autowired @Lazy private lateinit var connectionService: ConnectionService
 
-    override fun deviceFor(name: String) = connectionService.camera(name)
+    override fun deviceFor(name: String) = connectionService.wheel(name)
 }

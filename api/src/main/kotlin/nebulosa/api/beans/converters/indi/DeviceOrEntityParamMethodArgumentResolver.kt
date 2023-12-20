@@ -1,4 +1,4 @@
-package nebulosa.api.beans.resolvers
+package nebulosa.api.beans.converters.indi
 
 import nebulosa.api.atlas.*
 import nebulosa.api.beans.converters.annotation
@@ -24,7 +24,7 @@ import org.springframework.web.method.support.ModelAndViewContainer
 import org.springframework.web.server.ResponseStatusException
 
 @Component
-class EntityParamMethodArgumentResolver(
+class DeviceOrEntityParamMethodArgumentResolver(
     private val locationRepository: LocationRepository,
     private val starRepository: StarRepository,
     private val deepSkyObjectRepository: DeepSkyObjectRepository,

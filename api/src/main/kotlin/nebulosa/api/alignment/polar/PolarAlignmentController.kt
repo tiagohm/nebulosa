@@ -1,7 +1,7 @@
 package nebulosa.api.alignment.polar
 
 import nebulosa.api.alignment.polar.darv.DARVStartRequest
-import nebulosa.api.beans.annotations.EntityParam
+import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import org.springframework.web.bind.annotation.PutMapping
@@ -17,14 +17,14 @@ class PolarAlignmentController(
 
     @PutMapping("darv/{camera}/{guideOutput}/start")
     fun darvStart(
-        @EntityParam camera: Camera, @EntityParam guideOutput: GuideOutput,
+        @DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam guideOutput: GuideOutput,
         @RequestBody body: DARVStartRequest,
     ) {
         polarAlignmentService.darvStart(camera, guideOutput, body)
     }
 
     @PutMapping("darv/{camera}/{guideOutput}/stop")
-    fun darvStop(@EntityParam camera: Camera, @EntityParam guideOutput: GuideOutput) {
+    fun darvStop(@DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam guideOutput: GuideOutput) {
         polarAlignmentService.darvStop(camera, guideOutput)
     }
 }

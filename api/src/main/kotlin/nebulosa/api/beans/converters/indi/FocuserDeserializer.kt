@@ -1,6 +1,5 @@
-package nebulosa.api.focusers
+package nebulosa.api.beans.converters.indi
 
-import nebulosa.api.beans.converters.DeviceDeserializer
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.focuser.Focuser
 import org.springframework.beans.factory.annotation.Autowired

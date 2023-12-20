@@ -1,7 +1,7 @@
 package nebulosa.api.cameras
 
 import jakarta.validation.Valid
-import nebulosa.api.beans.annotations.EntityParam
+import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.camera.Camera
 import org.hibernate.validator.constraints.Range
@@ -20,28 +20,28 @@ class CameraController(
     }
 
     @GetMapping("{camera}")
-    fun camera(@EntityParam camera: Camera): Camera {
+    fun camera(@DeviceOrEntityParam camera: Camera): Camera {
         return camera
     }
 
     @PutMapping("{camera}/connect")
-    fun connect(@EntityParam camera: Camera) {
+    fun connect(@DeviceOrEntityParam camera: Camera) {
         cameraService.connect(camera)
     }
 
     @PutMapping("{camera}/disconnect")
-    fun disconnect(@EntityParam camera: Camera) {
+    fun disconnect(@DeviceOrEntityParam camera: Camera) {
         cameraService.disconnect(camera)
     }
 
     @GetMapping("{camera}/capturing")
-    fun isCapturing(@EntityParam camera: Camera): Boolean {
+    fun isCapturing(@DeviceOrEntityParam camera: Camera): Boolean {
         return cameraService.isCapturing(camera)
     }
 
     @PutMapping("{camera}/cooler")
     fun cooler(
-        @EntityParam camera: Camera,
+        @DeviceOrEntityParam camera: Camera,
         @RequestParam enabled: Boolean,
     ) {
         cameraService.cooler(camera, enabled)
@@ -49,7 +49,7 @@ class CameraController(
 
     @PutMapping("{camera}/temperature/setpoint")
     fun setpointTemperature(
-        @EntityParam camera: Camera,
+        @DeviceOrEntityParam camera: Camera,
         @RequestParam @Valid @Range(min = -50, max = 50) temperature: Double,
     ) {
         cameraService.setpointTemperature(camera, temperature)
@@ -57,14 +57,14 @@ class CameraController(
 
     @PutMapping("{camera}/capture/start")
     fun startCapture(
-        @EntityParam camera: Camera,
+        @DeviceOrEntityParam camera: Camera,
         @RequestBody body: CameraStartCaptureRequest,
     ) {
         cameraService.startCapture(camera, body)
     }
 
     @PutMapping("{camera}/capture/abort")
-    fun abortCapture(@EntityParam camera: Camera) {
+    fun abortCapture(@DeviceOrEntityParam camera: Camera) {
         cameraService.abortCapture(camera)
     }
 }

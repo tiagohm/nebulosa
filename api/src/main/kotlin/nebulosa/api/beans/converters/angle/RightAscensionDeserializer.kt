@@ -1,3 +1,3 @@
-package nebulosa.api.beans.converters
+package nebulosa.api.beans.converters.angle
 
 class RightAscensionDeserializer : AngleDeserializer(true)
