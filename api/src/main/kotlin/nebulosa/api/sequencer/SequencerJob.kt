@@ -38,10 +38,11 @@ data class SequencerJob(
         }
 
         if (plan.captureMode == SequenceCaptureMode.FULLY) {
-            for (i in plan.slots.indices) {
-                val request = mapRequest(plan.slots[i])
+            for (i in plan.entries.indices) {
+                val request = mapRequest(plan.entries[i])
                 val cameraExposureStep = CameraExposureStep(request)
                 val delayStep = DelayStep(request.exposureDelay)
+                delayStep.registerDelayStepListener(cameraExposureStep)
                 val delayAndWaitForSettleStep = SimpleSplitStep(waitForSettleStep, delayStep)
                 val ditherStep = DitherAfterExposureStep(request.dither, guider)
 
@@ -57,7 +58,7 @@ data class SequencerJob(
                 cameraExposureStep.registerCameraCaptureListener(cameraCaptureEventHandler)
             }
         } else {
-            val requests = plan.slots.map(::mapRequest)
+            val requests = plan.entries.map(::mapRequest)
             val count = IntArray(requests.size)
             val delaySteps = requests.map { DelayStep(it.exposureDelay) }
             val ditherSteps = requests.map { DitherAfterExposureStep(it.dither, guider) }
@@ -68,7 +69,7 @@ data class SequencerJob(
             while (true) {
                 var added = false
 
-                for (i in plan.slots.indices) {
+                for (i in plan.entries.indices) {
                     val request = requests[i]
 
                     if (count[i] < request.exposureAmount) {

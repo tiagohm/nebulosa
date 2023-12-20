@@ -5,7 +5,7 @@ import {
     FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
     INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo,
     Location, MinorPlanet, Mount, PlateSolverOptions, SCNRProtectionMethod, Satellite, SatelliteGroupType,
-    SettleInfo, SkyObjectType, SlewRate, Star, TrackMode, Twilight
+    SequencePlan, SettleInfo, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 import { HttpService } from './http.service'
 
@@ -590,6 +590,16 @@ export class ApiService {
 
     darvStop(camera: Camera, guideOutput: GuideOutput) {
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/stop`)
+    }
+
+    // SEQUENCER
+
+    sequencerStart(plan: SequencePlan) {
+        return this.http.put<void>(`sequencer/start`, plan)
+    }
+
+    sequencerStop() {
+        return this.http.put<void>(`sequencer/stop`)
     }
 
     // SOLVER

@@ -594,6 +594,11 @@ export interface NotificationEvent extends MessageEvent {
     silent: boolean
 }
 
+export interface SequencerEvent extends MessageEvent {
+    id: number
+    capture: CameraCaptureEvent
+}
+
 export interface CalibrationFrame {
     id: number
     type: FrameType

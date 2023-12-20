@@ -6,7 +6,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { Camera, CameraStartCapture, FilterWheel, Focuser, SequenceCaptureMode, SequencePlan } from '../../shared/types'
+import { Camera, CameraCaptureEvent, CameraCaptureState, CameraStartCapture, FilterWheel, Focuser, SequenceCaptureMode, SequencePlan } from '../../shared/types'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
@@ -28,8 +28,46 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         entries: [],
     }
 
-    sequenceInProgress = false
     savedPath?: string
+    readonly sequenceEvents: CameraCaptureEvent[] = []
+
+    state?: CameraCaptureState
+    sequenceId = 0
+
+    readonly exposure = {
+        count: 0,
+        remainingTime: 0,
+        progress: 0,
+    }
+
+    readonly capture = {
+        looping: false,
+        amount: 0,
+        remainingTime: 0,
+        elapsedTime: 0,
+        progress: 0,
+    }
+
+    readonly wait = {
+        remainingTime: 0,
+        progress: 0,
+    }
+
+    get capturing() {
+        return this.state === 'EXPOSURING'
+    }
+
+    get waiting() {
+        return this.state === 'WAITING'
+    }
+
+    get settling() {
+        return this.state === 'SETTLING'
+    }
+
+    canStart() {
+        return !this.plan.entries.find(e => !e.camera || !e.camera.connected)
+    }
 
     constructor(
         app: AppComponent,
@@ -85,6 +123,37 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
             for (const entry of this.plan.entries) {
                 this.updateEntryFromCamera(entry, event.device)
             }
+        })
+
+        electron.on('SEQUENCER_ELAPSED', event => {
+            ngZone.run(() => {
+                this.sequenceId = event.id
+
+                const captureEvent = event.capture
+
+                this.capture.elapsedTime = captureEvent.captureElapsedTime
+                this.capture.remainingTime = captureEvent.captureRemainingTime
+                this.capture.progress = captureEvent.captureProgress
+                this.exposure.remainingTime = captureEvent.exposureRemainingTime
+                this.exposure.progress = captureEvent.exposureProgress
+                this.exposure.count = captureEvent.exposureCount
+
+                if (captureEvent.state === 'WAITING') {
+                    this.wait.remainingTime = captureEvent.waitRemainingTime
+                    this.wait.progress = captureEvent.waitProgress
+                    this.state = captureEvent.state
+                } else if (captureEvent.state === 'SETTLING') {
+                    this.state = captureEvent.state
+                } else if (captureEvent.state === 'CAPTURE_STARTED') {
+                    this.capture.looping = captureEvent.exposureAmount <= 0
+                    this.capture.amount = captureEvent.exposureAmount
+                    this.state = 'EXPOSURING'
+                } else if (captureEvent.state === 'CAPTURE_FINISHED') {
+                    this.state = undefined
+                } else if (captureEvent.state === 'EXPOSURE_STARTED') {
+                    this.state = 'EXPOSURING'
+                }
+            })
         })
     }
 
@@ -154,7 +223,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadPlan(plan?: SequencePlan) {
-        plan ??= this.storage.get('sequencer.plan', this.plan) ?? []
+        plan ??= this.storage.get('sequencer.plan', this.plan)
 
         for (const entry of plan.entries) {
             if (entry.camera) {
@@ -192,5 +261,13 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
     savePlan() {
         this.storage.set('sequencer.plan', this.plan)
+    }
+
+    start() {
+        this.api.sequencerStart(this.plan)
+    }
+
+    stop() {
+        this.api.sequencerStop()
     }
 }

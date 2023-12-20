@@ -5,7 +5,7 @@
                 <div class="grid mt-2">
                     <div class="col-3">
                         <span class="p-float-label">
-                            <p-inputNumber [disabled]="sequenceInProgress" [(ngModel)]="plan.initialDelay"
+                            <p-inputNumber [disabled]="capturing" [(ngModel)]="plan.initialDelay"
                                            mode="decimal" [showButtons]="true" [step]="1" [min]="0" [max]="60" locale="en"
                                            styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePlan()" />
                             <label>Initial Delay (s)</label>
@@ -13,7 +13,7 @@
                     </div>
                     <div class="col-3">
                         <span class="p-float-label">
-                            <p-dropdown [disabled]="sequenceInProgress" [options]="captureModes" [(ngModel)]="plan.captureMode"
+                            <p-dropdown [disabled]="capturing" [options]="captureModes" [(ngModel)]="plan.captureMode" [autoDisplayFirst]="false"
                                         styleClass="w-100 p-inputtext-sm border-0" emptyMessage="No mode found" (ngModelChange)="savePlan()" />
                             <label>Mode</label>
                         </span>
@@ -37,6 +37,55 @@
             </p-tabPanel>
         </p-tabView>
     </div>
+    <div class="grid pb-2">
+        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"
+             style="min-height: 25px;">
+            <i class="mdi mdi-information text-blue-600"></i>
+            <span style="min-width: 44px" class="text-left mr-2">
+                {{ settling ? 'settling' : waiting ? 'waiting' : capturing ? 'capturing' : 'idle' }}
+            </span>
+            <span *ngIf="capturing || waiting || settling" class="bg-yellow-400 border-round-md p-1 text-gray-900" style="min-width: 30px">
+                #{{ sequenceId }}
+            </span>
+            <ng-container *ngIf="capturing">
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 46px">
+                    {{ exposure.count }}
+                    <span *ngIf="!capture.looping"> of {{ capture.amount }}</span>
+                </span>
+            </ng-container>
+            <ng-container *ngIf="capturing && !waiting">
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
+                    {{ exposure.remainingTime | exposureTime }}
+                </span>
+                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
+                    {{ exposure.progress | percent:'1.1-1' }}
+                </span>
+            </ng-container>
+            <ng-container *ngIf="capturing || waiting">
+                <ng-container *ngIf="!capture.looping">
+                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
+                        {{ capture.remainingTime | exposureTime }}
+                    </span>
+                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
+                        {{ capture.progress | percent:'1.1-1' }}
+                    </span>
+                </ng-container>
+                <ng-container *ngIf="capture.looping">
+                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
+                        {{ capture.elapsedTime | exposureTime }}
+                    </span>
+                </ng-container>
+            </ng-container>
+            <ng-container *ngIf="waiting">
+                <span class="bg-purple-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
+                    {{ wait.remainingTime | exposureTime }}
+                </span>
+                <span class="bg-purple-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
+                    {{ wait.progress | percent:'1.1-1' }}
+                </span>
+            </ng-container>
+        </div>
+    </div>
     <div class="grid flex align-items-center">
         <p-scrollPanel class="w-full" [style]="{ width: '100%', height: 'calc(100vh - 168px)' }" cdkDropList (cdkDropListDropped)="drop($event)">
             <div *ngFor="let entry of plan.entries; index as i" class="col-12" cdkDrag>
@@ -51,27 +100,27 @@
                                 <div class="grid">
                                     <div class="col-4 align-items-center pt-4">
                                         <span class="p-float-label">
-                                            <p-dropdown [disabled]="sequenceInProgress || !entry.enabled" [options]="cameras"
+                                            <p-dropdown [disabled]="capturing || !entry.enabled" [options]="cameras" [autoDisplayFirst]="false"
                                                         [(ngModel)]="entry.camera" optionLabel="name" styleClass="p-inputtext-sm border-0"
                                                         [style]="{'min-width': '131px'}" (ngModelChange)="updateEntryFromCamera(entry, $event)"
                                                         emptyMessage="No camera found" />
                                             <label>Camera</label>
                                         </span>
-                                        <p-button [disabled]="sequenceInProgress || !entry.enabled" [text]="true" [rounded]="true" icon="mdi mdi-cog"
+                                        <p-button [disabled]="capturing || !entry.enabled" [text]="true" [rounded]="true" icon="mdi mdi-cog"
                                                   severity="info" (onClick)="showCameraDialog(entry)" />
                                     </div>
                                     <div class="col-4 align-items-center pt-4">
                                         <span class="p-float-label" *ngIf="wheels.length">
-                                            <p-dropdown [disabled]="sequenceInProgress || !entry.enabled" [options]="wheels" [(ngModel)]="entry.wheel"
-                                                        optionLabel="name" styleClass="p-inputtext-sm border-0"
+                                            <p-dropdown [disabled]="capturing || !entry.enabled" [options]="wheels" [(ngModel)]="entry.wheel"
+                                                        optionLabel="name" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false"
                                                         emptyMessage="No filter wheel found" />
                                             <label>Filter Wheel</label>
                                         </span>
                                     </div>
                                     <div class="col-4 align-items-center pt-4">
                                         <span class="p-float-label" *ngIf="focusers.length">
-                                            <p-dropdown [disabled]="sequenceInProgress || !entry.enabled" [options]="focusers"
-                                                        [(ngModel)]="entry.focuser" optionLabel="name"
+                                            <p-dropdown [disabled]="capturing || !entry.enabled" [options]="focusers"
+                                                        [(ngModel)]="entry.focuser" optionLabel="name" [autoDisplayFirst]="false"
                                                         styleClass="p-inputtext-sm border-0" emptyMessage="No focuser found" />
                                             <label>Focuser</label>
                                         </span>
@@ -96,6 +145,17 @@
                 </p-card>
             </div>
         </p-scrollPanel>
+    </div>
+
+    <div class="fixed" style="right: 16px; top: 54px;">
+        <div class="grid">
+            <div class="col-12 flex align-items-center justify-content-center gap-1">
+                <p-button [disabled]="!canStart || capturing" label="Start" (onClick)="start()" icon="mdi mdi-play"
+                          severity="success" />
+                <p-button [disabled]="!canStart || !capturing" label="Abort" (onClick)="stop()" icon="mdi mdi-stop"
+                          severity="danger" />
+            </div>
+        </div>
     </div>
 
     <p-button [rounded]="true" icon="mdi mdi-plus" size="large" severity="success" (onClick)="add()" styleClass="fixed"

@@ -1,5 +1,6 @@
 package nebulosa.api.sequencer
 
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -12,7 +13,7 @@ class SequencerController(
 ) {
 
     @PutMapping("start")
-    fun startSequencer(@RequestBody body: SequencePlanRequest) {
+    fun startSequencer(@RequestBody @Valid body: SequencePlanRequest) {
         sequencerService.startSequencer(body)
     }
 
