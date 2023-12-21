@@ -1,9 +1,12 @@
 package nebulosa.batch.processing.delay
 
-import nebulosa.batch.processing.*
+import nebulosa.batch.processing.JobExecution
+import nebulosa.batch.processing.Step
+import nebulosa.batch.processing.StepExecution
+import nebulosa.batch.processing.StepResult
 import java.time.Duration
 
-data class DelayStep(@JvmField val duration: Duration) : Step, JobExecutionListener {
+data class DelayStep(@JvmField val duration: Duration) : Step {
 
     private val listeners = LinkedHashSet<DelayStepListener>()
 

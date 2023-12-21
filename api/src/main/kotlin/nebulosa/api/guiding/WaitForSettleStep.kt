@@ -1,9 +1,12 @@
 package nebulosa.api.guiding
 
-import nebulosa.batch.processing.*
+import nebulosa.batch.processing.JobExecution
+import nebulosa.batch.processing.Step
+import nebulosa.batch.processing.StepExecution
+import nebulosa.batch.processing.StepResult
 import nebulosa.guiding.Guider
 
-data class WaitForSettleStep(@JvmField val guider: Guider) : Step, JobExecutionListener {
+data class WaitForSettleStep(@JvmField val guider: Guider) : Step {
 
     private val listeners = LinkedHashSet<WaitForSettleListener>()
 

@@ -95,10 +95,8 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
                 while (jobExecution.canContinue && job.hasNext(jobExecution)) {
                     val step = job.next(jobExecution)
 
-                    if (step is JobExecutionListener) {
-                        if (stepJobListeners.add(step)) {
-                            step.beforeJob(jobExecution)
-                        }
+                    if (stepJobListeners.add(step)) {
+                        step.beforeJob(jobExecution)
                     }
 
                     val result = stepHandler.handle(step, StepExecution(step, jobExecution))
