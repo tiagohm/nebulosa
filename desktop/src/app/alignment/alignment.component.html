@@ -2,14 +2,12 @@
     <div class="grid">
         <div class="col-6">
             <div class="grid">
-                <div class="col-10">
+                <div class="col-12 align-items-center gap-2">
                     <span class="p-float-label">
                         <p-dropdown [disabled]="darvInProgress" [options]="cameras" [(ngModel)]="camera" optionLabel="name"
                                     (ngModelChange)="cameraChanged()" styleClass="p-inputtext-sm border-0" emptyMessage="No camera found" />
                         <label>Camera</label>
                     </span>
-                </div>
-                <div class="col-2">
                     <p-button *ngIf="cameraConnected" [disabled]="!camera || darvInProgress" (onClick)="cameraConnect()" icon="mdi mdi-close"
                               size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
                     <p-button *ngIf="!cameraConnected" [disabled]="!camera || darvInProgress" (onClick)="cameraConnect()" icon="mdi mdi-connection"
@@ -19,15 +17,13 @@
         </div>
         <div class="col-6">
             <div class="grid">
-                <div class="col-10">
+                <div class="col-12 align-items-center gap-2">
                     <span class="p-float-label">
                         <p-dropdown [disabled]="darvInProgress" [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name"
                                     (ngModelChange)="guideOutputChanged()" styleClass="p-inputtext-sm border-0"
                                     emptyMessage="No guide output found" />
                         <label>Guide Output</label>
                     </span>
-                </div>
-                <div class="col-2">
                     <p-button *ngIf="guideOutputConnected" [disabled]="!guideOutput || darvInProgress" (onClick)="guideOutputConnect()"
                               icon="mdi mdi-close" size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
                     <p-button *ngIf="!guideOutputConnected" [disabled]="!guideOutput || darvInProgress" (onClick)="guideOutputConnect()"
@@ -87,7 +83,7 @@
                             <p-button [disabled]="!cameraConnected || !guideOutputConnected || !darvInProgress" label="Abort" (onClick)="darvStop()"
                                       icon="mdi mdi-stop" severity="danger" />
                             <p-button [disabled]="!cameraConnected" (onClick)="openCameraImage()" icon="mdi mdi-image" [text]="true" styleClass="ml-4"
-                                      pTooltip="Open camera's image" tooltipPosition="bottom" />
+                                      pTooltip="View image" tooltipPosition="bottom" />
                         </div>
                     </div>
                 </p-tabPanel>

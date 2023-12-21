@@ -73,60 +73,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     readonly cameraModel: MenuItem[] = [
         {
-            icon: 'mdi mdi-content-save',
-            label: 'Auto save all exposures',
-            command: () => {
-                this.request.autoSave = !this.request.autoSave
-                this.savePreference()
-            },
-        },
-        {
-            icon: 'mdi mdi-folder',
-            label: 'Save path...',
-            command: async () => {
-                const defaultPath = this.savePath || this.capturesPath
-                const path = await this.electron.openDirectory({ defaultPath })
-
-                if (path) {
-                    this.savePath = path
-                    this.savePreference()
-                }
-            },
-        },
-        {
-            icon: 'mdi mdi-folder-plus',
-            label: 'New sub folder at',
-            items: [
-                {
-                    icon: 'mdi mdi-folder-off',
-                    label: 'None',
-                    command: () => {
-                        this.request.autoSubFolderMode = 'OFF'
-                        this.savePreference()
-                    },
-                },
-                {
-                    icon: 'mdi mdi-weather-sunny',
-                    label: 'Noon',
-                    command: () => {
-                        this.request.autoSubFolderMode = 'NOON'
-                        this.savePreference()
-                    },
-                },
-                {
-                    icon: 'mdi mdi-weather-night',
-                    label: 'Midnight',
-                    command: () => {
-                        this.request.autoSubFolderMode = 'MIDNIGHT'
-                        this.savePreference()
-                    },
-                },
-            ],
-        },
-        {
-            separator: true,
-        },
-        {
             icon: 'icomoon random-dither',
             label: 'Dither',
             command: () => {
@@ -322,6 +268,34 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.api.cameraDisconnect(this.camera!)
         } else {
             this.api.cameraConnect(this.camera!)
+        }
+    }
+
+    toggleAutoSaveAllExposures() {
+        this.request.autoSave = !this.request.autoSave
+        this.savePreference()
+    }
+
+    toggleAutoSubFolder() {
+        switch (this.request.autoSubFolderMode) {
+            case 'OFF': this.request.autoSubFolderMode = 'NOON'
+                break
+            case 'NOON': this.request.autoSubFolderMode = 'MIDNIGHT'
+                break
+            case 'MIDNIGHT': this.request.autoSubFolderMode = 'OFF'
+                break
+        }
+
+        this.savePreference()
+    }
+
+    async chooseSavePath() {
+        const defaultPath = this.savePath || this.capturesPath
+        const path = await this.electron.openDirectory({ defaultPath })
+
+        if (path) {
+            this.savePath = path
+            this.savePreference()
         }
     }
 

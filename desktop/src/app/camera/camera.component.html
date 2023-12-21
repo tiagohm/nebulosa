@@ -1,12 +1,10 @@
 <div class="container px-4 py-3">
     <div class="grid py-1 flex align-items-center">
-        <div class="col-6">
+        <div class="col-8 align-items-center gap-2">
             <span class="p-float-label">
                 <input type="text" pInputText [readonly]="true" [value]="camera.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Camera</label>
             </span>
-        </div>
-        <div class="col-2">
             <p-button *ngIf="!camera || camera.connected" [disabled]="!camera || running" (onClick)="connect()" icon="mdi mdi-close"
                       size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
             <p-button *ngIf="!camera.connected" [disabled]="!camera || running" (onClick)="connect()" icon="mdi mdi-connection"
@@ -14,24 +12,32 @@
         </div>
         <div class="col-4 flex justify-content-end align-items-center gap-2">
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-image-multiple" (click)="openCameraImage()"
-                      pTooltip="Image viewer" tooltipPosition="bottom" />
+                      pTooltip="View image" tooltipPosition="bottom" />
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-wrench" (click)="openCameraCalibration()"
                       pTooltip="Calibration" tooltipPosition="bottom" />
             <p-button *ngIf="!dialogMode" [disabled]="!camera || !camera.connected || running" [text]="true" [rounded]="true"
                       icon="mdi mdi-dots-vertical" (click)="cameraMenu.show()" />
         </div>
-        <div *ngIf="!dialogMode" class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
-            <i *ngIf="request.autoSave" class="mdi mdi-content-save" pTooltip="Auto save: ON" tooltipPosition="bottom"></i>
-            <i *ngIf="!request.autoSave" class="mdi mdi-content-save-off" pTooltip="Auto save: OFF" tooltipPosition="bottom"></i>
-            <i *ngIf="request.autoSubFolderMode === 'OFF'" class="mdi mdi-folder-off" pTooltip="Auto sub folder: OFF" tooltipPosition="bottom"></i>
-            <i *ngIf="request.autoSubFolderMode === 'NOON'" class="mdi mdi-weather-sunny text-yellow-600" pTooltip="Auto sub folder: NOON"
-               tooltipPosition="bottom"></i>
-            <i *ngIf="request.autoSubFolderMode === 'MIDNIGHT'" class="mdi mdi-weather-night text-blue-600" pTooltip="Auto sub folder: MIDNIGHT"
-               tooltipPosition="bottom"></i>
-            <span *ngIf="camera && (savePath || capturesPath)" style="padding-top: 1px; padding-bottom: 1px; height: 15px;"
-                  class="flex align-items-center gap-2 bg-gray-800 border-round-2xl px-3 text-overflow-scroll">
+        <div *ngIf="!dialogMode" class="col-12 py-0 text-sm text-gray-400 flex align-items-center gap-1">
+            <i *ngIf="request.autoSave" class="mdi mdi-content-save cursor-pointer" (click)="toggleAutoSaveAllExposures()" pTooltip="Auto save: ON"
+               tooltipPosition="bottom" [positionLeft]="24" [positionTop]="8"></i>
+            <i *ngIf="!request.autoSave" class="mdi mdi-content-save-off cursor-pointer" (click)="toggleAutoSaveAllExposures()"
+               pTooltip="Auto save: OFF" tooltipPosition="bottom" [positionLeft]="24" [positionTop]="8"></i>
+            <i *ngIf="request.autoSubFolderMode === 'OFF'" (click)="toggleAutoSubFolder()" class="mdi mdi-folder-off cursor-pointer"
+               pTooltip="Auto sub folder: OFF" tooltipPosition="bottom" [positionLeft]="24" [positionTop]="8"></i>
+            <i *ngIf="request.autoSubFolderMode === 'NOON'" (click)="toggleAutoSubFolder()"
+               class="mdi mdi-weather-sunny text-yellow-600 cursor-pointer" pTooltip="Auto sub folder: NOON" tooltipPosition="bottom"
+               [positionLeft]="24" [positionTop]="8"></i>
+            <i *ngIf="request.autoSubFolderMode === 'MIDNIGHT'" (click)="toggleAutoSubFolder()"
+               class="mdi mdi-weather-night text-blue-600 cursor-pointer" pTooltip="Auto sub folder: MIDNIGHT" tooltipPosition="bottom"
+               [positionLeft]="32" [positionTop]="8"></i>
+            <span *ngIf="camera && (savePath || capturesPath)" style="padding-top: 1px; padding-bottom: 1px; height: 17px;"
+                  class="flex flex-1 align-items-center gap-2 bg-gray-800 border-round-2xl px-3 text-overflow-scroll">
+                <i class="mdi mdi-folder-open cursor-pointer" pTooltip="Choose new folder" tooltipPosition="bottom" (click)="chooseSavePath()"
+                   [positionTop]="8"></i>
+                <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="clearSavePath()"
+                   [positionTop]="8"></i>
                 {{ savePath || capturesPath }}
-                <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="clearSavePath()"></i>
             </span>
         </div>
         <div *ngIf="!dialogMode" class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"
