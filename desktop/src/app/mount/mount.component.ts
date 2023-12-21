@@ -35,6 +35,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     tracking = false
     canPark = false
     canHome = false
+    slewingDirection?: string
 
     rightAscensionJ2000: Angle = '00h00m00s'
     declinationJ2000: Angle = `00°00'00"`
@@ -254,6 +255,8 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     moveTo(direction: string, pressed: boolean, event: MouseEvent) {
         if (event.button === 0) {
+            this.slewingDirection = pressed ? direction : undefined
+
             if (this.moveToDirection[0] !== pressed) {
                 switch (direction[0]) {
                     case 'N':

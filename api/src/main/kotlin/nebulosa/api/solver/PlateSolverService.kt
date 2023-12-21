@@ -52,7 +52,7 @@ class PlateSolverService(
             PlateSolverType.ASTROMETRY_NET -> LocalAstrometryNetPlateSolver(executablePath!!)
         }
 
-        plateSolver.solve(path, centerRA, centerDEC, radius, 2, DEFAULT_TIMEOUT)
+        plateSolver.solve(path, centerRA, centerDEC, radius, 1, DEFAULT_TIMEOUT)
     }
 
     fun settings(options: PlateSolverOptions) {

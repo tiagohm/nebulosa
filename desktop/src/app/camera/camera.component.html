@@ -7,9 +7,9 @@
             </span>
         </div>
         <div class="col-2">
-            <p-button *ngIf="!camera || camera.connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="mdi mdi-close"
+            <p-button *ngIf="!camera || camera.connected" [disabled]="!camera || running" (onClick)="connect()" icon="mdi mdi-close"
                       size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
-            <p-button *ngIf="!camera.connected" [disabled]="!camera || capturing" (onClick)="connect()" icon="mdi mdi-connection"
+            <p-button *ngIf="!camera.connected" [disabled]="!camera || running" (onClick)="connect()" icon="mdi mdi-connection"
                       size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-4 flex justify-content-end align-items-center gap-2">
@@ -17,7 +17,7 @@
                       pTooltip="Image viewer" tooltipPosition="bottom" />
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-wrench" (click)="openCameraCalibration()"
                       pTooltip="Calibration" tooltipPosition="bottom" />
-            <p-button *ngIf="!dialogMode" [disabled]="!camera || !camera.connected || capturing" [text]="true" [rounded]="true"
+            <p-button *ngIf="!dialogMode" [disabled]="!camera || !camera.connected || running" [text]="true" [rounded]="true"
                       icon="mdi mdi-dots-vertical" (click)="cameraMenu.show()" />
         </div>
         <div *ngIf="!dialogMode" class="col-12 pt-0 text-sm text-gray-400 flex align-items-center gap-1">
@@ -80,22 +80,22 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-3 flex flex-column justify-content-center text-center gap-2">
             <span class="text-sm text-gray-100">Cooler ({{ camera.coolerPower | number: '1.1-1' }}%)</span>
-            <p-inputSwitch [disabled]="!camera.connected || !camera.hasCooler || capturing" (onChange)="toggleCooler()"
+            <p-inputSwitch [disabled]="!camera.connected || !camera.hasCooler || running" (onChange)="toggleCooler()"
                            [(ngModel)]="camera!.cooler" />
         </div>
         <div class="col-3 flex flex-column justify-content-center text-center gap-2">
             <span class="text-sm text-gray-100">Dew heater</span>
-            <p-inputSwitch [disabled]="!camera.connected || !hasDewHeater || capturing" [(ngModel)]="camera!.dewHeater" />
+            <p-inputSwitch [disabled]="!camera.connected || !hasDewHeater || running" [(ngModel)]="camera!.dewHeater" />
         </div>
         <div class="col-6 flex flex-column">
             <div class="flex justify-content-center align-items-center gap-1">
                 <span class="p-float-label">
-                    <p-inputNumber [disabled]="!camera.connected || !camera.canSetTemperature || capturing" [(ngModel)]="setpointTemperature"
+                    <p-inputNumber [disabled]="!camera.connected || !camera.canSetTemperature || running" [(ngModel)]="setpointTemperature"
                                    mode="decimal" [showButtons]="true" (ngModelChange)="savePreference()" [step]="0.1" suffix="℃" [min]="-50"
                                    [max]="50" locale="en" styleClass="p-inputtext-sm border-0" [allowEmpty]="false" [minFractionDigits]="1" />
                     <label>Temperature ({{ camera.temperature | number: '1.1-1' }}°C)</label>
                 </span>
-                <p-button [disabled]="!camera.connected || !camera.canSetTemperature || capturing" (onClick)="applySetpointTemperature()"
+                <p-button [disabled]="!camera.connected || !camera.canSetTemperature || running" (onClick)="applySetpointTemperature()"
                           icon="mdi mdi-check" styleClass="p-button-sm" severity="success" pTooltip="Apply" tooltipPosition="bottom" />
             </div>
         </div>
@@ -104,19 +104,19 @@
         <div class="col-6">
             <div class="flex justify-content-center align-items-center gap-1">
                 <span class="p-float-label">
-                    <p-inputNumber [disabled]="!camera.connected || capturing" [(ngModel)]="request.exposureTime" mode="decimal" [showButtons]="true"
+                    <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.exposureTime" mode="decimal" [showButtons]="true"
                                    [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" locale="en" styleClass="p-inputtext-sm border-0"
                                    [allowEmpty]="false" (ngModelChange)="savePreference()" />
                     <label>Exposure Time</label>
                 </span>
                 <p-menu #exposureTimeMenu [model]="exposureTimeUnitModel" [popup]="true" appendTo="body" />
-                <button [disabled]="!camera.connected || capturing" pButton type="button" (click)="exposureTimeMenu.toggle($event)"
+                <button [disabled]="!camera.connected || running" pButton type="button" (click)="exposureTimeMenu.toggle($event)"
                         [label]="exposureTimeUnit"></button>
             </div>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [disabled]="!camera.connected || capturing" [options]="frameTypeOptions" [(ngModel)]="request.frameType"
+                <p-dropdown [disabled]="!camera.connected || running" [options]="frameTypeOptions" [(ngModel)]="request.frameType"
                             styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false"
                             (ngModelChange)="savePreference()" />
                 <label>Frame Type</label>
@@ -126,13 +126,13 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6 flex-column">
             <span class="text-sm text-gray-100">Exposure Mode</span>
-            <p-selectButton [disabled]="dialogMode || !camera.connected || capturing" [options]="exposureModeOptions" [(ngModel)]="exposureMode"
+            <p-selectButton [disabled]="dialogMode || !camera.connected || running" [options]="exposureModeOptions" [(ngModel)]="exposureMode"
                             styleClass="p-inputtext-sm border-0"
                             (ngModelChange)="savePreference()" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || exposureMode === 'SINGLE' || capturing" [(ngModel)]="request.exposureDelay"
+                <p-inputNumber [disabled]="!camera.connected || exposureMode === 'SINGLE' || running" [(ngModel)]="request.exposureDelay"
                                mode="decimal" [showButtons]="true" [step]="1" [min]="0" [max]="60" locale="en" styleClass="p-inputtext-sm border-0"
                                [allowEmpty]="false"
                                (ngModelChange)="savePreference()" />
@@ -141,7 +141,7 @@
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || exposureMode !== 'FIXED' || capturing" [(ngModel)]="request.exposureAmount"
+                <p-inputNumber [disabled]="!camera.connected || exposureMode !== 'FIXED' || running" [(ngModel)]="request.exposureAmount"
                                mode="decimal" [showButtons]="true" [step]="1.0" [min]="1" [max]="1000" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
                                (ngModelChange)="savePreference()" />
@@ -152,7 +152,7 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || !subFrame || capturing" [(ngModel)]="request.x" mode="decimal" [showButtons]="true"
+                <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.x" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="camera.minX" [max]="camera.maxX" locale="en" styleClass="p-inputtext-sm border-0"
                                [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>X</label>
@@ -160,7 +160,7 @@
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || !subFrame || capturing" [(ngModel)]="request.y" mode="decimal" [showButtons]="true"
+                <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.y" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="camera.minY" [max]="camera.maxY" locale="en" styleClass="p-inputtext-sm border-0"
                                [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Y</label>
@@ -168,7 +168,7 @@
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || !subFrame || capturing" [(ngModel)]="request.width" mode="decimal"
+                <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.width" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="camera.minWidth" [max]="camera.maxWidth" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Width</label>
@@ -176,7 +176,7 @@
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || !subFrame || capturing" [(ngModel)]="request.height" mode="decimal"
+                <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.height" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="camera.minHeight" [max]="camera.maxHeight" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Height</label>
@@ -186,15 +186,15 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-3 flex flex-column justify-content-center text-center gap-2">
             <span class="text-sm text-gray-100">Subframe</span>
-            <p-inputSwitch [disabled]="!camera.connected || capturing" [(ngModel)]="subFrame" (ngModelChange)="savePreference()" />
+            <p-inputSwitch [disabled]="!camera.connected || running" [(ngModel)]="subFrame" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-3 flex pt-3 flex-row align-items-center justify-content-center">
-            <p-button [disabled]="!camera.connected || !subFrame || capturing" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
+            <p-button [disabled]="!camera.connected || !subFrame || running" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
                       severity="info" pTooltip="Full size" tooltipPosition="bottom" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || capturing" [(ngModel)]="request.binX" mode="decimal" [showButtons]="true"
+                <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.binX" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="1" [max]="4" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
                                (ngModelChange)="savePreference()" />
                 <label>Bin X</label>
@@ -202,7 +202,7 @@
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || capturing" [(ngModel)]="request.binY" mode="decimal" [showButtons]="true"
+                <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.binY" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="1" [max]="4" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
                                (ngModelChange)="savePreference()" />
                 <label>Bin Y</label>
@@ -212,14 +212,14 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [disabled]="!camera.connected || capturing" [options]="camera.frameFormats" [(ngModel)]="request.frameFormat"
+                <p-dropdown [disabled]="!camera.connected || running" [options]="camera.frameFormats" [(ngModel)]="request.frameFormat"
                             styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" [autoDisplayFirst]="false" />
                 <label>Frame Format</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || capturing" [(ngModel)]="request.gain" mode="decimal" [showButtons]="true"
+                <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.gain" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="camera.gainMin" [max]="camera.gainMax" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
                                (ngModelChange)="savePreference()" />
                 <label>Gain</label>
@@ -227,7 +227,7 @@
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || capturing" [(ngModel)]="request.offset" mode="decimal" [showButtons]="true"
+                <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.offset" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="camera.offsetMin" [max]="camera.offsetMax" styleClass="p-inputtext-sm border-0"
                                [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Offset</label>
@@ -236,9 +236,9 @@
     </div>
     <div class="grid mt-1">
         <div class="col-12 flex align-items-center justify-content-center gap-1">
-            <p-button *ngIf="!dialogMode" [disabled]="!camera.connected || capturing" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
+            <p-button *ngIf="!dialogMode" [disabled]="!camera.connected || running" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
                       severity="success" />
-            <p-button *ngIf="!dialogMode" [disabled]="!camera.connected || !capturing" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
+            <p-button *ngIf="!dialogMode" [disabled]="!camera.connected || !running" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
                       severity="danger" />
             <p-button *ngIf="dialogMode" [disabled]="!camera.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
                       severity="info" />
@@ -252,11 +252,11 @@
     <div class="grid mt-2">
         <div class="col-6 flex flex-column justify-content-center text-center gap-2">
             <span class="text-sm text-gray-100">Enabled</span>
-            <p-inputSwitch [disabled]="!camera.connected || capturing" [(ngModel)]="request.dither!.enabled" (ngModelChange)="savePreference()" />
+            <p-inputSwitch [disabled]="!camera.connected || running" [(ngModel)]="request.dither!.enabled" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || capturing || !request.dither!.enabled" [showButtons]="true"
+                <p-inputNumber [disabled]="!camera.connected || running || !request.dither!.enabled" [showButtons]="true"
                                styleClass="border-0 p-inputtext-sm w-full" [min]="0.1" [max]="60" [(ngModel)]="request.dither!.amount" [step]="0.1"
                                locale="en" [minFractionDigits]="1" (ngModelChange)="savePreference()" />
                 <label>Dither (px)</label>
@@ -264,12 +264,12 @@
         </div>
         <div class="col-6 flex flex-column justify-content-center text-center gap-2">
             <span class="text-sm text-gray-100">Dither in RA only</span>
-            <p-checkbox [binary]="true" [disabled]="!camera.connected || capturing || !request.dither!.enabled"
+            <p-checkbox [binary]="true" [disabled]="!camera.connected || running || !request.dither!.enabled"
                         [(ngModel)]="request.dither!.raOnly" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || capturing || !request.dither!.enabled" [showButtons]="true"
+                <p-inputNumber [disabled]="!camera.connected || running || !request.dither!.enabled" [showButtons]="true"
                                styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
                                [(ngModel)]="request.dither!.afterExposures" [step]="1" (ngModelChange)="savePreference()" />
                 <label>After exposures</label>

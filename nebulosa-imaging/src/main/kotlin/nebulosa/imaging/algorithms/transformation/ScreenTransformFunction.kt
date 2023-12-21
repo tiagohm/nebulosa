@@ -2,6 +2,8 @@ package nebulosa.imaging.algorithms.transformation
 
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.TransformAlgorithm
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * @see <a href="https://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html#__XISF_Data_Objects_:_XISF_Image_:_Display_Function__">Adaptive Display Function Algorithm</a>
@@ -51,7 +53,7 @@ class ScreenTransformFunction(
     }
 
     private fun Float.df(midtone: Float, s: Float, h: Float, k1: Float, k2: Float): Float {
-        val p = (this * 65535f).toInt()
+        val p = max(0, min((this * 65535f).toInt(), 65535))
         if (!lut[p].isNaN()) return lut[p]
         if (this < s) return 0f
         if (this > h) return 1f

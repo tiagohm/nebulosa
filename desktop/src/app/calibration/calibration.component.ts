@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router'
 import path from 'path'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { ApiService } from '../../shared/services/api.service'
+import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { CalibrationFrame, CalibrationFrameGroup, Camera } from '../../shared/types'
@@ -29,6 +30,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
         private app: AppComponent,
         private api: ApiService,
         electron: ElectronService,
+        private browserWindow: BrowserWindowService,
         private route: ActivatedRoute,
         private storage: LocalStorageService,
     ) {
@@ -96,6 +98,10 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 
     async frameChecked(frame: CalibrationFrame, event: CheckboxChangeEvent) {
         await this.api.editCalibrationFrame(frame)
+    }
+
+    openImage(frame: CalibrationFrame) {
+        this.browserWindow.openImage({ path: frame.path })
     }
 
     replaceFrame(frame: CalibrationFrame) {

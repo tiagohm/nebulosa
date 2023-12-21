@@ -180,6 +180,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         return this.state === 'SETTLING'
     }
 
+    get running() {
+        return this.capturing || this.waiting || this.settling
+    }
+
     readonly exposure = Object.assign({}, EMPTY_CAMERA_EXPOSURE_INFO)
     readonly capture = Object.assign({}, EMPTY_CAMERA_CAPTURE_INFO)
     readonly wait = Object.assign({}, EMPTY_CAMERA_WAIT_INFO)
@@ -356,12 +360,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         const exposureFactor = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
         const exposureTime = Math.trunc(this.request.exposureTime * 60000000 / exposureFactor)
         const exposureAmount = this.exposureMode === 'LOOP' ? 0 : (this.exposureMode === 'FIXED' ? this.request.exposureAmount : 1)
+        const savePath = this.dialogMode ? this.request.savePath : this.savePath
 
         return {
             ...this.request,
             exposureDelay: this.request.exposureDelay * 1000000,
             x, y, width, height,
             exposureTime, exposureAmount,
+            savePath,
         }
     }
 
