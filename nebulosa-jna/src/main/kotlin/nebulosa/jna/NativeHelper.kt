@@ -5,8 +5,6 @@ import com.sun.jna.Native
 import com.sun.jna.Platform
 import nebulosa.io.transferAndClose
 import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.io.path.fileSize
 import kotlin.io.path.outputStream
 
 const val JNA_DIR = "jna.dir"
@@ -28,11 +26,13 @@ fun <T : Library> LibraryProvider.loadLibrary(type: Class<out T>, libraryDir: Pa
         ?: System.getProperty(JNA_DIR)?.ifBlank { null }?.let(Path::of)
         ?: Path.of(System.getProperty("java.io.tmpdir"))
 
-    val outputPath = Path.of("$outputDir", libraryName)
+    val outputPath = Path.of("$outputDir", "$libraryName$extension")
+    inputStream.transferAndClose(outputPath.outputStream())
 
-    if (!outputPath.exists() || outputPath.fileSize() <= 0L) {
-        inputStream.transferAndClose(outputPath.outputStream())
+    if (Platform.isWindows()) {
+        System.setProperty("jna.library.path", "$outputDir")
+        return Native.load(libraryName, type)
+    } else {
+        return Native.load("$outputPath", type)
     }
-
-    return Native.load("$outputPath", type)
 }
