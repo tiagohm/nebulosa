@@ -1,4 +1,5 @@
 import { AfterContentInit, AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { ActivatedRoute } from '@angular/router'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import moment from 'moment'
@@ -40,8 +41,35 @@ export interface SearchFilter {
     types: Union<SkyObjectType, 'ALL'>[]
 }
 
+export const EMPTY_SEARCH_FILTER: SearchFilter = {
+    text: '',
+    rightAscension: '00h00m00s',
+    declination: `+000°00'00"`,
+    radius: 0,
+    constellation: 'ALL',
+    magnitude: [-30, 30],
+    type: 'ALL',
+    types: ['ALL'],
+}
+
 export interface SkyAtlasPreference {
     satellites?: { group: SatelliteGroupType, enabled: boolean }[]
+}
+
+export enum SkyAtlasTab {
+    SUN,
+    MOON,
+    PLANET,
+    MINOR_PLANET,
+    STAR,
+    DSO,
+    SIMBAD,
+    SATELLITE,
+}
+
+export interface SkyAtlasData {
+    tab: SkyAtlasTab
+    filter?: Partial<Exclude<SearchFilter, 'types'>>
 }
 
 @Component({
@@ -52,16 +80,7 @@ export interface SkyAtlasPreference {
 export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, OnDestroy {
 
     refreshing = false
-
-    private activeTab = 0
-
-    get tab() {
-        return this.activeTab
-    }
-
-    set tab(value: number) {
-        this.activeTab = value
-    }
+    tab = SkyAtlasTab.SUN
 
     readonly bodyPosition = Object.assign({}, EMPTY_BODY_POSITION)
     moonIlluminated = 1
@@ -119,47 +138,17 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     star?: Star
     starItems: Star[] = []
     starSearchText = ''
-
-    private readonly starFilter: SearchFilter = {
-        text: '',
-        rightAscension: '00h00m00s',
-        declination: `+000°00'00"`,
-        radius: 0,
-        constellation: 'ALL',
-        magnitude: [-30, 30],
-        type: 'ALL',
-        types: ['ALL'],
-    }
+    private readonly starFilter = Object.assign({}, EMPTY_SEARCH_FILTER)
 
     dso?: DeepSkyObject
     dsoItems: DeepSkyObject[] = []
     dsoSearchText = ''
-
-    private readonly dsoFilter: SearchFilter = {
-        text: '',
-        rightAscension: '00h00m00s',
-        declination: `+000°00'00"`,
-        radius: 0,
-        constellation: 'ALL',
-        magnitude: [-30, 30],
-        type: 'ALL',
-        types: ['ALL'],
-    }
+    private readonly dsoFilter = Object.assign({}, EMPTY_SEARCH_FILTER)
 
     simbad?: DeepSkyObject
     simbadItems: DeepSkyObject[] = []
     simbadSearchText = ''
-
-    private readonly simbadFilter: SearchFilter = {
-        text: '',
-        rightAscension: '00h00m00s',
-        declination: `+000°00'00"`,
-        radius: 0,
-        constellation: 'ALL',
-        magnitude: [-30, 30],
-        type: 'ALL',
-        types: ['ALL'],
-    }
+    private readonly simbadFilter = Object.assign({}, EMPTY_SEARCH_FILTER)
 
     showSkyObjectFilter = false
     skyObjectFilter?: SearchFilter
@@ -474,6 +463,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
+        private route: ActivatedRoute,
         electron: ElectronService,
         private storage: LocalStorageService,
         private skyObjectPipe: SkyObjectPipe,
@@ -492,6 +482,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
         electron.on('LOCATION_CHANGED', (event) => {
             ngZone.run(() => this.refreshTab(true, true, event))
+        })
+
+        electron.on('DATA_CHANGED', event => {
+            this.loadTabFromData(event)
         })
 
         // TODO: Refresh graph and twilight if hours past 12 (noon)
@@ -529,9 +523,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 }
             })
 
-        if (initialDelay > 2500) {
-            await this.refreshTab()
-        }
+        await this.refreshTab()
+
+        this.route.queryParams.subscribe(e => {
+            const data = JSON.parse(decodeURIComponent(e.data)) as SkyAtlasData
+            this.loadTabFromData(data)
+        })
     }
 
     ngAfterViewInit() {
@@ -543,6 +540,28 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     @HostListener('window:unload')
     ngOnDestroy() {
         this.refreshTimer?.unsubscribe()
+    }
+
+    private loadTabFromData(data?: SkyAtlasData) {
+        if (data) {
+            this.tab = data.tab
+
+            if (this.tab === SkyAtlasTab.STAR || this.tab === SkyAtlasTab.DSO || this.tab === SkyAtlasTab.SIMBAD) {
+                const filters = [this.starFilter, this.dsoFilter, this.simbadFilter]
+                const i = this.tab - SkyAtlasTab.STAR
+
+                filters[i].rightAscension = data.filter?.rightAscension || filters[i].rightAscension
+                filters[i].declination = data.filter?.declination || filters[i].declination
+                if (data.filter?.radius) filters[i].radius = data.filter?.radius || filters[i].radius
+                filters[i].constellation = data.filter?.constellation || filters[i].constellation
+                filters[i].magnitude = data.filter?.magnitude || filters[i].magnitude
+                filters[i].type = data.filter?.type || filters[i].type
+
+                this.skyObjectFilter = filters[i]
+                this.tabChanged()
+                this.filterSkyObject()
+            }
+        }
     }
 
     async tabChanged() {
@@ -657,6 +676,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     }
 
     async filterSkyObject() {
+        if (!this.skyObjectFilter) return
+        if (!this.skyObjectFilter.radius) this.skyObjectFilter.radius = 1
+
         if (this.skyObjectFilter === this.starFilter) await this.searchStar()
         else if (this.skyObjectFilter === this.dsoFilter) await this.searchDSO()
         else if (this.skyObjectFilter === this.simbadFilter) await this.searchSimbad()
@@ -759,7 +781,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
         try {
             // Sun.
-            if (this.activeTab === 0) {
+            if (this.tab === SkyAtlasTab.SUN) {
                 this.name = 'Sun'
                 this.tags = []
                 this.imageOfSun.nativeElement.src = `${this.api.baseUrl}/sky-atlas/sun/image`
@@ -767,7 +789,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 Object.assign(this.bodyPosition, bodyPosition)
             }
             // Moon.
-            else if (this.activeTab === 1) {
+            else if (this.tab === SkyAtlasTab.MOON) {
                 this.name = 'Moon'
                 this.tags = []
                 const bodyPosition = await this.api.positionOfMoon(location!, this.dateTime)
@@ -776,7 +798,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 this.moonWaning = this.bodyPosition.leading
             }
             // Planet.
-            else if (this.activeTab === 2) {
+            else if (this.tab === SkyAtlasTab.PLANET) {
                 this.tags = []
 
                 if (this.planet) {
@@ -789,7 +811,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 }
             }
             // Minor Planet.
-            else if (this.activeTab === 3) {
+            else if (this.tab === SkyAtlasTab.MINOR_PLANET) {
                 this.tags = []
 
                 if (this.minorPlanet) {
@@ -807,7 +829,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 }
             }
             // Star.
-            else if (this.activeTab === 4) {
+            else if (this.tab === SkyAtlasTab.STAR) {
                 this.tags = []
 
                 if (this.star) {
@@ -820,7 +842,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 }
             }
             // DSO.
-            else if (this.activeTab === 5) {
+            else if (this.tab === SkyAtlasTab.DSO) {
                 this.tags = []
 
                 if (this.dso) {
@@ -833,7 +855,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 }
             }
             // Simbad.
-            else if (this.activeTab === 6) {
+            else if (this.tab === SkyAtlasTab.SIMBAD) {
                 this.tags = []
 
                 if (this.simbad) {
@@ -846,7 +868,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 }
             }
             // Satellite.
-            else if (this.activeTab === 7) {
+            else if (this.tab === SkyAtlasTab.SATELLITE) {
                 this.tags = []
 
                 if (this.satellite) {
@@ -883,25 +905,25 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
     private async refreshChart(location: Location) {
         // Sun.
-        if (this.activeTab === 0) {
+        if (this.tab === SkyAtlasTab.SUN) {
             const points = await this.api.altitudePointsOfSun(location!, this.dateTime)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // Moon.
-        else if (this.activeTab === 1) {
+        else if (this.tab === SkyAtlasTab.MOON) {
             const points = await this.api.altitudePointsOfMoon(location!, this.dateTime)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // Planet.
-        else if (this.activeTab === 2 && this.planet) {
+        else if (this.tab === SkyAtlasTab.PLANET && this.planet) {
             const points = await this.api.altitudePointsOfPlanet(location!, this.planet.code, this.dateTime)
             AtlasComponent.belowZeroPoints(points)
             this.altitudeData.datasets[9].data = points
         }
         // Minor Planet.
-        else if (this.activeTab === 3) {
+        else if (this.tab === SkyAtlasTab.MINOR_PLANET) {
             if (this.minorPlanet) {
                 const code = `DES=${this.minorPlanet.spkId};`
                 const points = await this.api.altitudePointsOfPlanet(location!, code, this.dateTime)
@@ -912,7 +934,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             }
         }
         // Star.
-        else if (this.activeTab === 4) {
+        else if (this.tab === SkyAtlasTab.STAR) {
             if (this.star) {
                 const points = await this.api.altitudePointsOfStar(location!, this.star, this.dateTime)
                 AtlasComponent.belowZeroPoints(points)
@@ -922,7 +944,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             }
         }
         // DSO.
-        else if (this.activeTab === 5) {
+        else if (this.tab === SkyAtlasTab.DSO) {
             if (this.dso) {
                 const points = await this.api.altitudePointsOfDSO(location!, this.dso, this.dateTime)
                 AtlasComponent.belowZeroPoints(points)
@@ -932,7 +954,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             }
         }
         // Simbad.
-        else if (this.activeTab === 6) {
+        else if (this.tab === SkyAtlasTab.SIMBAD) {
             if (this.simbad) {
                 const points = await this.api.altitudePointsOfSimbad(location!, this.simbad, this.dateTime)
                 AtlasComponent.belowZeroPoints(points)
@@ -942,7 +964,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             }
         }
         // Satellite.
-        else if (this.activeTab === 7) {
+        else if (this.tab === SkyAtlasTab.SATELLITE) {
             if (this.satellite) {
                 const points = await this.api.altitudePointsOfSatellite(location!, this.satellite, this.dateTime)
                 AtlasComponent.belowZeroPoints(points)

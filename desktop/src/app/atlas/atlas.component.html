@@ -330,7 +330,7 @@
                             </span>
                         </div>
                         <div class="col-3 justify-content-center">
-                            <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-lg mdi-dots-vertical"
+                            <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-md mdi-dots-vertical"
                                       (click)="ephemerisMenu.show()" />
                         </div>
                     </div>
@@ -379,8 +379,8 @@
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <p-inputNumber [min]="0" [max]="90" class="w-full" [showButtons]="true" inputStyleClass="border-0 w-full"
-                               [(ngModel)]="skyObjectFilter.radius" />
+                <p-inputNumber [min]="0" [max]="90" class="w-full" [step]="0.1" [maxFractionDigits]="1" [showButtons]="true"
+                               inputStyleClass="border-0 w-full" locale="en" [(ngModel)]="skyObjectFilter.radius" />
                 <label>Radius (°)</label>
             </span>
         </div>
@@ -420,7 +420,7 @@
                 <label>Type</label>
             </span>
         </div>
-        <div class="col-12">
+        <div class="col-12 flex-column">
             <p>Magnitude min: {{ skyObjectFilter.magnitude[0] }} max: {{ skyObjectFilter.magnitude[1] }}</p>
             <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="skyObjectFilter.magnitude" [range]="true" />
         </div>

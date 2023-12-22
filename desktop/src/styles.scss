@@ -83,10 +83,6 @@ p-dropdown,
     color: rgba(200, 200, 200, 0.87);
 }
 
-p-checkbox {
-    justify-content: center;
-}
-
 .p-checkbox {
     margin-left: auto;
     margin-right: auto;
@@ -155,7 +151,7 @@ p-calendar.border-0 .p-calendar-w-btn {
 
 i.mdi {
     aspect-ratio: 1/1;
-    display: inline-block;
+    display: inline-flex;
 }
 
 .p-dialog-content {

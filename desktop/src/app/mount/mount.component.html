@@ -78,6 +78,11 @@
                 <label>Pier</label>
             </span>
         </div>
+        <div class="col-3">
+        </div>
+        <div class="col-3 justify-content-center">
+            <p-button [text]="true" [rounded]="true" icon="mdi mdi-md mdi-dots-vertical" (click)="ephemerisMenu.show()" />
+        </div>
     </div>
     <div class="grid mt-1">
         <div class="col-4 flex flex-column justify-content-center">
@@ -197,3 +202,4 @@
 </div>
 
 <p-dialogMenu #targetMenu [model]="targetCoordinateModel" />
+<p-dialogMenu #ephemerisMenu [model]="ephemerisModel" />

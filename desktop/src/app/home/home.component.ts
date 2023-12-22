@@ -289,7 +289,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 this.browserWindow.openGuider({ bringToFront: true })
                 break
             case 'SKY_ATLAS':
-                this.browserWindow.openSkyAtlas({ bringToFront: true })
+                this.browserWindow.openSkyAtlas({ bringToFront: true, data: undefined })
                 break
             case 'FRAMING':
                 this.browserWindow.openFraming({ bringToFront: true, data: undefined })

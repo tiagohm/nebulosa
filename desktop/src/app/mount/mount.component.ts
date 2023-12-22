@@ -2,12 +2,14 @@ import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@a
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
+import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Angle, ComputedLocation, Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode, Union } from '../../shared/types'
 import { AppComponent } from '../app.component'
+import { SkyAtlasTab } from '../atlas/atlas.component'
 
 export interface MountPreference {
     targetCoordinateType?: TargetCoordinateType
@@ -60,6 +62,47 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     private readonly computeTargetCoordinatePublisher = new Subject<void>()
     private computeCoordinateSubscriptions: Subscription[] = []
     private readonly moveToDirection = [false, false]
+
+    readonly ephemerisModel: MenuItem[] = [
+        {
+            icon: 'mdi mdi-image',
+            label: 'Frame',
+            command: () => {
+                this.browserWindow.openFraming({ data: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } })
+            },
+        },
+        SEPARATOR_MENU_ITEM,
+        {
+            icon: 'mdi mdi-magnify',
+            label: 'Find stars around the coordinates',
+            command: () => {
+                this.browserWindow.openSkyAtlas({
+                    bringToFront: true,
+                    data: { tab: SkyAtlasTab.STAR, filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } }
+                })
+            },
+        },
+        {
+            icon: 'mdi mdi-magnify',
+            label: 'Find DSOs around the coordinates',
+            command: () => {
+                this.browserWindow.openSkyAtlas({
+                    bringToFront: true,
+                    data: { tab: SkyAtlasTab.DSO, filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } }
+                })
+            },
+        },
+        {
+            icon: 'mdi mdi-magnify',
+            label: 'Find around the coordinates on Simbad',
+            command: () => {
+                this.browserWindow.openSkyAtlas({
+                    bringToFront: true,
+                    data: { tab: SkyAtlasTab.SIMBAD, filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } }
+                })
+            },
+        },
+    ]
 
     readonly targetCoordinateModel: MenuItem[] = [
         {

@@ -4,6 +4,7 @@ import { FramingData } from '../../app/framing/framing.component'
 import { ImageData } from '../../app/image/image.component'
 import { Camera, Device, FilterWheel, Focuser, Mount, OpenWindow, OpenWindowOptions } from '../types'
 import { ElectronService } from './electron.service'
+import { SkyAtlasData } from '../../app/atlas/atlas.component'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
@@ -71,11 +72,11 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'indi', path: 'indi' })
     }
 
-    openSkyAtlas(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
+    openSkyAtlas(options: OpenWindowOptions<SkyAtlasData | undefined>) {
         options.icon ||= 'atlas'
         options.width ||= 450
         options.height ||= 523
-        this.openWindow({ ...options, id: 'atlas', path: 'atlas', data: undefined })
+        this.openWindow({ ...options, id: 'atlas', path: 'atlas' })
     }
 
     openFraming(options: OpenWindowOptions<FramingData | undefined>) {
