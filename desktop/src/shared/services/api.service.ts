@@ -583,8 +583,8 @@ export class ApiService {
     // DARV
 
     darvStart(camera: Camera, guideOutput: GuideOutput,
-        exposureTime: number, initialPause: number, direction: GuideDirection, reversed: boolean = false) {
-        const data = { exposureTime, initialPause, direction, reversed }
+        exposureTime: number, initialPause: number, direction: GuideDirection, reversed: boolean = false, capture?: CameraStartCapture) {
+        const data = { capture, exposureTime, initialPause, direction, reversed }
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
     }
 

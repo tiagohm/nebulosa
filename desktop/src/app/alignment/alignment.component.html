@@ -54,15 +54,15 @@
                     <div class="grid mt-2">
                         <div class="col-4">
                             <span class="p-float-label">
-                                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvInitialPause"
+                                <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvInitialPause" [showButtons]="true"
                                                [min]="1" [max]="60" />
                                 <label>Initial pause (s)</label>
                             </span>
                         </div>
                         <div class="col-4">
                             <span class="p-float-label">
-                                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvDrift"
-                                               [min]="1" [max]="600" />
+                                <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvDrift" [showButtons]="true" [min]="1"
+                                               [max]="600" />
                                 <label>Drift for (s)</label>
                             </span>
                         </div>

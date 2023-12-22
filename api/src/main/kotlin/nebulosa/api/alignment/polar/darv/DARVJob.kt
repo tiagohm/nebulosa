@@ -1,10 +1,7 @@
 package nebulosa.api.alignment.polar.darv
 
 import io.reactivex.rxjava3.subjects.PublishSubject
-import nebulosa.api.cameras.CameraCaptureListener
-import nebulosa.api.cameras.CameraExposureFinished
-import nebulosa.api.cameras.CameraExposureStep
-import nebulosa.api.cameras.CameraStartCaptureRequest
+import nebulosa.api.cameras.*
 import nebulosa.api.guiding.GuidePulseListener
 import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.guiding.GuidePulseStep
@@ -15,6 +12,7 @@ import nebulosa.batch.processing.ExecutionContext.Companion.getDuration
 import nebulosa.batch.processing.ExecutionContext.Companion.getPath
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.batch.processing.delay.DelayStepListener
+import nebulosa.indi.device.camera.FrameType
 import java.nio.file.Files
 import java.time.Duration
 
@@ -26,10 +24,12 @@ data class DARVJob(
     @JvmField val guideOutput = requireNotNull(request.guideOutput)
     @JvmField val direction = if (request.reversed) request.direction.reversed else request.direction
 
-    @JvmField val cameraRequest = CameraStartCaptureRequest(
+    @JvmField val cameraRequest = (request.capture ?: CameraStartCaptureRequest()).copy(
         camera = camera,
         exposureTime = request.exposureTime + request.initialPause,
         savePath = Files.createTempDirectory("darv"),
+        exposureAmount = 1, exposureDelay = Duration.ZERO,
+        frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
     )
 
     override val subject = PublishSubject.create<MessageEvent>()
