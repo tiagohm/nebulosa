@@ -160,8 +160,9 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     private fun save(stream: InputStream) {
         val savePath = if (request.autoSave) {
             val now = LocalDateTime.now()
+            val savePath = request.autoSubFolderMode.pathFor(request.savePath!!, now)
             val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), request.frameType)
-            Path.of("${request.savePath}", fileName)
+            Path.of("$savePath", fileName)
         } else {
             val fileName = "%s.fits".format(camera.name)
             Path.of("${request.savePath}", fileName)
