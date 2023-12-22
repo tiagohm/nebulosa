@@ -67,3 +67,6 @@ val Header.filter
 
 val Header.frame
     get() = (getStringOrNull("FRAME") ?: getStringOrNull(SBFitsExt.IMAGETYP))?.ifBlank { null }
+
+val Header.instrument
+    get() = getStringOrNull(Standard.INSTRUME)?.ifBlank { null }

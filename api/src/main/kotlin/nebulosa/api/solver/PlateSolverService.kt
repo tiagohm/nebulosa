@@ -3,7 +3,7 @@ package nebulosa.api.solver
 import com.sun.jna.Platform
 import jakarta.annotation.PostConstruct
 import nebulosa.api.image.ImageBucket
-import nebulosa.api.image.ImageCalibrated
+import nebulosa.api.image.ImageSolved
 import nebulosa.api.preferences.PreferenceService
 import nebulosa.astap.plate.solving.AstapPlateSolver
 import nebulosa.astrometrynet.plate.solving.LocalAstrometryNetPlateSolver
@@ -36,10 +36,10 @@ class PlateSolverService(
     fun solveImage(
         path: Path,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
-    ): ImageCalibrated {
+    ): ImageSolved {
         val calibration = solve(path, centerRA, centerDEC, radius)
         imageBucket.put(path, calibration)
-        return ImageCalibrated(calibration)
+        return ImageSolved(calibration)
     }
 
     @Synchronized

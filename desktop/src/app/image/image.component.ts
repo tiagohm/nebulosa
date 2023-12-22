@@ -15,8 +15,7 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { PrimeService } from '../../shared/services/prime.service'
 import {
     Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, DetectedStar, EquatorialCoordinateJ2000, FITSHeaderItem,
-    ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
-    Mount, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
+    ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, Mount, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
 } from '../../shared/types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
@@ -83,7 +82,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solverCenterRA = ''
     solverCenterDEC = ''
     solverRadius = 4
-    solverCalibration?: ImageCalibrated
+    solverData?: ImageSolved
 
     crossHair = false
     annotations: ImageAnnotation[] = []
@@ -457,8 +456,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.disableAutoStretch()
         }
 
-        this.calibrateMenuItem.disabled = !data.camera
-
         if (!data.camera) {
             this.disableCalibrate()
         }
@@ -517,8 +514,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.stretchMidtone = Math.trunc(info.stretchMidtone * 65536)
         }
 
-        this.annotationMenuItem.disabled = !info.calibrated
-        this.pointMountHereMenuItem.disabled = !info.calibrated
+        this.annotationMenuItem.disabled = !info.solved
+        this.pointMountHereMenuItem.disabled = !info.solved
         this.fitsHeaders = info.headers
 
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
@@ -621,7 +618,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solving = true
 
         try {
-            this.solverCalibration = await this.api.solveImage(this.imageData.path!, this.solverBlind,
+            this.solverData = await this.api.solveImage(this.imageData.path!, this.solverBlind,
                 this.solverCenterRA, this.solverCenterDEC, this.solverRadius)
 
             this.savePreference()
@@ -631,7 +628,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.pointMountHereMenuItem.disabled = false
         } catch {
             this.solved = false
-            this.solverCalibration = undefined
+            this.solverData = undefined
             this.annotationMenuItem.disabled = true
             this.pointMountHereMenuItem.disabled = true
         } finally {

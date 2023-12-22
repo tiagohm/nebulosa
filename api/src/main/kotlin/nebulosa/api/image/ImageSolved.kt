@@ -3,7 +3,7 @@ package nebulosa.api.image
 import nebulosa.math.*
 import nebulosa.plate.solving.PlateSolution
 
-data class ImageCalibrated(
+data class ImageSolved(
     val orientation: Double = 0.0,
     val scale: Double = 0.0,
     val rightAscensionJ2000: String = "",

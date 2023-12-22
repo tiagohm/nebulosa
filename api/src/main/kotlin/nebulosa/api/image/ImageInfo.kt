@@ -1,5 +1,6 @@
 package nebulosa.api.image
 
+import nebulosa.indi.device.camera.Camera
 import java.nio.file.Path
 
 data class ImageInfo(
@@ -12,6 +13,7 @@ data class ImageInfo(
     val stretchMidtone: Float,
     val rightAscension: String?,
     val declination: String?,
-    val calibrated: Boolean,
+    val solved: Boolean,
     val headers: List<ImageHeaderItem>,
+    val camera: Camera?,
 )

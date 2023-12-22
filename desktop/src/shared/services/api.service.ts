@@ -3,8 +3,7 @@ import moment from 'moment'
 import {
     Angle, BodyPosition, CalibrationFrame, CalibrationFrameGroup, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, DetectedStar, Device,
     FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
-    INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo,
-    Location, MinorPlanet, Mount, PlateSolverOptions, SCNRProtectionMethod, Satellite, SatelliteGroupType,
+    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, Location, MinorPlanet, Mount, PlateSolverOptions, SCNRProtectionMethod, Satellite, SatelliteGroupType,
     SequencePlan, SettleInfo, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 import { HttpService } from './http.service'
@@ -609,7 +608,7 @@ export class ApiService {
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ) {
         const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
-        return this.http.put<ImageCalibrated>(`plate-solver?${query}`)
+        return this.http.put<ImageSolved>(`plate-solver?${query}`)
     }
 
     getPlateSolverSettings() {

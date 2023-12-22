@@ -335,7 +335,7 @@ export interface ImageInfo {
     stretchMidtone: number
     rightAscension?: string
     declination?: string
-    calibrated: boolean
+    solved: boolean
     headers: FITSHeaderItem[]
 }
 
@@ -503,7 +503,7 @@ export interface ImageAnnotation {
     minorPlanet?: AstronomicalObject
 }
 
-export interface ImageCalibrated extends EquatorialCoordinateJ2000 {
+export interface ImageSolved extends EquatorialCoordinateJ2000 {
     orientation: number
     scale: number
     width: number

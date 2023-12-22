@@ -168,52 +168,52 @@
             <div class="col-4">
                 <span class="p-float-label">
                     <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                           [value]="solverCalibration?.rightAscensionJ2000 ?? '00h00m00s'" />
+                           [value]="solverData?.rightAscensionJ2000 ?? '00h00m00s'" />
                     <label>RA (J2000)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
                     <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                           [value]="solverCalibration?.declinationJ2000 ?? '+000°00\'00&quot;'" />
+                           [value]="solverData?.declinationJ2000 ?? '+000°00\'00&quot;'" />
                     <label>DEC (J2000)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.orientation?.toFixed(4) ?? '0.0'" />
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverData?.orientation?.toFixed(4) ?? '0.0'" />
                     <label>Orientation (°)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.scale?.toFixed(4) ?? '0.0'" />
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverData?.scale?.toFixed(4) ?? '0.0'" />
                     <label>Scale (arcsec/px)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
                     <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                           [value]="(solverCalibration?.width?.toFixed(2) ?? '0.0') + ' x ' + (solverCalibration?.height?.toFixed(2) ?? '0.0')" />
+                           [value]="(solverData?.width?.toFixed(2) ?? '0.0') + ' x ' + (solverData?.height?.toFixed(2) ?? '0.0')" />
                     <label>Field size (arcmin)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverCalibration?.radius?.toFixed(4) ?? '0.0'" />
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solverData?.radius?.toFixed(4) ?? '0.0'" />
                     <label>Radius (°)</label>
                 </span>
             </div>
         </div>
         <div class="grid mb-2">
             <div class="col-12 flex justify-content-center">
-                <p-button [disabled]="solving || !solved" (onClick)="mountSync(solverCalibration!)" icon="mdi mdi-sync" label="Sync"
+                <p-button [disabled]="solving || !solved" (onClick)="mountSync(solverData!)" icon="mdi mdi-sync" label="Sync"
                           [text]="true" severity="info" />
-                <p-button [disabled]="solving || !solved" (onClick)="mountGoTo(solverCalibration!)" icon="mdi mdi-telescope" label="Go To"
+                <p-button [disabled]="solving || !solved" (onClick)="mountGoTo(solverData!)" icon="mdi mdi-telescope" label="Go To"
                           [text]="true" severity="success" />
-                <p-button [disabled]="solving || !solved" (onClick)="mountSlew(solverCalibration!)" icon="mdi mdi-telescope" label="Slew"
+                <p-button [disabled]="solving || !solved" (onClick)="mountSlew(solverData!)" icon="mdi mdi-telescope" label="Slew"
                           [text]="true" severity="success" />
-                <p-button [disabled]="solving || !solved" (onClick)="frame(solverCalibration!)" icon="mdi mdi-image" label="Frame"
+                <p-button [disabled]="solving || !solved" (onClick)="frame(solverData!)" icon="mdi mdi-image" label="Frame"
                           [text]="true" />
             </div>
         </div>
