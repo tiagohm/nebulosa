@@ -33,6 +33,9 @@ updates:
       jackson:
         patterns:
           - "com.fasterxml.jackson*"
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin*"
 
   - package-ecosystem: "npm"
     directory: "/desktop"
