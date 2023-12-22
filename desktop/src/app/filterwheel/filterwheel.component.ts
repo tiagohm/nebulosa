@@ -116,8 +116,9 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    moveTo(filter: Filter) {
-        this.api.wheelMoveTo(this.wheel!, filter.position)
+    async moveTo(filter: Filter) {
+        await this.api.wheelMoveTo(this.wheel!, filter.position)
+        this.moving = true
     }
 
     shutterToggled(filter: Filter, event: InputSwitchChangeEvent) {
@@ -141,7 +142,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         }
 
         this.connected = this.wheel.connected
-        this.moving = this.wheel.moving
+        this.moving = this.wheel.moving && this.position === this.wheel.position
         this.position = this.wheel.position
 
         let filters: Filter[] = []
