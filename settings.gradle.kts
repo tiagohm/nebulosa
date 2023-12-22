@@ -12,7 +12,7 @@ buildCache {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("okio", "com.squareup.okio:okio:3.6.0")
+            library("okio", "com.squareup.okio:okio:3.7.0")
             library("okhttp", "com.squareup.okhttp3:okhttp:4.12.0")
             library("okhttp-logging", "com.squareup.okhttp3:logging-interceptor:4.12.0")
             library("jackson-core", "com.fasterxml.jackson.core:jackson-databind:2.16.0")
@@ -23,8 +23,8 @@ dependencyResolutionManagement {
             library("rx", "io.reactivex.rxjava3:rxjava:3.1.8")
             library("logback", "ch.qos.logback:logback-classic:1.4.14")
             library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
-            library("netty-transport", "io.netty:netty-transport:4.1.103.Final")
-            library("netty-codec", "io.netty:netty-codec:4.1.103.Final")
+            library("netty-transport", "io.netty:netty-transport:4.1.104.Final")
+            library("netty-codec", "io.netty:netty-codec:4.1.104.Final")
             library("xml", "com.fasterxml:aalto-xml:1.3.2")
             library("csv", "de.siegmar:fastcsv:2.2.2")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.14.0")
@@ -33,7 +33,7 @@ dependencyResolutionManagement {
             library("oshi", "com.github.oshi:oshi-core:6.4.9")
             library("timeshape", "net.iakovlev:timeshape:2022g.17")
             library("sqlite", "org.xerial:sqlite-jdbc:3.44.1.0")
-            library("flyway", "org.flywaydb:flyway-core:10.3.0")
+            library("flyway", "org.flywaydb:flyway-core:10.4.0")
             library("jna", "net.java.dev.jna:jna:5.14.0")
             library("hikari", "com.zaxxer:HikariCP:5.1.0")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.8.0")
