@@ -659,7 +659,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     frame(coordinate: EquatorialCoordinateJ2000) {
-        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000 } })
+        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000, fov: this.solverData!.width / 60, rotation: this.solverData!.orientation } })
     }
 
     imageLoaded() {
