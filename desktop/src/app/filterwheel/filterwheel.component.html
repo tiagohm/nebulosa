@@ -10,7 +10,7 @@
             <p-button *ngIf="!wheel.connected" [disabled]="!wheel || moving" (onClick)="connect()" icon="mdi mdi-connection"
                       size="small" severity="info" />
         </div>
-        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
+        <div *ngIf="!dialogMode" class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>
             <span class="mr-3">{{ moving ? 'moving' : 'idle' }}</span>
             <p-tag *ngIf="wheel.connected && selectedFilter" [value]="selectedFilter.name" severity="info" />
@@ -20,7 +20,7 @@
         <div class="col-9">
             <span class="p-float-label">
                 <p-dropdown [disabled]="!wheel.connected || moving" [options]="filters" [(ngModel)]="filter" styleClass="border-0"
-                            emptyMessage="No filter found">
+                            emptyMessage="No filter found" [autoDisplayFirst]="false" appendTo="body">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex flex-column justify-content-center gap-1">
                             <span class="flex align-items-center text-xs gap-1" style="min-height: 15px">
@@ -71,7 +71,7 @@
                            (onChange)="shutterToggled(filter, $event)" />
         </div>
         <div *ngIf="dialogMode" class="col-12 flex flex-column justify-content-center gap-2">
-            <p-button [disabled]="!wheel.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
+            <p-button [disabled]="!wheel.connected || !filters.length" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
                       severity="info" />
         </div>
     </div>

@@ -9,6 +9,7 @@ import { PrimeService } from '../../shared/services/prime.service'
 import { Camera, CameraCaptureEvent, CameraCaptureState, CameraStartCapture, FilterWheel, Focuser, SequenceCaptureMode, SequencePlan } from '../../shared/types'
 import { AppComponent } from '../app.component'
 import { CameraCaptureInfo, CameraComponent, CameraExposureInfo, CameraWaitInfo, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_EXPOSURE_INFO, EMPTY_CAMERA_WAIT_INFO } from '../camera/camera.component'
+import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
 
 @Component({
     selector: 'app-sequencer',
@@ -20,6 +21,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     cameras: Camera[] = []
     wheels: FilterWheel[] = []
     focusers: Focuser[] = []
+
+    camera?: Camera
+    wheel?: FilterWheel
+    focuser?: Focuser
 
     readonly captureModes: SequenceCaptureMode[] = ['FULLY', 'INTERLEAVED']
     readonly plan: SequencePlan = {
@@ -109,9 +114,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         })
 
         electron.on('CAMERA_UPDATED', event => {
-            for (const entry of this.plan.entries) {
-                this.updateEntryFromCamera(entry, event.device)
-            }
+            this.updateEntriesFromCamera(event.device)
         })
 
         // TODO: Sequencer elapsedTime, progress, remainingTime, #
@@ -197,9 +200,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromCamera(entry: CameraStartCapture, camera?: Camera) {
-        if (camera && entry.camera && entry.camera.name === camera.name) {
-            Object.assign(entry.camera, camera)
+        entry.camera = camera
 
+        if (camera) {
             if (camera.connected) {
                 if (camera.maxX) entry.x = Math.max(camera.minX, Math.min(entry.x, camera.maxX))
                 if (camera.maxY) entry.y = Math.max(camera.minY, Math.min(entry.y, camera.maxY))
@@ -217,30 +220,56 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    updateEntriesFromCamera(camera?: Camera) {
+        for (const entry of this.plan.entries) {
+            this.updateEntryFromCamera(entry, camera)
+        }
+    }
+
+    updateEntryFromWheel(entry: CameraStartCapture, wheel?: FilterWheel) {
+        entry.wheel = wheel
+
+        if (wheel) {
+            if (wheel.connected) {
+                this.savePlan()
+            }
+        }
+    }
+
+    updateEntriesFromWheel(wheel?: FilterWheel) {
+        for (const entry of this.plan.entries) {
+            this.updateEntryFromWheel(entry, wheel)
+        }
+    }
+
+    updateEntryFromFocuser(entry: CameraStartCapture, focuser?: Focuser) {
+        entry.focuser = focuser
+
+        if (focuser) {
+            if (focuser.connected) {
+                this.savePlan()
+            }
+        }
+    }
+
+    updateEntriesFromFocuser(focuser?: Focuser) {
+        for (const entry of this.plan.entries) {
+            this.updateEntryFromFocuser(entry, focuser)
+        }
+    }
+
     private loadPlan(plan?: SequencePlan) {
         plan ??= this.storage.get('sequencer.plan', this.plan)
 
-        for (const entry of plan.entries) {
-            if (entry.camera) {
-                entry.camera = this.cameras.find(e => e.name === entry.camera?.name) ?? this.cameras[0]
-            } else {
-                entry.camera = this.cameras[0]
-            }
-
-            if (entry.focuser) {
-                entry.focuser = this.focusers.find(e => e.name === entry.focuser?.name) ?? this.focusers[0]
-            } else {
-                entry.focuser = this.focusers[0]
-            }
-
-            if (entry.wheel) {
-                entry.wheel = this.wheels.find(e => e.name === entry.wheel?.name) ?? this.wheels[0]
-            } else {
-                entry.wheel = this.wheels[0]
-            }
-        }
-
         Object.assign(this.plan, plan)
+
+        this.camera = this.cameras.find(e => e.name === this.plan.entries[0]?.camera?.name) ?? this.cameras[0]
+        this.focuser = this.focusers.find(e => e.name === this.plan.entries[0]?.focuser?.name) ?? this.focusers[0]
+        this.wheel = this.wheels.find(e => e.name === this.plan.entries[0]?.wheel?.name) ?? this.wheels[0]
+
+        this.updateEntriesFromCamera(this.camera)
+        this.updateEntriesFromWheel(this.wheel)
+        this.updateEntriesFromFocuser(this.focuser)
 
         return plan.entries.length
     }
@@ -255,7 +284,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     async showWheelDialog(entry: CameraStartCapture) {
-        const result = await this.prime.open(CameraComponent, { header: 'Filter Wheel', width: 'calc(400px + 2.5rem)', data: Object.assign({}, entry) })
+        const result = await this.prime.open(FilterWheelComponent, { header: 'Filter Wheel', width: 'calc(340px + 2.5rem)', data: Object.assign({}, entry) })
 
         if (result) {
             Object.assign(entry, result)

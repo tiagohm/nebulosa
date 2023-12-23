@@ -63,61 +63,66 @@
             </p-tabPanel>
         </p-tabView>
     </div>
-    <div class="grid flex align-items-center">
+    <div class="grid">
+        <div class="col-4 align-items-center pt-4">
+            <span class="p-float-label">
+                <p-dropdown [disabled]="running" [options]="cameras" [autoDisplayFirst]="false"
+                            [(ngModel)]="camera" optionLabel="name" styleClass="p-inputtext-sm border-0"
+                            [style]="{'min-width': '131px'}" (ngModelChange)="updateEntriesFromCamera($event)"
+                            emptyMessage="No camera found" />
+                <label>Camera</label>
+            </span>
+        </div>
+        <div class="col-4 align-items-center pt-4">
+            <span class="p-float-label" *ngIf="wheels.length">
+                <p-dropdown [disabled]="running" [options]="wheels" [(ngModel)]="wheel"
+                            optionLabel="name" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false"
+                            emptyMessage="No filter wheel found" (ngModelChange)="updateEntriesFromWheel($event)" />
+                <label>Filter Wheel</label>
+            </span>
+        </div>
+        <div class="col-4 align-items-center pt-4">
+            <span class="p-float-label" *ngIf="focusers.length">
+                <p-dropdown [disabled]="running" [options]="focusers" [(ngModel)]="focuser" optionLabel="name" [autoDisplayFirst]="false"
+                            styleClass="p-inputtext-sm border-0" emptyMessage="No focuser found" (ngModelChange)="updateEntriesFromFocuser($event)" />
+                <label>Focuser</label>
+            </span>
+        </div>
+    </div>
+    <div class="grid mt-2 flex align-items-center">
         <p-scrollPanel class="w-full" [style]="{ width: '100%', height: 'calc(100vh - 168px)' }" cdkDropList (cdkDropListDropped)="drop($event)">
             <div *ngFor="let entry of plan.entries; index as i" class="col-12" cdkDrag>
                 <p-card>
                     <ng-template pTemplate="header">
                         <div class="grid">
-                            <div class="col-2 pb-0 align-items-center justify-content-center gap-2">
-                                <p-badge severity="info" value="#{{ i + 1 }}"></p-badge>
-                                <p-checkbox [binary]="true" [(ngModel)]="entry.enabled" (ngModelChange)="savePlan()" />
+                            <div class="col-1 pb-1 align-items-center justify-content-center gap-2">
+                                <span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
                             </div>
-                            <div class="col-10 pb-0">
-                                <div class="grid">
-                                    <div class="col-4 align-items-center pt-4">
-                                        <span class="p-float-label">
-                                            <p-dropdown [disabled]="running || !entry.enabled" [options]="cameras" [autoDisplayFirst]="false"
-                                                        [(ngModel)]="entry.camera" optionLabel="name" styleClass="p-inputtext-sm border-0"
-                                                        [style]="{'min-width': '131px'}" (ngModelChange)="updateEntryFromCamera(entry, $event)"
-                                                        emptyMessage="No camera found" />
-                                            <label>Camera</label>
-                                        </span>
-                                        <p-button [disabled]="running || !entry.enabled" [text]="true" [rounded]="true" icon="mdi mdi-cog"
-                                                  severity="info" (onClick)="showCameraDialog(entry)" />
-                                    </div>
-                                    <div class="col-4 align-items-center pt-4">
-                                        <span class="p-float-label" *ngIf="wheels.length">
-                                            <p-dropdown [disabled]="running || !entry.enabled" [options]="wheels" [(ngModel)]="entry.wheel"
-                                                        optionLabel="name" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false"
-                                                        emptyMessage="No filter wheel found" />
-                                            <label>Filter Wheel</label>
-                                        </span>
-                                        <p-button [disabled]="running || !entry.enabled" [text]="true" [rounded]="true" icon="mdi mdi-cog"
-                                                  severity="info" (onClick)="showWheelDialog(entry)" />
-                                    </div>
-                                    <div class="col-4 align-items-center pt-4">
-                                        <span class="p-float-label" *ngIf="focusers.length">
-                                            <p-dropdown [disabled]="running || !entry.enabled" [options]="focusers"
-                                                        [(ngModel)]="entry.focuser" optionLabel="name" [autoDisplayFirst]="false"
-                                                        styleClass="p-inputtext-sm border-0" emptyMessage="No focuser found" />
-                                            <label>Focuser</label>
-                                        </span>
-                                    </div>
-                                </div>
+                            <div class="col-10 pb-1 gap-2">
+                                <p-button [disabled]="running || !entry.enabled" icon="mdi mdi-camera-iris" label="Camera" severity="info"
+                                          styleClass="px-2 py-1" (onClick)="showCameraDialog(entry)" />
+                                <p-button [disabled]="running || !entry.enabled" icon="mdi mdi-palette" label="Filter Wheel" severity="info"
+                                          styleClass="px-2 py-1" (onClick)="showWheelDialog(entry)" />
+                                <p-button [disabled]="running || !entry.enabled" icon="mdi mdi-image-filter-center-focus" label="Focuser"
+                                          severity="info"
+                                          styleClass="px-2 py-1" (onClick)="showCameraDialog(entry)" />
+                            </div>
+                            <div class="col-1 pb-1 align-items-center justify-content-center gap-2">
+                                <p-checkbox [binary]="true" [(ngModel)]="entry.enabled" (ngModelChange)="savePlan()" />
                             </div>
                         </div>
                     </ng-template>
                     <div class="grid">
                         <div class="col-12 pt-0 flex">
-                            <div class="flex gap-2 align-items-center">
+                            <div class="flex gap-1 align-items-center">
                                 <p-tag [value]="entry.frameType" severity="success" />
                                 <p-tag value="{{ entry.exposureAmount }} of {{ entry.exposureTime | exposureTime }}" severity="info" />
-                                <p-tag value="DELAY: {{ entry.exposureDelay | exposureTime }}" />
+                                <p-tag value="DELAY: {{ entry.exposureDelay * 1000000 | exposureTime }}" />
                                 <p-tag value="ROI: {{ entry.x }} {{ entry.y }} {{ entry.width }}x{{ entry.height }}" />
                                 <p-tag value="BIN: {{ entry.binX }}x{{ entry.binY }}" />
                                 <p-tag value="GAIN: {{ entry.gain }}" />
                                 <p-tag value="OFFSET: {{ entry.offset }}" />
+                                <p-tag *ngIf="entry.wheelPosition" value="FILTER: {{ entry.wheelPosition }}" />
                             </div>
                         </div>
                         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"

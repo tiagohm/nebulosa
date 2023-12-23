@@ -317,7 +317,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
         return {
             ...this.request,
-            exposureDelay: this.request.exposureDelay * 1000000,
             x, y, width, height,
             exposureTime, exposureAmount,
             savePath,

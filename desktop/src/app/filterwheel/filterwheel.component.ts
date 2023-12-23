@@ -87,7 +87,6 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         if (config?.data) {
             Object.assign(this.request, config.data)
             this.dialogMode = true
-            this.position = config.data.wheelPosition || 1
             this.wheelChanged(this.request.wheel)
         }
     }
@@ -154,6 +153,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         if (!this.dialogMode) {
             this.moving = this.wheel.moving && this.position === this.wheel.position
             this.position = this.wheel.position
+        } else {
+            this.position = this.request.wheelPosition || 1
         }
 
         let filters: Filter[] = []
@@ -205,13 +206,9 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     private makeCameraStartCapture(): CameraStartCapture {
-        const preference = this.storage.get<WheelPreference>(`wheel.${this.wheel.name}`, {})
-            const shutterPosition = preference.shutterPosition ?? 0
-
         return {
             ...this.request,
-            wheelPosition: this.position,
-            shutterPosition,
+            wheelPosition: this.filter?.position ?? 0,
         }
     }
 
