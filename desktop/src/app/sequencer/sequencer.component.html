@@ -93,6 +93,8 @@
                                                         emptyMessage="No filter wheel found" />
                                             <label>Filter Wheel</label>
                                         </span>
+                                        <p-button [disabled]="running || !entry.enabled" [text]="true" [rounded]="true" icon="mdi mdi-cog"
+                                                  severity="info" (onClick)="showWheelDialog(entry)" />
                                     </div>
                                     <div class="col-4 align-items-center pt-4">
                                         <span class="p-float-label" *ngIf="focusers.length">

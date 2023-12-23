@@ -238,6 +238,14 @@ export interface FilterWheel extends Device {
     moving: boolean
 }
 
+export const EMPTY_WHEEL: FilterWheel = {
+    count: 0,
+    position: 0,
+    moving: false,
+    name: '',
+    connected: false
+}
+
 export interface Dither {
     enabled: boolean
     amount: number
@@ -270,6 +278,29 @@ export interface CameraStartCapture {
     shutterPosition?: number
     focuser?: Focuser
     focusOffset?: number
+}
+
+export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {
+    exposureTime: 1,
+    exposureAmount: 1,
+    exposureDelay: 0,
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    frameType: 'LIGHT',
+    binX: 1,
+    binY: 1,
+    gain: 0,
+    offset: 0,
+    autoSave: false,
+    autoSubFolderMode: 'OFF',
+    dither: {
+        enabled: false,
+        afterExposures: 1,
+        amount: 1.5,
+        raOnly: false,
+    }
 }
 
 export interface CameraCaptureEvent extends MessageEvent {

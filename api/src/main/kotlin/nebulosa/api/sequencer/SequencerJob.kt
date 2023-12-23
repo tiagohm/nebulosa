@@ -2,15 +2,18 @@ package nebulosa.api.sequencer
 
 import io.reactivex.rxjava3.subjects.PublishSubject
 import nebulosa.api.cameras.*
+import nebulosa.api.focusers.FocusOffsetStep
 import nebulosa.api.guiding.DitherAfterExposureStep
 import nebulosa.api.guiding.WaitForSettleStep
 import nebulosa.api.messages.MessageEvent
+import nebulosa.api.wheels.WheelStep
 import nebulosa.batch.processing.*
 import nebulosa.batch.processing.ExecutionContext.Companion.getDouble
 import nebulosa.batch.processing.ExecutionContext.Companion.getDuration
 import nebulosa.batch.processing.ExecutionContext.Companion.getInt
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.guiding.Guider
+import nebulosa.indi.device.camera.FrameType
 import java.time.LocalDateTime
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -42,6 +45,14 @@ data class SequencerJob(
             return request.copy(savePath = plan.savePath, autoSave = true, autoSubFolderMode = AutoSubFolderMode.OFF)
         }
 
+        fun CameraStartCaptureRequest.wheelStep(): Step? {
+            return if (wheel != null) WheelStep(wheel, if (frameType == FrameType.DARK) shutterPosition else wheelPosition) else null
+        }
+
+        fun CameraStartCaptureRequest.focusStep(): Step? {
+            return if (focuser != null) FocusOffsetStep(focuser, focusOffset) else null
+        }
+
         val validEntries = plan.entries.filter { it.enabled }
 
         if (plan.captureMode == SequenceCaptureMode.FULLY) {
@@ -52,12 +63,16 @@ data class SequencerJob(
                 delayStep.registerDelayStepListener(cameraExposureStep)
                 val delayAndWaitForSettleStep = SimpleSplitStep(waitForSettleStep, delayStep)
                 val ditherStep = DitherAfterExposureStep(request.dither, guider)
+                val wheelStep = request.wheelStep()
+                val focusStep = request.focusStep()
 
                 add(SequenceIdStep(plan.entries.indexOf(validEntries[i]) + 1))
 
                 repeat(request.exposureAmount) {
                     if (i == 0 && it == 0) add(waitForSettleStep)
                     else add(delayAndWaitForSettleStep)
+                    wheelStep?.also(::add)
+                    focusStep?.also(::add)
                     add(cameraExposureStep)
                     add(ditherStep)
                 }
@@ -73,6 +88,8 @@ data class SequencerJob(
             val cameraExposureSteps = requests.map { CameraExposureStep(it) }
             delaySteps.indices.forEach { delaySteps[it].registerDelayStepListener(cameraExposureSteps[it]) }
             val delayAndWaitForSettleSteps = requests.indices.map { SimpleSplitStep(waitForSettleStep, delaySteps[it]) }
+            val wheelSteps = requests.map { it.wheelStep() }
+            val focusSteps = requests.map { it.focusStep() }
 
             while (true) {
                 var added = false
@@ -86,6 +103,8 @@ data class SequencerJob(
                         if (i == 0 && count[i] == 0) add(waitForSettleStep)
                         else add(delayAndWaitForSettleSteps[i])
 
+                        wheelSteps[i]?.also(::add)
+                        focusSteps[i]?.also(::add)
                         add(cameraExposureSteps[i])
                         add(ditherSteps[i])
 

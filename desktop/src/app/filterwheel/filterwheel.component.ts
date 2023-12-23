@@ -1,12 +1,13 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, Optional } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { InputSwitchChangeEvent } from 'primeng/inputswitch'
 import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { RemoteStorageService } from '../../shared/services/preference.service'
-import { FilterWheel } from '../../shared/types'
+import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE, EMPTY_WHEEL, FilterWheel } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
 export interface WheelPreference {
@@ -29,13 +30,15 @@ export interface Filter {
 })
 export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
-    wheel?: FilterWheel
-    connected = false
+    readonly wheel = Object.assign({}, EMPTY_WHEEL)
+    readonly request = Object.assign({}, EMPTY_CAMERA_START_CAPTURE)
 
     moving = false
     position = 0
     filters: Filter[] = []
     filter?: Filter
+
+    dialogMode = false
 
     get selectedFilter(): Filter | undefined {
         return this.filters[this.position - 1]
@@ -45,15 +48,17 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     private subscription?: Subscription
 
     constructor(
-        private app: AppComponent,
         private api: ApiService,
         private electron: ElectronService,
         private storage: LocalStorageService,
         private remoteStorage: RemoteStorageService,
         private route: ActivatedRoute,
         ngZone: NgZone,
+        @Optional() private app?: AppComponent,
+        @Optional() private dialogRef?: DynamicDialogRef,
+        @Optional() config?: DynamicDialogConfig<CameraStartCapture>,
     ) {
-        app.title = 'Filter Wheel'
+        if (app) app.title = 'Filter Wheel'
 
         electron.on('WHEEL_UPDATED', event => {
             if (event.device.name === this.wheel?.name) {
@@ -67,7 +72,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         electron.on('WHEEL_DETACHED', event => {
             if (event.device.name === this.wheel?.name) {
                 ngZone.run(() => {
-                    this.connected = false
+                    Object.assign(this.wheel!, event.device)
                 })
             }
         })
@@ -78,6 +83,13 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 this.savePreference()
                 this.electron.send('WHEEL_RENAMED', { wheel: this.wheel!, filter })
             })
+
+        if (config?.data) {
+            Object.assign(this.request, config.data)
+            this.dialogMode = true
+            this.position = config.data.wheelPosition || 1
+            this.wheelChanged(this.request.wheel)
+        }
     }
 
     async ngAfterContentInit() {
@@ -93,23 +105,21 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     async wheelChanged(wheel?: FilterWheel) {
-        this.wheel = wheel
-
-        if (this.wheel) {
-            this.app.subTitle = this.wheel.name
-
-            const wheel = await this.api.wheel(this.wheel.name)
+        if (wheel && wheel.name) {
+            wheel = await this.api.wheel(wheel.name)
             Object.assign(this.wheel, wheel)
 
             this.loadPreference()
             this.update()
-        } else {
-            this.app.subTitle = ''
+        }
+
+        if (this.app) {
+            this.app.subTitle = wheel?.name ?? ''
         }
     }
 
     connect() {
-        if (this.connected) {
+        if (this.wheel.connected) {
             this.api.wheelDisconnect(this.wheel!)
         } else {
             this.api.wheelConnect(this.wheel!)
@@ -137,13 +147,14 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     private update() {
-        if (!this.wheel) {
+        if (!this.wheel?.name) {
             return
         }
 
-        this.connected = this.wheel.connected
-        this.moving = this.wheel.moving && this.position === this.wheel.position
-        this.position = this.wheel.position
+        if (!this.dialogMode) {
+            this.moving = this.wheel.moving && this.position === this.wheel.position
+            this.position = this.wheel.position
+        }
 
         let filters: Filter[] = []
 
@@ -171,7 +182,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadPreference() {
-        if (this.wheel) {
+        if (!this.dialogMode && this.wheel) {
             const preference = this.storage.get<WheelPreference>(`wheel.${this.wheel.name}`, {})
             const shutterPosition = preference.shutterPosition ?? 0
             this.filters.forEach(e => e.dark = e.position === shutterPosition)
@@ -179,7 +190,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     private savePreference() {
-        if (this.wheel && this.wheel.connected) {
+        if (!this.dialogMode && this.wheel && this.wheel.connected) {
             const dark = this.filters.find(e => e.dark)
 
             const preference: WheelPreference = {
@@ -191,5 +202,20 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             this.remoteStorage.set(`wheel.${this.wheel.name}.shutterPosition`, preference.shutterPosition)
             this.api.wheelSync(this.wheel, preference.names!)
         }
+    }
+
+    private makeCameraStartCapture(): CameraStartCapture {
+        const preference = this.storage.get<WheelPreference>(`wheel.${this.wheel.name}`, {})
+            const shutterPosition = preference.shutterPosition ?? 0
+
+        return {
+            ...this.request,
+            wheelPosition: this.position,
+            shutterPosition,
+        }
+    }
+
+    apply() {
+        this.dialogRef?.close(this.makeCameraStartCapture())
     }
 }

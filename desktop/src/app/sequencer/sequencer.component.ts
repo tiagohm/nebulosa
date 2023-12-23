@@ -254,6 +254,15 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    async showWheelDialog(entry: CameraStartCapture) {
+        const result = await this.prime.open(CameraComponent, { header: 'Filter Wheel', width: 'calc(400px + 2.5rem)', data: Object.assign({}, entry) })
+
+        if (result) {
+            Object.assign(entry, result)
+            this.savePlan()
+        }
+    }
+
     savePlan() {
         this.storage.set('sequencer.plan', this.plan)
     }

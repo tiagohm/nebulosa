@@ -6,7 +6,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { Camera, CameraCaptureState, CameraStartCapture, EMPTY_CAMERA, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType } from '../../shared/types'
+import { Camera, CameraCaptureState, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
 export interface CameraPreference extends Partial<CameraStartCapture> {
@@ -89,28 +89,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     exposureMode: ExposureMode = 'SINGLE'
     subFrame = false
 
-    readonly request: CameraStartCapture = {
-        exposureTime: 1,
-        exposureAmount: 1,
-        exposureDelay: 0,
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-        frameType: 'LIGHT',
-        binX: 1,
-        binY: 1,
-        gain: 0,
-        offset: 0,
-        autoSave: false,
-        autoSubFolderMode: 'OFF',
-        dither: {
-            enabled: false,
-            afterExposures: 1,
-            amount: 1.5,
-            raOnly: false,
-        }
-    }
+    readonly request = Object.assign({}, EMPTY_CAMERA_START_CAPTURE)
 
     state?: CameraCaptureState
 
@@ -227,7 +206,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        if (config) {
+        if (config?.data) {
             Object.assign(this.request, config.data)
             this.dialogMode = true
             this.cameraChanged(this.request.camera)
@@ -378,7 +357,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private update() {
-        if (this.camera) {
+        if (this.camera?.name) {
             if (this.camera.connected) {
                 this.request.x = Math.max(this.camera.minX, Math.min(this.request.x, this.camera.maxX))
                 this.request.y = Math.max(this.camera.minY, Math.min(this.request.y, this.camera.maxY))
