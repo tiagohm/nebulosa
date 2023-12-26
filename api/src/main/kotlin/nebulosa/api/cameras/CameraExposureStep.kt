@@ -91,7 +91,8 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     }
 
     override fun afterJob(jobExecution: JobExecution) {
-        camera.disableBlob()
+        // TODO: BUG: Está desativando para todas as cameras. Fiz alguma coisa errada ou isso é um bug?
+        // camera.disableBlob()
         listeners.forEach { it.onCaptureFinished(this, jobExecution) }
         listeners.clear()
     }

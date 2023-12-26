@@ -195,7 +195,7 @@
             <p-inputSwitch [disabled]="!camera.connected || running" [(ngModel)]="subFrame" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-3 flex pt-3 flex-row align-items-center justify-content-center">
-            <p-button [disabled]="!camera.connected || !subFrame || running" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
+            <p-button [disabled]="!camera.connected || running" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
                       severity="info" pTooltip="Full size" tooltipPosition="bottom" />
         </div>
         <div class="col-3">

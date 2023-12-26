@@ -206,12 +206,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
-        if (config?.data) {
-            Object.assign(this.request, config.data)
-            this.dialogMode = true
-            this.cameraChanged(this.request.camera)
-            this.exposureMode = 'FIXED'
-        }
+        this.loadCameraStartCaptureForDialogMode(config?.data)
     }
 
     async ngAfterContentInit() {
@@ -225,6 +220,16 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     ngOnDestroy() {
         if (!this.dialogMode) {
             this.abortCapture()
+        }
+    }
+
+    private async loadCameraStartCaptureForDialogMode(data?: CameraStartCapture) {
+        if (data) {
+            Object.assign(this.request, data)
+            this.dialogMode = true
+            await this.cameraChanged(this.request.camera)
+            this.exposureMode = 'FIXED'
+            this.normalizeExposureTimeAndUnit(this.request.exposureTime)
         }
     }
 
@@ -352,6 +357,26 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.exposureTimeMin = Math.max(1, exposureTimeMin)
             this.request.exposureTime = Math.max(this.exposureTimeMin, Math.min(exposureTime, this.exposureTimeMax))
             this.exposureTimeUnit = unit
+        }
+    }
+
+    private normalizeExposureTimeAndUnit(exposureTime: number) {
+        const factors = [
+            { unit: ExposureTimeUnit.MINUTE, time: 60000000 },
+            { unit: ExposureTimeUnit.SECOND, time: 1000000 },
+            { unit: ExposureTimeUnit.MILLISECOND, time: 1000 },
+        ]
+
+        for (const { unit, time } of factors) {
+            if (exposureTime >= time) {
+                const k = exposureTime / time
+
+                // exposureTime is multiple of time.
+                if (k === Math.floor(k)) {
+                    this.updateExposureUnit(unit)
+                    return
+                }
+            }
         }
     }
 

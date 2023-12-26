@@ -151,6 +151,8 @@ data class SequencerJob(
 
             super.onNext(SequencerEvent(id, elapsedTime, remainingTime, progress / stepCount, event))
         }
+
+        super.onNext(event)
     }
 
     private data class SequenceIdStep(private val id: Int) : Step {

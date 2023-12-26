@@ -34,9 +34,6 @@ data class CameraCaptureJob(
             waitForSettleStep.registerWaitForSettleListener(cameraExposureStep)
             cameraDelayStep.registerDelayStepListener(cameraExposureStep)
 
-            // TODO: Switch filter.
-            // TODO: Focus offset.
-
             add(waitForSettleStep)
             add(cameraExposureStep)
 

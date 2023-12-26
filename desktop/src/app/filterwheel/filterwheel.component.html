@@ -50,7 +50,7 @@
                       (onClick)="filter && moveTo(filter)" />
         </div>
     </div>
-    <div class="grid mt-2" *ngIf="filter">
+    <div class="grid mt-2" *ngIf="filter && !dialogMode">
         <div class="col-7">
             <span class="p-float-label">
                 <input pInputText [disabled]="!wheel.connected || dialogMode || moving" [(ngModel)]="filter.name"
@@ -70,8 +70,10 @@
             <p-inputSwitch [disabled]="!wheel.connected || dialogMode || moving" [ngModel]="filter.dark"
                            (onChange)="shutterToggled(filter, $event)" />
         </div>
-        <div *ngIf="dialogMode" class="col-12 flex flex-column justify-content-center gap-2">
-            <p-button [disabled]="!wheel.connected || !filters.length" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
+    </div>
+    <div class="grid mt-2" *ngIf="dialogMode">
+        <div *ngIf="dialogMode" class="col-12 flex justify-content-center gap-2">
+            <p-button [disabled]="!wheel.connected || !filter || !filters.length" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
                       severity="info" />
         </div>
     </div>

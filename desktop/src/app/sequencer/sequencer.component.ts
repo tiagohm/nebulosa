@@ -188,6 +188,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
             binY: 1,
             gain: 0,
             offset: 0,
+            frameFormat: camera?.frameFormats[0],
             autoSave: true,
             autoSubFolderMode: 'OFF',
             wheel,
@@ -274,6 +275,16 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         return plan.entries.length
     }
 
+    async chooseSavePath() {
+        const defaultPath = this.plan.savePath
+        const path = await this.electron.openDirectory({ defaultPath })
+
+        if (path) {
+            this.plan.savePath = path
+            this.savePlan()
+        }
+    }
+
     async showCameraDialog(entry: CameraStartCapture) {
         const result = await this.prime.open(CameraComponent, { header: 'Camera', width: 'calc(400px + 2.5rem)', data: Object.assign({}, entry) })
 
@@ -284,7 +295,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     async showWheelDialog(entry: CameraStartCapture) {
-        const result = await this.prime.open(FilterWheelComponent, { header: 'Filter Wheel', width: 'calc(340px + 2.5rem)', data: Object.assign({}, entry) })
+        const result = await this.prime.open(FilterWheelComponent, { header: 'Filter Wheel', width: 'calc(320px + 2.5rem)', data: Object.assign({}, entry) })
 
         if (result) {
             Object.assign(entry, result)
@@ -296,7 +307,15 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         this.storage.set('sequencer.plan', this.plan)
     }
 
-    start() {
+    deleteEntry(entry: CameraStartCapture, index: number) {
+        this.plan.entries.splice(index, 1)
+    }
+
+    duplicateEntry(entry: CameraStartCapture, index: number) {
+        this.plan.entries.splice(index + 1, 0, Object.assign({}, entry))
+    }
+
+    async start() {
         for (let i = 0; i < this.plan.entries.length; i++) {
             this.state[i] = undefined
             this.exposure[i] = Object.assign({}, EMPTY_CAMERA_EXPOSURE_INFO)
@@ -305,6 +324,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         }
 
         this.savePlan()
+
+        await this.browserWindow.openCameraImage(this.camera!)
 
         this.api.sequencerStart(this.plan)
     }
