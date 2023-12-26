@@ -1,8 +1,9 @@
 import { Client } from '@stomp/stompjs'
 import { BrowserWindow, Menu, Notification, app, dialog, ipcMain, screen, shell } from 'electron'
+import * as fs from 'fs'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { InternalEventType, MessageEvent, NotificationEvent, OpenDirectory, OpenFile, OpenWindow } from '../src/shared/types'
+import { InternalEventType, JsonFile, MessageEvent, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, SaveJson } from '../src/shared/types'
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })
@@ -49,8 +50,8 @@ function createMainWindow() {
         onWebSocketClose: () => {
             console.warn('Web Socket closed')
         },
-        onWebSocketError: (e) => {
-            console.error('Web Socket error', e)
+        onWebSocketError: () => {
+            console.error('Web Socket error')
         },
     })
 
@@ -292,7 +293,7 @@ try {
         return !value.canceled && value.filePaths[0]
     })
 
-    ipcMain.handle('SAVE_FITS_AS', async (event) => {
+    ipcMain.handle('SAVE_FITS', async (event) => {
         const ownerWindow = findWindowById(event.sender.id)
         const value = await dialog.showSaveDialog(ownerWindow!, {
             filters: [
@@ -303,6 +304,67 @@ try {
         })
 
         return !value.canceled && value.filePath
+    })
+
+    ipcMain.handle('SAVE_JSON', async (event, data: SaveJson) => {
+        const ownerWindow = findWindowById(event.sender.id)
+
+        function writeFile(path: string) {
+            const json = JSON.stringify(data.json)
+            fs.writeFileSync(path, json)
+            return <JsonFile>{ path, json: data.json }
+        }
+
+        if (data.path) {
+            return writeFile(data.path)
+        } else {
+            const value = await dialog.showSaveDialog(ownerWindow!, {
+                filters: [
+                    ...data.filters ?? [],
+                    { name: 'JSON files', extensions: ['json'] },
+                ],
+                defaultPath: data.defaultPath,
+                properties: ['createDirectory', 'showOverwriteConfirmation'],
+            })
+
+            if (!value.canceled) {
+                return writeFile(value.filePath!)
+            }
+        }
+
+        return false
+    })
+
+    ipcMain.handle('OPEN_JSON', async (event, data?: OpenFile) => {
+        const ownerWindow = findWindowById(event.sender.id)
+        const value = await dialog.showOpenDialog(ownerWindow!, {
+            filters: [
+                ...data?.filters ?? [],
+                { name: 'JSON files', extensions: ['json'] },
+            ],
+            properties: ['openFile'],
+            defaultPath: data?.defaultPath || undefined,
+        })
+
+        if (!value.canceled) {
+            const buffer = fs.readFileSync(value.filePaths[0])
+            return <JsonFile>{ path: value.filePaths[0], json: JSON.parse(buffer.toString('utf-8')) }
+        } else {
+            return false
+        }
+    })
+
+    ipcMain.handle('LOAD_JSON', async (_, path: string) => {
+        try {
+            if (fs.existsSync(path)) {
+                const buffer = fs.readFileSync(path)
+                return <JsonFile>{ path, json: JSON.parse(buffer.toString('utf-8')) }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        return false
     })
 
     ipcMain.handle('OPEN_DIRECTORY', async (event, data?: OpenDirectory) => {

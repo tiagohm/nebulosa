@@ -1,7 +1,6 @@
 package nebulosa.api.wheels
 
 import io.reactivex.rxjava3.subjects.PublishSubject
-import jakarta.annotation.PostConstruct
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.PropertyChangedEvent
@@ -12,18 +11,18 @@ import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
+import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
 @Component
 @Subscriber
 class WheelEventHandler(
     private val messageService: MessageService,
-) {
+) : Closeable {
 
     private val throttler = PublishSubject.create<FilterWheelEvent>()
 
-    @PostConstruct
-    private fun initialize() {
+    init {
         throttler
             .throttleLast(1000, TimeUnit.MILLISECONDS)
             .subscribe { sendUpdate(it.device!!) }
@@ -32,20 +31,23 @@ class WheelEventHandler(
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onFilterWheelEvent(event: FilterWheelEvent) {
         when (event) {
-            is PropertyChangedEvent -> {
-                throttler.onNext(event)
-            }
-            is FilterWheelAttached -> {
-                messageService.sendMessage(WheelMessageEvent(WHEEL_ATTACHED, event.device))
-            }
-            is FilterWheelDetached -> {
-                messageService.sendMessage(WheelMessageEvent(WHEEL_DETACHED, event.device))
-            }
+            is PropertyChangedEvent -> throttler.onNext(event)
+            is FilterWheelAttached -> sendMessage(WHEEL_ATTACHED, event.device)
+            is FilterWheelDetached -> sendMessage(WHEEL_DETACHED, event.device)
         }
     }
 
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendMessage(eventName: String, device: FilterWheel) {
+        messageService.sendMessage(WheelMessageEvent(eventName, device))
+    }
+
     fun sendUpdate(device: FilterWheel) {
-        messageService.sendMessage(WheelMessageEvent(WHEEL_UPDATED, device))
+        sendMessage(WHEEL_UPDATED, device)
+    }
+
+    override fun close() {
+        throttler.onComplete()
     }
 
     companion object {

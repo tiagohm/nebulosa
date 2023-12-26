@@ -49,6 +49,9 @@ class BeanConfiguration {
     fun capturesPath(appPath: Path): Path = Path.of("$appPath", "captures").createDirectories()
 
     @Bean
+    fun sequencesPath(appPath: Path): Path = Path.of("$appPath", "sequences").createDirectories()
+
+    @Bean
     fun cachePath(appPath: Path): Path = Path.of("$appPath", "cache").createDirectories()
 
     @Bean
@@ -126,9 +129,10 @@ class BeanConfiguration {
 
     @Bean
     fun webMvcConfigurer(
-        entityParamMethodArgumentResolver: HandlerMethodArgumentResolver,
+        deviceOrEntityParamMethodArgumentResolver: HandlerMethodArgumentResolver,
         dateAndTimeParamMethodArgumentResolver: HandlerMethodArgumentResolver,
         angleParamMethodArgumentResolver: HandlerMethodArgumentResolver,
+        durationUnitMethodArgumentResolver: HandlerMethodArgumentResolver,
     ) = object : WebMvcConfigurer {
 
         override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
@@ -145,9 +149,10 @@ class BeanConfiguration {
         }
 
         override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
-            resolvers.add(entityParamMethodArgumentResolver)
+            resolvers.add(deviceOrEntityParamMethodArgumentResolver)
             resolvers.add(dateAndTimeParamMethodArgumentResolver)
             resolvers.add(angleParamMethodArgumentResolver)
+            resolvers.add(durationUnitMethodArgumentResolver)
         }
     }
 

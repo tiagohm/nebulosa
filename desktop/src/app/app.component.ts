@@ -5,6 +5,10 @@ import { MenuItem } from 'primeng/api'
 import { APP_CONFIG } from '../environments/environment'
 import { ElectronService } from '../shared/services/electron.service'
 
+export interface ExtendedMenuItem extends MenuItem {
+    badgeSeverity?: 'success' | 'info' | 'warning' | 'danger'
+}
+
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
@@ -14,9 +18,9 @@ export class AppComponent implements AfterViewInit {
 
     pinned = false
     maximizable = false
-    subTitle = ''
+    subTitle? = ''
     backgroundColor = '#212121'
-    extra: MenuItem[] = []
+    topMenu: ExtendedMenuItem[] = []
 
     get title() {
         return this.windowTitle.getTitle()

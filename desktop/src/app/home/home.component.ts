@@ -18,6 +18,9 @@ type MappedDevice = {
     'WHEEL': FilterWheel
 }
 
+export const HOME_KEY = 'home'
+export const IMAGE_DIR_KEY = 'home.image.directory'
+
 export interface HomePreference {
     host?: string
     port?: number
@@ -180,7 +183,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     async ngAfterContentInit() {
         this.updateConnection()
 
-        const preference = this.storage.get<HomePreference>('home', {})
+        const preference = this.storage.get<HomePreference>(HOME_KEY, {})
 
         this.host = preference.host ?? 'localhost'
         this.port = preference.port ?? 7624
@@ -206,7 +209,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                     port: this.port,
                 }
 
-                this.storage.set('home', preference)
+                this.storage.set(HOME_KEY, preference)
             }
         } catch (e) {
             console.error(e)
@@ -261,11 +264,11 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const defaultPath = this.storage.get('home.image.directory', '')
+            const defaultPath = this.storage.get(IMAGE_DIR_KEY, '')
             const fitsPath = await this.electron.openFITS({ defaultPath })
 
             if (fitsPath) {
-                this.storage.set('home.image.directory', path.dirname(fitsPath))
+                this.storage.set(IMAGE_DIR_KEY, path.dirname(fitsPath))
                 this.browserWindow.openImage({ path: fitsPath, source: 'PATH' })
             }
         } else {
@@ -289,13 +292,16 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 this.browserWindow.openGuider({ bringToFront: true })
                 break
             case 'SKY_ATLAS':
-                this.browserWindow.openSkyAtlas({ bringToFront: true })
+                this.browserWindow.openSkyAtlas({ bringToFront: true, data: undefined })
                 break
             case 'FRAMING':
                 this.browserWindow.openFraming({ bringToFront: true, data: undefined })
                 break
             case 'ALIGNMENT':
                 this.browserWindow.openAlignment({ bringToFront: true })
+                break
+            case 'SEQUENCER':
+                this.browserWindow.openSequencer({ bringToFront: true })
                 break
             case 'INDI':
                 this.browserWindow.openINDI({ data: undefined, bringToFront: true })

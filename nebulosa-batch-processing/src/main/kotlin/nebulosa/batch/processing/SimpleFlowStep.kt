@@ -7,4 +7,12 @@ open class SimpleFlowStep : FlowStep, ArrayList<Step> {
     constructor(steps: Collection<Step>) : super(steps)
 
     constructor(vararg steps: Step) : this(steps.toList())
+
+    override fun beforeJob(jobExecution: JobExecution) {
+        forEach { it.beforeJob(jobExecution) }
+    }
+
+    override fun afterJob(jobExecution: JobExecution) {
+        forEach { it.afterJob(jobExecution) }
+    }
 }

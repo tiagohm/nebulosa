@@ -65,11 +65,3 @@
 .p-input-icon-right p-checkbox {
     margin-top: -0.745rem;
 }
-
-::ng-deep {
-
-    .p-overlaypanel:after,
-    .p-overlaypanel:before {
-        left: calc(var(--overlayArrowLeft, 0) + 2.1rem) !important;
-    }
-}

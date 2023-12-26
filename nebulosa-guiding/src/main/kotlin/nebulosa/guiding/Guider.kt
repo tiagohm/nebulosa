@@ -36,7 +36,7 @@ interface Guider : Closeable {
 
     fun dither(amount: Double, raOnly: Boolean = false)
 
-    fun waitForSettle(cancellationToken: CancellationToken? = null)
+    fun waitForSettle(cancellationToken: CancellationToken = CancellationToken.NONE)
 
     companion object {
 

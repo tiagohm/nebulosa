@@ -1,7 +1,7 @@
 package nebulosa.api.image
 
 import jakarta.servlet.http.HttpServletResponse
-import nebulosa.api.beans.annotations.EntityParam
+import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.transformation.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
@@ -18,7 +18,7 @@ class ImageController(
     @GetMapping
     fun openImage(
         @RequestParam path: Path,
-        @EntityParam(required = false) camera: Camera?,
+        @DeviceOrEntityParam(required = false) camera: Camera?,
         @RequestParam(required = false, defaultValue = "true") debayer: Boolean,
         @RequestParam(required = false, defaultValue = "false") calibrate: Boolean,
         @RequestParam(required = false, defaultValue = "false") autoStretch: Boolean,

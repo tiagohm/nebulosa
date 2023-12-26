@@ -3,6 +3,7 @@ package nebulosa.api.image
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.calibration.CalibrationFrameService
+import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.fits.*
@@ -42,6 +43,7 @@ class ImageService(
     private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
+    private val connectionService: ConnectionService,
 ) {
 
     @Synchronized
@@ -101,6 +103,7 @@ class ImageService(
                 .filter { it.key.isNotBlank() && it.value.isNotBlank() }
                 .map { ImageHeaderItem(it.key, it.value) }
                 .toList(),
+            image.header.instrument?.let(connectionService::camera),
         )
 
         output.addHeader("X-Image-Info", objectMapper.writeValueAsString(info))

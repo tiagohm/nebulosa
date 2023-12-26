@@ -34,7 +34,7 @@
     </div>
     <div class="col-6">
         <span class="p-float-label">
-            <p-inputNumber [min]="0" [max]="360" [step]="0.1" class="w-full" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
+            <p-inputNumber [min]="-360" [max]="360" [step]="0.1" class="w-full" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
                            [(ngModel)]="rotation" locale="en" [minFractionDigits]="1" />
             <label>Rotation (°)</label>
         </span>
@@ -58,10 +58,10 @@
             <label>HiPS Survey</label>
         </span>
     </div>
-    <div class="col-12 text-center mt-2">
+    <div class="col-12 justify-content-center mt-2">
         <p-button [disabled]="loading" icon="mdi mdi-download" label="Load" (onClick)="frame()" [text]="true" />
     </div>
-    <div class="col-12 text-center">
+    <div class="col-12 justify-content-center">
         <span class="text-sm text-gray-700">Made use of <a target="_blank"
                href="https://alasky.cds.unistra.fr/hips-image-services/hips2fits">hips2fits</a>, a
             service provided by CDS.</span>

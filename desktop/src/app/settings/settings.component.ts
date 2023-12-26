@@ -18,7 +18,6 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 
     locations: Location[] = []
     location = Object.assign({}, EMPTY_LOCATION)
-    private deletedLocations: Location[] = []
 
     readonly plateSolvers: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET']
     plateSolver!: PlateSolverOptions
@@ -43,20 +42,12 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         private prime: PrimeService,
     ) {
         app.title = 'Settings'
-
-        app.extra.push({
-            icon: 'mdi mdi-content-save',
-            tooltip: 'Save changes',
-            command: () => {
-                this.save()
-            }
-        })
     }
 
     async ngAfterViewInit() {
         this.plateSolver = await this.api.getPlateSolverSettings()
 
-        this.loadLocation()
+        this.loadLocations()
     }
 
     @HostListener('window:unload')
@@ -73,52 +64,37 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     private async showLocation(location: Location) {
         const result = await this.prime.open(LocationDialog, { header: 'Location', data: location })
 
-        if (result && !this.locations.includes(result)) {
-            this.locations.push(result)
+        if (result) {
+            await this.api.saveLocation(result)
+            await this.loadLocations()
+            this.electron.send('LOCATION_CHANGED', this.location)
         }
     }
 
-    private async loadLocation() {
+    private async loadLocations() {
         this.locations = await this.api.locations()
         this.location = this.locations.find(e => e.selected) ?? this.locations[0] ?? EMPTY_LOCATION
+
+        if (this.location.id && !this.location.selected) {
+            this.location.selected = true
+            this.api.saveLocation(this.location)
+        }
     }
 
     async deleteLocation() {
-        if (this.location.id > 0) {
-            this.deletedLocations.push(this.location)
-        }
-
-        const index = this.locations.indexOf(this.location)
-
-        if (index >= 0) {
-            const deletedLocation = this.locations[index]
-            this.locations.splice(index, 1)
-
-            if (this.location === deletedLocation) {
-                this.location = this.locations[0]
-                this.location.selected = true
-            }
-        }
+        await this.api.deleteLocation(this.location)
+        await this.loadLocations()
+        this.electron.send('LOCATION_CHANGED', this.location)
     }
 
     locationChanged() {
         this.locations.forEach(e => e.selected = false)
         this.location.selected = true
+        this.locations.forEach(e => this.api.saveLocation(e))
+        this.electron.send('LOCATION_CHANGED', this.location)
     }
 
     async save() {
-        for (const location of this.locations) {
-            await this.api.saveLocation(location)
-        }
-
-        for (const location of this.deletedLocations) {
-            await this.api.deleteLocation(location)
-        }
-
-        this.deletedLocations = []
-        await this.loadLocation()
-        this.electron.send('LOCATION_CHANGED', this.location)
-
-        this.api.setPlateSolverSettings(this.plateSolver)
+        this.api.updatePlateSolverSettings(this.plateSolver)
     }
 }

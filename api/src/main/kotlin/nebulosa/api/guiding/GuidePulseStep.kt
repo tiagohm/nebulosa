@@ -29,9 +29,6 @@ data class GuidePulseStep(@JvmField val request: GuidePulseRequest) : Step, Dela
     override fun execute(stepExecution: StepExecution): StepResult {
         val guideOutput = requireNotNull(request.guideOutput)
 
-        // Force stop in reversed direction.
-        guideOutput.pulseGuide(Duration.ZERO, request.direction.reversed)
-
         if (guideOutput.pulseGuide(request.duration, request.direction)) {
             delayStep.execute(stepExecution)
         }

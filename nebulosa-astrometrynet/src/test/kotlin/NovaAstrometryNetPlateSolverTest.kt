@@ -3,20 +3,16 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.shouldBeExactly
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.plate.solving.NovaAstrometryNetPlateSolver
-import nebulosa.io.resource
-import nebulosa.io.transferAndClose
 import nebulosa.math.deg
 import nebulosa.math.toArcsec
 import nebulosa.math.toDegrees
-import java.nio.file.Files
-import kotlin.io.path.outputStream
+import java.nio.file.Path
 
 @Ignored
 class NovaAstrometryNetPlateSolverTest : StringSpec() {
 
     init {
-        val file = Files.createTempFile("nova", ".jpg")
-            .also { resource("ldn673s_block1123.jpg")!!.transferAndClose(it.outputStream()) }
+        val file = Path.of("../data/ldn673s_block1123.jpg")
 
         "solve" {
             val service = NovaAstrometryNetService()

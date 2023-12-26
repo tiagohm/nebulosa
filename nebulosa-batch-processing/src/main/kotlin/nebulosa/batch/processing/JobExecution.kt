@@ -1,24 +1,27 @@
 package nebulosa.batch.processing
 
+import nebulosa.common.concurrency.CancellationToken
 import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 
-data class JobExecution(
+class JobExecution(
     val job: Job,
     val context: ExecutionContext,
     val jobLauncher: JobLauncher,
     val stepInterceptors: List<StepInterceptor>,
     val startedAt: LocalDateTime = LocalDateTime.now(),
-    var status: JobStatus = JobStatus.STARTING,
-    var finishedAt: LocalDateTime? = null,
 ) {
 
-    @JvmField internal val completable = CompletableFuture<Boolean>()
+    var status = JobStatus.STARTING
+        internal set
 
-    inline val jobId
-        get() = job.id
+    var finishedAt: LocalDateTime? = null
+        internal set
+
+    @JvmField internal val completable = CompletableFuture<Boolean>()
+    @JvmField val cancellationToken = CancellationToken()
 
     inline val canContinue
         get() = status == JobStatus.STARTED
@@ -55,4 +58,33 @@ data class JobExecution(
     internal fun completeExceptionally(e: Throwable) {
         completable.completeExceptionally(e)
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is JobExecution) return false
+
+        if (job != other.job) return false
+        if (context != other.context) return false
+        if (jobLauncher != other.jobLauncher) return false
+        if (stepInterceptors != other.stepInterceptors) return false
+        if (startedAt != other.startedAt) return false
+        if (status != other.status) return false
+        if (finishedAt != other.finishedAt) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = job.hashCode()
+        result = 31 * result + context.hashCode()
+        result = 31 * result + jobLauncher.hashCode()
+        result = 31 * result + stepInterceptors.hashCode()
+        result = 31 * result + startedAt.hashCode()
+        result = 31 * result + status.hashCode()
+        result = 31 * result + (finishedAt?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun toString() = "JobExecution(job=$job, context=$context, startedAt=$startedAt," +
+            " status=$status, finishedAt=$finishedAt)"
 }

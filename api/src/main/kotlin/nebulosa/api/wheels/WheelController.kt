@@ -1,8 +1,9 @@
 package nebulosa.api.wheels
 
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.beans.annotations.EntityParam
+import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.filterwheel.FilterWheel
 import org.springframework.web.bind.annotation.*
@@ -20,23 +21,23 @@ class WheelController(
     }
 
     @GetMapping("{wheel}")
-    fun wheel(@EntityParam wheel: FilterWheel): FilterWheel {
+    fun wheel(@DeviceOrEntityParam wheel: FilterWheel): FilterWheel {
         return wheel
     }
 
     @PutMapping("{wheel}/connect")
-    fun connect(@EntityParam wheel: FilterWheel) {
+    fun connect(@DeviceOrEntityParam wheel: FilterWheel) {
         wheelService.connect(wheel)
     }
 
     @PutMapping("{wheel}/disconnect")
-    fun disconnect(@EntityParam wheel: FilterWheel) {
+    fun disconnect(@DeviceOrEntityParam wheel: FilterWheel) {
         wheelService.disconnect(wheel)
     }
 
     @PutMapping("{wheel}/move-to")
     fun moveTo(
-        @EntityParam wheel: FilterWheel,
+        @DeviceOrEntityParam wheel: FilterWheel,
         @RequestParam @Valid @PositiveOrZero position: Int,
     ) {
         wheelService.moveTo(wheel, position)
@@ -44,8 +45,8 @@ class WheelController(
 
     @PutMapping("{wheel}/sync")
     fun sync(
-        @EntityParam wheel: FilterWheel,
-        @RequestParam @Valid @PositiveOrZero names: String,
+        @DeviceOrEntityParam wheel: FilterWheel,
+        @RequestParam @Valid @NotEmpty names: String,
     ) {
         wheelService.sync(wheel, names.split(","))
     }

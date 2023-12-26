@@ -1,7 +1,6 @@
 package nebulosa.api.guiding
 
 import io.reactivex.rxjava3.subjects.PublishSubject
-import jakarta.annotation.PostConstruct
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.DeviceEvent
@@ -12,18 +11,18 @@ import nebulosa.indi.device.guide.GuideOutputDetached
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
+import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
 @Component
 @Subscriber
 class GuideOutputEventHandler(
     private val messageService: MessageService,
-) {
+) : Closeable {
 
     private val throttler = PublishSubject.create<DeviceEvent<GuideOutput>>()
 
-    @PostConstruct
-    private fun initialize() {
+    init {
         throttler
             .throttleLast(1000, TimeUnit.MILLISECONDS)
             .subscribe { sendUpdate(it.device!!) }
@@ -31,24 +30,27 @@ class GuideOutputEventHandler(
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onGuideOutputEvent(event: DeviceEvent<GuideOutput>) {
-        val device = event.device ?: return
-
-        if (device.canPulseGuide && event is PropertyChangedEvent) {
+        if (event.device!!.canPulseGuide && event is PropertyChangedEvent) {
             throttler.onNext(event)
         }
 
         when (event) {
-            is GuideOutputAttached -> {
-                messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_ATTACHED, event.device))
-            }
-            is GuideOutputDetached -> {
-                messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_DETACHED, event.device))
-            }
+            is GuideOutputAttached -> sendMessage(GUIDE_OUTPUT_ATTACHED, event.device)
+            is GuideOutputDetached -> sendMessage(GUIDE_OUTPUT_DETACHED, event.device)
         }
     }
 
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendMessage(eventName: String, device: GuideOutput) {
+        messageService.sendMessage(GuideOutputMessageEvent(eventName, device))
+    }
+
     fun sendUpdate(device: GuideOutput) {
-        messageService.sendMessage(GuideOutputMessageEvent(GUIDE_OUTPUT_UPDATED, device))
+        sendMessage(GUIDE_OUTPUT_UPDATED, device)
+    }
+
+    override fun close() {
+        throttler.onComplete()
     }
 
     companion object {

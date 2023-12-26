@@ -1,7 +1,7 @@
 package nebulosa.api.solver
 
 import jakarta.validation.Valid
-import nebulosa.api.beans.annotations.AngleParam
+import nebulosa.api.beans.converters.angle.AngleParam
 import nebulosa.math.Angle
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path

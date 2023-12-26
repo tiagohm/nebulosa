@@ -7,6 +7,7 @@ import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.JobLauncher
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import org.springframework.stereotype.Component
 import java.util.*
@@ -29,7 +30,7 @@ class DARVExecutor(
 
         check(!isRunning(camera, guideOutput)) { "DARV job is already running" }
 
-        LOG.info("starting DARV job. data={}", request)
+        LOG.debug { "starting DARV. request=%s".format(request) }
 
         with(DARVJob(request)) {
             subscribe(this@DARVExecutor)

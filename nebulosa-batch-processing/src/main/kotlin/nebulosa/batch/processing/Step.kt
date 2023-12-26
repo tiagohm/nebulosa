@@ -1,6 +1,6 @@
 package nebulosa.batch.processing
 
-interface Step : Stoppable {
+interface Step : Stoppable, JobExecutionListener {
 
     fun execute(stepExecution: StepExecution): StepResult
 

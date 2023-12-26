@@ -8,8 +8,8 @@ import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
 import {
     ApiEventType, Camera, CameraCaptureEvent, DARVEvent, DeviceMessageEvent, FilterWheel, Focuser,
-    GuideOutput, Guider, GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, Location, Mount, NotificationEvent,
-    NotificationEventType, OpenDirectory, OpenFile
+    GuideOutput, Guider, GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, JsonFile,
+    Location, Mount, NotificationEvent, NotificationEventType, OpenDirectory, OpenFile, SaveJson, SequencerEvent
 } from '../types'
 import { ApiService } from './api.service'
 
@@ -42,6 +42,7 @@ type EventMappedType = {
     'DATA_CHANGED': any
     'LOCATION_CHANGED': Location
     'SKY_ATLAS_UPDATE_FINISHED': NotificationEvent
+    'SEQUENCER_ELAPSED': SequencerEvent
 }
 
 @Injectable({ providedIn: 'root' })
@@ -99,5 +100,17 @@ export class ElectronService {
 
     openDirectory(data?: OpenDirectory): Promise<string | false> {
         return this.send('OPEN_DIRECTORY', data)
+    }
+
+    saveJson<T>(data: SaveJson<T>): Promise<JsonFile<T> | false> {
+        return this.send('SAVE_JSON', data)
+    }
+
+    openJson<T>(data?: OpenFile): Promise<JsonFile<T> | false> {
+        return this.send('OPEN_JSON', data)
+    }
+
+    loadJson<T>(path: string): Promise<JsonFile<T> | false> {
+        return this.send('LOAD_JSON', path)
     }
 }

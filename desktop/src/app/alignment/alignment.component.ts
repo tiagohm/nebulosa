@@ -2,8 +2,10 @@ import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angu
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Camera, DARVState, GuideDirection, GuideOutput, Hemisphere, Union } from '../../shared/types'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { Camera, CameraStartCapture, DARVState, GuideDirection, GuideOutput, Hemisphere, Union } from '../../shared/types'
 import { AppComponent } from '../app.component'
+import { CameraPreference, cameraPreferenceKey } from '../camera/camera.component'
 
 @Component({
     selector: 'app-alignment',
@@ -34,6 +36,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
+        private storage: LocalStorageService,
         electron: ElectronService,
         ngZone: NgZone,
     ) {
@@ -168,7 +171,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         // TODO: Horizonte leste e oeste tem um impacto no "reversed"?
         const reversed = this.darvHemisphere === 'SOUTHERN'
         await this.openCameraImage()
-        await this.api.darvStart(this.camera!, this.guideOutput!, this.darvDrift * 1000000, this.darvInitialPause * 1000000, direction, reversed)
+        const capture = this.makeCameraStartCapture(this.camera!)
+        await this.api.darvStart(this.camera!, this.guideOutput!, this.darvDrift * 1000000, this.darvInitialPause * 1000000, direction, reversed, capture)
     }
 
     darvAzimuth() {
@@ -201,5 +205,27 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         }
 
         this.guideOutputConnected = this.guideOutput.connected
+    }
+
+    private makeCameraStartCapture(camera: Camera): CameraStartCapture {
+        const preference = this.storage.get<CameraPreference>(cameraPreferenceKey(camera), {})
+
+        return {
+            exposureTime: 0,
+            exposureAmount: 0,
+            exposureDelay: 0,
+            frameType: 'LIGHT',
+            autoSave: false,
+            autoSubFolderMode: 'OFF',
+            x: preference.x ?? camera.minX,
+            y: preference.y ?? camera.minY,
+            width: preference.width ?? camera.maxWidth,
+            height: preference.height ?? camera.maxHeight,
+            binX: preference.binX ?? 1,
+            binY: preference.binY ?? 1,
+            gain: preference.gain ?? 0,
+            offset: preference.offset ?? 0,
+            frameFormat: preference.frameFormat ?? (camera.frameFormats[0] || ''),
+        }
     }
 }

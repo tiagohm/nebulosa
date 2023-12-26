@@ -113,6 +113,60 @@ export interface Camera extends GuideOutput, Thermometer {
     capturesPath: string
 }
 
+export const EMPTY_CAMERA: Camera = {
+    exposuring: false,
+    hasCoolerControl: false,
+    coolerPower: 0,
+    cooler: false,
+    hasDewHeater: false,
+    dewHeater: false,
+    frameFormats: [],
+    canAbort: false,
+    cfaOffsetX: 0,
+    cfaOffsetY: 0,
+    cfaType: 'RGGB',
+    exposureMin: 0,
+    exposureMax: 1,
+    exposureState: 'IDLE',
+    exposureTime: 1,
+    hasCooler: false,
+    canSetTemperature: false,
+    canSubFrame: false,
+    x: 0,
+    minX: 0,
+    maxX: 0,
+    y: 0,
+    minY: 0,
+    maxY: 0,
+    width: 1023,
+    minWidth: 1023,
+    maxWidth: 1023,
+    height: 1280,
+    minHeight: 1280,
+    maxHeight: 1280,
+    canBin: false,
+    maxBinX: 1,
+    maxBinY: 1,
+    binX: 1,
+    binY: 1,
+    gain: 0,
+    gainMin: 0,
+    gainMax: 0,
+    offset: 0,
+    offsetMin: 0,
+    offsetMax: 0,
+    hasGuiderHead: false,
+    pixelSizeX: 0,
+    pixelSizeY: 0,
+    capturesPath: '',
+    canPulseGuide: false,
+    pulseGuiding: false,
+    name: '',
+    connected: false,
+    hasThermometer: false,
+    temperature: 0
+}
+
 export interface Parkable {
     canPark: boolean
     parking: boolean
@@ -184,6 +238,14 @@ export interface FilterWheel extends Device {
     moving: boolean
 }
 
+export const EMPTY_WHEEL: FilterWheel = {
+    count: 0,
+    position: 0,
+    moving: false,
+    name: '',
+    connected: false
+}
+
 export interface Dither {
     enabled: boolean
     amount: number
@@ -192,6 +254,8 @@ export interface Dither {
 }
 
 export interface CameraStartCapture {
+    enabled?: boolean
+    camera?: Camera
     exposureTime: number
     exposureAmount: number
     exposureDelay: number
@@ -209,6 +273,34 @@ export interface CameraStartCapture {
     savePath?: string
     autoSubFolderMode: AutoSubFolderMode
     dither?: Dither
+    wheel?: FilterWheel
+    wheelPosition?: number
+    shutterPosition?: number
+    focuser?: Focuser
+    focusOffset?: number
+}
+
+export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {
+    exposureTime: 1,
+    exposureAmount: 1,
+    exposureDelay: 0,
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    frameType: 'LIGHT',
+    binX: 1,
+    binY: 1,
+    gain: 0,
+    offset: 0,
+    autoSave: false,
+    autoSubFolderMode: 'OFF',
+    dither: {
+        enabled: false,
+        afterExposures: 1,
+        amount: 1.5,
+        raOnly: false,
+    }
 }
 
 export interface CameraCaptureEvent extends MessageEvent {
@@ -248,6 +340,13 @@ export interface OpenFile extends OpenDirectory {
     filters?: Electron.FileFilter[]
 }
 
+export interface JsonFile<T = any> {
+    path?: string
+    json: T
+}
+
+export interface SaveJson<T = any> extends OpenFile, JsonFile<T> { }
+
 export interface GuideCaptureEvent {
     camera: Camera
 }
@@ -267,7 +366,7 @@ export interface ImageInfo {
     stretchMidtone: number
     rightAscension?: string
     declination?: string
-    calibrated: boolean
+    solved: boolean
     headers: FITSHeaderItem[]
 }
 
@@ -377,7 +476,8 @@ export interface Twilight {
     civilDawn: number[]
 }
 
-export type MinorPlanetKind = 'ASTEROID' | 'COMET'
+export type MinorPlanetKind = 'ASTEROID' |
+    'COMET'
 
 export interface MinorPlanet {
     found: boolean
@@ -434,7 +534,7 @@ export interface ImageAnnotation {
     minorPlanet?: AstronomicalObject
 }
 
-export interface ImageCalibrated extends EquatorialCoordinateJ2000 {
+export interface ImageSolved extends EquatorialCoordinateJ2000 {
     orientation: number
     scale: number
     width: number
@@ -525,6 +625,14 @@ export interface NotificationEvent extends MessageEvent {
     silent: boolean
 }
 
+export interface SequencerEvent extends MessageEvent {
+    id: number
+    elapsedTime: number
+    remainingTime: number
+    progress: number
+    capture?: CameraCaptureEvent
+}
+
 export interface CalibrationFrame {
     id: number
     type: FrameType
@@ -551,6 +659,57 @@ export interface SettleInfo {
     amount: number
     time: number
     timeout: number
+}
+
+export type SequenceCaptureMode = 'FULLY' |
+    'INTERLEAVED'
+
+export interface AutoFocusAfterConditions {
+    enabled: boolean
+    onStart: boolean
+    onFilterChange: boolean
+    afterElapsedTime: number
+    afterElapsedTimeEnabled: boolean
+    afterExposures: number
+    afterExposuresEnabled: boolean
+    afterTemperatureChange: number
+    afterTemperatureChangeEnabled: boolean
+    afterHFDIncrease: number
+    afterHFDIncreaseEnabled: boolean
+}
+
+export interface SequencePlan {
+    initialDelay: number
+    captureMode: SequenceCaptureMode
+    savePath?: string
+    entries: CameraStartCapture[]
+    dither: Dither
+    autoFocus: AutoFocusAfterConditions
+}
+
+export const EMPTY_SEQUENCE_PLAN: SequencePlan = {
+    initialDelay: 0,
+    captureMode: 'FULLY',
+    entries: [],
+    dither: {
+        enabled: false,
+        amount: 1.5,
+        raOnly: false,
+        afterExposures: 1
+    },
+    autoFocus: {
+        enabled: false,
+        onStart: false,
+        onFilterChange: false,
+        afterElapsedTime: 1800, // 30 min
+        afterExposures: 10,
+        afterTemperatureChange: 5,
+        afterHFDIncrease: 10,
+        afterElapsedTimeEnabled: false,
+        afterExposuresEnabled: false,
+        afterTemperatureChangeEnabled: false,
+        afterHFDIncreaseEnabled: false
+    },
 }
 
 export enum ExposureTimeUnit {
@@ -755,9 +914,9 @@ export const API_EVENT_TYPES = [
 export type ApiEventType = (typeof API_EVENT_TYPES)[number]
 
 export const INTERNAL_EVENT_TYPES = [
-    'SAVE_FITS_AS', 'OPEN_FILE', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
+    'SAVE_FITS', 'OPEN_FILE', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
     'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW',
-    'WHEEL_RENAMED', 'LOCATION_CHANGED',
+    'WHEEL_RENAMED', 'LOCATION_CHANGED', 'SAVE_JSON', 'OPEN_JSON', 'LOAD_JSON'
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]

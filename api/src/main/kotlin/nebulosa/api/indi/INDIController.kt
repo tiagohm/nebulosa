@@ -1,7 +1,7 @@
 package nebulosa.api.indi
 
 import jakarta.validation.Valid
-import nebulosa.api.beans.annotations.EntityParam
+import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.PropertyVector
 import org.springframework.web.bind.annotation.*
@@ -14,20 +14,20 @@ class INDIController(
 ) {
 
     @GetMapping("{device}/properties")
-    fun properties(@EntityParam device: Device): Collection<PropertyVector<*, *>> {
+    fun properties(@DeviceOrEntityParam device: Device): Collection<PropertyVector<*, *>> {
         return indiService.properties(device)
     }
 
     @PutMapping("{device}/send")
     fun sendProperty(
-        @EntityParam device: Device,
+        @DeviceOrEntityParam device: Device,
         @RequestBody @Valid body: INDISendProperty,
     ) {
         return indiService.sendProperty(device, body)
     }
 
     @GetMapping("{device}/log")
-    fun log(@EntityParam device: Device): List<String> {
+    fun log(@DeviceOrEntityParam device: Device): List<String> {
         return device.messages
     }
 

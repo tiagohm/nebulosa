@@ -1,7 +1,6 @@
 package nebulosa.api.focusers
 
 import io.reactivex.rxjava3.subjects.PublishSubject
-import jakarta.annotation.PostConstruct
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.PropertyChangedEvent
@@ -12,18 +11,18 @@ import nebulosa.indi.device.focuser.FocuserEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
+import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
 @Component
 @Subscriber
 class FocuserEventHandler(
     private val messageService: MessageService,
-) {
+) : Closeable {
 
     private val throttler = PublishSubject.create<FocuserEvent>()
 
-    @PostConstruct
-    private fun initialize() {
+    init {
         throttler
             .throttleLast(1000, TimeUnit.MILLISECONDS)
             .subscribe { sendUpdate(it.device!!) }
@@ -32,20 +31,23 @@ class FocuserEventHandler(
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onFocuserEvent(event: FocuserEvent) {
         when (event) {
-            is PropertyChangedEvent -> {
-                throttler.onNext(event)
-            }
-            is FocuserAttached -> {
-                messageService.sendMessage(FocuserMessageEvent(FOCUSER_ATTACHED, event.device))
-            }
-            is FocuserDetached -> {
-                messageService.sendMessage(FocuserMessageEvent(FOCUSER_DETACHED, event.device))
-            }
+            is PropertyChangedEvent -> throttler.onNext(event)
+            is FocuserAttached -> sendMessage(FOCUSER_ATTACHED, event.device)
+            is FocuserDetached -> sendMessage(FOCUSER_DETACHED, event.device)
         }
     }
 
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendMessage(eventName: String, device: Focuser) {
+        messageService.sendMessage(FocuserMessageEvent(eventName, device))
+    }
+
     fun sendUpdate(device: Focuser) {
-        messageService.sendMessage(FocuserMessageEvent(FOCUSER_UPDATED, device))
+        sendMessage(FOCUSER_UPDATED, device)
+    }
+
+    override fun close() {
+        throttler.onComplete()
     }
 
     companion object {

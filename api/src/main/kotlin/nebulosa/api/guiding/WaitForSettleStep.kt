@@ -1,12 +1,13 @@
 package nebulosa.api.guiding
 
-import nebulosa.batch.processing.*
-import nebulosa.common.concurrency.CancellationToken
+import nebulosa.batch.processing.JobExecution
+import nebulosa.batch.processing.Step
+import nebulosa.batch.processing.StepExecution
+import nebulosa.batch.processing.StepResult
 import nebulosa.guiding.Guider
 
-data class WaitForSettleStep(@JvmField val guider: Guider) : Step, JobExecutionListener {
+data class WaitForSettleStep(@JvmField val guider: Guider) : Step {
 
-    private val cancellationToken = CancellationToken()
     private val listeners = LinkedHashSet<WaitForSettleListener>()
 
     fun registerWaitForSettleListener(listener: WaitForSettleListener) {
@@ -18,20 +19,23 @@ data class WaitForSettleStep(@JvmField val guider: Guider) : Step, JobExecutionL
     }
 
     override fun execute(stepExecution: StepExecution): StepResult {
-        if (guider.isSettling && !cancellationToken.isCancelled) {
+        if (guider.isSettling && !stepExecution.jobExecution.cancellationToken.isDone) {
+            stepExecution.context[WAITING] = true
             listeners.forEach { it.onSettleStarted(this, stepExecution) }
-            guider.waitForSettle(cancellationToken)
+            guider.waitForSettle(stepExecution.jobExecution.cancellationToken)
+            stepExecution.context[WAITING] = false
             listeners.forEach { it.onSettleFinished(this, stepExecution) }
         }
 
         return StepResult.FINISHED
     }
 
-    override fun stop(mayInterruptIfRunning: Boolean) {
-        cancellationToken.cancel()
-    }
-
     override fun afterJob(jobExecution: JobExecution) {
         listeners.clear()
+    }
+
+    companion object {
+
+        const val WAITING = "WAIT_FOR_SETTLE.WAITING"
     }
 }

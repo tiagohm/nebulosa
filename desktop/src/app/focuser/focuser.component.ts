@@ -6,6 +6,10 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { Focuser } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
+export function focuserPreferenceKey(focuser: Focuser) {
+    return `focuser.${focuser.name}`
+}
+
 export interface FocuserPreference {
     stepsRelative?: number
     stepsAbsolute?: number
@@ -150,7 +154,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
 
     private loadPreference() {
         if (this.focuser) {
-            const preference = this.storage.get<FocuserPreference>(`focuser.${this.focuser.name}`, {})
+            const preference = this.storage.get<FocuserPreference>(focuserPreferenceKey(this.focuser), {})
             this.stepsRelative = preference.stepsRelative ?? 100
             this.stepsAbsolute = preference.stepsAbsolute ?? this.focuser.position
         }
@@ -163,7 +167,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
                 stepsAbsolute: this.stepsAbsolute,
             }
 
-            this.storage.set(`focuser.${this.focuser.name}`, preference)
+            this.storage.set(focuserPreferenceKey(this.focuser), preference)
         }
     }
 }

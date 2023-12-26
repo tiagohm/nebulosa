@@ -21,17 +21,13 @@ inline val Header.height
     get() = naxis(2)
 
 val Header.rightAscension
-    get() = Angle(getStringOrNull(Standard.RA), isHours = true, decimalIsHours = false)
-        .takeIf { it.isFinite() }
-        ?.let { Angle(getStringOrNull(SBFitsExt.OBJCTRA), true) }
-        ?.takeIf { it.isFinite() }
+    get() = Angle(getStringOrNull(Standard.RA), isHours = true, decimalIsHours = false).takeIf { it.isFinite() }
+        ?: Angle(getStringOrNull(SBFitsExt.OBJCTRA), true).takeIf { it.isFinite() }
         ?: getDouble(NOAOExt.CRVAL1, Double.NaN).deg
 
 val Header.declination
-    get() = Angle(getStringOrNull(Standard.DEC))
-        .takeIf { it.isFinite() }
-        ?.let { Angle(getStringOrNull(SBFitsExt.OBJCTDEC)) }
-        ?.takeIf { it.isFinite() }
+    get() = Angle(getStringOrNull(Standard.DEC)).takeIf { it.isFinite() }
+        ?: Angle(getStringOrNull(SBFitsExt.OBJCTDEC)).takeIf { it.isFinite() }
         ?: getDouble(NOAOExt.CRVAL2, Double.NaN).deg
 
 inline val Header.binX
@@ -71,3 +67,6 @@ val Header.filter
 
 val Header.frame
     get() = (getStringOrNull("FRAME") ?: getStringOrNull(SBFitsExt.IMAGETYP))?.ifBlank { null }
+
+val Header.instrument
+    get() = getStringOrNull(Standard.INSTRUME)?.ifBlank { null }

@@ -70,8 +70,6 @@ class BatchProcessingTest : StringSpec() {
         private val initialValue: Double = 0.0,
     ) : SimpleJob(steps) {
 
-        override val id = "Job.Math"
-
         override fun beforeJob(jobExecution: JobExecution) {
             jobExecution.context["VALUE"] = initialValue
         }

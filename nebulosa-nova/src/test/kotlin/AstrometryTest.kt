@@ -1,8 +1,7 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.io.resource
-import nebulosa.io.source
+import nebulosa.io.seekableSource
 import nebulosa.math.au
 import nebulosa.math.deg
 import nebulosa.math.normalized
@@ -15,6 +14,7 @@ import nebulosa.nova.position.Barycentric
 import nebulosa.time.TDB
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
+import java.nio.file.Path
 
 class AstrometryTest : StringSpec() {
 
@@ -22,7 +22,7 @@ class AstrometryTest : StringSpec() {
         val de441 = Spk(RemoteDaf("https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp"))
         val mar097 = Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/mar097.bsp"))
         val ura111 = Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/ura111.bsp"))
-        val ceresSpk = Spk(SourceDaf(resource("1 Ceres.bsp")!!.readBytes().source()))
+        val ceresSpk = Spk(SourceDaf(Path.of("../data/1 Ceres.bsp").seekableSource()))
         val kernel = SpiceKernel(de441, mar097, ura111, ceresSpk)
         val sun = kernel[10]
         val moon = kernel[301]
