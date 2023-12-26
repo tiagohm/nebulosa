@@ -1,5 +1,6 @@
 import { Client } from '@stomp/stompjs'
 import { BrowserWindow, Menu, Notification, app, dialog, ipcMain, screen, shell } from 'electron'
+import * as ElectronStore from 'electron-store'
 import * as fs from 'fs'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
@@ -7,6 +8,8 @@ import { InternalEventType, JsonFile, MessageEvent, NotificationEvent, OpenDirec
 
 import { WebSocket } from 'ws'
 Object.assign(global, { WebSocket })
+
+const store = new ElectronStore()
 
 const browserWindows = new Map<string, BrowserWindow>()
 let api: ChildProcessWithoutNullStreams | null = null
@@ -102,10 +105,19 @@ function createWindow(options: OpenWindow<any>) {
     const icon = options.icon ?? 'nebulosa'
     const data = encodeURIComponent(JSON.stringify(options.data || {}))
 
+    const position = store.get(`window.${options.id}.position`, undefined) as { x: number, y: number } | undefined
+
+    if (position) {
+        position.x = Math.max(0, Math.min(position.x, size.width))
+        position.y = Math.max(0, Math.min(position.y, size.height))
+    }
+
     window = new BrowserWindow({
         title: 'Nebulosa',
         frame: false,
         width, height,
+        x: position?.x ?? undefined,
+        y: position?.y ?? undefined,
         resizable: serve || resizable,
         autoHideMenuBar: true,
         icon: path.join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
@@ -119,7 +131,9 @@ function createWindow(options: OpenWindow<any>) {
         },
     })
 
-    window.center()
+    if (!position) {
+        window.center()
+    }
 
     if (serve) {
         const debug = require('electron-debug')
@@ -135,6 +149,13 @@ function createWindow(options: OpenWindow<any>) {
     window.webContents.setWindowOpenHandler(({ url }) => {
         shell.openExternal(url)
         return { action: 'deny' }
+    })
+
+    window.on('moved', () => {
+        if (window) {
+            const [x, y] = window.getPosition()
+            store.set(`window.${options.id}.position`, { x, y })
+        }
     })
 
     window.on('close', () => {
