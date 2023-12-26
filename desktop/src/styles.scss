@@ -106,7 +106,6 @@ p-dropdown,
     >p-chart,
     >.p-float-label {
         width: 100%;
-        height: fit-content;
     }
 }
 
@@ -182,6 +181,16 @@ i.mdi {
 .p-overlaypanel:before,
 .p-overlaypanel:after {
     display: none;
+}
+
+.p-tabview {
+    .p-tabview-title {
+        line-height: 0;
+    }
+
+    .p-tabview-nav li .p-tabview-nav-link {
+        border-color: transparent !important;
+    }
 }
 
 .draggable-region {

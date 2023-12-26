@@ -116,16 +116,23 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
                 jobExecution.cancellationToken.unlisten(this)
             }
 
-            job.afterJob(jobExecution)
-            jobListeners.forEach { it.afterJob(jobExecution) }
-            stepJobListeners.forEach { it.afterJob(jobExecution) }
+            fun JobExecutionListener.afterJob() {
+                afterJob(jobExecution)
 
-            if (job is Closeable) {
-                job.close()
+                if (this is Closeable) {
+                    close()
+                }
+                if (this is PublishSubscribe<*>) {
+                    onComplete()
+                }
+                if (this is MutableCollection<*>) {
+                    clear()
+                }
             }
-            if (job is MutableCollection<*>) {
-                job.clear()
-            }
+
+            job.afterJob()
+            jobListeners.forEach { it.afterJob() }
+            stepJobListeners.forEach { it.afterJob() }
         }
 
         return jobExecution

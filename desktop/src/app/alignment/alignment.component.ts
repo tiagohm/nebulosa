@@ -5,7 +5,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Camera, CameraStartCapture, DARVState, GuideDirection, GuideOutput, Hemisphere, Union } from '../../shared/types'
 import { AppComponent } from '../app.component'
-import { CameraPreference } from '../camera/camera.component'
+import { CameraPreference, cameraPreferenceKey } from '../camera/camera.component'
 
 @Component({
     selector: 'app-alignment',
@@ -208,7 +208,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     private makeCameraStartCapture(camera: Camera): CameraStartCapture {
-        const preference = this.storage.get<CameraPreference>(`camera.${camera.name}`, {})
+        const preference = this.storage.get<CameraPreference>(cameraPreferenceKey(camera), {})
 
         return {
             exposureTime: 0,

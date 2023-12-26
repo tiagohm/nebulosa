@@ -109,4 +109,8 @@ export class ElectronService {
     openJson<T>(data?: OpenFile): Promise<JsonFile<T> | false> {
         return this.send('OPEN_JSON', data)
     }
+
+    loadJson<T>(path: string): Promise<JsonFile<T> | false> {
+        return this.send('LOAD_JSON', path)
+    }
 }

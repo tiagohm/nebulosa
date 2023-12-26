@@ -354,6 +354,19 @@ try {
         }
     })
 
+    ipcMain.handle('LOAD_JSON', async (_, path: string) => {
+        try {
+            if (fs.existsSync(path)) {
+                const buffer = fs.readFileSync(path)
+                return <JsonFile>{ path, json: JSON.parse(buffer.toString('utf-8')) }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        return false
+    })
+
     ipcMain.handle('OPEN_DIRECTORY', async (event, data?: OpenDirectory) => {
         const ownerWindow = findWindowById(event.sender.id)
         const value = await dialog.showOpenDialog(ownerWindow!, {

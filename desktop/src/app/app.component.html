@@ -5,8 +5,11 @@
         <div class="text-xs text-gray-100 font-normal">{{ subTitle }}</div>
     </span>
 
-    <p-button [text]="true" [rounded]="true" [icon]="e.icon" [disabled]="e.disabled" [pTooltip]="e.tooltip ?? e.label" tooltipPosition="bottom"
-              (onClick)="e.command?.({originalEvent: $event, item: e, index: i})" size="small" *ngFor="let e of topMenu; let i = index" />
+    <span class="relative" *ngFor="let e of topMenu; let i = index">
+        <p-badge *ngIf="e.badge" [severity]="e.badgeSeverity ?? 'danger'" />
+        <p-button [text]="true" [rounded]="true" [icon]="e.icon" [disabled]="e.disabled" [pTooltip]="e.tooltip ?? e.label" tooltipPosition="bottom"
+                  (onClick)="e.command?.({originalEvent: $event, item: e, index: i})" size="small" />
+    </span>
 
     <span class="separator flex justify-content-center" *ngIf="topMenu.length"></span>
 

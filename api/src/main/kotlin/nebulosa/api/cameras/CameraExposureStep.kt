@@ -2,6 +2,7 @@ package nebulosa.api.cameras
 
 import nebulosa.api.guiding.WaitForSettleListener
 import nebulosa.api.guiding.WaitForSettleStep
+import nebulosa.batch.processing.ExecutionContext
 import nebulosa.batch.processing.ExecutionContext.Companion.getDuration
 import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.StepExecution
@@ -32,7 +33,7 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     @JvmField val exposureAmount = request.exposureAmount
     @JvmField val exposureDelay = request.exposureDelay
 
-    @JvmField val estimatedCaptureTime: Duration = if (request.isLoop) Duration.ZERO
+    @JvmField @Volatile var estimatedCaptureTime: Duration = if (request.isLoop) Duration.ZERO
     else Duration.ofNanos(exposureTime.toNanos() * exposureAmount + exposureDelay.toNanos() * (exposureAmount - 1))
 
     private val latch = CountUpDownLatch()
@@ -42,7 +43,7 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     @Volatile private var exposureCount = 0
     @Volatile private var captureElapsedTime = Duration.ZERO!!
 
-    private var stepExecution: StepExecution? = null
+    @Volatile private var stepExecution: StepExecution? = null
 
     override fun registerCameraCaptureListener(listener: CameraCaptureListener): Boolean {
         return listeners.add(listener)
@@ -77,16 +78,7 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
 
     override fun beforeJob(jobExecution: JobExecution) {
         camera.enableBlob()
-
-        captureElapsedTime = Duration.ZERO
-
-        jobExecution.context[CAPTURE_ELAPSED_TIME] = Duration.ZERO
-        jobExecution.context[CAPTURE_PROGRESS] = 0.0
-        jobExecution.context[CAPTURE_REMAINING_TIME] = exposureTime
-        jobExecution.context[EXPOSURE_ELAPSED_TIME] = Duration.ZERO
-        jobExecution.context[EXPOSURE_REMAINING_TIME] = estimatedCaptureTime
-        jobExecution.context[EXPOSURE_PROGRESS] = 0.0
-
+        jobExecution.context.populateExecutionContext(Duration.ZERO, estimatedCaptureTime, 0.0)
         listeners.forEach { it.onCaptureStarted(this, jobExecution) }
     }
 
@@ -187,6 +179,11 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     }
 
     private fun StepExecution.onCameraExposureElapsed(elapsedTime: Duration, remainingTime: Duration, progress: Double) {
+        context.populateExecutionContext(elapsedTime, remainingTime, progress)
+        listeners.forEach { it.onExposureElapsed(this@CameraExposureStep, this) }
+    }
+
+    private fun ExecutionContext.populateExecutionContext(elapsedTime: Duration, remainingTime: Duration, progress: Double) {
         val captureElapsedTime = captureElapsedTime + elapsedTime
         var captureRemainingTime = Duration.ZERO
         var captureProgress = 0.0
@@ -196,14 +193,12 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
             captureProgress = (estimatedCaptureTime - captureRemainingTime).toNanos().toDouble() / estimatedCaptureTime.toNanos()
         }
 
-        context[EXPOSURE_ELAPSED_TIME] = elapsedTime
-        context[EXPOSURE_REMAINING_TIME] = remainingTime
-        context[EXPOSURE_PROGRESS] = progress
-        context[CAPTURE_ELAPSED_TIME] = captureElapsedTime
-        context[CAPTURE_REMAINING_TIME] = captureRemainingTime
-        context[CAPTURE_PROGRESS] = captureProgress
-
-        listeners.forEach { it.onExposureElapsed(this@CameraExposureStep, this) }
+        this[EXPOSURE_ELAPSED_TIME] = elapsedTime
+        this[EXPOSURE_REMAINING_TIME] = remainingTime
+        this[EXPOSURE_PROGRESS] = progress
+        this[CAPTURE_ELAPSED_TIME] = captureElapsedTime
+        this[CAPTURE_REMAINING_TIME] = captureRemainingTime
+        this[CAPTURE_PROGRESS] = captureProgress
     }
 
     companion object {

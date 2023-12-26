@@ -9,6 +9,10 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { Camera, CameraCaptureState, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
+export function cameraPreferenceKey(camera: Camera) {
+    return `camera.${camera.name}`
+}
+
 export interface CameraPreference extends Partial<CameraStartCapture> {
     setpointTemperature?: number
     exposureTimeUnit?: ExposureTimeUnit
@@ -322,6 +326,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
         return {
             ...this.request,
+            camera: this.camera,
             x, y, width, height,
             exposureTime, exposureAmount,
             savePath,
@@ -387,7 +392,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 this.request.y = Math.max(this.camera.minY, Math.min(this.request.y, this.camera.maxY))
                 this.request.width = Math.max(this.camera.minWidth, Math.min(this.request.width < 8 ? this.camera.maxWidth : this.request.width, this.camera.maxWidth))
                 this.request.height = Math.max(this.camera.minHeight, Math.min(this.request.height < 8 ? this.camera.maxHeight : this.request.width, this.camera.maxHeight))
-                if (!this.request.frameFormat) this.request.frameFormat = this.camera.frameFormats[0]
+                if (!this.request.frameFormat || !this.camera.frameFormats.includes(this.request.frameFormat)) this.request.frameFormat = this.camera.frameFormats[0]
 
                 this.updateExposureUnit(this.exposureTimeUnit)
             }
@@ -407,7 +412,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     private loadPreference() {
         if (!this.dialogMode && this.camera) {
-            const preference = this.storage.get<CameraPreference>(`camera.${this.camera.name}`, {})
+            const preference = this.storage.get<CameraPreference>(cameraPreferenceKey(this.camera), {})
 
             this.request.autoSave = preference.autoSave ?? false
             this.savePath = preference.savePath ?? ''
@@ -463,7 +468,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 dither: this.request.dither,
             }
 
-            this.storage.set(`camera.${this.camera.name}`, preference)
+            this.storage.set(cameraPreferenceKey(this.camera), preference)
         }
     }
 }

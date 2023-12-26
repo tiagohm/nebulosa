@@ -630,7 +630,7 @@ export interface SequencerEvent extends MessageEvent {
     elapsedTime: number
     remainingTime: number
     progress: number
-    capture: CameraCaptureEvent
+    capture?: CameraCaptureEvent
 }
 
 export interface CalibrationFrame {
@@ -665,12 +665,17 @@ export type SequenceCaptureMode = 'FULLY' |
     'INTERLEAVED'
 
 export interface AutoFocusAfterConditions {
+    enabled: boolean
     onStart: boolean
     onFilterChange: boolean
     afterElapsedTime: number
+    afterElapsedTimeEnabled: boolean
     afterExposures: number
+    afterExposuresEnabled: boolean
     afterTemperatureChange: number
+    afterTemperatureChangeEnabled: boolean
     afterHFDIncrease: number
+    afterHFDIncreaseEnabled: boolean
 }
 
 export interface SequencePlan {
@@ -680,6 +685,31 @@ export interface SequencePlan {
     entries: CameraStartCapture[]
     dither: Dither
     autoFocus: AutoFocusAfterConditions
+}
+
+export const EMPTY_SEQUENCE_PLAN: SequencePlan = {
+    initialDelay: 0,
+    captureMode: 'FULLY',
+    entries: [],
+    dither: {
+        enabled: false,
+        amount: 1.5,
+        raOnly: false,
+        afterExposures: 1
+    },
+    autoFocus: {
+        enabled: false,
+        onStart: false,
+        onFilterChange: false,
+        afterElapsedTime: 1800, // 30 min
+        afterExposures: 10,
+        afterTemperatureChange: 5,
+        afterHFDIncrease: 10,
+        afterElapsedTimeEnabled: false,
+        afterExposuresEnabled: false,
+        afterTemperatureChangeEnabled: false,
+        afterHFDIncreaseEnabled: false
+    },
 }
 
 export enum ExposureTimeUnit {
@@ -886,7 +916,7 @@ export type ApiEventType = (typeof API_EVENT_TYPES)[number]
 export const INTERNAL_EVENT_TYPES = [
     'SAVE_FITS', 'OPEN_FILE', 'OPEN_WINDOW', 'OPEN_DIRECTORY', 'CLOSE_WINDOW',
     'PIN_WINDOW', 'UNPIN_WINDOW', 'MINIMIZE_WINDOW', 'MAXIMIZE_WINDOW',
-    'WHEEL_RENAMED', 'LOCATION_CHANGED', 'SAVE_JSON', 'OPEN_JSON'
+    'WHEEL_RENAMED', 'LOCATION_CHANGED', 'SAVE_JSON', 'OPEN_JSON', 'LOAD_JSON'
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]

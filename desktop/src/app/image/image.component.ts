@@ -20,6 +20,10 @@ import {
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
 
+export function imagePreferenceKey(camera?: Camera) {
+    return camera ? `image.${camera.name}` : 'image'
+}
+
 export interface ImagePreference {
     solverRadius?: number
 }
@@ -680,14 +684,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadPreference(camera?: Camera) {
-        let preference: ImagePreference
-
-        if (camera) {
-            preference = this.storage.get<ImagePreference>(`image.${camera.name}`, {})
-        } else {
-            preference = this.storage.get<ImagePreference>('image', {})
-        }
-
+        const preference = this.storage.get<ImagePreference>(imagePreferenceKey(camera), {})
         this.solverRadius = preference.solverRadius ?? this.solverRadius
     }
 
@@ -696,11 +693,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             solverRadius: this.solverRadius
         }
 
-        if (this.imageData.camera) {
-            this.storage.set(`image.${this.imageData.camera.name}`, preference)
-        } else {
-            this.storage.set('image', preference)
-        }
+        this.storage.set(imagePreferenceKey(this.imageData.camera), preference)
     }
 
     private async executeMount(action: (mount: Mount) => void) {

@@ -282,7 +282,7 @@ class INDIXmlInputStream(private val source: InputStream) : INDIInputStream {
 
     private fun parseDelProperty() = DelProperty().apply {
         device = reader.attribute(DEVICE_ATTR_NAME)!!
-        name = reader.attribute(NAME_ATTR_NAME)!!
+        name = reader.attribute(NAME_ATTR_NAME) ?: ""
         timestamp = reader.attribute(TIMESTAMP_ATTR_NAME) ?: ""
         reader.attribute(MESSAGE_ATTR_NAME)?.also { message = it }
     }

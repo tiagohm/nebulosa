@@ -1,7 +1,7 @@
-<div class="container px-4 py-3">
+<div class="container px-4 pt-1 pb-3">
     <div class="grid py-1 flex align-items-center">
         <p-tabView class="w-full">
-            <p-tabPanel header="Capture">
+            <p-tabPanel header="Capture" leftIcon="mdi mdi-camera-iris">
                 <div class="grid mt-2">
                     <div class="col-3">
                         <span class="p-float-label">
@@ -29,26 +29,27 @@
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Dither">
-                <div class="grid mt-2">
-                    <div class="col-2 flex flex-column justify-content-center text-center gap-2">
-                        <span class="text-sm text-gray-100">Enabled</span>
-                        <p-inputSwitch [disabled]="running" [(ngModel)]="plan.dither.enabled" (ngModelChange)="savePlan()" />
+                <ng-template pTemplate="header">
+                    <div class="flex gap-2 align-items-center">
+                        <i class="icomoon random-dither"></i>
+                        <span>Dither</span>
+                        <p-checkbox [binary]="true" [disabled]="running" [(ngModel)]="plan.dither.enabled" (ngModelChange)="savePlan()" />
                     </div>
-                    <div class="col-4">
+                </ng-template>
+                <div class="grid mt-2">
+                    <div class="col-2 flex align-items-center">
+                        <p-checkbox [binary]="true" [disabled]="running || !plan.dither.enabled" label="RA only"
+                                    [(ngModel)]="plan.dither.raOnly" (ngModelChange)="savePlan()" />
+                    </div>
+                    <div class="col-3 align-items-center">
                         <span class="p-float-label">
                             <p-inputNumber [disabled]="running || !plan.dither.enabled" [showButtons]="true"
                                            styleClass="border-0 p-inputtext-sm w-full" [min]="0.1" [max]="60" [(ngModel)]="plan.dither.amount"
-                                           [step]="0.1"
-                                           locale="en" [minFractionDigits]="1" (ngModelChange)="savePlan()" />
+                                           [step]="0.1" locale="en" [minFractionDigits]="1" (ngModelChange)="savePlan()" />
                             <label>Dither (px)</label>
                         </span>
                     </div>
-                    <div class="col-2 flex flex-column justify-content-center text-center gap-2">
-                        <span class="text-sm text-gray-100">Dither in RA only</span>
-                        <p-checkbox [binary]="true" [disabled]="running || !plan.dither.enabled"
-                                    [(ngModel)]="plan.dither.raOnly" (ngModelChange)="savePlan()" />
-                    </div>
-                    <div class="col-4">
+                    <div class="col-3 align-items-center">
                         <span class="p-float-label">
                             <p-inputNumber [disabled]="running || !plan.dither.enabled" [showButtons]="true"
                                            styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
@@ -59,7 +60,66 @@
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Auto Focus">
+                <ng-template pTemplate="header">
+                    <div class="flex gap-2 align-items-center">
+                        <i class="mdi mdi-image-filter-center-focus"></i>
+                        <span>Auto Focus</span>
+                        <p-checkbox [binary]="true" [disabled]="running" [(ngModel)]="plan.autoFocus.enabled" (ngModelChange)="savePlan()" />
+                    </div>
+                </ng-template>
                 <div class="grid mt-2">
+                    <div class="col-5">
+                        <div class="grid">
+                            <div class="col-5 flex align-items-center">
+                                <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled" label="On start"
+                                            [(ngModel)]="plan.autoFocus.onStart" (ngModelChange)="savePlan()" />
+                            </div>
+                            <div class="col-7 flex align-items-center">
+                                <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled" label="On filter change"
+                                            [(ngModel)]="plan.autoFocus.onFilterChange" (ngModelChange)="savePlan()" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4 align-items-center gap-1">
+                        <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled"
+                                    [(ngModel)]="plan.autoFocus.afterElapsedTimeEnabled" (ngModelChange)="savePlan()" />
+                        <span class="p-float-label">
+                            <p-inputNumber [disabled]="running || !plan.autoFocus.afterElapsedTimeEnabled || !plan.autoFocus.enabled"
+                                           [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="86400"
+                                           [(ngModel)]="plan.autoFocus.afterElapsedTime" [step]="1" (ngModelChange)="savePlan()" />
+                            <label>After elapsed time (s)</label>
+                        </span>
+                    </div>
+                    <div class="col-3 align-items-center gap-1">
+                        <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled"
+                                    [(ngModel)]="plan.autoFocus.afterExposuresEnabled" (ngModelChange)="savePlan()" />
+                        <span class="p-float-label">
+                            <p-inputNumber [disabled]="running || !plan.autoFocus.afterExposuresEnabled || !plan.autoFocus.enabled"
+                                           [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
+                                           [(ngModel)]="plan.autoFocus.afterExposures" [step]="1" (ngModelChange)="savePlan()" />
+                            <label>After exposures</label>
+                        </span>
+                    </div>
+                    <div class="col-4 align-items-center gap-1">
+                        <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled"
+                                    [(ngModel)]="plan.autoFocus.afterTemperatureChangeEnabled" (ngModelChange)="savePlan()" />
+                        <span class="p-float-label">
+                            <p-inputNumber [disabled]="running || !plan.autoFocus.afterTemperatureChangeEnabled || !plan.autoFocus.enabled"
+                                           [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="10"
+                                           [(ngModel)]="plan.autoFocus.afterTemperatureChange" [step]="1" (ngModelChange)="savePlan()" />
+                            <label>After temperature change (°C)</label>
+                        </span>
+                    </div>
+                    <div class="col-4 align-items-center gap-1">
+                        <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled"
+                                    [(ngModel)]="plan.autoFocus.afterHFDIncreaseEnabled" (ngModelChange)="savePlan()" />
+                        <span class="p-float-label">
+                            <p-inputNumber [disabled]="running || !plan.autoFocus.afterHFDIncreaseEnabled || !plan.autoFocus.enabled"
+                                           [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
+                                           [(ngModel)]="plan.autoFocus.afterHFDIncrease" [step]="1" (ngModelChange)="savePlan()" />
+                            <label>After HFD increase (%)</label>
+                        </span>
+                    </div>
                 </div>
             </p-tabPanel>
         </p-tabView>
@@ -90,7 +150,24 @@
             </span>
         </div>
     </div>
-    <div class="grid mt-2 flex align-items-center">
+    <div class="grid mt-0">
+        <div class="col-12 gap-1 justify-content-end">
+            <ng-container *ngIf="event && running">
+                <span class="bg-green-300 border-round-md p-1 text-gray-900 text-sm text-center" style="min-width: 62px"
+                      pTooltip="Elapsed time" tooltipPosition="bottom">
+                    <i class="mdi mdi-timer-sand-complete mdi-progress-indicator"></i> {{ event.elapsedTime | exposureTime }}
+                </span>
+                <span class="bg-green-300 border-round-md p-1 text-gray-900 text-sm text-center" style="min-width: 62px"
+                      pTooltip="Remaining time" tooltipPosition="bottom">
+                    <i class="mdi mdi-timer-sand mdi-progress-indicator"></i> {{ event.remainingTime | exposureTime }}
+                </span>
+                <span class="bg-green-300 border-round-md p-1 text-gray-900 text-sm text-center" style="min-width: 52px">
+                    <i class="mdi mdi-percent mdi-progress-indicator"></i> {{ event.progress * 100 | number:'1.1-1' }}
+                </span>
+            </ng-container>
+        </div>
+    </div>
+    <div class="grid mt-1 flex align-items-center">
         <p-scrollPanel class="w-full" [style]="{ width: '100%', height: 'calc(100vh - 168px)' }" cdkDropList (cdkDropListDropped)="drop($event)">
             <div *ngFor="let entry of plan.entries; index as i" class="col-12" cdkDrag>
                 <p-card>
@@ -100,20 +177,24 @@
                                 <span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
                             </div>
                             <div class="col pb-1 align-items-center gap-2">
-                                <p-button [disabled]="running || !entry.enabled" icon="mdi mdi-camera-iris" label="Camera" severity="info"
-                                          styleClass="px-2 py-1" (onClick)="showCameraDialog(entry)" />
-                                <p-button [disabled]="running || !entry.enabled" icon="mdi mdi-palette" label="Filter Wheel" severity="info"
-                                          styleClass="px-2 py-1" (onClick)="showWheelDialog(entry)" />
+                                <p-button [disabled]="running || !entry.enabled" icon="mdi mdi-camera-iris" label="Camera"
+                                          [severity]="entry.camera?.connected ? 'info' : 'danger'" styleClass="px-2 py-1"
+                                          (onClick)="showCameraDialog(entry)" />
+                                <p-button [disabled]="running || !entry.enabled" icon="mdi mdi-palette" label="Filter Wheel"
+                                          [severity]="entry.wheel?.connected ? 'info' : 'danger'" styleClass="px-2 py-1"
+                                          (onClick)="showWheelDialog(entry)" />
                                 <p-button [disabled]="running || !entry.enabled" icon="mdi mdi-image-filter-center-focus" label="Focuser"
-                                          severity="info"
-                                          styleClass="px-2 py-1" (onClick)="showCameraDialog(entry)" />
+                                          [severity]="entry.focuser?.connected ? 'info' : 'danger'" styleClass="px-2 py-1"
+                                          (onClick)="showCameraDialog(entry)" />
                             </div>
                             <div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
-                                <p-button [disabled]="running" [text]="true" [rounded]="true" icon="mdi mdi-delete" severity="danger"
-                                          styleClass="p-button-sm" pTooltip="Delete" tooltipPosition="bottom" (onClick)="deleteEntry(entry, i)" />
+                                <p-button [disabled]="running || plan.entries.length <= 1" [text]="true" [rounded]="true" icon="mdi mdi-delete"
+                                          severity="danger" styleClass="p-button-sm" pTooltip="Delete" tooltipPosition="bottom"
+                                          (onClick)="deleteEntry(entry, i)" />
 
                                 <p-button [disabled]="running" [text]="true" [rounded]="true" icon="mdi mdi-content-duplicate" severity="info"
-                                          styleClass="p-button-sm" pTooltip="Duplicate" tooltipPosition="bottom" (onClick)="duplicateEntry(entry, i)" />
+                                          styleClass="p-button-sm" pTooltip="Duplicate" tooltipPosition="bottom"
+                                          (onClick)="duplicateEntry(entry, i)" />
 
                                 <p-checkbox [binary]="true" [(ngModel)]="entry.enabled" (ngModelChange)="savePlan()" />
                             </div>
@@ -193,6 +274,5 @@
     </div>
 
     <p-button [disabled]="running || plan.entries.length > 32" [rounded]="true" icon="mdi mdi-plus" size="large" severity="success" (onClick)="add()"
-              styleClass="fixed"
-              [style]="{bottom: '16px', right: '16px'}" />
+              styleClass="fixed" [style]="{bottom: '16px', right: '16px'}" />
 </div>

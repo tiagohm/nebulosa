@@ -9,6 +9,8 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { CalibrationFrame, CalibrationFrameGroup, Camera } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
+export const CALIBRATION_DIR_KEY = 'calibration.directory'
+
 @Component({
     selector: 'app-calibration',
     templateUrl: './calibration.component.html',
@@ -40,11 +42,11 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             icon: 'mdi mdi-image-plus',
             tooltip: 'Add file',
             command: async () => {
-                const defaultPath = this.storage.get('calibration.directory', '')
+                const defaultPath = this.storage.get(CALIBRATION_DIR_KEY, '')
                 const fitsPath = await electron.openFITS({ defaultPath })
 
                 if (fitsPath) {
-                    this.storage.set('calibration.directory', path.dirname(fitsPath))
+                    this.storage.set(CALIBRATION_DIR_KEY, path.dirname(fitsPath))
                     this.upload(fitsPath)
                 }
             },
@@ -54,11 +56,11 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             icon: 'mdi mdi-folder-plus',
             tooltip: 'Add folder',
             command: async () => {
-                const defaultPath = this.storage.get('calibration.directory', '')
+                const defaultPath = this.storage.get(CALIBRATION_DIR_KEY, '')
                 const dirPath = await electron.openDirectory({ defaultPath })
 
                 if (dirPath) {
-                    this.storage.set('calibration.directory', dirPath)
+                    this.storage.set(CALIBRATION_DIR_KEY, dirPath)
                     this.upload(dirPath)
                 }
             },

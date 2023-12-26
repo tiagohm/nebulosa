@@ -24,6 +24,8 @@ import { AppComponent } from '../app.component'
 
 Chart.register(zoomPlugin)
 
+export const ATLAS_KEY = 'atlas'
+
 export interface PlanetItem {
     name: string
     type: string
@@ -492,7 +494,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     }
 
     async ngOnInit() {
-        const preference = this.storage.get<SkyAtlasPreference>('atlas', {})
+        const preference = this.storage.get<SkyAtlasPreference>(ATLAS_KEY, {})
 
         for (const group of SATELLITE_GROUPS) {
             const satellite = preference.satellites?.find(e => e.group === group)
@@ -690,13 +692,13 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         this.refreshing = true
 
         try {
-            const preference = this.storage.get<SkyAtlasPreference>('atlas', {})
+            const preference = this.storage.get<SkyAtlasPreference>(ATLAS_KEY, {})
 
             preference.satellites = SATELLITE_GROUPS.map(group => {
                 return { group, enabled: this.satelliteSearchGroup.get(group) ?? false }
             })
 
-            this.storage.set('atlas', preference)
+            this.storage.set(ATLAS_KEY, preference)
 
             const groups = SATELLITE_GROUPS.filter(e => this.satelliteSearchGroup.get(e))
             this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText, groups)
@@ -706,7 +708,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     }
 
     resetSatelliteFilter() {
-        const preference = this.storage.get<SkyAtlasPreference>('atlas', {})
+        const preference = this.storage.get<SkyAtlasPreference>(ATLAS_KEY, {})
 
         preference.satellites = []
 
@@ -716,7 +718,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             this.satelliteSearchGroup.set(group, enabled)
         }
 
-        this.storage.set('atlas', preference)
+        this.storage.set(ATLAS_KEY, preference)
     }
 
     async filterSatellite() {

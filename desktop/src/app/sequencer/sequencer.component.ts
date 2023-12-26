@@ -1,15 +1,19 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import { MessageService } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { Camera, CameraCaptureEvent, CameraCaptureState, CameraStartCapture, FilterWheel, Focuser, SequenceCaptureMode, SequencePlan } from '../../shared/types'
+import { Camera, CameraCaptureEvent, CameraCaptureState, CameraStartCapture, EMPTY_SEQUENCE_PLAN, FilterWheel, Focuser, JsonFile, SequenceCaptureMode, SequencePlan, SequencerEvent } from '../../shared/types'
 import { AppComponent } from '../app.component'
 import { CameraCaptureInfo, CameraComponent, CameraExposureInfo, CameraWaitInfo, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_EXPOSURE_INFO, EMPTY_CAMERA_WAIT_INFO } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
+
+export const SEQUENCER_SAVED_PATH_KEY = 'sequencer.savedPath'
+export const SEQUENCER_PLAN_KEY = 'sequencer.plan'
 
 @Component({
     selector: 'app-sequencer',
@@ -27,29 +31,12 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     focuser?: Focuser
 
     readonly captureModes: SequenceCaptureMode[] = ['FULLY', 'INTERLEAVED']
-    readonly plan: SequencePlan = {
-        initialDelay: 0,
-        captureMode: 'FULLY',
-        entries: [],
-        dither: {
-            enabled: false,
-            amount: 1.5,
-            raOnly: false,
-            afterExposures: 1
-        },
-        autoFocus: {
-            onStart: false,
-            onFilterChange: false,
-            afterElapsedTime: 0,
-            afterExposures: 0,
-            afterTemperatureChange: 0,
-            afterHFDIncrease: 0
-        },
-    }
+    readonly plan = Object.assign({}, EMPTY_SEQUENCE_PLAN)
 
-    savedPath?: string
     readonly sequenceEvents: CameraCaptureEvent[] = []
 
+    event?: SequencerEvent
+    running = false
     readonly state = new Array<CameraCaptureState | undefined>(32)
     readonly exposure = new Array<CameraExposureInfo>(32)
     readonly capture = new Array<CameraCaptureInfo>(32)
@@ -59,22 +46,47 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         return !this.plan.entries.find(e => e.enabled && !e.camera?.connected)
     }
 
-    get running() {
-        return !!this.state.find(e => !!e)
+    get savedPath() {
+        return this.app.subTitle
+    }
+
+    set savedPath(value: string | undefined) {
+        this.app.subTitle = value
+    }
+
+    get savedPathWasModified() {
+        return !!this.app.topMenu[1].badge
+    }
+
+    set savedPathWasModified(value: boolean) {
+        this.app.topMenu[1].badge = value ? '1' : undefined
     }
 
     constructor(
-        app: AppComponent,
+        private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private storage: LocalStorageService,
         private route: ActivatedRoute,
+        private message: MessageService,
         private prime: PrimeService,
         ngZone: NgZone,
     ) {
         app.title = 'Sequencer'
 
+        app.topMenu.push({
+            icon: 'mdi mdi-plus',
+            label: 'Create new',
+            command: async () => {
+                this.savedPath = undefined
+                this.savedPathWasModified = false
+                this.storage.delete(SEQUENCER_SAVED_PATH_KEY)
+
+                Object.assign(this.plan, EMPTY_SEQUENCE_PLAN)
+                this.add()
+            },
+        })
         app.topMenu.push({
             icon: 'mdi mdi-content-save',
             label: 'Save',
@@ -82,8 +94,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
                 const file = await electron.saveJson({ path: this.savedPath, json: this.plan })
 
                 if (file !== false) {
-                    this.savedPath = file.path
-                    app.subTitle = this.savedPath!
+                    this.afterSavedJsonFile(file)
                 }
             },
         })
@@ -94,8 +105,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
                 const file = await electron.saveJson({ json: this.plan })
 
                 if (file !== false) {
-                    this.savedPath = file.path
-                    app.subTitle = this.savedPath!
+                    this.afterSavedJsonFile(file)
                 }
             },
         })
@@ -106,47 +116,81 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
                 const file = await electron.openJson<SequencePlan>()
 
                 if (file !== false) {
-                    this.savedPath = file.path
-                    this.loadPlan(file.json)
-                    app.subTitle = this.savedPath!
+                    this.loadSavedJsonFile(file)
                 }
             },
         })
 
         electron.on('CAMERA_UPDATED', event => {
-            this.updateEntriesFromCamera(event.device)
+            ngZone.run(() => {
+                const camera = this.cameras.find(e => e.name === event.device.name)
+
+                if (camera) {
+                    Object.assign(camera, event.device)
+                    this.updateEntriesFromCamera(camera)
+                }
+            })
         })
 
-        // TODO: Sequencer elapsedTime, progress, remainingTime, #
+        electron.on('WHEEL_UPDATED', event => {
+            ngZone.run(() => {
+                const wheel = this.wheels.find(e => e.name === event.device.name)
+
+                if (wheel) {
+                    Object.assign(wheel, event.device)
+                    this.updateEntriesFromWheel(wheel)
+                }
+            })
+        })
+
+        electron.on('FOCUSER_UPDATED', event => {
+            ngZone.run(() => {
+                const focuser = this.focusers.find(e => e.name === event.device.name)
+
+                if (focuser) {
+                    Object.assign(focuser, event.device)
+                    this.updateEntriesFromFocuser(focuser)
+                }
+            })
+        })
+
         electron.on('SEQUENCER_ELAPSED', event => {
             ngZone.run(() => {
-                const index = event.id - 1
+                if (this.running !== event.remainingTime > 0) {
+                    this.enableOrDisableTopbarMenu(event.remainingTime <= 0)
+                }
+
+                this.event = event
+                this.running = event.remainingTime > 0
 
                 const captureEvent = event.capture
+                const index = event.id - 1
 
-                console.info(event.elapsedTime, event.remainingTime, event.progress)
+                if (captureEvent) {
+                    this.capture[index].elapsedTime = captureEvent.captureElapsedTime
+                    this.capture[index].remainingTime = captureEvent.captureRemainingTime
+                    this.capture[index].progress = captureEvent.captureProgress
+                    this.exposure[index].remainingTime = captureEvent.exposureRemainingTime
+                    this.exposure[index].progress = captureEvent.exposureProgress
+                    this.exposure[index].count = captureEvent.exposureCount
 
-                this.capture[index].elapsedTime = captureEvent.captureElapsedTime
-                this.capture[index].remainingTime = captureEvent.captureRemainingTime
-                this.capture[index].progress = captureEvent.captureProgress
-                this.exposure[index].remainingTime = captureEvent.exposureRemainingTime
-                this.exposure[index].progress = captureEvent.exposureProgress
-                this.exposure[index].count = captureEvent.exposureCount
-
-                if (captureEvent.state === 'WAITING') {
-                    this.wait[index].remainingTime = captureEvent.waitRemainingTime
-                    this.wait[index].progress = captureEvent.waitProgress
-                    this.state[index] = 'WAITING'
-                } else if (captureEvent.state === 'SETTLING') {
-                    this.state[index] = 'SETTLING'
-                } else if (captureEvent.state === 'CAPTURE_STARTED') {
-                    this.capture[index].amount = captureEvent.exposureAmount
-                    this.state[index] = 'EXPOSURING'
-                } else if (captureEvent.state === 'CAPTURE_FINISHED') {
-                    this.state[index] = undefined
-                } else if (captureEvent.state === 'EXPOSURE_STARTED') {
-                    this.state[index] = 'EXPOSURING'
-                } else if (captureEvent.state === 'EXPOSURE_FINISHED') {
+                    if (captureEvent.state === 'WAITING') {
+                        this.wait[index].remainingTime = captureEvent.waitRemainingTime
+                        this.wait[index].progress = captureEvent.waitProgress
+                        this.state[index] = 'WAITING'
+                    } else if (captureEvent.state === 'SETTLING') {
+                        this.state[index] = 'SETTLING'
+                    } else if (captureEvent.state === 'CAPTURE_STARTED') {
+                        this.capture[index].amount = captureEvent.exposureAmount
+                        this.state[index] = 'EXPOSURING'
+                    } else if (captureEvent.state === 'CAPTURE_FINISHED') {
+                        this.state[index] = undefined
+                    } else if (captureEvent.state === 'EXPOSURE_STARTED') {
+                        this.state[index] = 'EXPOSURING'
+                    } else if (captureEvent.state === 'EXPOSURE_FINISHED') {
+                        this.state[index] = undefined
+                    }
+                } else if (!this.running && index >= 0) {
                     this.state[index] = undefined
                 }
             })
@@ -158,11 +202,13 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         this.wheels = await this.api.wheels()
         this.focusers = await this.api.focusers()
 
-        if (!this.loadPlan()) {
-            this.add()
-        }
+        this.loadSavedJsonFileFromPathOrAddDefault()
 
         // this.route.queryParams.subscribe(e => { })
+    }
+
+    private enableOrDisableTopbarMenu(enable: boolean) {
+        this.app.topMenu.forEach(e => e.disabled = !enable)
     }
 
     @HostListener('window:unload')
@@ -194,27 +240,66 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
             wheel,
             focuser,
         })
+
+        this.savePlan()
     }
 
     drop(event: CdkDragDrop<CameraStartCapture[]>) {
         moveItemInArray(this.plan.entries, event.previousIndex, event.currentIndex)
     }
 
+    private afterSavedJsonFile(file: JsonFile<SequencePlan>) {
+        this.savedPath = file.path!
+        this.storage.set(SEQUENCER_SAVED_PATH_KEY, this.savedPath)
+        this.savedPathWasModified = false
+    }
+
+    private loadSavedJsonFile(file: JsonFile<SequencePlan>) {
+        if (this.loadPlan(file.json)) {
+            this.savedPath = file.path
+        } else {
+            this.message.add({ severity: 'warn', detail: `No entry found for the saved Sequence at: ${file.path}` })
+
+            this.add()
+        }
+    }
+
+    private async loadSavedJsonFileFromPathOrAddDefault() {
+        const savedPath = this.storage.get<string | undefined>(SEQUENCER_SAVED_PATH_KEY, undefined)
+
+        if (savedPath) {
+            const file = await this.electron.loadJson<SequencePlan>(savedPath)
+
+            if (file !== false) {
+                return this.loadSavedJsonFile(file)
+            }
+
+            this.message.add({ severity: 'error', detail: `Failed to load the saved Sequence at: ${savedPath}` })
+
+            this.storage.delete(SEQUENCER_SAVED_PATH_KEY)
+        }
+
+        if (!this.loadPlan()) {
+            this.add()
+        }
+    }
+
     updateEntryFromCamera(entry: CameraStartCapture, camera?: Camera) {
-        entry.camera = camera
+        if (camera && (!entry.camera || entry.camera.name === camera.name)) {
+            entry.camera = camera
 
-        if (camera) {
             if (camera.connected) {
-                if (camera.maxX) entry.x = Math.max(camera.minX, Math.min(entry.x, camera.maxX))
-                if (camera.maxY) entry.y = Math.max(camera.minY, Math.min(entry.y, camera.maxY))
+                if (camera.maxX > 1) entry.x = Math.max(camera.minX, Math.min(entry.x, camera.maxX))
+                if (camera.maxY > 1) entry.y = Math.max(camera.minY, Math.min(entry.y, camera.maxY))
 
-                if (camera.maxWidth && (entry.width <= 0 || entry.width > camera.maxWidth)) entry.width = camera.maxWidth
-                if (camera.maxHeight && (entry.height <= 0 || entry.height > camera.maxHeight)) entry.height = camera.maxHeight
+                if (camera.maxWidth > 1 && (entry.width <= 0 || entry.width > camera.maxWidth)) entry.width = camera.maxWidth
+                if (camera.maxHeight > 1 && (entry.height <= 0 || entry.height > camera.maxHeight)) entry.height = camera.maxHeight
 
-                if (camera.maxBinX) entry.binX = Math.max(1, Math.min(entry.binX, camera.maxBinX))
-                if (camera.maxBinY) entry.binY = Math.max(1, Math.min(entry.binY, camera.maxBinY))
+                if (camera.maxBinX > 1) entry.binX = Math.max(1, Math.min(entry.binX, camera.maxBinX))
+                if (camera.maxBinY > 1) entry.binY = Math.max(1, Math.min(entry.binY, camera.maxBinY))
                 if (camera.gainMax) entry.gain = Math.max(camera.gainMin, Math.min(entry.gain, camera.gainMax))
                 if (camera.offsetMax) entry.offset = Math.max(camera.offsetMin, Math.min(entry.offset, camera.offsetMax))
+                if (!entry.frameFormat || !camera.frameFormats.includes(entry.frameFormat)) entry.frameFormat = camera.frameFormats[0]
 
                 this.savePlan()
             }
@@ -228,9 +313,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromWheel(entry: CameraStartCapture, wheel?: FilterWheel) {
-        entry.wheel = wheel
+        if (wheel && (!entry.wheel || entry.wheel.name === wheel.name)) {
+            entry.wheel = wheel
 
-        if (wheel) {
             if (wheel.connected) {
                 this.savePlan()
             }
@@ -244,9 +329,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromFocuser(entry: CameraStartCapture, focuser?: Focuser) {
-        entry.focuser = focuser
+        if (focuser && (!entry.focuser || entry.focuser.name === focuser.name)) {
+            entry.focuser = focuser
 
-        if (focuser) {
             if (focuser.connected) {
                 this.savePlan()
             }
@@ -260,7 +345,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadPlan(plan?: SequencePlan) {
-        plan ??= this.storage.get('sequencer.plan', this.plan)
+        plan ??= this.storage.get(SEQUENCER_PLAN_KEY, this.plan)
 
         Object.assign(this.plan, plan)
 
@@ -304,7 +389,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     savePlan() {
-        this.storage.set('sequencer.plan', this.plan)
+        this.storage.set(SEQUENCER_PLAN_KEY, this.plan)
+        this.savedPathWasModified = !!this.savedPath
     }
 
     deleteEntry(entry: CameraStartCapture, index: number) {

@@ -11,6 +11,10 @@ import { Angle, ComputedLocation, Constellation, Mount, PierSide, SlewRate, Targ
 import { AppComponent } from '../app.component'
 import { SkyAtlasTab } from '../atlas/atlas.component'
 
+export function mountPreferenceKey(mount: Mount) {
+    return `mount.${mount.name}`
+}
+
 export interface MountPreference {
     targetCoordinateType?: TargetCoordinateType
     targetRightAscension?: Angle
@@ -436,7 +440,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     private loadPreference() {
         if (this.mount) {
-            const preference = this.storage.get<MountPreference>(`mount.${this.mount.name}`, {})
+            const preference = this.storage.get<MountPreference>(mountPreferenceKey(this.mount), {})
             this.targetCoordinateType = preference.targetCoordinateType ?? 'JNOW'
             this.targetRightAscension = preference.targetRightAscension ?? '00h00m00s'
             this.targetDeclination = preference.targetDeclination ?? `00°00'00"`
@@ -452,7 +456,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                 targetDeclination: this.targetDeclination,
             }
 
-            this.storage.set(`mount.${this.mount.name}`, preference)
+            this.storage.set(mountPreferenceKey(this.mount), preference)
         }
     }
 }
