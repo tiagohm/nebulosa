@@ -7,13 +7,15 @@ import nebulosa.time.DeltaTime
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import nebulosa.time.TimeYMDHMS
+import java.nio.file.Path
+import kotlin.io.path.inputStream
 import kotlin.math.abs
 
 class StandardDeltaTimeTest : StringSpec() {
 
     init {
         val iersa = IERSA()
-        iersa.load(resource("finals2000A.all")!!)
+        iersa.load(Path.of("../data/finals2000A.all").inputStream())
         IERS.attach(iersa)
 
         "delta" {

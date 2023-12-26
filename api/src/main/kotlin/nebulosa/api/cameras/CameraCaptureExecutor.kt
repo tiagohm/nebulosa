@@ -1,73 +1,65 @@
 package nebulosa.api.cameras
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.sequencer.SequenceJobExecutor
-import nebulosa.api.sequencer.SequenceJobFactory
-import nebulosa.api.services.MessageService
+import nebulosa.api.messages.MessageEvent
+import nebulosa.api.messages.MessageService
+import nebulosa.batch.processing.JobExecution
+import nebulosa.batch.processing.JobLauncher
+import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
-import org.springframework.batch.core.JobExecution
-import org.springframework.batch.core.JobParameters
-import org.springframework.batch.core.configuration.JobRegistry
-import org.springframework.batch.core.configuration.support.ReferenceJobFactory
-import org.springframework.batch.core.launch.JobLauncher
-import org.springframework.batch.core.launch.JobOperator
 import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
 class CameraCaptureExecutor(
-    private val jobOperator: JobOperator,
-    private val asyncJobLauncher: JobLauncher,
-    private val jobRegistry: JobRegistry,
     private val messageService: MessageService,
-    private val sequenceJobFactory: SequenceJobFactory,
-) : SequenceJobExecutor<CameraStartCaptureRequest, CameraSequenceJob>, Consumer<CameraCaptureEvent> {
+    private val guider: Guider,
+    private val jobLauncher: JobLauncher,
+) : Consumer<MessageEvent> {
 
-    private val runningSequenceJobs = LinkedList<CameraSequenceJob>()
+    private val jobExecutions = LinkedList<JobExecution>()
 
     @Synchronized
-    override fun execute(request: CameraStartCaptureRequest): CameraSequenceJob {
+    fun execute(request: CameraStartCaptureRequest) {
         val camera = requireNotNull(request.camera)
 
-        check(!isCapturing(camera)) { "job is already running for camera: [${camera.name}]" }
         check(camera.connected) { "camera is not connected" }
+        check(!isCapturing(camera)) { "job is already running for camera: [${camera.name}]" }
 
-        LOG.info("starting camera capture. data={}", request)
+        LOG.debug { "starting camera capture. request=%s".format(request) }
 
-        val cameraCaptureJob = if (request.isLoop) {
-            sequenceJobFactory.cameraLoopCapture(request, this)
-        } else {
-            sequenceJobFactory.cameraCapture(request, this)
-        }
-
-        return asyncJobLauncher
-            .run(cameraCaptureJob, JobParameters())
-            .let { CameraSequenceJob(camera, request, cameraCaptureJob, it) }
-            .also(runningSequenceJobs::add)
-            .also { jobRegistry.register(ReferenceJobFactory(cameraCaptureJob)) }
+        val cameraCaptureJob = CameraCaptureJob(request, guider)
+        cameraCaptureJob.subscribe(this)
+        jobExecutions.add(jobLauncher.launch(cameraCaptureJob))
     }
 
+    fun findJobExecution(camera: Camera): JobExecution? {
+        for (i in jobExecutions.indices.reversed()) {
+            val jobExecution = jobExecutions[i]
+            val job = jobExecution.job as CameraCaptureJob
+
+            if (!jobExecution.isDone && job.camera === camera) {
+                return jobExecution
+            }
+        }
+
+        return null
+    }
+
+    @Synchronized
     fun stop(camera: Camera) {
-        val jobExecution = jobExecutionFor(camera) ?: return
-        jobOperator.stop(jobExecution.id)
+        val jobExecution = findJobExecution(camera) ?: return
+        jobLauncher.stop(jobExecution)
     }
 
     fun isCapturing(camera: Camera): Boolean {
-        return sequenceJobFor(camera)?.jobExecution?.isRunning ?: false
+        return findJobExecution(camera) != null
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun jobExecutionFor(camera: Camera): JobExecution? {
-        return sequenceJobFor(camera)?.jobExecution
-    }
-
-    override fun accept(event: CameraCaptureEvent) {
+    override fun accept(event: MessageEvent) {
         messageService.sendMessage(event)
-    }
-
-    override fun iterator(): Iterator<CameraSequenceJob> {
-        return runningSequenceJobs.iterator()
     }
 
     companion object {

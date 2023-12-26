@@ -14,9 +14,9 @@
                 <label>Port</label>
             </span>
         </div>
-        <div class="col-2 text-center pr-0">
-            <p-button *ngIf="connected" (onClick)="connect()" icon="mdi mdi-close" severity="danger" />
-            <p-button *ngIf="!connected" (onClick)="connect()" icon="mdi mdi-connection" severity="info" />
+        <div class="col-2 justify-content-center px-0">
+            <p-button *ngIf="connected" (onClick)="connect()" styleClass="p-button-sm" icon="mdi mdi-close" severity="danger" />
+            <p-button *ngIf="!connected" (onClick)="connect()" styleClass="p-button-sm" icon="mdi mdi-connection" severity="info" />
         </div>
     </div>
     <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 112px);">
@@ -56,15 +56,15 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasDome" styleClass="open min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/observatory.png" />
-                <div class="mt-1 text-sm">Dome</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
             <p-button [text]="true" [disabled]="!connected || !hasRotator" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/rotate.png" />
                 <div class="mt-1 text-sm">Rotator</div>
+            </p-button>
+        </div>
+        <div class="col-4 p-1">
+            <p-button [text]="true" [disabled]="!connected || !hasDome" styleClass="open min-w-full w-full px-1 py-2 flex-column">
+                <img src="assets/icons/observatory.png" />
+                <div class="mt-1 text-sm">Dome</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
@@ -87,8 +87,8 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasSequencer" styleClass="open min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/schedule.png" />
+            <p-button [text]="true" (onClick)="open('SEQUENCER')" [disabled]="!connected || !hasSequencer" styleClass="open min-w-full w-full px-1 py-2 flex-column">
+                <img src="assets/icons/workflow.png" />
                 <div class="mt-1 text-sm">Sequencer</div>
             </p-button>
         </div>

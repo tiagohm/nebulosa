@@ -3,10 +3,8 @@ import moment from 'moment'
 import {
     Angle, BodyPosition, CalibrationFrame, CalibrationFrameGroup, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, DetectedStar, Device,
     FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
-    INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
-    ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
-    Mount, PlateSolverOptions, SCNRProtectionMethod, Satellite, SatelliteGroupType,
-    SettleInfo, SkyObjectType, SlewRate, Star, TrackMode, Twilight
+    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, Location, MinorPlanet, Mount, PlateSolverOptions, SCNRProtectionMethod, Satellite, SatelliteGroupType,
+    SequencePlan, SettleInfo, SkyObjectType, SlewRate, Star, TrackMode, Twilight
 } from '../types'
 import { HttpService } from './http.service'
 
@@ -339,24 +337,26 @@ export class ApiService {
         return this.http.delete<void>(`image?${query}`)
     }
 
+    // INDI
+
     indiProperties(device: Device) {
-        return this.http.get<INDIProperty<any>[]>(`indiProperties?name=${device.name}`)
+        return this.http.get<INDIProperty<any>[]>(`indi/${device.name}/properties`)
     }
 
-    sendIndiProperty(device: Device, property: INDISendProperty) {
-        return this.http.post<void>(`sendIndiProperty?name=${device.name}`, property)
+    indiSendProperty(device: Device, property: INDISendProperty) {
+        return this.http.put<void>(`indi/${device.name}/send`, property)
     }
 
-    startListening(eventType: ListeningEventType) {
-        return this.http.post<void>(`startListening?eventType=${eventType}`)
+    indiStartListening(device: Device) {
+        return this.http.put<void>(`indi/listener/${device.name}/start`)
     }
 
-    stopListening(eventType: ListeningEventType) {
-        return this.http.post<void>(`stopListening?eventType=${eventType}`)
+    indiStopListening(device: Device) {
+        return this.http.put<void>(`indi/listener/${device.name}/stop`)
     }
 
     indiLog(device: Device) {
-        return this.http.get<string[]>(`indiLog?name=${device.name}`)
+        return this.http.get<string[]>(`indi/${device.name}/log`)
     }
 
     // LOCATION
@@ -582,13 +582,23 @@ export class ApiService {
     // DARV
 
     darvStart(camera: Camera, guideOutput: GuideOutput,
-        exposureTime: number, initialPause: number, direction: GuideDirection, reversed: boolean = false) {
-        const data = { exposureTime, initialPause, direction, reversed }
+        exposureTime: number, initialPause: number, direction: GuideDirection, reversed: boolean = false, capture?: CameraStartCapture) {
+        const data = { capture, exposureTime, initialPause, direction, reversed }
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
     }
 
     darvStop(camera: Camera, guideOutput: GuideOutput) {
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/stop`)
+    }
+
+    // SEQUENCER
+
+    sequencerStart(plan: SequencePlan) {
+        return this.http.put<void>(`sequencer/start`, plan)
+    }
+
+    sequencerStop() {
+        return this.http.put<void>(`sequencer/stop`)
     }
 
     // SOLVER
@@ -598,14 +608,14 @@ export class ApiService {
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ) {
         const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
-        return this.http.put<ImageCalibrated>(`plate-solver?${query}`)
+        return this.http.put<ImageSolved>(`plate-solver?${query}`)
     }
 
     getPlateSolverSettings() {
         return this.http.get<PlateSolverOptions>('plate-solver/settings')
     }
 
-    setPlateSolverSettings(settings: PlateSolverOptions) {
+    updatePlateSolverSettings(settings: PlateSolverOptions) {
         return this.http.put<void>('plate-solver/settings', settings)
     }
 

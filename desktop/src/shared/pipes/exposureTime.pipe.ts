@@ -25,7 +25,7 @@ export class ExposureTimePipe implements PipeTransform {
 
 function formatter(format: Intl.NumberFormat, unit: string) {
     return function (value: number) {
-        return `${format.format(value)}${unit}`
+        return value ? `${format.format(value)}${unit}` : ''
     }
 }
 

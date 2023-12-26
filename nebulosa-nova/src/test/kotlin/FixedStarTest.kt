@@ -1,7 +1,6 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.io.resource
 import nebulosa.math.*
 import nebulosa.nasa.daf.RemoteDaf
 import nebulosa.nasa.spk.Spk
@@ -12,12 +11,14 @@ import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
+import java.nio.file.Path
+import kotlin.io.path.inputStream
 
 class FixedStarTest : StringSpec() {
 
     init {
         val iersa = IERSA()
-        iersa.load(resource("finals2000A.all")!!)
+        iersa.load(Path.of("../data/finals2000A.all").inputStream())
         IERS.attach(iersa)
 
         "polaris" {

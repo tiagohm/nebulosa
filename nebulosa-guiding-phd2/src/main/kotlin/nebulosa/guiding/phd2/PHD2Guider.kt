@@ -1,5 +1,6 @@
 package nebulosa.guiding.phd2
 
+import nebulosa.common.concurrency.CancellationToken
 import nebulosa.common.concurrency.CountUpDownLatch
 import nebulosa.guiding.*
 import nebulosa.log.loggerFor
@@ -19,7 +20,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
     @Volatile private var shiftRateAxis = ShiftAxesType.RADEC
     @Volatile private var lockPosition = GuidePoint.ZERO
     @Volatile private var starPosition = GuidePoint.ZERO
-    private val listeners = hashSetOf<GuiderListener>()
+    private val listeners = LinkedHashSet<GuiderListener>()
 
     override var pixelScale = 1.0
         private set
@@ -232,14 +233,16 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         }
     }
 
-    override fun waitForSettle() {
+    override fun waitForSettle(cancellationToken: CancellationToken) {
         try {
+            cancellationToken.listen(settling)
             settling.await(settleTimeout)
         } catch (e: InterruptedException) {
             LOG.warn("PHD2 did not send SettleDone message in expected time")
         } catch (e: Throwable) {
             LOG.warn("an error occurrs while waiting for settle done", e)
         } finally {
+            cancellationToken.unlisten(settling)
             settling.reset()
         }
     }

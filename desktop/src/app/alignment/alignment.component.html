@@ -2,14 +2,12 @@
     <div class="grid">
         <div class="col-6">
             <div class="grid">
-                <div class="col-10">
+                <div class="col-12 align-items-center gap-2">
                     <span class="p-float-label">
                         <p-dropdown [disabled]="darvInProgress" [options]="cameras" [(ngModel)]="camera" optionLabel="name"
                                     (ngModelChange)="cameraChanged()" styleClass="p-inputtext-sm border-0" emptyMessage="No camera found" />
                         <label>Camera</label>
                     </span>
-                </div>
-                <div class="col-2">
                     <p-button *ngIf="cameraConnected" [disabled]="!camera || darvInProgress" (onClick)="cameraConnect()" icon="mdi mdi-close"
                               size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
                     <p-button *ngIf="!cameraConnected" [disabled]="!camera || darvInProgress" (onClick)="cameraConnect()" icon="mdi mdi-connection"
@@ -19,15 +17,13 @@
         </div>
         <div class="col-6">
             <div class="grid">
-                <div class="col-10">
+                <div class="col-12 align-items-center gap-2">
                     <span class="p-float-label">
                         <p-dropdown [disabled]="darvInProgress" [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name"
                                     (ngModelChange)="guideOutputChanged()" styleClass="p-inputtext-sm border-0"
                                     emptyMessage="No guide output found" />
                         <label>Guide Output</label>
                     </span>
-                </div>
-                <div class="col-2">
                     <p-button *ngIf="guideOutputConnected" [disabled]="!guideOutput || darvInProgress" (onClick)="guideOutputConnect()"
                               icon="mdi mdi-close" size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
                     <p-button *ngIf="!guideOutputConnected" [disabled]="!guideOutput || darvInProgress" (onClick)="guideOutputConnect()"
@@ -35,7 +31,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm" style="min-height: 25px;">
+        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-sm" style="min-height: 25px;">
             <i class="mdi mdi-information text-blue-600"></i>
             <span style="min-width: 60px" class="text-left mr-2">{{ darvStatus | enum | lowercase }}</span>
             <ng-container *ngIf="darvInProgress">
@@ -43,10 +39,10 @@
                     {{ darvDirection }}
                 </span>
                 <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
-                    {{ darvCapture.remainingTime | exposureTime }}
+                    {{ darvRemainingTime | exposureTime }}
                 </span>
                 <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
-                    {{ darvCapture.progress | percent:'1.1-1' }}
+                    {{ darvProgress | percent:'1.1-1' }}
                 </span>
             </ng-container>
         </div>
@@ -58,19 +54,19 @@
                     <div class="grid mt-2">
                         <div class="col-4">
                             <span class="p-float-label">
-                                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvInitialPause"
+                                <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvInitialPause" [showButtons]="true"
                                                [min]="1" [max]="60" />
                                 <label>Initial pause (s)</label>
                             </span>
                         </div>
                         <div class="col-4">
                             <span class="p-float-label">
-                                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvDrift"
-                                               [min]="1" [max]="600" />
+                                <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvDrift" [showButtons]="true" [min]="1"
+                                               [max]="600" />
                                 <label>Drift for (s)</label>
                             </span>
                         </div>
-                        <div class="col-4 text-center">
+                        <div class="col-4">
                             <span class="p-float-label">
                                 <p-dropdown [options]="darvHemispheres" [(ngModel)]="darvHemisphere" styleClass="p-inputtext-sm border-0"
                                             [autoDisplayFirst]="false" />
@@ -87,7 +83,7 @@
                             <p-button [disabled]="!cameraConnected || !guideOutputConnected || !darvInProgress" label="Abort" (onClick)="darvStop()"
                                       icon="mdi mdi-stop" severity="danger" />
                             <p-button [disabled]="!cameraConnected" (onClick)="openCameraImage()" icon="mdi mdi-image" [text]="true" styleClass="ml-4"
-                                      pTooltip="Open camera's image" tooltipPosition="bottom" />
+                                      pTooltip="View image" tooltipPosition="bottom" />
                         </div>
                     </div>
                 </p-tabPanel>

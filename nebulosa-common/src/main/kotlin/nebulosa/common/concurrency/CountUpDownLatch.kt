@@ -6,15 +6,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.AbstractQueuedSynchronizer
 import kotlin.math.max
 
-class CountUpDownLatch(initialCount: Int = 0) : AtomicBoolean(true) {
+class CountUpDownLatch(initialCount: Int = 0) : AtomicBoolean(initialCount == 0), CancellationListener {
 
     private val sync = Sync(this)
 
     init {
-        if (initialCount > 0) {
-            sync.count = initialCount
-            set(false)
-        }
+        require(initialCount >= 0) { "initialCount < 0: $initialCount" }
+        sync.count = initialCount
     }
 
     val count
@@ -51,6 +49,12 @@ class CountUpDownLatch(initialCount: Int = 0) : AtomicBoolean(true) {
 
     fun await(timeout: Duration, n: Int = 0): Boolean {
         return n >= 0 && sync.tryAcquireSharedNanos(n, timeout.toNanos())
+    }
+
+    override fun accept(source: CancellationSource) {
+        if (source !== CancellationSource.None) {
+            reset()
+        }
     }
 
     private class Sync(private val latch: AtomicBoolean) : AbstractQueuedSynchronizer() {

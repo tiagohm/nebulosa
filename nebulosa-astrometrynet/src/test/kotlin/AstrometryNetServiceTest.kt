@@ -10,16 +10,12 @@ import io.kotest.matchers.string.shouldNotBeBlank
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.nova.Parity
 import nebulosa.astrometrynet.nova.Upload
-import nebulosa.io.resource
-import nebulosa.io.transferAndClose
-import java.nio.file.Files
-import kotlin.io.path.outputStream
+import java.nio.file.Path
 
 class AstrometryNetServiceTest : StringSpec() {
 
     init {
-        val file = Files.createTempFile("nova", ".jpg")
-            .also { resource("ldn673s_block1123.jpg")!!.transferAndClose(it.outputStream()) }
+        val file = Path.of("../data/ldn673s_block1123.jpg")
 
         val service = NovaAstrometryNetService()
 

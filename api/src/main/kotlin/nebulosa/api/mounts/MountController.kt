@@ -3,8 +3,8 @@ package nebulosa.api.mounts
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.beans.annotations.DateAndTime
-import nebulosa.api.beans.annotations.EntityBy
+import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
+import nebulosa.api.beans.converters.time.DateAndTimeParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.Mount
@@ -32,23 +32,23 @@ class MountController(
     }
 
     @GetMapping("{mount}")
-    fun mount(@EntityBy mount: Mount): Mount {
+    fun mount(@DeviceOrEntityParam mount: Mount): Mount {
         return mount
     }
 
     @PutMapping("{mount}/connect")
-    fun connect(@EntityBy mount: Mount) {
+    fun connect(@DeviceOrEntityParam mount: Mount) {
         mountService.connect(mount)
     }
 
     @PutMapping("{mount}/disconnect")
-    fun disconnect(@EntityBy mount: Mount) {
+    fun disconnect(@DeviceOrEntityParam mount: Mount) {
         mountService.disconnect(mount)
     }
 
     @PutMapping("{mount}/tracking")
     fun tracking(
-        @EntityBy mount: Mount,
+        @DeviceOrEntityParam mount: Mount,
         @RequestParam enabled: Boolean,
     ) {
         mountService.tracking(mount, enabled)
@@ -56,7 +56,7 @@ class MountController(
 
     @PutMapping("{mount}/sync")
     fun sync(
-        @EntityBy mount: Mount,
+        @DeviceOrEntityParam mount: Mount,
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
@@ -66,7 +66,7 @@ class MountController(
 
     @PutMapping("{mount}/slew")
     fun slew(
-        @EntityBy mount: Mount,
+        @DeviceOrEntityParam mount: Mount,
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
@@ -76,7 +76,7 @@ class MountController(
 
     @PutMapping("{mount}/goto")
     fun goTo(
-        @EntityBy mount: Mount,
+        @DeviceOrEntityParam mount: Mount,
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
@@ -85,18 +85,18 @@ class MountController(
     }
 
     @PutMapping("{mount}/home")
-    fun home(@EntityBy mount: Mount) {
+    fun home(@DeviceOrEntityParam mount: Mount) {
         mountService.home(mount)
     }
 
     @PutMapping("{mount}/abort")
-    fun abort(@EntityBy mount: Mount) {
+    fun abort(@DeviceOrEntityParam mount: Mount) {
         mountService.abort(mount)
     }
 
     @PutMapping("{mount}/track-mode")
     fun trackMode(
-        @EntityBy mount: Mount,
+        @DeviceOrEntityParam mount: Mount,
         @RequestParam mode: TrackMode,
     ) {
         mountService.trackMode(mount, mode)
@@ -104,7 +104,7 @@ class MountController(
 
     @PutMapping("{mount}/slew-rate")
     fun slewRate(
-        @EntityBy mount: Mount,
+        @DeviceOrEntityParam mount: Mount,
         @RequestParam @Valid @NotBlank rate: String,
     ) {
         mountService.slewRate(mount, mount.slewRates.first { it.name == rate })
@@ -112,7 +112,7 @@ class MountController(
 
     @PutMapping("{mount}/move")
     fun move(
-        @EntityBy mount: Mount,
+        @DeviceOrEntityParam mount: Mount,
         @RequestParam direction: GuideDirection,
         @RequestParam enabled: Boolean,
     ) {
@@ -120,18 +120,18 @@ class MountController(
     }
 
     @PutMapping("{mount}/park")
-    fun park(@EntityBy mount: Mount) {
+    fun park(@DeviceOrEntityParam mount: Mount) {
         mountService.park(mount)
     }
 
     @PutMapping("{mount}/unpark")
-    fun unpark(@EntityBy mount: Mount) {
+    fun unpark(@DeviceOrEntityParam mount: Mount) {
         mountService.unpark(mount)
     }
 
     @PutMapping("{mount}/coordinates")
     fun coordinates(
-        @EntityBy mount: Mount,
+        @DeviceOrEntityParam mount: Mount,
         @RequestParam @Valid @NotBlank longitude: String,
         @RequestParam @Valid @NotBlank latitude: String,
         @RequestParam(required = false, defaultValue = "0.0") elevation: Double,
@@ -141,36 +141,36 @@ class MountController(
 
     @PutMapping("{mount}/datetime")
     fun dateTime(
-        @EntityBy mount: Mount,
-        @DateAndTime dateTime: LocalDateTime,
+        @DeviceOrEntityParam mount: Mount,
+        @DateAndTimeParam dateTime: LocalDateTime,
         @RequestParam @Valid @Range(min = -720, max = 720) offsetInMinutes: Int,
     ) {
         mountService.dateTime(mount, OffsetDateTime.of(dateTime, ZoneOffset.ofTotalSeconds(offsetInMinutes * 60)))
     }
 
     @GetMapping("{mount}/location/zenith")
-    fun zenithLocation(@EntityBy mount: Mount): ComputedLocation {
+    fun zenithLocation(@DeviceOrEntityParam mount: Mount): ComputedLocation {
         return mountService.computeZenithLocation(mount)
     }
 
     @GetMapping("{mount}/location/celestial-pole/north")
-    fun northCelestialPoleLocation(@EntityBy mount: Mount): ComputedLocation {
+    fun northCelestialPoleLocation(@DeviceOrEntityParam mount: Mount): ComputedLocation {
         return mountService.computeNorthCelestialPoleLocation(mount)
     }
 
     @GetMapping("{mount}/location/celestial-pole/south")
-    fun southCelestialPoleLocation(@EntityBy mount: Mount): ComputedLocation {
+    fun southCelestialPoleLocation(@DeviceOrEntityParam mount: Mount): ComputedLocation {
         return mountService.computeSouthCelestialPoleLocation(mount)
     }
 
     @GetMapping("{mount}/location/galactic-center")
-    fun galacticCenterLocation(@EntityBy mount: Mount): ComputedLocation {
+    fun galacticCenterLocation(@DeviceOrEntityParam mount: Mount): ComputedLocation {
         return mountService.computeGalacticCenterLocation(mount)
     }
 
     @GetMapping("{mount}/location")
     fun location(
-        @EntityBy mount: Mount,
+        @DeviceOrEntityParam mount: Mount,
         @RequestParam rightAscension: String,
         @RequestParam declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
@@ -186,7 +186,7 @@ class MountController(
 
     @PutMapping("{mount}/point-here")
     fun pointMountHere(
-        @EntityBy mount: Mount,
+        @DeviceOrEntityParam mount: Mount,
         @RequestParam path: Path,
         @RequestParam @Valid @PositiveOrZero x: Double,
         @RequestParam @Valid @PositiveOrZero y: Double,

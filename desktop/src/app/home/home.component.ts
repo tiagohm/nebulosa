@@ -1,4 +1,5 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import path from 'path'
 import { MenuItem, MessageService } from 'primeng/api'
 import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
 import { DialogMenuComponent } from '../../shared/components/dialogmenu/dialogmenu.component'
@@ -7,6 +8,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
+import { compareDevice } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 type MappedDevice = {
@@ -15,6 +17,9 @@ type MappedDevice = {
     'FOCUSER': Focuser
     'WHEEL': FilterWheel
 }
+
+export const HOME_KEY = 'home'
+export const IMAGE_DIR_KEY = 'home.image.directory'
 
 export interface HomePreference {
     host?: string
@@ -178,7 +183,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     async ngAfterContentInit() {
         this.updateConnection()
 
-        const preference = this.storage.get<HomePreference>('home', {})
+        const preference = this.storage.get<HomePreference>(HOME_KEY, {})
 
         this.host = preference.host ?? 'localhost'
         this.port = preference.port ?? 7624
@@ -204,7 +209,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                     port: this.port,
                 }
 
-                this.storage.set('home', preference)
+                this.storage.set(HOME_KEY, preference)
             }
         } catch (e) {
             console.error(e)
@@ -227,7 +232,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         if (devices.length === 0) return
         if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
 
-        for (const device of devices) {
+        for (const device of [...devices].sort(compareDevice)) {
             this.deviceModel.push({
                 icon: 'mdi mdi-connection',
                 label: device.name,
@@ -259,10 +264,12 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const path = await this.electron.openFITS()
+            const defaultPath = this.storage.get(IMAGE_DIR_KEY, '')
+            const fitsPath = await this.electron.openFITS({ defaultPath })
 
-            if (path) {
-                this.browserWindow.openImage({ path, source: 'PATH' })
+            if (fitsPath) {
+                this.storage.set(IMAGE_DIR_KEY, path.dirname(fitsPath))
+                this.browserWindow.openImage({ path: fitsPath, source: 'PATH' })
             }
         } else {
             const camera = await this.imageMenu.show(this.cameras)
@@ -285,13 +292,16 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 this.browserWindow.openGuider({ bringToFront: true })
                 break
             case 'SKY_ATLAS':
-                this.browserWindow.openSkyAtlas({ bringToFront: true })
+                this.browserWindow.openSkyAtlas({ bringToFront: true, data: undefined })
                 break
             case 'FRAMING':
                 this.browserWindow.openFraming({ bringToFront: true, data: undefined })
                 break
             case 'ALIGNMENT':
                 this.browserWindow.openAlignment({ bringToFront: true })
+                break
+            case 'SEQUENCER':
+                this.browserWindow.openSequencer({ bringToFront: true })
                 break
             case 'INDI':
                 this.browserWindow.openINDI({ data: undefined, bringToFront: true })
@@ -313,7 +323,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             this.connected = await this.api.connectionStatus()
         } catch {
             this.connected = false
+        }
 
+        if (!this.connected) {
             this.cameras = []
             this.mounts = []
             this.focusers = []

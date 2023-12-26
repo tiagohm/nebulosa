@@ -2,7 +2,7 @@ package nebulosa.api.focusers
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.beans.annotations.EntityBy
+import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.focuser.Focuser
 import org.springframework.web.bind.annotation.*
@@ -20,23 +20,23 @@ class FocuserController(
     }
 
     @GetMapping("{focuser}")
-    fun focuser(@EntityBy focuser: Focuser): Focuser {
+    fun focuser(@DeviceOrEntityParam focuser: Focuser): Focuser {
         return focuser
     }
 
     @PutMapping("{focuser}/connect")
-    fun connect(@EntityBy focuser: Focuser) {
+    fun connect(@DeviceOrEntityParam focuser: Focuser) {
         focuserService.connect(focuser)
     }
 
     @PutMapping("{focuser}/disconnect")
-    fun disconnect(@EntityBy focuser: Focuser) {
+    fun disconnect(@DeviceOrEntityParam focuser: Focuser) {
         focuserService.disconnect(focuser)
     }
 
     @PutMapping("{focuser}/move-in")
     fun moveIn(
-        @EntityBy focuser: Focuser,
+        @DeviceOrEntityParam focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
         focuserService.moveIn(focuser, steps)
@@ -44,7 +44,7 @@ class FocuserController(
 
     @PutMapping("{focuser}/move-out")
     fun moveOut(
-        @EntityBy focuser: Focuser,
+        @DeviceOrEntityParam focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
         focuserService.moveOut(focuser, steps)
@@ -52,20 +52,20 @@ class FocuserController(
 
     @PutMapping("{focuser}/move-to")
     fun moveTo(
-        @EntityBy focuser: Focuser,
+        @DeviceOrEntityParam focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
         focuserService.moveTo(focuser, steps)
     }
 
     @PutMapping("{focuser}/abort")
-    fun abort(@EntityBy focuser: Focuser) {
+    fun abort(@DeviceOrEntityParam focuser: Focuser) {
         focuserService.abort(focuser)
     }
 
     @PutMapping("{focuser}/sync")
     fun sync(
-        @EntityBy focuser: Focuser,
+        @DeviceOrEntityParam focuser: Focuser,
         @RequestParam @Valid @PositiveOrZero steps: Int,
     ) {
         focuserService.sync(focuser, steps)

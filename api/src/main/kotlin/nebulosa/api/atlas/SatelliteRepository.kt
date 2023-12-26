@@ -5,10 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @Repository
-@Transactional(readOnly = false, isolation = Isolation.SERIALIZABLE)
+@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
 interface SatelliteRepository : JpaRepository<SatelliteEntity, Long> {
 
     @Query(
@@ -17,7 +18,7 @@ interface SatelliteRepository : JpaRepository<SatelliteEntity, Long> {
                 " (:groupType = 0 OR s.group_type & :groupType != 0)",
         nativeQuery = true,
     )
-    @Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
+    @Transactional(readOnly = true)
     fun search(text: String? = null, groupType: Long = 0L, page: Pageable): List<SatelliteEntity>
 
     fun search(text: String? = null, groups: List<SatelliteGroupType>, page: Pageable): List<SatelliteEntity> {

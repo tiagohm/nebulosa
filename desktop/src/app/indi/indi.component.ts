@@ -4,6 +4,7 @@ import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
+import { compareDevice, compareText } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -30,8 +31,6 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         ngZone: NgZone,
     ) {
         app.title = 'INDI'
-
-        this.api.startListening('INDI')
 
         electron.on('DEVICE_PROPERTY_CHANGED', event => {
             ngZone.run(() => {
@@ -62,7 +61,11 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
     async ngAfterViewInit() {
         this.route.queryParams.subscribe(e => {
-            this.device = JSON.parse(decodeURIComponent(e.data)) as Device
+            const device = JSON.parse(decodeURIComponent(e.data))
+
+            if ("name" in device && device.name) {
+                this.device = device
+            }
         })
 
         this.devices = [
@@ -70,17 +73,28 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
             ...await this.api.mounts(),
             ...await this.api.focusers(),
             ...await this.api.wheels(),
-        ]
+        ].sort(compareDevice)
+
+        this.device = this.devices[0]
     }
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.api.stopListening('INDI')
+        if (this.device) {
+            this.api.indiStopListening(this.device)
+        }
     }
 
-    async deviceChanged() {
+    async deviceChanged(device: Device) {
+        if (this.device) {
+            this.api.indiStopListening(this.device)
+        }
+
+        this.device = device
+
         this.updateProperties()
-        this.messages = await this.api.indiLog(this.device!)
+        this.api.indiStartListening(device)
+        this.messages = await this.api.indiLog(device)
     }
 
     changeGroup(group: string) {
@@ -89,7 +103,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
     }
 
     send(property: INDISendProperty) {
-        this.api.sendIndiProperty(this.device!, property)
+        this.api.indiSendProperty(this.device!, property)
     }
 
     private updateGroups() {
@@ -116,7 +130,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
         if (this.groups.length === 0 || groupsChanged) {
             this.groups = Array.from(groups)
-                .sort((a, b) => a.localeCompare(b))
+                .sort(compareText)
                 .map(e => <MenuItem>{
                     icon: 'mdi mdi-sitemap',
                     label: e,

@@ -4,6 +4,7 @@ import { FramingData } from '../../app/framing/framing.component'
 import { ImageData } from '../../app/image/image.component'
 import { Camera, Device, FilterWheel, Focuser, Mount, OpenWindow, OpenWindowOptions } from '../types'
 import { ElectronService } from './electron.service'
+import { SkyAtlasData } from '../../app/atlas/atlas.component'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
@@ -24,7 +25,7 @@ export class BrowserWindowService {
     openCamera(options: OpenWindowOptions<Camera>) {
         options.icon ||= 'camera'
         options.width ||= 400
-        options.height ||= 478
+        options.height ||= 486
         this.openWindow({ ...options, id: `camera.${options.data.name}`, path: 'camera' })
     }
 
@@ -45,7 +46,7 @@ export class BrowserWindowService {
     openGuider(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'guider'
         options.width ||= 425
-        options.height ||= 440
+        options.height ||= 450
         this.openWindow({ ...options, id: 'guider', path: 'guider', data: undefined })
     }
 
@@ -71,11 +72,11 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'indi', path: 'indi' })
     }
 
-    openSkyAtlas(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
+    openSkyAtlas(options: OpenWindowOptions<SkyAtlasData | undefined>) {
         options.icon ||= 'atlas'
         options.width ||= 450
         options.height ||= 523
-        this.openWindow({ ...options, id: 'atlas', path: 'atlas', data: undefined })
+        this.openWindow({ ...options, id: 'atlas', path: 'atlas' })
     }
 
     openFraming(options: OpenWindowOptions<FramingData | undefined>) {
@@ -87,9 +88,17 @@ export class BrowserWindowService {
 
     openAlignment(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'star'
-        options.width ||= 470
+        options.width ||= 400
         options.height ||= 280
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
+    }
+
+    openSequencer(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
+        options.icon ||= 'workflow'
+        options.width ||= 630
+        options.height ||= 570
+        options.resizable = true
+        this.openWindow({ ...options, id: 'sequencer', path: 'sequencer', data: undefined })
     }
 
     openSettings(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
@@ -102,11 +111,11 @@ export class BrowserWindowService {
     openCalibration(options: OpenWindowOptions<Camera>) {
         options.icon ||= 'stack'
         options.width ||= 510
-        options.height ||= 526
+        options.height ||= 508
         this.openWindow({ ...options, id: 'calibration', path: 'calibration' })
     }
 
     openAbout() {
-        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 340, height: 243, bringToFront: true, data: undefined })
+        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 480, height: 252, bringToFront: true, data: undefined })
     }
 }

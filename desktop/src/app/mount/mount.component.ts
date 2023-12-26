@@ -2,12 +2,18 @@ import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@a
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
+import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Angle, ComputedLocation, Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode, Union } from '../../shared/types'
 import { AppComponent } from '../app.component'
+import { SkyAtlasTab } from '../atlas/atlas.component'
+
+export function mountPreferenceKey(mount: Mount) {
+    return `mount.${mount.name}`
+}
 
 export interface MountPreference {
     targetCoordinateType?: TargetCoordinateType
@@ -35,6 +41,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     tracking = false
     canPark = false
     canHome = false
+    slewingDirection?: string
 
     rightAscensionJ2000: Angle = '00h00m00s'
     declinationJ2000: Angle = `00°00'00"`
@@ -59,6 +66,47 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     private readonly computeTargetCoordinatePublisher = new Subject<void>()
     private computeCoordinateSubscriptions: Subscription[] = []
     private readonly moveToDirection = [false, false]
+
+    readonly ephemerisModel: MenuItem[] = [
+        {
+            icon: 'mdi mdi-image',
+            label: 'Frame',
+            command: () => {
+                this.browserWindow.openFraming({ data: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } })
+            },
+        },
+        SEPARATOR_MENU_ITEM,
+        {
+            icon: 'mdi mdi-magnify',
+            label: 'Find stars around the coordinates',
+            command: () => {
+                this.browserWindow.openSkyAtlas({
+                    bringToFront: true,
+                    data: { tab: SkyAtlasTab.STAR, filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } }
+                })
+            },
+        },
+        {
+            icon: 'mdi mdi-magnify',
+            label: 'Find DSOs around the coordinates',
+            command: () => {
+                this.browserWindow.openSkyAtlas({
+                    bringToFront: true,
+                    data: { tab: SkyAtlasTab.DSO, filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } }
+                })
+            },
+        },
+        {
+            icon: 'mdi mdi-magnify',
+            label: 'Find around the coordinates on Simbad',
+            command: () => {
+                this.browserWindow.openSkyAtlas({
+                    bringToFront: true,
+                    data: { tab: SkyAtlasTab.SIMBAD, filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } }
+                })
+            },
+        },
+    ]
 
     readonly targetCoordinateModel: MenuItem[] = [
         {
@@ -156,13 +204,19 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     ) {
         app.title = 'Mount'
 
-        api.startListening('MOUNT')
-
         electron.on('MOUNT_UPDATED', event => {
             if (event.device.name === this.mount?.name) {
                 ngZone.run(() => {
                     Object.assign(this.mount!, event.device)
                     this.update()
+                })
+            }
+        })
+
+        electron.on('MOUNT_DETACHED', event => {
+            if (event.device.name === this.mount?.name) {
+                ngZone.run(() => {
+                    this.connected = false
                 })
             }
         })
@@ -195,8 +249,6 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
         this.computeCoordinateSubscriptions
             .forEach(e => e.unsubscribe())
-
-        this.api.stopListening('MOUNT')
     }
 
     async mountChanged(mount?: Mount) {
@@ -250,6 +302,8 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     moveTo(direction: string, pressed: boolean, event: MouseEvent) {
         if (event.button === 0) {
+            this.slewingDirection = pressed ? direction : undefined
+
             if (this.moveToDirection[0] !== pressed) {
                 switch (direction[0]) {
                     case 'N':
@@ -326,7 +380,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    private async update() {
+    private update() {
         if (this.mount) {
             this.connected = this.mount.connected
             this.slewing = this.mount.slewing
@@ -386,7 +440,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     private loadPreference() {
         if (this.mount) {
-            const preference = this.storage.get<MountPreference>(`mount.${this.mount.name}`, {})
+            const preference = this.storage.get<MountPreference>(mountPreferenceKey(this.mount), {})
             this.targetCoordinateType = preference.targetCoordinateType ?? 'JNOW'
             this.targetRightAscension = preference.targetRightAscension ?? '00h00m00s'
             this.targetDeclination = preference.targetDeclination ?? `00°00'00"`
@@ -402,7 +456,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                 targetDeclination: this.targetDeclination,
             }
 
-            this.storage.set(`mount.${this.mount.name}`, preference)
+            this.storage.set(mountPreferenceKey(this.mount), preference)
         }
     }
 }

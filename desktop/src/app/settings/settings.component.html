@@ -19,7 +19,7 @@
                     <label>Location</label>
                 </span>
             </div>
-            <div class="col-4 flex align-items-center gap-1">
+            <div class="col-4 gap-1">
                 <p-button (onClick)="addLocation()" icon="mdi mdi-plus" size="small" severity="success" />
                 <p-button (onClick)="editLocation()" icon="mdi mdi-pencil" size="small" severity="info" />
                 <p-button [disabled]="locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
@@ -27,13 +27,13 @@
             </div>
         </div>
         <div *ngIf="item === items[1]" class="grid p-2">
-            <div class="col-5 md:col-4 lg:col-3">
+            <div class="col-5 md:col-4 lg:col-2">
                 <span class="p-float-label">
                     <p-dropdown [options]="plateSolvers" [(ngModel)]="plateSolver.type" styleClass="p-inputtext-sm border-0" />
                     <label>Type</label>
                 </span>
             </div>
-            <div class="col-7">
+            <div class="col-7 md:col-6 lg:col-3">
                 <span class="p-float-label">
                     <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.executablePath" />
                     <label>Executable path</label>

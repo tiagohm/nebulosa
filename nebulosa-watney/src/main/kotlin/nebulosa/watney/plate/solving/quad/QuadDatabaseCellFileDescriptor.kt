@@ -4,7 +4,6 @@ import nebulosa.erfa.SphericalCoordinate
 import nebulosa.io.ByteOrder
 import nebulosa.io.readFloat
 import nebulosa.io.readInt
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg

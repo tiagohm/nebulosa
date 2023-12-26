@@ -15,11 +15,14 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { PrimeService } from '../../shared/services/prime.service'
 import {
     Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, DetectedStar, EquatorialCoordinateJ2000, FITSHeaderItem,
-    ImageAnnotation, ImageCalibrated, ImageChannel, ImageInfo, ImageSource,
-    Mount, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
+    ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, Mount, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
 } from '../../shared/types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
+
+export function imagePreferenceKey(camera?: Camera) {
+    return camera ? `image.${camera.name}` : 'image'
+}
 
 export interface ImagePreference {
     solverRadius?: number
@@ -83,7 +86,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solverCenterRA = ''
     solverCenterDEC = ''
     solverRadius = 4
-    solverCalibration?: ImageCalibrated
+    solverData?: ImageSolved
 
     crossHair = false
     annotations: ImageAnnotation[] = []
@@ -115,7 +118,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Save as...',
         icon: 'mdi mdi-content-save',
         command: async () => {
-            const path = await this.electron.send('SAVE_FITS_AS')
+            const path = await this.electron.send('SAVE_FITS')
             if (path) this.api.saveImageAs(this.imageData.path!, path)
         },
     }
@@ -357,12 +360,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Image'
 
-        electron.on('CAMERA_EXPOSURE_FINISHED', async (event) => {
-            if (event.camera.name === this.imageData.camera?.name) {
+        electron.on('CAMERA_CAPTURE_ELAPSED', async (event) => {
+            if (event.state === 'EXPOSURE_FINISHED' && event.camera.name === this.imageData.camera?.name) {
                 await this.closeImage()
 
                 ngZone.run(() => {
                     this.imageData.path = event.savePath
+                    this.clearOverlay()
                     this.loadImage()
                 })
             }
@@ -456,11 +460,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.disableAutoStretch()
         }
 
-        this.calibrateMenuItem.disabled = !data.camera
-
         if (!data.camera) {
             this.disableCalibrate()
         }
+
+        this.clearOverlay()
 
         this.loadImage()
     }
@@ -477,8 +481,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private async loadImage() {
         if (this.imageData.path) {
-            this.clearOverlay()
-
             await this.loadImageFromPath(this.imageData.path)
         }
 
@@ -516,8 +518,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.stretchMidtone = Math.trunc(info.stretchMidtone * 65536)
         }
 
-        this.annotationMenuItem.disabled = !info.calibrated
-        this.pointMountHereMenuItem.disabled = !info.calibrated
+        this.annotationMenuItem.disabled = !info.solved
+        this.pointMountHereMenuItem.disabled = !info.solved
         this.fitsHeaders = info.headers
 
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
@@ -620,7 +622,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solving = true
 
         try {
-            this.solverCalibration = await this.api.solveImage(this.imageData.path!, this.solverBlind,
+            this.solverData = await this.api.solveImage(this.imageData.path!, this.solverBlind,
                 this.solverCenterRA, this.solverCenterDEC, this.solverRadius)
 
             this.savePreference()
@@ -630,7 +632,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.pointMountHereMenuItem.disabled = false
         } catch {
             this.solved = false
-            this.solverCalibration = undefined
+            this.solverData = undefined
             this.annotationMenuItem.disabled = true
             this.pointMountHereMenuItem.disabled = true
         } finally {
@@ -658,7 +660,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     frame(coordinate: EquatorialCoordinateJ2000) {
-        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000 } })
+        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000, fov: this.solverData!.width / 60, rotation: this.solverData!.orientation } })
     }
 
     imageLoaded() {
@@ -682,14 +684,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadPreference(camera?: Camera) {
-        let preference: ImagePreference
-
-        if (camera) {
-            preference = this.storage.get<ImagePreference>(`image.${camera.name}`, {})
-        } else {
-            preference = this.storage.get<ImagePreference>('image', {})
-        }
-
+        const preference = this.storage.get<ImagePreference>(imagePreferenceKey(camera), {})
         this.solverRadius = preference.solverRadius ?? this.solverRadius
     }
 
@@ -698,11 +693,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             solverRadius: this.solverRadius
         }
 
-        if (this.imageData.camera) {
-            this.storage.set(`image.${this.imageData.camera.name}`, preference)
-        } else {
-            this.storage.set('image', preference)
-        }
+        this.storage.set(imagePreferenceKey(this.imageData.camera), preference)
     }
 
     private async executeMount(action: (mount: Mount) => void) {

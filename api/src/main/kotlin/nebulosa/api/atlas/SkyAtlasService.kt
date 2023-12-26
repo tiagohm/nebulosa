@@ -241,7 +241,7 @@ class SkyAtlasService(
         .search(SimbadSearch(0, text, rightAscension, declination, radius, type?.let(::listOf), magnitudeMin, magnitudeMax, constellation, 5000))
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
-    private fun refreshImageOfSun() {
+    protected fun refreshImageOfSun() {
         val request = Request.Builder()
             .url(SUN_IMAGE_URL)
             .build()
