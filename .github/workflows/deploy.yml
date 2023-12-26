@@ -55,7 +55,7 @@ jobs:
           node-version: 20
 
       - name: Download API
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: api-${{ github.sha }}
           path: desktop
