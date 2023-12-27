@@ -3,7 +3,7 @@
         <div class="col-6">
             <div class="grid">
                 <div class="col-12 align-items-center gap-2">
-                    <span class="p-float-label">
+                    <span class="p-float-label device">
                         <p-dropdown [disabled]="darvInProgress" [options]="cameras" [(ngModel)]="camera" optionLabel="name"
                                     (ngModelChange)="cameraChanged()" styleClass="p-inputtext-sm border-0" emptyMessage="No camera found" />
                         <label>Camera</label>
@@ -18,7 +18,7 @@
         <div class="col-6">
             <div class="grid">
                 <div class="col-12 align-items-center gap-2">
-                    <span class="p-float-label">
+                    <span class="p-float-label device">
                         <p-dropdown [disabled]="darvInProgress" [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name"
                                     (ngModelChange)="guideOutputChanged()" styleClass="p-inputtext-sm border-0"
                                     emptyMessage="No guide output found" />

@@ -180,7 +180,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     darvAltitude() {
-        this.darvStart('EAST') // TODO: NORTH não é usado?
+        this.darvStart('NORTH') // TODO: NORTH não é usado?
     }
 
     darvStop() {
