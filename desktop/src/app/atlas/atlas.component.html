@@ -84,9 +84,9 @@
                     </p-table>
                 </div>
             </p-tabPanel>
-            <p-tabPanel header="Sky Object" [disabled]="refreshing">
+            <p-tabPanel header="Sky Objects" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="Sky Object" tooltipPosition="bottom">
+                    <div class="p-3" pTooltip="Sky Objects on Simbad" tooltipPosition="bottom">
                         <img src="assets/icons/online-search.png">
                     </div>
                 </ng-template>
@@ -170,7 +170,7 @@
     </div>
 </div>
 <div class="grid px-2 fixed bottom-0" style="height: 212px;">
-    <p-tabView [style]="{height: '258px', width: '100vw'}">
+    <p-tabView [style]="{height: '258px', width: '100vw'}" styleClass="info">
         <p-tabPanel leftIcon="mdi mdi-information">
             <div class="grid pt-3 px-3 flex-row justify-content-center">
                 <div class="col-12">

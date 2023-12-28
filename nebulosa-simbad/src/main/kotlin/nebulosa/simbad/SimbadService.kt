@@ -82,14 +82,14 @@ class SimbadService(
             var magnitude = row.getField("V").toDoubleOrNull()
                 ?: row.getField("B").toDoubleOrNull()
                 ?: row.getField("U").toDoubleOrNull()
-                ?: SkyObject.UNKNOWN_MAGNITUDE
+                ?: SkyObject.MAGNITUDE_MAX
 
-            if (magnitude >= SkyObject.UNKNOWN_MAGNITUDE || !magnitude.isFinite()) {
-                magnitude = min(magnitude, row.getField("R").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                magnitude = min(magnitude, row.getField("I").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                magnitude = min(magnitude, row.getField("J").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                magnitude = min(magnitude, row.getField("H").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                magnitude = min(magnitude, row.getField("K").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+            if (magnitude >= SkyObject.MAGNITUDE_MAX || !magnitude.isFinite()) {
+                magnitude = min(magnitude, row.getField("R").toDoubleOrNull() ?: SkyObject.MAGNITUDE_MAX)
+                magnitude = min(magnitude, row.getField("I").toDoubleOrNull() ?: SkyObject.MAGNITUDE_MAX)
+                magnitude = min(magnitude, row.getField("J").toDoubleOrNull() ?: SkyObject.MAGNITUDE_MAX)
+                magnitude = min(magnitude, row.getField("H").toDoubleOrNull() ?: SkyObject.MAGNITUDE_MAX)
+                magnitude = min(magnitude, row.getField("K").toDoubleOrNull() ?: SkyObject.MAGNITUDE_MAX)
             }
 
             val distance = if (parallax > 0.0) (1000.0 * ONE_PARSEC) / parallax else 0.0 // AU

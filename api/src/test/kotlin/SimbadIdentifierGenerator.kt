@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 object SimbadIdentifierGenerator {
 
-    @JvmStatic private val SIMBAD_IDS_PATH = Path.of("data/simbad.ids")
+    @JvmStatic private val SIMBAD_IDS_PATH = Path.of("data", "simbad.ids")
 
     @JvmStatic private val LOG = loggerFor<SimbadIdentifierGenerator>()
 
@@ -81,13 +81,15 @@ object SimbadIdentifierGenerator {
         fun extractNames(text: String): Set<String> {
             names.clear()
 
-            val ids = text.split("|")
+            val ids = text.split("|").toMutableList()
 
             for (entry in SimbadCatalogType.entries) {
                 val namesIterator = ids.iterator()
 
                 while (namesIterator.hasNext()) {
                     val name = entry.match(namesIterator.next()) ?: continue
+
+                    namesIterator.remove()
 
                     if (names.add(name)) {
                         if (name in CALDWELL) {

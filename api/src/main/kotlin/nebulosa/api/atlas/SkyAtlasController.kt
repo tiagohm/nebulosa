@@ -12,6 +12,7 @@ import nebulosa.math.hours
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObjectType
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @RestController
@@ -34,9 +35,9 @@ class SkyAtlasController(
     @GetMapping("sun/altitude-points")
     fun altitudePointsOfSun(
         @DeviceOrEntityParam location: LocationEntity,
-        @DateAndTimeParam dateTime: LocalDateTime,
+        @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfSun(location, dateTime.toLocalDate(), stepSize)
+    ) = skyAtlasService.altitudePointsOfSun(location, dateTime, stepSize)
 
     @GetMapping("moon/position")
     fun positionOfMoon(
@@ -47,9 +48,9 @@ class SkyAtlasController(
     @GetMapping("moon/altitude-points")
     fun altitudePointsOfMoon(
         @DeviceOrEntityParam location: LocationEntity,
-        @DateAndTimeParam dateTime: LocalDateTime,
+        @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfMoon(location, dateTime.toLocalDate(), stepSize)
+    ) = skyAtlasService.altitudePointsOfMoon(location, dateTime, stepSize)
 
     @GetMapping("planets/{code}/position")
     fun positionOfPlanet(
@@ -62,9 +63,9 @@ class SkyAtlasController(
     fun altitudePointsOfPlanet(
         @PathVariable code: String,
         @DeviceOrEntityParam location: LocationEntity,
-        @DateAndTimeParam dateTime: LocalDateTime,
+        @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfPlanet(location, code, dateTime.toLocalDate(), stepSize)
+    ) = skyAtlasService.altitudePointsOfPlanet(location, code, dateTime, stepSize)
 
     @GetMapping("minor-planets")
     fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String) = skyAtlasService.searchMinorPlanet(text)
@@ -80,9 +81,9 @@ class SkyAtlasController(
     fun altitudePointsOfSkyObject(
         @PathVariable id: Long,
         @DeviceOrEntityParam location: LocationEntity,
-        @DateAndTimeParam dateTime: LocalDateTime,
+        @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfSkyObject(location, id, dateTime.toLocalDate(), stepSize)
+    ) = skyAtlasService.altitudePointsOfSkyObject(location, id, dateTime, stepSize)
 
     @GetMapping("sky-objects")
     fun searchSkyObject(
@@ -113,9 +114,9 @@ class SkyAtlasController(
     fun altitudePointsOfSatellite(
         @DeviceOrEntityParam satellite: SatelliteEntity,
         @DeviceOrEntityParam location: LocationEntity,
-        @DateAndTimeParam dateTime: LocalDateTime,
+        @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfSatellite(location, satellite, dateTime.toLocalDate(), stepSize)
+    ) = skyAtlasService.altitudePointsOfSatellite(location, satellite, dateTime, stepSize)
 
     @GetMapping("satellites")
     fun searchSatellites(
@@ -126,6 +127,6 @@ class SkyAtlasController(
     @GetMapping("twilight")
     fun twilight(
         @DeviceOrEntityParam location: LocationEntity,
-        @DateAndTimeParam dateTime: LocalDateTime,
-    ) = skyAtlasService.twilight(location, dateTime.toLocalDate())
+        @DateAndTimeParam dateTime: LocalDate,
+    ) = skyAtlasService.twilight(location, dateTime)
 }

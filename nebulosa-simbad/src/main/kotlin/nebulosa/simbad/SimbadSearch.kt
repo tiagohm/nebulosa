@@ -14,8 +14,8 @@ data class SimbadSearch(
     internal val declination: Angle = 0.0,
     internal val radius: Angle = 0.0,
     internal val types: List<SkyObjectType>? = null,
-    internal val magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE,
-    internal val magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
+    internal val magnitudeMin: Double = -SkyObject.MAGNITUDE_MIN,
+    internal val magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
     internal val constellation: Constellation? = null,
     internal val ids: LongArray = LongArray(0),
     internal val lastID: Long = NO_ID,
@@ -43,8 +43,8 @@ data class SimbadSearch(
         internal var declination: Angle = 0.0
         internal var radius: Angle = 0.0
         internal val types: MutableList<SkyObjectType> = ArrayList()
-        internal var magnitudeMin = -SkyObject.UNKNOWN_MAGNITUDE
-        internal var magnitudeMax = SkyObject.UNKNOWN_MAGNITUDE
+        internal var magnitudeMin = -SkyObject.MAGNITUDE_MIN
+        internal var magnitudeMax = SkyObject.MAGNITUDE_MAX
         internal var constellation: Constellation? = null
         internal var ids = LongArray(0)
         internal var lastID = 0L
@@ -66,7 +66,7 @@ data class SimbadSearch(
 
         fun types(types: Iterable<SkyObjectType>) = apply { this.types.addAll(types) }
 
-        fun noMagnitude() = apply { magnitude(NO_MAGNITUDE_RANGE) }
+        fun noMagnitude() = apply { magnitude(SkyObject.MAGNITUDE_RANGE) }
 
         fun magnitudeMin(magnitudeMin: Double) = apply { this.magnitudeMin = magnitudeMin }
 
@@ -96,6 +96,5 @@ data class SimbadSearch(
     companion object {
 
         const val NO_ID = -1L
-        @JvmStatic val NO_MAGNITUDE_RANGE = -SkyObject.UNKNOWN_MAGNITUDE..SkyObject.UNKNOWN_MAGNITUDE
     }
 }

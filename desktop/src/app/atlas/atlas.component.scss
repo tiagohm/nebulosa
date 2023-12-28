@@ -5,17 +5,20 @@
 
     ::ng-deep {
         .main.p-tabview {
+            padding-left: 0.21rem;
+            padding-right: 0.21rem;
+
             p-table.planet .p-datatable-wrapper {
                 height: calc(100vh - 301px);
             }
 
             p-table.minorPlanet .p-datatable-wrapper {
-                height: calc(100vh - 341px);
+                height: calc(100vh - 343px);
             }
 
             p-table.skyObject .p-datatable-wrapper,
             p-table.satellite .p-datatable-wrapper {
-                height: calc(100vh - 387px);
+                height: calc(100vh - 389px);
             }
 
             .p-tabview-nav li {
@@ -32,6 +35,11 @@
                     }
                 }
             }
+        }
+
+        .info.p-tabview {
+            padding-left: 0.21rem;
+            padding-right: 0.21rem;
         }
 
         .p-tabview .p-tabview-left-icon {

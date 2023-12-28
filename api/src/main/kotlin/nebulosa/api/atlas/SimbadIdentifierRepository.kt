@@ -16,7 +16,7 @@ class SimbadIdentifierRepository(@Qualifier("simbadIdentifierBox") override val 
                 if (name.startsWith("%") && name.endsWith("%")) it.contains(SimbadIdentifierEntity_.name, name.replace("%", ""), CASE_INSENSITIVE)
                 else if (name.endsWith("%")) it.startsWith(SimbadIdentifierEntity_.name, name.replace("%", ""), CASE_INSENSITIVE)
                 else if (name.startsWith("%")) it.endsWith(SimbadIdentifierEntity_.name, name.replace("%", ""), CASE_INSENSITIVE)
-                else it.equal(SimbadIdentifierEntity_.name, name, CASE_INSENSITIVE)
+                else it.contains(SimbadIdentifierEntity_.name, name, CASE_INSENSITIVE)
             }
             .build()
             .use { it.find() }

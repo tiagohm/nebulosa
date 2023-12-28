@@ -13,6 +13,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.Temporal
 
 @Component
 class DateAndTimeParamMethodArgumentResolver : HandlerMethodArgumentResolver {
@@ -26,8 +27,9 @@ class DateAndTimeParamMethodArgumentResolver : HandlerMethodArgumentResolver {
         mavContainer: ModelAndViewContainer?,
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?,
-    ): Any? {
+    ): Temporal? {
         val dateAndTimeParam = parameter.annotation<DateAndTimeParam>()!!
+        val type = parameter.parameterType
 
         val dateValue = webRequest.parameter("date")
         val timeValue = webRequest.parameter("time")
@@ -36,9 +38,13 @@ class DateAndTimeParamMethodArgumentResolver : HandlerMethodArgumentResolver {
             ?.let { LocalDate.parse(it, DateTimeFormatter.ofPattern(dateAndTimeParam.datePattern)) }
             ?: LocalDate.now()
 
+        if (type === LocalDate::class.java) return date
+
         val time = timeValue?.ifBlank { null }
             ?.let { LocalTime.parse(it, DateTimeFormatter.ofPattern(dateAndTimeParam.timePattern)) }
             ?: LocalTime.now()
+
+        if (type === LocalTime::class.java) return time
 
         return LocalDateTime.of(date, time)
             .let { if (dateAndTimeParam.noSeconds) it.withSecond(0).withNano(0) else it }

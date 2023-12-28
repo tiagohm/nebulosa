@@ -51,7 +51,7 @@ class SkyAtlasService(
     private val cachedSimbadEntries = HashMap<Long, SimbadEntry>()
     @Volatile private var sunImage = ByteArray(0)
 
-    val objectTypes by lazy { SkyObjectType.entries }
+    val objectTypes: List<SkyObjectType> = SkyObjectType.entries
 
     fun imageOfSun(output: HttpServletResponse) {
         output.contentType = "image/png"
@@ -181,7 +181,7 @@ class SkyAtlasService(
         text: String? = null,
         rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
         constellation: Constellation? = null,
-        magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
+        magnitudeMin: Double = SkyObject.MAGNITUDE_MIN, magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
         type: SkyObjectType? = null,
     ): List<SimbadEntry> {
         require(text.isNullOrBlank() || text.length >= 3) { "invalid text" }
@@ -190,14 +190,23 @@ class SkyAtlasService(
             LongArray(0)
         } else {
             synchronized(simbadIdentifierRepository) {
-                val identifiers = simbadIdentifierRepository.findByName(text.replace(INVALID_DSO_CHARS, ""))
-                LOG.info("found {} identifiers for {}", identifiers.size, text)
+                val name = text.replace(INVALID_DSO_CHARS, "")
+                val identifiers = simbadIdentifierRepository.findByName(name)
+                LOG.info("found {} identifiers for {}", identifiers.size, name)
+                if (identifiers.isEmpty()) return emptyList()
                 LongArray(identifiers.size) { identifiers[it].simbadId }
             }
         }
 
-        return simbadService
-            .search(SimbadSearch(0, null, rightAscension, declination, radius, type?.let(::listOf), magnitudeMin, magnitudeMax, constellation, ids))
+        val search = SimbadSearch.Builder()
+            .region(rightAscension, declination, radius)
+            .also { if (type != null) it.types(type) }
+            .magnitude(magnitudeMin..magnitudeMax)
+            .constellation(constellation)
+            .ids(ids)
+            .build()
+
+        return simbadService.search(search)
     }
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
@@ -229,9 +238,9 @@ class SkyAtlasService(
 
         @JvmStatic
         private fun Double.clampMagnitude(): Double {
-            return if (this in -29.9..29.9) this
-            else if (this < -29.9) -SkyObject.UNKNOWN_MAGNITUDE
-            else SkyObject.UNKNOWN_MAGNITUDE
+            return if (this in SkyObject.MAGNITUDE_RANGE) this
+            else if (this < SkyObject.MAGNITUDE_MIN) SkyObject.MAGNITUDE_MIN
+            else SkyObject.MAGNITUDE_MAX
         }
 
         @JvmStatic
