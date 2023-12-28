@@ -7,7 +7,6 @@ import nebulosa.batch.processing.ExecutionContext.Companion.getBoolean
 import nebulosa.batch.processing.ExecutionContext.Companion.getDouble
 import nebulosa.batch.processing.ExecutionContext.Companion.getDuration
 import nebulosa.batch.processing.ExecutionContext.Companion.getInt
-import nebulosa.batch.processing.ExecutionContext.Companion.getPath
 import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.delay.DelayStep
@@ -78,13 +77,11 @@ data class CameraCaptureEventHandler(private val observer: Observer<MessageEvent
                 )
             }
             CameraCaptureState.EXPOSURE_FINISHED -> {
-                val savePath = stepExecution.context.getPath(CameraExposureStep.SAVE_PATH)!!
-
                 CameraExposureFinished(
                     stepExecution.jobExecution, step.camera,
                     step.exposureAmount, exposureCount,
                     captureElapsedTime, captureProgress, captureRemainingTime,
-                    savePath
+                    step.savedPath!!
                 )
             }
             else -> return

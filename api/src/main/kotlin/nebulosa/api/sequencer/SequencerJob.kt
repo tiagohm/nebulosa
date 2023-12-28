@@ -49,7 +49,7 @@ data class SequencerJob(
         }
 
         fun CameraStartCaptureRequest.wheelStep(): Step? {
-            return if (wheel != null) WheelStep(wheel, if (frameType == FrameType.DARK) shutterPosition else wheelPosition) else null
+            return if (wheel != null) WheelStep(wheel, if (frameType == FrameType.DARK) shutterPosition else filterPosition) else null
         }
 
         fun CameraStartCaptureRequest.focusStep(): Step? {

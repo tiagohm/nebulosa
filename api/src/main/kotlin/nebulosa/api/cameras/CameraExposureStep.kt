@@ -45,6 +45,9 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
 
     @Volatile private var stepExecution: StepExecution? = null
 
+    @Volatile override var savedPath: Path? = null
+        private set
+
     override fun registerCameraCaptureListener(listener: CameraCaptureListener): Boolean {
         return listeners.add(listener)
     }
@@ -151,7 +154,7 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     }
 
     private fun save(stream: InputStream) {
-        val savePath = if (request.autoSave) {
+        savedPath = if (request.autoSave) {
             val now = LocalDateTime.now()
             val savePath = request.autoSubFolderMode.pathFor(request.savePath!!, now)
             val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), request.frameType)
@@ -162,12 +165,10 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
         }
 
         try {
-            LOG.info("saving FITS. path={}", savePath)
+            LOG.info("saving FITS. path={}", savedPath)
 
-            savePath.createParentDirectories()
-            stream.transferAndClose(savePath.outputStream())
-
-            stepExecution!!.context[SAVE_PATH] = savePath
+            savedPath!!.createParentDirectories()
+            stream.transferAndClose(savedPath!!.outputStream())
 
             listeners.forEach { it.onExposureFinished(this, stepExecution!!) }
         } catch (e: Throwable) {
@@ -204,7 +205,6 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     companion object {
 
         const val EXPOSURE_COUNT = "CAMERA_EXPOSURE.EXPOSURE_COUNT"
-        const val SAVE_PATH = "CAMERA_EXPOSURE.SAVE_PATH"
         const val EXPOSURE_ELAPSED_TIME = "CAMERA_EXPOSURE.EXPOSURE_ELAPSED_TIME"
         const val EXPOSURE_REMAINING_TIME = "CAMERA_EXPOSURE.EXPOSURE_REMAINING_TIME"
         const val EXPOSURE_PROGRESS = "CAMERA_EXPOSURE.EXPOSURE_PROGRESS"

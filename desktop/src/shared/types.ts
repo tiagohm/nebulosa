@@ -274,7 +274,7 @@ export interface CameraStartCapture {
     autoSubFolderMode: AutoSubFolderMode
     dither?: Dither
     wheel?: FilterWheel
-    wheelPosition?: number
+    filterPosition?: number
     shutterPosition?: number
     focuser?: Focuser
     focusOffset?: number

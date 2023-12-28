@@ -156,7 +156,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             this.moving = this.wheel.moving && this.position === this.wheel.position
             this.position = this.wheel.position
         } else {
-            this.position = this.request.wheelPosition || 1
+            this.position = this.request.filterPosition || 1
         }
 
         let filters: Filter[] = []
@@ -210,7 +210,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         return {
             ...this.request,
             wheel: this.wheel,
-            wheelPosition: this.filter?.position ?? 0,
+            filterPosition: this.filter?.position ?? 0,
         }
     }
 
