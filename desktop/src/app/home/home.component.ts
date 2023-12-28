@@ -176,8 +176,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 return this.wheels.length
             },
         )
-
-        electron.on('SKY_ATLAS_UPDATE_FINISHED', () => this.open('SKY_ATLAS'))
     }
 
     async ngAfterContentInit() {

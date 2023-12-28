@@ -6,8 +6,8 @@ import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
 import nebulosa.api.locations.LocationEntity
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
+import nebulosa.log.loggerFor
 import nebulosa.math.Angle
-import nebulosa.math.toLightYears
 import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
@@ -20,7 +20,6 @@ import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
@@ -42,9 +41,8 @@ class SkyAtlasService(
     private val horizonsEphemerisProvider: HorizonsEphemerisProvider,
     private val bodyEphemerisProvider: BodyEphemerisProvider,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
-    private val starRepository: StarRepository,
-    private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val satelliteRepository: SatelliteRepository,
+    private val simbadIdentifierRepository: SimbadIdentifierRepository,
     private val simbadService: SimbadService,
     private val httpClient: OkHttpClient,
 ) {
@@ -53,11 +51,7 @@ class SkyAtlasService(
     private val cachedSimbadEntries = HashMap<Long, SimbadEntry>()
     @Volatile private var sunImage = ByteArray(0)
 
-    val starTypes by lazy { starRepository.types() }
-
-    val dsoTypes by lazy { deepSkyObjectRepository.types() }
-
-    val simbadTypes by lazy { SkyObjectType.entries }
+    val objectTypes by lazy { SkyObjectType.entries }
 
     fun imageOfSun(output: HttpServletResponse) {
         output.contentType = "image/png"
@@ -76,17 +70,7 @@ class SkyAtlasService(
         return positionOfBody(code, location, dateTime)!!
     }
 
-    fun positionOfStar(location: LocationEntity, star: StarEntity, dateTime: LocalDateTime): BodyPosition {
-        return positionOfBody(star, location, dateTime)!!
-            .copy(magnitude = star.magnitude, constellation = star.constellation, distance = star.distance.toLightYears, distanceUnit = "ly")
-    }
-
-    fun positionOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, dateTime: LocalDateTime): BodyPosition {
-        return positionOfBody(dso, location, dateTime)!!
-            .copy(magnitude = dso.magnitude, constellation = dso.constellation, distance = dso.distance.toLightYears, distanceUnit = "ly")
-    }
-
-    fun positionOfSimbad(location: LocationEntity, id: Long, dateTime: LocalDateTime): BodyPosition {
+    fun positionOfSkyObject(location: LocationEntity, id: Long, dateTime: LocalDateTime): BodyPosition {
         val target = cachedSimbadEntries[id] ?: simbadService.search(SimbadSearch(id)).firstOrNull()
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found simbad with id: [$id]")
         cachedSimbadEntries[target.id] = target
@@ -113,7 +97,7 @@ class SkyAtlasService(
     }
 
     fun searchSatellites(text: String, groups: List<SatelliteGroupType>): List<SatelliteEntity> {
-        return satelliteRepository.search(text.ifBlank { null }, groups, Pageable.ofSize(1000))
+        return satelliteRepository.search(text.ifBlank { null }, groups)
     }
 
     fun twilight(location: LocationEntity, date: LocalDate): Twilight {
@@ -164,17 +148,7 @@ class SkyAtlasService(
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfStar(location: LocationEntity, star: StarEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(star, location, LocalDateTime.of(date, LocalTime.now()))
-        return altitudePointsOfBody(ephemeris, stepSize)
-    }
-
-    fun altitudePointsOfDSO(location: LocationEntity, dso: DeepSkyObjectEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(dso, location, LocalDateTime.of(date, LocalTime.now()))
-        return altitudePointsOfBody(ephemeris, stepSize)
-    }
-
-    fun altitudePointsOfSimbad(location: LocationEntity, id: Long, date: LocalDate, stepSize: Int): List<DoubleArray> {
+    fun altitudePointsOfSkyObject(location: LocationEntity, id: Long, date: LocalDate, stepSize: Int): List<DoubleArray> {
         val target = cachedSimbadEntries[id] ?: simbadService.search(SimbadSearch(id)).firstOrNull()
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found simbad with id: [$id]")
         cachedSimbadEntries[target.id] = target
@@ -203,45 +177,31 @@ class SkyAtlasService(
         ?.let(MinorPlanet::of)
         ?: MinorPlanet.EMPTY
 
-    fun searchStar(
-        text: String,
-        rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
-        constellation: Constellation? = null,
-        magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
-        type: SkyObjectType? = null,
-    ) = starRepository.search(
-        text.replace(INVALID_DSO_CHARS, "").replace("][", "").ifBlank { null },
-        rightAscension, declination, radius,
-        constellation,
-        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type,
-        Pageable.ofSize(5000),
-    )
-
-    fun searchDSO(
-        text: String,
-        rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
-        constellation: Constellation? = null,
-        magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
-        type: SkyObjectType? = null,
-    ) = deepSkyObjectRepository.search(
-        text.replace(INVALID_DSO_CHARS, "").replace("][", "").ifBlank { null },
-        rightAscension, declination, radius,
-        constellation,
-        magnitudeMin.clampMagnitude(), magnitudeMax.clampMagnitude(), type,
-        Pageable.ofSize(5000),
-    )
-
-    fun searchSimbad(
+    fun searchSkyObject(
         text: String? = null,
         rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
         constellation: Constellation? = null,
         magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE, magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
         type: SkyObjectType? = null,
-    ) = simbadService
-        .search(SimbadSearch(0, text, rightAscension, declination, radius, type?.let(::listOf), magnitudeMin, magnitudeMax, constellation, 5000))
+    ): List<SimbadEntry> {
+        require(text.isNullOrBlank() || text.length >= 3) { "invalid text" }
+
+        val ids = if (text.isNullOrBlank()) {
+            LongArray(0)
+        } else {
+            synchronized(simbadIdentifierRepository) {
+                val identifiers = simbadIdentifierRepository.findByName(text.replace(INVALID_DSO_CHARS, ""))
+                LOG.info("found {} identifiers for {}", identifiers.size, text)
+                LongArray(identifiers.size) { identifiers[it].simbadId }
+            }
+        }
+
+        return simbadService
+            .search(SimbadSearch(0, null, rightAscension, declination, radius, type?.let(::listOf), magnitudeMin, magnitudeMax, constellation, ids))
+    }
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
-    protected fun refreshImageOfSun() {
+    fun refreshImageOfSun() {
         val request = Request.Builder()
             .url(SUN_IMAGE_URL)
             .build()
@@ -264,12 +224,13 @@ class SkyAtlasService(
         private const val SUN = "10"
         private const val MOON = "301"
 
-        @JvmStatic private val INVALID_DSO_CHARS = Regex("[^\\w\\-\\s\\[\\].+]+")
+        @JvmStatic private val LOG = loggerFor<SkyAtlasService>()
+        @JvmStatic private val INVALID_DSO_CHARS = Regex("[^\\w\\-\\s\\[\\].+%]+")
 
         @JvmStatic
         private fun Double.clampMagnitude(): Double {
             return if (this in -29.9..29.9) this
-            else if (this < 0.0) -SkyObject.UNKNOWN_MAGNITUDE
+            else if (this < -29.9) -SkyObject.UNKNOWN_MAGNITUDE
             else SkyObject.UNKNOWN_MAGNITUDE
         }
 

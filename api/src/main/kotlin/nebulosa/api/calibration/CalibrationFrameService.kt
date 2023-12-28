@@ -89,14 +89,13 @@ class CalibrationFrameService(
                     val filter = if (frameType == FrameType.FLAT) header.filter else null
 
                     val frame = CalibrationFrameEntity(
-                        System.currentTimeMillis(),
-                        frameType, camera.name, filter,
+                        0L, frameType, camera.name, filter,
                         exposureTime, temperature,
                         header.width, header.height, header.binX, header.binY,
                         gain, "$file",
                     )
 
-                    calibrationFrameRepository.saveAndFlush(frame)
+                    calibrationFrameRepository.save(frame)
                         .also(frames::add)
                 }
             } catch (e: Throwable) {
@@ -108,15 +107,15 @@ class CalibrationFrameService(
     }
 
     fun edit(id: Long, path: String?, enabled: Boolean): CalibrationFrameEntity {
-        return with(calibrationFrameRepository.findById(id).get()) {
+        return with(calibrationFrameRepository.find(id)!!) {
             if (!path.isNullOrBlank()) this.path = path
             this.enabled = enabled
-            calibrationFrameRepository.saveAndFlush(this)
+            calibrationFrameRepository.save(this)
         }
     }
 
     fun delete(id: Long) {
-        calibrationFrameRepository.deleteById(id)
+        calibrationFrameRepository.delete(id)
     }
 
     // exposureTime, temperature, width, height, binX, binY, gain.

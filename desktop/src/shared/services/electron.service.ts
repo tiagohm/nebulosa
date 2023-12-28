@@ -9,7 +9,7 @@ import * as fs from 'fs'
 import {
     ApiEventType, Camera, CameraCaptureEvent, DARVEvent, DeviceMessageEvent, FilterWheel, Focuser,
     GuideOutput, Guider, GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, JsonFile,
-    Location, Mount, NotificationEvent, NotificationEventType, OpenDirectory, OpenFile, SaveJson, SequencerEvent
+    Location, Mount, NotificationEventType, OpenDirectory, OpenFile, SaveJson, SequencerEvent
 } from '../types'
 import { ApiService } from './api.service'
 
@@ -41,7 +41,6 @@ type EventMappedType = {
     'DARV_POLAR_ALIGNMENT_ELAPSED': DARVEvent
     'DATA_CHANGED': any
     'LOCATION_CHANGED': Location
-    'SKY_ATLAS_UPDATE_FINISHED': NotificationEvent
     'SEQUENCER_ELAPSED': SequencerEvent
 }
 

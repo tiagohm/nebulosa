@@ -1,6 +1,6 @@
 <div class="grid flex-1">
     <div class="col-12">
-        <p-tabView [(activeIndex)]="tab" (activeIndexChange)="tabChanged()" class="main-tabs">
+        <p-tabView [(activeIndex)]="tab" (activeIndexChange)="tabChanged()" styleClass="main">
             <p-tabPanel header="Sun" [disabled]="refreshing">
                 <ng-template pTemplate="header">
                     <div class="p-3" pTooltip="Sun" tooltipPosition="bottom">
@@ -28,7 +28,7 @@
                         <img src="assets/icons/jupiter.png">
                     </div>
                 </ng-template>
-                <div class="grid flex align-items-center justify-content-center">
+                <div class="flex align-items-center justify-content-center px-1">
                     <p-table [value]="planets" class="planet" [(selection)]="planet" (selectionChange)="planetChanged()" selectionMode="single"
                              dataKey="code"
                              styleClass="p-datatable-striped">
@@ -53,21 +53,19 @@
                         <img src="assets/icons/asteroid.png">
                     </div>
                 </ng-template>
-                <div class="grid flex align-items-center justify-content-center">
-                    <div class="col-9">
-                        <span class="p-float-label">
+                <div class="flex mt-2 flex-column align-items-center justify-content-center">
+                    <div class="flex w-full align-items-center px-4 gap-2">
+                        <span class="p-float-label flex-1">
                             <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="minorPlanetSearchText"
                                    pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
                                    tooltipPosition="bottom" />
                             <label>Search</label>
                         </span>
-                    </div>
-                    <div class="col-3">
                         <p-button [disabled]="minorPlanetSearchText.length < 3 || refreshing" (onClick)="searchMinorPlanet()" icon="mdi mdi-magnify"
                                   severity="success" size="small" />
                     </div>
                 </div>
-                <div class="grid flex align-items-center justify-content-center mt-2">
+                <div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
                     <p-table [value]="minorPlanet?.parameters ?? []" class="minorPlanet" styleClass="p-datatable-striped">
                         <ng-template pTemplate="header">
                             <tr>
@@ -86,110 +84,27 @@
                     </p-table>
                 </div>
             </p-tabPanel>
-            <p-tabPanel header="Stars" [disabled]="refreshing">
+            <p-tabPanel header="Sky Object" [disabled]="refreshing">
                 <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="Stars" tooltipPosition="bottom">
-                        <img src="assets/icons/stars.png">
-                    </div>
-                </ng-template>
-                <div class="grid flex align-items-center justify-content-center">
-                    <div class="col-9">
-                        <span class="p-float-label">
-                            <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="starSearchText" />
-                            <label>Search</label>
-                        </span>
-                    </div>
-                    <div class="col-3 flex align-items-center gap-1">
-                        <p-button [disabled]="refreshing" (onClick)="searchStar()" icon="mdi mdi-magnify" severity="info" size="small" />
-                        <p-button [disabled]="refreshing" (onClick)="showStarFilterDialog()" icon="mdi mdi-filter" size="small" />
-                    </div>
-                </div>
-                <div class="grid flex align-items-center justify-content-center mt-2">
-                    <p-table [value]="starItems" class="star" sortField="magnitude" [(selection)]="star" (selectionChange)="starChanged()"
-                             selectionMode="single" dataKey="id" styleClass="p-datatable-striped" [paginator]="true" [rows]="100"
-                             [pageLinks]="3" [showCurrentPageReport]="true" currentPageReportTemplate="{first}-{last} / {totalRecords}">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th style="width: 40%" pSortableColumn="name">Name <p-sortIcon field="name" /></th>
-                                <th style="width: 25%" pSortableColumn="type">Type <p-sortIcon field="type" /></th>
-                                <th style="width: 15%" pSortableColumn="magnitude">Mag. <p-sortIcon field="magnitude" /></th>
-                                <th style="width: 20%" pSortableColumn="constellation">Const. <p-sortIcon field="constellation" /></th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr [pSelectableRow]="item">
-                                <td class="text-sm">{{ item | skyObject:'name' }}</td>
-                                <td class="text-sm">{{ item.type | enum }}</td>
-                                <td class="text-sm text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
-                                <td class="text-sm text-center">{{ item.constellation }}</td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
-                </div>
-            </p-tabPanel>
-            <p-tabPanel header="DSOs" [disabled]="refreshing">
-                <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="DSOs" tooltipPosition="bottom">
-                        <img src="assets/icons/milky-way.png">
-                    </div>
-                </ng-template>
-                <div class="grid flex align-items-center justify-content-center">
-                    <div class="col-9">
-                        <span class="p-float-label">
-                            <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="dsoSearchText" />
-                            <label>Search</label>
-                        </span>
-                    </div>
-                    <div class="col-3 flex align-items-center gap-1">
-                        <p-button [disabled]="refreshing" (onClick)="searchDSO()" icon="mdi mdi-magnify" size="small" severity="info" />
-                        <p-button [disabled]="refreshing" (onClick)="showDSOFilterDialog()" icon="mdi mdi-filter" size="small" />
-                    </div>
-                </div>
-                <div class="grid flex align-items-center justify-content-center mt-2">
-                    <p-table [value]="dsoItems" class="dso" sortField="magnitude" [(selection)]="dso" (selectionChange)="dsoChanged()"
-                             selectionMode="single" dataKey="id" styleClass="p-datatable-striped" [paginator]="true" [rows]="100"
-                             [pageLinks]="3" [showCurrentPageReport]="true" currentPageReportTemplate="{first}-{last} / {totalRecords}">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th style="width: 40%" pSortableColumn="name">Name <p-sortIcon field="name" /></th>
-                                <th style="width: 25%" pSortableColumn="type">Type <p-sortIcon field="type" /></th>
-                                <th style="width: 15%" pSortableColumn="magnitude">Mag. <p-sortIcon field="magnitude" /></th>
-                                <th style="width: 20%" pSortableColumn="constellation">Const. <p-sortIcon field="constellation" /></th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr [pSelectableRow]="item">
-                                <td class="text-sm">{{ item | skyObject:'name' }}</td>
-                                <td class="text-sm">{{ item.type | enum }}</td>
-                                <td class="text-sm text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
-                                <td class="text-sm text-center">{{ item.constellation }}</td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
-                </div>
-            </p-tabPanel>
-            <p-tabPanel header="Simbad" [disabled]="refreshing">
-                <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="Simbad" tooltipPosition="bottom">
+                    <div class="p-3" pTooltip="Sky Object" tooltipPosition="bottom">
                         <img src="assets/icons/online-search.png">
                     </div>
                 </ng-template>
-                <div class="grid flex align-items-center justify-content-center">
-                    <div class="col-9">
-                        <span class="p-float-label">
-                            <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="simbadSearchText" />
+                <div class="flex mt-2 align-items-center justify-content-center">
+                    <div class="flex w-full align-items-center px-4 gap-2">
+                        <span class="p-float-label flex-1">
+                            <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="skyObjectSearchText" />
                             <label>Search</label>
                         </span>
-                    </div>
-                    <div class="col-3 flex align-items-center gap-1">
-                        <p-button [disabled]="refreshing" (onClick)="searchSimbad()" icon="mdi mdi-magnify" size="small" severity="info" />
-                        <p-button [disabled]="refreshing" (onClick)="showSimbadFilterDialog()" icon="mdi mdi-filter" size="small" />
+                        <p-button [disabled]="refreshing" (onClick)="searchSkyObject()" icon="mdi mdi-magnify" size="small" severity="info" />
+                        <p-button [disabled]="refreshing" (onClick)="showSkyObjectFilterDialog()" icon="mdi mdi-filter" size="small" />
                     </div>
                 </div>
-                <div class="grid flex align-items-center justify-content-center mt-2">
-                    <p-table [value]="simbadItems" class="simbad" sortField="magnitude" [(selection)]="simbad" (selectionChange)="simbadChanged()"
-                             selectionMode="single" dataKey="id" styleClass="p-datatable-striped" [paginator]="true" [rows]="100"
-                             [pageLinks]="3" [showCurrentPageReport]="true" currentPageReportTemplate="{first}-{last} / {totalRecords}">
+                <div class="flex align-items-center justify-content-center mt-2 px-1">
+                    <p-table [value]="skyObjectItems" class="skyObject" sortField="magnitude" [(selection)]="skyObject"
+                             (selectionChange)="skyObjectChanged()" selectionMode="single" dataKey="id" styleClass="p-datatable-striped"
+                             [paginator]="true" [rows]="100" [pageLinks]="3" [showCurrentPageReport]="true"
+                             currentPageReportTemplate="{first}-{last} / {totalRecords}">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th style="width: 40%" pSortableColumn="name">Name <p-sortIcon field="name" /></th>
@@ -215,21 +130,19 @@
                         <img src="assets/icons/satellite.png">
                     </div>
                 </ng-template>
-                <div class="grid flex align-items-center justify-content-center">
-                    <div class="col-9">
-                        <span class="p-float-label">
+                <div class="flex mt-2 flex-column align-items-center justify-content-center">
+                    <div class="flex w-full align-items-center px-4 gap-2">
+                        <span class="p-float-label flex-1">
                             <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="satelliteSearchText" />
                             <label>Search</label>
                         </span>
-                    </div>
-                    <div class="col-3 flex align-items-center gap-1">
                         <p-button [disabled]="refreshing" (onClick)="searchSatellite()" icon="mdi mdi-magnify"
                                   size="small" severity="info" />
                         <p-button [disabled]="refreshing" (onClick)="showSatelliteFilterDialog = true" icon="mdi mdi-filter"
                                   size="small" />
                     </div>
                 </div>
-                <div class="grid flex align-items-center justify-content-center mt-2">
+                <div class="flex align-items-center justify-content-center mt-2 px-1">
                     <p-table [value]="satelliteItems" class="satellite" sortField="name" [(selection)]="satellite"
                              (selectionChange)="satelliteChanged()"
                              selectionMode="single" dataKey="id" styleClass="p-datatable-striped" [paginator]="true" [rows]="100"
@@ -256,10 +169,10 @@
         </p-tabView>
     </div>
 </div>
-<div class="grid px-2 relative">
+<div class="grid px-2 fixed bottom-0" style="height: 212px;">
     <p-tabView [style]="{height: '258px', width: '100vw'}">
         <p-tabPanel leftIcon="mdi mdi-information">
-            <div class="grid pt-2 flex-row justify-content-center">
+            <div class="grid pt-3 px-3 flex-row justify-content-center">
                 <div class="col-12">
                     <div class="grid">
                         <div class="col-3">
@@ -347,7 +260,9 @@
             </div>
         </p-tabPanel>
         <p-tabPanel leftIcon="mdi mdi-chart-bell-curve">
-            <p-chart #chart width="100%" height="170px" [data]="altitudeData" [responsive]="true" [options]="altitudeOptions" />
+            <div class="p-1">
+                <p-chart #chart width="100%" height="170px" [data]="altitudeData" [responsive]="true" [options]="altitudeOptions" />
+            </div>
         </p-tabPanel>
     </p-tabView>
     <div class="col-9 flex flex-row align-items-center justify-content-center gap-2 absolute" style="height: 32px; right: 14px; top: 2px;">
@@ -452,11 +367,9 @@
                 <p-calendar [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTime" (ngModelChange)="dateTimeChanged(true)"
                             [inline]="true" [showIcon]="true" [showWeek]="true" [showButtonBar]="false" dateFormat="yy-mm-dd" styleClass="w-full" />
             </div>
-            <div class="col-4 flex-column gap-2 align-items-center justify-content-start gap-1">
-                <p-checkbox [binary]="true" label="Enabled" [disabled]="refreshing" [(ngModel)]="useManualDateTime"
-                            (ngModelChange)="useManualDateTimeChanged()" />
+            <div class="col-4 flex-column gap-3 align-items-center justify-content-start gap-1">
+                <p-inputSwitch [disabled]="refreshing" [(ngModel)]="useManualDateTime" (ngModelChange)="useManualDateTimeChanged()" />
                 <div class="flex flex-column align-items-center">
-                    <span>Time</span>
                     <div class="flex align-items-center justify-content-center gap-2">
                         <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0"
                                        [max]="23"

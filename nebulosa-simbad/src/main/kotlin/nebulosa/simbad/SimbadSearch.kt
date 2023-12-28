@@ -1,10 +1,12 @@
 package nebulosa.simbad
 
+import nebulosa.adql.SortDirection
 import nebulosa.math.Angle
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 
+@Suppress("ArrayInDataClass")
 data class SimbadSearch(
     internal val id: Long = NO_ID,
     internal val text: String? = null,
@@ -15,29 +17,40 @@ data class SimbadSearch(
     internal val magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE,
     internal val magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE,
     internal val constellation: Constellation? = null,
-    internal val limit: Int = 1000,
-    internal val lastID: Long = 0,
+    internal val ids: LongArray = LongArray(0),
+    internal val lastID: Long = NO_ID,
+    internal val limit: Int = SimbadService.DEFAULT_LIMIT,
+    internal val sortType: SortType = SortType.OID,
+    internal val sortDirection: SortDirection = SortDirection.ASCENDING,
 ) {
+
+    enum class SortType {
+        OID,
+        MAGNITUDE,
+    }
 
     private constructor(builder: Builder) : this(
         builder.id, builder.text, builder.rightAscension, builder.declination, builder.radius,
-        builder.types, builder.magnitudeMin, builder.magnitudeMax, builder.constellation, builder.limit,
-        builder.lastID,
+        builder.types, builder.magnitudeMin, builder.magnitudeMax, builder.constellation,
+        builder.ids, builder.lastID, builder.limit, builder.sortType, builder.sortDirection,
     )
 
     class Builder {
 
-        internal var id: Long = NO_ID
+        internal var id = NO_ID
         internal var text: String? = null
         internal var rightAscension: Angle = 0.0
         internal var declination: Angle = 0.0
         internal var radius: Angle = 0.0
         internal val types: MutableList<SkyObjectType> = ArrayList()
-        internal var magnitudeMin: Double = -SkyObject.UNKNOWN_MAGNITUDE
-        internal var magnitudeMax: Double = SkyObject.UNKNOWN_MAGNITUDE
+        internal var magnitudeMin = -SkyObject.UNKNOWN_MAGNITUDE
+        internal var magnitudeMax = SkyObject.UNKNOWN_MAGNITUDE
         internal var constellation: Constellation? = null
-        internal var limit: Int = 1000
-        internal var lastID: Long = 0L
+        internal var ids = LongArray(0)
+        internal var lastID = 0L
+        internal var limit = SimbadService.DEFAULT_LIMIT
+        internal var sortType = SortType.OID
+        internal var sortDirection = SortDirection.ASCENDING
 
         fun id(id: Long) = apply { this.id = id }
 
@@ -69,6 +82,13 @@ data class SimbadSearch(
         fun limit(limit: Int) = apply { this.limit = limit }
 
         fun lastID(lastID: Long) = apply { this.lastID = lastID }
+
+        fun ids(ids: LongArray) = apply { this.ids = ids }
+
+        fun sortBy(sortType: SortType, ascending: SortDirection = SortDirection.ASCENDING) = apply {
+            this.sortType = sortType
+            this.sortDirection = ascending
+        }
 
         fun build() = SimbadSearch(this)
     }

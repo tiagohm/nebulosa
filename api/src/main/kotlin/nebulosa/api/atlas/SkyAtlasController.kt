@@ -69,89 +69,23 @@ class SkyAtlasController(
     @GetMapping("minor-planets")
     fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String) = skyAtlasService.searchMinorPlanet(text)
 
-    @GetMapping("stars/{star}/position")
-    fun positionOfStar(
-        @DeviceOrEntityParam star: StarEntity,
-        @DeviceOrEntityParam location: LocationEntity,
-        @DateAndTimeParam dateTime: LocalDateTime,
-    ) = skyAtlasService.positionOfStar(location, star, dateTime)
-
-    @GetMapping("stars/{star}/altitude-points")
-    fun altitudePointsOfStar(
-        @DeviceOrEntityParam star: StarEntity,
-        @DeviceOrEntityParam location: LocationEntity,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfStar(location, star, dateTime.toLocalDate(), stepSize)
-
-    @GetMapping("stars")
-    fun searchStar(
-        @RequestParam(required = false, defaultValue = "") text: String,
-        @RequestParam(required = false, defaultValue = "") rightAscension: String,
-        @RequestParam(required = false, defaultValue = "") declination: String,
-        @RequestParam(required = false, defaultValue = "0.0") radius: Double,
-        @RequestParam(required = false) constellation: Constellation?,
-        @RequestParam(required = false, defaultValue = "-99.0") magnitudeMin: Double,
-        @RequestParam(required = false, defaultValue = "99.0") magnitudeMax: Double,
-        @RequestParam(required = false) type: SkyObjectType?,
-    ) = skyAtlasService.searchStar(
-        text, rightAscension.hours, declination.deg, radius.deg,
-        constellation, magnitudeMin, magnitudeMax, type,
-    )
-
-    @GetMapping("stars/types")
-    fun starTypes() = skyAtlasService.starTypes
-
-    @GetMapping("dsos/{dso}/position")
-    fun positionOfDSO(
-        @DeviceOrEntityParam dso: DeepSkyObjectEntity,
-        @DeviceOrEntityParam location: LocationEntity,
-        @DateAndTimeParam dateTime: LocalDateTime,
-    ) = skyAtlasService.positionOfDSO(location, dso, dateTime)
-
-    @GetMapping("dsos/{dso}/altitude-points")
-    fun altitudePointsOfDSO(
-        @DeviceOrEntityParam dso: DeepSkyObjectEntity,
-        @DeviceOrEntityParam location: LocationEntity,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfDSO(location, dso, dateTime.toLocalDate(), stepSize)
-
-    @GetMapping("dsos")
-    fun searchDSO(
-        @RequestParam(required = false, defaultValue = "") text: String,
-        @RequestParam(required = false, defaultValue = "") rightAscension: String,
-        @RequestParam(required = false, defaultValue = "") declination: String,
-        @RequestParam(required = false, defaultValue = "0.0") radius: Double,
-        @RequestParam(required = false) constellation: Constellation?,
-        @RequestParam(required = false, defaultValue = "-99.0") magnitudeMin: Double,
-        @RequestParam(required = false, defaultValue = "99.0") magnitudeMax: Double,
-        @RequestParam(required = false) type: SkyObjectType?,
-    ) = skyAtlasService.searchDSO(
-        text, rightAscension.hours, declination.deg, radius.deg,
-        constellation, magnitudeMin, magnitudeMax, type,
-    )
-
-    @GetMapping("dsos/types")
-    fun dsoTypes() = skyAtlasService.dsoTypes
-
-    @GetMapping("simbad/{id}/position")
-    fun positionOfSimbad(
+    @GetMapping("sky-objects/{id}/position")
+    fun positionOfSkyObject(
         @PathVariable id: Long,
         @DeviceOrEntityParam location: LocationEntity,
         @DateAndTimeParam dateTime: LocalDateTime,
-    ) = skyAtlasService.positionOfSimbad(location, id, dateTime)
+    ) = skyAtlasService.positionOfSkyObject(location, id, dateTime)
 
-    @GetMapping("simbad/{id}/altitude-points")
-    fun altitudePointsOfSimbad(
+    @GetMapping("sky-objects/{id}/altitude-points")
+    fun altitudePointsOfSkyObject(
         @PathVariable id: Long,
         @DeviceOrEntityParam location: LocationEntity,
         @DateAndTimeParam dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfSimbad(location, id, dateTime.toLocalDate(), stepSize)
+    ) = skyAtlasService.altitudePointsOfSkyObject(location, id, dateTime.toLocalDate(), stepSize)
 
-    @GetMapping("simbad")
-    fun searchSimbad(
+    @GetMapping("sky-objects")
+    fun searchSkyObject(
         @RequestParam(required = false, defaultValue = "") text: String,
         @RequestParam(required = false, defaultValue = "") rightAscension: String,
         @RequestParam(required = false, defaultValue = "") declination: String,
@@ -160,13 +94,13 @@ class SkyAtlasController(
         @RequestParam(required = false, defaultValue = "-99.0") magnitudeMin: Double,
         @RequestParam(required = false, defaultValue = "99.0") magnitudeMax: Double,
         @RequestParam(required = false) type: SkyObjectType?,
-    ) = skyAtlasService.searchSimbad(
+    ) = skyAtlasService.searchSkyObject(
         text, rightAscension.hours, declination.deg, radius.deg,
         constellation, magnitudeMin, magnitudeMax, type,
     )
 
-    @GetMapping("simbad/types")
-    fun simbadTypes() = skyAtlasService.simbadTypes
+    @GetMapping("sky-objects/types")
+    fun skyObjectTypes() = skyAtlasService.objectTypes
 
     @GetMapping("satellites/{satellite}/position")
     fun positionOfSatellite(

@@ -921,9 +921,7 @@ export const INTERNAL_EVENT_TYPES = [
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
 
-export const NOTIFICATION_EVENT_TYPE = [
-    'SKY_ATLAS_UPDATE_FINISHED'
-] as const
+export const NOTIFICATION_EVENT_TYPE = [] as const
 
 export type NotificationEventType = (typeof NOTIFICATION_EVENT_TYPE)[number]
 

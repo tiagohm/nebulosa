@@ -1,22 +1,23 @@
 package nebulosa.api.calibration
 
-import jakarta.persistence.*
+import io.objectbox.annotation.*
+import nebulosa.api.entities.BoxEntity
+import nebulosa.api.beans.converters.FrameTypePropertyConverter
 import nebulosa.indi.device.camera.FrameType
 
 @Entity
-@Table(name = "calibration_frames")
 data class CalibrationFrameEntity(
-    @Id @Column(name = "id", columnDefinition = "INT8") var id: Long = 0L,
-    @Enumerated(EnumType.ORDINAL) @Column(name = "type", columnDefinition = "INT1") var type: FrameType = FrameType.LIGHT,
-    @Column(name = "camera", columnDefinition = "TEXT") var camera: String? = null,
-    @Column(name = "filter", columnDefinition = "TEXT") var filter: String? = null,
-    @Column(name = "exposure_time", columnDefinition = "INT8") var exposureTime: Long = 0L,
-    @Column(name = "temperature", columnDefinition = "REAL") var temperature: Double = 0.0,
-    @Column(name = "width", columnDefinition = "INT4") var width: Int = 0,
-    @Column(name = "height", columnDefinition = "INT4") var height: Int = 0,
-    @Column(name = "bin_x", columnDefinition = "INT1") var binX: Int = 0,
-    @Column(name = "bin_y", columnDefinition = "INT1") var binY: Int = 0,
-    @Column(name = "gain", columnDefinition = "REAL") var gain: Double = 0.0,
-    @Column(name = "path", columnDefinition = "TEXT") var path: String? = null,
-    @Column(name = "enabled", columnDefinition = "INT1") var enabled: Boolean = true,
-)
+    @Id override var id: Long = 0L,
+    @Index @Convert(converter = FrameTypePropertyConverter::class, dbType = Int::class) var type: FrameType = FrameType.LIGHT,
+    @Index var camera: String? = null,
+    @Index var filter: String? = null,
+    var exposureTime: Long = 0L,
+    var temperature: Double = 0.0,
+    var width: Int = 0,
+    var height: Int = 0,
+    var binX: Int = 0,
+    var binY: Int = 0,
+    var gain: Double = 0.0,
+    @Unique var path: String? = null,
+    var enabled: Boolean = true,
+) : BoxEntity

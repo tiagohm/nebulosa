@@ -78,31 +78,11 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         SEPARATOR_MENU_ITEM,
         {
             icon: 'mdi mdi-magnify',
-            label: 'Find stars around the coordinates',
+            label: 'Find sky objects around the coordinates',
             command: () => {
                 this.browserWindow.openSkyAtlas({
                     bringToFront: true,
-                    data: { tab: SkyAtlasTab.STAR, filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } }
-                })
-            },
-        },
-        {
-            icon: 'mdi mdi-magnify',
-            label: 'Find DSOs around the coordinates',
-            command: () => {
-                this.browserWindow.openSkyAtlas({
-                    bringToFront: true,
-                    data: { tab: SkyAtlasTab.DSO, filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } }
-                })
-            },
-        },
-        {
-            icon: 'mdi mdi-magnify',
-            label: 'Find around the coordinates on Simbad',
-            command: () => {
-                this.browserWindow.openSkyAtlas({
-                    bringToFront: true,
-                    data: { tab: SkyAtlasTab.SIMBAD, filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } }
+                    data: { tab: SkyAtlasTab.SKY_OBJECT, filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 } }
                 })
             },
         },

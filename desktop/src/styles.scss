@@ -19,6 +19,18 @@ body {
     visibility: hidden;
 }
 
+.contents {
+    display: contents !important;
+}
+
+.p-tabview-panels {
+    padding: 0 !important;
+}
+
+p-table {
+    width: 100%;
+}
+
 .mdi:before {
     font-size: 1.25rem;
     display: inline-flex;

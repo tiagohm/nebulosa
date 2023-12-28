@@ -1,54 +1,75 @@
 package nebulosa.api.calibration
 
+import io.objectbox.Box
+import io.objectbox.kotlin.equal
+import io.objectbox.query.QueryBuilder.StringOrder.CASE_INSENSITIVE
+import io.objectbox.query.QueryBuilder.StringOrder.CASE_SENSITIVE
+import nebulosa.api.repositories.BoxRepository
 import nebulosa.indi.device.camera.Camera
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Modifying
-import org.springframework.data.jpa.repository.Query
-import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Isolation
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
+import nebulosa.indi.device.camera.FrameType
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.stereotype.Component
 
-@Repository
-@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-interface CalibrationFrameRepository : JpaRepository<CalibrationFrameEntity, Long> {
+@Component
+class CalibrationFrameRepository(@Qualifier("calibrationFrameBox") override val box: Box<CalibrationFrameEntity>) :
+    BoxRepository<CalibrationFrameEntity>() {
 
-    @Transactional(readOnly = true)
-    @Query("SELECT frame FROM CalibrationFrameEntity frame WHERE frame.camera = :#{#camera.name}")
-    fun findAll(camera: Camera): List<CalibrationFrameEntity>
+    fun findAll(camera: Camera): List<CalibrationFrameEntity> {
+        return box.query()
+            .equal(CalibrationFrameEntity_.camera, camera.name, CASE_SENSITIVE)
+            .build()
+            .use { it.find() }
+    }
 
-    @Modifying
-    @Query("DELETE FROM CalibrationFrameEntity frame WHERE frame.camera = :#{#camera.name} and frame.path = :path")
-    fun delete(camera: Camera, path: String)
+    @Synchronized
+    fun delete(camera: Camera, path: String) {
+        return box.query()
+            .equal(CalibrationFrameEntity_.camera, camera.name, CASE_SENSITIVE)
+            .equal(CalibrationFrameEntity_.path, path, CASE_SENSITIVE)
+            .build()
+            .use { it.remove() }
+    }
 
-    @Query(
-        "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 1 " +
-                "AND frame.enabled = TRUE AND frame.camera = :#{#camera.name} " +
-                "AND frame.width = :width " +
-                "AND frame.height = :height " +
-                "AND frame.binX = :bin AND frame.binY = :bin " +
-                "AND (:exposureTime <= 0 OR frame.exposureTime = :exposureTime) " +
-                "AND (:gain < 0.0 OR frame.gain = :gain)"
-    )
-    @Transactional(readOnly = true)
-    fun darkFrames(camera: Camera, width: Int, height: Int, bin: Int, exposureTime: Long, gain: Double): List<CalibrationFrameEntity>
+    fun darkFrames(camera: Camera, width: Int, height: Int, bin: Int, exposureTime: Long, gain: Double): List<CalibrationFrameEntity> {
+        return box.query()
+            .equal(CalibrationFrameEntity_.type, FrameType.DARK.ordinal)
+            .equal(CalibrationFrameEntity_.enabled, true)
+            .equal(CalibrationFrameEntity_.camera, camera.name, CASE_SENSITIVE)
+            .equal(CalibrationFrameEntity_.width, width)
+            .equal(CalibrationFrameEntity_.height, height)
+            .equal(CalibrationFrameEntity_.binX, bin)
+            .equal(CalibrationFrameEntity_.binY, bin)
+            .also { if (exposureTime > 0L) it.equal(CalibrationFrameEntity_.exposureTime, exposureTime) }
+            .also { if (gain > 0L) it.equal(CalibrationFrameEntity_.gain, gain, 1E-3) }
+            .build()
+            .use { it.find() }
+    }
 
-    @Query(
-        "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 3 " +
-                "AND frame.enabled = TRUE AND frame.camera = :#{#camera.name} " +
-                "AND frame.width = :width AND frame.height = :height " +
-                "AND frame.binX = :bin AND frame.binY = :bin " +
-                "AND (:gain < 0.0 OR frame.gain = :gain)"
-    )
-    @Transactional(readOnly = true)
-    fun biasFrames(camera: Camera, width: Int, height: Int, bin: Int, gain: Double): List<CalibrationFrameEntity>
+    fun biasFrames(camera: Camera, width: Int, height: Int, bin: Int, gain: Double): List<CalibrationFrameEntity> {
+        return box.query()
+            .equal(CalibrationFrameEntity_.type, FrameType.BIAS.ordinal)
+            .equal(CalibrationFrameEntity_.enabled, true)
+            .equal(CalibrationFrameEntity_.camera, camera.name, CASE_SENSITIVE)
+            .equal(CalibrationFrameEntity_.width, width)
+            .equal(CalibrationFrameEntity_.height, height)
+            .equal(CalibrationFrameEntity_.binX, bin)
+            .equal(CalibrationFrameEntity_.binY, bin)
+            .also { if (gain > 0L) it.equal(CalibrationFrameEntity_.gain, gain, 1E-3) }
+            .build()
+            .use { it.find() }
+    }
 
-    @Query(
-        "SELECT frame FROM CalibrationFrameEntity frame WHERE frame.type = 2 " +
-                "AND frame.enabled = TRUE AND frame.camera = :#{#camera.name} AND frame.filter = :filter " +
-                "AND frame.width = :width AND frame.height = :height " +
-                "AND frame.binX = :bin AND frame.binY = :bin"
-    )
-    @Transactional(readOnly = true)
-    fun flatFrames(camera: Camera, filter: String, width: Int, height: Int, bin: Int): List<CalibrationFrameEntity>
+    fun flatFrames(camera: Camera, filter: String, width: Int, height: Int, bin: Int): List<CalibrationFrameEntity> {
+        return box.query()
+            .equal(CalibrationFrameEntity_.type, FrameType.BIAS.ordinal)
+            .equal(CalibrationFrameEntity_.enabled, true)
+            .equal(CalibrationFrameEntity_.camera, camera.name, CASE_SENSITIVE)
+            .equal(CalibrationFrameEntity_.filter, filter, CASE_INSENSITIVE)
+            .equal(CalibrationFrameEntity_.width, width)
+            .equal(CalibrationFrameEntity_.height, height)
+            .equal(CalibrationFrameEntity_.binX, bin)
+            .equal(CalibrationFrameEntity_.binY, bin)
+            .build()
+            .use { it.find() }
+    }
 }
