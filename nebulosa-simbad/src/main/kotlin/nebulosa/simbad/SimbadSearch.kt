@@ -14,7 +14,7 @@ data class SimbadSearch(
     internal val declination: Angle = 0.0,
     internal val radius: Angle = 0.0,
     internal val types: List<SkyObjectType>? = null,
-    internal val magnitudeMin: Double = -SkyObject.MAGNITUDE_MIN,
+    internal val magnitudeMin: Double = SkyObject.MAGNITUDE_MIN,
     internal val magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
     internal val constellation: Constellation? = null,
     internal val ids: LongArray = LongArray(0),
@@ -43,7 +43,7 @@ data class SimbadSearch(
         internal var declination: Angle = 0.0
         internal var radius: Angle = 0.0
         internal val types: MutableList<SkyObjectType> = ArrayList()
-        internal var magnitudeMin = -SkyObject.MAGNITUDE_MIN
+        internal var magnitudeMin = SkyObject.MAGNITUDE_MIN
         internal var magnitudeMax = SkyObject.MAGNITUDE_MAX
         internal var constellation: Constellation? = null
         internal var ids = LongArray(0)
