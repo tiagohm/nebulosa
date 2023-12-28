@@ -29,10 +29,5 @@ fun <T : Library> LibraryProvider.loadLibrary(type: Class<out T>, libraryDir: Pa
     val outputPath = Path.of("$outputDir", "$libraryName$extension")
     inputStream.transferAndClose(outputPath.outputStream())
 
-    if (Platform.isWindows()) {
-        System.setProperty("jna.library.path", "$outputDir")
-        return Native.load(libraryName, type)
-    } else {
-        return Native.load("$outputPath", type)
-    }
+    return Native.load("$outputPath", type)
 }
