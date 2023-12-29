@@ -106,6 +106,13 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'sequencer', path: 'sequencer', data: undefined })
     }
 
+    openFlatWizard(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
+        options.icon ||= 'star'
+        options.width ||= 467
+        options.height ||= 492
+        this.openWindow({ ...options, id: 'flat-wizard', path: 'flat-wizard', data: undefined })
+    }
+
     openSettings(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'settings'
         options.width ||= 580

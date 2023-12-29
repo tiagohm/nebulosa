@@ -9,6 +9,7 @@ import nebulosa.batch.processing.StepResult
 import nebulosa.fits.Fits
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.computation.Statistics
+import org.slf4j.LoggerFactory
 
 data class FlatWizardStep(
     @JvmField val request: FlatWizardRequest,
@@ -28,7 +29,8 @@ data class FlatWizardStep(
 
     private val flatWizardExecutionListeners = HashSet<FlatWizardExecutionListener>()
     private val cameraCaptureListeners = HashSet<CameraCaptureListener>()
-    private val meanRange = (request.meanTarget * request.meanTolerance).let { (request.meanTarget - it)..(request.meanTarget + it) }
+    private val meanTarget = request.meanTarget / 65535f
+    private val meanRange = (meanTarget * request.meanTolerance / 100f).let { (meanTarget - it)..(meanTarget + it) }
 
     fun registerFlatWizardExecutionListener(listener: FlatWizardExecutionListener) {
         flatWizardExecutionListeners.add(listener)
@@ -98,5 +100,6 @@ data class FlatWizardStep(
     companion object {
 
         @JvmStatic private val STATISTICS = Statistics(noMedian = false, noDeviation = false)
+        @JvmStatic private val LOG = LoggerFactory.getLogger(FlatWizardStep::class.java)
     }
 }

@@ -13,8 +13,8 @@ data class FlatWizardRequest(
     @JsonIgnoreProperties("focuser", "dither") val captureRequest: CameraStartCaptureRequest,
     @field:DurationMin(millis = 1) @field:DurationMax(minutes = 1) @field:DurationUnit(ChronoUnit.MILLIS) val exposureMin: Duration = MIN_EXPOSURE,
     @field:DurationMin(millis = 1) @field:DurationMax(minutes = 1) @field:DurationUnit(ChronoUnit.MILLIS) val exposureMax: Duration = MAX_EXPOSURE,
-    @field:Range(min = 0, max = 1) val meanTarget: Float = 0.5f, // 50% = 32768 (16-bit)
-    @field:Range(min = 0, max = 1) val meanTolerance: Float = 0.1f, // 10%
+    @field:Range(min = 0, max = 65535) val meanTarget: Int = 32768, // 50% = 32768 (16-bit)
+    @field:Range(min = 0, max = 100) val meanTolerance: Int = 10, // 10%
 ) {
 
     companion object {

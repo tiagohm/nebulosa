@@ -207,6 +207,16 @@ i.mdi {
     }
 }
 
+.p-multiselect-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.p-multiselect-filter-container {
+    margin-left: 8px;
+}
+
 .draggable-region {
     -webkit-app-region: drag;
 }
@@ -214,6 +224,7 @@ i.mdi {
 p-contextmenu *,
 p-dropdown *,
 p-dropdownitem *,
+.p-multiselect-header *,
 .no-draggable-region {
     -webkit-app-region: no-drag;
 }

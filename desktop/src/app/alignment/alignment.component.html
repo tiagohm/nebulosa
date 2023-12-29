@@ -1,35 +1,27 @@
 <div class="container px-4 py-3">
     <div class="grid">
-        <div class="col-6">
-            <div class="grid">
-                <div class="col-12 align-items-center gap-2">
-                    <span class="p-float-label device">
-                        <p-dropdown [disabled]="darvInProgress" [options]="cameras" [(ngModel)]="camera" optionLabel="name"
-                                    (ngModelChange)="cameraChanged()" styleClass="p-inputtext-sm border-0" emptyMessage="No camera found" />
-                        <label>Camera</label>
-                    </span>
-                    <p-button *ngIf="cameraConnected" [disabled]="!camera || darvInProgress" (onClick)="cameraConnect()" icon="mdi mdi-close"
-                              size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
-                    <p-button *ngIf="!cameraConnected" [disabled]="!camera || darvInProgress" (onClick)="cameraConnect()" icon="mdi mdi-connection"
-                              size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
-                </div>
-            </div>
+        <div class="col-6 align-items-center gap-2">
+            <span class="p-float-label device">
+                <p-dropdown [disabled]="darvInProgress" [options]="cameras" [(ngModel)]="camera" optionLabel="name"
+                            (ngModelChange)="cameraChanged()" styleClass="p-inputtext-sm border-0" emptyMessage="No camera found" />
+                <label>Camera</label>
+            </span>
+            <p-button *ngIf="cameraConnected" [disabled]="!camera || darvInProgress" (onClick)="cameraConnect()" icon="mdi mdi-close"
+                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
+            <p-button *ngIf="!cameraConnected" [disabled]="!camera || darvInProgress" (onClick)="cameraConnect()" icon="mdi mdi-connection"
+                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
-        <div class="col-6">
-            <div class="grid">
-                <div class="col-12 align-items-center gap-2">
-                    <span class="p-float-label device">
-                        <p-dropdown [disabled]="darvInProgress" [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name"
-                                    (ngModelChange)="guideOutputChanged()" styleClass="p-inputtext-sm border-0"
-                                    emptyMessage="No guide output found" />
-                        <label>Guide Output</label>
-                    </span>
-                    <p-button *ngIf="guideOutputConnected" [disabled]="!guideOutput || darvInProgress" (onClick)="guideOutputConnect()"
-                              icon="mdi mdi-close" size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
-                    <p-button *ngIf="!guideOutputConnected" [disabled]="!guideOutput || darvInProgress" (onClick)="guideOutputConnect()"
-                              icon="mdi mdi-connection" size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
-                </div>
-            </div>
+        <div class="col-6 align-items-center gap-2">
+            <span class="p-float-label device">
+                <p-dropdown [disabled]="darvInProgress" [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name"
+                            (ngModelChange)="guideOutputChanged()" styleClass="p-inputtext-sm border-0"
+                            emptyMessage="No guide output found" />
+                <label>Guide Output</label>
+            </span>
+            <p-button *ngIf="guideOutputConnected" [disabled]="!guideOutput || darvInProgress" (onClick)="guideOutputConnect()"
+                      icon="mdi mdi-close" size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
+            <p-button *ngIf="!guideOutputConnected" [disabled]="!guideOutput || darvInProgress" (onClick)="guideOutputConnect()"
+                      icon="mdi mdi-connection" size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-sm" style="min-height: 25px;">
             <i class="mdi mdi-information text-blue-600"></i>

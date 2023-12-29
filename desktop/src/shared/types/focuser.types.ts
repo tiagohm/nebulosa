@@ -30,3 +30,12 @@ export const EMPTY_FOCUSER: Focuser = {
     hasThermometer: false,
     temperature: 0
 }
+
+export function focuserPreferenceKey(focuser: Focuser) {
+    return `focuser.${focuser.name}`
+}
+
+export interface FocuserPreference {
+    stepsRelative?: number
+    stepsAbsolute?: number
+}

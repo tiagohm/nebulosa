@@ -5,6 +5,7 @@ import { Angle, BodyPosition, ComputedLocation, Constellation, DeepSkyObject, Lo
 import { CalibrationFrame, CalibrationFrameGroup } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
 import { Device, INDIProperty, INDISendProperty } from '../types/device.types'
+import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
@@ -554,6 +555,12 @@ export class ApiService {
 
     sequencerStop() {
         return this.http.put<void>(`sequencer/stop`)
+    }
+
+    // FLAT WIZARD
+
+    flatWizardStart(request: FlatWizardRequest) {
+        return this.http.put<void>(`flat-wizard/start`, request)
     }
 
     // SOLVER

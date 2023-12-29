@@ -96,6 +96,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         return this.hasCamera
     }
 
+    get hasFlatWizard() {
+        return this.hasCamera
+    }
+
     get hasINDI() {
         return this.hasCamera || this.hasMount || this.hasFocuser
             || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
@@ -305,6 +309,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 break
             case 'SEQUENCER':
                 this.browserWindow.openSequencer({ bringToFront: true })
+                break
+            case 'FLAT_WIZARD':
+                this.browserWindow.openFlatWizard({ bringToFront: true })
                 break
             case 'INDI':
                 this.browserWindow.openINDI({ data: undefined, bringToFront: true })

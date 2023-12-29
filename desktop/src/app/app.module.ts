@@ -23,6 +23,7 @@ import { InputSwitchModule } from 'primeng/inputswitch'
 import { InputTextModule } from 'primeng/inputtext'
 import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
+import { MultiSelectModule } from 'primeng/multiselect'
 import { OverlayPanelModule } from 'primeng/overlaypanel'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
 import { SelectButtonModule } from 'primeng/selectbutton'
@@ -57,6 +58,7 @@ import { AtlasComponent } from './atlas/atlas.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
+import { FlatWizardComponent } from './flatwizard/flat-wizard.component'
 import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
 import { GuiderComponent } from './guider/guider.component'
@@ -83,6 +85,7 @@ import { SettingsComponent } from './settings/settings.component'
         EnvPipe,
         ExposureTimePipe,
         FilterWheelComponent,
+        FlatWizardComponent,
         FocuserComponent,
         FramingComponent,
         GuiderComponent,
@@ -127,6 +130,7 @@ import { SettingsComponent } from './settings/settings.component'
         InputTextModule,
         ListboxModule,
         MenuModule,
+        MultiSelectModule,
         OverlayPanelModule,
         ScrollPanelModule,
         SelectButtonModule,

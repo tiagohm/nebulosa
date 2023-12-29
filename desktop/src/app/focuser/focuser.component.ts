@@ -3,17 +3,8 @@ import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { EMPTY_FOCUSER, Focuser } from '../../shared/types/focuser.types'
+import { EMPTY_FOCUSER, Focuser, FocuserPreference, focuserPreferenceKey } from '../../shared/types/focuser.types'
 import { AppComponent } from '../app.component'
-
-export function focuserPreferenceKey(focuser: Focuser) {
-    return `focuser.${focuser.name}`
-}
-
-export interface FocuserPreference {
-    stepsRelative?: number
-    stepsAbsolute?: number
-}
 
 @Component({
     selector: 'app-focuser',
