@@ -6,58 +6,10 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { Camera, CameraCaptureState, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType } from '../../shared/types/camera.types'
+import { PrimeService } from '../../shared/services/prime.service'
+import { Camera, CameraCaptureState, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_EXPOSURE_INFO, EMPTY_CAMERA_START_CAPTURE, EMPTY_CAMERA_WAIT_INFO, ExposureMode, ExposureTimeUnit, FrameType, cameraPreferenceKey } from '../../shared/types/camera.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
-
-export function cameraPreferenceKey(camera: Camera) {
-    return `camera.${camera.name}`
-}
-
-export interface CameraPreference extends Partial<CameraStartCapture> {
-    setpointTemperature?: number
-    exposureTimeUnit?: ExposureTimeUnit
-    exposureMode?: ExposureMode
-    subFrame?: boolean
-}
-
-export interface CameraExposureInfo {
-    count: number
-    remainingTime: number
-    progress: number
-}
-
-export const EMPTY_CAMERA_EXPOSURE_INFO: CameraExposureInfo = {
-    count: 0,
-    remainingTime: 0,
-    progress: 0,
-}
-
-export interface CameraCaptureInfo {
-    looping: boolean
-    amount: number
-    remainingTime: number
-    elapsedTime: number
-    progress: number
-}
-
-export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
-    looping: false,
-    amount: 0,
-    remainingTime: 0,
-    elapsedTime: 0,
-    progress: 0,
-}
-
-export interface CameraWaitInfo {
-    remainingTime: number
-    progress: number
-}
-
-export const EMPTY_CAMERA_WAIT_INFO: CameraWaitInfo = {
-    remainingTime: 0,
-    progress: 0,
-}
 
 @Component({
     selector: 'app-camera',
@@ -70,11 +22,43 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     savePath = ''
     capturesPath = ''
+    mode: CameraDialogMode = 'CAPTURE'
+
+    get canShowMenu() {
+        return this.mode === 'CAPTURE'
+    }
+
+    get canShowSavePath() {
+        return this.mode === 'CAPTURE'
+    }
+
+    get canShowInfo() {
+        return this.mode === 'CAPTURE'
+    }
+
+    get canExposureMode() {
+        return this.mode === 'CAPTURE'
+    }
+
+    get canExposureTime() {
+        return this.mode !== 'FLAT_WIZARD'
+    }
+
+    get canFrameType() {
+        return this.mode !== 'FLAT_WIZARD'
+    }
+
+    get canStartOrAbort() {
+        return this.mode === 'CAPTURE'
+    }
+
+    get canSave() {
+        return this.mode !== 'CAPTURE'
+    }
 
     wheel?: FilterWheel
 
     showDitherDialog = false
-    dialogMode = false
 
     readonly cameraModel: MenuItem[] = [
         {
@@ -161,7 +145,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         ngZone: NgZone,
         @Optional() private app?: AppComponent,
         @Optional() private dialogRef?: DynamicDialogRef,
-        @Optional() config?: DynamicDialogConfig<CameraStartCapture>,
+        @Optional() config?: DynamicDialogConfig<CameraDialogInput>,
     ) {
         if (app) app.title = 'Camera'
 
@@ -223,18 +207,27 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        if (!this.dialogMode) {
+        if (this.mode === 'CAPTURE') {
             this.abortCapture()
         }
     }
 
-    private async loadCameraStartCaptureForDialogMode(data?: CameraStartCapture) {
+    private async loadCameraStartCaptureForDialogMode(data?: CameraDialogInput) {
         if (data) {
-            Object.assign(this.request, data)
-            this.dialogMode = true
+            this.mode = data.mode
+            Object.assign(this.request, data.request)
             await this.cameraChanged(this.request.camera)
-            this.exposureMode = 'FIXED'
             this.normalizeExposureTimeAndUnit(this.request.exposureTime)
+            this.loadDefaultsForMode(data.mode)
+        }
+    }
+
+    private loadDefaultsForMode(mode: CameraDialogMode) {
+        if (mode === 'SEQUENCER') {
+            this.exposureMode = 'FIXED'
+        } else if (this.mode === 'FLAT_WIZARD') {
+            this.exposureMode = 'SINGLE'
+            this.request.frameType = 'FLAT'
         }
     }
 
@@ -323,7 +316,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         const exposureFactor = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
         const exposureTime = Math.trunc(this.request.exposureTime * 60000000 / exposureFactor)
         const exposureAmount = this.exposureMode === 'LOOP' ? 0 : (this.exposureMode === 'FIXED' ? this.request.exposureAmount : 1)
-        const savePath = this.dialogMode ? this.request.savePath : this.savePath
+        const savePath = this.mode !== 'CAPTURE' ? this.request.savePath : this.savePath
 
         return {
             ...this.request,
@@ -412,7 +405,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadPreference() {
-        if (!this.dialogMode && this.camera.name) {
+        if (this.mode === 'CAPTURE' && this.camera.name) {
             const preference = this.storage.get<CameraPreference>(cameraPreferenceKey(this.camera), {})
 
             this.request.autoSave = preference.autoSave ?? false
@@ -444,7 +437,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     savePreference() {
-        if (!this.dialogMode && this.camera.connected) {
+        if (this.mode === 'CAPTURE' && this.camera.connected) {
             const preference: CameraPreference = {
                 autoSave: this.request.autoSave,
                 savePath: this.savePath,
@@ -470,6 +463,18 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
 
             this.storage.set(cameraPreferenceKey(this.camera), preference)
+        }
+    }
+
+    static async showAsDialog(prime: PrimeService, mode: CameraDialogMode, request: CameraStartCapture) {
+        const data: CameraDialogInput = { mode, request }
+        const result = await prime.open<CameraDialogInput, CameraStartCapture>(CameraComponent, { header: 'Camera', width: 'calc(400px + 2.5rem)', data })
+
+        if (result) {
+            Object.assign(request, result)
+            return true
+        } else {
+            return false
         }
     }
 }

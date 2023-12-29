@@ -12,9 +12,13 @@ export class LocalStorageService implements StorageService {
         return localStorage.removeItem(key)
     }
 
-    get<T>(key: string, defaultValue: T): T {
+    get<T>(key: string, defaultValue: T | (() => T)): T {
         const value = localStorage.getItem(key)
-        if (value === undefined || value === null) return defaultValue
+
+        if (value === undefined || value === null) {
+            return defaultValue instanceof Function ? defaultValue() : defaultValue
+        }
+
         return JSON.parse(value) as T
     }
 

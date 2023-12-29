@@ -4,10 +4,9 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { DARVState, Hemisphere } from '../../shared/types/alignment.types'
-import { Camera, CameraStartCapture } from '../../shared/types/camera.types'
+import { Camera, CameraPreference, CameraStartCapture, cameraPreferenceKey } from '../../shared/types/camera.types'
 import { GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { AppComponent } from '../app.component'
-import { CameraPreference, cameraPreferenceKey } from '../camera/camera.component'
 
 @Component({
     selector: 'app-alignment',

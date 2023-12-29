@@ -5,6 +5,8 @@ import { Focuser } from './focuser.types'
 import { GuideOutput } from './guider.types'
 import { FilterWheel } from './wheel.types'
 
+export type CameraDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD'
+
 export type FrameType = 'LIGHT' | 'DARK' | 'FLAT' | 'BIAS'
 
 export type CfaPattern = 'RGGB' | 'BGGR' | 'GBRG' | 'GRBG' | 'GRGB' | 'GBGR' | 'RGBG' | 'BGRG'
@@ -201,3 +203,57 @@ export type CameraCaptureState = 'CAPTURE_STARTED' |
     'SETTLING' |
     'EXPOSURE_FINISHED' |
     'CAPTURE_FINISHED'
+
+export interface CameraDialogInput {
+    mode: CameraDialogMode
+    request: CameraStartCapture
+}
+
+export function cameraPreferenceKey(camera: Camera) {
+    return `camera.${camera.name}`
+}
+
+export interface CameraPreference extends Partial<CameraStartCapture> {
+    setpointTemperature?: number
+    exposureTimeUnit?: ExposureTimeUnit
+    exposureMode?: ExposureMode
+    subFrame?: boolean
+}
+
+export interface CameraExposureInfo {
+    count: number
+    remainingTime: number
+    progress: number
+}
+
+export const EMPTY_CAMERA_EXPOSURE_INFO: CameraExposureInfo = {
+    count: 0,
+    remainingTime: 0,
+    progress: 0,
+}
+
+export interface CameraCaptureInfo {
+    looping: boolean
+    amount: number
+    remainingTime: number
+    elapsedTime: number
+    progress: number
+}
+
+export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
+    looping: false,
+    amount: 0,
+    remainingTime: 0,
+    elapsedTime: 0,
+    progress: 0,
+}
+
+export interface CameraWaitInfo {
+    remainingTime: number
+    progress: number
+}
+
+export const EMPTY_CAMERA_WAIT_INFO: CameraWaitInfo = {
+    remainingTime: 0,
+    progress: 0,
+}

@@ -15,10 +15,10 @@
                       pTooltip="View image" tooltipPosition="bottom" />
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-wrench" (click)="openCameraCalibration()"
                       pTooltip="Calibration" tooltipPosition="bottom" />
-            <p-button *ngIf="!dialogMode" [disabled]="!camera || !camera.connected || running" [text]="true" [rounded]="true"
+            <p-button *ngIf="canShowMenu" [disabled]="!camera || !camera.connected || running" [text]="true" [rounded]="true"
                       icon="mdi mdi-dots-vertical" (click)="cameraMenu.show()" />
         </div>
-        <div *ngIf="!dialogMode" class="col-12 py-0 text-sm text-gray-400 flex align-items-center gap-1">
+        <div *ngIf="canShowSavePath" class="col-12 py-0 text-sm text-gray-400 flex align-items-center gap-1">
             <i *ngIf="request.autoSave" class="mdi mdi-content-save cursor-pointer" (click)="toggleAutoSaveAllExposures()" pTooltip="Auto save: ON"
                tooltipPosition="bottom" [positionLeft]="24" [positionTop]="8"></i>
             <i *ngIf="!request.autoSave" class="mdi mdi-content-save-off cursor-pointer" (click)="toggleAutoSaveAllExposures()"
@@ -40,7 +40,7 @@
                 {{ savePath || capturesPath }}
             </span>
         </div>
-        <div *ngIf="!dialogMode" class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"
+        <div *ngIf="canShowInfo" class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"
              style="min-height: 25px;">
             <i class="mdi mdi-information text-blue-600"></i>
             <span style="min-width: 44px" class="text-left mr-2">
@@ -110,19 +110,19 @@
         <div class="col-6">
             <div class="flex justify-content-center align-items-center gap-1">
                 <span class="p-float-label">
-                    <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.exposureTime" mode="decimal" [showButtons]="true"
-                                   [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" locale="en" styleClass="p-inputtext-sm border-0"
-                                   [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                    <p-inputNumber [disabled]="!canExposureTime || !camera.connected || running" [(ngModel)]="request.exposureTime" mode="decimal"
+                                   [showButtons]="true" [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" locale="en"
+                                   styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                     <label>Exposure Time</label>
                 </span>
                 <p-menu #exposureTimeMenu [model]="exposureTimeUnitModel" [popup]="true" appendTo="body" />
-                <button [disabled]="!camera.connected || running" pButton type="button" (click)="exposureTimeMenu.toggle($event)"
+                <button [disabled]="!canExposureTime || !camera.connected || running" pButton type="button" (click)="exposureTimeMenu.toggle($event)"
                         [label]="exposureTimeUnit"></button>
             </div>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [disabled]="!camera.connected || running" [options]="frameTypeOptions" [(ngModel)]="request.frameType"
+                <p-dropdown [disabled]="!canFrameType || !camera.connected || running" [options]="frameTypeOptions" [(ngModel)]="request.frameType"
                             styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false"
                             (ngModelChange)="savePreference()" />
                 <label>Frame Type</label>
@@ -132,16 +132,14 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6 flex-column">
             <span class="text-sm text-gray-100">Exposure Mode</span>
-            <p-selectButton [disabled]="dialogMode || !camera.connected || running" [options]="exposureModeOptions" [(ngModel)]="exposureMode"
-                            styleClass="p-inputtext-sm border-0"
-                            (ngModelChange)="savePreference()" />
+            <p-selectButton [disabled]="!canExposureMode || !camera.connected || running" [options]="exposureModeOptions" [(ngModel)]="exposureMode"
+                            styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || exposureMode === 'SINGLE' || running" [(ngModel)]="request.exposureDelay"
                                mode="decimal" [showButtons]="true" [step]="1" [min]="0" [max]="60" locale="en" styleClass="p-inputtext-sm border-0"
-                               [allowEmpty]="false"
-                               (ngModelChange)="savePreference()" />
+                               [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Delay (s)</label>
             </span>
         </div>
@@ -149,8 +147,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || exposureMode !== 'FIXED' || running" [(ngModel)]="request.exposureAmount"
                                mode="decimal" [showButtons]="true" [step]="1.0" [min]="1" [max]="1000" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
-                               (ngModelChange)="savePreference()" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Count</label>
             </span>
         </div>
@@ -242,11 +239,11 @@
     </div>
     <div class="grid mt-1">
         <div class="col-12 flex align-items-center justify-content-center gap-1">
-            <p-button *ngIf="!dialogMode" [disabled]="!camera.connected || running" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
+            <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || running" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
                       severity="success" />
-            <p-button *ngIf="!dialogMode" [disabled]="!camera.connected || !running" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
+            <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || !running" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
                       severity="danger" />
-            <p-button *ngIf="dialogMode" [disabled]="!camera.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
+            <p-button *ngIf="canSave" [disabled]="!camera.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
                       severity="info" />
         </div>
     </div>

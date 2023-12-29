@@ -8,12 +8,12 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureEvent, CameraCaptureState, CameraStartCapture } from '../../shared/types/camera.types'
+import { Camera, CameraCaptureEvent, CameraCaptureInfo, CameraCaptureState, CameraExposureInfo, CameraStartCapture, CameraWaitInfo, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_EXPOSURE_INFO, EMPTY_CAMERA_WAIT_INFO } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { EMPTY_SEQUENCE_PLAN, SequenceCaptureMode, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
-import { CameraCaptureInfo, CameraComponent, CameraExposureInfo, CameraWaitInfo, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_EXPOSURE_INFO, EMPTY_CAMERA_WAIT_INFO } from '../camera/camera.component'
+import { CameraComponent } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
 
 export const SEQUENCER_SAVED_PATH_KEY = 'sequencer.savedPath'
@@ -375,19 +375,13 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     async showCameraDialog(entry: CameraStartCapture) {
-        const result = await this.prime.open(CameraComponent, { header: 'Camera', width: 'calc(400px + 2.5rem)', data: Object.assign({}, entry) })
-
-        if (result) {
-            Object.assign(entry, result)
+        if (await CameraComponent.showAsDialog(this.prime, 'SEQUENCER', entry)) {
             this.savePlan()
         }
     }
 
     async showWheelDialog(entry: CameraStartCapture) {
-        const result = await this.prime.open(FilterWheelComponent, { header: 'Filter Wheel', width: 'calc(320px + 2.5rem)', data: Object.assign({}, entry) })
-
-        if (result) {
-            Object.assign(entry, result)
+        if (await FilterWheelComponent.showAsDialog(this.prime, 'SEQUENCER', entry)) {
             this.savePlan()
         }
     }
