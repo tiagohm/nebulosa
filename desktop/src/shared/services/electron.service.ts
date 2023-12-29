@@ -13,6 +13,7 @@ import { InternalEventType, JsonFile, OpenDirectory, OpenFile, SaveJson } from '
 import { Location } from '../types/atlas.types'
 import { Camera, CameraCaptureEvent } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
+import { FlatWizardEvent } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
 import { Mount } from '../types/mount.types'
@@ -49,6 +50,9 @@ type EventMappedType = {
     'DATA.CHANGED': any
     'LOCATION.CHANGED': Location
     'SEQUENCER.ELAPSED': SequencerEvent
+    'FLAT_WIZARD.ELAPSED': FlatWizardEvent
+    'FLAT_WIZARD.FRAME_CAPTURED': FlatWizardEvent
+    'FLAT_WIZARD.FAILED': FlatWizardEvent
 }
 
 @Injectable({ providedIn: 'root' })

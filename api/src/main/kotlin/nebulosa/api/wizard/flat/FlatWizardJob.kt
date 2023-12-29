@@ -35,7 +35,9 @@ data class FlatWizardJob(@JvmField val request: FlatWizardRequest) : SimpleJob()
 
     override fun onNext(event: MessageEvent) {
         if (event is CameraCaptureEvent) {
-            super.onNext(FlatWizardElapsed(step.cameraExposureStep!!.exposureTime, event))
+            super.onNext(FlatWizardElapsed(step.exposureTime, event))
         }
+
+        super.onNext(event)
     }
 }

@@ -3,13 +3,20 @@ package nebulosa.api.wizard.flat
 import nebulosa.api.cameras.AutoSubFolderMode
 import nebulosa.api.cameras.CameraCaptureListener
 import nebulosa.api.cameras.CameraExposureStep
+import nebulosa.api.cameras.CameraExposureStep.Companion.makeSavePath
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
 import nebulosa.fits.Fits
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.computation.Statistics
+import nebulosa.io.transferAndClose
 import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.inputStream
+import kotlin.io.path.outputStream
 
 data class FlatWizardStep(
     @JvmField val request: FlatWizardRequest,
@@ -21,12 +28,13 @@ data class FlatWizardStep(
     @Volatile var exposureMax = request.exposureMax
         private set
 
-    @Volatile var cameraExposureStep: CameraExposureStep? = null
+    @Volatile var exposureTime: Duration = Duration.ZERO
         private set
 
     @Volatile private var stopped = false
     @Volatile private var image: Image? = null
 
+    private val cameraExposureStep = AtomicReference<CameraExposureStep>()
     private val flatWizardExecutionListeners = HashSet<FlatWizardExecutionListener>()
     private val cameraCaptureListeners = HashSet<CameraCaptureListener>()
     private val meanTarget = request.meanTarget / 65535f
@@ -56,28 +64,36 @@ data class FlatWizardStep(
             return StepResult.FINISHED
         }
 
+        exposureTime = (exposureMax + exposureMin).dividedBy(2L)
+
         val cameraExposureStep = CameraExposureStep(
             request.captureRequest.copy(
-                exposureTime = (exposureMax + exposureMin).dividedBy(2L), exposureAmount = 1,
+                exposureTime = exposureTime, exposureAmount = 1,
                 autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF,
             )
         )
 
-        this.cameraExposureStep = cameraExposureStep
-
+        this.cameraExposureStep.set(cameraExposureStep)
         cameraCaptureListeners.forEach(cameraExposureStep::registerCameraCaptureListener)
+        cameraExposureStep.beforeJob(stepExecution.jobExecution)
         cameraExposureStep.execute(stepExecution)
+        cameraExposureStep.afterJob(stepExecution.jobExecution)
 
         val savedPath = cameraExposureStep.savedPath
 
         if (!stopped && savedPath != null) {
-            Fits(savedPath).use { fits ->
+            Fits(savedPath).also(Fits::read).use { fits ->
                 image = image?.load(fits) ?: Image.open(fits, false)
 
                 val statistics = STATISTICS.compute(image!!)
 
+                LOG.info("flat frame captured. duration={}, statistics={}", cameraExposureStep.exposureTime, statistics)
+
                 if (statistics.mean in meanRange) {
-                    flatWizardExecutionListeners.forEach { it.onFlatCaptured(this, savedPath, cameraExposureStep.exposureTime) }
+                    val path = request.captureRequest.makeSavePath(true)
+                    savedPath.inputStream().transferAndClose(path.outputStream())
+                    savedPath.deleteIfExists()
+                    flatWizardExecutionListeners.forEach { it.onFlatCaptured(this, path, cameraExposureStep.exposureTime) }
                 } else if (statistics.mean < meanRange.start) {
                     exposureMin = cameraExposureStep.exposureTime
                     return StepResult.CONTINUABLE
@@ -93,13 +109,12 @@ data class FlatWizardStep(
 
     override fun stop(mayInterruptIfRunning: Boolean) {
         stopped = true
-        cameraExposureStep?.stop(mayInterruptIfRunning)
-        cameraExposureStep = null
+        cameraExposureStep.getAndSet(null)?.stop(mayInterruptIfRunning)
     }
 
     companion object {
 
-        @JvmStatic private val STATISTICS = Statistics(noMedian = false, noDeviation = false)
+        @JvmStatic private val STATISTICS = Statistics(noMedian = true, noDeviation = true)
         @JvmStatic private val LOG = LoggerFactory.getLogger(FlatWizardStep::class.java)
     }
 }

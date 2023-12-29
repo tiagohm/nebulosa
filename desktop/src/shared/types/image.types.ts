@@ -6,7 +6,7 @@ export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY' | 'NONE'
 export const SCNR_PROTECTION_METHODS = ['MAXIMUM_MASK', 'ADDITIVE_MASK', 'AVERAGE_NEUTRAL', 'MAXIMUM_NEUTRAL', 'MINIMUM_NEUTRAL'] as const
 export type SCNRProtectionMethod = (typeof SCNR_PROTECTION_METHODS)[number]
 
-export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA'
+export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD'
 
 export interface FITSHeaderItem {
     name: string

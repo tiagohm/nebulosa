@@ -459,6 +459,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         if (data.source === 'FRAMING') {
             this.disableAutoStretch()
+        } else if (data.source === 'FLAT_WIZARD') {
+            this.disableCalibrate(false)
         }
 
         if (!data.camera) {
@@ -575,9 +577,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.autoStretchMenuItem.checked = false
     }
 
-    private disableCalibrate() {
+    private disableCalibrate(canEnable: boolean = true) {
         this.calibrate = false
         this.calibrateMenuItem.checked = false
+        this.calibrateMenuItem.disabled = !canEnable
     }
 
     autoStretch() {

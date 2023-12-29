@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import { MessageService } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -29,10 +30,12 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     filters: FilterSlot[] = []
     selectedFilters: FilterSlot[] = []
 
+    private readonly selectedFiltersMap = new Map<string, FilterSlot[]>()
+
     readonly request: FlatWizardRequest = {
         captureRequest: Object.assign({}, EMPTY_CAMERA_START_CAPTURE),
         exposureMin: 1,
-        exposureMax: 60000,
+        exposureMax: 2000,
         meanTarget: 32768,
         meanTolerance: 10,
     }
@@ -53,11 +56,38 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
         private storage: LocalStorageService,
         private route: ActivatedRoute,
         private prime: PrimeService,
+        private message: MessageService,
         ngZone: NgZone,
     ) {
         app.title = 'Flat Wizard'
 
+        electron.on('FLAT_WIZARD.ELAPSED', event => {
+            if (event.capture && event.capture.camera.name === this.camera?.name) {
+                ngZone.run(() => {
+                    if (event.capture?.state === 'CAPTURE_STARTED') {
+                        this.captureInProgress = true
+                    }
+                })
+            }
+        })
 
+        electron.on('FLAT_WIZARD.FRAME_CAPTURED', event => {
+            if (event.capture && event.capture.camera.name === this.camera?.name) {
+                ngZone.run(() => {
+                    this.captureInProgress = false
+                    this.message.add({ severity: 'success', detail: `Flat frame saved at ${event.savedPath}` })
+                })
+            }
+        })
+
+        electron.on('FLAT_WIZARD.FAILED', event => {
+            if (event.capture && event.capture.camera.name === this.camera?.name) {
+                ngZone.run(() => {
+                    this.captureInProgress = false
+                    this.message.add({ severity: 'error', detail: `Failed to find an optimal exposure time from given parameters` })
+                })
+            }
+        })
     }
 
     async ngAfterViewInit() {
@@ -130,16 +160,20 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
             }
 
             this.filters = filters
+
+            this.selectedFilters = this.selectedFiltersMap.get(this.wheel.name) ?? []
+            this.selectedFiltersMap.set(this.wheel.name, this.selectedFilters)
         }
     }
 
     async start() {
-        await this.browserWindow.openCameraImage(this.camera!)
+        await this.browserWindow.openCameraImage(this.camera!, 'FLAT_WIZARD')
         // TODO: Iniciar para cada filtro selecionado. Usar os eventos para percorrer (se houver filtro).
         // Se Falhar, interrompe todo o fluxo.
-        this.api.flatWizardStart(this.request)
+        this.api.flatWizardStart(this.camera!, this.request)
     }
 
     stop() {
+        this.api.flatWizardStop(this.camera!)
     }
 }

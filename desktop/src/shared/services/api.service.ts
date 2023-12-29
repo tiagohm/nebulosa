@@ -559,8 +559,12 @@ export class ApiService {
 
     // FLAT WIZARD
 
-    flatWizardStart(request: FlatWizardRequest) {
-        return this.http.put<void>(`flat-wizard/start`, request)
+    flatWizardStart(camera: Camera, request: FlatWizardRequest) {
+        return this.http.put<void>(`flat-wizard/${camera.name}/start`, request)
+    }
+
+    flatWizardStop(camera: Camera) {
+        return this.http.put<void>(`flat-wizard/${camera.name}/stop`)
     }
 
     // SOLVER

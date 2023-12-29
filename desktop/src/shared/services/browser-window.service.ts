@@ -10,6 +10,7 @@ import { Focuser } from '../types/focuser.types'
 import { Mount } from '../types/mount.types'
 import { FilterWheel } from '../types/wheel.types'
 import { ElectronService } from './electron.service'
+import { ImageSource } from '../types/image.types'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
@@ -55,10 +56,10 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'guider', path: 'guider', data: undefined })
     }
 
-    async openCameraImage(camera: Camera) {
+    async openCameraImage(camera: Camera, source: ImageSource = 'CAMERA') {
         const factor = camera.height / camera.width
         const id = `image.${camera.name}`
-        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `${factor}w`, resizable: true, data: { camera, source: 'CAMERA' } })
+        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `${factor}w`, resizable: true, data: { camera, source } })
         return id
     }
 

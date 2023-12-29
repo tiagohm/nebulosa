@@ -154,17 +154,9 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     }
 
     private fun save(stream: InputStream) {
-        savedPath = if (request.autoSave) {
-            val now = LocalDateTime.now()
-            val savePath = request.autoSubFolderMode.pathFor(request.savePath!!, now)
-            val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), request.frameType)
-            Path.of("$savePath", fileName)
-        } else {
-            val fileName = "%s.fits".format(camera.name)
-            Path.of("${request.savePath}", fileName)
-        }
-
         try {
+            savedPath = request.makeSavePath()
+
             LOG.info("saving FITS. path={}", savedPath)
 
             savedPath!!.createParentDirectories()
@@ -214,5 +206,18 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
 
         @JvmStatic private val LOG = loggerFor<CameraExposureStep>()
         @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmssSSS")
+
+        @JvmStatic
+        fun CameraStartCaptureRequest.makeSavePath(autoSave: Boolean = this.autoSave): Path {
+            return if (autoSave) {
+                val now = LocalDateTime.now()
+                val savePath = autoSubFolderMode.pathFor(savePath!!, now)
+                val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), frameType)
+                Path.of("$savePath", fileName)
+            } else {
+                val fileName = "%s.fits".format(camera!!.name)
+                Path.of("$savePath", fileName)
+            }
+        }
     }
 }
