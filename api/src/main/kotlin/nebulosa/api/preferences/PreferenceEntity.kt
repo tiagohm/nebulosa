@@ -1,13 +1,14 @@
 package nebulosa.api.preferences
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import io.objectbox.annotation.ConflictStrategy
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.annotation.Unique
+import nebulosa.api.entities.BoxEntity
 
 @Entity
-@Table(name = "preferences")
 data class PreferenceEntity(
-    @Id @Column(name = "key", columnDefinition = "TEXT") var key: String = "",
-    @Column(name = "value", columnDefinition = "TEXT") var value: String? = null,
-)
+    @Id override var id: Long = 0L,
+    @Unique(onConflict = ConflictStrategy.REPLACE) var key: String = "",
+    var value: String? = null,
+) : BoxEntity

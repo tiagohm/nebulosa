@@ -16,7 +16,7 @@ enum class AutoSubFolderMode {
         else -> ""
     }
 
-    fun pathFor(parentPath: Path, dateTime: LocalDateTime = LocalDateTime.now()): Path {
-        return if (this == OFF) parentPath else Path.of("$parentPath", directoryNameAt(dateTime))
+    fun pathFor(parentPath: Path, dateTime: LocalDateTime? = null): Path {
+        return if (this == OFF) parentPath else Path.of("$parentPath", directoryNameAt(dateTime ?: LocalDateTime.now()))
     }
 }

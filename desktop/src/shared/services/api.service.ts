@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
 import {
-    Angle, BodyPosition, CalibrationFrame, CalibrationFrameGroup, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation, DeepSkyObject, DetectedStar, Device,
-    FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
-    INDIProperty, INDISendProperty, ImageAnnotation, ImageCalibrated,
-    ImageChannel, ImageInfo, ListeningEventType, Location, MinorPlanet,
-    Mount, PlateSolverOptions, SCNRProtectionMethod, Satellite, SatelliteGroupType,
-    SettleInfo, SkyObjectType, SlewRate, Star, TrackMode, Twilight
+    Angle, BodyPosition, CalibrationFrame, CalibrationFrameGroup, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation,
+    DeepSkyObject, DetectedStar, Device, FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
+    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, Location, MinorPlanet, Mount, PlateSolverOptions,
+    SCNRProtectionMethod, Satellite, SatelliteGroupType, SequencePlan, SettleInfo, SkyObjectType, SlewRate, TrackMode, Twilight
 } from '../types'
 import { HttpService } from './http.service'
 
@@ -34,7 +32,7 @@ export class ApiService {
         return this.http.get<boolean>(`connection`)
     }
 
-    // CAMERA.
+    // CAMERA
 
     cameras() {
         return this.http.get<Camera[]>(`cameras`)
@@ -339,24 +337,26 @@ export class ApiService {
         return this.http.delete<void>(`image?${query}`)
     }
 
+    // INDI
+
     indiProperties(device: Device) {
-        return this.http.get<INDIProperty<any>[]>(`indiProperties?name=${device.name}`)
+        return this.http.get<INDIProperty<any>[]>(`indi/${device.name}/properties`)
     }
 
-    sendIndiProperty(device: Device, property: INDISendProperty) {
-        return this.http.post<void>(`sendIndiProperty?name=${device.name}`, property)
+    indiSendProperty(device: Device, property: INDISendProperty) {
+        return this.http.put<void>(`indi/${device.name}/send`, property)
     }
 
-    startListening(eventType: ListeningEventType) {
-        return this.http.post<void>(`startListening?eventType=${eventType}`)
+    indiStartListening(device: Device) {
+        return this.http.put<void>(`indi/listener/${device.name}/start`)
     }
 
-    stopListening(eventType: ListeningEventType) {
-        return this.http.post<void>(`stopListening?eventType=${eventType}`)
+    indiStopListening(device: Device) {
+        return this.http.put<void>(`indi/listener/${device.name}/stop`)
     }
 
     indiLog(device: Device) {
-        return this.http.get<string[]>(`indiLog?name=${device.name}`)
+        return this.http.get<string[]>(`indi/${device.name}/log`)
     }
 
     // LOCATION
@@ -419,82 +419,30 @@ export class ApiService {
         return this.http.get<[number, number][]>(`sky-atlas/planets/${encodeURIComponent(code)}/altitude-points?${query}`)
     }
 
-    positionOfStar(location: Location, star: Star, dateTime: Date) {
+    positionOfSkyObject(location: Location, simbad: DeepSkyObject, dateTime: Date) {
         const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
         const query = this.http.query({ location: location.id, date, time })
-        return this.http.get<BodyPosition>(`sky-atlas/stars/${star.id}/position?${query}`)
+        return this.http.get<BodyPosition>(`sky-atlas/sky-objects/${simbad.id}/position?${query}`)
     }
 
-    altitudePointsOfStar(location: Location, star: Star, dateTime: Date) {
+    altitudePointsOfSkyObject(location: Location, simbad: DeepSkyObject, dateTime: Date) {
         const date = moment(dateTime).format('YYYY-MM-DD')
         const query = this.http.query({ location: location.id, date })
-        return this.http.get<[number, number][]>(`sky-atlas/stars/${star.id}/altitude-points?${query}`)
+        return this.http.get<[number, number][]>(`sky-atlas/sky-objects/${simbad.id}/altitude-points?${query}`)
     }
 
-    searchStar(text: string,
+    searchSkyObject(text: string,
         rightAscension: Angle, declination: Angle, radius: Angle,
         constellation?: Constellation,
         magnitudeMin: number = -99, magnitudeMax: number = 99,
         type?: SkyObjectType,
     ) {
         const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
-        return this.http.get<Star[]>(`sky-atlas/stars?${query}`)
+        return this.http.get<DeepSkyObject[]>(`sky-atlas/sky-objects?${query}`)
     }
 
-    starTypes() {
-        return this.http.get<SkyObjectType[]>(`sky-atlas/stars/types`)
-    }
-
-    positionOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        const query = this.http.query({ location: location.id, date, time })
-        return this.http.get<BodyPosition>(`sky-atlas/dsos/${dso.id}/position?${query}`)
-    }
-
-    altitudePointsOfDSO(location: Location, dso: DeepSkyObject, dateTime: Date) {
-        const date = moment(dateTime).format('YYYY-MM-DD')
-        const query = this.http.query({ location: location.id, date })
-        return this.http.get<[number, number][]>(`sky-atlas/dsos/${dso.id}/altitude-points?${query}`)
-    }
-
-    searchDSO(text: string,
-        rightAscension: Angle, declination: Angle, radius: Angle,
-        constellation?: Constellation,
-        magnitudeMin: number = -99, magnitudeMax: number = 99,
-        type?: SkyObjectType,
-    ) {
-        const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
-        return this.http.get<DeepSkyObject[]>(`sky-atlas/dsos?${query}`)
-    }
-
-    dsoTypes() {
-        return this.http.get<SkyObjectType[]>(`sky-atlas/dsos/types`)
-    }
-
-    positionOfSimbad(location: Location, simbad: DeepSkyObject, dateTime: Date) {
-        const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-        const query = this.http.query({ location: location.id, date, time })
-        return this.http.get<BodyPosition>(`sky-atlas/simbad/${simbad.id}/position?${query}`)
-    }
-
-    altitudePointsOfSimbad(location: Location, simbad: DeepSkyObject, dateTime: Date) {
-        const date = moment(dateTime).format('YYYY-MM-DD')
-        const query = this.http.query({ location: location.id, date })
-        return this.http.get<[number, number][]>(`sky-atlas/simbad/${simbad.id}/altitude-points?${query}`)
-    }
-
-    searchSimbad(text: string,
-        rightAscension: Angle, declination: Angle, radius: Angle,
-        constellation?: Constellation,
-        magnitudeMin: number = -99, magnitudeMax: number = 99,
-        type?: SkyObjectType,
-    ) {
-        const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
-        return this.http.get<DeepSkyObject[]>(`sky-atlas/simbad?${query}`)
-    }
-
-    simbadTypes() {
-        return this.http.get<SkyObjectType[]>(`sky-atlas/simbad/types`)
+    skyObjectTypes() {
+        return this.http.get<SkyObjectType[]>(`sky-atlas/sky-objects/types`)
     }
 
     positionOfSatellite(location: Location, satellite: Satellite, dateTime: Date) {
@@ -560,6 +508,15 @@ export class ApiService {
         return this.http.put<CalibrationFrame[]>(`calibration-frames/${camera.name}?${query}`)
     }
 
+    editCalibrationFrame(frame: CalibrationFrame) {
+        const query = this.http.query({ path: frame.path, enabled: frame.enabled })
+        return this.http.patch<CalibrationFrame>(`calibration-frames/${frame.id}?${query}`)
+    }
+
+    deleteCalibrationFrame(frame: CalibrationFrame) {
+        return this.http.delete<void>(`calibration-frames/${frame.id}`)
+    }
+
     // FRAMING
 
     frame(rightAscension: Angle, declination: Angle,
@@ -573,13 +530,23 @@ export class ApiService {
     // DARV
 
     darvStart(camera: Camera, guideOutput: GuideOutput,
-        exposureTime: number, initialPause: number, direction: GuideDirection, reversed: boolean = false) {
-        const data = { exposureTime, initialPause, direction, reversed }
+        exposureTime: number, initialPause: number, direction: GuideDirection, reversed: boolean = false, capture?: CameraStartCapture) {
+        const data = { capture, exposureTime, initialPause, direction, reversed }
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
     }
 
     darvStop(camera: Camera, guideOutput: GuideOutput) {
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/stop`)
+    }
+
+    // SEQUENCER
+
+    sequencerStart(plan: SequencePlan) {
+        return this.http.put<void>(`sequencer/start`, plan)
+    }
+
+    sequencerStop() {
+        return this.http.put<void>(`sequencer/stop`)
     }
 
     // SOLVER
@@ -589,14 +556,14 @@ export class ApiService {
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ) {
         const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
-        return this.http.put<ImageCalibrated>(`plate-solver?${query}`)
+        return this.http.put<ImageSolved>(`plate-solver?${query}`)
     }
 
     getPlateSolverSettings() {
         return this.http.get<PlateSolverOptions>('plate-solver/settings')
     }
 
-    setPlateSolverSettings(settings: PlateSolverOptions) {
+    updatePlateSolverSettings(settings: PlateSolverOptions) {
         return this.http.put<void>('plate-solver/settings', settings)
     }
 

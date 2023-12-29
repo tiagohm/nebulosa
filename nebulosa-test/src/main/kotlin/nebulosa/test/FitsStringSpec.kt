@@ -15,7 +15,7 @@ import kotlin.io.path.*
 @Suppress("PropertyName")
 abstract class FitsStringSpec : StringSpec() {
 
-    protected val FITS_DIR = "../nebulosa-test/src/main/resources/fits"
+    protected val FITS_DIR = "../data/fits"
 
     protected val NGC3344_COLOR_8 by lazy { Fits("$FITS_DIR/NGC3344.Color.8.fits").also(Fits::read) }
     protected val NGC3344_COLOR_16 by lazy { Fits("$FITS_DIR/NGC3344.Color.16.fits").also(Fits::read) }

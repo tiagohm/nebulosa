@@ -9,6 +9,8 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { Angle, HipsSurvey } from '../../shared/types'
 import { AppComponent } from '../app.component'
 
+export const FRAMING_KEY = 'framing'
+
 export interface FramingPreference {
     rightAscension?: Angle
     declination?: Angle
@@ -119,7 +121,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadPreference() {
-        const preference = this.storage.get<FramingPreference>('framing', {})
+        const preference = this.storage.get<FramingPreference>(FRAMING_KEY, {})
 
         this.rightAscension = preference.rightAscension ?? '00h00m00s'
         this.declination = preference.declination ?? `+00°00'00"`
@@ -141,7 +143,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
             hipsSurvey: this.hipsSurvey,
         }
 
-        this.storage.set('framing', preference)
+        this.storage.set(FRAMING_KEY, preference)
     }
 
     private async closeFrameImage() {

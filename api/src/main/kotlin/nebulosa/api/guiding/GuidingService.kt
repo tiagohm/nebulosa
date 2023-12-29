@@ -1,9 +1,8 @@
 package nebulosa.api.guiding
 
-import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
+import nebulosa.api.messages.MessageService
 import nebulosa.api.preferences.PreferenceService
-import nebulosa.api.services.MessageService
 import nebulosa.guiding.GuideStar
 import nebulosa.guiding.GuideState
 import nebulosa.guiding.Guider
@@ -33,17 +32,13 @@ class GuidingService(
     val settleTimeout
         get() = guider.settleTimeout
 
-    @PostConstruct
-    private fun initialize() {
-        settle(preferenceService.getJSON<SettleInfo>("GUIDING.SETTLE") ?: SettleInfo.EMPTY)
-    }
-
     @Synchronized
     fun connect(host: String, port: Int) {
         check(!phd2Client.isOpen)
 
         phd2Client.open(host, port)
         guider.registerGuiderListener(this)
+        settle(preferenceService.getJSON<SettleInfo>("GUIDING.SETTLE") ?: SettleInfo.EMPTY)
         messageService.sendMessage(GuiderMessageEvent(GUIDER_CONNECTED))
     }
 

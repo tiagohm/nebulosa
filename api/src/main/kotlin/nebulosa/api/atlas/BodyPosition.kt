@@ -1,9 +1,9 @@
 package nebulosa.api.atlas
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import nebulosa.api.beans.converters.DegreeMinuteSecondSerializer
-import nebulosa.api.beans.converters.HourMinuteSecondSerializer
-import nebulosa.api.beans.converters.SignedDegreeMinuteSecondSerializer
+import nebulosa.api.beans.converters.angle.AzimuthSerializer
+import nebulosa.api.beans.converters.angle.DeclinationSerializer
+import nebulosa.api.beans.converters.angle.RightAscensionSerializer
 import nebulosa.constants.AU_KM
 import nebulosa.constants.SPEED_OF_LIGHT
 import nebulosa.horizons.HorizonsElement
@@ -14,17 +14,17 @@ import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 
 data class BodyPosition(
-    @JsonSerialize(using = HourMinuteSecondSerializer::class)
+    @JsonSerialize(using = RightAscensionSerializer::class)
     val rightAscensionJ2000: Angle,
-    @JsonSerialize(using = SignedDegreeMinuteSecondSerializer::class)
+    @JsonSerialize(using = DeclinationSerializer::class)
     val declinationJ2000: Angle,
-    @JsonSerialize(using = HourMinuteSecondSerializer::class)
+    @JsonSerialize(using = RightAscensionSerializer::class)
     val rightAscension: Angle,
-    @JsonSerialize(using = SignedDegreeMinuteSecondSerializer::class)
+    @JsonSerialize(using = DeclinationSerializer::class)
     val declination: Angle,
-    @JsonSerialize(using = DegreeMinuteSecondSerializer::class)
+    @JsonSerialize(using = AzimuthSerializer::class)
     val azimuth: Angle,
-    @JsonSerialize(using = SignedDegreeMinuteSecondSerializer::class)
+    @JsonSerialize(using = DeclinationSerializer::class)
     val altitude: Angle,
     val magnitude: Double,
     val constellation: Constellation,

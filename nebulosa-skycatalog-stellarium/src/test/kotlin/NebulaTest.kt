@@ -1,21 +1,21 @@
 import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.ints.shouldBeExactly
-import nebulosa.io.resource
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.skycatalog.stellarium.Nebula
 import nebulosa.test.NonGitHubOnlyCondition
 import okio.gzip
 import okio.source
+import java.nio.file.Path
 
 @EnabledIf(NonGitHubOnlyCondition::class)
 class NebulaTest : StringSpec() {
 
     init {
         val nebula = Nebula()
-        val catalog = resource("catalog.dat")!!.source().gzip()
-        val names = resource("names.dat")!!.source()
+        val catalog = Path.of("../data/catalog.dat").source().gzip()
+        val names = Path.of("../data/names.dat").source()
         nebula.load(catalog, names)
 
         "load" {

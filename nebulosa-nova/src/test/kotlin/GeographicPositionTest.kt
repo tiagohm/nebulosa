@@ -2,7 +2,6 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.io.resource
 import nebulosa.math.deg
 import nebulosa.math.hms
 import nebulosa.math.m
@@ -11,12 +10,14 @@ import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UT1
+import java.nio.file.Path
+import kotlin.io.path.inputStream
 
 class GeographicPositionTest : StringSpec() {
 
     init {
         val iersa = IERSA()
-        iersa.load(resource("finals2000A.all")!!)
+        iersa.load(Path.of("../data/finals2000A.all").inputStream())
         IERS.attach(iersa)
 
         "lst" {

@@ -1,13 +1,13 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.io.resource
-import nebulosa.io.source
+import nebulosa.io.seekableSource
 import nebulosa.nasa.daf.RemoteDaf
 import nebulosa.nasa.daf.SourceDaf
 import nebulosa.nasa.spk.Spk
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
+import java.nio.file.Path
 
 class SpkTest : StringSpec() {
 
@@ -35,7 +35,7 @@ class SpkTest : StringSpec() {
             v[2] shouldBe (1.580159029289274E-03 plusOrMinus 1e-6)
         }
         "65803 Didymos (Type 21)" {
-            val spk = Spk(SourceDaf(resource("65803 Didymos.bsp")!!.readBytes().source()))
+            val spk = Spk(SourceDaf(Path.of("../data/65803 Didymos.bsp").seekableSource()))
             val (p, v) = spk[10, 2065803]!!.compute(UTC(TimeYMDHMS(2022, 12, 8, 20, 7, 15.0)))
             p[0] shouldBe (1.231026319338612E-01 plusOrMinus 1e-2)
             p[1] shouldBe (1.022833989843715E+00 plusOrMinus 1e-2)

@@ -16,7 +16,7 @@ export class LocationDialog implements AfterViewInit {
 
     constructor(
         private dialogRef: DynamicDialogRef,
-        config: DynamicDialogConfig,
+        config: DynamicDialogConfig<Location>,
     ) {
         this.location = config.data!
     }

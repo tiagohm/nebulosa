@@ -26,7 +26,7 @@
 * https://www.flaticon.com/free-icon/stars_3266390
 * https://www.flaticon.com/free-icon/milky-way_1086076
 * https://www.flaticon.com/free-icon/satellite_1086093
-* https://www.flaticon.com/free-icon/schedule_3652191
 * https://www.flaticon.com/free-icon/search_10770011
 * https://www.flaticon.com/free-icon/stack_3342239
+* https://www.flaticon.com/free-icon/workflow_7400612
 * https://thenounproject.com/icon/random-dither-4259782

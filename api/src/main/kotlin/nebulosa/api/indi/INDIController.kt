@@ -1,36 +1,50 @@
 package nebulosa.api.indi
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
-import nebulosa.api.connection.ConnectionService
+import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
+import nebulosa.indi.device.Device
 import nebulosa.indi.device.PropertyVector
 import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("indi")
 class INDIController(
-    private val connectionService: ConnectionService,
     private val indiService: INDIService,
+    private val indiEventHandler: INDIEventHandler,
 ) {
 
-    @GetMapping("indiProperties")
-    fun properties(@RequestParam @Valid @NotBlank name: String): Collection<PropertyVector<*, *>> {
-        val device = requireNotNull(connectionService.device(name))
+    @GetMapping("{device}/properties")
+    fun properties(@DeviceOrEntityParam device: Device): Collection<PropertyVector<*, *>> {
         return indiService.properties(device)
     }
 
-    @PostMapping("sendIndiProperty")
+    @PutMapping("{device}/send")
     fun sendProperty(
-        @RequestParam @Valid @NotBlank name: String,
+        @DeviceOrEntityParam device: Device,
         @RequestBody @Valid body: INDISendProperty,
     ) {
-        val device = requireNotNull(connectionService.device(name))
         return indiService.sendProperty(device, body)
     }
 
-    @GetMapping("indiLog")
-    fun indiLog(@RequestParam(required = false) name: String?): List<String> {
-        if (name.isNullOrBlank()) return indiService.messages()
-        val device = connectionService.device(name) ?: return emptyList()
+    @GetMapping("{device}/log")
+    fun log(@DeviceOrEntityParam device: Device): List<String> {
         return device.messages
+    }
+
+    @GetMapping("log")
+    fun log(): List<String> {
+        return indiService.messages()
+    }
+
+    @Synchronized
+    @PutMapping("listener/{device}/start")
+    fun startListening(device: Device) {
+        indiEventHandler.canSendEvents.add(device)
+    }
+
+    @Synchronized
+    @PutMapping("listener/{device}/stop")
+    fun stopListening(device: Device) {
+        indiEventHandler.canSendEvents.remove(device)
     }
 }

@@ -19,8 +19,12 @@ interface SkyObject {
 
     companion object {
 
-        const val UNKNOWN_MAGNITUDE = 99.0
+        const val UNKNOWN_MAGNITUDE = 30.0
+        const val MAGNITUDE_MIN = -UNKNOWN_MAGNITUDE
+        const val MAGNITUDE_MAX = UNKNOWN_MAGNITUDE
         const val NAME_SEPARATOR = "|"
+
+        @JvmStatic val MAGNITUDE_RANGE = MAGNITUDE_MIN..MAGNITUDE_MAX
 
         @JvmStatic
         fun computeConstellation(rightAscension: Angle, declination: Angle, time: UTC): Constellation {

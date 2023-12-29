@@ -1,16 +1,33 @@
 package nebulosa.api.preferences
 
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Query
-import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Isolation
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
+import io.objectbox.Box
+import io.objectbox.query.QueryBuilder.StringOrder.CASE_SENSITIVE
+import nebulosa.api.repositories.BoxRepository
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.stereotype.Component
 
-@Repository
-@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-interface PreferenceRepository : JpaRepository<PreferenceEntity, String> {
+@Component
+class PreferenceRepository(@Qualifier("preferenceBox") override val box: Box<PreferenceEntity>) : BoxRepository<PreferenceEntity>() {
 
-    @Query("SELECT p.key FROM PreferenceEntity p")
-    fun keys(): Set<String>
+    fun existsByKey(key: String): Boolean {
+        return box.query()
+            .equal(PreferenceEntity_.key, key, CASE_SENSITIVE)
+            .build()
+            .use { it.findUnique() != null }
+    }
+
+    fun findByKey(key: String): PreferenceEntity? {
+        return box.query()
+            .equal(PreferenceEntity_.key, key, CASE_SENSITIVE)
+            .build()
+            .use { it.findUnique() }
+    }
+
+    @Synchronized
+    fun deleteByKey(key: String) {
+        return box.query()
+            .equal(PreferenceEntity_.key, key, CASE_SENSITIVE)
+            .build()
+            .use { it.remove() }
+    }
 }

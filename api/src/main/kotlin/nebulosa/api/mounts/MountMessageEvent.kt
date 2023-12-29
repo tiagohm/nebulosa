@@ -1,6 +1,6 @@
 package nebulosa.api.mounts
 
-import nebulosa.api.services.DeviceMessageEvent
+import nebulosa.api.messages.DeviceMessageEvent
 import nebulosa.indi.device.mount.Mount
 
 data class MountMessageEvent(

@@ -33,7 +33,6 @@ import nebulosa.indi.protocol.DefTextVector
 import nebulosa.indi.protocol.DelProperty
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.Message
-import nebulosa.indi.protocol.io.INDIInputStream
 import nebulosa.indi.protocol.parser.INDIProtocolParser
 import nebulosa.indi.protocol.parser.INDIProtocolReader
 import nebulosa.log.debug
@@ -54,16 +53,6 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
     @Volatile private var protocolReader: INDIProtocolReader? = null
     private val messageQueueCounter = HashMap<INDIProtocol, Int>(2048)
     private val handlers = ArrayList<DeviceEventHandler>()
-
-    override val input = object : INDIInputStream {
-
-        override fun readINDIProtocol(): INDIProtocol {
-            Thread.sleep(1)
-            return messageReorderingQueue.take()
-        }
-
-        override fun close() = Unit
-    }
 
     val isRunning
         get() = protocolReader != null
@@ -190,6 +179,20 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
 
                     var registered = false
 
+                    fun takeMessageFromReorderingQueue(device: Device) {
+                        if (messageReorderingQueue.isNotEmpty()) {
+                            repeat(messageReorderingQueue.size) {
+                                val queuedMessage = messageReorderingQueue.take()
+
+                                if (queuedMessage.device == device.name) {
+                                    handleMessage(queuedMessage)
+                                } else {
+                                    messageReorderingQueue.offer(message)
+                                }
+                            }
+                        }
+                    }
+
                     if (executable in Camera.DRIVERS) {
                         registered = true
 
@@ -197,6 +200,7 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
                             val device = CAMERAS[executable]?.create(this, message.device)
                                 ?: CameraDevice(this, message.device)
                             cameras[message.device] = device
+                            takeMessageFromReorderingQueue(device)
                             LOG.info("camera attached: {}", device.name)
                             fireOnEventReceived(CameraAttached(device))
                         }
@@ -209,6 +213,7 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
                             val device = MOUNTS[executable]?.create(this, message.device)
                                 ?: MountDevice(this, message.device)
                             mounts[message.device] = device
+                            takeMessageFromReorderingQueue(device)
                             LOG.info("mount attached: {}", device.name)
                             fireOnEventReceived(MountAttached(device))
                         }
@@ -220,6 +225,7 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
                         if (message.device !in wheels) {
                             val device = FilterWheelDevice(this, message.device)
                             wheels[message.device] = device
+                            takeMessageFromReorderingQueue(device)
                             LOG.info("filter wheel attached: {}", device.name)
                             fireOnEventReceived(FilterWheelAttached(device))
                         }
@@ -231,6 +237,7 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
                         if (message.device !in focusers) {
                             val device = FocuserDevice(this, message.device)
                             focusers[message.device] = device
+                            takeMessageFromReorderingQueue(device)
                             LOG.info("focuser attached: {}", device.name)
                             fireOnEventReceived(FocuserAttached(device))
                         }
@@ -242,6 +249,7 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
                         if (message.device !in gps) {
                             val device = GPSDevice(this, message.device)
                             gps[message.device] = device
+                            takeMessageFromReorderingQueue(device)
                             LOG.info("gps attached: {}", device.name)
                             fireOnEventReceived(GPSAttached(device))
                         }

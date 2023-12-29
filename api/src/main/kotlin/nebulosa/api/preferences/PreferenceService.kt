@@ -1,7 +1,6 @@
 package nebulosa.api.preferences
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
@@ -10,14 +9,11 @@ class PreferenceService(
     private val objectMapper: ObjectMapper,
 ) {
 
-    fun keys() = preferenceRepository.keys()
+    operator fun get(key: String) = preferenceRepository.findByKey(key)
 
-    operator fun get(key: String) = preferenceRepository.findByIdOrNull(key)
+    fun put(entity: PreferenceEntity) = preferenceRepository.save(entity)
 
-    @Synchronized
-    fun put(entity: PreferenceEntity): Unit = run { preferenceRepository.saveAndFlush(entity) }
-
-    operator fun contains(key: String) = preferenceRepository.existsById(key)
+    operator fun contains(key: String) = preferenceRepository.existsByKey(key)
 
     fun <T> getJSON(key: String, type: Class<out T>): T? = this[key]?.value?.let { objectMapper.readValue(it, type) }
 
@@ -35,7 +31,7 @@ class PreferenceService(
 
     fun getDouble(key: String) = getJSON(key, Double::class.java)
 
-    fun putJSON(key: String, value: Any?) = put(PreferenceEntity(key, if (value == null) null else objectMapper.writeValueAsString(value)))
+    fun putJSON(key: String, value: Any?) = put(PreferenceEntity(0L, key, if (value == null) null else objectMapper.writeValueAsString(value)))
 
     fun putBoolean(key: String, value: Boolean) = putJSON(key, value)
 
@@ -49,23 +45,7 @@ class PreferenceService(
 
     fun putDouble(key: String, value: Double) = putJSON(key, value)
 
-    @Synchronized
     fun clear() = preferenceRepository.deleteAll()
 
-    @Synchronized
-    fun delete(key: String) = preferenceRepository.deleteById(key)
-
-    final inline var skyAtlasVersion
-        get() = getText(SKY_ATLAS_VERSION)
-        set(value) = putText(SKY_ATLAS_VERSION, value)
-
-    final inline var satellitesUpdatedAt
-        get() = getLong(SATELLITES_UPDATED_AT) ?: 0L
-        set(value) = putLong(SATELLITES_UPDATED_AT, value)
-
-    companion object {
-
-        const val SKY_ATLAS_VERSION = "SKY_ATLAS_VERSION"
-        const val SATELLITES_UPDATED_AT = "SATELLITES_UPDATED_AT"
-    }
+    fun delete(key: String) = preferenceRepository.deleteByKey(key)
 }

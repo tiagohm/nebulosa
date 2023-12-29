@@ -1,7 +1,6 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.io.resource
 import nebulosa.math.*
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
@@ -9,12 +8,14 @@ import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import nebulosa.time.TimeJD
 import nebulosa.time.TimeYMDHMS
+import java.nio.file.Path
+import kotlin.io.path.inputStream
 
 class ICRFTest : StringSpec() {
 
     init {
         val iersa = IERSA()
-        iersa.load(resource("finals2000A.all")!!)
+        iersa.load(Path.of("../data/finals2000A.all").inputStream())
         IERS.attach(iersa)
 
         "equatorial at date to equatorial J2000" {

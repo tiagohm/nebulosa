@@ -339,14 +339,14 @@ internal open class CameraDevice(
 
     override fun close() {
         if (hasThermometer) {
-            hasThermometer = false
             handler.unregisterThermometer(this)
+            hasThermometer = false
             LOG.info("thermometer detached: {}", name)
         }
 
         if (canPulseGuide) {
-            canPulseGuide = false
             handler.unregisterGuideOutput(this)
+            canPulseGuide = false
             LOG.info("guide output detached: {}", name)
         }
     }

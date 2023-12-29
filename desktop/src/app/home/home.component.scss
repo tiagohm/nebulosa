@@ -1,4 +1,6 @@
 p-button ::ng-deep {
+    display: contents;
+
     &.open {
         min-height: 56px;
         max-height: 56px;

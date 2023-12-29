@@ -1,9 +1,11 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.beans.annotations.EntityBy
+import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.guide.GuideOutput
+import org.hibernate.validator.constraints.time.DurationMax
+import org.hibernate.validator.constraints.time.DurationMin
 import org.springframework.web.bind.annotation.*
 import java.time.Duration
 
@@ -20,25 +22,26 @@ class GuideOutputController(
     }
 
     @GetMapping("{guideOutput}")
-    fun guideOutput(@EntityBy guideOutput: GuideOutput): GuideOutput {
+    fun guideOutput(@DeviceOrEntityParam guideOutput: GuideOutput): GuideOutput {
         return guideOutput
     }
 
     @PutMapping("{guideOutput}/connect")
-    fun connect(@EntityBy guideOutput: GuideOutput) {
+    fun connect(@DeviceOrEntityParam guideOutput: GuideOutput) {
         guideOutputService.connect(guideOutput)
     }
 
     @PutMapping("{guideOutput}/disconnect")
-    fun disconnect(@EntityBy guideOutput: GuideOutput) {
+    fun disconnect(@DeviceOrEntityParam guideOutput: GuideOutput) {
         guideOutputService.disconnect(guideOutput)
     }
 
     @PutMapping("{guideOutput}/pulse")
     fun pulse(
-        @EntityBy guideOutput: GuideOutput,
-        @RequestParam direction: GuideDirection, @RequestParam duration: Long,
+        @DeviceOrEntityParam guideOutput: GuideOutput,
+        @RequestParam direction: GuideDirection,
+        @RequestParam @DurationMin(nanos = 0L) @DurationMax(seconds = 60L) duration: Duration,
     ) {
-        guideOutputService.pulse(guideOutput, direction, Duration.ofNanos(duration * 1000L))
+        guideOutputService.pulse(guideOutput, direction, duration)
     }
 }

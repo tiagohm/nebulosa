@@ -1,6 +1,6 @@
 import { Injectable, Type } from '@angular/core'
 import { ConfirmEventType, ConfirmationService } from 'primeng/api'
-import { DialogService } from 'primeng/dynamicdialog'
+import { DialogService, DynamicDialogConfig } from 'primeng/dynamicdialog'
 
 @Injectable({ providedIn: 'root' })
 export class PrimeService {
@@ -10,16 +10,18 @@ export class PrimeService {
         private confirmation: ConfirmationService,
     ) { }
 
-    open<T>(componentType: Type<any>, config: { header: string, draggable?: boolean, data?: T }) {
+    open<T>(componentType: Type<any>, config: DynamicDialogConfig<T>) {
         const ref = this.dialog.open(componentType, {
             ...config,
             draggable: config.draggable ?? true,
             resizable: false,
-            width: '80vw',
+            width: config.width || '80vw',
             style: {
-                'max-width': '360px',
+                ...config.style,
+                'max-width': '480px',
             },
             contentStyle: {
+                ...config.contentStyle,
                 'overflow-y': 'hidden',
             },
         })

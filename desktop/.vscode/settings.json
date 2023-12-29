@@ -5,7 +5,7 @@
   "typescript.preferences.quoteStyle": "single",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.organizeImports": true
+    "source.organizeImports": "explicit"
   },
   "html.format.wrapAttributes": "preserve-aligned",
   "html.format.wrapLineLength": 150,

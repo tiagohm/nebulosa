@@ -27,7 +27,10 @@ class INDIProtocolReader(
                 val message = input.readINDIProtocol() ?: break
                 parser.handleMessage(message)
             }
+
+            LOG.info("protocol parser finished")
         } catch (_: InterruptedException) {
+            LOG.info("protocol parser interrupted")
         } catch (e: Throwable) {
             LOG.error("protocol parser error", e)
             parser.close()

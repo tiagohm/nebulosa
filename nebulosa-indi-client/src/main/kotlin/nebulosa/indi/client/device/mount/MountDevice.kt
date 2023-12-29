@@ -258,25 +258,25 @@ internal open class MountDevice(
 
     override fun guideNorth(duration: Duration) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toNanos() / 1000.0, "TIMED_GUIDE_S" to 0.0)
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toMillis().toDouble(), "TIMED_GUIDE_S" to 0.0)
         }
     }
 
     override fun guideSouth(duration: Duration) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toNanos() / 1000.0, "TIMED_GUIDE_N" to 0.0)
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toMillis().toDouble(), "TIMED_GUIDE_N" to 0.0)
         }
     }
 
     override fun guideEast(duration: Duration) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toNanos() / 1000.0, "TIMED_GUIDE_W" to 0.0)
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toMillis().toDouble(), "TIMED_GUIDE_W" to 0.0)
         }
     }
 
     override fun guideWest(duration: Duration) {
         if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toNanos() / 1000.0, "TIMED_GUIDE_E" to 0.0)
+            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toMillis().toDouble(), "TIMED_GUIDE_E" to 0.0)
         }
     }
 

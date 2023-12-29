@@ -12,7 +12,7 @@ class LocationService(
     }
 
     fun location(id: Long): LocationEntity {
-        return locationRepository.findById(id).get()
+        return locationRepository.find(id)!!
     }
 
     fun selected(): LocationEntity? {
@@ -21,14 +21,14 @@ class LocationService(
 
     @Synchronized
     fun save(location: LocationEntity): LocationEntity {
-        location.id = if (location.id <= 0L) System.currentTimeMillis() else location.id
         if (location.selected) locationRepository.unselectedAll()
-        return locationRepository.save(location)
+        locationRepository.save(location)
+        return location
     }
 
     @Synchronized
     fun delete(id: Long) {
-        if (id > 0L && locationRepository.count() > 1) {
+        if (id > 0L && locationRepository.size > 1) {
             var location = location(id)
 
             locationRepository.delete(location)

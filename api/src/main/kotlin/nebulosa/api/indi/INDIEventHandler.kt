@@ -1,7 +1,7 @@
 package nebulosa.api.indi
 
 import nebulosa.api.beans.annotations.Subscriber
-import nebulosa.api.services.MessageService
+import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -14,8 +14,7 @@ class INDIEventHandler(
     private val messageService: MessageService,
 ) : LinkedList<String>() {
 
-    var canSendEvents = false
-        internal set
+    val canSendEvents = HashSet<Device>()
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onDeviceEvent(event: DeviceEvent<*>) {
@@ -33,19 +32,19 @@ class INDIEventHandler(
     }
 
     fun sendINDIPropertyChanged(event: DevicePropertyEvent) {
-        if (canSendEvents) {
+        if (event.device in canSendEvents) {
             messageService.sendMessage(INDIMessageEvent(DEVICE_PROPERTY_CHANGED, event))
         }
     }
 
     fun sendINDIPropertyDeleted(event: DevicePropertyEvent) {
-        if (canSendEvents) {
+        if (event.device in canSendEvents) {
             messageService.sendMessage(INDIMessageEvent(DEVICE_PROPERTY_DELETED, event))
         }
     }
 
     fun sendINDIMessageReceived(event: DeviceMessageReceived) {
-        if (canSendEvents) {
+        if (event.device in canSendEvents) {
             messageService.sendMessage(INDIMessageEvent(DEVICE_MESSAGE_RECEIVED, event))
         }
     }

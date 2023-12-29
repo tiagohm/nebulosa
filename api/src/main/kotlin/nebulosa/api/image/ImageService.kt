@@ -3,6 +3,7 @@ package nebulosa.api.image
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.calibration.CalibrationFrameService
+import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.fits.*
@@ -22,12 +23,12 @@ import nebulosa.watney.star.detection.WatneyStarDetector
 import nebulosa.wcs.WCSException
 import nebulosa.wcs.WCSTransform
 import org.springframework.http.HttpStatus
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
 import javax.imageio.ImageIO
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -41,7 +42,8 @@ class ImageService(
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
-    private val systemExecutorService: ExecutorService,
+    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
+    private val connectionService: ConnectionService,
 ) {
 
     @Synchronized
@@ -101,6 +103,7 @@ class ImageService(
                 .filter { it.key.isNotBlank() && it.value.isNotBlank() }
                 .map { ImageHeaderItem(it.key, it.value) }
                 .toList(),
+            image.header.instrument?.let(connectionService::camera),
         )
 
         output.addHeader("X-Image-Info", objectMapper.writeValueAsString(info))
@@ -141,9 +144,9 @@ class ImageService(
         val dateTime = image.header.observationDate
 
         if (minorPlanets && dateTime != null) {
-            CompletableFuture.runAsync({
-                val latitude = image.header.latitude.let { if (it.isFinite()) it else 0.0 }
-                val longitude = image.header.longitude.let { if (it.isFinite()) it else 0.0 }
+            threadPoolTaskExecutor.submitCompletable {
+                val latitude = image.header.latitude ?: 0.0
+                val longitude = image.header.longitude ?: 0.0
 
                 LOG.info(
                     "finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}",
@@ -154,7 +157,7 @@ class ImageService(
                     dateTime, latitude, longitude, 0.0,
                     calibration.rightAscension, calibration.declination, calibration.radius,
                     minorPlanetMagLimit,
-                ).execute().body() ?: return@runAsync
+                ).execute().body() ?: return@submitCompletable
 
                 val radiusInSeconds = calibration.radius.toArcsec
                 var count = 0
@@ -174,13 +177,14 @@ class ImageService(
                 }
 
                 LOG.info("Found {} minor planets", count)
-            }, systemExecutorService).whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
+            }.whenComplete { _, e -> e?.printStackTrace() }
+                .also(tasks::add)
         }
 
         // val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
 
         if (stars || dsos) {
-            CompletableFuture.runAsync({
+            threadPoolTaskExecutor.submitCompletable {
                 LOG.info("finding star annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 val types = ArrayList<SkyObjectType>(4)
@@ -227,7 +231,8 @@ class ImageService(
                 }
 
                 LOG.info("Found {} stars/DSOs", count)
-            }, systemExecutorService).whenComplete { _, e -> e?.printStackTrace() }.also(tasks::add)
+            }.whenComplete { _, e -> e?.printStackTrace() }
+                .also(tasks::add)
         }
 
         CompletableFuture.allOf(*tasks.toTypedArray()).join()
