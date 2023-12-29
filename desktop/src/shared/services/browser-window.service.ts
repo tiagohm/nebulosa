@@ -1,10 +1,15 @@
 import { Injectable } from '@angular/core'
 import { v4 as uuidv4 } from 'uuid'
+import { SkyAtlasData } from '../../app/atlas/atlas.component'
 import { FramingData } from '../../app/framing/framing.component'
 import { ImageData } from '../../app/image/image.component'
-import { Camera, Device, FilterWheel, Focuser, Mount, OpenWindow, OpenWindowOptions } from '../types'
+import { OpenWindow, OpenWindowOptions } from '../types/app.types'
+import { Camera } from '../types/camera.types'
+import { Device } from '../types/device.types'
+import { Focuser } from '../types/focuser.types'
+import { Mount } from '../types/mount.types'
+import { FilterWheel } from '../types/wheel.types'
 import { ElectronService } from './electron.service'
-import { SkyAtlasData } from '../../app/atlas/atlas.component'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
@@ -12,7 +17,7 @@ export class BrowserWindowService {
     constructor(private electron: ElectronService) { }
 
     private async openWindow<T>(data: OpenWindow<T>) {
-        await this.electron.ipcRenderer.invoke('OPEN_WINDOW', data)
+        await this.electron.ipcRenderer.invoke('WINDOW.OPEN', data)
     }
 
     openMount(options: OpenWindowOptions<Mount>) {

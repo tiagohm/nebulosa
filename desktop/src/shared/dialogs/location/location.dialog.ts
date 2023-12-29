@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ViewChild } from '@angular/core'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { OpenStreetMapComponent } from '../../components/openstreetmap/openstreetmap.component'
-import { Location } from '../../types'
+import { Location } from '../../types/atlas.types'
 
 @Component({
     templateUrl: './location.dialog.html',

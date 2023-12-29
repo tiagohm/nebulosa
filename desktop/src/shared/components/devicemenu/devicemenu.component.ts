@@ -1,7 +1,7 @@
 import { Component, Input, ViewChild } from '@angular/core'
 import { MenuItem, MessageService } from 'primeng/api'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
-import { Device } from '../../types'
+import { Device } from '../../types/device.types'
 import { DialogMenuComponent } from '../dialogmenu/dialogmenu.component'
 
 @Component({

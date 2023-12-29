@@ -52,19 +52,19 @@ export class AppComponent implements AfterViewInit {
 
     pin() {
         this.pinned = !this.pinned
-        if (this.pinned) this.electron.send('PIN_WINDOW')
-        else this.electron.send('UNPIN_WINDOW')
+        if (this.pinned) this.electron.send('WINDOW.PIN')
+        else this.electron.send('WINDOW.UNPIN')
     }
 
     minimize() {
-        this.electron.send('MINIMIZE_WINDOW')
+        this.electron.send('WINDOW.MINIMIZE')
     }
 
     maximize() {
-        this.electron.send('MAXIMIZE_WINDOW')
+        this.electron.send('WINDOW.MAXIMIZE')
     }
 
     close() {
-        this.electron.send('CLOSE_WINDOW')
+        this.electron.send('WINDOW.CLOSE')
     }
 }

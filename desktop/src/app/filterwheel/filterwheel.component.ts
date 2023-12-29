@@ -1,12 +1,13 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, Optional } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
-import { InputSwitchChangeEvent } from 'primeng/inputswitch'
 import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE, EMPTY_WHEEL, FilterWheel } from '../../shared/types'
+import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
+import { EMPTY_WHEEL, FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
 export function wheelPreferenceKey(wheel: FilterWheel) {
@@ -62,19 +63,20 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     ) {
         if (app) app.title = 'Filter Wheel'
 
-        electron.on('WHEEL_UPDATED', event => {
-            if (event.device.name === this.wheel?.name) {
+        electron.on('WHEEL.UPDATED', event => {
+            if (event.device.name === this.wheel.name) {
                 ngZone.run(() => {
-                    Object.assign(this.wheel!, event.device)
+                    const wasConnected = this.wheel.connected
+                    Object.assign(this.wheel, event.device)
                     this.update()
                 })
             }
         })
 
-        electron.on('WHEEL_DETACHED', event => {
-            if (event.device.name === this.wheel?.name) {
+        electron.on('WHEEL.DETACHED', event => {
+            if (event.device.name === this.wheel.name) {
                 ngZone.run(() => {
-                    Object.assign(this.wheel!, event.device)
+                    Object.assign(this.wheel, event.device)
                 })
             }
         })
@@ -83,7 +85,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             .pipe(debounceTime(1500))
             .subscribe((filter) => {
                 this.savePreference()
-                this.electron.send('WHEEL_RENAMED', { wheel: this.wheel!, filter })
+                this.electron.send('WHEEL.RENAMED', { wheel: this.wheel, filter })
             })
 
         if (config?.data) {
@@ -121,18 +123,18 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     connect() {
         if (this.wheel.connected) {
-            this.api.wheelDisconnect(this.wheel!)
+            this.api.wheelDisconnect(this.wheel)
         } else {
-            this.api.wheelConnect(this.wheel!)
+            this.api.wheelConnect(this.wheel)
         }
     }
 
     async moveTo(filter: Filter) {
-        await this.api.wheelMoveTo(this.wheel!, filter.position)
+        await this.api.wheelMoveTo(this.wheel, filter.position)
         this.moving = true
     }
 
-    shutterToggled(filter: Filter, event: InputSwitchChangeEvent) {
+    shutterToggled(filter: Filter, event: CheckboxChangeEvent) {
         this.filters.forEach(e => e.dark = event.checked && e === filter)
         this.filterChangedPublisher.next(Object.assign({}, filter))
     }
@@ -148,7 +150,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     private update() {
-        if (!this.wheel?.name) {
+        if (!this.wheel.name) {
             return
         }
 
@@ -185,7 +187,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadPreference() {
-        if (!this.dialogMode && this.wheel) {
+        if (!this.dialogMode && this.wheel.name) {
             const preference = this.storage.get<WheelPreference>(wheelPreferenceKey(this.wheel), {})
             const shutterPosition = preference.shutterPosition ?? 0
             this.filters.forEach(e => e.dark = e.position === shutterPosition)
@@ -193,7 +195,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     private savePreference() {
-        if (!this.dialogMode && this.wheel && this.wheel.connected) {
+        if (!this.dialogMode && this.wheel.connected) {
             const dark = this.filters.find(e => e.dark)
 
             const preference: WheelPreference = {

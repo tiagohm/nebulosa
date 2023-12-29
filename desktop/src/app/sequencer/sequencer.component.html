@@ -24,7 +24,7 @@
                                    (ngModelChange)="savePlan()" />
                             <label>Path</label>
                         </span>
-                        <p-button icon="mdi mdi-folder-open" styleClass="p-button-sm" (onClick)="chooseSavePath()" />
+                        <p-button icon="mdi mdi-folder-open" size="small" (onClick)="chooseSavePath()" />
                     </div>
                 </div>
             </p-tabPanel>
@@ -189,11 +189,11 @@
                             </div>
                             <div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
                                 <p-button [disabled]="running || plan.entries.length <= 1" [text]="true" [rounded]="true" icon="mdi mdi-delete"
-                                          severity="danger" styleClass="p-button-sm" pTooltip="Delete" tooltipPosition="bottom"
+                                          severity="danger" size=small pTooltip="Delete" tooltipPosition="bottom"
                                           (onClick)="deleteEntry(entry, i)" />
 
                                 <p-button [disabled]="running" [text]="true" [rounded]="true" icon="mdi mdi-content-duplicate" severity="info"
-                                          styleClass="p-button-sm" pTooltip="Duplicate" tooltipPosition="bottom"
+                                          size=small pTooltip="Duplicate" tooltipPosition="bottom"
                                           (onClick)="duplicateEntry(entry, i)" />
 
                                 <p-checkbox [binary]="true" [(ngModel)]="entry.enabled" (ngModelChange)="savePlan()" />

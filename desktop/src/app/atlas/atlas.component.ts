@@ -16,10 +16,8 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import {
-    Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION,
-    Location, MinorPlanet, Mount, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Union
-} from '../../shared/types'
+import { Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType } from '../../shared/types/atlas.types'
+import { Mount } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 Chart.register(zoomPlugin)
@@ -37,10 +35,10 @@ export interface SearchFilter {
     rightAscension: Angle
     declination: Angle
     radius: number
-    constellation: Union<Constellation, 'ALL'>
+    constellation: Constellation | 'ALL'
     magnitude: [number, number]
-    type: Union<SkyObjectType, 'ALL'>
-    types: Union<SkyObjectType, 'ALL'>[]
+    type: SkyObjectType | 'ALL'
+    types: (SkyObjectType | 'ALL')[]
 }
 
 export const EMPTY_SEARCH_FILTER: SearchFilter = {
@@ -140,7 +138,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     skyObjectSearchText = ''
     readonly skyObjectFilter = Object.assign({}, EMPTY_SEARCH_FILTER)
     showSkyObjectFilter = false
-    readonly constellationOptions: Union<Constellation, 'ALL'>[] = ['ALL', ...CONSTELLATIONS]
+    readonly constellationOptions: (Constellation | 'ALL')[] = ['ALL', ...CONSTELLATIONS]
 
     satellite?: Satellite
     satelliteItems: Satellite[] = []
@@ -441,11 +439,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             },
         })
 
-        electron.on('LOCATION_CHANGED', (event) => {
+        electron.on('LOCATION.CHANGED', event => {
             ngZone.run(() => this.refreshTab(true, true, event))
         })
 
-        electron.on('DATA_CHANGED', event => {
+        electron.on('DATA.CHANGED', event => {
             this.loadTabFromData(event)
         })
 

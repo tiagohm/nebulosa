@@ -6,7 +6,8 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { Camera, CameraCaptureState, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType } from '../../shared/types'
+import { Camera, CameraCaptureState, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType } from '../../shared/types/camera.types'
+import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
 export function cameraPreferenceKey(camera: Camera) {
@@ -164,25 +165,25 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     ) {
         if (app) app.title = 'Camera'
 
-        electron.on('CAMERA_UPDATED', event => {
-            if (event.device.name === this.camera?.name) {
+        electron.on('CAMERA.UPDATED', event => {
+            if (event.device.name === this.camera.name) {
                 ngZone.run(() => {
-                    Object.assign(this.camera!, event.device)
+                    Object.assign(this.camera, event.device)
                     this.update()
                 })
             }
         })
 
-        electron.on('CAMERA_DETACHED', event => {
-            if (event.device.name === this.camera?.name) {
+        electron.on('CAMERA.DETACHED', event => {
+            if (event.device.name === this.camera.name) {
                 ngZone.run(() => {
-                    Object.assign(this.camera!, event.device)
+                    Object.assign(this.camera, event.device)
                 })
             }
         })
 
-        electron.on('CAMERA_CAPTURE_ELAPSED', event => {
-            if (event.camera.name === this.camera?.name) {
+        electron.on('CAMERA.CAPTURE_ELAPSED', event => {
+            if (event.camera.name === this.camera.name) {
                 ngZone.run(() => {
                     this.capture.elapsedTime = event.captureElapsedTime
                     this.capture.remainingTime = event.captureRemainingTime
@@ -252,10 +253,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     connect() {
-        if (this.camera!.connected) {
-            this.api.cameraDisconnect(this.camera!)
+        if (this.camera.connected) {
+            this.api.cameraDisconnect(this.camera)
         } else {
-            this.api.cameraConnect(this.camera!)
+            this.api.cameraConnect(this.camera)
         }
     }
 
@@ -289,11 +290,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     applySetpointTemperature() {
         this.savePreference()
-        this.api.cameraSetpointTemperature(this.camera!, this.setpointTemperature)
+        this.api.cameraSetpointTemperature(this.camera, this.setpointTemperature)
     }
 
     toggleCooler() {
-        this.api.cameraCooler(this.camera!, this.camera!.cooler)
+        this.api.cameraCooler(this.camera, this.camera.cooler)
     }
 
     fullsize() {
@@ -307,18 +308,18 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     openCameraImage() {
-        return this.browserWindow.openCameraImage(this.camera!)
+        return this.browserWindow.openCameraImage(this.camera)
     }
 
     openCameraCalibration() {
-        return this.browserWindow.openCalibration({ data: this.camera! })
+        return this.browserWindow.openCalibration({ data: this.camera })
     }
 
     private makeCameraStartCapture(): CameraStartCapture {
-        const x = this.subFrame ? this.request.x : this.camera!.minX
-        const y = this.subFrame ? this.request.y : this.camera!.minY
-        const width = this.subFrame ? this.request.width : this.camera!.maxWidth
-        const height = this.subFrame ? this.request.height : this.camera!.maxHeight
+        const x = this.subFrame ? this.request.x : this.camera.minX
+        const y = this.subFrame ? this.request.y : this.camera.minY
+        const width = this.subFrame ? this.request.width : this.camera.maxWidth
+        const height = this.subFrame ? this.request.height : this.camera.maxHeight
         const exposureFactor = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
         const exposureTime = Math.trunc(this.request.exposureTime * 60000000 / exposureFactor)
         const exposureAmount = this.exposureMode === 'LOOP' ? 0 : (this.exposureMode === 'FIXED' ? this.request.exposureAmount : 1)
@@ -335,11 +336,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     async startCapture() {
         await this.openCameraImage()
-        this.api.cameraStartCapture(this.camera!, this.makeCameraStartCapture())
+        this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
     }
 
     abortCapture() {
-        this.api.cameraAbortCapture(this.camera!)
+        this.api.cameraAbortCapture(this.camera)
     }
 
     private static exposureUnitFactor(unit: ExposureTimeUnit) {
@@ -352,12 +353,12 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private updateExposureUnit(unit: ExposureTimeUnit) {
-        if (this.camera!.exposureMax) {
+        if (this.camera.exposureMax) {
             const a = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
             const b = CameraComponent.exposureUnitFactor(unit)
             const exposureTime = Math.trunc(this.request.exposureTime * b / a)
-            const exposureTimeMin = Math.trunc(this.camera!.exposureMin * b / 60000000)
-            const exposureTimeMax = Math.trunc(this.camera!.exposureMax * b / 60000000)
+            const exposureTimeMin = Math.trunc(this.camera.exposureMin * b / 60000000)
+            const exposureTimeMax = Math.trunc(this.camera.exposureMax * b / 60000000)
             this.exposureTimeMax = Math.max(1, exposureTimeMax)
             this.exposureTimeMin = Math.max(1, exposureTimeMin)
             this.request.exposureTime = Math.max(this.exposureTimeMin, Math.min(exposureTime, this.exposureTimeMax))
@@ -386,7 +387,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private update() {
-        if (this.camera?.name) {
+        if (this.camera.name) {
             if (this.camera.connected) {
                 this.request.x = Math.max(this.camera.minX, Math.min(this.request.x, this.camera.maxX))
                 this.request.y = Math.max(this.camera.minY, Math.min(this.request.y, this.camera.maxY))
@@ -411,7 +412,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadPreference() {
-        if (!this.dialogMode && this.camera) {
+        if (!this.dialogMode && this.camera.name) {
             const preference = this.storage.get<CameraPreference>(cameraPreferenceKey(this.camera), {})
 
             this.request.autoSave = preference.autoSave ?? false
@@ -443,7 +444,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     savePreference() {
-        if (!this.dialogMode && this.camera && this.camera.connected) {
+        if (!this.dialogMode && this.camera.connected) {
             const preference: CameraPreference = {
                 autoSave: this.request.autoSave,
                 savePath: this.savePath,

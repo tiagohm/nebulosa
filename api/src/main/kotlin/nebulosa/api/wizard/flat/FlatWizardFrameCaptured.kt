@@ -4,10 +4,10 @@ import nebulosa.api.messages.MessageEvent
 import java.nio.file.Path
 import java.time.Duration
 
-data class FlatFrameCaptured(
+data class FlatWizardFrameCaptured(
     val savedPath: Path,
-    val duration: Duration,
+    val exposureTime: Duration,
 ) : MessageEvent {
 
-    override val eventName = "FLAT_FRAME_CAPTURED"
+    override val eventName = "FLAT_WIZARD.FRAME_CAPTURED"
 }

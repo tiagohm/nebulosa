@@ -7,7 +7,11 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { Camera, CameraCaptureEvent, CameraCaptureState, CameraStartCapture, EMPTY_SEQUENCE_PLAN, FilterWheel, Focuser, JsonFile, SequenceCaptureMode, SequencePlan, SequencerEvent } from '../../shared/types'
+import { JsonFile } from '../../shared/types/app.types'
+import { Camera, CameraCaptureEvent, CameraCaptureState, CameraStartCapture } from '../../shared/types/camera.types'
+import { Focuser } from '../../shared/types/focuser.types'
+import { EMPTY_SEQUENCE_PLAN, SequenceCaptureMode, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
+import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 import { CameraCaptureInfo, CameraComponent, CameraExposureInfo, CameraWaitInfo, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_EXPOSURE_INFO, EMPTY_CAMERA_WAIT_INFO } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
@@ -121,7 +125,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
             },
         })
 
-        electron.on('CAMERA_UPDATED', event => {
+        electron.on('CAMERA.UPDATED', event => {
             ngZone.run(() => {
                 const camera = this.cameras.find(e => e.name === event.device.name)
 
@@ -132,7 +136,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
             })
         })
 
-        electron.on('WHEEL_UPDATED', event => {
+        electron.on('WHEEL.UPDATED', event => {
             ngZone.run(() => {
                 const wheel = this.wheels.find(e => e.name === event.device.name)
 
@@ -143,7 +147,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
             })
         })
 
-        electron.on('FOCUSER_UPDATED', event => {
+        electron.on('FOCUSER.UPDATED', event => {
             ngZone.run(() => {
                 const focuser = this.focusers.find(e => e.name === event.device.name)
 
@@ -154,7 +158,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
             })
         })
 
-        electron.on('SEQUENCER_ELAPSED', event => {
+        electron.on('SEQUENCER.ELAPSED', event => {
             ngZone.run(() => {
                 if (this.running !== event.remainingTime > 0) {
                     this.enableOrDisableTopbarMenu(event.remainingTime <= 0)
@@ -215,9 +219,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     ngOnDestroy() { }
 
     add() {
-        const camera = this.cameras[0]
-        const wheel = this.wheels[0]
-        const focuser = this.focusers[0]
+        const camera = this.camera ?? this.cameras[0]
+        const wheel = this.wheel ?? this.wheels[0]
+        const focuser = this.focuser ?? this.focusers[0]
 
         this.plan.entries.push({
             enabled: true,
@@ -256,7 +260,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
     private loadSavedJsonFile(file: JsonFile<SequencePlan>) {
         if (this.loadPlan(file.json)) {
-            this.savedPath = file.path
+            this.afterSavedJsonFile(file)
         } else {
             this.message.add({ severity: 'warn', detail: `No entry found for the saved Sequence at: ${file.path}` })
 
@@ -268,7 +272,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         const savedPath = this.storage.get<string | undefined>(SEQUENCER_SAVED_PATH_KEY, undefined)
 
         if (savedPath) {
-            const file = await this.electron.loadJson<SequencePlan>(savedPath)
+            const file = await this.electron.readJson<SequencePlan>(savedPath)
 
             if (file !== false) {
                 return this.loadSavedJsonFile(file)
@@ -285,7 +289,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromCamera(entry: CameraStartCapture, camera?: Camera) {
-        if (camera && (!entry.camera || entry.camera.name === camera.name)) {
+        if (camera) {
             entry.camera = camera
 
             if (camera.connected) {
@@ -313,7 +317,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromWheel(entry: CameraStartCapture, wheel?: FilterWheel) {
-        if (wheel && (!entry.wheel || entry.wheel.name === wheel.name)) {
+        if (wheel) {
             entry.wheel = wheel
 
             if (wheel.connected) {
@@ -329,7 +333,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromFocuser(entry: CameraStartCapture, focuser?: Focuser) {
-        if (focuser && (!entry.focuser || entry.focuser.name === focuser.name)) {
+        if (focuser) {
             entry.focuser = focuser
 
             if (focuser.connected) {

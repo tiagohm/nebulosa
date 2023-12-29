@@ -21,8 +21,10 @@
     ]
   },
   "files": [
-    "app/main.ts",
-    "src/shared/types.ts"
+    "app/main.ts"
+  ],
+  "include": [
+    "src/shared/types/*.ts"
   ],
   "exclude": [
     "node_modules",

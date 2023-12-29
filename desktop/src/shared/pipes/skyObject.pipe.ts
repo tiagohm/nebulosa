@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core'
-import { AstronomicalObject } from '../types'
+import { AstronomicalObject } from '../types/atlas.types'
 
 const SKY_OBJECT_PARTS = ['name', 'firstName'] as const
 

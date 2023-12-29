@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core'
 import { MenuItem } from 'primeng/api'
-import { CheckableMenuItem, ToggleableMenuItem } from '../../types'
+import { CheckableMenuItem, ToggleableMenuItem } from '../../types/app.types'
 
 @Component({
     selector: 'p-menuItem',

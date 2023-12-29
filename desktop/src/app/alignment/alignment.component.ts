@@ -3,7 +3,9 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { Camera, CameraStartCapture, DARVState, GuideDirection, GuideOutput, Hemisphere, Union } from '../../shared/types'
+import { DARVState, Hemisphere } from '../../shared/types/alignment.types'
+import { Camera, CameraStartCapture } from '../../shared/types/camera.types'
+import { GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { AppComponent } from '../app.component'
 import { CameraPreference, cameraPreferenceKey } from '../camera/camera.component'
 
@@ -28,7 +30,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     readonly darvHemispheres: Hemisphere[] = ['NORTHERN', 'SOUTHERN']
     darvHemisphere: Hemisphere = 'NORTHERN'
     darvDirection?: GuideDirection
-    darvStatus: Union<DARVState, 'IDLE'> = 'IDLE'
+    darvStatus: DARVState | 'IDLE' = 'IDLE'
     darvRemainingTime = 0
     darvProgress = 0
 
@@ -42,7 +44,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Alignment'
 
-        electron.on('CAMERA_UPDATED', event => {
+        electron.on('CAMERA.UPDATED', event => {
             if (event.device.name === this.camera?.name) {
                 ngZone.run(() => {
                     Object.assign(this.camera!, event.device)
@@ -51,13 +53,13 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('CAMERA_ATTACHED', event => {
+        electron.on('CAMERA.ATTACHED', event => {
             ngZone.run(() => {
                 this.cameras.push(event.device)
             })
         })
 
-        electron.on('CAMERA_DETACHED', event => {
+        electron.on('CAMERA.DETACHED', event => {
             ngZone.run(() => {
                 const index = this.cameras.findIndex(e => e.name === event.device.name)
 
@@ -73,13 +75,13 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        electron.on('GUIDE_OUTPUT_ATTACHED', event => {
+        electron.on('GUIDE_OUTPUT.ATTACHED', event => {
             ngZone.run(() => {
                 this.guideOutputs.push(event.device)
             })
         })
 
-        electron.on('GUIDE_OUTPUT_DETACHED', event => {
+        electron.on('GUIDE_OUTPUT.DETACHED', event => {
             ngZone.run(() => {
                 const index = this.guideOutputs.findIndex(e => e.name === event.device.name)
 
@@ -95,7 +97,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        electron.on('GUIDE_OUTPUT_UPDATED', event => {
+        electron.on('GUIDE_OUTPUT.UPDATED', event => {
             if (event.device.name === this.guideOutput?.name) {
                 ngZone.run(() => {
                     Object.assign(this.guideOutput!, event.device)
@@ -104,7 +106,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DARV_POLAR_ALIGNMENT_ELAPSED', event => {
+        electron.on('DARV_ALIGNMENT.ELAPSED', event => {
             if (event.camera.name === this.camera?.name &&
                 event.guideOutput.name === this.guideOutput?.name) {
                 ngZone.run(() => {

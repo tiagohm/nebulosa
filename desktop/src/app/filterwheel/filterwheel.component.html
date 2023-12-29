@@ -66,9 +66,8 @@
             </span>
         </div>
         <div *ngIf="!dialogMode" class="col-12 flex flex-column justify-content-center gap-2">
-            <span class="text-sm">Shutter</span>
-            <p-inputSwitch [disabled]="!wheel.connected || dialogMode || moving" [ngModel]="filter.dark"
-                           (onChange)="shutterToggled(filter, $event)" />
+            <p-checkbox [binary]="true" [disabled]="!wheel.connected || dialogMode || moving" [ngModel]="filter.dark"
+                        (onChange)="shutterToggled(filter, $event)" label="Shutter" />
         </div>
     </div>
     <div class="grid mt-2" *ngIf="dialogMode">

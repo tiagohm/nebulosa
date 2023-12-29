@@ -7,7 +7,12 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { Camera, Device, FilterWheel, Focuser, HomeWindowType, Mount } from '../../shared/types'
+import { Camera } from '../../shared/types/camera.types'
+import { Device } from '../../shared/types/device.types'
+import { Focuser } from '../../shared/types/focuser.types'
+import { HomeWindowType } from '../../shared/types/home.types'
+import { Mount } from '../../shared/types/mount.types'
+import { FilterWheel } from '../../shared/types/wheel.types'
 import { compareDevice } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
@@ -113,13 +118,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         onAdd: (device: MappedDevice[K]) => number,
         onRemove: (device: MappedDevice[K]) => number,
     ) {
-        this.electron.on(`${type}_ATTACHED`, event => {
+        this.electron.on(`${type}.ATTACHED`, event => {
             this.ngZone.run(() => {
                 onAdd(event.device as any)
             })
         })
 
-        this.electron.on(`${type}_DETACHED`, event => {
+        this.electron.on(`${type}.DETACHED`, event => {
             this.ngZone.run(() => {
                 onRemove(event.device as any)
             })
@@ -263,11 +268,11 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
             const defaultPath = this.storage.get(IMAGE_DIR_KEY, '')
-            const fitsPath = await this.electron.openFITS({ defaultPath })
+            const filePath = await this.electron.openFits({ defaultPath })
 
-            if (fitsPath) {
-                this.storage.set(IMAGE_DIR_KEY, path.dirname(fitsPath))
-                this.browserWindow.openImage({ path: fitsPath, source: 'PATH' })
+            if (filePath) {
+                this.storage.set(IMAGE_DIR_KEY, path.dirname(filePath))
+                this.browserWindow.openImage({ path: filePath, source: 'PATH' })
             }
         } else {
             const camera = await this.imageMenu.show(this.cameras)

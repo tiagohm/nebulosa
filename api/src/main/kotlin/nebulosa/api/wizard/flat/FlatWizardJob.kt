@@ -26,7 +26,7 @@ data class FlatWizardJob(@JvmField val request: FlatWizardRequest) : SimpleJob()
     }
 
     override fun onFlatCaptured(step: FlatWizardStep, savedPath: Path, duration: Duration) {
-        subject.onNext(FlatFrameCaptured(savedPath, duration))
+        subject.onNext(FlatWizardFrameCaptured(savedPath, duration))
     }
 
     override fun onFlatFailed(step: FlatWizardStep) {

@@ -13,10 +13,11 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import {
-    Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, DetectedStar, EquatorialCoordinateJ2000, FITSHeaderItem,
-    ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, Mount, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
-} from '../../shared/types'
+import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
+import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
+import { Camera } from '../../shared/types/camera.types'
+import { DetectedStar, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { Mount } from '../../shared/types/mount.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
 
@@ -118,7 +119,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Save as...',
         icon: 'mdi mdi-content-save',
         command: async () => {
-            const path = await this.electron.send('SAVE_FITS')
+            const path = await this.electron.saveFits()
             if (path) this.api.saveImageAs(this.imageData.path!, path)
         },
     }
@@ -360,7 +361,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Image'
 
-        electron.on('CAMERA_CAPTURE_ELAPSED', async (event) => {
+        electron.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
             if (event.state === 'EXPOSURE_FINISHED' && event.camera.name === this.imageData.camera?.name) {
                 await this.closeImage()
 
@@ -372,7 +373,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DATA_CHANGED', async (event: ImageData) => {
+        electron.on('DATA.CHANGED', async (event: ImageData) => {
             await this.closeImage()
 
             ngZone.run(() => {

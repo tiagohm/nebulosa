@@ -3,45 +3,52 @@ import { Injectable } from '@angular/core'
 // If you import a module but never use any of the imported values
 // other than as TypeScript types, the resulting javascript file will
 // look as if you never imported the module at all.
+
 import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
-import {
-    ApiEventType, Camera, CameraCaptureEvent, DARVEvent, DeviceMessageEvent, FilterWheel, Focuser,
-    GuideOutput, Guider, GuiderMessageEvent, HistoryStep, INDIMessageEvent, InternalEventType, JsonFile,
-    Location, Mount, NotificationEventType, OpenDirectory, OpenFile, SaveJson, SequencerEvent
-} from '../types'
+import { DARVEvent } from '../types/alignment.types'
+import { ApiEventType, DeviceMessageEvent } from '../types/api.types'
+import { InternalEventType, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
+import { Location } from '../types/atlas.types'
+import { Camera, CameraCaptureEvent } from '../types/camera.types'
+import { INDIMessageEvent } from '../types/device.types'
+import { Focuser } from '../types/focuser.types'
+import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
+import { Mount } from '../types/mount.types'
+import { SequencerEvent } from '../types/sequencer.types'
+import { FilterWheel } from '../types/wheel.types'
 import { ApiService } from './api.service'
 
 type EventMappedType = {
-    'DEVICE_PROPERTY_CHANGED': INDIMessageEvent
-    'DEVICE_PROPERTY_DELETED': INDIMessageEvent
-    'DEVICE_MESSAGE_RECEIVED': INDIMessageEvent
-    'CAMERA_UPDATED': DeviceMessageEvent<Camera>
-    'CAMERA_ATTACHED': DeviceMessageEvent<Camera>
-    'CAMERA_DETACHED': DeviceMessageEvent<Camera>
-    'CAMERA_CAPTURE_ELAPSED': CameraCaptureEvent
-    'MOUNT_UPDATED': DeviceMessageEvent<Mount>
-    'MOUNT_ATTACHED': DeviceMessageEvent<Mount>
-    'MOUNT_DETACHED': DeviceMessageEvent<Mount>
-    'FOCUSER_UPDATED': DeviceMessageEvent<Focuser>
-    'FOCUSER_ATTACHED': DeviceMessageEvent<Focuser>
-    'FOCUSER_DETACHED': DeviceMessageEvent<Focuser>
-    'WHEEL_UPDATED': DeviceMessageEvent<FilterWheel>
-    'WHEEL_ATTACHED': DeviceMessageEvent<FilterWheel>
-    'WHEEL_DETACHED': DeviceMessageEvent<FilterWheel>
-    'GUIDE_OUTPUT_UPDATED': DeviceMessageEvent<GuideOutput>
-    'GUIDE_OUTPUT_ATTACHED': DeviceMessageEvent<GuideOutput>
-    'GUIDE_OUTPUT_DETACHED': DeviceMessageEvent<GuideOutput>
-    'GUIDER_CONNECTED': GuiderMessageEvent<undefined>
-    'GUIDER_DISCONNECTED': GuiderMessageEvent<undefined>
-    'GUIDER_UPDATED': GuiderMessageEvent<Guider>
-    'GUIDER_STEPPED': GuiderMessageEvent<HistoryStep>
-    'GUIDER_MESSAGE_RECEIVED': GuiderMessageEvent<string>
-    'DARV_POLAR_ALIGNMENT_ELAPSED': DARVEvent
-    'DATA_CHANGED': any
-    'LOCATION_CHANGED': Location
-    'SEQUENCER_ELAPSED': SequencerEvent
+    'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
+    'DEVICE.PROPERTY_DELETED': INDIMessageEvent
+    'DEVICE.MESSAGE_RECEIVED': INDIMessageEvent
+    'CAMERA.UPDATED': DeviceMessageEvent<Camera>
+    'CAMERA.ATTACHED': DeviceMessageEvent<Camera>
+    'CAMERA.DETACHED': DeviceMessageEvent<Camera>
+    'CAMERA.CAPTURE_ELAPSED': CameraCaptureEvent
+    'MOUNT.UPDATED': DeviceMessageEvent<Mount>
+    'MOUNT.ATTACHED': DeviceMessageEvent<Mount>
+    'MOUNT.DETACHED': DeviceMessageEvent<Mount>
+    'FOCUSER.UPDATED': DeviceMessageEvent<Focuser>
+    'FOCUSER.ATTACHED': DeviceMessageEvent<Focuser>
+    'FOCUSER.DETACHED': DeviceMessageEvent<Focuser>
+    'WHEEL.UPDATED': DeviceMessageEvent<FilterWheel>
+    'WHEEL.ATTACHED': DeviceMessageEvent<FilterWheel>
+    'WHEEL.DETACHED': DeviceMessageEvent<FilterWheel>
+    'GUIDE_OUTPUT.UPDATED': DeviceMessageEvent<GuideOutput>
+    'GUIDE_OUTPUT.ATTACHED': DeviceMessageEvent<GuideOutput>
+    'GUIDE_OUTPUT.DETACHED': DeviceMessageEvent<GuideOutput>
+    'GUIDER.CONNECTED': GuiderMessageEvent<undefined>
+    'GUIDER.DISCONNECTED': GuiderMessageEvent<undefined>
+    'GUIDER.UPDATED': GuiderMessageEvent<Guider>
+    'GUIDER.STEPPED': GuiderMessageEvent<GuiderHistoryStep>
+    'GUIDER.MESSAGE_RECEIVED': GuiderMessageEvent<string>
+    'DARV_ALIGNMENT.ELAPSED': DARVEvent
+    'DATA.CHANGED': any
+    'LOCATION.CHANGED': Location
+    'SEQUENCER.ELAPSED': SequencerEvent
 }
 
 @Injectable({ providedIn: 'root' })
@@ -80,7 +87,7 @@ export class ElectronService {
         return !!(window && window.process && window.process.type)
     }
 
-    send(channel: ApiEventType | InternalEventType | NotificationEventType, ...data: any[]) {
+    send(channel: ApiEventType | InternalEventType, ...data: any[]) {
         return this.ipcRenderer.invoke(channel, ...data)
     }
 
@@ -90,26 +97,58 @@ export class ElectronService {
     }
 
     openFile(data?: OpenFile): Promise<string | undefined> {
-        return this.send('OPEN_FILE', data)
+        return this.send('FILE.OPEN', data)
     }
 
-    openFITS(data?: OpenFile): Promise<string | undefined> {
+    saveFile(data?: OpenFile): Promise<string | undefined> {
+        return this.send('FILE.SAVE', data)
+    }
+
+    openFits(data?: OpenFile): Promise<string | undefined> {
         return this.openFile({ ...data, filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }] })
     }
 
+    saveFits(data?: OpenFile) {
+        return this.saveFile({
+            ...data,
+            filters: [
+                { name: 'FITS files', extensions: ['fits', 'fit'] },
+                { name: 'Image files', extensions: ['png', 'jpe?g'] },
+            ]
+        })
+    }
+
     openDirectory(data?: OpenDirectory): Promise<string | false> {
-        return this.send('OPEN_DIRECTORY', data)
+        return this.send('DIRECTORY.OPEN', data)
     }
 
-    saveJson<T>(data: SaveJson<T>): Promise<JsonFile<T> | false> {
-        return this.send('SAVE_JSON', data)
+    async saveJson<T>(data: SaveJson<T>): Promise<JsonFile<T> | false> {
+        data.path = data.path || await this.saveFile({ ...data, filters: [{ name: 'JSON files', extensions: ['json'] }] })
+
+        if (data.path) {
+            if (await this.writeJson(data)) {
+                return data
+            }
+        }
+
+        return false
     }
 
-    openJson<T>(data?: OpenFile): Promise<JsonFile<T> | false> {
-        return this.send('OPEN_JSON', data)
+    async openJson<T>(data?: OpenFile): Promise<JsonFile<T> | false> {
+        const path = await this.openFile({ ...data, filters: [{ name: 'JSON files', extensions: ['json'] }] })
+
+        if (path) {
+            return await this.readJson<T>(path)
+        }
+
+        return false
     }
 
-    loadJson<T>(path: string): Promise<JsonFile<T> | false> {
-        return this.send('LOAD_JSON', path)
+    writeJson<T>(json: JsonFile<T>): Promise<boolean> {
+        return this.send('JSON.WRITE', json)
+    }
+
+    readJson<T>(path: string): Promise<JsonFile<T> | false> {
+        return this.send('JSON.READ', path)
     }
 }

@@ -2,12 +2,12 @@
     <div class="grid flex align-items-center">
         <div class="col-8 align-items-center gap-2">
             <span class="p-float-label">
-                <input type="text" pInputText [readonly]="true" [value]="focuser?.name" class="p-inputtext-sm border-0 w-full" />
+                <input type="text" pInputText [readonly]="true" [value]="focuser.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Focuser</label>
             </span>
-            <p-button *ngIf="connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-close"
+            <p-button *ngIf="focuser.connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-close"
                       size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
-            <p-button *ngIf="!connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-connection"
+            <p-button *ngIf="!focuser.connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-connection"
                       size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
@@ -30,29 +30,29 @@
             </span>
         </div>
         <div class="col-4 text-center">
-            <p-button [disabled]="!canRelativeMove || !moving" icon="mdi mdi-stop" [text]="true" severity="danger" size="small"
+            <p-button [disabled]="!focuser.connected || !canRelativeMove || !moving" icon="mdi mdi-stop" [text]="true" severity="danger" size="small"
                       pTooltip="Abort" tooltipPosition="bottom" />
         </div>
         <div class="col-6 flex align-items-center gap-1">
-            <p-button [disabled]="!canRelativeMove || moving || !stepsRelative" (onClick)="moveIn()" icon="mdi mdi-arrow-left-bold"
-                      [text]="true" size="small" pTooltip="Move In" tooltipPosition="bottom" />
+            <p-button [disabled]="!focuser.connected || !canRelativeMove || moving || !stepsRelative" (onClick)="moveIn()"
+                      icon="mdi mdi-arrow-left-bold" [text]="true" size="small" pTooltip="Move In" tooltipPosition="bottom" />
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!canRelativeMove" [min]="0" [max]="maxPosition" [showButtons]="true" styleClass="p-inputtext-sm border-0"
-                               [(ngModel)]="stepsRelative" [allowEmpty]="false" locale="en" />
+                <p-inputNumber [disabled]="!focuser.connected || !canRelativeMove" [min]="0" [max]="maxPosition" [showButtons]="true"
+                               styleClass="p-inputtext-sm border-0" [(ngModel)]="stepsRelative" [allowEmpty]="false" locale="en" />
                 <label>Relative</label>
             </span>
-            <p-button [disabled]="!canRelativeMove || moving || !stepsRelative" (onClick)="moveOut()" icon="mdi mdi-arrow-right-bold"
-                      [text]="true" size="small" pTooltip="Move Out" tooltipPosition="bottom" />
+            <p-button [disabled]="!focuser.connected || !canRelativeMove || moving || !stepsRelative" (onClick)="moveOut()"
+                      icon="mdi mdi-arrow-right-bold" [text]="true" size="small" pTooltip="Move Out" tooltipPosition="bottom" />
         </div>
         <div class="col-6 flex align-items-center gap-1">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!canAbsoluteMove" [min]="0" [max]="maxPosition" [showButtons]="true"
+                <p-inputNumber [disabled]="!focuser.connected || !canAbsoluteMove" [min]="0" [max]="maxPosition" [showButtons]="true"
                                styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="stepsAbsolute" [allowEmpty]="false" locale="en" />
                 <label>Absolute</label>
             </span>
-            <p-button [disabled]="!canAbsoluteMove || moving || stepsAbsolute === position" (onClick)="moveTo()" icon="mdi mdi-check"
-                      [text]="true" severity="success" size="small" pTooltip="Move To" tooltipPosition="bottom" />
-            <p-button [disabled]="!canSync || moving" (onClick)="sync()" icon="mdi mdi-sync"
+            <p-button [disabled]="!focuser.connected || !canAbsoluteMove || moving || stepsAbsolute === position" (onClick)="moveTo()"
+                      icon="mdi mdi-check" [text]="true" severity="success" size="small" pTooltip="Move To" tooltipPosition="bottom" />
+            <p-button [disabled]="!focuser.connected || !canSync || moving" (onClick)="sync()" icon="mdi mdi-sync"
                       [text]="true" severity="info" size="small" pTooltip="Sync" tooltipPosition="bottom" />
         </div>
     </div>

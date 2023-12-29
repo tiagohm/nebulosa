@@ -6,7 +6,8 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { CalibrationFrame, CalibrationFrameGroup, Camera } from '../../shared/types'
+import { CalibrationFrame, CalibrationFrameGroup } from '../../shared/types/calibration.types'
+import { Camera } from '../../shared/types/camera.types'
 import { AppComponent } from '../app.component'
 
 export const CALIBRATION_DIR_KEY = 'calibration.directory'
@@ -43,11 +44,11 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             tooltip: 'Add file',
             command: async () => {
                 const defaultPath = this.storage.get(CALIBRATION_DIR_KEY, '')
-                const fitsPath = await electron.openFITS({ defaultPath })
+                const filePath = await electron.openFits({ defaultPath })
 
-                if (fitsPath) {
-                    this.storage.set(CALIBRATION_DIR_KEY, path.dirname(fitsPath))
-                    this.upload(fitsPath)
+                if (filePath) {
+                    this.storage.set(CALIBRATION_DIR_KEY, path.dirname(filePath))
+                    this.upload(filePath)
                 }
             },
         })

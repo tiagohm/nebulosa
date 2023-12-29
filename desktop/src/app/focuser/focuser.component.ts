@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { Focuser } from '../../shared/types'
+import { EMPTY_FOCUSER, Focuser } from '../../shared/types/focuser.types'
 import { AppComponent } from '../app.component'
 
 export function focuserPreferenceKey(focuser: Focuser) {
@@ -22,8 +22,7 @@ export interface FocuserPreference {
 })
 export class FocuserComponent implements AfterViewInit, OnDestroy {
 
-    focuser?: Focuser
-    connected = false
+    readonly focuser = Object.assign({}, EMPTY_FOCUSER)
 
     moving = false
     position = 0
@@ -51,19 +50,19 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Focuser'
 
-        electron.on('FOCUSER_UPDATED', event => {
-            if (event.device.name === this.focuser?.name) {
+        electron.on('FOCUSER.UPDATED', event => {
+            if (event.device.name === this.focuser.name) {
                 ngZone.run(() => {
-                    Object.assign(this.focuser!, event.device)
+                    Object.assign(this.focuser, event.device)
                     this.update()
                 })
             }
         })
 
-        electron.on('FOCUSER_DETACHED', event => {
-            if (event.device.name === this.focuser?.name) {
+        electron.on('FOCUSER.DETACHED', event => {
+            if (event.device.name === this.focuser.name) {
                 ngZone.run(() => {
-                    this.connected = false
+                    Object.assign(this.focuser, event.device)
                 })
             }
         })
@@ -82,54 +81,52 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     async focuserChanged(focuser?: Focuser) {
-        this.focuser = focuser
-
-        if (this.focuser) {
-            this.app.subTitle = this.focuser.name
-
-            const focuser = await this.api.focuser(this.focuser.name)
+        if (focuser && focuser.name) {
+            focuser = await this.api.focuser(focuser.name)
             Object.assign(this.focuser, focuser)
 
             this.loadPreference()
             this.update()
-        } else {
-            this.app.subTitle = ''
+        }
+
+        if (this.app) {
+            this.app.subTitle = focuser?.name ?? ''
         }
     }
 
     connect() {
-        if (this.connected) {
-            this.api.focuserDisconnect(this.focuser!)
+        if (this.focuser.connected) {
+            this.api.focuserDisconnect(this.focuser)
         } else {
-            this.api.focuserConnect(this.focuser!)
+            this.api.focuserConnect(this.focuser)
         }
     }
 
     moveIn() {
         this.moving = true
-        this.api.focuserMoveIn(this.focuser!, this.stepsRelative)
+        this.api.focuserMoveIn(this.focuser, this.stepsRelative)
         this.savePreference()
     }
 
     moveOut() {
         this.moving = true
-        this.api.focuserMoveOut(this.focuser!, this.stepsRelative)
+        this.api.focuserMoveOut(this.focuser, this.stepsRelative)
         this.savePreference()
     }
 
     moveTo() {
         this.moving = true
-        this.api.focuserMoveTo(this.focuser!, this.stepsAbsolute)
+        this.api.focuserMoveTo(this.focuser, this.stepsAbsolute)
         this.savePreference()
     }
 
     sync() {
-        this.api.focuserSync(this.focuser!, this.stepsAbsolute)
+        this.api.focuserSync(this.focuser, this.stepsAbsolute)
         this.savePreference()
     }
 
     abort() {
-        this.api.focuserAbort(this.focuser!)
+        this.api.focuserAbort(this.focuser)
     }
 
     private update() {
@@ -137,7 +134,6 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
             return
         }
 
-        this.connected = this.focuser.connected
         this.moving = this.focuser.moving
         this.position = this.focuser.position
         this.hasThermometer = this.focuser.hasThermometer
@@ -153,7 +149,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadPreference() {
-        if (this.focuser) {
+        if (this.focuser.name) {
             const preference = this.storage.get<FocuserPreference>(focuserPreferenceKey(this.focuser), {})
             this.stepsRelative = preference.stepsRelative ?? 100
             this.stepsAbsolute = preference.stepsAbsolute ?? this.focuser.position
@@ -161,7 +157,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     private savePreference() {
-        if (this.focuser && this.focuser.connected) {
+        if (this.focuser.connected) {
             const preference: FocuserPreference = {
                 stepsRelative: this.stepsRelative,
                 stepsAbsolute: this.stepsAbsolute,
