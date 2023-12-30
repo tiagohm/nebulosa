@@ -319,6 +319,74 @@
     </div>
 </p-dialog>
 
+<p-dialog header="Statistics" [draggable]="true" [(visible)]="showStatisticsDialog" [modal]="false" [style]="{width: '360px'}"
+          class="pointer-events-none">
+    <div class="grid p-2" *ngIf="imageInfo">
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="imageInfo.statistics.count" />
+                <label>Count (px)</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.mean * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                <label>Mean</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.median * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                <label>Median</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.variance * statisticsBits.value * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                <label>Variance</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.avgDev * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                <label>Avg Dev</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.stdDev * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                <label>Std Dev</label>
+            </span>
+        </div>
+        <div class="col-3">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.minimum * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                <label>Minimum</label>
+            </span>
+        </div>
+        <div class="col-3">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.maximum * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                <label>Maximum</label>
+            </span>
+        </div>
+        <div class="col-6">
+            <span class="p-float-label device">
+                <p-dropdown [options]="statisticsBitOptions" [(ngModel)]="statisticsBits" optionLabel="name"
+                            styleClass="p-inputtext-sm border-0" appendTo="body" />
+                <label>Bits</label>
+            </span>
+        </div>
+    </div>
+</p-dialog>
+
 <div class="fixed p-3 text-sm coordinates monospaced" *ngIf="mouseCoordinate && isMouseCoordinateVisible">
     <div class="grid m-0">
         <div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>

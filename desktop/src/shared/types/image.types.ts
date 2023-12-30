@@ -26,6 +26,7 @@ export interface ImageInfo {
     declination?: string
     solved: boolean
     headers: FITSHeaderItem[]
+    statistics: ImageStatistics
 }
 
 export interface ImageAnnotation {
@@ -61,4 +62,25 @@ export interface DetectedStar {
     snr: number
     hfd: number
     flux: number
+}
+
+export type ImageStatisticsBitLength = 1 | 255 | 65535
+
+export interface ImageStatisticsBitOption {
+    name: string,
+    value: ImageStatisticsBitLength
+    fixedLength: number
+}
+
+export interface ImageStatistics {
+    count: number
+    maxCount: number
+    mean: number
+    sumOfSquares: number
+    median: number
+    variance: number
+    stdDev: number
+    avgDev: number
+    minimum: number
+    maximum: number
 }

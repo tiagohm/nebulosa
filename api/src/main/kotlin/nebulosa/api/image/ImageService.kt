@@ -8,6 +8,7 @@ import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
+import nebulosa.imaging.algorithms.computation.Statistics
 import nebulosa.imaging.algorithms.transformation.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
@@ -82,6 +83,8 @@ class ImageService(
             transformedImage = SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode).transform(transformedImage)
         }
 
+        val statistics = transformedImage.compute(Statistics.GRAY)
+
         if (autoStretch) {
             stretchParams = AutoScreenTransformFunction.compute(transformedImage)
             transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
@@ -97,11 +100,12 @@ class ImageService(
             path,
             transformedImage.width, transformedImage.height, transformedImage.mono,
             stretchParams.shadow, stretchParams.highlight, stretchParams.midtone,
-            transformedImage.header.rightAscension.format(AngleFormatter.HMS),
-            transformedImage.header.declination.format(AngleFormatter.SIGNED_DMS),
+            transformedImage.header.rightAscension.takeIf { it.isFinite() },
+            transformedImage.header.declination.takeIf { it.isFinite() },
             imageBucket[path]?.second != null,
             transformedImage.header.map { ImageHeaderItem(it.key, it.value) },
             instrument?.let(connectionService::camera),
+            statistics,
         )
 
         output.addHeader("X-Image-Info", objectMapper.writeValueAsString(info))

@@ -16,7 +16,7 @@ import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
-import { DetectedStar, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { DetectedStar, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, ImageStatisticsBitLength, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
@@ -102,9 +102,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     showFITSHeadersDialog = false
     fitsHeaders: FITSHeaderItem[] = []
 
+    showStatisticsDialog = false
+
+    readonly statisticsBitOptions: ImageStatisticsBitOption[] = [
+        { name: 'Normalized: [0, 1]', value: 1, fixedLength: 8 },
+        { name: '8-bit: [0, 255]', value: 255, fixedLength: 4 },
+        { name: '16-bit: [0, 65535]', value: 65535, fixedLength: 2 },
+    ]
+
+    statisticsBits = this.statisticsBitOptions[0]
+
     private panZoom?: PanZoom
     private imageURL!: string
-    private imageInfo?: ImageInfo
+    imageInfo?: ImageInfo
     private imageMouseX = 0
     private imageMouseY = 0
     private imageData: ImageData = {}
@@ -207,6 +217,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.calibrate = !this.calibrate
             this.calibrateMenuItem.checked = this.calibrate
             this.loadImage()
+        },
+    }
+
+    private readonly statisticsMenuItem: MenuItem = {
+        icon: 'mdi mdi-chart-histogram',
+        label: 'Statistics',
+        command: () => {
+            this.showStatisticsDialog = true
         },
     }
 
@@ -337,6 +355,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.calibrateMenuItem,
         SEPARATOR_MENU_ITEM,
         this.overlayMenuItem,
+        this.statisticsMenuItem,
         this.fitsHeaderMenuItem,
         SEPARATOR_MENU_ITEM,
         this.pointMountHereMenuItem,
