@@ -305,7 +305,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     openCameraCalibration() {
-        return this.browserWindow.openCalibration({ data: this.camera })
+        return this.browserWindow.openCalibration({ data: this.camera, bringToFront: true })
     }
 
     private makeCameraStartCapture(): CameraStartCapture {

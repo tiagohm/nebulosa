@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import path from 'path'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
@@ -36,6 +36,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private route: ActivatedRoute,
         private storage: LocalStorageService,
+        ngZone: NgZone,
     ) {
         app.title = 'Calibration'
 
@@ -66,18 +67,31 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
                 }
             },
         })
+
+        electron.on('DATA.CHANGED', (data: Camera) => {
+            ngZone.run(() => {
+                if (data.name !== this.camera.name) {
+                    this.loadForCamera(data, true)
+                }
+            })
+        })
     }
 
     async ngAfterViewInit() {
         this.route.queryParams.subscribe(async e => {
-            this.camera = JSON.parse(decodeURIComponent(e.data)) as Camera
-            this.app.subTitle = this.camera.name
-            this.load()
+            const camera = JSON.parse(decodeURIComponent(e.data)) as Camera
+            this.loadForCamera(camera)
         })
     }
 
     @HostListener('window:unload')
     ngOnDestroy() { }
+
+    private loadForCamera(camera: Camera, reload: boolean = false) {
+        this.camera = camera
+        this.app.subTitle = this.camera.name
+        return reload ? this.reload() : this.load()
+    }
 
     private async upload(path: string) {
         const frames = await this.api.uploadCalibrationFrame(this.camera!, path)
@@ -89,6 +103,12 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 
     private async load() {
         this.groups = await this.api.calibrationFrames(this.camera)
+    }
+
+    private async reload() {
+        this.group = undefined
+        this.groupSelected()
+        this.load()
     }
 
     groupSelected() {
