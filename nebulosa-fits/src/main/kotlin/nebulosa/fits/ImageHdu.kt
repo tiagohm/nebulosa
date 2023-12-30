@@ -43,6 +43,6 @@ data class ImageHdu(
     companion object {
 
         @JvmStatic
-        fun isValid(header: Header) = header.getBoolean(Standard.SIMPLE)
+        fun isValid(header: Header) = header.getBoolean(Standard.SIMPLE) || header.getStringOrNull(Standard.XTENSION) == "IMAGE"
     }
 }

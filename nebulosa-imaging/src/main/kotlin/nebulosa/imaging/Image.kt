@@ -35,9 +35,6 @@ class Image(
     inline val b
         get() = buffer.b
 
-    inline val indices
-        get() = 0 until size
-
     inline fun indexAt(x: Int, y: Int): Int {
         return y * stride + x
     }
@@ -411,7 +408,7 @@ class Image(
         ): Int {
             var count = 0
 
-            for (i in indices step stepSize) {
+            for (i in 0 until size step stepSize) {
                 val pixel = when (channel) {
                     ImageChannel.GRAY -> readGray(i)
                     ImageChannel.RED -> readRed(i)

@@ -7,7 +7,7 @@ import nebulosa.imaging.algorithms.TransformAlgorithm
 import kotlin.math.max
 import kotlin.math.min
 
-class Grayscale(
+data class Grayscale(
     private val red: Float,
     private val green: Float,
     private val blue: Float,

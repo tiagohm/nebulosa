@@ -9,7 +9,7 @@ import kotlin.math.min
  * @see <a href="https://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html#__XISF_Data_Objects_:_XISF_Image_:_Display_Function__">Adaptive Display Function Algorithm</a>
  * @see <a href="https://pixinsight.com/tutorials/24-bit-stf/">24-Bit Screen LUTs</a>
  */
-class ScreenTransformFunction(
+data class ScreenTransformFunction(
     private val midtone: Float,
     private val shadow: Float = 0f,
     private val highlight: Float = 1f,

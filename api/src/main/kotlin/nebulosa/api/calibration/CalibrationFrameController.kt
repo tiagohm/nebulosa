@@ -14,13 +14,13 @@ class CalibrationFrameController(
     @GetMapping("{camera}")
     fun groups(@DeviceOrEntityParam camera: Camera): List<CalibrationFrameGroup> {
         var id = 0
-        val groupedFrames = calibrationFrameService.groupedCalibrationFrames(camera)
+        val groupedFrames = calibrationFrameService.groupedCalibrationFrames(camera.name)
         return groupedFrames.map { CalibrationFrameGroup(id++, it.key, it.value) }
     }
 
     @PutMapping("{camera}")
     fun upload(@DeviceOrEntityParam camera: Camera, @RequestParam path: Path): List<CalibrationFrameEntity> {
-        return calibrationFrameService.upload(camera, path)
+        return calibrationFrameService.upload(camera.name, path)
     }
 
     @PatchMapping("{id}")

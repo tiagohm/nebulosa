@@ -65,9 +65,10 @@ class ImageService(
                 || scnrEnabled
 
         var transformedImage = if (shouldBeTransformed) image.clone() else image
+        val instrument = camera?.name ?: image.header.instrument
 
-        if (calibrate && camera != null) {
-            transformedImage = calibrationFrameService.calibrate(camera, transformedImage, transformedImage === image)
+        if (calibrate && !instrument.isNullOrBlank()) {
+            transformedImage = calibrationFrameService.calibrate(instrument, transformedImage, transformedImage === image)
         }
 
         if (mirrorHorizontal) {
@@ -99,11 +100,8 @@ class ImageService(
             transformedImage.header.rightAscension.format(AngleFormatter.HMS),
             transformedImage.header.declination.format(AngleFormatter.SIGNED_DMS),
             imageBucket[path]?.second != null,
-            transformedImage.header.iterator().asSequence()
-                .filter { it.key.isNotBlank() && it.value.isNotBlank() }
-                .map { ImageHeaderItem(it.key, it.value) }
-                .toList(),
-            image.header.instrument?.let(connectionService::camera),
+            transformedImage.header.map { ImageHeaderItem(it.key, it.value) },
+            instrument?.let(connectionService::camera),
         )
 
         output.addHeader("X-Image-Info", objectMapper.writeValueAsString(info))

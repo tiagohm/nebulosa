@@ -5,7 +5,7 @@ import nebulosa.fits.clone
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.TransformAlgorithm
 
-class SubFrame(
+data class SubFrame(
     private val x: Int, private val y: Int,
     private val width: Int, private val height: Int,
 ) : TransformAlgorithm {
