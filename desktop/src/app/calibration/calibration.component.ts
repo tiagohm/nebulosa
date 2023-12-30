@@ -153,4 +153,18 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             }
         }
     }
+
+    async deleteGroupFrames(group: CalibrationFrameGroup) {
+        for (const frame of group.frames) {
+            await this.api.deleteCalibrationFrame(frame)
+
+            if (frame === this.frame) {
+                this.frame = undefined
+            }
+        }
+
+        if (group === this.group) {
+            this.group === undefined
+        }
+    }
 }
