@@ -177,14 +177,14 @@
                                 <span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
                             </div>
                             <div class="col pb-1 align-items-center gap-2">
-                                <p-button [disabled]="running || !entry.enabled" icon="mdi mdi-camera-iris" label="Camera"
+                                <p-button [disabled]="running || !entry.camera || !entry.enabled" icon="mdi mdi-camera-iris" label="Camera"
                                           [severity]="entry.camera?.connected ? 'info' : 'danger'" styleClass="px-2 py-1"
                                           (onClick)="showCameraDialog(entry)" />
-                                <p-button [disabled]="running || !entry.enabled" icon="mdi mdi-palette" label="Filter Wheel"
+                                <p-button [disabled]="running || !entry.wheel || !entry.enabled" icon="mdi mdi-palette" label="Filter Wheel"
                                           [severity]="entry.wheel?.connected ? 'info' : 'danger'" styleClass="px-2 py-1"
                                           (onClick)="showWheelDialog(entry)" />
-                                <p-button [disabled]="running || !entry.enabled" icon="mdi mdi-image-filter-center-focus" label="Focuser"
-                                          [severity]="entry.focuser?.connected ? 'info' : 'danger'" styleClass="px-2 py-1"
+                                <p-button [disabled]="running || !entry.focuser || !entry.enabled" icon="mdi mdi-image-filter-center-focus"
+                                          label="Focuser" [severity]="entry.focuser?.connected ? 'info' : 'danger'" styleClass="px-2 py-1"
                                           (onClick)="showCameraDialog(entry)" />
                             </div>
                             <div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">

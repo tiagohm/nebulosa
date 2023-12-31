@@ -289,9 +289,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromCamera(entry: CameraStartCapture, camera?: Camera) {
-        if (camera) {
-            entry.camera = camera
+        entry.camera = camera
 
+        if (camera) {
             if (camera.connected) {
                 if (camera.maxX > 1) entry.x = Math.max(camera.minX, Math.min(entry.x, camera.maxX))
                 if (camera.maxY > 1) entry.y = Math.max(camera.minY, Math.min(entry.y, camera.maxY))
@@ -317,9 +317,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromWheel(entry: CameraStartCapture, wheel?: FilterWheel) {
-        if (wheel) {
-            entry.wheel = wheel
+        entry.wheel = wheel
 
+        if (wheel) {
             if (wheel.connected) {
                 this.savePlan()
             }
@@ -333,9 +333,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromFocuser(entry: CameraStartCapture, focuser?: Focuser) {
-        if (focuser) {
-            entry.focuser = focuser
+        entry.focuser = focuser
 
+        if (focuser) {
             if (focuser.connected) {
                 this.savePlan()
             }
