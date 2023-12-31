@@ -1,4 +1,4 @@
-import { CameraCaptureEvent, CameraStartCapture, Dither } from './camera.types'
+import { AutoSubFolderMode, CameraCaptureEvent, CameraStartCapture, Dither } from './camera.types'
 
 export type SequenceCaptureMode = 'FULLY' | 'INTERLEAVED'
 
@@ -19,6 +19,7 @@ export interface AutoFocusAfterConditions {
 export interface SequencePlan {
     initialDelay: number
     captureMode: SequenceCaptureMode
+    autoSubFolderMode: AutoSubFolderMode
     savePath?: string
     entries: CameraStartCapture[]
     dither: Dither
@@ -28,6 +29,7 @@ export interface SequencePlan {
 export const EMPTY_SEQUENCE_PLAN: SequencePlan = {
     initialDelay: 0,
     captureMode: 'FULLY',
+    autoSubFolderMode: 'OFF',
     entries: [],
     dither: {
         enabled: false,

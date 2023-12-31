@@ -2,7 +2,7 @@
     <div class="grid py-1 flex align-items-center">
         <p-tabView class="w-full">
             <p-tabPanel header="Capture" leftIcon="mdi mdi-camera-iris">
-                <div class="grid mt-2">
+                <div class="grid mt-3">
                     <div class="col-3">
                         <span class="p-float-label">
                             <p-inputNumber [disabled]="running" [(ngModel)]="plan.initialDelay"
@@ -19,6 +19,15 @@
                         </span>
                     </div>
                     <div class="col-6 gap-2">
+                        <i *ngIf="plan.autoSubFolderMode === 'OFF'" (click)="toggleAutoSubFolder()" class="mdi mdi-folder-off cursor-pointer"
+                           pTooltip="Auto sub folder: OFF" tooltipPosition="bottom" [positionTop]="8"></i>
+                        <i *ngIf="plan.autoSubFolderMode === 'NOON'" (click)="toggleAutoSubFolder()"
+                           class="mdi mdi-weather-sunny text-yellow-600 cursor-pointer" pTooltip="Auto sub folder: NOON" tooltipPosition="bottom"
+                           [positionTop]="8"></i>
+                        <i *ngIf="plan.autoSubFolderMode === 'MIDNIGHT'" (click)="toggleAutoSubFolder()"
+                           class="mdi mdi-weather-night text-blue-600 cursor-pointer" pTooltip="Auto sub folder: MIDNIGHT" tooltipPosition="bottom"
+                           [positionTop]="8"></i>
+
                         <span class="p-float-label">
                             <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="plan.savePath"
                                    (ngModelChange)="savePlan()" />
@@ -36,7 +45,7 @@
                         <p-checkbox [binary]="true" [disabled]="running" [(ngModel)]="plan.dither.enabled" (ngModelChange)="savePlan()" />
                     </div>
                 </ng-template>
-                <div class="grid mt-2">
+                <div class="grid mt-3">
                     <div class="col-2 flex align-items-center">
                         <p-checkbox [binary]="true" [disabled]="running || !plan.dither.enabled" label="RA only"
                                     [(ngModel)]="plan.dither.raOnly" (ngModelChange)="savePlan()" />
@@ -67,7 +76,7 @@
                         <p-checkbox [binary]="true" [disabled]="running" [(ngModel)]="plan.autoFocus.enabled" (ngModelChange)="savePlan()" />
                     </div>
                 </ng-template>
-                <div class="grid mt-2">
+                <div class="grid mt-3">
                     <div class="col-5">
                         <div class="grid">
                             <div class="col-5 flex align-items-center">
@@ -265,9 +274,9 @@
     <div class="fixed" style="right: 16px; top: 54px;">
         <div class="grid">
             <div class="col-12 flex align-items-center justify-content-center gap-1">
-                <p-button [disabled]="!canStart || running" label="Start" (onClick)="start()" icon="mdi mdi-play"
+                <p-button [disabled]="!plan.entries.length || !canStart || running" label="Start" (onClick)="start()" icon="mdi mdi-play"
                           severity="success" />
-                <p-button [disabled]="!canStart || !running" label="Abort" (onClick)="stop()" icon="mdi mdi-stop"
+                <p-button [disabled]="!plan.entries.length || !canStart || !running" label="Abort" (onClick)="stop()" icon="mdi mdi-stop"
                           severity="danger" />
             </div>
         </div>

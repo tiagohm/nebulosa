@@ -364,6 +364,19 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         return plan.entries.length
     }
 
+    toggleAutoSubFolder() {
+        switch (this.plan.autoSubFolderMode) {
+            case 'OFF': this.plan.autoSubFolderMode = 'NOON'
+                break
+            case 'NOON': this.plan.autoSubFolderMode = 'MIDNIGHT'
+                break
+            case 'MIDNIGHT': this.plan.autoSubFolderMode = 'OFF'
+                break
+        }
+
+        this.savePlan()
+    }
+
     async chooseSavePath() {
         const defaultPath = this.plan.savePath
         const path = await this.electron.openDirectory({ defaultPath })

@@ -45,7 +45,7 @@ data class SequencerJob(
         val waitForSettleStep = WaitForSettleStep(guider)
 
         fun mapRequest(request: CameraStartCaptureRequest): CameraStartCaptureRequest {
-            return request.copy(savePath = plan.savePath, autoSave = true, autoSubFolderMode = AutoSubFolderMode.OFF)
+            return request.copy(savePath = plan.savePath, autoSave = true, autoSubFolderMode = plan.autoSubFolderMode)
         }
 
         fun CameraStartCaptureRequest.wheelStep(): Step? {
