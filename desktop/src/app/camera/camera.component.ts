@@ -386,7 +386,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 this.request.y = Math.max(this.camera.minY, Math.min(this.request.y, this.camera.maxY))
                 this.request.width = Math.max(this.camera.minWidth, Math.min(this.request.width < 8 ? this.camera.maxWidth : this.request.width, this.camera.maxWidth))
                 this.request.height = Math.max(this.camera.minHeight, Math.min(this.request.height < 8 ? this.camera.maxHeight : this.request.width, this.camera.maxHeight))
-                if (!this.request.frameFormat || !this.camera.frameFormats.includes(this.request.frameFormat)) this.request.frameFormat = this.camera.frameFormats[0]
+                if (this.camera.frameFormats.length && (!this.request.frameFormat || !this.camera.frameFormats.includes(this.request.frameFormat))) this.request.frameFormat = this.camera.frameFormats[0]
 
                 this.updateExposureUnit(this.exposureTimeUnit)
             }
