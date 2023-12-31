@@ -1,11 +1,13 @@
 package nebulosa.api.image
 
 import jakarta.servlet.http.HttpServletResponse
+import jakarta.validation.Valid
 import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.transformation.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import nebulosa.star.detection.ImageStar
+import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 
@@ -69,4 +71,10 @@ class ImageController(
     fun detectStars(@RequestParam path: Path): List<ImageStar> {
         return imageService.detectStars(path)
     }
+
+    @GetMapping("histogram")
+    fun histogram(
+        @RequestParam path: Path,
+        @RequestParam(required = false, defaultValue = "16") @Valid @Range(min = 8, max = 16) bitLength: Int,
+    ) = imageService.histogram(path, bitLength)
 }

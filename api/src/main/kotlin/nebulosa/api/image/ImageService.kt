@@ -8,6 +8,7 @@ import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
+import nebulosa.imaging.algorithms.computation.Histogram
 import nebulosa.imaging.algorithms.computation.Statistics
 import nebulosa.imaging.algorithms.transformation.*
 import nebulosa.indi.device.camera.Camera
@@ -310,6 +311,11 @@ class ImageService(
     fun detectStars(path: Path): List<ImageStar> {
         val (image) = imageBucket[path] ?: return emptyList()
         return WATNEY_STAR_DETECTOR.detect(image)
+    }
+
+    fun histogram(path: Path, bitLength: Int = 16): IntArray {
+        val (image) = imageBucket[path] ?: return IntArray(0)
+        return image.compute(Histogram(bitLength = bitLength))
     }
 
     companion object {

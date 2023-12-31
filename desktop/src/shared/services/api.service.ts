@@ -493,6 +493,11 @@ export class ApiService {
         return this.http.put<DetectedStar[]>(`image/detect-stars?${query}`)
     }
 
+    imageHistogram(path: string, bitLength: number = 16) {
+        const query = this.http.query({ path, bitLength })
+        return this.http.get<number[]>(`image/histogram?${query}`)
+    }
+
     // CALIBRATION
 
     calibrationFrames(camera: Camera) {

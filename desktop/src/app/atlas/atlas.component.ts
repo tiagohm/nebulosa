@@ -283,7 +283,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 data: [],
                 cubicInterpolationMode: 'monotone',
                 pointRadius: 0,
-            }]
+            }
+        ]
     }
 
     readonly altitudeOptions: ChartOptions = {

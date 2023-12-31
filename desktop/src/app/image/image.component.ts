@@ -7,6 +7,7 @@ import * as path from 'path'
 import { MenuItem } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
+import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -16,7 +17,7 @@ import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
-import { DetectedStar, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, ImageStatisticsBitLength, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { DetectedStar, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
@@ -54,6 +55,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     @ViewChild('deviceMenu')
     private readonly deviceMenu!: DeviceMenuComponent
+
+    @ViewChild('histogram')
+    private readonly histogram!: HistogramComponent
 
     debayer = true
     calibrate = true
@@ -105,16 +109,20 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     showStatisticsDialog = false
 
     readonly statisticsBitOptions: ImageStatisticsBitOption[] = [
-        { name: 'Normalized: [0, 1]', value: 1, fixedLength: 8 },
-        { name: '8-bit: [0, 255]', value: 255, fixedLength: 4 },
-        { name: '16-bit: [0, 65535]', value: 65535, fixedLength: 2 },
+        { name: 'Normalized: [0, 1]', rangeMax: 1, bitLength: 16 },
+        { name: '8-bit: [0, 255]', rangeMax: 255, bitLength: 8 },
+        { name: '9-bit: [0, 511]', rangeMax: 511, bitLength: 9 },
+        { name: '10-bit: [0, 1023]', rangeMax: 1023, bitLength: 10 },
+        { name: '12-bit: [0, 4095]', rangeMax: 4095, bitLength: 12 },
+        { name: '14-bit: [0, 16383]', rangeMax: 16383, bitLength: 14 },
+        { name: '16-bit: [0, 65535]', rangeMax: 65535, bitLength: 16 },
     ]
 
-    statisticsBits = this.statisticsBitOptions[0]
+    statisticsBitLength = this.statisticsBitOptions[0]
+    imageInfo?: ImageInfo
 
     private panZoom?: PanZoom
     private imageURL!: string
-    imageInfo?: ImageInfo
     private imageMouseX = 0
     private imageMouseY = 0
     private imageData: ImageData = {}
@@ -225,6 +233,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Statistics',
         command: () => {
             this.showStatisticsDialog = true
+            this.computeHistogram()
         },
     }
 
@@ -499,6 +508,17 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.detectedStars = []
         this.detectedStarsIsVisible = false
         this.detectStarsMenuItem.toggleable = false
+
+        this.histogram?.update([])
+    }
+
+    private async computeHistogram() {
+        const data = await this.api.imageHistogram(this.imageData.path!, this.statisticsBitLength.bitLength)
+        this.histogram.update(data)
+    }
+
+    statisticsBitLengthChanged() {
+        this.computeHistogram()
     }
 
     private async loadImage() {
@@ -567,8 +587,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     imageMouseMovedWithCoordinates(x: number, y: number) {
         if (!this.menu.visible()) {
             this.mouseCoordinate = this.mouseCoordinateInterpolation?.interpolateAsText(x, y, true, true, false)
-            this.mouseCoordinate!.x = x
-            this.mouseCoordinate!.y = y
+
+            if (this.mouseCoordinate) {
+                this.mouseCoordinate.x = x
+                this.mouseCoordinate.y = y
+            }
         }
     }
 

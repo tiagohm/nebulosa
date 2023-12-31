@@ -38,6 +38,7 @@ import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { DeviceMenuComponent } from '../shared/components/devicemenu/devicemenu.component'
 import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.component'
+import { HistogramComponent } from '../shared/components/histogram/histogram.component'
 import { MenuItemComponent } from '../shared/components/menuitem/menuitem.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
@@ -89,6 +90,7 @@ import { SettingsComponent } from './settings/settings.component'
         FocuserComponent,
         FramingComponent,
         GuiderComponent,
+        HistogramComponent,
         HomeComponent,
         ImageComponent,
         INDIComponent,

@@ -302,8 +302,9 @@
 <p-dialog header="FITS Headers" [draggable]="true" [(visible)]="showFITSHeadersDialog" [modal]="false" [style]="{width: '320px'}"
           class="pointer-events-none">
     <div class="grid p-2">
-        <p-table [value]="fitsHeaders" class="max-h-22rem w-full" dataKey="name" styleClass="w-full pb-4 p-datatable-striped">
-            <ng-template pTemplate="header" [style]="{maxHeight: '100px'}">
+        <p-table [value]="fitsHeaders" class="max-h-22rem w-full" dataKey="name" styleClass="w-full pb-4 p-datatable-striped"
+                 [style]="{maxHeight: '100px'}">
+            <ng-template pTemplate="header">
                 <tr>
                     <th>Name</th>
                     <th>Value</th>
@@ -331,58 +332,61 @@
         <div class="col-4">
             <span class="p-float-label">
                 <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.mean * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                       [value]="(imageInfo.statistics.mean * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Mean</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
                 <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.median * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                       [value]="(imageInfo.statistics.median * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Median</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
                 <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.variance * statisticsBits.value * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                       [value]="(imageInfo.statistics.variance * statisticsBitLength.rangeMax * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Variance</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
                 <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.avgDev * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                       [value]="(imageInfo.statistics.avgDev * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Avg Dev</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
                 <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.stdDev * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                       [value]="(imageInfo.statistics.stdDev * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Std Dev</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.minimum * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                       [value]="(imageInfo.statistics.minimum * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Minimum</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.maximum * statisticsBits.value).toFixed(statisticsBits.fixedLength)" />
+                       [value]="(imageInfo.statistics.maximum * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Maximum</label>
             </span>
         </div>
         <div class="col-6">
             <span class="p-float-label device">
-                <p-dropdown [options]="statisticsBitOptions" [(ngModel)]="statisticsBits" optionLabel="name"
-                            styleClass="p-inputtext-sm border-0" appendTo="body" />
+                <p-dropdown [options]="statisticsBitOptions" [(ngModel)]="statisticsBitLength" optionLabel="name"
+                            styleClass="p-inputtext-sm border-0" appendTo="body" (ngModelChange)="statisticsBitLengthChanged()" />
                 <label>Bits</label>
             </span>
+        </div>
+        <div class="col-12">
+            <p-histogram #histogram class="w-full" style="max-height: 94px" />
         </div>
     </div>
 </p-dialog>

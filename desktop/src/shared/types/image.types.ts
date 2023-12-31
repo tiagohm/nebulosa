@@ -64,12 +64,10 @@ export interface DetectedStar {
     flux: number
 }
 
-export type ImageStatisticsBitLength = 1 | 255 | 65535
-
 export interface ImageStatisticsBitOption {
     name: string,
-    value: ImageStatisticsBitLength
-    fixedLength: number
+    rangeMax: number
+    bitLength: number
 }
 
 export interface ImageStatistics {
