@@ -166,9 +166,9 @@ export class ApiService {
         return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/galactic-center`)
     }
 
-    pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
-        const query = this.http.query({ path, x, y, synchronized })
-        return this.http.post<void>(`mounts/${mount.name}/point-here?${query}`)
+    pointMountHere(mount: Mount, path: string, x: number, y: number) {
+        const query = this.http.query({ path, x, y })
+        return this.http.put<void>(`mounts/${mount.name}/point-here?${query}`)
     }
 
     // FOCUSER

@@ -190,8 +190,7 @@ class MountController(
         @RequestParam path: Path,
         @RequestParam @Valid @PositiveOrZero x: Double,
         @RequestParam @Valid @PositiveOrZero y: Double,
-        @RequestParam(required = false, defaultValue = "true") synchronized: Boolean,
     ) {
-        mountService.pointMountHere(mount, path, x, y, synchronized)
+        mountService.pointMountHere(mount, path, x, y)
     }
 }

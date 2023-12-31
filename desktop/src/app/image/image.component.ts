@@ -242,7 +242,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         disabled: true,
         command: () => {
             this.executeMount((mount) => {
-                this.api.pointMountHere(mount, this.imageData.path!, this.imageMouseX, this.imageMouseY, !this.solved)
+                this.api.pointMountHere(mount, this.imageData.path!, this.imageMouseX, this.imageMouseY)
             })
         },
     }

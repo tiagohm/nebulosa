@@ -223,23 +223,22 @@ class MountService(private val imageBucket: ImageBucket) {
         return computedLocation
     }
 
-    fun pointMountHere(mount: Mount, path: Path, x: Double, y: Double, synchronized: Boolean) {
+    fun pointMountHere(mount: Mount, path: Path, x: Double, y: Double) {
         val calibration = imageBucket[path]?.second ?: return
 
         if (calibration.isNotEmpty() && calibration.solved) {
             val wcs = WCSTransform(calibration)
-            val (rightAscension, declination) = wcs.use { it.pixToSky(x, y) }
+            val (rightAscension, declination) = wcs.use { it.pixToSky(x, y) } // J2000
 
-            if (synchronized) {
-                goTo(mount, rightAscension, declination, true)
-            } else {
-                val icrf = ICRF.equatorial(calibration.rightAscension, calibration.declination)
-                val (calibratedRA, calibratedDEC) = icrf.equatorialAtDate()
-                val raOffset = calibratedRA - mount.rightAscension
-                val decOffset = calibratedDEC - mount.declination
-                LOG.info("pointing mount adjusted. ra={}, dec={}", raOffset.toArcmin, decOffset.toArcmin)
-                goTo(mount, rightAscension + raOffset, declination + decOffset, false)
-            }
+            val icrf = ICRF.equatorial(calibration.rightAscension, calibration.declination)
+            val (calibratedRA, calibratedDEC) = icrf.equatorialAtDate()
+            val raOffset = mount.rightAscension - calibratedRA
+            val decOffset = mount.declination - calibratedDEC
+            LOG.info(
+                "pointing mount adjusted. ra={}, dec={}, dx={}, dy={}", rightAscension.format(AngleFormatter.HMS),
+                declination.format(AngleFormatter.SIGNED_DMS), raOffset.format(AngleFormatter.HMS), decOffset.format(AngleFormatter.SIGNED_DMS)
+            )
+            goTo(mount, rightAscension + raOffset, declination + decOffset, true)
         }
     }
 
