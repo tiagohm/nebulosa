@@ -317,7 +317,7 @@ open class ICRF protected constructor(
             center: Number = Int.MIN_VALUE,
             target: Number = Int.MIN_VALUE,
         ): ICRF {
-            val position = CartesianCoordinate.of(rightAscension, declination, distance).vector
+            val position = CartesianCoordinate.of(rightAscension, declination, distance)
             return of(if (epoch != null) epoch.m.transposed * position else position, Vector3D.EMPTY, time, center, target)
         }
     }

@@ -1,14 +1,11 @@
-@file:JvmName("Vector3D")
-
 package nebulosa.math
 
 import kotlin.math.asin
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
-@JvmInline
 @Suppress("NOTHING_TO_INLINE")
-value class Vector3D private constructor(@PublishedApi internal val vector: DoubleArray) {
+open class Vector3D protected constructor(@PublishedApi @JvmField internal val vector: DoubleArray) {
 
     constructor(x: Double = 0.0, y: Double = 0.0, z: Double = 0.0) : this(doubleArrayOf(x, y, z))
 
@@ -50,7 +47,7 @@ value class Vector3D private constructor(@PublishedApi internal val vector: Doub
     inline val length
         get() = sqrt(dot(this))
 
-    val normalized
+    inline val normalized
         get() = length.let { if (it == 0.0) this else this / it }
 
     inline val latitude
@@ -59,12 +56,10 @@ value class Vector3D private constructor(@PublishedApi internal val vector: Doub
     inline val longitude
         get() = atan2(y, x).rad.normalized
 
-    fun isEmpty() = x == 0.0 && y == 0.0 && z == 0.0
+    inline fun isEmpty() = x == 0.0 && y == 0.0 && z == 0.0
 
     /**
      * Computes the angle between this vector and [vector].
-
-     * @return The angle in radians.
      */
     fun angle(vector: Vector3D): Angle {
         val a = this * vector.length
@@ -72,7 +67,20 @@ value class Vector3D private constructor(@PublishedApi internal val vector: Doub
         return (2.0 * atan2((a - b).length, (a + b).length)).rad
     }
 
-    override fun toString() = "Vector3D(x=$x, y=$y, z=$z)"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Vector3D) return false
+
+        if (!vector.contentEquals(other.vector)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return vector.contentHashCode()
+    }
+
+    override fun toString() = "${javaClass.simpleName}(x=$x, y=$y, z=$z)"
 
     companion object {
 

@@ -148,31 +148,22 @@ class MountController(
         mountService.dateTime(mount, OffsetDateTime.of(dateTime, ZoneOffset.ofTotalSeconds(offsetInMinutes * 60)))
     }
 
-    @GetMapping("{mount}/location/zenith")
-    fun zenithLocation(@DeviceOrEntityParam mount: Mount): ComputedLocation {
-        return mountService.computeZenithLocation(mount)
-    }
-
-    @GetMapping("{mount}/location/celestial-pole/north")
-    fun northCelestialPoleLocation(@DeviceOrEntityParam mount: Mount): ComputedLocation {
-        return mountService.computeNorthCelestialPoleLocation(mount)
-    }
-
-    @GetMapping("{mount}/location/celestial-pole/south")
-    fun southCelestialPoleLocation(@DeviceOrEntityParam mount: Mount): ComputedLocation {
-        return mountService.computeSouthCelestialPoleLocation(mount)
-    }
-
-    @GetMapping("{mount}/location/galactic-center")
-    fun galacticCenterLocation(@DeviceOrEntityParam mount: Mount): ComputedLocation {
-        return mountService.computeGalacticCenterLocation(mount)
+    @GetMapping("{mount}/location/{type}")
+    fun celestialLocation(@DeviceOrEntityParam mount: Mount, @PathVariable type: CelestialLocationType): ComputedLocation {
+        return when (type) {
+            CelestialLocationType.ZENITH -> mountService.computeZenithLocation(mount)
+            CelestialLocationType.NORTH_POLE -> mountService.computeNorthCelestialPoleLocation(mount)
+            CelestialLocationType.SOUTH_POLE -> mountService.computeSouthCelestialPoleLocation(mount)
+            CelestialLocationType.GALACTIC_CENTER -> mountService.computeGalacticCenterLocation(mount)
+            CelestialLocationType.MERIDIAN_EQUATOR -> mountService.computeMeridianEquatorLocation(mount)
+            CelestialLocationType.MERIDIAN_ECLIPTIC -> mountService.computeMeridianEclipticLocation(mount)
+        }
     }
 
     @GetMapping("{mount}/location")
     fun location(
         @DeviceOrEntityParam mount: Mount,
-        @RequestParam rightAscension: String,
-        @RequestParam declination: String,
+        @RequestParam rightAscension: String, @RequestParam declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
         @RequestParam(required = false, defaultValue = "true") equatorial: Boolean,
         @RequestParam(required = false, defaultValue = "true") horizontal: Boolean,

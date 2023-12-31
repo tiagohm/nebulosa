@@ -10,7 +10,7 @@ import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
 import { CoordinateInterpolation, DetectedStar, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, SCNRProtectionMethod } from '../types/image.types'
-import { Mount, SlewRate, TrackMode } from '../types/mount.types'
+import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
 import { SequencePlan } from '../types/sequencer.types'
 import { PlateSolverSettings } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
@@ -150,20 +150,8 @@ export class ApiService {
         return this.http.get<ComputedLocation>(`mounts/${mount.name}/location?${query}`)
     }
 
-    mountZenithLocation(mount: Mount) {
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/zenith`)
-    }
-
-    mountNorthCelestialPoleLocation(mount: Mount) {
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/celestial-pole/north`)
-    }
-
-    mountSouthCelestialPoleLocation(mount: Mount) {
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/celestial-pole/south`)
-    }
-
-    mountGalacticCenterLocation(mount: Mount) {
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/galactic-center`)
+    mountCelestialLocation(mount: Mount, type: CelestialLocationType) {
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/${type}`)
     }
 
     pointMountHere(mount: Mount, path: string, x: number, y: number) {

@@ -5,9 +5,9 @@
                 <input type="text" pInputText [readonly]="true" [value]="mount.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Mount</label>
             </span>
-            <p-button *ngIf="mount.connected" [disabled]="!mount || slewing || parking || parked" (onClick)="connect()" icon="mdi mdi-close"
+            <p-button *ngIf="mount.connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-close"
                       size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
-            <p-button *ngIf="!mount.connected" [disabled]="!mount || slewing || parking || parked" (onClick)="connect()" icon="mdi mdi-connection"
+            <p-button *ngIf="!mount.connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-connection"
                       size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">

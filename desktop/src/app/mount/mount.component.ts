@@ -114,6 +114,14 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             },
         },
         {
+            icon: 'mdi mdi-image',
+            label: 'Frame',
+            command: () => {
+                this.browserWindow.openFraming({ data: { rightAscension: this.targetRightAscension, declination: this.targetDeclination } })
+            },
+        },
+        SEPARATOR_MENU_ITEM,
+        {
             icon: 'mdi mdi-crosshairs-gps',
             label: 'Locations',
             items: [
@@ -139,7 +147,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'Zenith',
                     command: async () => {
-                        const coordinates = await this.api.mountZenithLocation(this.mount)
+                        const coordinates = await this.api.mountCelestialLocation(this.mount, 'ZENITH')
                         this.updateTargetCoordinate(coordinates)
                     },
                 },
@@ -147,7 +155,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'North celestial pole',
                     command: async () => {
-                        const coordinates = await this.api.mountNorthCelestialPoleLocation(this.mount)
+                        const coordinates = await this.api.mountCelestialLocation(this.mount, 'NORTH_POLE')
                         this.updateTargetCoordinate(coordinates)
                     },
                 },
@@ -155,7 +163,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'South celestial pole',
                     command: async () => {
-                        const coordinates = await this.api.mountSouthCelestialPoleLocation(this.mount)
+                        const coordinates = await this.api.mountCelestialLocation(this.mount, 'SOUTH_POLE')
                         this.updateTargetCoordinate(coordinates)
                     },
                 },
@@ -163,9 +171,31 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'Galactic center',
                     command: async () => {
-                        const coordinates = await this.api.mountGalacticCenterLocation(this.mount)
+                        const coordinates = await this.api.mountCelestialLocation(this.mount, 'GALACTIC_CENTER')
                         this.updateTargetCoordinate(coordinates)
                     },
+                },
+                {
+                    icon: 'mdi mdi-crosshairs',
+                    label: 'Intersection points',
+                    items: [
+                        {
+                            icon: 'mdi mdi-crosshairs-gps',
+                            label: 'Meridian x Equator',
+                            command: async () => {
+                                const coordinates = await this.api.mountCelestialLocation(this.mount, 'MERIDIAN_EQUATOR')
+                                this.updateTargetCoordinate(coordinates)
+                            },
+                        },
+                        {
+                            icon: 'mdi mdi-crosshairs-gps',
+                            label: 'Meridian x Ecliptic',
+                            command: async () => {
+                                const coordinates = await this.api.mountCelestialLocation(this.mount, 'MERIDIAN_ECLIPTIC')
+                                this.updateTargetCoordinate(coordinates)
+                            },
+                        },
+                    ]
                 },
             ],
         },

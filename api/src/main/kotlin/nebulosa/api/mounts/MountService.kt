@@ -4,6 +4,8 @@ import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.image.ImageBucket
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
+import nebulosa.erfa.CartesianCoordinate
+import nebulosa.erfa.SphericalCoordinate
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
@@ -12,6 +14,7 @@ import nebulosa.indi.device.mount.TrackMode
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.astrometry.Constellation
+import nebulosa.nova.frame.Ecliptic
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
@@ -37,7 +40,7 @@ class MountService(private val imageBucket: ImageBucket) {
         @Synchronized get() {
             val curTime = System.currentTimeMillis()
 
-            if (curTime - prevTime >= 30000L) {
+            if (curTime - prevTime >= 1000L) {
                 prevTime = curTime
                 field = UTC.now()
             }
@@ -146,10 +149,7 @@ class MountService(private val imageBucket: ImageBucket) {
     }
 
     fun computeZenithLocation(mount: Mount): ComputedLocation {
-        return computeLocation(
-            mount, computeLST(mount), mount.latitude,
-            j2000 = false, equatorial = true, horizontal = true, meridianAt = false,
-        )
+        return computeLocation(mount, computeLST(mount), mount.latitude, j2000 = false, meridianAt = false)
     }
 
     fun computeNorthCelestialPoleLocation(mount: Mount): ComputedLocation {
@@ -161,17 +161,21 @@ class MountService(private val imageBucket: ImageBucket) {
     }
 
     fun computeCelestialPoleLocation(mount: Mount, south: Boolean): ComputedLocation {
-        return computeLocation(
-            mount, computeLST(mount), if (south) -QUARTER else QUARTER,
-            j2000 = false, equatorial = true, horizontal = true, meridianAt = false,
-        )
+        return computeLocation(mount, computeLST(mount), if (south) -QUARTER else QUARTER, j2000 = false, meridianAt = false)
     }
 
     fun computeGalacticCenterLocation(mount: Mount): ComputedLocation {
-        return computeLocation(
-            mount, GALACTIC_CENTER_RA, GALACTIC_CENTER_DEC,
-            j2000 = true, equatorial = true, horizontal = true, meridianAt = false,
-        )
+        return computeLocation(mount, GALACTIC_CENTER_RA, GALACTIC_CENTER_DEC, j2000 = true, meridianAt = false)
+    }
+
+    fun computeMeridianEquatorLocation(mount: Mount): ComputedLocation {
+        return computeLocation(mount, computeLST(mount), 0.0, j2000 = false, meridianAt = false)
+    }
+
+    fun computeMeridianEclipticLocation(mount: Mount): ComputedLocation {
+        val ra = computeLST(mount)
+        val equatorial = Ecliptic.rotationAt(currentTime) * CartesianCoordinate.of(ra, 0.0, 1.0)
+        return computeLocation(mount, ra, SphericalCoordinate.of(equatorial).latitude, j2000 = false, meridianAt = false)
     }
 
     fun computeLocation(

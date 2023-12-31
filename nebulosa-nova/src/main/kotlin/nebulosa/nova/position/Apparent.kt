@@ -52,7 +52,7 @@ class Apparent internal constructor(
             )
 
             val r = frame.rotationAt(position.time)
-            val p = r.transposed * CartesianCoordinate.of(azimuth, altitude, distance).vector
+            val p = r.transposed * CartesianCoordinate.of(azimuth, altitude, distance)
 
             return Apparent(p, Vector3D.EMPTY, position.time, position.center, position.target)
         }
