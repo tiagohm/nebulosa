@@ -19,3 +19,4 @@
 *.gz            binary
 *.dll           binary
 *.so            binary
+*.zip           binary
