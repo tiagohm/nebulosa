@@ -8,7 +8,7 @@ import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { OverlayPanel } from 'primeng/overlaypanel'
 import { Subscription, timer } from 'rxjs'
-import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
+import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 import { ApiService } from '../../shared/services/api.service'
@@ -153,7 +153,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     private readonly imageOfSun!: ElementRef<HTMLImageElement>
 
     @ViewChild('deviceMenu')
-    private readonly deviceMenu!: DeviceMenuComponent
+    private readonly deviceMenu!: DeviceListMenuComponent
 
     @ViewChild('calendarPanel')
     private readonly calendarPanel!: OverlayPanel

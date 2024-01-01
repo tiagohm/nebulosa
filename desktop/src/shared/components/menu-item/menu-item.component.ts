@@ -3,9 +3,9 @@ import { MenuItem } from 'primeng/api'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../types/app.types'
 
 @Component({
-    selector: 'p-menuItem',
-    templateUrl: './menuitem.component.html',
-    styleUrls: ['./menuitem.component.scss'],
+    selector: 'neb-menu-item',
+    templateUrl: './menu-item.component.html',
+    styleUrls: ['./menu-item.component.scss'],
 })
 export class MenuItemComponent {
 

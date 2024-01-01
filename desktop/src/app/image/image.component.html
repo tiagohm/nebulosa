@@ -37,7 +37,7 @@
 
 <p-contextMenu #menu [model]="contextMenuItems">
     <ng-template pTemplate="item" let-item>
-        <p-menuItem [item]="item" />
+        <neb-menu-item [item]="item" />
     </ng-template>
 </p-contextMenu>
 
@@ -386,7 +386,7 @@
             </span>
         </div>
         <div class="col-12">
-            <p-histogram #histogram class="w-full" style="max-height: 94px" />
+            <neb-histogram #histogram class="w-full" style="max-height: 94px" />
         </div>
     </div>
 </p-dialog>
@@ -402,4 +402,4 @@
     </div>
 </div>
 
-<p-deviceMenu #deviceMenu />
+<neb-device-list-menu #deviceMenu />

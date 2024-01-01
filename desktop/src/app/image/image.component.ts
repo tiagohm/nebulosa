@@ -6,7 +6,7 @@ import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
 import { MenuItem } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
-import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
+import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
@@ -54,7 +54,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private readonly menu!: ContextMenu
 
     @ViewChild('deviceMenu')
-    private readonly deviceMenu!: DeviceMenuComponent
+    private readonly deviceMenu!: DeviceListMenuComponent
 
     @ViewChild('histogram')
     private readonly histogram!: HistogramComponent

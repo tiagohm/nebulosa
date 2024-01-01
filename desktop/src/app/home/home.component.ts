@@ -1,8 +1,8 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import path from 'path'
 import { MenuItem, MessageService } from 'primeng/api'
-import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
-import { DialogMenuComponent } from '../../shared/components/dialogmenu/dialogmenu.component'
+import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
+import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -42,7 +42,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     private readonly deviceMenu!: DialogMenuComponent
 
     @ViewChild('imageMenu')
-    private readonly imageMenu!: DeviceMenuComponent
+    private readonly imageMenu!: DeviceListMenuComponent
 
     host = ''
     port = 7624

@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
 
 @Component({
-    selector: 'p-moon',
+    selector: 'neb-moon',
     templateUrl: './moon.component.html',
     styleUrls: ['./moon.component.scss'],
 })

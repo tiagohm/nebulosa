@@ -1,7 +1,7 @@
-import { AfterContentInit, AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core'
 
 @Component({
-    selector: 'p-histogram',
+    selector: 'neb-histogram',
     templateUrl: './histogram.component.html',
     styleUrls: ['./histogram.component.scss'],
 })

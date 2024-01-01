@@ -2,11 +2,11 @@ import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, O
 import * as L from 'leaflet'
 
 @Component({
-    selector: 'p-openStreetMap',
-    templateUrl: './openstreetmap.component.html',
-    styleUrls: ['./openstreetmap.component.scss'],
+    selector: 'neb-map',
+    templateUrl: './map.component.html',
+    styleUrls: ['./map.component.scss'],
 })
-export class OpenStreetMapComponent implements AfterViewInit, OnChanges {
+export class MapComponent implements AfterViewInit, OnChanges {
 
     @ViewChild("map")
     private readonly mapRef!: ElementRef<HTMLDivElement>

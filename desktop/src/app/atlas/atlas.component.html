@@ -19,7 +19,7 @@
                     </div>
                 </ng-template>
                 <div class="grid flex align-items-center justify-content-center" style="height: 206px;">
-                    <p-moon [width]="187" [height]="187" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
+                    <neb-moon [width]="187" [height]="187" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Planets" [disabled]="refreshing">
@@ -385,5 +385,5 @@
     </ng-template>
 </p-overlayPanel>
 
-<p-dialogMenu #ephemerisMenu [model]="ephemerisModel" />
-<p-deviceMenu #deviceMenu />
+<neb-dialog-menu #ephemerisMenu [model]="ephemerisModel" />
+<neb-device-list-menu #deviceMenu />

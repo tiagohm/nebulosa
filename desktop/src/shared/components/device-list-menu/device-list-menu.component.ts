@@ -2,14 +2,14 @@ import { Component, Input, ViewChild } from '@angular/core'
 import { MenuItem, MessageService } from 'primeng/api'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
 import { Device } from '../../types/device.types'
-import { DialogMenuComponent } from '../dialogmenu/dialogmenu.component'
+import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
 
 @Component({
-    selector: 'p-deviceMenu',
-    templateUrl: './devicemenu.component.html',
-    styleUrls: ['./devicemenu.component.scss'],
+    selector: 'neb-device-list-menu',
+    templateUrl: './device-list-menu.component.html',
+    styleUrls: ['./device-list-menu.component.scss'],
 })
-export class DeviceMenuComponent {
+export class DeviceListMenuComponent {
 
     @Input()
     readonly model: MenuItem[] = []

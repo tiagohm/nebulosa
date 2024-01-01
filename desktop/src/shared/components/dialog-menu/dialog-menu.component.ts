@@ -3,9 +3,9 @@ import { MenuItem } from 'primeng/api'
 import { SlideMenu } from 'primeng/slidemenu'
 
 @Component({
-    selector: 'p-dialogMenu',
-    templateUrl: './dialogmenu.component.html',
-    styleUrls: ['./dialogmenu.component.scss'],
+    selector: 'neb-dialog-menu',
+    templateUrl: './dialog-menu.component.html',
+    styleUrls: ['./dialog-menu.component.scss'],
 })
 export class DialogMenuComponent {
 

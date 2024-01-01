@@ -36,12 +36,12 @@ import { TagModule } from 'primeng/tag'
 import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
-import { DeviceMenuComponent } from '../shared/components/devicemenu/devicemenu.component'
-import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.component'
+import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
+import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
-import { MenuItemComponent } from '../shared/components/menuitem/menuitem.component'
+import { MapComponent } from '../shared/components/map/map.component'
+import { MenuItemComponent } from '../shared/components/menu-item/menu-item.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
-import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
@@ -80,7 +80,7 @@ import { SettingsComponent } from './settings/settings.component'
         AtlasComponent,
         CalibrationComponent,
         CameraComponent,
-        DeviceMenuComponent,
+        DeviceListMenuComponent,
         DialogMenuComponent,
         EnumPipe,
         EnvPipe,
@@ -100,7 +100,7 @@ import { SettingsComponent } from './settings/settings.component'
         MoonComponent,
         MountComponent,
         NoDropdownDirective,
-        OpenStreetMapComponent,
+        MapComponent,
         SequencerComponent,
         SettingsComponent,
         SkyObjectPipe,
