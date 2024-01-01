@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MessageService } from 'primeng/api'
+import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -25,7 +26,10 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     wheels: FilterWheel[] = []
     wheel?: FilterWheel
 
-    captureInProgress = false
+    running = false
+
+    @ViewChild('cameraExposure')
+    private readonly cameraExposure!: CameraExposureComponent
 
     filters: FilterSlot[] = []
     selectedFilters: FilterSlot[] = []
@@ -49,9 +53,9 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     }
 
     constructor(
-        private app: AppComponent,
+        app: AppComponent,
         private api: ApiService,
-        private electron: ElectronService,
+        electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private storage: LocalStorageService,
         private route: ActivatedRoute,
@@ -62,31 +66,31 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
         app.title = 'Flat Wizard'
 
         electron.on('FLAT_WIZARD.ELAPSED', event => {
-            if (event.capture && event.capture.camera.name === this.camera?.name) {
+            if (event.capture) {
                 ngZone.run(() => {
-                    if (event.capture?.state === 'CAPTURE_STARTED') {
-                        this.captureInProgress = true
+                    this.cameraExposure.handleCameraCaptureEvent(event.capture!)
+
+                    if (event.capture!.state === 'CAPTURE_STARTED') {
+                        this.running = true
+                    } else if (event.capture!.state === 'CAPTURE_FINISHED' && event.capture!.aborted) {
+                        this.running = false
                     }
                 })
             }
         })
 
         electron.on('FLAT_WIZARD.FRAME_CAPTURED', event => {
-            if (event.capture && event.capture.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    this.captureInProgress = false
-                    this.message.add({ severity: 'success', detail: `Flat frame saved at ${event.savedPath}` })
-                })
-            }
+            ngZone.run(() => {
+                this.running = false
+                this.message.add({ severity: 'success', detail: `Flat frame saved at ${event.savedPath}` })
+            })
         })
 
         electron.on('FLAT_WIZARD.FAILED', event => {
-            if (event.capture && event.capture.camera.name === this.camera?.name) {
-                ngZone.run(() => {
-                    this.captureInProgress = false
-                    this.message.add({ severity: 'error', detail: `Failed to find an optimal exposure time from given parameters` })
-                })
-            }
+            ngZone.run(() => {
+                this.running = false
+                this.message.add({ severity: 'error', detail: `Failed to find an optimal exposure time from given parameters` })
+            })
         })
     }
 

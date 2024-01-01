@@ -2,32 +2,31 @@
     <div class="grid">
         <div class="col-6 align-items-center gap-2">
             <span class="p-float-label device">
-                <p-dropdown [disabled]="captureInProgress" [options]="cameras" [(ngModel)]="camera" optionLabel="name"
+                <p-dropdown [disabled]="running" [options]="cameras" [(ngModel)]="camera" optionLabel="name"
                             styleClass="p-inputtext-sm border-0" (ngModelChange)="cameraChanged()" emptyMessage="No camera found" />
                 <label>Camera</label>
             </span>
-            <p-button [disabled]="!camera || captureInProgress" icon="mdi mdi-cog" (onClick)="showCameraDialog()" />
+            <p-button [disabled]="!camera || running" icon="mdi mdi-cog" (onClick)="showCameraDialog()" />
         </div>
         <div class="col-6 align-items-center gap-2">
             <span class="p-float-label device">
-                <p-dropdown [disabled]="captureInProgress" [options]="wheels" [(ngModel)]="wheel" optionLabel="name"
+                <p-dropdown [disabled]="running" [options]="wheels" [(ngModel)]="wheel" optionLabel="name"
                             styleClass="p-inputtext-sm border-0" (ngModelChange)="wheelChanged()" emptyMessage="No filter wheel found" />
                 <label>Filter Wheel</label>
             </span>
-            <p-button *ngIf="wheel?.connected" [disabled]="!wheel || captureInProgress" (onClick)="wheelConnect()" icon="mdi mdi-close"
+            <p-button *ngIf="wheel?.connected" [disabled]="!wheel || running" (onClick)="wheelConnect()" icon="mdi mdi-close"
                       size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
-            <p-button *ngIf="!wheel?.connected" [disabled]="!wheel || captureInProgress" (onClick)="wheelConnect()" icon="mdi mdi-connection"
+            <p-button *ngIf="!wheel?.connected" [disabled]="!wheel || running" (onClick)="wheelConnect()" icon="mdi mdi-connection"
                       size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
-        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-sm" style="min-height: 25px;">
-            <i class="mdi mdi-information text-blue-600"></i>
-            <span style="min-width: 60px" class="text-left mr-2">idle</span>
+        <div class="col-12 pt-0 pb-1 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-xs">
+            <neb-camera-exposure #cameraExposure />
         </div>
     </div>
     <div class="grid mt-2">
         <div class="col-6">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera?.connected || captureInProgress" [(ngModel)]="request.exposureMin" mode="decimal"
+                <p-inputNumber [disabled]="!camera?.connected || running" [(ngModel)]="request.exposureMin" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="1" [max]="60000" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" />
                 <label>Min Exposure (ms)</label>
@@ -35,7 +34,7 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera?.connected || captureInProgress" [(ngModel)]="request.exposureMax" mode="decimal"
+                <p-inputNumber [disabled]="!camera?.connected || running" [(ngModel)]="request.exposureMax" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="request.exposureMin" [max]="60000" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" />
                 <label>Max Exposure (ms)</label>
@@ -43,7 +42,7 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera?.connected || captureInProgress" [(ngModel)]="request.meanTarget" mode="decimal"
+                <p-inputNumber [disabled]="!camera?.connected || running" [(ngModel)]="request.meanTarget" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="0" [max]="65535" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" />
                 <label>Mean Target ({{ meanTargetMin }} - {{ meanTargetMax }})</label>
@@ -51,7 +50,7 @@
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera?.connected || captureInProgress" [(ngModel)]="request.meanTolerance" mode="decimal"
+                <p-inputNumber [disabled]="!camera?.connected || running" [(ngModel)]="request.meanTolerance" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="0" [max]="100" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" />
                 <label>Mean Tolerance (%)</label>
@@ -69,9 +68,9 @@
     </div>
     <div class="grid mt-1">
         <div class="col-12 flex align-items-center justify-content-center gap-1">
-            <p-button [disabled]="!camera?.connected || captureInProgress" label="Start" (onClick)="start()" icon="mdi mdi-play"
+            <p-button [disabled]="!camera?.connected || running" label="Start" (onClick)="start()" icon="mdi mdi-play"
                       severity="success" />
-            <p-button [disabled]="!camera?.connected || !captureInProgress" label="Abort" (onClick)="stop()" icon="mdi mdi-stop"
+            <p-button [disabled]="!camera?.connected || !running" label="Abort" (onClick)="stop()" icon="mdi mdi-stop"
                       severity="danger" />
         </div>
     </div>

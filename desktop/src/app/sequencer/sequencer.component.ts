@@ -1,14 +1,15 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MessageService } from 'primeng/api'
+import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureEvent, CameraCaptureInfo, CameraCaptureState, CameraExposureInfo, CameraStartCapture, CameraWaitInfo, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_EXPOSURE_INFO, EMPTY_CAMERA_WAIT_INFO } from '../../shared/types/camera.types'
+import { Camera, CameraCaptureEvent, CameraStartCapture } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { EMPTY_SEQUENCE_PLAN, SequenceCaptureMode, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
@@ -41,10 +42,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
     event?: SequencerEvent
     running = false
-    readonly state = new Array<CameraCaptureState | undefined>(32)
-    readonly exposure = new Array<CameraExposureInfo>(32)
-    readonly capture = new Array<CameraCaptureInfo>(32)
-    readonly wait = new Array<CameraWaitInfo>(32)
+
+    @ViewChildren('cameraExposure')
+    private readonly cameraExposures!: QueryList<CameraExposureComponent>
 
     get canStart() {
         return !this.plan.entries.find(e => e.enabled && !e.camera?.connected)
@@ -171,31 +171,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
                 const index = event.id - 1
 
                 if (captureEvent) {
-                    this.capture[index].elapsedTime = captureEvent.captureElapsedTime
-                    this.capture[index].remainingTime = captureEvent.captureRemainingTime
-                    this.capture[index].progress = captureEvent.captureProgress
-                    this.exposure[index].remainingTime = captureEvent.exposureRemainingTime
-                    this.exposure[index].progress = captureEvent.exposureProgress
-                    this.exposure[index].count = captureEvent.exposureCount
-
-                    if (captureEvent.state === 'WAITING') {
-                        this.wait[index].remainingTime = captureEvent.waitRemainingTime
-                        this.wait[index].progress = captureEvent.waitProgress
-                        this.state[index] = 'WAITING'
-                    } else if (captureEvent.state === 'SETTLING') {
-                        this.state[index] = 'SETTLING'
-                    } else if (captureEvent.state === 'CAPTURE_STARTED') {
-                        this.capture[index].amount = captureEvent.exposureAmount
-                        this.state[index] = 'EXPOSURING'
-                    } else if (captureEvent.state === 'CAPTURE_FINISHED') {
-                        this.state[index] = undefined
-                    } else if (captureEvent.state === 'EXPOSURE_STARTED') {
-                        this.state[index] = 'EXPOSURING'
-                    } else if (captureEvent.state === 'EXPOSURE_FINISHED') {
-                        this.state[index] = undefined
-                    }
+                    this.cameraExposures.get(index)?.handleCameraCaptureEvent(captureEvent)
                 } else if (!this.running && index >= 0) {
-                    this.state[index] = undefined
+                    // this.state[index] = undefined
                 }
             })
         })
@@ -365,16 +343,18 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     toggleAutoSubFolder() {
-        switch (this.plan.autoSubFolderMode) {
-            case 'OFF': this.plan.autoSubFolderMode = 'NOON'
-                break
-            case 'NOON': this.plan.autoSubFolderMode = 'MIDNIGHT'
-                break
-            case 'MIDNIGHT': this.plan.autoSubFolderMode = 'OFF'
-                break
-        }
+        if (!this.running) {
+            switch (this.plan.autoSubFolderMode) {
+                case 'OFF': this.plan.autoSubFolderMode = 'NOON'
+                    break
+                case 'NOON': this.plan.autoSubFolderMode = 'MIDNIGHT'
+                    break
+                case 'MIDNIGHT': this.plan.autoSubFolderMode = 'OFF'
+                    break
+            }
 
-        this.savePlan()
+            this.savePlan()
+        }
     }
 
     async chooseSavePath() {
@@ -414,10 +394,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
     async start() {
         for (let i = 0; i < this.plan.entries.length; i++) {
-            this.state[i] = undefined
-            this.exposure[i] = Object.assign({}, EMPTY_CAMERA_EXPOSURE_INFO)
-            this.capture[i] = Object.assign({}, EMPTY_CAMERA_CAPTURE_INFO)
-            this.wait[i] = Object.assign({}, EMPTY_CAMERA_WAIT_INFO)
+            this.cameraExposures.get(i)?.reset()
         }
 
         this.savePlan()

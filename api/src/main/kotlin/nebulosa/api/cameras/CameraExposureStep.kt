@@ -70,7 +70,8 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
                     aborted = true
                 }
                 is CameraExposureProgressChanged -> {
-                    val exposureRemainingTime = event.device.exposureTime
+                    // minOf fix possible bug on SVBony exposure time.
+                    val exposureRemainingTime = minOf(event.device.exposureTime, exposureTime)
                     val exposureElapsedTime = exposureTime - exposureRemainingTime
                     val exposureProgress = exposureElapsedTime.toNanos().toDouble() / exposureTime.toNanos()
                     stepExecution?.onCameraExposureElapsed(exposureElapsedTime, exposureRemainingTime, exposureProgress)
@@ -125,7 +126,7 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     private fun executeCapture(stepExecution: StepExecution) {
         if (camera.connected && !aborted) {
             synchronized(camera) {
-                LOG.debug { "camera exposure started. request=%s".format(request) }
+                LOG.debug { "camera exposure started. estimatedCaptureTime=$estimatedCaptureTime, request=$request" }
 
                 latch.countUp()
 
@@ -148,7 +149,7 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
 
                 captureElapsedTime += exposureTime
 
-                LOG.debug { "camera exposure finished. aborted=%s, camera=%s".format(aborted, camera) }
+                LOG.debug { "camera exposure finished. aborted=$aborted, camera=$camera" }
             }
         }
     }

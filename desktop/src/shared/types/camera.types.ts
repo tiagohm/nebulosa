@@ -194,15 +194,10 @@ export interface CameraCaptureEvent extends MessageEvent {
     waitProgress: number
     savePath?: string
     state: CameraCaptureState
+    aborted?: boolean
 }
 
-export type CameraCaptureState = 'CAPTURE_STARTED' |
-    'EXPOSURE_STARTED' |
-    'EXPOSURING' |
-    'WAITING' |
-    'SETTLING' |
-    'EXPOSURE_FINISHED' |
-    'CAPTURE_FINISHED'
+export type CameraCaptureState = 'IDLE' | 'CAPTURE_STARTED' | 'EXPOSURE_STARTED' | 'EXPOSURING' | 'WAITING' | 'SETTLING' | 'EXPOSURE_FINISHED' | 'CAPTURE_FINISHED'
 
 export interface CameraDialogInput {
     mode: CameraDialogMode

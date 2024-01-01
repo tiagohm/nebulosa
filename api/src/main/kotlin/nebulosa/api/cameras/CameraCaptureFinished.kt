@@ -10,6 +10,7 @@ data class CameraCaptureFinished(
     override val camera: Camera,
     override val exposureAmount: Int,
     override val captureElapsedTime: Duration,
+    val aborted: Boolean,
 ) : CameraCaptureEvent {
 
     override val exposureCount = exposureAmount

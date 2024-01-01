@@ -60,6 +60,7 @@ data class FlatWizardStep(
         val delta = exposureMax.toMillis() - exposureMin.toMillis()
 
         if (delta < 10) {
+            LOG.warn("Failed to find an optimal exposure time. exposureMin={}, exposureMax={}", exposureMin, exposureMax)
             flatWizardExecutionListeners.forEach { it.onFlatFailed(this) }
             return StepResult.FINISHED
         }
@@ -83,17 +84,18 @@ data class FlatWizardStep(
 
         if (!stopped && savedPath != null) {
             Fits(savedPath).also(Fits::read).use { fits ->
-                image = image?.load(fits) ?: Image.open(fits, false)
+                image = image?.load(fits, false) ?: Image.open(fits, false)
 
                 val statistics = STATISTICS.compute(image!!)
 
-                LOG.info("flat frame captured. duration={}, statistics={}", cameraExposureStep.exposureTime, statistics)
+                LOG.info("flat frame captured. duration={}, statistics={}", exposureTime, statistics)
 
                 if (statistics.mean in meanRange) {
                     val path = request.captureRequest.makeSavePath(true)
                     savedPath.inputStream().transferAndClose(path.outputStream())
                     savedPath.deleteIfExists()
-                    flatWizardExecutionListeners.forEach { it.onFlatCaptured(this, path, cameraExposureStep.exposureTime) }
+                    LOG.info("Found an optimal exposure time. exposure={}, path={}", exposureTime, path)
+                    flatWizardExecutionListeners.forEach { it.onFlatCaptured(this, path, exposureTime) }
                 } else if (statistics.mean < meanRange.start) {
                     exposureMin = cameraExposureStep.exposureTime
                     return StepResult.CONTINUABLE

@@ -8,6 +8,7 @@ import nebulosa.batch.processing.ExecutionContext.Companion.getDouble
 import nebulosa.batch.processing.ExecutionContext.Companion.getDuration
 import nebulosa.batch.processing.ExecutionContext.Companion.getInt
 import nebulosa.batch.processing.JobExecution
+import nebulosa.batch.processing.JobStatus
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.delay.DelayStep
 
@@ -36,7 +37,8 @@ data class CameraCaptureEventHandler(private val observer: Observer<MessageEvent
 
     override fun onCaptureFinished(step: CameraExposureStep, jobExecution: JobExecution) {
         val captureElapsedTime = jobExecution.context.getDuration(CameraExposureStep.CAPTURE_ELAPSED_TIME)
-        observer.onNext(CameraCaptureFinished(jobExecution, step.camera, step.exposureAmount, captureElapsedTime))
+        val aborted = jobExecution.status == JobStatus.STOPPED || jobExecution.status == JobStatus.STOPPING
+        observer.onNext(CameraCaptureFinished(jobExecution, step.camera, step.exposureAmount, captureElapsedTime, aborted))
     }
 
     fun sendCameraExposureEvent(step: CameraExposureStep, stepExecution: StepExecution, state: CameraCaptureState) {

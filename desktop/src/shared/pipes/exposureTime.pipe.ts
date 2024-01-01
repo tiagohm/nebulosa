@@ -11,7 +11,7 @@ export class ExposureTimePipe implements PipeTransform {
             }
         }
 
-        return `${value}`
+        return `${value}s`
     }
 
     private static readonly UNITS = [

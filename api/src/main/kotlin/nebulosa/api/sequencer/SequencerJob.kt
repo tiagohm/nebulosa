@@ -173,7 +173,9 @@ data class SequencerJob(
             super.onNext(SequencerEvent(id, elapsedTime, estimatedCaptureTime - elapsedTime, progress, event))
         }
 
-        super.onNext(event)
+        if (event is CameraExposureFinished) {
+            super.onNext(event)
+        }
     }
 
     override fun onDelayElapsed(step: DelayStep, stepExecution: StepExecution) {

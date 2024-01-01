@@ -8,6 +8,7 @@
     "resolveJsonModule": true,
     "module": "CommonJS",
     "target": "ES2022",
+    "noFallthroughCasesInSwitch": true,
     "types": [
       "node"
     ],

@@ -3,6 +3,7 @@ package nebulosa.api.wizard.flat
 import io.reactivex.rxjava3.subjects.PublishSubject
 import nebulosa.api.cameras.CameraCaptureEvent
 import nebulosa.api.cameras.CameraCaptureEventHandler
+import nebulosa.api.cameras.CameraExposureFinished
 import nebulosa.api.messages.MessageEvent
 import nebulosa.batch.processing.PublishSubscribe
 import nebulosa.batch.processing.SimpleJob
@@ -26,11 +27,11 @@ data class FlatWizardJob(@JvmField val request: FlatWizardRequest) : SimpleJob()
     }
 
     override fun onFlatCaptured(step: FlatWizardStep, savedPath: Path, duration: Duration) {
-        subject.onNext(FlatWizardFrameCaptured(savedPath, duration))
+        super.onNext(FlatWizardFrameCaptured(savedPath, duration))
     }
 
     override fun onFlatFailed(step: FlatWizardStep) {
-        subject.onNext(FlatWizardFailed)
+        super.onNext(FlatWizardFailed)
     }
 
     override fun onNext(event: MessageEvent) {
@@ -38,6 +39,8 @@ data class FlatWizardJob(@JvmField val request: FlatWizardRequest) : SimpleJob()
             super.onNext(FlatWizardElapsed(step.exposureTime, event))
         }
 
-        super.onNext(event)
+        if (event is CameraExposureFinished) {
+            super.onNext(event)
+        }
     }
 }

@@ -1,13 +1,14 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, Optional } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, Optional, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
+import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { Camera, CameraCaptureState, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_EXPOSURE_INFO, EMPTY_CAMERA_START_CAPTURE, EMPTY_CAMERA_WAIT_INFO, ExposureMode, ExposureTimeUnit, FrameType, cameraPreferenceKey } from '../../shared/types/camera.types'
+import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType, cameraPreferenceKey } from '../../shared/types/camera.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
@@ -79,28 +80,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     subFrame = false
 
     readonly request = Object.assign({}, EMPTY_CAMERA_START_CAPTURE)
-
-    state?: CameraCaptureState
-
-    get capturing() {
-        return this.state === 'EXPOSURING'
-    }
-
-    get waiting() {
-        return this.state === 'WAITING'
-    }
-
-    get settling() {
-        return this.state === 'SETTLING'
-    }
-
-    get running() {
-        return this.capturing || this.waiting || this.settling
-    }
-
-    readonly exposure = Object.assign({}, EMPTY_CAMERA_EXPOSURE_INFO)
-    readonly capture = Object.assign({}, EMPTY_CAMERA_CAPTURE_INFO)
-    readonly wait = Object.assign({}, EMPTY_CAMERA_WAIT_INFO)
+    running = false
 
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
     readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
@@ -136,6 +116,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         }
     ]
 
+    @ViewChild('cameraExposure')
+    private readonly cameraExposure!: CameraExposureComponent
+
     constructor(
         private api: ApiService,
         private browserWindow: BrowserWindowService,
@@ -169,28 +152,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         electron.on('CAMERA.CAPTURE_ELAPSED', event => {
             if (event.camera.name === this.camera.name) {
                 ngZone.run(() => {
-                    this.capture.elapsedTime = event.captureElapsedTime
-                    this.capture.remainingTime = event.captureRemainingTime
-                    this.capture.progress = event.captureProgress
-                    this.exposure.remainingTime = event.exposureRemainingTime
-                    this.exposure.progress = event.exposureProgress
-                    this.exposure.count = event.exposureCount
-
-                    if (event.state === 'WAITING') {
-                        this.wait.remainingTime = event.waitRemainingTime
-                        this.wait.progress = event.waitProgress
-                        this.state = event.state
-                    } else if (event.state === 'SETTLING') {
-                        this.state = event.state
-                    } else if (event.state === 'CAPTURE_STARTED') {
-                        this.capture.looping = event.exposureAmount <= 0
-                        this.capture.amount = event.exposureAmount
-                        this.state = 'EXPOSURING'
-                    } else if (event.state === 'CAPTURE_FINISHED') {
-                        this.state = undefined
-                    } else if (event.state === 'EXPOSURE_STARTED') {
-                        this.state = 'EXPOSURING'
-                    }
+                    this.running = this.cameraExposure.handleCameraCaptureEvent(event)
                 })
             }
         })

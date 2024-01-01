@@ -29,11 +29,11 @@
                            [positionTop]="8"></i>
 
                         <span class="p-float-label">
-                            <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="plan.savePath"
+                            <input type="text" pInputText [disabled]="running" class="p-inputtext-sm border-0 w-full" [(ngModel)]="plan.savePath"
                                    (ngModelChange)="savePlan()" />
                             <label>Path</label>
                         </span>
-                        <p-button icon="mdi mdi-folder-open" size="small" (onClick)="chooseSavePath()" />
+                        <p-button [disabled]="running" icon="mdi mdi-folder-open" size="small" (onClick)="chooseSavePath()" />
                     </div>
                 </div>
             </p-tabPanel>
@@ -162,15 +162,15 @@
     <div class="grid mt-0">
         <div class="col-12 gap-1 justify-content-end">
             <ng-container *ngIf="event && running">
-                <span class="bg-green-300 border-round-md p-1 text-gray-900 text-sm text-center" style="min-width: 62px"
+                <span class="bg-green-300 border-round-md text-gray-900 text-sm text-center" style="min-width: 62px"
                       pTooltip="Elapsed time" tooltipPosition="bottom">
                     <i class="mdi mdi-timer-sand-complete mdi-progress-indicator"></i> {{ event.elapsedTime | exposureTime }}
                 </span>
-                <span class="bg-green-300 border-round-md p-1 text-gray-900 text-sm text-center" style="min-width: 62px"
+                <span class="bg-green-300 border-round-md text-gray-900 text-sm text-center" style="min-width: 62px"
                       pTooltip="Remaining time" tooltipPosition="bottom">
                     <i class="mdi mdi-timer-sand mdi-progress-indicator"></i> {{ event.remainingTime | exposureTime }}
                 </span>
-                <span class="bg-green-300 border-round-md p-1 text-gray-900 text-sm text-center" style="min-width: 52px">
+                <span class="bg-green-300 border-round-md text-gray-900 text-sm text-center" style="min-width: 52px">
                     <i class="mdi mdi-percent mdi-progress-indicator"></i> {{ event.progress * 100 | number:'1.1-1' }}
                 </span>
             </ng-container>
@@ -223,47 +223,8 @@
                                 <p-tag *ngIf="entry.filterPosition" value="FILTER: {{ entry.filterPosition }}" />
                             </div>
                         </div>
-                        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"
-                             style="min-height: 25px;">
-                            <i class="mdi mdi-information text-blue-600"></i>
-                            <span style="min-width: 44px" class="text-left mr-2">
-                                {{ state[i] === 'SETTLING' ? 'settling' : state[i] === 'WAITING' ? 'waiting' : state[i] === 'EXPOSURING'
-                                ? 'capturing' : 'idle' }}
-                            </span>
-                            <ng-container *ngIf="state[i]">
-                                <span class="bg-orange-500 border-round-md p-1 text-gray-900" style="min-width: 58px">
-                                    <i class="mdi mdi-counter mdi-progress-indicator"></i> {{ exposure[i].count }} of {{ capture[i].amount }}
-                                </span>
-                                <span class="bg-green-300 border-round-md p-1 text-gray-900" style="min-width: 62px"
-                                      pTooltip="Elapsed time" tooltipPosition="bottom">
-                                    <i class="mdi mdi-timer-sand-complete mdi-progress-indicator"></i> {{ capture[i].elapsedTime | exposureTime }}
-                                </span>
-                                <span class="bg-green-300 border-round-md p-1 text-gray-900" style="min-width: 62px"
-                                      pTooltip="Remaining time" tooltipPosition="bottom">
-                                    <i class="mdi mdi-timer-sand mdi-progress-indicator"></i> {{ capture[i].remainingTime | exposureTime }}
-                                </span>
-                                <span class="bg-green-300 border-round-md p-1 text-gray-900" style="min-width: 52px">
-                                    <i class="mdi mdi-percent mdi-progress-indicator"></i> {{ capture[i].progress * 100 | number:'1.1-1' }}
-                                </span>
-                            </ng-container>
-                            <ng-container *ngIf="state[i] === 'EXPOSURING'">
-                                <span class="bg-cyan-300 border-round-md p-1 text-gray-900" style="min-width: 62px"
-                                      pTooltip="Remaining time" tooltipPosition="bottom">
-                                    <i class="mdi mdi-timer-sand mdi-progress-indicator"></i> {{ exposure[i].remainingTime | exposureTime }}
-                                </span>
-                                <span class="bg-cyan-300 border-round-md p-1 text-gray-900" style="min-width: 52px">
-                                    <i class="mdi mdi-percent mdi-progress-indicator"></i> {{ exposure[i].progress * 100 | number:'1.1-1' }}
-                                </span>
-                            </ng-container>
-                            <ng-container *ngIf="state[i] === 'WAITING'">
-                                <span class="bg-purple-300 border-round-md p-1 text-gray-900" style="min-width: 62px"
-                                      pTooltip="Remaining time" tooltipPosition="bottom">
-                                    <i class="mdi mdi-timer-sand mdi-progress-indicator"></i> {{ wait[i].remainingTime | exposureTime }}
-                                </span>
-                                <span class="bg-purple-300 border-round-md p-1 text-gray-900" style="min-width: 52px">
-                                    <i class="mdi mdi-percent mdi-progress-indicator"></i> {{ wait[i].progress * 100 | number:'1.1-1' }}
-                                </span>
-                            </ng-container>
+                        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm">
+                            <neb-camera-exposure #cameraExposure />
                         </div>
                     </div>
                 </p-card>

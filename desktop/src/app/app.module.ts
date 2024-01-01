@@ -36,6 +36,7 @@ import { TagModule } from 'primeng/tag'
 import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
+import { CameraExposureComponent } from '../shared/components/camera-exposure/camera-exposure.component'
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
@@ -59,7 +60,7 @@ import { AtlasComponent } from './atlas/atlas.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
-import { FlatWizardComponent } from './flatwizard/flat-wizard.component'
+import { FlatWizardComponent } from './flat-wizard/flat-wizard.component'
 import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
 import { GuiderComponent } from './guider/guider.component'
@@ -80,6 +81,7 @@ import { SettingsComponent } from './settings/settings.component'
         AtlasComponent,
         CalibrationComponent,
         CameraComponent,
+        CameraExposureComponent,
         DeviceListMenuComponent,
         DialogMenuComponent,
         EnumPipe,
