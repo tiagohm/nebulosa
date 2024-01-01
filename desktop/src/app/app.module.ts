@@ -23,6 +23,7 @@ import { InputSwitchModule } from 'primeng/inputswitch'
 import { InputTextModule } from 'primeng/inputtext'
 import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
+import { MultiSelectModule } from 'primeng/multiselect'
 import { OverlayPanelModule } from 'primeng/overlaypanel'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
 import { SelectButtonModule } from 'primeng/selectbutton'
@@ -35,11 +36,13 @@ import { TagModule } from 'primeng/tag'
 import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
-import { DeviceMenuComponent } from '../shared/components/devicemenu/devicemenu.component'
-import { DialogMenuComponent } from '../shared/components/dialogmenu/dialogmenu.component'
-import { MenuItemComponent } from '../shared/components/menuitem/menuitem.component'
+import { CameraExposureComponent } from '../shared/components/camera-exposure/camera-exposure.component'
+import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
+import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
+import { HistogramComponent } from '../shared/components/histogram/histogram.component'
+import { MapComponent } from '../shared/components/map/map.component'
+import { MenuItemComponent } from '../shared/components/menu-item/menu-item.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
-import { OpenStreetMapComponent } from '../shared/components/openstreetmap/openstreetmap.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
@@ -57,6 +60,7 @@ import { AtlasComponent } from './atlas/atlas.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
+import { FlatWizardComponent } from './flat-wizard/flat-wizard.component'
 import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
 import { GuiderComponent } from './guider/guider.component'
@@ -77,15 +81,18 @@ import { SettingsComponent } from './settings/settings.component'
         AtlasComponent,
         CalibrationComponent,
         CameraComponent,
-        DeviceMenuComponent,
+        CameraExposureComponent,
+        DeviceListMenuComponent,
         DialogMenuComponent,
         EnumPipe,
         EnvPipe,
         ExposureTimePipe,
         FilterWheelComponent,
+        FlatWizardComponent,
         FocuserComponent,
         FramingComponent,
         GuiderComponent,
+        HistogramComponent,
         HomeComponent,
         ImageComponent,
         INDIComponent,
@@ -95,7 +102,7 @@ import { SettingsComponent } from './settings/settings.component'
         MoonComponent,
         MountComponent,
         NoDropdownDirective,
-        OpenStreetMapComponent,
+        MapComponent,
         SequencerComponent,
         SettingsComponent,
         SkyObjectPipe,
@@ -127,6 +134,7 @@ import { SettingsComponent } from './settings/settings.component'
         InputTextModule,
         ListboxModule,
         MenuModule,
+        MultiSelectModule,
         OverlayPanelModule,
         ScrollPanelModule,
         SelectButtonModule,

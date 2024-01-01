@@ -19,6 +19,7 @@ import java.time.Duration
 import java.time.temporal.ChronoUnit
 
 data class CameraStartCaptureRequest(
+    val enabled: Boolean = true,
     // Capture.
     val camera: Camera? = null,
     @field:DurationMin(nanos = 1000L) @field:DurationMax(minutes = 60L) val exposureTime: Duration = Duration.ZERO,
@@ -41,12 +42,11 @@ data class CameraStartCaptureRequest(
     @field:Valid val dither: DitherAfterExposureRequest = DitherAfterExposureRequest.DISABLED,
     // Filter Wheel.
     val wheel: FilterWheel? = null,
-    val wheelPosition: Int = 0,
+    val filterPosition: Int = 0,
     val shutterPosition: Int = 0,
     // Focuser.
     val focuser: Focuser? = null,
     val focusOffset: Int = 0,
-    val enabled: Boolean = true,
 ) {
 
     inline val isLoop

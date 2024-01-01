@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core'
-import { Angle } from '../types'
+import { Angle } from '../types/atlas.types'
 import { AngleRange, formatAngle, radiansToDegrees } from '../utils/angle'
 
 @Pipe({ name: 'angle' })

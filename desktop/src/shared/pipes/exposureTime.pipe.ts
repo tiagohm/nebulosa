@@ -11,7 +11,7 @@ export class ExposureTimePipe implements PipeTransform {
             }
         }
 
-        return `${value}`
+        return `${value}s`
     }
 
     private static readonly UNITS = [
@@ -39,7 +39,7 @@ const millisecondFormatter = formatter(THREE_DIGITS_FORMATTER, 'ms')
 function format(value: number, factors: [number, number], formatters: [UnitFormatter, UnitFormatter]) {
     const a = value / factors[0]
     const b = (a - Math.trunc(a)) * factors[1]
-    return `${formatters[0](a)}${formatters[1](b)}`
+    return `${formatters[0](Math.trunc(a))}${formatters[1](Math.trunc(b))}`
 }
 
 function hours(value: number) {

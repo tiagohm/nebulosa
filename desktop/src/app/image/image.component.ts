@@ -6,17 +6,19 @@ import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
 import { MenuItem } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
-import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
+import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
+import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import {
-    Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, DetectedStar, EquatorialCoordinateJ2000, FITSHeaderItem,
-    ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, Mount, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
-} from '../../shared/types'
+import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
+import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
+import { Camera } from '../../shared/types/camera.types'
+import { DetectedStar, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { Mount } from '../../shared/types/mount.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
 
@@ -52,7 +54,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private readonly menu!: ContextMenu
 
     @ViewChild('deviceMenu')
-    private readonly deviceMenu!: DeviceMenuComponent
+    private readonly deviceMenu!: DeviceListMenuComponent
+
+    @ViewChild('histogram')
+    private readonly histogram!: HistogramComponent
 
     debayer = true
     calibrate = true
@@ -101,9 +106,23 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     showFITSHeadersDialog = false
     fitsHeaders: FITSHeaderItem[] = []
 
+    showStatisticsDialog = false
+
+    readonly statisticsBitOptions: ImageStatisticsBitOption[] = [
+        { name: 'Normalized: [0, 1]', rangeMax: 1, bitLength: 16 },
+        { name: '8-bit: [0, 255]', rangeMax: 255, bitLength: 8 },
+        { name: '9-bit: [0, 511]', rangeMax: 511, bitLength: 9 },
+        { name: '10-bit: [0, 1023]', rangeMax: 1023, bitLength: 10 },
+        { name: '12-bit: [0, 4095]', rangeMax: 4095, bitLength: 12 },
+        { name: '14-bit: [0, 16383]', rangeMax: 16383, bitLength: 14 },
+        { name: '16-bit: [0, 65535]', rangeMax: 65535, bitLength: 16 },
+    ]
+
+    statisticsBitLength = this.statisticsBitOptions[0]
+    imageInfo?: ImageInfo
+
     private panZoom?: PanZoom
     private imageURL!: string
-    private imageInfo?: ImageInfo
     private imageMouseX = 0
     private imageMouseY = 0
     private imageData: ImageData = {}
@@ -118,7 +137,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Save as...',
         icon: 'mdi mdi-content-save',
         command: async () => {
-            const path = await this.electron.send('SAVE_FITS')
+            const path = await this.electron.saveFits()
             if (path) this.api.saveImageAs(this.imageData.path!, path)
         },
     }
@@ -209,6 +228,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
+    private readonly statisticsMenuItem: MenuItem = {
+        icon: 'mdi mdi-chart-histogram',
+        label: 'Statistics',
+        command: () => {
+            this.showStatisticsDialog = true
+            this.computeHistogram()
+        },
+    }
+
     private readonly fitsHeaderMenuItem: MenuItem = {
         icon: 'mdi mdi-list-box',
         label: 'FITS Header',
@@ -223,7 +251,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         disabled: true,
         command: () => {
             this.executeMount((mount) => {
-                this.api.pointMountHere(mount, this.imageData.path!, this.imageMouseX, this.imageMouseY, !this.solved)
+                this.api.pointMountHere(mount, this.imageData.path!, this.imageMouseX, this.imageMouseY)
             })
         },
     }
@@ -336,6 +364,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.calibrateMenuItem,
         SEPARATOR_MENU_ITEM,
         this.overlayMenuItem,
+        this.statisticsMenuItem,
         this.fitsHeaderMenuItem,
         SEPARATOR_MENU_ITEM,
         this.pointMountHereMenuItem,
@@ -360,7 +389,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Image'
 
-        electron.on('CAMERA_CAPTURE_ELAPSED', async (event) => {
+        electron.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
             if (event.state === 'EXPOSURE_FINISHED' && event.camera.name === this.imageData.camera?.name) {
                 await this.closeImage()
 
@@ -372,7 +401,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DATA_CHANGED', async (event: ImageData) => {
+        electron.on('DATA.CHANGED', async (event: ImageData) => {
             await this.closeImage()
 
             ngZone.run(() => {
@@ -458,6 +487,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         if (data.source === 'FRAMING') {
             this.disableAutoStretch()
+        } else if (data.source === 'FLAT_WIZARD') {
+            this.disableCalibrate(false)
         }
 
         if (!data.camera) {
@@ -477,6 +508,17 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.detectedStars = []
         this.detectedStarsIsVisible = false
         this.detectStarsMenuItem.toggleable = false
+
+        this.histogram?.update([])
+    }
+
+    private async computeHistogram() {
+        const data = await this.api.imageHistogram(this.imageData.path!, this.statisticsBitLength.bitLength)
+        this.histogram.update(data)
+    }
+
+    statisticsBitLengthChanged() {
+        this.computeHistogram()
     }
 
     private async loadImage() {
@@ -545,8 +587,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     imageMouseMovedWithCoordinates(x: number, y: number) {
         if (!this.menu.visible()) {
             this.mouseCoordinate = this.mouseCoordinateInterpolation?.interpolateAsText(x, y, true, true, false)
-            this.mouseCoordinate!.x = x
-            this.mouseCoordinate!.y = y
+
+            if (this.mouseCoordinate) {
+                this.mouseCoordinate.x = x
+                this.mouseCoordinate.y = y
+            }
         }
     }
 
@@ -574,9 +619,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.autoStretchMenuItem.checked = false
     }
 
-    private disableCalibrate() {
+    private disableCalibrate(canEnable: boolean = true) {
         this.calibrate = false
         this.calibrateMenuItem.checked = false
+        this.calibrateMenuItem.disabled = !canEnable
     }
 
     autoStretch() {

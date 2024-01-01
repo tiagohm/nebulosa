@@ -22,7 +22,7 @@ import nebulosa.imaging.algorithms.TransformAlgorithm
  *
  * @See <a href="https://www.pixinsight.com/doc/legacy/LE/21_noise_reduction/scnr/scnr.html">PixInsight</a>
  */
-class SubtractiveChromaticNoiseReduction(
+data class SubtractiveChromaticNoiseReduction(
     private val channel: ImageChannel,
     private val amount: Float,
     private val protectionMethod: ProtectionMethod,

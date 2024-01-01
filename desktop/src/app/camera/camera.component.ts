@@ -1,62 +1,16 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, Optional } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, Optional, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
+import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { Camera, CameraCaptureState, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FilterWheel, FrameType } from '../../shared/types'
+import { PrimeService } from '../../shared/services/prime.service'
+import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType, cameraPreferenceKey } from '../../shared/types/camera.types'
+import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
-
-export function cameraPreferenceKey(camera: Camera) {
-    return `camera.${camera.name}`
-}
-
-export interface CameraPreference extends Partial<CameraStartCapture> {
-    setpointTemperature?: number
-    exposureTimeUnit?: ExposureTimeUnit
-    exposureMode?: ExposureMode
-    subFrame?: boolean
-}
-
-export interface CameraExposureInfo {
-    count: number
-    remainingTime: number
-    progress: number
-}
-
-export const EMPTY_CAMERA_EXPOSURE_INFO: CameraExposureInfo = {
-    count: 0,
-    remainingTime: 0,
-    progress: 0,
-}
-
-export interface CameraCaptureInfo {
-    looping: boolean
-    amount: number
-    remainingTime: number
-    elapsedTime: number
-    progress: number
-}
-
-export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
-    looping: false,
-    amount: 0,
-    remainingTime: 0,
-    elapsedTime: 0,
-    progress: 0,
-}
-
-export interface CameraWaitInfo {
-    remainingTime: number
-    progress: number
-}
-
-export const EMPTY_CAMERA_WAIT_INFO: CameraWaitInfo = {
-    remainingTime: 0,
-    progress: 0,
-}
 
 @Component({
     selector: 'app-camera',
@@ -69,11 +23,43 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     savePath = ''
     capturesPath = ''
+    mode: CameraDialogMode = 'CAPTURE'
+
+    get canShowMenu() {
+        return this.mode === 'CAPTURE'
+    }
+
+    get canShowSavePath() {
+        return this.mode === 'CAPTURE'
+    }
+
+    get canShowInfo() {
+        return this.mode === 'CAPTURE'
+    }
+
+    get canExposureMode() {
+        return this.mode === 'CAPTURE'
+    }
+
+    get canExposureTime() {
+        return this.mode !== 'FLAT_WIZARD'
+    }
+
+    get canFrameType() {
+        return this.mode !== 'FLAT_WIZARD'
+    }
+
+    get canStartOrAbort() {
+        return this.mode === 'CAPTURE'
+    }
+
+    get canSave() {
+        return this.mode !== 'CAPTURE'
+    }
 
     wheel?: FilterWheel
 
     showDitherDialog = false
-    dialogMode = false
 
     readonly cameraModel: MenuItem[] = [
         {
@@ -94,28 +80,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     subFrame = false
 
     readonly request = Object.assign({}, EMPTY_CAMERA_START_CAPTURE)
-
-    state?: CameraCaptureState
-
-    get capturing() {
-        return this.state === 'EXPOSURING'
-    }
-
-    get waiting() {
-        return this.state === 'WAITING'
-    }
-
-    get settling() {
-        return this.state === 'SETTLING'
-    }
-
-    get running() {
-        return this.capturing || this.waiting || this.settling
-    }
-
-    readonly exposure = Object.assign({}, EMPTY_CAMERA_EXPOSURE_INFO)
-    readonly capture = Object.assign({}, EMPTY_CAMERA_CAPTURE_INFO)
-    readonly wait = Object.assign({}, EMPTY_CAMERA_WAIT_INFO)
+    running = false
 
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
     readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
@@ -151,6 +116,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         }
     ]
 
+    @ViewChild('cameraExposure')
+    private readonly cameraExposure!: CameraExposureComponent
+
     constructor(
         private api: ApiService,
         private browserWindow: BrowserWindowService,
@@ -160,52 +128,31 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         ngZone: NgZone,
         @Optional() private app?: AppComponent,
         @Optional() private dialogRef?: DynamicDialogRef,
-        @Optional() config?: DynamicDialogConfig<CameraStartCapture>,
+        @Optional() config?: DynamicDialogConfig<CameraDialogInput>,
     ) {
         if (app) app.title = 'Camera'
 
-        electron.on('CAMERA_UPDATED', event => {
-            if (event.device.name === this.camera?.name) {
+        electron.on('CAMERA.UPDATED', event => {
+            if (event.device.name === this.camera.name) {
                 ngZone.run(() => {
-                    Object.assign(this.camera!, event.device)
+                    Object.assign(this.camera, event.device)
                     this.update()
                 })
             }
         })
 
-        electron.on('CAMERA_DETACHED', event => {
-            if (event.device.name === this.camera?.name) {
+        electron.on('CAMERA.DETACHED', event => {
+            if (event.device.name === this.camera.name) {
                 ngZone.run(() => {
-                    Object.assign(this.camera!, event.device)
+                    Object.assign(this.camera, event.device)
                 })
             }
         })
 
-        electron.on('CAMERA_CAPTURE_ELAPSED', event => {
-            if (event.camera.name === this.camera?.name) {
+        electron.on('CAMERA.CAPTURE_ELAPSED', event => {
+            if (event.camera.name === this.camera.name) {
                 ngZone.run(() => {
-                    this.capture.elapsedTime = event.captureElapsedTime
-                    this.capture.remainingTime = event.captureRemainingTime
-                    this.capture.progress = event.captureProgress
-                    this.exposure.remainingTime = event.exposureRemainingTime
-                    this.exposure.progress = event.exposureProgress
-                    this.exposure.count = event.exposureCount
-
-                    if (event.state === 'WAITING') {
-                        this.wait.remainingTime = event.waitRemainingTime
-                        this.wait.progress = event.waitProgress
-                        this.state = event.state
-                    } else if (event.state === 'SETTLING') {
-                        this.state = event.state
-                    } else if (event.state === 'CAPTURE_STARTED') {
-                        this.capture.looping = event.exposureAmount <= 0
-                        this.capture.amount = event.exposureAmount
-                        this.state = 'EXPOSURING'
-                    } else if (event.state === 'CAPTURE_FINISHED') {
-                        this.state = undefined
-                    } else if (event.state === 'EXPOSURE_STARTED') {
-                        this.state = 'EXPOSURING'
-                    }
+                    this.running = this.cameraExposure.handleCameraCaptureEvent(event)
                 })
             }
         })
@@ -222,18 +169,27 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        if (!this.dialogMode) {
+        if (this.mode === 'CAPTURE') {
             this.abortCapture()
         }
     }
 
-    private async loadCameraStartCaptureForDialogMode(data?: CameraStartCapture) {
+    private async loadCameraStartCaptureForDialogMode(data?: CameraDialogInput) {
         if (data) {
-            Object.assign(this.request, data)
-            this.dialogMode = true
+            this.mode = data.mode
+            Object.assign(this.request, data.request)
             await this.cameraChanged(this.request.camera)
-            this.exposureMode = 'FIXED'
             this.normalizeExposureTimeAndUnit(this.request.exposureTime)
+            this.loadDefaultsForMode(data.mode)
+        }
+    }
+
+    private loadDefaultsForMode(mode: CameraDialogMode) {
+        if (mode === 'SEQUENCER') {
+            this.exposureMode = 'FIXED'
+        } else if (this.mode === 'FLAT_WIZARD') {
+            this.exposureMode = 'SINGLE'
+            this.request.frameType = 'FLAT'
         }
     }
 
@@ -252,10 +208,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     connect() {
-        if (this.camera!.connected) {
-            this.api.cameraDisconnect(this.camera!)
+        if (this.camera.connected) {
+            this.api.cameraDisconnect(this.camera)
         } else {
-            this.api.cameraConnect(this.camera!)
+            this.api.cameraConnect(this.camera)
         }
     }
 
@@ -289,11 +245,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     applySetpointTemperature() {
         this.savePreference()
-        this.api.cameraSetpointTemperature(this.camera!, this.setpointTemperature)
+        this.api.cameraSetpointTemperature(this.camera, this.setpointTemperature)
     }
 
     toggleCooler() {
-        this.api.cameraCooler(this.camera!, this.camera!.cooler)
+        this.api.cameraCooler(this.camera, this.camera.cooler)
     }
 
     fullsize() {
@@ -307,22 +263,22 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     openCameraImage() {
-        return this.browserWindow.openCameraImage(this.camera!)
+        return this.browserWindow.openCameraImage(this.camera)
     }
 
     openCameraCalibration() {
-        return this.browserWindow.openCalibration({ data: this.camera! })
+        return this.browserWindow.openCalibration({ data: this.camera, bringToFront: true })
     }
 
     private makeCameraStartCapture(): CameraStartCapture {
-        const x = this.subFrame ? this.request.x : this.camera!.minX
-        const y = this.subFrame ? this.request.y : this.camera!.minY
-        const width = this.subFrame ? this.request.width : this.camera!.maxWidth
-        const height = this.subFrame ? this.request.height : this.camera!.maxHeight
+        const x = this.subFrame ? this.request.x : this.camera.minX
+        const y = this.subFrame ? this.request.y : this.camera.minY
+        const width = this.subFrame ? this.request.width : this.camera.maxWidth
+        const height = this.subFrame ? this.request.height : this.camera.maxHeight
         const exposureFactor = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
         const exposureTime = Math.trunc(this.request.exposureTime * 60000000 / exposureFactor)
         const exposureAmount = this.exposureMode === 'LOOP' ? 0 : (this.exposureMode === 'FIXED' ? this.request.exposureAmount : 1)
-        const savePath = this.dialogMode ? this.request.savePath : this.savePath
+        const savePath = this.mode !== 'CAPTURE' ? this.request.savePath : this.savePath
 
         return {
             ...this.request,
@@ -335,11 +291,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     async startCapture() {
         await this.openCameraImage()
-        this.api.cameraStartCapture(this.camera!, this.makeCameraStartCapture())
+        this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
     }
 
     abortCapture() {
-        this.api.cameraAbortCapture(this.camera!)
+        this.api.cameraAbortCapture(this.camera)
     }
 
     private static exposureUnitFactor(unit: ExposureTimeUnit) {
@@ -352,12 +308,12 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private updateExposureUnit(unit: ExposureTimeUnit) {
-        if (this.camera!.exposureMax) {
+        if (this.camera.exposureMax) {
             const a = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
             const b = CameraComponent.exposureUnitFactor(unit)
             const exposureTime = Math.trunc(this.request.exposureTime * b / a)
-            const exposureTimeMin = Math.trunc(this.camera!.exposureMin * b / 60000000)
-            const exposureTimeMax = Math.trunc(this.camera!.exposureMax * b / 60000000)
+            const exposureTimeMin = Math.trunc(this.camera.exposureMin * b / 60000000)
+            const exposureTimeMax = Math.trunc(this.camera.exposureMax * b / 60000000)
             this.exposureTimeMax = Math.max(1, exposureTimeMax)
             this.exposureTimeMin = Math.max(1, exposureTimeMin)
             this.request.exposureTime = Math.max(this.exposureTimeMin, Math.min(exposureTime, this.exposureTimeMax))
@@ -386,13 +342,13 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private update() {
-        if (this.camera?.name) {
+        if (this.camera.name) {
             if (this.camera.connected) {
                 this.request.x = Math.max(this.camera.minX, Math.min(this.request.x, this.camera.maxX))
                 this.request.y = Math.max(this.camera.minY, Math.min(this.request.y, this.camera.maxY))
                 this.request.width = Math.max(this.camera.minWidth, Math.min(this.request.width < 8 ? this.camera.maxWidth : this.request.width, this.camera.maxWidth))
                 this.request.height = Math.max(this.camera.minHeight, Math.min(this.request.height < 8 ? this.camera.maxHeight : this.request.width, this.camera.maxHeight))
-                if (!this.request.frameFormat || !this.camera.frameFormats.includes(this.request.frameFormat)) this.request.frameFormat = this.camera.frameFormats[0]
+                if (this.camera.frameFormats.length && (!this.request.frameFormat || !this.camera.frameFormats.includes(this.request.frameFormat))) this.request.frameFormat = this.camera.frameFormats[0]
 
                 this.updateExposureUnit(this.exposureTimeUnit)
             }
@@ -411,7 +367,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadPreference() {
-        if (!this.dialogMode && this.camera) {
+        if (this.mode === 'CAPTURE' && this.camera.name) {
             const preference = this.storage.get<CameraPreference>(cameraPreferenceKey(this.camera), {})
 
             this.request.autoSave = preference.autoSave ?? false
@@ -443,7 +399,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     savePreference() {
-        if (!this.dialogMode && this.camera && this.camera.connected) {
+        if (this.mode === 'CAPTURE' && this.camera.connected) {
             const preference: CameraPreference = {
                 autoSave: this.request.autoSave,
                 savePath: this.savePath,
@@ -469,6 +425,18 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
 
             this.storage.set(cameraPreferenceKey(this.camera), preference)
+        }
+    }
+
+    static async showAsDialog(prime: PrimeService, mode: CameraDialogMode, request: CameraStartCapture) {
+        const data: CameraDialogInput = { mode, request }
+        const result = await prime.open<CameraDialogInput, CameraStartCapture>(CameraComponent, { header: 'Camera', width: 'calc(400px + 2.5rem)', data })
+
+        if (result) {
+            Object.assign(request, result)
+            return true
+        } else {
+            return false
         }
     }
 }

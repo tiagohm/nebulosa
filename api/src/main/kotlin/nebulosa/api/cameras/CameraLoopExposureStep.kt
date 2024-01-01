@@ -12,6 +12,9 @@ data class CameraLoopExposureStep(
     private val cameraExposureStep = CameraExposureStep(request)
     private val delayStep = DelayStep(request.exposureDelay)
 
+    override val savedPath
+        get() = cameraExposureStep.savedPath
+
     init {
         delayStep.registerDelayStepListener(cameraExposureStep)
     }

@@ -1,11 +1,19 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
-import {
-    Angle, BodyPosition, CalibrationFrame, CalibrationFrameGroup, Camera, CameraStartCapture, ComputedLocation, Constellation, CoordinateInterpolation,
-    DeepSkyObject, DetectedStar, Device, FilterWheel, Focuser, GuideDirection, GuideOutput, Guider, HipsSurvey, HistoryStep,
-    INDIProperty, INDISendProperty, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, Location, MinorPlanet, Mount, PlateSolverOptions,
-    SCNRProtectionMethod, Satellite, SatelliteGroupType, SequencePlan, SettleInfo, SkyObjectType, SlewRate, TrackMode, Twilight
-} from '../types'
+import { DARVStart } from '../types/alignment.types'
+import { Angle, BodyPosition, ComputedLocation, Constellation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
+import { CalibrationFrame, CalibrationFrameGroup } from '../types/calibration.types'
+import { Camera, CameraStartCapture } from '../types/camera.types'
+import { Device, INDIProperty, INDISendProperty } from '../types/device.types'
+import { FlatWizardRequest } from '../types/flat-wizard.types'
+import { Focuser } from '../types/focuser.types'
+import { HipsSurvey } from '../types/framing.types'
+import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
+import { CoordinateInterpolation, DetectedStar, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, SCNRProtectionMethod } from '../types/image.types'
+import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
+import { SequencePlan } from '../types/sequencer.types'
+import { PlateSolverSettings } from '../types/settings.types'
+import { FilterWheel } from '../types/wheel.types'
 import { HttpService } from './http.service'
 
 @Injectable({ providedIn: 'root' })
@@ -142,25 +150,13 @@ export class ApiService {
         return this.http.get<ComputedLocation>(`mounts/${mount.name}/location?${query}`)
     }
 
-    mountZenithLocation(mount: Mount) {
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/zenith`)
+    mountCelestialLocation(mount: Mount, type: CelestialLocationType) {
+        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/${type}`)
     }
 
-    mountNorthCelestialPoleLocation(mount: Mount) {
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/celestial-pole/north`)
-    }
-
-    mountSouthCelestialPoleLocation(mount: Mount) {
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/celestial-pole/south`)
-    }
-
-    mountGalacticCenterLocation(mount: Mount) {
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/galactic-center`)
-    }
-
-    pointMountHere(mount: Mount, path: string, x: number, y: number, synchronized: boolean = true) {
-        const query = this.http.query({ path, x, y, synchronized })
-        return this.http.post<void>(`mounts/${mount.name}/point-here?${query}`)
+    pointMountHere(mount: Mount, path: string, x: number, y: number) {
+        const query = this.http.query({ path, x, y })
+        return this.http.put<void>(`mounts/${mount.name}/point-here?${query}`)
     }
 
     // FOCUSER
@@ -267,11 +263,11 @@ export class ApiService {
 
     guidingHistory(maxLength: number = 100) {
         const query = this.http.query({ maxLength })
-        return this.http.get<HistoryStep[]>(`guiding/history?${query}`)
+        return this.http.get<GuiderHistoryStep[]>(`guiding/history?${query}`)
     }
 
     guidingLatestHistory() {
-        return this.http.get<HistoryStep | null>(`guiding/history/latest`)
+        return this.http.get<GuiderHistoryStep | null>(`guiding/history/latest`)
     }
 
     guidingClearHistory() {
@@ -497,6 +493,11 @@ export class ApiService {
         return this.http.put<DetectedStar[]>(`image/detect-stars?${query}`)
     }
 
+    imageHistogram(path: string, bitLength: number = 16) {
+        const query = this.http.query({ path, bitLength })
+        return this.http.get<number[]>(`image/histogram?${query}`)
+    }
+
     // CALIBRATION
 
     calibrationFrames(camera: Camera) {
@@ -531,7 +532,7 @@ export class ApiService {
 
     darvStart(camera: Camera, guideOutput: GuideOutput,
         exposureTime: number, initialPause: number, direction: GuideDirection, reversed: boolean = false, capture?: CameraStartCapture) {
-        const data = { capture, exposureTime, initialPause, direction, reversed }
+        const data: DARVStart = { capture, exposureTime, initialPause, direction, reversed }
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
     }
 
@@ -549,6 +550,16 @@ export class ApiService {
         return this.http.put<void>(`sequencer/stop`)
     }
 
+    // FLAT WIZARD
+
+    flatWizardStart(camera: Camera, request: FlatWizardRequest) {
+        return this.http.put<void>(`flat-wizard/${camera.name}/start`, request)
+    }
+
+    flatWizardStop(camera: Camera) {
+        return this.http.put<void>(`flat-wizard/${camera.name}/stop`)
+    }
+
     // SOLVER
 
     solveImage(
@@ -560,10 +571,10 @@ export class ApiService {
     }
 
     getPlateSolverSettings() {
-        return this.http.get<PlateSolverOptions>('plate-solver/settings')
+        return this.http.get<PlateSolverSettings>('plate-solver/settings')
     }
 
-    updatePlateSolverSettings(settings: PlateSolverOptions) {
+    updatePlateSolverSettings(settings: PlateSolverSettings) {
         return this.http.put<void>('plate-solver/settings', settings)
     }
 

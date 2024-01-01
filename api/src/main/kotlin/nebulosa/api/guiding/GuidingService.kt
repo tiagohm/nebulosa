@@ -38,7 +38,7 @@ class GuidingService(
 
         phd2Client.open(host, port)
         guider.registerGuiderListener(this)
-        settle(preferenceService.getJSON<SettleInfo>("GUIDING.SETTLE") ?: SettleInfo.EMPTY)
+        settle(preferenceService.getJSON<SettleInfo>("GUIDER.SETTLE_INFO") ?: SettleInfo.EMPTY)
         messageService.sendMessage(GuiderMessageEvent(GUIDER_CONNECTED))
     }
 
@@ -85,7 +85,7 @@ class GuidingService(
         guider.settleTime = Duration.ofSeconds(settle.time)
         guider.settleTimeout = Duration.ofSeconds(settle.timeout)
 
-        preferenceService.putJSON("GUIDING.SETTLE", settle)
+        preferenceService.putJSON("GUIDER.SETTLE_INFO", settle)
     }
 
     fun settle(): SettleInfo {
@@ -125,10 +125,10 @@ class GuidingService(
 
     companion object {
 
-        const val GUIDER_CONNECTED = "GUIDER_CONNECTED"
-        const val GUIDER_DISCONNECTED = "GUIDER_DISCONNECTED"
-        const val GUIDER_UPDATED = "GUIDER_UPDATED"
-        const val GUIDER_STEPPED = "GUIDER_STEPPED"
-        const val GUIDER_MESSAGE_RECEIVED = "GUIDER_MESSAGE_RECEIVED"
+        const val GUIDER_CONNECTED = "GUIDER.CONNECTED"
+        const val GUIDER_DISCONNECTED = "GUIDER.DISCONNECTED"
+        const val GUIDER_UPDATED = "GUIDER.UPDATED"
+        const val GUIDER_STEPPED = "GUIDER.STEPPED"
+        const val GUIDER_MESSAGE_RECEIVED = "GUIDER.MESSAGE_RECEIVED"
     }
 }

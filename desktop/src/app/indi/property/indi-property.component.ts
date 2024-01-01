@@ -1,5 +1,5 @@
 import { AfterContentInit, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core'
-import { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem } from '../../../shared/types'
+import { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem } from '../../../shared/types/device.types'
 
 @Component({
     selector: 'app-indi-property',

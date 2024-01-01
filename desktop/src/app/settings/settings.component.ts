@@ -4,7 +4,8 @@ import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { EMPTY_LOCATION, Location, PlateSolverOptions, PlateSolverType } from '../../shared/types'
+import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
+import { PlateSolverSettings, PlateSolverType } from '../../shared/types/settings.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -20,7 +21,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     location = Object.assign({}, EMPTY_LOCATION)
 
     readonly plateSolvers: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET']
-    plateSolver!: PlateSolverOptions
+    plateSolver!: PlateSolverSettings
 
     readonly items: MenuItem[] = [
         {
@@ -67,7 +68,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         if (result) {
             await this.api.saveLocation(result)
             await this.loadLocations()
-            this.electron.send('LOCATION_CHANGED', this.location)
+            this.electron.send('LOCATION.CHANGED', this.location)
         }
     }
 
@@ -84,14 +85,14 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     async deleteLocation() {
         await this.api.deleteLocation(this.location)
         await this.loadLocations()
-        this.electron.send('LOCATION_CHANGED', this.location)
+        this.electron.send('LOCATION.CHANGED', this.location)
     }
 
     locationChanged() {
         this.locations.forEach(e => e.selected = false)
         this.location.selected = true
         this.locations.forEach(e => this.api.saveLocation(e))
-        this.electron.send('LOCATION_CHANGED', this.location)
+        this.electron.send('LOCATION.CHANGED', this.location)
     }
 
     async save() {

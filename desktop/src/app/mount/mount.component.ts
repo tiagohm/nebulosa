@@ -7,7 +7,8 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { Angle, ComputedLocation, Constellation, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode, Union } from '../../shared/types'
+import { Angle, ComputedLocation, Constellation } from '../../shared/types/atlas.types'
+import { EMPTY_MOUNT, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 import { SkyAtlasTab } from '../atlas/atlas.component'
 
@@ -28,8 +29,7 @@ export interface MountPreference {
 })
 export class MountComponent implements AfterContentInit, OnDestroy {
 
-    mount?: Mount
-    connected = false
+    readonly mount = Object.assign({}, EMPTY_MOUNT)
 
     slewing = false
     parking = false
@@ -50,7 +50,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     azimuth: Angle = `000°00'00"`
     altitude: Angle = `+00°00'00"`
     lst = '00:00'
-    constellation: Union<Constellation, '-'> = '-'
+    constellation?: Constellation
     timeLeftToMeridianFlip = '00:00'
     meridianAt = '00:00'
     pierSide: PierSide = 'NEITHER'
@@ -59,7 +59,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     targetDeclination: Angle = `00°00'00"`
     targetAzimuth: Angle = `000°00'00"`
     targetAltitude: Angle = `+00°00'00"`
-    targetConstellation: Union<Constellation, '-'> = '-'
+    targetConstellation?: Constellation
     targetMeridianAt = '00:00'
 
     private readonly computeCoordinatePublisher = new Subject<void>()
@@ -114,6 +114,14 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             },
         },
         {
+            icon: 'mdi mdi-image',
+            label: 'Frame',
+            command: () => {
+                this.browserWindow.openFraming({ data: { rightAscension: this.targetRightAscension, declination: this.targetDeclination } })
+            },
+        },
+        SEPARATOR_MENU_ITEM,
+        {
             icon: 'mdi mdi-crosshairs-gps',
             label: 'Locations',
             items: [
@@ -139,7 +147,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'Zenith',
                     command: async () => {
-                        const coordinates = await this.api.mountZenithLocation(this.mount!)
+                        const coordinates = await this.api.mountCelestialLocation(this.mount, 'ZENITH')
                         this.updateTargetCoordinate(coordinates)
                     },
                 },
@@ -147,7 +155,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'North celestial pole',
                     command: async () => {
-                        const coordinates = await this.api.mountNorthCelestialPoleLocation(this.mount!)
+                        const coordinates = await this.api.mountCelestialLocation(this.mount, 'NORTH_POLE')
                         this.updateTargetCoordinate(coordinates)
                     },
                 },
@@ -155,7 +163,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'South celestial pole',
                     command: async () => {
-                        const coordinates = await this.api.mountSouthCelestialPoleLocation(this.mount!)
+                        const coordinates = await this.api.mountCelestialLocation(this.mount, 'SOUTH_POLE')
                         this.updateTargetCoordinate(coordinates)
                     },
                 },
@@ -163,9 +171,31 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'Galactic center',
                     command: async () => {
-                        const coordinates = await this.api.mountGalacticCenterLocation(this.mount!)
+                        const coordinates = await this.api.mountCelestialLocation(this.mount, 'GALACTIC_CENTER')
                         this.updateTargetCoordinate(coordinates)
                     },
+                },
+                {
+                    icon: 'mdi mdi-crosshairs',
+                    label: 'Intersection points',
+                    items: [
+                        {
+                            icon: 'mdi mdi-crosshairs-gps',
+                            label: 'Meridian x Equator',
+                            command: async () => {
+                                const coordinates = await this.api.mountCelestialLocation(this.mount, 'MERIDIAN_EQUATOR')
+                                this.updateTargetCoordinate(coordinates)
+                            },
+                        },
+                        {
+                            icon: 'mdi mdi-crosshairs-gps',
+                            label: 'Meridian x Ecliptic',
+                            command: async () => {
+                                const coordinates = await this.api.mountCelestialLocation(this.mount, 'MERIDIAN_ECLIPTIC')
+                                this.updateTargetCoordinate(coordinates)
+                            },
+                        },
+                    ]
                 },
             ],
         },
@@ -184,25 +214,30 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     ) {
         app.title = 'Mount'
 
-        electron.on('MOUNT_UPDATED', event => {
+        electron.on('MOUNT.UPDATED', event => {
             if (event.device.name === this.mount?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.mount!, event.device)
+                    const wasConnected = this.mount.connected
+                    Object.assign(this.mount, event.device)
                     this.update()
+
+                    if (this.mount.connected && !wasConnected) {
+                        this.computeCoordinates()
+                    }
                 })
             }
         })
 
-        electron.on('MOUNT_DETACHED', event => {
+        electron.on('MOUNT.DETACHED', event => {
             if (event.device.name === this.mount?.name) {
                 ngZone.run(() => {
-                    this.connected = false
+                    Object.assign(this.mount, event.device)
                 })
             }
         })
 
         this.computeCoordinateSubscriptions[0] = this.computeCoordinatePublisher
-            .pipe(throttleTime(5000))
+            .pipe(throttleTime(2500))
             .subscribe(() => this.computeCoordinates())
 
         this.computeCoordinateSubscriptions[1] = interval(5000)
@@ -232,41 +267,39 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     async mountChanged(mount?: Mount) {
-        this.mount = mount
-
-        if (this.mount) {
-            this.app.subTitle = this.mount!.name
-
-            const mount = await this.api.mount(this.mount.name)
+        if (mount && mount.name) {
+            mount = await this.api.mount(mount.name)
             Object.assign(this.mount, mount)
 
             this.loadPreference()
             this.update()
-        } else {
-            this.app.subTitle = ''
+        }
+
+        if (this.app) {
+            this.app.subTitle = mount?.name ?? ''
         }
     }
 
     connect() {
-        if (this.connected) {
-            this.api.mountDisconnect(this.mount!)
+        if (this.mount.connected) {
+            this.api.mountDisconnect(this.mount)
         } else {
-            this.api.mountConnect(this.mount!)
+            this.api.mountConnect(this.mount)
         }
     }
 
     async goTo() {
-        await this.api.mountGoTo(this.mount!, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
+        await this.api.mountGoTo(this.mount, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
         this.savePreference()
     }
 
     async slewTo() {
-        await this.api.mountSlew(this.mount!, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
+        await this.api.mountSlew(this.mount, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
         this.savePreference()
     }
 
     async sync() {
-        await this.api.mountSync(this.mount!, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
+        await this.api.mountSync(this.mount, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
         this.savePreference()
     }
 
@@ -287,16 +320,16 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             if (this.moveToDirection[0] !== pressed) {
                 switch (direction[0]) {
                     case 'N':
-                        this.api.mountMove(this.mount!, 'NORTH', pressed)
+                        this.api.mountMove(this.mount, 'NORTH', pressed)
                         break
                     case 'S':
-                        this.api.mountMove(this.mount!, 'SOUTH', pressed)
+                        this.api.mountMove(this.mount, 'SOUTH', pressed)
                         break
                     case 'W':
-                        this.api.mountMove(this.mount!, 'WEST', pressed)
+                        this.api.mountMove(this.mount, 'WEST', pressed)
                         break
                     case 'E':
-                        this.api.mountMove(this.mount!, 'EAST', pressed)
+                        this.api.mountMove(this.mount, 'EAST', pressed)
                         break
                 }
 
@@ -306,10 +339,10 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             if (this.moveToDirection[1] !== pressed) {
                 switch (direction[1]) {
                     case 'W':
-                        this.api.mountMove(this.mount!, 'WEST', pressed)
+                        this.api.mountMove(this.mount, 'WEST', pressed)
                         break
                     case 'E':
-                        this.api.mountMove(this.mount!, 'EAST', pressed)
+                        this.api.mountMove(this.mount, 'EAST', pressed)
                         break
                     default:
                         return
@@ -321,48 +354,47 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     abort() {
-        this.api.mountAbort(this.mount!)
+        this.api.mountAbort(this.mount)
     }
 
     trackingToggled() {
-        if (this.connected) {
-            this.api.mountTracking(this.mount!, this.tracking)
+        if (this.mount.connected) {
+            this.api.mountTracking(this.mount, this.tracking)
         }
     }
 
     trackModeChanged() {
-        if (this.connected) {
-            this.api.mountTrackMode(this.mount!, this.trackMode)
+        if (this.mount.connected) {
+            this.api.mountTrackMode(this.mount, this.trackMode)
         }
     }
 
     slewRateChanged() {
-        if (this.connected && this.slewRate) {
-            this.api.mountSlewRate(this.mount!, this.slewRate)
+        if (this.mount.connected && this.slewRate) {
+            this.api.mountSlewRate(this.mount, this.slewRate)
         }
     }
 
     park() {
-        if (this.connected) {
-            this.api.mountPark(this.mount!)
+        if (this.mount.connected) {
+            this.api.mountPark(this.mount)
         }
     }
 
     unpark() {
-        if (this.connected) {
-            this.api.mountUnpark(this.mount!)
+        if (this.mount.connected) {
+            this.api.mountUnpark(this.mount)
         }
     }
 
     home() {
-        if (this.connected) {
-            this.api.mountHome(this.mount!)
+        if (this.mount.connected) {
+            this.api.mountHome(this.mount)
         }
     }
 
     private update() {
         if (this.mount) {
-            this.connected = this.mount.connected
             this.slewing = this.mount.slewing
             this.parking = this.mount.parking
             this.parked = this.mount.parked
@@ -382,8 +414,8 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     private async computeCoordinates() {
-        if (this.mount && this.mount.connected) {
-            const computedCoordinates = await this.api.mountComputeLocation(this.mount!, false, this.mount.rightAscension, this.mount.declination, true, true, true)
+        if (this.mount.connected) {
+            const computedCoordinates = await this.api.mountComputeLocation(this.mount, false, this.mount.rightAscension, this.mount.declination, true, true, true)
             this.rightAscensionJ2000 = computedCoordinates.rightAscensionJ2000
             this.declinationJ2000 = computedCoordinates.declinationJ2000
             this.azimuth = computedCoordinates.azimuth
@@ -396,8 +428,8 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     async computeTargetCoordinates() {
-        if (this.mount && this.mount.connected) {
-            const computedCoordinates = await this.api.mountComputeLocation(this.mount!, this.targetCoordinateType === 'J2000',
+        if (this.mount.connected) {
+            const computedCoordinates = await this.api.mountComputeLocation(this.mount, this.targetCoordinateType === 'J2000',
                 this.targetRightAscension, this.targetDeclination, true, true, true)
             this.targetAzimuth = computedCoordinates.azimuth
             this.targetAltitude = computedCoordinates.altitude
@@ -419,7 +451,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadPreference() {
-        if (this.mount) {
+        if (this.mount.name) {
             const preference = this.storage.get<MountPreference>(mountPreferenceKey(this.mount), {})
             this.targetCoordinateType = preference.targetCoordinateType ?? 'JNOW'
             this.targetRightAscension = preference.targetRightAscension ?? '00h00m00s'
@@ -429,7 +461,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     private savePreference() {
-        if (this.mount && this.mount.connected) {
+        if (this.mount.connected) {
             const preference: MountPreference = {
                 targetCoordinateType: this.targetCoordinateType,
                 targetRightAscension: this.targetRightAscension,

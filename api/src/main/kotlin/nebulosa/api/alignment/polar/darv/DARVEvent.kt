@@ -21,5 +21,5 @@ sealed interface DARVEvent : MessageEvent {
     val state: DARVState
 
     override val eventName
-        get() = "DARV_POLAR_ALIGNMENT_ELAPSED"
+        get() = "DARV_ALIGNMENT.ELAPSED"
 }

@@ -11,7 +11,7 @@ object FitsIO : FitsReader, FitsWriter {
 
         val hdu = when {
             ImageHdu.isValid(header) -> ImageHdu(header)
-            else -> throw IOException("invalid FITS format")
+            else -> throw IOException("unsupported FITS header")
         }
 
         hdu.read(source)

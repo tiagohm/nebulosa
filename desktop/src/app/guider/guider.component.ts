@@ -4,7 +4,7 @@ import { ChartData, ChartOptions } from 'chart.js'
 import { UIChart } from 'primeng/chart'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { GuideDirection, GuideOutput, GuideState, GuideStep, Guider, GuiderPlotMode, GuiderYAxisUnit, HistoryStep } from '../../shared/types'
+import { GuideDirection, GuideOutput, GuideState, GuideStep, Guider, GuiderHistoryStep, GuiderPlotMode, GuiderYAxisUnit } from '../../shared/types/guider.types'
 
 export interface GuiderPreference {
     settleAmount?: number
@@ -39,7 +39,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     settleAmount = 1.5
     settleTime = 10
     settleTimeout = 30
-    readonly phdGuideHistory: HistoryStep[] = []
+    readonly phdGuideHistory: GuiderHistoryStep[] = []
     private phdDurationScale = 1.0
 
     pixelScale = 1.0
@@ -220,7 +220,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     ) {
         title.setTitle('Guider')
 
-        electron.on('GUIDE_OUTPUT_UPDATED', event => {
+        electron.on('GUIDE_OUTPUT.UPDATED', event => {
             if (event.device.name === this.guideOutput?.name) {
                 ngZone.run(() => {
                     Object.assign(this.guideOutput!, event.device)
@@ -229,38 +229,38 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('GUIDE_OUTPUT_ATTACHED', event => {
+        electron.on('GUIDE_OUTPUT.ATTACHED', event => {
             ngZone.run(() => {
                 this.guideOutputs.push(event.device)
             })
         })
 
-        electron.on('GUIDE_OUTPUT_DETACHED', event => {
+        electron.on('GUIDE_OUTPUT.DETACHED', event => {
             ngZone.run(() => {
                 const index = this.guideOutputs.findIndex(e => e.name === event.device.name)
                 if (index >= 0) this.guideOutputs.splice(index, 1)
             })
         })
 
-        electron.on('GUIDER_CONNECTED', () => {
+        electron.on('GUIDER.CONNECTED', () => {
             ngZone.run(() => {
                 this.connected = true
             })
         })
 
-        electron.on('GUIDER_DISCONNECTED', () => {
+        electron.on('GUIDER.DISCONNECTED', () => {
             ngZone.run(() => {
                 this.connected = false
             })
         })
 
-        electron.on('GUIDER_UPDATED', event => {
+        electron.on('GUIDER.UPDATED', event => {
             ngZone.run(() => {
                 this.processGuiderStatus(event.data)
             })
         })
 
-        electron.on('GUIDER_STEPPED', event => {
+        electron.on('GUIDER.STEPPED', event => {
             ngZone.run(() => {
                 if (this.phdGuideHistory.length >= 100) {
                     this.phdGuideHistory.splice(0, this.phdGuideHistory.length - 99)
@@ -277,7 +277,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        electron.on('GUIDER_MESSAGE_RECEIVED', event => {
+        electron.on('GUIDER.MESSAGE_RECEIVED', event => {
             ngZone.run(() => {
                 this.message = event.data
             })

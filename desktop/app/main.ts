@@ -4,9 +4,10 @@ import * as ElectronStore from 'electron-store'
 import * as fs from 'fs'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
-import { InternalEventType, JsonFile, MessageEvent, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, SaveJson } from '../src/shared/types'
 
 import { WebSocket } from 'ws'
+import { MessageEvent } from '../src/shared/types/api.types'
+import { InternalEventType, JsonFile, NotificationEvent, OpenDirectory, OpenFile, OpenWindow } from '../src/shared/types/app.types'
 Object.assign(global, { WebSocket })
 
 const store = new ElectronStore()
@@ -31,11 +32,11 @@ function createMainWindow() {
     wsClient = new Client({
         brokerURL: `ws://localhost:${apiPort}/ws`,
         onConnect: () => {
-            wsClient.subscribe('NEBULOSA_EVENT', message => {
+            wsClient.subscribe('NEBULOSA.EVENT', message => {
                 const event = JSON.parse(message.body) as MessageEvent
 
                 if (event.eventName) {
-                    if (event.eventName === 'NOTIFICATION') {
+                    if (event.eventName === 'NOTIFICATION.SENT') {
                         showNotification(event as NotificationEvent)
                     } else {
                         sendToAllWindows(event.eventName, event)
@@ -67,7 +68,7 @@ function createWindow(options: OpenWindow<any>) {
     if (window) {
         if (options.data) {
             console.info('window data changed. id=%s, data=%s', options.id, options.data)
-            window.webContents.send('DATA_CHANGED', options.data)
+            window.webContents.send('DATA.CHANGED', options.data)
         }
 
         return window
@@ -280,7 +281,7 @@ try {
         }
     })
 
-    ipcMain.handle('OPEN_WINDOW', async (_, data: OpenWindow<any>) => {
+    ipcMain.handle('WINDOW.OPEN', async (_, data: OpenWindow<any>) => {
         const newWindow = !browserWindows.has(data.id)
 
         const window = createWindow(data)
@@ -302,7 +303,7 @@ try {
         })
     })
 
-    ipcMain.handle('OPEN_FILE', async (event, data?: OpenFile) => {
+    ipcMain.handle('FILE.OPEN', async (event, data?: OpenFile) => {
         const ownerWindow = findWindowById(event.sender.id)
 
         const value = await dialog.showOpenDialog(ownerWindow!, {
@@ -314,68 +315,29 @@ try {
         return !value.canceled && value.filePaths[0]
     })
 
-    ipcMain.handle('SAVE_FITS', async (event) => {
+    ipcMain.handle('FILE.SAVE', async (event, data?: OpenFile) => {
         const ownerWindow = findWindowById(event.sender.id)
         const value = await dialog.showSaveDialog(ownerWindow!, {
-            filters: [
-                { name: 'FITS files', extensions: ['fits', 'fit'] },
-                { name: 'Image files', extensions: ['png', 'jpe?g'] },
-            ],
+            filters: data?.filters,
             properties: ['createDirectory', 'showOverwriteConfirmation'],
+            defaultPath: data?.defaultPath || undefined,
         })
 
         return !value.canceled && value.filePath
     })
 
-    ipcMain.handle('SAVE_JSON', async (event, data: SaveJson) => {
-        const ownerWindow = findWindowById(event.sender.id)
-
-        function writeFile(path: string) {
+    ipcMain.handle('JSON.WRITE', async (_, data: JsonFile) => {
+        try {
             const json = JSON.stringify(data.json)
-            fs.writeFileSync(path, json)
-            return <JsonFile>{ path, json: data.json }
-        }
-
-        if (data.path) {
-            return writeFile(data.path)
-        } else {
-            const value = await dialog.showSaveDialog(ownerWindow!, {
-                filters: [
-                    ...data.filters ?? [],
-                    { name: 'JSON files', extensions: ['json'] },
-                ],
-                defaultPath: data.defaultPath,
-                properties: ['createDirectory', 'showOverwriteConfirmation'],
-            })
-
-            if (!value.canceled) {
-                return writeFile(value.filePath!)
-            }
-        }
-
-        return false
-    })
-
-    ipcMain.handle('OPEN_JSON', async (event, data?: OpenFile) => {
-        const ownerWindow = findWindowById(event.sender.id)
-        const value = await dialog.showOpenDialog(ownerWindow!, {
-            filters: [
-                ...data?.filters ?? [],
-                { name: 'JSON files', extensions: ['json'] },
-            ],
-            properties: ['openFile'],
-            defaultPath: data?.defaultPath || undefined,
-        })
-
-        if (!value.canceled) {
-            const buffer = fs.readFileSync(value.filePaths[0])
-            return <JsonFile>{ path: value.filePaths[0], json: JSON.parse(buffer.toString('utf-8')) }
-        } else {
+            fs.writeFileSync(data.path!, json)
+            return true
+        } catch (e) {
+            console.error(e)
             return false
         }
     })
 
-    ipcMain.handle('LOAD_JSON', async (_, path: string) => {
+    ipcMain.handle('JSON.READ', async (_, path: string) => {
         try {
             if (fs.existsSync(path)) {
                 const buffer = fs.readFileSync(path)
@@ -388,7 +350,7 @@ try {
         return false
     })
 
-    ipcMain.handle('OPEN_DIRECTORY', async (event, data?: OpenDirectory) => {
+    ipcMain.handle('DIRECTORY.OPEN', async (event, data?: OpenDirectory) => {
         const ownerWindow = findWindowById(event.sender.id)
         const value = await dialog.showOpenDialog(ownerWindow!, {
             properties: ['openDirectory'],
@@ -398,25 +360,25 @@ try {
         return !value.canceled && value.filePaths[0]
     })
 
-    ipcMain.handle('PIN_WINDOW', (event) => {
+    ipcMain.handle('WINDOW.PIN', (event) => {
         const window = findWindowById(event.sender.id)
         window?.setAlwaysOnTop(true)
         return !!window
     })
 
-    ipcMain.handle('UNPIN_WINDOW', (event) => {
+    ipcMain.handle('WINDOW.UNPIN', (event) => {
         const window = findWindowById(event.sender.id)
         window?.setAlwaysOnTop(false)
         return !!window
     })
 
-    ipcMain.handle('MINIMIZE_WINDOW', (event) => {
+    ipcMain.handle('WINDOW.MINIMIZE', (event) => {
         const window = findWindowById(event.sender.id)
         window?.minimize()
         return !!window
     })
 
-    ipcMain.handle('MAXIMIZE_WINDOW', (event) => {
+    ipcMain.handle('WINDOW.MAXIMIZE', (event) => {
         const window = findWindowById(event.sender.id)
 
         if (window?.isMaximized()) window.unmaximize()
@@ -425,7 +387,7 @@ try {
         return window?.isMaximized() ?? false
     })
 
-    ipcMain.handle('CLOSE_WINDOW', (event, id?: string) => {
+    ipcMain.handle('WINDOW.CLOSE', (event, id?: string) => {
         if (id) {
             for (const [key, value] of browserWindows) {
                 if (key === id) {
@@ -442,7 +404,7 @@ try {
         }
     })
 
-    const events: InternalEventType[] = ['WHEEL_RENAMED', 'LOCATION_CHANGED']
+    const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED']
 
     for (const item of events) {
         ipcMain.handle(item, (_, data) => {

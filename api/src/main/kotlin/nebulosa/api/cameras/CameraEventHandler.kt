@@ -52,8 +52,8 @@ class CameraEventHandler(
 
     companion object {
 
-        const val CAMERA_UPDATED = "CAMERA_UPDATED"
-        const val CAMERA_ATTACHED = "CAMERA_ATTACHED"
-        const val CAMERA_DETACHED = "CAMERA_DETACHED"
+        const val CAMERA_UPDATED = "CAMERA.UPDATED"
+        const val CAMERA_ATTACHED = "CAMERA.ATTACHED"
+        const val CAMERA_DETACHED = "CAMERA.DETACHED"
     }
 }

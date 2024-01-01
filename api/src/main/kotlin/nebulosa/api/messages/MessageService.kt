@@ -46,7 +46,7 @@ class MessageService(
 
     companion object {
 
-        const val EVENT_NAME = "NEBULOSA_EVENT"
+        const val EVENT_NAME = "NEBULOSA.EVENT"
 
         @JvmStatic private val LOG = loggerFor<MessageService>()
     }

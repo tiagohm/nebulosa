@@ -8,6 +8,8 @@ import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
+import nebulosa.imaging.algorithms.computation.Histogram
+import nebulosa.imaging.algorithms.computation.Statistics
 import nebulosa.imaging.algorithms.transformation.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
@@ -65,9 +67,10 @@ class ImageService(
                 || scnrEnabled
 
         var transformedImage = if (shouldBeTransformed) image.clone() else image
+        val instrument = camera?.name ?: image.header.instrument
 
-        if (calibrate && camera != null) {
-            transformedImage = calibrationFrameService.calibrate(camera, transformedImage, transformedImage === image)
+        if (calibrate && !instrument.isNullOrBlank()) {
+            transformedImage = calibrationFrameService.calibrate(instrument, transformedImage, transformedImage === image)
         }
 
         if (mirrorHorizontal) {
@@ -80,6 +83,8 @@ class ImageService(
         if (scnrEnabled) {
             transformedImage = SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode).transform(transformedImage)
         }
+
+        val statistics = transformedImage.compute(Statistics.GRAY)
 
         if (autoStretch) {
             stretchParams = AutoScreenTransformFunction.compute(transformedImage)
@@ -96,14 +101,12 @@ class ImageService(
             path,
             transformedImage.width, transformedImage.height, transformedImage.mono,
             stretchParams.shadow, stretchParams.highlight, stretchParams.midtone,
-            transformedImage.header.rightAscension.format(AngleFormatter.HMS),
-            transformedImage.header.declination.format(AngleFormatter.SIGNED_DMS),
+            transformedImage.header.rightAscension.takeIf { it.isFinite() },
+            transformedImage.header.declination.takeIf { it.isFinite() },
             imageBucket[path]?.second != null,
-            transformedImage.header.iterator().asSequence()
-                .filter { it.key.isNotBlank() && it.value.isNotBlank() }
-                .map { ImageHeaderItem(it.key, it.value) }
-                .toList(),
-            image.header.instrument?.let(connectionService::camera),
+            transformedImage.header.map { ImageHeaderItem(it.key, it.value) },
+            instrument?.let(connectionService::camera),
+            statistics,
         )
 
         output.addHeader("X-Image-Info", objectMapper.writeValueAsString(info))
@@ -308,6 +311,11 @@ class ImageService(
     fun detectStars(path: Path): List<ImageStar> {
         val (image) = imageBucket[path] ?: return emptyList()
         return WATNEY_STAR_DETECTOR.detect(image)
+    }
+
+    fun histogram(path: Path, bitLength: Int = 16): IntArray {
+        val (image) = imageBucket[path] ?: return IntArray(0)
+        return image.compute(Histogram(bitLength = bitLength))
     }
 
     companion object {

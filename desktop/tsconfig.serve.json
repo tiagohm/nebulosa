@@ -8,6 +8,7 @@
     "resolveJsonModule": true,
     "module": "CommonJS",
     "target": "ES2022",
+    "noFallthroughCasesInSwitch": true,
     "types": [
       "node"
     ],
@@ -21,8 +22,10 @@
     ]
   },
   "files": [
-    "app/main.ts",
-    "src/shared/types.ts"
+    "app/main.ts"
+  ],
+  "include": [
+    "src/shared/types/*.ts"
   ],
   "exclude": [
     "node_modules",

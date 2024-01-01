@@ -37,7 +37,7 @@
 
 <p-contextMenu #menu [model]="contextMenuItems">
     <ng-template pTemplate="item" let-item>
-        <p-menuItem [item]="item" />
+        <neb-menu-item [item]="item" />
     </ng-template>
 </p-contextMenu>
 
@@ -58,11 +58,12 @@
                 </span>
             </div>
         </div>
-        <div class="col-12 text-sm">
-            <p>Star and DSO annotations made use of <a target="_blank" href="https://simbad.cds.unistra.fr/simbad/">SIMBAD Astronomical Database - CDS
-                    (Strasbourg)</a></p>
-            <p>Minor planets annotations made use of <a target="_blank" href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">Small-Body
-                    Identification API</a>
+        <div class="col-12 flex-column text-sm">
+            <p class="m-0">Star and DSO annotations made use of
+                <a target="_blank" href="https://simbad.cds.unistra.fr/simbad/">SIMBAD Astronomical Database - CDS (Strasbourg)</a>
+            </p>
+            <p class="m-0">Minor planets annotations made use of
+                <a target="_blank" href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">Small-Body Identification API</a>
             </p>
         </div>
     </div>
@@ -301,8 +302,9 @@
 <p-dialog header="FITS Headers" [draggable]="true" [(visible)]="showFITSHeadersDialog" [modal]="false" [style]="{width: '320px'}"
           class="pointer-events-none">
     <div class="grid p-2">
-        <p-table [value]="fitsHeaders" class="max-h-22rem w-full" dataKey="name" styleClass="w-full pb-4 p-datatable-striped">
-            <ng-template pTemplate="header" [style]="{maxHeight: '100px'}">
+        <p-table [value]="fitsHeaders" class="max-h-22rem w-full" dataKey="name" styleClass="w-full pb-4 p-datatable-striped"
+                 [style]="{maxHeight: '100px'}">
+            <ng-template pTemplate="header">
                 <tr>
                     <th>Name</th>
                     <th>Value</th>
@@ -318,6 +320,77 @@
     </div>
 </p-dialog>
 
+<p-dialog header="Statistics" [draggable]="true" [(visible)]="showStatisticsDialog" [modal]="false" [style]="{width: '360px'}"
+          class="pointer-events-none">
+    <div class="grid p-2" *ngIf="imageInfo">
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="imageInfo.statistics.count" />
+                <label>Count (px)</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.mean * statisticsBitLength.rangeMax).toFixed(8)" />
+                <label>Mean</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.median * statisticsBitLength.rangeMax).toFixed(8)" />
+                <label>Median</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.variance * statisticsBitLength.rangeMax * statisticsBitLength.rangeMax).toFixed(8)" />
+                <label>Variance</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.avgDev * statisticsBitLength.rangeMax).toFixed(8)" />
+                <label>Avg Dev</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.stdDev * statisticsBitLength.rangeMax).toFixed(8)" />
+                <label>Std Dev</label>
+            </span>
+        </div>
+        <div class="col-3">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.minimum * statisticsBitLength.rangeMax).toFixed(8)" />
+                <label>Minimum</label>
+            </span>
+        </div>
+        <div class="col-3">
+            <span class="p-float-label">
+                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                       [value]="(imageInfo.statistics.maximum * statisticsBitLength.rangeMax).toFixed(8)" />
+                <label>Maximum</label>
+            </span>
+        </div>
+        <div class="col-6">
+            <span class="p-float-label device">
+                <p-dropdown [options]="statisticsBitOptions" [(ngModel)]="statisticsBitLength" optionLabel="name"
+                            styleClass="p-inputtext-sm border-0" appendTo="body" (ngModelChange)="statisticsBitLengthChanged()" />
+                <label>Bits</label>
+            </span>
+        </div>
+        <div class="col-12">
+            <neb-histogram #histogram class="w-full" style="max-height: 94px" />
+        </div>
+    </div>
+</p-dialog>
+
 <div class="fixed p-3 text-sm coordinates monospaced" *ngIf="mouseCoordinate && isMouseCoordinateVisible">
     <div class="grid m-0">
         <div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
@@ -329,4 +402,4 @@
     </div>
 </div>
 
-<p-deviceMenu #deviceMenu />
+<neb-device-list-menu #deviceMenu />

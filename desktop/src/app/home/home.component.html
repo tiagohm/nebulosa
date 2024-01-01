@@ -15,8 +15,8 @@
             </span>
         </div>
         <div class="col-2 justify-content-center px-0">
-            <p-button *ngIf="connected" (onClick)="connect()" styleClass="p-button-sm" icon="mdi mdi-close" severity="danger" />
-            <p-button *ngIf="!connected" (onClick)="connect()" styleClass="p-button-sm" icon="mdi mdi-connection" severity="info" />
+            <p-button *ngIf="connected" (onClick)="connect()" size="small" icon="mdi mdi-close" severity="danger" />
+            <p-button *ngIf="!connected" (onClick)="connect()" size="small" icon="mdi mdi-connection" severity="info" />
         </div>
     </div>
     <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 112px);">
@@ -87,8 +87,9 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [text]="true" (onClick)="open('SEQUENCER')" [disabled]="!connected || !hasSequencer" styleClass="open min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/workflow.png" />
+            <p-button [text]="true" (onClick)="open('SEQUENCER')" [disabled]="!connected || !hasSequencer"
+                      styleClass="open min-w-full w-full px-1 py-2 flex-column">
+                <img src="assets/icons/sequencer.png" />
                 <div class="mt-1 text-sm">Sequencer</div>
             </p-button>
         </div>
@@ -102,6 +103,13 @@
             <p-button [text]="true" (onClick)="open('FRAMING')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/framing.png" />
                 <div class="mt-1 text-sm">Framing</div>
+            </p-button>
+        </div>
+        <div class="col-4 p-1">
+            <p-button [text]="true" (onClick)="open('FLAT_WIZARD')" [disabled]="!connected || !hasFlatWizard"
+                      styleClass="open min-w-full w-full px-1 py-2 flex-column">
+                <img src="assets/icons/flat-wizard.png" />
+                <div class="mt-1 text-sm">Flat Wizard</div>
             </p-button>
         </div>
         <div class="col-4 p-1">
@@ -126,5 +134,5 @@
     </div>
 </div>
 
-<p-dialogMenu #deviceMenu [model]="deviceModel" />
-<p-deviceMenu #imageMenu [model]="imageModel" [disableIfNotConnected]="false" />
+<neb-dialog-menu #deviceMenu [model]="deviceModel" />
+<neb-device-list-menu #imageMenu [model]="imageModel" [disableIfNotConnected]="false" />

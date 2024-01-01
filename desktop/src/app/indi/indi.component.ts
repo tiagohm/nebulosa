@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types'
+import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types/device.types'
 import { compareDevice, compareText } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
@@ -32,14 +32,14 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'INDI'
 
-        electron.on('DEVICE_PROPERTY_CHANGED', event => {
+        electron.on('DEVICE.PROPERTY_CHANGED', event => {
             ngZone.run(() => {
                 this.addOrUpdateProperty(event.property!)
                 this.updateGroups()
             })
         })
 
-        electron.on('DEVICE_PROPERTY_DELETED', event => {
+        electron.on('DEVICE.PROPERTY_DELETED', event => {
             const index = this.properties.findIndex((e) => e.name === event.property!.name)
 
             if (index >= 0) {
@@ -50,7 +50,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DEVICE_MESSAGE_RECEIVED', event => {
+        electron.on('DEVICE.MESSAGE_RECEIVED', event => {
             if (this.device && event.device?.name === this.device.name) {
                 ngZone.run(() => {
                     this.messages.splice(0, 0, event.message!)
