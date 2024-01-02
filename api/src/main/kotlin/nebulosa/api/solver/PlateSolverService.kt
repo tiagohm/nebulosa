@@ -55,16 +55,18 @@ class PlateSolverService(
         plateSolver.solve(path, centerRA, centerDEC, radius, 1, DEFAULT_TIMEOUT)
     }
 
-    fun settings(options: PlateSolverOptions) {
-        preferenceService.putJSON("SETTINGS.PLATE_SOLVER", options)
+    fun settings(options: PlateSolverSettings) {
+        preferenceService.putJSON(SETTINGS_KEY, options)
     }
 
-    fun settings(): PlateSolverOptions {
-        return preferenceService.getJSON<PlateSolverOptions>("SETTINGS.PLATE_SOLVER")
-            ?: PlateSolverOptions.EMPTY
+    fun settings(): PlateSolverSettings {
+        return preferenceService.getJSON<PlateSolverSettings>(SETTINGS_KEY)
+            ?: PlateSolverSettings.EMPTY
     }
 
     companion object {
+
+        const val SETTINGS_KEY = "SETTINGS.PLATE_SOLVER"
 
         @JvmStatic private val DEFAULT_TIMEOUT = Duration.ofMinutes(5)
     }

@@ -22,12 +22,12 @@ class PlateSolverController(
     ) = plateSolverService.solveImage(path, centerRA, centerDEC, if (blind) 0.0 else radius)
 
     @PutMapping("settings")
-    fun settings(@RequestBody @Valid body: PlateSolverOptions) {
+    fun settings(@RequestBody @Valid body: PlateSolverSettings) {
         plateSolverService.settings(body)
     }
 
     @GetMapping("settings")
-    fun settings(): PlateSolverOptions {
+    fun settings(): PlateSolverSettings {
         return plateSolverService.settings()
     }
 }

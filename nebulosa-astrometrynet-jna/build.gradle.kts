@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-jna"))
+    api(libs.jna)
     api(project(":nebulosa-plate-solving"))
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))

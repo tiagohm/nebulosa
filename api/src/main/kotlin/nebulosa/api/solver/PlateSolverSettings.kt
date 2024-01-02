@@ -2,7 +2,7 @@ package nebulosa.api.solver
 
 import java.nio.file.Path
 
-data class PlateSolverOptions(
+data class PlateSolverSettings(
     val type: PlateSolverType = PlateSolverType.ASTAP,
     val executablePath: Path? = null,
     val downsampleFactor: Int = 2,
@@ -10,6 +10,6 @@ data class PlateSolverOptions(
 
     companion object {
 
-        @JvmStatic val EMPTY = PlateSolverOptions()
+        @JvmStatic val EMPTY = PlateSolverSettings()
     }
 }

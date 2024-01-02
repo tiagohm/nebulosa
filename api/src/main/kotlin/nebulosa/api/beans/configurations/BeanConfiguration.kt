@@ -64,6 +64,9 @@ class BeanConfiguration {
     fun cachePath(appPath: Path): Path = Path.of("$appPath", "cache").createDirectories()
 
     @Bean
+    fun libsPath(appPath: Path): Path = Path.of("$appPath", "libs").createDirectories()
+
+    @Bean
     @Suppress("UNCHECKED_CAST")
     fun kotlinModule(
         serializers: List<StdSerializer<*>>,

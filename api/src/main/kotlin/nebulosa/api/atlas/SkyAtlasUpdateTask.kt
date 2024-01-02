@@ -13,7 +13,7 @@ class SkyAtlasUpdateTask(
     private val simbadIdentifierRepository: SimbadIdentifierRepository,
 ) : Runnable {
 
-    @Scheduled(initialDelay = 1L, fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
     override fun run() {
         if (simbadIdentifierRepository.isEmpty()) {
             val request = Request.Builder()

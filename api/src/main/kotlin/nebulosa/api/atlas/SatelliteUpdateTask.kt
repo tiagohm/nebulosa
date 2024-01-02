@@ -16,13 +16,13 @@ class SatelliteUpdateTask(
     private val satelliteRepository: SatelliteRepository,
 ) : Runnable {
 
-    @Scheduled(initialDelay = 1L, fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelay = UPDATE_INTERVAL, timeUnit = TimeUnit.MILLISECONDS)
     override fun run() {
         checkIsOutOfDateAndUpdate()
     }
 
     private fun isOutOfDate(): Boolean {
-        val updatedAt = preferenceService.getLong(SATELLITES_UPDATED_AT) ?: 0L
+        val updatedAt = preferenceService.getLong(UPDATED_AT_KEY) ?: 0L
         return System.currentTimeMillis() - updatedAt >= UPDATE_INTERVAL
     }
 
@@ -31,7 +31,7 @@ class SatelliteUpdateTask(
             LOG.info("satellites is out of date")
 
             if (updateTLEs()) {
-                preferenceService.putLong(SATELLITES_UPDATED_AT, System.currentTimeMillis())
+                preferenceService.putLong(UPDATED_AT_KEY, System.currentTimeMillis())
             } else {
                 LOG.warn("no satellites was updated")
             }
@@ -102,8 +102,8 @@ class SatelliteUpdateTask(
 
     companion object {
 
-        const val UPDATE_INTERVAL = 1000L * 60 * 60 * 24 // 1 day
-        const val SATELLITES_UPDATED_AT = "SATELLITES_UPDATED_AT"
+        const val UPDATE_INTERVAL = 1000L * 60 * 60 * 24 * 2 // 2 days in ms
+        const val UPDATED_AT_KEY = "SATELLITES.UPDATED_AT"
 
         @JvmStatic private val LOG = loggerFor<SatelliteUpdateTask>()
     }

@@ -22,7 +22,7 @@ class IERSUpdateTask(
     private val httpClient: OkHttpClient,
 ) : Runnable {
 
-    @Scheduled(initialDelay = 5L, fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
     override fun run() {
         val finals2000A = Path.of("$dataPath", "finals2000A.all")
 
@@ -35,15 +35,12 @@ class IERSUpdateTask(
 
     private fun Path.download() {
         try {
-            var request = Request.Builder()
-                .head()
-                .url(IERSA.URL)
-                .build()
+            var request = Request.Builder().head().url(IERSA.URL).build()
 
             var modifiedAt = httpClient.newCall(request).execute()
                 .use { it.headers.getDate(HttpHeaders.LAST_MODIFIED) }
 
-            if (modifiedAt != null && "$modifiedAt" == preferenceService.getText(IERS_UPDATED_AT)) {
+            if (modifiedAt != null && "$modifiedAt" == preferenceService.getText(UPDATED_AT_KEY)) {
                 LOG.info("finals2000A.all is up to date. modifiedAt={}", modifiedAt)
                 return
             }
@@ -55,7 +52,7 @@ class IERSUpdateTask(
             httpClient.newCall(request).execute().use {
                 it.body!!.byteStream().transferAndClose(outputStream())
                 modifiedAt = it.headers.getDate(HttpHeaders.LAST_MODIFIED)
-                preferenceService.putText(IERS_UPDATED_AT, "$modifiedAt")
+                preferenceService.putText(UPDATED_AT_KEY, "$modifiedAt")
                 LOG.info("finals2000A.all downloaded. modifiedAt={}", modifiedAt)
             }
         } catch (e: Throwable) {
@@ -65,7 +62,7 @@ class IERSUpdateTask(
 
     companion object {
 
-        const val IERS_UPDATED_AT = "IERS_UPDATED_AT"
+        const val UPDATED_AT_KEY = "IERS.UPDATED_AT"
 
         @JvmStatic private val LOG = loggerFor<IERSUpdateTask>()
     }

@@ -1,10 +1,9 @@
 package nebulosa.astrometrynet.plate.solving
 
 import com.sun.jna.Library
+import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.ptr.DoubleByReference
-import nebulosa.jna.LibraryProvider
-import nebulosa.jna.loadLibrary
 import nebulosa.plate.solving.Parity
 
 @Suppress("FunctionName")
@@ -170,15 +169,16 @@ interface LibAstrometryNet : Library {
 
     fun sip_get_orientation(sip: Sip.ByReference): Double
 
-    companion object : LibraryProvider {
+    companion object {
 
         const val DQMAX = 5
         const val INDEX_ONLY_LOAD_METADATA = 2
-        const val NO = 0.toByte()
-        const val YES = 1.toByte()
+        const val NO: Byte = 0
+        const val YES: Byte = 1
 
-        override val libraryName = "libastrometry"
+        const val LIBRARY_NAME = "libastrometry"
+        const val PATH = "LIBASTROMETRYNET_PATH"
 
-        val INSTANCE by lazy { loadLibrary<LibAstrometryNet>() }
+        @JvmStatic val INSTANCE: LibAstrometryNet by lazy { Native.load(System.getProperty(PATH, LIBRARY_NAME), LibAstrometryNet::class.java) }
     }
 }
