@@ -56,11 +56,10 @@ class ImageController(
     @GetMapping("annotations")
     fun annotationsOfImage(
         @RequestParam path: Path,
-        @RequestParam(required = false, defaultValue = "true") stars: Boolean,
-        @RequestParam(required = false, defaultValue = "true") dsos: Boolean,
+        @RequestParam(required = false, defaultValue = "true") starsAndDSOs: Boolean,
         @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
         @RequestParam(required = false, defaultValue = "12.0") minorPlanetMagLimit: Double,
-    ) = imageService.annotations(path, stars, dsos, minorPlanets, minorPlanetMagLimit)
+    ) = imageService.annotations(path, starsAndDSOs, minorPlanets, minorPlanetMagLimit)
 
     @GetMapping("coordinate-interpolation")
     fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {

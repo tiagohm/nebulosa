@@ -1,12 +1,16 @@
 import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
+import path from 'path'
 import { MenuItem } from 'primeng/api'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
-import { PlateSolverSettings, PlateSolverType } from '../../shared/types/settings.types'
+import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverOptions, PlateSolverType } from '../../shared/types/settings.types'
 import { AppComponent } from '../app.component'
+
+export const SETTINGS_PLATE_SOLVER_KEY = 'settings.plateSolver'
 
 @Component({
     selector: 'app-settings',
@@ -20,8 +24,8 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     locations: Location[] = []
     location = Object.assign({}, EMPTY_LOCATION)
 
-    readonly plateSolvers: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET']
-    plateSolver!: PlateSolverSettings
+    readonly plateSolverTypes: PlateSolverType[] = ['ASTAP', /*'ASTROMETRY_NET',*/ 'ASTROMETRY_NET_ONLINE']
+    readonly plateSolver: PlateSolverOptions
 
     readonly items: MenuItem[] = [
         {
@@ -39,15 +43,16 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     constructor(
         app: AppComponent,
         private api: ApiService,
+        private storage: LocalStorageService,
         private electron: ElectronService,
         private prime: PrimeService,
     ) {
         app.title = 'Settings'
+
+        this.plateSolver = storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS)
     }
 
     async ngAfterViewInit() {
-        this.plateSolver = await this.api.getPlateSolverSettings()
-
         this.loadLocations()
     }
 
@@ -95,7 +100,16 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         this.electron.send('LOCATION.CHANGED', this.location)
     }
 
+    async chooseExecutablePath() {
+        const executablePath = await this.electron.openFile({ defaultPath: path.dirname(this.plateSolver.executablePath) })
+
+        if (executablePath) {
+            this.plateSolver.executablePath = executablePath
+            this.save()
+        }
+    }
+
     async save() {
-        this.api.updatePlateSolverSettings(this.plateSolver)
+        this.storage.set(SETTINGS_PLATE_SOLVER_KEY, this.plateSolver)
     }
 }

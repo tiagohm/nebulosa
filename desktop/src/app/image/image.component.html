@@ -41,11 +41,11 @@
     </ng-template>
 </p-contextMenu>
 
-<p-dialog header="Annotation" [draggable]="false" [(visible)]="showAnnotationDialog" [modal]="true" [style]="{width: '320px'}">
+<p-dialog header="Annotation" [draggable]="false" [(visible)]="showAnnotationDialog" [modal]="true"
+          [style]="{width: 'min-content', minWidth: '338px'}">
     <div class="grid">
         <div class="col-12 flex flex-column">
-            <p-checkbox [(ngModel)]="annotateWithStars" class="py-1" [binary]="true" label="Annotate with stars" />
-            <p-checkbox [(ngModel)]="annotateWithDSOs" class="py-1" [binary]="true" label="Annotate with DSOs" />
+            <p-checkbox [(ngModel)]="annotateWithStarsAndDSOs" class="py-1" [binary]="true" label="Annotate with stars & DSOs" />
 
             <div class="flex flex-row align-items-center gap-2">
                 <p-checkbox [(ngModel)]="annotateWithMinorPlanets" class="py-1" [binary]="true" label="Annotate with minor planets" />
@@ -73,7 +73,7 @@
 </p-dialog>
 
 <p-dialog header="Astronomical Object" [draggable]="true" [(visible)]="showAnnotationInfoDialog" [modal]="false"
-          [style]="{width: '60vw', maxWidth: '320px'}">
+          [style]="{width: 'min-content', minWidth: '324px'}">
     <div class="grid mt-2">
         <ng-container *ngIf="annotationInfo">
             <div class="col-12">
@@ -132,13 +132,21 @@
             <p-button (onClick)="mountSync(annotationInfo!)" icon="mdi mdi-sync" label="Sync" [text]="true" severity="info" />
             <p-button (onClick)="mountGoTo(annotationInfo!)" icon="mdi mdi-telescope" label="Go To" [text]="true" severity="success" />
             <p-button (onClick)="mountSlew(annotationInfo!)" icon="mdi mdi-telescope" label="Slew" [text]="true" severity="success" />
+            <p-button (onClick)="frame(annotationInfo!)" icon="mdi mdi-image" label="Frame" [text]="true" />
         </div>
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Plate Solver" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: '370px'}"
+<p-dialog header="Plate Solver" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: 'min-content', minWidth: '340px'}"
           class="pointer-events-none">
     <div class="grid pt-2">
+        <div class="col-12 gap-2 align-items-center">
+            <span class="p-float-label">
+                <p-dropdown [options]="solverTypes" [(ngModel)]="solverType" styleClass="p-inputtext-sm border-0" />
+                <label>Type</label>
+            </span>
+            <p-checkbox [binary]="true" label="Blind" [(ngModel)]="solverBlind" />
+        </div>
         <div class="col-8">
             <div class="grid">
                 <div class="col-6">
@@ -161,7 +169,6 @@
                                [(ngModel)]="solverRadius" />
                 <label>Radius (°)</label>
             </span>
-            <p-checkbox [binary]="true" pTooltip="Blind" tooltipPosition="bottom" [(ngModel)]="solverBlind" />
         </div>
     </div>
     <ng-template pTemplate="footer">
@@ -223,7 +230,8 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Stretching" [draggable]="true" [(visible)]="showStretchingDialog" [modal]="false" [style]="{width: '320px'}"
+<p-dialog header="Stretching" [draggable]="true" [(visible)]="showStretchingDialog" [modal]="false"
+          [style]="{width: 'min-content', minWidth: '320px'}"
           class="pointer-events-none">
     <div class="grid px-2 pt-2">
         <div class="col-8 flex flex-column">
@@ -299,11 +307,10 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="FITS Headers" [draggable]="true" [(visible)]="showFITSHeadersDialog" [modal]="false" [style]="{width: '320px'}"
-          class="pointer-events-none">
-    <div class="grid p-2">
-        <p-table [value]="fitsHeaders" class="max-h-22rem w-full" dataKey="name" styleClass="w-full pb-4 p-datatable-striped"
-                 [style]="{maxHeight: '100px'}">
+<p-dialog header="FITS Headers" [draggable]="true" [(visible)]="showFITSHeadersDialog" [modal]="false"
+          [style]="{width: 'min-content', minWidth: '340px', minHeight: '340px'}" class="pointer-events-none">
+    <div class="p-2">
+        <p-table [value]="fitsHeaders" class="w-full" dataKey="name" styleClass="w-full pb-4 p-datatable-striped">
             <ng-template pTemplate="header">
                 <tr>
                     <th>Name</th>
@@ -320,8 +327,8 @@
     </div>
 </p-dialog>
 
-<p-dialog header="Statistics" [draggable]="true" [(visible)]="showStatisticsDialog" [modal]="false" [style]="{width: '360px'}"
-          class="pointer-events-none">
+<p-dialog header="Statistics" [draggable]="true" [(visible)]="showStatisticsDialog" [modal]="false"
+          [style]="{width: 'min-content', minWidth: '336px'}" class="pointer-events-none">
     <div class="grid p-2" *ngIf="imageInfo">
         <div class="col-4">
             <span class="p-float-label">

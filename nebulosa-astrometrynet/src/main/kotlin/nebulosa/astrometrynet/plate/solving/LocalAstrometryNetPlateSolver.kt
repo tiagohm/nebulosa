@@ -1,6 +1,7 @@
 package nebulosa.astrometrynet.plate.solving
 
 import nebulosa.common.process.ProcessExecutor
+import nebulosa.imaging.Image
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.plate.solving.PlateSolution
@@ -15,15 +16,17 @@ import kotlin.io.path.deleteRecursively
 /**
  * @see <a href="http://astrometry.net/doc/readme.html">README</a>
  */
-class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver<Path> {
+class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver {
 
     private val executor = ProcessExecutor(path)
 
     override fun solve(
-        input: Path,
+        path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
     ): PlateSolution {
+        requireNotNull(path) { "path is required" }
+
         val arguments = mutableMapOf<String, Any?>()
 
         arguments["--out"] = UUID.randomUUID().toString()
@@ -47,9 +50,9 @@ class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver<Path> {
             arguments["--radius"] = radius.toDegrees
         }
 
-        arguments["$input"] = null
+        arguments["$path"] = null
 
-        val process = executor.execute(arguments, Duration.ZERO, input.parent)
+        val process = executor.execute(arguments, Duration.ZERO, path.parent)
 
         val buffer = process.inputReader()
 

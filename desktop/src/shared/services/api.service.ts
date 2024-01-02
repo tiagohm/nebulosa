@@ -12,7 +12,7 @@ import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } fr
 import { CoordinateInterpolation, DetectedStar, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, SCNRProtectionMethod } from '../types/image.types'
 import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
 import { SequencePlan } from '../types/sequencer.types'
-import { PlateSolverSettings } from '../types/settings.types'
+import { PlateSolverOptions } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
 import { HttpService } from './http.service'
 
@@ -471,10 +471,10 @@ export class ApiService {
 
     annotationsOfImage(
         path: string,
-        stars: boolean = true, dsos: boolean = true, minorPlanets: boolean = false,
+        starsAndDSOs: boolean = true, minorPlanets: boolean = false,
         minorPlanetMagLimit: number = 12.0,
     ) {
-        const query = this.http.query({ path, stars, dsos, minorPlanets, minorPlanetMagLimit })
+        const query = this.http.query({ path, starsAndDSOs, minorPlanets, minorPlanetMagLimit })
         return this.http.get<ImageAnnotation[]>(`image/annotations?${query}`)
     }
 
@@ -563,19 +563,11 @@ export class ApiService {
     // SOLVER
 
     solveImage(
-        path: string, blind: boolean,
+        options: PlateSolverOptions, path: string, blind: boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ) {
-        const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
+        const query = this.http.query({ ...options, path, blind, centerRA, centerDEC, radius })
         return this.http.put<ImageSolved>(`plate-solver?${query}`)
-    }
-
-    getPlateSolverSettings() {
-        return this.http.get<PlateSolverSettings>('plate-solver/settings')
-    }
-
-    updatePlateSolverSettings(settings: PlateSolverSettings) {
-        return this.http.put<void>('plate-solver/settings', settings)
     }
 
     // PREFERENCE

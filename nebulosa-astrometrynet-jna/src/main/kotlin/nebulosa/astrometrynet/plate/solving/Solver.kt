@@ -42,10 +42,10 @@ sealed class Solver : Structure() {
     @JvmField var logRatioToTune = 0.0
     @JvmField var recordMatchCallback: RecordMatchCallback? = null
     @JvmField var userData: Pointer? = null
-    @JvmField var distanceFromQuadBonus = 0.toByte()
-    @JvmField var verifyUniformize = 0.toByte()
-    @JvmField var verifyDedup = 0.toByte()
-    @JvmField var doTweak = 0.toByte()
+    @JvmField var distanceFromQuadBonus: Byte = 0
+    @JvmField var verifyUniformize: Byte = 0
+    @JvmField var verifyDedup: Byte = 0
+    @JvmField var doTweak: Byte = 0
     @JvmField var tweakAbOrder = 0
     @JvmField var tweakAbpOrder = 0
 
@@ -58,19 +58,19 @@ sealed class Solver : Structure() {
     @JvmField var startobj = 0
     @JvmField var endobj = 0
     @JvmField var parity = 0
-    @JvmField var useRaDec = 0.toByte()
+    @JvmField var useRaDec: Byte = 0
     @JvmField val centerxyz = DoubleArray(3)
     @JvmField var r2 = 0.0
     @JvmField var logRatioBailThreshold = 0.0
     @JvmField var logRatioStoplooking = 0.0
     @JvmField var maxquads = 0
     @JvmField var maxmatches = 0
-    @JvmField var setCrpix = 0.toByte()
-    @JvmField var setCrpixCenter = 0.toByte()
+    @JvmField var setCrpix: Byte = 0
+    @JvmField var setCrpixCenter: Byte = 0
     @JvmField val crpix = DoubleArray(2)
     @JvmField var moTemplate: Pointer? = null
     @JvmField var timerCallback: Pointer? = null
-    @JvmField var quitNow = 0.toByte()
+    @JvmField var quitNow: Byte = 0
 
     // SOLVER OUTPUT
     @JvmField var numTries = 0
@@ -100,8 +100,8 @@ sealed class Solver : Structure() {
     @JvmField var bestLogodds = 0.0
     @JvmField var bestMatch = Matched.ByValue()
     @JvmField var bestIndex: Index.ByReference? = null
-    @JvmField var bestMatchSolves = 0.toByte()
-    @JvmField var haveBestMatch = 0.toByte()
+    @JvmField var bestMatchSolves: Byte = 0
+    @JvmField var haveBestMatch: Byte = 0
     @JvmField var vf: Pointer? = null
 
     class ByReference : Solver(), Structure.ByReference

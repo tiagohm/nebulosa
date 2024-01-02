@@ -19,8 +19,10 @@ import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, St
 import { Camera } from '../../shared/types/camera.types'
 import { DetectedStar, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
+import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverType } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
+import { SETTINGS_PLATE_SOLVER_KEY } from '../settings/settings.component'
 
 export function imagePreferenceKey(camera?: Camera) {
     return camera ? `image.${camera.name}` : 'image'
@@ -74,8 +76,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     scnrProtectionMethod: SCNRProtectionMethod = 'AVERAGE_NEUTRAL'
 
     showAnnotationDialog = false
-    annotateWithStars = true
-    annotateWithDSOs = true
+    annotateWithStarsAndDSOs = true
     annotateWithMinorPlanets = false
     annotateWithMinorPlanetsMagLimit = 12.0
 
@@ -92,6 +93,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solverCenterDEC = ''
     solverRadius = 4
     solverData?: ImageSolved
+    readonly solverTypes: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET_ONLINE']
+    solverType: PlateSolverType
 
     crossHair = false
     annotations: ImageAnnotation[] = []
@@ -408,6 +411,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 this.loadImageFromData(event)
             })
         })
+
+        this.solverType = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS).type
     }
 
     ngAfterViewInit() {
@@ -599,7 +604,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         try {
             this.annotating = true
             this.annotations = await this.api.annotationsOfImage(this.imageData.path!,
-                this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets, this.annotateWithMinorPlanetsMagLimit)
+                this.annotateWithStarsAndDSOs, this.annotateWithMinorPlanets, this.annotateWithMinorPlanetsMagLimit)
             this.annotationIsVisible = true
             this.annotationMenuItem.toggleable = this.annotations.length > 0
             this.annotationMenuItem.toggled = this.annotationMenuItem.toggleable
@@ -668,7 +673,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solving = true
 
         try {
-            this.solverData = await this.api.solveImage(this.imageData.path!, this.solverBlind,
+            const options = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS)
+            options.type = this.solverType
+            this.solverData = await this.api.solveImage(options, this.imageData.path!, this.solverBlind,
                 this.solverCenterRA, this.solverCenterDEC, this.solverRadius)
 
             this.savePreference()

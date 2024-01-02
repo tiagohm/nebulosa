@@ -3,6 +3,7 @@ package nebulosa.astap.plate.solving
 import nebulosa.common.process.ProcessExecutor
 import nebulosa.fits.NOAOExt
 import nebulosa.fits.Standard
+import nebulosa.imaging.Image
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg
@@ -23,15 +24,17 @@ import kotlin.math.ceil
 /**
  * @see <a href="https://www.hnsky.org/astap.htm#astap_command_line">README</a>
  */
-class AstapPlateSolver(path: Path) : PlateSolver<Path> {
+class AstapPlateSolver(path: Path) : PlateSolver {
 
     private val executor = ProcessExecutor(path)
 
     override fun solve(
-        input: Path,
+        path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
     ): PlateSolution {
+        requireNotNull(path) { "path is required" }
+
         val arguments = mutableMapOf<String, Any?>()
 
         val basePath = Files.createTempDirectory("astap")
@@ -40,6 +43,7 @@ class AstapPlateSolver(path: Path) : PlateSolver<Path> {
 
         arguments["-o"] = outFile
         arguments["-z"] = downsampleFactor
+        arguments["-fov"] = 0 // auto
 
         if (radius.toDegrees >= 0.1) {
             arguments["-ra"] = centerRA.toHours
@@ -49,12 +53,12 @@ class AstapPlateSolver(path: Path) : PlateSolver<Path> {
             arguments["-r"] = "180.0"
         }
 
-        arguments["-f"] = input
+        arguments["-f"] = path
 
         LOG.info("local solving. command={}", arguments)
 
         try {
-            val process = executor.execute(arguments, timeout ?: Duration.ofSeconds(300), input.parent)
+            val process = executor.execute(arguments, timeout ?: Duration.ofSeconds(300), path.parent)
 
             LOG.info("astap exited. code={}", process.exitValue())
 

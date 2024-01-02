@@ -1,6 +1,7 @@
 package nebulosa.watney.plate.solving
 
 import nebulosa.erfa.SphericalCoordinate
+import nebulosa.fits.Fits
 import nebulosa.fits.Header
 import nebulosa.fits.NOAOExt
 import nebulosa.fits.Standard
@@ -25,6 +26,7 @@ import nebulosa.watney.plate.solving.quad.StarQuad
 import nebulosa.watney.plate.solving.quad.StarQuadMatch
 import nebulosa.watney.star.detection.WatneyStarDetector
 import org.apache.commons.collections4.bag.HashBag
+import java.nio.file.Path
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
@@ -35,14 +37,17 @@ data class WatneyPlateSolver(
     private val quadDatabase: QuadDatabase,
     private val starDetector: StarDetector<Image>? = null,
     private val numSubSets: Int = 4,
-) : PlateSolver<Image> {
+) : PlateSolver {
 
+    @Suppress("NAME_SHADOWING")
     override fun solve(
-        input: Image,
+        path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
     ): PlateSolution {
-        val stars = (starDetector ?: DEFAULT_STAR_DETECTOR).detect(input)
+        val image = image ?: Fits(path!!).also(Fits::read).use(Image::open)
+        val stars = (starDetector ?: DEFAULT_STAR_DETECTOR).detect(image)
+
         LOG.debug { "detected ${stars.size} stars from the image" }
 
         fun makeSuccessSolution(solution: ComputedPlateSolution): PlateSolution {
@@ -79,7 +84,7 @@ data class WatneyPlateSolver(
         repeat(numSubSets) {
             for (rg in runsByRadius.indices) {
                 for (searchRun in runsByRadius[rg].second) {
-                    val solveResult = trySolve(input, searchRun, countInFirstPass, quadDatabase, numSubSets, it, imageStarQuads, iteration)
+                    val solveResult = trySolve(image, searchRun, countInFirstPass, quadDatabase, numSubSets, it, imageStarQuads, iteration)
 
                     serialSearches.add(solveResult)
 
@@ -108,7 +113,7 @@ data class WatneyPlateSolver(
                 LOG.debug { "continue searching, potential matches to try: ${potentialMatchQueue.size}" }
 
                 for (searchRun in potentialMatchQueue) {
-                    val solveResult = trySolve(input, searchRun, countInFirstPass, quadDatabase, 1, 0, imageStarQuads, iteration)
+                    val solveResult = trySolve(image, searchRun, countInFirstPass, quadDatabase, 1, 0, imageStarQuads, iteration)
 
                     if (solveResult.success) {
                         LOG.info("a successful result was found!")

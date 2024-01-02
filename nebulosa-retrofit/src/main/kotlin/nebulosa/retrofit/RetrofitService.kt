@@ -12,9 +12,9 @@ import retrofit2.converter.jackson.JacksonConverterFactory
 import java.util.concurrent.TimeUnit
 
 abstract class RetrofitService(
-    val url: String,
-    private val httpClient: OkHttpClient? = null,
-    private val objectMapper: ObjectMapper? = null,
+    url: String,
+    httpClient: OkHttpClient? = null,
+    objectMapper: ObjectMapper? = null,
 ) {
 
     protected val mapper by lazy { objectMapper ?: DEFAULT_MAPPER.copy()!! }
@@ -29,7 +29,7 @@ abstract class RetrofitService(
 
     protected open val retrofit by lazy {
         val builder = Retrofit.Builder()
-        builder.baseUrl(url)
+        builder.baseUrl(url.trim().let { if (it.endsWith("/")) it else "$it/" })
         builder.addConverterFactory(RawAsStringConverterFactory)
         builder.addConverterFactory(RawAsByteArrayConverterFactory)
         converterFactory.forEach { builder.addConverterFactory(it) }

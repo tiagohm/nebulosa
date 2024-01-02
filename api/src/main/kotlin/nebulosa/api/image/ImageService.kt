@@ -19,7 +19,6 @@ import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadSearch
 import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
-import nebulosa.skycatalog.SkyObjectType
 import nebulosa.star.detection.ImageStar
 import nebulosa.watney.star.detection.WatneyStarDetector
 import nebulosa.wcs.WCSException
@@ -104,7 +103,7 @@ class ImageService(
             transformedImage.header.rightAscension.takeIf { it.isFinite() },
             transformedImage.header.declination.takeIf { it.isFinite() },
             imageBucket[path]?.second != null,
-            transformedImage.header.map { ImageHeaderItem(it.key, it.value) },
+            transformedImage.header.mapNotNull { if (it.isCommentStyle) null else ImageHeaderItem(it.key, it.value) },
             instrument?.let(connectionService::camera),
             statistics,
         )
@@ -125,7 +124,7 @@ class ImageService(
     @Synchronized
     fun annotations(
         path: Path,
-        stars: Boolean, dsos: Boolean, minorPlanets: Boolean,
+        starsAndDSOs: Boolean, minorPlanets: Boolean,
         minorPlanetMagLimit: Double = 12.0,
     ): List<ImageAnnotation> {
         val (image, calibration) = imageBucket[path] ?: return emptyList()
@@ -186,27 +185,9 @@ class ImageService(
 
         // val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
 
-        if (stars || dsos) {
+        if (starsAndDSOs) {
             threadPoolTaskExecutor.submitCompletable {
-                LOG.info("finding star annotations. dateTime={}, calibration={}", dateTime, calibration)
-
-                val types = ArrayList<SkyObjectType>(4)
-
-                if (stars) {
-                    types.add(SkyObjectType.STAR)
-                }
-
-                if (dsos) {
-                    types.add(SkyObjectType.CLUSTER_OF_STARS)
-                    types.add(SkyObjectType.ASSOCIATION_OF_STARS)
-                    types.add(SkyObjectType.GALAXY)
-                    types.add(SkyObjectType.INTERSTELLAR_MEDIUM_OBJECT)
-                    types.add(SkyObjectType.CLUSTER_OF_GALAXIES)
-                    types.add(SkyObjectType.INTERACTING_GALAXIES)
-                    types.add(SkyObjectType.GROUP_OF_GALAXIES)
-                    types.add(SkyObjectType.SUPERCLUSTER_OF_GALAXIES)
-                    types.add(SkyObjectType.PAIR_OF_GALAXIES)
-                }
+                LOG.info("finding star/DSO annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 var lastID = 0L
                 var count = 0
@@ -214,8 +195,7 @@ class ImageService(
                 while (true) {
                     val search = SimbadSearch.Builder()
                         .region(calibration.rightAscension, calibration.declination, calibration.radius)
-                        .types(types)
-                        .limit(5000)
+                        .limit(10000)
                         .lastID(lastID)
                         .build()
 

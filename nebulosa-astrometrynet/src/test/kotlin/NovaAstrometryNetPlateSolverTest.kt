@@ -18,7 +18,7 @@ class NovaAstrometryNetPlateSolverTest : StringSpec() {
             val service = NovaAstrometryNetService()
             val solver = NovaAstrometryNetPlateSolver(service)
 
-            val calibration = solver.solve(file, centerRA = 290.0.deg, centerDEC = 11.0.deg, radius = 2.0.deg)
+            val calibration = solver.solve(file, null, centerRA = 290.0.deg, centerDEC = 11.0.deg, radius = 2.0.deg)
 
             calibration.orientation.toDegrees shouldBeExactly 90.0397051079753
             calibration.scale.toArcsec shouldBeExactly 2.0675124414774606
@@ -30,7 +30,7 @@ class NovaAstrometryNetPlateSolverTest : StringSpec() {
             val service = NovaAstrometryNetService()
             val solver = NovaAstrometryNetPlateSolver(service)
 
-            val calibration = solver.solve(file)
+            val calibration = solver.solve(file, null)
 
             calibration.orientation.toDegrees shouldBeExactly 90.0397051079753
             calibration.scale.toArcsec shouldBeExactly 2.0675124414774606

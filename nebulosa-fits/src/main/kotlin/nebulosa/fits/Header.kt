@@ -1,6 +1,7 @@
 package nebulosa.fits
 
 import nebulosa.io.SeekableSource
+import nebulosa.io.source
 import nebulosa.log.loggerFor
 import okio.Buffer
 import java.io.EOFException
@@ -128,6 +129,16 @@ open class Header internal constructor(@JvmField internal val cards: LinkedList<
             val header = Header()
             header.read(source)
             return header
+        }
+
+        @JvmStatic
+        fun from(source: String): Header {
+            return from(source.toByteArray())
+        }
+
+        @JvmStatic
+        fun from(source: ByteArray): Header {
+            return from(source.source())
         }
 
         @JvmStatic
