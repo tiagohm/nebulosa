@@ -4,7 +4,7 @@
             <span class="p-float-label">
                 <p-dropdown [disabled]="connected" [options]="lastConnectedHosts" [ngModel]="connection" [editable]="true" optionLabel="host"
                             styleClass="border-0 p-inputtext-sm w-full" (ngModelChange)="hostChanged($event)"
-                            [autoDisplayFirst]="false">
+                            [autoDisplayFirst]="false" emptyMessage="No connection found">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex flex-row justify-content-between gap-1">
                             <span>{{ item.host }}</span>

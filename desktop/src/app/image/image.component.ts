@@ -17,7 +17,7 @@ import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
-import { DetectedStar, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverType } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
@@ -92,7 +92,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solverCenterRA = ''
     solverCenterDEC = ''
     solverRadius = 4
-    solverData?: ImageSolved
+    readonly solvedData = Object.assign({}, EMPTY_IMAGE_SOLVED)
     readonly solverTypes: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET_ONLINE']
     solverType: PlateSolverType
 
@@ -514,6 +514,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.detectedStarsIsVisible = false
         this.detectStarsMenuItem.toggleable = false
 
+        Object.assign(this.solvedData, EMPTY_IMAGE_SOLVED)
+
         this.histogram?.update([])
     }
 
@@ -675,8 +677,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         try {
             const options = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS)
             options.type = this.solverType
-            this.solverData = await this.api.solveImage(options, this.imageData.path!, this.solverBlind,
-                this.solverCenterRA, this.solverCenterDEC, this.solverRadius)
+
+            Object.assign(this.solvedData,
+                await this.api.solveImage(options, this.imageData.path!, this.solverBlind,
+                    this.solverCenterRA, this.solverCenterDEC, this.solverRadius))
 
             this.savePreference()
 
@@ -685,7 +689,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.pointMountHereMenuItem.disabled = false
         } catch {
             this.solved = false
-            this.solverData = undefined
+            Object.assign(this.solvedData, EMPTY_IMAGE_SOLVED)
             this.annotationMenuItem.disabled = true
             this.pointMountHereMenuItem.disabled = true
         } finally {
@@ -713,7 +717,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     frame(coordinate: EquatorialCoordinateJ2000) {
-        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000, fov: this.solverData!.width / 60, rotation: this.solverData!.orientation } })
+        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000, fov: this.solvedData!.width / 60, rotation: this.solvedData!.orientation } })
     }
 
     imageLoaded() {

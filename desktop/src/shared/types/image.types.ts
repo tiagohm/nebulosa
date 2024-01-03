@@ -45,6 +45,16 @@ export interface ImageSolved extends EquatorialCoordinateJ2000 {
     radius: number
 }
 
+export const EMPTY_IMAGE_SOLVED: ImageSolved = {
+    orientation: 0,
+    scale: 0,
+    width: 0,
+    height: 0,
+    radius: 0,
+    rightAscensionJ2000: '00h00m00s',
+    declinationJ2000: '+000°00\'00"'
+}
+
 export interface CoordinateInterpolation {
     ma: number[]
     md: number[]
