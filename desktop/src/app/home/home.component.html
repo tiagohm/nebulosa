@@ -1,20 +1,37 @@
 <div class="container px-4 pt-4">
     <div class="grid flex justify-content-center align-items-center">
-        <div class="col-6 px-0">
+        <div class="col-7 px-0">
             <span class="p-float-label">
-                <input [disabled]="connected" type="text" pInputText class="border-0 p-inputtext-sm w-full" placeholder="localhost"
-                       [(ngModel)]="host" />
+                <p-dropdown [disabled]="connected" [options]="lastConnectedHosts" [ngModel]="connection" [editable]="true" optionLabel="host"
+                            styleClass="border-0 p-inputtext-sm w-full" (ngModelChange)="hostChanged($event)"
+                            [autoDisplayFirst]="false">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div class="flex flex-row justify-content-between gap-1">
+                            <span>{{ item.host }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <div class="flex flex-column gap-1">
+                            <div class="flex flex-row justify-content-between gap-1">
+                                <span class="font-bold">{{ item.host }}:{{ item.port }}</span>
+                                <i class="mdi mdi-close" pTooltip="Remove" tooltipPosition="bottom" (click)="removeConnection(item, $event)"></i>
+                            </div>
+                            <div class="flex flex-row align-items-center gap-1 text-xs">
+                                <i class="mdi mdi-sm mdi-clock"></i>
+                                <span>{{ item.connectedAt | date:'dd-MM-yyyy HH:mm:ss' }}</span>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
                 <label>Host</label>
             </span>
         </div>
-        <div class="col-4 pr-0">
+        <div class="col-5 gap-2">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="connected" [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" placeholder="7624"
-                               [(ngModel)]="port" [format]="false" />
+                               [(ngModel)]="connection.port" [format]="false" />
                 <label>Port</label>
             </span>
-        </div>
-        <div class="col-2 justify-content-center px-0">
             <p-button *ngIf="connected" (onClick)="connect()" size="small" icon="mdi mdi-close" severity="danger" />
             <p-button *ngIf="!connected" (onClick)="connect()" size="small" icon="mdi mdi-connection" severity="info" />
         </div>

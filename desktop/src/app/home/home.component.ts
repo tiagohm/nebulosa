@@ -1,6 +1,7 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import path from 'path'
 import { MenuItem, MessageService } from 'primeng/api'
+import { AutoCompleteCompleteEvent } from 'primeng/autocomplete'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { ApiService } from '../../shared/services/api.service'
@@ -10,7 +11,7 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { Camera } from '../../shared/types/camera.types'
 import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { HomeWindowType } from '../../shared/types/home.types'
+import { ConnectionDetails, EMPTY_CONNECTION_DETAILS, HomeWindowType } from '../../shared/types/home.types'
 import { Mount } from '../../shared/types/mount.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { compareDevice } from '../../shared/utils/comparators'
@@ -23,13 +24,8 @@ type MappedDevice = {
     'WHEEL': FilterWheel
 }
 
-export const HOME_KEY = 'home'
 export const IMAGE_DIR_KEY = 'home.image.directory'
-
-export interface HomePreference {
-    host?: string
-    port?: number
-}
+export const LAST_CONNECTED_HOSTS_KEY = 'home.lastConnectedHosts'
 
 @Component({
     selector: 'app-home',
@@ -44,9 +40,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     @ViewChild('imageMenu')
     private readonly imageMenu!: DeviceListMenuComponent
 
-    host = ''
-    port = 7624
     connected = false
+    lastConnectedHosts: ConnectionDetails[] = []
+    connection: ConnectionDetails
 
     cameras: Camera[] = []
     mounts: Mount[] = []
@@ -185,15 +181,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 return this.wheels.length
             },
         )
+
+        this.lastConnectedHosts = storage.get<ConnectionDetails[]>(LAST_CONNECTED_HOSTS_KEY, [])
+        this.connection = Object.assign({}, this.lastConnectedHosts[0] ?? EMPTY_CONNECTION_DETAILS)
     }
 
     async ngAfterContentInit() {
         this.updateConnection()
-
-        const preference = this.storage.get<HomePreference>(HOME_KEY, {})
-
-        this.host = preference.host ?? 'localhost'
-        this.port = preference.port ?? 7624
 
         this.cameras = await this.api.cameras()
         this.mounts = await this.api.mounts()
@@ -204,19 +198,48 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     @HostListener('window:unload')
     ngOnDestroy() { }
 
+    hostChanged(event: string | ConnectionDetails) {
+        if (typeof event === 'string') {
+            this.connection.host = event
+        } else {
+            Object.assign(this.connection, event)
+        }
+    }
+
+    removeConnection(connection: ConnectionDetails, event: MouseEvent) {
+        const { host, port } = connection
+        const index = this.lastConnectedHosts.findIndex(e => e.host === host && e.port === port)
+
+        if (index >= 0) {
+            this.lastConnectedHosts.splice(index, 1)
+            this.storage.set(LAST_CONNECTED_HOSTS_KEY, this.lastConnectedHosts)
+        }
+
+        event.stopImmediatePropagation()
+    }
+
     async connect() {
         try {
             if (this.connected) {
                 await this.api.disconnect()
             } else {
-                await this.api.connect(this.host || 'localhost', this.port)
+                let { host, port } = this.connection
 
-                const preference: HomePreference = {
-                    host: this.host,
-                    port: this.port,
+                host ||= 'localhost'
+                port ||= 7624
+
+                await this.api.connect(host, port)
+
+                const index = this.lastConnectedHosts.findIndex(e => e.host === host && e.port === port)
+
+                if (index >= 0) {
+                    this.lastConnectedHosts.splice(index, 1)
                 }
 
-                this.storage.set(HOME_KEY, preference)
+                this.lastConnectedHosts.splice(0, 0, Object.assign({}, this.connection))
+                this.lastConnectedHosts[0].connectedAt = Date.now()
+
+                this.storage.set(LAST_CONNECTED_HOSTS_KEY, this.lastConnectedHosts)
             }
         } catch (e) {
             console.error(e)
@@ -225,6 +248,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         } finally {
             this.updateConnection()
         }
+    }
+
+    filterLastConnected(event: AutoCompleteCompleteEvent) {
+
     }
 
     private openDevice<K extends keyof MappedDevice>(type: K) {
