@@ -1,11 +1,14 @@
 package nebulosa.time
 
+import nebulosa.erfa.eraUt1Utc
 import nebulosa.math.*
 import java.io.InputStream
 import kotlin.math.max
 import kotlin.math.min
 
-abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
+// https://hpiers.obspm.fr/iers/bul/bulb/explanatory.pdf
+
+abstract class IERS : PolarMotion, TimeDelta, Collection<List<String>> {
 
     interface Column {
 
@@ -32,6 +35,14 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
 
     operator fun get(index: Int, column: Column) = data[index][column.ordinal]
 
+    fun time(index: Int) = time[index]
+
+    fun pmX(index: Int) = pmX[index]
+
+    fun pmY(index: Int) = pmY[index]
+
+    fun dut1(index: Int) = dut1[index]
+
     override val size
         get() = data.size
 
@@ -48,7 +59,7 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
         input: DoubleArray,
         vararg data: DoubleArray,
     ): DoubleArray {
-        val value = if (time is UT1 || time is UTC) time.value else time.tt.value
+        val value = time.value
         val i = input.search(value, rightSide = true)
         val k = max(1, min(i, input.size - 1))
         val t0 = input[k - 1]
@@ -86,25 +97,26 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
         return PairOfAngle(x, y)
     }
 
+    /**
+     * Computes UT1 - UTC in seconds at [time].
+     */
     override fun delta(time: InstantOfTime): Double {
-        val dt = interpolate(time, this.time, dut1)[0]
-        return if (dt.isNaN()) DeltaTime.Standard.delta(time)
-        else dt
+        return interpolate(time, this.time, dut1)[0].takeIf(Double::isFinite) ?: eraUt1Utc(time.whole, time.fraction, 0.0)[1]
     }
 
-    companion object : PolarMotion, DeltaTime {
+    companion object : PolarMotion, TimeDelta {
 
         @Volatile private var polarMotion: PolarMotion = PolarMotion.None
-        @Volatile private var deltaTime: DeltaTime = DeltaTime.Standard
+        @Volatile private var timeDelta: TimeDelta? = null
 
         fun attach(iers: IERS) {
             polarMotion = iers
-            deltaTime = iers
+            timeDelta = iers
         }
 
         fun detach() {
             polarMotion = PolarMotion.None
-            deltaTime = DeltaTime.Standard
+            timeDelta = null
         }
 
         override fun pmXY(time: InstantOfTime): PairOfAngle {
@@ -120,7 +132,7 @@ abstract class IERS : PolarMotion, DeltaTime, Collection<List<String>> {
         }
 
         override fun delta(time: InstantOfTime): Double {
-            return deltaTime.delta(time)
+            return timeDelta?.delta(time) ?: eraUt1Utc(time.whole, time.fraction, 0.0)[1]
         }
     }
 }

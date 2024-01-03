@@ -22,6 +22,6 @@ data class LocationEntity(
 ) : BoxEntity {
 
     fun geographicPosition(): GeographicPosition {
-        return Geoid.IERS2010.latLon(longitude.deg, latitude.deg, elevation.m)
+        return Geoid.IERS2010.lonLat(longitude.deg, latitude.deg, elevation.m)
     }
 }

@@ -60,7 +60,7 @@ class Matrix3DTest : StringSpec() {
         }
         "chain rotation" {
             val m0 = Matrix3D.IDENTITY.rotateZ(SEMICIRCLE).rotateX(-SEMICIRCLE).rotateY(SEMICIRCLE)
-            val m1 = Matrix3D.rotateZ(SEMICIRCLE).rotateX(-SEMICIRCLE).rotateY(SEMICIRCLE)
+            val m1 = Matrix3D.rotZ(SEMICIRCLE).rotateX(-SEMICIRCLE).rotateY(SEMICIRCLE)
             m0.matrix shouldBe m1.matrix
         }
         "plus matrix" {

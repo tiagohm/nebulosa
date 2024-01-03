@@ -1,4 +1,4 @@
-@file:Suppress("PrivatePropertyName")
+@file:Suppress("PrivatePropertyName", "NOTHING_TO_INLINE")
 
 package nebulosa.erfa
 
@@ -351,7 +351,7 @@ fun eraC2ixys(
     val e = if (r2 > 0.0) atan2(y, x).rad else 0.0
     val d = atan(sqrt(r2 / (1.0 - r2))).rad
 
-    return Matrix3D.rotateZ(e).rotateY(d).rotateZ(-(e + s))
+    return Matrix3D.rotZ(e).rotateY(d).rotateZ(-(e + s))
 }
 
 @Suppress("FloatingPointLiteralPrecision") private const val OM = 1.00273781191135448 * TAU / DAYSEC
@@ -364,7 +364,7 @@ fun eraC2ixys(
  * @param sp The TIO locator s' (radians)
  */
 fun eraPom00(xp: Angle, yp: Angle, sp: Angle): Matrix3D {
-    return Matrix3D.rotateZ(sp).rotateY(-xp).rotateX(-yp)
+    return Matrix3D.rotZ(sp).rotateY(-xp).rotateX(-yp)
 }
 
 /**
@@ -538,7 +538,7 @@ fun eraApco(
     refa: Angle, refb: Angle,
 ): AstrometryParameters {
     // Form the rotation matrix, CIRS to apparent [HA,Dec].
-    var r = Matrix3D.rotateZ(theta + sp).rotateY(-xp).rotateX(-yp).rotateZ(elong)
+    var r = Matrix3D.rotZ(theta + sp).rotateY(-xp).rotateX(-yp).rotateZ(elong)
 
     // Solve for local Earth rotation angle.
     val a = r[0, 0]
@@ -884,7 +884,7 @@ fun eraNut06a(tt1: Double, tt2: Double): PairOfAngle {
  * Form rotation matrix given the Fukushima-Williams angles.
  */
 fun eraFw2m(gamb: Angle, phib: Angle, psi: Angle, eps: Angle): Matrix3D {
-    return Matrix3D.rotateZ(gamb).rotateX(phib).rotateZ(-psi).rotateX(-eps)
+    return Matrix3D.rotZ(gamb).rotateX(phib).rotateZ(-psi).rotateX(-eps)
 }
 
 /**
@@ -1924,7 +1924,7 @@ fun eraEcm06(tt1: Double, tt2: Double): Matrix3D {
     // Precession-bias matrix, IAU 2006.
     val bp = eraPmat06(tt1, tt2)
     // Equatorial of date to ecliptic matrix.
-    val e = Matrix3D.rotateX(ob)
+    val e = Matrix3D.rotX(ob)
     // ICRS to ecliptic coordinates rotation matrix, IAU 2006.
     return e * bp
 }
@@ -1988,7 +1988,7 @@ fun eraP06e(tt1: Double, tt2: Double): PrecessionAnglesIAU2006 {
  * @param deps Nutation angle.
  */
 fun eraNumat(epsa: Angle, dpsi: Angle, deps: Angle): Matrix3D {
-    return Matrix3D.rotateX(epsa).rotateZ(-dpsi).rotateX(-(epsa + deps))
+    return Matrix3D.rotX(epsa).rotateZ(-dpsi).rotateX(-(epsa + deps))
 }
 
 /**
@@ -2269,3 +2269,313 @@ fun eraPb06(tt1: Double, tt2: Double): EulerAngles {
 
     return EulerAngles(zeta, z, theta)
 }
+
+inline fun roundToNearestWholeNumber(a: Double): Double {
+    return if (abs(a) < 0.5) 0.0 else if (a < 0.0) ceil(a - 0.5) else floor(a + 0.5)
+}
+
+fun eraJd2Cal(dj1: Double, dj2: Double): Calendar {
+    // Separate day and fraction (where -0.5 <= fraction < 0.5).
+    var d = roundToNearestWholeNumber(dj1)
+    val f1 = dj1 - d
+    var jd = d.toLong()
+    d = roundToNearestWholeNumber(dj2)
+    val f2 = dj2 - d
+    jd += d.toLong()
+
+
+    // Compute f1+f2+0.5 using compensated summation (Klein 2006).
+    var s = 0.5
+    var cs = 0.0
+    val v = doubleArrayOf(f1, f2)
+
+    for (x in v) {
+        val t = s + x
+        cs += if (abs(s) >= abs(x)) (s - t) + x else (x - t) + s
+        s = t
+
+        if (s >= 1.0) {
+            jd++
+            s -= 1.0
+        }
+    }
+
+    var f = s + cs
+    cs = f - s
+
+    // Deal with negative f.
+    if (f < 0.0) {
+        // Compensated summation: assume that |s| <= 1.0.
+        f = s + 1.0
+        cs += (1.0 - f) + s
+        s = f
+        f = s + cs
+        cs = f - s
+        jd--
+    }
+
+    // Deal with f that is 1.0 or more (when rounded to double).
+    if ((f - 1.0) >= -DBL_EPSILON / 4.0) {
+        // Compensated summation: assume that |s| <= 1.0.
+        val t = s - 1.0
+        cs += (s - t) - 1.0
+        s = t
+        f = s + cs
+
+        if (-DBL_EPSILON / 2.0 < f) {
+            jd++
+            f = max(f, 0.0)
+        }
+    }
+
+    // Express day in Gregorian calendar.
+    var l = jd + 68569L
+    val n = (4L * l) / 146097L
+    l -= (146097L * n + 3L) / 4L
+    val i = (4000L * (l + 1L)) / 1461001L
+    l -= (1461L * i) / 4L - 31L
+    val k = (80L * l) / 2447L
+    val id = (l - (2447L * k) / 80L).toInt()
+    l = k / 11L
+    val im = (k + 2L - 12L * l).toInt()
+    val iy = (100L * (n - 49L) + i + l).toInt()
+
+    return Calendar(iy, im, id, f)
+}
+
+/**
+ * Computes Gregorian Calendar to Modified Julian Date for 0hrs.
+ */
+fun eraCal2Jd(iy: Int, im: Int, id: Int): Double {
+    val my = (im - 14) / 12L
+    val iypmy = iy + my
+    return ((1461L * (iypmy + 4800L)) / 4L + (367L * (im - 2 - 12 * my)) / 12L - (3L * ((iypmy + 4900L) / 100L)) / 4L + id - 2432076L).toDouble()
+}
+
+private data class LeapSecond(@JvmField val year: Int, @JvmField val month: Int, @JvmField val delat: Double)
+
+private val LEAP_SECOND_CHANGES = arrayOf(
+    LeapSecond(1960, 1, 1.4178180),
+    LeapSecond(1961, 1, 1.4228180),
+    LeapSecond(1961, 8, 1.3728180),
+    LeapSecond(1962, 1, 1.8458580),
+    LeapSecond(1963, 11, 1.9458580),
+    LeapSecond(1964, 1, 3.2401300),
+    LeapSecond(1964, 4, 3.3401300),
+    LeapSecond(1964, 9, 3.4401300),
+    LeapSecond(1965, 1, 3.5401300),
+    LeapSecond(1965, 3, 3.6401300),
+    LeapSecond(1965, 7, 3.7401300),
+    LeapSecond(1965, 9, 3.8401300),
+    LeapSecond(1966, 1, 4.3131700),
+    LeapSecond(1968, 2, 4.2131700),
+    LeapSecond(1972, 1, 10.0),
+    LeapSecond(1972, 7, 11.0),
+    LeapSecond(1973, 1, 12.0),
+    LeapSecond(1974, 1, 13.0),
+    LeapSecond(1975, 1, 14.0),
+    LeapSecond(1976, 1, 15.0),
+    LeapSecond(1977, 1, 16.0),
+    LeapSecond(1978, 1, 17.0),
+    LeapSecond(1979, 1, 18.0),
+    LeapSecond(1980, 1, 19.0),
+    LeapSecond(1981, 7, 20.0),
+    LeapSecond(1982, 7, 21.0),
+    LeapSecond(1983, 7, 22.0),
+    LeapSecond(1985, 7, 23.0),
+    LeapSecond(1988, 1, 24.0),
+    LeapSecond(1990, 1, 25.0),
+    LeapSecond(1991, 1, 26.0),
+    LeapSecond(1992, 7, 27.0),
+    LeapSecond(1993, 7, 28.0),
+    LeapSecond(1994, 7, 29.0),
+    LeapSecond(1996, 1, 30.0),
+    LeapSecond(1997, 7, 31.0),
+    LeapSecond(1999, 1, 32.0),
+    LeapSecond(2006, 1, 33.0),
+    LeapSecond(2009, 1, 34.0),
+    LeapSecond(2012, 7, 35.0),
+    LeapSecond(2015, 7, 36.0),
+    LeapSecond(2017, 1, 37.0),
+)
+
+private val LEAP_SECOND_DRIFT = arrayOf(
+    doubleArrayOf(37300.0, 0.0012960),
+    doubleArrayOf(37300.0, 0.0012960),
+    doubleArrayOf(37300.0, 0.0012960),
+    doubleArrayOf(37665.0, 0.0011232),
+    doubleArrayOf(37665.0, 0.0011232),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(39126.0, 0.0025920),
+    doubleArrayOf(39126.0, 0.0025920),
+)
+
+/**
+ *  For a given UTC date, calculate Delta(AT) = TAI-UTC.
+ */
+fun eraDat(iy: Int, im: Int, id: Int, fd: Double): Double {
+    val djm = eraCal2Jd(iy, im, id)
+
+    // Combine year and month to form a date-ordered integer...
+    val m = 12 * iy + im
+
+    // ...and use it to find the preceding table entry.
+    val i = LEAP_SECOND_CHANGES.indexOfLast { m >= 12 * it.year + it.month }
+
+    // Prevent underflow warnings.
+    if (i < 0) return Double.NaN
+
+    // Get the Delta(AT).
+    var da = LEAP_SECOND_CHANGES[i].delat
+
+    // If pre-1972, adjust for drift.
+    if (LEAP_SECOND_CHANGES[i].year < 1972) {
+        da += (djm + fd - LEAP_SECOND_DRIFT[i][0]) * LEAP_SECOND_DRIFT[i][1]
+    }
+
+    return da
+}
+
+inline fun eraDat(cal: Calendar, fraction: Double = cal.fraction): Double {
+    return eraDat(cal.year, cal.month, cal.day, fraction)
+}
+
+fun eraUt1Utc(ut11: Double, ut12: Double, dut1: Double): DoubleArray {
+    val u1 = max(ut11, ut12)
+    var u2 = min(ut11, ut12)
+
+    var duts = dut1
+
+    // See if the UT1 can possibly be in a leap-second day.
+    var d1 = u1
+    var dats1 = 0.0
+
+    for (i in -1..3) {
+        var d2 = u2 + i
+        val cal = eraJd2Cal(d1, d2)
+        val dats2 = eraDat(cal, 0.0)
+        if (i == -1) dats1 = dats2
+        val ddats = dats2 - dats1
+
+        if (abs(ddats) >= 0.5) {
+            // Yes, leap second nearby: ensure UT1-UTC is "before" value.
+            if (ddats * duts >= 0.0) duts -= ddats
+
+            // UT1 for the start of the UTC day that ends in a leap.
+            d1 = MJD0
+            d2 = eraCal2Jd(cal.year, cal.month, cal.day)
+
+            val us1 = d1
+            val us2 = d2 - 1.0 + duts / DAYSEC
+
+            // Is the UT1 after this point?
+            val du = u1 - us1 + (u2 - us2)
+
+            if (du > 0.0) {
+                // Yes: fraction of the current UTC day that has elapsed.
+                val fd = du * DAYSEC / (DAYSEC + ddats)
+
+                // Ramp UT1-UTC to bring about ERFA's JD(UTC) convention.
+                duts += ddats * if (fd <= 1.0) fd else 1.0
+            }
+
+            break
+        }
+
+        dats1 = dats2
+    }
+
+    // Subtract the (possibly adjusted) UT1-UTC from UT1 to give UTC.
+    u2 -= duts / DAYSEC
+
+    return doubleArrayOf(u1, u2)
+}
+
+fun eraUtcTai(utc1: Double, utc2: Double): DoubleArray {
+    val u1 = max(utc1, utc2)
+    val u2 = min(utc1, utc2)
+
+    // Get TAI-UTC at 0h today.
+    val cal = eraJd2Cal(u1, u2)
+    val dat0 = eraDat(cal, 0.0)
+
+    // Get TAI-UTC at 12h today (to detect drift).
+    val dat12 = eraDat(cal, 0.5)
+
+    // Get TAI-UTC at 0h tomorrow (to detect jumps).
+    val calt = eraJd2Cal(u1 + 1.5, u2 - cal.fraction)
+    val dat24 = eraDat(calt, 0.0)
+
+    // Separate TAI-UTC change into per-day (DLOD) and any jump (DLEAP).
+    val dlod = 2.0 * (dat12 - dat0)
+    val dleap = dat24 - (dat0 + dlod)
+
+    // Remove any scaling applied to spread leap into preceding day.
+    var fd = cal.fraction * (DAYSEC + dleap) / DAYSEC
+
+    // Scale from (pre-1972) UTC seconds to SI seconds.
+    fd *= (DAYSEC + dlod) / DAYSEC
+
+    // Today's calendar date to 2-part JD.
+    val z = eraCal2Jd(cal.year, cal.month, cal.day)
+
+    // Assemble the TAI result, preserving the UTC split and order.
+    val a2 = (MJD0 - u1) + z + (fd + dat0 / DAYSEC)
+
+    return doubleArrayOf(u1, a2)
+}
+
+inline fun eraTaiUt1(tai1: Double, tai2: Double, dta: Double): DoubleArray {
+    return doubleArrayOf(tai1, tai2 + dta / DAYSEC)
+}
+
+fun eraUtcUt1(utc1: Double, utc2: Double, dut1: Double): DoubleArray {
+    val cal = eraJd2Cal(utc1, utc2)
+    val dat = eraDat(cal)
+
+    // Form UT1-TAI
+    val dta = dut1 - dat
+
+    val (tai1, tai2) = eraUtcTai(utc1, utc2)
+    return eraTaiUt1(tai1, tai2, dta)
+}
+
+fun eraTaiUtc(tai1: Double, tai2: Double): DoubleArray {
+    var u2 = tai2
+
+    // Iterate(though in most cases just once is enough).
+    repeat(3) {
+        // Guessed UTC to TAI.
+        val (g1, g2) = eraUtcTai(tai1, u2)
+
+        // Adjust guessed UTC.
+        u2 += tai1 - g1
+        u2 += tai2 - g2
+    }
+
+    return doubleArrayOf(tai1, u2)
+}
+
+inline fun eraTaiTt(tai1: Double, tai2: Double): DoubleArray {
+    return doubleArrayOf(tai1, tai2 + TTMINUSTAI / DAYSEC)
+}
+
+inline fun eraTtTai(tt1: Double, tt2: Double): DoubleArray {
+    return doubleArrayOf(tt1, tt2 - TTMINUSTAI / DAYSEC)
+}
+
+inline fun eraTtTdb(tt1: Double, tt2: Double, dtr: Double): DoubleArray {
+    return doubleArrayOf(tt1, tt2 + dtr / DAYSEC)
+}
+
+inline fun eraTdbTt(tdb1: Double, tdb2: Double, dtr: Double): DoubleArray {
+    return doubleArrayOf(tdb1, tdb2 - dtr / DAYSEC)
+}
+
+const val DBL_EPSILON = 2.220446049250313E-16

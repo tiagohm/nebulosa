@@ -4,8 +4,11 @@ import nebulosa.constants.DAYSEC
 import nebulosa.constants.TTMINUSTAI
 import nebulosa.erfa.eraDtDb
 
-object TDBMinusTT : DeltaTime {
+object TDBMinusTT : TimeDelta {
 
+    /**
+     * Computes TDB - TT in seconds at [time].
+     */
     override fun delta(time: InstantOfTime): Double {
         require(time is TDB || time is TT) { "invalid timescale: $time" }
         // First go from the current input time (which is either

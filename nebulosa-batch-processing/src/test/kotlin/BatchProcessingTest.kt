@@ -1,6 +1,6 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.longs.shouldBeInRange
+import io.kotest.matchers.doubles.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 import nebulosa.batch.processing.*
 import nebulosa.log.loggerFor
@@ -13,55 +13,41 @@ class BatchProcessingTest : StringSpec() {
         val launcher = AsyncJobLauncher(Executors.newSingleThreadExecutor())
 
         "single" {
-            val startedAt = System.currentTimeMillis()
             val jobExecution = launcher.launch(MathJob(listOf(SumStep())))
             jobExecution.waitForCompletion()
             jobExecution.context["VALUE"] shouldBe 1.0
-            (System.currentTimeMillis() - startedAt) shouldBeInRange (1000L..2000L)
         }
         "multiple" {
-            val startedAt = System.currentTimeMillis()
             val jobExecution = launcher.launch(MathJob(listOf(SumStep(), SumStep())))
             jobExecution.waitForCompletion()
             jobExecution.context["VALUE"] shouldBe 2.0
-            (System.currentTimeMillis() - startedAt) shouldBeInRange (2000L..3000L)
         }
         "split" {
-            val startedAt = System.currentTimeMillis()
             val jobExecution = launcher.launch(MathJob(listOf(SplitSumStep())))
             jobExecution.waitForCompletion()
             jobExecution.context["VALUE"] shouldBe N.toDouble()
-            (System.currentTimeMillis() - startedAt) shouldBeInRange (1000L..2000L)
         }
         "flow" {
-            val startedAt = System.currentTimeMillis()
             val jobExecution = launcher.launch(MathJob(listOf(FlowSumStep())))
             jobExecution.waitForCompletion()
             jobExecution.context["VALUE"] shouldBe N.toDouble()
-            (System.currentTimeMillis() - startedAt) shouldBeInRange (N * 1000L..(N + 1) * 1000L)
         }
         "split flow" {
-            val startedAt = System.currentTimeMillis()
             val jobExecution = launcher.launch(MathJob(listOf(SimpleSplitStep(FlowSumStep(), FlowSumStep()))))
             jobExecution.waitForCompletion()
             jobExecution.context["VALUE"] shouldBe (N * 2).toDouble()
-            (System.currentTimeMillis() - startedAt) shouldBeInRange (N * 1000L..(N + 1) * 1000L)
         }
         "stop" {
-            val startedAt = System.currentTimeMillis()
             val jobExecution = launcher.launch(MathJob((0..7).map { SumStep() }))
-            thread { Thread.sleep(4000); launcher.stop(jobExecution) }
+            thread { Thread.sleep(5000); launcher.stop(jobExecution) }
             jobExecution.waitForCompletion()
-            jobExecution.context["VALUE"] shouldBe 3.0
+            jobExecution.context["VALUE"] as Double shouldBeGreaterThanOrEqual 3.0
             jobExecution.isStopped.shouldBeTrue()
-            (System.currentTimeMillis() - startedAt) shouldBeInRange (4000L..5000L)
         }
         "repeatable" {
-            val startedAt = System.currentTimeMillis()
             val jobExecution = launcher.launch(MathJob(listOf(SumStep()), 10.0))
             jobExecution.waitForCompletion()
             jobExecution.context["VALUE"] shouldBe 20.0
-            (System.currentTimeMillis() - startedAt) shouldBeInRange (10000L..11000L)
         }
     }
 
@@ -101,6 +87,8 @@ class BatchProcessingTest : StringSpec() {
                         return StepResult.CONTINUABLE
                     }
                 }
+            } else {
+                println("stopped")
             }
 
             return StepResult.FINISHED

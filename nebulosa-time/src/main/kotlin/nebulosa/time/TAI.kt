@@ -1,7 +1,7 @@
 package nebulosa.time
 
-import nebulosa.constants.DAYSEC
-import nebulosa.constants.TTMINUSTAI
+import nebulosa.erfa.eraTaiTt
+import nebulosa.erfa.eraTaiUtc
 
 class TAI : TimeJD, Timescale {
 
@@ -17,11 +17,11 @@ class TAI : TimeJD, Timescale {
 
     override val ut1 get() = utc.ut1
 
-    override val utc by lazy { UTC(whole, fraction - TAIMinusUTC.delta(this) / DAYSEC) }
+    override val utc by lazy { UTC(eraTaiUtc(whole, fraction)) }
 
     override val tai get() = this
 
-    override val tt by lazy { TT(whole, fraction + TTMINUSTAI / DAYSEC) }
+    override val tt by lazy { TT(eraTaiTt(whole, fraction)) }
 
     override val tcg get() = tt.tcg
 

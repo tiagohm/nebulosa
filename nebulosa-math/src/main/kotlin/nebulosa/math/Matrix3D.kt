@@ -1,10 +1,7 @@
-@file:JvmName("Matrix3D")
-
 package nebulosa.math
 
-@JvmInline
 @Suppress("NOTHING_TO_INLINE")
-value class Matrix3D(@PublishedApi internal val matrix: DoubleArray) {
+open class Matrix3D(@PublishedApi @JvmField internal val matrix: DoubleArray) {
 
     constructor(
         a11: Double = 0.0, a12: Double = 0.0, a13: Double = 0.0,
@@ -173,11 +170,18 @@ value class Matrix3D(@PublishedApi internal val matrix: DoubleArray) {
             a21 == 0.0 && a22 == 0.0 && a23 == 0.0 &&
             a31 == 0.0 && a32 == 0.0 && a33 == 0.0
 
-    override fun toString(): String {
-        return "Matrix3D(a11=$a11, a12=$a12, a13=$a13, a21=$a21, a22=$a22, a23=$a23, a31=$a31, a32=$a32, a33=$a33)"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Matrix3D) return false
+
+        if (!matrix.contentEquals(other.matrix)) return false
+
+        return true
     }
 
-    inline fun equalsTo(other: Matrix3D) = matrix.contentEquals(other.matrix)
+    override fun hashCode() = matrix.contentHashCode()
+
+    override fun toString() = "Matrix3D(a11=$a11, a12=$a12, a13=$a13, a21=$a21, a22=$a22, a23=$a23, a31=$a31, a32=$a32, a33=$a33)"
 
     companion object {
 
@@ -188,21 +192,21 @@ value class Matrix3D(@PublishedApi internal val matrix: DoubleArray) {
         fun of(other: Matrix3D) = Matrix3D(other.matrix)
 
         @JvmStatic
-        fun rotateX(angle: Angle): Matrix3D {
+        fun rotX(angle: Angle): Matrix3D {
             val ca = angle.cos
             val sa = angle.sin
             return Matrix3D(1.0, 0.0, 0.0, 0.0, ca, sa, 0.0, -sa, ca)
         }
 
         @JvmStatic
-        fun rotateY(angle: Angle): Matrix3D {
+        fun rotY(angle: Angle): Matrix3D {
             val ca = angle.cos
             val sa = angle.sin
             return Matrix3D(ca, 0.0, -sa, 0.0, 1.0, 0.0, sa, 0.0, ca)
         }
 
         @JvmStatic
-        fun rotateZ(angle: Angle): Matrix3D {
+        fun rotZ(angle: Angle): Matrix3D {
             val ca = angle.cos
             val sa = angle.sin
             return Matrix3D(ca, sa, 0.0, -sa, ca, 0.0, 0.0, 0.0, 1.0)

@@ -9,9 +9,9 @@ import kotlin.math.sin
 
 @Suppress("NOTHING_TO_INLINE")
 data class SphericalCoordinate(
-    val theta: Angle,
-    val phi: Angle,
-    val distance: Distance,
+    @JvmField val theta: Angle,
+    @JvmField val phi: Angle,
+    @JvmField val distance: Distance,
 ) {
 
     val cartesian by lazy { CartesianCoordinate.of(theta, phi, distance) }

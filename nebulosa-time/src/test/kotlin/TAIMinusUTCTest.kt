@@ -1,10 +1,10 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.shouldBeExactly
-import nebulosa.time.DeltaTime
+import nebulosa.time.TimeDelta
 import nebulosa.time.TAIMinusUTC
 import nebulosa.time.TimeYMDHMS
 
-class TAIMinusUTCTest : StringSpec(), DeltaTime by TAIMinusUTC {
+class TAIMinusUTCTest : StringSpec(), TimeDelta by TAIMinusUTC {
 
     init {
         "delta" {

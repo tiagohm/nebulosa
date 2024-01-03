@@ -7,7 +7,9 @@ import nebulosa.erfa.eraSp00
 import nebulosa.math.*
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
+import nebulosa.time.IERS
 import nebulosa.time.InstantOfTime
+import kotlin.math.atan2
 import kotlin.math.tan
 
 class GeographicPosition(
@@ -18,8 +20,8 @@ class GeographicPosition(
     val model: Geoid,
 ) : ITRSPosition(itrs), Frame {
 
-    private val rLat by lazy { Matrix3D.rotateY(-latitude).flipX() }
-    private val rLatLon by lazy { rLat * Matrix3D.rotateZ(longitude) }
+    private val rLat by lazy { Matrix3D.rotY(-latitude).flipX() }
+    private val rLatLon by lazy { rLat * Matrix3D.rotZ(longitude) }
 
     override val center = 399
 
@@ -28,9 +30,15 @@ class GeographicPosition(
     /**
      * Returns this position’s Local Sidereal Time at the [time].
      */
-    fun lstAt(time: InstantOfTime): Angle {
-        val sprime = eraSp00(time.tt.whole, time.tt.fraction)
-        return (time.gast + longitude + sprime).normalized
+    fun lstAt(time: InstantOfTime, tio: Boolean = false): Angle {
+        return if (tio) {
+            val (sprime, xp, yp) = IERS.pmAngles(time)
+            val r = Matrix3D.rotZ(longitude).rotateX(-yp).rotateY(-xp).rotateZ(time.gast + sprime)
+            atan2(r[0, 1], r[0, 0])
+        } else {
+            val sprime = eraSp00(time.tt.whole, time.tt.fraction)
+            (time.gast + longitude + sprime).normalized
+        }
     }
 
     /**

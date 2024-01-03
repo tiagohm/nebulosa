@@ -31,7 +31,7 @@ data class PlanetaryFrame(
         segment: PckSegment,
     ) : this(
         center,
-        Matrix3D.rotateX(angles.first).rotateY(angles.second).rotateZ(angles.third),
+        Matrix3D.rotX(angles.first).rotateY(angles.second).rotateZ(angles.third),
         segment,
     )
 
@@ -40,7 +40,7 @@ data class PlanetaryFrame(
      */
     override fun rotationAt(time: InstantOfTime): Matrix3D {
         val (ra, dec, w) = segment.compute(time.tdb, derivative = false).position
-        val r = Matrix3D.rotateZ((-w).rad).rotateX((-dec).rad).rotateZ((-ra).rad)
+        val r = Matrix3D.rotZ((-w).rad).rotateX((-dec).rad).rotateZ((-ra).rad)
         return if (matrix != null) matrix * r else r
     }
 
@@ -54,7 +54,7 @@ data class PlanetaryFrame(
         val (ra, dec, w) = c
         val (radot, decdot, wdot) = rates
 
-        val r = Matrix3D.rotateZ((-w).rad)
+        val r = Matrix3D.rotZ((-w).rad)
             .rotateX((-dec).rad)
             .rotateZ((-ra).rad)
 

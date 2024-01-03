@@ -50,7 +50,7 @@ class MountService(private val imageBucket: ImageBucket) {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onMountGeographicCoordinateChanged(event: MountGeographicCoordinateChanged) {
-        val site = Geoid.IERS2010.latLon(event.device.longitude, event.device.latitude, event.device.elevation)
+        val site = Geoid.IERS2010.lonLat(event.device.longitude, event.device.latitude, event.device.elevation)
         this.site[event.device] = site
     }
 

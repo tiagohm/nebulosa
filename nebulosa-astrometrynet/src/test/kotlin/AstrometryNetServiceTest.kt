@@ -74,7 +74,7 @@ class AstrometryNetServiceTest : StringSpec() {
         }
         "wcs" {
             val text = service.wcs(7973139).execute().body()!!
-            text shouldContain "SIMPLE"
+            text.decodeToString() shouldContain "SIMPLE"
         }
     }
 }

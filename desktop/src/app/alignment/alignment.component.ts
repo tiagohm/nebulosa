@@ -69,7 +69,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.cameras.splice(index, 1)
-
                 }
             })
         })
@@ -91,7 +90,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.guideOutputs.splice(index, 1)
-
                 }
             })
         })

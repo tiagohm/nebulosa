@@ -27,7 +27,7 @@ class ErfaTest : StringSpec() {
             s[7] shouldBe (3.085711545336372503 plusOrMinus 1e-12)
             s[8] shouldBe (3.687721683977873065 plusOrMinus 1e-12)
 
-            s.equalsTo(Matrix3D.rotateX(0.3456789.rad) * r).shouldBeTrue()
+            (s == Matrix3D.rotX(0.3456789.rad) * r).shouldBeTrue()
         }
         "eraRy" {
             val r = Matrix3D(2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 3.0, 4.0, 5.0)
@@ -43,7 +43,7 @@ class ErfaTest : StringSpec() {
             s[7] shouldBe (4.779889022262298150 plusOrMinus 1e-12)
             s[8] shouldBe (5.381899160903798712 plusOrMinus 1e-12)
 
-            s.equalsTo(Matrix3D.rotateY(0.3456789.rad) * r).shouldBeTrue()
+            (s == Matrix3D.rotY(0.3456789.rad) * r).shouldBeTrue()
         }
         "eraRz" {
             val r = Matrix3D(2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 3.0, 4.0, 5.0)
@@ -59,7 +59,7 @@ class ErfaTest : StringSpec() {
             s[7] shouldBe (4.0 plusOrMinus 1e-12)
             s[8] shouldBe (5.0 plusOrMinus 1e-12)
 
-            s.equalsTo(Matrix3D.rotateZ(0.3456789.rad) * r).shouldBeTrue()
+            (s == Matrix3D.rotZ(0.3456789.rad) * r).shouldBeTrue()
         }
         "eraRxr" {
             val a = Matrix3D(2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 3.0, 4.0, 5.0)
@@ -673,6 +673,66 @@ class ErfaTest : StringSpec() {
             zeta shouldBe (-0.5092634016326478238e-3 plusOrMinus 1e-12)
             z shouldBe (-0.3602772060566044413e-3 plusOrMinus 1e-12)
             theta shouldBe (-0.3779735537167811177e-3 plusOrMinus 1e-12)
+        }
+        "eraJd2Cal" {
+            val (y, m, d, f) = eraJd2Cal(2400000.5, 50123.9999)
+            y shouldBeExactly 1996
+            m shouldBeExactly 2
+            d shouldBeExactly 10
+            f shouldBe (0.9999 plusOrMinus 1e-7)
+        }
+        "eraCal2Jd" {
+            eraCal2Jd(2003, 6, 1) shouldBeExactly 52791.0
+        }
+        "eraDat" {
+            eraDat(2003, 6, 1, 0.0) shouldBeExactly 32.0
+            eraDat(2008, 1, 17, 0.0) shouldBeExactly 33.0
+            eraDat(2017, 9, 1, 0.0) shouldBeExactly 37.0
+        }
+        "eraUt1Utc" {
+            val (u1, u2) = eraUt1Utc(2453750.5, 0.892104561, 0.3341)
+            u1 shouldBeExactly 2453750.5
+            u2 shouldBe (0.8921006941018518519 plusOrMinus 1e-12)
+        }
+        "eraUtcTai" {
+            val (u1, u2) = eraUtcTai(2453750.5, 0.892100694)
+            u1 shouldBeExactly 2453750.5
+            u2 shouldBe (0.8924826384444444444 plusOrMinus 1e-12)
+        }
+        "eraTaiUt1" {
+            val (u1, u2) = eraTaiUt1(2453750.5, 0.892482639, -32.6659)
+            u1 shouldBeExactly 2453750.5
+            u2 shouldBe (0.8921045614537037037 plusOrMinus 1e-12)
+        }
+        "eraUtcUt1" {
+            val (u1, u2) = eraUtcUt1(2453750.5, 0.892100694, 0.3341)
+            u1 shouldBeExactly 2453750.5
+            u2 shouldBe (0.8921045608981481481 plusOrMinus 1e-12)
+        }
+        "eraTaiUtc" {
+            val (u1, u2) = eraTaiUtc(2453750.5, 0.892482639)
+            u1 shouldBeExactly 2453750.5
+            u2 shouldBe (0.8921006945555555556 plusOrMinus 1e-12)
+        }
+        "eraTaiTt" {
+            val (u1, u2) = eraTaiTt(2453750.5, 0.892482639)
+            u1 shouldBeExactly 2453750.5
+            u2 shouldBe (0.892855139 plusOrMinus 1e-12)
+        }
+        "eraTtTai" {
+            val (u1, u2) = eraTtTai(2453750.5, 0.892482639)
+            u1 shouldBeExactly 2453750.5
+            u2 shouldBe (0.892110139 plusOrMinus 1e-12)
+        }
+        "eraTtTdb" {
+            val (u1, u2) = eraTtTdb(2453750.5, 0.892855139, -0.000201)
+            u1 shouldBeExactly 2453750.5
+            u2 shouldBe (0.8928551366736111111 plusOrMinus 1e-12)
+        }
+        "eraTdbTt" {
+            val (u1, u2) = eraTdbTt(2453750.5, 0.892855137, -0.000201)
+            u1 shouldBeExactly 2453750.5
+            u2 shouldBe (0.8928551393263888889 plusOrMinus 1e-12)
         }
     }
 }

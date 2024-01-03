@@ -4,8 +4,8 @@ import nebulosa.math.Vector3D
 
 @Suppress("NOTHING_TO_INLINE")
 data class PositionAndVelocity(
-    val position: Vector3D,
-    val velocity: Vector3D,
+    @JvmField val position: Vector3D,
+    @JvmField val velocity: Vector3D,
 ) {
 
     inline operator fun unaryMinus() = PositionAndVelocity(-position, -velocity)

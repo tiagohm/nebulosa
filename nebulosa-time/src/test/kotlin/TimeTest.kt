@@ -56,65 +56,77 @@ class TimeTest : StringSpec() {
             mdj.whole shouldBe (2450002.0 plusOrMinus 1e-8)
             mdj.fraction shouldBe (-0.021168981482333038 plusOrMinus 1e-12)
         }
-        "ut1 -> utc" {
-            val time = UT1(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).utc
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
-            time.fraction shouldBe (0.01642267426347935 plusOrMinus 1E-15) // ?
+        "ut1" {
+            val time = UT1(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0))
+
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
+            time.fraction shouldBe (0.0 plusOrMinus 1E-15)
+
+            with(time.utc) {
+                whole shouldBe (2459581.0 plusOrMinus 1E-16)
+                fraction shouldBe (1.2782876138691737e-06 plusOrMinus 1E-10)
+            }
         }
-        "utc -> tai" {
-            val time = UTC(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).tai
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
+        "utc" {
+            val time = UTC(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0))
+
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
+            time.fraction shouldBe (0.0 plusOrMinus 1E-15)
+
+            with(time.ut1) {
+                whole shouldBe (2459581.0 plusOrMinus 1E-16)
+                fraction shouldBe (-1.2782876157107722e-06 plusOrMinus 1E-10)
+            }
+        }
+        "utc to tai" {
+            val time = UTC(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).tai
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
             time.fraction shouldBe (0.017651886574074127 plusOrMinus 1E-16)
         }
-        "tai -> tt" {
-            val time = TAI(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).tt
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
+        "tai to tt" {
+            val time = TAI(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).tt
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
             time.fraction shouldBe (0.017596145833333358 plusOrMinus 1E-16)
         }
-        "tt -> tcg" {
-            val time = TT(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).tcg
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
+        "tt to tcg" {
+            val time = TT(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).tcg
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
             time.fraction shouldBe (0.01723535529790421 plusOrMinus 1E-16)
         }
-        "tt -> tdb" {
-            val time = TT(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).tdb
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
+        "tt to tdb" {
+            val time = TT(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).tdb
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
             time.fraction shouldBe (0.017223644633339433 plusOrMinus 1E-16)
         }
-        "tdb -> tcb" {
-            val time = TDB(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).tcb
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
+        "tdb to tcb" {
+            val time = TDB(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).tcb
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
             time.fraction shouldBe (0.01748415743557536 plusOrMinus 1E-16)
         }
-        "tcb -> tdb" {
-            val time = TCB(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).tdb
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
+        "tcb to tdb" {
+            val time = TCB(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).tdb
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
             time.fraction shouldBe (0.01696313423513064 plusOrMinus 1E-16)
         }
-        "tdb -> tt" {
-            val time = TDB(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).tt
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
+        "tdb to tt" {
+            val time = TDB(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).tt
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
             time.fraction shouldBe (0.01722364703332728 plusOrMinus 1E-16)
         }
-        "tcg -> tt" {
-            val time = TCG(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).tt
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
+        "tcg to tt" {
+            val time = TCG(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).tt
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
             time.fraction shouldBe (0.017211936368770664 plusOrMinus 1E-16)
         }
-        "tt -> tai" {
-            val time = TT(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).tai
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
+        "tt to tai" {
+            val time = TT(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).tai
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
             time.fraction shouldBe (0.016851145833333355 plusOrMinus 1E-16)
         }
-        "tai -> utc" {
-            val time = TAI(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).utc
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
+        "tai to utc" {
+            val time = TAI(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).utc
+            time.whole shouldBe (2459581.0 plusOrMinus 1E-16)
             time.fraction shouldBe (0.016795405092592586 plusOrMinus 1E-16)
-        }
-        "utc -> ut1" {
-            val time = UTC(TimeYMDHMS(2023, 1, 1, 12, 24, 48.123)).ut1
-            time.whole shouldBe (2459946.0 plusOrMinus 1E-16)
-            time.fraction shouldBe (0.01802461740318736 plusOrMinus 1E-16) // ?
         }
     }
 }
