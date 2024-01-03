@@ -27,5 +27,5 @@ class TDB : TimeJD, Timescale {
 
     override val tdb get() = this
 
-    override val tcb by lazy { TCB(eraTdbTcb(whole, fraction)) }
+    override val tcb by lazy { eraTdbTcb(whole, fraction).let { TCB(it[0], it[1]) } }
 }

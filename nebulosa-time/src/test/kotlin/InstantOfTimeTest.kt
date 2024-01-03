@@ -25,7 +25,7 @@ class InstantOfTimeTest : StringSpec() {
             val angle = "99 34 58.365".deg
             TimeYMDHMS(2023, 1, 30, 22).era.toDegrees shouldBe (angle.toDegrees plusOrMinus 1e-6)
         }
-        "as datetime" {
+        "datetime" {
             var ymdhms = TimeYMDHMS(2023, 1, 30, 22, 45, 33.5)
             var datetime = ymdhms.asDateTime()
             datetime.year shouldBeExactly 2023
