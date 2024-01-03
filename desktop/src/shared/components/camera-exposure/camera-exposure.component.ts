@@ -28,7 +28,9 @@ export class CameraExposureComponent {
         this.exposure.progress = event.exposureProgress
         this.exposure.count = event.exposureCount
 
-        if (event.state === 'WAITING') {
+        if (event.state === 'EXPOSURING') {
+            this.state = 'EXPOSURING'
+        } else if (event.state === 'WAITING') {
             this.wait.remainingTime = event.waitRemainingTime
             this.wait.progress = event.waitProgress
             this.state = event.state

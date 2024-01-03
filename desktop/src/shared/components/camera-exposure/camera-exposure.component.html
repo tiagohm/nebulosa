@@ -7,6 +7,7 @@
               pTooltip="Elapsed time" tooltipPosition="bottom">
             <i class="mdi mdi-timer-sand-complete"></i> {{ capture.elapsedTime | exposureTime }}
         </span>
+        @if (capture.amount > 0) {
         <span class="bg-green-300 state time flex align-items-center gap-1 justify-content-center text-gray-900"
               pTooltip="Remaining time" tooltipPosition="bottom">
             <i class="mdi mdi-timer-sand"></i> {{ capture.remainingTime | exposureTime }}
@@ -14,10 +15,11 @@
         <span class="bg-green-300 state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
             <i class="mdi mdi-percent"></i> {{ capture.progress * 100 | number:'1.1-1' }}
         </span>
+        }
     </span>
 </span>
 <span class="flex flex-column">
-    <span class="text-left flex align-items-center gap-1">
+    <span class="text-left flex align-items-center gap-1 mb-1">
         <i class="mdi mdi-information text-blue-600"></i> {{ (state ?? 'IDLE') | enum | lowercase }}
     </span>
     <span class="flex align-items-center state-group exposure" *ngIf="state === 'EXPOSURING'">
