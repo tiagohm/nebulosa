@@ -16,15 +16,15 @@ export class HistogramComponent implements AfterViewInit {
         this.ctx = this.canvas.nativeElement.getContext('2d')!
     }
 
-    get data() {
-        return []
-    }
-
     update(data: number[], dontClear: boolean = false) {
         const canvas = this.canvas.nativeElement
 
-        if (!dontClear) {
+        if (!dontClear || !data.length) {
             this.ctx.clearRect(0, 0, canvas.width, canvas.height)
+        }
+
+        if (!data.length) {
+            return
         }
 
         const max = data.reduce((a, b) => Math.max(a, b))
