@@ -82,7 +82,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     autoStretched = true
     showStretchingDialog = false
-    stretchShadowhHighlight = [0, 65536]
+    stretchShadowHighlight = [0, 65536]
     stretchMidtone = 32768
 
     showSolverDialog = false
@@ -550,7 +550,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         const image = this.image.nativeElement
         const scnrEnabled = this.scnrChannel !== 'NONE'
         const { info, blob } = await this.api.openImage(path, this.imageData.camera, this.calibrate, this.debayer, this.autoStretched,
-            this.stretchShadowhHighlight[0] / 65536, this.stretchShadowhHighlight[1] / 65536, this.stretchMidtone / 65536,
+            this.stretchShadowHighlight[0] / 65536, this.stretchShadowHighlight[1] / 65536, this.stretchMidtone / 65536,
             this.mirrorHorizontal, this.mirrorVertical,
             this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMethod)
 
@@ -562,8 +562,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solverBlind = !this.solverCenterRA || !this.solverCenterDEC
 
         if (this.autoStretched) {
-            this.stretchShadowhHighlight[0] = Math.trunc(info.stretchShadow * 65536)
-            this.stretchShadowhHighlight[1] = Math.trunc(info.stretchHighlight * 65536)
+            this.stretchShadowHighlight = [Math.trunc(info.stretchShadow * 65536), Math.trunc(info.stretchHighlight * 65536)]
             this.stretchMidtone = Math.trunc(info.stretchMidtone * 65536)
         }
 
@@ -640,8 +639,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     resetStretch() {
-        this.stretchShadowhHighlight[0] = 0
-        this.stretchShadowhHighlight[1] = 65536
+        this.stretchShadowHighlight = [0, 65536]
         this.stretchMidtone = 32768
 
         this.stretchImage()

@@ -236,17 +236,17 @@
             <div class="flex flex-row gap-2 align-items-center justify-content-between">
                 <span class="p-float-label">
                     <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchShadowhHighlight[0]" locale="en" />
+                                   [(ngModel)]="stretchShadowHighlight[0]" locale="en" />
                     <label>Shadow</label>
                 </span>
                 <span class="p-float-label">
                     <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchShadowhHighlight[1]" locale="en" />
+                                   [(ngModel)]="stretchShadowHighlight[1]" locale="en" />
                     <label>Highlight</label>
                 </span>
             </div>
 
-            <p-slider class="mt-3 px-2" [min]="0" [max]="65536" [(ngModel)]="stretchShadowhHighlight" [range]="true" />
+            <p-slider class="mt-3 px-2" [min]="0" [max]="65536" [(ngModel)]="stretchShadowHighlight" [range]="true" />
         </div>
         <div class="col-4 flex flex-column">
             <div class="text-center w-full">
