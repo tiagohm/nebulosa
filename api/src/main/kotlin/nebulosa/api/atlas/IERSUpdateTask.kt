@@ -5,6 +5,8 @@ import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
+import nebulosa.time.IERSAB
+import nebulosa.time.IERSB
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpHeaders
@@ -24,36 +26,43 @@ class IERSUpdateTask(
 
     @Scheduled(fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
     override fun run() {
-        val finals2000A = Path.of("$dataPath", "finals2000A.all")
-
-        finals2000A.download()
-
         val iersa = IERSA()
-        finals2000A.inputStream().use(iersa::load)
-        IERS.attach(iersa)
+        val iersb = IERSB()
+
+        with(Path.of("$dataPath", "finals2000A.all")) {
+            download(IERSA.URL, IERSA_UPDATED_AT_KEY)
+            inputStream().use(iersa::load)
+        }
+
+        with(Path.of("$dataPath", "eopc04.1962-now.txt")) {
+            download(IERSB.URL, IERSB_UPDATED_AT_KEY)
+            inputStream().use(iersb::load)
+        }
+
+        IERS.attach(IERSAB(iersa, iersb))
     }
 
-    private fun Path.download() {
+    private fun Path.download(url: String, key: String) {
         try {
-            var request = Request.Builder().head().url(IERSA.URL).build()
+            var request = Request.Builder().head().url(url).build()
 
             var modifiedAt = httpClient.newCall(request).execute()
                 .use { it.headers.getDate(HttpHeaders.LAST_MODIFIED) }
 
-            if (modifiedAt != null && "$modifiedAt" == preferenceService.getText(UPDATED_AT_KEY)) {
-                LOG.info("finals2000A.all is up to date. modifiedAt={}", modifiedAt)
+            if (modifiedAt != null && "$modifiedAt" == preferenceService.getText(key)) {
+                LOG.info("$url is up to date. modifiedAt={}", modifiedAt)
                 return
             }
 
             request = request.newBuilder().get().build()
 
-            LOG.info("downloading finals2000A.all")
+            LOG.info("downloading $url")
 
             httpClient.newCall(request).execute().use {
                 it.body!!.byteStream().transferAndClose(outputStream())
                 modifiedAt = it.headers.getDate(HttpHeaders.LAST_MODIFIED)
-                preferenceService.putText(UPDATED_AT_KEY, "$modifiedAt")
-                LOG.info("finals2000A.all downloaded. modifiedAt={}", modifiedAt)
+                preferenceService.putText(key, "$modifiedAt")
+                LOG.info("$url downloaded. modifiedAt={}", modifiedAt)
             }
         } catch (e: Throwable) {
             LOG.error("failed to download finals2000A.all", e)
@@ -62,7 +71,8 @@ class IERSUpdateTask(
 
     companion object {
 
-        const val UPDATED_AT_KEY = "IERS.UPDATED_AT"
+        const val IERSA_UPDATED_AT_KEY = "IERSA.UPDATED_AT"
+        const val IERSB_UPDATED_AT_KEY = "IERSB.UPDATED_AT"
 
         @JvmStatic private val LOG = loggerFor<IERSUpdateTask>()
     }
