@@ -159,6 +159,12 @@ function createWindow(options: OpenWindow<any>) {
         }
     })
 
+    window.webContents.on('before-input-event', (event, input) => {
+        window?.webContents.send('KEY.PRESSED', input)
+        console.info('key was pressed', input)
+        event.preventDefault()
+    })
+
     window.on('close', () => {
         const homeWindow = browserWindows.get('home')
 

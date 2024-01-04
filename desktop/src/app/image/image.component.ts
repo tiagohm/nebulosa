@@ -167,14 +167,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-auto-fix',
         checked: true,
         command: () => {
-            this.autoStretched = !this.autoStretched
-            this.autoStretchMenuItem.checked = this.autoStretched
-
-            if (!this.autoStretched) {
-                this.resetStretch()
-            } else {
-                this.loadImage()
-            }
+            this.toggleStretch()
         },
     }
 
@@ -214,9 +207,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-invert-colors',
         checked: false,
         command: () => {
-            this.invert = !this.invert
-            this.invertMenuItem.checked = this.invert
-            this.loadImage()
+            this.invertImage()
         },
     }
 
@@ -264,8 +255,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-bullseye',
         checked: false,
         command: () => {
-            this.crossHair = !this.crossHair
-            this.crosshairMenuItem.checked = this.crossHair
+            this.toggleCrosshair()
         },
     }
 
@@ -410,6 +400,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             ngZone.run(() => {
                 this.loadImageFromData(event)
             })
+        })
+
+        electron.on('KEY.PRESSED', event => {
+            if (event.control && !event.shift && !event.alt) {
+                switch (event.key) {
+                    case 'a': return this.toggleStretch()
+                    case 'i': return this.invertImage()
+                    case 'x': return this.toggleCrosshair()
+                    case '-': return this.zoomOut()
+                    case '=': return this.zoomIn()
+                    case '0': return this.resetZoom()
+                }
+            }
         })
 
         this.solverType = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS).type
@@ -645,13 +648,52 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.stretchImage()
     }
 
+    toggleStretch() {
+        this.autoStretched = !this.autoStretched
+        this.autoStretchMenuItem.checked = this.autoStretched
+
+        if (!this.autoStretched) {
+            this.resetStretch()
+        } else {
+            this.loadImage()
+        }
+    }
+
     stretchImage() {
         this.disableAutoStretch()
         this.loadImage()
     }
 
+    invertImage() {
+        this.invert = !this.invert
+        this.invertMenuItem.checked = this.invert
+        this.loadImage()
+    }
+
     scnrImage() {
         this.loadImage()
+    }
+
+    toggleCrosshair() {
+        this.crossHair = !this.crossHair
+        this.crosshairMenuItem.checked = this.crossHair
+    }
+
+    zoomIn() {
+        if (!this.panZoom) return
+        const { scale } = this.panZoom.getTransform()
+        this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, scale * 1.1)
+    }
+
+    zoomOut() {
+        if (!this.panZoom) return
+        const { scale } = this.panZoom.getTransform()
+        this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, scale * 0.9)
+    }
+
+    resetZoom() {
+        if (!this.panZoom) return
+        this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, 1.0)
     }
 
     private async retrieveCoordinateInterpolation() {
