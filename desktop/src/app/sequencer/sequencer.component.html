@@ -160,18 +160,21 @@
         </div>
     </div>
     <div class="grid mt-0">
-        <div class="col-12 gap-1 justify-content-end">
+        <div class="col-12 justify-content-end">
             <ng-container *ngIf="event && running">
-                <span class="bg-green-300 border-round-md text-gray-900 text-sm text-center" style="min-width: 62px"
+                <span class="bg-orange-500 border-round-left-md text-gray-900 line-height-3 text-sm text-center" style="min-width: 48px">
+                    <i class="mdi mdi-counter mdi-sm"></i> {{ event.id }}
+                </span>
+                <span class="bg-green-300 text-gray-900 line-height-3 text-sm text-center" style="min-width: 62px"
                       pTooltip="Elapsed time" tooltipPosition="bottom">
-                    <i class="mdi mdi-timer-sand-complete mdi-progress-indicator"></i> {{ event.elapsedTime | exposureTime }}
+                    <i class="mdi mdi-timer-sand-complete mdi-sm"></i> {{ event.elapsedTime | exposureTime }}
                 </span>
-                <span class="bg-green-300 border-round-md text-gray-900 text-sm text-center" style="min-width: 62px"
+                <span class="bg-green-300 text-gray-900 line-height-3 text-sm text-center" style="min-width: 62px"
                       pTooltip="Remaining time" tooltipPosition="bottom">
-                    <i class="mdi mdi-timer-sand mdi-progress-indicator"></i> {{ event.remainingTime | exposureTime }}
+                    <i class="mdi mdi-timer-sand mdi-sm"></i> {{ event.remainingTime | exposureTime }}
                 </span>
-                <span class="bg-green-300 border-round-md text-gray-900 text-sm text-center" style="min-width: 52px">
-                    <i class="mdi mdi-percent mdi-progress-indicator"></i> {{ event.progress * 100 | number:'1.1-1' }}
+                <span class="bg-green-300 border-round-right-md text-gray-900 line-height-3 text-sm text-center" style="min-width: 52px">
+                    <i class="mdi mdi-percent mdi-sm"></i> {{ event.progress * 100 | number:'1.1-1' }}
                 </span>
             </ng-container>
         </div>
