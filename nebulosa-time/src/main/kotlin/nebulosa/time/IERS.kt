@@ -1,8 +1,10 @@
 package nebulosa.time
 
+import nebulosa.constants.MJD0
 import nebulosa.erfa.eraUt1Utc
 import nebulosa.math.*
 import java.io.InputStream
+import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
@@ -21,7 +23,7 @@ abstract class IERS : PolarMotion, TimeDelta, Collection<List<String>> {
 
     protected val data = ArrayList<List<String>>()
 
-    protected abstract val columns: List<Column>
+    abstract val columns: List<Column>
 
     protected abstract val time: DoubleArray
 
@@ -33,7 +35,7 @@ abstract class IERS : PolarMotion, TimeDelta, Collection<List<String>> {
 
     protected abstract fun canUseThisLine(line: String): Boolean
 
-    operator fun get(index: Int, column: Column) = data[index][column.ordinal]
+    open operator fun get(index: Int, column: Column) = data[index][column.ordinal]
 
     fun time(index: Int) = time[index]
 
@@ -60,18 +62,23 @@ abstract class IERS : PolarMotion, TimeDelta, Collection<List<String>> {
         vararg data: DoubleArray,
     ): DoubleArray {
         val value = time.value
-        val i = input.search(value, rightSide = true)
+        val mjd = floor(time.whole - MJD0 + time.fraction)
+        val utc = time.whole - (MJD0 + mjd) + time.fraction
+
+        val i = input.search(mjd, rightSide = true)
         val k = max(1, min(i, input.size - 1))
         val t0 = input[k - 1]
         val t1 = input[k]
 
         return DoubleArray(data.size) {
-            if (i <= 0) Double.NaN
-            else if (i >= input.size) Double.NaN
+            // Do not extrapolate outside range, instead just propagate last values.
+            if (i <= 0) data[it].first()
+            else if (i >= input.size) data[it].last()
             else {
                 val a = data[it][k - 1]
                 val b = data[it][k]
                 a + (b - a) / (t1 - t0) * (value - t0)
+                a + (mjd - t0 + utc) / (t1 - t0) * (b - a)
             }
         }
     }
@@ -101,7 +108,7 @@ abstract class IERS : PolarMotion, TimeDelta, Collection<List<String>> {
      * Computes UT1 - UTC in seconds at [time].
      */
     override fun delta(time: InstantOfTime): Double {
-        return interpolate(time, this.time, dut1)[0].takeIf(Double::isFinite) ?: eraUt1Utc(time.whole, time.fraction, 0.0)[1]
+        return interpolate(time, this.time, dut1)[0]
     }
 
     companion object : PolarMotion, TimeDelta {

@@ -1,7 +1,5 @@
 package nebulosa.time
 
-import nebulosa.constants.DAYSEC
-import nebulosa.constants.MJD0
 import java.io.InputStream
 
 /**
@@ -54,14 +52,14 @@ class IERSA : IERS() {
     override lateinit var dut1: DoubleArray
         private set
 
-    override val columns = Column.entries
+    override val columns: List<Column> = Column.entries
 
     override fun canUseThisLine(line: String) = line.trim().length > 17 && (line[16] == 'I' || line[16] == 'P')
 
     override fun load(source: InputStream) {
         super.load(source)
 
-        time = DoubleArray(size) { this[it, Column.MJD].toDouble() + (TT_MINUS_UTC / DAYSEC + MJD0) }
+        time = DoubleArray(size) { this[it, Column.MJD].toDouble() }
         pmX = DoubleArray(size) { compute(Column.PM_X_A, Column.PM_X_B, it) }
         pmY = DoubleArray(size) { compute(Column.PM_Y_A, Column.PM_Y_B, it) }
         dut1 = DoubleArray(size) { compute(Column.DUT1_A, Column.DUT1_B, it) }
@@ -71,16 +69,9 @@ class IERSA : IERS() {
 
         const val URL = "https://datacenter.iers.org/data/9/finals2000A.all"
 
-        private const val TT_MINUS_UTC = 32.184 + 12.0
-
         @JvmStatic
         private fun IERS.compute(a: IERS.Column, b: IERS.Column, index: Int): Double {
-            val d = this[index, b].toDoubleOrNull()
-            val c = this[index, a].toDoubleOrNull() ?: return d ?: 0.0
-
-            if (d == null) return c
-
-            return (c + d) / 2
+            return this[index, b].toDoubleOrNull() ?: this[index, a].toDoubleOrNull() ?: 0.0
         }
     }
 }
