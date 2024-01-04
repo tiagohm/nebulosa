@@ -58,7 +58,9 @@ data class SequencerJob(
 
         val usedEntries = plan.entries.filter { it.enabled }
 
-        if (plan.captureMode == SequenceCaptureMode.FULLY) {
+        require(usedEntries.isNotEmpty()) { "no entries found" }
+
+        if (plan.captureMode == SequenceCaptureMode.FULLY || usedEntries.size == 1) {
             for (i in usedEntries.indices) {
                 val request = mapRequest(usedEntries[i])
                 val cameraExposureStep = CameraExposureStep(request)
