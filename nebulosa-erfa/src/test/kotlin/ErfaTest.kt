@@ -734,5 +734,15 @@ class ErfaTest : StringSpec() {
             u1 shouldBeExactly 2453750.5
             u2 shouldBe (0.8928551393263888889 plusOrMinus 1e-12)
         }
+        "eraUt1Tai" {
+            val (u1, u2) = eraUt1Tai(2453750.5, 0.892104561, -32.6659)
+            u1 shouldBeExactly 2453750.5
+            u2 shouldBe (0.8924826385462962963 plusOrMinus 1e-12)
+        }
+        "eraTtUt1" {
+            val (u1, u2) = eraTtUt1(2453750.5, 0.892855139, 64.8499)
+            u1 shouldBeExactly 2453750.5
+            u2 shouldBe (0.8921045614537037037 plusOrMinus 1e-12)
+        }
     }
 }

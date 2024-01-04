@@ -43,7 +43,11 @@ sealed class InstantOfTime : Timescale {
 
     abstract operator fun plus(days: Double): InstantOfTime
 
+    abstract operator fun plus(delta: TimeDelta): InstantOfTime
+
     abstract operator fun minus(days: Double): InstantOfTime
+
+    abstract operator fun minus(delta: TimeDelta): InstantOfTime
 
     fun asYearMonthDayAndFraction(cutoff: JulianCalendarCutOff = JulianCalendarCutOff.NONE): Pair<IntArray, DoubleArray> {
         val a = whole.toInt()
@@ -132,6 +136,22 @@ sealed class InstantOfTime : Timescale {
      * Returns the mean obliquity of the ecliptic in radians.
      */
     val meanObliquity by lazy { eraObl06(tt.whole, tt.fraction) }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is InstantOfTime) return false
+
+        if (whole != other.whole) return false
+        if (fraction != other.fraction) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = whole.hashCode()
+        result = 31 * result + fraction.hashCode()
+        return result
+    }
 
     override fun toString() = "${javaClass.simpleName}(whole=$whole, fraction=$fraction)"
 }

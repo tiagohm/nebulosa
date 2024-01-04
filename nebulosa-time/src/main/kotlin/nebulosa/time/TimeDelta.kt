@@ -11,10 +11,10 @@ import java.nio.file.Path
 import kotlin.io.path.writeBytes
 import kotlin.math.abs
 
-interface TimeDelta {
+fun interface TimeDelta {
 
     /**
-     * Computes de ΔT in seconds at [time].
+     * Computes the ΔT in seconds at [time].
      */
     fun delta(time: InstantOfTime): Double
 

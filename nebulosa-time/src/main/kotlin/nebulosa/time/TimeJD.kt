@@ -4,19 +4,31 @@ import nebulosa.math.twoProduct
 import nebulosa.math.twoSum
 import kotlin.math.round
 
-open class TimeJD internal constructor(normalized: DoubleArray) : InstantOfTime() {
+open class TimeJD internal constructor(private val jd: DoubleArray, normalize: Boolean = false) : InstantOfTime() {
 
-    final override val whole = normalized[0]
+    final override val whole
+        get() = jd[0]
 
-    final override val fraction = normalized[1]
+    final override val fraction
+        get() = jd[1]
 
-    constructor(whole: Double, fraction: Double = 0.0) : this(normalize(whole, fraction))
+    constructor(whole: Double, fraction: Double = 0.0) : this(doubleArrayOf(whole, fraction), true)
 
     constructor(time: InstantOfTime) : this(doubleArrayOf(time.whole, time.fraction))
 
+    init {
+        if (normalize) {
+            normalize(jd[0], jd[1], output = jd)
+        }
+    }
+
     override fun plus(days: Double) = TimeJD(whole + days, fraction)
 
+    override fun plus(delta: TimeDelta) = TimeJD(whole, fraction + delta.delta(this))
+
     override fun minus(days: Double) = TimeJD(whole - days, fraction)
+
+    override fun minus(delta: TimeDelta) = TimeJD(whole, fraction - delta.delta(this))
 
     override val ut1 get() = UT1(whole, fraction)
 
@@ -57,6 +69,7 @@ open class TimeJD internal constructor(normalized: DoubleArray) : InstantOfTime(
             whole: Double,
             fraction: Double = 0.0,
             divisor: Double = Double.NaN,
+            output: DoubleArray? = null,
         ): DoubleArray {
             var (sum, err) = twoSum(whole, fraction)
 
@@ -80,7 +93,13 @@ open class TimeJD internal constructor(normalized: DoubleArray) : InstantOfTime(
             var (extra1, frac1) = twoSum(sum, -day)
             frac1 += extra1 + err
 
-            return doubleArrayOf(day, frac1)
+            return if (output != null) {
+                output[0] = day
+                output[1] = frac1
+                output
+            } else {
+                doubleArrayOf(day, frac1)
+            }
         }
     }
 }

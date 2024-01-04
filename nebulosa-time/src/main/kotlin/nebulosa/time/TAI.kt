@@ -5,7 +5,7 @@ import nebulosa.erfa.eraTaiUtc
 
 class TAI : TimeJD, Timescale {
 
-    constructor(normalized: DoubleArray) : super(normalized)
+    constructor(jd: DoubleArray, normalize: Boolean = false) : super(jd, normalize)
 
     constructor(whole: Double, fraction: Double = 0.0) : super(whole, fraction)
 
@@ -13,15 +13,19 @@ class TAI : TimeJD, Timescale {
 
     override fun plus(days: Double) = TAI(whole + days, fraction)
 
+    override fun plus(delta: TimeDelta) = TAI(whole, fraction + delta.delta(this))
+
     override fun minus(days: Double) = TAI(whole - days, fraction)
+
+    override fun minus(delta: TimeDelta) = TAI(whole, fraction - delta.delta(this))
 
     override val ut1 get() = utc.ut1
 
-    override val utc by lazy { eraTaiUtc(whole, fraction).let { UTC(it[0], it[1]) } }
+    override val utc by lazy { UTC(eraTaiUtc(whole, fraction), true) }
 
     override val tai get() = this
 
-    override val tt by lazy { eraTaiTt(whole, fraction).let { TT(it[0], it[1]) } }
+    override val tt by lazy { TT(eraTaiTt(whole, fraction), true) }
 
     override val tcg get() = tt.tcg
 

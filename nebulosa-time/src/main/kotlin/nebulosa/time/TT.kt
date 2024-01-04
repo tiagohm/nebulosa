@@ -1,12 +1,12 @@
 package nebulosa.time
 
-import nebulosa.constants.DAYSEC
 import nebulosa.erfa.eraTtTai
 import nebulosa.erfa.eraTtTcg
+import nebulosa.erfa.eraTtTdb
 
 class TT : TimeJD, Timescale {
 
-    constructor(normalized: DoubleArray) : super(normalized)
+    constructor(jd: DoubleArray, normalize: Boolean = false) : super(jd, normalize)
 
     constructor(whole: Double, fraction: Double = 0.0) : super(whole, fraction)
 
@@ -14,19 +14,23 @@ class TT : TimeJD, Timescale {
 
     override fun plus(days: Double) = TT(whole + days, fraction)
 
+    override fun plus(delta: TimeDelta) = TT(whole, fraction + delta.delta(this))
+
     override fun minus(days: Double) = TT(whole - days, fraction)
+
+    override fun minus(delta: TimeDelta) = TT(whole, fraction - delta.delta(this))
 
     override val ut1 get() = utc.ut1
 
     override val utc get() = tai.utc
 
-    override val tai by lazy { eraTtTai(whole, fraction).let { TAI(it[0], it[1]) } }
+    override val tai by lazy { TAI(eraTtTai(whole, fraction), true) }
 
     override val tt get() = this
 
-    override val tcg by lazy { eraTtTcg(whole, fraction).let { TCG(it[0], it[1]) } }
+    override val tcg by lazy { TCG(eraTtTcg(whole, fraction), true) }
 
-    override val tdb by lazy { TDB(whole, fraction + TDBMinusTT.delta(this) / DAYSEC) }
+    override val tdb by lazy { TDB(eraTtTdb(whole, fraction, TDBMinusTT.delta(this)), true) }
 
     override val tcb get() = tdb.tcb
 }

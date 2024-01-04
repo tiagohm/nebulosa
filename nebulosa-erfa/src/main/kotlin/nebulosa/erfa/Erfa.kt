@@ -2446,6 +2446,9 @@ inline fun eraDat(cal: Calendar, fraction: Double = cal.fraction): Double {
     return eraDat(cal.year, cal.month, cal.day, fraction)
 }
 
+/**
+ * Universal Time, UT1, to Coordinated Universal Time, UTC.
+ */
 fun eraUt1Utc(ut11: Double, ut12: Double, dut1: Double): DoubleArray {
     val u1 = max(ut11, ut12)
     var u2 = min(ut11, ut12)
@@ -2497,6 +2500,9 @@ fun eraUt1Utc(ut11: Double, ut12: Double, dut1: Double): DoubleArray {
     return doubleArrayOf(u1, u2)
 }
 
+/**
+ * Coordinated Universal Time, UTC, to International Atomic Time, TAI.
+ */
 fun eraUtcTai(utc1: Double, utc2: Double): DoubleArray {
     val u1 = max(utc1, utc2)
     val u2 = min(utc1, utc2)
@@ -2531,10 +2537,16 @@ fun eraUtcTai(utc1: Double, utc2: Double): DoubleArray {
     return doubleArrayOf(u1, a2)
 }
 
-inline fun eraTaiUt1(tai1: Double, tai2: Double, dta: Double): DoubleArray {
-    return doubleArrayOf(tai1, tai2 + dta / DAYSEC)
+/**
+ * International Atomic Time, TAI, to Universal Time, UT1.
+ */
+inline fun eraTaiUt1(tai1: Double, tai2: Double, ut1MinusTai: Double): DoubleArray {
+    return doubleArrayOf(tai1, tai2 + ut1MinusTai / DAYSEC)
 }
 
+/**
+ * Coordinated Universal Time, UTC, to Universal Time, UT1.
+ */
 fun eraUtcUt1(utc1: Double, utc2: Double, dut1: Double): DoubleArray {
     val cal = eraJd2Cal(utc1, utc2)
     val dat = eraDat(cal)
@@ -2546,6 +2558,9 @@ fun eraUtcUt1(utc1: Double, utc2: Double, dut1: Double): DoubleArray {
     return eraTaiUt1(tai1, tai2, dta)
 }
 
+/**
+ * International Atomic Time, TAI, to Coordinated Universal Time, UTC.
+ */
 fun eraTaiUtc(tai1: Double, tai2: Double): DoubleArray {
     var u2 = tai2
 
@@ -2562,20 +2577,46 @@ fun eraTaiUtc(tai1: Double, tai2: Double): DoubleArray {
     return doubleArrayOf(tai1, u2)
 }
 
+/**
+ * International Atomic Time, TAI, to Terrestrial Time, TT.
+ */
 inline fun eraTaiTt(tai1: Double, tai2: Double): DoubleArray {
     return doubleArrayOf(tai1, tai2 + TTMINUSTAI / DAYSEC)
 }
 
+/**
+ * Terrestrial Time, TT, to International Atomic Time, TAI.
+ */
 inline fun eraTtTai(tt1: Double, tt2: Double): DoubleArray {
     return doubleArrayOf(tt1, tt2 - TTMINUSTAI / DAYSEC)
 }
 
-inline fun eraTtTdb(tt1: Double, tt2: Double, dtr: Double): DoubleArray {
-    return doubleArrayOf(tt1, tt2 + dtr / DAYSEC)
+/**
+ * Terrestrial Time, TT, to Barycentric Dynamical Time, TDB.
+ */
+inline fun eraTtTdb(tt1: Double, tt2: Double, tdbMinusTt: Double): DoubleArray {
+    return doubleArrayOf(tt1, tt2 + tdbMinusTt / DAYSEC)
 }
 
-inline fun eraTdbTt(tdb1: Double, tdb2: Double, dtr: Double): DoubleArray {
-    return doubleArrayOf(tdb1, tdb2 - dtr / DAYSEC)
+/**
+ * Barycentric Dynamical Time, TDB, to Terrestrial Time, TT.
+ */
+inline fun eraTdbTt(tdb1: Double, tdb2: Double, tdbMinusTt: Double): DoubleArray {
+    return doubleArrayOf(tdb1, tdb2 - tdbMinusTt / DAYSEC)
+}
+
+/**
+ * Universal Time, UT1, to International Atomic Time, TAI.
+ */
+inline fun eraUt1Tai(ut11: Double, ut12: Double, ut1MinusTai: Double): DoubleArray {
+    return doubleArrayOf(ut11, ut12 - ut1MinusTai / DAYSEC)
+}
+
+/**
+ * Terrestrial Time, TT, to Universal Time, UT1.
+ */
+inline fun eraTtUt1(tt1: Double, tt2: Double, ttMinusUt1: Double): DoubleArray {
+    return doubleArrayOf(tt1, tt2 - ttMinusUt1 / DAYSEC)
 }
 
 const val DBL_EPSILON = 2.220446049250313E-16
