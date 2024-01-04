@@ -1,4 +1,4 @@
-@file:Suppress("PrivatePropertyName", "NOTHING_TO_INLINE")
+@file:Suppress("PrivatePropertyName", "NOTHING_TO_INLINE", "FloatingPointLiteralPrecision")
 
 package nebulosa.erfa
 
@@ -354,7 +354,10 @@ fun eraC2ixys(
     return Matrix3D.rotZ(e).rotateY(d).rotateZ(-(e + s))
 }
 
-@Suppress("FloatingPointLiteralPrecision") private const val OM = 1.00273781191135448 * TAU / DAYSEC
+/**
+ * Earth rotation rate in radians per UT1 second.
+ */
+const val OM = 1.00273781191135448 * TAU / DAYSEC
 
 /**
  * Form the matrix of polar motion for a given date, IAU 2000.
@@ -363,7 +366,7 @@ fun eraC2ixys(
  * @param yp Coordinates of the pole (radians)
  * @param sp The TIO locator s' (radians)
  */
-fun eraPom00(xp: Angle, yp: Angle, sp: Angle): Matrix3D {
+inline fun eraPom00(xp: Angle, yp: Angle, sp: Angle): Matrix3D {
     return Matrix3D.rotZ(sp).rotateY(-xp).rotateX(-yp)
 }
 
@@ -726,10 +729,10 @@ fun eraFasa03(t: Double) = (0.874016757 + 21.3299104960 * t).mod(TAU).rad
 fun eraFaur03(t: Double) = (5.481293872 + 7.4781598567 * t).mod(TAU).rad
 
 private data class LuniSolarNut(
-    val nl: Int, val nlp: Int, val nf: Int,
-    val nd: Int, val nom: Int, val sp: Double,
-    val spt: Double, val cp: Double, val ce: Double,
-    val cet: Double, val se: Double,
+    @JvmField val nl: Int, @JvmField val nlp: Int, @JvmField val nf: Int,
+    @JvmField val nd: Int, @JvmField val nom: Int, @JvmField val sp: Double,
+    @JvmField val spt: Double, @JvmField val cp: Double, @JvmField val ce: Double,
+    @JvmField val cet: Double, @JvmField val se: Double,
 ) {
 
     companion object {
@@ -744,11 +747,11 @@ private data class LuniSolarNut(
 }
 
 private data class PlanetaryNut(
-    val nl: Int, val nf: Int, val nd: Int, val nom: Int,
-    val nme: Int, val nve: Int, val nea: Int, val nma: Int,
-    val nju: Int, val nsa: Int, val nur: Int, val nne: Int,
-    val npa: Int, val sp: Int, val cp: Int,
-    val se: Int, val ce: Int,
+    @JvmField val nl: Int, val nf: Int, val nd: Int, val nom: Int,
+    @JvmField val nme: Int, val nve: Int, val nea: Int, val nma: Int,
+    @JvmField val nju: Int, val nsa: Int, val nur: Int, val nne: Int,
+    @JvmField val npa: Int, val sp: Int, val cp: Int,
+    @JvmField val se: Int, val ce: Int,
 ) {
 
     companion object {
@@ -883,7 +886,7 @@ fun eraNut06a(tt1: Double, tt2: Double): PairOfAngle {
 /**
  * Form rotation matrix given the Fukushima-Williams angles.
  */
-fun eraFw2m(gamb: Angle, phib: Angle, psi: Angle, eps: Angle): Matrix3D {
+inline fun eraFw2m(gamb: Angle, phib: Angle, psi: Angle, eps: Angle): Matrix3D {
     return Matrix3D.rotZ(gamb).rotateX(phib).rotateZ(-psi).rotateX(-eps)
 }
 
@@ -901,10 +904,10 @@ fun eraPnm06a(tt1: Double, tt2: Double): Matrix3D {
     return eraFw2m(gamb, phib, psib + dp, epsa + de)
 }
 
-private class Term(
-    val nfa: IntArray,
-    val s: Double,
-    val c: Double,
+private data class Term(
+    @JvmField val nfa: IntArray,
+    @JvmField val s: Double,
+    @JvmField val c: Double,
 )
 
 // Polynomial coefficients
@@ -1373,10 +1376,10 @@ fun eraApcg13(tdb1: Double, tdb2: Double): AstrometryParameters {
     )
 }
 
-private class ComplementaryTerm(
-    val nfa: IntArray,
-    val s: Double,
-    val c: Double,
+private data class ComplementaryTerm(
+    @JvmField val nfa: IntArray,
+    @JvmField val s: Double,
+    @JvmField val c: Double,
 )
 
 // Terms of order t^0
@@ -1523,12 +1526,13 @@ fun eraEect00(tt1: Double, tt2: Double): Angle {
  * Earth rotation angle (IAU 2000 model).
  */
 fun eraEra00(ut11: Double, ut12: Double): Angle {
-    require(ut12 < 1.0) { "ut12 < 1.0: $ut12" }
-
     val t = ut12 + (ut11 - J2000)
 
+    // Fractional part of T (days).
+    val f = ut12 % 1.0 + ut11 % 1.0
+
     // Earth rotation angle at this UT1.
-    return (TAU * (ut12 + 0.7790572732640 + 0.00273781191135448 * t)).rad.normalized
+    return eraAnpm(TAU * (f + 0.7790572732640 + 0.00273781191135448 * t))
 }
 
 /**
@@ -1551,7 +1555,7 @@ fun eraEra00(ut11: Double, ut12: Double): Angle {
  * @return equation of the equinoxes in radians.
  *
  */
-fun eraEe00(tt1: Double, tt2: Double, epsa: Angle, dpsi: Angle): Angle {
+inline fun eraEe00(tt1: Double, tt2: Double, epsa: Angle, dpsi: Angle): Angle {
     return dpsi * epsa.cos + eraEect00(tt1, tt2)
 }
 
@@ -1601,10 +1605,8 @@ fun eraGmst06(ut11: Double, ut12: Double, tt1: Double, tt2: Double): Angle {
     val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
     // Greenwich Mean Sidereal Time, IAU 2006.
-    return (eraEra00(
-        ut11,
-        ut12
-    ) + (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
+    return (eraEra00(ut11, ut12) +
+            (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
 }
 
 /**
@@ -1736,8 +1738,8 @@ fun eraEe00b(tt1: Double, tt2: Double): Angle {
 }
 
 // Precession and obliquity corrections (radians per century).
-private val PRECOR = (-0.29965).arcsec
-private val OBLCOR = (-0.02524).arcsec
+private const val PRECOR = -0.29965 * ASEC2RAD
+private const val OBLCOR = -0.02524 * ASEC2RAD
 
 /**
  * Precession-rate part of the IAU 2000 precession-nutation models (part of MHB2000).
@@ -1861,8 +1863,8 @@ private val X = arrayOf(
     LuniSolarNut(1, 1, 2, -2, 2, 1290.0, 0.0, 0.0, -556.0, 0.0, 0.0),
 )
 
-private val DPPLAN = (-0.135).mas
-private val DEPLAN = 0.388.mas
+private const val DPPLAN = -0.135 * MILLIASEC2RAD
+private const val DEPLAN = 0.388 * MILLIASEC2RAD
 
 /**
  * Nutation, IAU 2000B model.
@@ -1911,7 +1913,7 @@ fun eraNut00b(tt1: Double, tt2: Double): PairOfAngle {
  * @param era  double          Earth rotation angle (radians).
  * @param rpom double[3][3]    Polar-motion matrix.
  */
-fun eraC2tcio(rc2i: Matrix3D, era: Angle, rpom: Matrix3D): Matrix3D {
+inline fun eraC2tcio(rc2i: Matrix3D, era: Angle, rpom: Matrix3D): Matrix3D {
     return rpom * rc2i.rotateZ(era)
 }
 
@@ -1987,7 +1989,7 @@ fun eraP06e(tt1: Double, tt2: Double): PrecessionAnglesIAU2006 {
  * @param dpsi Nutation angle.
  * @param deps Nutation angle.
  */
-fun eraNumat(epsa: Angle, dpsi: Angle, deps: Angle): Matrix3D {
+inline fun eraNumat(epsa: Angle, dpsi: Angle, deps: Angle): Matrix3D {
     return Matrix3D.rotX(epsa).rotateZ(-dpsi).rotateX(-(epsa + deps))
 }
 
@@ -2012,7 +2014,7 @@ fun eraNum06a(tt1: Double, tt2: Double): Matrix3D {
  * @param gst  Greenwich (apparent) Sidereal Time (radians)
  * @param rpom Polar-motion matrix
  */
-fun eraC2teqx(rbpn: Matrix3D, gst: Angle, rpom: Matrix3D): Matrix3D {
+inline fun eraC2teqx(rbpn: Matrix3D, gst: Angle, rpom: Matrix3D): Matrix3D {
     return rpom * rbpn.rotateZ(gst)
 }
 
@@ -2022,28 +2024,103 @@ fun eraC2teqx(rbpn: Matrix3D, gst: Angle, rpom: Matrix3D): Matrix3D {
  *
  * The matrix rc2t transforms from celestial to terrestrial coordinates:
  *
- *    [TRS] = RPOM * R_3(GST) * RBPN * [CRS]
- *
- *          = rc2t * [CRS]
+ *    [TRS] = RPOM * R_3(GST) * RBPN * [CRS] = rc2t * [CRS]
  */
-//fun eraC2tpe(tt1: Double, tt2: Double, ut11: Double, ut12: Double,
-//             dpsi: Angle, deps: Angle, xp: Angle, yp: Angle): Matrix3D {
-//    // Form the celestial-to-true matrix for this TT.
-//    val eraPn00(tt1, tt2, dpsi, deps, &epsa, rb, rp, rbp, rn, rbpn)
-//    // Predict the Greenwich Mean Sidereal Time for this UT1 and TT.
-//    val gmst = eraGmst00(ut11, ut12, tt1, tt2)
-//    // Predict the equation of the equinoxes given TT and nutation.
-//    val ee = eraEe00(tt1, tt2, epsa, dpsi)
-//    // Estimate s'.
-//    val sp = eraSp00(tt1, tt2)
-//    // Form the polar motion matrix.
-//    eraPom00(xp, yp, sp, rpom)
-//    // Combine to form the celestial-to-terrestrial matrix.
-//    eraC2teqx(rbpn, gmst + ee, rpom, rc2t)
-//}
+fun eraC2tpe(
+    tt1: Double, tt2: Double, ut11: Double, ut12: Double,
+    dpsi: Angle, deps: Angle, xp: Angle, yp: Angle
+): Matrix3D {
+    // Form the celestial-to-true matrix for this TT.
+    val (epsa, _, _, _, _, rbpn) = eraPn00(tt1, tt2, dpsi, deps)
+    // Predict the Greenwich Mean Sidereal Time for this UT1 and TT.
+    val gmst = eraGmst00(ut11, ut12, tt1, tt2)
+    // Predict the equation of the equinoxes given TT and nutation.
+    val ee = eraEe00(tt1, tt2, epsa, dpsi)
+    // Estimate s'.
+    val sp = eraSp00(tt1, tt2)
+    // Form the polar motion matrix.
+    val rpom = eraPom00(xp, yp, sp)
+    // Combine to form the celestial-to-terrestrial matrix.
+    return eraC2teqx(rbpn, gmst + ee, rpom)
+}
 
-fun eraPn00(tt1: Double, tt2: Double, dpsi: Angle, deps: Angle) {
+// The frame bias corrections in longitude and obliquity.
+const val DPBIAS: Angle = -0.041775 * ASEC2RAD
+const val DEBIAS: Angle = -0.0068192 * ASEC2RAD
 
+/**
+ * The ICRS RA of the J2000.0 equinox (Chapront et al., 2002).
+ */
+const val DRA0: Angle = -0.0146 * ASEC2RAD
+
+/**
+ *  Frame bias components of IAU 2000 precession-nutation models;  part
+ *  of the Mathews-Herring-Buffett (MHB2000) nutation series, with
+ *  additions.
+ *
+ *  @return longitude and obliquity corrections, and the ICRS RA of the J2000.0 mean equinox.
+ */
+inline fun eraBi00(): DoubleArray {
+    return doubleArrayOf(DPBIAS, DEBIAS, DRA0)
+}
+
+/**
+ * J2000.0 obliquity (Lieske et al. 1977)
+ */
+const val EPS0 = 84381.448 * ASEC2RAD
+
+/**
+ * Frame bias and precession, IAU 2000.
+ *
+ * @return frame bias matrix, precession matrix and bias-precession matrix.
+ */
+fun eraBp00(tt1: Double, tt2: Double): Array<Matrix3D> {
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
+
+    // Frame bias.
+    val (dpsibi, depsbi, dra0) = eraBi00()
+
+    // Precession angles (Lieske et al. 1977)
+    val psia77 = (5038.7784 + (-1.07259 + (-0.001147) * t) * t) * t * ASEC2RAD
+    val oma77 = EPS0 + ((0.05127 + (-0.007726) * t) * t) * t * ASEC2RAD
+    val chia = (10.5526 + (-2.38064 + (-0.001125) * t) * t) * t * ASEC2RAD
+
+    // Apply IAU 2000 precession corrections.
+    val (dpsipr, depspr) = eraPr00(tt1, tt2)
+    val psia = psia77 + dpsipr
+    val oma = oma77 + depspr
+
+    // Frame bias matrix: GCRS to J2000.0.
+    val rb = Matrix3D.rotZ(dra0).rotateY(dpsibi * sin(EPS0)).rotateX(-depsbi)
+
+    // Precession matrix: J2000.0 to mean of date.
+    val rp = Matrix3D.rotX(EPS0).rotateZ(-psia).rotateX(-oma).rotateZ(chia)
+
+    return arrayOf(rb, rp, rp * rb)
+}
+
+/**
+ * Precession-nutation, IAU 2000 model:  a multi-purpose function,
+ * supporting classical (equinox-based) use directly and CIO-based
+ * use indirectly.
+ */
+fun eraPn00(tt1: Double, tt2: Double, dpsi: Angle, deps: Angle): PrecessionNutationMatrices {
+    // IAU 2000 precession-rate adjustments.
+    val (_, depspr) = eraPr00(tt1, tt2)
+
+    // Mean obliquity, consistent with IAU 2000 precession-nutation.
+    val epsa = eraObl80(tt1, tt2) + depspr
+
+    // Frame bias and precession matrices and their product.
+    val (rb, rp, rbp) = eraBp00(tt1, tt2)
+
+    // Nutation matrix.
+    val rn = eraNumat(epsa, dpsi, deps)
+
+    // Bias-precession-nutation matrix (classical).
+    val rbpn = rn * rbp
+
+    return PrecessionNutationMatrices(epsa, rb, rp, rbp, rn, rbpn)
 }
 
 typealias StarDirectionCosines = DoubleArray

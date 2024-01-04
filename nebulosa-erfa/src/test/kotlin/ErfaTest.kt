@@ -744,5 +744,117 @@ class ErfaTest : StringSpec() {
             u1 shouldBeExactly 2453750.5
             u2 shouldBe (0.8921045614537037037 plusOrMinus 1e-12)
         }
+        "eraBp00" {
+            val (rb, rp, rbp) = eraBp00(2400000.5, 50123.9999)
+
+            rb[0, 0] shouldBe (0.9999999999999942498 plusOrMinus 1e-12)
+            rb[0, 1] shouldBe (-0.7078279744199196626e-7 plusOrMinus 1e-16)
+            rb[0, 2] shouldBe (0.8056217146976134152e-7 plusOrMinus 1e-16)
+            rb[1, 0] shouldBe (0.7078279477857337206e-7 plusOrMinus 1e-16)
+            rb[1, 1] shouldBe (0.9999999999999969484 plusOrMinus 1e-12)
+            rb[1, 2] shouldBe (0.3306041454222136517e-7 plusOrMinus 1e-16)
+            rb[2, 0] shouldBe (-0.8056217380986972157e-7 plusOrMinus 1e-16)
+            rb[2, 1] shouldBe (-0.3306040883980552500e-7 plusOrMinus 1e-16)
+            rb[2, 2] shouldBe (0.9999999999999962084 plusOrMinus 1e-12)
+            rp[0, 0] shouldBe (0.9999995504864048241 plusOrMinus 1e-12)
+            rp[0, 1] shouldBe (0.8696113836207084411e-3 plusOrMinus 1e-14)
+            rp[0, 2] shouldBe (0.3778928813389333402e-3 plusOrMinus 1e-14)
+            rp[1, 0] shouldBe (-0.8696113818227265968e-3 plusOrMinus 1e-14)
+            rp[1, 1] shouldBe (0.9999996218879365258 plusOrMinus 1e-12)
+            rp[1, 2] shouldBe (-0.1690679263009242066e-6 plusOrMinus 1e-14)
+            rp[2, 0] shouldBe (-0.3778928854764695214e-3 plusOrMinus 1e-14)
+            rp[2, 1] shouldBe (-0.1595521004195286491e-6 plusOrMinus 1e-14)
+            rp[2, 2] shouldBe (0.9999999285984682756 plusOrMinus 1e-12)
+            rbp[0, 0] shouldBe (0.9999995505175087260 plusOrMinus 1e-12)
+            rbp[0, 1] shouldBe (0.8695405883617884705e-3 plusOrMinus 1e-14)
+            rbp[0, 2] shouldBe (0.3779734722239007105e-3 plusOrMinus 1e-14)
+            rbp[1, 0] shouldBe (-0.8695405990410863719e-3 plusOrMinus 1e-14)
+            rbp[1, 1] shouldBe (0.9999996219494925900 plusOrMinus 1e-12)
+            rbp[1, 2] shouldBe (-0.1360775820404982209e-6 plusOrMinus 1e-14)
+            rbp[2, 0] shouldBe (-0.3779734476558184991e-3 plusOrMinus 1e-14)
+            rbp[2, 1] shouldBe (-0.1925857585832024058e-6 plusOrMinus 1e-14)
+            rbp[2, 2] shouldBe (0.9999999285680153377 plusOrMinus 1e-12)
+        }
+        "eraPn00" {
+            val (epsa, rb, rp, rbp, rn, rbpn) = eraPn00(2400000.5, 53736.0, -0.9632552291149335877e-5, 0.4063197106621141414e-4)
+
+            epsa shouldBe (0.4090791789404229916 plusOrMinus 1e-12)
+
+            rb[0, 0] shouldBe (0.9999999999999942498 plusOrMinus 1e-12)
+            rb[0, 1] shouldBe (-0.7078279744199196626e-7 plusOrMinus 1e-18)
+            rb[0, 2] shouldBe (0.8056217146976134152e-7 plusOrMinus 1e-18)
+
+            rb[1, 0] shouldBe (0.7078279477857337206e-7 plusOrMinus 1e-18)
+            rb[1, 1] shouldBe (0.9999999999999969484 plusOrMinus 1e-12)
+            rb[1, 2] shouldBe (0.3306041454222136517e-7 plusOrMinus 1e-18)
+
+            rb[2, 0] shouldBe (-0.8056217380986972157e-7 plusOrMinus 1e-18)
+            rb[2, 1] shouldBe (-0.3306040883980552500e-7 plusOrMinus 1e-18)
+            rb[2, 2] shouldBe (0.9999999999999962084 plusOrMinus 1e-12)
+
+            rp[0, 0] shouldBe (0.9999989300532289018 plusOrMinus 1e-12)
+            rp[0, 1] shouldBe (-0.1341647226791824349e-2 plusOrMinus 1e-14)
+            rp[0, 2] shouldBe (-0.5829880927190296547e-3 plusOrMinus 1e-14)
+
+            rp[1, 0] shouldBe (0.1341647231069759008e-2 plusOrMinus 1e-14)
+            rp[1, 1] shouldBe (0.9999990999908750433 plusOrMinus 1e-12)
+            rp[1, 2] shouldBe (-0.3837444441583715468e-6 plusOrMinus 1e-14)
+
+            rp[2, 0] shouldBe (0.5829880828740957684e-3 plusOrMinus 1e-14)
+            rp[2, 1] shouldBe (-0.3984203267708834759e-6 plusOrMinus 1e-14)
+            rp[2, 2] shouldBe (0.9999998300623538046 plusOrMinus 1e-12)
+
+            rbp[0, 0] shouldBe (0.9999989300052243993 plusOrMinus 1e-12)
+            rbp[0, 1] shouldBe (-0.1341717990239703727e-2 plusOrMinus 1e-14)
+            rbp[0, 2] shouldBe (-0.5829075749891684053e-3 plusOrMinus 1e-14)
+
+            rbp[1, 0] shouldBe (0.1341718013831739992e-2 plusOrMinus 1e-14)
+            rbp[1, 1] shouldBe (0.9999990998959191343 plusOrMinus 1e-12)
+            rbp[1, 2] shouldBe (-0.3505759733565421170e-6 plusOrMinus 1e-14)
+
+            rbp[2, 0] shouldBe (0.5829075206857717883e-3 plusOrMinus 1e-14)
+            rbp[2, 1] shouldBe (-0.4315219955198608970e-6 plusOrMinus 1e-14)
+            rbp[2, 2] shouldBe (0.9999998301093036269 plusOrMinus 1e-12)
+
+            rn[0, 0] shouldBe (0.9999999999536069682 plusOrMinus 1e-12)
+            rn[0, 1] shouldBe (0.8837746144872140812e-5 plusOrMinus 1e-16)
+            rn[0, 2] shouldBe (0.3831488838252590008e-5 plusOrMinus 1e-16)
+
+            rn[1, 0] shouldBe (-0.8837590456633197506e-5 plusOrMinus 1e-16)
+            rn[1, 1] shouldBe (0.9999999991354692733 plusOrMinus 1e-12)
+            rn[1, 2] shouldBe (-0.4063198798559573702e-4 plusOrMinus 1e-16)
+
+            rn[2, 0] shouldBe (-0.3831847930135328368e-5 plusOrMinus 1e-16)
+            rn[2, 1] shouldBe (0.4063195412258150427e-4 plusOrMinus 1e-16)
+            rn[2, 2] shouldBe (0.9999999991671806225 plusOrMinus 1e-12)
+
+            rbpn[0, 0] shouldBe (0.9999989440499982806 plusOrMinus 1e-12)
+            rbpn[0, 1] shouldBe (-0.1332880253640848301e-2 plusOrMinus 1e-14)
+            rbpn[0, 2] shouldBe (-0.5790760898731087295e-3 plusOrMinus 1e-14)
+
+            rbpn[1, 0] shouldBe (0.1332856746979948745e-2 plusOrMinus 1e-14)
+            rbpn[1, 1] shouldBe (0.9999991109064768883 plusOrMinus 1e-12)
+            rbpn[1, 2] shouldBe (-0.4097740555723063806e-4 plusOrMinus 1e-14)
+
+            rbpn[2, 0] shouldBe (0.5791301929950205000e-3 plusOrMinus 1e-14)
+            rbpn[2, 1] shouldBe (0.4020553681373702931e-4 plusOrMinus 1e-14)
+            rbpn[2, 2] shouldBe (0.9999998314958529887 plusOrMinus 1e-12)
+        }
+        "eraC2tpe" {
+            val rc2t =
+                eraC2tpe(2400000.5, 53736.0, 2400000.5, 53736.0, -0.9630909107115582393e-5, 0.4090789763356509900, 2.55060238e-7, 1.860359247e-6)
+
+            rc2t[0, 0] shouldBe (-0.1813677995763029394 plusOrMinus 1e-12)
+            rc2t[0, 1] shouldBe (0.9023482206891683275 plusOrMinus 1e-12)
+            rc2t[0, 2] shouldBe (-0.3909902938641085751 plusOrMinus 1e-12)
+
+            rc2t[1, 0] shouldBe (-0.9834147641476804807 plusOrMinus 1e-12)
+            rc2t[1, 1] shouldBe (-0.1659883635434995121 plusOrMinus 1e-12)
+            rc2t[1, 2] shouldBe (0.7309763898042819705e-1 plusOrMinus 1e-12)
+
+            rc2t[2, 0] shouldBe (0.1059685430673215247e-2 plusOrMinus 1e-12)
+            rc2t[2, 1] shouldBe (0.3977631855605078674 plusOrMinus 1e-12)
+            rc2t[2, 2] shouldBe (0.9174875068792735362 plusOrMinus 1e-12)
+        }
     }
 }
