@@ -5,7 +5,7 @@ import nebulosa.math.Matrix3D
 import nebulosa.time.IERS
 import nebulosa.time.InstantOfTime
 
-fun cirsToITRS(time: InstantOfTime): Matrix3D {
+fun cirsToItrs(time: InstantOfTime): Matrix3D {
     // Compute the polar motion p-matrix.
     val (xp, yp) = IERS.pmXY(time)
     val sp = eraSp00(time.tt.whole, time.tt.fraction)
@@ -17,7 +17,7 @@ fun cirsToITRS(time: InstantOfTime): Matrix3D {
     return eraC2tcio(Matrix3D.IDENTITY, era, pm)
 }
 
-fun teteToITRS(
+fun teteToItrs(
     time: InstantOfTime,
     rbpn: Matrix3D? = null,
 ): Matrix3D {

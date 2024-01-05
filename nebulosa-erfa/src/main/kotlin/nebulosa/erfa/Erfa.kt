@@ -27,11 +27,11 @@ fun eraP2s(x: Distance, y: Distance, z: Distance): SphericalCoordinate {
  *
  * @return longitude angle (theta) and latitude angle (phi).
  */
-fun eraC2s(x: Distance, y: Distance, z: Distance): PairOfAngle {
+fun eraC2s(x: Distance, y: Distance, z: Distance): DoubleArray {
     val d2 = x * x + y * y
     val theta = if (d2 == 0.0) 0.0 else atan2(y, x)
     val phi = if (z == 0.0) 0.0 else atan2(z, sqrt(d2))
-    return PairOfAngle(theta.rad, phi.rad)
+    return doubleArrayOf(theta.rad, phi.rad)
 }
 
 /**
@@ -86,7 +86,7 @@ fun eraAb(pnat: Vector3D, v: Vector3D, s: Distance, bm1: Double): Vector3D {
  *
  * @return hour angle (local) and declination
  */
-fun eraAe2hd(az: Angle, alt: Angle, phi: Angle): PairOfAngle {
+fun eraAe2hd(az: Angle, alt: Angle, phi: Angle): DoubleArray {
     val sa = az.sin
     val ca = az.cos
     val se = alt.sin
@@ -102,7 +102,7 @@ fun eraAe2hd(az: Angle, alt: Angle, phi: Angle): PairOfAngle {
     val ha = if (r != 0.0) atan2(y, x).rad else 0.0
     val dec = atan2(z, r).rad
 
-    return PairOfAngle(ha, dec)
+    return doubleArrayOf(ha, dec)
 }
 
 /**
@@ -773,7 +773,7 @@ private val XPL by lazyBufferedResource("PLANETARY-NUT.dat") { Array(687) { Plan
  * Nutation, IAU 2000A model (MHB2000 luni-solar and planetary nutation
  * with free core nutation omitted).
  */
-fun eraNut00a(tt1: Double, tt2: Double): PairOfAngle {
+fun eraNut00a(tt1: Double, tt2: Double): DoubleArray {
     // Interval between fundamental date J2000.0 and given date (JC).
     val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
@@ -860,13 +860,13 @@ fun eraNut00a(tt1: Double, tt2: Double): PairOfAngle {
     val dep = de
 
     // Units of 0.1 microarcsecond to radians.
-    return PairOfAngle((dpls + dpp).arcsec / 10000000.0, (dels + dep).arcsec / 10000000.0)
+    return doubleArrayOf((dpls + dpp).arcsec / 10000000.0, (dels + dep).arcsec / 10000000.0)
 }
 
 /**
  * IAU 2000A nutation with adjustments to match the IAU 2006 precession.
  */
-fun eraNut06a(tt1: Double, tt2: Double): PairOfAngle {
+fun eraNut06a(tt1: Double, tt2: Double): DoubleArray {
     // Interval between fundamental date J2000.0 and given date (JC).
     val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
@@ -880,7 +880,7 @@ fun eraNut06a(tt1: Double, tt2: Double): PairOfAngle {
     val dpsi = dp + dp * (0.4697e-6 + fj2)
     val deps = de + de * fj2
 
-    return PairOfAngle(dpsi.rad, deps.rad)
+    return doubleArrayOf(dpsi.rad, deps.rad)
 }
 
 /**
@@ -904,6 +904,7 @@ fun eraPnm06a(tt1: Double, tt2: Double): Matrix3D {
     return eraFw2m(gamb, phib, psib + dp, epsa + de)
 }
 
+@Suppress("ArrayInDataClass")
 private data class Term(
     @JvmField val nfa: IntArray,
     @JvmField val s: Double,
@@ -1108,7 +1109,7 @@ fun era00(ut11: Double, ut12: Double): Angle {
  *
  * @return tan Z coefficient (radians) and tan^3 Z coefficient (radians)
  */
-fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): PairOfAngle {
+fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): DoubleArray {
     // Decide whether optical/IR or radio case:  switch at 100 microns.
     val optic = wl <= 100.0
 
@@ -1144,7 +1145,7 @@ fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): PairOfAngle {
     val refa = gamma * (1.0 - beta)
     val refb = -gamma * (beta - gamma / 2.0)
 
-    return PairOfAngle(refa.rad, refb.rad)
+    return doubleArrayOf(refa.rad, refb.rad)
 }
 
 //fun apco(frame: CoordinateFrame) {
@@ -1376,6 +1377,7 @@ fun eraApcg13(tdb1: Double, tdb2: Double): AstrometryParameters {
     )
 }
 
+@Suppress("ArrayInDataClass")
 private data class ComplementaryTerm(
     @JvmField val nfa: IntArray,
     @JvmField val s: Double,
@@ -1759,10 +1761,10 @@ private const val OBLCOR = -0.02524 * ASEC2RAD
  * model, formally adopted by the IAU General Assembly in 2000,
  * namely MHB2000 (Mathews et al. 2002).
  */
-fun eraPr00(tt1: Double, tt2: Double): PairOfAngle {
+fun eraPr00(tt1: Double, tt2: Double): DoubleArray {
     // Interval between fundamental epoch J2000.0 and given date (JC).
     val t = (tt1 - J2000 + tt2) / DAYSPERJC
-    return PairOfAngle(PRECOR * t, OBLCOR * t)
+    return doubleArrayOf(PRECOR * t, OBLCOR * t)
 }
 
 /**
@@ -1869,7 +1871,7 @@ private const val DEPLAN = 0.388 * MILLIASEC2RAD
 /**
  * Nutation, IAU 2000B model.
  */
-fun eraNut00b(tt1: Double, tt2: Double): PairOfAngle {
+fun eraNut00b(tt1: Double, tt2: Double): DoubleArray {
     // Interval between fundamental epoch J2000.0 and given date (JC).
     val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
@@ -1901,7 +1903,7 @@ fun eraNut00b(tt1: Double, tt2: Double): PairOfAngle {
         de += (X[i].ce + X[i].cet * t) * carg + X[i].se * sarg
     }
 
-    return PairOfAngle(dp.arcsec / 10000000.0 + DPPLAN, de.arcsec / 10000000.0 + DEPLAN)
+    return doubleArrayOf(dp.arcsec / 10000000.0 + DPPLAN, de.arcsec / 10000000.0 + DEPLAN)
 }
 
 /**
@@ -2131,7 +2133,7 @@ typealias TangentPointDirectionCosines = DoubleArray
  * of a star and its spherical coordinates, determine the spherical
  * coordinates of the tangent point.
  */
-fun eraTpors(xi: Angle, eta: Angle, a: Angle, b: Angle): PairOfAngle? {
+fun eraTpors(xi: Angle, eta: Angle, a: Angle, b: Angle): DoubleArray? {
     val xi2 = xi * xi
     val r = sqrt(1.0 + xi2 + eta * eta)
     val sb = b.sin
@@ -2148,7 +2150,7 @@ fun eraTpors(xi: Angle, eta: Angle, a: Angle, b: Angle): PairOfAngle? {
         val a01 = (a - atan2(xi, w)).normalized
         val b01 = atan2(s, c).rad
 
-        if (abs(rsb) < 1.0) return PairOfAngle(a01, b01)
+        if (abs(rsb) < 1.0) return doubleArrayOf(a01, b01)
 
         w = -w
         s = rsb - eta * w
@@ -2156,7 +2158,7 @@ fun eraTpors(xi: Angle, eta: Angle, a: Angle, b: Angle): PairOfAngle? {
         val a02 = (a - atan2(xi, w)).normalized
         val b02 = atan2(s, c).rad
 
-        return PairOfAngle(a02, b02)
+        return doubleArrayOf(a02, b02)
     } else {
         return null
     }
@@ -2206,13 +2208,13 @@ fun eraTporv(xi: Angle, eta: Angle, v: StarDirectionCosines): TangentPointDirect
  * coordinates and the spherical coordinates of the tangent point,
  * solve for the spherical coordinates of the star.
  */
-fun eraTpsts(xi: Angle, eta: Angle, a0: Angle, b0: Angle): PairOfAngle {
+fun eraTpsts(xi: Angle, eta: Angle, a0: Angle, b0: Angle): DoubleArray {
     val sb0 = b0.sin
     val cb0 = b0.cos
     val d = cb0 - eta * sb0
     val a = (a0 + atan2(xi, d)).normalized
     val b = atan2(sb0 + eta * cb0, hypot(xi, d)).rad
-    return PairOfAngle(a, b)
+    return doubleArrayOf(a, b)
 }
 
 /**

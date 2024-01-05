@@ -1,6 +1,9 @@
-@file:JvmName("MathAlgorithms")
+@file:JvmName("Math")
+@file:Suppress("NOTHING_TO_INLINE")
 
 package nebulosa.math
+
+import kotlin.math.floor
 
 /**
  * Adds [a] and [b] exactly, returning the result as two 64-bit floats.
@@ -104,27 +107,75 @@ fun DoubleArray.search(
 /**
  * Remaps a number [x] from one range to another.
  */
-fun map(x: Int, inMin: Int, inMax: Int, outMin: Int, outMax: Int): Int {
+inline fun map(x: Int, inMin: Int, inMax: Int, outMin: Int, outMax: Int): Int {
     return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
 }
 
 /**
  * Remaps a number [x] from one range to another.
  */
-fun map(x: Long, inMin: Long, inMax: Long, outMin: Long, outMax: Long): Long {
+inline fun map(x: Long, inMin: Long, inMax: Long, outMin: Long, outMax: Long): Long {
     return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
 }
 
 /**
  * Remaps a number [x] from one range to another.
  */
-fun map(x: Float, inMin: Float, inMax: Float, outMin: Float, outMax: Float): Float {
+inline fun map(x: Float, inMin: Float, inMax: Float, outMin: Float, outMax: Float): Float {
     return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
 }
 
 /**
  * Remaps a number [x] from one range to another.
  */
-fun map(x: Double, inMin: Double, inMax: Double, outMin: Double, outMax: Double): Double {
+inline fun map(x: Double, inMin: Double, inMax: Double, outMin: Double, outMax: Double): Double {
     return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
 }
+
+/**
+ * Returns a pair containing the quotient and the remainder when this number is divided by [other].
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun Double.divmod(other: Double) = doubleArrayOf(floor(this / other), this pmod other)
+
+/**
+ * Returns a pair containing the quotient and the remainder when this number is divided by [other].
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun Int.divmod(other: Int) = intArrayOf(this / other, this pmod other)
+
+/**
+ * Computes the modulo where the result is always positive.
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun Double.amod(other: Double) = (this % other).let { if (it <= 0.0) it + other else it }
+
+/**
+ * Computes the modulo where the result is always positive.
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun Int.amod(other: Int) = (this % other).let { if (it <= 0) it + other else it }
+
+/**
+ * Computes the modulo where the result is always non-negative.
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun Double.pmod(other: Double) = (this % other).let { if (it < 0.0) it + other else it }
+
+/**
+ * Computes the modulo where the result is always non-negative.
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun Int.pmod(other: Int) = (this % other).let { if (it < 0) it + other else it }
+
+/**
+ * Computes the floor modulo.
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun Double.fmod(other: Double) = (this % other + other) % other
+
+/**
+ * Computes the floor modulo.
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun Int.fmod(other: Int) = (this % other + other) % other

@@ -2,7 +2,9 @@ package nebulosa.time
 
 import nebulosa.constants.MJD0
 import nebulosa.erfa.eraUt1Utc
-import nebulosa.math.*
+import nebulosa.math.Matrix3D
+import nebulosa.math.arcsec
+import nebulosa.math.search
 import java.io.InputStream
 import kotlin.math.floor
 import kotlin.math.max
@@ -96,12 +98,12 @@ abstract class IERS : PolarMotion, TimeDelta, Collection<List<String>> {
         }
     }
 
-    override fun pmXY(time: InstantOfTime): PairOfAngle {
+    override fun pmXY(time: InstantOfTime): DoubleArray {
         val xy = interpolate(time, this.time, pmX, pmY)
-        if (xy[0].isNaN() && xy[1].isNaN()) return PairOfAngle.ZERO
+        if (xy[0].isNaN() && xy[1].isNaN()) return doubleArrayOf(0.0, 0.0)
         val x = if (xy[0].isNaN()) 0.0 else xy[0].arcsec
         val y = if (xy[1].isNaN()) 0.0 else xy[1].arcsec
-        return PairOfAngle(x, y)
+        return doubleArrayOf(x, y)
     }
 
     /**
@@ -126,11 +128,11 @@ abstract class IERS : PolarMotion, TimeDelta, Collection<List<String>> {
             timeDelta = null
         }
 
-        override fun pmXY(time: InstantOfTime): PairOfAngle {
+        override fun pmXY(time: InstantOfTime): DoubleArray {
             return polarMotion.pmXY(time)
         }
 
-        override fun pmAngles(time: InstantOfTime): TripleOfAngle {
+        override fun pmAngles(time: InstantOfTime): DoubleArray {
             return polarMotion.pmAngles(time)
         }
 

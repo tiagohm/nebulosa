@@ -3,7 +3,6 @@ package nebulosa.adql
 import adql.query.operand.StringConstant
 import adql.query.operand.function.geometry.PointFunction
 import nebulosa.math.Angle
-import nebulosa.math.PairOfAngle
 import nebulosa.math.toDegrees
 
 data class SkyPoint internal constructor(override val operand: PointFunction) : Region {
@@ -16,5 +15,5 @@ data class SkyPoint internal constructor(override val operand: PointFunction) : 
 
     constructor(x: Angle, y: Operand<*>) : this(x.toDegrees.operand, y)
 
-    constructor(point: PairOfAngle) : this(point.first, point.second)
+    constructor(point: DoubleArray) : this(point[0], point[1])
 }

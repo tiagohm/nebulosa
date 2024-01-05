@@ -2,21 +2,18 @@ package nebulosa.time
 
 import nebulosa.erfa.eraSp00
 import nebulosa.math.Matrix3D
-import nebulosa.math.PairOfAngle
-import nebulosa.math.TripleOfAngle
-import nebulosa.math.arcsec
 
 fun interface PolarMotion {
 
-    fun pmXY(time: InstantOfTime): PairOfAngle
+    fun pmXY(time: InstantOfTime): DoubleArray
 
     /**
      * Computes the motion angles from the specified [time].
      */
-    fun pmAngles(time: InstantOfTime): TripleOfAngle {
+    fun pmAngles(time: InstantOfTime): DoubleArray {
         val sprime = eraSp00(time.tt.whole, time.tt.fraction)
         val (x, y) = pmXY(time)
-        return TripleOfAngle(sprime, x, y)
+        return doubleArrayOf(sprime, x, y)
     }
 
     /**
@@ -29,9 +26,9 @@ fun interface PolarMotion {
 
     object None : PolarMotion {
 
-        override fun pmXY(time: InstantOfTime) = PairOfAngle.ZERO
+        override fun pmXY(time: InstantOfTime) = doubleArrayOf(0.0, 0.0)
 
-        override fun pmAngles(time: InstantOfTime) = TripleOfAngle.ZERO
+        override fun pmAngles(time: InstantOfTime) = doubleArrayOf(0.0, 0.0, 0.0)
 
         override fun pmMatrix(time: InstantOfTime) = Matrix3D.IDENTITY
     }

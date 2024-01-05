@@ -360,13 +360,13 @@ data class WatneyPlateSolver(
             val rightEquatorial = standardToEquatorialCoordinates(scopeCoordsRA, scopeCoordsDEC, x, y)
 
             // Calculate the matrix components CD* that can be used to calculate any pixel RA/Dec
-            var dRa = rightEquatorial.first - imageCenterEquatorial.first
-            val cd11 = (dRa * cos(imageCenterEquatorial.second)).toDegrees
-            val cd21 = (rightEquatorial.second - imageCenterEquatorial.second).toDegrees
+            var dRa = rightEquatorial[0] - imageCenterEquatorial[0]
+            val cd11 = (dRa * cos(imageCenterEquatorial[1])).toDegrees
+            val cd21 = (rightEquatorial[1] - imageCenterEquatorial[1]).toDegrees
 
-            dRa = upEquatorial.first - imageCenterEquatorial.first
-            val cd12 = (dRa * cos(imageCenterEquatorial.second)).toDegrees
-            val cd22 = (upEquatorial.second - imageCenterEquatorial.second).toDegrees
+            dRa = upEquatorial[0] - imageCenterEquatorial[0]
+            val cd12 = (dRa * cos(imageCenterEquatorial[1])).toDegrees
+            val cd22 = (upEquatorial[1] - imageCenterEquatorial[1]).toDegrees
 
             var crota1 = 0.0
             var crota2 = 0.0
