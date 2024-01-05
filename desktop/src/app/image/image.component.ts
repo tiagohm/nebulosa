@@ -405,12 +405,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         window.addEventListener('keydown', event => {
             if (event.ctrlKey && !event.shiftKey && !event.altKey) {
                 switch (event.key) {
-                    case 'a': return this.toggleStretch()
-                    case 'i': return this.invertImage()
-                    case 'x': return this.toggleCrosshair()
-                    case '-': return this.zoomOut()
-                    case '=': return this.zoomIn()
-                    case '0': return this.resetZoom()
+                    case 'a': this.toggleStretch(); break
+                    case 'i': this.invertImage(); break
+                    case 'x': this.toggleCrosshair(); break
+                    case '-': this.zoomOut(); break
+                    case '=': this.zoomIn(); break
+                    case '0': this.resetZoom(); break
                     default: return
                 }
 
