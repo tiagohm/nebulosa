@@ -166,20 +166,12 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    private async darvStart(direction: GuideDirection) {
+    async darvStart(direction: GuideDirection = 'EAST') {
         // TODO: Horizonte leste e oeste tem um impacto no "reversed"?
         const reversed = this.darvHemisphere === 'SOUTHERN'
         await this.openCameraImage()
         const capture = this.makeCameraStartCapture(this.camera!)
-        await this.api.darvStart(this.camera!, this.guideOutput!, this.darvDrift * 1000000, this.darvInitialPause * 1000000, direction, reversed, capture)
-    }
-
-    darvAzimuth() {
-        this.darvStart('EAST')
-    }
-
-    darvAltitude() {
-        this.darvStart('NORTH') // TODO: NORTH não é usado?
+        await this.api.darvStart(this.camera!, this.guideOutput!, this.darvDrift, this.darvInitialPause, direction, reversed, capture)
     }
 
     darvStop() {

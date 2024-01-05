@@ -68,10 +68,8 @@
                     </div>
                     <div class="grid mt-1">
                         <div class="col-12 flex align-items-center justify-content-center gap-1">
-                            <p-button [disabled]="!cameraConnected || !guideOutputConnected || darvInProgress" label="Azimuth"
-                                      (onClick)="darvAzimuth()" icon="mdi mdi-arrow-left-right-bold" severity="success" />
-                            <p-button [disabled]="!cameraConnected || !guideOutputConnected || darvInProgress" label="Altitude"
-                                      (onClick)="darvAltitude()" icon="mdi mdi-arrow-up-down-bold" severity="success" />
+                            <p-button [disabled]="!cameraConnected || !guideOutputConnected || darvInProgress" label="Start" (onClick)="darvStart()"
+                                      icon="mdi mdi-play" severity="success" />
                             <p-button [disabled]="!cameraConnected || !guideOutputConnected || !darvInProgress" label="Abort" (onClick)="darvStop()"
                                       icon="mdi mdi-stop" severity="danger" />
                             <p-button [disabled]="!cameraConnected" (onClick)="openCameraImage()" icon="mdi mdi-image" [text]="true" styleClass="ml-4"
