@@ -13,7 +13,6 @@ class ImageBucket {
 
     @Synchronized
     fun put(path: Path, image: Image, solution: PlateSolution? = null) {
-        remove(path)
         bucket[path] = image to solution
     }
 
@@ -25,9 +24,10 @@ class ImageBucket {
     }
 
     @Synchronized
-    fun open(path: Path, debayer: Boolean = true, solution: PlateSolution? = null): Image {
-        remove(path)
-        val image = Fits(path).also(Fits::read).use { Image.open(it, debayer) }
+    fun open(path: Path, debayer: Boolean = true, solution: PlateSolution? = null, force: Boolean = false): Image {
+        val openedImage = this[path]
+        if (openedImage != null && !force) return openedImage.first
+        val image = Fits(path).also(Fits::read).use { openedImage?.first?.load(it) ?: Image.open(it, debayer) }
         put(path, image, solution ?: PlateSolution.from(image.header))
         return image
     }

@@ -384,7 +384,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         electron.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
             if (event.state === 'EXPOSURE_FINISHED' && event.camera.name === this.imageData.camera?.name) {
-                await this.closeImage()
+                await this.closeImage(event.savePath !== this.imageData.path)
 
                 ngZone.run(() => {
                     this.imageData.path = event.savePath
@@ -395,7 +395,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('DATA.CHANGED', async (event: ImageData) => {
-            await this.closeImage()
+            await this.closeImage(event.path !== this.imageData.path)
 
             ngZone.run(() => {
                 this.loadImageFromData(event)
@@ -439,7 +439,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private async closeImage(force: boolean = false) {
         if (this.imageData.path) {
-            if (force || !this.imageData.path.startsWith('@')) {
+            if (force) {
                 await this.api.closeImage(this.imageData.path)
             }
         }
@@ -555,10 +555,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private async loadImageFromPath(path: string) {
         const image = this.image.nativeElement
         const scnrEnabled = this.scnrChannel !== 'NONE'
-        const { info, blob } = await this.api.openImage(path, this.imageData.camera, this.calibrate, this.debayer, this.autoStretched,
+        const { info, blob } = await this.api.openImage(path, this.imageData.camera, this.calibrate, this.debayer, !!this.imageData.camera, this.autoStretched,
             this.stretchShadowHighlight[0] / 65536, this.stretchShadowHighlight[1] / 65536, this.stretchMidtone / 65536,
-            this.mirrorHorizontal, this.mirrorVertical,
-            this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMethod)
+            this.mirrorHorizontal, this.mirrorVertical, this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMethod)
 
         this.imageInfo = info
         this.scnrMenuItem.disabled = info.mono

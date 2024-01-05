@@ -23,6 +23,7 @@ class ImageController(
         @DeviceOrEntityParam(required = false) camera: Camera?,
         @RequestParam(required = false, defaultValue = "true") debayer: Boolean,
         @RequestParam(required = false, defaultValue = "false") calibrate: Boolean,
+        @RequestParam(required = false, defaultValue = "false") force: Boolean,
         @RequestParam(required = false, defaultValue = "false") autoStretch: Boolean,
         @RequestParam(required = false, defaultValue = "0.0") shadow: Float,
         @RequestParam(required = false, defaultValue = "1.0") highlight: Float,
@@ -37,7 +38,7 @@ class ImageController(
         output: HttpServletResponse,
     ) = imageService.openImage(
         path, camera,
-        debayer, calibrate, autoStretch, shadow, highlight, midtone,
+        debayer, calibrate, force, autoStretch, shadow, highlight, midtone,
         mirrorHorizontal, mirrorVertical, invert,
         scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode,
         output,

@@ -49,14 +49,14 @@ class ImageService(
 
     @Synchronized
     fun openImage(
-        path: Path, camera: Camera?, debayer: Boolean = true, calibrate: Boolean = false,
+        path: Path, camera: Camera?, debayer: Boolean = true, calibrate: Boolean = false, force: Boolean = false,
         autoStretch: Boolean = false, shadow: Float = 0f, highlight: Float = 1f, midtone: Float = 0.5f,
         mirrorHorizontal: Boolean = false, mirrorVertical: Boolean = false, invert: Boolean = false,
         scnrEnabled: Boolean = false, scnrChannel: ImageChannel = ImageChannel.GREEN, scnrAmount: Float = 0.5f,
         scnrProtectionMode: ProtectionMethod = ProtectionMethod.AVERAGE_NEUTRAL,
         output: HttpServletResponse,
     ) {
-        val image = imageBucket[path]?.first ?: imageBucket.open(path, debayer)
+        val image = imageBucket.open(path, debayer, force = force)
 
         val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
         var stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
@@ -118,7 +118,6 @@ class ImageService(
     fun closeImage(path: Path) {
         imageBucket.remove(path)
         LOG.info("image closed. path={}", path)
-        System.gc()
     }
 
     @Synchronized

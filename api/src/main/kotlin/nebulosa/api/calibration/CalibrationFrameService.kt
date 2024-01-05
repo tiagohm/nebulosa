@@ -35,7 +35,7 @@ class CalibrationFrameService(
             var calibrationImage = Image(transformedImage.width, transformedImage.height, Header(), transformedImage.mono)
 
             if (biasFrame != null) {
-                calibrationImage = Fits(biasFrame.path!!).also(Fits::read).use(calibrationImage::load)
+                calibrationImage = Fits(biasFrame.path!!).also(Fits::read).use(calibrationImage::load)!!
                 transformedImage = transformedImage.transform(BiasSubtraction(calibrationImage))
                 LOG.info("bias frame subtraction applied. frame={}", biasFrame)
             } else {
@@ -46,7 +46,7 @@ class CalibrationFrameService(
             }
 
             if (darkFrame != null) {
-                calibrationImage = Fits(darkFrame.path!!).also(Fits::read).use(calibrationImage::load)
+                calibrationImage = Fits(darkFrame.path!!).also(Fits::read).use(calibrationImage::load)!!
                 transformedImage = transformedImage.transform(DarkSubtraction(calibrationImage))
                 LOG.info("dark frame subtraction applied. frame={}", darkFrame)
             } else {
@@ -57,7 +57,7 @@ class CalibrationFrameService(
             }
 
             if (flatFrame != null) {
-                calibrationImage = Fits(flatFrame.path!!).also(Fits::read).use(calibrationImage::load)
+                calibrationImage = Fits(flatFrame.path!!).also(Fits::read).use(calibrationImage::load)!!
                 transformedImage = transformedImage.transform(FlatCorrection(calibrationImage))
                 LOG.info("flat frame correction applied. frame={}", flatFrame)
             } else {

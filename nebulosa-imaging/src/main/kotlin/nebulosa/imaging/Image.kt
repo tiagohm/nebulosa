@@ -245,19 +245,21 @@ class Image(
         return image
     }
 
-    fun load(fits: Fits, debayer: Boolean = true): Image {
+    fun canLoad(hdu: ImageHdu, debayer: Boolean = true): Boolean {
+        return hdu.width == width && hdu.height == height && (isMono(hdu) || !debayer) == this.mono
+    }
+
+    fun canLoad(fits: Fits, debayer: Boolean = true): Boolean {
+        return canLoad(fits.filterIsInstance<ImageHdu>().first(), debayer)
+    }
+
+    fun load(fits: Fits, debayer: Boolean = true): Image? {
         return load(fits.filterIsInstance<ImageHdu>().first(), debayer)
     }
 
-    fun load(hdu: ImageHdu, debayer: Boolean = true): Image {
-        require(hdu.width == width) { "width does not match. $width != ${hdu.width}" }
-        require(hdu.height == height) { "height does not match. $height != ${hdu.height}" }
-
-        val mono = isMono(hdu) || !debayer
-        require(mono == this.mono) { "color format does not match" }
-
+    fun load(hdu: ImageHdu, debayer: Boolean = true): Image? {
+        if (!canLoad(hdu, debayer)) return null
         load(this, hdu, debayer)
-
         return this
     }
 
