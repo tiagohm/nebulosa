@@ -20,6 +20,6 @@ object FitsIO : FitsReader, FitsWriter {
     }
 
     override fun write(sink: Sink, hdu: Hdu<*>) {
-        TODO("Not yet implemented")
+        hdu.write(sink)
     }
 }

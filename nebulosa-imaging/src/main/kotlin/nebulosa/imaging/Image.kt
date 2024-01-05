@@ -7,6 +7,7 @@ import nebulosa.imaging.algorithms.transform
 import nebulosa.imaging.algorithms.transformation.CfaPattern
 import nebulosa.imaging.algorithms.transformation.Debayer
 import nebulosa.imaging.algorithms.transformation.Grayscale
+import okio.Sink
 import java.awt.color.ColorSpace
 import java.awt.image.*
 import kotlin.math.max
@@ -199,6 +200,10 @@ class Image(
                 }
             }
         }
+    }
+
+    fun writeTo(sink: Sink) {
+        hdu().write(sink)
     }
 
     fun hdu(): Hdu<ImageData> {

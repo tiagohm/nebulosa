@@ -1,5 +1,6 @@
 package nebulosa.fits
 
+import okio.Sink
 import java.nio.ByteBuffer
 
 interface ImageData {
@@ -11,4 +12,6 @@ interface ImageData {
     val bitpix: Bitpix
 
     fun read(block: (ByteBuffer) -> Unit)
+
+    fun writeTo(sink: Sink): Long
 }
