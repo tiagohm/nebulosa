@@ -83,9 +83,10 @@ class SkyAtlasService(
     }
 
     private fun positionOfBody(target: Any, location: LocationEntity, dateTime: LocalDateTime): BodyPosition? {
+        val position = positions.getOrPut(location, location::geographicPosition)
         return bodyEphemeris(target, location, dateTime)
             .withLocationAndDateTime(location, dateTime)
-            ?.let(BodyPosition::of)
+            ?.let { BodyPosition.of(it, position) }
     }
 
     private fun bodyEphemeris(target: Any, location: LocationEntity, dateTime: LocalDateTime): List<HorizonsElement> {

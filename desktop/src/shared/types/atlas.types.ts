@@ -1,3 +1,5 @@
+import { PierSide } from './mount.types'
+
 export type Angle = string | number
 
 export const CONSTELLATIONS = [
@@ -116,6 +118,7 @@ export interface BodyPosition extends EquatorialCoordinate, EquatorialCoordinate
     illuminated: number
     elongation: number
     leading: boolean
+    pierSide: PierSide
 }
 
 export const EMPTY_BODY_POSITION: BodyPosition = {
@@ -132,6 +135,7 @@ export const EMPTY_BODY_POSITION: BodyPosition = {
     illuminated: 0,
     elongation: 0,
     leading: false,
+    pierSide: 'NEITHER'
 }
 
 export interface Twilight {
@@ -198,6 +202,21 @@ export interface ComputedLocation extends EquatorialCoordinate, EquatorialCoordi
     meridianAt: string
     timeLeftToMeridianFlip: string
     lst: string
+    pierSide: PierSide
+}
+
+export const EMPTY_COMPUTED_LOCATION: ComputedLocation = {
+    constellation: 'AND',
+    meridianAt: '00:00',
+    timeLeftToMeridianFlip: '00:00',
+    lst: '00:00',
+    pierSide: 'NEITHER',
+    rightAscensionJ2000: '00h00m00s',
+    declinationJ2000: `+000°00'00"`,
+    rightAscension: '00h00m00s',
+    declination: `+000°00'00"`,
+    azimuth: `000°00'00"`,
+    altitude: `+00°00'00"`,
 }
 
 export const SATELLITE_GROUPS = [

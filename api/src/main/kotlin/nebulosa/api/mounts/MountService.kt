@@ -1,5 +1,6 @@
 package nebulosa.api.mounts
 
+import nebulosa.api.atlas.CurrentTime
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.image.ImageBucket
 import nebulosa.constants.PI
@@ -7,10 +8,7 @@ import nebulosa.constants.TAU
 import nebulosa.erfa.CartesianCoordinate
 import nebulosa.erfa.SphericalCoordinate
 import nebulosa.guiding.GuideDirection
-import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.mount.MountGeographicCoordinateChanged
-import nebulosa.indi.device.mount.SlewRate
-import nebulosa.indi.device.mount.TrackMode
+import nebulosa.indi.device.mount.*
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.astrometry.Constellation
@@ -18,7 +16,6 @@ import nebulosa.nova.frame.Ecliptic
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
-import nebulosa.time.UTC
 import nebulosa.wcs.WCSTransform
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -26,27 +23,12 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 
 @Service
 @Subscriber
 class MountService(private val imageBucket: ImageBucket) {
 
     private val site = HashMap<Mount, GeographicPosition>(2)
-
-    @Volatile private var prevTime = 0L
-
-    private var currentTime = UTC.now()
-        @Synchronized get() {
-            val curTime = System.currentTimeMillis()
-
-            if (curTime - prevTime >= 1000L) {
-                prevTime = curTime
-                field = UTC.now()
-            }
-
-            return field
-        }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onMountGeographicCoordinateChanged(event: MountGeographicCoordinateChanged) {
@@ -145,7 +127,7 @@ class MountService(private val imageBucket: ImageBucket) {
     }
 
     fun computeLST(mount: Mount): Angle {
-        return site[mount]!!.lstAt(currentTime)
+        return site[mount]!!.lstAt(CurrentTime)
     }
 
     fun computeZenithLocation(mount: Mount): ComputedLocation {
@@ -174,7 +156,7 @@ class MountService(private val imageBucket: ImageBucket) {
 
     fun computeMeridianEclipticLocation(mount: Mount): ComputedLocation {
         val ra = computeLST(mount)
-        val equatorial = Ecliptic.rotationAt(currentTime) * CartesianCoordinate.of(ra, 0.0, 1.0)
+        val equatorial = Ecliptic.rotationAt(CurrentTime) * CartesianCoordinate.of(ra, 0.0, 1.0)
         return computeLocation(mount, ra, SphericalCoordinate.of(equatorial).latitude, j2000 = false, meridianAt = false)
     }
 
@@ -186,7 +168,7 @@ class MountService(private val imageBucket: ImageBucket) {
         val computedLocation = ComputedLocation()
 
         val center = site[mount]!!
-        val time = currentTime
+        val time = CurrentTime
         val epoch = if (j2000) null else time
 
         val icrf = ICRF.equatorial(rightAscension, declination, time = time, epoch = epoch, center = center)
@@ -195,34 +177,36 @@ class MountService(private val imageBucket: ImageBucket) {
         if (j2000) {
             if (equatorial) {
                 val raDec = icrf.equatorialAtDate()
-                computedLocation.rightAscension = raDec.longitude.normalized.format(AngleFormatter.HMS)
-                computedLocation.declination = raDec.latitude.format(AngleFormatter.SIGNED_DMS)
+                computedLocation.rightAscension = raDec.longitude.normalized
+                computedLocation.declination = raDec.latitude
             }
 
-            computedLocation.rightAscensionJ2000 = rightAscension.format(AngleFormatter.HMS)
-            computedLocation.declinationJ2000 = declination.format(AngleFormatter.SIGNED_DMS)
+            computedLocation.rightAscensionJ2000 = rightAscension
+            computedLocation.declinationJ2000 = declination
         } else {
             if (equatorial) {
                 val raDec = icrf.equatorialJ2000()
-                computedLocation.rightAscensionJ2000 = raDec.longitude.normalized.format(AngleFormatter.HMS)
-                computedLocation.declinationJ2000 = raDec.latitude.format(AngleFormatter.SIGNED_DMS)
+                computedLocation.rightAscensionJ2000 = raDec.longitude.normalized
+                computedLocation.declinationJ2000 = raDec.latitude
             }
 
-            computedLocation.rightAscension = rightAscension.format(AngleFormatter.HMS)
-            computedLocation.declination = declination.format(AngleFormatter.SIGNED_DMS)
+            computedLocation.rightAscension = rightAscension
+            computedLocation.declination = declination
         }
 
         if (horizontal) {
             val altAz = icrf.horizontal()
-            computedLocation.azimuth = altAz.longitude.normalized.format(AngleFormatter.SIGNED_DMS)
-            computedLocation.altitude = altAz.latitude.format(AngleFormatter.SIGNED_DMS)
+            computedLocation.azimuth = altAz.longitude.normalized
+            computedLocation.altitude = altAz.latitude
         }
 
         if (meridianAt) {
-            computeTimeLeftToMeridianFlip(rightAscension, computeLST(mount).also { computedLocation.lst = it.format(LST_FORMAT) })
-                .also { computedLocation.timeLeftToMeridianFlip = it.format(LST_FORMAT) }
-                .also { computedLocation.meridianAt = LocalDateTime.now().plusSeconds((it.toHours * 3600.0).toLong()).format(MERIDIAN_TIME_FORMAT) }
+            computeTimeLeftToMeridianFlip(rightAscension, computeLST(mount).also { computedLocation.lst = it })
+                .also { computedLocation.timeLeftToMeridianFlip = it }
+                .also { computedLocation.meridianAt = LocalDateTime.now().plusSeconds((it.toHours * 3600.0).toLong()) }
         }
+
+        computedLocation.pierSide = PierSide.expectedPierSide(computedLocation.rightAscension, computedLocation.declination, computeLST(mount))
 
         return computedLocation
     }
@@ -254,11 +238,5 @@ class MountService(private val imageBucket: ImageBucket) {
         @JvmStatic private val GALACTIC_CENTER_DEC = "-29 00 28.1".deg
 
         @JvmStatic private val LOG = loggerFor<MountService>()
-        @JvmStatic private val MERIDIAN_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
-        @JvmStatic private val LST_FORMAT = AngleFormatter.Builder()
-            .hours()
-            .noSign()
-            .noSeconds()
-            .build()
     }
 }

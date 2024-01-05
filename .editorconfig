@@ -9,7 +9,7 @@ insert_final_newline = true
 max_line_length = 150
 tab_width = 4
 trim_trailing_whitespace = true
-ij_continuation_indent_size = 8
+ij_continuation_indent_size = 4
 ij_formatter_off_tag = @formatter:off
 ij_formatter_on_tag = @formatter:on
 ij_formatter_tags_enabled = true
@@ -22,6 +22,8 @@ trim_trailing_whitespace = false
 
 [*.kt]
 ij_kotlin_line_break_after_multiline_when_entry = false
+ij_kotlin_variable_annotation_wrap = off
+ij_kotlin_field_annotation_wrap = off
 
 [*.py]
 ij_python_wrap_long_lines = false

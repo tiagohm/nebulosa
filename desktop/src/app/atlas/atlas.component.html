@@ -242,9 +242,11 @@
                                 <label>Elongation (°)</label>
                             </span>
                         </div>
-                        <div class="col-3 justify-content-center">
-                            <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-md mdi-dots-vertical"
-                                      (click)="ephemerisMenu.show()" />
+                        <div class="col-3">
+                            <span class="p-float-label">
+                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.pierSide" />
+                                <label>Pier Side</label>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -265,9 +267,13 @@
             </div>
         </p-tabPanel>
     </p-tabView>
-    <div class="col-9 flex flex-row align-items-center justify-content-center gap-2 absolute" style="height: 32px; right: 14px; top: 2px;">
-        <span class="text-overflow-scroll font-bold">{{ name ?? '' }}</span>
-        <p-tag *ngFor="let tag of tags" [severity]="tag.severity" [value]="tag.title" />
+    <div class="col-9 flex align-items-center justify-content-between absolute" style="height: 32px; right: 14px; top: 2px;">
+        <span class="flex w-full align-items-center gap-2 justify-content-center">
+            <span class="text-overflow-scroll font-bold">{{ name ?? '' }}</span>
+            <p-tag *ngFor="let tag of tags" [severity]="tag.severity" [value]="tag.title" />
+        </span>
+        <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-md mdi-dots-vertical"
+                  (click)="ephemerisMenu.show()" />
     </div>
 </div>
 

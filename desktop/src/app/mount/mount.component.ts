@@ -7,7 +7,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { Angle, ComputedLocation, Constellation } from '../../shared/types/atlas.types'
+import { Angle, ComputedLocation, Constellation, EMPTY_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
 import { EMPTY_MOUNT, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 import { SkyAtlasTab } from '../atlas/atlas.component'
@@ -57,10 +57,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     targetCoordinateType: TargetCoordinateType = 'JNOW'
     targetRightAscension: Angle = '00h00m00s'
     targetDeclination: Angle = `00°00'00"`
-    targetAzimuth: Angle = `000°00'00"`
-    targetAltitude: Angle = `+00°00'00"`
-    targetConstellation?: Constellation
-    targetMeridianAt = '00:00'
+    targetComputedLocation: ComputedLocation = Object.assign({}, EMPTY_COMPUTED_LOCATION)
 
     private readonly computeCoordinatePublisher = new Subject<void>()
     private readonly computeTargetCoordinatePublisher = new Subject<void>()
@@ -429,12 +426,9 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     async computeTargetCoordinates() {
         if (this.mount.connected) {
-            const computedCoordinates = await this.api.mountComputeLocation(this.mount, this.targetCoordinateType === 'J2000',
+            const computedLocation = await this.api.mountComputeLocation(this.mount, this.targetCoordinateType === 'J2000',
                 this.targetRightAscension, this.targetDeclination, true, true, true)
-            this.targetAzimuth = computedCoordinates.azimuth
-            this.targetAltitude = computedCoordinates.altitude
-            this.targetConstellation = computedCoordinates.constellation
-            this.targetMeridianAt = computedCoordinates.meridianAt
+            this.targetComputedLocation = computedLocation
         }
     }
 
