@@ -117,7 +117,7 @@
                             <tr [pSelectableRow]="item">
                                 <td class="text-sm">{{ item | skyObject:'name' }}</td>
                                 <td class="text-sm">{{ item.type | enum }}</td>
-                                <td class="text-sm text-center">{{ item.magnitude < 99 ? item.magnitude.toFixed(1) : '-' }}</td>
+                                <td class="text-sm text-center">{{ item.magnitude < 30 ? item.magnitude.toFixed(1) : '-' }}</td>
                                 <td class="text-sm text-center">{{ item.constellation }}</td>
                             </tr>
                         </ng-template>
@@ -214,7 +214,7 @@
                         <div class="col-3">
                             <span class="p-float-label">
                                 <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                                       [value]="bodyPosition.magnitude < 99 ? bodyPosition.magnitude.toFixed(2) : '-'" />
+                                       [value]="bodyPosition.magnitude < 30 ? bodyPosition.magnitude.toFixed(2) : '-'" />
                                 <label>Magnitude</label>
                             </span>
                         </div>
