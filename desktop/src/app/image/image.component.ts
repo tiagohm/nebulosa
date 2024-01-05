@@ -402,8 +402,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        electron.on('KEY.PRESSED', event => {
-            if (event.control && !event.shift && !event.alt) {
+        window.addEventListener('keydown', event => {
+            if (event.ctrlKey && !event.shiftKey && !event.altKey) {
                 switch (event.key) {
                     case 'a': return this.toggleStretch()
                     case 'i': return this.invertImage()
@@ -411,9 +411,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                     case '-': return this.zoomOut()
                     case '=': return this.zoomIn()
                     case '0': return this.resetZoom()
+                    default: return
                 }
+
+                event.preventDefault()
             }
-        })
+        }, true)
 
         this.solverType = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS).type
     }

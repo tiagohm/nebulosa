@@ -53,7 +53,6 @@ type EventMappedType = {
     'FLAT_WIZARD.ELAPSED': FlatWizardEvent
     'FLAT_WIZARD.FRAME_CAPTURED': FlatWizardEvent
     'FLAT_WIZARD.FAILED': FlatWizardEvent
-    'KEY.PRESSED': Electron.Input
 }
 
 @Injectable({ providedIn: 'root' })
