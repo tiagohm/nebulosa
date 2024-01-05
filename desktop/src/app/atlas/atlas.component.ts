@@ -671,8 +671,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         refreshChart: boolean = false,
         location?: Location,
     ) {
-        if (this.refreshing) return
-
         location ??= await this.api.selectedLocation()
 
         this.refreshing = true
