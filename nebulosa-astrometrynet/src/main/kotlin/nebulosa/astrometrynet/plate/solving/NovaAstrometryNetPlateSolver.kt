@@ -13,7 +13,6 @@ import nebulosa.plate.solving.PlateSolver
 import nebulosa.plate.solving.PlateSolvingException
 import java.nio.file.Path
 import java.time.Duration
-import kotlin.math.max
 
 data class NovaAstrometryNetPlateSolver(
     private val service: NovaAstrometryNetService,
@@ -68,7 +67,7 @@ data class NovaAstrometryNetPlateSolver(
             throw PlateSolvingException(submission.errorMessage)
         }
 
-        var timeLeft = max(60000L, timeout?.toMillis() ?: 0L)
+        var timeLeft = timeout?.takeIf { it.toSeconds() > 0 }?.toMillis() ?: 300000L
 
         while (timeLeft >= 0L) {
             val startTime = System.currentTimeMillis()

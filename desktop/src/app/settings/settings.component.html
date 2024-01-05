@@ -27,15 +27,15 @@
             </div>
         </div>
         <div *ngIf="item === items[1]" class="grid p-2">
-            <div class="col-6">
+            <div class="col-8">
                 <span class="p-float-label">
                     <p-dropdown [options]="plateSolverTypes" [(ngModel)]="plateSolver.type" styleClass="p-inputtext-sm border-0"
                                 (ngModelChange)="save()" />
                     <label>Type</label>
                 </span>
             </div>
-            <div class="col-12 gap-2">
-                <span class="w-full flex gap-1 align-items-center" *ngIf="plateSolver.type === 'ASTAP'">
+            <div class="col-12" *ngIf="plateSolver.type === 'ASTAP'">
+                <span class="w-full flex gap-1 align-items-center">
                     <span class="w-full p-float-label">
                         <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.executablePath"
                                (ngModelChange)="save()" />
@@ -43,21 +43,38 @@
                     </span>
                     <p-button icon="mdi mdi-folder-open" size="small" (onClick)="chooseExecutablePath()" />
                 </span>
-                <span class="p-float-label" *ngIf="plateSolver.type === 'ASTAP'">
-                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.downsampleFactor"
-                                   (ngModelChange)="save()" [showButtons]="true" [min]="0" [max]="4" />
-                    <label>Downsample factor</label>
-                </span>
-                <span class="p-float-label" *ngIf="plateSolver.type === 'ASTROMETRY_NET_ONLINE'">
-                    <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.apiUrl"
-                           (ngModelChange)="save()" />
-                    <label>API URL</label>
-                </span>
-                <span class="p-float-label" *ngIf="plateSolver.type === 'ASTROMETRY_NET_ONLINE'">
-                    <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.apiKey"
-                           (ngModelChange)="save()" />
-                    <label>API Key</label>
-                </span>
+            </div>
+            <div class="col-12">
+                <div class="grid">
+                    <div class="col-6" *ngIf="plateSolver.type === 'ASTAP'">
+                        <span class="p-float-label">
+                            <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.downsampleFactor"
+                                           (ngModelChange)="save()" [showButtons]="true" [min]="0" [max]="4" />
+                            <label>Downsample factor</label>
+                        </span>
+                    </div>
+                    <div class="col-12" *ngIf="plateSolver.type === 'ASTROMETRY_NET_ONLINE'">
+                        <span class="p-float-label">
+                            <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.apiUrl"
+                                   (ngModelChange)="save()" />
+                            <label>API URL</label>
+                        </span>
+                    </div>
+                    <div class="col-6" *ngIf="plateSolver.type === 'ASTROMETRY_NET_ONLINE'">
+                        <span class="p-float-label">
+                            <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.apiKey"
+                                   (ngModelChange)="save()" />
+                            <label>API Key</label>
+                        </span>
+                    </div>
+                    <div class="col-6">
+                        <span class="p-float-label">
+                            <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [(ngModel)]="plateSolver.timeout"
+                                           (ngModelChange)="save()" [showButtons]="true" [min]="0" [max]="300" />
+                            <label>Timeout (s)</label>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

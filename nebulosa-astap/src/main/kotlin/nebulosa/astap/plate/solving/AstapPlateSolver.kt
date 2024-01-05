@@ -58,8 +58,8 @@ class AstapPlateSolver(path: Path) : PlateSolver {
         LOG.info("local solving. command={}", arguments)
 
         try {
-            val process = executor.execute(arguments, timeout ?: Duration.ofSeconds(300), path.parent)
-
+            val process = executor.execute(arguments, timeout?.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5), path.parent)
+            if (process.isAlive) process.destroyForcibly()
             LOG.info("astap exited. code={}", process.exitValue())
 
             val ini = Properties()

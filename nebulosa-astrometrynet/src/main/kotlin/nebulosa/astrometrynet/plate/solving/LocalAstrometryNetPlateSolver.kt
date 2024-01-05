@@ -35,7 +35,7 @@ class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver {
         val outFolder = Files.createTempDirectory("localplatesolver")
         arguments["--dir"] = outFolder
 
-        arguments["--cpulimit"] = timeout?.toSeconds() ?: 300
+        arguments["--cpulimit"] = timeout?.takeIf { it.toSeconds() > 0 }?.toSeconds() ?: 300
         arguments["--scale-units"] = "degwidth"
         arguments["--guess-scale"] = null
         arguments["--crpix-center"] = null

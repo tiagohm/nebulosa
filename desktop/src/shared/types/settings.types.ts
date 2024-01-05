@@ -6,6 +6,7 @@ export interface PlateSolverOptions {
     downsampleFactor: number
     apiUrl: string
     apiKey: string
+    timeout: number
 }
 
 export const EMPTY_PLATE_SOLVER_OPTIONS: PlateSolverOptions = {
@@ -14,4 +15,5 @@ export const EMPTY_PLATE_SOLVER_OPTIONS: PlateSolverOptions = {
     downsampleFactor: 0,
     apiUrl: 'https://nova.astrometry.net/',
     apiKey: '',
+    timeout: 0,
 }

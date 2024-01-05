@@ -10,7 +10,6 @@ import nebulosa.math.Angle
 import okhttp3.OkHttpClient
 import org.springframework.stereotype.Service
 import java.nio.file.Path
-import java.time.Duration
 
 @Service
 class PlateSolverService(
@@ -42,12 +41,12 @@ class PlateSolverService(
             }
         }
 
-        plateSolver.solve(path, null, centerRA, centerDEC, radius, 1, DEFAULT_TIMEOUT)
+        plateSolver
+            .solve(path, null, centerRA, centerDEC, radius, 1, options.timeout.takeIf { it.toSeconds() > 0 })
     }
 
     companion object {
 
-        @JvmStatic private val DEFAULT_TIMEOUT = Duration.ofMinutes(5)
         @JvmStatic private val NOVA_ASTROMETRY_NET_CACHE = HashMap<String, NovaAstrometryNetService>()
     }
 }
