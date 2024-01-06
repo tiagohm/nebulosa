@@ -16,70 +16,70 @@ import kotlin.math.min
 class Nebula : SkyCatalog<NebulaEntry>(94661) {
 
     fun load(
-        source: Source,
+        catalog: Source,
         namesSource: Source? = null,
     ) {
         clear()
 
-        (source as? BufferedSource ?: source.buffer()).use {
-            it.readString() // Version.
-            it.readString() // Edition.
+        (catalog as? BufferedSource ?: catalog.buffer()).use { source ->
+            source.readString() // Version.
+            source.readString() // Edition.
 
             val currentTime = UTC.now()
-            val namesMap = namesSource?.loadNames() ?: emptyMap()
+            val commonNames = namesSource?.let(::namesFor) ?: emptyList()
             val names = ArrayList<String>(8)
 
-            while (!it.exhausted()) {
-                val id = it.readInt().toLong()
-                val ra = it.readDouble().rad
-                val dec = it.readDouble().rad
-                val mB = it.readDouble()
-                val mV = it.readDouble()
-                val type = (it.readInt() + 1) % 37
-                it.readString() // Morphological type
-                val majorAxis = it.readDouble().deg
-                val minorAxis = it.readDouble().deg
-                val orientation = it.readInt().deg
-                val redshift = it.readDouble()
-                it.readDouble() // Redshift error
-                val parallax = it.readDouble().mas
-                it.readDouble().mas // Parallax error
-                it.readDouble() // Distance
-                it.readDouble() // Distance error
-                val ngc = it.readInt()
-                val ic = it.readInt()
-                val m = it.readInt()
-                val c = it.readInt()
-                val b = it.readInt()
-                val sh2 = it.readInt()
-                val vdb = it.readInt()
-                val rcw = it.readInt()
-                val ldn = it.readInt()
-                val lbn = it.readInt()
-                val cr = it.readInt()
-                val mel = it.readInt()
-                val pgc = it.readInt()
-                val ugc = it.readInt()
-                val ced = it.readString()
-                val arp = it.readInt()
-                val vv = it.readInt()
-                val pk = it.readString()
-                val png = it.readString()
-                val snrg = it.readString()
-                val aco = it.readString()
-                val hcg = it.readString()
-                val eso = it.readString()
-                val vdbh = it.readString()
-                val dwb = it.readInt()
-                val tr = it.readInt()
-                val st = it.readInt()
-                val ru = it.readInt()
-                val vdbha = it.readInt()
+            while (!source.exhausted()) {
+                val id = source.readInt().toLong()
+                val ra = source.readDouble().rad
+                val dec = source.readDouble().rad
+                val mB = source.readDouble()
+                val mV = source.readDouble()
+                val type = (source.readInt() + 1) % 37
+                source.readString() // Morphological type
+                val majorAxis = source.readDouble().deg
+                val minorAxis = source.readDouble().deg
+                val orientation = source.readInt().deg
+                val redshift = source.readDouble()
+                source.readDouble() // Redshift error
+                val parallax = source.readDouble().mas
+                source.readDouble().mas // Parallax error
+                source.readDouble() // Distance
+                source.readDouble() // Distance error
+                val ngc = source.readInt()
+                val ic = source.readInt()
+                val m = source.readInt()
+                val c = source.readInt()
+                val b = source.readInt()
+                val sh2 = source.readInt()
+                val vdb = source.readInt()
+                val rcw = source.readInt()
+                val ldn = source.readInt()
+                val lbn = source.readInt()
+                val cr = source.readInt()
+                val mel = source.readInt()
+                val pgc = source.readInt()
+                val ugc = source.readInt()
+                val ced = source.readString()
+                val arp = source.readInt()
+                val vv = source.readInt()
+                val pk = source.readString()
+                val png = source.readString()
+                val snrg = source.readString()
+                val aco = source.readString()
+                val hcg = source.readString()
+                val eso = source.readString()
+                val vdbh = source.readString()
+                val dwb = source.readInt()
+                val tr = source.readInt()
+                val st = source.readInt()
+                val ru = source.readInt()
+                val vdbha = source.readInt()
 
                 names.clear()
 
                 fun String.findNames(useKeyAsName: Boolean = true) {
-                    if (this in namesMap) names.addAll(namesMap[this]!!)
+                    commonNames.asSequence().filter { it.id == this }.forEach { names.add(it.name) }
                     if (useKeyAsName) names.add(this)
                 }
 
@@ -122,7 +122,7 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
                     majorAxis, minorAxis, orientation,
                     parallax = parallax, redshift = redshift,
                     // distance * 3261.5637769,
-                    constellation = SkyObject.computeConstellation(ra, dec, currentTime),
+                    constellation = SkyObject.constellationFor(ra, dec, currentTime),
                 )
 
                 add(nebula)
@@ -145,28 +145,31 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
          * Loads the Stellarium DSO Catalog Names file.
          */
         @JvmStatic
-        private fun Source.loadNames(): Map<String, List<String>> {
-            val res = HashMap<String, MutableList<String>>()
+        fun namesFor(source: Source): List<Name> {
+            val names = ArrayList<Name>()
 
-            (this as? BufferedSource ?: buffer()).use {
+            (source as? BufferedSource ?: source.buffer()).use {
                 while (!it.exhausted()) {
                     val line = it.readUtf8Line() ?: break
 
-                    if (line.startsWith("#")) continue
+                    if (line.startsWith("#") || line.isBlank()) continue
 
-                    val name = DSO_NAME_REGEX.matchEntire(line.substring(20))?.groupValues?.get(1) ?: continue
-                    val prefix = line.substring(0..4).trim()
+                    val prefix = prefixFor(line.substring(0..4).trim())
                     val id = line.substring(5..19).trim()
-
-                    val key = if (prefix.isEmpty()) id else "$prefix $id"
-
-                    if (key !in res) res[key] = ArrayList(4)
-
-                    res[key]!!.add(name)
+                    val name = DSO_NAME_REGEX.matchEntire(line.substring(20))?.groupValues?.get(1) ?: continue
+                    val key = if (prefix.isEmpty()) id else "$prefix$id"
+                    names.add(Name(key, name))
                 }
             }
 
-            return res
+            return names
+        }
+
+        @Suppress("NOTHING_TO_INLINE")
+        private inline fun prefixFor(prefix: String) = when (prefix) {
+            "SH2" -> "SH 2-"
+            "SNRG" -> "SNR G"
+            else -> "$prefix "
         }
     }
 }

@@ -408,7 +408,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             command: () => {
                 this.skyObjectFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
                 this.skyObjectFilter.declination = this.bodyPosition.declinationJ2000
-                if (this.skyObjectFilter.radius <= 0) this.skyObjectFilter.radius = 1
+                if (this.skyObjectFilter.radius <= 0) this.skyObjectFilter.radius = 4
                 this.tab = SkyAtlasTab.SKY_OBJECT
                 this.tabChanged()
                 this.filterSkyObject()
@@ -589,7 +589,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     async filterSkyObject() {
         if (!this.skyObjectFilter) return
 
-        if (!this.skyObjectFilter.radius) this.skyObjectFilter.radius = 1
+        if (this.skyObjectFilter.radius <= 0) this.skyObjectFilter.radius = 4
 
         await this.searchSkyObject()
 

@@ -185,41 +185,92 @@
       "relations": []
     },
     {
-      "id": "5:6518840186314177945",
-      "lastPropertyId": "3:7171122916482173681",
-      "name": "SimbadIdentifierEntity",
+      "id": "6:3705054558003767840",
+      "lastPropertyId": "12:762260734150852642",
+      "name": "SimbadEntity",
       "properties": [
         {
-          "id": "1:5740207060374171983",
+          "id": "1:2815331295543596023",
           "name": "id",
           "type": 6,
-          "flags": 1
+          "flags": 129
         },
         {
-          "id": "2:4684765207346563658",
+          "id": "2:1094957247301775448",
           "name": "name",
-          "indexId": "6:9080720220858934797",
-          "type": 9,
-          "flags": 2048
+          "type": 9
         },
         {
-          "id": "3:7171122916482173681",
-          "name": "simbadId",
-          "type": 6
+          "id": "3:2894803910674914590",
+          "name": "type",
+          "type": 5
+        },
+        {
+          "id": "4:2941887692366753803",
+          "name": "rightAscensionJ2000",
+          "type": 8
+        },
+        {
+          "id": "5:9102733480395399072",
+          "name": "declinationJ2000",
+          "type": 8
+        },
+        {
+          "id": "6:5928907297748334710",
+          "name": "magnitude",
+          "type": 8
+        },
+        {
+          "id": "7:6938045857158270084",
+          "name": "pmRA",
+          "type": 8
+        },
+        {
+          "id": "8:3191952939943328844",
+          "name": "pmDEC",
+          "type": 8
+        },
+        {
+          "id": "9:116139679953849730",
+          "name": "parallax",
+          "type": 8
+        },
+        {
+          "id": "10:8499347473053691215",
+          "name": "radialVelocity",
+          "type": 8
+        },
+        {
+          "id": "11:5618236643604972886",
+          "name": "redshift",
+          "type": 8
+        },
+        {
+          "id": "12:762260734150852642",
+          "name": "constellation",
+          "type": 5
         }
       ],
       "relations": []
     }
   ],
-  "lastEntityId": "5:6518840186314177945",
+  "lastEntityId": "6:3705054558003767840",
   "lastIndexId": "6:9080720220858934797",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
-  "retiredEntityUids": [],
-  "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredEntityUids": [
+    6518840186314177945
+  ],
+  "retiredIndexUids": [
+    9080720220858934797
+  ],
+  "retiredPropertyUids": [
+    5740207060374171983,
+    4684765207346563658,
+    7171122916482173681
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

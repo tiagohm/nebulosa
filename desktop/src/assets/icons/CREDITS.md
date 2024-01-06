@@ -26,8 +26,8 @@
 * https://www.flaticon.com/free-icon/stars_3266390
 * https://www.flaticon.com/free-icon/milky-way_1086076
 * https://www.flaticon.com/free-icon/satellite_1086093
-* https://www.flaticon.com/free-icon/search_10770011
 * https://www.flaticon.com/free-icon/stack_3342239
 * https://www.flaticon.com/free-icon/witch-hat_5606276
 * https://www.flaticon.com/free-icon/picture_2659360
+* https://www.flaticon.com/free-icon/magnifier_13113714
 * https://thenounproject.com/icon/random-dither-4259782

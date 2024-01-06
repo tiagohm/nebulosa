@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.objectbox.BoxStore
 import nebulosa.api.atlas.SatelliteEntity
-import nebulosa.api.atlas.SimbadIdentifierEntity
+import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.entities.MyObjectBox
 import nebulosa.api.locations.LocationEntity
@@ -165,7 +165,7 @@ class BeanConfiguration {
     fun satelliteBox(boxStore: BoxStore) = boxStore.boxFor(SatelliteEntity::class.java)!!
 
     @Bean
-    fun simbadIdentifierBox(@Qualifier("simbadBoxStore") boxStore: BoxStore) = boxStore.boxFor(SimbadIdentifierEntity::class.java)!!
+    fun simbadEntityBox(@Qualifier("simbadBoxStore") boxStore: BoxStore) = boxStore.boxFor(SimbadEntity::class.java)!!
 
     @Bean
     fun webMvcConfigurer(

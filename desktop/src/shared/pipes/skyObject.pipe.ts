@@ -11,7 +11,7 @@ export class SkyObjectPipe implements PipeTransform {
     transform(value: AstronomicalObject | undefined, what: SkyObjectPart) {
         switch (what) {
             case 'name':
-                return value?.name.replaceAll('][', ' · ').replace('[', '').replace(']', '')
+                return value?.name.replaceAll('|', ' · ')
             case 'firstName':
                 return value?.name.split(/\[([^\]]+)\]/g).filter(Boolean)[0]
         }

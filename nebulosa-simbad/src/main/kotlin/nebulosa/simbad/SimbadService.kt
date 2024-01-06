@@ -92,8 +92,8 @@ class SimbadService(
                 magnitude = min(magnitude, row.getField("K").toDoubleOrNull() ?: SkyObject.MAGNITUDE_MAX)
             }
 
-            val distance = if (parallax > 0.0) (1000.0 * ONE_PARSEC) / parallax else 0.0 // AU
-            val constellation = SkyObject.computeConstellation(rightAscensionJ2000, declinationJ2000, currentTime)
+            val distance = SkyObject.distanceFor(parallax)
+            val constellation = SkyObject.constellationFor(rightAscensionJ2000, declinationJ2000, currentTime)
 
             val entity = SimbadEntry(
                 id, name.joinToString("") { "[$it]" }, magnitude,

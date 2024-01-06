@@ -31,7 +31,7 @@ class LibWCSDownloadTask(
                 val libraryPath = Path.of("$libsPath", "libwcs")
 
                 if (newestVersion != preferenceService.getText(VERSION_KEY) || !libraryPath.exists()) {
-                    LOG.info("LibWCS is out of date. Downloading it...")
+                    LOG.info("LibWCS is out of date. Downloading...")
 
                     val libraryUrl = checkNotNull(LIBRARY_URLS[Platform.RESOURCE_PREFIX])
                     request = Request.Builder().get().url(libraryUrl).build()

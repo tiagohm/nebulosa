@@ -50,7 +50,7 @@ class HygDatabase : SkyCatalog<HygEntry>(118005) {
                 .takeIf { it.isNotEmpty() }
                 ?.uppercase()
                 ?.let(Constellation::valueOf)
-                ?: SkyObject.computeConstellation(rightAscension, declination, currentTime)
+                ?: SkyObject.constellationFor(rightAscension, declination, currentTime)
 
             names.clear()
 

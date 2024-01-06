@@ -8,14 +8,13 @@ import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
+import nebulosa.math.toLightYears
+import nebulosa.math.toMas
 import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.sbd.SmallBodyDatabaseService
-import nebulosa.simbad.SimbadEntry
-import nebulosa.simbad.SimbadSearch
-import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import okhttp3.OkHttpClient
@@ -42,13 +41,12 @@ class SkyAtlasService(
     private val bodyEphemerisProvider: BodyEphemerisProvider,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val satelliteRepository: SatelliteRepository,
-    private val simbadIdentifierRepository: SimbadIdentifierRepository,
-    private val simbadService: SimbadService,
+    private val simbadEntityRepository: SimbadEntityRepository,
     private val httpClient: OkHttpClient,
 ) {
 
     private val positions = HashMap<LocationEntity, GeographicPosition>()
-    private val cachedSimbadEntries = HashMap<Long, SimbadEntry>()
+    private val cachedSimbadEntities = HashMap<Long, SimbadEntity>()
     @Volatile private var sunImage = ByteArray(0)
 
     val objectTypes: List<SkyObjectType> = SkyObjectType.entries
@@ -71,11 +69,12 @@ class SkyAtlasService(
     }
 
     fun positionOfSkyObject(location: LocationEntity, id: Long, dateTime: LocalDateTime): BodyPosition {
-        val target = cachedSimbadEntries[id] ?: simbadService.search(SimbadSearch(id)).firstOrNull()
-        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found simbad with id: [$id]")
-        cachedSimbadEntries[target.id] = target
+        val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id)
+        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found sky object: [$id]")
+        cachedSimbadEntities[id] = target
+        val distance = SkyObject.distanceFor(target.parallax.toMas)
         return positionOfBody(target, location, dateTime)!!
-            .copy(magnitude = target.magnitude, constellation = target.constellation, distance = target.distance, distanceUnit = "ly")
+            .copy(magnitude = target.magnitude, constellation = target.constellation, distance = distance.toLightYears, distanceUnit = "ly")
     }
 
     fun positionOfSatellite(location: LocationEntity, satellite: SatelliteEntity, dateTime: LocalDateTime): BodyPosition {
@@ -150,9 +149,9 @@ class SkyAtlasService(
     }
 
     fun altitudePointsOfSkyObject(location: LocationEntity, id: Long, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val target = cachedSimbadEntries[id] ?: simbadService.search(SimbadSearch(id)).firstOrNull()
-        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found simbad with id: [$id]")
-        cachedSimbadEntries[target.id] = target
+        val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id)
+        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found sky object: [$id]")
+        cachedSimbadEntities[id] = target
         val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now()))
         return altitudePointsOfBody(ephemeris, stepSize)
     }
@@ -184,31 +183,7 @@ class SkyAtlasService(
         constellation: Constellation? = null,
         magnitudeMin: Double = SkyObject.MAGNITUDE_MIN, magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
         type: SkyObjectType? = null,
-    ): List<SimbadEntry> {
-        require(text.isNullOrBlank() || text.length >= 3) { "invalid text" }
-
-        val ids = if (text.isNullOrBlank()) {
-            LongArray(0)
-        } else {
-            synchronized(simbadIdentifierRepository) {
-                val name = text.replace(INVALID_DSO_CHARS, "")
-                val identifiers = simbadIdentifierRepository.findByName(name)
-                LOG.info("found {} identifiers for {}", identifiers.size, name)
-                if (identifiers.isEmpty()) return emptyList()
-                LongArray(identifiers.size) { identifiers[it].simbadId }
-            }
-        }
-
-        val search = SimbadSearch.Builder()
-            .region(rightAscension, declination, radius)
-            .also { if (type != null) it.types(type) }
-            .magnitude(magnitudeMin..magnitudeMax)
-            .constellation(constellation)
-            .ids(ids)
-            .build()
-
-        return simbadService.search(search)
-    }
+    ) = simbadEntityRepository.find(text, constellation, rightAscension, declination, radius, magnitudeMin, magnitudeMax, type)
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
     fun refreshImageOfSun() {
