@@ -5,15 +5,13 @@ import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.hypot
 
-data class CartesianCoordinate(
-    val x: Distance = 0.0,
-    val y: Distance = 0.0,
-    val z: Distance = 0.0,
-) {
+class CartesianCoordinate : Vector3D {
+
+    constructor(x: Distance = 0.0, y: Distance = 0.0, z: Distance = 0.0) : super(x, y, z)
+
+    constructor(vector: DoubleArray) : super(vector)
 
     val spherical by lazy { SphericalCoordinate.of(x, y, z) }
-
-    val vector by lazy { Vector3D(x, y, z) }
 
     fun angularDistance(coordinate: CartesianCoordinate): Angle {
         val dot = x * coordinate.x + y * coordinate.y + z * coordinate.z

@@ -45,6 +45,9 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
 
     @Volatile private var stepExecution: StepExecution? = null
 
+    @Volatile override var savedPath: Path? = null
+        private set
+
     override fun registerCameraCaptureListener(listener: CameraCaptureListener): Boolean {
         return listeners.add(listener)
     }
@@ -67,7 +70,8 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
                     aborted = true
                 }
                 is CameraExposureProgressChanged -> {
-                    val exposureRemainingTime = event.device.exposureTime
+                    // minOf fix possible bug on SVBony exposure time.
+                    val exposureRemainingTime = minOf(event.device.exposureTime, exposureTime)
                     val exposureElapsedTime = exposureTime - exposureRemainingTime
                     val exposureProgress = exposureElapsedTime.toNanos().toDouble() / exposureTime.toNanos()
                     stepExecution?.onCameraExposureElapsed(exposureElapsedTime, exposureRemainingTime, exposureProgress)
@@ -122,7 +126,7 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     private fun executeCapture(stepExecution: StepExecution) {
         if (camera.connected && !aborted) {
             synchronized(camera) {
-                LOG.debug { "camera exposure started. request=%s".format(request) }
+                LOG.debug { "camera exposure started. estimatedCaptureTime=$estimatedCaptureTime, request=$request" }
 
                 latch.countUp()
 
@@ -145,29 +149,19 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
 
                 captureElapsedTime += exposureTime
 
-                LOG.debug { "camera exposure finished. aborted=%s, camera=%s".format(aborted, camera) }
+                LOG.debug { "camera exposure finished. aborted=$aborted, camera=$camera" }
             }
         }
     }
 
     private fun save(stream: InputStream) {
-        val savePath = if (request.autoSave) {
-            val now = LocalDateTime.now()
-            val savePath = request.autoSubFolderMode.pathFor(request.savePath!!, now)
-            val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), request.frameType)
-            Path.of("$savePath", fileName)
-        } else {
-            val fileName = "%s.fits".format(camera.name)
-            Path.of("${request.savePath}", fileName)
-        }
-
         try {
-            LOG.info("saving FITS. path={}", savePath)
+            savedPath = request.makeSavePath()
 
-            savePath.createParentDirectories()
-            stream.transferAndClose(savePath.outputStream())
+            LOG.info("saving FITS. path={}", savedPath)
 
-            stepExecution!!.context[SAVE_PATH] = savePath
+            savedPath!!.createParentDirectories()
+            stream.transferAndClose(savedPath!!.outputStream())
 
             listeners.forEach { it.onExposureFinished(this, stepExecution!!) }
         } catch (e: Throwable) {
@@ -204,7 +198,6 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
     companion object {
 
         const val EXPOSURE_COUNT = "CAMERA_EXPOSURE.EXPOSURE_COUNT"
-        const val SAVE_PATH = "CAMERA_EXPOSURE.SAVE_PATH"
         const val EXPOSURE_ELAPSED_TIME = "CAMERA_EXPOSURE.EXPOSURE_ELAPSED_TIME"
         const val EXPOSURE_REMAINING_TIME = "CAMERA_EXPOSURE.EXPOSURE_REMAINING_TIME"
         const val EXPOSURE_PROGRESS = "CAMERA_EXPOSURE.EXPOSURE_PROGRESS"
@@ -214,5 +207,18 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
 
         @JvmStatic private val LOG = loggerFor<CameraExposureStep>()
         @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmssSSS")
+
+        @JvmStatic
+        fun CameraStartCaptureRequest.makeSavePath(autoSave: Boolean = this.autoSave): Path {
+            return if (autoSave) {
+                val now = LocalDateTime.now()
+                val savePath = autoSubFolderMode.pathFor(savePath!!, now)
+                val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), frameType)
+                Path.of("$savePath", fileName)
+            } else {
+                val fileName = "%s.fits".format(camera!!.name)
+                Path.of("$savePath", fileName)
+            }
+        }
     }
 }

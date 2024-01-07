@@ -9,15 +9,15 @@ import kotlin.math.max
 import kotlin.math.min
 
 data class SigmaClip(
-    val sigma: Double = 3.0,
-    val sigmaLower: Double = sigma,
-    val sigmaUpper: Double = sigma,
-    val channel: ImageChannel = ImageChannel.GRAY,
-    val centerMethod: CenterMethod = CenterMethod.MEDIAN,
-    val maxIteration: Int = 5,
-    val replaceRejectedPixels: Boolean = false,
-    val rejectedPixelFillValue: Float = 0f,
-    val noStatistics: Boolean = true,
+    private val sigma: Double = 3.0,
+    private val sigmaLower: Double = sigma,
+    private val sigmaUpper: Double = sigma,
+    private val channel: ImageChannel = ImageChannel.GRAY,
+    private val centerMethod: CenterMethod = CenterMethod.MEDIAN,
+    private val maxIteration: Int = 5,
+    private val replaceRejectedPixels: Boolean = false,
+    private val rejectedPixelFillValue: Float = 0f,
+    private val noStatistics: Boolean = true,
 ) : TransformAlgorithm, ComputationAlgorithm<SigmaClip.Data> {
 
     enum class CenterMethod {
@@ -49,7 +49,7 @@ data class SigmaClip(
             val std = stats.stdDev
             var count = 0
 
-            for (i in source.indices) {
+            for (i in 0 until source.size) {
                 val pixel = source.read(i, channel)
                 val reject = pixel < center - (sigmaLower * std) ||
                         pixel > center + (sigmaUpper * std)
@@ -70,7 +70,7 @@ data class SigmaClip(
 
         val stats = if (noStatistics) Statistics.Data.EMPTY else Statistics(channel).compute(source)
 
-        for (i in source.indices) {
+        for (i in 0 until source.size) {
             val pixel = source.read(i, channel)
 
             if (pixel < 0) {

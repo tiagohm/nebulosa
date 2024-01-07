@@ -118,6 +118,8 @@ data class HeaderCard(
         const val MAX_VALID_CHAR = 0x7e.toChar()
         const val HIERARCH_WITH_DOT = "HIERARCH."
 
+        @JvmStatic val END = HeaderCard("END", "", "", Any::class.java)
+
         @JvmStatic private val BOOLEAN_TYPES = arrayOf(
             Boolean::class.javaPrimitiveType!!, Boolean::class.javaObjectType,
         )

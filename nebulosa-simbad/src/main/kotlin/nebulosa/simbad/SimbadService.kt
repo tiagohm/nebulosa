@@ -82,18 +82,18 @@ class SimbadService(
             var magnitude = row.getField("V").toDoubleOrNull()
                 ?: row.getField("B").toDoubleOrNull()
                 ?: row.getField("U").toDoubleOrNull()
-                ?: SkyObject.UNKNOWN_MAGNITUDE
+                ?: SkyObject.MAGNITUDE_MAX
 
-            if (magnitude >= SkyObject.UNKNOWN_MAGNITUDE || !magnitude.isFinite()) {
-                magnitude = min(magnitude, row.getField("R").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                magnitude = min(magnitude, row.getField("I").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                magnitude = min(magnitude, row.getField("J").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                magnitude = min(magnitude, row.getField("H").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
-                magnitude = min(magnitude, row.getField("K").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
+            if (magnitude >= SkyObject.MAGNITUDE_MAX || !magnitude.isFinite()) {
+                magnitude = min(magnitude, row.getField("R").toDoubleOrNull() ?: SkyObject.MAGNITUDE_MAX)
+                magnitude = min(magnitude, row.getField("I").toDoubleOrNull() ?: SkyObject.MAGNITUDE_MAX)
+                magnitude = min(magnitude, row.getField("J").toDoubleOrNull() ?: SkyObject.MAGNITUDE_MAX)
+                magnitude = min(magnitude, row.getField("H").toDoubleOrNull() ?: SkyObject.MAGNITUDE_MAX)
+                magnitude = min(magnitude, row.getField("K").toDoubleOrNull() ?: SkyObject.MAGNITUDE_MAX)
             }
 
-            val distance = if (parallax > 0.0) (1000.0 * ONE_PARSEC) / parallax else 0.0 // AU
-            val constellation = SkyObject.computeConstellation(rightAscensionJ2000, declinationJ2000, currentTime)
+            val distance = SkyObject.distanceFor(parallax)
+            val constellation = SkyObject.constellationFor(rightAscensionJ2000, declinationJ2000, currentTime)
 
             val entity = SimbadEntry(
                 id, name.joinToString("") { "[$it]" }, magnitude,
@@ -110,14 +110,14 @@ class SimbadService(
     }
 
     fun search(search: SimbadSearch): List<SimbadEntry> {
-        val (id, text, rightAscension, declination, radius, types, magnitudeMin, magnitudeMax, constellation, limit) = search
+        val (id, text, rightAscension, declination, radius, types, magnitudeMin, magnitudeMax, constellation, ids, _, limit, sortType, sortDir) = search
         val builder = QueryBuilder()
 
         var join: Table = LeftJoin(BASIC_TABLE, FLUX_TABLE, arrayOf(OID equal FLUX_TABLE.column("oidref")))
         join = LeftJoin(join, IDS_TABLE, arrayOf(OID equal IDS_TABLE.column("oidref")))
 
         builder.add(Distinct)
-        builder.add(Limit(max(1, min(limit, 10000))))
+        builder.add(Limit(max(1, min(if (ids.isEmpty()) limit else ids.size, DEFAULT_LIMIT))))
         builder.addAll(arrayOf(OID, MAIN_ID, OTYPE, RA, DEC, PM_RA, PM_DEC, PLX, RAD_VEL, REDSHIFT))
         builder.addAll(arrayOf(MAG_V, MAG_B, MAG_U, MAG_R, MAG_I, MAG_J, MAG_H, MAG_K))
         builder.addAll(arrayOf(MAJOR_AXIS, MINOR_AXIS, ORIENT, SP_TYPE, IDS))
@@ -126,18 +126,25 @@ class SimbadService(
         if (id > 0) {
             builder.add(OID equal id)
         } else {
-            if (!text.isNullOrBlank()) {
+            if (ids.isNotEmpty()) {
+                builder.add(OID includes ids)
+            } else if (!text.isNullOrBlank()) {
                 join = LeftJoin(join, IDENT_TABLE, arrayOf(OID equal IDENT_TABLE.column("oidref")))
             }
 
-            builder.add(OID greaterThan search.lastID)
+            if (search.lastID > 0) builder.add(OID greaterThan search.lastID)
             if (radius > 0.0) builder.add(SkyPoint(RA, DEC) contains Circle(rightAscension, declination, radius))
             if (!types.isNullOrEmpty()) builder.add(Or(types.map { OTYPE equal "${it.codes[0]}.." }))
             if (magnitudeMin > -30.0) builder.add((MAG_V greaterOrEqual magnitudeMin) or (MAG_B greaterOrEqual magnitudeMin))
             if (magnitudeMax < 30.0) builder.add((MAG_V lessOrEqual magnitudeMax) or (MAG_B lessOrEqual magnitudeMax))
             if (!text.isNullOrBlank()) builder.add(ID equal text.trim())
             if (constellation != null) builder.add(SkyPoint(RA, DEC) contains ConstellationBoundary(constellation.name))
-            builder.add(SortBy(OID))
+
+            if (sortType == SimbadSearch.SortType.OID) builder.add(SortBy(OID, sortDir))
+            else if (sortType == SimbadSearch.SortType.MAGNITUDE) {
+                builder.add(SortBy(MAG_V, sortDir))
+                builder.add(SortBy(MAG_B, sortDir))
+            }
         }
 
         builder.add(join)
@@ -147,6 +154,7 @@ class SimbadService(
 
     companion object {
 
+        const val DEFAULT_LIMIT = 5000
         const val MAIN_URL = "https://simbad.cds.unistra.fr/"
         const val ALTERNATIVE_URL = "https://simbad.u-strasbg.fr/"
 

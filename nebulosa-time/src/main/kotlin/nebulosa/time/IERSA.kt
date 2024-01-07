@@ -1,7 +1,5 @@
 package nebulosa.time
 
-import nebulosa.constants.DAYSEC
-import nebulosa.constants.MJD0
 import java.io.InputStream
 
 /**
@@ -54,38 +52,27 @@ class IERSA : IERS() {
     override lateinit var dut1: DoubleArray
         private set
 
-    override val columns = Column.entries
+    override val columns: List<Column> = Column.entries
 
-    override fun canUseThisLine(line: String) = line.trim().length > 17 && line[16] == 'I'
+    override fun canUseThisLine(line: String) = line.trim().length > 17 && (line[16] == 'I' || line[16] == 'P')
 
     override fun load(source: InputStream) {
         super.load(source)
 
-        time = DoubleArray(size) {
-            val mjd = this[it, Column.MJD].toDouble()
-            mjd + (TT_MINUS_UTC / DAYSEC + MJD0)
-        }
-
-        pmX = DoubleArray(size) { this[it, Column.PM_X_A].toDouble() }
-
-        pmY = DoubleArray(size) { this[it, Column.PM_Y_A].toDouble() }
-
-        dut1 = DoubleArray(size) { this[it, Column.DUT1_A].toDouble() }
-
-        val bigJumps = IntArray(dut1.size) { if (it > 0 && dut1[it] - dut1[it - 1] > 0.9) 1 else 0 }
-
-        for (i in dut1.indices) {
-            if (i > 0) bigJumps[i] += bigJumps[i - 1]
-            val k = bigJumps[i] + TT_MINUS_UTC
-            dut1[i] = k - dut1[i]
-        }
+        time = DoubleArray(size) { this[it, Column.MJD].toDouble() }
+        pmX = DoubleArray(size) { compute(Column.PM_X_A, Column.PM_X_B, it) }
+        pmY = DoubleArray(size) { compute(Column.PM_Y_A, Column.PM_Y_B, it) }
+        dut1 = DoubleArray(size) { compute(Column.DUT1_A, Column.DUT1_B, it) }
     }
 
     companion object {
 
         const val URL = "https://datacenter.iers.org/data/9/finals2000A.all"
 
-        private const val TT_MINUS_UTC = 32.184 + 12.0
+        @JvmStatic
+        private fun IERS.compute(a: IERS.Column, b: IERS.Column, index: Int): Double {
+            return this[index, b].toDoubleOrNull() ?: this[index, a].toDoubleOrNull() ?: 0.0
+        }
     }
 }
 

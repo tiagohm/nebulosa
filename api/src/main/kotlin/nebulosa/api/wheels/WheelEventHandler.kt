@@ -52,8 +52,8 @@ class WheelEventHandler(
 
     companion object {
 
-        const val WHEEL_UPDATED = "WHEEL_UPDATED"
-        const val WHEEL_ATTACHED = "WHEEL_ATTACHED"
-        const val WHEEL_DETACHED = "WHEEL_DETACHED"
+        const val WHEEL_UPDATED = "WHEEL.UPDATED"
+        const val WHEEL_ATTACHED = "WHEEL.ATTACHED"
+        const val WHEEL_DETACHED = "WHEEL.DETACHED"
     }
 }

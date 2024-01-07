@@ -42,7 +42,7 @@ class ICRFTest : StringSpec() {
             val elevation = 853.m
 
             val time = TimeYMDHMS(2023, 1, 30, 22)
-            val site = Geoid.IERS2010.latLon(longitude, latitude, elevation)
+            val site = Geoid.IERS2010.lonLat(longitude, latitude, elevation)
 
             val icrf = ICRF.equatorial(ra, dec, time = time, center = site)
             val azAlt = icrf.horizontal()

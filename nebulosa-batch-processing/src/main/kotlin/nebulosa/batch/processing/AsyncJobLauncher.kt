@@ -130,9 +130,9 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
                 }
             }
 
-            job.afterJob()
-            jobListeners.forEach { it.afterJob() }
             stepJobListeners.forEach { it.afterJob() }
+            jobListeners.forEach { it.afterJob() }
+            job.afterJob()
         }
 
         return jobExecution

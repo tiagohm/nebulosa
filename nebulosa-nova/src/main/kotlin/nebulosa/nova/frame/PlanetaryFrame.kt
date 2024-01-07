@@ -1,7 +1,10 @@
 package nebulosa.nova.frame
 
 import nebulosa.constants.DAYSEC
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.Matrix3D
+import nebulosa.math.rad
 import nebulosa.nasa.pck.PckSegment
 import nebulosa.nova.position.PlanetograhicPosition
 import nebulosa.time.InstantOfTime
@@ -13,13 +16,13 @@ import kotlin.math.sin
  */
 data class PlanetaryFrame(
     val center: Number,
-    val matrix: Matrix3D?,
-    val segment: PckSegment,
+    private val matrix: Matrix3D?,
+    private val segment: PckSegment,
 ) : Frame {
 
     data class RotationAndRate(
-        val rotation: Matrix3D,
-        val rate: Matrix3D,
+        @JvmField val rotation: Matrix3D,
+        @JvmField val rate: Matrix3D,
     )
 
     /**
@@ -27,20 +30,16 @@ data class PlanetaryFrame(
      */
     constructor(
         center: Number,
-        angles: TripleOfAngle,
+        angles: DoubleArray,
         segment: PckSegment,
-    ) : this(
-        center,
-        Matrix3D.rotateX(angles.first).rotateY(angles.second).rotateZ(angles.third),
-        segment,
-    )
+    ) : this(center, Matrix3D.rotX(angles[0]).rotateY(angles[1]).rotateZ(angles[2]), segment)
 
     /**
      * Returns the rotation matrix for this frame at the [time].
      */
     override fun rotationAt(time: InstantOfTime): Matrix3D {
         val (ra, dec, w) = segment.compute(time.tdb, derivative = false).position
-        val r = Matrix3D.rotateZ((-w).rad).rotateX((-dec).rad).rotateZ((-ra).rad)
+        val r = Matrix3D.rotZ((-w).rad).rotateX((-dec).rad).rotateZ((-ra).rad)
         return if (matrix != null) matrix * r else r
     }
 
@@ -54,7 +53,7 @@ data class PlanetaryFrame(
         val (ra, dec, w) = c
         val (radot, decdot, wdot) = rates
 
-        val r = Matrix3D.rotateZ((-w).rad)
+        val r = Matrix3D.rotZ((-w).rad)
             .rotateX((-dec).rad)
             .rotateZ((-ra).rad)
 

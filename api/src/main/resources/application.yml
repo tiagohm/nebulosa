@@ -11,21 +11,6 @@ spring:
   main:
     lazy-initialization: true
 
-  datasource:
-    url: 'jdbc:sqlite:file:${DATA_PATH}/nebulosa.db'
-
-  jpa:
-    database-platform: org.hibernate.community.dialect.SQLiteDialect
-    show-sql: false
-    open-in-view: true
-    hibernate:
-      ddl-auto: validate
-
-  flyway:
-    baseline-on-migrate: true
-    baseline-version: 0
-    table: migrations
-
 logging:
   level:
     nebulosa.indi: INFO

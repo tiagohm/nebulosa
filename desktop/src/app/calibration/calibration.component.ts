@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import path from 'path'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
@@ -6,7 +6,8 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { CalibrationFrame, CalibrationFrameGroup, Camera } from '../../shared/types'
+import { CalibrationFrame, CalibrationFrameGroup } from '../../shared/types/calibration.types'
+import { Camera } from '../../shared/types/camera.types'
 import { AppComponent } from '../app.component'
 
 export const CALIBRATION_DIR_KEY = 'calibration.directory'
@@ -35,6 +36,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private route: ActivatedRoute,
         private storage: LocalStorageService,
+        ngZone: NgZone,
     ) {
         app.title = 'Calibration'
 
@@ -43,11 +45,11 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             tooltip: 'Add file',
             command: async () => {
                 const defaultPath = this.storage.get(CALIBRATION_DIR_KEY, '')
-                const fitsPath = await electron.openFITS({ defaultPath })
+                const filePath = await electron.openFits({ defaultPath })
 
-                if (fitsPath) {
-                    this.storage.set(CALIBRATION_DIR_KEY, path.dirname(fitsPath))
-                    this.upload(fitsPath)
+                if (filePath) {
+                    this.storage.set(CALIBRATION_DIR_KEY, path.dirname(filePath))
+                    this.upload(filePath)
                 }
             },
         })
@@ -65,18 +67,31 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
                 }
             },
         })
+
+        electron.on('DATA.CHANGED', (data: Camera) => {
+            ngZone.run(() => {
+                if (data.name !== this.camera.name) {
+                    this.loadForCamera(data, true)
+                }
+            })
+        })
     }
 
     async ngAfterViewInit() {
         this.route.queryParams.subscribe(async e => {
-            this.camera = JSON.parse(decodeURIComponent(e.data)) as Camera
-            this.app.subTitle = this.camera.name
-            this.load()
+            const camera = JSON.parse(decodeURIComponent(e.data)) as Camera
+            this.loadForCamera(camera)
         })
     }
 
     @HostListener('window:unload')
     ngOnDestroy() { }
+
+    private loadForCamera(camera: Camera, reload: boolean = false) {
+        this.camera = camera
+        this.app.subTitle = this.camera.name
+        return reload ? this.reload() : this.load()
+    }
 
     private async upload(path: string) {
         const frames = await this.api.uploadCalibrationFrame(this.camera!, path)
@@ -88,6 +103,12 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 
     private async load() {
         this.groups = await this.api.calibrationFrames(this.camera)
+    }
+
+    private async reload() {
+        this.group = undefined
+        this.groupSelected()
+        this.load()
     }
 
     groupSelected() {
@@ -130,6 +151,20 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
                     this.group = undefined
                 }
             }
+        }
+    }
+
+    async deleteGroupFrames(group: CalibrationFrameGroup) {
+        for (const frame of group.frames) {
+            await this.api.deleteCalibrationFrame(frame)
+
+            if (frame === this.frame) {
+                this.frame = undefined
+            }
+        }
+
+        if (group === this.group) {
+            this.group === undefined
         }
     }
 }

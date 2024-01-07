@@ -1,10 +1,16 @@
 import { Injectable } from '@angular/core'
 import { v4 as uuidv4 } from 'uuid'
+import { SkyAtlasData } from '../../app/atlas/atlas.component'
 import { FramingData } from '../../app/framing/framing.component'
 import { ImageData } from '../../app/image/image.component'
-import { Camera, Device, FilterWheel, Focuser, Mount, OpenWindow, OpenWindowOptions } from '../types'
+import { OpenWindow, OpenWindowOptions } from '../types/app.types'
+import { Camera } from '../types/camera.types'
+import { Device } from '../types/device.types'
+import { Focuser } from '../types/focuser.types'
+import { Mount } from '../types/mount.types'
+import { FilterWheel } from '../types/wheel.types'
 import { ElectronService } from './electron.service'
-import { SkyAtlasData } from '../../app/atlas/atlas.component'
+import { ImageSource } from '../types/image.types'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
@@ -12,7 +18,7 @@ export class BrowserWindowService {
     constructor(private electron: ElectronService) { }
 
     private async openWindow<T>(data: OpenWindow<T>) {
-        await this.electron.ipcRenderer.invoke('OPEN_WINDOW', data)
+        await this.electron.ipcRenderer.invoke('WINDOW.OPEN', data)
     }
 
     openMount(options: OpenWindowOptions<Mount>) {
@@ -25,7 +31,7 @@ export class BrowserWindowService {
     openCamera(options: OpenWindowOptions<Camera>) {
         options.icon ||= 'camera'
         options.width ||= 400
-        options.height ||= 486
+        options.height ||= 476
         this.openWindow({ ...options, id: `camera.${options.data.name}`, path: 'camera' })
     }
 
@@ -50,10 +56,10 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'guider', path: 'guider', data: undefined })
     }
 
-    async openCameraImage(camera: Camera) {
+    async openCameraImage(camera: Camera, source: ImageSource = 'CAMERA') {
         const factor = camera.height / camera.width
         const id = `image.${camera.name}`
-        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `${factor}w`, resizable: true, data: { camera, source: 'CAMERA' } })
+        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `${factor}w`, resizable: true, data: { camera, source } })
         return id
     }
 
@@ -101,11 +107,18 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'sequencer', path: 'sequencer', data: undefined })
     }
 
+    openFlatWizard(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
+        options.icon ||= 'star'
+        options.width ||= 467
+        options.height ||= 492
+        this.openWindow({ ...options, id: 'flat-wizard', path: 'flat-wizard', data: undefined })
+    }
+
     openSettings(options: Omit<OpenWindowOptions<undefined>, 'data'> = {}) {
         options.icon ||= 'settings'
         options.width ||= 580
         options.height ||= 445
-        this.openWindow({ ...options, id: 'settings', path: 'settings', resizable: true, data: undefined })
+        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined })
     }
 
     openCalibration(options: OpenWindowOptions<Camera>) {

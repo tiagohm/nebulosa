@@ -1,7 +1,6 @@
 package nebulosa.guiding.phd2
 
 import nebulosa.math.Angle
-import nebulosa.math.PairOfAngle
 import java.time.Duration
 
 data class SiderealShiftTrackingRate(
@@ -9,9 +8,9 @@ data class SiderealShiftTrackingRate(
     val enabled: Boolean = true,
 ) {
 
-    constructor(start: PairOfAngle, end: PairOfAngle, between: Duration) : this(
-        (end.first - start.first) / between.toMillis() / 3.6,
-        (end.second - start.second) / between.toMillis() / 3.6,
+    constructor(start: DoubleArray, end: DoubleArray, between: Duration) : this(
+        (end[0] - start[0]) / between.toMillis() / 3.6,
+        (end[1] - start[1]) / between.toMillis() / 3.6,
     )
 
     companion object {

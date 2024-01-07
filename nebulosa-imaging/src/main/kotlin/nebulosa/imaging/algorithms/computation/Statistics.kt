@@ -17,17 +17,17 @@ data class Statistics(
 
     @Suppress("ArrayInDataClass")
     data class Data(
-        val count: Int = 0,
-        val maxCount: Int = 0,
-        val mean: Float = 0f,
-        val sumOfSquares: Float = 0f,
-        val median: Float = 0f,
-        val variance: Float = 0f,
-        val stdDev: Float = 0f,
-        val avgDev: Float = 0f,
-        val minimum: Float = 0f,
-        val maximum: Float = 0f,
-        val histogram: IntArray = IntArray(0),
+        @JvmField val count: Int = 0,
+        @JvmField val maxCount: Int = 0,
+        @JvmField val mean: Float = 0f,
+        @JvmField val sumOfSquares: Float = 0f,
+        @JvmField val median: Float = 0f,
+        @JvmField val variance: Float = 0f,
+        @JvmField val stdDev: Float = 0f,
+        @JvmField val avgDev: Float = 0f,
+        @JvmField val minimum: Float = 0f,
+        @JvmField val maximum: Float = 0f,
+        @JvmField val histogram: IntArray = IntArray(0),
     ) : ClosedFloatingPointRange<Float> {
 
         override val start
@@ -38,9 +38,12 @@ data class Statistics(
 
         override fun lessThanOrEquals(a: Float, b: Float) = a <= b
 
-        override fun contains(value: Float): Boolean = value in minimum..maximum
+        override fun contains(value: Float) = value in minimum..maximum
 
-        override fun isEmpty(): Boolean = !(minimum <= maximum)
+        override fun isEmpty() = minimum > maximum
+
+        override fun toString() = "Data(count=$count, maxCount=$maxCount, mean=$mean, sumOfSquares=$sumOfSquares, median=$median," +
+                " variance=$variance, stdDev=$stdDev, avgDev=$avgDev, minimum=$minimum, maximum=$maximum)"
 
         companion object {
 

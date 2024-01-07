@@ -1,4 +1,4 @@
-import { Angle } from '../types'
+import { Angle } from '../types/atlas.types'
 import { degreesToRadians, formatAngle } from './angle'
 import { BicubicSplineInterpolation } from './bicubic-interpolation'
 import { TimeRepresentation, longitudeDegreesConstrained, obliquity, rectangularEquatorialToEcliptic, rectangularEquatorialToGalactic, rectangularToSphericalDegreesConstrained, sphericalToRectangular } from './ephemeris'

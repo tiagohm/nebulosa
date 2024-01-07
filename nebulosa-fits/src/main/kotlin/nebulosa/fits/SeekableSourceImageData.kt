@@ -4,6 +4,7 @@ import nebulosa.io.Seekable
 import nebulosa.io.sink
 import nebulosa.io.transferFully
 import okio.Buffer
+import okio.Sink
 import okio.Source
 import java.nio.ByteBuffer
 
@@ -32,9 +33,28 @@ data class SeekableSourceImageData(
 
                 buffer.transferFully(source, sink, strideSizeInBytes)
                 block(ByteBuffer.wrap(data))
-
                 buffer.clear()
             }
+        }
+    }
+
+    override fun writeTo(sink: Sink): Long {
+        require(source is Source)
+
+        val buffer = Buffer()
+        val strideSizeInBytes = (width * bitpix.byteSize).toLong()
+        var byteCount = 0L
+
+        return synchronized(source) {
+            source.seek(position)
+
+            repeat(height) {
+                buffer.transferFully(source, sink, strideSizeInBytes)
+                buffer.clear()
+                byteCount += strideSizeInBytes
+            }
+
+            byteCount
         }
     }
 }

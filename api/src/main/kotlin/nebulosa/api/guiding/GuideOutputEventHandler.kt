@@ -55,8 +55,8 @@ class GuideOutputEventHandler(
 
     companion object {
 
-        const val GUIDE_OUTPUT_UPDATED = "GUIDE_OUTPUT_UPDATED"
-        const val GUIDE_OUTPUT_ATTACHED = "GUIDE_OUTPUT_ATTACHED"
-        const val GUIDE_OUTPUT_DETACHED = "GUIDE_OUTPUT_DETACHED"
+        const val GUIDE_OUTPUT_UPDATED = "GUIDE_OUTPUT.UPDATED"
+        const val GUIDE_OUTPUT_ATTACHED = "GUIDE_OUTPUT.ATTACHED"
+        const val GUIDE_OUTPUT_DETACHED = "GUIDE_OUTPUT.DETACHED"
     }
 }

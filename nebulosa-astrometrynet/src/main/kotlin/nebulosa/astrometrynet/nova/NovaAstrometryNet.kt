@@ -1,6 +1,6 @@
 package nebulosa.astrometrynet.nova
 
-import nebulosa.retrofit.RawAsString
+import nebulosa.retrofit.RawAsByteArray
 import okhttp3.FormBody
 import okhttp3.MultipartBody
 import retrofit2.Call
@@ -29,7 +29,7 @@ interface NovaAstrometryNet {
     @GET("api/jobs/{jobId}/calibration")
     fun jobCalibration(@Path("jobId") jobId: Int): Call<JobCalibration>
 
-    @RawAsString
+    @RawAsByteArray
     @GET("wcs_file/{jobId}")
-    fun wcs(@Path("jobId") jobId: Int): Call<String>
+    fun wcs(@Path("jobId") jobId: Int): Call<ByteArray>
 }

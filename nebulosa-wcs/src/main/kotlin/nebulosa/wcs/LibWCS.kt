@@ -1,17 +1,16 @@
 package nebulosa.wcs
 
 import com.sun.jna.Library
+import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.ptr.DoubleByReference
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.PointerByReference
-import nebulosa.jna.LibraryProvider
-import nebulosa.jna.loadLibrary
 
 // https://www.atnf.csiro.au/people/mcalabre/WCS/index.html
 // https://www.atnf.csiro.au/people/mcalabre/WCS/Intro/WCS01.html
 
-internal interface LibWCS : Library {
+interface LibWCS : Library {
 
     fun wcspih(
         header: String, nkeyrec: Int, relax: Int, ctrl: Int,
@@ -44,10 +43,11 @@ internal interface LibWCS : Library {
 
     fun wcsfree(wcs: Pointer): Int
 
-    companion object : LibraryProvider {
+    companion object {
 
-        override val libraryName = "libwcs"
+        const val LIBRARY_NAME = "libwcs"
+        const val PATH = "LIBWCS_PATH"
 
-        val INSTANCE by lazy { loadLibrary<LibWCS>() }
+        @JvmStatic val INSTANCE: LibWCS by lazy { Native.load(System.getProperty(PATH, LIBRARY_NAME), LibWCS::class.java) }
     }
 }

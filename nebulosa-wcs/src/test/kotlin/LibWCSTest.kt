@@ -7,7 +7,7 @@ import nebulosa.fits.Header
 import nebulosa.math.AngleFormatter
 import nebulosa.math.format
 import nebulosa.test.NonGitHubOnlyCondition
-import nebulosa.wcs.WCSTransform
+import nebulosa.wcs.WCS
 import kotlin.random.Random
 
 // https://www.atnf.csiro.au/people/mcalabre/WCS/example_data.html
@@ -30,7 +30,7 @@ class LibWCSTest : StringSpec() {
     private fun pixToSky(projectionName: String, width: Int, height: Int) {
         val data = Array(2048) { intArrayOf(Random.nextInt(width), Random.nextInt(height)) }
 
-        WCSTransform(readHeaderFromFits(projectionName)).use {
+        WCS(readHeaderFromFits(projectionName)).use {
             val topLeft = it.pixToSky(0.0, 0.0)
             val topRight = it.pixToSky(width.toDouble(), 0.0)
             val bottomLeft = it.pixToSky(0.0, height.toDouble())

@@ -4,7 +4,7 @@ import nebulosa.erfa.eraTcbTdb
 
 class TCB : TimeJD, Timescale {
 
-    constructor(normalized: DoubleArray) : super(normalized)
+    constructor(jd: DoubleArray, normalize: Boolean = false) : super(jd, normalize)
 
     constructor(whole: Double, fraction: Double = 0.0) : super(whole, fraction)
 
@@ -12,7 +12,11 @@ class TCB : TimeJD, Timescale {
 
     override fun plus(days: Double) = TCB(whole + days, fraction)
 
+    override fun plus(delta: TimeDelta) = TCB(whole, fraction + delta.delta(this))
+
     override fun minus(days: Double) = TCB(whole - days, fraction)
+
+    override fun minus(delta: TimeDelta) = TCB(whole, fraction - delta.delta(this))
 
     override val ut1 get() = utc.ut1
 
@@ -24,7 +28,7 @@ class TCB : TimeJD, Timescale {
 
     override val tcg get() = tt.tcg
 
-    override val tdb by lazy { TDB(eraTcbTdb(whole, fraction)) }
+    override val tdb by lazy { TDB(eraTcbTdb(whole, fraction), true) }
 
     override val tcb get() = this
 }

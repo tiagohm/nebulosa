@@ -17,7 +17,7 @@ data class Upload(
     @field:JsonProperty("center_ra") val centerRA: Double? = null,
     @field:JsonProperty("center_dec") val centerDEC: Double? = null,
     @field:JsonProperty("radius") val radius: Double? = null,
-    @field:JsonProperty("downsample_factor") val downsampleFactor: Int = 2,
+    @field:JsonProperty("downsample_factor") val downsampleFactor: Int = 0,
     @field:JsonProperty("tweak_order") val tweakOrder: Int = 2,
     @field:JsonProperty("crpix_center") val crpixCenter: Boolean = true,
     @field:JsonProperty("parity") val parity: Parity = Parity.BOTH,

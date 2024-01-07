@@ -7,6 +7,7 @@ import nebulosa.imaging.algorithms.transform
 import nebulosa.imaging.algorithms.transformation.CfaPattern
 import nebulosa.imaging.algorithms.transformation.Debayer
 import nebulosa.imaging.algorithms.transformation.Grayscale
+import okio.Sink
 import java.awt.color.ColorSpace
 import java.awt.image.*
 import kotlin.math.max
@@ -34,9 +35,6 @@ class Image(
 
     inline val b
         get() = buffer.b
-
-    inline val indices
-        get() = 0 until size
 
     inline fun indexAt(x: Int, y: Int): Int {
         return y * stride + x
@@ -204,6 +202,10 @@ class Image(
         }
     }
 
+    fun writeTo(sink: Sink) {
+        hdu().write(sink)
+    }
+
     fun hdu(): Hdu<ImageData> {
         val data = Array(numberOfChannels) { FloatArrayImageData(width, height, this.data[it]) }
         return ImageHdu(header, data)
@@ -248,19 +250,21 @@ class Image(
         return image
     }
 
-    fun load(fits: Fits, debayer: Boolean = true): Image {
+    fun canLoad(hdu: ImageHdu, debayer: Boolean = true): Boolean {
+        return hdu.width == width && hdu.height == height && (isMono(hdu) || !debayer) == this.mono
+    }
+
+    fun canLoad(fits: Fits, debayer: Boolean = true): Boolean {
+        return canLoad(fits.filterIsInstance<ImageHdu>().first(), debayer)
+    }
+
+    fun load(fits: Fits, debayer: Boolean = true): Image? {
         return load(fits.filterIsInstance<ImageHdu>().first(), debayer)
     }
 
-    fun load(hdu: ImageHdu, debayer: Boolean = true): Image {
-        require(hdu.width == width) { "width does not match. $width != ${hdu.width}" }
-        require(hdu.height == height) { "height does not match. $height != ${hdu.height}" }
-
-        val mono = isMono(hdu) || !debayer
-        require(mono == this.mono) { "color format does not match" }
-
+    fun load(hdu: ImageHdu, debayer: Boolean = true): Image? {
+        if (!canLoad(hdu, debayer)) return null
         load(this, hdu, debayer)
-
         return this
     }
 
@@ -411,7 +415,7 @@ class Image(
         ): Int {
             var count = 0
 
-            for (i in indices step stepSize) {
+            for (i in 0 until size step stepSize) {
                 val pixel = when (channel) {
                     ImageChannel.GRAY -> readGray(i)
                     ImageChannel.RED -> readRed(i)

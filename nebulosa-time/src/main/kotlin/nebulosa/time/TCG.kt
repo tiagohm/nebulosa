@@ -4,7 +4,7 @@ import nebulosa.erfa.eraTcgTt
 
 class TCG : TimeJD, Timescale {
 
-    constructor(normalized: DoubleArray) : super(normalized)
+    constructor(jd: DoubleArray, normalize: Boolean = false) : super(jd, normalize)
 
     constructor(whole: Double, fraction: Double = 0.0) : super(whole, fraction)
 
@@ -12,7 +12,11 @@ class TCG : TimeJD, Timescale {
 
     override fun plus(days: Double) = TCG(whole + days, fraction)
 
+    override fun plus(delta: TimeDelta) = TCG(whole, fraction + delta.delta(this))
+
     override fun minus(days: Double) = TCG(whole - days, fraction)
+
+    override fun minus(delta: TimeDelta) = TCG(whole, fraction - delta.delta(this))
 
     override val ut1 get() = utc.ut1
 
@@ -20,7 +24,7 @@ class TCG : TimeJD, Timescale {
 
     override val tai get() = tt.tai
 
-    override val tt by lazy { TT(eraTcgTt(whole, fraction)) }
+    override val tt by lazy { TT(eraTcgTt(whole, fraction), true) }
 
     override val tcg get() = this
 

@@ -23,7 +23,7 @@ data class PlanetograhicPosition(
         latitude: Angle, longitude: Angle, distance: Distance,
     ) : this(
         frame,
-        Matrix3D.rotateZ(longitude).rotateY(-latitude) * Vector3D(distance),
+        Matrix3D.rotZ(longitude).rotateY(-latitude) * Vector3D(distance),
         latitude, longitude,
     )
 
@@ -42,7 +42,7 @@ data class PlanetograhicPosition(
         // from position, to support situations where we were not
         // given a latitude and longitude.  If that is not feasible,
         // then at least cache the product of these first two matrices.
-        val m = Matrix3D.rotateY((TAU / 4.0 - latitude).rad)
+        val m = Matrix3D.rotY((TAU / 4.0 - latitude).rad)
             .rotateZ((TAU / 2.0 - longitude).rad) *
                 frame.rotationAt(time)
 

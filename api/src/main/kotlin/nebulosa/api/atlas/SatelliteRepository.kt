@@ -1,27 +1,32 @@
 package nebulosa.api.atlas
 
-import org.springframework.data.domain.Pageable
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Query
-import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Isolation
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
+import io.objectbox.Box
+import io.objectbox.query.QueryBuilder.StringOrder.CASE_INSENSITIVE
+import io.objectbox.query.QueryBuilder.StringOrder.CASE_SENSITIVE
+import io.objectbox.query.QueryCondition
+import nebulosa.api.repositories.BoxRepository
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.stereotype.Component
 
-@Repository
-@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-interface SatelliteRepository : JpaRepository<SatelliteEntity, Long> {
+@Component
+class SatelliteRepository(@Qualifier("satelliteBox") override val box: Box<SatelliteEntity>) : BoxRepository<SatelliteEntity>() {
 
-    @Query(
-        "SELECT s.* FROM satellites s WHERE" +
-                " (:text IS NULL OR s.name LIKE ('%' || :text || '%') OR CAST(s.id AS TEXT) = :text) AND" +
-                " (:groupType = 0 OR s.group_type & :groupType != 0)",
-        nativeQuery = true,
-    )
-    @Transactional(readOnly = true)
-    fun search(text: String? = null, groupType: Long = 0L, page: Pageable): List<SatelliteEntity>
+    fun search(text: String? = null, groups: List<SatelliteGroupType> = emptyList()): List<SatelliteEntity> {
+        val builder = box.query()
+            .also { if (!text.isNullOrBlank()) it.contains(SatelliteEntity_.name, text, CASE_INSENSITIVE) }
 
-    fun search(text: String? = null, groups: List<SatelliteGroupType>, page: Pageable): List<SatelliteEntity> {
-        return search(text, if (groups.isEmpty()) 0L else SatelliteGroupType.codeOf(groups), page)
+        if (groups.isNotEmpty()) {
+            var condition: QueryCondition<SatelliteEntity> = SatelliteEntity_.groups.containsElement(groups[0].name, CASE_SENSITIVE)
+
+            for (i in 1 until groups.size) {
+                condition = condition.or(SatelliteEntity_.groups.containsElement(groups[i].name, CASE_SENSITIVE))
+            }
+
+            builder.apply(condition)
+        }
+
+        return builder
+            .build()
+            .use { it.findLazy() }
     }
 }

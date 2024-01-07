@@ -6,19 +6,23 @@ import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
 import { MenuItem } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
-import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
+import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
+import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import {
-    Angle, AstronomicalObject, Camera, CheckableMenuItem, DeepSkyObject, DetectedStar, EquatorialCoordinateJ2000, FITSHeaderItem,
-    ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, ImageSource, Mount, SCNRProtectionMethod, SCNR_PROTECTION_METHODS, Star, ToggleableMenuItem
-} from '../../shared/types'
+import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
+import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
+import { Camera } from '../../shared/types/camera.types'
+import { DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { Mount } from '../../shared/types/mount.types'
+import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverType } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
+import { SETTINGS_PLATE_SOLVER_KEY } from '../settings/settings.component'
 
 export function imagePreferenceKey(camera?: Camera) {
     return camera ? `image.${camera.name}` : 'image'
@@ -52,7 +56,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private readonly menu!: ContextMenu
 
     @ViewChild('deviceMenu')
-    private readonly deviceMenu!: DeviceMenuComponent
+    private readonly deviceMenu!: DeviceListMenuComponent
+
+    @ViewChild('histogram')
+    private readonly histogram!: HistogramComponent
 
     debayer = true
     calibrate = true
@@ -69,14 +76,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     scnrProtectionMethod: SCNRProtectionMethod = 'AVERAGE_NEUTRAL'
 
     showAnnotationDialog = false
-    annotateWithStars = true
-    annotateWithDSOs = true
+    annotateWithStarsAndDSOs = true
     annotateWithMinorPlanets = false
     annotateWithMinorPlanetsMagLimit = 12.0
 
     autoStretched = true
     showStretchingDialog = false
-    stretchShadowhHighlight = [0, 65536]
+    stretchShadowHighlight = [0, 65536]
     stretchMidtone = 32768
 
     showSolverDialog = false
@@ -86,7 +92,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solverCenterRA = ''
     solverCenterDEC = ''
     solverRadius = 4
-    solverData?: ImageSolved
+    readonly solvedData = Object.assign({}, EMPTY_IMAGE_SOLVED)
+    readonly solverTypes: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET_ONLINE']
+    solverType: PlateSolverType
 
     crossHair = false
     annotations: ImageAnnotation[] = []
@@ -101,9 +109,23 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     showFITSHeadersDialog = false
     fitsHeaders: FITSHeaderItem[] = []
 
+    showStatisticsDialog = false
+
+    readonly statisticsBitOptions: ImageStatisticsBitOption[] = [
+        { name: 'Normalized: [0, 1]', rangeMax: 1, bitLength: 16 },
+        { name: '8-bit: [0, 255]', rangeMax: 255, bitLength: 8 },
+        { name: '9-bit: [0, 511]', rangeMax: 511, bitLength: 9 },
+        { name: '10-bit: [0, 1023]', rangeMax: 1023, bitLength: 10 },
+        { name: '12-bit: [0, 4095]', rangeMax: 4095, bitLength: 12 },
+        { name: '14-bit: [0, 16383]', rangeMax: 16383, bitLength: 14 },
+        { name: '16-bit: [0, 65535]', rangeMax: 65535, bitLength: 16 },
+    ]
+
+    statisticsBitLength = this.statisticsBitOptions[0]
+    imageInfo?: ImageInfo
+
     private panZoom?: PanZoom
     private imageURL!: string
-    private imageInfo?: ImageInfo
     private imageMouseX = 0
     private imageMouseY = 0
     private imageData: ImageData = {}
@@ -118,7 +140,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Save as...',
         icon: 'mdi mdi-content-save',
         command: async () => {
-            const path = await this.electron.send('SAVE_FITS')
+            const path = await this.electron.saveFits()
             if (path) this.api.saveImageAs(this.imageData.path!, path)
         },
     }
@@ -145,14 +167,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-auto-fix',
         checked: true,
         command: () => {
-            this.autoStretched = !this.autoStretched
-            this.autoStretchMenuItem.checked = this.autoStretched
-
-            if (!this.autoStretched) {
-                this.resetStretch()
-            } else {
-                this.loadImage()
-            }
+            this.toggleStretch()
         },
     }
 
@@ -192,9 +207,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-invert-colors',
         checked: false,
         command: () => {
-            this.invert = !this.invert
-            this.invertMenuItem.checked = this.invert
-            this.loadImage()
+            this.invertImage()
         },
     }
 
@@ -206,6 +219,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.calibrate = !this.calibrate
             this.calibrateMenuItem.checked = this.calibrate
             this.loadImage()
+        },
+    }
+
+    private readonly statisticsMenuItem: MenuItem = {
+        icon: 'mdi mdi-chart-histogram',
+        label: 'Statistics',
+        command: () => {
+            this.showStatisticsDialog = true
+            this.computeHistogram()
         },
     }
 
@@ -223,7 +245,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         disabled: true,
         command: () => {
             this.executeMount((mount) => {
-                this.api.pointMountHere(mount, this.imageData.path!, this.imageMouseX, this.imageMouseY, !this.solved)
+                this.api.pointMountHere(mount, this.imageData.path!, this.imageMouseX, this.imageMouseY)
             })
         },
     }
@@ -233,8 +255,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-bullseye',
         checked: false,
         command: () => {
-            this.crossHair = !this.crossHair
-            this.crosshairMenuItem.checked = this.crossHair
+            this.toggleCrosshair()
         },
     }
 
@@ -336,6 +357,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.calibrateMenuItem,
         SEPARATOR_MENU_ITEM,
         this.overlayMenuItem,
+        this.statisticsMenuItem,
         this.fitsHeaderMenuItem,
         SEPARATOR_MENU_ITEM,
         this.pointMountHereMenuItem,
@@ -360,9 +382,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Image'
 
-        electron.on('CAMERA_CAPTURE_ELAPSED', async (event) => {
+        electron.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
             if (event.state === 'EXPOSURE_FINISHED' && event.camera.name === this.imageData.camera?.name) {
-                await this.closeImage()
+                await this.closeImage(event.savePath !== this.imageData.path)
 
                 ngZone.run(() => {
                     this.imageData.path = event.savePath
@@ -372,13 +394,31 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DATA_CHANGED', async (event: ImageData) => {
-            await this.closeImage()
+        electron.on('DATA.CHANGED', async (event: ImageData) => {
+            await this.closeImage(event.path !== this.imageData.path)
 
             ngZone.run(() => {
                 this.loadImageFromData(event)
             })
         })
+
+        window.addEventListener('keydown', event => {
+            if (event.ctrlKey && !event.shiftKey && !event.altKey) {
+                switch (event.key) {
+                    case 'a': this.toggleStretch(); break
+                    case 'i': this.invertImage(); break
+                    case 'x': this.toggleCrosshair(); break
+                    case '-': this.zoomOut(); break
+                    case '=': this.zoomIn(); break
+                    case '0': this.resetZoom(); break
+                    default: return
+                }
+
+                event.preventDefault()
+            }
+        }, true)
+
+        this.solverType = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS).type
     }
 
     ngAfterViewInit() {
@@ -399,7 +439,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private async closeImage(force: boolean = false) {
         if (this.imageData.path) {
-            if (force || !this.imageData.path.startsWith('@')) {
+            if (force) {
                 await this.api.closeImage(this.imageData.path)
             }
         }
@@ -458,6 +498,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         if (data.source === 'FRAMING') {
             this.disableAutoStretch()
+        } else if (data.source === 'FLAT_WIZARD') {
+            this.disableCalibrate(false)
         }
 
         if (!data.camera) {
@@ -477,6 +519,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.detectedStars = []
         this.detectedStarsIsVisible = false
         this.detectStarsMenuItem.toggleable = false
+
+        Object.assign(this.solvedData, EMPTY_IMAGE_SOLVED)
+
+        this.histogram?.update([])
+    }
+
+    private async computeHistogram() {
+        const data = await this.api.imageHistogram(this.imageData.path!, this.statisticsBitLength.bitLength)
+        this.histogram.update(data)
+    }
+
+    statisticsBitLengthChanged() {
+        this.computeHistogram()
     }
 
     private async loadImage() {
@@ -500,10 +555,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private async loadImageFromPath(path: string) {
         const image = this.image.nativeElement
         const scnrEnabled = this.scnrChannel !== 'NONE'
-        const { info, blob } = await this.api.openImage(path, this.imageData.camera, this.calibrate, this.debayer, this.autoStretched,
-            this.stretchShadowhHighlight[0] / 65536, this.stretchShadowhHighlight[1] / 65536, this.stretchMidtone / 65536,
-            this.mirrorHorizontal, this.mirrorVertical,
-            this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMethod)
+        const { info, blob } = await this.api.openImage(path, this.imageData.camera, this.calibrate, this.debayer, !!this.imageData.camera, this.autoStretched,
+            this.stretchShadowHighlight[0] / 65536, this.stretchShadowHighlight[1] / 65536, this.stretchMidtone / 65536,
+            this.mirrorHorizontal, this.mirrorVertical, this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMethod)
 
         this.imageInfo = info
         this.scnrMenuItem.disabled = info.mono
@@ -513,8 +567,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solverBlind = !this.solverCenterRA || !this.solverCenterDEC
 
         if (this.autoStretched) {
-            this.stretchShadowhHighlight[0] = Math.trunc(info.stretchShadow * 65536)
-            this.stretchShadowhHighlight[1] = Math.trunc(info.stretchHighlight * 65536)
+            this.stretchShadowHighlight = [Math.trunc(info.stretchShadow * 65536), Math.trunc(info.stretchHighlight * 65536)]
             this.stretchMidtone = Math.trunc(info.stretchMidtone * 65536)
         }
 
@@ -545,8 +598,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     imageMouseMovedWithCoordinates(x: number, y: number) {
         if (!this.menu.visible()) {
             this.mouseCoordinate = this.mouseCoordinateInterpolation?.interpolateAsText(x, y, true, true, false)
-            this.mouseCoordinate!.x = x
-            this.mouseCoordinate!.y = y
+
+            if (this.mouseCoordinate) {
+                this.mouseCoordinate.x = x
+                this.mouseCoordinate.y = y
+            }
         }
     }
 
@@ -554,7 +610,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         try {
             this.annotating = true
             this.annotations = await this.api.annotationsOfImage(this.imageData.path!,
-                this.annotateWithStars, this.annotateWithDSOs, this.annotateWithMinorPlanets, this.annotateWithMinorPlanetsMagLimit)
+                this.annotateWithStarsAndDSOs, this.annotateWithMinorPlanets, this.annotateWithMinorPlanetsMagLimit)
             this.annotationIsVisible = true
             this.annotationMenuItem.toggleable = this.annotations.length > 0
             this.annotationMenuItem.toggled = this.annotationMenuItem.toggleable
@@ -574,9 +630,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.autoStretchMenuItem.checked = false
     }
 
-    private disableCalibrate() {
+    private disableCalibrate(canEnable: boolean = true) {
         this.calibrate = false
         this.calibrateMenuItem.checked = false
+        this.calibrateMenuItem.disabled = !canEnable
     }
 
     autoStretch() {
@@ -587,11 +644,21 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     resetStretch() {
-        this.stretchShadowhHighlight[0] = 0
-        this.stretchShadowhHighlight[1] = 65536
+        this.stretchShadowHighlight = [0, 65536]
         this.stretchMidtone = 32768
 
         this.stretchImage()
+    }
+
+    toggleStretch() {
+        this.autoStretched = !this.autoStretched
+        this.autoStretchMenuItem.checked = this.autoStretched
+
+        if (!this.autoStretched) {
+            this.resetStretch()
+        } else {
+            this.loadImage()
+        }
     }
 
     stretchImage() {
@@ -599,8 +666,36 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.loadImage()
     }
 
+    invertImage() {
+        this.invert = !this.invert
+        this.invertMenuItem.checked = this.invert
+        this.loadImage()
+    }
+
     scnrImage() {
         this.loadImage()
+    }
+
+    toggleCrosshair() {
+        this.crossHair = !this.crossHair
+        this.crosshairMenuItem.checked = this.crossHair
+    }
+
+    zoomIn() {
+        if (!this.panZoom) return
+        const { scale } = this.panZoom.getTransform()
+        this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, scale * 1.1)
+    }
+
+    zoomOut() {
+        if (!this.panZoom) return
+        const { scale } = this.panZoom.getTransform()
+        this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, scale * 0.9)
+    }
+
+    resetZoom() {
+        if (!this.panZoom) return
+        this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, 1.0)
     }
 
     private async retrieveCoordinateInterpolation() {
@@ -622,8 +717,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solving = true
 
         try {
-            this.solverData = await this.api.solveImage(this.imageData.path!, this.solverBlind,
-                this.solverCenterRA, this.solverCenterDEC, this.solverRadius)
+            const options = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS)
+            options.type = this.solverType
+
+            Object.assign(this.solvedData,
+                await this.api.solveImage(options, this.imageData.path!, this.solverBlind,
+                    this.solverCenterRA, this.solverCenterDEC, this.solverRadius))
 
             this.savePreference()
 
@@ -632,7 +731,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.pointMountHereMenuItem.disabled = false
         } catch {
             this.solved = false
-            this.solverData = undefined
+            Object.assign(this.solvedData, EMPTY_IMAGE_SOLVED)
             this.annotationMenuItem.disabled = true
             this.pointMountHereMenuItem.disabled = true
         } finally {
@@ -660,7 +759,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     frame(coordinate: EquatorialCoordinateJ2000) {
-        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000, fov: this.solverData!.width / 60, rotation: this.solverData!.orientation } })
+        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000, fov: this.solvedData!.width / 60, rotation: this.solvedData!.orientation } })
     }
 
     imageLoaded() {

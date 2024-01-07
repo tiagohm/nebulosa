@@ -7,6 +7,7 @@ import { AtlasComponent } from './atlas/atlas.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
+import { FlatWizardComponent } from './flat-wizard/flat-wizard.component'
 import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
 import { GuiderComponent } from './guider/guider.component'
@@ -70,6 +71,10 @@ const routes: Routes = [
     {
         path: 'sequencer',
         component: SequencerComponent,
+    },
+    {
+        path: 'flat-wizard',
+        component: FlatWizardComponent,
     },
     {
         path: 'calibration',

@@ -8,7 +8,7 @@ import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { OverlayPanel } from 'primeng/overlaypanel'
 import { Subscription, timer } from 'rxjs'
-import { DeviceMenuComponent } from '../../shared/components/devicemenu/devicemenu.component'
+import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 import { ApiService } from '../../shared/services/api.service'
@@ -16,10 +16,8 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import {
-    Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION,
-    Location, MinorPlanet, Mount, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType, Star, Union
-} from '../../shared/types'
+import { Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType } from '../../shared/types/atlas.types'
+import { Mount } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 Chart.register(zoomPlugin)
@@ -37,10 +35,10 @@ export interface SearchFilter {
     rightAscension: Angle
     declination: Angle
     radius: number
-    constellation: Union<Constellation, 'ALL'>
+    constellation: Constellation | 'ALL'
     magnitude: [number, number]
-    type: Union<SkyObjectType, 'ALL'>
-    types: Union<SkyObjectType, 'ALL'>[]
+    type: SkyObjectType | 'ALL'
+    types: (SkyObjectType | 'ALL')[]
 }
 
 export const EMPTY_SEARCH_FILTER: SearchFilter = {
@@ -63,9 +61,7 @@ export enum SkyAtlasTab {
     MOON,
     PLANET,
     MINOR_PLANET,
-    STAR,
-    DSO,
-    SIMBAD,
+    SKY_OBJECT,
     SATELLITE,
 }
 
@@ -137,24 +133,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     minorPlanetChoiceItems: { name: string, pdes: string }[] = []
     showMinorPlanetChoiceDialog = false
 
-    star?: Star
-    starItems: Star[] = []
-    starSearchText = ''
-    private readonly starFilter = Object.assign({}, EMPTY_SEARCH_FILTER)
-
-    dso?: DeepSkyObject
-    dsoItems: DeepSkyObject[] = []
-    dsoSearchText = ''
-    private readonly dsoFilter = Object.assign({}, EMPTY_SEARCH_FILTER)
-
-    simbad?: DeepSkyObject
-    simbadItems: DeepSkyObject[] = []
-    simbadSearchText = ''
-    private readonly simbadFilter = Object.assign({}, EMPTY_SEARCH_FILTER)
-
+    skyObject?: DeepSkyObject
+    skyObjectItems: DeepSkyObject[] = []
+    skyObjectSearchText = ''
+    readonly skyObjectFilter = Object.assign({}, EMPTY_SEARCH_FILTER)
     showSkyObjectFilter = false
-    skyObjectFilter?: SearchFilter
-    readonly constellationOptions: Union<Constellation, 'ALL'>[] = ['ALL', ...CONSTELLATIONS]
+    readonly constellationOptions: (Constellation | 'ALL')[] = ['ALL', ...CONSTELLATIONS]
 
     satellite?: Satellite
     satelliteItems: Satellite[] = []
@@ -169,7 +153,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     private readonly imageOfSun!: ElementRef<HTMLImageElement>
 
     @ViewChild('deviceMenu')
-    private readonly deviceMenu!: DeviceMenuComponent
+    private readonly deviceMenu!: DeviceListMenuComponent
 
     @ViewChild('calendarPanel')
     private readonly calendarPanel!: OverlayPanel
@@ -299,7 +283,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 data: [],
                 cubicInterpolationMode: 'monotone',
                 pointRadius: 0,
-            }]
+            }
+        ]
     }
 
     readonly altitudeOptions: ChartOptions = {
@@ -419,39 +404,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     readonly ephemerisModel: MenuItem[] = [
         {
             icon: 'mdi mdi-magnify',
-            label: 'Find stars around this object',
+            label: 'Find sky objects around this object',
             command: () => {
-                this.starFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
-                this.starFilter.declination = this.bodyPosition.declinationJ2000
-                if (this.starFilter.radius <= 0) this.starFilter.radius = 1
-                this.skyObjectFilter = this.starFilter
-                this.tab = 4
-                this.tabChanged()
-                this.filterSkyObject()
-            },
-        },
-        {
-            icon: 'mdi mdi-magnify',
-            label: 'Find DSOs around this object',
-            command: () => {
-                this.dsoFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
-                this.dsoFilter.declination = this.bodyPosition.declinationJ2000
-                if (this.dsoFilter.radius <= 0) this.dsoFilter.radius = 1
-                this.skyObjectFilter = this.dsoFilter
-                this.tab = 5
-                this.tabChanged()
-                this.filterSkyObject()
-            },
-        },
-        {
-            icon: 'mdi mdi-magnify',
-            label: 'Find around this object on Simbad',
-            command: () => {
-                this.simbadFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
-                this.simbadFilter.declination = this.bodyPosition.declinationJ2000
-                if (this.simbadFilter.radius <= 0) this.simbadFilter.radius = 1
-                this.skyObjectFilter = this.simbadFilter
-                this.tab = 6
+                this.skyObjectFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
+                this.skyObjectFilter.declination = this.bodyPosition.declinationJ2000
+                if (this.skyObjectFilter.radius <= 0) this.skyObjectFilter.radius = 4
+                this.tab = SkyAtlasTab.SKY_OBJECT
                 this.tabChanged()
                 this.filterSkyObject()
             },
@@ -482,11 +440,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             },
         })
 
-        electron.on('LOCATION_CHANGED', (event) => {
+        electron.on('LOCATION.CHANGED', event => {
             ngZone.run(() => this.refreshTab(true, true, event))
         })
 
-        electron.on('DATA_CHANGED', event => {
+        electron.on('DATA.CHANGED', event => {
             this.loadTabFromData(event)
         })
 
@@ -502,9 +460,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             this.satelliteSearchGroup.set(group, enabled)
         }
 
-        this.starFilter.types.push(... await this.api.starTypes())
-        this.dsoFilter.types.push(... await this.api.dsoTypes())
-        this.simbadFilter.types.push(... await this.api.simbadTypes())
+        this.skyObjectFilter.types.push(... await this.api.skyObjectTypes())
     }
 
     async ngAfterContentInit() {
@@ -548,18 +504,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         if (data) {
             this.tab = data.tab
 
-            if (this.tab === SkyAtlasTab.STAR || this.tab === SkyAtlasTab.DSO || this.tab === SkyAtlasTab.SIMBAD) {
-                const filters = [this.starFilter, this.dsoFilter, this.simbadFilter]
-                const i = this.tab - SkyAtlasTab.STAR
+            if (this.tab === SkyAtlasTab.SKY_OBJECT) {
+                this.skyObjectFilter.rightAscension = data.filter?.rightAscension || this.skyObjectFilter.rightAscension
+                this.skyObjectFilter.declination = data.filter?.declination || this.skyObjectFilter.declination
+                if (data.filter?.radius) this.skyObjectFilter.radius = data.filter?.radius || this.skyObjectFilter.radius
+                this.skyObjectFilter.constellation = data.filter?.constellation || this.skyObjectFilter.constellation
+                this.skyObjectFilter.magnitude = data.filter?.magnitude || this.skyObjectFilter.magnitude
+                this.skyObjectFilter.type = data.filter?.type || this.skyObjectFilter.type
 
-                filters[i].rightAscension = data.filter?.rightAscension || filters[i].rightAscension
-                filters[i].declination = data.filter?.declination || filters[i].declination
-                if (data.filter?.radius) filters[i].radius = data.filter?.radius || filters[i].radius
-                filters[i].constellation = data.filter?.constellation || filters[i].constellation
-                filters[i].magnitude = data.filter?.magnitude || filters[i].magnitude
-                filters[i].type = data.filter?.type || filters[i].type
-
-                this.skyObjectFilter = filters[i]
                 this.tabChanged()
                 this.filterSkyObject()
             }
@@ -606,7 +558,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         await this.refreshTab(false, true)
     }
 
-    async simbadChanged() {
+    async skyObjectChanged() {
         await this.refreshTab(false, true)
     }
 
@@ -614,63 +566,20 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         await this.refreshTab(false, true)
     }
 
-    showStarFilterDialog() {
-        this.skyObjectFilter = this.starFilter
+    showSkyObjectFilterDialog() {
         this.showSkyObjectFilter = true
     }
 
-    async searchStar() {
-        const constellation = this.starFilter.constellation === 'ALL' ? undefined : this.starFilter.constellation
-        const type = this.starFilter.type === 'ALL' ? undefined : this.starFilter.type
+    async searchSkyObject() {
+        const constellation = this.skyObjectFilter.constellation === 'ALL' ? undefined : this.skyObjectFilter.constellation
+        const type = this.skyObjectFilter.type === 'ALL' ? undefined : this.skyObjectFilter.type
 
         this.refreshing = true
 
         try {
-            this.starItems = await this.api.searchStar(this.starSearchText,
-                this.starFilter.rightAscension, this.starFilter.declination, this.starFilter.radius,
-                constellation, this.starFilter.magnitude[0], this.starFilter.magnitude[1], type,
-            )
-        } finally {
-            this.refreshing = false
-        }
-    }
-
-    showDSOFilterDialog() {
-        this.skyObjectFilter = this.dsoFilter
-        this.showSkyObjectFilter = true
-    }
-
-    async searchDSO() {
-        const constellation = this.dsoFilter.constellation === 'ALL' ? undefined : this.dsoFilter.constellation
-        const type = this.dsoFilter.type === 'ALL' ? undefined : this.dsoFilter.type
-
-        this.refreshing = true
-
-        try {
-            this.dsoItems = await this.api.searchDSO(this.dsoSearchText,
-                this.dsoFilter.rightAscension, this.dsoFilter.declination, this.dsoFilter.radius,
-                constellation, this.dsoFilter.magnitude[0], this.dsoFilter.magnitude[1], type,
-            )
-        } finally {
-            this.refreshing = false
-        }
-    }
-
-    showSimbadFilterDialog() {
-        this.skyObjectFilter = this.simbadFilter
-        this.showSkyObjectFilter = true
-    }
-
-    async searchSimbad() {
-        const constellation = this.simbadFilter.constellation === 'ALL' ? undefined : this.simbadFilter.constellation
-        const type = this.simbadFilter.type === 'ALL' ? undefined : this.simbadFilter.type
-
-        this.refreshing = true
-
-        try {
-            this.simbadItems = await this.api.searchSimbad(this.simbadSearchText,
-                this.simbadFilter.rightAscension, this.simbadFilter.declination, this.simbadFilter.radius,
-                constellation, this.simbadFilter.magnitude[0], this.simbadFilter.magnitude[1], type,
+            this.skyObjectItems = await this.api.searchSkyObject(this.skyObjectSearchText,
+                this.skyObjectFilter.rightAscension, this.skyObjectFilter.declination, this.skyObjectFilter.radius,
+                constellation, this.skyObjectFilter.magnitude[0], this.skyObjectFilter.magnitude[1], type,
             )
         } finally {
             this.refreshing = false
@@ -679,11 +588,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
     async filterSkyObject() {
         if (!this.skyObjectFilter) return
-        if (!this.skyObjectFilter.radius) this.skyObjectFilter.radius = 1
 
-        if (this.skyObjectFilter === this.starFilter) await this.searchStar()
-        else if (this.skyObjectFilter === this.dsoFilter) await this.searchDSO()
-        else if (this.skyObjectFilter === this.simbadFilter) await this.searchSimbad()
+        await this.searchSkyObject()
 
         this.showSkyObjectFilter = false
     }
@@ -763,8 +669,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         refreshChart: boolean = false,
         location?: Location,
     ) {
-        if (this.refreshing) return
-
         location ??= await this.api.selectedLocation()
 
         this.refreshing = true
@@ -830,39 +734,13 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                     Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
                 }
             }
-            // Star.
-            else if (this.tab === SkyAtlasTab.STAR) {
+            // Sky Object.
+            else if (this.tab === SkyAtlasTab.SKY_OBJECT) {
                 this.tags = []
 
-                if (this.star) {
-                    this.name = this.skyObjectPipe.transform(this.star, 'name')
-                    const bodyPosition = await this.api.positionOfStar(location!, this.star, this.dateTime)
-                    Object.assign(this.bodyPosition, bodyPosition)
-                } else {
-                    this.name = undefined
-                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
-                }
-            }
-            // DSO.
-            else if (this.tab === SkyAtlasTab.DSO) {
-                this.tags = []
-
-                if (this.dso) {
-                    this.name = this.skyObjectPipe.transform(this.dso, 'name')
-                    const bodyPosition = await this.api.positionOfDSO(location!, this.dso, this.dateTime)
-                    Object.assign(this.bodyPosition, bodyPosition)
-                } else {
-                    this.name = undefined
-                    Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
-                }
-            }
-            // Simbad.
-            else if (this.tab === SkyAtlasTab.SIMBAD) {
-                this.tags = []
-
-                if (this.simbad) {
-                    this.name = this.skyObjectPipe.transform(this.simbad, 'name')
-                    const bodyPosition = await this.api.positionOfSimbad(location!, this.simbad, this.dateTime)
+                if (this.skyObject) {
+                    this.name = this.skyObjectPipe.transform(this.skyObject, 'name')
+                    const bodyPosition = await this.api.positionOfSkyObject(location!, this.skyObject, this.dateTime)
                     Object.assign(this.bodyPosition, bodyPosition)
                 } else {
                     this.name = undefined
@@ -935,30 +813,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 this.altitudeData.datasets[9].data = []
             }
         }
-        // Star.
-        else if (this.tab === SkyAtlasTab.STAR) {
-            if (this.star) {
-                const points = await this.api.altitudePointsOfStar(location!, this.star, this.dateTime)
-                AtlasComponent.belowZeroPoints(points)
-                this.altitudeData.datasets[9].data = points
-            } else {
-                this.altitudeData.datasets[9].data = []
-            }
-        }
-        // DSO.
-        else if (this.tab === SkyAtlasTab.DSO) {
-            if (this.dso) {
-                const points = await this.api.altitudePointsOfDSO(location!, this.dso, this.dateTime)
-                AtlasComponent.belowZeroPoints(points)
-                this.altitudeData.datasets[9].data = points
-            } else {
-                this.altitudeData.datasets[9].data = []
-            }
-        }
-        // Simbad.
-        else if (this.tab === SkyAtlasTab.SIMBAD) {
-            if (this.simbad) {
-                const points = await this.api.altitudePointsOfSimbad(location!, this.simbad, this.dateTime)
+        // Sky Object.
+        else if (this.tab === SkyAtlasTab.SKY_OBJECT) {
+            if (this.skyObject) {
+                const points = await this.api.altitudePointsOfSkyObject(location!, this.skyObject, this.dateTime)
                 AtlasComponent.belowZeroPoints(points)
                 this.altitudeData.datasets[9].data = points
             } else {

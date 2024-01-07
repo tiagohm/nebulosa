@@ -6,8 +6,11 @@ import kotlin.math.sin
 /**
  * TDB - TT by Fairhead & Bretagnon, 1990.
  */
-object TDBMinusTTByFairheadAndBretagnon1990 : DeltaTime {
+object TDBMinusTTByFairheadAndBretagnon1990 : TimeDelta {
 
+    /**
+     * Computes TDB - TT in seconds at [time].
+     */
     override fun delta(time: InstantOfTime): Double {
         // Given that the two time scales never diverge by more than 2ms, TT
         // can also be given as the argument to perform the conversion in the

@@ -1,11 +1,11 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.time.DeltaTime
+import nebulosa.time.TimeDelta
 import nebulosa.time.TDB
 import nebulosa.time.TDBMinusTTByFairheadAndBretagnon1990
 
-class TDBMinusTTByFairheadAndBretagnon1990Test : StringSpec(), DeltaTime by TDBMinusTTByFairheadAndBretagnon1990 {
+class TDBMinusTTByFairheadAndBretagnon1990Test : StringSpec(), TimeDelta by TDBMinusTTByFairheadAndBretagnon1990 {
 
     init {
         "delta" {

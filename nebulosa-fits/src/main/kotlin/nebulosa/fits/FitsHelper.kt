@@ -2,8 +2,8 @@ package nebulosa.fits
 
 import nebulosa.math.Angle
 import nebulosa.math.deg
+import java.time.Duration
 import java.time.LocalDateTime
-import kotlin.time.Duration.Companion.seconds
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun Header.clone() = Header(this)
@@ -36,37 +36,40 @@ inline val Header.binX
 inline val Header.binY
     get() = getIntOrNull(SBFitsExt.YBINNING) ?: binX
 
-val Header.exposureTime
-    get() = (getDoubleOrNull(Standard.EXPTIME) ?: getDouble(Standard.EXPOSURE, 0.0)).seconds
+inline val Header.exposureTimeInSeconds
+    get() = getDoubleOrNull(Standard.EXPTIME) ?: getDouble(Standard.EXPOSURE, 0.0)
+
+inline val Header.exposureTime: Duration
+    get() = Duration.ofNanos((exposureTimeInSeconds * 1000000000.0).toLong())
 
 inline val Header.exposureTimeInMicroseconds
-    get() = exposureTime.inWholeMicroseconds
+    get() = (exposureTimeInSeconds * 1000000.0).toLong()
 
 const val INVALID_TEMPERATURE = 999.0
 
 inline val Header.temperature
-    get() = getDouble(NOAOExt.CCDTEM, INVALID_TEMPERATURE)
+    get() = getDoubleOrNull(NOAOExt.CCDTEM) ?: getDouble(SBFitsExt.CCD_TEMP, INVALID_TEMPERATURE)
 
 inline val Header.gain
     get() = getDouble(NOAOExt.GAIN, 0.0)
 
-val Header.latitude
+inline val Header.latitude
     get() = (getDoubleOrNull(SBFitsExt.SITELAT) ?: getDoubleOrNull("LAT-OBS"))?.deg
 
-val Header.longitude
+inline val Header.longitude
     get() = (getDoubleOrNull(SBFitsExt.SITELONG) ?: getDoubleOrNull("LONG-OBS"))?.deg
 
-val Header.observationDate
+inline val Header.observationDate
     get() = getStringOrNull(Standard.DATE_OBS)?.let(LocalDateTime::parse)
 
-val Header.cfaPattern
+inline val Header.cfaPattern
     get() = getStringOrNull(MaxImDLExt.BAYERPAT)?.ifBlank { null }?.trim()
 
-val Header.filter
+inline val Header.filter
     get() = getStringOrNull(Standard.FILTER)?.ifBlank { null }?.trim()
 
-val Header.frame
-    get() = (getStringOrNull("FRAME") ?: getStringOrNull(SBFitsExt.IMAGETYP))?.ifBlank { null }
+inline val Header.frame
+    get() = (getStringOrNull("FRAME") ?: getStringOrNull(SBFitsExt.IMAGETYP))?.ifBlank { null }?.trim()
 
-val Header.instrument
-    get() = getStringOrNull(Standard.INSTRUME)?.ifBlank { null }
+inline val Header.instrument
+    get() = getStringOrNull(Standard.INSTRUME)?.ifBlank { null }?.trim()

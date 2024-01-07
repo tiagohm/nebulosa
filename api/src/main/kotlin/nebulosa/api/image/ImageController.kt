@@ -1,11 +1,13 @@
 package nebulosa.api.image
 
 import jakarta.servlet.http.HttpServletResponse
+import jakarta.validation.Valid
 import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.transformation.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import nebulosa.star.detection.ImageStar
+import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 
@@ -21,6 +23,7 @@ class ImageController(
         @DeviceOrEntityParam(required = false) camera: Camera?,
         @RequestParam(required = false, defaultValue = "true") debayer: Boolean,
         @RequestParam(required = false, defaultValue = "false") calibrate: Boolean,
+        @RequestParam(required = false, defaultValue = "false") force: Boolean,
         @RequestParam(required = false, defaultValue = "false") autoStretch: Boolean,
         @RequestParam(required = false, defaultValue = "0.0") shadow: Float,
         @RequestParam(required = false, defaultValue = "1.0") highlight: Float,
@@ -35,7 +38,7 @@ class ImageController(
         output: HttpServletResponse,
     ) = imageService.openImage(
         path, camera,
-        debayer, calibrate, autoStretch, shadow, highlight, midtone,
+        debayer, calibrate, force, autoStretch, shadow, highlight, midtone,
         mirrorHorizontal, mirrorVertical, invert,
         scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode,
         output,
@@ -54,11 +57,10 @@ class ImageController(
     @GetMapping("annotations")
     fun annotationsOfImage(
         @RequestParam path: Path,
-        @RequestParam(required = false, defaultValue = "true") stars: Boolean,
-        @RequestParam(required = false, defaultValue = "true") dsos: Boolean,
+        @RequestParam(required = false, defaultValue = "true") starsAndDSOs: Boolean,
         @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
         @RequestParam(required = false, defaultValue = "12.0") minorPlanetMagLimit: Double,
-    ) = imageService.annotations(path, stars, dsos, minorPlanets, minorPlanetMagLimit)
+    ) = imageService.annotations(path, starsAndDSOs, minorPlanets, minorPlanetMagLimit)
 
     @GetMapping("coordinate-interpolation")
     fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {
@@ -69,4 +71,10 @@ class ImageController(
     fun detectStars(@RequestParam path: Path): List<ImageStar> {
         return imageService.detectStars(path)
     }
+
+    @GetMapping("histogram")
+    fun histogram(
+        @RequestParam path: Path,
+        @RequestParam(required = false, defaultValue = "16") @Valid @Range(min = 8, max = 16) bitLength: Int,
+    ) = imageService.histogram(path, bitLength)
 }

@@ -52,8 +52,8 @@ class MountEventHandler(
 
     companion object {
 
-        const val MOUNT_UPDATED = "MOUNT_UPDATED"
-        const val MOUNT_ATTACHED = "MOUNT_ATTACHED"
-        const val MOUNT_DETACHED = "MOUNT_DETACHED"
+        const val MOUNT_UPDATED = "MOUNT.UPDATED"
+        const val MOUNT_ATTACHED = "MOUNT.ATTACHED"
+        const val MOUNT_DETACHED = "MOUNT.DETACHED"
     }
 }

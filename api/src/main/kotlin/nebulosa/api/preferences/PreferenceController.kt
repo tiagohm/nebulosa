@@ -40,32 +40,32 @@ class PreferenceController(
 
     @PutMapping("{key}/boolean")
     fun putBoolean(@PathVariable key: String, @RequestParam value: Boolean) {
-        return preferenceService.putBoolean(key, value)
+        preferenceService.putBoolean(key, value)
     }
 
     @PutMapping("{key}/int")
     fun putInt(@PathVariable key: String, @RequestParam value: Int) {
-        return preferenceService.putInt(key, value)
+        preferenceService.putInt(key, value)
     }
 
     @PutMapping("{key}/long")
     fun putLong(@PathVariable key: String, @RequestParam value: Long) {
-        return preferenceService.putLong(key, value)
+        preferenceService.putLong(key, value)
     }
 
     @PutMapping("{key}/double")
     fun putDouble(@PathVariable key: String, @RequestParam value: Double) {
-        return preferenceService.putDouble(key, value)
+        preferenceService.putDouble(key, value)
     }
 
     @PutMapping("{key}/text")
     fun putText(@PathVariable key: String, @RequestParam value: String) {
-        return preferenceService.putText(key, value)
+        preferenceService.putText(key, value)
     }
 
     @PutMapping("{key}")
     fun putJSON(@PathVariable key: String, @RequestBody body: PreferenceRequestBody?) {
-        return preferenceService.putJSON(key, body?.data)
+        preferenceService.putJSON(key, body?.data)
     }
 
     @DeleteMapping("{key}")

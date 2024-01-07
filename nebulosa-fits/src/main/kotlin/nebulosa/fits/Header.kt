@@ -1,8 +1,10 @@
 package nebulosa.fits
 
 import nebulosa.io.SeekableSource
+import nebulosa.io.source
 import nebulosa.log.loggerFor
 import okio.Buffer
+import okio.Sink
 import java.io.EOFException
 import java.io.Serializable
 import java.util.*
@@ -51,6 +53,26 @@ open class Header internal constructor(@JvmField internal val cards: LinkedList<
         if (skipBytes > 0L) source.skip(skipBytes)
 
         buffer.clear()
+    }
+
+    override fun write(sink: Sink) {
+        val buffer = Buffer()
+
+        for (card in cards) {
+            buffer.writeString(card.format().also { println(it) }, Charsets.US_ASCII)
+        }
+
+        if (cards.last.key != "END") {
+            buffer.writeString(HeaderCard.END.format(), Charsets.US_ASCII)
+        }
+
+        var remainingBytes = Hdu.computeRemainingBytesToSkip(buffer.size)
+
+        while (remainingBytes-- > 0) {
+            buffer.writeByte(0)
+        }
+
+        buffer.readAll(sink)
     }
 
     override fun add(key: FitsHeader, value: Boolean): HeaderCard {
@@ -128,6 +150,16 @@ open class Header internal constructor(@JvmField internal val cards: LinkedList<
             val header = Header()
             header.read(source)
             return header
+        }
+
+        @JvmStatic
+        fun from(source: String): Header {
+            return from(source.toByteArray())
+        }
+
+        @JvmStatic
+        fun from(source: ByteArray): Header {
+            return from(source.source())
         }
 
         @JvmStatic

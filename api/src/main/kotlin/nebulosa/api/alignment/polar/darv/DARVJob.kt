@@ -9,7 +9,6 @@ import nebulosa.api.messages.MessageEvent
 import nebulosa.batch.processing.*
 import nebulosa.batch.processing.ExecutionContext.Companion.getDouble
 import nebulosa.batch.processing.ExecutionContext.Companion.getDuration
-import nebulosa.batch.processing.ExecutionContext.Companion.getPath
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.batch.processing.delay.DelayStepListener
 import nebulosa.indi.device.camera.FrameType
@@ -63,8 +62,7 @@ data class DARVJob(
     }
 
     override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution) {
-        val savePath = stepExecution.context.getPath(CameraExposureStep.SAVE_PATH)!!
-        onNext(CameraExposureFinished(stepExecution.jobExecution, step.camera, 1, 1, Duration.ZERO, 1.0, Duration.ZERO, savePath))
+        onNext(CameraExposureFinished(stepExecution.jobExecution, step.camera, 1, 1, Duration.ZERO, 1.0, Duration.ZERO, step.savedPath!!))
     }
 
     override fun onGuidePulseElapsed(step: GuidePulseStep, stepExecution: StepExecution) {

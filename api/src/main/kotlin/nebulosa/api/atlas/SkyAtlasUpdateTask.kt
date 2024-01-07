@@ -1,122 +1,71 @@
 package nebulosa.api.atlas
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
-import nebulosa.api.messages.MessageService
-import nebulosa.api.notifications.NotificationEvent
 import nebulosa.api.preferences.PreferenceService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okio.source
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.io.InputStream
-import java.nio.file.Path
 import java.util.concurrent.TimeUnit
-import java.util.zip.GZIPInputStream
-import kotlin.io.path.exists
-import kotlin.io.path.inputStream
 
 @Component
 class SkyAtlasUpdateTask(
-    private val objectMapper: ObjectMapper,
-    private val preferenceService: PreferenceService,
-    private val starsRepository: StarRepository,
-    private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val httpClient: OkHttpClient,
-    private val dataPath: Path,
-    private val satelliteUpdateTask: SatelliteUpdateTask,
-    private val messageService: MessageService,
+    private val simbadEntityRepository: SimbadEntityRepository,
+    private val preferenceService: PreferenceService,
 ) : Runnable {
 
-    data class Finished(override val body: String) : NotificationEvent {
-
-        override val type = "SKY_ATLAS_UPDATE_FINISHED"
-    }
-
-    @Scheduled(initialDelay = 1L, fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
     override fun run() {
-        satelliteUpdateTask.run()
+        var request = Request.Builder().get().url(VERSION_URL).build()
 
-        val version = preferenceService.getText(SKY_ATLAS_VERSION)
+        httpClient.newCall(request).execute().use { response ->
+            if (response.isSuccessful) {
+                val newestVersion = response.body!!.string()
 
-        if (version != DATABASE_VERSION) {
-            LOG.info("Star/DSO database is out of date. currentVersion={}, newVersion={}", version, DATABASE_VERSION)
+                if (newestVersion != preferenceService.getText(VERSION_KEY) || simbadEntityRepository.isEmpty()) {
+                    LOG.info("Sky Atlas is out of date. Downloading...")
 
-            messageService.sendMessage(Finished("Star/DSO database is being updated."))
+                    var finished = false
 
-            starsRepository.deleteAllInBatch()
-            deepSkyObjectRepository.deleteAllInBatch()
+                    for (i in 0 until MAX_DATA_COUNT) {
+                        if (finished) break
 
-            readStarsAndLoad()
-            readDSOsAndLoad()
+                        val url = DATA_URL.format(i)
+                        request = Request.Builder().get().url(url).build()
 
-            preferenceService.putText(SKY_ATLAS_VERSION, DATABASE_VERSION)
+                        httpClient.newCall(request).execute().use {
+                            if (it.isSuccessful) {
+                                val reader = SimbadDatabaseReader(it.body!!.byteStream().source())
 
-            messageService.sendMessage(Finished("Sky Atlas database was updated to version $DATABASE_VERSION."))
-        } else {
-            LOG.info("Star/DSO database is up to date. version={}", version)
-        }
-    }
-
-    private fun readStarsAndLoad() {
-        val starsPath = Path.of("$dataPath", "stars.json.gz")
-
-        if (starsPath.exists()) {
-            starsPath.inputStream().use(::loadStars)
-        } else {
-            val request = Request.Builder()
-                .url("https://github.com/tiagohm/nebulosa/raw/main/api/data/stars.json.gz")
-                .build()
-
-            httpClient.newCall(request)
-                .execute()
-                .use {
-                    if (it.isSuccessful) {
-                        loadStars(it.body!!.byteStream())
+                                for (entity in reader) {
+                                    simbadEntityRepository.save(entity)
+                                }
+                            } else if (it.code == 404) {
+                                finished = true
+                            } else {
+                                LOG.error("Failed to download. url={}, code={}", url, it.code)
+                                return
+                            }
+                        }
                     }
+
+                    preferenceService.putText(VERSION_KEY, newestVersion)
+                } else {
+                    LOG.info("Sky Atlas is up to date. version={}, size={}", newestVersion, simbadEntityRepository.size)
                 }
+            }
         }
-    }
-
-    private fun loadStars(inputStream: InputStream) {
-        GZIPInputStream(inputStream)
-            .use { objectMapper.readValue(it, object : TypeReference<List<StarEntity>>() {}) }
-            .let(starsRepository::saveAllAndFlush)
-            .also { LOG.info("Star database loaded. size={}", it.size) }
-    }
-
-    private fun readDSOsAndLoad() {
-        val dsosPath = Path.of("$dataPath", "dsos.json.gz")
-
-        if (dsosPath.exists()) {
-            dsosPath.inputStream().use(::loadDSOs)
-        } else {
-            val request = Request.Builder()
-                .url("https://github.com/tiagohm/nebulosa/raw/main/api/data/dsos.json.gz")
-                .build()
-
-            httpClient.newCall(request)
-                .execute()
-                .use {
-                    if (it.isSuccessful) {
-                        loadDSOs(it.body!!.byteStream())
-                    }
-                }
-        }
-    }
-
-    private fun loadDSOs(inputStream: InputStream) {
-        GZIPInputStream(inputStream)
-            .use { objectMapper.readValue(it, object : TypeReference<List<DeepSkyObjectEntity>>() {}) }
-            .let(deepSkyObjectRepository::saveAllAndFlush)
-            .also { LOG.info("DSO database loaded. size={}", it.size) }
     }
 
     companion object {
 
-        const val DATABASE_VERSION = "2023.10.18"
-        const val SKY_ATLAS_VERSION = "SKY_ATLAS_VERSION"
+        const val VERSION_URL = "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/simbad/VERSION.txt"
+        const val VERSION_KEY = "SKY_ATLAS.VERSION"
+
+        const val DATA_URL = "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/simbad/simbad.%02d.dat"
+        const val MAX_DATA_COUNT = 100
 
         @JvmStatic private val LOG = loggerFor<SkyAtlasUpdateTask>()
     }

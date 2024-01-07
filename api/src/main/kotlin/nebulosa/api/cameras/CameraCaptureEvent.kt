@@ -33,5 +33,5 @@ sealed interface CameraCaptureEvent : MessageEvent, JobExecutionEvent {
     val savePath: Path?
 
     override val eventName
-        get() = "CAMERA_CAPTURE_ELAPSED"
+        get() = "CAMERA.CAPTURE_ELAPSED"
 }

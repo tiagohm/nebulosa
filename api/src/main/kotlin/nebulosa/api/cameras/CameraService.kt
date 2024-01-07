@@ -38,7 +38,7 @@ class CameraService(
 
         val savePath = request.savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
-            ?: Path.of("$capturesPath", camera.name)
+            ?: Path.of("$capturesPath", camera.name, request.frameType.name)
 
         cameraCaptureExecutor
             .execute(request.copy(camera = camera, savePath = savePath))

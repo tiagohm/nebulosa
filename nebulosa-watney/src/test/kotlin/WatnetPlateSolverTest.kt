@@ -22,7 +22,7 @@ class WatnetPlateSolverTest : Hips2FitsStringSpec() {
 
         "blind" {
             val image = Image.open(M31)
-            println(solver.solve(image, 0.0, 0.0, 0.deg))
+            println(solver.solve(null, image, 0.0, 0.0, 0.deg))
         }
         "form image star quads" {
             val (quads, countInFirstPass) = WatneyPlateSolver.formImageStarQuads(M31_STARS)

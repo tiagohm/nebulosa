@@ -1,5 +1,6 @@
 package nebulosa.api.guiding
 
+import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
@@ -36,13 +37,22 @@ data class GuidePulseStep(@JvmField val request: GuidePulseRequest) : Step, Dela
         return StepResult.FINISHED
     }
 
+    override fun afterJob(jobExecution: JobExecution) {
+        request.guideOutput?.stop()
+    }
+
     override fun stop(mayInterruptIfRunning: Boolean) {
-        request.guideOutput?.pulseGuide(Duration.ZERO, request.direction)
+        request.guideOutput?.stop()
         delayStep.stop()
     }
 
     override fun onDelayElapsed(step: DelayStep, stepExecution: StepExecution) {
         listeners.forEach { it.onGuidePulseElapsed(this, stepExecution) }
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun GuideOutput.stop() {
+        pulseGuide(Duration.ZERO, request.direction)
     }
 
     companion object {

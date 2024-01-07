@@ -34,10 +34,12 @@
                 </ng-template>
             </p-table>
         </div>
-        <div class="col-12">
+        <div class="col-12 pt-0 align-items-center justify-content-between">
             <p class="m-0">Frames</p>
+            <p-button [disabled]="!group" [text]="true" icon="mdi mdi-delete" severity="danger" (onClick)="this.group && deleteGroupFrames(this.group)"
+                      pTooltip="Delete all frames" tooltipPosition="bottom" [positionLeft]="-20" />
         </div>
-        <div class="col-12">
+        <div class="col-12 pt-0">
             <p-table [value]="group?.frames ?? []" [(selection)]="frame" selectionMode="single"
                      dataKey="id" styleClass="p-datatable-sm p-datatable-striped"
                      [scrollable]="true" scrollHeight="110px" [paginator]="true" [rows]="100"

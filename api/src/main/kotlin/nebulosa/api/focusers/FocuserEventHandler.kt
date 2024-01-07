@@ -52,8 +52,8 @@ class FocuserEventHandler(
 
     companion object {
 
-        const val FOCUSER_UPDATED = "FOCUSER_UPDATED"
-        const val FOCUSER_ATTACHED = "FOCUSER_ATTACHED"
-        const val FOCUSER_DETACHED = "FOCUSER_DETACHED"
+        const val FOCUSER_UPDATED = "FOCUSER.UPDATED"
+        const val FOCUSER_ATTACHED = "FOCUSER.ATTACHED"
+        const val FOCUSER_DETACHED = "FOCUSER.DETACHED"
     }
 }

@@ -12,5 +12,5 @@ data class SequencerEvent(
     val capture: CameraCaptureEvent? = null,
 ) : MessageEvent {
 
-    override val eventName = "SEQUENCER_ELAPSED"
+    override val eventName = "SEQUENCER.ELAPSED"
 }

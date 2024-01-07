@@ -2,26 +2,26 @@ package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
+import nebulosa.api.atlas.SimbadEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.fits.*
 import nebulosa.imaging.ImageChannel
+import nebulosa.imaging.algorithms.computation.Histogram
+import nebulosa.imaging.algorithms.computation.Statistics
 import nebulosa.imaging.algorithms.transformation.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.sbd.SmallBodyDatabaseService
-import nebulosa.simbad.SimbadSearch
-import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
-import nebulosa.skycatalog.SkyObjectType
 import nebulosa.star.detection.ImageStar
 import nebulosa.watney.star.detection.WatneyStarDetector
 import nebulosa.wcs.WCSException
-import nebulosa.wcs.WCSTransform
+import nebulosa.wcs.WCS
 import org.springframework.http.HttpStatus
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
@@ -40,7 +40,7 @@ class ImageService(
     private val framingService: FramingService,
     private val calibrationFrameService: CalibrationFrameService,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
-    private val simbadService: SimbadService,
+    private val simbadEntityRepository: SimbadEntityRepository,
     private val imageBucket: ImageBucket,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val connectionService: ConnectionService,
@@ -48,14 +48,14 @@ class ImageService(
 
     @Synchronized
     fun openImage(
-        path: Path, camera: Camera?, debayer: Boolean = true, calibrate: Boolean = false,
+        path: Path, camera: Camera?, debayer: Boolean = true, calibrate: Boolean = false, force: Boolean = false,
         autoStretch: Boolean = false, shadow: Float = 0f, highlight: Float = 1f, midtone: Float = 0.5f,
         mirrorHorizontal: Boolean = false, mirrorVertical: Boolean = false, invert: Boolean = false,
         scnrEnabled: Boolean = false, scnrChannel: ImageChannel = ImageChannel.GREEN, scnrAmount: Float = 0.5f,
         scnrProtectionMode: ProtectionMethod = ProtectionMethod.AVERAGE_NEUTRAL,
         output: HttpServletResponse,
     ) {
-        val image = imageBucket[path]?.first ?: imageBucket.open(path, debayer)
+        val image = imageBucket.open(path, debayer, force = force)
 
         val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
         var stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
@@ -65,9 +65,10 @@ class ImageService(
                 || scnrEnabled
 
         var transformedImage = if (shouldBeTransformed) image.clone() else image
+        val instrument = camera?.name ?: image.header.instrument
 
-        if (calibrate && camera != null) {
-            transformedImage = calibrationFrameService.calibrate(camera, transformedImage, transformedImage === image)
+        if (calibrate && !instrument.isNullOrBlank()) {
+            transformedImage = calibrationFrameService.calibrate(instrument, transformedImage, transformedImage === image)
         }
 
         if (mirrorHorizontal) {
@@ -80,6 +81,8 @@ class ImageService(
         if (scnrEnabled) {
             transformedImage = SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode).transform(transformedImage)
         }
+
+        val statistics = transformedImage.compute(Statistics.GRAY)
 
         if (autoStretch) {
             stretchParams = AutoScreenTransformFunction.compute(transformedImage)
@@ -96,14 +99,12 @@ class ImageService(
             path,
             transformedImage.width, transformedImage.height, transformedImage.mono,
             stretchParams.shadow, stretchParams.highlight, stretchParams.midtone,
-            transformedImage.header.rightAscension.format(AngleFormatter.HMS),
-            transformedImage.header.declination.format(AngleFormatter.SIGNED_DMS),
+            transformedImage.header.rightAscension.takeIf { it.isFinite() },
+            transformedImage.header.declination.takeIf { it.isFinite() },
             imageBucket[path]?.second != null,
-            transformedImage.header.iterator().asSequence()
-                .filter { it.key.isNotBlank() && it.value.isNotBlank() }
-                .map { ImageHeaderItem(it.key, it.value) }
-                .toList(),
-            image.header.instrument?.let(connectionService::camera),
+            transformedImage.header.mapNotNull { if (it.isCommentStyle) null else ImageHeaderItem(it.key, it.value) },
+            instrument?.let(connectionService::camera),
+            statistics,
         )
 
         output.addHeader("X-Image-Info", objectMapper.writeValueAsString(info))
@@ -116,13 +117,12 @@ class ImageService(
     fun closeImage(path: Path) {
         imageBucket.remove(path)
         LOG.info("image closed. path={}", path)
-        System.gc()
     }
 
     @Synchronized
     fun annotations(
         path: Path,
-        stars: Boolean, dsos: Boolean, minorPlanets: Boolean,
+        starsAndDSOs: Boolean, minorPlanets: Boolean,
         minorPlanetMagLimit: Double = 12.0,
     ): List<ImageAnnotation> {
         val (image, calibration) = imageBucket[path] ?: return emptyList()
@@ -132,7 +132,7 @@ class ImageService(
         }
 
         val wcs = try {
-            WCSTransform(calibration)
+            WCS(calibration)
         } catch (e: WCSException) {
             LOG.error("unable to generate annotations for image. path={}", path)
             return emptyList()
@@ -183,51 +183,20 @@ class ImageService(
 
         // val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
 
-        if (stars || dsos) {
+        if (starsAndDSOs) {
             threadPoolTaskExecutor.submitCompletable {
-                LOG.info("finding star annotations. dateTime={}, calibration={}", dateTime, calibration)
+                LOG.info("finding star/DSO annotations. dateTime={}, calibration={}", dateTime, calibration)
 
-                val types = ArrayList<SkyObjectType>(4)
+                val catalog = simbadEntityRepository.find(null, null, calibration.rightAscension, calibration.declination, calibration.radius)
 
-                if (stars) {
-                    types.add(SkyObjectType.STAR)
-                }
-
-                if (dsos) {
-                    types.add(SkyObjectType.CLUSTER_OF_STARS)
-                    types.add(SkyObjectType.ASSOCIATION_OF_STARS)
-                    types.add(SkyObjectType.GALAXY)
-                    types.add(SkyObjectType.INTERSTELLAR_MEDIUM_OBJECT)
-                    types.add(SkyObjectType.CLUSTER_OF_GALAXIES)
-                    types.add(SkyObjectType.INTERACTING_GALAXIES)
-                    types.add(SkyObjectType.GROUP_OF_GALAXIES)
-                    types.add(SkyObjectType.SUPERCLUSTER_OF_GALAXIES)
-                    types.add(SkyObjectType.PAIR_OF_GALAXIES)
-                }
-
-                var lastID = 0L
                 var count = 0
 
-                while (true) {
-                    val search = SimbadSearch.Builder()
-                        .region(calibration.rightAscension, calibration.declination, calibration.radius)
-                        .types(types)
-                        .limit(5000)
-                        .lastID(lastID)
-                        .build()
-
-                    val catalog = simbadService.search(search)
-
-                    if (catalog.isEmpty()) break
-
-                    for (entry in catalog) {
-                        val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
-                        val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
-                        else ImageAnnotation(x, y, dso = entry)
-                        annotations.add(annotation)
-                        lastID = entry.id
-                        count++
-                    }
+                for (entry in catalog) {
+                    val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
+                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
+                    else ImageAnnotation(x, y, dso = entry)
+                    annotations.add(annotation)
+                    count++
                 }
 
                 LOG.info("Found {} stars/DSOs", count)
@@ -277,7 +246,7 @@ class ImageService(
         }
 
         val wcs = try {
-            WCSTransform(calibration)
+            WCS(calibration)
         } catch (e: WCSException) {
             LOG.error("unable to generate annotations for image. path={}", path)
             return null
@@ -308,6 +277,11 @@ class ImageService(
     fun detectStars(path: Path): List<ImageStar> {
         val (image) = imageBucket[path] ?: return emptyList()
         return WATNEY_STAR_DETECTOR.detect(image)
+    }
+
+    fun histogram(path: Path, bitLength: Int = 16): IntArray {
+        val (image) = imageBucket[path] ?: return IntArray(0)
+        return image.compute(Histogram(bitLength = bitLength))
     }
 
     companion object {

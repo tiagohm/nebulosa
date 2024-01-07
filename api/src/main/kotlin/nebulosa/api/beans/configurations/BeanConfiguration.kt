@@ -5,6 +5,13 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import io.objectbox.BoxStore
+import nebulosa.api.atlas.SatelliteEntity
+import nebulosa.api.atlas.SimbadEntity
+import nebulosa.api.calibration.CalibrationFrameEntity
+import nebulosa.api.entities.MyObjectBox
+import nebulosa.api.locations.LocationEntity
+import nebulosa.api.preferences.PreferenceEntity
 import nebulosa.batch.processing.AsyncJobLauncher
 import nebulosa.common.json.PathDeserializer
 import nebulosa.common.json.PathSerializer
@@ -20,9 +27,11 @@ import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.greenrobot.eventbus.EventBus
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
@@ -53,6 +62,9 @@ class BeanConfiguration {
 
     @Bean
     fun cachePath(appPath: Path): Path = Path.of("$appPath", "cache").createDirectories()
+
+    @Bean
+    fun libsPath(appPath: Path): Path = Path.of("$appPath", "libs").createDirectories()
 
     @Bean
     @Suppress("UNCHECKED_CAST")
@@ -126,6 +138,34 @@ class BeanConfiguration {
 
     @Bean
     fun asyncJobLauncher(threadPoolTaskExecutor: ThreadPoolTaskExecutor) = AsyncJobLauncher(threadPoolTaskExecutor)
+
+    @Bean
+    @Primary
+    fun boxStore(dataPath: Path) = MyObjectBox.builder()
+        .baseDirectory(dataPath.toFile())
+        .name("main")
+        .build()!!
+
+    @Bean
+    fun simbadBoxStore(dataPath: Path) = MyObjectBox.builder()
+        .baseDirectory(dataPath.toFile())
+        .name("simbad")
+        .build()!!
+
+    @Bean
+    fun locationBox(boxStore: BoxStore) = boxStore.boxFor(LocationEntity::class.java)!!
+
+    @Bean
+    fun calibrationFrameBox(boxStore: BoxStore) = boxStore.boxFor(CalibrationFrameEntity::class.java)!!
+
+    @Bean
+    fun preferenceBox(boxStore: BoxStore) = boxStore.boxFor(PreferenceEntity::class.java)!!
+
+    @Bean
+    fun satelliteBox(boxStore: BoxStore) = boxStore.boxFor(SatelliteEntity::class.java)!!
+
+    @Bean
+    fun simbadEntityBox(@Qualifier("simbadBoxStore") boxStore: BoxStore) = boxStore.boxFor(SimbadEntity::class.java)!!
 
     @Bean
     fun webMvcConfigurer(

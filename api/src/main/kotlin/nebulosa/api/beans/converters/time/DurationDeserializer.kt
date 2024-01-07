@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.deser.std.NumberDeserializers
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.convert.DurationUnit
-import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -22,10 +21,8 @@ class DurationDeserializer(private val unit: ChronoUnit?) : StdDeserializer<Dura
     @Autowired
     constructor() : this(null)
 
-    @Autowired @Lazy private lateinit var converter: StringToDurationConverter
-
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Duration? {
-        return if (unit == null) converter.convert(p.text)
+        return if (unit == null) StringToDurationConverter.convert(p.text)
         else Duration.of(numberDeserializer.deserialize(p, ctxt), unit)
     }
 

@@ -16,12 +16,7 @@ enum class Parity {
     class Deserializer : JsonDeserializer<Parity>() {
 
         override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Parity {
-            return ENTRIES[p.valueAsDouble.toInt()]
+            return entries[p.valueAsInt]
         }
-    }
-
-    companion object {
-
-        @JvmStatic private val ENTRIES = values()
     }
 }

@@ -6,7 +6,8 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { Angle, HipsSurvey } from '../../shared/types'
+import { Angle } from '../../shared/types/atlas.types'
+import { HipsSurvey } from '../../shared/types/framing.types'
 import { AppComponent } from '../app.component'
 
 export const FRAMING_KEY = 'framing'
@@ -63,7 +64,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Framing'
 
-        electron.on('DATA_CHANGED', (event: FramingData) => {
+        electron.on('DATA.CHANGED', (event: FramingData) => {
             ngZone.run(() => this.frameFromData(event))
         })
     }
@@ -80,7 +81,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
     @HostListener('window:unload')
     ngOnDestroy() {
         this.closeFrameImage()
-        this.electron.send('CLOSE_WINDOW', this.frameId)
+        this.electron.send('WINDOW.CLOSE', this.frameId)
     }
 
     private frameFromData(data: FramingData) {

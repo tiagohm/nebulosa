@@ -1,22 +1,30 @@
 package nebulosa.api.locations
 
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Modifying
-import org.springframework.data.jpa.repository.Query
-import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Isolation
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
+import io.objectbox.Box
+import nebulosa.api.repositories.BoxRepository
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.stereotype.Component
 
-@Repository
-@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW, isolation = Isolation.SERIALIZABLE)
-interface LocationRepository : JpaRepository<LocationEntity, Long> {
+@Component
+class LocationRepository(@Qualifier("locationBox") override val box: Box<LocationEntity>) : BoxRepository<LocationEntity>() {
 
-    fun findFirstByOrderById(): LocationEntity?
+    fun findFirstByOrderById(): LocationEntity? {
+        return box.query()
+            .order(LocationEntity_.id)
+            .build()
+            .use { it.findFirst() }
+    }
 
-    fun findFirstBySelectedTrueOrderById(): LocationEntity?
+    fun findFirstBySelectedTrueOrderById(): LocationEntity? {
+        return box.query()
+            .equal(LocationEntity_.selected, true)
+            .order(LocationEntity_.id)
+            .build()
+            .use { it.findFirst() }
+    }
 
-    @Modifying
-    @Query("UPDATE LocationEntity l SET l.selected = false")
-    fun unselectedAll()
+    @Synchronized
+    fun unselectedAll() {
+        box.put(onEach { it.selected = false })
+    }
 }

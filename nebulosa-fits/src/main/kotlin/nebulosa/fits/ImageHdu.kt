@@ -1,6 +1,8 @@
 package nebulosa.fits
 
 import nebulosa.io.SeekableSource
+import okio.Buffer
+import okio.Sink
 
 data class ImageHdu(
     override var header: Header,
@@ -24,6 +26,21 @@ data class ImageHdu(
         if (skipBytes > 0L) source.seek(position + skipBytes)
     }
 
+    override fun write(sink: Sink) {
+        header.write(sink)
+
+        val byteCount = data.sumOf { it.writeTo(sink) }
+        var remainingBytes = Hdu.computeRemainingBytesToSkip(byteCount)
+
+        if (remainingBytes > 0) {
+            Buffer().use {
+                while (remainingBytes-- > 0) it.writeByte(0)
+                it.readAll(sink)
+                it.close()
+            }
+        }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is ImageHdu) return false
@@ -43,6 +60,6 @@ data class ImageHdu(
     companion object {
 
         @JvmStatic
-        fun isValid(header: Header) = header.getBoolean(Standard.SIMPLE)
+        fun isValid(header: Header) = header.getBoolean(Standard.SIMPLE) || header.getStringOrNull(Standard.XTENSION) == "IMAGE"
     }
 }

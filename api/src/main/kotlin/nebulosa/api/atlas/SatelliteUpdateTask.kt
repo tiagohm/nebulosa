@@ -4,8 +4,10 @@ import nebulosa.api.preferences.PreferenceService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 @Component
 class SatelliteUpdateTask(
@@ -14,12 +16,13 @@ class SatelliteUpdateTask(
     private val satelliteRepository: SatelliteRepository,
 ) : Runnable {
 
+    @Scheduled(fixedDelay = UPDATE_INTERVAL, timeUnit = TimeUnit.MILLISECONDS)
     override fun run() {
         checkIsOutOfDateAndUpdate()
     }
 
     private fun isOutOfDate(): Boolean {
-        val updatedAt = preferenceService.getLong(SATELLITES_UPDATED_AT) ?: 0L
+        val updatedAt = preferenceService.getLong(UPDATED_AT_KEY) ?: 0L
         return System.currentTimeMillis() - updatedAt >= UPDATE_INTERVAL
     }
 
@@ -28,7 +31,7 @@ class SatelliteUpdateTask(
             LOG.info("satellites is out of date")
 
             if (updateTLEs()) {
-                preferenceService.putLong(SATELLITES_UPDATED_AT, System.currentTimeMillis())
+                preferenceService.putLong(UPDATED_AT_KEY, System.currentTimeMillis())
             } else {
                 LOG.warn("no satellites was updated")
             }
@@ -38,7 +41,7 @@ class SatelliteUpdateTask(
     }
 
     private fun updateTLEs(): Boolean {
-        satelliteRepository.deleteAllInBatch()
+        satelliteRepository.deleteAll()
 
         val data = HashMap<Long, SatelliteEntity>(16384)
         val tasks = ArrayList<CompletableFuture<*>>(SatelliteGroupType.entries.size)
@@ -52,7 +55,7 @@ class SatelliteUpdateTask(
         tasks.forEach(CompletableFuture<*>::get)
 
         return satelliteRepository
-            .saveAllAndFlush(data.values)
+            .save(data.values)
             .also { LOG.info("{} satellites updated", it.size) }
             .isNotEmpty()
     }
@@ -81,11 +84,11 @@ class SatelliteUpdateTask(
 
                                 synchronized(data) {
                                     if (id in data) {
-                                        data[id]!!.groupType = data[id]!!.groupType or (1L shl group.ordinal)
+                                        data[id]!!.groups.add(group.name)
                                     } else {
                                         val name = lines[0].trim()
                                         val tle = lines.joinToString("\n")
-                                        data[id] = SatelliteEntity(id, name, tle, group.ordinal.toLong())
+                                        data[id] = SatelliteEntity(id, name, tle, mutableListOf(group.name))
                                     }
                                 }
 
@@ -99,8 +102,8 @@ class SatelliteUpdateTask(
 
     companion object {
 
-        const val UPDATE_INTERVAL = 1000L * 60 * 60 * 24 // 1 day
-        const val SATELLITES_UPDATED_AT = "SATELLITES_UPDATED_AT"
+        const val UPDATE_INTERVAL = 1000L * 60 * 60 * 24 * 2 // 2 days in ms
+        const val UPDATED_AT_KEY = "SATELLITES.UPDATED_AT"
 
         @JvmStatic private val LOG = loggerFor<SatelliteUpdateTask>()
     }

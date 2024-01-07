@@ -1,4 +1,4 @@
-@file:Suppress("PrivatePropertyName")
+@file:Suppress("PrivatePropertyName", "NOTHING_TO_INLINE", "FloatingPointLiteralPrecision")
 
 package nebulosa.erfa
 
@@ -27,11 +27,11 @@ fun eraP2s(x: Distance, y: Distance, z: Distance): SphericalCoordinate {
  *
  * @return longitude angle (theta) and latitude angle (phi).
  */
-fun eraC2s(x: Distance, y: Distance, z: Distance): PairOfAngle {
+fun eraC2s(x: Distance, y: Distance, z: Distance): DoubleArray {
     val d2 = x * x + y * y
     val theta = if (d2 == 0.0) 0.0 else atan2(y, x)
     val phi = if (z == 0.0) 0.0 else atan2(z, sqrt(d2))
-    return PairOfAngle(theta.rad, phi.rad)
+    return doubleArrayOf(theta.rad, phi.rad)
 }
 
 /**
@@ -86,7 +86,7 @@ fun eraAb(pnat: Vector3D, v: Vector3D, s: Distance, bm1: Double): Vector3D {
  *
  * @return hour angle (local) and declination
  */
-fun eraAe2hd(az: Angle, alt: Angle, phi: Angle): PairOfAngle {
+fun eraAe2hd(az: Angle, alt: Angle, phi: Angle): DoubleArray {
     val sa = az.sin
     val ca = az.cos
     val se = alt.sin
@@ -102,7 +102,7 @@ fun eraAe2hd(az: Angle, alt: Angle, phi: Angle): PairOfAngle {
     val ha = if (r != 0.0) atan2(y, x).rad else 0.0
     val dec = atan2(z, r).rad
 
-    return PairOfAngle(ha, dec)
+    return doubleArrayOf(ha, dec)
 }
 
 /**
@@ -351,10 +351,13 @@ fun eraC2ixys(
     val e = if (r2 > 0.0) atan2(y, x).rad else 0.0
     val d = atan(sqrt(r2 / (1.0 - r2))).rad
 
-    return Matrix3D.rotateZ(e).rotateY(d).rotateZ(-(e + s))
+    return Matrix3D.rotZ(e).rotateY(d).rotateZ(-(e + s))
 }
 
-@Suppress("FloatingPointLiteralPrecision") private const val OM = 1.00273781191135448 * TAU / DAYSEC
+/**
+ * Earth rotation rate in radians per UT1 second.
+ */
+const val OM = 1.00273781191135448 * TAU / DAYSEC
 
 /**
  * Form the matrix of polar motion for a given date, IAU 2000.
@@ -363,8 +366,8 @@ fun eraC2ixys(
  * @param yp Coordinates of the pole (radians)
  * @param sp The TIO locator s' (radians)
  */
-fun eraPom00(xp: Angle, yp: Angle, sp: Angle): Matrix3D {
-    return Matrix3D.rotateZ(sp).rotateY(-xp).rotateX(-yp)
+inline fun eraPom00(xp: Angle, yp: Angle, sp: Angle): Matrix3D {
+    return Matrix3D.rotZ(sp).rotateY(-xp).rotateX(-yp)
 }
 
 /**
@@ -538,7 +541,7 @@ fun eraApco(
     refa: Angle, refb: Angle,
 ): AstrometryParameters {
     // Form the rotation matrix, CIRS to apparent [HA,Dec].
-    var r = Matrix3D.rotateZ(theta + sp).rotateY(-xp).rotateX(-yp).rotateZ(elong)
+    var r = Matrix3D.rotZ(theta + sp).rotateY(-xp).rotateX(-yp).rotateZ(elong)
 
     // Solve for local Earth rotation angle.
     val a = r[0, 0]
@@ -726,10 +729,10 @@ fun eraFasa03(t: Double) = (0.874016757 + 21.3299104960 * t).mod(TAU).rad
 fun eraFaur03(t: Double) = (5.481293872 + 7.4781598567 * t).mod(TAU).rad
 
 private data class LuniSolarNut(
-    val nl: Int, val nlp: Int, val nf: Int,
-    val nd: Int, val nom: Int, val sp: Double,
-    val spt: Double, val cp: Double, val ce: Double,
-    val cet: Double, val se: Double,
+    @JvmField val nl: Int, @JvmField val nlp: Int, @JvmField val nf: Int,
+    @JvmField val nd: Int, @JvmField val nom: Int, @JvmField val sp: Double,
+    @JvmField val spt: Double, @JvmField val cp: Double, @JvmField val ce: Double,
+    @JvmField val cet: Double, @JvmField val se: Double,
 ) {
 
     companion object {
@@ -744,11 +747,11 @@ private data class LuniSolarNut(
 }
 
 private data class PlanetaryNut(
-    val nl: Int, val nf: Int, val nd: Int, val nom: Int,
-    val nme: Int, val nve: Int, val nea: Int, val nma: Int,
-    val nju: Int, val nsa: Int, val nur: Int, val nne: Int,
-    val npa: Int, val sp: Int, val cp: Int,
-    val se: Int, val ce: Int,
+    @JvmField val nl: Int, val nf: Int, val nd: Int, val nom: Int,
+    @JvmField val nme: Int, val nve: Int, val nea: Int, val nma: Int,
+    @JvmField val nju: Int, val nsa: Int, val nur: Int, val nne: Int,
+    @JvmField val npa: Int, val sp: Int, val cp: Int,
+    @JvmField val se: Int, val ce: Int,
 ) {
 
     companion object {
@@ -770,7 +773,7 @@ private val XPL by lazyBufferedResource("PLANETARY-NUT.dat") { Array(687) { Plan
  * Nutation, IAU 2000A model (MHB2000 luni-solar and planetary nutation
  * with free core nutation omitted).
  */
-fun eraNut00a(tt1: Double, tt2: Double): PairOfAngle {
+fun eraNut00a(tt1: Double, tt2: Double): DoubleArray {
     // Interval between fundamental date J2000.0 and given date (JC).
     val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
@@ -857,13 +860,13 @@ fun eraNut00a(tt1: Double, tt2: Double): PairOfAngle {
     val dep = de
 
     // Units of 0.1 microarcsecond to radians.
-    return PairOfAngle((dpls + dpp).arcsec / 10000000.0, (dels + dep).arcsec / 10000000.0)
+    return doubleArrayOf((dpls + dpp).arcsec / 10000000.0, (dels + dep).arcsec / 10000000.0)
 }
 
 /**
  * IAU 2000A nutation with adjustments to match the IAU 2006 precession.
  */
-fun eraNut06a(tt1: Double, tt2: Double): PairOfAngle {
+fun eraNut06a(tt1: Double, tt2: Double): DoubleArray {
     // Interval between fundamental date J2000.0 and given date (JC).
     val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
@@ -877,14 +880,14 @@ fun eraNut06a(tt1: Double, tt2: Double): PairOfAngle {
     val dpsi = dp + dp * (0.4697e-6 + fj2)
     val deps = de + de * fj2
 
-    return PairOfAngle(dpsi.rad, deps.rad)
+    return doubleArrayOf(dpsi.rad, deps.rad)
 }
 
 /**
  * Form rotation matrix given the Fukushima-Williams angles.
  */
-fun eraFw2m(gamb: Angle, phib: Angle, psi: Angle, eps: Angle): Matrix3D {
-    return Matrix3D.rotateZ(gamb).rotateX(phib).rotateZ(-psi).rotateX(-eps)
+inline fun eraFw2m(gamb: Angle, phib: Angle, psi: Angle, eps: Angle): Matrix3D {
+    return Matrix3D.rotZ(gamb).rotateX(phib).rotateZ(-psi).rotateX(-eps)
 }
 
 /**
@@ -901,10 +904,11 @@ fun eraPnm06a(tt1: Double, tt2: Double): Matrix3D {
     return eraFw2m(gamb, phib, psib + dp, epsa + de)
 }
 
-private class Term(
-    val nfa: IntArray,
-    val s: Double,
-    val c: Double,
+@Suppress("ArrayInDataClass")
+private data class Term(
+    @JvmField val nfa: IntArray,
+    @JvmField val s: Double,
+    @JvmField val c: Double,
 )
 
 // Polynomial coefficients
@@ -1105,7 +1109,7 @@ fun era00(ut11: Double, ut12: Double): Angle {
  *
  * @return tan Z coefficient (radians) and tan^3 Z coefficient (radians)
  */
-fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): PairOfAngle {
+fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): DoubleArray {
     // Decide whether optical/IR or radio case:  switch at 100 microns.
     val optic = wl <= 100.0
 
@@ -1141,7 +1145,7 @@ fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): PairOfAngle {
     val refa = gamma * (1.0 - beta)
     val refb = -gamma * (beta - gamma / 2.0)
 
-    return PairOfAngle(refa.rad, refb.rad)
+    return doubleArrayOf(refa.rad, refb.rad)
 }
 
 //fun apco(frame: CoordinateFrame) {
@@ -1373,10 +1377,11 @@ fun eraApcg13(tdb1: Double, tdb2: Double): AstrometryParameters {
     )
 }
 
-private class ComplementaryTerm(
-    val nfa: IntArray,
-    val s: Double,
-    val c: Double,
+@Suppress("ArrayInDataClass")
+private data class ComplementaryTerm(
+    @JvmField val nfa: IntArray,
+    @JvmField val s: Double,
+    @JvmField val c: Double,
 )
 
 // Terms of order t^0
@@ -1523,12 +1528,13 @@ fun eraEect00(tt1: Double, tt2: Double): Angle {
  * Earth rotation angle (IAU 2000 model).
  */
 fun eraEra00(ut11: Double, ut12: Double): Angle {
-    require(ut12 < 1.0) { "ut12 < 1.0: $ut12" }
-
     val t = ut12 + (ut11 - J2000)
 
+    // Fractional part of T (days).
+    val f = ut12 % 1.0 + ut11 % 1.0
+
     // Earth rotation angle at this UT1.
-    return (TAU * (ut12 + 0.7790572732640 + 0.00273781191135448 * t)).rad.normalized
+    return eraAnpm(TAU * (f + 0.7790572732640 + 0.00273781191135448 * t))
 }
 
 /**
@@ -1551,7 +1557,7 @@ fun eraEra00(ut11: Double, ut12: Double): Angle {
  * @return equation of the equinoxes in radians.
  *
  */
-fun eraEe00(tt1: Double, tt2: Double, epsa: Angle, dpsi: Angle): Angle {
+inline fun eraEe00(tt1: Double, tt2: Double, epsa: Angle, dpsi: Angle): Angle {
     return dpsi * epsa.cos + eraEect00(tt1, tt2)
 }
 
@@ -1601,10 +1607,8 @@ fun eraGmst06(ut11: Double, ut12: Double, tt1: Double, tt2: Double): Angle {
     val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
     // Greenwich Mean Sidereal Time, IAU 2006.
-    return (eraEra00(
-        ut11,
-        ut12
-    ) + (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
+    return (eraEra00(ut11, ut12) +
+            (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
 }
 
 /**
@@ -1736,8 +1740,8 @@ fun eraEe00b(tt1: Double, tt2: Double): Angle {
 }
 
 // Precession and obliquity corrections (radians per century).
-private val PRECOR = (-0.29965).arcsec
-private val OBLCOR = (-0.02524).arcsec
+private const val PRECOR = -0.29965 * ASEC2RAD
+private const val OBLCOR = -0.02524 * ASEC2RAD
 
 /**
  * Precession-rate part of the IAU 2000 precession-nutation models (part of MHB2000).
@@ -1757,10 +1761,10 @@ private val OBLCOR = (-0.02524).arcsec
  * model, formally adopted by the IAU General Assembly in 2000,
  * namely MHB2000 (Mathews et al. 2002).
  */
-fun eraPr00(tt1: Double, tt2: Double): PairOfAngle {
+fun eraPr00(tt1: Double, tt2: Double): DoubleArray {
     // Interval between fundamental epoch J2000.0 and given date (JC).
     val t = (tt1 - J2000 + tt2) / DAYSPERJC
-    return PairOfAngle(PRECOR * t, OBLCOR * t)
+    return doubleArrayOf(PRECOR * t, OBLCOR * t)
 }
 
 /**
@@ -1861,13 +1865,13 @@ private val X = arrayOf(
     LuniSolarNut(1, 1, 2, -2, 2, 1290.0, 0.0, 0.0, -556.0, 0.0, 0.0),
 )
 
-private val DPPLAN = (-0.135).mas
-private val DEPLAN = 0.388.mas
+private const val DPPLAN = -0.135 * MILLIASEC2RAD
+private const val DEPLAN = 0.388 * MILLIASEC2RAD
 
 /**
  * Nutation, IAU 2000B model.
  */
-fun eraNut00b(tt1: Double, tt2: Double): PairOfAngle {
+fun eraNut00b(tt1: Double, tt2: Double): DoubleArray {
     // Interval between fundamental epoch J2000.0 and given date (JC).
     val t = (tt1 - J2000 + tt2) / DAYSPERJC
 
@@ -1899,7 +1903,7 @@ fun eraNut00b(tt1: Double, tt2: Double): PairOfAngle {
         de += (X[i].ce + X[i].cet * t) * carg + X[i].se * sarg
     }
 
-    return PairOfAngle(dp.arcsec / 10000000.0 + DPPLAN, de.arcsec / 10000000.0 + DEPLAN)
+    return doubleArrayOf(dp.arcsec / 10000000.0 + DPPLAN, de.arcsec / 10000000.0 + DEPLAN)
 }
 
 /**
@@ -1911,7 +1915,7 @@ fun eraNut00b(tt1: Double, tt2: Double): PairOfAngle {
  * @param era  double          Earth rotation angle (radians).
  * @param rpom double[3][3]    Polar-motion matrix.
  */
-fun eraC2tcio(rc2i: Matrix3D, era: Angle, rpom: Matrix3D): Matrix3D {
+inline fun eraC2tcio(rc2i: Matrix3D, era: Angle, rpom: Matrix3D): Matrix3D {
     return rpom * rc2i.rotateZ(era)
 }
 
@@ -1924,7 +1928,7 @@ fun eraEcm06(tt1: Double, tt2: Double): Matrix3D {
     // Precession-bias matrix, IAU 2006.
     val bp = eraPmat06(tt1, tt2)
     // Equatorial of date to ecliptic matrix.
-    val e = Matrix3D.rotateX(ob)
+    val e = Matrix3D.rotX(ob)
     // ICRS to ecliptic coordinates rotation matrix, IAU 2006.
     return e * bp
 }
@@ -1987,8 +1991,8 @@ fun eraP06e(tt1: Double, tt2: Double): PrecessionAnglesIAU2006 {
  * @param dpsi Nutation angle.
  * @param deps Nutation angle.
  */
-fun eraNumat(epsa: Angle, dpsi: Angle, deps: Angle): Matrix3D {
-    return Matrix3D.rotateX(epsa).rotateZ(-dpsi).rotateX(-(epsa + deps))
+inline fun eraNumat(epsa: Angle, dpsi: Angle, deps: Angle): Matrix3D {
+    return Matrix3D.rotX(epsa).rotateZ(-dpsi).rotateX(-(epsa + deps))
 }
 
 /**
@@ -2012,7 +2016,7 @@ fun eraNum06a(tt1: Double, tt2: Double): Matrix3D {
  * @param gst  Greenwich (apparent) Sidereal Time (radians)
  * @param rpom Polar-motion matrix
  */
-fun eraC2teqx(rbpn: Matrix3D, gst: Angle, rpom: Matrix3D): Matrix3D {
+inline fun eraC2teqx(rbpn: Matrix3D, gst: Angle, rpom: Matrix3D): Matrix3D {
     return rpom * rbpn.rotateZ(gst)
 }
 
@@ -2022,28 +2026,103 @@ fun eraC2teqx(rbpn: Matrix3D, gst: Angle, rpom: Matrix3D): Matrix3D {
  *
  * The matrix rc2t transforms from celestial to terrestrial coordinates:
  *
- *    [TRS] = RPOM * R_3(GST) * RBPN * [CRS]
- *
- *          = rc2t * [CRS]
+ *    [TRS] = RPOM * R_3(GST) * RBPN * [CRS] = rc2t * [CRS]
  */
-//fun eraC2tpe(tt1: Double, tt2: Double, ut11: Double, ut12: Double,
-//             dpsi: Angle, deps: Angle, xp: Angle, yp: Angle): Matrix3D {
-//    // Form the celestial-to-true matrix for this TT.
-//    val eraPn00(tt1, tt2, dpsi, deps, &epsa, rb, rp, rbp, rn, rbpn)
-//    // Predict the Greenwich Mean Sidereal Time for this UT1 and TT.
-//    val gmst = eraGmst00(ut11, ut12, tt1, tt2)
-//    // Predict the equation of the equinoxes given TT and nutation.
-//    val ee = eraEe00(tt1, tt2, epsa, dpsi)
-//    // Estimate s'.
-//    val sp = eraSp00(tt1, tt2)
-//    // Form the polar motion matrix.
-//    eraPom00(xp, yp, sp, rpom)
-//    // Combine to form the celestial-to-terrestrial matrix.
-//    eraC2teqx(rbpn, gmst + ee, rpom, rc2t)
-//}
+fun eraC2tpe(
+    tt1: Double, tt2: Double, ut11: Double, ut12: Double,
+    dpsi: Angle, deps: Angle, xp: Angle, yp: Angle
+): Matrix3D {
+    // Form the celestial-to-true matrix for this TT.
+    val (epsa, _, _, _, _, rbpn) = eraPn00(tt1, tt2, dpsi, deps)
+    // Predict the Greenwich Mean Sidereal Time for this UT1 and TT.
+    val gmst = eraGmst00(ut11, ut12, tt1, tt2)
+    // Predict the equation of the equinoxes given TT and nutation.
+    val ee = eraEe00(tt1, tt2, epsa, dpsi)
+    // Estimate s'.
+    val sp = eraSp00(tt1, tt2)
+    // Form the polar motion matrix.
+    val rpom = eraPom00(xp, yp, sp)
+    // Combine to form the celestial-to-terrestrial matrix.
+    return eraC2teqx(rbpn, gmst + ee, rpom)
+}
 
-fun eraPn00(tt1: Double, tt2: Double, dpsi: Angle, deps: Angle) {
+// The frame bias corrections in longitude and obliquity.
+const val DPBIAS: Angle = -0.041775 * ASEC2RAD
+const val DEBIAS: Angle = -0.0068192 * ASEC2RAD
 
+/**
+ * The ICRS RA of the J2000.0 equinox (Chapront et al., 2002).
+ */
+const val DRA0: Angle = -0.0146 * ASEC2RAD
+
+/**
+ *  Frame bias components of IAU 2000 precession-nutation models;  part
+ *  of the Mathews-Herring-Buffett (MHB2000) nutation series, with
+ *  additions.
+ *
+ *  @return longitude and obliquity corrections, and the ICRS RA of the J2000.0 mean equinox.
+ */
+inline fun eraBi00(): DoubleArray {
+    return doubleArrayOf(DPBIAS, DEBIAS, DRA0)
+}
+
+/**
+ * J2000.0 obliquity (Lieske et al. 1977)
+ */
+const val EPS0 = 84381.448 * ASEC2RAD
+
+/**
+ * Frame bias and precession, IAU 2000.
+ *
+ * @return frame bias matrix, precession matrix and bias-precession matrix.
+ */
+fun eraBp00(tt1: Double, tt2: Double): Array<Matrix3D> {
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
+
+    // Frame bias.
+    val (dpsibi, depsbi, dra0) = eraBi00()
+
+    // Precession angles (Lieske et al. 1977)
+    val psia77 = (5038.7784 + (-1.07259 + (-0.001147) * t) * t) * t * ASEC2RAD
+    val oma77 = EPS0 + ((0.05127 + (-0.007726) * t) * t) * t * ASEC2RAD
+    val chia = (10.5526 + (-2.38064 + (-0.001125) * t) * t) * t * ASEC2RAD
+
+    // Apply IAU 2000 precession corrections.
+    val (dpsipr, depspr) = eraPr00(tt1, tt2)
+    val psia = psia77 + dpsipr
+    val oma = oma77 + depspr
+
+    // Frame bias matrix: GCRS to J2000.0.
+    val rb = Matrix3D.rotZ(dra0).rotateY(dpsibi * sin(EPS0)).rotateX(-depsbi)
+
+    // Precession matrix: J2000.0 to mean of date.
+    val rp = Matrix3D.rotX(EPS0).rotateZ(-psia).rotateX(-oma).rotateZ(chia)
+
+    return arrayOf(rb, rp, rp * rb)
+}
+
+/**
+ * Precession-nutation, IAU 2000 model:  a multi-purpose function,
+ * supporting classical (equinox-based) use directly and CIO-based
+ * use indirectly.
+ */
+fun eraPn00(tt1: Double, tt2: Double, dpsi: Angle, deps: Angle): PrecessionNutationMatrices {
+    // IAU 2000 precession-rate adjustments.
+    val (_, depspr) = eraPr00(tt1, tt2)
+
+    // Mean obliquity, consistent with IAU 2000 precession-nutation.
+    val epsa = eraObl80(tt1, tt2) + depspr
+
+    // Frame bias and precession matrices and their product.
+    val (rb, rp, rbp) = eraBp00(tt1, tt2)
+
+    // Nutation matrix.
+    val rn = eraNumat(epsa, dpsi, deps)
+
+    // Bias-precession-nutation matrix (classical).
+    val rbpn = rn * rbp
+
+    return PrecessionNutationMatrices(epsa, rb, rp, rbp, rn, rbpn)
 }
 
 typealias StarDirectionCosines = DoubleArray
@@ -2054,7 +2133,7 @@ typealias TangentPointDirectionCosines = DoubleArray
  * of a star and its spherical coordinates, determine the spherical
  * coordinates of the tangent point.
  */
-fun eraTpors(xi: Angle, eta: Angle, a: Angle, b: Angle): PairOfAngle? {
+fun eraTpors(xi: Angle, eta: Angle, a: Angle, b: Angle): DoubleArray? {
     val xi2 = xi * xi
     val r = sqrt(1.0 + xi2 + eta * eta)
     val sb = b.sin
@@ -2071,7 +2150,7 @@ fun eraTpors(xi: Angle, eta: Angle, a: Angle, b: Angle): PairOfAngle? {
         val a01 = (a - atan2(xi, w)).normalized
         val b01 = atan2(s, c).rad
 
-        if (abs(rsb) < 1.0) return PairOfAngle(a01, b01)
+        if (abs(rsb) < 1.0) return doubleArrayOf(a01, b01)
 
         w = -w
         s = rsb - eta * w
@@ -2079,7 +2158,7 @@ fun eraTpors(xi: Angle, eta: Angle, a: Angle, b: Angle): PairOfAngle? {
         val a02 = (a - atan2(xi, w)).normalized
         val b02 = atan2(s, c).rad
 
-        return PairOfAngle(a02, b02)
+        return doubleArrayOf(a02, b02)
     } else {
         return null
     }
@@ -2129,13 +2208,13 @@ fun eraTporv(xi: Angle, eta: Angle, v: StarDirectionCosines): TangentPointDirect
  * coordinates and the spherical coordinates of the tangent point,
  * solve for the spherical coordinates of the star.
  */
-fun eraTpsts(xi: Angle, eta: Angle, a0: Angle, b0: Angle): PairOfAngle {
+fun eraTpsts(xi: Angle, eta: Angle, a0: Angle, b0: Angle): DoubleArray {
     val sb0 = b0.sin
     val cb0 = b0.cos
     val d = cb0 - eta * sb0
     val a = (a0 + atan2(xi, d)).normalized
     val b = atan2(sb0 + eta * cb0, hypot(xi, d)).rad
-    return PairOfAngle(a, b)
+    return doubleArrayOf(a, b)
 }
 
 /**
@@ -2269,3 +2348,354 @@ fun eraPb06(tt1: Double, tt2: Double): EulerAngles {
 
     return EulerAngles(zeta, z, theta)
 }
+
+inline fun roundToNearestWholeNumber(a: Double): Double {
+    return if (abs(a) < 0.5) 0.0 else if (a < 0.0) ceil(a - 0.5) else floor(a + 0.5)
+}
+
+fun eraJd2Cal(dj1: Double, dj2: Double): Calendar {
+    // Separate day and fraction (where -0.5 <= fraction < 0.5).
+    var d = roundToNearestWholeNumber(dj1)
+    val f1 = dj1 - d
+    var jd = d.toLong()
+    d = roundToNearestWholeNumber(dj2)
+    val f2 = dj2 - d
+    jd += d.toLong()
+
+
+    // Compute f1+f2+0.5 using compensated summation (Klein 2006).
+    var s = 0.5
+    var cs = 0.0
+    val v = doubleArrayOf(f1, f2)
+
+    for (x in v) {
+        val t = s + x
+        cs += if (abs(s) >= abs(x)) (s - t) + x else (x - t) + s
+        s = t
+
+        if (s >= 1.0) {
+            jd++
+            s -= 1.0
+        }
+    }
+
+    var f = s + cs
+    cs = f - s
+
+    // Deal with negative f.
+    if (f < 0.0) {
+        // Compensated summation: assume that |s| <= 1.0.
+        f = s + 1.0
+        cs += (1.0 - f) + s
+        s = f
+        f = s + cs
+        cs = f - s
+        jd--
+    }
+
+    // Deal with f that is 1.0 or more (when rounded to double).
+    if ((f - 1.0) >= -DBL_EPSILON / 4.0) {
+        // Compensated summation: assume that |s| <= 1.0.
+        val t = s - 1.0
+        cs += (s - t) - 1.0
+        s = t
+        f = s + cs
+
+        if (-DBL_EPSILON / 2.0 < f) {
+            jd++
+            f = max(f, 0.0)
+        }
+    }
+
+    // Express day in Gregorian calendar.
+    var l = jd + 68569L
+    val n = (4L * l) / 146097L
+    l -= (146097L * n + 3L) / 4L
+    val i = (4000L * (l + 1L)) / 1461001L
+    l -= (1461L * i) / 4L - 31L
+    val k = (80L * l) / 2447L
+    val id = (l - (2447L * k) / 80L).toInt()
+    l = k / 11L
+    val im = (k + 2L - 12L * l).toInt()
+    val iy = (100L * (n - 49L) + i + l).toInt()
+
+    return Calendar(iy, im, id, f)
+}
+
+/**
+ * Computes Gregorian Calendar to Modified Julian Date for 0hrs.
+ */
+fun eraCal2Jd(iy: Int, im: Int, id: Int): Double {
+    val my = (im - 14) / 12L
+    val iypmy = iy + my
+    return ((1461L * (iypmy + 4800L)) / 4L + (367L * (im - 2 - 12 * my)) / 12L - (3L * ((iypmy + 4900L) / 100L)) / 4L + id - 2432076L).toDouble()
+}
+
+private data class LeapSecond(@JvmField val year: Int, @JvmField val month: Int, @JvmField val delat: Double)
+
+private val LEAP_SECOND_CHANGES = arrayOf(
+    LeapSecond(1960, 1, 1.4178180),
+    LeapSecond(1961, 1, 1.4228180),
+    LeapSecond(1961, 8, 1.3728180),
+    LeapSecond(1962, 1, 1.8458580),
+    LeapSecond(1963, 11, 1.9458580),
+    LeapSecond(1964, 1, 3.2401300),
+    LeapSecond(1964, 4, 3.3401300),
+    LeapSecond(1964, 9, 3.4401300),
+    LeapSecond(1965, 1, 3.5401300),
+    LeapSecond(1965, 3, 3.6401300),
+    LeapSecond(1965, 7, 3.7401300),
+    LeapSecond(1965, 9, 3.8401300),
+    LeapSecond(1966, 1, 4.3131700),
+    LeapSecond(1968, 2, 4.2131700),
+    LeapSecond(1972, 1, 10.0),
+    LeapSecond(1972, 7, 11.0),
+    LeapSecond(1973, 1, 12.0),
+    LeapSecond(1974, 1, 13.0),
+    LeapSecond(1975, 1, 14.0),
+    LeapSecond(1976, 1, 15.0),
+    LeapSecond(1977, 1, 16.0),
+    LeapSecond(1978, 1, 17.0),
+    LeapSecond(1979, 1, 18.0),
+    LeapSecond(1980, 1, 19.0),
+    LeapSecond(1981, 7, 20.0),
+    LeapSecond(1982, 7, 21.0),
+    LeapSecond(1983, 7, 22.0),
+    LeapSecond(1985, 7, 23.0),
+    LeapSecond(1988, 1, 24.0),
+    LeapSecond(1990, 1, 25.0),
+    LeapSecond(1991, 1, 26.0),
+    LeapSecond(1992, 7, 27.0),
+    LeapSecond(1993, 7, 28.0),
+    LeapSecond(1994, 7, 29.0),
+    LeapSecond(1996, 1, 30.0),
+    LeapSecond(1997, 7, 31.0),
+    LeapSecond(1999, 1, 32.0),
+    LeapSecond(2006, 1, 33.0),
+    LeapSecond(2009, 1, 34.0),
+    LeapSecond(2012, 7, 35.0),
+    LeapSecond(2015, 7, 36.0),
+    LeapSecond(2017, 1, 37.0),
+)
+
+private val LEAP_SECOND_DRIFT = arrayOf(
+    doubleArrayOf(37300.0, 0.0012960),
+    doubleArrayOf(37300.0, 0.0012960),
+    doubleArrayOf(37300.0, 0.0012960),
+    doubleArrayOf(37665.0, 0.0011232),
+    doubleArrayOf(37665.0, 0.0011232),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(38761.0, 0.0012960),
+    doubleArrayOf(39126.0, 0.0025920),
+    doubleArrayOf(39126.0, 0.0025920),
+)
+
+/**
+ *  For a given UTC date, calculate Delta(AT) = TAI-UTC.
+ */
+fun eraDat(iy: Int, im: Int, id: Int, fd: Double): Double {
+    val djm = eraCal2Jd(iy, im, id)
+
+    // Combine year and month to form a date-ordered integer...
+    val m = 12 * iy + im
+
+    // ...and use it to find the preceding table entry.
+    val i = LEAP_SECOND_CHANGES.indexOfLast { m >= 12 * it.year + it.month }
+
+    // Prevent underflow warnings.
+    if (i < 0) return Double.NaN
+
+    // Get the Delta(AT).
+    var da = LEAP_SECOND_CHANGES[i].delat
+
+    // If pre-1972, adjust for drift.
+    if (LEAP_SECOND_CHANGES[i].year < 1972) {
+        da += (djm + fd - LEAP_SECOND_DRIFT[i][0]) * LEAP_SECOND_DRIFT[i][1]
+    }
+
+    return da
+}
+
+inline fun eraDat(cal: Calendar, fraction: Double = cal.fraction): Double {
+    return eraDat(cal.year, cal.month, cal.day, fraction)
+}
+
+/**
+ * Universal Time, UT1, to Coordinated Universal Time, UTC.
+ */
+fun eraUt1Utc(ut11: Double, ut12: Double, dut1: Double): DoubleArray {
+    val u1 = max(ut11, ut12)
+    var u2 = min(ut11, ut12)
+
+    var duts = dut1
+
+    // See if the UT1 can possibly be in a leap-second day.
+    var d1 = u1
+    var dats1 = 0.0
+
+    for (i in -1..3) {
+        var d2 = u2 + i
+        val cal = eraJd2Cal(d1, d2)
+        val dats2 = eraDat(cal, 0.0)
+        if (i == -1) dats1 = dats2
+        val ddats = dats2 - dats1
+
+        if (abs(ddats) >= 0.5) {
+            // Yes, leap second nearby: ensure UT1-UTC is "before" value.
+            if (ddats * duts >= 0.0) duts -= ddats
+
+            // UT1 for the start of the UTC day that ends in a leap.
+            d1 = MJD0
+            d2 = eraCal2Jd(cal.year, cal.month, cal.day)
+
+            val us1 = d1
+            val us2 = d2 - 1.0 + duts / DAYSEC
+
+            // Is the UT1 after this point?
+            val du = u1 - us1 + (u2 - us2)
+
+            if (du > 0.0) {
+                // Yes: fraction of the current UTC day that has elapsed.
+                val fd = du * DAYSEC / (DAYSEC + ddats)
+
+                // Ramp UT1-UTC to bring about ERFA's JD(UTC) convention.
+                duts += ddats * if (fd <= 1.0) fd else 1.0
+            }
+
+            break
+        }
+
+        dats1 = dats2
+    }
+
+    // Subtract the (possibly adjusted) UT1-UTC from UT1 to give UTC.
+    u2 -= duts / DAYSEC
+
+    return doubleArrayOf(u1, u2)
+}
+
+/**
+ * Coordinated Universal Time, UTC, to International Atomic Time, TAI.
+ */
+fun eraUtcTai(utc1: Double, utc2: Double): DoubleArray {
+    val u1 = max(utc1, utc2)
+    val u2 = min(utc1, utc2)
+
+    // Get TAI-UTC at 0h today.
+    val cal = eraJd2Cal(u1, u2)
+    val dat0 = eraDat(cal, 0.0)
+
+    // Get TAI-UTC at 12h today (to detect drift).
+    val dat12 = eraDat(cal, 0.5)
+
+    // Get TAI-UTC at 0h tomorrow (to detect jumps).
+    val calt = eraJd2Cal(u1 + 1.5, u2 - cal.fraction)
+    val dat24 = eraDat(calt, 0.0)
+
+    // Separate TAI-UTC change into per-day (DLOD) and any jump (DLEAP).
+    val dlod = 2.0 * (dat12 - dat0)
+    val dleap = dat24 - (dat0 + dlod)
+
+    // Remove any scaling applied to spread leap into preceding day.
+    var fd = cal.fraction * (DAYSEC + dleap) / DAYSEC
+
+    // Scale from (pre-1972) UTC seconds to SI seconds.
+    fd *= (DAYSEC + dlod) / DAYSEC
+
+    // Today's calendar date to 2-part JD.
+    val z = eraCal2Jd(cal.year, cal.month, cal.day)
+
+    // Assemble the TAI result, preserving the UTC split and order.
+    val a2 = (MJD0 - u1) + z + (fd + dat0 / DAYSEC)
+
+    return doubleArrayOf(u1, a2)
+}
+
+/**
+ * International Atomic Time, TAI, to Universal Time, UT1.
+ */
+inline fun eraTaiUt1(tai1: Double, tai2: Double, ut1MinusTai: Double): DoubleArray {
+    return doubleArrayOf(tai1, tai2 + ut1MinusTai / DAYSEC)
+}
+
+/**
+ * Coordinated Universal Time, UTC, to Universal Time, UT1.
+ */
+fun eraUtcUt1(utc1: Double, utc2: Double, dut1: Double): DoubleArray {
+    val cal = eraJd2Cal(utc1, utc2)
+    val dat = eraDat(cal)
+
+    // Form UT1-TAI
+    val dta = dut1 - dat
+
+    val (tai1, tai2) = eraUtcTai(utc1, utc2)
+    return eraTaiUt1(tai1, tai2, dta)
+}
+
+/**
+ * International Atomic Time, TAI, to Coordinated Universal Time, UTC.
+ */
+fun eraTaiUtc(tai1: Double, tai2: Double): DoubleArray {
+    var u2 = tai2
+
+    // Iterate(though in most cases just once is enough).
+    repeat(3) {
+        // Guessed UTC to TAI.
+        val (g1, g2) = eraUtcTai(tai1, u2)
+
+        // Adjust guessed UTC.
+        u2 += tai1 - g1
+        u2 += tai2 - g2
+    }
+
+    return doubleArrayOf(tai1, u2)
+}
+
+/**
+ * International Atomic Time, TAI, to Terrestrial Time, TT.
+ */
+inline fun eraTaiTt(tai1: Double, tai2: Double): DoubleArray {
+    return doubleArrayOf(tai1, tai2 + TTMINUSTAI / DAYSEC)
+}
+
+/**
+ * Terrestrial Time, TT, to International Atomic Time, TAI.
+ */
+inline fun eraTtTai(tt1: Double, tt2: Double): DoubleArray {
+    return doubleArrayOf(tt1, tt2 - TTMINUSTAI / DAYSEC)
+}
+
+/**
+ * Terrestrial Time, TT, to Barycentric Dynamical Time, TDB.
+ */
+inline fun eraTtTdb(tt1: Double, tt2: Double, tdbMinusTt: Double): DoubleArray {
+    return doubleArrayOf(tt1, tt2 + tdbMinusTt / DAYSEC)
+}
+
+/**
+ * Barycentric Dynamical Time, TDB, to Terrestrial Time, TT.
+ */
+inline fun eraTdbTt(tdb1: Double, tdb2: Double, tdbMinusTt: Double): DoubleArray {
+    return doubleArrayOf(tdb1, tdb2 - tdbMinusTt / DAYSEC)
+}
+
+/**
+ * Universal Time, UT1, to International Atomic Time, TAI.
+ */
+inline fun eraUt1Tai(ut11: Double, ut12: Double, ut1MinusTai: Double): DoubleArray {
+    return doubleArrayOf(ut11, ut12 - ut1MinusTai / DAYSEC)
+}
+
+/**
+ * Terrestrial Time, TT, to Universal Time, UT1.
+ */
+inline fun eraTtUt1(tt1: Double, tt2: Double, ttMinusUt1: Double): DoubleArray {
+    return doubleArrayOf(tt1, tt2 - ttMinusUt1 / DAYSEC)
+}
+
+const val DBL_EPSILON = 2.220446049250313E-16

@@ -25,7 +25,7 @@ class CalibrationFrameService(
     private val calibrationFrameRepository: CalibrationFrameRepository,
 ) {
 
-    fun calibrate(camera: Camera, image: Image, createNew: Boolean = false): Image {
+    fun calibrate(camera: String, image: Image, createNew: Boolean = false): Image {
         val darkFrame = findBestDarkFrames(camera, image).firstOrNull()
         val biasFrame = findBestBiasFrames(camera, image).firstOrNull()
         val flatFrame = findBestFlatFrames(camera, image).firstOrNull()
@@ -35,35 +35,54 @@ class CalibrationFrameService(
             var calibrationImage = Image(transformedImage.width, transformedImage.height, Header(), transformedImage.mono)
 
             if (biasFrame != null) {
-                calibrationImage = Fits(biasFrame.path!!).also(Fits::read).use(calibrationImage::load)
+                calibrationImage = Fits(biasFrame.path!!).also(Fits::read).use(calibrationImage::load)!!
                 transformedImage = transformedImage.transform(BiasSubtraction(calibrationImage))
                 LOG.info("bias frame subtraction applied. frame={}", biasFrame)
+            } else {
+                LOG.info(
+                    "no bias frames found. width={}, height={}, bin={}, gain={}",
+                    image.width, image.height, image.header.binX, image.header.gain
+                )
             }
 
             if (darkFrame != null) {
-                calibrationImage = Fits(darkFrame.path!!).also(Fits::read).use(calibrationImage::load)
+                calibrationImage = Fits(darkFrame.path!!).also(Fits::read).use(calibrationImage::load)!!
                 transformedImage = transformedImage.transform(DarkSubtraction(calibrationImage))
                 LOG.info("dark frame subtraction applied. frame={}", darkFrame)
+            } else {
+                LOG.info(
+                    "no dark frames found. width={}, height={}, bin={}, exposureTime={}, gain={}",
+                    image.width, image.height, image.header.binX, image.header.exposureTimeInMicroseconds, image.header.gain
+                )
             }
 
             if (flatFrame != null) {
-                calibrationImage = Fits(flatFrame.path!!).also(Fits::read).use(calibrationImage::load)
+                calibrationImage = Fits(flatFrame.path!!).also(Fits::read).use(calibrationImage::load)!!
                 transformedImage = transformedImage.transform(FlatCorrection(calibrationImage))
                 LOG.info("flat frame correction applied. frame={}", flatFrame)
+            } else {
+                LOG.info(
+                    "no flat frames found. filter={}, width={}, height={}, bin={}",
+                    image.header.filter, image.width, image.height, image.header.binX
+                )
             }
 
             transformedImage
         } else {
+            LOG.info(
+                "no calibration frames found.  width={}, height={}, bin={}, gain={}, filter={}, exposureTime={}",
+                image.width, image.height, image.header.binX, image.header.gain, image.header.filter, image.header.exposureTimeInMicroseconds
+            )
             image
         }
     }
 
-    fun groupedCalibrationFrames(camera: Camera): Map<CalibrationGroupKey, List<CalibrationFrameEntity>> {
+    fun groupedCalibrationFrames(camera: String): Map<CalibrationGroupKey, List<CalibrationFrameEntity>> {
         val frames = calibrationFrameRepository.findAll(camera)
         return frames.groupBy(CalibrationGroupKey::from)
     }
 
-    fun upload(camera: Camera, path: Path): List<CalibrationFrameEntity> {
+    fun upload(camera: String, path: Path): List<CalibrationFrameEntity> {
         val files = if (path.isRegularFile() && path.isFits) listOf(path)
         else if (path.isDirectory()) path.listDirectoryEntries("*.{fits,fit}").filter { it.isRegularFile() }
         else return emptyList()
@@ -72,7 +91,7 @@ class CalibrationFrameService(
     }
 
     @Synchronized
-    fun upload(camera: Camera, files: List<Path>): List<CalibrationFrameEntity> {
+    fun upload(camera: String, files: List<Path>): List<CalibrationFrameEntity> {
         val frames = ArrayList<CalibrationFrameEntity>(files.size)
 
         for (file in files) {
@@ -89,14 +108,13 @@ class CalibrationFrameService(
                     val filter = if (frameType == FrameType.FLAT) header.filter else null
 
                     val frame = CalibrationFrameEntity(
-                        System.currentTimeMillis(),
-                        frameType, camera.name, filter,
+                        0L, frameType, camera, filter,
                         exposureTime, temperature,
                         header.width, header.height, header.binX, header.binY,
                         gain, "$file",
                     )
 
-                    calibrationFrameRepository.saveAndFlush(frame)
+                    calibrationFrameRepository.save(frame)
                         .also(frames::add)
                 }
             } catch (e: Throwable) {
@@ -108,19 +126,19 @@ class CalibrationFrameService(
     }
 
     fun edit(id: Long, path: String?, enabled: Boolean): CalibrationFrameEntity {
-        return with(calibrationFrameRepository.findById(id).get()) {
+        return with(calibrationFrameRepository.find(id)!!) {
             if (!path.isNullOrBlank()) this.path = path
             this.enabled = enabled
-            calibrationFrameRepository.saveAndFlush(this)
+            calibrationFrameRepository.save(this)
         }
     }
 
     fun delete(id: Long) {
-        calibrationFrameRepository.deleteById(id)
+        calibrationFrameRepository.delete(id)
     }
 
     // exposureTime, temperature, width, height, binX, binY, gain.
-    fun findBestDarkFrames(camera: Camera, image: Image): List<CalibrationFrameEntity> {
+    fun findBestDarkFrames(camera: String, image: Image): List<CalibrationFrameEntity> {
         val header = image.header
         val temperature = header.temperature
 
@@ -138,8 +156,8 @@ class CalibrationFrameService(
     }
 
     // filter, width, height, binX, binY.
-    fun findBestFlatFrames(camera: Camera, image: Image): List<CalibrationFrameEntity> {
-        val filter = image.header.filter ?: return emptyList()
+    fun findBestFlatFrames(camera: String, image: Image): List<CalibrationFrameEntity> {
+        val filter = image.header.filter
 
         // TODO: Generate master from matched frames.
         return calibrationFrameRepository
@@ -147,7 +165,7 @@ class CalibrationFrameService(
     }
 
     // width, height, binX, binY, gain.
-    fun findBestBiasFrames(camera: Camera, image: Image): List<CalibrationFrameEntity> {
+    fun findBestBiasFrames(camera: String, image: Image): List<CalibrationFrameEntity> {
         // TODO: Generate master from matched frames.
         return calibrationFrameRepository
             .biasFrames(camera, image.width, image.height, image.header.binX, image.header.gain)

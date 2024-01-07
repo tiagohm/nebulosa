@@ -19,7 +19,7 @@ import java.time.LocalTime
  * @see <img src="https://docs.astropy.org/en/stable/_images/time_scale_conversion.png"/>
  */
 @Suppress("NOTHING_TO_INLINE")
-sealed class InstantOfTime : Timescale {
+abstract class InstantOfTime : Timescale {
 
     /**
      * Number of days.
@@ -43,7 +43,11 @@ sealed class InstantOfTime : Timescale {
 
     abstract operator fun plus(days: Double): InstantOfTime
 
+    abstract operator fun plus(delta: TimeDelta): InstantOfTime
+
     abstract operator fun minus(days: Double): InstantOfTime
+
+    abstract operator fun minus(delta: TimeDelta): InstantOfTime
 
     fun asYearMonthDayAndFraction(cutoff: JulianCalendarCutOff = JulianCalendarCutOff.NONE): Pair<IntArray, DoubleArray> {
         val a = whole.toInt()
@@ -84,54 +88,70 @@ sealed class InstantOfTime : Timescale {
     /**
      * Returns 3×3 rotation matrix: ICRS -> equinox of this date.
      */
-    val m by lazy { eraPnm06a(tt.whole, tt.fraction) }
+    open val m by lazy { eraPnm06a(tt.whole, tt.fraction) }
 
     /**
      * Returns the nutation angles for this date.
      */
-    val nutationAngles by lazy { eraNut06a(tt.whole, tt.fraction) }
+    open val nutationAngles by lazy { eraNut06a(tt.whole, tt.fraction) }
 
     /**
      * Returns the 3×3 precession matrix P for this date.
      */
-    val precessionMatrix by lazy { eraPmat06(tt.whole, tt.fraction) }
+    open val precessionMatrix by lazy { eraPmat06(tt.whole, tt.fraction) }
 
     /**
      * Returns the 3×3 nutation matrix N for this date.
      */
-    val nutationMatrix by lazy { eraNum06a(tt.whole, tt.fraction) }
+    open val nutationMatrix by lazy { eraNum06a(tt.whole, tt.fraction) }
 
-    val polarMotionMatrix by lazy { IERS.pmMatrix(this) }
+    open val polarMotionMatrix by lazy { IERS.pmMatrix(this) }
 
     /**
      * Returns Greenwich Apparent Sidereal Time (GAST).
      */
-    val gast by lazy { eraGst06a(ut1.whole, ut1.fraction, tt.whole, tt.fraction) }
+    open val gast by lazy { eraGst06a(ut1.whole, ut1.fraction, tt.whole, tt.fraction) }
 
     /**
      * Returns Greenwich Mean Sidereal Time (GMST).
      */
-    val gmst by lazy { eraGmst06(ut1.whole, ut1.fraction, tt.whole, tt.fraction) }
+    open val gmst by lazy { eraGmst06(ut1.whole, ut1.fraction, tt.whole, tt.fraction) }
 
     /**
      * Returns Earth rotation angle (IAU 2000 model).
      */
-    val era by lazy { eraEra00(ut1.whole, ut1.fraction) }
+    open val era by lazy { eraEra00(ut1.whole, ut1.fraction) }
 
     /**
      * Returns the 3x3 matrix of Equation of Origins in cycles.
      */
-    val c by lazy { Matrix3D.rotateZ(eraEra00(ut1.whole, ut1.fraction) - gast) * m }
+    open val c by lazy { Matrix3D.rotZ(eraEra00(ut1.whole, ut1.fraction) - gast) * m }
 
     /**
      * Returns the true obliquity of the ecliptic in radians.
      */
-    val trueObliquity by lazy { meanObliquity + nutationAngles.second }
+    open val trueObliquity by lazy { meanObliquity + nutationAngles[1] }
 
     /**
      * Returns the mean obliquity of the ecliptic in radians.
      */
-    val meanObliquity by lazy { eraObl06(tt.whole, tt.fraction) }
+    open val meanObliquity by lazy { eraObl06(tt.whole, tt.fraction) }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is InstantOfTime) return false
+
+        if (whole != other.whole) return false
+        if (fraction != other.fraction) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = whole.hashCode()
+        result = 31 * result + fraction.hashCode()
+        return result
+    }
 
     override fun toString() = "${javaClass.simpleName}(whole=$whole, fraction=$fraction)"
 }

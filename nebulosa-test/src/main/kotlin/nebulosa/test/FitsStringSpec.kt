@@ -9,8 +9,10 @@ import okio.ByteString.Companion.toByteString
 import java.awt.image.BufferedImage
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
+import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
 import kotlin.io.path.*
+
 
 @Suppress("PropertyName")
 abstract class FitsStringSpec : StringSpec() {
@@ -45,6 +47,10 @@ abstract class FitsStringSpec : StringSpec() {
     protected val STAR_FOCUS_15 by lazy { Fits("$FITS_DIR/STAR_FOCUS_15.fits").also(Fits::read) }
     protected val STAR_FOCUS_16 by lazy { Fits("$FITS_DIR/STAR_FOCUS_16.fits").also(Fits::read) }
     protected val STAR_FOCUS_17 by lazy { Fits("$FITS_DIR/STAR_FOCUS_17.fits").also(Fits::read) }
+    protected val UNCALIBRATED by lazy { Fits("$FITS_DIR/UNCALIBRATED.fits").also(Fits::read) }
+    protected val DARK by lazy { Fits("$FITS_DIR/DARK.fits").also(Fits::read) }
+    protected val FLAT by lazy { Fits("$FITS_DIR/FLAT.fits").also(Fits::read) }
+    protected val BIAS by lazy { Fits("$FITS_DIR/BIAS.fits").also(Fits::read) }
 
     protected fun BufferedImage.save(name: String): Pair<Path, String> {
         val path = Path.of("src", "test", "resources", "saved", "$name.png").createParentDirectories()
@@ -75,6 +81,22 @@ abstract class FitsStringSpec : StringSpec() {
         }
 
         return path
+    }
+
+    protected fun unzip(name: String) {
+        val path = Path.of(FITS_DIR, "$name.zip")
+
+        with(ZipInputStream(path.inputStream())) {
+            var zipEntry = getNextEntry()
+
+            while (zipEntry != null) {
+                transferAndCloseOutput(Path.of(FITS_DIR, zipEntry.name).outputStream())
+                zipEntry = getNextEntry()
+            }
+
+            closeEntry()
+            close()
+        }
     }
 
     companion object {

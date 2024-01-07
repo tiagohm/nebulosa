@@ -1,7 +1,6 @@
 package nebulosa.watney.plate.solving.math
 
 import nebulosa.math.Angle
-import nebulosa.math.PairOfAngle
 import kotlin.math.*
 
 /**
@@ -19,8 +18,8 @@ fun equatorialToStandardCoordinates(ra: Angle, dec: Angle, centerRA: Angle, cent
  * Transform standard coordinates to equatorial coordinates when the field center
  * equatorial coordinates are given.
  */
-fun standardToEquatorialCoordinates(centerRA: Angle, centerDEC: Angle, stdX: Double, stdY: Double): PairOfAngle {
+fun standardToEquatorialCoordinates(centerRA: Angle, centerDEC: Angle, stdX: Double, stdY: Double): DoubleArray {
     val ra = centerRA + atan2(-stdX, cos(centerDEC) - stdY * sin(centerDEC))
     val dec = asin((sin(centerDEC) + stdY * cos(centerDEC)) / sqrt(1 + stdX * stdX + stdY * stdY))
-    return PairOfAngle(ra, dec)
+    return doubleArrayOf(ra, dec)
 }

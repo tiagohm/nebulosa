@@ -25,7 +25,7 @@ data class Geoid(
      * Longitude is positive towards the east, so supply a negative
      * number for west.
      */
-    fun latLon(
+    fun lonLat(
         longitude: Angle, latitude: Angle,
         elevation: Distance = 0.0,
     ): GeographicPosition {

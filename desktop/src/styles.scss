@@ -19,12 +19,28 @@ body {
     visibility: hidden;
 }
 
+.contents {
+    display: contents !important;
+}
+
+.p-tabview-panels {
+    padding: 0 !important;
+}
+
+p-table {
+    width: 100%;
+}
+
 .mdi:before {
     font-size: 1.25rem;
     display: inline-flex;
     justify-content: center;
     align-items: center;
     aspect-ratio: auto 1/1;
+}
+
+.mdi.mdi-sm:before {
+    font-size: 1rem;
 }
 
 .mdi.mdi-lg:before {
@@ -92,6 +108,7 @@ p-dropdown,
 .grid {
     min-width: 100%;
     flex: 1;
+    height: fit-content;
 }
 
 .grid>.col,
@@ -111,8 +128,13 @@ p-dropdown,
 
 .border-0,
 .p-selectbutton.border-0 .p-button,
+.p-inputwrapper.border-0 .p-inputtext,
 .p-inputnumber.border-0 .p-inputtext {
     border: 1px solid rgba(255, 255, 255, 0) !important;
+}
+
+.p-button.p-button-icon-only {
+    min-width: fit-content;
 }
 
 p-calendar.border-0 .p-calendar-w-btn {
@@ -190,7 +212,18 @@ i.mdi {
 
     .p-tabview-nav li .p-tabview-nav-link {
         border-color: transparent !important;
+        min-height: 32px;
     }
+}
+
+.p-multiselect-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.p-multiselect-filter-container {
+    margin-left: 8px;
 }
 
 .draggable-region {
@@ -200,6 +233,7 @@ i.mdi {
 p-contextmenu *,
 p-dropdown *,
 p-dropdownitem *,
+.p-multiselect-header *,
 .no-draggable-region {
     -webkit-app-region: no-drag;
 }

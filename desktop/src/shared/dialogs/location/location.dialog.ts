@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ViewChild } from '@angular/core'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
-import { OpenStreetMapComponent } from '../../components/openstreetmap/openstreetmap.component'
-import { Location } from '../../types'
+import { MapComponent } from '../../components/map/map.component'
+import { Location } from '../../types/atlas.types'
 
 @Component({
     templateUrl: './location.dialog.html',
@@ -10,7 +10,7 @@ import { Location } from '../../types'
 export class LocationDialog implements AfterViewInit {
 
     @ViewChild('map')
-    private readonly map!: OpenStreetMapComponent
+    private readonly map!: MapComponent
 
     readonly location: Location
 

@@ -1,6 +1,7 @@
 package nebulosa.api.beans.converters.indi
 
-import nebulosa.api.atlas.*
+import nebulosa.api.atlas.SatelliteEntity
+import nebulosa.api.atlas.SatelliteRepository
 import nebulosa.api.beans.converters.annotation
 import nebulosa.api.beans.converters.parameter
 import nebulosa.api.connection.ConnectionService
@@ -13,7 +14,6 @@ import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import org.springframework.core.MethodParameter
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.RequestParam
@@ -26,17 +26,13 @@ import org.springframework.web.server.ResponseStatusException
 @Component
 class DeviceOrEntityParamMethodArgumentResolver(
     private val locationRepository: LocationRepository,
-    private val starRepository: StarRepository,
-    private val deepSkyObjectRepository: DeepSkyObjectRepository,
     private val satelliteRepository: SatelliteRepository,
     private val connectionService: ConnectionService,
 ) : HandlerMethodArgumentResolver {
 
     private val entityResolvers = mapOf<Class<*>, (String) -> Any?>(
-        LocationEntity::class.java to { locationRepository.findByIdOrNull(it.toLong()) },
-        StarEntity::class.java to { starRepository.findByIdOrNull(it.toLong()) },
-        DeepSkyObjectEntity::class.java to { deepSkyObjectRepository.findByIdOrNull(it.toLong()) },
-        SatelliteEntity::class.java to { satelliteRepository.findByIdOrNull(it.toLong()) },
+        LocationEntity::class.java to { locationRepository.find(it.toLong()) },
+        SatelliteEntity::class.java to { satelliteRepository.find(it.toLong()) },
         Device::class.java to { connectionService.device(it) },
         Camera::class.java to { connectionService.camera(it) },
         Mount::class.java to { connectionService.mount(it) },

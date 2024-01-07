@@ -23,10 +23,9 @@
 * https://www.flaticon.com/free-icon/full-moon_9689786
 * https://www.flaticon.com/free-icon/jupiter_1086078
 * https://www.flaticon.com/free-icon/asteroid_1086068
-* https://www.flaticon.com/free-icon/stars_3266390
-* https://www.flaticon.com/free-icon/milky-way_1086076
 * https://www.flaticon.com/free-icon/satellite_1086093
-* https://www.flaticon.com/free-icon/search_10770011
 * https://www.flaticon.com/free-icon/stack_3342239
-* https://www.flaticon.com/free-icon/workflow_7400612
+* https://www.flaticon.com/free-icon/witch-hat_5606276
+* https://www.flaticon.com/free-icon/picture_2659360
+* https://www.flaticon.com/free-icon/magnifier_13113714
 * https://thenounproject.com/icon/random-dither-4259782

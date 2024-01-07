@@ -314,10 +314,15 @@ export class EnumPipe implements PipeTransform {
         'LOST_LOCK': 'Lost Lock',
         'PAUSED': 'Paused',
         'LOOPING': 'Looping',
+        // Alignment.
         'INITIAL_PAUSE': 'Initial Pause',
         'FORWARD': 'Forward',
         'BACKWARD': 'Backward',
         'IDLE': 'Idle',
+        // Camera Exposure.
+        'SETTLING': 'Settling',
+        'WAITING': 'Waiting',
+        'EXPOSURING': 'Exposuring',
     }
 
     transform(value: string) {

@@ -45,11 +45,11 @@ data class SequencerJob(
         val waitForSettleStep = WaitForSettleStep(guider)
 
         fun mapRequest(request: CameraStartCaptureRequest): CameraStartCaptureRequest {
-            return request.copy(savePath = plan.savePath, autoSave = true, autoSubFolderMode = AutoSubFolderMode.OFF)
+            return request.copy(savePath = plan.savePath, autoSave = true, autoSubFolderMode = plan.autoSubFolderMode)
         }
 
         fun CameraStartCaptureRequest.wheelStep(): Step? {
-            return if (wheel != null) WheelStep(wheel, if (frameType == FrameType.DARK) shutterPosition else wheelPosition) else null
+            return if (wheel != null) WheelStep(wheel, if (frameType == FrameType.DARK) shutterPosition else filterPosition) else null
         }
 
         fun CameraStartCaptureRequest.focusStep(): Step? {
@@ -58,7 +58,9 @@ data class SequencerJob(
 
         val usedEntries = plan.entries.filter { it.enabled }
 
-        if (plan.captureMode == SequenceCaptureMode.FULLY) {
+        require(usedEntries.isNotEmpty()) { "no entries found" }
+
+        if (plan.captureMode == SequenceCaptureMode.FULLY || usedEntries.size == 1) {
             for (i in usedEntries.indices) {
                 val request = mapRequest(usedEntries[i])
                 val cameraExposureStep = CameraExposureStep(request)
@@ -173,7 +175,9 @@ data class SequencerJob(
             super.onNext(SequencerEvent(id, elapsedTime, estimatedCaptureTime - elapsedTime, progress, event))
         }
 
-        super.onNext(event)
+        if (event is CameraExposureFinished) {
+            super.onNext(event)
+        }
     }
 
     override fun onDelayElapsed(step: DelayStep, stepExecution: StepExecution) {

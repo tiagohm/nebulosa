@@ -28,7 +28,7 @@ class CameraCaptureExecutor(
         check(camera.connected) { "camera is not connected" }
         check(!isCapturing(camera)) { "job is already running for camera: [${camera.name}]" }
 
-        LOG.debug { "starting camera capture. request=%s".format(request) }
+        LOG.debug { "starting camera capture. request=$request" }
 
         val cameraCaptureJob = CameraCaptureJob(request, guider)
         cameraCaptureJob.subscribe(this)

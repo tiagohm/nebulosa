@@ -15,10 +15,10 @@
                       pTooltip="View image" tooltipPosition="bottom" />
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-wrench" (click)="openCameraCalibration()"
                       pTooltip="Calibration" tooltipPosition="bottom" />
-            <p-button *ngIf="!dialogMode" [disabled]="!camera || !camera.connected || running" [text]="true" [rounded]="true"
+            <p-button *ngIf="canShowMenu" [disabled]="!camera || !camera.connected || running" [text]="true" [rounded]="true"
                       icon="mdi mdi-dots-vertical" (click)="cameraMenu.show()" />
         </div>
-        <div *ngIf="!dialogMode" class="col-12 py-0 text-sm text-gray-400 flex align-items-center gap-1">
+        <div *ngIf="canShowSavePath" class="col-12 py-0 text-sm text-gray-400 flex align-items-center gap-1">
             <i *ngIf="request.autoSave" class="mdi mdi-content-save cursor-pointer" (click)="toggleAutoSaveAllExposures()" pTooltip="Auto save: ON"
                tooltipPosition="bottom" [positionLeft]="24" [positionTop]="8"></i>
             <i *ngIf="!request.autoSave" class="mdi mdi-content-save-off cursor-pointer" (click)="toggleAutoSaveAllExposures()"
@@ -31,7 +31,7 @@
             <i *ngIf="request.autoSubFolderMode === 'MIDNIGHT'" (click)="toggleAutoSubFolder()"
                class="mdi mdi-weather-night text-blue-600 cursor-pointer" pTooltip="Auto sub folder: MIDNIGHT" tooltipPosition="bottom"
                [positionLeft]="32" [positionTop]="8"></i>
-            <span *ngIf="camera && (savePath || capturesPath)" style="padding-top: 1px; padding-bottom: 1px; height: 17px;"
+            <span *ngIf="camera && (savePath || capturesPath)" style="padding-top: 1px; padding-bottom: 1px; height: 14px;"
                   class="flex flex-1 align-items-center gap-2 bg-gray-800 border-round-2xl px-3 text-overflow-scroll">
                 <i class="mdi mdi-folder-open cursor-pointer" pTooltip="Choose new folder" tooltipPosition="bottom" (click)="chooseSavePath()"
                    [positionTop]="8"></i>
@@ -40,47 +40,8 @@
                 {{ savePath || capturesPath }}
             </span>
         </div>
-        <div *ngIf="!dialogMode" class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"
-             style="min-height: 25px;">
-            <i class="mdi mdi-information text-blue-600"></i>
-            <span style="min-width: 44px" class="text-left mr-2">
-                {{ settling ? 'settling' : waiting ? 'waiting' : capturing ? 'capturing' : 'idle' }}
-            </span>
-            <ng-container *ngIf="capturing">
-                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 46px">
-                    {{ exposure.count }}
-                    <span *ngIf="!capture.looping"> of {{ capture.amount }}</span>
-                </span>
-                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
-                    {{ exposure.remainingTime | exposureTime }}
-                </span>
-                <span class="bg-cyan-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
-                    {{ exposure.progress | percent:'1.1-1' }}
-                </span>
-            </ng-container>
-            <ng-container *ngIf="capturing || waiting">
-                <ng-container *ngIf="!capture.looping">
-                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
-                        {{ capture.remainingTime | exposureTime }}
-                    </span>
-                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
-                        {{ capture.progress | percent:'1.1-1' }}
-                    </span>
-                </ng-container>
-                <ng-container *ngIf="capture.looping">
-                    <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
-                        {{ capture.elapsedTime | exposureTime }}
-                    </span>
-                </ng-container>
-            </ng-container>
-            <ng-container *ngIf="waiting">
-                <span class="bg-purple-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
-                    {{ wait.remainingTime | exposureTime }}
-                </span>
-                <span class="bg-purple-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
-                    {{ wait.progress | percent:'1.1-1' }}
-                </span>
-            </ng-container>
+        <div *ngIf="canShowInfo" class="col-12 pt-0 pb-1 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-xs">
+            <neb-camera-exposure #cameraExposure />
         </div>
     </div>
     <div class="grid py-1 flex align-items-center">
@@ -102,7 +63,7 @@
                     <label>Temperature ({{ camera.temperature | number: '1.1-1' }}°C)</label>
                 </span>
                 <p-button [disabled]="!camera.connected || !camera.canSetTemperature || running" (onClick)="applySetpointTemperature()"
-                          icon="mdi mdi-check" styleClass="p-button-sm" severity="success" pTooltip="Apply" tooltipPosition="bottom" />
+                          icon="mdi mdi-check" size="small" severity="success" pTooltip="Apply" tooltipPosition="bottom" />
             </div>
         </div>
     </div>
@@ -110,19 +71,19 @@
         <div class="col-6">
             <div class="flex justify-content-center align-items-center gap-1">
                 <span class="p-float-label">
-                    <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.exposureTime" mode="decimal" [showButtons]="true"
-                                   [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" locale="en" styleClass="p-inputtext-sm border-0"
-                                   [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                    <p-inputNumber [disabled]="!canExposureTime || !camera.connected || running" [(ngModel)]="request.exposureTime" mode="decimal"
+                                   [showButtons]="true" [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" locale="en"
+                                   styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                     <label>Exposure Time</label>
                 </span>
                 <p-menu #exposureTimeMenu [model]="exposureTimeUnitModel" [popup]="true" appendTo="body" />
-                <button [disabled]="!camera.connected || running" pButton type="button" (click)="exposureTimeMenu.toggle($event)"
+                <button [disabled]="!canExposureTime || !camera.connected || running" pButton type="button" (click)="exposureTimeMenu.toggle($event)"
                         [label]="exposureTimeUnit"></button>
             </div>
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [disabled]="!camera.connected || running" [options]="frameTypeOptions" [(ngModel)]="request.frameType"
+                <p-dropdown [disabled]="!canFrameType || !camera.connected || running" [options]="frameTypeOptions" [(ngModel)]="request.frameType"
                             styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false"
                             (ngModelChange)="savePreference()" />
                 <label>Frame Type</label>
@@ -132,16 +93,14 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6 flex-column">
             <span class="text-sm text-gray-100">Exposure Mode</span>
-            <p-selectButton [disabled]="dialogMode || !camera.connected || running" [options]="exposureModeOptions" [(ngModel)]="exposureMode"
-                            styleClass="p-inputtext-sm border-0"
-                            (ngModelChange)="savePreference()" />
+            <p-selectButton [disabled]="!canExposureMode || !camera.connected || running" [options]="exposureModeOptions" [(ngModel)]="exposureMode"
+                            styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || exposureMode === 'SINGLE' || running" [(ngModel)]="request.exposureDelay"
                                mode="decimal" [showButtons]="true" [step]="1" [min]="0" [max]="60" locale="en" styleClass="p-inputtext-sm border-0"
-                               [allowEmpty]="false"
-                               (ngModelChange)="savePreference()" />
+                               [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Delay (s)</label>
             </span>
         </div>
@@ -149,8 +108,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || exposureMode !== 'FIXED' || running" [(ngModel)]="request.exposureAmount"
                                mode="decimal" [showButtons]="true" [step]="1.0" [min]="1" [max]="1000" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
-                               (ngModelChange)="savePreference()" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Count</label>
             </span>
         </div>
@@ -242,17 +200,17 @@
     </div>
     <div class="grid mt-1">
         <div class="col-12 flex align-items-center justify-content-center gap-1">
-            <p-button *ngIf="!dialogMode" [disabled]="!camera.connected || running" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
+            <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || running" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
                       severity="success" />
-            <p-button *ngIf="!dialogMode" [disabled]="!camera.connected || !running" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
+            <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || !running" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
                       severity="danger" />
-            <p-button *ngIf="dialogMode" [disabled]="!camera.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
+            <p-button *ngIf="canSave" [disabled]="!camera.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
                       severity="info" />
         </div>
     </div>
 </div>
 
-<p-dialogMenu #cameraMenu [model]="cameraModel" />
+<neb-dialog-menu #cameraMenu [model]="cameraModel" />
 
 <p-dialog header="Dither" [draggable]="true" [(visible)]="showDitherDialog" [modal]="true" [style]="{width: '80vw', maxWidth: '260px'}">
     <div class="grid mt-2">

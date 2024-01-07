@@ -1,0 +1,276 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:2141918888386721824",
+      "lastPropertyId": "7:637271438293072650",
+      "name": "LocationEntity",
+      "properties": [
+        {
+          "id": "1:3442525931231983774",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:759171631592640168",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:8579542454327527012",
+          "name": "latitude",
+          "type": 8
+        },
+        {
+          "id": "4:2278417754998832727",
+          "name": "longitude",
+          "type": 8
+        },
+        {
+          "id": "5:6340857252773714708",
+          "name": "elevation",
+          "type": 8
+        },
+        {
+          "id": "6:8178041138715870006",
+          "name": "offsetInMinutes",
+          "type": 5
+        },
+        {
+          "id": "7:637271438293072650",
+          "name": "selected",
+          "type": 1
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:2045817682728620153",
+      "lastPropertyId": "13:7087599727202298624",
+      "name": "CalibrationFrameEntity",
+      "properties": [
+        {
+          "id": "1:278364626282462565",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2256350506731837179",
+          "name": "type",
+          "indexId": "4:817263978142134714",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "3:3456302856844566424",
+          "name": "camera",
+          "indexId": "1:3662625594835691874",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "4:5972230499024785383",
+          "name": "filter",
+          "indexId": "2:1025779831315419041",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "5:6361954738111255053",
+          "name": "exposureTime",
+          "type": 6
+        },
+        {
+          "id": "6:8528955891035480680",
+          "name": "temperature",
+          "type": 8
+        },
+        {
+          "id": "7:2574616483728323822",
+          "name": "width",
+          "type": 5
+        },
+        {
+          "id": "8:8865939992938062812",
+          "name": "height",
+          "type": 5
+        },
+        {
+          "id": "9:975912299719394995",
+          "name": "binX",
+          "type": 5
+        },
+        {
+          "id": "10:1271977543915641201",
+          "name": "binY",
+          "type": 5
+        },
+        {
+          "id": "11:5411887422831392953",
+          "name": "gain",
+          "type": 8
+        },
+        {
+          "id": "12:5768939074601408853",
+          "name": "path",
+          "indexId": "3:3193767946870807856",
+          "type": 9,
+          "flags": 2080
+        },
+        {
+          "id": "13:7087599727202298624",
+          "name": "enabled",
+          "type": 1
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:6517804651010773363",
+      "lastPropertyId": "3:7280575610200271256",
+      "name": "PreferenceEntity",
+      "properties": [
+        {
+          "id": "1:7536416243834995627",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1965090070669971323",
+          "name": "key",
+          "indexId": "5:4282004812167689322",
+          "type": 9,
+          "flags": 34848
+        },
+        {
+          "id": "3:7280575610200271256",
+          "name": "value",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:3737128326466279707",
+      "lastPropertyId": "4:2231211530557374123",
+      "name": "SatelliteEntity",
+      "properties": [
+        {
+          "id": "1:6295515048769926146",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:2455064913731043963",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:4151339193253592643",
+          "name": "tle",
+          "type": 9
+        },
+        {
+          "id": "4:2231211530557374123",
+          "name": "groups",
+          "type": 30
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "6:3705054558003767840",
+      "lastPropertyId": "12:762260734150852642",
+      "name": "SimbadEntity",
+      "properties": [
+        {
+          "id": "1:2815331295543596023",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:1094957247301775448",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:2894803910674914590",
+          "name": "type",
+          "type": 5
+        },
+        {
+          "id": "4:2941887692366753803",
+          "name": "rightAscensionJ2000",
+          "type": 8
+        },
+        {
+          "id": "5:9102733480395399072",
+          "name": "declinationJ2000",
+          "type": 8
+        },
+        {
+          "id": "6:5928907297748334710",
+          "name": "magnitude",
+          "type": 8
+        },
+        {
+          "id": "7:6938045857158270084",
+          "name": "pmRA",
+          "type": 8
+        },
+        {
+          "id": "8:3191952939943328844",
+          "name": "pmDEC",
+          "type": 8
+        },
+        {
+          "id": "9:116139679953849730",
+          "name": "parallax",
+          "type": 8
+        },
+        {
+          "id": "10:8499347473053691215",
+          "name": "radialVelocity",
+          "type": 8
+        },
+        {
+          "id": "11:5618236643604972886",
+          "name": "redshift",
+          "type": 8
+        },
+        {
+          "id": "12:762260734150852642",
+          "name": "constellation",
+          "type": 5
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "6:3705054558003767840",
+  "lastIndexId": "6:9080720220858934797",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [
+    6518840186314177945
+  ],
+  "retiredIndexUids": [
+    9080720220858934797
+  ],
+  "retiredPropertyUids": [
+    5740207060374171983,
+    4684765207346563658,
+    7171122916482173681
+  ],
+  "retiredRelationUids": [],
+  "version": 1
+}
