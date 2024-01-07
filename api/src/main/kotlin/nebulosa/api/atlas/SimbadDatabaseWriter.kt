@@ -23,6 +23,7 @@ class SimbadDatabaseWriter(sink: Sink) : Closeable {
         )
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun write(
         id: Long,
         name: String,
@@ -50,7 +51,7 @@ class SimbadDatabaseWriter(sink: Sink) : Closeable {
         buffer.writeFloat(parallax.toFloat())
         buffer.writeFloat(radialVelocity.toFloat())
         // buffer.writeFloat(redshift.toFloat())
-        buffer.writeByte(constellation.ordinal)
+        // buffer.writeByte(constellation.ordinal)
     }
 
     override fun close() {

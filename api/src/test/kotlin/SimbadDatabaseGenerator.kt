@@ -6,17 +6,17 @@ import nebulosa.api.atlas.SimbadDatabaseWriter
 import nebulosa.api.atlas.SimbadEntity
 import nebulosa.io.resource
 import nebulosa.log.loggerFor
+import nebulosa.nova.astrometry.Constellation
 import nebulosa.simbad.SimbadCatalogType
 import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import nebulosa.skycatalog.stellarium.Nebula
-import nebulosa.time.UTC
 import okhttp3.OkHttpClient
 import okio.sink
 import okio.source
+import org.slf4j.LoggerFactory
 import java.io.InputStreamReader
-import java.net.SocketException
 import java.nio.file.Path
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
@@ -30,7 +30,6 @@ object SimbadDatabaseGenerator {
 
     @JvmStatic private val SIMBAD_DATABASE_PATH = Path.of("data", "simbad")
     @JvmStatic private val LOG = loggerFor<SimbadDatabaseGenerator>()
-    @JvmStatic private val CURRENT_TIME = UTC.now()
 
     @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
         .connectTimeout(5L, TimeUnit.MINUTES)
@@ -166,8 +165,6 @@ object SimbadDatabaseGenerator {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        System.setProperty("app.dir", "$SIMBAD_DATABASE_PATH")
-
         SIMBAD_DATABASE_PATH.deleteRecursively()
         SIMBAD_DATABASE_PATH.createDirectories()
 
@@ -177,12 +174,14 @@ object SimbadDatabaseGenerator {
         tasks.add(EXECUTOR_SERVICE.submit(IcDownloadTask))
         tasks.add(EXECUTOR_SERVICE.submit(HdDownloadTask))
         tasks.add(EXECUTOR_SERVICE.submit(HrDownloadTask))
+        tasks.add(EXECUTOR_SERVICE.submit(HipDownloadTask))
+        tasks.add(EXECUTOR_SERVICE.submit(SaoDownloadTask))
         tasks.add(EXECUTOR_SERVICE.submit(GumDownloadTask))
         tasks.add(EXECUTOR_SERVICE.submit(BarnardDownloadTask))
         tasks.add(EXECUTOR_SERVICE.submit(LbnDownloadTask))
         tasks.add(EXECUTOR_SERVICE.submit(LdnDownloadTask))
         tasks.add(EXECUTOR_SERVICE.submit(RcwDownloadTask))
-        tasks.add(EXECUTOR_SERVICE.submit(ShDownloadTask))
+        tasks.add(EXECUTOR_SERVICE.submit(Sh2DownloadTask))
         tasks.add(EXECUTOR_SERVICE.submit(CedDownloadTask))
         tasks.add(EXECUTOR_SERVICE.submit(UgcDownloadTask))
         tasks.add(EXECUTOR_SERVICE.submit(ApgDownloadTask))
@@ -201,7 +200,6 @@ object SimbadDatabaseGenerator {
 
         for (task in tasks) {
             with(task.get()) {
-                LOG.info("task finished. entities={}", size)
                 forEach { entities[it.id] = it }
             }
         }
@@ -214,14 +212,14 @@ object SimbadDatabaseGenerator {
             }
 
             writer.write(entity)
-            LOG.info("entity={}", entity)
+            LOG.info("Entity: {}", entity)
             count++
         }
 
         writer?.close()
 
-        LOG.info("recorded {} entities", entities.size)
-        LOG.info("remaining names. count={}, stellarium={}", STELLARIUM_NAMES.size, STELLARIUM_NAMES)
+        LOG.info("Recorded {} entities", entities.size)
+        LOG.info("Remaining names. count={}, stellarium={}", STELLARIUM_NAMES.size, STELLARIUM_NAMES)
 
         EXECUTOR_SERVICE.shutdownNow()
     }
@@ -256,14 +254,12 @@ object SimbadDatabaseGenerator {
                 magnitude = min(magnitude, row.getField("K").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
             }
 
-            val constellation = SkyObject.constellationFor(rightAscensionJ2000, declinationJ2000, CURRENT_TIME)
-
             val entity = SimbadEntity(
                 id, name, type,
                 rightAscensionJ2000, declinationJ2000,
                 magnitude, pmRA, pmDEC,
                 parallax, radialVelocity, redshift,
-                constellation
+                Constellation.AND // Don't save it.
             )
 
             if (entity.generateNames()) {
@@ -280,9 +276,11 @@ object SimbadDatabaseGenerator {
         private val magnitudeMax: Double = Double.NaN,
     ) : Callable<List<SimbadEntity>> {
 
+        protected val log by lazy { LoggerFactory.getLogger(javaClass)!! }
+
         private val mainBuilder = QueryBuilder().apply {
             add(Ignored)
-            add(Limit(100000))
+            add(Limit(50000))
             add(Distinct)
 
             var join: Table = LeftJoin(BASIC_TABLE, IDS_TABLE, arrayOf(OID equal IDS_TABLE.column("oidref")))
@@ -310,24 +308,24 @@ object SimbadDatabaseGenerator {
             val entities = ArrayList<SimbadEntity>()
             var lastID = 0L
 
+            log.info("Task started")
+
             while (true) {
                 idBuilder[0] = IDENT_TABLE.column("oidref") greaterThan lastID
                 var query = idBuilder.build()
 
                 var ids: LongArray
+                var attempt = 0
 
                 while (true) {
                     try {
                         val rows = SIMBAD_SERVICE.query(query).execute().body().takeIf { !it.isNullOrEmpty() } ?: return entities
                         ids = LongArray(rows.size) { rows[it].getField("oidref").toLong() }
                         break
-                    } catch (e: SocketException) {
-                        LOG.error("Socket error", e)
-                        Thread.sleep(1000)
-                        continue
                     } catch (e: Throwable) {
-                        LOG.error("Failed to retrieve ids. error={}, query={}", e, query)
-                        return entities
+                        log.error("Failed to retrieve IDs. attempt=${attempt++}, query=$query", e)
+                        Thread.sleep(attempt * 1000L)
+                        continue
                     }
                 }
 
@@ -335,29 +333,30 @@ object SimbadDatabaseGenerator {
 
                 lastID = ids.last()
 
-                LOG.info("found {} $name ids", ids.size)
+                log.info("Found {} IDs", ids.size)
 
                 for (i in ids.indices step 1000) {
                     mainBuilder[0] = OID includes ids.sliceArray(i until min(i + 1000, ids.size))
                     query = mainBuilder.build()
 
+                    attempt = 0
+
                     while (true) {
                         try {
                             val rows = SIMBAD_SERVICE.query(query).execute().body().takeIf { !it.isNullOrEmpty() } ?: return entities
-                            LOG.info("found $name {} rows", rows.size)
+                            log.info("Found {} rows", rows.size)
                             rows.parse(entities)
                             break
-                        } catch (e: SocketException) {
-                            LOG.error("Socket error", e)
-                            Thread.sleep(1000)
-                            continue
                         } catch (e: Throwable) {
-                            LOG.error("Failed to download. error={}, query={}", e, query)
-                            return entities
+                            log.error("Failed to download. attempt=${attempt++}, query=$query", e)
+                            Thread.sleep(attempt * 1000L)
+                            continue
                         }
                     }
                 }
             }
+
+            log.info("Task finished. count={}", entities.size)
 
             return entities
         }
@@ -367,12 +366,14 @@ object SimbadDatabaseGenerator {
     private data object IcDownloadTask : DownloadTask("IC ")
     private data object HdDownloadTask : DownloadTask("HD ", 6.0)
     private data object HrDownloadTask : DownloadTask("HR ", 6.0)
+    private data object HipDownloadTask : DownloadTask("HIP ", 6.0)
+    private data object SaoDownloadTask : DownloadTask("SAO ", 6.0)
     private data object GumDownloadTask : DownloadTask("GUM ")
     private data object BarnardDownloadTask : DownloadTask("Barnard ")
     private data object LbnDownloadTask : DownloadTask("LBN ")
     private data object LdnDownloadTask : DownloadTask("LDN ")
     private data object RcwDownloadTask : DownloadTask("RCW ")
-    private data object ShDownloadTask : DownloadTask("SH  2-")
+    private data object Sh2DownloadTask : DownloadTask("SH  2-")
     private data object CedDownloadTask : DownloadTask("Ced ")
     private data object UgcDownloadTask : DownloadTask("UGC ")
     private data object ApgDownloadTask : DownloadTask("APG ")

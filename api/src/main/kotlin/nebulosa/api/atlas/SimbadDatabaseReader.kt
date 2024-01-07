@@ -4,7 +4,7 @@ import nebulosa.io.readFloat
 import nebulosa.math.deg
 import nebulosa.math.kms
 import nebulosa.math.mas
-import nebulosa.nova.astrometry.Constellation
+import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import okio.BufferedSource
 import okio.Source
@@ -15,6 +15,7 @@ import java.io.Closeable
 class SimbadDatabaseReader(source: Source) : Iterator<SimbadEntity>, Closeable {
 
     private val buffer = if (source is BufferedSource) source else source.gzip().buffer()
+    private val time = CurrentTime.utc
 
     override fun hasNext() = !buffer.exhausted()
 
@@ -31,7 +32,8 @@ class SimbadDatabaseReader(source: Source) : Iterator<SimbadEntity>, Closeable {
         val parallax = buffer.readFloat().toDouble().mas
         val radialVelocity = buffer.readFloat().toDouble().kms
         val redshift = 0.0 // buffer.readDouble()
-        val constellation = Constellation.entries[buffer.readByte().toInt() and 0xFF]
+        // val constellation = Constellation.entries[buffer.readByte().toInt() and 0xFF]
+        val constellation = SkyObject.constellationFor(rightAscension, declination, time)
 
         return SimbadEntity(id, name, type, rightAscension, declination, magnitude, pmRA, pmDEC, parallax, radialVelocity, redshift, constellation)
     }
