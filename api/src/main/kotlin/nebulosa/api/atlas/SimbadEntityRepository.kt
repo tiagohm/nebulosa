@@ -23,7 +23,7 @@ class SimbadEntityRepository(@Qualifier("simbadEntityBox") override val box: Box
         magnitudeMin: Double = SkyObject.MAGNITUDE_MIN, magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
         type: SkyObjectType? = null,
     ): List<SimbadEntity> {
-        val useCoordinate = radius > 0.0 && radius.toDegrees > 0.1
+        val useFilter = radius > 0.0 && radius.toDegrees > 0.1
 
         return box.query()
             .also {
@@ -38,7 +38,7 @@ class SimbadEntityRepository(@Qualifier("simbadEntityBox") override val box: Box
                     else if (name.startsWith("%")) it.endsWith(SimbadEntity_.name, name.replace("%", ""), CASE_INSENSITIVE)
                 }
 
-                if (useCoordinate) it.filter(object : QueryFilter<SimbadEntity> {
+                if (useFilter) it.filter(object : QueryFilter<SimbadEntity> {
                     private val filter = SkyObjectInsideCoordinate(rightAscension, declination, radius)
 
                     override fun keep(entity: SimbadEntity) = filter.test(entity)
@@ -47,6 +47,6 @@ class SimbadEntityRepository(@Qualifier("simbadEntityBox") override val box: Box
                 it.order(SimbadEntity_.magnitude)
             }
             .build()
-            .use { if (useCoordinate) it.find() else it.find(0, 5000) }
+            .use { if (useFilter) it.find() else it.find(0, 5000) }
     }
 }

@@ -33,7 +33,7 @@ abstract class BoxRepository<T : BoxEntity> : Collection<T> {
     }
 
     open fun findAll(): List<T> {
-        return box.all
+        return box.query().build().use { it.findLazy() }
     }
 
     open fun find(id: Long): T? {
@@ -48,7 +48,7 @@ abstract class BoxRepository<T : BoxEntity> : Collection<T> {
     }
 
     override fun iterator(): Iterator<T> {
-        return box.all.iterator()
+        return findAll().iterator()
     }
 
     override fun containsAll(elements: Collection<T>): Boolean {

@@ -226,7 +226,7 @@
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.distance" />
+                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.distance.toFixed(3)" />
                                 <label>Distance ({{ bodyPosition.distanceUnit }})</label>
                             </span>
                         </div>

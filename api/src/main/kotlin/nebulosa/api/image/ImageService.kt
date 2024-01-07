@@ -17,7 +17,6 @@ import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.sbd.SmallBodyDatabaseService
-import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.star.detection.ImageStar
 import nebulosa.watney.star.detection.WatneyStarDetector

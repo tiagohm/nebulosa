@@ -589,8 +589,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     async filterSkyObject() {
         if (!this.skyObjectFilter) return
 
-        if (this.skyObjectFilter.radius <= 0) this.skyObjectFilter.radius = 4
-
         await this.searchSkyObject()
 
         this.showSkyObjectFilter = false

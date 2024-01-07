@@ -49,7 +49,7 @@ class SkyAtlasService(
     private val cachedSimbadEntities = HashMap<Long, SimbadEntity>()
     @Volatile private var sunImage = ByteArray(0)
 
-    val objectTypes: List<SkyObjectType> = SkyObjectType.entries
+    val objectTypes: Collection<SkyObjectType> by lazy { simbadEntityRepository.findAll().map { it.type }.toSortedSet() }
 
     fun imageOfSun(output: HttpServletResponse) {
         output.contentType = "image/png"

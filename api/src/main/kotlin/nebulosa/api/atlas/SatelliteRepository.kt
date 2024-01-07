@@ -27,6 +27,6 @@ class SatelliteRepository(@Qualifier("satelliteBox") override val box: Box<Satel
 
         return builder
             .build()
-            .use { it.find() }
+            .use { it.findLazy() }
     }
 }
