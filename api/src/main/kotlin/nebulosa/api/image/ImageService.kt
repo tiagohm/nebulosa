@@ -2,6 +2,7 @@ package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
+import nebulosa.api.atlas.SimbadEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
@@ -16,7 +17,6 @@ import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.sbd.SmallBodyDatabaseService
-import nebulosa.simbad.SimbadSearch
 import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.star.detection.ImageStar
@@ -41,7 +41,7 @@ class ImageService(
     private val framingService: FramingService,
     private val calibrationFrameService: CalibrationFrameService,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
-    private val simbadService: SimbadService,
+    private val simbadEntityRepository: SimbadEntityRepository,
     private val imageBucket: ImageBucket,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val connectionService: ConnectionService,
@@ -188,28 +188,16 @@ class ImageService(
             threadPoolTaskExecutor.submitCompletable {
                 LOG.info("finding star/DSO annotations. dateTime={}, calibration={}", dateTime, calibration)
 
-                var lastID = 0L
+                val catalog = simbadEntityRepository.find(null, null, calibration.rightAscension, calibration.declination, calibration.radius)
+
                 var count = 0
 
-                while (true) {
-                    val search = SimbadSearch.Builder()
-                        .region(calibration.rightAscension, calibration.declination, calibration.radius)
-                        .limit(10000)
-                        .lastID(lastID)
-                        .build()
-
-                    val catalog = simbadService.search(search)
-
-                    if (catalog.isEmpty()) break
-
-                    for (entry in catalog) {
-                        val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
-                        val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
-                        else ImageAnnotation(x, y, dso = entry)
-                        annotations.add(annotation)
-                        lastID = entry.id
-                        count++
-                    }
+                for (entry in catalog) {
+                    val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
+                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
+                    else ImageAnnotation(x, y, dso = entry)
+                    annotations.add(annotation)
+                    count++
                 }
 
                 LOG.info("Found {} stars/DSOs", count)
