@@ -3,6 +3,7 @@ import { MenuItem, MessageService } from 'primeng/api'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
 import { Device } from '../../types/device.types'
 import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
+import { compareDevice } from '../../utils/comparators'
 
 @Component({
     selector: 'neb-device-list-menu',
@@ -29,7 +30,7 @@ export class DeviceListMenuComponent {
         const model: MenuItem[] = []
 
         return new Promise<T | undefined>((resolve) => {
-            if (devices.length <= 0 || !devices.find(e => e.connected)) {
+            if (devices.length <= 0) {
                 resolve(undefined)
                 this.message.add({ severity: 'warn', detail: 'Please connect your equipment first!' })
                 return
@@ -47,7 +48,7 @@ export class DeviceListMenuComponent {
                 model.push(SEPARATOR_MENU_ITEM)
             }
 
-            for (const device of devices) {
+            for (const device of devices.sort(compareDevice)) {
                 model.push({
                     icon: 'mdi mdi-connection',
                     label: device.name,
