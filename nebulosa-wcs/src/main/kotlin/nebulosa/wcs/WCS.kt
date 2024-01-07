@@ -10,7 +10,7 @@ import nebulosa.math.deg
 import nebulosa.math.toDegrees
 import java.io.Closeable
 
-class WCSTransform(header: Header) : Closeable {
+class WCS(header: Header) : Closeable {
 
     private val wcs: Pointer
 
@@ -77,6 +77,10 @@ class WCSTransform(header: Header) : Closeable {
 
     override fun close() {
         LibWCS.INSTANCE.wcsfree(wcs)
+    }
+
+    protected fun finalize() {
+        close()
     }
 
     companion object {

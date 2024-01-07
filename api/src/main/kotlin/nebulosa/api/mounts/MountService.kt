@@ -16,7 +16,7 @@ import nebulosa.nova.frame.Ecliptic
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
-import nebulosa.wcs.WCSTransform
+import nebulosa.wcs.WCS
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Service
@@ -215,7 +215,7 @@ class MountService(private val imageBucket: ImageBucket) {
         val calibration = imageBucket[path]?.second ?: return
 
         if (calibration.isNotEmpty() && calibration.solved) {
-            val wcs = WCSTransform(calibration)
+            val wcs = WCS(calibration)
             val (rightAscension, declination) = wcs.use { it.pixToSky(x, y) } // J2000
 
             val icrf = ICRF.equatorial(calibration.rightAscension, calibration.declination)

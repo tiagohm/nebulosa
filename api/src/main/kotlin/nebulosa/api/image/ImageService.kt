@@ -21,7 +21,7 @@ import nebulosa.skycatalog.ClassificationType
 import nebulosa.star.detection.ImageStar
 import nebulosa.watney.star.detection.WatneyStarDetector
 import nebulosa.wcs.WCSException
-import nebulosa.wcs.WCSTransform
+import nebulosa.wcs.WCS
 import org.springframework.http.HttpStatus
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
@@ -132,7 +132,7 @@ class ImageService(
         }
 
         val wcs = try {
-            WCSTransform(calibration)
+            WCS(calibration)
         } catch (e: WCSException) {
             LOG.error("unable to generate annotations for image. path={}", path)
             return emptyList()
@@ -246,7 +246,7 @@ class ImageService(
         }
 
         val wcs = try {
-            WCSTransform(calibration)
+            WCS(calibration)
         } catch (e: WCSException) {
             LOG.error("unable to generate annotations for image. path={}", path)
             return null

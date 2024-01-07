@@ -1,10 +1,11 @@
 package nebulosa.plate.solving
 
 import nebulosa.fits.Header
-import nebulosa.fits.NOAOExt
 import nebulosa.fits.Standard
 import nebulosa.log.loggerFor
 import nebulosa.math.*
+import nebulosa.wcs.computeCdMatrix
+import nebulosa.wcs.hasCd
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -34,13 +35,11 @@ data class PlateSolution(
 
         @JvmStatic
         fun from(header: Header): PlateSolution? {
-            val cd11 = header.getDoubleOrNull(NOAOExt.CD1_1)
-            val cd22 = header.getDoubleOrNull(NOAOExt.CD2_2)
-            val cd12 = header.getDoubleOrNull(NOAOExt.CD1_2)
-            val crota2 = header.getDoubleOrNull(Standard.CROTA2)?.deg ?: atan2(cd12 ?: return null, cd11 ?: return null).rad
+            val (cd11, cd12, _, cd22) = header.computeCdMatrix()
+            val crota2 = header.getDoubleOrNull(Standard.CROTA2)?.deg ?: atan2(cd12, cd11).rad
             // https://danmoser.github.io/notes/gai_fits-imgs.html
-            val cdelt1 = header.getDoubleOrNull(Standard.CDELT1)?.deg ?: ((cd11 ?: return null) / cos(crota2)).deg
-            val cdelt2 = header.getDoubleOrNull(Standard.CDELT2)?.deg ?: ((cd22 ?: return null) / cos(crota2)).deg
+            val cdelt1 = header.getDoubleOrNull(Standard.CDELT1)?.deg ?: (cd11 / cos(crota2)).deg
+            val cdelt2 = header.getDoubleOrNull(Standard.CDELT2)?.deg ?: (cd22 / cos(crota2)).deg
             val crval1 = header.getDoubleOrNull(Standard.CRVAL1)?.deg ?: return null
             val crval2 = header.getDoubleOrNull(Standard.CRVAL2)?.deg ?: return null
             val width = header.getIntOrNull(Standard.NAXIS1) ?: header.getInt("IMAGEW", 0)
