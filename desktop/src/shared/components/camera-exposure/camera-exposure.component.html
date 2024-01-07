@@ -7,7 +7,7 @@
               pTooltip="Elapsed time" tooltipPosition="bottom">
             <i class="mdi mdi-timer-sand-complete"></i> {{ capture.elapsedTime | exposureTime }}
         </span>
-        @if (capture.amount > 0) {
+        @if (!capture.looping) {
         <span class="bg-green-300 state time flex align-items-center gap-1 justify-content-center text-gray-900"
               pTooltip="Remaining time" tooltipPosition="bottom">
             <i class="mdi mdi-timer-sand"></i> {{ capture.remainingTime | exposureTime }}
