@@ -25,21 +25,21 @@ class LibWCSDownloadTask(
     override fun run() {
         var request = Request.Builder().get().url(VERSION_URL).build()
 
+        val libraryUrl = checkNotNull(LIBRARY_URLS[Platform.RESOURCE_PREFIX])
+        val libraryPath = Path.of("$libsPath", libraryUrl.substring(libraryUrl.lastIndexOf('/') + 1))
+
         httpClient.newCall(request).execute().use { response ->
             if (response.isSuccessful) {
                 val newestVersion = response.body!!.string()
-                val libraryPath = Path.of("$libsPath", "libwcs")
 
                 if (newestVersion != preferenceService.getText(VERSION_KEY) || !libraryPath.exists()) {
                     LOG.info("LibWCS is out of date. Downloading...")
 
-                    val libraryUrl = checkNotNull(LIBRARY_URLS[Platform.RESOURCE_PREFIX])
                     request = Request.Builder().get().url(libraryUrl).build()
 
                     httpClient.newCall(request).execute().use {
                         if (it.isSuccessful) {
                             it.body!!.byteStream().transferAndCloseOutput(libraryPath.outputStream())
-                            System.setProperty(LibWCS.PATH, "$libraryPath")
                             preferenceService.putText(VERSION_KEY, newestVersion)
                         }
                     }
@@ -48,6 +48,8 @@ class LibWCSDownloadTask(
                 }
             }
         }
+
+        System.setProperty(LibWCS.PATH, "$libraryPath")
     }
 
     companion object {
