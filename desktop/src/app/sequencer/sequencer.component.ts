@@ -1,13 +1,11 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
 import { MessageService } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { JsonFile } from '../../shared/types/app.types'
 import { Camera, CameraCaptureEvent, CameraStartCapture } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
@@ -72,9 +70,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private storage: LocalStorageService,
-        private route: ActivatedRoute,
         private message: MessageService,
-        private prime: PrimeService,
         ngZone: NgZone,
     ) {
         app.title = 'Sequencer'
@@ -368,13 +364,13 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     async showCameraDialog(entry: CameraStartCapture) {
-        if (await CameraComponent.showAsDialog(this.prime, 'SEQUENCER', entry)) {
+        if (await CameraComponent.showAsDialog(this.browserWindow, 'SEQUENCER', entry)) {
             this.savePlan()
         }
     }
 
     async showWheelDialog(entry: CameraStartCapture) {
-        if (await FilterWheelComponent.showAsDialog(this.prime, 'SEQUENCER', entry)) {
+        if (await FilterWheelComponent.showAsDialog(this.browserWindow, 'SEQUENCER', entry)) {
             this.savePlan()
         }
     }

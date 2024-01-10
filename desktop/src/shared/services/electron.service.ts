@@ -9,7 +9,7 @@ import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
 import { DARVEvent } from '../types/alignment.types'
 import { ApiEventType, DeviceMessageEvent } from '../types/api.types'
-import { InternalEventType, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
+import { CloseWindow, InternalEventType, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
 import { Location } from '../types/atlas.types'
 import { Camera, CameraCaptureEvent } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
@@ -154,5 +154,9 @@ export class ElectronService {
 
     readJson<T>(path: string): Promise<JsonFile<T> | false> {
         return this.send('JSON.READ', path)
+    }
+
+    closeWindow<T>(data: CloseWindow<T>) {
+        return this.send('WINDOW.CLOSE', data)
     }
 }

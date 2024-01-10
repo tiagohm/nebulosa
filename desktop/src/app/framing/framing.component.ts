@@ -81,7 +81,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
     @HostListener('window:unload')
     ngOnDestroy() {
         this.closeFrameImage()
-        this.electron.send('WINDOW.CLOSE', this.frameId)
+        this.electron.closeWindow({ id: this.frameId })
     }
 
     private frameFromData(data: FramingData) {

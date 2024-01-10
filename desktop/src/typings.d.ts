@@ -8,4 +8,5 @@ interface Window {
     process: any
     require: any
     apiPort: number
+    modal: boolean
 }

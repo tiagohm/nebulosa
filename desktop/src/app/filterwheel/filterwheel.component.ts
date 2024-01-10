@@ -1,12 +1,11 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, Optional } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
+import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
 import { EMPTY_WHEEL, FilterSlot, FilterWheel, WheelDialogInput, WheelDialogMode, WheelPreference, wheelPreferenceKey } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
@@ -52,14 +51,12 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     private subscription?: Subscription
 
     constructor(
+        private app: AppComponent,
         private api: ApiService,
         private electron: ElectronService,
         private storage: LocalStorageService,
         private route: ActivatedRoute,
         ngZone: NgZone,
-        @Optional() private app?: AppComponent,
-        @Optional() private dialogRef?: DynamicDialogRef,
-        @Optional() config?: DynamicDialogConfig<WheelDialogInput>,
     ) {
         if (app) app.title = 'Filter Wheel'
 
@@ -87,18 +84,20 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 this.savePreference()
                 this.electron.send('WHEEL.RENAMED', { wheel: this.wheel, filter })
             })
-
-        if (config?.data) {
-            Object.assign(this.request, config.data.request)
-            this.mode = config.data.mode
-            this.wheelChanged(this.request.wheel)
-        }
     }
 
     async ngAfterContentInit() {
         this.route.queryParams.subscribe(e => {
-            const wheel = JSON.parse(decodeURIComponent(e.data)) as FilterWheel
-            this.wheelChanged(wheel)
+            const decodedData = JSON.parse(decodeURIComponent(e.data))
+
+            if (this.app.modal) {
+                const request = decodedData as WheelDialogInput
+                Object.assign(this.request, request.request)
+                this.mode = request.mode
+                this.wheelChanged(this.request.wheel)
+            } else {
+                this.wheelChanged(decodedData)
+            }
         })
     }
 
@@ -217,12 +216,11 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     apply() {
-        this.dialogRef?.close(this.makeCameraStartCapture())
+        this.app.close(this.makeCameraStartCapture())
     }
 
-    static async showAsDialog(prime: PrimeService, mode: WheelDialogMode, request: CameraStartCapture) {
-        const data: WheelDialogInput = { mode, request }
-        const result = await prime.open(FilterWheelComponent, { header: 'Filter Wheel', width: 'calc(320px + 2.5rem)', data })
+    static async showAsDialog(window: BrowserWindowService, mode: WheelDialogMode, request: CameraStartCapture) {
+        const result = await window.openWheelDialog({ data: { mode, request } })
 
         if (result) {
             Object.assign(request, result)

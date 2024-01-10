@@ -1,12 +1,10 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
 import { MessageService } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { Camera, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
 import { FlatWizardRequest } from '../../shared/types/flat-wizard.types'
 import { FilterSlot, FilterWheel, WheelPreference, wheelPreferenceKey } from '../../shared/types/wheel.types'
@@ -58,8 +56,6 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
         electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private storage: LocalStorageService,
-        private route: ActivatedRoute,
-        private prime: PrimeService,
         private message: MessageService,
         ngZone: NgZone,
     ) {
@@ -103,8 +99,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     ngOnDestroy() { }
 
     async showCameraDialog() {
-        if (await CameraComponent.showAsDialog(this.prime, 'FLAT_WIZARD', this.request.captureRequest)) {
-        }
+        CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.request.captureRequest)
     }
 
     cameraChanged() {
