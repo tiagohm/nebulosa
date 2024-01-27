@@ -1,20 +1,12 @@
 package nebulosa.star.detection
 
-import kotlin.math.hypot
+import nebulosa.math.Point2D
 
-interface ImageStar {
-
-    val x: Double
-
-    val y: Double
+interface ImageStar : Point2D {
 
     val hfd: Double
 
     val snr: Double
 
     val flux: Double
-
-    fun distance(star: ImageStar): Double {
-        return hypot(x - star.x, y - star.y)
-    }
 }

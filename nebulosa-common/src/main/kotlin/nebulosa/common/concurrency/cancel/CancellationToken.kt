@@ -1,48 +1,62 @@
-package nebulosa.common.concurrency
+package nebulosa.common.concurrency.cancel
 
 import java.io.Closeable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.function.Consumer
+
+typealias CancellationListener = Consumer<CancellationSource>
 
 class CancellationToken private constructor(private val completable: CompletableFuture<CancellationSource>?) : Closeable, Future<CancellationSource> {
 
     constructor() : this(CompletableFuture<CancellationSource>())
 
     private val listeners = LinkedHashSet<CancellationListener>()
+    private val completed = AtomicBoolean()
 
     init {
         completable?.whenComplete { source, _ ->
-            if (source != null) {
-                listeners.forEach { it.accept(source) }
+            synchronized(this) {
+                completed.set(true)
+
+                if (source != null) {
+                    listeners.forEach { it.accept(source) }
+                }
+
+                listeners.clear()
             }
-
-            listeners.clear()
         }
     }
 
-    fun listen(listener: CancellationListener): Boolean {
-        return if (completable == null) {
-            false
-        } else if (isDone) {
-            listener.accept(CancellationSource.Listen)
-            false
-        } else {
-            listeners.add(listener)
+    @Synchronized
+    fun listen(listener: CancellationListener) {
+        if (completable != null) {
+            if (completed.get() || isDone) {
+                listener.accept(CancellationSource.Listen)
+            } else {
+                listeners.add(listener)
+            }
         }
     }
 
-    fun unlisten(listener: CancellationListener): Boolean {
-        return listeners.remove(listener)
+    @Synchronized
+    fun unlisten(listener: CancellationListener) {
+        listeners.remove(listener)
     }
 
     fun cancel() {
         cancel(true)
     }
 
-    @Synchronized
     override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
-        completable?.complete(CancellationSource.Cancel(mayInterruptIfRunning)) ?: return false
+        return cancel(CancellationSource.Cancel(mayInterruptIfRunning))
+    }
+
+    @Synchronized
+    fun cancel(source: CancellationSource): Boolean {
+        completable?.complete(source) ?: return false
         return true
     }
 

@@ -1,6 +1,5 @@
 package nebulosa.api.mounts
 
-import nebulosa.api.atlas.CurrentTime
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.image.ImageBucket
 import nebulosa.constants.PI
@@ -16,6 +15,7 @@ import nebulosa.nova.frame.Ecliptic
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
+import nebulosa.time.CurrentTime
 import nebulosa.wcs.WCS
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode

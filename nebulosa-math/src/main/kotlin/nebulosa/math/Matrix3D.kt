@@ -1,7 +1,7 @@
 package nebulosa.math
 
 @Suppress("NOTHING_TO_INLINE")
-open class Matrix3D(@PublishedApi @JvmField internal val matrix: DoubleArray) {
+open class Matrix3D(@PublishedApi @JvmField internal val matrix: DoubleArray) : Cloneable {
 
     constructor(
         a11: Double = 0.0, a12: Double = 0.0, a13: Double = 0.0,
@@ -37,7 +37,7 @@ open class Matrix3D(@PublishedApi @JvmField internal val matrix: DoubleArray) {
         get() = matrix[8]
 
     // TODO: Potentially less stable than using LU decomposition
-    inline val determinant: Double
+    val determinant: Double
         get() {
             val a = a11 * (a22 * a33 - a23 * a32)
             val b = a12 * (a21 * a33 - a23 * a31)
@@ -107,9 +107,9 @@ open class Matrix3D(@PublishedApi @JvmField internal val matrix: DoubleArray) {
     )
 
     inline operator fun times(other: Vector3D) = Vector3D(
-        a11 * other.x + a12 * other.y + a13 * other.z,
-        a21 * other.x + a22 * other.y + a23 * other.z,
-        a31 * other.x + a32 * other.y + a33 * other.z,
+        a11 * other.vector[0] + a12 * other.vector[1] + a13 * other.vector[2],
+        a21 * other.vector[0] + a22 * other.vector[1] + a23 * other.vector[2],
+        a31 * other.vector[0] + a32 * other.vector[1] + a33 * other.vector[2],
     )
 
     inline operator fun times(scalar: Double) = Matrix3D(
@@ -166,9 +166,11 @@ open class Matrix3D(@PublishedApi @JvmField internal val matrix: DoubleArray) {
 
     inline fun flipY() = Matrix3D(a13, a12, a11, a23, a22, a21, a33, a32, a31)
 
+    override fun clone() = Matrix3D(matrix.copyOf())
+
     fun isEmpty() = a11 == 0.0 && a12 == 0.0 && a13 == 0.0 &&
-            a21 == 0.0 && a22 == 0.0 && a23 == 0.0 &&
-            a31 == 0.0 && a32 == 0.0 && a33 == 0.0
+        a21 == 0.0 && a22 == 0.0 && a23 == 0.0 &&
+        a31 == 0.0 && a32 == 0.0 && a33 == 0.0
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

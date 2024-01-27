@@ -1,6 +1,6 @@
 package nebulosa.guiding
 
-import nebulosa.common.concurrency.CancellationToken
+import nebulosa.common.concurrency.cancel.CancellationToken
 import java.io.Closeable
 import java.time.Duration
 

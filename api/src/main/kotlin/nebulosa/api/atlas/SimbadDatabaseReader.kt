@@ -6,6 +6,7 @@ import nebulosa.math.kms
 import nebulosa.math.mas
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
+import nebulosa.time.CurrentTime
 import okio.BufferedSource
 import okio.Source
 import okio.buffer

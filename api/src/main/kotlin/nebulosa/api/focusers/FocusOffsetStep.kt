@@ -4,7 +4,7 @@ import nebulosa.api.wheels.WheelStep
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
-import nebulosa.common.concurrency.CountUpDownLatch
+import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.indi.device.focuser.FocuserMoveFailed

@@ -9,7 +9,7 @@ import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.batch.processing.delay.DelayStepListener
-import nebulosa.common.concurrency.CountUpDownLatch
+import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
 import nebulosa.log.debug

@@ -6,7 +6,7 @@ import kotlin.math.exp
 import kotlin.math.pow
 
 /**
- * Represents a pressure value in millibars.
+ * Represents a pressure value in millibars/hPa.
  */
 typealias Pressure = Double
 

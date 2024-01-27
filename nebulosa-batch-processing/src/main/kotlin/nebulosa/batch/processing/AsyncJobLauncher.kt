@@ -1,7 +1,7 @@
 package nebulosa.batch.processing
 
 import nebulosa.common.concurrency.CancellationListener
-import nebulosa.common.concurrency.CancellationSource
+import nebulosa.common.concurrency.cancel.CancellationSource
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import java.io.Closeable

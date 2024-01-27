@@ -1,16 +1,17 @@
 package nebulosa.api.image
 
 import nebulosa.math.Angle
+import nebulosa.math.Point2D
 import nebulosa.skycatalog.DeepSkyObject
 import nebulosa.skycatalog.SkyObject
 
 data class ImageAnnotation(
-    val x: Double,
-    val y: Double,
+    override val x: Double,
+    override val y: Double,
     val star: DeepSkyObject? = null,
     val dso: DeepSkyObject? = null,
     val minorPlanet: SkyObject? = null,
-) {
+) : Point2D {
 
     internal data class MinorPlanet(
         override val id: Long = 0L,

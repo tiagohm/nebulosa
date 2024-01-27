@@ -18,7 +18,7 @@ open class Header internal constructor(@JvmField internal val cards: LinkedList<
 
     constructor(header: Header) : this(LinkedList(header.cards))
 
-    fun readOnly(): Header = ReadOnlyHeader(this)
+    open fun readOnly(): Header = ReadOnlyHeader(this)
 
     override fun clear() {
         cards.clear()

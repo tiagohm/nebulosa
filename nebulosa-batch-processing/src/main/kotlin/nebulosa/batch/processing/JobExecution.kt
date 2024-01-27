@@ -1,6 +1,6 @@
 package nebulosa.batch.processing
 
-import nebulosa.common.concurrency.CancellationToken
+import nebulosa.common.concurrency.cancel.CancellationToken
 import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException

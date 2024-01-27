@@ -42,9 +42,7 @@ data class PlanetograhicPosition(
         // from position, to support situations where we were not
         // given a latitude and longitude.  If that is not feasible,
         // then at least cache the product of these first two matrices.
-        val m = Matrix3D.rotY((TAU / 4.0 - latitude).rad)
-            .rotateZ((TAU / 2.0 - longitude).rad) *
-                frame.rotationAt(time)
+        val m = Matrix3D.rotY((TAU / 4.0 - latitude).rad).rotateZ((TAU / 2.0 - longitude).rad) * frame.rotationAt(time)
 
         // Turn clockwise into counterclockwise.
         // Flip the sign of y so that azimuth reads north-east rather than the other direction.

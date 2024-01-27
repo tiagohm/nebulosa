@@ -1,22 +1,25 @@
-package nebulosa.api.atlas
+package nebulosa.time
 
-import nebulosa.time.InstantOfTime
-import nebulosa.time.TimeDelta
-import nebulosa.time.UTC
+import nebulosa.common.time.Stopwatch
 
 object CurrentTime : InstantOfTime() {
 
-    private const val MAX_INTERVAL = 1000L * 30 // 30s.
+    const val MAX_INTERVAL_KEY = "CURRENT_TIME.MAX_INTERVAL"
 
-    @Volatile private var lastTime = 0L
+    private val maxInterval = System.getProperty(MAX_INTERVAL_KEY, "30000").toLongOrNull() ?: 30000L
+    private val stopwatch = Stopwatch()
+
+    init {
+        stopwatch.start()
+    }
 
     private var time = UTC.now()
-        @Synchronized get() {
-            val curTime = System.currentTimeMillis()
-
-            if (curTime - lastTime >= MAX_INTERVAL) {
-                lastTime = curTime
-                field = UTC.now()
+        get() {
+            synchronized(stopwatch) {
+                if (stopwatch.elapsedMilliseconds >= maxInterval) {
+                    stopwatch.reset()
+                    field = UTC.now()
+                }
             }
 
             return field

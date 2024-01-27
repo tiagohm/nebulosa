@@ -1,11 +1,12 @@
 package nebulosa.plate.solving
 
 import nebulosa.fits.Header
+import nebulosa.fits.HeaderCard
+import nebulosa.fits.ReadOnlyHeader
 import nebulosa.fits.Standard
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.wcs.computeCdMatrix
-import nebulosa.wcs.hasCd
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -21,11 +22,10 @@ data class PlateSolution(
     val height: Angle = 0.0,
     val parity: Parity = Parity.NORMAL,
     val radius: Angle = hypot(width, height).rad / 2.0,
-) : Header() {
+    private val header: Collection<HeaderCard> = emptyList(),
+) : ReadOnlyHeader(header) {
 
-    override fun toString() = "PlateSolution(solved=$solved, orientation=$orientation, scale=$scale, " +
-            "rightAscension=$rightAscension, declination=$declination, width=$width, " +
-            "height=$height, parity=$parity, radius=$radius, header=${super.toString()})"
+    override fun readOnly() = this
 
     companion object {
 
@@ -51,9 +51,7 @@ data class PlateSolution(
                 crval1.format(AngleFormatter.HMS), crval2.format(AngleFormatter.SIGNED_DMS),
             )
 
-            val solution = PlateSolution(true, crota2, cdelt2, crval1, crval2, abs(cdelt1 * width), abs(cdelt2 * height))
-            header.iterator().forEach(solution::add)
-            return solution
+            return PlateSolution(true, crota2, cdelt2, crval1, crval2, abs(cdelt1 * width), abs(cdelt2 * height), header = header)
         }
     }
 }

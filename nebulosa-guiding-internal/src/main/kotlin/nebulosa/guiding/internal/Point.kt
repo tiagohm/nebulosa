@@ -1,9 +1,6 @@
 package nebulosa.guiding.internal
 
-import nebulosa.math.Angle
-import nebulosa.math.rad
-import kotlin.math.atan2
-import kotlin.math.hypot
+import nebulosa.math.Point2D
 
 /**
  * Represents a location on a guide camera image.
@@ -32,32 +29,8 @@ open class Point(
         valid = true
     }
 
-    internal inline fun set(point: GuidePoint) {
+    internal inline fun set(point: Point2D) {
         set(point.x, point.y)
-    }
-
-    override fun dX(point: GuidePoint): Double {
-        return x - point.x
-    }
-
-    override fun dY(point: GuidePoint): Double {
-        return y - point.y
-    }
-
-    override val distance
-        get() = hypot(x, y)
-
-    override fun distance(point: GuidePoint) = hypot(dX(point), dY(point))
-
-    override val angle
-        get() = if (x != 0.0 || y != 0.0) atan2(y, x).rad
-        else 0.0
-
-    override fun angle(point: GuidePoint): Angle {
-        val dx = dX(point)
-        val dy = dY(point)
-        return if (dx != 0.0 || dy != 0.0) atan2(dy, dx).rad
-        else 0.0
     }
 
     internal open fun invalidate() {

@@ -1,7 +1,7 @@
 package nebulosa.guiding.phd2
 
-import nebulosa.common.concurrency.CancellationToken
-import nebulosa.common.concurrency.CountUpDownLatch
+import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.guiding.*
 import nebulosa.log.loggerFor
 import nebulosa.math.arcsec

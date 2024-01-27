@@ -6,7 +6,7 @@ import io.kotest.matchers.longs.shouldBeGreaterThanOrEqual
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import nebulosa.common.concurrency.CountUpDownLatch
+import nebulosa.common.concurrency.latch.CountUpDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.system.measureTimeMillis
 
