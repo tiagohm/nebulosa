@@ -1,6 +1,6 @@
 package nebulosa.batch.processing
 
-import nebulosa.common.concurrency.CancellationListener
+import nebulosa.common.concurrency.cancel.CancellationListener
 import nebulosa.common.concurrency.cancel.CancellationSource
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
