@@ -83,26 +83,25 @@ data class FlatWizardStep(
         val savedPath = cameraExposureStep.savedPath
 
         if (!stopped && savedPath != null) {
-            Fits(savedPath).also(Fits::read).use { fits ->
-                image = image?.load(fits, false) ?: Image.open(fits, false)
+            image = Fits(savedPath).also(Fits::read).use { fits ->
+                image?.load(fits, false) ?: Image.open(fits, false)
+            }
 
-                val statistics = STATISTICS.compute(image!!)
+            val statistics = STATISTICS.compute(image!!)
+            LOG.info("flat frame captured. duration={}, statistics={}", exposureTime, statistics)
 
-                LOG.info("flat frame captured. duration={}, statistics={}", exposureTime, statistics)
-
-                if (statistics.mean in meanRange) {
-                    val path = request.captureRequest.makeSavePath(true)
-                    savedPath.inputStream().transferAndClose(path.outputStream())
-                    savedPath.deleteIfExists()
-                    LOG.info("Found an optimal exposure time. exposure={}, path={}", exposureTime, path)
-                    flatWizardExecutionListeners.forEach { it.onFlatCaptured(this, path, exposureTime) }
-                } else if (statistics.mean < meanRange.start) {
-                    exposureMin = cameraExposureStep.exposureTime
-                    return StepResult.CONTINUABLE
-                } else {
-                    exposureMax = cameraExposureStep.exposureTime
-                    return StepResult.CONTINUABLE
-                }
+            if (statistics.mean in meanRange) {
+                val path = request.captureRequest.makeSavePath(true)
+                savedPath.inputStream().transferAndClose(path.outputStream())
+                savedPath.deleteIfExists()
+                LOG.info("Found an optimal exposure time. exposure={}, path={}", exposureTime, path)
+                flatWizardExecutionListeners.forEach { it.onFlatCaptured(this, path, exposureTime) }
+            } else if (statistics.mean < meanRange.start) {
+                exposureMin = cameraExposureStep.exposureTime
+                return StepResult.CONTINUABLE
+            } else {
+                exposureMax = cameraExposureStep.exposureTime
+                return StepResult.CONTINUABLE
             }
         }
 
