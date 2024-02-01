@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "17.0.0",
-    "@angular-devkit/build-angular": "17.0.8",
+    "@angular-devkit/build-angular": "17.1.2",
     "@angular/cli": "17.0.8",
     "@angular/compiler-cli": "17.0.8",
     "@types/leaflet": "1.9.8",
