@@ -44,7 +44,7 @@ class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver {
         arguments["--no-plots"] = null
         // args["--resort"] = null
 
-        if (radius.toDegrees >= 0.1) {
+        if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
             arguments["--ra"] = centerRA.toDegrees
             arguments["--dec"] = centerDEC.toDegrees
             arguments["--radius"] = radius.toDegrees

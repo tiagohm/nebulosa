@@ -21,7 +21,6 @@ internal class Position {
         rightAscension: Angle, declination: Angle,
         longitude: Angle, latitude: Angle,
     ) {
-
         val time = UTC.now()
         val ee = eraEe06a(time.tt.whole, time.tt.fraction)
         val (ri, di) = eraAtic13((rightAscension + ee).normalized, declination, time.tdb.whole, time.tdb.fraction)

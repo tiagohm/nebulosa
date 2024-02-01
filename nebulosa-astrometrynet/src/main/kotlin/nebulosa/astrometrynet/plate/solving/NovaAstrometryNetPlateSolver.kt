@@ -46,7 +46,7 @@ data class NovaAstrometryNetPlateSolver(
     ): PlateSolution {
         renewSession()
 
-        val blind = radius.toDegrees < 0.1
+        val blind = radius.toDegrees < 0.1 || !centerRA.isFinite() || !centerDEC.isFinite()
 
         val upload = Upload(
             session = session!!.session,

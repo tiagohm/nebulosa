@@ -6,11 +6,13 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.AbstractQueuedSynchronizer
+import java.util.function.Supplier
 import kotlin.math.max
 
-class CountUpDownLatch(initialCount: Int = 0) : AtomicBoolean(initialCount == 0), CancellationListener {
+class CountUpDownLatch(initialCount: Int = 0) : Supplier<Boolean>, CancellationListener {
 
-    private val sync = Sync(this)
+    private val latch = AtomicBoolean(initialCount == 0)
+    private val sync = Sync(latch)
 
     init {
         require(initialCount >= 0) { "initialCount < 0: $initialCount" }
@@ -20,11 +22,15 @@ class CountUpDownLatch(initialCount: Int = 0) : AtomicBoolean(initialCount == 0)
     val count
         get() = sync.count
 
+    override fun get(): Boolean {
+        return latch.get()
+    }
+
     @Synchronized
     fun countUp(n: Int = 1): Int {
         if (n >= 1) {
             sync.count += n
-            set(false)
+            latch.set(false)
         }
 
         return count
@@ -79,7 +85,7 @@ class CountUpDownLatch(initialCount: Int = 0) : AtomicBoolean(initialCount == 0)
                     val next = max(0, this - releases)
 
                     if (compareAndSetState(this, next)) {
-                        latch.set(next <= state)
+                        latch.set(next <= this)
                         return latch.get()
                     }
                 }

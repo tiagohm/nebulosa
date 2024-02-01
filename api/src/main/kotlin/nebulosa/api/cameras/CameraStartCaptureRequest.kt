@@ -51,4 +51,9 @@ data class CameraStartCaptureRequest(
 
     inline val isLoop
         get() = exposureAmount <= 0
+
+    companion object {
+
+        @JvmStatic val EMPTY = CameraStartCaptureRequest()
+    }
 }

@@ -45,7 +45,7 @@ class AstapPlateSolver(path: Path) : PlateSolver {
         arguments["-z"] = downsampleFactor
         arguments["-fov"] = 0 // auto
 
-        if (radius.toDegrees >= 0.1) {
+        if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
             arguments["-ra"] = centerRA.toHours
             arguments["-spd"] = centerDEC.toDegrees + 90.0
             arguments["-r"] = ceil(radius.toDegrees)

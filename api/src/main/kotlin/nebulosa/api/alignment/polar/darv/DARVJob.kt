@@ -1,7 +1,10 @@
 package nebulosa.api.alignment.polar.darv
 
 import io.reactivex.rxjava3.subjects.PublishSubject
-import nebulosa.api.cameras.*
+import nebulosa.api.cameras.AutoSubFolderMode
+import nebulosa.api.cameras.CameraCaptureListener
+import nebulosa.api.cameras.CameraExposureFinished
+import nebulosa.api.cameras.CameraExposureStep
 import nebulosa.api.guiding.GuidePulseListener
 import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.guiding.GuidePulseStep
@@ -16,14 +19,14 @@ import java.nio.file.Files
 import java.time.Duration
 
 data class DARVJob(
-    val request: DARVStartRequest,
+    @JvmField val request: DARVStartRequest,
 ) : SimpleJob(), PublishSubscribe<MessageEvent>, CameraCaptureListener, GuidePulseListener, DelayStepListener {
 
     @JvmField val camera = requireNotNull(request.camera)
     @JvmField val guideOutput = requireNotNull(request.guideOutput)
     @JvmField val direction = if (request.reversed) request.direction.reversed else request.direction
 
-    @JvmField val cameraRequest = (request.capture ?: CameraStartCaptureRequest()).copy(
+    @JvmField val cameraRequest = request.capture.copy(
         camera = camera,
         exposureTime = request.exposureTime + request.initialPause,
         savePath = Files.createTempDirectory("darv"),
