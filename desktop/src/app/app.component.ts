@@ -18,6 +18,7 @@ export class AppComponent implements AfterViewInit {
 
     pinned = false
     maximizable = false
+    readonly modal = window.modal
     subTitle? = ''
     backgroundColor = '#212121'
     topMenu: ExtendedMenuItem[] = []
@@ -64,7 +65,7 @@ export class AppComponent implements AfterViewInit {
         this.electron.send('WINDOW.MAXIMIZE')
     }
 
-    close() {
-        this.electron.send('WINDOW.CLOSE')
+    close(data?: any) {
+        this.electron.closeWindow({ data })
     }
 }

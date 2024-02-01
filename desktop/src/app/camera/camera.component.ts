@@ -1,13 +1,11 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, Optional, ViewChild } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType, cameraPreferenceKey } from '../../shared/types/camera.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
@@ -120,15 +118,13 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     private readonly cameraExposure!: CameraExposureComponent
 
     constructor(
+        private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private storage: LocalStorageService,
         private route: ActivatedRoute,
         ngZone: NgZone,
-        @Optional() private app?: AppComponent,
-        @Optional() private dialogRef?: DynamicDialogRef,
-        @Optional() config?: DynamicDialogConfig<CameraDialogInput>,
     ) {
         if (app) app.title = 'Camera'
 
@@ -156,14 +152,17 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 })
             }
         })
-
-        this.loadCameraStartCaptureForDialogMode(config?.data)
     }
 
     async ngAfterContentInit() {
         this.route.queryParams.subscribe(e => {
-            const camera = JSON.parse(decodeURIComponent(e.data)) as Camera
-            this.cameraChanged(camera)
+            const decodedData = JSON.parse(decodeURIComponent(e.data))
+
+            if (this.app.modal) {
+                this.loadCameraStartCaptureForDialogMode(decodedData)
+            } else {
+                this.cameraChanged(decodedData)
+            }
         })
     }
 
@@ -363,7 +362,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     apply() {
-        this.dialogRef?.close(this.makeCameraStartCapture())
+        this.app.close(this.makeCameraStartCapture())
     }
 
     private loadPreference() {
@@ -428,9 +427,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    static async showAsDialog(prime: PrimeService, mode: CameraDialogMode, request: CameraStartCapture) {
-        const data: CameraDialogInput = { mode, request }
-        const result = await prime.open<CameraDialogInput, CameraStartCapture>(CameraComponent, { header: 'Camera', width: 'calc(400px + 2.5rem)', data })
+    static async showAsDialog(window: BrowserWindowService, mode: CameraDialogMode, request: CameraStartCapture) {
+        const result = await window.openCameraDialog({ data: { mode, request } })
 
         if (result) {
             Object.assign(request, result)

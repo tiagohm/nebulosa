@@ -27,19 +27,30 @@ export const INTERNAL_EVENT_TYPES = [
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
-export interface OpenWindow<T> {
-    id: string
-    path: string
+
+export interface OpenWindowOptions {
     icon?: string
     resizable?: boolean
     width?: number | string
     height?: number | string
     bringToFront?: boolean
     requestFocus?: boolean
+}
+
+export interface OpenWindowOptionsWithData<T> extends OpenWindowOptions {
     data: T
 }
 
-export type OpenWindowOptions<T> = Omit<OpenWindow<T>, 'id' | 'path'>
+export interface OpenWindow<T> extends OpenWindowOptionsWithData<T> {
+    id: string
+    path: string
+    modal?: boolean
+}
+
+export interface CloseWindow<T = undefined> {
+    id?: string
+    data?: T
+}
 
 export interface OpenDirectory {
     defaultPath?: string

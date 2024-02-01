@@ -7,12 +7,13 @@ import * as path from 'path'
 
 import { WebSocket } from 'ws'
 import { MessageEvent } from '../src/shared/types/api.types'
-import { InternalEventType, JsonFile, NotificationEvent, OpenDirectory, OpenFile, OpenWindow } from '../src/shared/types/app.types'
+import { CloseWindow, InternalEventType, JsonFile, NotificationEvent, OpenDirectory, OpenFile, OpenWindow } from '../src/shared/types/app.types'
 Object.assign(global, { WebSocket })
 
 const store = new ElectronStore()
 
 const browserWindows = new Map<string, BrowserWindow>()
+const modalWindows = new Map<string, { window: BrowserWindow, resolve: (data: any) => void }>()
 let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
 let wsClient: Client
@@ -23,8 +24,7 @@ const serve = args.some(e => e === '--serve')
 app.commandLine.appendSwitch('disable-http-cache')
 
 function createMainWindow() {
-    const splashWindow = browserWindows.get('splash')
-    splashWindow?.close()
+    browserWindows.get('splash')?.close()
     browserWindows.delete('splash')
 
     createWindow({ id: 'home', path: 'home', data: undefined })
@@ -62,10 +62,10 @@ function createMainWindow() {
     wsClient.activate()
 }
 
-function createWindow(options: OpenWindow<any>) {
+function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
     let window = browserWindows.get(options.id)
 
-    if (window) {
+    if (window && !options.modal) {
         if (options.data) {
             console.info('window data changed. id=%s, data=%s', options.id, options.data)
             window.webContents.send('DATA.CHANGED', options.data)
@@ -106,7 +106,7 @@ function createWindow(options: OpenWindow<any>) {
     const icon = options.icon ?? 'nebulosa'
     const data = encodeURIComponent(JSON.stringify(options.data || {}))
 
-    const position = store.get(`window.${options.id}.position`, undefined) as { x: number, y: number } | undefined
+    const position = !options.modal ? store.get(`window.${options.id}.position`, undefined) as { x: number, y: number } | undefined : undefined
 
     if (position) {
         position.x = Math.max(0, Math.min(position.x, size.width))
@@ -116,6 +116,8 @@ function createWindow(options: OpenWindow<any>) {
     window = new BrowserWindow({
         title: 'Nebulosa',
         frame: false,
+        modal: options.modal,
+        parent,
         width, height,
         x: position?.x ?? undefined,
         y: position?.y ?? undefined,
@@ -126,7 +128,7 @@ function createWindow(options: OpenWindow<any>) {
             nodeIntegration: true,
             allowRunningInsecureContent: serve,
             contextIsolation: false,
-            additionalArguments: [`--port=${apiPort}`],
+            additionalArguments: [`--port=${apiPort}`, `--id=${options.id}`, `--modal=${options.modal ?? false}`],
             preload: path.join(__dirname, 'preload.js'),
             devTools: serve,
         },
@@ -179,6 +181,13 @@ function createWindow(options: OpenWindow<any>) {
                     break
                 }
             }
+
+            for (const [key, value] of modalWindows) {
+                if (value.window === window) {
+                    modalWindows.delete(key)
+                    break
+                }
+            }
         }
     })
 
@@ -219,7 +228,8 @@ function showNotification(event: NotificationEvent) {
 }
 
 function findWindowById(id: number) {
-    for (const [_, window] of browserWindows) if (window.id === id) return window
+    for (const [key, window] of browserWindows) if (window.id === id) return { window, key }
+    for (const [key, window] of modalWindows) if (window.window.id === id) return { window: window.window, key }
     return undefined
 }
 
@@ -281,8 +291,24 @@ try {
         }
     })
 
-    ipcMain.handle('WINDOW.OPEN', async (_, data: OpenWindow<any>) => {
-        const newWindow = !browserWindows.has(data.id)
+    ipcMain.handle('WINDOW.OPEN', async (event, data: OpenWindow<any>) => {
+        if (data.modal) {
+            const parent = findWindowById(event.sender.id)
+            const window = createWindow(data, parent?.window)
+
+            const promise = new Promise<any>((resolve) => {
+                modalWindows.set(data.id, {
+                    window, resolve: (value) => {
+                        window.close()
+                        resolve(value)
+                    }
+                })
+            })
+
+            return promise
+        }
+
+        const isNew = !browserWindows.has(data.id)
 
         const window = createWindow(data)
 
@@ -293,7 +319,7 @@ try {
         }
 
         return new Promise<boolean>((resolve) => {
-            if (newWindow) {
+            if (isNew) {
                 window.webContents.once('did-finish-load', () => {
                     resolve(true)
                 })
@@ -306,7 +332,7 @@ try {
     ipcMain.handle('FILE.OPEN', async (event, data?: OpenFile) => {
         const ownerWindow = findWindowById(event.sender.id)
 
-        const value = await dialog.showOpenDialog(ownerWindow!, {
+        const value = await dialog.showOpenDialog(ownerWindow!.window, {
             filters: data?.filters,
             properties: ['openFile'],
             defaultPath: data?.defaultPath || undefined,
@@ -317,7 +343,7 @@ try {
 
     ipcMain.handle('FILE.SAVE', async (event, data?: OpenFile) => {
         const ownerWindow = findWindowById(event.sender.id)
-        const value = await dialog.showSaveDialog(ownerWindow!, {
+        const value = await dialog.showSaveDialog(ownerWindow!.window, {
             filters: data?.filters,
             properties: ['createDirectory', 'showOverwriteConfirmation'],
             defaultPath: data?.defaultPath || undefined,
@@ -352,7 +378,7 @@ try {
 
     ipcMain.handle('DIRECTORY.OPEN', async (event, data?: OpenDirectory) => {
         const ownerWindow = findWindowById(event.sender.id)
-        const value = await dialog.showOpenDialog(ownerWindow!, {
+        const value = await dialog.showOpenDialog(ownerWindow!.window, {
             properties: ['openDirectory'],
             defaultPath: data?.defaultPath || undefined,
         })
@@ -361,25 +387,25 @@ try {
     })
 
     ipcMain.handle('WINDOW.PIN', (event) => {
-        const window = findWindowById(event.sender.id)
+        const window = findWindowById(event.sender.id)?.window
         window?.setAlwaysOnTop(true)
         return !!window
     })
 
     ipcMain.handle('WINDOW.UNPIN', (event) => {
-        const window = findWindowById(event.sender.id)
+        const window = findWindowById(event.sender.id)?.window
         window?.setAlwaysOnTop(false)
         return !!window
     })
 
     ipcMain.handle('WINDOW.MINIMIZE', (event) => {
-        const window = findWindowById(event.sender.id)
+        const window = findWindowById(event.sender.id)?.window
         window?.minimize()
         return !!window
     })
 
     ipcMain.handle('WINDOW.MAXIMIZE', (event) => {
-        const window = findWindowById(event.sender.id)
+        const window = findWindowById(event.sender.id)?.window
 
         if (window?.isMaximized()) window.unmaximize()
         else window?.maximize()
@@ -387,21 +413,25 @@ try {
         return window?.isMaximized() ?? false
     })
 
-    ipcMain.handle('WINDOW.CLOSE', (event, id?: string) => {
-        if (id) {
+    ipcMain.handle('WINDOW.CLOSE', (event, data: CloseWindow<any>) => {
+        if (data.id) {
             for (const [key, value] of browserWindows) {
-                if (key === id) {
+                if (key === data.id) {
                     value.close()
                     return true
                 }
             }
-
-            return false
         } else {
             const window = findWindowById(event.sender.id)
-            window?.close()
-            return !!window
+
+            if (window) {
+                modalWindows.get(window.key)?.resolve(data.data)
+                window.window.close()
+                return true
+            }
         }
+
+        return false
     })
 
     const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED']

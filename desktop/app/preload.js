@@ -1,3 +1,7 @@
-const port = process.argv.find(e => e.startsWith('--port=')).split('=')[1]
+function argWith(name) {
+    return process.argv.find(e => e.startsWith(`--${name}=`))?.split('=')?.[1]
+}
 
-window.apiPort = parseInt(port)
+window.apiPort = parseInt(argWith('port'))
+window.id = argWith('id')
+window.modal = argWith('modal') === 'true'
