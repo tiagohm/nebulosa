@@ -19,10 +19,10 @@ import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, St
 import { Camera } from '../../shared/types/camera.types'
 import { DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
-import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverType } from '../../shared/types/settings.types'
+import { PlateSolverType } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
-import { SETTINGS_PLATE_SOLVER_KEY } from '../settings/settings.component'
+import { SettingsComponent } from '../settings/settings.component'
 
 export function imagePreferenceKey(camera?: Camera) {
     return camera ? `image.${camera.name}` : 'image'
@@ -30,6 +30,7 @@ export function imagePreferenceKey(camera?: Camera) {
 
 export interface ImagePreference {
     solverRadius?: number
+    solverType?: PlateSolverType
 }
 
 export interface ImageData {
@@ -94,7 +95,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solverRadius = 4
     readonly solvedData = Object.assign({}, EMPTY_IMAGE_SOLVED)
     readonly solverTypes: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET_ONLINE']
-    solverType: PlateSolverType
+    solverType = this.solverTypes[0]
 
     crossHair = false
     annotations: ImageAnnotation[] = []
@@ -417,8 +418,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 event.preventDefault()
             }
         }, true)
-
-        this.solverType = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS).type
     }
 
     ngAfterViewInit() {
@@ -717,8 +716,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solving = true
 
         try {
-            const options = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS)
-            options.type = this.solverType
+            const options = SettingsComponent.getPlateSolverOptions(this.storage, this.solverType)
 
             Object.assign(this.solvedData,
                 await this.api.solveImage(options, this.imageData.path!, this.solverBlind,
@@ -785,11 +783,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private loadPreference(camera?: Camera) {
         const preference = this.storage.get<ImagePreference>(imagePreferenceKey(camera), {})
         this.solverRadius = preference.solverRadius ?? this.solverRadius
+        this.solverType = preference.solverType ?? this.solverTypes[0]
     }
 
     private savePreference() {
         const preference: ImagePreference = {
-            solverRadius: this.solverRadius
+            solverRadius: this.solverRadius,
+            solverType: this.solverType
         }
 
         this.storage.set(imagePreferenceKey(this.imageData.camera), preference)

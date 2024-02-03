@@ -6,6 +6,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
+import { StorageService } from '../../shared/services/storage.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
 import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverOptions, PlateSolverType } from '../../shared/types/settings.types'
 import { AppComponent } from '../app.component'
@@ -25,7 +26,8 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     location = Object.assign({}, EMPTY_LOCATION)
 
     readonly plateSolverTypes: PlateSolverType[] = ['ASTAP', /*'ASTROMETRY_NET',*/ 'ASTROMETRY_NET_ONLINE']
-    readonly plateSolver: PlateSolverOptions
+    plateSolverType = this.plateSolverTypes[0]
+    readonly plateSolvers = new Map<PlateSolverType, PlateSolverOptions>()
 
     readonly items: MenuItem[] = [
         {
@@ -49,7 +51,9 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Settings'
 
-        this.plateSolver = storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS)
+        for (const type of this.plateSolverTypes) {
+            this.plateSolvers.set(type, SettingsComponent.getPlateSolverOptions(storage, type))
+        }
     }
 
     async ngAfterViewInit() {
@@ -101,15 +105,26 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     }
 
     async chooseExecutablePath() {
-        const executablePath = await this.electron.openFile({ defaultPath: path.dirname(this.plateSolver.executablePath) })
+        const options = this.plateSolvers.get(this.plateSolverType)!
+        const executablePath = await this.electron.openFile({ defaultPath: path.dirname(options.executablePath) })
 
         if (executablePath) {
-            this.plateSolver.executablePath = executablePath
+            options.executablePath = executablePath
             this.save()
         }
     }
 
     async save() {
-        this.storage.set(SETTINGS_PLATE_SOLVER_KEY, this.plateSolver)
+        for (const type of this.plateSolverTypes) {
+            SettingsComponent.putPlateSolverOptions(this.storage, type, this.plateSolvers.get(type)!)
+        }
+    }
+
+    static getPlateSolverOptions(storage: LocalStorageService, type: PlateSolverType) {
+        return storage.get(`${SETTINGS_PLATE_SOLVER_KEY}.${type}`, EMPTY_PLATE_SOLVER_OPTIONS)
+    }
+
+    static putPlateSolverOptions(storage: StorageService, type: PlateSolverType, options: PlateSolverOptions) {
+        return storage.set(`${SETTINGS_PLATE_SOLVER_KEY}.${type}`, options)
     }
 }
