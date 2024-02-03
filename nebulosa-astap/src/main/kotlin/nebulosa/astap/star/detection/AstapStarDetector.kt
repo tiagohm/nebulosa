@@ -1,6 +1,7 @@
 package nebulosa.astap.star.detection
 
-import de.siegmar.fastcsv.reader.NamedCsvReader
+import de.siegmar.fastcsv.reader.CommentStrategy
+import de.siegmar.fastcsv.reader.CsvReader
 import nebulosa.common.process.ProcessExecutor
 import nebulosa.log.loggerFor
 import nebulosa.star.detection.ImageStar
@@ -35,7 +36,7 @@ class AstapStarDetector(path: Path) : StarDetector<Path> {
 
         try {
             csvFile.inputStream().use {
-                for (record in CSV_READER.build(InputStreamReader(it, Charsets.UTF_8))) {
+                for (record in CSV_READER.ofNamedCsvRecord(InputStreamReader(it, Charsets.UTF_8))) {
                     detectedStars.add(
                         Star(
                             record.getField("x").toDouble(),
@@ -58,10 +59,10 @@ class AstapStarDetector(path: Path) : StarDetector<Path> {
 
         @JvmStatic private val LOG = loggerFor<AstapStarDetector>()
 
-        @JvmStatic private val CSV_READER = NamedCsvReader.builder()
+        @JvmStatic private val CSV_READER = CsvReader.builder()
             .fieldSeparator(',')
             .quoteCharacter('"')
             .commentCharacter('#')
-            .skipComments(true)
+            .commentStrategy(CommentStrategy.SKIP)
     }
 }

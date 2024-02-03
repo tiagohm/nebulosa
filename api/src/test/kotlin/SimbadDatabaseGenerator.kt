@@ -1,6 +1,6 @@
 import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
-import de.siegmar.fastcsv.reader.NamedCsvRow
+import de.siegmar.fastcsv.reader.NamedCsvRecord
 import nebulosa.adql.*
 import nebulosa.api.atlas.SimbadDatabaseWriter
 import nebulosa.api.atlas.SimbadEntity
@@ -49,25 +49,25 @@ object SimbadDatabaseGenerator {
 
     @JvmStatic private val CALDWELL = resource("caldwell.csv")!!
         .use { stream ->
-            CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
+            CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1).ifEmpty { it.getField(2) } to it.getField(0) }
         }
 
     @JvmStatic private val BENNETT = resource("bennett.csv")!!
         .use { stream ->
-            CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
+            CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1) to it.getField(0) }
         }
 
     @JvmStatic private val DUNLOP = resource("dunlop.csv")!!
         .use { stream ->
-            CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
+            CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1) to it.getField(0) }
         }
 
     @JvmStatic private val HERSHEL = resource("hershel.csv")!!
         .use { stream ->
-            CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
+            CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1) to it.getField(0) }
         }
 
@@ -225,7 +225,7 @@ object SimbadDatabaseGenerator {
     }
 
     @JvmStatic
-    private fun List<NamedCsvRow>.parse(entities: MutableList<SimbadEntity>): List<SimbadEntity> {
+    private fun List<NamedCsvRecord>.parse(entities: MutableList<SimbadEntity>): List<SimbadEntity> {
         var writeCount = 0
 
         for (row in this) {

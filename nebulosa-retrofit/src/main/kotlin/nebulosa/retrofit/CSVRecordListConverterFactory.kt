@@ -1,11 +1,11 @@
 package nebulosa.retrofit
 
-import de.siegmar.fastcsv.reader.NamedCsvReader
+import de.siegmar.fastcsv.reader.CsvReader
 import retrofit2.Converter
 import retrofit2.Retrofit
 import java.lang.reflect.Type
 
-data class CSVRecordListConverterFactory(private val reader: NamedCsvReader.NamedCsvReaderBuilder) : Converter.Factory() {
+data class CSVRecordListConverterFactory(private val reader: CsvReader.CsvReaderBuilder) : Converter.Factory() {
 
     override fun responseBodyConverter(
         type: Type,

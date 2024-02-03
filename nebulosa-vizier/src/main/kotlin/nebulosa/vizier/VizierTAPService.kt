@@ -1,7 +1,8 @@
 package nebulosa.vizier
 
-import de.siegmar.fastcsv.reader.NamedCsvReader
-import de.siegmar.fastcsv.reader.NamedCsvRow
+import de.siegmar.fastcsv.reader.CommentStrategy
+import de.siegmar.fastcsv.reader.CsvReader
+import de.siegmar.fastcsv.reader.NamedCsvRecord
 import nebulosa.retrofit.CSVRecordListConverterFactory
 import nebulosa.retrofit.RetrofitService
 import okhttp3.FormBody
@@ -23,7 +24,7 @@ class VizierTAPService(url: String = "") : RetrofitService(url.ifBlank { URL }) 
 
     private val service by lazy { retrofit.create<VizierTAP>() }
 
-    fun query(query: String): Call<List<NamedCsvRow>> {
+    fun query(query: String): Call<List<NamedCsvRecord>> {
         val body = FormBody.Builder()
             .add("request", "doQuery")
             .add("lang", "adql")
@@ -38,10 +39,10 @@ class VizierTAPService(url: String = "") : RetrofitService(url.ifBlank { URL }) 
 
         const val URL = "http://tapvizier.cds.unistra.fr/"
 
-        @JvmStatic private val CSV_READER = NamedCsvReader.builder()
+        @JvmStatic private val CSV_READER = CsvReader.builder()
             .fieldSeparator(',')
             .quoteCharacter('"')
             .commentCharacter('#')
-            .skipComments(true)
+            .commentStrategy(CommentStrategy.SKIP)
     }
 }

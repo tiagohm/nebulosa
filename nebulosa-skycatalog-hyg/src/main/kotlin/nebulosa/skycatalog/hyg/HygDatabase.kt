@@ -1,6 +1,7 @@
 package nebulosa.skycatalog.hyg
 
-import de.siegmar.fastcsv.reader.NamedCsvReader
+import de.siegmar.fastcsv.reader.CommentStrategy
+import de.siegmar.fastcsv.reader.CsvReader
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.math.kms
@@ -23,7 +24,7 @@ class HygDatabase : SkyCatalog<HygEntry>(118005) {
     fun load(stream: InputStream) {
         clear()
 
-        val reader = CSV_READER.build(InputStreamReader(stream, Charsets.UTF_8))
+        val reader = CSV_READER.ofNamedCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
 
         val names = ArrayList<String>(7)
         val currentTime = UTC.now()
@@ -79,10 +80,10 @@ class HygDatabase : SkyCatalog<HygEntry>(118005) {
 
     companion object {
 
-        @JvmStatic private val CSV_READER = NamedCsvReader.builder()
+        @JvmStatic private val CSV_READER = CsvReader.builder()
             .fieldSeparator(',')
             .quoteCharacter('"')
             .commentCharacter('#')
-            .skipComments(true)
+            .commentStrategy(CommentStrategy.SKIP)
     }
 }
