@@ -1,7 +1,8 @@
 package nebulosa.simbad
 
-import de.siegmar.fastcsv.reader.NamedCsvReader
-import de.siegmar.fastcsv.reader.NamedCsvRow
+import de.siegmar.fastcsv.reader.CommentStrategy
+import de.siegmar.fastcsv.reader.CsvReader
+import de.siegmar.fastcsv.reader.NamedCsvRecord
 import nebulosa.adql.*
 import nebulosa.log.loggerFor
 import nebulosa.math.*
@@ -31,11 +32,11 @@ class SimbadService(
 
     private val service by lazy { retrofit.create<Simbad>() }
 
-    fun query(query: Query): Call<List<NamedCsvRow>> {
+    fun query(query: Query): Call<List<NamedCsvRecord>> {
         return query("$query")
     }
 
-    fun query(query: String): Call<List<NamedCsvRow>> {
+    fun query(query: String): Call<List<NamedCsvRecord>> {
         val body = FormBody.Builder()
             .add("request", "doQuery")
             .add("lang", "adql")
@@ -49,9 +50,8 @@ class SimbadService(
     }
 
     fun search(query: Query): List<SimbadEntry> {
-        val rows = query(query).execute().body()
-        if (rows.isNullOrEmpty()) return emptyList()
-        val res = ArrayList<SimbadEntry>(rows.size)
+        val rows = query(query).execute().body() ?: return emptyList()
+        val res = ArrayList<SimbadEntry>()
         val currentTime = UTC.now()
 
         fun matchName(name: String): String? {
@@ -160,11 +160,11 @@ class SimbadService(
 
         @JvmStatic private val LOG = loggerFor<SimbadService>()
 
-        @JvmStatic private val CSV_READER = NamedCsvReader.builder()
+        @JvmStatic private val CSV_READER = CsvReader.builder()
             .fieldSeparator('\t')
             .quoteCharacter('"')
             .commentCharacter('#')
-            .skipComments(true)
+            .commentStrategy(CommentStrategy.SKIP)
 
         @JvmStatic private val BASIC_TABLE = From("basic").alias("b")
         @JvmStatic private val FLUX_TABLE = From("allfluxes").alias("f")

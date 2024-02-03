@@ -104,7 +104,7 @@ class AstapPlateSolver(path: Path) : PlateSolver {
                 header.add(NOAOExt.CD2_1, cd21)
                 header.add(NOAOExt.CD2_2, cd22)
 
-                val solution = PlateSolution(true, crota2.deg, cdelt2.deg, crval1.deg, crval2.deg, width.deg, height.deg, header = header)
+                val solution = PlateSolution(true, crota2.deg, cdelt2.deg, crval1.deg, crval2.deg, width.deg, height.deg)
 
                 LOG.info("astap solved. calibration={}", solution)
 
