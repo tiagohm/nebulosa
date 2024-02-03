@@ -19,6 +19,7 @@ export const EMPTY_WHEEL: FilterWheel = {
 
 export interface WheelDialogInput {
     mode: WheelDialogMode
+    wheel: FilterWheel
     request: CameraStartCapture
 }
 

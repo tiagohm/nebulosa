@@ -99,7 +99,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     ngOnDestroy() { }
 
     async showCameraDialog() {
-        CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.request.captureRequest)
+        CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.camera!, this.request.captureRequest)
     }
 
     cameraChanged() {
@@ -117,8 +117,6 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     private updateEntryFromCamera(camera?: Camera) {
         if (camera) {
             const request = this.request.captureRequest
-
-            request.camera = camera
 
             if (camera.connected) {
                 if (camera.maxX > 1) request.x = Math.max(camera.minX, Math.min(request.x, camera.maxX))

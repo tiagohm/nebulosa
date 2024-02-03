@@ -25,9 +25,10 @@ import java.time.format.DateTimeFormatter
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.outputStream
 
-data class CameraExposureStep(override val request: CameraStartCaptureRequest) : CameraStartCaptureStep, DelayStepListener, WaitForSettleListener {
-
-    @JvmField val camera = requireNotNull(request.camera)
+data class CameraExposureStep(
+    override val camera: Camera,
+    override val request: CameraStartCaptureRequest,
+) : CameraStartCaptureStep, DelayStepListener, WaitForSettleListener {
 
     @JvmField val exposureTime = request.exposureTime
     @JvmField val exposureAmount = request.exposureAmount
@@ -156,7 +157,7 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
 
     private fun save(stream: InputStream) {
         try {
-            savedPath = request.makeSavePath()
+            savedPath = request.makeSavePath(camera)
 
             LOG.info("saving FITS. path={}", savedPath)
 
@@ -209,14 +210,14 @@ data class CameraExposureStep(override val request: CameraStartCaptureRequest) :
         @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmssSSS")
 
         @JvmStatic
-        fun CameraStartCaptureRequest.makeSavePath(autoSave: Boolean = this.autoSave): Path {
+        fun CameraStartCaptureRequest.makeSavePath(camera: Camera, autoSave: Boolean = this.autoSave): Path {
             return if (autoSave) {
                 val now = LocalDateTime.now()
                 val savePath = autoSubFolderMode.pathFor(savePath!!, now)
                 val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), frameType)
                 Path.of("$savePath", fileName)
             } else {
-                val fileName = "%s.fits".format(camera!!.name)
+                val fileName = "%s.fits".format(camera.name)
                 Path.of("$savePath", fileName)
             }
         }

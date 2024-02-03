@@ -531,9 +531,7 @@ export class ApiService {
 
     // DARV
 
-    darvStart(camera: Camera, guideOutput: GuideOutput,
-        exposureTime: number, initialPause: number, direction: GuideDirection, reversed: boolean = false, capture?: CameraStartCapture) {
-        const data: DARVStart = { capture, exposureTime, initialPause, direction, reversed }
+    darvStart(camera: Camera, guideOutput: GuideOutput, data: DARVStart) {
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
     }
 
@@ -543,12 +541,13 @@ export class ApiService {
 
     // SEQUENCER
 
-    sequencerStart(plan: SequencePlan) {
-        return this.http.put<void>(`sequencer/start`, plan)
+    sequencerStart(camera: Camera, plan: SequencePlan) {
+        const body: SequencePlan = { ...plan, camera: undefined, wheel: undefined, focuser: undefined }
+        return this.http.put<void>(`sequencer/${camera.name}/start`, body)
     }
 
-    sequencerStop() {
-        return this.http.put<void>(`sequencer/stop`)
+    sequencerStop(camera: Camera) {
+        return this.http.put<void>(`sequencer/${camera.name}/stop`)
     }
 
     // FLAT WIZARD

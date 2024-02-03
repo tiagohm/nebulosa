@@ -177,7 +177,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         if (data) {
             this.mode = data.mode
             Object.assign(this.request, data.request)
-            await this.cameraChanged(this.request.camera)
+            await this.cameraChanged(data.camera)
             this.normalizeExposureTimeAndUnit(this.request.exposureTime)
             this.loadDefaultsForMode(data.mode)
         }
@@ -281,7 +281,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
         return {
             ...this.request,
-            camera: this.camera,
             x, y, width, height,
             exposureTime, exposureAmount,
             savePath,
@@ -427,8 +426,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    static async showAsDialog(window: BrowserWindowService, mode: CameraDialogMode, request: CameraStartCapture) {
-        const result = await window.openCameraDialog({ data: { mode, request } })
+    static async showAsDialog(window: BrowserWindowService, mode: CameraDialogMode, camera: Camera, request: CameraStartCapture) {
+        const result = await window.openCameraDialog({ data: { mode, camera, request } })
 
         if (result) {
             Object.assign(request, result)

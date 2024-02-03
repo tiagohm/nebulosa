@@ -13,7 +13,7 @@ export interface DARVStart {
     reversed: boolean
 }
 
-export interface DARVEvent extends MessageEvent {
+export interface DARVElapsed extends MessageEvent {
     camera: Camera
     guideOutput: GuideOutput
     remainingTime: number

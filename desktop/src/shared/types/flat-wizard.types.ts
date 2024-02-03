@@ -1,4 +1,4 @@
-import { CameraCaptureEvent, CameraStartCapture } from './camera.types'
+import { CameraCaptureElapsed, CameraStartCapture } from './camera.types'
 
 export interface FlatWizardRequest {
     captureRequest: CameraStartCapture
@@ -10,6 +10,6 @@ export interface FlatWizardRequest {
 
 export interface FlatWizardEvent {
     exposureTime: number
-    capture?: CameraCaptureEvent
+    capture?: CameraCaptureElapsed
     savedPath?: string
 }

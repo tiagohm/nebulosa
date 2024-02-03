@@ -3,7 +3,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { DARVState, Hemisphere } from '../../shared/types/alignment.types'
+import { DARVStart, DARVState, Hemisphere } from '../../shared/types/alignment.types'
 import { Camera, CameraPreference, CameraStartCapture, cameraPreferenceKey } from '../../shared/types/camera.types'
 import { GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { AppComponent } from '../app.component'
@@ -167,11 +167,11 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     async darvStart(direction: GuideDirection = 'EAST') {
-        // TODO: Horizonte leste e oeste tem um impacto no "reversed"?
         const reversed = this.darvHemisphere === 'SOUTHERN'
         await this.openCameraImage()
         const capture = this.makeCameraStartCapture(this.camera!)
-        await this.api.darvStart(this.camera!, this.guideOutput!, this.darvDrift, this.darvInitialPause, direction, reversed, capture)
+        const data: DARVStart = { capture, exposureTime: this.darvDrift, initialPause: this.darvInitialPause, direction, reversed }
+        await this.api.darvStart(this.camera!, this.guideOutput!, data)
     }
 
     darvStop() {

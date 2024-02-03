@@ -15,20 +15,20 @@ class PolarAlignmentService(
     private val tppaExecutor: TPPAExecutor,
 ) {
 
-    fun darvStart(camera: Camera, guideOutput: GuideOutput, darvStartRequest: DARVStartRequest) {
+    fun darvStart(camera: Camera, guideOutput: GuideOutput, darvStartRequest: DARVStartRequest): String {
         check(camera.connected) { "camera not connected" }
         check(guideOutput.connected) { "guide output not connected" }
-        darvExecutor.execute(darvStartRequest.copy(camera = camera, guideOutput = guideOutput))
+        return darvExecutor.execute(camera, guideOutput, darvStartRequest)
     }
 
     fun darvStop(camera: Camera, guideOutput: GuideOutput) {
         darvExecutor.stop(camera, guideOutput)
     }
 
-    fun tppaStart(camera: Camera, mount: Mount, tppaStartRequest: TPPAStartRequest) {
+    fun tppaStart(camera: Camera, mount: Mount, tppaStartRequest: TPPAStartRequest): String {
         check(camera.connected) { "camera not connected" }
         check(mount.connected) { "mount not connected" }
-        tppaExecutor.execute(tppaStartRequest.copy(camera = camera, mount = mount))
+        return tppaExecutor.execute(camera, mount, tppaStartRequest)
     }
 
     fun tppaStop(camera: Camera, mount: Mount) {

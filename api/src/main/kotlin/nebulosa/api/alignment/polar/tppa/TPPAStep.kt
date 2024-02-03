@@ -12,20 +12,22 @@ import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
 import nebulosa.fits.Fits
 import nebulosa.imaging.Image
+import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.mount.Mount
 import nebulosa.math.deg
 import nebulosa.plate.solving.PlateSolver
 import nebulosa.star.detection.StarDetector
 
 data class TPPAStep(
+    private val camera: Camera,
     private val solver: PlateSolver,
     private val starDetector: StarDetector<Image>,
-    private val mount: Mount?,
     private val request: TPPAStartRequest,
+    private val mount: Mount? = null,
     private val cameraRequest: CameraStartCaptureRequest = request.capture,
 ) : Step {
 
-    private val cameraExposureStep = CameraExposureStep(cameraRequest)
+    private val cameraExposureStep = CameraExposureStep(camera, cameraRequest)
     private val alignment = ThreePointPolarAlignment(solver, starDetector)
     @Volatile private var image: Image? = null
 

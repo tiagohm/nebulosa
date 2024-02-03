@@ -6,7 +6,7 @@ import nebulosa.indi.device.camera.Camera
 import java.nio.file.Path
 import java.time.Duration
 
-sealed interface CameraCaptureEvent : MessageEvent, JobExecutionEvent {
+sealed interface CameraCaptureElapsed : MessageEvent, JobExecutionEvent {
 
     val camera: Camera
 

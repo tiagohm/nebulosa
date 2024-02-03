@@ -94,7 +94,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 const request = decodedData as WheelDialogInput
                 Object.assign(this.request, request.request)
                 this.mode = request.mode
-                this.wheelChanged(this.request.wheel)
+                this.wheelChanged(request.wheel)
             } else {
                 this.wheelChanged(decodedData)
             }
@@ -210,7 +210,6 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     private makeCameraStartCapture(): CameraStartCapture {
         return {
             ...this.request,
-            wheel: this.wheel,
             filterPosition: this.filter?.position ?? 0,
         }
     }
@@ -219,8 +218,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         this.app.close(this.makeCameraStartCapture())
     }
 
-    static async showAsDialog(window: BrowserWindowService, mode: WheelDialogMode, request: CameraStartCapture) {
-        const result = await window.openWheelDialog({ data: { mode, request } })
+    static async showAsDialog(window: BrowserWindowService, mode: WheelDialogMode, wheel: FilterWheel, request: CameraStartCapture) {
+        const result = await window.openWheelDialog({ data: { mode, wheel, request } })
 
         if (result) {
             Object.assign(request, result)

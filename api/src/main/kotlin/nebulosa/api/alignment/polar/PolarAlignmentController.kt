@@ -21,9 +21,7 @@ class PolarAlignmentController(
     fun darvStart(
         @DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam guideOutput: GuideOutput,
         @RequestBody body: DARVStartRequest,
-    ) {
-        polarAlignmentService.darvStart(camera, guideOutput, body)
-    }
+    ) = polarAlignmentService.darvStart(camera, guideOutput, body)
 
     @PutMapping("darv/{camera}/{guideOutput}/stop")
     fun darvStop(@DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam guideOutput: GuideOutput) {
@@ -34,9 +32,7 @@ class PolarAlignmentController(
     fun tppaStart(
         @DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam mount: Mount,
         @RequestBody body: TPPAStartRequest,
-    ) {
-        polarAlignmentService.tppaStart(camera, mount, body)
-    }
+    ) = polarAlignmentService.tppaStart(camera, mount, body)
 
     @PutMapping("tppa/{camera}/{mount}/stop")
     fun tppaStop(@DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam mount: Mount) {

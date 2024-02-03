@@ -37,7 +37,7 @@ export class BrowserWindowService {
 
     openCameraDialog(options: OpenWindowOptionsWithData<CameraDialogInput>) {
         Object.assign(options, { icon: 'camera', width: 400, height: 424 })
-        return this.openModal<CameraDialogInput, CameraStartCapture>({ ...options, id: `camera.${options.data.request.camera!.name}.modal`, path: 'camera' })
+        return this.openModal<CameraDialogInput, CameraStartCapture>({ ...options, id: `camera.${options.data.camera.name}.modal`, path: 'camera' })
     }
 
     openFocuser(options: OpenWindowOptionsWithData<Focuser>) {
@@ -52,7 +52,7 @@ export class BrowserWindowService {
 
     openWheelDialog(options: OpenWindowOptionsWithData<WheelDialogInput>) {
         Object.assign(options, { icon: 'filter-wheel', width: 300, height: 217 })
-        return this.openModal<WheelDialogInput, CameraStartCapture>({ ...options, id: `wheel.${options.data.request.camera!.name}.modal`, path: 'wheel' })
+        return this.openModal<WheelDialogInput, CameraStartCapture>({ ...options, id: `wheel.${options.data.wheel.name}.modal`, path: 'wheel' })
     }
 
     openGuider(options: OpenWindowOptions = {}) {
