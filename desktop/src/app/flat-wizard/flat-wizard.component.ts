@@ -1,13 +1,13 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import { MessageService } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PreferenceService } from '../../shared/services/preference.service'
+import { PrimeService } from '../../shared/services/prime.service'
 import { Camera, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
 import { FlatWizardRequest } from '../../shared/types/flat-wizard.types'
-import { FilterSlot, FilterWheel, WheelPreference, wheelPreferenceKey } from '../../shared/types/wheel.types'
+import { FilterSlot, FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
@@ -55,38 +55,52 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         electron: ElectronService,
         private browserWindow: BrowserWindowService,
-        private storage: LocalStorageService,
-        private message: MessageService,
+        private prime: PrimeService,
+        private preference: PreferenceService,
         ngZone: NgZone,
     ) {
         app.title = 'Flat Wizard'
 
         electron.on('FLAT_WIZARD.ELAPSED', event => {
-            if (event.capture) {
+            if (event.state === 'EXPOSURING' && event.capture && event.capture.camera?.name === this.camera?.name) {
                 ngZone.run(() => {
-                    this.cameraExposure.handleCameraCaptureEvent(event.capture!)
+                    this.running = this.cameraExposure.handleCameraCaptureEvent(event.capture!, true)
+                })
+            } else if (event.state === 'CAPTURED') {
+                ngZone.run(() => {
+                    this.running = false
+                    this.prime.message(`Flat frame saved at ${event.savedPath}`)
+                })
+            } else if (event.state === 'FAILED') {
+                ngZone.run(() => {
+                    this.running = false
+                    this.prime.message(`Failed to find an optimal exposure time from given parameters`, 'error')
+                })
+            }
 
-                    if (event.capture!.state === 'CAPTURE_STARTED') {
-                        this.running = true
-                    } else if (event.capture!.state === 'CAPTURE_FINISHED' && event.capture!.aborted) {
-                        this.running = false
-                    }
+            if (!this.running) {
+                ngZone.run(() => {
+                    this.cameraExposure.reset()
                 })
             }
         })
 
-        electron.on('FLAT_WIZARD.FRAME_CAPTURED', event => {
-            ngZone.run(() => {
-                this.running = false
-                this.message.add({ severity: 'success', detail: `Flat frame saved at ${event.savedPath}` })
-            })
+        electron.on('CAMERA.UPDATED', event => {
+            if (event.device.name === this.camera?.name) {
+                ngZone.run(() => {
+                    Object.assign(this.camera!, event.device)
+                    this.cameraChanged()
+                })
+            }
         })
 
-        electron.on('FLAT_WIZARD.FAILED', event => {
-            ngZone.run(() => {
-                this.running = false
-                this.message.add({ severity: 'error', detail: `Failed to find an optimal exposure time from given parameters` })
-            })
+        electron.on('WHEEL.UPDATED', event => {
+            if (event.device.name === this.wheel?.name) {
+                ngZone.run(() => {
+                    Object.assign(this.wheel!, event.device)
+                    this.wheelChanged()
+                })
+            }
         })
     }
 
@@ -99,7 +113,9 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     ngOnDestroy() { }
 
     async showCameraDialog() {
-        CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.camera!, this.request.captureRequest)
+        if (await CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.camera!, this.request.captureRequest)) {
+            this.preference.flatWizardCameraSet(this.camera!, this.request.captureRequest)
+        }
     }
 
     cameraChanged() {
@@ -116,7 +132,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
 
     private updateEntryFromCamera(camera?: Camera) {
         if (camera) {
-            const request = this.request.captureRequest
+            const request = this.preference.flatWizardCameraGet(camera, this.request.captureRequest)
 
             if (camera.connected) {
                 if (camera.maxX > 1) request.x = Math.max(camera.minX, Math.min(request.x, camera.maxX))
@@ -131,6 +147,8 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
                 if (camera.offsetMax) request.offset = Math.max(camera.offsetMin, Math.min(request.offset, camera.offsetMax))
                 if (!request.frameFormat || !camera.frameFormats.includes(request.frameFormat)) request.frameFormat = camera.frameFormats[0]
             }
+
+            this.request.captureRequest = request
         }
     }
 
@@ -148,7 +166,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
                 filters = this.filters
             }
 
-            const preference = this.storage.get<WheelPreference>(wheelPreferenceKey(this.wheel), {})
+            const preference = this.preference.wheelPreferenceGet(this.wheel)
 
             for (let position = 1; position <= filters.length; position++) {
                 const name = preference.names?.[position - 1] ?? `Filter #${position}`

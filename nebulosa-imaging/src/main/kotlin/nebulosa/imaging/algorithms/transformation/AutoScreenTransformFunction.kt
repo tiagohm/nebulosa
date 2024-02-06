@@ -9,7 +9,7 @@ import nebulosa.log.loggerFor
 import kotlin.math.max
 import kotlin.math.min
 
-object AutoScreenTransformFunction : ComputationAlgorithm<ScreenTransformFunction.Parameters>, TransformAlgorithm {
+data object AutoScreenTransformFunction : ComputationAlgorithm<ScreenTransformFunction.Parameters>, TransformAlgorithm {
 
     override fun compute(source: Image): ScreenTransformFunction.Parameters {
         // Find the median sample.

@@ -23,10 +23,6 @@ export interface WheelDialogInput {
     request: CameraStartCapture
 }
 
-export function wheelPreferenceKey(wheel: FilterWheel) {
-    return `wheel.${wheel.name}`
-}
-
 export interface WheelPreference {
     shutterPosition?: number
     names?: string[]

@@ -5,9 +5,9 @@ import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
-import { EMPTY_WHEEL, FilterSlot, FilterWheel, WheelDialogInput, WheelDialogMode, WheelPreference, wheelPreferenceKey } from '../../shared/types/wheel.types'
+import { EMPTY_WHEEL, FilterSlot, FilterWheel, WheelDialogInput, WheelDialogMode, WheelPreference } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -54,7 +54,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         private app: AppComponent,
         private api: ApiService,
         private electron: ElectronService,
-        private storage: LocalStorageService,
+        private preference: PreferenceService,
         private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
@@ -171,7 +171,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             filters = this.filters
         }
 
-        const preference = this.storage.get<WheelPreference>(wheelPreferenceKey(this.wheel), {})
+        const preference = this.preference.wheelPreferenceGet(this.wheel)
 
         for (let position = 1; position <= filters.length; position++) {
             const name = preference.names?.[position - 1] ?? `Filter #${position}`
@@ -187,7 +187,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     private loadPreference() {
         if (this.mode === 'CAPTURE' && this.wheel.name) {
-            const preference = this.storage.get<WheelPreference>(wheelPreferenceKey(this.wheel), {})
+            const preference = this.preference.wheelPreferenceGet(this.wheel)
             const shutterPosition = preference.shutterPosition ?? 0
             this.filters.forEach(e => e.dark = e.position === shutterPosition)
         }
@@ -202,7 +202,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 names: this.filters.map(e => e.name)
             }
 
-            this.storage.set(wheelPreferenceKey(this.wheel), preference)
+            this.preference.wheelPreferenceSet(this.wheel, preference)
             this.api.wheelSync(this.wheel, preference.names!)
         }
     }

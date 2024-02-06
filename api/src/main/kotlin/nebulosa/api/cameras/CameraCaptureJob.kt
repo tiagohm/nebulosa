@@ -48,4 +48,8 @@ data class CameraCaptureJob(
 
         cameraExposureStep.registerCameraCaptureListener(cameraCaptureEventHandler)
     }
+
+    override fun contains(data: Any): Boolean {
+        return data === camera || super.contains(data)
+    }
 }

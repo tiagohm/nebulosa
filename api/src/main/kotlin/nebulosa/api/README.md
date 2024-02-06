@@ -71,7 +71,7 @@ URL: `localhost:{PORT}/ws`
 ```json5
 {
     "camera": {},
-    "state": "EXPOSURING",
+    "state": "CAPTURE_STARTED|EXPOSURE_STARTED|EXPOSURING|WAITING|SETTLING|EXPOSURE_FINISHED|CAPTURE_FINISHED",
     "exposureAmount": 0,
     "exposureCount": 0,
     "captureElapsedTime": 0,
@@ -190,7 +190,7 @@ URL: `localhost:{PORT}/ws`
     "remainingTime": 0,
     "progress": 0.0,
     "direction": "EAST",
-    "state": "FORWARD"
+    "state": "FORWARD|BACKWARD"
 }
 ```
 
@@ -200,23 +200,46 @@ URL: `localhost:{PORT}/ws`
 
 ```json5
 {
+    "state": "EXPOSURING|CAPTURED|FAILED",
     "exposureTime": 0,
+    "savedPath": "",
+    // CAMERA.CAPTURE_ELAPSED
+    "capture": {},
+    "message": ""
+}
+```
+
+### Sequencer
+
+#### SEQUENCER.ELAPSED
+
+```json5
+{
+    "id": 0,
+    "elapsedTime": 0,
+    "remainingTime": 0,
+    "progress": 0.0,
+    // CAMERA.CAPTURE_ELAPSED
     "capture": {}
 }
 ```
 
-#### FLAT_WIZARD.FRAME_CAPTURED
+### INDI
+
+#### DEVICE.PROPERTY_CHANGED, DEVICE.PROPERTY_DELETED
 
 ```json5
 {
-    "exposureTime": 0,
-    "savedPath": ""
+    "device": {},
+    "property": {}
 }
 ```
 
-#### FLAT_WIZARD.FAILED
+#### DEVICE.MESSAGE_RECEIVED
 
 ```json5
 {
+    "device": {},
+    "message": ""
 }
 ```

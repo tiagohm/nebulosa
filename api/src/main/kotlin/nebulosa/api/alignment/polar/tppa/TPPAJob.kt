@@ -40,4 +40,8 @@ data class TPPAJob(
 
         register(tppaStep)
     }
+
+    override fun contains(data: Any): Boolean {
+        return data === camera || data === mount || super.contains(data)
+    }
 }

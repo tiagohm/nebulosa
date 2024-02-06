@@ -9,7 +9,7 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { JsonFile } from '../../shared/types/app.types'
 import { Camera, CameraCaptureElapsed, CameraStartCapture } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { EMPTY_SEQUENCE_PLAN, SequenceCaptureMode, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
+import { EMPTY_SEQUENCE_PLAN, SequenceCaptureMode, SequencePlan, SequencerElapsed } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
@@ -38,7 +38,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
     readonly sequenceEvents: CameraCaptureElapsed[] = []
 
-    event?: SequencerEvent
+    event?: SequencerElapsed
     running = false
 
     @ViewChildren('cameraExposure')

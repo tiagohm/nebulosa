@@ -8,8 +8,12 @@ export interface FlatWizardRequest {
     meanTolerance: number
 }
 
-export interface FlatWizardEvent {
+export type FlatWizardState = 'EXPOSURING' | 'CAPTURED' | 'FAILED'
+
+export interface FlatWizardElapsed {
+    state: FlatWizardState
     exposureTime: number
     capture?: CameraCaptureElapsed
     savedPath?: string
+    message?: string
 }

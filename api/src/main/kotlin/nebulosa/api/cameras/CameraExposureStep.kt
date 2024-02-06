@@ -4,6 +4,7 @@ import nebulosa.api.guiding.WaitForSettleListener
 import nebulosa.api.guiding.WaitForSettleStep
 import nebulosa.batch.processing.ExecutionContext
 import nebulosa.batch.processing.ExecutionContext.Companion.getDuration
+import nebulosa.batch.processing.ExecutionContext.Companion.getInt
 import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
@@ -28,6 +29,7 @@ import kotlin.io.path.outputStream
 data class CameraExposureStep(
     override val camera: Camera,
     override val request: CameraStartCaptureRequest,
+    private val virtualLoop: Boolean = false,
 ) : CameraStartCaptureStep, DelayStepListener, WaitForSettleListener {
 
     @JvmField val exposureTime = request.exposureTime
@@ -83,6 +85,8 @@ data class CameraExposureStep(
 
     override fun beforeJob(jobExecution: JobExecution) {
         camera.enableBlob()
+        exposureCount = jobExecution.context.getInt(EXPOSURE_COUNT, exposureCount)
+        captureElapsedTime = jobExecution.context.getDuration(CAPTURE_ELAPSED_TIME, captureElapsedTime)
         jobExecution.context.populateExecutionContext(Duration.ZERO, estimatedCaptureTime, 0.0)
         listeners.forEach { it.onCaptureStarted(this, jobExecution) }
     }
@@ -127,7 +131,7 @@ data class CameraExposureStep(
     private fun executeCapture(stepExecution: StepExecution) {
         if (camera.connected && !aborted) {
             synchronized(camera) {
-                LOG.debug { "camera exposure started. estimatedCaptureTime=$estimatedCaptureTime, request=$request" }
+                LOG.debug { "camera exposure started. estimatedCaptureTime=$estimatedCaptureTime, request=$request, context=${stepExecution.context}" }
 
                 latch.countUp()
 
@@ -149,8 +153,9 @@ data class CameraExposureStep(
                 latch.await()
 
                 captureElapsedTime += exposureTime
+                stepExecution.context[CAPTURE_ELAPSED_TIME] = captureElapsedTime
 
-                LOG.debug { "camera exposure finished. aborted=$aborted, camera=$camera" }
+                LOG.debug { "camera exposure finished. aborted=$aborted, camera=$camera, context=${stepExecution.context}" }
             }
         }
     }
@@ -183,7 +188,7 @@ data class CameraExposureStep(
         var captureRemainingTime = Duration.ZERO
         var captureProgress = 0.0
 
-        if (!request.isLoop) {
+        if (!request.isLoop && !virtualLoop) {
             captureRemainingTime = if (estimatedCaptureTime > captureElapsedTime) estimatedCaptureTime - captureElapsedTime else Duration.ZERO
             captureProgress = (estimatedCaptureTime - captureRemainingTime).toNanos().toDouble() / estimatedCaptureTime.toNanos()
         }

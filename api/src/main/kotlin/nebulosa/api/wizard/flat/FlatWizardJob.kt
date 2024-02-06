@@ -30,7 +30,7 @@ data class FlatWizardJob(
     }
 
     override fun onFlatCaptured(step: FlatWizardStep, savedPath: Path, duration: Duration) {
-        super.onNext(FlatWizardFrameCaptured(savedPath, duration))
+        super.onNext(FlatWizardFrameCaptured(duration, savedPath))
     }
 
     override fun onFlatFailed(step: FlatWizardStep) {
@@ -39,12 +39,16 @@ data class FlatWizardJob(
 
     override fun onNext(event: MessageEvent) {
         if (event is CameraCaptureElapsed) {
-            super.onNext(FlatWizardElapsed(step.exposureTime, event))
+            super.onNext(FlatWizardIsExposuring(step.exposureTime, event))
 
             // Notify Camera window to retrieve new image.
             if (event is CameraExposureFinished) {
                 super.onNext(event)
             }
         }
+    }
+
+    override fun contains(data: Any): Boolean {
+        return data === camera || data === wheel || super.contains(data)
     }
 }

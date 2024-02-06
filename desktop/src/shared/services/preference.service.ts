@@ -1,30 +1,30 @@
 import { Injectable } from '@angular/core'
-import { ApiService } from './api.service'
-import { StorageService } from './storage.service'
+import { Camera, CameraStartCapture, EMPTY_CAMERA_START_CAPTURE } from '../types/camera.types'
+import { FilterWheel, WheelPreference } from '../types/wheel.types'
+import { LocalStorageService } from './local-storage.service'
 
 @Injectable({ providedIn: 'root' })
-export class RemoteStorageService implements StorageService {
+export class PreferenceService {
 
-    constructor(private api: ApiService) { }
+    constructor(private storage: LocalStorageService) { }
 
-    clear() {
-        return this.api.clearPreferences()
+    // WHEEL.
+
+    wheelPreferenceGet(wheel: FilterWheel) {
+        return this.storage.get<WheelPreference>(`wheel.${wheel.name}`, {})
     }
 
-    delete(key: string) {
-        return this.api.deletePreference(key)
+    wheelPreferenceSet(wheel: FilterWheel, preference: WheelPreference) {
+        this.storage.set(`wheel.${wheel.name}`, preference)
     }
 
-    async get<T>(key: string, defaultValue: T) {
-        return await this.api.getPreference<T>(key) ?? defaultValue
+    // FLAT WIZARD.
+
+    flatWizardCameraGet(camera: Camera, value: CameraStartCapture = EMPTY_CAMERA_START_CAPTURE) {
+        return this.storage.get(`flatWizard.camera.${camera.name}`, value)
     }
 
-    has(key: string) {
-        return this.api.hasPreference(key)
-    }
-
-    set(key: string, value: any) {
-        if (value === null || value === undefined) return this.delete(key)
-        else return this.api.setPreference(key, value)
+    flatWizardCameraSet(camera: Camera, capture?: CameraStartCapture) {
+        this.storage.set(`flatWizard.camera.${camera.name}`, capture)
     }
 }

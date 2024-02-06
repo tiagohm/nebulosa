@@ -1,7 +1,7 @@
 <span class="flex flex-column">
     <span class="flex align-items-center state-group capture" *ngIf="state && state !== 'IDLE'">
         <span class="bg-orange-500 state counter flex align-items-center gap-1 justify-content-center text-gray-900">
-            <i class="mdi mdi-counter"></i> {{ exposure.count }} <span *ngIf="capture.amount">of {{ capture.amount }}</span>
+            <i class="mdi mdi-counter"></i> {{ exposure.count }} <span *ngIf="!capture.looping">of {{ capture.amount }}</span>
         </span>
         <span class="bg-green-300 state time flex align-items-center gap-1 justify-content-center text-gray-900"
               pTooltip="Elapsed time" tooltipPosition="bottom">

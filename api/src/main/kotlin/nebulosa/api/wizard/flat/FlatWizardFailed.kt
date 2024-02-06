@@ -1,8 +1,12 @@
 package nebulosa.api.wizard.flat
 
-import nebulosa.api.messages.MessageEvent
+import java.time.Duration
 
-object FlatWizardFailed : MessageEvent {
+data object FlatWizardFailed : FlatWizardElapsed {
 
-    override val eventName = "FLAT_WIZARD.FAILED"
+    override val state = FlatWizardState.FAILED
+    override val exposureTime: Duration = Duration.ZERO
+    override val capture = null
+    override val savedPath = null
+    override val message = ""
 }

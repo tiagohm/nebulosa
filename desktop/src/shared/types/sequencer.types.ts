@@ -57,7 +57,7 @@ export const EMPTY_SEQUENCE_PLAN: SequencePlan = {
     },
 }
 
-export interface SequencerEvent extends MessageEvent {
+export interface SequencerElapsed extends MessageEvent {
     id: number
     elapsedTime: number
     remainingTime: number

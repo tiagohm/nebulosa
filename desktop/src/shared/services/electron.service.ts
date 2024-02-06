@@ -13,11 +13,11 @@ import { CloseWindow, InternalEventType, JsonFile, OpenDirectory, OpenFile, Save
 import { Location } from '../types/atlas.types'
 import { Camera, CameraCaptureElapsed } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
-import { FlatWizardEvent } from '../types/flat-wizard.types'
+import { FlatWizardElapsed } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
 import { Mount } from '../types/mount.types'
-import { SequencerEvent } from '../types/sequencer.types'
+import { SequencerElapsed } from '../types/sequencer.types'
 import { FilterWheel } from '../types/wheel.types'
 import { ApiService } from './api.service'
 
@@ -49,10 +49,8 @@ type EventMappedType = {
     'DARV_ALIGNMENT.ELAPSED': DARVElapsed
     'DATA.CHANGED': any
     'LOCATION.CHANGED': Location
-    'SEQUENCER.ELAPSED': SequencerEvent
-    'FLAT_WIZARD.ELAPSED': FlatWizardEvent
-    'FLAT_WIZARD.FRAME_CAPTURED': FlatWizardEvent
-    'FLAT_WIZARD.FAILED': FlatWizardEvent
+    'SEQUENCER.ELAPSED': SequencerElapsed
+    'FLAT_WIZARD.ELAPSED': FlatWizardElapsed
 }
 
 @Injectable({ providedIn: 'root' })

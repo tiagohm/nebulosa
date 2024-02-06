@@ -196,7 +196,7 @@ data class SequencerJob(
     }
 
     override fun contains(data: Any): Boolean {
-        return data === camera || super.contains(data)
+        return data === camera || data === focuser || data === wheel || super.contains(data)
     }
 
     private data class SequenceIdStep(private val id: Int) : Step {

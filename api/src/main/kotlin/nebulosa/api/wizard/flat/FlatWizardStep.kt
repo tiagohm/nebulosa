@@ -59,6 +59,8 @@ data class FlatWizardStep(
     }
 
     override fun execute(stepExecution: StepExecution): StepResult {
+        if (stopped) return StepResult.FINISHED
+
         val delta = exposureMax.toMillis() - exposureMin.toMillis()
 
         if (delta < 10) {
