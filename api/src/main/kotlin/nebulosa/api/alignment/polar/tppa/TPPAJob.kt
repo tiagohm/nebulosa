@@ -22,7 +22,7 @@ data class TPPAJob(
     @JvmField val mount: Mount? = null,
     @JvmField val longitude: Angle = mount!!.longitude,
     @JvmField val latitude: Angle = mount!!.latitude,
-) : SimpleJob(), PublishSubscribe<MessageEvent>, CameraCaptureListener {
+) : SimpleJob(), PublishSubscribe<MessageEvent>, CameraCaptureListener, TPPAListener {
 
     @JvmField val cameraRequest = request.capture.copy(
         savePath = Files.createTempDirectory("tppa"),
@@ -37,8 +37,33 @@ data class TPPAJob(
 
     init {
         tppaStep.registerCameraCaptureListener(cameraCaptureEventHandler)
+        tppaStep.registerTPPAListener(this)
 
         register(tppaStep)
+    }
+
+    override fun slewStarted(step: TPPAStep, rightAscension: Angle, declination: Angle) {
+        onNext(TPPAEvent.Slewing(step.camera, step.mount, step.stepCount, step.elapsedTime, rightAscension, declination))
+    }
+
+    override fun solverStarted(step: TPPAStep) {
+        onNext(TPPAEvent.Solving(step.camera, step.mount, step.stepCount, step.elapsedTime))
+    }
+
+    override fun solverFinished(step: TPPAStep, rightAscension: Angle, declination: Angle) {
+        onNext(TPPAEvent.Solved(step.camera, step.mount, step.stepCount, step.elapsedTime, rightAscension, declination))
+    }
+
+    override fun polarAlignmentComputed(step: TPPAStep, azimuth: Angle, altitude: Angle) {
+        onNext(TPPAEvent.Computed(step.camera, step.mount, step.stepCount, step.elapsedTime, azimuth, altitude))
+    }
+
+    override fun solverFailed(step: TPPAStep) {
+        onNext(TPPAEvent.Failed(step.camera, step.mount, step.stepCount, step.elapsedTime))
+    }
+
+    override fun polarAlignmentFinished(step: TPPAStep, aborted: Boolean) {
+        onNext(TPPAEvent.Finished(step.camera, step.mount))
     }
 
     override fun contains(data: Any): Boolean {

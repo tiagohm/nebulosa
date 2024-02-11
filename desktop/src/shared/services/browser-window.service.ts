@@ -2,12 +2,11 @@ import { Injectable } from '@angular/core'
 import { v4 as uuidv4 } from 'uuid'
 import { SkyAtlasData } from '../../app/atlas/atlas.component'
 import { FramingData } from '../../app/framing/framing.component'
-import { ImageData } from '../../app/image/image.component'
 import { OpenWindow, OpenWindowOptions, OpenWindowOptionsWithData } from '../types/app.types'
 import { Camera, CameraDialogInput, CameraStartCapture } from '../types/camera.types'
 import { Device } from '../types/device.types'
 import { Focuser } from '../types/focuser.types'
-import { ImageSource } from '../types/image.types'
+import { ImageData, ImageSource } from '../types/image.types'
 import { Mount } from '../types/mount.types'
 import { FilterWheel, WheelDialogInput } from '../types/wheel.types'
 import { ElectronService } from './electron.service'
@@ -90,7 +89,7 @@ export class BrowserWindowService {
     }
 
     openAlignment(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 400, height: 280 })
+        Object.assign(options, { icon: 'star', width: 450, height: 360 })
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
 

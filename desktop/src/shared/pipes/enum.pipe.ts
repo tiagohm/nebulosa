@@ -1,9 +1,17 @@
 import { Pipe, PipeTransform } from '@angular/core'
+import { DARVState, TPPAState } from '../types/alignment.types'
+import { Constellation, SatelliteGroupType, SkyObjectType } from '../types/atlas.types'
+import { CameraCaptureState } from '../types/camera.types'
+import { GuideState } from '../types/guider.types'
+import { SCNRProtectionMethod } from '../types/image.types'
+
+export type EnumPipeKey = SCNRProtectionMethod | Constellation | SkyObjectType | SatelliteGroupType |
+    DARVState | TPPAState | GuideState | CameraCaptureState | 'ALL'
 
 @Pipe({ name: 'enum' })
 export class EnumPipe implements PipeTransform {
 
-    readonly enums: Record<string, string> = {
+    readonly enums: Record<EnumPipeKey, string | undefined> = {
         // General.
         'ALL': 'All',
         // SCNRProtectiveMethod.
@@ -319,13 +327,23 @@ export class EnumPipe implements PipeTransform {
         'FORWARD': 'Forward',
         'BACKWARD': 'Backward',
         'IDLE': 'Idle',
+        'SLEWING': 'Slewing',
+        'SOLVING': 'Solving',
+        'SOLVED': 'Solved',
+        'COMPUTED': 'Computed',
+        'FAILED': 'Failed',
+        'FINISHED': 'Finished',
         // Camera Exposure.
         'SETTLING': 'Settling',
         'WAITING': 'Waiting',
         'EXPOSURING': 'Exposuring',
+        'CAPTURE_STARTED': undefined,
+        'EXPOSURE_STARTED': undefined,
+        'EXPOSURE_FINISHED': undefined,
+        'CAPTURE_FINISHED': undefined
     }
 
-    transform(value: string) {
+    transform(value: EnumPipeKey) {
         return this.enums[value] ?? value
     }
 }

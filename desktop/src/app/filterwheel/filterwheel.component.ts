@@ -73,7 +73,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         electron.on('WHEEL.DETACHED', event => {
             if (event.device.name === this.wheel.name) {
                 ngZone.run(() => {
-                    Object.assign(this.wheel, event.device)
+                    Object.assign(this.wheel, EMPTY_WHEEL)
                 })
             }
         })
@@ -171,7 +171,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             filters = this.filters
         }
 
-        const preference = this.preference.wheelPreferenceGet(this.wheel)
+        const preference = this.preference.wheelPreference(this.wheel).get()
 
         for (let position = 1; position <= filters.length; position++) {
             const name = preference.names?.[position - 1] ?? `Filter #${position}`
@@ -187,7 +187,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     private loadPreference() {
         if (this.mode === 'CAPTURE' && this.wheel.name) {
-            const preference = this.preference.wheelPreferenceGet(this.wheel)
+            const preference = this.preference.wheelPreference(this.wheel).get()
             const shutterPosition = preference.shutterPosition ?? 0
             this.filters.forEach(e => e.dark = e.position === shutterPosition)
         }
@@ -202,7 +202,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 names: this.filters.map(e => e.name)
             }
 
-            this.preference.wheelPreferenceSet(this.wheel, preference)
+            this.preference.wheelPreference(this.wheel).set(preference)
             this.api.wheelSync(this.wheel, preference.names!)
         }
     }

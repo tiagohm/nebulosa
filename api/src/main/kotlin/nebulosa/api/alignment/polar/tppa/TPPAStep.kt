@@ -10,6 +10,8 @@ import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
+import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.common.time.Stopwatch
 import nebulosa.fits.Fits
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.Camera
@@ -21,10 +23,10 @@ import nebulosa.math.deg
 import nebulosa.plate.solving.PlateSolver
 
 data class TPPAStep(
-    private val camera: Camera,
+    @JvmField val camera: Camera,
     private val solver: PlateSolver,
     private val request: TPPAStartRequest,
-    private val mount: Mount? = null,
+    @JvmField val mount: Mount? = null,
     private val longitude: Angle = mount!!.longitude,
     private val latitude: Angle = mount!!.latitude,
     private val cameraRequest: CameraStartCaptureRequest = request.capture,
@@ -32,10 +34,19 @@ data class TPPAStep(
 
     private val cameraExposureStep = CameraExposureStep(camera, cameraRequest)
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
+    private val listeners = LinkedHashSet<TPPAListener>()
+    private val stopwatch = Stopwatch()
+    private val cancellationToken = CancellationToken()
+
     @Volatile private var image: Image? = null
     @Volatile private var mountSlewStep: MountSlewStep? = null
-    @Volatile private var stopped = false
     @Volatile private var noSolutionAttempts = 0
+
+    val stepCount
+        get() = alignment.state
+
+    val elapsedTime
+        get() = stopwatch.elapsed
 
     fun registerCameraCaptureListener(listener: CameraCaptureListener): Boolean {
         return cameraExposureStep.registerCameraCaptureListener(listener)
@@ -43,6 +54,14 @@ data class TPPAStep(
 
     fun unregisterCameraCaptureListener(listener: CameraCaptureListener): Boolean {
         return cameraExposureStep.unregisterCameraCaptureListener(listener)
+    }
+
+    fun registerTPPAListener(listener: TPPAListener): Boolean {
+        return listeners.add(listener)
+    }
+
+    fun unregisterTPPAListener(listener: TPPAListener): Boolean {
+        return listeners.remove(listener)
     }
 
     override fun beforeJob(jobExecution: JobExecution) {
@@ -56,26 +75,35 @@ data class TPPAStep(
         if (mount != null && request.stopTrackingWhenDone) {
             mount.tracking(false)
         }
+
+        stopwatch.stop()
+
+        listeners.forEach { it.polarAlignmentFinished(this, cancellationToken.isCancelled) }
     }
 
     override fun execute(stepExecution: StepExecution): StepResult {
-        if (stopped) return StepResult.FINISHED
+        if (cancellationToken.isCancelled) return StepResult.FINISHED
 
         LOG.debug { "executing TPPA. camera=$camera, mount=$mount, state=${alignment.state}" }
 
+        stopwatch.start()
+
         if (mount != null) {
             if (alignment.state in 1..2) {
-                val step = MountSlewStep(mount, mount.rightAscension + 10.deg, mount.declination)
+                val step = MountSlewStep(mount, mount.rightAscension + request.stepDistance.deg, mount.declination)
                 mountSlewStep = step
+                listeners.forEach { it.slewStarted(this, step.rightAscension, step.declination) }
                 step.executeSingle(stepExecution)
             }
         }
 
-        if (stopped) return StepResult.FINISHED
+        if (cancellationToken.isCancelled) return StepResult.FINISHED
+
+        listeners.forEach { it.solverStarted(this) }
 
         cameraExposureStep.execute(stepExecution)
 
-        if (!stopped) {
+        if (!cancellationToken.isCancelled) {
             val savedPath = cameraExposureStep.savedPath ?: return StepResult.FINISHED
             image = Fits(savedPath).also(Fits::read).use { image?.load(it, false) ?: Image.open(it, false) }
             val radius = if (mount == null) 0.0 else ThreePointPolarAlignment.DEFAULT_RADIUS
@@ -83,13 +111,28 @@ data class TPPAStep(
 
             LOG.info("alignment completed. result=$result")
 
-            if (result is ThreePointPolarAlignmentResult.NeedMoreMeasurement) {
-                noSolutionAttempts = 0
-                return StepResult.CONTINUABLE
-            } else if (result is ThreePointPolarAlignmentResult.NoPlateSolution) {
-                noSolutionAttempts++
-                return if (noSolutionAttempts < 10) StepResult.CONTINUABLE
-                else StepResult.FINISHED
+            when (result) {
+                is ThreePointPolarAlignmentResult.NeedMoreMeasurement -> {
+                    noSolutionAttempts = 0
+                    listeners.forEach { it.solverFinished(this, result.rightAscension, result.declination) }
+                    return StepResult.CONTINUABLE
+                }
+                is ThreePointPolarAlignmentResult.NoPlateSolution -> {
+                    noSolutionAttempts++
+
+                    return if (noSolutionAttempts < 10) {
+                        listeners.forEach { it.solverFailed(this) }
+                        StepResult.CONTINUABLE
+                    } else {
+                        StepResult.FINISHED
+                    }
+                }
+                is ThreePointPolarAlignmentResult.Measured -> {
+                    listeners.forEach {
+                        it.solverFinished(this, result.rightAscension, result.declination)
+                        it.polarAlignmentComputed(this, result.azimuth, result.altitude)
+                    }
+                }
             }
         }
 
@@ -97,7 +140,7 @@ data class TPPAStep(
     }
 
     override fun stop(mayInterruptIfRunning: Boolean) {
-        stopped = true
+        cancellationToken.cancel(mayInterruptIfRunning)
         mountSlewStep?.stop(mayInterruptIfRunning)
         cameraExposureStep.stop(mayInterruptIfRunning)
     }

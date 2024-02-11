@@ -1,5 +1,8 @@
 package nebulosa.api.alignment.polar.tppa
 
+import io.reactivex.rxjava3.functions.Consumer
+import nebulosa.api.cameras.CameraExposureFinished
+import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
 import nebulosa.api.solver.PlateSolverService
 import nebulosa.batch.processing.JobExecutor
@@ -15,7 +18,7 @@ class TPPAExecutor(
     override val jobLauncher: JobLauncher,
     private val messageService: MessageService,
     private val plateSolverService: PlateSolverService,
-) : JobExecutor() {
+) : JobExecutor(), Consumer<MessageEvent> {
 
     @Synchronized
     fun execute(camera: Camera, mount: Mount, request: TPPAStartRequest): String {
@@ -26,7 +29,7 @@ class TPPAExecutor(
         val solver = plateSolverService.solverFor(request.plateSolver)
 
         return with(TPPAJob(camera, request, solver, mount)) {
-            subscribe(messageService::sendMessage)
+            subscribe(this@TPPAExecutor)
             register(jobLauncher.launch(this))
             id
         }
@@ -34,6 +37,12 @@ class TPPAExecutor(
 
     fun stop(camera: Camera, mount: Mount) {
         stopWithAny(camera, mount)
+    }
+
+    override fun accept(event: MessageEvent) {
+        if (event is TPPAEvent || event is CameraExposureFinished) {
+            messageService.sendMessage(event)
+        }
     }
 
     companion object {

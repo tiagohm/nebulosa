@@ -5,8 +5,8 @@ import { CameraExposureComponent } from '../../shared/components/camera-exposure
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType, cameraPreferenceKey } from '../../shared/types/camera.types'
+import { PreferenceService } from '../../shared/services/preference.service'
+import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
@@ -40,11 +40,19 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     get canExposureTime() {
-        return this.mode !== 'FLAT_WIZARD'
+        return this.mode !== 'FLAT_WIZARD' && this.mode !== 'DARV'
+    }
+
+    get canExposureTimeUnit() {
+        return this.mode !== 'TPPA' && this.mode !== 'DARV'
+    }
+
+    get canExposureAmount() {
+        return this.mode === 'CAPTURE'
     }
 
     get canFrameType() {
-        return this.mode !== 'FLAT_WIZARD'
+        return this.mode !== 'FLAT_WIZARD' && this.mode !== 'DARV'
     }
 
     get canStartOrAbort() {
@@ -122,7 +130,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
-        private storage: LocalStorageService,
+        private preference: PreferenceService,
         private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
@@ -140,7 +148,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         electron.on('CAMERA.DETACHED', event => {
             if (event.device.name === this.camera.name) {
                 ngZone.run(() => {
-                    Object.assign(this.camera, event.device)
+                    Object.assign(this.camera, EMPTY_CAMERA)
                 })
             }
         })
@@ -178,8 +186,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.mode = data.mode
             Object.assign(this.request, data.request)
             await this.cameraChanged(data.camera)
-            this.normalizeExposureTimeAndUnit(this.request.exposureTime)
             this.loadDefaultsForMode(data.mode)
+            this.normalizeExposureTimeAndUnit(this.request.exposureTime)
         }
     }
 
@@ -189,6 +197,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         } else if (this.mode === 'FLAT_WIZARD') {
             this.exposureMode = 'SINGLE'
             this.request.frameType = 'FLAT'
+        } else if (mode === 'TPPA') {
+            this.exposureMode = 'FIXED'
+            this.exposureTimeUnit = ExposureTimeUnit.SECOND
+            this.request.exposureAmount = 1
         }
     }
 
@@ -203,6 +215,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
         if (this.app) {
             this.app.subTitle = camera?.name ?? ''
+        }
+        if (this.mode !== 'CAPTURE') {
+            this.app.subTitle += ` · ${this.mode}`
         }
     }
 
@@ -296,7 +311,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         this.api.cameraAbortCapture(this.camera)
     }
 
-    private static exposureUnitFactor(unit: ExposureTimeUnit) {
+    static exposureUnitFactor(unit: ExposureTimeUnit) {
         switch (unit) {
             case ExposureTimeUnit.MINUTE: return 1
             case ExposureTimeUnit.SECOND: return 60
@@ -305,9 +320,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    private updateExposureUnit(unit: ExposureTimeUnit) {
+    private updateExposureUnit(unit: ExposureTimeUnit, from: ExposureTimeUnit = this.exposureTimeUnit) {
         if (this.camera.exposureMax) {
-            const a = CameraComponent.exposureUnitFactor(this.exposureTimeUnit)
+            const a = CameraComponent.exposureUnitFactor(from)
             const b = CameraComponent.exposureUnitFactor(unit)
             const exposureTime = Math.trunc(this.request.exposureTime * b / a)
             const exposureTimeMin = Math.trunc(this.camera.exposureMin * b / 60000000)
@@ -320,34 +335,33 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private normalizeExposureTimeAndUnit(exposureTime: number) {
-        const factors = [
-            { unit: ExposureTimeUnit.MINUTE, time: 60000000 },
-            { unit: ExposureTimeUnit.SECOND, time: 1000000 },
-            { unit: ExposureTimeUnit.MILLISECOND, time: 1000 },
-        ]
+        if (this.canExposureTimeUnit) {
+            const factors = [
+                { unit: ExposureTimeUnit.MINUTE, time: 60000000 },
+                { unit: ExposureTimeUnit.SECOND, time: 1000000 },
+                { unit: ExposureTimeUnit.MILLISECOND, time: 1000 },
+            ]
 
-        for (const { unit, time } of factors) {
-            if (exposureTime >= time) {
-                const k = exposureTime / time
+            for (const { unit, time } of factors) {
+                if (exposureTime >= time) {
+                    const k = exposureTime / time
 
-                // exposureTime is multiple of time.
-                if (k === Math.floor(k)) {
-                    this.updateExposureUnit(unit)
-                    return
+                    // exposureTime is multiple of time.
+                    if (k === Math.floor(k)) {
+                        this.updateExposureUnit(unit, ExposureTimeUnit.MICROSECOND)
+                        return
+                    }
                 }
             }
+        } else {
+            this.updateExposureUnit(this.exposureTimeUnit, ExposureTimeUnit.MICROSECOND)
         }
     }
 
     private update() {
         if (this.camera.name) {
             if (this.camera.connected) {
-                this.request.x = Math.max(this.camera.minX, Math.min(this.request.x, this.camera.maxX))
-                this.request.y = Math.max(this.camera.minY, Math.min(this.request.y, this.camera.maxY))
-                this.request.width = Math.max(this.camera.minWidth, Math.min(this.request.width < 8 ? this.camera.maxWidth : this.request.width, this.camera.maxWidth))
-                this.request.height = Math.max(this.camera.minHeight, Math.min(this.request.height < 8 ? this.camera.maxHeight : this.request.width, this.camera.maxHeight))
-                if (this.camera.frameFormats.length && (!this.request.frameFormat || !this.camera.frameFormats.includes(this.request.frameFormat))) this.request.frameFormat = this.camera.frameFormats[0]
-
+                updateCameraStartCaptureFromCamera(this.request, this.camera)
                 this.updateExposureUnit(this.exposureTimeUnit)
             }
 
@@ -366,7 +380,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     private loadPreference() {
         if (this.mode === 'CAPTURE' && this.camera.name) {
-            const preference = this.storage.get<CameraPreference>(cameraPreferenceKey(this.camera), {})
+            const preference = this.preference.cameraPreference(this.camera).get()
 
             this.request.autoSave = preference.autoSave ?? false
             this.savePath = preference.savePath ?? ''
@@ -399,30 +413,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     savePreference() {
         if (this.mode === 'CAPTURE' && this.camera.connected) {
             const preference: CameraPreference = {
-                autoSave: this.request.autoSave,
-                savePath: this.savePath,
-                autoSubFolderMode: this.request.autoSubFolderMode,
+                ...this.request,
                 setpointTemperature: this.setpointTemperature,
-                exposureTime: this.request.exposureTime,
                 exposureTimeUnit: this.exposureTimeUnit,
                 exposureMode: this.exposureMode,
-                exposureDelay: this.request.exposureDelay,
-                exposureAmount: this.request.exposureAmount,
-                x: this.request.x,
-                y: this.request.y,
-                width: this.request.width,
-                height: this.request.height,
                 subFrame: this.subFrame,
-                binX: this.request.binX,
-                binY: this.request.binY,
-                frameType: this.request.frameType,
-                gain: this.request.gain,
-                offset: this.request.offset,
-                frameFormat: this.request.frameFormat,
-                dither: this.request.dither,
             }
 
-            this.storage.set(cameraPreferenceKey(this.camera), preference)
+            this.preference.cameraPreference(this.camera).set(preference)
         }
     }
 

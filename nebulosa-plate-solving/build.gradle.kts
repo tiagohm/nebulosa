@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-math"))
+    api(project(":nebulosa-common"))
     api(project(":nebulosa-wcs"))
     api(project(":nebulosa-imaging"))
     implementation(project(":nebulosa-log"))

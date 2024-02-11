@@ -53,7 +53,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         electron.on('FOCUSER.DETACHED', event => {
             if (event.device.name === this.focuser.name) {
                 ngZone.run(() => {
-                    Object.assign(this.focuser, event.device)
+                    Object.assign(this.focuser, EMPTY_FOCUSER)
                 })
             }
         })

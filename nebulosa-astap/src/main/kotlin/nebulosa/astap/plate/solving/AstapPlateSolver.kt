@@ -1,5 +1,6 @@
 package nebulosa.astap.plate.solving
 
+import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.common.process.ProcessExecutor
 import nebulosa.fits.Header
 import nebulosa.fits.NOAOExt
@@ -33,6 +34,7 @@ class AstapPlateSolver(path: Path) : PlateSolver {
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
+        cancellationToken: CancellationToken,
     ): PlateSolution {
         requireNotNull(path) { "path is required" }
 
@@ -59,7 +61,8 @@ class AstapPlateSolver(path: Path) : PlateSolver {
         LOG.info("local solving. command={}", arguments)
 
         try {
-            val process = executor.execute(arguments, timeout?.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5), path.parent)
+            val timeoutOrDefault = timeout?.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5)
+            val process = executor.execute(arguments, timeoutOrDefault, path.parent, cancellationToken)
             if (process.isAlive) process.destroyForcibly()
             LOG.info("astap exited. code={}", process.exitValue())
 

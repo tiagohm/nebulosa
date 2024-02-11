@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
-import { DARVStart } from '../types/alignment.types'
+import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { Angle, BodyPosition, ComputedLocation, Constellation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
 import { CalibrationFrame, CalibrationFrameGroup } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
@@ -537,6 +537,16 @@ export class ApiService {
 
     darvStop(camera: Camera, guideOutput: GuideOutput) {
         return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/stop`)
+    }
+
+    // TPPA
+
+    tppaStart(camera: Camera, mount: Mount, data: TPPAStart) {
+        return this.http.put<void>(`polar-alignment/tppa/${camera.name}/${mount.name}/start`, data)
+    }
+
+    tppaStop(camera: Camera, mount: Mount) {
+        return this.http.put<void>(`polar-alignment/tppa/${camera.name}/${mount.name}/stop`)
     }
 
     // SEQUENCER

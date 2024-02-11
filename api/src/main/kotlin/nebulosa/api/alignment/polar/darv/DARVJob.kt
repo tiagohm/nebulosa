@@ -29,7 +29,7 @@ data class DARVJob(
     @JvmField val direction = if (request.reversed) request.direction.reversed else request.direction
 
     @JvmField val cameraRequest = request.capture.copy(
-        exposureTime = request.exposureTime + request.initialPause,
+        exposureTime = request.capture.exposureTime + request.capture.exposureDelay,
         savePath = Files.createTempDirectory("darv"),
         exposureAmount = 1, exposureDelay = Duration.ZERO,
         frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
@@ -41,10 +41,10 @@ data class DARVJob(
         val cameraExposureStep = CameraExposureStep(camera, cameraRequest)
         cameraExposureStep.registerCameraCaptureListener(this)
 
-        val initialPauseDelayStep = DelayStep(request.initialPause)
+        val initialPauseDelayStep = DelayStep(request.capture.exposureDelay)
         initialPauseDelayStep.registerDelayStepListener(this)
 
-        val guidePulseDuration = request.exposureTime.dividedBy(2L)
+        val guidePulseDuration = request.capture.exposureTime.dividedBy(2L)
         val forwardGuidePulseRequest = GuidePulseRequest(direction, guidePulseDuration)
         val forwardGuidePulseStep = GuidePulseStep(guideOutput, forwardGuidePulseRequest)
         forwardGuidePulseStep.registerGuidePulseListener(this)
@@ -58,7 +58,7 @@ data class DARVJob(
     }
 
     override fun beforeJob(jobExecution: JobExecution) {
-        onNext(DARVStarted(camera, guideOutput, request.initialPause, direction))
+        onNext(DARVStarted(camera, guideOutput, request.capture.exposureDelay, direction))
     }
 
     override fun afterJob(jobExecution: JobExecution) {

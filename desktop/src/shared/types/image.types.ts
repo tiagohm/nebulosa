@@ -1,5 +1,6 @@
 import { AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
 import { Camera } from './camera.types'
+import { PlateSolverType } from './settings.types'
 
 export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY' | 'NONE'
 
@@ -91,4 +92,21 @@ export interface ImageStatistics {
     avgDev: number
     minimum: number
     maximum: number
+}
+
+export interface ImagePreference {
+    solverRadius?: number
+    solverType?: PlateSolverType
+}
+
+export const EMPTY_IMAGE_PREFERENCE: ImagePreference = {
+    solverRadius: 4,
+    solverType: 'ASTROMETRY_NET_ONLINE'
+}
+
+export interface ImageData {
+    camera?: Camera
+    path?: string
+    source?: ImageSource
+    title?: string
 }

@@ -5,9 +5,12 @@ import nebulosa.plate.solving.PlateSolvingException
 
 sealed interface ThreePointPolarAlignmentResult {
 
-    data object NeedMoreMeasurement : ThreePointPolarAlignmentResult
+    data class NeedMoreMeasurement(@JvmField val rightAscension: Angle, @JvmField val declination: Angle) : ThreePointPolarAlignmentResult
 
-    data class Measured(@JvmField val azimuth: Angle, @JvmField val altitude: Angle) : ThreePointPolarAlignmentResult
+    data class Measured(
+        @JvmField val rightAscension: Angle, @JvmField val declination: Angle,
+        @JvmField val azimuth: Angle, @JvmField val altitude: Angle,
+    ) : ThreePointPolarAlignmentResult
 
     data class NoPlateSolution(@JvmField val exception: PlateSolvingException?) : ThreePointPolarAlignmentResult
 }

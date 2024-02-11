@@ -1,5 +1,7 @@
 export type PlateSolverType = 'ASTROMETRY_NET' | 'ASTROMETRY_NET_ONLINE' | 'ASTAP'
 
+export const DEFAULT_SOLVER_TYPES: PlateSolverType[] = ['ASTROMETRY_NET_ONLINE', 'ASTAP']
+
 export interface PlateSolverOptions {
     type: PlateSolverType
     executablePath: string
@@ -15,5 +17,5 @@ export const EMPTY_PLATE_SOLVER_OPTIONS: PlateSolverOptions = {
     downsampleFactor: 0,
     apiUrl: 'https://nova.astrometry.net/',
     apiKey: '',
-    timeout: 0,
+    timeout: 600,
 }

@@ -252,12 +252,12 @@
                 </div>
                 <div class="col-12 pt-0 flex justify-content-center">
                     <p-button [disabled]="!name || refreshing" [text]="true" severity="info" (onClick)="mountSync()" icon="mdi mdi-sync"
-                              label="Sync" />
+                              label="Sync" size="small" />
                     <p-button [disabled]="!name || refreshing" [text]="true" severity="success" (onClick)="mountGoTo()" icon="mdi mdi-telescope"
-                              label="Go To" />
+                              label="Go To" size="small" />
                     <p-button [disabled]="!name || refreshing" [text]="true" severity="success" (onClick)="mountSlew()" icon="mdi mdi-telescope"
-                              label="Slew" />
-                    <p-button [disabled]="!name || refreshing" [text]="true" (onClick)="frame()" icon="mdi mdi-image" label="Frame" />
+                              label="Slew" size="small" />
+                    <p-button [disabled]="!name || refreshing" [text]="true" (onClick)="frame()" icon="mdi mdi-image" label="Frame" size="small" />
                 </div>
             </div>
         </p-tabPanel>
@@ -347,7 +347,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterSkyObject()" />
+        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" size="small" (onClick)="filterSkyObject()" />
     </ng-template>
 </p-dialog>
 
@@ -361,8 +361,9 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" [text]="true" severity="danger" icon="mdi mdi-restore" label="Reset" (onClick)="resetSatelliteFilter()" />
-        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterSatellite()" />
+        <p-button [disabled]="refreshing" [text]="true" severity="danger" icon="mdi mdi-restore" label="Reset" size="small"
+                  (onClick)="resetSatelliteFilter()" />
+        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" size="small" (onClick)="filterSatellite()" />
     </ng-template>
 </p-dialog>
 

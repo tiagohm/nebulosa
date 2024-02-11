@@ -1,5 +1,6 @@
 package nebulosa.alignment.polar.point.three
 
+import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.constants.DEG2RAD
 import nebulosa.fits.declination
 import nebulosa.fits.observationDate
@@ -37,9 +38,10 @@ data class ThreePointPolarAlignment(
         rightAscension: Angle = image.header.rightAscension,
         declination: Angle = image.header.declination,
         radius: Angle = DEFAULT_RADIUS,
+        cancellationToken: CancellationToken = CancellationToken.NONE,
     ): ThreePointPolarAlignmentResult {
         val solution = try {
-            solver.solve(path, image, rightAscension, declination, radius)
+            solver.solve(path, image, rightAscension, declination, radius, cancellationToken = cancellationToken)
         } catch (e: PlateSolvingException) {
             return ThreePointPolarAlignmentResult.NoPlateSolution(e)
         }
@@ -51,15 +53,13 @@ data class ThreePointPolarAlignment(
 
             positions[min(state, 2)] = solution.position(time)
 
-            if (state >= 2) {
+            if (state++ >= 2) {
                 val polarErrorDetermination = PolarErrorDetermination(positions[0]!!, positions[1]!!, positions[2]!!, longitude, latitude)
                 val (azimuth, altitude) = polarErrorDetermination.compute()
-                return ThreePointPolarAlignmentResult.Measured(azimuth, altitude)
+                return ThreePointPolarAlignmentResult.Measured(solution.rightAscension, solution.declination, azimuth, altitude)
             }
 
-            state++
-
-            return ThreePointPolarAlignmentResult.NeedMoreMeasurement
+            return ThreePointPolarAlignmentResult.NeedMoreMeasurement(solution.rightAscension, solution.declination)
         }
     }
 

@@ -13,4 +13,5 @@ data class TPPAStartRequest(
     val eastDirection: Boolean = true,
     val refractionAdjustment: Boolean = false,
     val stopTrackingWhenDone: Boolean = true,
+    val stepDistance: Double = 10.0, // degrees
 )

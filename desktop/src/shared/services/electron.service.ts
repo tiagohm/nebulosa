@@ -7,7 +7,7 @@ import { Injectable } from '@angular/core'
 import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
-import { DARVElapsed } from '../types/alignment.types'
+import { DARVElapsed, TPPAElapsed } from '../types/alignment.types'
 import { ApiEventType, DeviceMessageEvent } from '../types/api.types'
 import { CloseWindow, InternalEventType, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
 import { Location } from '../types/atlas.types'
@@ -47,6 +47,7 @@ type EventMappedType = {
     'GUIDER.STEPPED': GuiderMessageEvent<GuiderHistoryStep>
     'GUIDER.MESSAGE_RECEIVED': GuiderMessageEvent<string>
     'DARV_ALIGNMENT.ELAPSED': DARVElapsed
+    'TPPA_ALIGNMENT.ELAPSED': TPPAElapsed
     'DATA.CHANGED': any
     'LOCATION.CHANGED': Location
     'SEQUENCER.ELAPSED': SequencerElapsed

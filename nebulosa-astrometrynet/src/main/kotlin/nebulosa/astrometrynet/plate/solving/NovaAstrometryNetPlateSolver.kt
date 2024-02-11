@@ -3,6 +3,7 @@ package nebulosa.astrometrynet.plate.solving
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.nova.Session
 import nebulosa.astrometrynet.nova.Upload
+import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.fits.Header
 import nebulosa.imaging.Image
 import nebulosa.log.loggerFor
@@ -43,6 +44,7 @@ data class NovaAstrometryNetPlateSolver(
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
+        cancellationToken: CancellationToken,
     ): PlateSolution {
         renewSession()
 
@@ -69,13 +71,13 @@ data class NovaAstrometryNetPlateSolver(
 
         var timeLeft = timeout?.takeIf { it.toSeconds() > 0 }?.toMillis() ?: 300000L
 
-        while (timeLeft >= 0L) {
+        while (timeLeft >= 0L && !cancellationToken.isCancelled) {
             val startTime = System.currentTimeMillis()
 
             val status = service.submissionStatus(submission.subId).execute().body()
                 ?: throw PlateSolvingException("failed to retrieve submission status")
 
-            if (status.solved) {
+            if (status.solved && !cancellationToken.isCancelled) {
                 LOG.info("retrieving WCS from job. id={}", status.jobs[0])
 
                 val body = service.wcs(status.jobs[0]).execute().body()
@@ -89,9 +91,11 @@ data class NovaAstrometryNetPlateSolver(
                 return calibration ?: PlateSolution.NO_SOLUTION
             }
 
-            timeLeft -= System.currentTimeMillis() - startTime + 5000L
+            if (!cancellationToken.isCancelled) {
+                timeLeft -= System.currentTimeMillis() - startTime + 5000L
 
-            Thread.sleep(5000L)
+                Thread.sleep(5000L)
+            }
         }
 
         throw PlateSolvingException("the plate solving took a long time and finished")

@@ -68,7 +68,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="annotating" icon="mdi mdi-check" label="Annotate" (onClick)="annotateImage()" [text]="true" />
+        <p-button [disabled]="annotating" icon="mdi mdi-check" label="Annotate" (onClick)="annotateImage()" [text]="true" size="small" />
     </ng-template>
 </p-dialog>
 
@@ -129,10 +129,10 @@
     </div>
     <ng-template pTemplate="footer">
         <div class="col-12 flex justify-content-center">
-            <p-button (onClick)="mountSync(annotationInfo!)" icon="mdi mdi-sync" label="Sync" [text]="true" severity="info" />
-            <p-button (onClick)="mountGoTo(annotationInfo!)" icon="mdi mdi-telescope" label="Go To" [text]="true" severity="success" />
-            <p-button (onClick)="mountSlew(annotationInfo!)" icon="mdi mdi-telescope" label="Slew" [text]="true" severity="success" />
-            <p-button (onClick)="frame(annotationInfo!)" icon="mdi mdi-image" label="Frame" [text]="true" />
+            <p-button (onClick)="mountSync(annotationInfo!)" icon="mdi mdi-sync" label="Sync" [text]="true" severity="info" size="small" />
+            <p-button (onClick)="mountGoTo(annotationInfo!)" icon="mdi mdi-telescope" label="Go To" [text]="true" severity="success" size="small" />
+            <p-button (onClick)="mountSlew(annotationInfo!)" icon="mdi mdi-telescope" label="Slew" [text]="true" severity="success" size="small" />
+            <p-button (onClick)="frame(annotationInfo!)" icon="mdi mdi-image" label="Frame" [text]="true" size="small" />
         </div>
     </ng-template>
 </p-dialog>
@@ -214,17 +214,17 @@
         <div class="grid mb-2">
             <div class="col-12 flex justify-content-center">
                 <p-button [disabled]="solving || !solved" (onClick)="mountSync(solvedData!)" icon="mdi mdi-sync" label="Sync"
-                          [text]="true" severity="info" />
+                          [text]="true" severity="info" size="small" />
                 <p-button [disabled]="solving || !solved" (onClick)="mountGoTo(solvedData!)" icon="mdi mdi-telescope" label="Go To"
-                          [text]="true" severity="success" />
+                          [text]="true" severity="success" size="small" />
                 <p-button [disabled]="solving || !solved" (onClick)="mountSlew(solvedData!)" icon="mdi mdi-telescope" label="Slew"
-                          [text]="true" severity="success" />
+                          [text]="true" severity="success" size="small" />
                 <p-button [disabled]="solving || !solved" (onClick)="frame(solvedData!)" icon="mdi mdi-image" label="Frame"
                           [text]="true" />
             </div>
         </div>
 
-        <p-button [disabled]="solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" />
+        <p-button [disabled]="solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" size="small" />
     </ng-template>
 </p-dialog>
 
@@ -261,9 +261,9 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button icon="mdi mdi-auto-fix" label="Auto" (onClick)="autoStretch()" [text]="true" severity="info" />
-        <p-button icon="mdi mdi-restore" label="Reset" (onClick)="resetStretch()" [text]="true" severity="danger" />
-        <p-button icon="mdi mdi-check" label="Stretch" (onClick)="stretchImage()" [text]="true" />
+        <p-button icon="mdi mdi-auto-fix" label="Auto" (onClick)="autoStretch()" [text]="true" severity="info" size="small" />
+        <p-button icon="mdi mdi-restore" label="Reset" (onClick)="resetStretch()" [text]="true" severity="danger" size="small" />
+        <p-button icon="mdi mdi-check" label="Stretch" (onClick)="stretchImage()" [text]="true" size="small" />
     </ng-template>
 </p-dialog>
 
@@ -301,7 +301,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button icon="mdi mdi-check" label="Apply" (onClick)="scnrImage()" [text]="true" />
+        <p-button icon="mdi mdi-check" label="Apply" (onClick)="scnrImage()" [text]="true" size="small" />
     </ng-template>
 </p-dialog>
 

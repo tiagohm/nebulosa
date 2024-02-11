@@ -4,14 +4,11 @@ import { MenuItem } from 'primeng/api'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { StorageService } from '../../shared/services/storage.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
-import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverOptions, PlateSolverType } from '../../shared/types/settings.types'
+import { DEFAULT_SOLVER_TYPES, PlateSolverOptions, PlateSolverType } from '../../shared/types/settings.types'
 import { AppComponent } from '../app.component'
-
-export const SETTINGS_PLATE_SOLVER_KEY = 'settings.plateSolver'
 
 @Component({
     selector: 'app-settings',
@@ -25,7 +22,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     locations: Location[] = []
     location = Object.assign({}, EMPTY_LOCATION)
 
-    readonly plateSolverTypes: PlateSolverType[] = ['ASTAP', /*'ASTROMETRY_NET',*/ 'ASTROMETRY_NET_ONLINE']
+    readonly plateSolverTypes: PlateSolverType[] = Object.assign([], DEFAULT_SOLVER_TYPES)
     plateSolverType = this.plateSolverTypes[0]
     readonly plateSolvers = new Map<PlateSolverType, PlateSolverOptions>()
 
@@ -45,14 +42,14 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     constructor(
         app: AppComponent,
         private api: ApiService,
-        private storage: LocalStorageService,
+        private preference: PreferenceService,
         private electron: ElectronService,
         private prime: PrimeService,
     ) {
         app.title = 'Settings'
 
         for (const type of this.plateSolverTypes) {
-            this.plateSolvers.set(type, SettingsComponent.getPlateSolverOptions(storage, type))
+            this.plateSolvers.set(type, preference.plateSolverOptions(type).get())
         }
     }
 
@@ -116,15 +113,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 
     async save() {
         for (const type of this.plateSolverTypes) {
-            SettingsComponent.putPlateSolverOptions(this.storage, type, this.plateSolvers.get(type)!)
+            this.preference.plateSolverOptions(type).set(this.plateSolvers.get(type)!)
         }
-    }
-
-    static getPlateSolverOptions(storage: LocalStorageService, type: PlateSolverType) {
-        return storage.get(`${SETTINGS_PLATE_SOLVER_KEY}.${type}`, EMPTY_PLATE_SOLVER_OPTIONS)
-    }
-
-    static putPlateSolverOptions(storage: StorageService, type: PlateSolverType, options: PlateSolverOptions) {
-        return storage.set(`${SETTINGS_PLATE_SOLVER_KEY}.${type}`, options)
     }
 }
