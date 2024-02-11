@@ -37,7 +37,7 @@ class BodyEphemerisProvider : CachedEphemerisProvider<Body>() {
             val astrometric = site.at<Barycentric>(utc).observe(target)
             val (az, alt) = astrometric.horizontal()
             val (ra, dec) = astrometric.equatorialAtDate()
-            val (raJ2000, decJ2000) = astrometric.equatorialJ2000()
+            val (raJ2000, decJ2000) = astrometric.equatorial()
 
             val element = HorizonsElement(time)
             element[HorizonsQuantity.ASTROMETRIC_RA] = "${raJ2000.normalized.toDegrees}"

@@ -47,7 +47,7 @@ inline val Int.atm
  *
  * https://www.mide.com/air-pressure-at-altitude-calculator
  */
-fun Distance.pressure(temperature: Temperature = 10.0.celsius): Pressure {
+fun Distance.pressure(temperature: Temperature = 15.0.celsius): Pressure {
     val e = 9.80665 * 0.0289644 / (8.31432 * -0.0065)
     val k = temperature.toKelvin
     val m = toMeters

@@ -8,7 +8,7 @@ import nebulosa.api.solver.PlateSolverOptions
 
 data class TPPAStartRequest(
     @JsonIgnoreProperties("camera", "focuser", "wheel") val capture: CameraStartCaptureRequest = CameraStartCaptureRequest.EMPTY,
-    @field:NotNull @Valid val plateSolverOptions: PlateSolverOptions = PlateSolverOptions.EMPTY,
+    @field:NotNull @Valid val plateSolver: PlateSolverOptions = PlateSolverOptions.EMPTY,
     val startFromCurrentPosition: Boolean = true,
     val eastDirection: Boolean = true,
     val refractionAdjustment: Boolean = false,

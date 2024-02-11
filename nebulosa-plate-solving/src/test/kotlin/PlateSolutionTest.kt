@@ -3,8 +3,8 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.fits.Header
-import nebulosa.math.AngleFormatter
-import nebulosa.math.format
+import nebulosa.math.formatHMS
+import nebulosa.math.formatSignedDMS
 import nebulosa.math.toArcsec
 import nebulosa.math.toDegrees
 import nebulosa.plate.solving.PlateSolution
@@ -41,8 +41,8 @@ class PlateSolutionTest : StringSpec() {
             val header = Header.from(astrometryNet)
             val solution = PlateSolution.from(header).shouldNotBeNull()
 
-            solution.rightAscension.format(AngleFormatter.HMS) shouldBe "03h19m07.7s"
-            solution.declination.format(AngleFormatter.SIGNED_DMS) shouldBe "-066°30'12.2\""
+            solution.rightAscension.formatHMS() shouldBe "03h19m07.7s"
+            solution.declination.formatSignedDMS() shouldBe "-066°30'12.2\""
             solution.orientation.toDegrees shouldBe (-136.9 plusOrMinus 1e-1)
             solution.scale.toArcsec shouldBe (1.37 plusOrMinus 1e-2)
             solution.radius.toDegrees shouldBe (0.476 plusOrMinus 1e-3)

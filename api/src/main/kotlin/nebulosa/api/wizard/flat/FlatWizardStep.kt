@@ -81,9 +81,7 @@ data class FlatWizardStep(
 
         this.cameraExposureStep.set(cameraExposureStep)
         cameraCaptureListeners.forEach(cameraExposureStep::registerCameraCaptureListener)
-        cameraExposureStep.beforeJob(stepExecution.jobExecution)
-        cameraExposureStep.execute(stepExecution)
-        cameraExposureStep.afterJob(stepExecution.jobExecution)
+        cameraExposureStep.executeSingle(stepExecution)
 
         val savedPath = cameraExposureStep.savedPath
 

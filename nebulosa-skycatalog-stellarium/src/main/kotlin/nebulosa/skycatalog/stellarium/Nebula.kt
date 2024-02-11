@@ -7,7 +7,6 @@ import nebulosa.math.rad
 import nebulosa.skycatalog.SkyCatalog
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
-import nebulosa.time.UTC
 import okio.BufferedSource
 import okio.Source
 import okio.buffer
@@ -25,7 +24,6 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
             source.readString() // Version.
             source.readString() // Edition.
 
-            val currentTime = UTC.now()
             val commonNames = namesSource?.let(::namesFor) ?: emptyList()
             val names = ArrayList<String>(8)
 
@@ -122,7 +120,7 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
                     majorAxis, minorAxis, orientation,
                     parallax = parallax, redshift = redshift,
                     // distance * 3261.5637769,
-                    constellation = SkyObject.constellationFor(ra, dec, currentTime),
+                    constellation = SkyObject.constellationFor(ra, dec),
                 )
 
                 add(nebula)

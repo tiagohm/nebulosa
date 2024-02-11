@@ -1,6 +1,9 @@
 package nebulosa.math
 
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.atan2
+import kotlin.math.sqrt
 
 @Suppress("NOTHING_TO_INLINE")
 open class Vector3D protected constructor(@PublishedApi @JvmField internal val vector: DoubleArray) : Point3D, Cloneable {
@@ -60,7 +63,7 @@ open class Vector3D protected constructor(@PublishedApi @JvmField internal val v
         get() = length.let { if (it == 0.0) this else this / it }
 
     inline val latitude
-        get() = asin(vector[2] / length).rad
+        get() = acos(vector[2]).rad
 
     inline val longitude
         get() = atan2(vector[1], vector[0]).rad.normalized
@@ -132,7 +135,7 @@ open class Vector3D protected constructor(@PublishedApi @JvmField internal val v
          */
         @JvmStatic
         fun plane(a: Vector3D, b: Vector3D, c: Vector3D): Vector3D {
-            return (b - a).cross(c - b).normalized
+            return (b - a).cross(c - b)
         }
     }
 }

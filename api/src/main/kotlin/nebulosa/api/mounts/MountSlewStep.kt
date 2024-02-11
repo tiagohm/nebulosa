@@ -10,6 +10,8 @@ import nebulosa.indi.device.mount.MountSlewFailed
 import nebulosa.indi.device.mount.MountSlewingChanged
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
+import nebulosa.math.formatHMS
+import nebulosa.math.formatSignedDMS
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -26,25 +28,29 @@ data class MountSlewStep(
     private val initialDEC = mount.declination
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onFilterWheelEvent(event: MountEvent) {
-        if (event is MountSlewingChanged) {
-            if (!mount.slewing && mount.rightAscension != initialRA && mount.declination != initialDEC) {
+    fun onMountEvent(event: MountEvent) {
+        if (event.device === mount) {
+            if (event is MountSlewingChanged) {
+                if (!mount.slewing && (mount.rightAscension != initialRA || mount.declination != initialDEC)) {
+                    latch.reset()
+                }
+            } else if (event is MountSlewFailed) {
+                LOG.warn("failed to slew mount. mount={}", mount)
                 latch.reset()
             }
-        } else if (event is MountSlewFailed) {
-            LOG.warn("failed to slew mount. mount={}", mount)
-            latch.reset()
         }
     }
 
     override fun execute(stepExecution: StepExecution): StepResult {
-        if (mount.connected && rightAscension.isFinite() &&
-            declination.isFinite() && mount.rightAscension != initialRA
-            && mount.declination != initialDEC
+        if (mount.connected &&
+            rightAscension.isFinite() && declination.isFinite() &&
+            (mount.rightAscension != rightAscension || mount.declination != declination)
         ) {
             EventBus.getDefault().register(this)
 
             latch.countUp()
+
+            LOG.info("moving mount. mount={}, ra={}, dec={}", mount, mount.rightAscension.formatHMS(), mount.declination.formatSignedDMS())
 
             if (j2000) {
                 if (goTo) mount.goToJ2000(rightAscension, declination)
@@ -56,6 +62,8 @@ data class MountSlewStep(
 
             latch.await()
 
+            LOG.info("mount moved. mount={}, ra={}, dec={}", mount, mount.rightAscension.formatHMS(), mount.declination.formatSignedDMS())
+
             EventBus.getDefault().unregister(this)
         }
 
@@ -63,6 +71,7 @@ data class MountSlewStep(
     }
 
     override fun stop(mayInterruptIfRunning: Boolean) {
+        mount.abortMotion()
         latch.reset()
     }
 

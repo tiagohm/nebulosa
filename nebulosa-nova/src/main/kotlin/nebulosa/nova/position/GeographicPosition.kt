@@ -2,14 +2,17 @@ package nebulosa.nova.position
 
 import nebulosa.constants.ANGULAR_VELOCITY
 import nebulosa.constants.DAYSEC
-import nebulosa.constants.DEG2RAD
+import nebulosa.constants.PIOVERTWO
+import nebulosa.erfa.eraRefco
 import nebulosa.erfa.eraSp00
 import nebulosa.math.*
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
 import nebulosa.time.IERS
 import nebulosa.time.InstantOfTime
+import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.pow
 import kotlin.math.tan
 
 class GeographicPosition(
@@ -50,19 +53,11 @@ class GeographicPosition(
      */
     fun refract(
         altitude: Angle,
-        temperature: Temperature = 10.0.celsius,
+        temperature: Temperature = 15.0.celsius,
         pressure: Pressure = elevation.pressure(temperature),
-    ): Angle {
-        val a = altitude.toDegrees
-
-        return if (a >= -1.0 && a <= 89.9) {
-            val r = 0.016667 / tan((a + 7.31 / (a + 4.4)) * DEG2RAD)
-            val d = r * (0.28 * pressure / temperature.toKelvin)
-            (a + d).deg
-        } else {
-            altitude
-        }
-    }
+        relativeHumidity: Double = 0.0,
+        waveLength: Double = 0.54,
+    ) = computeRefractedAltitude(altitude, temperature, pressure, relativeHumidity, waveLength)
 
     /**
      * Computes rotation from GCRS to this location’s altazimuth system.
@@ -116,5 +111,47 @@ class GeographicPosition(
     companion object {
 
         @JvmStatic val EARTH_ANGULAR_VELOCITY_VECTOR = Vector3D(z = DAYSEC * ANGULAR_VELOCITY)
+
+        @JvmStatic
+        fun computeRefractedAltitude(
+            altitude: Angle,
+            temperature: Temperature = 15.0.celsius,
+            pressure: Pressure = ONE_ATM,
+            relativeHumidity: Double = 0.5,
+            waveLength: Double = 0.55,
+            iterationIncrement: Angle = 1.0.arcsec,
+        ): Double {
+            if (altitude < 0.0) {
+                return altitude
+            }
+
+            val z = PIOVERTWO - altitude
+
+            val (refa, refb) = eraRefco(pressure, temperature, relativeHumidity, waveLength)
+
+            var roller = iterationIncrement
+            var iterations = 0
+
+            while (iterations++ < 10) {
+                val refractedZenithDistanceRadian = z - roller
+
+                // dZ = A tan Z + B tan^3 Z.
+                val dZ2 = refa * tan(refractedZenithDistanceRadian) + refb * tan(refractedZenithDistanceRadian).pow(3.0)
+
+                if (dZ2.isNaN()) {
+                    return altitude
+                }
+
+                val originalZenithDistanceRadian = refractedZenithDistanceRadian + dZ2
+
+                if (abs(originalZenithDistanceRadian - z) < iterationIncrement) {
+                    return PIOVERTWO - originalZenithDistanceRadian
+                }
+
+                roller += iterationIncrement
+            }
+
+            return altitude
+        }
     }
 }

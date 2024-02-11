@@ -1,32 +1,35 @@
 package nebulosa.alignment.polar.point.three
 
-import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment.State.*
 import nebulosa.constants.DEG2RAD
 import nebulosa.fits.declination
+import nebulosa.fits.observationDate
 import nebulosa.fits.rightAscension
 import nebulosa.imaging.Image
 import nebulosa.math.Angle
-import nebulosa.math.Point2D
 import nebulosa.plate.solving.PlateSolution
 import nebulosa.plate.solving.PlateSolver
-import nebulosa.star.detection.StarDetector
+import nebulosa.plate.solving.PlateSolvingException
+import nebulosa.time.TimeYMDHMS
+import nebulosa.time.UTC
 import java.nio.file.Path
+import kotlin.math.min
 
+/**
+ * Three Point Polar Alignment almost anywhere in the sky.
+ *
+ * Based on Stefan Berg's algorithm.
+ *
+ * @see <a href="https://bitbucket.org/Isbeorn/nina.plugin.polaralignment/src/master/">BitBucket</a>
+ */
 data class ThreePointPolarAlignment(
     private val solver: PlateSolver,
-    private val starDetector: StarDetector<Image>,
+    private val longitude: Angle,
+    private val latitude: Angle,
 ) {
 
-    enum class State {
-        FIRST_MEASURE,
-        SECOND_MEASURE,
-        THIRD_MEASURE,
-        ADJUSTMENT_MEASURE,
-    }
+    private val positions = arrayOfNulls<Position>(3)
 
-    private val solutions = HashMap<State, PlateSolution>(4)
-
-    @Volatile var state = FIRST_MEASURE
+    @Volatile var state = 0
         private set
 
     fun align(
@@ -35,63 +38,42 @@ data class ThreePointPolarAlignment(
         declination: Angle = image.header.declination,
         radius: Angle = DEFAULT_RADIUS,
     ): ThreePointPolarAlignmentResult {
-        return when (state) {
-            FIRST_MEASURE -> measure(path, image, SECOND_MEASURE, rightAscension, declination, radius)
-            SECOND_MEASURE -> measure(path, image, THIRD_MEASURE, rightAscension, declination, radius)
-            THIRD_MEASURE -> measure(path, image, ADJUSTMENT_MEASURE, rightAscension, declination, radius)
-            ADJUSTMENT_MEASURE -> measure(path, image, ADJUSTMENT_MEASURE, rightAscension, declination, radius)
+        val solution = try {
+            solver.solve(path, image, rightAscension, declination, radius)
+        } catch (e: PlateSolvingException) {
+            return ThreePointPolarAlignmentResult.NoPlateSolution(e)
         }
-    }
 
-    private fun measure(
-        path: Path?, image: Image?, nextState: State,
-        rightAscension: Angle, declination: Angle, radius: Angle,
-    ): ThreePointPolarAlignmentResult {
-        val solution = solver.solve(path, image, rightAscension, declination, radius)
-
-        return if (!solution.solved) {
-            ThreePointPolarAlignmentResult.NoPlateSolution
+        if (!solution.solved) {
+            return ThreePointPolarAlignmentResult.NoPlateSolution(null)
         } else {
-            solutions[state] = solution
+            val time = image.header.observationDate?.let { UTC(TimeYMDHMS(it)) } ?: UTC.now()
 
-            if (state != ADJUSTMENT_MEASURE) {
-                state = nextState
-                ThreePointPolarAlignmentResult.NeedMoreMeasure
-            } else {
-                computeAdjustment()
+            positions[min(state, 2)] = solution.position(time)
+
+            if (state >= 2) {
+                val polarErrorDetermination = PolarErrorDetermination(positions[0]!!, positions[1]!!, positions[2]!!, longitude, latitude)
+                val (azimuth, altitude) = polarErrorDetermination.compute()
+                return ThreePointPolarAlignmentResult.Measured(azimuth, altitude)
             }
+
+            state++
+
+            return ThreePointPolarAlignmentResult.NeedMoreMeasurement
         }
     }
 
-    private fun computeAdjustment(): ThreePointPolarAlignmentResult {
-        return ThreePointPolarAlignmentResult.NeedMoreMeasure
+    fun reset() {
+        state = 0
+        positions.fill(null)
     }
 
-    fun selectNewReferenceStar(image: Image, point: Point2D) {
-        val referenceStar = starDetector.closestStarPosition(image, point)
+    private fun PlateSolution.position(time: UTC): Position {
+        return Position(rightAscension, declination, longitude, latitude, time)
     }
 
     companion object {
 
         const val DEFAULT_RADIUS: Angle = 4 * DEG2RAD
-
-        @JvmStatic
-        internal fun StarDetector<Image>.closestStarPosition(image: Image, reference: Point2D): Point2D {
-            val detectedStars = detect(image)
-
-            var closestPoint = reference
-            var minDistance = Double.MAX_VALUE
-
-            for (star in detectedStars) {
-                val distance = star.distance(reference)
-
-                if (distance < minDistance) {
-                    closestPoint = star
-                    minDistance = distance
-                }
-            }
-
-            return closestPoint
-        }
     }
 }

@@ -1,68 +1,56 @@
 package nebulosa.alignment.polar.point.three
 
 import nebulosa.constants.PIOVERTWO
-import nebulosa.erfa.CartesianCoordinate
 import nebulosa.erfa.eraAtco13
-import nebulosa.erfa.eraAtic13
-import nebulosa.erfa.eraEe06a
 import nebulosa.math.Angle
+import nebulosa.math.ONE_ATM
 import nebulosa.math.Vector3D
-import nebulosa.math.normalized
+import nebulosa.time.CurrentTime
 import nebulosa.time.IERS
-import nebulosa.time.UTC
-import kotlin.math.acos
+import nebulosa.time.InstantOfTime
+import kotlin.math.cos
+import kotlin.math.sin
 
-internal class Position {
+internal data class Position(
+    @JvmField val topocentric: Topocentric,
+    @JvmField val vector: Vector3D,
+) {
 
-    @JvmField val topocentric: Topocentric
-    @JvmField val vector: Vector3D
+    companion object {
 
-    constructor(
-        rightAscension: Angle, declination: Angle,
-        longitude: Angle, latitude: Angle,
-    ) {
-        val time = UTC.now()
-        val ee = eraEe06a(time.tt.whole, time.tt.fraction)
-        val (ri, di) = eraAtic13((rightAscension + ee).normalized, declination, time.tdb.whole, time.tdb.fraction)
-        val dut1 = IERS.delta(time)
-        val (xp, yp) = IERS.pmAngles(time)
-        val (b) = eraAtco13(ri, di, 0.0, 0.0, 0.0, 0.0, time.whole, time.fraction, dut1, longitude, latitude, 0.0, xp, yp, 1013.25, 15.0, 0.0, 0.55)
-        val az = b[0] // aob
-        val alt = PIOVERTWO - b[1] // zob
-        topocentric = Topocentric(az, alt, longitude, latitude, time)
-        vector = CartesianCoordinate.of(-topocentric.azimuth, PIOVERTWO - topocentric.altitude, 1.0)
-    }
-
-    constructor(topocentric: Topocentric, vector: Vector3D) {
-        this.topocentric = topocentric
-        this.vector = vector
-    }
-
-    constructor(vector: Vector3D, longitude: Angle, latitude: Angle) {
-        this.topocentric = if (vector[0] == 0.0 && vector[1] == 0.0) {
-            Topocentric(0.0, PIOVERTWO, longitude, latitude, UTC.now())
-        } else {
-            Topocentric(-vector.longitude, PIOVERTWO - acos(vector[2]), longitude, latitude, UTC.now())
+        operator fun invoke(
+            rightAscension: Angle, declination: Angle,
+            longitude: Angle, latitude: Angle,
+            time: InstantOfTime = CurrentTime,
+            refract: Boolean = false,
+        ): Position {
+            // SOFA.CelestialToTopocentric.
+            val dut1 = IERS.delta(time)
+            val (xp, yp) = IERS.pmAngles(time)
+            val pressure = if (refract) ONE_ATM else 0.0
+            // @formatter:off
+            val (b) = eraAtco13(rightAscension, declination, 0.0, 0.0, 0.0, 0.0, time.utc.whole, time.utc.fraction, dut1, longitude, latitude, 0.0, xp, yp, pressure, 15.0, 0.5, 0.55)
+            // @formatter:on
+            val topocentric = Topocentric(b[0], PIOVERTWO - b[1], longitude, latitude)
+            // val vector = CartesianCoordinate.of(-b[0], b[1], 1.0)
+            val theta = -b[0]
+            val phi = b[1]
+            val x = cos(theta) * sin(phi)
+            val y = sin(theta) * sin(phi)
+            val z = cos(phi)
+            return Position(topocentric, Vector3D(x, y, z))
         }
 
-        this.vector = vector
+        operator fun invoke(
+            vector: Vector3D, longitude: Angle, latitude: Angle,
+        ): Position {
+            val topocentric = if (vector.x == 0.0 && vector.y == 0.0) {
+                Topocentric(0.0, PIOVERTWO, longitude, latitude)
+            } else {
+                Topocentric(-vector.longitude, PIOVERTWO - vector.latitude, longitude, latitude)
+            }
+
+            return Position(topocentric, vector)
+        }
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Position) return false
-
-        if (topocentric != other.topocentric) return false
-        if (vector != other.vector) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = topocentric.hashCode()
-        result = 31 * result + vector.hashCode()
-        return result
-    }
-
-    override fun toString() = "Position(topocentric=$topocentric, vector=$vector)"
 }

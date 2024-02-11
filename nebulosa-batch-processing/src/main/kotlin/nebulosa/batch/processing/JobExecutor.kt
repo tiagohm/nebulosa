@@ -1,8 +1,5 @@
-package nebulosa.api.jobs
+package nebulosa.batch.processing
 
-import nebulosa.batch.processing.Job
-import nebulosa.batch.processing.JobExecution
-import nebulosa.batch.processing.JobLauncher
 import java.util.*
 
 abstract class JobExecutor {

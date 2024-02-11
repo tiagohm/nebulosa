@@ -16,8 +16,8 @@ data class ImageSolved(
     constructor(solution: PlateSolution) : this(
         solution.orientation.toDegrees,
         solution.scale.toArcsec,
-        solution.rightAscension.format(AngleFormatter.HMS),
-        solution.declination.format(AngleFormatter.SIGNED_DMS),
+        solution.rightAscension.formatHMS(),
+        solution.declination.formatSignedDMS(),
         solution.width.toArcmin, solution.height.toArcmin,
         solution.radius.toDegrees,
     )

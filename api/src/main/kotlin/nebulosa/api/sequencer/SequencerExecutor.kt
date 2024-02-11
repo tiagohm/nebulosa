@@ -1,7 +1,7 @@
 package nebulosa.api.sequencer
 
-import nebulosa.api.jobs.JobExecutor
 import nebulosa.api.messages.MessageService
+import nebulosa.batch.processing.JobExecutor
 import nebulosa.batch.processing.JobLauncher
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
@@ -30,7 +30,7 @@ class SequencerExecutor(
         val sequencerJob = SequencerJob(camera, request, guider, wheel, focuser)
         sequencerJob.subscribe(messageService::sendMessage)
         sequencerJob.initialize()
-        jobExecutions.add(jobLauncher.launch(sequencerJob))
+        register(jobLauncher.launch(sequencerJob))
     }
 
     fun stop(camera: Camera) {

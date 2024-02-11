@@ -1,8 +1,9 @@
 package nebulosa.api.notifications
 
 import nebulosa.api.messages.MessageEvent
+import nebulosa.api.messages.QueueableEvent
 
-interface NotificationEvent : MessageEvent {
+interface NotificationEvent : MessageEvent, QueueableEvent {
 
     enum class Severity {
         INFO,

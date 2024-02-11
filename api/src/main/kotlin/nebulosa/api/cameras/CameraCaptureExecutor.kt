@@ -1,7 +1,7 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.jobs.JobExecutor
 import nebulosa.api.messages.MessageService
+import nebulosa.batch.processing.JobExecutor
 import nebulosa.batch.processing.JobLauncher
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
@@ -25,7 +25,7 @@ class CameraCaptureExecutor(
 
         val cameraCaptureJob = CameraCaptureJob(camera, request, guider)
         cameraCaptureJob.subscribe(messageService::sendMessage)
-        jobExecutions.add(jobLauncher.launch(cameraCaptureJob))
+        register(jobLauncher.launch(cameraCaptureJob))
     }
 
     fun stop(camera: Camera) {

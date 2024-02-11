@@ -1056,8 +1056,7 @@ fun eraS06a(tt1: Double, tt2: Double): Angle {
     // Bias-precession-nutation-matrix, IAU 20006/2000A.
     val rnpb = eraPnm06a(tt1, tt2)
     // Extract the CIP coordinates.
-    val x = rnpb[2, 0]
-    val y = rnpb[2, 1]
+    val (x, y) = eraBpn2xy(rnpb)
     // Compute the CIO locator s, given the CIP coordinates.
     return eraS06(tt1, tt2, x, y)
 }
@@ -1086,6 +1085,8 @@ fun era00(ut11: Double, ut12: Double): Angle {
  * @return tan Z coefficient (radians) and tan^3 Z coefficient (radians)
  */
 fun eraRefco(phpa: Pressure, tc: Temperature, rh: Double, wl: Double): DoubleArray {
+    if (phpa <= 0.0) return doubleArrayOf(0.0, 0.0)
+
     // Decide whether optical/IR or radio case:  switch at 100 microns.
     val optic = wl <= 100.0
 
@@ -1095,12 +1096,8 @@ fun eraRefco(phpa: Pressure, tc: Temperature, rh: Double, wl: Double): DoubleArr
     val w = max(0.1, min(wl, 1e+6))
 
     // Water vapour pressure at the observer.
-    val pw = if (p > 0.0) {
-        val ps = 10.0.pow((0.7859 + 0.03477 * t) / (1.0 + 0.00412 * t)) * (1.0 + p * (4.5e-6 + 6e-10 * t * t))
-        r * ps / (1.0 - (1.0 - r) * ps / p)
-    } else {
-        0.0
-    }
+    val ps = 10.0.pow((0.7859 + 0.03477 * t) / (1.0 + 0.00412 * t)) * (1.0 + p * (4.5e-6 + 6e-10 * t * t))
+    val pw = r * ps / (1.0 - (1.0 - r) * ps / p)
 
     // Refractive index minus 1 at the observer.
 

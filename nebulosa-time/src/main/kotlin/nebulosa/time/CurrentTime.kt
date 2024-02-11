@@ -4,9 +4,8 @@ import nebulosa.common.time.Stopwatch
 
 object CurrentTime : InstantOfTime() {
 
-    const val MAX_INTERVAL_KEY = "CURRENT_TIME.MAX_INTERVAL"
+    const val ELAPSED_INTERVAL = 1000L
 
-    private val maxInterval = System.getProperty(MAX_INTERVAL_KEY, "30000").toLongOrNull() ?: 30000L
     private val stopwatch = Stopwatch()
 
     init {
@@ -16,7 +15,7 @@ object CurrentTime : InstantOfTime() {
     private var time = UTC.now()
         get() {
             synchronized(stopwatch) {
-                if (stopwatch.elapsedMilliseconds >= maxInterval) {
+                if (stopwatch.elapsedMilliseconds >= ELAPSED_INTERVAL) {
                     stopwatch.reset()
                     field = UTC.now()
                 }

@@ -47,8 +47,8 @@ data class PlateSolution(
 
             LOG.info(
                 "solution from {}: ORIE={}, SCALE={}, RA={}, DEC={}",
-                header, crota2.format(AngleFormatter.SIGNED_DMS), cdelt2.toArcsec,
-                crval1.format(AngleFormatter.HMS), crval2.format(AngleFormatter.SIGNED_DMS),
+                header, crota2.formatSignedDMS(), cdelt2.toArcsec,
+                crval1.formatHMS(), crval2.formatSignedDMS(),
             )
 
             return PlateSolution(true, crota2, cdelt2, crval1, crval2, abs(cdelt1 * width), abs(cdelt2 * height), header = header)

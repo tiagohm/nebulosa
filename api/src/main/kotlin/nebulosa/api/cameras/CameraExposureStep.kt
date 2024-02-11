@@ -99,10 +99,13 @@ data class CameraExposureStep(
     }
 
     override fun execute(stepExecution: StepExecution): StepResult {
-        this.stepExecution = stepExecution
-        EventBus.getDefault().register(this)
-        executeCapture(stepExecution)
-        EventBus.getDefault().unregister(this)
+        if (request.isLoop || estimatedCaptureTime > Duration.ZERO) {
+            this.stepExecution = stepExecution
+            EventBus.getDefault().register(this)
+            executeCapture(stepExecution)
+            EventBus.getDefault().unregister(this)
+        }
+
         return StepResult.FINISHED
     }
 
@@ -157,6 +160,8 @@ data class CameraExposureStep(
 
                 LOG.debug { "camera exposure finished. aborted=$aborted, camera=$camera, context=${stepExecution.context}" }
             }
+        } else {
+            LOG.warn("camera not connected or aborted. aborted=$aborted, camera=$camera")
         }
     }
 

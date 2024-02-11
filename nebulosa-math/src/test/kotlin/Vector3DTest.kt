@@ -76,5 +76,14 @@ class Vector3DTest : StringSpec() {
         "no rotation" {
             Vector3D(1.0, 2.0, 3.0).rotate(Vector3D.Y, 0.0) shouldBe Vector3D(1.0, 2.0, 3.0)
         }
+        "plane" {
+            val a = Vector3D(1.0, -2.0, 1.0)
+            val b = Vector3D(4.0, -2.0, -2.0)
+            val c = Vector3D(4.0, 1.0, 4.0)
+            val d = Vector3D.plane(a, b, c)
+            d.x shouldBeExactly 9.0
+            d.y shouldBeExactly -18.0
+            d.z shouldBeExactly 9.0
+        }
     }
 }
