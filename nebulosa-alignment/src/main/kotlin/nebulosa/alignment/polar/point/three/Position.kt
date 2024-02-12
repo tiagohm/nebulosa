@@ -22,12 +22,12 @@ internal data class Position(
             rightAscension: Angle, declination: Angle,
             longitude: Angle, latitude: Angle,
             time: InstantOfTime = CurrentTime,
-            refract: Boolean = false,
+            compensateRefraction: Boolean = false,
         ): Position {
             // SOFA.CelestialToTopocentric.
             val dut1 = IERS.delta(time)
             val (xp, yp) = IERS.pmAngles(time)
-            val pressure = if (refract) ONE_ATM else 0.0
+            val pressure = if (compensateRefraction) ONE_ATM else 0.0
             // @formatter:off
             val (b) = eraAtco13(rightAscension, declination, 0.0, 0.0, 0.0, 0.0, time.utc.whole, time.utc.fraction, dut1, longitude, latitude, 0.0, xp, yp, pressure, 15.0, 0.5, 0.55)
             // @formatter:on

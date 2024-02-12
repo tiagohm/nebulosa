@@ -11,7 +11,7 @@ data class TPPAStartRequest(
     @field:NotNull @Valid val plateSolver: PlateSolverOptions = PlateSolverOptions.EMPTY,
     val startFromCurrentPosition: Boolean = true,
     val eastDirection: Boolean = true,
-    val refractionAdjustment: Boolean = false,
+    val compensateRefraction: Boolean = false,
     val stopTrackingWhenDone: Boolean = true,
     val stepDistance: Double = 10.0, // degrees
 )

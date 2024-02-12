@@ -55,7 +55,19 @@ data class TPPAJob(
     }
 
     override fun polarAlignmentComputed(step: TPPAStep, azimuth: Angle, altitude: Angle) {
-        onNext(TPPAEvent.Computed(step.camera, step.mount, step.stepCount, step.elapsedTime, azimuth, altitude))
+        val azimuthErrorDir = when {
+            azimuth > 0 -> if (latitude > 0) "🠔 Move LEFT/WEST" else "🠔 Move LEFT/EAST"
+            azimuth < 0 -> if (latitude > 0) "Move RIGHT/EAST 🠖" else "Move RIGHT/WEST 🠖"
+            else -> ""
+        }
+
+        val altitudeErrorDir = when {
+            altitude > 0 -> if (latitude > 0) "🠗 Move DOWN" else "Move UP 🠕"
+            altitude < 0 -> if (latitude > 0) "Move UP 🠕" else "🠗 Move DOWN"
+            else -> ""
+        }
+
+        onNext(TPPAEvent.Computed(step.camera, step.mount, step.stepCount, step.elapsedTime, azimuth, altitude, azimuthErrorDir, altitudeErrorDir))
     }
 
     override fun solverFailed(step: TPPAStep) {

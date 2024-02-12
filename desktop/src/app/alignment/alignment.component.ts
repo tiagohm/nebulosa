@@ -4,6 +4,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { AlignmentMethod, AlignmentPreference, DARVStart, DARVState, Hemisphere, TPPAStart, TPPAState } from '../../shared/types/alignment.types'
+import { Angle } from '../../shared/types/atlas.types'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit } from '../../shared/types/camera.types'
 import { EMPTY_GUIDE_OUTPUT, GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { EMPTY_MOUNT, Mount } from '../../shared/types/mount.types'
@@ -32,18 +33,28 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     running = false
     alignmentMethod?: AlignmentMethod
     status: DARVState | TPPAState = 'IDLE'
+    elapsedTime = 0
+    remainingTime = 0
+    progress = 0
 
     readonly tppaRequest: TPPAStart = {
         capture: Object.assign({}, EMPTY_CAMERA_START_CAPTURE),
         plateSolver: Object.assign({}, EMPTY_PLATE_SOLVER_OPTIONS),
         startFromCurrentPosition: true,
         eastDirection: true,
-        refractionAdjustment: true,
+        compensateRefraction: true,
         stopTrackingWhenDone: true,
         stepDistance: 10,
     }
 
     readonly plateSolverTypes: PlateSolverType[] = Object.assign([], DEFAULT_SOLVER_TYPES)
+    tppaAzimuthError: Angle = `00°00'00"`
+    tppaAzimuthErrorDirection = ''
+    tppaAltitudeError: Angle = `00°00'00"`
+    tppaAltitudeErrorDirection = ''
+    tppaTotalError: Angle = `00°00'00"`
+    tppaRightAscension: Angle = '00h00m00s'
+    tppaDeclination: Angle = `00°00'00"`
 
     readonly darvRequest: DARVStart = {
         capture: Object.assign({}, EMPTY_CAMERA_START_CAPTURE),
@@ -57,8 +68,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     readonly darvHemispheres: Hemisphere[] = ['NORTHERN', 'SOUTHERN']
     darvHemisphere: Hemisphere = 'NORTHERN'
     darvDirection?: GuideDirection
-    darvRemainingTime = 0
-    darvProgress = 0
 
     constructor(
         app: AppComponent,
@@ -154,12 +163,24 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        electron.on('TPPA_ALIGNMENT.ELAPSED', event => {
+        electron.on('TPPA.ELAPSED', event => {
             if (event.camera.name === this.camera.name &&
                 (!event.mount || event.mount.name === this.mount.name)) {
                 ngZone.run(() => {
                     this.status = event.state
                     this.running = event.state !== 'FINISHED'
+                    this.elapsedTime = event.elapsedTime
+
+                    if (event.state === 'COMPUTED') {
+                        this.tppaAzimuthError = event.azimuthError
+                        this.tppaAltitudeError = event.altitudeError
+                        this.tppaAzimuthErrorDirection = event.azimuthErrorDirection
+                        this.tppaAltitudeErrorDirection = event.altitudeErrorDirection
+                        this.tppaTotalError = event.totalError
+                    } else if (event.state === 'SOLVED' || event.state === 'SLEWING') {
+                        this.tppaRightAscension = event.rightAscension
+                        this.tppaDeclination = event.declination
+                    }
 
                     if (!this.running) {
                         this.alignmentMethod = undefined
@@ -168,13 +189,13 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        electron.on('DARV_ALIGNMENT.ELAPSED', event => {
+        electron.on('DARV.ELAPSED', event => {
             if (event.camera.name === this.camera.name &&
                 event.guideOutput.name === this.guideOutput.name) {
                 ngZone.run(() => {
                     this.status = event.state
-                    this.darvRemainingTime = event.remainingTime
-                    this.darvProgress = event.progress
+                    this.remainingTime = event.remainingTime
+                    this.progress = event.progress
                     this.running = event.remainingTime > 0
 
                     if (event.state === 'FORWARD' || event.state === 'BACKWARD') {
@@ -306,7 +327,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
         this.tppaRequest.startFromCurrentPosition = preference.tppaStartFromCurrentPosition
         this.tppaRequest.eastDirection = preference.tppaEastDirection
-        this.tppaRequest.refractionAdjustment = preference.tppaRefractionAdjustment
+        this.tppaRequest.compensateRefraction = preference.tppaCompensateRefraction
         this.tppaRequest.stopTrackingWhenDone = preference.tppaStopTrackingWhenDone
         this.tppaRequest.stepDistance = preference.tppaStepDistance
         this.tppaRequest.plateSolver.type = preference.tppaPlateSolverType
@@ -332,7 +353,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         const preference: AlignmentPreference = {
             tppaStartFromCurrentPosition: this.tppaRequest.startFromCurrentPosition,
             tppaEastDirection: this.tppaRequest.eastDirection,
-            tppaRefractionAdjustment: this.tppaRequest.refractionAdjustment,
+            tppaCompensateRefraction: this.tppaRequest.compensateRefraction,
             tppaStopTrackingWhenDone: this.tppaRequest.stopTrackingWhenDone,
             tppaStepDistance: this.tppaRequest.stepDistance,
             tppaPlateSolverType: this.tppaRequest.plateSolver.type,

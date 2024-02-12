@@ -38,6 +38,7 @@ data class ThreePointPolarAlignment(
         rightAscension: Angle = image.header.rightAscension,
         declination: Angle = image.header.declination,
         radius: Angle = DEFAULT_RADIUS,
+        compensateRefraction: Boolean = false,
         cancellationToken: CancellationToken = CancellationToken.NONE,
     ): ThreePointPolarAlignmentResult {
         val solution = try {
@@ -46,12 +47,12 @@ data class ThreePointPolarAlignment(
             return ThreePointPolarAlignmentResult.NoPlateSolution(e)
         }
 
-        if (!solution.solved) {
+        if (!solution.solved || cancellationToken.isCancelled) {
             return ThreePointPolarAlignmentResult.NoPlateSolution(null)
         } else {
             val time = image.header.observationDate?.let { UTC(TimeYMDHMS(it)) } ?: UTC.now()
 
-            positions[min(state, 2)] = solution.position(time)
+            positions[min(state, 2)] = solution.position(time, compensateRefraction)
 
             if (state++ >= 2) {
                 val polarErrorDetermination = PolarErrorDetermination(positions[0]!!, positions[1]!!, positions[2]!!, longitude, latitude)
@@ -68,8 +69,8 @@ data class ThreePointPolarAlignment(
         positions.fill(null)
     }
 
-    private fun PlateSolution.position(time: UTC): Position {
-        return Position(rightAscension, declination, longitude, latitude, time)
+    private fun PlateSolution.position(time: UTC, compensateRefraction: Boolean): Position {
+        return Position(rightAscension, declination, longitude, latitude, time, compensateRefraction)
     }
 
     companion object {

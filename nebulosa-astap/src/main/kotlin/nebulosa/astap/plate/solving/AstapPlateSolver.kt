@@ -58,13 +58,16 @@ class AstapPlateSolver(path: Path) : PlateSolver {
 
         arguments["-f"] = path
 
-        LOG.info("local solving. command={}", arguments)
+        LOG.info("ASTAP solving. command={}", arguments)
 
         try {
             val timeoutOrDefault = timeout?.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5)
             val process = executor.execute(arguments, timeoutOrDefault, path.parent, cancellationToken)
+
             if (process.isAlive) process.destroyForcibly()
             LOG.info("astap exited. code={}", process.exitValue())
+
+            if (cancellationToken.isCancelled) return PlateSolution.NO_SOLUTION
 
             val ini = Properties()
             Paths.get("$basePath", "$baseName.ini").inputStream().use(ini::load)

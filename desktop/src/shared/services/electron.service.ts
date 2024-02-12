@@ -46,8 +46,8 @@ type EventMappedType = {
     'GUIDER.UPDATED': GuiderMessageEvent<Guider>
     'GUIDER.STEPPED': GuiderMessageEvent<GuiderHistoryStep>
     'GUIDER.MESSAGE_RECEIVED': GuiderMessageEvent<string>
-    'DARV_ALIGNMENT.ELAPSED': DARVElapsed
-    'TPPA_ALIGNMENT.ELAPSED': TPPAElapsed
+    'DARV.ELAPSED': DARVElapsed
+    'TPPA.ELAPSED': TPPAElapsed
     'DATA.CHANGED': any
     'LOCATION.CHANGED': Location
     'SEQUENCER.ELAPSED': SequencerElapsed

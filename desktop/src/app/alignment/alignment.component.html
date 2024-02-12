@@ -39,10 +39,15 @@
                     {{ darvDirection }}
                 </span>
                 <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
-                    {{ darvRemainingTime | exposureTime }}
+                    {{ remainingTime | exposureTime }}
                 </span>
                 <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 40px">
-                    {{ darvProgress | percent:'1.1-1' }}
+                    {{ progress | percent:'1.1-1' }}
+                </span>
+            </ng-container>
+            <ng-container *ngIf="running && alignmentMethod === 'TPPA'">
+                <span class="bg-green-500 border-round-md p-1 text-gray-900" style="min-width: 50px">
+                    {{ elapsedTime | exposureTime }}
                 </span>
             </ng-container>
         </div>
@@ -75,8 +80,24 @@
                                         (ngModelChange)="savePreference()" />
                         </div>
                         <div class="col-6 flex align-items-center justify-content-center text-center gap-2 text-sm">
-                            <p-checkbox [binary]="true" [(ngModel)]="tppaRequest.refractionAdjustment" label="Refraction adjustment"
+                            <p-checkbox [binary]="true" [(ngModel)]="tppaRequest.compensateRefraction" label="Compensate refraction"
                                         (ngModelChange)="savePreference()" />
+                        </div>
+                    </div>
+                    <div class="grid mt-2">
+                        <div class="col-4 flex flex-column align-items-center justify-content-center">
+                            <span>Azimuth</span>
+                            <span>{{ tppaAzimuthError }}</span>
+                            <span>{{ tppaAzimuthErrorDirection }}</span>
+                        </div>
+                        <div class="col-4 flex flex-column align-items-center justify-content-center">
+                            <span>Altitude</span>
+                            <span>{{ tppaAltitudeError }}</span>
+                            <span>{{ tppaAltitudeErrorDirection }}</span>
+                        </div>
+                        <div class="col-4 flex flex-column align-items-center justify-content-center">
+                            <span>Total</span>
+                            <span>{{ tppaTotalError }}</span>
                         </div>
                     </div>
                     <div class="grid mt-2">

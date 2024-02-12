@@ -3,6 +3,7 @@ package nebulosa.api.mounts
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
+import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountEvent
@@ -15,6 +16,7 @@ import nebulosa.math.formatSignedDMS
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.time.Duration
 
 data class MountSlewStep(
     val mount: Mount,
@@ -23,9 +25,10 @@ data class MountSlewStep(
 ) : Step {
 
     private val latch = CountUpDownLatch()
+    private val settleDelayStep = DelayStep(SETTLE_DURATION)
 
-    private val initialRA = mount.rightAscension
-    private val initialDEC = mount.declination
+    @Volatile private var initialRA = mount.rightAscension
+    @Volatile private var initialDEC = mount.declination
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onMountEvent(event: MountEvent) {
@@ -42,7 +45,7 @@ data class MountSlewStep(
     }
 
     override fun execute(stepExecution: StepExecution): StepResult {
-        if (mount.connected &&
+        if (mount.connected && !mount.parked && !mount.parking && !mount.slewing &&
             rightAscension.isFinite() && declination.isFinite() &&
             (mount.rightAscension != rightAscension || mount.declination != declination)
         ) {
@@ -50,7 +53,10 @@ data class MountSlewStep(
 
             latch.countUp()
 
-            LOG.info("moving mount. mount={}, ra={}, dec={}", mount, mount.rightAscension.formatHMS(), mount.declination.formatSignedDMS())
+            LOG.info("moving mount. mount={}, ra={}, dec={}", mount, rightAscension.formatHMS(), declination.formatSignedDMS())
+
+            initialRA = mount.rightAscension
+            initialDEC = mount.declination
 
             if (j2000) {
                 if (goTo) mount.goToJ2000(rightAscension, declination)
@@ -62,9 +68,13 @@ data class MountSlewStep(
 
             latch.await()
 
-            LOG.info("mount moved. mount={}, ra={}, dec={}", mount, mount.rightAscension.formatHMS(), mount.declination.formatSignedDMS())
+            LOG.info("mount moved. mount={}", mount)
+
+            settleDelayStep.execute(stepExecution)
 
             EventBus.getDefault().unregister(this)
+        } else {
+            LOG.warn("cannot move mount. mount={}", mount)
         }
 
         return StepResult.FINISHED
@@ -73,10 +83,12 @@ data class MountSlewStep(
     override fun stop(mayInterruptIfRunning: Boolean) {
         mount.abortMotion()
         latch.reset()
+        settleDelayStep.stop(mayInterruptIfRunning)
     }
 
     companion object {
 
         @JvmStatic private val LOG = loggerFor<MountSlewStep>()
+        @JvmStatic private val SETTLE_DURATION: Duration = Duration.ofSeconds(5)
     }
 }

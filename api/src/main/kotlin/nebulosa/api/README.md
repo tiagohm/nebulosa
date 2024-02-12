@@ -181,7 +181,7 @@ URL: `localhost:{PORT}/ws`
 
 ### DARV Polar Alignment
 
-#### DARV_ALIGNMENT.ELAPSED
+#### DARV.ELAPSED
 
 ```json5
 {
@@ -191,6 +191,27 @@ URL: `localhost:{PORT}/ws`
     "progress": 0.0,
     "direction": "EAST",
     "state": "FORWARD|BACKWARD"
+}
+```
+
+### Three Point Polar Alignment
+
+#### TPPA.ELAPSED
+
+```json5
+{
+    "camera": {},
+    "mount": {},
+    "elapsedTime": 0,
+    "stepCount": 0,
+    "state": "SLEWING|SOLVING|SOLVED|COMPUTED|FAILED|FINISHED",
+    "rightAscension": "00h00m00s",
+    "declination": "00d00m00s",
+    "azimuthError": "00d00m00s",
+    "altitudeError": "00d00m00s",
+    "totalError": "00d00m00s",
+    "azimuthErrorDirection": "",
+    "altitudeErrorDirection": ""
 }
 ```
 

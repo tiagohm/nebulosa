@@ -1,3 +1,4 @@
+import { Angle } from './atlas.types'
 import { Camera, CameraStartCapture } from './camera.types'
 import { GuideDirection, GuideOutput } from './guider.types'
 import { Mount } from './mount.types'
@@ -17,7 +18,7 @@ export interface AlignmentPreference {
     darvHemisphere: Hemisphere
     tppaStartFromCurrentPosition: boolean
     tppaEastDirection: boolean
-    tppaRefractionAdjustment: boolean
+    tppaCompensateRefraction: boolean
     tppaStopTrackingWhenDone: boolean
     tppaStepDistance: number
     tppaPlateSolverType: PlateSolverType
@@ -29,7 +30,7 @@ export const EMPTY_ALIGNMENT_PREFERENCE: AlignmentPreference = {
     darvHemisphere: 'NORTHERN',
     tppaStartFromCurrentPosition: true,
     tppaEastDirection: true,
-    tppaRefractionAdjustment: true,
+    tppaCompensateRefraction: true,
     tppaStopTrackingWhenDone: true,
     tppaStepDistance: 10,
     tppaPlateSolverType: 'ASTAP',
@@ -57,7 +58,7 @@ export interface TPPAStart {
     plateSolver: PlateSolverOptions
     startFromCurrentPosition: boolean
     eastDirection: boolean
-    refractionAdjustment: boolean
+    compensateRefraction: boolean
     stopTrackingWhenDone: boolean
     stepDistance: number
 }
@@ -68,8 +69,11 @@ export interface TPPAElapsed extends MessageEvent {
     elapsedTime: number
     stepCount: number
     state: TPPAState
-    rightAscension: number
-    declination: number
-    azimuth: number
-    altitude: number
+    rightAscension: Angle
+    declination: Angle
+    azimuthError: Angle
+    altitudeError: Angle
+    totalError: Angle
+    azimuthErrorDirection: string
+    altitudeErrorDirection: string
 }

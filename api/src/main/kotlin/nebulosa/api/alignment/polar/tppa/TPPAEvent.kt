@@ -1,10 +1,14 @@
 package nebulosa.api.alignment.polar.tppa
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import nebulosa.api.beans.converters.angle.DeclinationSerializer
+import nebulosa.api.beans.converters.angle.RightAscensionSerializer
 import nebulosa.api.messages.MessageEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.mount.Mount
 import nebulosa.math.Angle
 import java.time.Duration
+import kotlin.math.hypot
 
 sealed interface TPPAEvent : MessageEvent {
 
@@ -24,22 +28,31 @@ sealed interface TPPAEvent : MessageEvent {
     val declination: Angle
         get() = 0.0
 
-    val azimuth: Angle
+    val azimuthError: Angle
         get() = 0.0
 
-    val altitude: Angle
+    val altitudeError: Angle
         get() = 0.0
+
+    val totalError: Angle
+        get() = 0.0
+
+    val azimuthErrorDirection: String
+        get() = ""
+
+    val altitudeErrorDirection: String
+        get() = ""
 
     override val eventName
-        get() = "TPPA_ALIGNMENT.ELAPSED"
+        get() = "TPPA.ELAPSED"
 
     data class Slewing(
         override val camera: Camera,
         override val mount: Mount?,
         override val stepCount: Int,
         override val elapsedTime: Duration,
-        override val rightAscension: Angle,
-        override val declination: Angle,
+        @field:JsonSerialize(using = RightAscensionSerializer::class) override val rightAscension: Angle,
+        @field:JsonSerialize(using = DeclinationSerializer::class) override val declination: Angle,
     ) : TPPAEvent {
 
         override val state = TPPAState.SLEWING
@@ -60,8 +73,8 @@ sealed interface TPPAEvent : MessageEvent {
         override val mount: Mount?,
         override val stepCount: Int,
         override val elapsedTime: Duration,
-        override val rightAscension: Angle,
-        override val declination: Angle,
+        @field:JsonSerialize(using = RightAscensionSerializer::class) override val rightAscension: Angle,
+        @field:JsonSerialize(using = DeclinationSerializer::class) override val declination: Angle,
     ) : TPPAEvent {
 
         override val state = TPPAState.SOLVED
@@ -72,10 +85,13 @@ sealed interface TPPAEvent : MessageEvent {
         override val mount: Mount?,
         override val stepCount: Int,
         override val elapsedTime: Duration,
-        override val azimuth: Double,
-        override val altitude: Double,
+        @field:JsonSerialize(using = DeclinationSerializer::class) override val azimuthError: Angle,
+        @field:JsonSerialize(using = DeclinationSerializer::class) override val altitudeError: Angle,
+        override val azimuthErrorDirection: String,
+        override val altitudeErrorDirection: String,
     ) : TPPAEvent {
 
+        @JsonSerialize(using = DeclinationSerializer::class) override val totalError = hypot(azimuthError, altitudeError)
         override val state = TPPAState.COMPUTED
     }
 

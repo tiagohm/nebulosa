@@ -89,8 +89,10 @@ data class TPPAStep(
         stopwatch.start()
 
         if (mount != null) {
+            val stepDistance = if (request.eastDirection) request.stepDistance else -request.stepDistance
+
             if (alignment.state in 1..2) {
-                val step = MountSlewStep(mount, mount.rightAscension + request.stepDistance.deg, mount.declination)
+                val step = MountSlewStep(mount, mount.rightAscension + stepDistance.deg, mount.declination)
                 mountSlewStep = step
                 listeners.forEach { it.slewStarted(this, step.rightAscension, step.declination) }
                 step.executeSingle(stepExecution)
@@ -106,10 +108,17 @@ data class TPPAStep(
         if (!cancellationToken.isCancelled) {
             val savedPath = cameraExposureStep.savedPath ?: return StepResult.FINISHED
             image = Fits(savedPath).also(Fits::read).use { image?.load(it, false) ?: Image.open(it, false) }
-            val radius = if (mount == null) 0.0 else ThreePointPolarAlignment.DEFAULT_RADIUS
-            val result = alignment.align(savedPath, image!!, mount?.rightAscension ?: 0.0, mount?.declination ?: 0.0, radius)
 
-            LOG.info("alignment completed. result=$result")
+            val radius = if (mount == null) 0.0 else ThreePointPolarAlignment.DEFAULT_RADIUS
+
+            val result = alignment.align(
+                savedPath, image!!, mount?.rightAscension ?: 0.0, mount?.declination ?: 0.0, radius,
+                request.compensateRefraction, cancellationToken
+            )
+
+            LOG.info("alignment completed. result=$result, cancelled={}", cancellationToken.isCancelled)
+
+            if (cancellationToken.isCancelled) return StepResult.FINISHED
 
             when (result) {
                 is ThreePointPolarAlignmentResult.NeedMoreMeasurement -> {
