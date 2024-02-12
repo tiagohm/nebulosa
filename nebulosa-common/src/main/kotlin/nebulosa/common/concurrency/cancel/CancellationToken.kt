@@ -62,7 +62,7 @@ class CancellationToken private constructor(private val completable: Completable
     }
 
     override fun isCancelled(): Boolean {
-        return isDone
+        return completable != null && isDone
     }
 
     override fun isDone(): Boolean {

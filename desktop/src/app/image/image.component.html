@@ -211,7 +211,7 @@
                 </span>
             </div>
         </div>
-        <div class="grid mb-2">
+        <div class="grid mb-2 mt-2">
             <div class="col-12 flex justify-content-center">
                 <p-button [disabled]="solving || !solved" (onClick)="mountSync(solvedData!)" icon="mdi mdi-sync" label="Sync"
                           [text]="true" severity="info" size="small" />
@@ -220,7 +220,7 @@
                 <p-button [disabled]="solving || !solved" (onClick)="mountSlew(solvedData!)" icon="mdi mdi-telescope" label="Slew"
                           [text]="true" severity="success" size="small" />
                 <p-button [disabled]="solving || !solved" (onClick)="frame(solvedData!)" icon="mdi mdi-image" label="Frame"
-                          [text]="true" />
+                          [text]="true" size="small" />
             </div>
         </div>
 

@@ -333,6 +333,7 @@ export class EnumPipe implements PipeTransform {
         'COMPUTED': 'Computed',
         'FAILED': 'Failed',
         'FINISHED': 'Finished',
+        'PAUSING': 'Pausing',
         // Camera Exposure.
         'SETTLING': 'Settling',
         'WAITING': 'Waiting',

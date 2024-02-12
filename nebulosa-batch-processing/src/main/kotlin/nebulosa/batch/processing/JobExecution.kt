@@ -24,16 +24,13 @@ class JobExecution(
     @JvmField val cancellationToken = CancellationToken()
 
     inline val canContinue
-        get() = status == JobStatus.STARTED
+        get() = status == JobStatus.STARTED || status == JobStatus.PAUSED
 
     inline val isStopping
         get() = status == JobStatus.STOPPING
 
     inline val isStopped
         get() = status == JobStatus.STOPPED
-
-    inline val isPausing
-        get() = status == JobStatus.PAUSING
 
     inline val isPaused
         get() = status == JobStatus.PAUSED

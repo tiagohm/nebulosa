@@ -5,7 +5,6 @@ enum class JobStatus {
     STARTED,
     STOPPING,
     STOPPED,
-    PAUSING,
     PAUSED,
     FAILED,
     COMPLETED,

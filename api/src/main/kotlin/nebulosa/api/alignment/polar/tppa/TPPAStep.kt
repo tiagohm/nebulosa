@@ -36,6 +36,7 @@ data class TPPAStep(
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
     private val listeners = LinkedHashSet<TPPAListener>()
     private val stopwatch = Stopwatch()
+    private val stepDistances = DoubleArray(2) { if (request.eastDirection) request.stepDistance else -request.stepDistance }
 
     @Volatile private var image: Image? = null
     @Volatile private var mountSlewStep: MountSlewStep? = null
@@ -101,13 +102,12 @@ data class TPPAStep(
 
         // Mount slew step.
         if (mount != null) {
-            val stepDistance = if (request.eastDirection) request.stepDistance else -request.stepDistance
-
-            if (alignment.state in 1..2) {
-                val step = MountSlewStep(mount, mount.rightAscension + stepDistance.deg, mount.declination)
+            if (alignment.state in 1..2 && stepDistances[alignment.state - 1] != 0.0) {
+                val step = MountSlewStep(mount, mount.rightAscension + stepDistances[alignment.state - 1].deg, mount.declination)
                 mountSlewStep = step
                 listeners.forEach { it.slewStarted(this, step.rightAscension, step.declination) }
                 step.executeSingle(stepExecution)
+                stepDistances[alignment.state - 1] = 0.0
             }
         }
 
@@ -151,10 +151,14 @@ data class TPPAStep(
                     }
                 }
                 is ThreePointPolarAlignmentResult.Measured -> {
+                    noSolutionAttempts = 0
+
                     listeners.forEach {
                         it.solverFinished(this, result.rightAscension, result.declination)
                         it.polarAlignmentComputed(this, result.azimuth, result.altitude)
                     }
+
+                    return StepResult.CONTINUABLE
                 }
             }
         }

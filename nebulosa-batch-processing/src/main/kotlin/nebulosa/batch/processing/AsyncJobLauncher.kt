@@ -155,11 +155,11 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
     }
 
     override fun pause(jobExecution: JobExecution) {
-        if (!jobExecution.isDone && !jobExecution.isPausing && !jobExecution.isPaused) {
+        if (!jobExecution.isDone && !jobExecution.isPaused) {
             val job = jobExecution.job
 
             if (job is Pauseable) {
-                jobExecution.status = JobStatus.PAUSING
+                jobExecution.status = JobStatus.PAUSED
                 job.pause()
             }
 
@@ -170,7 +170,7 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
     }
 
     override fun unpause(jobExecution: JobExecution) {
-        if (!jobExecution.isDone && !jobExecution.isPausing && jobExecution.isPaused) {
+        if (!jobExecution.isDone && jobExecution.isPaused) {
             val job = jobExecution.job
 
             if (job is Pauseable) {

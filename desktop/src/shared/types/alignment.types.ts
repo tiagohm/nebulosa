@@ -7,7 +7,7 @@ export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
 
 export type DARVState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'
 
-export type TPPAState = 'IDLE' | 'SLEWING' | 'SOLVING' | 'SOLVED' | 'PAUSED' | 'COMPUTED' | 'FAILED' | 'FINISHED'
+export type TPPAState = 'IDLE' | 'SLEWING' | 'SOLVING' | 'SOLVED' | 'PAUSING' | 'PAUSED' | 'COMPUTED' | 'FAILED' | 'FINISHED'
 
 export type AlignmentMethod = 'DARV' | 'TPPA'
 

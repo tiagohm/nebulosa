@@ -167,7 +167,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         electron.on('TPPA.ELAPSED', event => {
             if (event.id === this.id) {
                 ngZone.run(() => {
-                    this.status = event.state
+                    if (this.status !== 'PAUSING' || event.state === 'PAUSED') {
+                        this.status = event.state
+                    }
+
                     this.running = event.state !== 'FINISHED'
                     this.elapsedTime = event.elapsedTime
 
@@ -314,6 +317,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     tppaPause() {
+        this.status = 'PAUSING'
         this.api.tppaPause(this.id)
     }
 
