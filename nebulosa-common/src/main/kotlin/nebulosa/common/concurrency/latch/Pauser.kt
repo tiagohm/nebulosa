@@ -4,20 +4,20 @@ import java.io.Closeable
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
-class Pauser : Closeable {
+open class Pauser : Pauseable, Closeable {
 
     private val latch = CountUpDownLatch()
 
-    val isPaused
+    final override val isPaused
         get() = !latch.get()
 
-    fun pause() {
+    final override fun pause() {
         if (latch.get()) {
             latch.countUp(1)
         }
     }
 
-    fun unpause() {
+    final override fun unpause() {
         if (!latch.get()) {
             latch.reset()
         }
@@ -27,15 +27,15 @@ class Pauser : Closeable {
         unpause()
     }
 
-    fun waitWhileIsPaused() {
+    fun waitIfPaused() {
         latch.await()
     }
 
-    fun waitWhileIsPaused(timeout: Long, unit: TimeUnit): Boolean {
+    fun waitIfPaused(timeout: Long, unit: TimeUnit): Boolean {
         return latch.await(timeout, unit)
     }
 
-    fun waitWhileIsPaused(timeout: Duration): Boolean {
+    fun waitIfPaused(timeout: Duration): Boolean {
         return latch.await(timeout)
     }
 }

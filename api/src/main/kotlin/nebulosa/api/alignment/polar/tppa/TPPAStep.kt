@@ -10,7 +10,7 @@ import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
-import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.common.concurrency.latch.Pauseable
 import nebulosa.common.time.Stopwatch
 import nebulosa.fits.Fits
 import nebulosa.imaging.Image
@@ -30,17 +30,17 @@ data class TPPAStep(
     private val longitude: Angle = mount!!.longitude,
     private val latitude: Angle = mount!!.latitude,
     private val cameraRequest: CameraStartCaptureRequest = request.capture,
-) : Step {
+) : Step, Pauseable {
 
     private val cameraExposureStep = CameraExposureStep(camera, cameraRequest)
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
     private val listeners = LinkedHashSet<TPPAListener>()
     private val stopwatch = Stopwatch()
-    private val cancellationToken = CancellationToken()
 
     @Volatile private var image: Image? = null
     @Volatile private var mountSlewStep: MountSlewStep? = null
     @Volatile private var noSolutionAttempts = 0
+    @Volatile private var stepExecution: StepExecution? = null
 
     val stepCount
         get() = alignment.state
@@ -78,16 +78,28 @@ data class TPPAStep(
 
         stopwatch.stop()
 
-        listeners.forEach { it.polarAlignmentFinished(this, cancellationToken.isCancelled) }
+        listeners.forEach { it.polarAlignmentFinished(this, jobExecution.cancellationToken.isCancelled) }
     }
 
     override fun execute(stepExecution: StepExecution): StepResult {
+        val cancellationToken = stepExecution.jobExecution.cancellationToken
+
         if (cancellationToken.isCancelled) return StepResult.FINISHED
 
         LOG.debug { "executing TPPA. camera=$camera, mount=$mount, state=${alignment.state}" }
 
+        this.stepExecution = stepExecution
+
+        if (cancellationToken.isPaused) {
+            listeners.forEach { it.polarAlignmentPaused(this) }
+            cancellationToken.waitIfPaused()
+        }
+
+        if (cancellationToken.isCancelled) return StepResult.FINISHED
+
         stopwatch.start()
 
+        // Mount slew step.
         if (mount != null) {
             val stepDistance = if (request.eastDirection) request.stepDistance else -request.stepDistance
 
@@ -103,6 +115,7 @@ data class TPPAStep(
 
         listeners.forEach { it.solverStarted(this) }
 
+        // Camera capture step.
         cameraExposureStep.execute(stepExecution)
 
         if (!cancellationToken.isCancelled) {
@@ -111,6 +124,7 @@ data class TPPAStep(
 
             val radius = if (mount == null) 0.0 else ThreePointPolarAlignment.DEFAULT_RADIUS
 
+            // Polar alignment step.
             val result = alignment.align(
                 savedPath, image!!, mount?.rightAscension ?: 0.0, mount?.declination ?: 0.0, radius,
                 request.compensateRefraction, cancellationToken
@@ -149,9 +163,18 @@ data class TPPAStep(
     }
 
     override fun stop(mayInterruptIfRunning: Boolean) {
-        cancellationToken.cancel(mayInterruptIfRunning)
         mountSlewStep?.stop(mayInterruptIfRunning)
         cameraExposureStep.stop(mayInterruptIfRunning)
+    }
+
+    override val isPaused
+        get() = stepExecution?.jobExecution?.cancellationToken?.isPaused ?: false
+
+    override fun pause() {
+        stopwatch.stop()
+    }
+
+    override fun unpause() {
     }
 
     companion object {

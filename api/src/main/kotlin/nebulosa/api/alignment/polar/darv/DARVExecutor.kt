@@ -24,15 +24,10 @@ class DARVExecutor(
 
         LOG.info { "starting DARV. camera=$camera, guideOutput=$guideOutput, request=$request" }
 
-        return with(DARVJob(camera, guideOutput, request)) {
-            subscribe(messageService::sendMessage)
-            register(jobLauncher.launch(this))
-            id
-        }
-    }
-
-    fun stop(camera: Camera, guideOutput: GuideOutput) {
-        stopWithAny(camera, guideOutput)
+        val darvJob = DARVJob(camera, guideOutput, request)
+        darvJob.subscribe(messageService::sendMessage)
+        register(jobLauncher.launch(darvJob))
+        return darvJob.id
     }
 
     companion object {

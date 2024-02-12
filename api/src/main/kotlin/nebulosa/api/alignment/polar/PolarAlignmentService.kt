@@ -21,8 +21,8 @@ class PolarAlignmentService(
         return darvExecutor.execute(camera, guideOutput, darvStartRequest)
     }
 
-    fun darvStop(camera: Camera, guideOutput: GuideOutput) {
-        darvExecutor.stop(camera, guideOutput)
+    fun darvStop(id: String) {
+        darvExecutor.stop(id)
     }
 
     fun tppaStart(camera: Camera, mount: Mount, tppaStartRequest: TPPAStartRequest): String {
@@ -31,7 +31,15 @@ class PolarAlignmentService(
         return tppaExecutor.execute(camera, mount, tppaStartRequest)
     }
 
-    fun tppaStop(camera: Camera, mount: Mount) {
-        tppaExecutor.stop(camera, mount)
+    fun tppaStop(id: String) {
+        tppaExecutor.stop(id)
+    }
+
+    fun tppaPause(id: String) {
+        tppaExecutor.pause(id)
+    }
+
+    fun tppaUnpause(id: String) {
+        tppaExecutor.unpause(id)
     }
 }

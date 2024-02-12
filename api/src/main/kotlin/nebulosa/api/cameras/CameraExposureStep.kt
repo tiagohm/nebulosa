@@ -84,7 +84,6 @@ data class CameraExposureStep(
     }
 
     override fun beforeJob(jobExecution: JobExecution) {
-        camera.enableBlob()
         exposureCount = jobExecution.context.getInt(EXPOSURE_COUNT, exposureCount)
         captureElapsedTime = jobExecution.context.getDuration(CAPTURE_ELAPSED_TIME, captureElapsedTime)
         jobExecution.context.populateExecutionContext(Duration.ZERO, estimatedCaptureTime, 0.0)
@@ -112,7 +111,7 @@ data class CameraExposureStep(
     override fun stop(mayInterruptIfRunning: Boolean) {
         LOG.info("stopping camera exposure. camera={}", camera)
         camera.abortCapture()
-        camera.disableBlob()
+        // camera.disableBlob()
         aborted = true
         latch.reset()
     }
@@ -139,6 +138,8 @@ data class CameraExposureStep(
                 latch.countUp()
 
                 stepExecution.context[EXPOSURE_COUNT] = ++exposureCount
+
+                camera.enableBlob()
 
                 listeners.forEach { it.onExposureStarted(this, stepExecution) }
 

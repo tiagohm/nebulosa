@@ -200,8 +200,7 @@ URL: `localhost:{PORT}/ws`
 
 ```json5
 {
-    "camera": {},
-    "mount": {},
+    "id": "",
     "elapsedTime": 0,
     "stepCount": 0,
     "state": "SLEWING|SOLVING|SOLVED|COMPUTED|FAILED|FINISHED",

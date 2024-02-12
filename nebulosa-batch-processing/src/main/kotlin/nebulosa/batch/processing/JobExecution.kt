@@ -32,6 +32,12 @@ class JobExecution(
     inline val isStopped
         get() = status == JobStatus.STOPPED
 
+    inline val isPausing
+        get() = status == JobStatus.PAUSING
+
+    inline val isPaused
+        get() = status == JobStatus.PAUSED
+
     inline val isCompleted
         get() = status == JobStatus.COMPLETED
 

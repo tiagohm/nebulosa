@@ -10,6 +10,8 @@ interface TPPAListener {
 
     fun solverFinished(step: TPPAStep, rightAscension: Angle, declination: Angle)
 
+    fun polarAlignmentPaused(step: TPPAStep)
+
     fun polarAlignmentComputed(step: TPPAStep, azimuth: Angle, altitude: Angle)
 
     fun solverFailed(step: TPPAStep)

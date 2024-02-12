@@ -1,14 +1,13 @@
 import { Angle } from './atlas.types'
-import { Camera, CameraStartCapture } from './camera.types'
-import { GuideDirection, GuideOutput } from './guider.types'
-import { Mount } from './mount.types'
+import { CameraStartCapture } from './camera.types'
+import { GuideDirection } from './guider.types'
 import { PlateSolverOptions, PlateSolverType } from './settings.types'
 
 export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
 
 export type DARVState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'
 
-export type TPPAState = 'IDLE' | 'SLEWING' | 'SOLVING' | 'SOLVED' | 'COMPUTED' | 'FAILED' | 'FINISHED'
+export type TPPAState = 'IDLE' | 'SLEWING' | 'SOLVING' | 'SOLVED' | 'PAUSED' | 'COMPUTED' | 'FAILED' | 'FINISHED'
 
 export type AlignmentMethod = 'DARV' | 'TPPA'
 
@@ -45,8 +44,7 @@ export interface DARVStart {
 }
 
 export interface DARVElapsed extends MessageEvent {
-    camera: Camera
-    guideOutput: GuideOutput
+    id: string
     remainingTime: number
     progress: number
     state: DARVState
@@ -64,8 +62,7 @@ export interface TPPAStart {
 }
 
 export interface TPPAElapsed extends MessageEvent {
-    camera: Camera
-    mount?: Mount
+    id: string
     elapsedTime: number
     stepCount: number
     state: TPPAState

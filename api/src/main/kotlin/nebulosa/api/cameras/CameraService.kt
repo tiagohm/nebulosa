@@ -29,15 +29,16 @@ class CameraService(
     }
 
     @Synchronized
-    fun startCapture(camera: Camera, request: CameraStartCaptureRequest) {
+    fun startCapture(camera: Camera, request: CameraStartCaptureRequest): String {
         val savePath = request.savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
             ?: Path.of("$capturesPath", camera.name, request.frameType.name)
 
-        cameraCaptureExecutor
+        return cameraCaptureExecutor
             .execute(camera, request.copy(savePath = savePath))
     }
 
+    @Synchronized
     fun abortCapture(camera: Camera) {
         cameraCaptureExecutor.stop(camera)
     }

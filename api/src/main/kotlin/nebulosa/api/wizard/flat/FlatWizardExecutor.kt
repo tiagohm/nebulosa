@@ -14,7 +14,7 @@ class FlatWizardExecutor(
     override val jobLauncher: JobLauncher,
 ) : JobExecutor() {
 
-    fun execute(camera: Camera, request: FlatWizardRequest) {
+    fun execute(camera: Camera, request: FlatWizardRequest): String {
         check(camera.connected) { "camera is not connected" }
         check(findJobExecutionWithAny(camera) == null) { "job is already running for camera: [${camera.name}]" }
 
@@ -23,10 +23,11 @@ class FlatWizardExecutor(
         val flatWizardJob = FlatWizardJob(camera, request)
         flatWizardJob.subscribe(messageService::sendMessage)
         register(jobLauncher.launch(flatWizardJob))
+        return flatWizardJob.id
     }
 
     fun stop(camera: Camera) {
-        stopWithAny(camera)
+        findJobExecutionWithAny(camera)?.also { jobLauncher.stop(it) }
     }
 
     companion object {

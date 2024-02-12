@@ -1,25 +1,25 @@
 package nebulosa.common.concurrency.cancel
 
+import nebulosa.common.concurrency.latch.Pauser
 import java.io.Closeable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 
 typealias CancellationListener = Consumer<CancellationSource>
 
-class CancellationToken private constructor(private val completable: CompletableFuture<CancellationSource>?) : Closeable, Future<CancellationSource> {
+class CancellationToken private constructor(private val completable: CompletableFuture<CancellationSource>?) : Pauser(), Closeable,
+    Future<CancellationSource> {
 
     constructor() : this(CompletableFuture<CancellationSource>())
 
     private val listeners = LinkedHashSet<CancellationListener>()
-    private val completed = AtomicBoolean()
 
     init {
         completable?.whenComplete { source, _ ->
             synchronized(this) {
-                completed.set(true)
+                unpause()
 
                 if (source != null) {
                     listeners.forEach { it.accept(source) }
@@ -33,7 +33,7 @@ class CancellationToken private constructor(private val completable: Completable
     @Synchronized
     fun listen(listener: CancellationListener) {
         if (completable != null) {
-            if (completed.get() || isDone) {
+            if (isDone) {
                 listener.accept(CancellationSource.Listen)
             } else {
                 listeners.add(listener)
@@ -56,6 +56,7 @@ class CancellationToken private constructor(private val completable: Completable
 
     @Synchronized
     fun cancel(source: CancellationSource): Boolean {
+        unpause()
         completable?.complete(source) ?: return false
         return true
     }
@@ -77,6 +78,8 @@ class CancellationToken private constructor(private val completable: Completable
     }
 
     override fun close() {
+        super.close()
+
         if (!isDone) {
             completable?.complete(CancellationSource.Close)
         }

@@ -2,6 +2,7 @@ package nebulosa.batch.processing
 
 import nebulosa.common.concurrency.cancel.CancellationListener
 import nebulosa.common.concurrency.cancel.CancellationSource
+import nebulosa.common.concurrency.latch.Pauseable
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import java.io.Closeable
@@ -149,6 +150,36 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
 
             if (!jobExecution.cancellationToken.isDone) {
                 jobExecution.cancellationToken.cancel(mayInterruptIfRunning)
+            }
+        }
+    }
+
+    override fun pause(jobExecution: JobExecution) {
+        if (!jobExecution.isDone && !jobExecution.isPausing && !jobExecution.isPaused) {
+            val job = jobExecution.job
+
+            if (job is Pauseable) {
+                jobExecution.status = JobStatus.PAUSING
+                job.pause()
+            }
+
+            if (!jobExecution.cancellationToken.isDone) {
+                jobExecution.cancellationToken.pause()
+            }
+        }
+    }
+
+    override fun unpause(jobExecution: JobExecution) {
+        if (!jobExecution.isDone && !jobExecution.isPausing && jobExecution.isPaused) {
+            val job = jobExecution.job
+
+            if (job is Pauseable) {
+                job.unpause()
+                jobExecution.status = JobStatus.STARTED
+            }
+
+            if (!jobExecution.cancellationToken.isDone) {
+                jobExecution.cancellationToken.unpause()
             }
         }
     }

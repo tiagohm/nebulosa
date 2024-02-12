@@ -43,39 +43,43 @@ data class TPPAJob(
     }
 
     override fun slewStarted(step: TPPAStep, rightAscension: Angle, declination: Angle) {
-        onNext(TPPAEvent.Slewing(step.camera, step.mount, step.stepCount, step.elapsedTime, rightAscension, declination))
+        onNext(TPPAEvent.Slewing(id, step.stepCount, step.elapsedTime, rightAscension, declination))
     }
 
     override fun solverStarted(step: TPPAStep) {
-        onNext(TPPAEvent.Solving(step.camera, step.mount, step.stepCount, step.elapsedTime))
+        onNext(TPPAEvent.Solving(id, step.stepCount, step.elapsedTime))
     }
 
     override fun solverFinished(step: TPPAStep, rightAscension: Angle, declination: Angle) {
-        onNext(TPPAEvent.Solved(step.camera, step.mount, step.stepCount, step.elapsedTime, rightAscension, declination))
+        onNext(TPPAEvent.Solved(id, step.stepCount, step.elapsedTime, rightAscension, declination))
+    }
+
+    override fun polarAlignmentPaused(step: TPPAStep) {
+        onNext(TPPAEvent.Paused(id, step.stepCount, step.elapsedTime))
     }
 
     override fun polarAlignmentComputed(step: TPPAStep, azimuth: Angle, altitude: Angle) {
-        val azimuthErrorDir = when {
+        val azimuthErrorDirection = when {
             azimuth > 0 -> if (latitude > 0) "🠔 Move LEFT/WEST" else "🠔 Move LEFT/EAST"
             azimuth < 0 -> if (latitude > 0) "Move RIGHT/EAST 🠖" else "Move RIGHT/WEST 🠖"
             else -> ""
         }
 
-        val altitudeErrorDir = when {
+        val altitudeErrorDirection = when {
             altitude > 0 -> if (latitude > 0) "🠗 Move DOWN" else "Move UP 🠕"
             altitude < 0 -> if (latitude > 0) "Move UP 🠕" else "🠗 Move DOWN"
             else -> ""
         }
 
-        onNext(TPPAEvent.Computed(step.camera, step.mount, step.stepCount, step.elapsedTime, azimuth, altitude, azimuthErrorDir, altitudeErrorDir))
+        onNext(TPPAEvent.Computed(id, step.stepCount, step.elapsedTime, azimuth, altitude, azimuthErrorDirection, altitudeErrorDirection))
     }
 
     override fun solverFailed(step: TPPAStep) {
-        onNext(TPPAEvent.Failed(step.camera, step.mount, step.stepCount, step.elapsedTime))
+        onNext(TPPAEvent.Failed(id, step.stepCount, step.elapsedTime))
     }
 
     override fun polarAlignmentFinished(step: TPPAStep, aborted: Boolean) {
-        onNext(TPPAEvent.Finished(step.camera, step.mount))
+        onNext(TPPAEvent.Finished(id))
     }
 
     override fun contains(data: Any): Boolean {

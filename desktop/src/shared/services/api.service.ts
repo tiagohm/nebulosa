@@ -532,21 +532,29 @@ export class ApiService {
     // DARV
 
     darvStart(camera: Camera, guideOutput: GuideOutput, data: DARVStart) {
-        return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
+        return this.http.put<string>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
     }
 
-    darvStop(camera: Camera, guideOutput: GuideOutput) {
-        return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/stop`)
+    darvStop(id: string) {
+        return this.http.put<void>(`polar-alignment/darv/${id}/stop`)
     }
 
     // TPPA
 
     tppaStart(camera: Camera, mount: Mount, data: TPPAStart) {
-        return this.http.put<void>(`polar-alignment/tppa/${camera.name}/${mount.name}/start`, data)
+        return this.http.put<string>(`polar-alignment/tppa/${camera.name}/${mount.name}/start`, data)
     }
 
-    tppaStop(camera: Camera, mount: Mount) {
-        return this.http.put<void>(`polar-alignment/tppa/${camera.name}/${mount.name}/stop`)
+    tppaStop(id: string) {
+        return this.http.put<void>(`polar-alignment/tppa/${id}/stop`)
+    }
+
+    tppaPause(id: string) {
+        return this.http.put<void>(`polar-alignment/tppa/${id}/pause`)
+    }
+
+    tppaUnpause(id: string) {
+        return this.http.put<void>(`polar-alignment/tppa/${id}/unpause`)
     }
 
     // SEQUENCER

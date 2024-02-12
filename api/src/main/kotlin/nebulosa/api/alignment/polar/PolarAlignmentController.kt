@@ -6,10 +6,7 @@ import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("polar-alignment")
@@ -23,9 +20,9 @@ class PolarAlignmentController(
         @RequestBody body: DARVStartRequest,
     ) = polarAlignmentService.darvStart(camera, guideOutput, body)
 
-    @PutMapping("darv/{camera}/{guideOutput}/stop")
-    fun darvStop(@DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam guideOutput: GuideOutput) {
-        polarAlignmentService.darvStop(camera, guideOutput)
+    @PutMapping("darv/{id}/stop")
+    fun darvStop(@PathVariable id: String) {
+        polarAlignmentService.darvStop(id)
     }
 
     @PutMapping("tppa/{camera}/{mount}/start")
@@ -34,8 +31,18 @@ class PolarAlignmentController(
         @RequestBody body: TPPAStartRequest,
     ) = polarAlignmentService.tppaStart(camera, mount, body)
 
-    @PutMapping("tppa/{camera}/{mount}/stop")
-    fun tppaStop(@DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam mount: Mount) {
-        polarAlignmentService.tppaStop(camera, mount)
+    @PutMapping("tppa/{id}/stop")
+    fun tppaStop(@PathVariable id: String) {
+        polarAlignmentService.tppaStop(id)
+    }
+
+    @PutMapping("tppa/{id}/pause")
+    fun tppaPause(@PathVariable id: String) {
+        polarAlignmentService.tppaPause(id)
+    }
+
+    @PutMapping("tppa/{id}/unpause")
+    fun tppaUnpause(@PathVariable id: String) {
+        polarAlignmentService.tppaUnpause(id)
     }
 }

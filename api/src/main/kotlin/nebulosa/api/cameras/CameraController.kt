@@ -54,9 +54,7 @@ class CameraController(
     fun startCapture(
         @DeviceOrEntityParam camera: Camera,
         @RequestBody body: CameraStartCaptureRequest,
-    ) {
-        cameraService.startCapture(camera, body)
-    }
+    ) = cameraService.startCapture(camera, body)
 
     @PutMapping("{camera}/capture/abort")
     fun abortCapture(@DeviceOrEntityParam camera: Camera) {

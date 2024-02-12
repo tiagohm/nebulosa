@@ -28,15 +28,10 @@ class TPPAExecutor(
 
         val solver = plateSolverService.solverFor(request.plateSolver)
 
-        return with(TPPAJob(camera, request, solver, mount)) {
-            subscribe(this@TPPAExecutor)
-            register(jobLauncher.launch(this))
-            id
-        }
-    }
-
-    fun stop(camera: Camera, mount: Mount) {
-        stopWithAny(camera, mount)
+        val tppaJob = TPPAJob(camera, request, solver, mount)
+        tppaJob.subscribe(this)
+        register(jobLauncher.launch(tppaJob))
+        return tppaJob.id
     }
 
     override fun accept(event: MessageEvent) {

@@ -14,7 +14,7 @@ data class LibAstrometryNetPlateSolver(private val solver: LibAstrometryNet) : P
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
-        cancellationToken: CancellationToken?,
+        cancellationToken: CancellationToken,
     ): PlateSolution {
         return PlateSolution.NO_SOLUTION
     }

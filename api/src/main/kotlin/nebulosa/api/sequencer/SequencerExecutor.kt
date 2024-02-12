@@ -18,11 +18,10 @@ class SequencerExecutor(
     override val jobLauncher: JobLauncher,
 ) : JobExecutor() {
 
-    @Synchronized
     fun execute(
         camera: Camera, request: SequencePlanRequest,
         wheel: FilterWheel? = null, focuser: Focuser? = null,
-    ) {
+    ): String {
         check(findJobExecutionWithAny(camera) == null) { "job is already running" }
 
         LOG.info { "starting sequencer. camera=$camera, wheel=$wheel, focuser=$focuser, request=$request" }
@@ -31,10 +30,11 @@ class SequencerExecutor(
         sequencerJob.subscribe(messageService::sendMessage)
         sequencerJob.initialize()
         register(jobLauncher.launch(sequencerJob))
+        return sequencerJob.id
     }
 
     fun stop(camera: Camera) {
-        stopWithAny(camera)
+        findJobExecutionWithAny(camera)?.also { jobLauncher.stop(it) }
     }
 
     companion object {

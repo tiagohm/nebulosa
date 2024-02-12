@@ -58,11 +58,11 @@ data class DARVJob(
     }
 
     override fun beforeJob(jobExecution: JobExecution) {
-        onNext(DARVStarted(camera, guideOutput, request.capture.exposureDelay, direction))
+        onNext(DARVEvent.Started(id, request.capture.exposureDelay, direction))
     }
 
     override fun afterJob(jobExecution: JobExecution) {
-        onNext(DARVFinished(camera, guideOutput))
+        onNext(DARVEvent.Finished(id))
     }
 
     override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution) {
@@ -74,13 +74,13 @@ data class DARVJob(
         val remainingTime = stepExecution.context.getDuration(DelayStep.REMAINING_TIME)
         val progress = stepExecution.context.getDouble(DelayStep.PROGRESS)
         val state = if (direction == this.direction) DARVState.FORWARD else DARVState.BACKWARD
-        onNext(DARVGuidePulseElapsed(camera, guideOutput, remainingTime, progress, direction, state))
+        onNext(DARVEvent.GuidePulseElapsed(id, remainingTime, progress, direction, state))
     }
 
     override fun onDelayElapsed(step: DelayStep, stepExecution: StepExecution) {
         val remainingTime = stepExecution.context.getDuration(DelayStep.REMAINING_TIME)
         val progress = stepExecution.context.getDouble(DelayStep.PROGRESS)
-        onNext(DARVInitialPauseElapsed(camera, guideOutput, remainingTime, progress))
+        onNext(DARVEvent.InitialPauseElapsed(id, remainingTime, progress))
     }
 
     override fun contains(data: Any): Boolean {

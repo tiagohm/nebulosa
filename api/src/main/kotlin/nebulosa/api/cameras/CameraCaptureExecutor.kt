@@ -16,8 +16,7 @@ class CameraCaptureExecutor(
     override val jobLauncher: JobLauncher,
 ) : JobExecutor() {
 
-    @Synchronized
-    fun execute(camera: Camera, request: CameraStartCaptureRequest) {
+    fun execute(camera: Camera, request: CameraStartCaptureRequest): String {
         check(camera.connected) { "camera is not connected" }
         check(findJobExecutionWithAny(camera) == null) { "Camera Capture job is already running" }
 
@@ -26,10 +25,11 @@ class CameraCaptureExecutor(
         val cameraCaptureJob = CameraCaptureJob(camera, request, guider)
         cameraCaptureJob.subscribe(messageService::sendMessage)
         register(jobLauncher.launch(cameraCaptureJob))
+        return cameraCaptureJob.id
     }
 
     fun stop(camera: Camera) {
-        stopWithAny(camera)
+        findJobExecutionWithAny(camera)?.also { jobLauncher.stop(it) }
     }
 
     companion object {
