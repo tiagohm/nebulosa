@@ -14,7 +14,7 @@ data class CameraExposureStarted(
     override val captureProgress: Double,
     override val captureRemainingTime: Duration,
     override val exposureRemainingTime: Duration,
-) : CameraExposureEvent {
+) : CameraCaptureElapsed {
 
     override val state = CameraCaptureState.EXPOSURE_STARTED
     override val exposureProgress = 0.0

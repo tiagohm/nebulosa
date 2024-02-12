@@ -5,7 +5,7 @@ import nebulosa.math.Distance
 import nebulosa.math.ONE_PARSEC
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.ICRF
-import nebulosa.time.UTC
+import nebulosa.time.InstantOfTime
 
 interface SkyObject {
 
@@ -29,8 +29,13 @@ interface SkyObject {
         @JvmStatic val MAGNITUDE_RANGE = MAGNITUDE_MIN..MAGNITUDE_MAX
 
         @JvmStatic
-        fun constellationFor(rightAscension: Angle, declination: Angle, time: UTC): Constellation {
-            return Constellation.find(ICRF.equatorial(rightAscension, declination, time = time))
+        fun constellationFor(icrf: ICRF): Constellation {
+            return Constellation.find(icrf)
+        }
+
+        @JvmStatic
+        fun constellationFor(rightAscension: Angle, declination: Angle, epoch: InstantOfTime? = null): Constellation {
+            return constellationFor(ICRF.equatorial(rightAscension, declination, epoch = epoch))
         }
 
         @JvmStatic

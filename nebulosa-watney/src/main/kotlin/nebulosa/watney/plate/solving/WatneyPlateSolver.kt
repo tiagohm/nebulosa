@@ -1,5 +1,6 @@
 package nebulosa.watney.plate.solving
 
+import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.erfa.SphericalCoordinate
 import nebulosa.fits.Fits
 import nebulosa.fits.Header
@@ -44,6 +45,7 @@ data class WatneyPlateSolver(
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
+        cancellationToken: CancellationToken,
     ): PlateSolution {
         val image = image ?: Fits(path!!).also(Fits::read).use(Image::open)
         val stars = (starDetector ?: DEFAULT_STAR_DETECTOR).detect(image)

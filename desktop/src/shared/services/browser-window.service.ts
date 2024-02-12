@@ -2,12 +2,11 @@ import { Injectable } from '@angular/core'
 import { v4 as uuidv4 } from 'uuid'
 import { SkyAtlasData } from '../../app/atlas/atlas.component'
 import { FramingData } from '../../app/framing/framing.component'
-import { ImageData } from '../../app/image/image.component'
 import { OpenWindow, OpenWindowOptions, OpenWindowOptionsWithData } from '../types/app.types'
 import { Camera, CameraDialogInput, CameraStartCapture } from '../types/camera.types'
 import { Device } from '../types/device.types'
 import { Focuser } from '../types/focuser.types'
-import { ImageSource } from '../types/image.types'
+import { ImageData, ImageSource } from '../types/image.types'
 import { Mount } from '../types/mount.types'
 import { FilterWheel, WheelDialogInput } from '../types/wheel.types'
 import { ElectronService } from './electron.service'
@@ -37,7 +36,7 @@ export class BrowserWindowService {
 
     openCameraDialog(options: OpenWindowOptionsWithData<CameraDialogInput>) {
         Object.assign(options, { icon: 'camera', width: 400, height: 424 })
-        return this.openModal<CameraDialogInput, CameraStartCapture>({ ...options, id: `camera.${options.data.request.camera!.name}.modal`, path: 'camera' })
+        return this.openModal<CameraDialogInput, CameraStartCapture>({ ...options, id: `camera.${options.data.camera.name}.modal`, path: 'camera' })
     }
 
     openFocuser(options: OpenWindowOptionsWithData<Focuser>) {
@@ -52,7 +51,7 @@ export class BrowserWindowService {
 
     openWheelDialog(options: OpenWindowOptionsWithData<WheelDialogInput>) {
         Object.assign(options, { icon: 'filter-wheel', width: 300, height: 217 })
-        return this.openModal<WheelDialogInput, CameraStartCapture>({ ...options, id: `wheel.${options.data.request.camera!.name}.modal`, path: 'wheel' })
+        return this.openModal<WheelDialogInput, CameraStartCapture>({ ...options, id: `wheel.${options.data.wheel.name}.modal`, path: 'wheel' })
     }
 
     openGuider(options: OpenWindowOptions = {}) {
@@ -90,7 +89,7 @@ export class BrowserWindowService {
     }
 
     openAlignment(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 400, height: 280 })
+        Object.assign(options, { icon: 'star', width: 450, height: 360 })
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
 

@@ -1,6 +1,5 @@
 package nebulosa.api.mounts
 
-import nebulosa.api.atlas.CurrentTime
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.image.ImageBucket
 import nebulosa.constants.PI
@@ -16,6 +15,9 @@ import nebulosa.nova.frame.Ecliptic
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
+import nebulosa.time.CurrentTime
+import nebulosa.time.TimeJD
+import nebulosa.time.UTC
 import nebulosa.wcs.WCS
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -168,15 +170,14 @@ class MountService(private val imageBucket: ImageBucket) {
         val computedLocation = ComputedLocation()
 
         val center = site[mount]!!
-        val time = CurrentTime
-        val epoch = if (j2000) null else time
+        val epoch = if (j2000) null else CurrentTime
 
-        val icrf = ICRF.equatorial(rightAscension, declination, time = time, epoch = epoch, center = center)
+        val icrf = ICRF.equatorial(rightAscension, declination, epoch = epoch, center = center)
         computedLocation.constellation = Constellation.find(icrf)
 
         if (j2000) {
             if (equatorial) {
-                val raDec = icrf.equatorialAtDate()
+                val raDec = icrf.equatorialAtEpoch(CurrentTime)
                 computedLocation.rightAscension = raDec.longitude.normalized
                 computedLocation.declination = raDec.latitude
             }
@@ -185,7 +186,7 @@ class MountService(private val imageBucket: ImageBucket) {
             computedLocation.declinationJ2000 = declination
         } else {
             if (equatorial) {
-                val raDec = icrf.equatorialJ2000()
+                val raDec = icrf.equatorial()
                 computedLocation.rightAscensionJ2000 = raDec.longitude.normalized
                 computedLocation.declinationJ2000 = raDec.latitude
             }
@@ -223,8 +224,8 @@ class MountService(private val imageBucket: ImageBucket) {
             val raOffset = mount.rightAscension - calibratedRA
             val decOffset = mount.declination - calibratedDEC
             LOG.info(
-                "pointing mount adjusted. ra={}, dec={}, dx={}, dy={}", rightAscension.format(AngleFormatter.HMS),
-                declination.format(AngleFormatter.SIGNED_DMS), raOffset.format(AngleFormatter.HMS), decOffset.format(AngleFormatter.SIGNED_DMS)
+                "pointing mount adjusted. ra={}, dec={}, dx={}, dy={}", rightAscension.formatHMS(),
+                declination.formatSignedDMS(), raOffset.formatHMS(), decOffset.formatSignedDMS()
             )
             goTo(mount, rightAscension + raOffset, declination + decOffset, true)
         }

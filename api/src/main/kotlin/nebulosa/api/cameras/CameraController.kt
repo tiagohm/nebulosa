@@ -34,11 +34,6 @@ class CameraController(
         cameraService.disconnect(camera)
     }
 
-    @GetMapping("{camera}/capturing")
-    fun isCapturing(@DeviceOrEntityParam camera: Camera): Boolean {
-        return cameraService.isCapturing(camera)
-    }
-
     @PutMapping("{camera}/cooler")
     fun cooler(
         @DeviceOrEntityParam camera: Camera,
@@ -59,9 +54,7 @@ class CameraController(
     fun startCapture(
         @DeviceOrEntityParam camera: Camera,
         @RequestBody body: CameraStartCaptureRequest,
-    ) {
-        cameraService.startCapture(camera, body)
-    }
+    ) = cameraService.startCapture(camera, body)
 
     @PutMapping("{camera}/capture/abort")
     fun abortCapture(@DeviceOrEntityParam camera: Camera) {

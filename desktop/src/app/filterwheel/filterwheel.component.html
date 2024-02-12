@@ -47,7 +47,7 @@
         </div>
         <div class="col-3 flex align-items-center justify-content-center">
             <p-button [disabled]="!canMoveTo || !wheel.connected || moving || filter?.position === position" label="Move" icon="mdi mdi-check"
-                      (onClick)="filter && moveTo(filter)" />
+                      (onClick)="filter && moveTo(filter)" size="small" />
         </div>
     </div>
     <div class="grid mt-2" *ngIf="filter && canEdit">
@@ -73,7 +73,7 @@
     <div class="grid mt-2" *ngIf="canApply">
         <div class="col-12 flex justify-content-center gap-2">
             <p-button [disabled]="!wheel.connected || !filter || !filters.length" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
-                      severity="info" />
+                      severity="info" size="small" />
         </div>
     </div>
 </div>

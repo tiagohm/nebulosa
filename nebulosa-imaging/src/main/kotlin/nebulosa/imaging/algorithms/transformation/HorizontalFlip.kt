@@ -3,7 +3,7 @@ package nebulosa.imaging.algorithms.transformation
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.TransformAlgorithm
 
-object HorizontalFlip : TransformAlgorithm {
+data object HorizontalFlip : TransformAlgorithm {
 
     override fun transform(source: Image): Image {
         for (y in 0 until source.height) {

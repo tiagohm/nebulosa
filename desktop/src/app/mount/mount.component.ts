@@ -228,7 +228,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         electron.on('MOUNT.DETACHED', event => {
             if (event.device.name === this.mount?.name) {
                 ngZone.run(() => {
-                    Object.assign(this.mount, event.device)
+                    Object.assign(this.mount, EMPTY_MOUNT)
                 })
             }
         })

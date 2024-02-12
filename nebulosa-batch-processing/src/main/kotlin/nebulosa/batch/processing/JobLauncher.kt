@@ -19,4 +19,8 @@ interface JobLauncher : Collection<JobExecution>, Stoppable {
     fun launch(job: Job, executionContext: ExecutionContext? = null): JobExecution
 
     fun stop(jobExecution: JobExecution, mayInterruptIfRunning: Boolean = true)
+
+    fun pause(jobExecution: JobExecution)
+
+    fun unpause(jobExecution: JobExecution)
 }

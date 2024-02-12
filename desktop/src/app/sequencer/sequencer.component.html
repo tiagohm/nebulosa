@@ -138,7 +138,7 @@
             <span class="p-float-label">
                 <p-dropdown [disabled]="running" [options]="cameras" [autoDisplayFirst]="false"
                             [(ngModel)]="camera" optionLabel="name" styleClass="p-inputtext-sm border-0"
-                            [style]="{'min-width': '131px'}" (ngModelChange)="updateEntriesFromCamera($event)"
+                            [style]="{'min-width': '131px'}" (ngModelChange)="savePlan()"
                             emptyMessage="No camera found" />
                 <label>Camera</label>
             </span>
@@ -147,14 +147,14 @@
             <span class="p-float-label" *ngIf="wheels.length">
                 <p-dropdown [disabled]="running" [options]="wheels" [(ngModel)]="wheel"
                             optionLabel="name" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false"
-                            emptyMessage="No filter wheel found" (ngModelChange)="updateEntriesFromWheel($event)" />
+                            emptyMessage="No filter wheel found" (ngModelChange)="savePlan()" />
                 <label>Filter Wheel</label>
             </span>
         </div>
         <div class="col-4 align-items-center pt-4">
             <span class="p-float-label" *ngIf="focusers.length">
                 <p-dropdown [disabled]="running" [options]="focusers" [(ngModel)]="focuser" optionLabel="name" [autoDisplayFirst]="false"
-                            styleClass="p-inputtext-sm border-0" emptyMessage="No focuser found" (ngModelChange)="updateEntriesFromFocuser($event)" />
+                            styleClass="p-inputtext-sm border-0" emptyMessage="No focuser found" (ngModelChange)="savePlan()" />
                 <label>Focuser</label>
             </span>
         </div>
@@ -189,23 +189,23 @@
                                 <span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
                             </div>
                             <div class="col pb-1 align-items-center gap-2">
-                                <p-button [disabled]="running || !entry.camera || !entry.enabled" icon="mdi mdi-camera-iris" label="Camera"
-                                          [severity]="entry.camera?.connected ? 'info' : 'danger'" styleClass="px-2 py-1"
-                                          (onClick)="showCameraDialog(entry)" />
-                                <p-button [disabled]="running || !entry.wheel || !entry.enabled" icon="mdi mdi-palette" label="Filter Wheel"
-                                          [severity]="entry.wheel?.connected ? 'info' : 'danger'" styleClass="px-2 py-1"
-                                          (onClick)="showWheelDialog(entry)" />
-                                <p-button [disabled]="running || !entry.focuser || !entry.enabled" icon="mdi mdi-image-filter-center-focus"
-                                          label="Focuser" [severity]="entry.focuser?.connected ? 'info' : 'danger'" styleClass="px-2 py-1"
-                                          (onClick)="showCameraDialog(entry)" />
+                                <p-button [disabled]="running || !camera || !entry.enabled" icon="mdi mdi-camera-iris" label="Camera"
+                                          [severity]="camera?.connected ? 'success' : 'danger'" styleClass="px-2 py-1"
+                                          (onClick)="showCameraDialog(entry)" size="small" />
+                                <p-button [disabled]="running || !wheel || !entry.enabled" icon="mdi mdi-palette" label="Filter Wheel"
+                                          [severity]="wheel?.connected ? 'success' : 'danger'" styleClass="px-2 py-1"
+                                          (onClick)="showWheelDialog(entry)" size="small" />
+                                <p-button [disabled]="running || !focuser || !entry.enabled" icon="mdi mdi-image-filter-center-focus"
+                                          label="Focuser" [severity]="focuser?.connected ? 'success' : 'danger'" styleClass="px-2 py-1"
+                                          (onClick)="showCameraDialog(entry)" size="small" />
                             </div>
                             <div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
                                 <p-button [disabled]="running || plan.entries.length <= 1" [text]="true" [rounded]="true" icon="mdi mdi-delete"
-                                          severity="danger" size=small pTooltip="Delete" tooltipPosition="bottom"
+                                          severity="danger" size=small pTooltip="Delete" tooltipPosition="bottom" size="small"
                                           (onClick)="deleteEntry(entry, i)" />
 
                                 <p-button [disabled]="running" [text]="true" [rounded]="true" icon="mdi mdi-content-duplicate" severity="info"
-                                          size=small pTooltip="Duplicate" tooltipPosition="bottom"
+                                          size=small pTooltip="Duplicate" tooltipPosition="bottom" size="small"
                                           (onClick)="duplicateEntry(entry, i)" />
 
                                 <p-checkbox [binary]="true" [(ngModel)]="entry.enabled" (ngModelChange)="savePlan()" />
@@ -239,9 +239,9 @@
         <div class="grid">
             <div class="col-12 flex align-items-center justify-content-center gap-1">
                 <p-button [disabled]="!plan.entries.length || !canStart || running" label="Start" (onClick)="start()" icon="mdi mdi-play"
-                          severity="success" />
+                          severity="success" size="small" />
                 <p-button [disabled]="!plan.entries.length || !canStart || !running" label="Abort" (onClick)="stop()" icon="mdi mdi-stop"
-                          severity="danger" />
+                          severity="danger" size="small" />
             </div>
         </div>
     </div>

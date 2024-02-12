@@ -33,4 +33,14 @@ class TT : TimeJD, Timescale {
     override val tdb by lazy { TDB(eraTtTdb(whole, fraction, TDBMinusTT.delta(this)), true) }
 
     override val tcb get() = tdb.tcb
+
+    companion object {
+
+        @JvmStatic val J2000 = TT(TimeJD.J2000)
+
+        @JvmStatic val B1950 = TT(TimeJD.B1950)
+
+        @JvmStatic
+        fun now() = TT(TimeJD.now())
+    }
 }

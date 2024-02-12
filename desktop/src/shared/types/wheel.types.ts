@@ -19,11 +19,8 @@ export const EMPTY_WHEEL: FilterWheel = {
 
 export interface WheelDialogInput {
     mode: WheelDialogMode
+    wheel: FilterWheel
     request: CameraStartCapture
-}
-
-export function wheelPreferenceKey(wheel: FilterWheel) {
-    return `wheel.${wheel.name}`
 }
 
 export interface WheelPreference {

@@ -12,32 +12,16 @@ import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
-import { DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageData, ImageInfo, ImagePreference, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
-import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverType } from '../../shared/types/settings.types'
+import { DEFAULT_SOLVER_TYPES, PlateSolverType } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
-import { SETTINGS_PLATE_SOLVER_KEY } from '../settings/settings.component'
-
-export function imagePreferenceKey(camera?: Camera) {
-    return camera ? `image.${camera.name}` : 'image'
-}
-
-export interface ImagePreference {
-    solverRadius?: number
-}
-
-export interface ImageData {
-    camera?: Camera
-    path?: string
-    source?: ImageSource
-    title?: string
-}
 
 @Component({
     selector: 'app-image',
@@ -93,8 +77,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solverCenterDEC = ''
     solverRadius = 4
     readonly solvedData = Object.assign({}, EMPTY_IMAGE_SOLVED)
-    readonly solverTypes: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET_ONLINE']
-    solverType: PlateSolverType
+    readonly solverTypes: PlateSolverType[] = Object.assign([], DEFAULT_SOLVER_TYPES)
+    solverType = this.solverTypes[0]
 
     crossHair = false
     annotations: ImageAnnotation[] = []
@@ -376,7 +360,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
-        private storage: LocalStorageService,
+        private preference: PreferenceService,
         private prime: PrimeService,
         private ngZone: NgZone,
     ) {
@@ -417,8 +401,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 event.preventDefault()
             }
         }, true)
-
-        this.solverType = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS).type
     }
 
     ngAfterViewInit() {
@@ -717,8 +699,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solving = true
 
         try {
-            const options = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS)
-            options.type = this.solverType
+            const options = this.preference.plateSolverOptions(this.solverType).get()
 
             Object.assign(this.solvedData,
                 await this.api.solveImage(options, this.imageData.path!, this.solverBlind,
@@ -783,16 +764,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadPreference(camera?: Camera) {
-        const preference = this.storage.get<ImagePreference>(imagePreferenceKey(camera), {})
+        const preference = this.preference.imagePreference(camera).get()
         this.solverRadius = preference.solverRadius ?? this.solverRadius
+        this.solverType = preference.solverType ?? this.solverTypes[0]
     }
 
     private savePreference() {
         const preference: ImagePreference = {
-            solverRadius: this.solverRadius
+            solverRadius: this.solverRadius,
+            solverType: this.solverType
         }
 
-        this.storage.set(imagePreferenceKey(this.imageData.camera), preference)
+        this.preference.imagePreference(this.imageData.camera).set(preference)
     }
 
     private async executeMount(action: (mount: Mount) => void) {

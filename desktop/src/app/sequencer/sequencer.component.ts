@@ -7,9 +7,9 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureEvent, CameraStartCapture } from '../../shared/types/camera.types'
+import { Camera, CameraCaptureElapsed, CameraStartCapture } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { EMPTY_SEQUENCE_PLAN, SequenceCaptureMode, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
+import { EMPTY_SEQUENCE_PLAN, SequenceCaptureMode, SequencePlan, SequencerElapsed } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
@@ -36,16 +36,16 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     readonly captureModes: SequenceCaptureMode[] = ['FULLY', 'INTERLEAVED']
     readonly plan = Object.assign({}, EMPTY_SEQUENCE_PLAN)
 
-    readonly sequenceEvents: CameraCaptureEvent[] = []
+    readonly sequenceEvents: CameraCaptureElapsed[] = []
 
-    event?: SequencerEvent
+    event?: SequencerElapsed
     running = false
 
     @ViewChildren('cameraExposure')
     private readonly cameraExposures!: QueryList<CameraExposureComponent>
 
     get canStart() {
-        return !this.plan.entries.find(e => e.enabled && !e.camera?.connected)
+        return !!this.camera && this.camera.connected && !!this.plan.entries.find(e => e.enabled)
     }
 
     get savedPath() {
@@ -127,7 +127,6 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
                 if (camera) {
                     Object.assign(camera, event.device)
-                    this.updateEntriesFromCamera(camera)
                 }
             })
         })
@@ -138,7 +137,6 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
                 if (wheel) {
                     Object.assign(wheel, event.device)
-                    this.updateEntriesFromWheel(wheel)
                 }
             })
         })
@@ -149,7 +147,6 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
                 if (focuser) {
                     Object.assign(focuser, event.device)
-                    this.updateEntriesFromFocuser(focuser)
                 }
             })
         })
@@ -199,7 +196,6 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         this.plan.entries.push({
             enabled: true,
-            camera,
             exposureTime: 1000000,
             exposureAmount: 1,
             exposureDelay: 0,
@@ -215,8 +211,6 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
             frameFormat: camera?.frameFormats[0],
             autoSave: true,
             autoSubFolderMode: 'OFF',
-            wheel,
-            focuser,
         })
 
         this.savePlan()
@@ -263,8 +257,6 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromCamera(entry: CameraStartCapture, camera?: Camera) {
-        entry.camera = camera
-
         if (camera) {
             if (camera.connected) {
                 if (camera.maxX > 1) entry.x = Math.max(camera.minX, Math.min(entry.x, camera.maxX))
@@ -284,56 +276,14 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    updateEntriesFromCamera(camera?: Camera) {
-        for (const entry of this.plan.entries) {
-            this.updateEntryFromCamera(entry, camera)
-        }
-    }
-
-    updateEntryFromWheel(entry: CameraStartCapture, wheel?: FilterWheel) {
-        entry.wheel = wheel
-
-        if (wheel) {
-            if (wheel.connected) {
-                this.savePlan()
-            }
-        }
-    }
-
-    updateEntriesFromWheel(wheel?: FilterWheel) {
-        for (const entry of this.plan.entries) {
-            this.updateEntryFromWheel(entry, wheel)
-        }
-    }
-
-    updateEntryFromFocuser(entry: CameraStartCapture, focuser?: Focuser) {
-        entry.focuser = focuser
-
-        if (focuser) {
-            if (focuser.connected) {
-                this.savePlan()
-            }
-        }
-    }
-
-    updateEntriesFromFocuser(focuser?: Focuser) {
-        for (const entry of this.plan.entries) {
-            this.updateEntryFromFocuser(entry, focuser)
-        }
-    }
-
     private loadPlan(plan?: SequencePlan) {
         plan ??= this.storage.get(SEQUENCER_PLAN_KEY, this.plan)
 
         Object.assign(this.plan, plan)
 
-        this.camera = this.cameras.find(e => e.name === this.plan.entries[0]?.camera?.name) ?? this.cameras[0]
-        this.focuser = this.focusers.find(e => e.name === this.plan.entries[0]?.focuser?.name) ?? this.focusers[0]
-        this.wheel = this.wheels.find(e => e.name === this.plan.entries[0]?.wheel?.name) ?? this.wheels[0]
-
-        this.updateEntriesFromCamera(this.camera)
-        this.updateEntriesFromWheel(this.wheel)
-        this.updateEntriesFromFocuser(this.focuser)
+        this.camera = this.cameras.find(e => e.name === this.plan.camera?.name) ?? this.cameras[0]
+        this.focuser = this.focusers.find(e => e.name === this.plan.focuser?.name) ?? this.focusers[0]
+        this.wheel = this.wheels.find(e => e.name === this.plan.wheel?.name) ?? this.wheels[0]
 
         return plan.entries.length
     }
@@ -364,18 +314,21 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     async showCameraDialog(entry: CameraStartCapture) {
-        if (await CameraComponent.showAsDialog(this.browserWindow, 'SEQUENCER', entry)) {
+        if (await CameraComponent.showAsDialog(this.browserWindow, 'SEQUENCER', this.camera!, entry)) {
             this.savePlan()
         }
     }
 
     async showWheelDialog(entry: CameraStartCapture) {
-        if (await FilterWheelComponent.showAsDialog(this.browserWindow, 'SEQUENCER', entry)) {
+        if (await FilterWheelComponent.showAsDialog(this.browserWindow, 'SEQUENCER', this.wheel!, entry)) {
             this.savePlan()
         }
     }
 
     savePlan() {
+        this.plan.camera = this.camera
+        this.plan.wheel = this.wheel
+        this.plan.focuser = this.focuser
         this.storage.set(SEQUENCER_PLAN_KEY, this.plan)
         this.savedPathWasModified = !!this.savedPath
     }
@@ -389,7 +342,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     async start() {
-        for (let i = 0; i < this.plan.entries.length; i++) {
+        for (let i = 0; i < this.cameraExposures.length; i++) {
             this.cameraExposures.get(i)?.reset()
         }
 
@@ -397,10 +350,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         await this.browserWindow.openCameraImage(this.camera!)
 
-        this.api.sequencerStart(this.plan)
+        this.api.sequencerStart(this.camera!, this.plan)
     }
 
     stop() {
-        this.api.sequencerStop()
+        this.api.sequencerStop(this.camera!)
     }
 }

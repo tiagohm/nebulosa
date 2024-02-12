@@ -1,5 +1,6 @@
 package nebulosa.astrometrynet.plate.solving
 
+import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.common.process.ProcessExecutor
 import nebulosa.imaging.Image
 import nebulosa.log.loggerFor
@@ -24,6 +25,7 @@ class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver {
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
+        cancellationToken: CancellationToken,
     ): PlateSolution {
         requireNotNull(path) { "path is required" }
 
@@ -44,7 +46,7 @@ class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver {
         arguments["--no-plots"] = null
         // args["--resort"] = null
 
-        if (radius.toDegrees >= 0.1) {
+        if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
             arguments["--ra"] = centerRA.toDegrees
             arguments["--dec"] = centerDEC.toDegrees
             arguments["--radius"] = radius.toDegrees
@@ -52,7 +54,7 @@ class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver {
 
         arguments["$path"] = null
 
-        val process = executor.execute(arguments, Duration.ZERO, path.parent)
+        val process = executor.execute(arguments, Duration.ZERO, path.parent, cancellationToken)
 
         val buffer = process.inputReader()
 

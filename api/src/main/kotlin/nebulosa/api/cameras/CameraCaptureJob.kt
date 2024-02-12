@@ -9,21 +9,21 @@ import nebulosa.batch.processing.SimpleJob
 import nebulosa.batch.processing.SimpleSplitStep
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.guiding.Guider
+import nebulosa.indi.device.camera.Camera
 
 data class CameraCaptureJob(
+    @JvmField val camera: Camera,
     @JvmField val request: CameraStartCaptureRequest,
     @JvmField val guider: Guider,
 ) : SimpleJob(), PublishSubscribe<MessageEvent> {
 
     private val cameraCaptureEventHandler = CameraCaptureEventHandler(this)
 
-    @JvmField val camera = requireNotNull(request.camera)
-
     override val subject = PublishSubject.create<MessageEvent>()
 
     init {
-        val cameraExposureStep = if (request.isLoop) CameraLoopExposureStep(request)
-        else CameraExposureStep(request)
+        val cameraExposureStep = if (request.isLoop) CameraLoopExposureStep(camera, request)
+        else CameraExposureStep(camera, request)
 
         if (cameraExposureStep is CameraExposureStep) {
             val ditherStep = DitherAfterExposureStep(request.dither, guider)
@@ -34,18 +34,22 @@ data class CameraCaptureJob(
             waitForSettleStep.registerWaitForSettleListener(cameraExposureStep)
             cameraDelayStep.registerDelayStepListener(cameraExposureStep)
 
-            add(waitForSettleStep)
-            add(cameraExposureStep)
+            register(waitForSettleStep)
+            register(cameraExposureStep)
 
             repeat(request.exposureAmount - 1) {
-                add(delayAndWaitForSettleStep)
-                add(cameraExposureStep)
-                add(ditherStep)
+                register(delayAndWaitForSettleStep)
+                register(cameraExposureStep)
+                register(ditherStep)
             }
         } else {
-            add(cameraExposureStep)
+            register(cameraExposureStep)
         }
 
         cameraExposureStep.registerCameraCaptureListener(cameraCaptureEventHandler)
+    }
+
+    override fun contains(data: Any): Boolean {
+        return data === camera || super.contains(data)
     }
 }

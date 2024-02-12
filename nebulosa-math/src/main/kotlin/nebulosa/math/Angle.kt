@@ -110,6 +110,12 @@ fun Angle.dms(): DoubleArray {
 
 inline fun Angle.format(formatter: AngleFormatter) = formatter.format(this)
 
+inline fun Angle.formatHMS() = format(AngleFormatter.HMS)
+
+inline fun Angle.formatDMS() = format(AngleFormatter.DMS)
+
+inline fun Angle.formatSignedDMS() = format(AngleFormatter.SIGNED_DMS)
+
 inline fun HMS(hour: Int, minute: Int, second: Double = 0.0) = (hour + minute / 60.0 + second / 3600.0).hours
 
 inline fun DMS(degrees: Int, minute: Int, second: Double = 0.0, negative: Boolean = degrees < 0) =

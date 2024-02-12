@@ -4,12 +4,14 @@ import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
 import nebulosa.batch.processing.delay.DelayStep
+import nebulosa.indi.device.camera.Camera
 
 data class CameraLoopExposureStep(
+    override val camera: Camera,
     override val request: CameraStartCaptureRequest,
 ) : CameraStartCaptureStep {
 
-    private val cameraExposureStep = CameraExposureStep(request)
+    private val cameraExposureStep = CameraExposureStep(camera, request)
     private val delayStep = DelayStep(request.exposureDelay)
 
     override val savedPath

@@ -1,5 +1,6 @@
 package nebulosa.common.process
 
+import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.log.loggerFor
 import java.nio.file.Path
 import java.time.Duration
@@ -11,6 +12,7 @@ open class ProcessExecutor(private val path: Path) {
         arguments: Map<String, Any?>,
         timeout: Duration? = null,
         workingDir: Path? = null,
+        cancellationToken: CancellationToken = CancellationToken.NONE,
     ): Process {
         val args = ArrayList<String>(arguments.size * 2)
 
@@ -28,7 +30,8 @@ open class ProcessExecutor(private val path: Path) {
         LOG.info("executing process. pid={}, args={}", process.pid(), args)
 
         // TODO: READ OUTPUT STREAM LINE TO CALLBACK
-        // TODO: CANCELLATION
+
+        cancellationToken.listen { process.destroyForcibly() }
 
         if (timeout == null || timeout.isNegative) process.waitFor()
         else process.waitFor(timeout.seconds, TimeUnit.SECONDS)

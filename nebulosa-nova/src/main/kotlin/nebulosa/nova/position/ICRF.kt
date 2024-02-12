@@ -9,9 +9,8 @@ import nebulosa.math.*
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.frame.Frame
 import nebulosa.nova.frame.ITRS
+import nebulosa.time.CurrentTime
 import nebulosa.time.InstantOfTime
-import nebulosa.time.TimeJD
-import nebulosa.time.UTC
 import kotlin.math.atan2
 
 /**
@@ -78,9 +77,17 @@ open class ICRF protected constructor(
     /**
      * Computes the equatorial (RA, declination, distance)
      * referenced to the dynamical system defined by
+     * the Earth's true equator and equinox at specific time
+     * represented by its rotation [matrix].
+     */
+    fun equatorialAtEpoch(matrix: Matrix3D) = (matrix * position).let { SphericalCoordinate.of(it[0].au, it[1].au, it[2].au) }
+
+    /**
+     * Computes the equatorial (RA, declination, distance)
+     * referenced to the dynamical system defined by
      * the Earth's true equator and equinox at specific [epoch] time.
      */
-    fun equatorialAtEpoch(epoch: InstantOfTime) = (epoch.m * position).let { SphericalCoordinate.of(it[0].au, it[1].au, it[2].au) }
+    fun equatorialAtEpoch(epoch: InstantOfTime) = equatorialAtEpoch(epoch.m)
 
     /**
      * Computes the equatorial (RA, declination, distance)
@@ -88,13 +95,6 @@ open class ICRF protected constructor(
      * the Earth's true equator and equinox of [time].
      */
     fun equatorialAtDate() = equatorialAtEpoch(time)
-
-    /**
-     * Computes the equatorial (RA, declination, distance)
-     * referenced to the dynamical system defined by
-     * the Earth's true equator and equinox of J2000.0.
-     */
-    fun equatorialJ2000() = equatorialAtEpoch(TimeJD.J2000)
 
     /**
      * Computes hour angle, declination, and distance.
@@ -125,7 +125,7 @@ open class ICRF protected constructor(
      * Computes the altitude, azimuth and distance relative to the observer's horizon.
      */
     fun horizontal(
-        temperature: Temperature = 10.0.celsius,
+        temperature: Temperature = 15.0.celsius,
         pressure: Pressure = ONE_ATM,
     ): SphericalCoordinate {
         // TODO: Uncomment when implement apparent method.
@@ -214,8 +214,8 @@ open class ICRF protected constructor(
     val horizontalRotation by lazy {
         require(target is GeographicPosition || target is PlanetograhicPosition) {
             "to compute an altazimuth position, you must observe from " +
-                    "a specific Earth location or from a position on another body loaded from a set " +
-                    "of planetary constants"
+                "a specific Earth location or from a position on another body loaded from a set " +
+                "of planetary constants"
         }
 
         (target as Frame).rotationAt(time)
@@ -242,26 +242,21 @@ open class ICRF protected constructor(
             else -> ICRF(position, velocity, time, center, target)
         }
 
+        @JvmStatic
         internal fun horizontal(
             position: ICRF,
-            temperature: Temperature = 10.0.celsius,
-            pressure: Pressure = 1013.0.mbar,
+            temperature: Temperature = 15.0.celsius,
+            pressure: Pressure = ONE_ATM,
         ): SphericalCoordinate {
-            val centerBarycentric = position.centerBarycentric
+            val r = position.centerBarycentric?.horizontalRotation
+                ?: (position.center as? Frame)?.rotationAt(position.time)
+                ?: throw IllegalArgumentException(
+                    "to compute an altazimuth position, you must observe from " +
+                        "a specific Earth location or from a position on another body loaded from a set " +
+                        "of planetary constants"
+                )
 
-            val r = centerBarycentric?.horizontalRotation
-                ?: if (position.center is Frame) {
-                    position.center.rotationAt(position.time)
-                } else {
-                    throw IllegalArgumentException(
-                        "to compute an altazimuth position, you must observe from " +
-                                "a specific Earth location or from a position on another body loaded from a set " +
-                                "of planetary constants"
-                    )
-                }
-
-            val h = r * position.position
-            val coordinate = SphericalCoordinate.of(h[0].au, h[1].au, h[2].au)
+            val coordinate = SphericalCoordinate.of(r * position.position)
 
             return if (position.center is GeographicPosition) {
                 val refracted = position.center.refract(coordinate.latitude, temperature, pressure)
@@ -274,6 +269,7 @@ open class ICRF protected constructor(
         /**
          * Builds a position from two vectors in a reference [frame] at the [time].
          */
+        @JvmStatic
         fun frame(
             time: InstantOfTime,
             frame: Frame,
@@ -309,10 +305,11 @@ open class ICRF protected constructor(
          * to be in the dynamical system of that particular date. Otherwise,
          * they will be assumed to be ICRS (the modern replacement for J2000).
          */
+        @JvmStatic
         fun equatorial(
             rightAscension: Angle, declination: Angle,
             distance: Distance = ONE_GIGAPARSEC,
-            time: InstantOfTime = UTC.now(),
+            time: InstantOfTime = CurrentTime,
             epoch: InstantOfTime? = null,
             center: Number = Int.MIN_VALUE,
             target: Number = Int.MIN_VALUE,

@@ -4,10 +4,7 @@ import io.kotest.matchers.shouldBe
 import nebulosa.math.*
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
-import nebulosa.time.IERS
-import nebulosa.time.IERSA
-import nebulosa.time.TimeJD
-import nebulosa.time.TimeYMDHMS
+import nebulosa.time.*
 import java.nio.file.Path
 import kotlin.io.path.inputStream
 
@@ -21,16 +18,16 @@ class ICRFTest : StringSpec() {
         "equatorial at date to equatorial J2000" {
             val ra = 2.15105.deg
             val dec = (-0.4493).deg
-            val (raNow, decNow) = ICRF.equatorial(ra, dec, epoch = TimeJD(2459950.24436)).equatorialJ2000()
-            raNow.toDegrees shouldBe (1.85881 plusOrMinus 1e-2)
-            decNow.toDegrees shouldBe (-0.5762 plusOrMinus 1e-2)
+            val (raNow, decNow) = ICRF.equatorial(ra, dec, epoch = TT(2459950.0, 0.24436)).equatorial()
+            raNow.toDegrees shouldBe (1.85881 plusOrMinus 1e-4)
+            decNow.toDegrees shouldBe (-0.5762 plusOrMinus 1e-4)
         }
         "equatorial J2000 to equatorial at date" {
             val ra = 1.85881.deg
             val dec = (-0.5762).deg
-            val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtEpoch(TimeJD(2459950.24436))
-            raNow.toDegrees shouldBe (2.15105 plusOrMinus 1e-2)
-            decNow.toDegrees shouldBe (-0.4493 plusOrMinus 1e-2)
+            val (raNow, decNow) = ICRF.equatorial(ra, dec).equatorialAtEpoch(TT(2459950.0, 0.24436))
+            raNow.toDegrees shouldBe (2.15105 plusOrMinus 1e-4)
+            decNow.toDegrees shouldBe (-0.4493 plusOrMinus 1e-4)
         }
         "horizontal" {
             // Sirius.

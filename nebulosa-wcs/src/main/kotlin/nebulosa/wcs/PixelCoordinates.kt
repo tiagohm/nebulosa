@@ -1,5 +1,6 @@
 package nebulosa.wcs
 
 import nebulosa.math.Angle
+import nebulosa.math.Point2D
 
-data class PixelCoordinates(val x: Double, val y: Double, val phi: Angle, val theta: Angle)
+data class PixelCoordinates(override val x: Double, override val y: Double, val phi: Angle, val theta: Angle) : Point2D

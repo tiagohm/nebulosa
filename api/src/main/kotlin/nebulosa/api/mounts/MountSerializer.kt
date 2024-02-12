@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.indi.device.mount.Mount
-import nebulosa.math.AngleFormatter
-import nebulosa.math.format
+import nebulosa.math.formatHMS
+import nebulosa.math.formatSignedDMS
 import nebulosa.math.toDegrees
 import nebulosa.math.toMeters
 import org.springframework.stereotype.Component
@@ -32,8 +32,8 @@ class MountSerializer : StdSerializer<Mount>(Mount::class.java) {
         gen.writeStringField("pierSide", value.pierSide.name)
         gen.writeNumberField("guideRateWE", value.guideRateWE)
         gen.writeNumberField("guideRateNS", value.guideRateNS)
-        gen.writeStringField("rightAscension", value.rightAscension.format(AngleFormatter.HMS))
-        gen.writeStringField("declination", value.declination.format(AngleFormatter.SIGNED_DMS))
+        gen.writeStringField("rightAscension", value.rightAscension.formatHMS())
+        gen.writeStringField("declination", value.declination.formatSignedDMS())
         gen.writeBooleanField("canPulseGuide", value.canPulseGuide)
         gen.writeBooleanField("pulseGuiding", value.pulseGuiding)
         gen.writeBooleanField("canPark", value.canPark)

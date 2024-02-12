@@ -3,7 +3,7 @@ package nebulosa.api.guiding
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
-import nebulosa.common.concurrency.CountUpDownLatch
+import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.guiding.GuideState
 import nebulosa.guiding.Guider
 import nebulosa.guiding.GuiderListener

@@ -38,7 +38,7 @@ class MessageService(
     fun sendMessage(event: MessageEvent) {
         if (connected.get()) {
             simpleMessageTemplate.convertAndSend(EVENT_NAME, event)
-        } else {
+        } else if (event is QueueableEvent) {
             LOG.debug { "queueing message. event=$event" }
             messageQueue.offer(event)
         }

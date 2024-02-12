@@ -71,7 +71,7 @@ URL: `localhost:{PORT}/ws`
 ```json5
 {
     "camera": {},
-    "state": "EXPOSURING",
+    "state": "CAPTURE_STARTED|EXPOSURE_STARTED|EXPOSURING|WAITING|SETTLING|EXPOSURE_FINISHED|CAPTURE_FINISHED",
     "exposureAmount": 0,
     "exposureCount": 0,
     "captureElapsedTime": 0,
@@ -181,7 +181,7 @@ URL: `localhost:{PORT}/ws`
 
 ### DARV Polar Alignment
 
-#### DARV_ALIGNMENT.ELAPSED
+#### DARV.ELAPSED
 
 ```json5
 {
@@ -190,7 +190,27 @@ URL: `localhost:{PORT}/ws`
     "remainingTime": 0,
     "progress": 0.0,
     "direction": "EAST",
-    "state": "FORWARD"
+    "state": "FORWARD|BACKWARD"
+}
+```
+
+### Three Point Polar Alignment
+
+#### TPPA.ELAPSED
+
+```json5
+{
+    "id": "",
+    "elapsedTime": 0,
+    "stepCount": 0,
+    "state": "SLEWING|SOLVING|SOLVED|COMPUTED|FAILED|FINISHED",
+    "rightAscension": "00h00m00s",
+    "declination": "00d00m00s",
+    "azimuthError": "00d00m00s",
+    "altitudeError": "00d00m00s",
+    "totalError": "00d00m00s",
+    "azimuthErrorDirection": "",
+    "altitudeErrorDirection": ""
 }
 ```
 
@@ -200,23 +220,46 @@ URL: `localhost:{PORT}/ws`
 
 ```json5
 {
+    "state": "EXPOSURING|CAPTURED|FAILED",
     "exposureTime": 0,
+    "savedPath": "",
+    // CAMERA.CAPTURE_ELAPSED
+    "capture": {},
+    "message": ""
+}
+```
+
+### Sequencer
+
+#### SEQUENCER.ELAPSED
+
+```json5
+{
+    "id": 0,
+    "elapsedTime": 0,
+    "remainingTime": 0,
+    "progress": 0.0,
+    // CAMERA.CAPTURE_ELAPSED
     "capture": {}
 }
 ```
 
-#### FLAT_WIZARD.FRAME_CAPTURED
+### INDI
+
+#### DEVICE.PROPERTY_CHANGED, DEVICE.PROPERTY_DELETED
 
 ```json5
 {
-    "exposureTime": 0,
-    "savedPath": ""
+    "device": {},
+    "property": {}
 }
 ```
 
-#### FLAT_WIZARD.FAILED
+#### DEVICE.MESSAGE_RECEIVED
 
 ```json5
 {
+    "device": {},
+    "message": ""
 }
 ```

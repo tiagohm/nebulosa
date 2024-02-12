@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
-import { DARVStart } from '../types/alignment.types'
+import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { Angle, BodyPosition, ComputedLocation, Constellation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
 import { CalibrationFrame, CalibrationFrameGroup } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
@@ -531,24 +531,41 @@ export class ApiService {
 
     // DARV
 
-    darvStart(camera: Camera, guideOutput: GuideOutput,
-        exposureTime: number, initialPause: number, direction: GuideDirection, reversed: boolean = false, capture?: CameraStartCapture) {
-        const data: DARVStart = { capture, exposureTime, initialPause, direction, reversed }
-        return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
+    darvStart(camera: Camera, guideOutput: GuideOutput, data: DARVStart) {
+        return this.http.put<string>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
     }
 
-    darvStop(camera: Camera, guideOutput: GuideOutput) {
-        return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/stop`)
+    darvStop(id: string) {
+        return this.http.put<void>(`polar-alignment/darv/${id}/stop`)
+    }
+
+    // TPPA
+
+    tppaStart(camera: Camera, mount: Mount, data: TPPAStart) {
+        return this.http.put<string>(`polar-alignment/tppa/${camera.name}/${mount.name}/start`, data)
+    }
+
+    tppaStop(id: string) {
+        return this.http.put<void>(`polar-alignment/tppa/${id}/stop`)
+    }
+
+    tppaPause(id: string) {
+        return this.http.put<void>(`polar-alignment/tppa/${id}/pause`)
+    }
+
+    tppaUnpause(id: string) {
+        return this.http.put<void>(`polar-alignment/tppa/${id}/unpause`)
     }
 
     // SEQUENCER
 
-    sequencerStart(plan: SequencePlan) {
-        return this.http.put<void>(`sequencer/start`, plan)
+    sequencerStart(camera: Camera, plan: SequencePlan) {
+        const body: SequencePlan = { ...plan, camera: undefined, wheel: undefined, focuser: undefined }
+        return this.http.put<void>(`sequencer/${camera.name}/start`, body)
     }
 
-    sequencerStop() {
-        return this.http.put<void>(`sequencer/stop`)
+    sequencerStop(camera: Camera) {
+        return this.http.put<void>(`sequencer/${camera.name}/stop`)
     }
 
     // FLAT WIZARD

@@ -1,5 +1,6 @@
 package nebulosa.astrometrynet.plate.solving
 
+import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.imaging.Image
 import nebulosa.math.Angle
 import nebulosa.plate.solving.PlateSolution
@@ -13,6 +14,7 @@ data class LibAstrometryNetPlateSolver(private val solver: LibAstrometryNet) : P
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
+        cancellationToken: CancellationToken,
     ): PlateSolution {
         return PlateSolution.NO_SOLUTION
     }

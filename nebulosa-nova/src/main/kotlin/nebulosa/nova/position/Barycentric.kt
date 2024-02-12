@@ -8,7 +8,7 @@ import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Observable
 import nebulosa.nova.frame.Ecliptic
 import nebulosa.time.InstantOfTime
-import nebulosa.time.TimeJD
+import nebulosa.time.TT
 
 /**
  * An |xyz| position measured from the Solar System barycenter.
@@ -45,7 +45,7 @@ class Barycentric internal constructor(
      */
     fun phaseAngle(target: Body, center: Body): Angle {
         val pe = -observe(target) // Rotate 180 degrees to point back at Earth.
-        val ps = target.at<Barycentric>(TimeJD(time.tt - pe.lightTime)).observe(center)
+        val ps = target.at<Barycentric>(TT(time.tt.whole - pe.lightTime, time.tt.fraction)).observe(center)
         return pe.separationFrom(ps)
     }
 

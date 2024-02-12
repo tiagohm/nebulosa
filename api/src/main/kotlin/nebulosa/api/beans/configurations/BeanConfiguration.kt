@@ -19,9 +19,12 @@ import nebulosa.guiding.Guider
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
+import nebulosa.imaging.Image
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
+import nebulosa.star.detection.StarDetector
+import nebulosa.watney.star.detection.WatneyStarDetector
 import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
@@ -138,6 +141,10 @@ class BeanConfiguration {
 
     @Bean
     fun asyncJobLauncher(threadPoolTaskExecutor: ThreadPoolTaskExecutor) = AsyncJobLauncher(threadPoolTaskExecutor)
+
+    @Bean
+    @Primary
+    fun watneyStarDetector(): StarDetector<Image> = WatneyStarDetector(computeHFD = true)
 
     @Bean
     @Primary

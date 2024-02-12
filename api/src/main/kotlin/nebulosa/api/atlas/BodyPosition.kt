@@ -14,6 +14,7 @@ import nebulosa.math.deg
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.skycatalog.SkyObject
+import nebulosa.time.CurrentTime
 
 data class BodyPosition(
     @field:JsonSerialize(using = RightAscensionSerializer::class) val rightAscensionJ2000: Angle,

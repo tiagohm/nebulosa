@@ -7,17 +7,17 @@ import { Injectable } from '@angular/core'
 import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
-import { DARVEvent } from '../types/alignment.types'
+import { DARVElapsed, TPPAElapsed } from '../types/alignment.types'
 import { ApiEventType, DeviceMessageEvent } from '../types/api.types'
 import { CloseWindow, InternalEventType, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
 import { Location } from '../types/atlas.types'
-import { Camera, CameraCaptureEvent } from '../types/camera.types'
+import { Camera, CameraCaptureElapsed } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
-import { FlatWizardEvent } from '../types/flat-wizard.types'
+import { FlatWizardElapsed } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
 import { Mount } from '../types/mount.types'
-import { SequencerEvent } from '../types/sequencer.types'
+import { SequencerElapsed } from '../types/sequencer.types'
 import { FilterWheel } from '../types/wheel.types'
 import { ApiService } from './api.service'
 
@@ -28,7 +28,7 @@ type EventMappedType = {
     'CAMERA.UPDATED': DeviceMessageEvent<Camera>
     'CAMERA.ATTACHED': DeviceMessageEvent<Camera>
     'CAMERA.DETACHED': DeviceMessageEvent<Camera>
-    'CAMERA.CAPTURE_ELAPSED': CameraCaptureEvent
+    'CAMERA.CAPTURE_ELAPSED': CameraCaptureElapsed
     'MOUNT.UPDATED': DeviceMessageEvent<Mount>
     'MOUNT.ATTACHED': DeviceMessageEvent<Mount>
     'MOUNT.DETACHED': DeviceMessageEvent<Mount>
@@ -46,13 +46,12 @@ type EventMappedType = {
     'GUIDER.UPDATED': GuiderMessageEvent<Guider>
     'GUIDER.STEPPED': GuiderMessageEvent<GuiderHistoryStep>
     'GUIDER.MESSAGE_RECEIVED': GuiderMessageEvent<string>
-    'DARV_ALIGNMENT.ELAPSED': DARVEvent
+    'DARV.ELAPSED': DARVElapsed
+    'TPPA.ELAPSED': TPPAElapsed
     'DATA.CHANGED': any
     'LOCATION.CHANGED': Location
-    'SEQUENCER.ELAPSED': SequencerEvent
-    'FLAT_WIZARD.ELAPSED': FlatWizardEvent
-    'FLAT_WIZARD.FRAME_CAPTURED': FlatWizardEvent
-    'FLAT_WIZARD.FAILED': FlatWizardEvent
+    'SEQUENCER.ELAPSED': SequencerElapsed
+    'FLAT_WIZARD.ELAPSED': FlatWizardElapsed
 }
 
 @Injectable({ providedIn: 'root' })

@@ -3,7 +3,7 @@ package nebulosa.imaging.algorithms.transformation
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.TransformAlgorithm
 
-object Invert : TransformAlgorithm {
+data object Invert : TransformAlgorithm {
 
     override fun transform(source: Image): Image {
         for (i in source.r.indices) source.r[i] = 1f - source.r[i]

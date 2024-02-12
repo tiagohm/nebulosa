@@ -10,6 +10,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":nebulosa-alignment"))
     implementation(project(":nebulosa-astap"))
     implementation(project(":nebulosa-astrometrynet"))
     implementation(project(":nebulosa-batch-processing"))

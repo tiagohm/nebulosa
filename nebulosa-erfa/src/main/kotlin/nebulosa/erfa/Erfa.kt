@@ -11,6 +11,10 @@ import okio.BufferedSource
 import kotlin.math.*
 import kotlin.math.PI
 
+inline fun eraPdp(a: DoubleArray, b: DoubleArray): Double {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+}
+
 /**
  * P-vector to spherical polar coordinates.
  *
@@ -35,6 +39,16 @@ fun eraC2s(x: Distance, y: Distance, z: Distance): DoubleArray {
 }
 
 /**
+ * Convert spherical coordinates to Cartesian.
+ *
+ * @return direction cosines.
+ */
+fun eraS2c(theta: Angle, phi: Angle): Vector3D {
+    val cp = cos(phi)
+    return Vector3D(cos(theta) * cp, sin(theta) * cp, sin(phi))
+}
+
+/**
  * Apply aberration to transform natural direction into proper direction.
  *
  * @param pnat Natural direction to the source (unit vector).
@@ -49,12 +63,20 @@ fun eraAb(pnat: Vector3D, v: Vector3D, s: Distance, bm1: Double): Vector3D {
     val w1 = 1.0 + pdv / (1.0 + bm1)
     val w2 = SCHWARZSCHILD_RADIUS_OF_THE_SUN / s
     val p = DoubleArray(3)
+    var r2 = 0.0
 
-    for (i in 0..2) {
-        p[i] = pnat[i] * bm1 + w1 * v[i] + w2 * (v[i] - pdv * pnat[i])
+    repeat(3) {
+        p[it] = pnat[it] * bm1 + w1 * v[it] + w2 * (v[it] - pdv * pnat[it])
+        r2 += p[it] * p[it]
     }
 
-    return Vector3D(p).normalized
+    val r = sqrt(r2)
+
+    repeat(3) {
+        p[it] /= r
+    }
+
+    return Vector3D(p)
 }
 
 /**
@@ -244,8 +266,8 @@ fun eraAnpm(angle: Angle): Angle {
  * i.e. around 1/298.
  */
 fun eraGc2Gde(
-    radius: Distance, flattening: Double,
-    x: Distance, y: Distance, z: Distance,
+    radius: Double, flattening: Double,
+    x: Double, y: Double, z: Double,
 ): SphericalCoordinate {
     val aeps2 = radius * radius * 1e-32
     val e2 = (2.0 - flattening) * flattening
@@ -302,7 +324,7 @@ fun eraGc2Gde(
         height = absz - b
     }
 
-    return SphericalCoordinate(elong.rad, phi.rad, height.au)
+    return SphericalCoordinate(elong.rad, phi.rad, height)
 }
 
 /**
@@ -313,9 +335,9 @@ fun eraGc2Gde(
  * i.e. around 1/298.
  */
 fun eraGd2Gce(
-    radius: Distance, flattening: Double,
-    elong: Angle, phi: Angle, height: Distance,
-): CartesianCoordinate {
+    radius: Double, flattening: Double,
+    elong: Angle, phi: Angle, height: Double,
+): Vector3D {
     val sp = phi.sin
     val cp = phi.cos
     val w = (1.0 - flattening).let { it * it }
@@ -331,7 +353,7 @@ fun eraGd2Gce(
     val y = r * elong.sin
     val z = (aS + height) * sp
 
-    return CartesianCoordinate(x.au, y.au, z.au)
+    return Vector3D(x, y, z)
 }
 
 /**
@@ -384,17 +406,17 @@ inline fun eraPom00(xp: Angle, yp: Angle, sp: Angle): Matrix3D {
  * @return Position/velocity vector (m, m/s, CIRS)
  */
 fun eraPvtob(
-    elong: Angle, phi: Angle, hm: Distance,
+    elong: Angle, phi: Angle, hm: Double,
     xp: Angle, yp: Angle,
     sp: Angle,
     theta: Angle,
 ): PositionAndVelocity {
     // Geodetic to geocentric transformation (WGS84).
-    val xyzm = eraGd2Gce(6378137.0.m, 1.0 / 298.257223563, elong, phi, hm)
+    val xyzm = eraGd2Gce(6378137.0, 1.0 / 298.257223563, elong, phi, hm)
 
     // Polar motion and TIO position.
     val rpm = eraPom00(xp, yp, sp)
-    val (x, y, z) = rpm.transposed * Vector3D(xyzm.x.toMeters, xyzm.y.toMeters, xyzm.z.toMeters)
+    val (x, y, z) = rpm.transposed * xyzm
 
     val s = theta.sin
     val c = theta.cos
@@ -408,9 +430,6 @@ fun eraPvtob(
     return PositionAndVelocity(Vector3D(px, py, z), Vector3D(vx, vy, 0.0))
 }
 
-private const val AUDMS = AU_M / DAYSEC
-private const val CR = LIGHT_TIME_AU_S / DAYSEC
-
 /**
  * For an observer whose geocentric position and velocity are known,
  * prepare star-independent astrometry parameters for transformations
@@ -419,79 +438,50 @@ private const val CR = LIGHT_TIME_AU_S / DAYSEC
  *
  * @param tdb1  TDB date
  * @param tdb2  TDB fraction date
- * @param px    Observer's geocentric position (m)
- * @param py    Observer's geocentric position (m)
- * @param pz    Observer's geocentric position (m)
- * @param vx    Observer's geocentric velocity (m/s)
- * @param vy    Observer's geocentric velocity (m/s)
- * @param vz    Observer's geocentric velocity (m/s)
- * @param ebpx  Earth barycentric position (au)
- * @param ebpy  Earth barycentric position (au)
- * @param ebpz  Earth barycentric position (au)
- * @param ebvx  Earth barycentric velocity (au/day)
- * @param ebvy  Earth barycentric velocity (au/day)
- * @param ebvz  Earth barycentric velocity (au/day)
- * @param ehpx   Earth heliocentric position (au)
- * @param ehpy   Earth heliocentric position (au)
- * @param ehpz   Earth heliocentric position (au)
+ * @param p     Observer's geocentric position (m)
+ * @param v     Observer's geocentric velocity (m/s)
+ * @param ebp   Earth barycentric position (au)
+ * @param ebv   Earth barycentric velocity (au/day)
+ * @param ehp   Earth heliocentric position (au)
  */
-@Suppress("UnnecessaryVariable")
 fun eraApcs(
     tdb1: Double, tdb2: Double,
-    px: Distance, py: Distance, pz: Distance,
-    vx: Double, vy: Double, vz: Double,
-    ebpx: Distance, ebpy: Distance, ebpz: Distance,
-    ebvx: Velocity, ebvy: Velocity, ebvz: Velocity,
-    ehpx: Distance, ehpy: Distance, ehpz: Distance,
+    p: Vector3D, v: Vector3D,
+    ebp: Vector3D, ebv: Vector3D, ehp: Vector3D,
 ): AstrometryParameters {
     // Time since reference epoch, years (for proper motion calculation).
     val pmt = (tdb1 - J2000 + tdb2) / DAYSPERJY
 
     // Adjust Earth ephemeris to observer.
-    val dpx = px
-    val dvx = vx / AUDMS
-    val phx = ehpx + dpx
-    val vbx = ebvx + dvx
-
-    val dpy = py
-    val dvy = vy / AUDMS
-    val vby = ebvy + dvy
-    val phy = ehpy + dpy
-
-    val dpz = pz
-    val dvz = vz / AUDMS
-    val vbz = ebvz + dvz
-    val phz = ehpz + dpz
+    val ph = ehp + p / AU_M
+    val vb = ebv + v / (AU_M / DAYSEC)
 
     // Barycentric position of observer (au).
-    val pbx = ebpx + dpx
-    val pby = ebpy + dpy
-    val pbz = ebpz + dpz
+    val pb = ebp + p / AU_M
 
     // Heliocentric direction and distance (unit vector and au).
-    val ph = Vector3D(phx, phy, phz)
     val em = ph.length
-    val (ehx, ehy, ehz) = ph.normalized
+    val eh = ph.normalized
 
     // Barycentric vel. in units of c, and reciprocal of Lorenz factor.
     var v2 = 0.0
-    val wx = vbx * CR
+    val wx = vb[0] * (LIGHT_TIME_AU / DAYSEC)
     v2 += wx * wx
 
-    val wy = vby * CR
+    val wy = vb[1] * (LIGHT_TIME_AU / DAYSEC)
     v2 += wy * wy
 
-    val wz = vbz * CR
+    val wz = vb[2] * (LIGHT_TIME_AU / DAYSEC)
     v2 += wz * wz
 
     val bm1 = sqrt(1.0 - v2)
 
     return AstrometryParameters(
         pmt = pmt,
-        eb = CartesianCoordinate(pbx, pby, pbz),
+        eb = pb,
         em = em.au,
-        ehx = ehx, ehy = ehy, ehz = ehz,
-        vx = wx, vy = wy, vz = wz,
+        eh = eh,
+        v = Vector3D(wx, wy, wz),
         bm1 = bm1,
     )
 }
@@ -504,16 +494,10 @@ fun eraApcs(
  * site coordinates.
  *
  * @param tdb1   TDB as a 2-part...
- * @param tdb2   ...Julian Date (Note 1)
- * @param ebpx   Earth barycentric position (au)
- * @param ebpy   Earth barycentric position (au)
- * @param ebpz   Earth barycentric position (au)
- * @param ebvx   Earth barycentric velocity (au/day)
- * @param ebvy   Earth barycentric velocity (au/day)
- * @param ebvz   Earth barycentric velocity (au/day)
- * @param ehpx   Earth heliocentric position (au)
- * @param ehpy   Earth heliocentric position (au)
- * @param ehpz   Earth heliocentric position (au)
+ * @param tdb2   ...Julian Date
+ * @param ebp   Earth barycentric position (au)
+ * @param ebv   Earth barycentric velocity (au/day)
+ * @param ehp   Earth heliocentric position (au)
  * @param x      CIP X (components of unit vector)
  * @param y      CIP Y (components of unit vector)
  * @param s      The CIO locator s (radians)
@@ -529,13 +513,10 @@ fun eraApcs(
  */
 fun eraApco(
     tdb1: Double, tdb2: Double,
-    ebpx: Distance, ebpy: Distance, ebpz: Distance,
-    ebvx: Velocity, ebvy: Velocity, ebvz: Velocity,
-    ehpx: Distance, ehpy: Distance, ehpz: Distance,
-    x: Double, y: Double,
-    s: Angle,
+    ebp: Vector3D, ebv: Vector3D, ehp: Vector3D,
+    x: Double, y: Double, s: Angle,
     theta: Angle, elong: Angle, phi: Angle,
-    hm: Distance,
+    hm: Double,
     xp: Angle, yp: Angle,
     sp: Angle,
     refa: Angle, refb: Angle,
@@ -544,16 +525,11 @@ fun eraApco(
     var r = Matrix3D.rotZ(theta + sp).rotateY(-xp).rotateX(-yp).rotateZ(elong)
 
     // Solve for local Earth rotation angle.
-    val a = r[0, 0]
-    val b = r[0, 1]
-    val eral = if (a != 0.0 || b != 0.0) atan2(b, a).rad else 0.0
+    val eral = atan2(r[0, 1], r[0, 0])
 
     // Solve for polar motion [X,Y] with respect to local meridian.
-    val c = r[0, 2]
-    val xpl = atan2(c, hypot(a, b)).rad
-    val d = r[1, 2]
-    val e = r[2, 2]
-    val ypl = if (d != 0.0 || e != 0.0) (-atan2(d, e)).rad else 0.0
+    val xpl = atan2(r[0, 2], hypot(r[0, 0], r[0, 1])).rad
+    val ypl = -atan2(r[1, 2], r[2, 2])
 
     // Adjusted longitude.
     val along = eraAnpm(eral - theta)
@@ -576,11 +552,8 @@ fun eraApco(
     // ICRS <-> GCRS parameters.
     return eraApcs(
         tdb1, tdb2,
-        p.x.m, p.y.m, p.z.m,
-        v.x, v.y, v.z,
-        ebpx, ebpy, ebpz,
-        ebvx, ebvy, ebvz,
-        ehpx, ehpy, ehpz,
+        p, v,
+        ebp, ebv, ehp,
     ).copy(
         eral = eral,
         xpl = xpl, ypl = ypl,
@@ -629,7 +602,7 @@ fun eraPfw06(tt1: Double, tt2: Double): FukushimaWilliamsFourAngles {
 /**
  * Fundamental argument, IERS Conventions (2003): mean anomaly of the Moon.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFal03(t: Double): Angle {
     return (485868.249036 + t * (1717915923.2178 + t * (31.8792 + t * (0.051635 + t * (-0.00024470))))).mod(TURNAS).arcsec
@@ -638,7 +611,7 @@ fun eraFal03(t: Double): Angle {
 /**
  * Fundamental argument, IERS Conventions (2003): mean anomaly of the Sun.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFalp03(t: Double): Angle {
     return (1287104.793048 + t * (129596581.0481 + t * (-0.5532 + t * (0.000136 + t * (-0.00001149))))).mod(TURNAS).arcsec
@@ -647,7 +620,7 @@ fun eraFalp03(t: Double): Angle {
 /**
  * Fundamental argument, IERS Conventions (2003): mean anomaly of the Sun.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFad03(t: Double): Angle {
     return (1072260.703692 + t * (1602961601.2090 + t * (-6.3706 + t * (0.006593 + t * (-0.00003169))))).mod(TURNAS).arcsec
@@ -657,7 +630,7 @@ fun eraFad03(t: Double): Angle {
  * Fundamental argument, IERS Conventions (2003): mean longitude of the Moon
  * minus mean longitude of the ascending node.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFaf03(t: Double): Angle {
     return (335779.526232 + t * (1739527262.8478 + t * (-12.7512 + t * (-0.001037 + t * (0.00000417))))).mod(TURNAS).arcsec
@@ -666,7 +639,7 @@ fun eraFaf03(t: Double): Angle {
 /**
  * Fundamental argument, IERS Conventions (2003): mean longitude of the Moon's ascending node.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFaom03(t: Double): Angle {
     return (450160.398036 + t * (-6962890.5431 + t * (7.4722 + t * (0.007702 + t * (-0.00005939))))).mod(TURNAS).arcsec
@@ -675,56 +648,56 @@ fun eraFaom03(t: Double): Angle {
 /**
  * Fundamental argument, IERS Conventions (2003): general accumulated precession in longitude.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFapa03(t: Double) = ((0.024381750 + 0.00000538691 * t) * t).rad
 
 /**
  * Fundamental argument, IERS Conventions (2003): mean longitude of Mercury.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFame03(t: Double) = (4.402608842 + 2608.7903141574 * t).mod(TAU).rad
 
 /**
  * Fundamental argument, IERS Conventions (2003): mean longitude of Venus.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFave03(t: Double) = (3.176146697 + 1021.3285546211 * t).mod(TAU).rad
 
 /**
  * Fundamental argument, IERS Conventions (2003): mean longitude of Earth.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFae03(t: Double) = (1.753470314 + 628.3075849991 * t).mod(TAU).rad
 
 /**
  * Fundamental argument, IERS Conventions (2003): mean longitude of Mars.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFama03(t: Double) = (6.203480913 + 334.0612426700 * t).mod(TAU).rad
 
 /**
  * Fundamental argument, IERS Conventions (2003): mean longitude of Jupiter.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFaju03(t: Double) = (0.599546497 + 52.9690962641 * t).mod(TAU).rad
 
 /**
  * Fundamental argument, IERS Conventions (2003): mean longitude of Saturn.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFasa03(t: Double) = (0.874016757 + 21.3299104960 * t).mod(TAU).rad
 
 /**
  * Fundamental argument, IERS Conventions (2003): mean longitude of Uranus.
  *
- * @param t TDB, Julian centuries since J2000.0 (Note 1)
+ * @param t TDB, Julian centuries since J2000.0
  */
 fun eraFaur03(t: Double) = (5.481293872 + 7.4781598567 * t).mod(TAU).rad
 
@@ -846,8 +819,8 @@ fun eraNut00a(tt1: Double, tt2: Double): DoubleArray {
 
     for (i in xpl.indices.reversed()) {
         val arg = (xpl[i].nl * al + xpl[i].nf * af + xpl[i].nd * ad + xpl[i].nom * aom + xpl[i].nme * alme +
-                xpl[i].nve * alve + xpl[i].nea * alea + xpl[i].nma * alma + xpl[i].nju * alju +
-                xpl[i].nsa * alsa + xpl[i].nur * alur + xpl[i].nne * alne + xpl[i].npa * apa).mod(TAU)
+            xpl[i].nve * alve + xpl[i].nea * alea + xpl[i].nma * alma + xpl[i].nju * alju +
+            xpl[i].nsa * alsa + xpl[i].nur * alur + xpl[i].nne * alne + xpl[i].npa * apa).mod(TAU)
 
         val sarg = sin(arg)
         val carg = cos(arg)
@@ -905,112 +878,115 @@ fun eraPnm06a(tt1: Double, tt2: Double): Matrix3D {
 }
 
 @Suppress("ArrayInDataClass")
-private data class Term(
+internal data class Term(
     @JvmField val nfa: IntArray,
     @JvmField val s: Double,
     @JvmField val c: Double,
 )
 
-// Polynomial coefficients
-private val SP = doubleArrayOf(94.00e-6, 3808.65e-6, -122.68e-6, -72574.11e-6, 27.98e-6, 15.62e-6)
+internal object IAU2006 {
 
-// Terms of order t^0
-private val S0 = arrayOf(
-    // 1-10
-    Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), -2640.73e-6, 0.39e-6),
-    Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), -63.53e-6, 0.02e-6),
-    Term(intArrayOf(0, 0, 2, -2, 3, 0, 0, 0), -11.75e-6, -0.01e-6),
-    Term(intArrayOf(0, 0, 2, -2, 1, 0, 0, 0), -11.21e-6, -0.01e-6),
-    Term(intArrayOf(0, 0, 2, -2, 2, 0, 0, 0), 4.57e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 2, 0, 3, 0, 0, 0), -2.02e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 2, 0, 1, 0, 0, 0), -1.98e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 0, 0, 3, 0, 0, 0), 1.72e-6, 0.00e-6),
-    Term(intArrayOf(0, 1, 0, 0, 1, 0, 0, 0), 1.41e-6, 0.01e-6),
-    Term(intArrayOf(0, 1, 0, 0, -1, 0, 0, 0), 1.26e-6, 0.01e-6),
-    // 11-20
-    Term(intArrayOf(1, 0, 0, 0, -1, 0, 0, 0), 0.63e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, 0, 0, 1, 0, 0, 0), 0.63e-6, 0.00e-6),
-    Term(intArrayOf(0, 1, 2, -2, 3, 0, 0, 0), -0.46e-6, 0.00e-6),
-    Term(intArrayOf(0, 1, 2, -2, 1, 0, 0, 0), -0.45e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 4, -4, 4, 0, 0, 0), -0.36e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 1, -1, 1, -8, 12, 0), 0.24e-6, 0.12e-6),
-    Term(intArrayOf(0, 0, 2, 0, 0, 0, 0, 0), -0.32e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 2, 0, 2, 0, 0, 0), -0.28e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, 2, 0, 3, 0, 0, 0), -0.27e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, 2, 0, 1, 0, 0, 0), -0.26e-6, 0.00e-6),
-    // 21-30
-    Term(intArrayOf(0, 0, 2, -2, 0, 0, 0, 0), 0.21e-6, 0.00e-6),
-    Term(intArrayOf(0, 1, -2, 2, -3, 0, 0, 0), -0.19e-6, 0.00e-6),
-    Term(intArrayOf(0, 1, -2, 2, -1, 0, 0, 0), -0.18e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 0, 0, 0, 8, -13, -1), 0.10e-6, -0.05e-6),
-    Term(intArrayOf(0, 0, 0, 2, 0, 0, 0, 0), -0.15e-6, 0.00e-6),
-    Term(intArrayOf(2, 0, -2, 0, -1, 0, 0, 0), 0.14e-6, 0.00e-6),
-    Term(intArrayOf(0, 1, 2, -2, 2, 0, 0, 0), 0.14e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, 0, -2, 1, 0, 0, 0), -0.14e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, 0, -2, -1, 0, 0, 0), -0.14e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 4, -2, 4, 0, 0, 0), -0.13e-6, 0.00e-6),
-    // 31-33
-    Term(intArrayOf(0, 0, 2, -2, 4, 0, 0, 0), 0.11e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, -2, 0, -3, 0, 0, 0), -0.11e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, -2, 0, -1, 0, 0, 0), -0.11e-6, 0.00e-6),
-)
+    // Polynomial coefficients
+    @JvmField internal val SP = doubleArrayOf(94.00e-6, 3808.65e-6, -122.68e-6, -72574.11e-6, 27.98e-6, 15.62e-6)
 
-// Terms of order t^1
-private val S1 = arrayOf(
-    // 1 - 3
-    Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), -0.07e-6, 3.57e-6),
-    Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), 1.73e-6, -0.03e-6),
-    Term(intArrayOf(0, 0, 2, -2, 3, 0, 0, 0), 0.00e-6, 0.48e-6),
-)
+    // Terms of order t^0
+    @JvmField internal val S0 = arrayOf(
+        // 1-10
+        Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), -2640.73e-6, 0.39e-6),
+        Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), -63.53e-6, 0.02e-6),
+        Term(intArrayOf(0, 0, 2, -2, 3, 0, 0, 0), -11.75e-6, -0.01e-6),
+        Term(intArrayOf(0, 0, 2, -2, 1, 0, 0, 0), -11.21e-6, -0.01e-6),
+        Term(intArrayOf(0, 0, 2, -2, 2, 0, 0, 0), 4.57e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, 0, 3, 0, 0, 0), -2.02e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, 0, 1, 0, 0, 0), -1.98e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 0, 0, 3, 0, 0, 0), 1.72e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, 0, 0, 1, 0, 0, 0), 1.41e-6, 0.01e-6),
+        Term(intArrayOf(0, 1, 0, 0, -1, 0, 0, 0), 1.26e-6, 0.01e-6),
+        // 11-20
+        Term(intArrayOf(1, 0, 0, 0, -1, 0, 0, 0), 0.63e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 0, 0, 1, 0, 0, 0), 0.63e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, 2, -2, 3, 0, 0, 0), -0.46e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, 2, -2, 1, 0, 0, 0), -0.45e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 4, -4, 4, 0, 0, 0), -0.36e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 1, -1, 1, -8, 12, 0), 0.24e-6, 0.12e-6),
+        Term(intArrayOf(0, 0, 2, 0, 0, 0, 0, 0), -0.32e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, 0, 2, 0, 0, 0), -0.28e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 2, 0, 3, 0, 0, 0), -0.27e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 2, 0, 1, 0, 0, 0), -0.26e-6, 0.00e-6),
+        // 21-30
+        Term(intArrayOf(0, 0, 2, -2, 0, 0, 0, 0), 0.21e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, -2, 2, -3, 0, 0, 0), -0.19e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, -2, 2, -1, 0, 0, 0), -0.18e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 0, 0, 0, 8, -13, -1), 0.10e-6, -0.05e-6),
+        Term(intArrayOf(0, 0, 0, 2, 0, 0, 0, 0), -0.15e-6, 0.00e-6),
+        Term(intArrayOf(2, 0, -2, 0, -1, 0, 0, 0), 0.14e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, 2, -2, 2, 0, 0, 0), 0.14e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 0, -2, 1, 0, 0, 0), -0.14e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 0, -2, -1, 0, 0, 0), -0.14e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 4, -2, 4, 0, 0, 0), -0.13e-6, 0.00e-6),
+        // 31-33
+        Term(intArrayOf(0, 0, 2, -2, 4, 0, 0, 0), 0.11e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, -2, 0, -3, 0, 0, 0), -0.11e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, -2, 0, -1, 0, 0, 0), -0.11e-6, 0.00e-6),
+    )
 
-// Terms of order t^2
-private val S2 = arrayOf(
-    // 1-10
-    Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), 743.52e-6, -0.17e-6),
-    Term(intArrayOf(0, 0, 2, -2, 2, 0, 0, 0), 56.91e-6, 0.06e-6),
-    Term(intArrayOf(0, 0, 2, 0, 2, 0, 0, 0), 9.84e-6, -0.01e-6),
-    Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), -8.85e-6, 0.01e-6),
-    Term(intArrayOf(0, 1, 0, 0, 0, 0, 0, 0), -6.38e-6, -0.05e-6),
-    Term(intArrayOf(1, 0, 0, 0, 0, 0, 0, 0), -3.07e-6, 0.00e-6),
-    Term(intArrayOf(0, 1, 2, -2, 2, 0, 0, 0), 2.23e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 2, 0, 1, 0, 0, 0), 1.67e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, 2, 0, 2, 0, 0, 0), 1.30e-6, 0.00e-6),
-    Term(intArrayOf(0, 1, -2, 2, -2, 0, 0, 0), 0.93e-6, 0.00e-6),
-    // 11-20
-    Term(intArrayOf(1, 0, 0, -2, 0, 0, 0, 0), 0.68e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 2, -2, 1, 0, 0, 0), -0.55e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, -2, 0, -2, 0, 0, 0), 0.53e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 0, 2, 0, 0, 0, 0), -0.27e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, 0, 0, 1, 0, 0, 0), -0.27e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, -2, -2, -2, 0, 0, 0), -0.26e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, 0, 0, -1, 0, 0, 0), -0.25e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, 2, 0, 1, 0, 0, 0), 0.22e-6, 0.00e-6),
-    Term(intArrayOf(2, 0, 0, -2, 0, 0, 0, 0), -0.21e-6, 0.00e-6),
-    Term(intArrayOf(2, 0, -2, 0, -1, 0, 0, 0), 0.20e-6, 0.00e-6),
-    // 21-25
-    Term(intArrayOf(0, 0, 2, 2, 2, 0, 0, 0), 0.17e-6, 0.00e-6),
-    Term(intArrayOf(2, 0, 2, 0, 2, 0, 0, 0), 0.13e-6, 0.00e-6),
-    Term(intArrayOf(2, 0, 0, 0, 0, 0, 0, 0), -0.13e-6, 0.00e-6),
-    Term(intArrayOf(1, 0, 2, -2, 2, 0, 0, 0), -0.12e-6, 0.00e-6),
-    Term(intArrayOf(0, 0, 2, 0, 0, 0, 0, 0), -0.11e-6, 0.00e-6),
-)
+    // Terms of order t^1
+    @JvmField internal val S1 = arrayOf(
+        // 1 - 3
+        Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), -0.07e-6, 3.57e-6),
+        Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), 1.73e-6, -0.03e-6),
+        Term(intArrayOf(0, 0, 2, -2, 3, 0, 0, 0), 0.00e-6, 0.48e-6),
+    )
 
-// Terms of order t^3
-private val S3 = arrayOf(
-    // 1-4
-    Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), 0.30e-6, -23.42e-6),
-    Term(intArrayOf(0, 0, 2, -2, 2, 0, 0, 0), -0.03e-6, -1.46e-6),
-    Term(intArrayOf(0, 0, 2, 0, 2, 0, 0, 0), -0.01e-6, -0.25e-6),
-    Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), 0.00e-6, 0.23e-6),
-)
+    // Terms of order t^2
+    @JvmField internal val S2 = arrayOf(
+        // 1-10
+        Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), 743.52e-6, -0.17e-6),
+        Term(intArrayOf(0, 0, 2, -2, 2, 0, 0, 0), 56.91e-6, 0.06e-6),
+        Term(intArrayOf(0, 0, 2, 0, 2, 0, 0, 0), 9.84e-6, -0.01e-6),
+        Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), -8.85e-6, 0.01e-6),
+        Term(intArrayOf(0, 1, 0, 0, 0, 0, 0, 0), -6.38e-6, -0.05e-6),
+        Term(intArrayOf(1, 0, 0, 0, 0, 0, 0, 0), -3.07e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, 2, -2, 2, 0, 0, 0), 2.23e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, 0, 1, 0, 0, 0), 1.67e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 2, 0, 2, 0, 0, 0), 1.30e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, -2, 2, -2, 0, 0, 0), 0.93e-6, 0.00e-6),
+        // 11-20
+        Term(intArrayOf(1, 0, 0, -2, 0, 0, 0, 0), 0.68e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, -2, 1, 0, 0, 0), -0.55e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, -2, 0, -2, 0, 0, 0), 0.53e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 0, 2, 0, 0, 0, 0), -0.27e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 0, 0, 1, 0, 0, 0), -0.27e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, -2, -2, -2, 0, 0, 0), -0.26e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 0, 0, -1, 0, 0, 0), -0.25e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 2, 0, 1, 0, 0, 0), 0.22e-6, 0.00e-6),
+        Term(intArrayOf(2, 0, 0, -2, 0, 0, 0, 0), -0.21e-6, 0.00e-6),
+        Term(intArrayOf(2, 0, -2, 0, -1, 0, 0, 0), 0.20e-6, 0.00e-6),
+        // 21-25
+        Term(intArrayOf(0, 0, 2, 2, 2, 0, 0, 0), 0.17e-6, 0.00e-6),
+        Term(intArrayOf(2, 0, 2, 0, 2, 0, 0, 0), 0.13e-6, 0.00e-6),
+        Term(intArrayOf(2, 0, 0, 0, 0, 0, 0, 0), -0.13e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 2, -2, 2, 0, 0, 0), -0.12e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, 0, 0, 0, 0, 0), -0.11e-6, 0.00e-6),
+    )
 
-// Terms of order t^4
-private val S4 = arrayOf(
-    // 1-1
-    Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), -0.26e-6, -0.01e-6),
-)
+    // Terms of order t^3
+    @JvmField internal val S3 = arrayOf(
+        // 1-4
+        Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), 0.30e-6, -23.42e-6),
+        Term(intArrayOf(0, 0, 2, -2, 2, 0, 0, 0), -0.03e-6, -1.46e-6),
+        Term(intArrayOf(0, 0, 2, 0, 2, 0, 0, 0), -0.01e-6, -0.25e-6),
+        Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), 0.00e-6, 0.23e-6),
+    )
 
-private val S = arrayOf(S0, S1, S2, S3, S4)
+    // Terms of order t^4
+    @JvmField internal val S4 = arrayOf(
+        // 1-1
+        Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), -0.26e-6, -0.01e-6),
+    )
+
+    @JvmField internal val S = arrayOf(S0, S1, S2, S3, S4)
+}
 
 /**
  * The CIO locator s, positioning the Celestial Intermediate Origin on
@@ -1042,17 +1018,17 @@ fun eraS06(tt1: Double, tt2: Double, x: Double, y: Double): Angle {
     fa[7] = eraFapa03(t)
 
     // Evalutate s.
-    val w = DoubleArray(6) { SP[it] }
+    val w = DoubleArray(6) { IAU2006.SP[it] }
 
-    for (k in S.indices) {
-        for (i in S[k].indices.reversed()) {
+    for (k in IAU2006.S.indices) {
+        for (i in IAU2006.S[k].indices.reversed()) {
             var a = 0.0
 
-            for (j in 0..7) {
-                a += S[k][i].nfa[j] * fa[j]
+            repeat(8) {
+                a += IAU2006.S[k][i].nfa[it] * fa[it]
             }
 
-            w[k] += S[k][i].s * sin(a) + S[k][i].c * cos(a)
+            w[k] += IAU2006.S[k][i].s * sin(a) + IAU2006.S[k][i].c * cos(a)
         }
     }
 
@@ -1080,8 +1056,7 @@ fun eraS06a(tt1: Double, tt2: Double): Angle {
     // Bias-precession-nutation-matrix, IAU 20006/2000A.
     val rnpb = eraPnm06a(tt1, tt2)
     // Extract the CIP coordinates.
-    val x = rnpb[2, 0]
-    val y = rnpb[2, 1]
+    val (x, y) = eraBpn2xy(rnpb)
     // Compute the CIO locator s, given the CIP coordinates.
     return eraS06(tt1, tt2, x, y)
 }
@@ -1109,7 +1084,9 @@ fun era00(ut11: Double, ut12: Double): Angle {
  *
  * @return tan Z coefficient (radians) and tan^3 Z coefficient (radians)
  */
-fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): DoubleArray {
+fun eraRefco(phpa: Pressure, tc: Temperature, rh: Double, wl: Double): DoubleArray {
+    if (phpa <= 0.0) return doubleArrayOf(0.0, 0.0)
+
     // Decide whether optical/IR or radio case:  switch at 100 microns.
     val optic = wl <= 100.0
 
@@ -1119,12 +1096,8 @@ fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): DoubleArray {
     val w = max(0.1, min(wl, 1e+6))
 
     // Water vapour pressure at the observer.
-    val pw = if (p > 0.0) {
-        val ps = 10.0.pow((0.7859 + 0.03477 * t) / (1.0 + 0.00412 * t)) * (1.0 + p * (4.5e-6 + 6e-10 * t * t))
-        r * ps / (1.0 - (1.0 - r) * ps / p)
-    } else {
-        0.0
-    }
+    val ps = 10.0.pow((0.7859 + 0.03477 * t) / (1.0 + 0.00412 * t)) * (1.0 + p * (4.5e-6 + 6e-10 * t * t))
+    val pw = r * ps / (1.0 - (1.0 - r) * ps / p)
 
     // Refractive index minus 1 at the observer.
 
@@ -1171,30 +1144,15 @@ fun eraRefco(phpa: Double, tc: Double, rh: Double, wl: Double): DoubleArray {
  *
  * @param tdb1  TDB date
  * @param tdb2  TDB fraction date
- * @param ebpx  Earth barycentric position (au)
- * @param ebpy  Earth barycentric position (au)
- * @param ebpz  Earth barycentric position (au)
- * @param ebvx  Earth barycentric velocity (au/day)
- * @param ebvy  Earth barycentric velocity (au/day)
- * @param ebvz  Earth barycentric velocity (au/day)
- * @param ehpx  Earth heliocentric position (au)
- * @param ehpy  Earth heliocentric position (au)
- * @param ehpz  Earth heliocentric position (au)
+ * @param ebp  Earth barycentric position (au)
+ * @param ebv  Earth barycentric velocity (au/day)
+ * @param ehp  Earth heliocentric position (au)
  */
-fun eraApcg(
+inline fun eraApcg(
     tdb1: Double, tdb2: Double,
-    ebpx: Distance, ebpy: Distance, ebpz: Distance,
-    ebvx: Velocity, ebvy: Velocity, ebvz: Velocity,
-    ehpx: Distance, ehpy: Distance, ehpz: Distance,
+    ebp: Vector3D, ebv: Vector3D, ehp: Vector3D,
 ): AstrometryParameters {
-    return eraApcs(
-        tdb1, tdb2,
-        0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0,
-        ebpx, ebpy, ebpz,
-        ebvx, ebvy, ebvz,
-        ehpx, ehpy, ehpz,
-    )
+    return eraApcs(tdb1, tdb2, Vector3D.EMPTY, Vector3D.EMPTY, ebp, ebv, ehp)
 }
 
 private const val AM12 = 0.000000211284
@@ -1255,25 +1213,25 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
     val cs1 = CS1
     val cs2 = CS2
 
-    for (i in 0..2) {
+    repeat(3) {
         var xyz = 0.0
         var xyzd = 0.0
 
         // Sun to Earth, T^0 terms.
-        for (k in ce0[i].indices step 3) {
-            val a = ce0[i][k]
-            val b = ce0[i][k + 1]
-            val c = ce0[i][k + 2]
+        for (k in ce0[it].indices step 3) {
+            val a = ce0[it][k]
+            val b = ce0[it][k + 1]
+            val c = ce0[it][k + 2]
             val p = b + c * t
             xyz += a * cos(p)
             xyzd -= a * c * sin(p)
         }
 
         // Sun to Earth, T^1 terms.
-        for (k in ce1[i].indices step 3) {
-            val a = ce1[i][k]
-            val b = ce1[i][k + 1]
-            val c = ce1[i][k + 2]
+        for (k in ce1[it].indices step 3) {
+            val a = ce1[it][k]
+            val b = ce1[it][k + 1]
+            val c = ce1[it][k + 2]
             val ct = c * t
             val p = b + ct
             val cp = cos(p)
@@ -1282,10 +1240,10 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
         }
 
         // Sun to Earth, T^2 terms.
-        for (k in ce2[i].indices step 3) {
-            val a = ce2[i][k]
-            val b = ce2[i][k + 1]
-            val c = ce2[i][k + 2]
+        for (k in ce2[it].indices step 3) {
+            val a = ce2[it][k]
+            val b = ce2[it][k + 1]
+            val c = ce2[it][k + 2]
             val ct = c * t
             val p = b + ct
             val cp = cos(p)
@@ -1294,24 +1252,24 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
         }
 
         // Heliocentric Earth position and velocity component.
-        ph[i] = xyz
-        vh[i] = xyzd / DAYSPERJY
+        ph[it] = xyz
+        vh[it] = xyzd / DAYSPERJY
 
         // SSB to Sun, T^0 terms.
-        for (k in cs0[i].indices step 3) {
-            val a = cs0[i][k]
-            val b = cs0[i][k + 1]
-            val c = cs0[i][k + 2]
+        for (k in cs0[it].indices step 3) {
+            val a = cs0[it][k]
+            val b = cs0[it][k + 1]
+            val c = cs0[it][k + 2]
             val p = b + c * t
             xyz += a * cos(p)
             xyzd -= a * c * sin(p)
         }
 
         // SSB to Sun, T^1 terms.
-        for (k in cs1[i].indices step 3) {
-            val a = cs1[i][k]
-            val b = cs1[i][k + 1]
-            val c = cs1[i][k + 2]
+        for (k in cs1[it].indices step 3) {
+            val a = cs1[it][k]
+            val b = cs1[it][k + 1]
+            val c = cs1[it][k + 2]
             val ct = c * t
             val p = b + ct
             val cp = cos(p)
@@ -1320,10 +1278,10 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
         }
 
         // SSB to Sun, T^2 terms.
-        for (k in cs2[i].indices step 3) {
-            val a = cs2[i][k]
-            val b = cs2[i][k + 1]
-            val c = cs2[i][k + 2]
+        for (k in cs2[it].indices step 3) {
+            val a = cs2[it][k]
+            val b = cs2[it][k + 1]
+            val c = cs2[it][k + 2]
             val ct = c * t
             val p = b + ct
             val cp = cos(p)
@@ -1332,8 +1290,8 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
         }
 
         // Barycentric Earth position and velocity component.
-        pb[i] = xyz
-        vb[i] = xyzd / DAYSPERJY
+        pb[it] = xyz
+        vb[it] = xyzd / DAYSPERJY
     }
 
     val phx = ph[0] + AM12 * ph[1] + AM13 * ph[2]
@@ -1353,7 +1311,7 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
     val vbz = AM32 * vb[1] + AM33 * vb[2]
 
     return PositionAndVelocity(Vector3D(phx, phy, phz), Vector3D(vhx, vhy, vhz)) to
-            PositionAndVelocity(Vector3D(pbx, pby, pbz), Vector3D(vbx, vby, vbz))
+        PositionAndVelocity(Vector3D(pbx, pby, pbz), Vector3D(vbx, vby, vbz))
 }
 
 /**
@@ -1368,13 +1326,7 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
  */
 fun eraApcg13(tdb1: Double, tdb2: Double): AstrometryParameters {
     val (h, b) = eraEpv00(tdb1, tdb2)
-
-    return eraApcg(
-        tdb1, tdb2,
-        b.position.x.au, b.position.y.au, b.position.z.au,
-        b.velocity.x.auDay, b.velocity.y.auDay, b.velocity.z.auDay,
-        h.position.x.au, h.position.y.au, h.position.z.au,
-    )
+    return eraApcg(tdb1, tdb2, b.position, b.velocity, h.position)
 }
 
 @Suppress("ArrayInDataClass")
@@ -1504,8 +1456,8 @@ fun eraEect00(tt1: Double, tt2: Double): Angle {
     for (i in E0.indices.reversed()) {
         var a = 0.0
 
-        for (j in 0..7) {
-            a += E0[i].nfa[j] * fa[j]
+        repeat(8) {
+            a += E0[i].nfa[it] * fa[it]
         }
 
         s0 += E0[i].s * sin(a) + E0[i].c * cos(a)
@@ -1514,8 +1466,8 @@ fun eraEect00(tt1: Double, tt2: Double): Angle {
     for (i in E1.indices.reversed()) {
         var a = 0.0
 
-        for (j in 0..7) {
-            a += E1[i].nfa[j] * fa[j]
+        repeat(8) {
+            a += E1[i].nfa[it] * fa[it]
         }
 
         s1 += E1[i].s * sin(a) + E1[i].c * cos(a)
@@ -1608,12 +1560,19 @@ fun eraGmst06(ut11: Double, ut12: Double, tt1: Double, tt2: Double): Angle {
 
     // Greenwich Mean Sidereal Time, IAU 2006.
     return (eraEra00(ut11, ut12) +
-            (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
+        (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
 }
 
 /**
  * Equation of the equinoxes, compatible with IAU 2000 resolutions and
  * IAU 2006/2000A precession-nutation.
+ *
+ * The equation of the equinoxes is the difference between apparent sidereal time
+ * and mean sidereal time. It is also known as nutation in right ascension.
+ *
+ * The result, which is in radians, operates in the following sense:
+ *
+ * `Greenwich apparent ST = GMST + equation of the equinoxes`.
  *
  * @param tt1   TT day (Julian date).
  * @param tt2   TT fraction of day (Julian date).
@@ -2033,7 +1992,7 @@ fun eraC2tpe(
     dpsi: Angle, deps: Angle, xp: Angle, yp: Angle
 ): Matrix3D {
     // Form the celestial-to-true matrix for this TT.
-    val (epsa, _, _, _, _, rbpn) = eraPn00(tt1, tt2, dpsi, deps)
+    val (_, _, epsa, _, _, _, _, rbpn) = eraPn00(tt1, tt2, dpsi, deps)
     // Predict the Greenwich Mean Sidereal Time for this UT1 and TT.
     val gmst = eraGmst00(ut11, ut12, tt1, tt2)
     // Predict the equation of the equinoxes given TT and nutation.
@@ -2102,11 +2061,11 @@ fun eraBp00(tt1: Double, tt2: Double): Array<Matrix3D> {
 }
 
 /**
- * Precession-nutation, IAU 2000 model:  a multi-purpose function,
+ * Precession-nutation, IAU 2000 model: a multi-purpose function,
  * supporting classical (equinox-based) use directly and CIO-based
  * use indirectly.
  */
-fun eraPn00(tt1: Double, tt2: Double, dpsi: Angle, deps: Angle): PrecessionNutationMatrices {
+fun eraPn00(tt1: Double, tt2: Double, dpsi: Angle, deps: Angle): PrecessionNutationAnglesAndMatrices {
     // IAU 2000 precession-rate adjustments.
     val (_, depspr) = eraPr00(tt1, tt2)
 
@@ -2122,7 +2081,7 @@ fun eraPn00(tt1: Double, tt2: Double, dpsi: Angle, deps: Angle): PrecessionNutat
     // Bias-precession-nutation matrix (classical).
     val rbpn = rn * rbp
 
-    return PrecessionNutationMatrices(epsa, rb, rp, rbp, rn, rbpn)
+    return PrecessionNutationAnglesAndMatrices(dpsi, deps, epsa, rb, rp, rbp, rn, rbpn)
 }
 
 typealias StarDirectionCosines = DoubleArray
@@ -2699,3 +2658,906 @@ inline fun eraTtUt1(tt1: Double, tt2: Double, ttMinusUt1: Double): DoubleArray {
 }
 
 const val DBL_EPSILON = 2.220446049250313E-16
+
+/**
+ * For a terrestrial observer, prepare star-independent astrometry
+ * parameters for transformations between ICRS and geocentric CIRS
+ * coordinates.  The Earth ephemeris and CIP/CIO are supplied by the
+ * caller.
+ *
+ * The parameters produced by this function are required in the
+ * parallax, light deflection, aberration, and bias-precession-nutation
+ * parts of the astrometric transformation chain.
+ *
+ * @param tdb1  TDB as a 2-part...
+ * @param tdb2  ...Julian Date (Note 1)
+ * @param ebp    Earth barycentric position (au)
+ * @param ebv    Earth barycentric velocity (au/day)
+ * @param ehp    Earth heliocentric position (au)
+ * @param x      CIP X (components of unit vector)
+ * @param y      CIP Y (components of unit vector)
+ * @param s      the CIO locator s (radians)
+ *
+ * @return Star-independent astrometry parameters.
+ */
+fun eraApci(
+    tdb1: Double, tdb2: Double,
+    ebp: Vector3D, ebv: Vector3D, ehp: Vector3D,
+    x: Double, y: Double, s: Double,
+): AstrometryParameters {
+    val astrom = eraApcg(tdb1, tdb2, ebp, ebv, ehp)
+    val bpn = eraC2ixys(x, y, s)
+    return astrom.copy(bpn = bpn)
+}
+
+/**
+ * For a terrestrial observer, prepare star-independent astrometry
+ * parameters for transformations between ICRS and geocentric CIRS
+ * coordinates.  The caller supplies the date, and ERFA models are used
+ * to predict the Earth ephemeris and CIP/CIO.
+ *
+ * The parameters produced by this function are required in the
+ * parallax, light deflection, aberration, and bias-precession-nutation
+ * parts of the astrometric transformation chain.
+ *
+ * @return star-independent astrometry parameters and
+ * equation of the origins (ERA-GST, radians).
+ */
+fun eraApci13(tdb1: Double, tdb2: Double): Pair<AstrometryParameters, Angle> {
+    // Earth barycentric & heliocentric position/velocity (au, au/d).
+    val (ehpv, ebpv) = eraEpv00(tdb1, tdb2)
+
+    // Form the equinox based BPN matrix, IAU 2006/2000A.
+    val r = eraPnm06a(tdb1, tdb2)
+
+    // Extract CIP X,Y.
+    val (x, y) = eraBpn2xy(r)
+
+    // Obtain CIO locator s.
+    val s = eraS06(tdb1, tdb2, x, y)
+
+    // Compute the star-independent astrometry parameters.
+    val astrom = eraApci(tdb1, tdb2, ebpv.position, ebpv.velocity, ehpv.position, x, y, s)
+
+    // Equation of the origins.
+    val eo = eraEors(r, s)
+
+    return astrom to eo
+}
+
+/**
+ * Transform ICRS star data, epoch J2000.0, to CIRS.
+ */
+fun eraAtci13(
+    rightAscension: Angle, declination: Angle,
+    pmRA: Angle, pmDEC: Angle, parallax: Angle, rv: Velocity,
+    tdb1: Double, tdb2: Double
+): DoubleArray {
+    // The transformation parameters.
+    val (astrom, eo) = eraApci13(tdb1, tdb2)
+    // ICRS (epoch J2000.0) to CIRS.
+    val (ri, di) = eraAtciq(rightAscension, declination, pmRA, pmDEC, parallax, rv, astrom)
+
+    return doubleArrayOf(ri, di, eo)
+}
+
+/**
+ * Quick ICRS, epoch J2000.0, to CIRS transformation, given precomputed
+ * star-independent astrometry parameters.
+ *
+ * Use of this function is appropriate when efficiency is important and
+ * where many star positions are to be transformed for one date.  The
+ * star-independent parameters can be obtained by calling one of the
+ * functions [eraApci13], [eraApcg13], [eraApco13] or [eraApcs13].
+ *
+ * If the parallax and proper motions are zero the [eraAtciqz] function
+ * can be used instead.
+ *
+ * @return CIRS RA,Dec (radians)
+ */
+fun eraAtciq(
+    rightAscension: Angle, declination: Angle,
+    pmRA: Angle, pmDEC: Angle, parallax: Angle, rv: Velocity,
+    astrom: AstrometryParameters,
+): DoubleArray {
+    // Proper motion and parallax, giving BCRS coordinate direction.
+    val pco = eraPmpx(rightAscension, declination, pmRA, pmDEC, parallax, rv, astrom.pmt, astrom.eb)
+
+    // Light deflection by the Sun, giving BCRS natural direction.
+    val pnat = eraLdsun(pco, astrom.eh, astrom.em)
+
+    // Aberration, giving GCRS proper direction.
+    val ppr = eraAb(pnat, astrom.v, astrom.em, astrom.bm1)
+
+    // Bias-precession-nutation, giving CIRS proper direction.
+    val pi = astrom.bpn * ppr
+
+    // CIRS RA,Dec.
+    val (ri, di) = eraC2s(pi[0], pi[1], pi[2])
+
+    return doubleArrayOf(ri.normalized, di)
+}
+
+/**
+ * Quick ICRS to CIRS transformation, given precomputed star-
+ * independent astrometry parameters, and assuming zero parallax and
+ * proper motion.
+ *
+ * Use of this function is appropriate when efficiency is important and
+ * where many star positions are to be transformed for one date.  The
+ * star-independent parameters can be obtained by calling one of the
+ * functions eraApci[13], eraApcg[13], eraApco[13] or eraApcs[13].
+ *
+ * The corresponding function for the case of non-zero parallax and
+ * proper motion is [eraAtciq].
+ *
+ * @return CIRS RA,Dec (radians)
+ */
+fun eraAtciqz(rightAscension: Angle, declination: Angle, astrom: AstrometryParameters): DoubleArray {
+    // BCRS coordinate direction (unit vector).
+    val pco = eraS2c(rightAscension, declination)
+
+    // Light deflection by the Sun, giving BCRS natural direction.
+    val pnat = eraLdsun(pco, astrom.eh, astrom.em)
+
+    // Aberration, giving GCRS proper direction.
+    val ppr = eraAb(pnat, astrom.v, astrom.em, astrom.bm1)
+
+    // Bias-precession-nutation, giving CIRS proper direction.
+    val pi = astrom.bpn * ppr
+
+    // CIRS RA,Dec.
+    val (ri, di) = eraC2s(pi[0], pi[1], pi[2])
+
+    return doubleArrayOf(ri.normalized, di)
+}
+
+/**
+ * Deflection of starlight by the Sun.
+ *
+ * @param p  Direction from observer to star (unit vector)
+ * @param e  Direction from Sun to observer (unit vector)
+ * @param em Distance from Sun to observer (au)
+ *
+ * @return Observer to deflected star (unit vector)
+ */
+fun eraLdsun(p: Vector3D, e: Vector3D, em: Distance): Vector3D {
+    // Deflection limiter (smaller for distant observers).
+    val em2 = max(1.0, em * em)
+    return eraLd(1.0, p, p, e, em, 1e-6 / em2)
+}
+
+/**
+ * Apply light deflection by a solar-system body, as part of
+ * transforming coordinate direction into natural direction.
+ *
+ * @param bm    Mass of the gravitating body (solar masses)
+ * @param p     Direction from observer to source (unit vector)
+ * @param q     Direction from body to source (unit vector)
+ * @param e     Direction from body to observer (unit vector)
+ * @param em    Distance from body to observer (au)
+ * @param dlim  Deflection limiter (Note 4)
+ *
+ * @return Observer to deflected source (unit vector)
+ */
+fun eraLd(bm: Double, p: Vector3D, q: Vector3D, e: Vector3D, em: Distance, dlim: Double): Vector3D {
+    val qpe = DoubleArray(3) { q[it] + e[it] }
+    val w = bm * SCHWARZSCHILD_RADIUS_OF_THE_SUN / em / max(q.dot(qpe), dlim)
+    // p x (e x q).
+    val eq = e.cross(q)
+    val peq = p.cross(eq)
+
+    // Apply the deflection.
+    repeat(3) {
+        qpe[it] = p[it] + w * peq[it]
+    }
+
+    return Vector3D(qpe)
+}
+
+/**
+ * Proper motion and parallax.
+ *
+ * @param rightAscension ICRS RA at catalog epoch (radians)
+ * @param declination    ICRS Dec at catalog epoch (radians)
+ * @param pmRA           RA proper motion (radians/year, Note 1)
+ * @param pmDEC          Dec proper motion (radians/year)
+ * @param parallax       parallax (arcsec)
+ * @param rv             radial velocity (km/s, +ve if receding)
+ * @param pmt            proper motion time interval (SSB, Julian years)
+ * @param pob            SSB to observer vector (au)
+ *
+ * @return Coordinate direction (BCRS unit vector)
+ */
+fun eraPmpx(
+    rightAscension: Angle, declination: Angle,
+    pmRA: Angle, pmDEC: Angle, parallax: Angle, rv: Velocity,
+    pmt: Double, pob: Vector3D
+): Vector3D {
+    val p = DoubleArray(3)
+    val pm = DoubleArray(3)
+
+    // Spherical coordinates to unit vector (and useful functions).
+    val sr = sin(rightAscension)
+    val cr = cos(rightAscension)
+    val sd = sin(declination)
+    val cd = cos(declination)
+    p[0] = cr * cd
+    p[1] = sr * cd
+    p[2] = sd
+
+    // Proper motion time interval (y) including Roemer effect.
+    val dt = pmt + pob.dot(p) * (LIGHT_TIME_AU / DAYSEC / DAYSPERJY)
+
+    // Space motion (radians per year).
+    val pxr = parallax * ASEC2RAD
+    val w = (DAYSEC * DAYSPERJM / AU_M) * rv * pxr
+    val pdz = pmDEC * p[2]
+    pm[0] = -pmRA * p[1] - pdz * cr + w * p[0]
+    pm[1] = pmRA * p[0] - pdz * sr + w * p[1]
+    pm[2] = pmDEC * cd + w * p[2]
+
+    // Coordinate direction of star (unit vector, BCRS).
+    repeat(3) {
+        p[it] += dt * pm[it] - pxr * pob[it]
+    }
+
+    return Vector3D(p).normalized
+}
+
+/**
+ * Extract from the bias-precession-nutation matrix the X,Y coordinates
+ * of the Celestial Intermediate Pole.
+ */
+inline fun eraBpn2xy(rbpn: Matrix3D): DoubleArray {
+    return doubleArrayOf(rbpn[2, 0], rbpn[2, 1])
+}
+
+/**
+ * Precession-nutation, IAU 2000B model: a multi-purpose function,
+ * supporting classical (equinox-based) use directly and CIO-based
+ * use indirectly.
+ */
+fun eraPn00b(tt1: Double, tt2: Double): PrecessionNutationAnglesAndMatrices {
+    val (dpsi, deps) = eraNut00b(tt1, tt2)
+    val (_, _, epsa, rb, rp, rbp, rn, rbpn) = eraPn00(tt1, tt2, dpsi, deps)
+    return PrecessionNutationAnglesAndMatrices(dpsi, deps, epsa, rb, rp, rbp, rn, rbpn)
+}
+
+/**
+ * Form the matrix of precession-nutation for a given date (including
+ * frame bias), equinox-based, IAU 2000B model.
+ */
+inline fun eraPnm00b(tt1: Double, tt2: Double): Matrix3D {
+    return eraPn00b(tt1, tt2).gcrsToTrue
+}
+
+/**
+ * The CIO locator s, positioning the Celestial Intermediate Origin on
+ * the equator of the Celestial Intermediate Pole, using the IAU 2000B
+ * precession-nutation model.
+ */
+fun eraS00b(tt1: Double, tt2: Double): Angle {
+    // Bias-precession-nutation-matrix, IAU 2000B.
+    val rbpn = eraPnm00b(tt1, tt2)
+
+    // Extract the CIP coordinates.
+    val (x, y) = eraBpn2xy(rbpn)
+
+    // Compute the CIO locator s, given the CIP coordinates.
+    return eraS00(tt1, tt2, x, y)
+}
+
+internal object IAU2000 {
+
+    // Polynomial coefficients
+    @JvmField internal val SP = doubleArrayOf(94.00e-6, 3808.35e-6, -119.94e-6, -72574.09e-6, 27.70e-6, 15.61e-6)
+
+    // Terms of order t^0
+    @JvmField internal val S0 = arrayOf(
+        // 1-10
+        Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), -2640.73e-6, 0.39e-6),
+        Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), -63.53e-6, 0.02e-6),
+        Term(intArrayOf(0, 0, 2, -2, 3, 0, 0, 0), -11.75e-6, -0.01e-6),
+        Term(intArrayOf(0, 0, 2, -2, 1, 0, 0, 0), -11.21e-6, -0.01e-6),
+        Term(intArrayOf(0, 0, 2, -2, 2, 0, 0, 0), 4.57e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, 0, 3, 0, 0, 0), -2.02e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, 0, 1, 0, 0, 0), -1.98e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 0, 0, 3, 0, 0, 0), 1.72e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, 0, 0, 1, 0, 0, 0), 1.41e-6, 0.01e-6),
+        Term(intArrayOf(0, 1, 0, 0, -1, 0, 0, 0), 1.26e-6, 0.01e-6),
+
+        // 11-20
+        Term(intArrayOf(1, 0, 0, 0, -1, 0, 0, 0), 0.63e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 0, 0, 1, 0, 0, 0), 0.63e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, 2, -2, 3, 0, 0, 0), -0.46e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, 2, -2, 1, 0, 0, 0), -0.45e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 4, -4, 4, 0, 0, 0), -0.36e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 1, -1, 1, -8, 12, 0), 0.24e-6, 0.12e-6),
+        Term(intArrayOf(0, 0, 2, 0, 0, 0, 0, 0), -0.32e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, 0, 2, 0, 0, 0), -0.28e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 2, 0, 3, 0, 0, 0), -0.27e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 2, 0, 1, 0, 0, 0), -0.26e-6, 0.00e-6),
+
+        // 21-30
+        Term(intArrayOf(0, 0, 2, -2, 0, 0, 0, 0), 0.21e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, -2, 2, -3, 0, 0, 0), -0.19e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, -2, 2, -1, 0, 0, 0), -0.18e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 0, 0, 0, 8, -13, -1), 0.10e-6, -0.05e-6),
+        Term(intArrayOf(0, 0, 0, 2, 0, 0, 0, 0), -0.15e-6, 0.00e-6),
+        Term(intArrayOf(2, 0, -2, 0, -1, 0, 0, 0), 0.14e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, 2, -2, 2, 0, 0, 0), 0.14e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 0, -2, 1, 0, 0, 0), -0.14e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 0, -2, -1, 0, 0, 0), -0.14e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 4, -2, 4, 0, 0, 0), -0.13e-6, 0.00e-6),
+
+        // 31-33
+        Term(intArrayOf(0, 0, 2, -2, 4, 0, 0, 0), 0.11e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, -2, 0, -3, 0, 0, 0), -0.11e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, -2, 0, -1, 0, 0, 0), -0.11e-6, 0.00e-6),
+    )
+
+    // Terms of order t^1
+    @JvmField internal val S1 = arrayOf(
+        // 1 - 3
+        Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), -0.07e-6, 3.57e-6),
+        Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), 1.71e-6, -0.03e-6),
+        Term(intArrayOf(0, 0, 2, -2, 3, 0, 0, 0), 0.00e-6, 0.48e-6),
+    )
+
+    // Terms of order t^2
+    @JvmField internal val S2 = arrayOf(
+        // 1-10
+        // 1-10
+        Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), 743.53e-6, -0.17e-6),
+        Term(intArrayOf(0, 0, 2, -2, 2, 0, 0, 0), 56.91e-6, 0.06e-6),
+        Term(intArrayOf(0, 0, 2, 0, 2, 0, 0, 0), 9.84e-6, -0.01e-6),
+        Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), -8.85e-6, 0.01e-6),
+        Term(intArrayOf(0, 1, 0, 0, 0, 0, 0, 0), -6.38e-6, -0.05e-6),
+        Term(intArrayOf(1, 0, 0, 0, 0, 0, 0, 0), -3.07e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, 2, -2, 2, 0, 0, 0), 2.23e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, 0, 1, 0, 0, 0), 1.67e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 2, 0, 2, 0, 0, 0), 1.30e-6, 0.00e-6),
+        Term(intArrayOf(0, 1, -2, 2, -2, 0, 0, 0), 0.93e-6, 0.00e-6),
+
+        // 11-20
+        Term(intArrayOf(1, 0, 0, -2, 0, 0, 0, 0), 0.68e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, -2, 1, 0, 0, 0), -0.55e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, -2, 0, -2, 0, 0, 0), 0.53e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 0, 2, 0, 0, 0, 0), -0.27e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 0, 0, 1, 0, 0, 0), -0.27e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, -2, -2, -2, 0, 0, 0), -0.26e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 0, 0, -1, 0, 0, 0), -0.25e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 2, 0, 1, 0, 0, 0), 0.22e-6, 0.00e-6),
+        Term(intArrayOf(2, 0, 0, -2, 0, 0, 0, 0), -0.21e-6, 0.00e-6),
+        Term(intArrayOf(2, 0, -2, 0, -1, 0, 0, 0), 0.20e-6, 0.00e-6),
+
+        // 21-25
+        Term(intArrayOf(0, 0, 2, 2, 2, 0, 0, 0), 0.17e-6, 0.00e-6),
+        Term(intArrayOf(2, 0, 2, 0, 2, 0, 0, 0), 0.13e-6, 0.00e-6),
+        Term(intArrayOf(2, 0, 0, 0, 0, 0, 0, 0), -0.13e-6, 0.00e-6),
+        Term(intArrayOf(1, 0, 2, -2, 2, 0, 0, 0), -0.12e-6, 0.00e-6),
+        Term(intArrayOf(0, 0, 2, 0, 0, 0, 0, 0), -0.11e-6, 0.00e-6),
+    )
+
+    // Terms of order t^3
+    @JvmField internal val S3 = arrayOf(
+        // 1-4
+        Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), 0.30e-6, -23.51e-6),
+        Term(intArrayOf(0, 0, 2, -2, 2, 0, 0, 0), -0.03e-6, -1.39e-6),
+        Term(intArrayOf(0, 0, 2, 0, 2, 0, 0, 0), -0.01e-6, -0.24e-6),
+        Term(intArrayOf(0, 0, 0, 0, 2, 0, 0, 0), 0.00e-6, 0.22e-6),
+    )
+
+    // Terms of order t^4
+    @JvmField internal val S4 = arrayOf(
+        // 1-1
+        Term(intArrayOf(0, 0, 0, 0, 1, 0, 0, 0), -0.26e-6, -0.01e-6),
+    )
+
+    @JvmField internal val S = arrayOf(S0, S1, S2, S3, S4)
+}
+
+/**
+ * The CIO locator s, positioning the Celestial Intermediate Origin on
+ * the equator of the Celestial Intermediate Pole, given the CIP's X,Y
+ * coordinates. Compatible with IAU 2000A precession-nutation.
+ */
+fun eraS00(tt1: Double, tt2: Double, x: Double, y: Double): Angle {
+    // Interval between fundamental epoch J2000.0 and current date (JC).
+    val t = (tt1 - J2000 + tt2) / DAYSPERJC
+
+    // Fundamental Arguments (from IERS Conventions 2003)
+    val fa = DoubleArray(8)
+
+    // Mean anomaly of the Moon.
+    fa[0] = eraFal03(t)
+    // Mean anomaly of the Sun.
+    fa[1] = eraFalp03(t)
+    // Mean longitude of the Moon minus that of the ascending node.
+    fa[2] = eraFaf03(t)
+    // Mean elongation of the Moon from the Sun.
+    fa[3] = eraFad03(t)
+    // Mean longitude of the ascending node of the Moon.
+    fa[4] = eraFaom03(t)
+    // Mean longitude of Venus.
+    fa[5] = eraFave03(t)
+    // Mean longitude of Earth.
+    fa[6] = eraFae03(t)
+    // General precession in longitude.
+    fa[7] = eraFapa03(t)
+
+    // Evalutate s.
+    val w = DoubleArray(6) { IAU2000.SP[it] }
+
+    for (k in IAU2000.S.indices) {
+        for (i in IAU2000.S[k].indices.reversed()) {
+            var a = 0.0
+
+            repeat(8) {
+                a += IAU2000.S[k][i].nfa[it] * fa[it]
+            }
+
+            w[k] += IAU2000.S[k][i].s * sin(a) + IAU2000.S[k][i].c * cos(a)
+        }
+    }
+
+    return (w[0] + (w[1] + (w[2] + (w[3] + (w[4] + w[5] * t) * t) * t) * t) * t).arcsec - x * y / 2.0
+}
+
+/**
+ * Form the matrix of precession-nutation for a given date (including
+ * frame bias), equinox based, IAU 2000A model.
+ */
+inline fun eraPnm00a(tt1: Double, tt2: Double): Matrix3D {
+    return eraPn00a(tt1, tt2).gcrsToTrue
+}
+
+/**
+ * Precession-nutation, IAU 2000A model: a multi-purpose function,
+ * supporting classical (equinox-based) use directly and CIO-based
+ * use indirectly.
+ */
+fun eraPn00a(tt1: Double, tt2: Double): PrecessionNutationAnglesAndMatrices {
+    val (dpsi, deps) = eraNut00a(tt1, tt2)
+    val (_, _, epsa, rb, rp, rbp, rn, rbpn) = eraPn00(tt1, tt2, dpsi, deps)
+    return PrecessionNutationAnglesAndMatrices(dpsi, deps, epsa, rb, rp, rbp, rn, rbpn)
+}
+
+/**
+ * The CIO locator s, positioning the Celestial Intermediate Origin on
+ * the equator of the Celestial Intermediate Pole, using the IAU 2000A
+ * precession-nutation model.
+ */
+fun eraS00a(tt1: Double, tt2: Double): Angle {
+    // Bias-precession-nutation-matrix, IAU 2000A.
+    val rbpn = eraPnm00a(tt1, tt2)
+
+    // Extract the CIP coordinates.
+    val (x, y) = eraBpn2xy(rbpn)
+
+    // Compute the CIO locator s, given the CIP coordinates.
+    return eraS00(tt1, tt2, x, y)
+}
+
+/**
+ * For a terrestrial observer, prepare star-independent astrometry
+ * parameters for transformations between ICRS and observed
+ * coordinates. The caller supplies UTC, site coordinates, ambient air
+ * conditions and observing wavelength, and ERFA models are used to
+ * obtain the Earth ephemeris, CIP/CIO and refraction constants.
+ *
+ * The parameters produced by this function are required in the
+ * parallax, light deflection, aberration, and bias-precession-nutation
+ * parts of the ICRS/CIRS transformations.
+ *
+ * @param utc1   UTC as a 2-part...
+ * @param utc2   ...Julian Date
+ * @param dut1   UT1-UTC (seconds)
+ * @param elong  Longitude (radians, east +ve)
+ * @param phi    Latitude (geodetic, radians)
+ * @param hm     Height above ellipsoid (m, geodetic)
+ * @param xp     Polar motion coordinates (radians)
+ * @param yp     Polar motion coordinates (radians)
+ * @param phpa   Pressure at the observer (hPa = mBar)
+ * @param tc     Ambient temperature at the observer (deg C)
+ * @param rh     Relative humidity at the observer (range 0-1)
+ * @param wl     Wavelength (micrometers)
+ */
+fun eraApco13(
+    utc1: Double, utc2: Double, dut1: Double,
+    elong: Angle, phi: Angle, hm: Distance, xp: Angle, yp: Angle,
+    phpa: Pressure, tc: Temperature, rh: Double, wl: Double
+): Pair<AstrometryParameters, Angle> {
+    val (tai1, tai2) = eraUtcTai(utc1, utc2)
+    val (tt1, tt2) = eraTaiTt(tai1, tai2)
+    val (ut11, ut12) = eraUtcUt1(utc1, utc2, dut1)
+
+    // Earth barycentric & heliocentric position/velocity (au, au/d).
+    val (ehpv, ebpv) = eraEpv00(tt1, tt2)
+    val (ebp, ebv) = ebpv
+    val ehp = ehpv.position
+
+    // Form the equinox based BPN matrix, IAU 2006/2000A.
+    val r = eraPnm06a(tt1, tt2)
+
+    // Extract CIP X,Y.
+    val (x, y) = eraBpn2xy(r)
+
+    // Obtain CIO locator s.
+    val s = eraS06(tt1, tt2, x, y)
+
+    // Earth rotation angle.
+    val theta = eraEra00(ut11, ut12)
+
+    // TIO locator s'.
+    val sp = eraSp00(tt1, tt2)
+
+    // Refraction constants A and B.
+    val (refa, refb) = eraRefco(phpa, tc, rh, wl)
+
+    // Compute the star-independent astrometry parameters.
+    val astrom = eraApco(
+        tt1, tt2, ebp, ebv, ehp,
+        x, y, s, theta,
+        elong, phi, hm, xp, yp, sp, refa, refb
+    )
+
+    // Equation of the origins.
+    val eo = eraEors(r, s)
+
+    return astrom to eo
+}
+
+/**
+ * For an observer whose geocentric position and velocity are known,
+ * prepare star-independent astrometry parameters for transformations
+ * between ICRS and GCRS. The Earth ephemeris is from ERFA models.
+ *
+ * The parameters produced by this function are required in the space
+ * motion, parallax, light deflection and aberration parts of the
+ * astrometric transformation chain.
+ *
+ * @param p observer's geocentric position with respect to BCRS axes (m)
+ * @param v observer's geocentric velocity with respect to BCRS axes (m/s)
+ */
+fun eraApcs13(tdb1: Double, tdb2: Double, p: Vector3D, v: Vector3D): AstrometryParameters {
+    // Earth barycentric & heliocentric position/velocity (au, au/d).
+    val (ehpv, ebpv) = eraEpv00(tdb1, tdb2)
+    // Compute the star-independent astrometry parameters.
+    return eraApcs(tdb1, tdb2, p, v, ebpv.position, ebpv.velocity, ehpv.position)
+}
+
+/**
+ * For a terrestrial observer, prepare star-independent astrometry
+ * parameters for transformations between CIRS and observed
+ * coordinates.  The caller supplies the Earth orientation information
+ * and the refraction constants as well as the site coordinates.
+ *
+ * @param sp     The TIO locator s (radians)
+ * @param theta  Earth rotation angle (radians)
+ * @param elong  Longitude (radians, east +ve)
+ * @param phi    Latitude (geodetic, radians)
+ * @param hm     Height above ellipsoid (m, geodetic)
+ * @param xp     Polar motion coordinates (radians)
+ * @param yp     Polar motion coordinates (radians)
+ * @param refa   Refraction constant A (radians)
+ * @param refb   Refraction constant B (radians)
+ */
+fun eraApio(
+    sp: Angle, theta: Angle, elong: Angle, phi: Angle,
+    hm: Double, xp: Angle, yp: Angle, refa: Angle, refb: Angle,
+    astrom: AstrometryParameters? = null,
+): AstrometryParameters {
+    // Form the rotation matrix, CIRS to apparent [HA,Dec].
+    val r = Matrix3D.rotZ(theta + sp).rotateY(-xp).rotateX(-yp).rotateZ(elong)
+
+    // Solve for local Earth rotation angle.
+    val eral = atan2(r[0, 1], r[0, 0])
+
+    // Solve for polar motion [X,Y] with respect to local meridian.
+    val xpl = atan2(r[0, 2], hypot(r[0, 0], r[0, 1]))
+    val ypl = -atan2(r[1, 2], r[2, 2])
+
+    // Adjusted longitude.
+    val along = eraAnpm(eral - theta)
+
+    // Functions of latitude.
+    val sphi = sin(phi)
+    val cphi = cos(phi)
+
+    // Observer's geocentric position and velocity (m, m/s, CIRS).
+    val pv = eraPvtob(elong, phi, hm, xp, yp, sp, theta)
+
+    // Magnitude of diurnal aberration vector.
+    val diurab = hypot(pv.velocity[0], pv.velocity[1]) / SPEED_OF_LIGHT
+
+    // Refraction constants.
+    return astrom?.copy(
+        xpl = xpl, ypl = ypl, along = along, sphi = sphi, cphi = cphi,
+        diurab = diurab, refa = refa, refb = refb, eral = eral,
+    ) ?: AstrometryParameters(
+        xpl = xpl, ypl = ypl, along = along, sphi = sphi, cphi = cphi,
+        diurab = diurab, refa = refa, refb = refb, eral = eral,
+    )
+}
+
+/**
+ * For a terrestrial observer, prepare star-independent astrometry
+ * parameters for transformations between CIRS and observed
+ * coordinates.  The caller supplies UTC, site coordinates, ambient air
+ * conditions and observing wavelength.
+ *
+ * @param utc1   UTC as a 2-part...
+ * @param utc2   ...Julian Date
+ * @param dut1   UT1-UTC (seconds)
+ * @param elong  Longitude (radians, east +ve)
+ * @param phi    Latitude (geodetic, radians)
+ * @param hm     Height above ellipsoid (m, geodetic)
+ * @param xp     Polar motion coordinates (radians)
+ * @param yp     Polar motion coordinates (radians)
+ * @param phpa   Pressure at the observer (hPa = mBar)
+ * @param tc     Ambient temperature at the observer (deg C)
+ * @param rh     Relative humidity at the observer (range 0-1)
+ * @param wl     Wavelength (micrometers)
+ */
+fun eraApio13(
+    utc1: Double, utc2: Double, dut1: Double,
+    elong: Angle, phi: Angle, hm: Distance, xp: Angle, yp: Angle,
+    phpa: Pressure, tc: Temperature, rh: Double, wl: Double
+): AstrometryParameters {
+    val (tai1, tai2) = eraUtcTai(utc1, utc2)
+    val (tt1, tt2) = eraTaiTt(tai1, tai2)
+    val (ut11, ut12) = eraUtcUt1(utc1, utc2, dut1)
+
+    // TIO locator s'.
+    val sp = eraSp00(tt1, tt2)
+
+    // Earth rotation angle.
+    val theta = eraEra00(ut11, ut12)
+
+    // Refraction constants A and B.
+    val (refa, refb) = eraRefco(phpa, tc, rh, wl)
+
+    // CIRS <-> observed astrometry parameters.
+    return eraApio(sp, theta, elong, phi, hm, xp, yp, refa, refb)
+}
+
+/**
+ * Quick CIRS to observed place transformation.
+ *
+ * Use of this function is appropriate when efficiency is important and
+ * where many star positions are all to be transformed for one date.
+ * The star-independent astrometry parameters can be obtained by
+ * calling [eraApio13] or [eraApco13].
+ *
+ * @param rightAscension  CIRS right ascension
+ * @param declination     CIRS declination
+ * @param astrom          star-independent astrometry parameters.
+ *
+ * @return observed azimuth (radians: N=0,E=90), observed zenith distance (radians),
+ * observed hour angle (radians), observed declination (radians), observed right ascension (CIO-based, radians)
+ */
+fun eraAtioq(rightAscension: Angle, declination: Angle, astrom: AstrometryParameters): DoubleArray {
+    // CIRS RA,Dec to Cartesian -HA,Dec.
+    val v = eraS2c(rightAscension - astrom.eral, declination)
+
+    // Polar motion.
+    val sx = sin(astrom.xpl)
+    val cx = cos(astrom.xpl)
+    val sy = sin(astrom.ypl)
+    val cy = cos(astrom.ypl)
+    val xhd = cx * v[0] + sx * v[2]
+    val yhd = sx * sy * v[0] + cy * v[1] - cx * sy * v[2]
+    val zhd = -sx * cy * v[0] + sy * v[1] + cx * cy * v[2]
+
+    // Diurnal aberration.
+    var f = (1.0 - astrom.diurab * yhd)
+    val xhdt = f * xhd
+    val yhdt = f * (yhd + astrom.diurab)
+    val zhdt = f * zhd
+
+    // Cartesian -HA,Dec to Cartesian Az,El (S=0,E=90).
+    val xaet = astrom.sphi * xhdt - astrom.cphi * zhdt
+    val zaet = astrom.cphi * xhdt + astrom.sphi * zhdt
+
+    // Azimuth (N=0,E=90).
+    val azobs = if (xaet != 0.0 || yhdt != 0.0) atan2(yhdt, -xaet) else 0.0
+
+    // Cosine and sine of altitude, with precautions.
+    val r = max(sqrt(xaet * xaet + yhdt * yhdt), 1e-6)
+    val z = max(zaet, 0.05)
+
+    // A*tan(z)+B*tan^3(z) model, with Newton-Raphson correction.
+    val tz = r / z
+    val w = astrom.refb * tz * tz
+    val del = (astrom.refa + w) * tz / (1.0 + (astrom.refa + 3.0 * w) / (z * z))
+
+    // Apply the change, giving observed vector.
+    val cosdel = 1.0 - del * del / 2.0
+    f = cosdel - del * z / r
+    val xaeo = xaet * f
+    val yaeo = yhdt * f
+    val zaeo = cosdel * zaet + del * r
+
+    // Observed ZD.
+    val zdobs = atan2(sqrt(xaeo * xaeo + yaeo * yaeo), zaeo)
+
+    // Az/El vector to HA,Dec vector (both right-handed).
+    val vx = astrom.sphi * xaeo + astrom.cphi * zaeo
+    val vz = -astrom.cphi * xaeo + astrom.sphi * zaeo
+
+    // To spherical -HA,Dec.
+    val (hmobs, dcobs) = eraC2s(vx, yaeo, vz)
+
+    // Right ascension (with respect to CIO).
+    val raobs = astrom.eral + hmobs
+
+    // Return the results.
+    return doubleArrayOf(azobs.normalized, zdobs, -hmobs, dcobs, raobs.normalized)
+}
+
+/**
+ * ICRS RA,Dec to observed place.  The caller supplies UTC, site
+ * coordinates, ambient air conditions and observing wavelength.
+ *
+ * ERFA models are used for the Earth ephemeris, bias-precession-
+ * nutation, Earth orientation and refraction.
+ *
+ * @param rightAscension ICRS RA at catalog epoch (radians)
+ * @param declination    ICRS Dec at catalog epoch (radians)
+ * @param pmRA           RA proper motion (radians/year, Note 1)
+ * @param pmDEC          Dec proper motion (radians/year)
+ * @param parallax       parallax (arcsec)
+ * @param rv             radial velocity (km/s, +ve if receding)
+ * @param utc1   UTC as a 2-part...
+ * @param utc2   ...Julian Date
+ * @param dut1   UT1-UTC (seconds)
+ * @param elong  Longitude (radians, east +ve)
+ * @param phi    Latitude (geodetic, radians)
+ * @param hm     Height above ellipsoid (m, geodetic)
+ * @param xp     Polar motion coordinates (radians)
+ * @param yp     Polar motion coordinates (radians)
+ * @param phpa   Pressure at the observer (hPa = mBar)
+ * @param tc     Ambient temperature at the observer (deg C)
+ * @param rh     Relative humidity at the observer (range 0-1)
+ * @param wl     Wavelength (micrometers)
+ *
+ * @return observed azimuth (radians: N=0,E=90), observed zenith distance (radians),
+ * observed hour angle (radians), observed declination (radians),
+ * observed right ascension (CIO-based, radians) and equation of the origins (ERA-GST, radians).
+ */
+fun eraAtco13(
+    rightAscension: Angle, declination: Angle,
+    pmRA: Angle, pmDEC: Angle, parallax: Angle, rv: Velocity,
+    utc1: Double, utc2: Double, dut1: Double,
+    elong: Angle, phi: Angle, hm: Double, xp: Angle, yp: Angle,
+    phpa: Double, tc: Temperature, rh: Double, wl: Double,
+): Pair<DoubleArray, Angle> {
+    // Star-independent astrometry parameters.
+    val (astrom, eo) = eraApco13(utc1, utc2, dut1, elong, phi, hm, xp, yp, phpa, tc, rh, wl)
+    // Transform ICRS to CIRS.
+    val (ri, di) = eraAtciq(rightAscension, declination, pmRA, pmDEC, parallax, rv, astrom)
+    // Transform CIRS to observed.
+    return eraAtioq(ri, di, astrom) to eo
+}
+
+/**
+ * Quick CIRS RA,Dec to ICRS astrometric place, given the star-
+ * independent astrometry parameters.
+ *
+ * Use of this function is appropriate when efficiency is important and
+ * where many star positions are all to be transformed for one date.
+ * The star-independent astrometry parameters can be obtained by
+ * calling one of the functions [eraApci13], [eraApcg13], [eraApco13]
+ * or [eraApcs13].
+ *
+ * @return ICRS astrometric RA,Dec (radians)
+ */
+fun eraAticq(rightAscension: Angle, declination: Angle, astrom: AstrometryParameters): DoubleArray {
+    // CIRS RA,Dec to Cartesian.
+    val pi = eraS2c(rightAscension, declination)
+
+    // Bias-precession-nutation, giving GCRS proper direction.
+    val ppr = astrom.bpn.transposed * pi
+
+    // Aberration, giving GCRS natural direction
+    val d = DoubleArray(3)
+    val pnat = Vector3D()
+
+    repeat(3) {
+        pnat.unsafe {
+            var r2 = 0.0
+
+            for (i in 0..2) {
+                val w = ppr[i] - d[i]
+                this[i] = w
+                r2 += w * w
+            }
+
+            val r = sqrt(r2)
+
+            for (i in 0..2) {
+                this[i] /= r
+            }
+        }
+
+        val after = eraAb(pnat, astrom.v, astrom.em, astrom.bm1)
+
+        pnat.unsafe {
+            var r2 = 0.0
+
+            for (i in 0..2) {
+                d[i] = after[i] - this[i]
+                val w = ppr[i] - d[i]
+                this[i] = w
+                r2 += w * w
+            }
+
+            val r = sqrt(r2)
+
+            for (i in 0..2) {
+                this[i] /= r
+            }
+        }
+    }
+
+    // Light deflection by the Sun, giving BCRS coordinate direction.
+    d.fill(0.0)
+
+    val pco = Vector3D()
+
+    repeat(5) {
+        pco.unsafe {
+            var r2 = 0.0
+
+            for (i in 0..2) {
+                val w = pnat[i] - d[i]
+                this[i] = w
+                r2 += w * w
+            }
+
+            val r = sqrt(r2)
+
+            for (i in 0..2) {
+                this[i] /= r
+            }
+        }
+
+        val after = eraLdsun(pco, astrom.eh, astrom.em)
+
+        pco.unsafe {
+            var r2 = 0.0
+
+            for (i in 0..2) {
+                d[i] = after[i] - this[i]
+                val w = pnat[i] - d[i]
+                this[i] = w
+                r2 += w * w
+            }
+
+            val r = sqrt(r2)
+
+            for (i in 0..2) {
+                this[i] /= r
+            }
+        }
+    }
+
+    return eraC2s(pco[0], pco[1], pco[2])
+}
+
+/**
+ * Transform star RA,Dec from geocentric CIRS to ICRS astrometric.
+ *
+ * @return ICRS astrometric RA,Dec (radians) and  equation of the origins (ERA-GST, radians).
+ */
+fun eraAtic13(rightAscension: Angle, declination: Angle, tdb1: Double, tdb2: Double): DoubleArray {
+    // Star-independent astrometry parameters.
+    val (astrom, eo) = eraApci13(tdb1, tdb2)
+
+    // CIRS to ICRS astrometric.
+    val (ri, di) = eraAticq(rightAscension, declination, astrom)
+
+    return doubleArrayOf(ri, di, eo)
+}

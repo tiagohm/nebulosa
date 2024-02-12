@@ -8,6 +8,7 @@ import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.framing.HipsSurveyType
 import nebulosa.fits.*
+import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.computation.Histogram
 import nebulosa.imaging.algorithms.computation.Statistics
@@ -19,9 +20,9 @@ import nebulosa.math.*
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.star.detection.ImageStar
-import nebulosa.watney.star.detection.WatneyStarDetector
-import nebulosa.wcs.WCSException
+import nebulosa.star.detection.StarDetector
 import nebulosa.wcs.WCS
+import nebulosa.wcs.WCSException
 import org.springframework.http.HttpStatus
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
@@ -44,6 +45,7 @@ class ImageService(
     private val imageBucket: ImageBucket,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val connectionService: ConnectionService,
+    private val starDetector: StarDetector<Image>,
 ) {
 
     @Synchronized
@@ -276,7 +278,7 @@ class ImageService(
 
     fun detectStars(path: Path): List<ImageStar> {
         val (image) = imageBucket[path] ?: return emptyList()
-        return WATNEY_STAR_DETECTOR.detect(image)
+        return starDetector.detect(image)
     }
 
     fun histogram(path: Path, bitLength: Int = 16): IntArray {
@@ -287,7 +289,6 @@ class ImageService(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<ImageService>()
-        @JvmStatic private val WATNEY_STAR_DETECTOR = WatneyStarDetector(computeHFD = true)
 
         private const val COORDINATE_INTERPOLATION_DELTA = 24
     }

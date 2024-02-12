@@ -1,5 +1,6 @@
 package nebulosa.astap.plate.solving
 
+import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.common.process.ProcessExecutor
 import nebulosa.fits.Header
 import nebulosa.fits.NOAOExt
@@ -33,6 +34,7 @@ class AstapPlateSolver(path: Path) : PlateSolver {
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
+        cancellationToken: CancellationToken,
     ): PlateSolution {
         requireNotNull(path) { "path is required" }
 
@@ -46,7 +48,7 @@ class AstapPlateSolver(path: Path) : PlateSolver {
         arguments["-z"] = downsampleFactor
         arguments["-fov"] = 0 // auto
 
-        if (radius.toDegrees >= 0.1) {
+        if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
             arguments["-ra"] = centerRA.toHours
             arguments["-spd"] = centerDEC.toDegrees + 90.0
             arguments["-r"] = ceil(radius.toDegrees)
@@ -56,12 +58,16 @@ class AstapPlateSolver(path: Path) : PlateSolver {
 
         arguments["-f"] = path
 
-        LOG.info("local solving. command={}", arguments)
+        LOG.info("ASTAP solving. command={}", arguments)
 
         try {
-            val process = executor.execute(arguments, timeout?.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5), path.parent)
+            val timeoutOrDefault = timeout?.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5)
+            val process = executor.execute(arguments, timeoutOrDefault, path.parent, cancellationToken)
+
             if (process.isAlive) process.destroyForcibly()
             LOG.info("astap exited. code={}", process.exitValue())
+
+            if (cancellationToken.isCancelled) return PlateSolution.NO_SOLUTION
 
             val ini = Properties()
             Paths.get("$basePath", "$baseName.ini").inputStream().use(ini::load)

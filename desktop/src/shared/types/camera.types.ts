@@ -1,11 +1,9 @@
 import { MessageEvent } from './api.types'
 import { Thermometer } from './auxiliary.types'
 import { PropertyState } from './device.types'
-import { Focuser } from './focuser.types'
 import { GuideOutput } from './guider.types'
-import { FilterWheel } from './wheel.types'
 
-export type CameraDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD'
+export type CameraDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD' | 'TPPA' | 'DARV'
 
 export type FrameType = 'LIGHT' | 'DARK' | 'FLAT' | 'BIAS'
 
@@ -133,7 +131,6 @@ export interface Dither {
 
 export interface CameraStartCapture {
     enabled?: boolean
-    camera?: Camera
     exposureTime: number
     exposureAmount: number
     exposureDelay: number
@@ -151,10 +148,8 @@ export interface CameraStartCapture {
     savePath?: string
     autoSubFolderMode: AutoSubFolderMode
     dither?: Dither
-    wheel?: FilterWheel
     filterPosition?: number
     shutterPosition?: number
-    focuser?: Focuser
     focusOffset?: number
 }
 
@@ -181,7 +176,23 @@ export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {
     }
 }
 
-export interface CameraCaptureEvent extends MessageEvent {
+export function updateCameraStartCaptureFromCamera(request: CameraStartCapture, camera: Camera) {
+    if (camera.maxX > 1) request.x = Math.max(camera.minX, Math.min(request.x, camera.maxX))
+    if (camera.maxY > 1) request.y = Math.max(camera.minY, Math.min(request.y, camera.maxY))
+
+    if (camera.maxWidth > 1 && (request.width <= 1 || request.width > camera.maxWidth)) request.width = camera.maxWidth
+    if (camera.maxHeight > 1 && (request.height <= 1 || request.height > camera.maxHeight)) request.height = camera.maxHeight
+    if (camera.minWidth > 1 && request.width < camera.minWidth) request.width = camera.minWidth
+    if (camera.minHeight > 1 && request.height < camera.minHeight) request.height = camera.minHeight
+
+    if (camera.maxBinX > 1) request.binX = Math.max(1, Math.min(request.binX, camera.maxBinX))
+    if (camera.maxBinY > 1) request.binY = Math.max(1, Math.min(request.binY, camera.maxBinY))
+    if (camera.gainMax) request.gain = Math.max(camera.gainMin, Math.min(request.gain, camera.gainMax))
+    if (camera.offsetMax) request.offset = Math.max(camera.offsetMin, Math.min(request.offset, camera.offsetMax))
+    if (!request.frameFormat || !camera.frameFormats.includes(request.frameFormat)) request.frameFormat = camera.frameFormats[0]
+}
+
+export interface CameraCaptureElapsed extends MessageEvent {
     camera: Camera
     exposureAmount: number
     exposureCount: number
@@ -201,18 +212,23 @@ export type CameraCaptureState = 'IDLE' | 'CAPTURE_STARTED' | 'EXPOSURE_STARTED'
 
 export interface CameraDialogInput {
     mode: CameraDialogMode
+    camera: Camera
     request: CameraStartCapture
 }
 
-export function cameraPreferenceKey(camera: Camera) {
-    return `camera.${camera.name}`
+export interface CameraPreference extends CameraStartCapture {
+    setpointTemperature: number
+    exposureTimeUnit: ExposureTimeUnit
+    exposureMode: ExposureMode
+    subFrame: boolean
 }
 
-export interface CameraPreference extends Partial<CameraStartCapture> {
-    setpointTemperature?: number
-    exposureTimeUnit?: ExposureTimeUnit
-    exposureMode?: ExposureMode
-    subFrame?: boolean
+export const EMPTY_CAMERA_PREFERENCE: CameraPreference = {
+    ...EMPTY_CAMERA_START_CAPTURE,
+    setpointTemperature: 0,
+    exposureTimeUnit: ExposureTimeUnit.MICROSECOND,
+    exposureMode: 'SINGLE',
+    subFrame: false,
 }
 
 export interface CameraExposureInfo {

@@ -32,7 +32,7 @@ class CalibrationFrameService(
 
         return if (darkFrame != null || biasFrame != null || flatFrame != null) {
             var transformedImage = if (createNew) image.clone() else image
-            var calibrationImage = Image(transformedImage.width, transformedImage.height, Header(), transformedImage.mono)
+            var calibrationImage = Image(transformedImage.width, transformedImage.height, Header.EMPTY, transformedImage.mono)
 
             if (biasFrame != null) {
                 calibrationImage = Fits(biasFrame.path!!).also(Fits::read).use(calibrationImage::load)!!

@@ -20,10 +20,6 @@ class CameraService(
         camera.disconnect()
     }
 
-    fun isCapturing(camera: Camera): Boolean {
-        return cameraCaptureExecutor.isCapturing(camera)
-    }
-
     fun setpointTemperature(camera: Camera, temperature: Double) {
         camera.temperature(temperature)
     }
@@ -33,17 +29,16 @@ class CameraService(
     }
 
     @Synchronized
-    fun startCapture(camera: Camera, request: CameraStartCaptureRequest) {
-        if (isCapturing(camera)) return
-
+    fun startCapture(camera: Camera, request: CameraStartCaptureRequest): String {
         val savePath = request.savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
             ?: Path.of("$capturesPath", camera.name, request.frameType.name)
 
-        cameraCaptureExecutor
-            .execute(request.copy(camera = camera, savePath = savePath))
+        return cameraCaptureExecutor
+            .execute(camera, request.copy(savePath = savePath))
     }
 
+    @Synchronized
     fun abortCapture(camera: Camera) {
         cameraCaptureExecutor.stop(camera)
     }

@@ -5,9 +5,9 @@ import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
-import { EMPTY_WHEEL, FilterSlot, FilterWheel, WheelDialogInput, WheelDialogMode, WheelPreference, wheelPreferenceKey } from '../../shared/types/wheel.types'
+import { EMPTY_WHEEL, FilterSlot, FilterWheel, WheelDialogInput, WheelDialogMode, WheelPreference } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -54,7 +54,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         private app: AppComponent,
         private api: ApiService,
         private electron: ElectronService,
-        private storage: LocalStorageService,
+        private preference: PreferenceService,
         private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
@@ -73,7 +73,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         electron.on('WHEEL.DETACHED', event => {
             if (event.device.name === this.wheel.name) {
                 ngZone.run(() => {
-                    Object.assign(this.wheel, event.device)
+                    Object.assign(this.wheel, EMPTY_WHEEL)
                 })
             }
         })
@@ -94,7 +94,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 const request = decodedData as WheelDialogInput
                 Object.assign(this.request, request.request)
                 this.mode = request.mode
-                this.wheelChanged(this.request.wheel)
+                this.wheelChanged(request.wheel)
             } else {
                 this.wheelChanged(decodedData)
             }
@@ -171,7 +171,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             filters = this.filters
         }
 
-        const preference = this.storage.get<WheelPreference>(wheelPreferenceKey(this.wheel), {})
+        const preference = this.preference.wheelPreference(this.wheel).get()
 
         for (let position = 1; position <= filters.length; position++) {
             const name = preference.names?.[position - 1] ?? `Filter #${position}`
@@ -187,7 +187,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     private loadPreference() {
         if (this.mode === 'CAPTURE' && this.wheel.name) {
-            const preference = this.storage.get<WheelPreference>(wheelPreferenceKey(this.wheel), {})
+            const preference = this.preference.wheelPreference(this.wheel).get()
             const shutterPosition = preference.shutterPosition ?? 0
             this.filters.forEach(e => e.dark = e.position === shutterPosition)
         }
@@ -202,7 +202,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 names: this.filters.map(e => e.name)
             }
 
-            this.storage.set(wheelPreferenceKey(this.wheel), preference)
+            this.preference.wheelPreference(this.wheel).set(preference)
             this.api.wheelSync(this.wheel, preference.names!)
         }
     }
@@ -210,7 +210,6 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     private makeCameraStartCapture(): CameraStartCapture {
         return {
             ...this.request,
-            wheel: this.wheel,
             filterPosition: this.filter?.position ?? 0,
         }
     }
@@ -219,8 +218,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         this.app.close(this.makeCameraStartCapture())
     }
 
-    static async showAsDialog(window: BrowserWindowService, mode: WheelDialogMode, request: CameraStartCapture) {
-        const result = await window.openWheelDialog({ data: { mode, request } })
+    static async showAsDialog(window: BrowserWindowService, mode: WheelDialogMode, wheel: FilterWheel, request: CameraStartCapture) {
+        const result = await window.openWheelDialog({ data: { mode, wheel, request } })
 
         if (result) {
             Object.assign(request, result)

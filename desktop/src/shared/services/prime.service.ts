@@ -1,5 +1,5 @@
 import { Injectable, Type } from '@angular/core'
-import { ConfirmEventType, ConfirmationService } from 'primeng/api'
+import { ConfirmEventType, ConfirmationService, MessageService } from 'primeng/api'
 import { DialogService, DynamicDialogConfig } from 'primeng/dynamicdialog'
 
 @Injectable({ providedIn: 'root' })
@@ -8,6 +8,7 @@ export class PrimeService {
     constructor(
         private dialog: DialogService,
         private confirmation: ConfirmationService,
+        private messager: MessageService,
     ) { }
 
     open<T, R = T>(componentType: Type<any>, config: DynamicDialogConfig<T>) {
@@ -50,5 +51,9 @@ export class PrimeService {
                 },
             })
         })
+    }
+
+    message(text: string, severity: 'info' | 'warn' | 'error' | 'success' = 'success') {
+        this.messager.add({ severity, detail: text, life: 8500 })
     }
 }

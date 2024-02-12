@@ -81,7 +81,7 @@
         <div class="col-3">
         </div>
         <div class="col-3 justify-content-center">
-            <p-button [text]="true" [rounded]="true" icon="mdi mdi-md mdi-dots-vertical" (click)="ephemerisMenu.show()" />
+            <p-button [text]="true" [rounded]="true" icon="mdi mdi-md mdi-dots-vertical" (click)="ephemerisMenu.show()" size="small" />
         </div>
     </div>
     <div class="grid mt-1">
@@ -158,7 +158,7 @@
                 </div>
                 <div class="col-4">
                     <p-button [disabled]="!mount.connected || parked" icon="mdi mdi-close-circle" [text]="true" severity="danger"
-                              (onClick)="abort()" />
+                              (onClick)="abort()" size="small" />
                 </div>
                 <div class="col-4">
                     <button pButton [disabled]="!mount.connected || (slewing && slewingDirection !== 'E') || parking || parked"
@@ -191,11 +191,11 @@
                 </div>
                 <div class="col-6 flex flex-row gap-2 justify-content-center align-items-center">
                     <p-button *ngIf="!parked" [disabled]="!mount.connected || !canPark || slewing || parking" icon="mdi mdi-stop" (onClick)="park()"
-                              pTooltip="Park" tooltipPosition="bottom" severity="danger" [text]="true" />
+                              pTooltip="Park" tooltipPosition="bottom" severity="danger" [text]="true" size="small" />
                     <p-button *ngIf="parked" [disabled]="!mount.connected || !canPark || slewing || parking" icon="mdi mdi-play" (onClick)="unpark()"
-                              pTooltip="Unpark" tooltipPosition="bottom" severity="success" [text]="true" />
+                              pTooltip="Unpark" tooltipPosition="bottom" severity="success" [text]="true" size="small" />
                     <p-button [disabled]="!mount.connected || !canHome || slewing || parking || parked" icon="mdi mdi-home" (onClick)="home()"
-                              pTooltip="Home" tooltipPosition="bottom" severity="info" [text]="true" />
+                              pTooltip="Home" tooltipPosition="bottom" severity="info" [text]="true" size="small" />
                 </div>
                 <div class="col-6">
                     <span class="p-float-label">

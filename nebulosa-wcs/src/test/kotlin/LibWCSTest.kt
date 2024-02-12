@@ -4,8 +4,8 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.fits.Fits
 import nebulosa.fits.Header
-import nebulosa.math.AngleFormatter
-import nebulosa.math.format
+import nebulosa.math.formatHMS
+import nebulosa.math.formatSignedDMS
 import nebulosa.test.NonGitHubOnlyCondition
 import nebulosa.wcs.WCS
 import kotlin.random.Random
@@ -37,11 +37,11 @@ class LibWCSTest : StringSpec() {
             val bottomRight = it.pixToSky(width.toDouble(), height.toDouble())
             val center = it.pixToSky(width / 2.0, height / 2.0)
 
-            println("top left: ${topLeft.rightAscension.format(AngleFormatter.HMS)} ${topLeft.declination.format(AngleFormatter.SIGNED_DMS)}")
-            println("top right: ${topRight.rightAscension.format(AngleFormatter.HMS)} ${topRight.declination.format(AngleFormatter.SIGNED_DMS)}")
-            println("bottom left: ${bottomLeft.rightAscension.format(AngleFormatter.HMS)} ${bottomLeft.declination.format(AngleFormatter.SIGNED_DMS)}")
-            println("bottom right: ${bottomRight.rightAscension.format(AngleFormatter.HMS)} ${bottomRight.declination.format(AngleFormatter.SIGNED_DMS)}")
-            println("center: ${center.rightAscension.format(AngleFormatter.HMS)} ${center.declination.format(AngleFormatter.SIGNED_DMS)}")
+            println("top left: ${topLeft.rightAscension.formatHMS()} ${topLeft.declination.formatSignedDMS()}")
+            println("top right: ${topRight.rightAscension.formatHMS()} ${topRight.declination.formatSignedDMS()}")
+            println("bottom left: ${bottomLeft.rightAscension.formatHMS()} ${bottomLeft.declination.formatSignedDMS()}")
+            println("bottom right: ${bottomRight.rightAscension.formatHMS()} ${bottomRight.declination.formatSignedDMS()}")
+            println("center: ${center.rightAscension.formatHMS()} ${center.declination.formatSignedDMS()}")
 
             for ((x0, y0) in data) {
                 val (rightAscension, declination) = it.pixToSky(x0.toDouble(), y0.toDouble())

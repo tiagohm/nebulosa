@@ -1,4 +1,4 @@
-package nebulosa.common.concurrency
+package nebulosa.common.concurrency.atomic
 
 import java.util.concurrent.atomic.AtomicLong
 

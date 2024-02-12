@@ -10,6 +10,7 @@ import nebulosa.batch.processing.StepResult
 import nebulosa.fits.Fits
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.computation.Statistics
+import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -19,6 +20,7 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
 data class FlatWizardStep(
+    @JvmField val camera: Camera,
     @JvmField val request: FlatWizardRequest,
 ) : Step {
 
@@ -57,6 +59,8 @@ data class FlatWizardStep(
     }
 
     override fun execute(stepExecution: StepExecution): StepResult {
+        if (stopped) return StepResult.FINISHED
+
         val delta = exposureMax.toMillis() - exposureMin.toMillis()
 
         if (delta < 10) {
@@ -68,6 +72,7 @@ data class FlatWizardStep(
         exposureTime = (exposureMax + exposureMin).dividedBy(2L)
 
         val cameraExposureStep = CameraExposureStep(
+            camera,
             request.captureRequest.copy(
                 exposureTime = exposureTime, exposureAmount = 1,
                 autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF,
@@ -76,9 +81,7 @@ data class FlatWizardStep(
 
         this.cameraExposureStep.set(cameraExposureStep)
         cameraCaptureListeners.forEach(cameraExposureStep::registerCameraCaptureListener)
-        cameraExposureStep.beforeJob(stepExecution.jobExecution)
-        cameraExposureStep.execute(stepExecution)
-        cameraExposureStep.afterJob(stepExecution.jobExecution)
+        cameraExposureStep.executeSingle(stepExecution)
 
         val savedPath = cameraExposureStep.savedPath
 
@@ -91,7 +94,7 @@ data class FlatWizardStep(
             LOG.info("flat frame captured. duration={}, statistics={}", exposureTime, statistics)
 
             if (statistics.mean in meanRange) {
-                val path = request.captureRequest.makeSavePath(true)
+                val path = request.captureRequest.makeSavePath(camera, true)
                 savedPath.inputStream().transferAndClose(path.outputStream())
                 savedPath.deleteIfExists()
                 LOG.info("Found an optimal exposure time. exposure={}, path={}", exposureTime, path)

@@ -164,15 +164,11 @@ class AngleTest : StringSpec() {
                 .build()
                 .format(negativeAngle) shouldBe "-043 0000 45.00000"
 
-            AngleFormatter.HMS
-                .format(0.0) shouldBe "00h00m00.0s"
-
-            AngleFormatter.HMS
-                .format(CIRCLE) shouldBe "00h00m00.0s"
+            AngleFormatter.HMS.format(0.0) shouldBe "00h00m00.0s"
+            AngleFormatter.HMS.format(CIRCLE) shouldBe "00h00m00.0s"
         }
         "bug on round seconds" {
-            "23h59m60.0s".hours
-                .format(AngleFormatter.HMS) shouldBe "00h00m00.0s"
+            "23h59m60.0s".hours.formatHMS() shouldBe "00h00m00.0s"
 
             AngleFormatter.HMS
                 .format(Radians(6.283182643402501)) shouldBe "23h59m59.9s"

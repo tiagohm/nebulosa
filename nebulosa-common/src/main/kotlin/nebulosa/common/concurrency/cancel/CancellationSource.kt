@@ -1,6 +1,6 @@
-package nebulosa.common.concurrency
+package nebulosa.common.concurrency.cancel
 
-sealed interface CancellationSource {
+interface CancellationSource {
 
     data object None : CancellationSource
 

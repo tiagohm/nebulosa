@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    api(project(":nebulosa-common"))
     api(project(":nebulosa-erfa"))
     testImplementation(project(":nebulosa-test"))
 }

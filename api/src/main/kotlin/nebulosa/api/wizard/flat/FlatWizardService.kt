@@ -18,7 +18,8 @@ class FlatWizardService(
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
             ?: Path.of("$capturesPath", camera.name, "FLAT")
 
-        flatWizardExecutor.execute(request.copy(captureRequest = request.captureRequest.copy(camera = camera, savePath = savePath)))
+        flatWizardExecutor
+            .execute(camera, request.copy(captureRequest = request.captureRequest.copy(savePath = savePath)))
     }
 
     @Synchronized

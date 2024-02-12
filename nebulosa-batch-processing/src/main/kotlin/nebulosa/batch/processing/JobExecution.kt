@@ -1,6 +1,6 @@
 package nebulosa.batch.processing
 
-import nebulosa.common.concurrency.CancellationToken
+import nebulosa.common.concurrency.cancel.CancellationToken
 import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
@@ -24,13 +24,16 @@ class JobExecution(
     @JvmField val cancellationToken = CancellationToken()
 
     inline val canContinue
-        get() = status == JobStatus.STARTED
+        get() = status == JobStatus.STARTED || status == JobStatus.PAUSED
 
     inline val isStopping
         get() = status == JobStatus.STOPPING
 
     inline val isStopped
         get() = status == JobStatus.STOPPED
+
+    inline val isPaused
+        get() = status == JobStatus.PAUSED
 
     inline val isCompleted
         get() = status == JobStatus.COMPLETED
