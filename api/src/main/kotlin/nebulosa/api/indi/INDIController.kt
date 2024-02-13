@@ -28,7 +28,7 @@ class INDIController(
 
     @GetMapping("{device}/log")
     fun log(@DeviceOrEntityParam device: Device): List<String> {
-        return device.messages
+        return synchronized(device.messages) { device.messages }
     }
 
     @GetMapping("log")

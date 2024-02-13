@@ -9,7 +9,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.thermometer.Thermometer
 import java.io.Closeable
 
-interface DeviceHub : Closeable {
+interface INDIDeviceProvider : Closeable {
 
     fun registerDeviceEventHandler(handler: DeviceEventHandler)
 

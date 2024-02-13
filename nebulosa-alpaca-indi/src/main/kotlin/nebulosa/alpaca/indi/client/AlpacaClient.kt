@@ -6,7 +6,7 @@ import nebulosa.alpaca.indi.devices.ASCOMDevice
 import nebulosa.alpaca.indi.devices.cameras.ASCOMCamera
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
-import nebulosa.indi.device.DeviceHub
+import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
 import nebulosa.indi.device.camera.CameraDetached
@@ -24,7 +24,7 @@ class AlpacaClient(
     host: String,
     port: Int,
     httpClient: OkHttpClient? = null,
-) : DeviceHub {
+) : INDIDeviceProvider {
 
     private val service = AlpacaService("http://$host:$port/", httpClient)
     private val handlers = LinkedHashSet<DeviceEventHandler>()

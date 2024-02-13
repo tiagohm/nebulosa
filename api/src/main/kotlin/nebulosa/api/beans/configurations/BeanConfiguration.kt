@@ -94,13 +94,22 @@ class BeanConfiguration {
     fun cache(cachePath: Path) = Cache(cachePath.toFile(), MAX_CACHE_SIZE)
 
     @Bean
-    fun httpLogger() = HttpLoggingInterceptor.Logger { OKHTTP_LOGGER.debug(it) }
+    fun httpLogger() = HttpLoggingInterceptor.Logger { OKHTTP_LOGGER.info(it) }
 
     @Bean
     fun httpClient(connectionPool: ConnectionPool, cache: Cache, httpLogger: HttpLoggingInterceptor.Logger) = OkHttpClient.Builder()
         .connectionPool(connectionPool)
         .cache(cache)
         .addInterceptor(HttpLoggingInterceptor(httpLogger).setLevel(HttpLoggingInterceptor.Level.BASIC))
+        .readTimeout(60L, TimeUnit.SECONDS)
+        .writeTimeout(60L, TimeUnit.SECONDS)
+        .connectTimeout(60L, TimeUnit.SECONDS)
+        .callTimeout(60L, TimeUnit.SECONDS)
+        .build()
+
+    @Bean
+    fun alpacaHttpClient(connectionPool: ConnectionPool) = OkHttpClient.Builder()
+        .connectionPool(connectionPool)
         .readTimeout(60L, TimeUnit.SECONDS)
         .writeTimeout(60L, TimeUnit.SECONDS)
         .connectTimeout(60L, TimeUnit.SECONDS)

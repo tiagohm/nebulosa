@@ -3,7 +3,7 @@ package nebulosa.api.connection
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.device.Device
-import nebulosa.indi.device.DeviceHub
+import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
@@ -23,13 +23,13 @@ import java.io.Closeable
 class ConnectionService(
     private val eventBus: EventBus,
     private val connectionEventHandler: ConnectionEventHandler,
-    private val httpClient: OkHttpClient,
+    private val alpacaHttpClient: OkHttpClient,
 ) : Closeable {
 
-    @Volatile private var deviceHub: DeviceHub? = null
+    @Volatile private var provider: INDIDeviceProvider? = null
 
     fun connectionStatus(): Boolean {
-        return deviceHub != null
+        return provider != null
     }
 
     @Synchronized
@@ -37,7 +37,7 @@ class ConnectionService(
         try {
             disconnect()
 
-            deviceHub = when (type) {
+            provider = when (type) {
                 ConnectionType.INDI -> {
                     val client = INDIClient(host, port)
                     client.registerDeviceEventHandler(eventBus::post)
@@ -46,7 +46,7 @@ class ConnectionService(
                     client
                 }
                 else -> {
-                    val client = AlpacaClient(host, port, httpClient)
+                    val client = AlpacaClient(host, port, alpacaHttpClient)
                     client.registerDeviceEventHandler(eventBus::post)
                     client.registerDeviceEventHandler(connectionEventHandler)
                     client.discovery()
@@ -62,8 +62,8 @@ class ConnectionService(
 
     @Synchronized
     fun disconnect() {
-        deviceHub?.close()
-        deviceHub = null
+        provider?.close()
+        provider = null
     }
 
     override fun close() {
@@ -71,59 +71,59 @@ class ConnectionService(
     }
 
     fun cameras(): List<Camera> {
-        return deviceHub?.cameras() ?: emptyList()
+        return provider?.cameras() ?: emptyList()
     }
 
     fun mounts(): List<Mount> {
-        return deviceHub?.mounts() ?: emptyList()
+        return provider?.mounts() ?: emptyList()
     }
 
     fun focusers(): List<Focuser> {
-        return deviceHub?.focusers() ?: emptyList()
+        return provider?.focusers() ?: emptyList()
     }
 
     fun wheels(): List<FilterWheel> {
-        return deviceHub?.wheels() ?: emptyList()
+        return provider?.wheels() ?: emptyList()
     }
 
     fun gps(): List<GPS> {
-        return deviceHub?.gps() ?: emptyList()
+        return provider?.gps() ?: emptyList()
     }
 
     fun guideOutputs(): List<GuideOutput> {
-        return deviceHub?.guideOutputs() ?: emptyList()
+        return provider?.guideOutputs() ?: emptyList()
     }
 
     fun thermometers(): List<Thermometer> {
-        return deviceHub?.thermometers() ?: emptyList()
+        return provider?.thermometers() ?: emptyList()
     }
 
     fun camera(name: String): Camera? {
-        return deviceHub?.camera(name)
+        return provider?.camera(name)
     }
 
     fun mount(name: String): Mount? {
-        return deviceHub?.mount(name)
+        return provider?.mount(name)
     }
 
     fun focuser(name: String): Focuser? {
-        return deviceHub?.focuser(name)
+        return provider?.focuser(name)
     }
 
     fun wheel(name: String): FilterWheel? {
-        return deviceHub?.wheel(name)
+        return provider?.wheel(name)
     }
 
     fun gps(name: String): GPS? {
-        return deviceHub?.gps(name)
+        return provider?.gps(name)
     }
 
     fun guideOutput(name: String): GuideOutput? {
-        return deviceHub?.guideOutput(name)
+        return provider?.guideOutput(name)
     }
 
     fun thermometer(name: String): Thermometer? {
-        return deviceHub?.thermometer(name)
+        return provider?.thermometer(name)
     }
 
     fun device(name: String): Device? {
@@ -132,6 +132,8 @@ class ConnectionService(
             ?: focuser(name)
             ?: wheel(name)
             ?: guideOutput(name)
+            ?: gps(name)
+            ?: thermometer(name)
     }
 
     companion object {

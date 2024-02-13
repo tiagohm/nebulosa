@@ -36,15 +36,15 @@ abstract class ASCOMDevice : Device {
     @Volatile private var refresher: Refresher? = null
 
     override fun connect() {
-        executeRequest(service.connect(device.number, true))
+        service.connect(device.number, true).doRequest()
     }
 
     override fun disconnect() {
-        executeRequest(service.connect(device.number, false))
+        service.connect(device.number, false).doRequest()
     }
 
     open fun refresh(elapsedTimeInSeconds: Long) {
-        executeRequest(service.isConnected(device.number)) { processConnected(it.value) }
+        service.isConnected(device.number).doRequest { processConnected(it.value) }
     }
 
     open fun reset() {
@@ -61,17 +61,24 @@ abstract class ASCOMDevice : Device {
     protected abstract fun onDisconnected()
 
     private fun addMessageAndFireEvent(text: String) {
-        messages.addFirst(text)
-        client.fireOnEventReceived(DeviceMessageReceived(this, text))
+        synchronized(messages) {
+            messages.addFirst(text)
+
+            client.fireOnEventReceived(DeviceMessageReceived(this, text))
+
+            if (messages.size > 100) {
+                messages.removeLast()
+            }
+        }
     }
 
-    protected fun <T : AlpacaResponse<*>> executeRequest(call: Call<T>): T? {
+    protected fun <T : AlpacaResponse<*>> Call<T>.doRequest(): T? {
         try {
-            val response = call.execute().body()
+            val response = execute().body()
 
-            if (response == null) {
+            return if (response == null) {
                 LOG.warn("response has no body. device={}", name)
-                return null
+                null
             } else if (response.errorNumber != 0) {
                 val message = response.errorMessage
 
@@ -79,10 +86,11 @@ abstract class ASCOMDevice : Device {
                     addMessageAndFireEvent("[%s]: %s".format(LocalDateTime.now(), message))
                 }
 
-                LOG.warn("unsuccessful response. device={}, code={}, message={}", name, response.errorNumber, response.errorMessage)
-                return null
+                // LOG.warn("unsuccessful response. device={}, code={}, message={}", name, response.errorNumber, response.errorMessage)
+
+                null
             } else {
-                return response
+                response
             }
         } catch (e: HttpException) {
             LOG.error("unexpected response. device=$name", e)
@@ -93,8 +101,8 @@ abstract class ASCOMDevice : Device {
         return null
     }
 
-    protected inline fun <T : AlpacaResponse<*>> executeRequest(call: Call<T>, action: (T) -> Unit): Boolean {
-        return executeRequest(call)?.also(action) != null
+    protected inline fun <T : AlpacaResponse<*>> Call<T>.doRequest(action: (T) -> Unit): Boolean {
+        return doRequest()?.also(action) != null
     }
 
     protected fun processConnected(value: Boolean) {
@@ -128,13 +136,15 @@ abstract class ASCOMDevice : Device {
         override fun run() {
             stopwatch.start()
 
-            val startTime = System.currentTimeMillis()
-            refresh(stopwatch.elapsedSeconds)
-            val endTime = System.currentTimeMillis()
-            val delayTime = 1000L - (endTime - startTime)
+            while (true) {
+                val startTime = System.currentTimeMillis()
+                refresh(stopwatch.elapsedSeconds)
+                val endTime = System.currentTimeMillis()
+                val delayTime = 2000L - (endTime - startTime)
 
-            if (delayTime > 1L) {
-                sleep(delayTime)
+                if (delayTime > 1L) {
+                    sleep(delayTime)
+                }
             }
         }
     }

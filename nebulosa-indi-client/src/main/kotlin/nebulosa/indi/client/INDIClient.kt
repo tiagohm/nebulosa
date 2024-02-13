@@ -3,7 +3,7 @@ package nebulosa.indi.client
 import nebulosa.indi.client.connection.INDIProccessConnection
 import nebulosa.indi.client.connection.INDISocketConnection
 import nebulosa.indi.client.device.DeviceProtocolHandler
-import nebulosa.indi.device.DeviceHub
+import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
@@ -18,7 +18,7 @@ import nebulosa.indi.protocol.io.INDIConnection
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 
-class INDIClient(private val connection: INDIConnection) : DeviceProtocolHandler(), MessageSender, DeviceHub {
+class INDIClient(private val connection: INDIConnection) : DeviceProtocolHandler(), MessageSender, INDIDeviceProvider {
 
     constructor(
         host: String,

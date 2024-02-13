@@ -28,6 +28,18 @@ internal abstract class INDIDevice(
         handler.sendMessageToServer(message)
     }
 
+    private fun addMessageAndFireEvent(text: String) {
+        synchronized(messages) {
+            messages.addFirst(text)
+
+            handler.fireOnEventReceived(DeviceMessageReceived(this, text))
+
+            if (messages.size > 100) {
+                messages.removeLast()
+            }
+        }
+    }
+
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
             is SwitchVector<*> -> {
@@ -58,9 +70,7 @@ internal abstract class INDIDevice(
                 handler.fireOnEventReceived(DevicePropertyDeleted(property))
             }
             is Message -> {
-                val text = "[%s]: %s".format(message.timestamp, message.message)
-                messages.addFirst(text)
-                handler.fireOnEventReceived(DeviceMessageReceived(this, text))
+                addMessageAndFireEvent("[%s]: %s".format(message.timestamp, message.message))
             }
             else -> Unit
         }

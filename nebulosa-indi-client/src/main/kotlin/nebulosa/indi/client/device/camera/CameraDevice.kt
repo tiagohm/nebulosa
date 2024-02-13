@@ -4,6 +4,7 @@ import nebulosa.imaging.algorithms.transformation.CfaPattern
 import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.camera.*
+import nebulosa.indi.device.camera.Camera.Companion.NANO_SECONDS
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.protocol.*
 import nebulosa.io.Base64InputStream
@@ -165,8 +166,8 @@ internal open class CameraDevice(
                         val element = message["CCD_EXPOSURE_VALUE"]!!
 
                         if (element is DefNumber) {
-                            exposureMin = Duration.ofNanos((element.min * 1000000000.0).toLong())
-                            exposureMax = Duration.ofNanos((element.max * 1000000000.0).toLong())
+                            exposureMin = Duration.ofNanos((element.min * NANO_SECONDS).toLong())
+                            exposureMax = Duration.ofNanos((element.max * NANO_SECONDS).toLong())
                             handler.fireOnEventReceived(CameraExposureMinMaxChanged(this))
                         }
 
@@ -174,7 +175,7 @@ internal open class CameraDevice(
                         exposureState = message.state
 
                         if (exposureState == PropertyState.BUSY || exposureState == PropertyState.OK) {
-                            exposureTime = Duration.ofNanos((element.value * 1000000000.0).toLong())
+                            exposureTime = Duration.ofNanos((element.value * NANO_SECONDS).toLong())
 
                             handler.fireOnEventReceived(CameraExposureProgressChanged(this))
                         }
@@ -349,7 +350,7 @@ internal open class CameraDevice(
     override fun offset(value: Int) = Unit
 
     override fun startCapture(exposureTime: Duration) {
-        val exposureInSeconds = exposureTime.toNanos() / 1000000000.0
+        val exposureInSeconds = exposureTime.toNanos() / NANO_SECONDS
         sendNewNumber("CCD_EXPOSURE", "CCD_EXPOSURE_VALUE" to exposureInSeconds)
     }
 

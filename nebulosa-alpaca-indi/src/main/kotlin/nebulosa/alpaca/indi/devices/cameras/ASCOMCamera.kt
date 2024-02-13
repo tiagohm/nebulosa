@@ -9,6 +9,7 @@ import nebulosa.alpaca.indi.devices.ASCOMDevice
 import nebulosa.imaging.algorithms.transformation.CfaPattern
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.*
+import nebulosa.indi.device.camera.Camera.Companion.NANO_SECONDS
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
@@ -129,7 +130,7 @@ data class ASCOMCamera(
     }
 
     override fun cooler(enabled: Boolean) {
-        executeRequest(service.cooler(device.number, enabled))
+        service.cooler(device.number, enabled).doRequest()
     }
 
     override fun dewHeater(enabled: Boolean) {
@@ -137,11 +138,15 @@ data class ASCOMCamera(
     }
 
     override fun temperature(value: Double) {
-        executeRequest(service.setpointCCDTemperature(device.number, value))
+        service.setpointCCDTemperature(device.number, value).doRequest()
     }
 
     override fun frameFormat(format: String?) {
-        // TODO
+        val index = frameFormats.indexOf(format)
+
+        if (index >= 0) {
+            service.readoutMode(device.number, index).doRequest()
+        }
     }
 
     override fun frameType(type: FrameType) {
@@ -149,38 +154,38 @@ data class ASCOMCamera(
     }
 
     override fun frame(x: Int, y: Int, width: Int, height: Int) {
-        executeRequest(service.startX(device.number, x)) ?: return
-        executeRequest(service.startY(device.number, y)) ?: return
-        executeRequest(service.numX(device.number, width)) ?: return
-        executeRequest(service.numY(device.number, height))
+        service.startX(device.number, x).doRequest() ?: return
+        service.startY(device.number, y).doRequest() ?: return
+        service.numX(device.number, width).doRequest() ?: return
+        service.numY(device.number, height).doRequest()
     }
 
     override fun bin(x: Int, y: Int) {
-        executeRequest(service.binX(device.number, x)) ?: return
-        executeRequest(service.binY(device.number, y))
+        service.binX(device.number, x).doRequest() ?: return
+        service.binY(device.number, y).doRequest()
     }
 
     override fun gain(value: Int) {
-        executeRequest(service.gain(device.number, value))
+        service.gain(device.number, value).doRequest()
     }
 
     override fun offset(value: Int) {
-        executeRequest(service.offset(device.number, value))
+        service.offset(device.number, value).doRequest()
     }
 
     override fun startCapture(exposureTime: Duration) {
         this.exposureTime = exposureTime
-        executeRequest(service.startExposure(device.number, exposureTime.toNanos() / 1000000000.0, frameType == FrameType.DARK))
+        service.startExposure(device.number, exposureTime.toNanos() / NANO_SECONDS, frameType == FrameType.DARK).doRequest()
     }
 
     override fun abortCapture() {
-        executeRequest(service.abortExposure(device.number))
+        service.abortExposure(device.number).doRequest()
     }
 
     private fun pulseGuide(direction: PulseGuideDirection, duration: Duration) {
         val durationInMilliseconds = duration.toMillis()
 
-        executeRequest(service.pulseGuide(device.number, direction, durationInMilliseconds)) ?: return
+        service.pulseGuide(device.number, direction, durationInMilliseconds).doRequest() ?: return
 
         if (durationInMilliseconds > 0) {
             pulseGuiding = true
@@ -221,6 +226,7 @@ data class ASCOMCamera(
         processCapabilities()
         processPixelSize()
         processCfaOffset()
+        processReadoutModes()
     }
 
     override fun onDisconnected() {
@@ -285,15 +291,18 @@ data class ASCOMCamera(
         reset()
     }
 
+    @Synchronized
     override fun refresh(elapsedTimeInSeconds: Long) {
         super.refresh(elapsedTimeInSeconds)
 
-        executeRequest(service.cameraState(device.number)) { processCameraState(it.value) }
+        if (connected) {
+            service.cameraState(device.number).doRequest { processCameraState(it.value) }
 
-        processBin()
-        processGain()
-        processOffset()
-        processCooler()
+            processBin()
+            processGain()
+            processOffset()
+            processCooler()
+        }
     }
 
     private fun processCameraState(value: CameraState) {
@@ -346,7 +355,7 @@ data class ASCOMCamera(
             if (prevExposureState != exposureState) client.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
 
             if (exposuring) {
-                executeRequest(service.percentCompleted(device.number)) {
+                service.percentCompleted(device.number).doRequest {
 
                 }
             }
@@ -362,8 +371,8 @@ data class ASCOMCamera(
     }
 
     private fun processBin() {
-        executeRequest(service.binX(device.number)) { x ->
-            executeRequest(service.binY(device.number)) { y ->
+        service.binX(device.number).doRequest { x ->
+            service.binY(device.number).doRequest { y ->
                 if (x.value != binX || y.value != binY) {
                     binX = x.value
                     binY = y.value
@@ -375,8 +384,8 @@ data class ASCOMCamera(
     }
 
     private fun processGainMinMax() {
-        executeRequest(service.gainMin(device.number)) { min ->
-            executeRequest(service.gainMax(device.number)) { max ->
+        service.gainMin(device.number).doRequest { min ->
+            service.gainMax(device.number).doRequest { max ->
                 gainMin = min.value
                 gainMax = max.value
                 gain = max(gainMin, min(gain, gainMax))
@@ -387,7 +396,7 @@ data class ASCOMCamera(
     }
 
     private fun processGain() {
-        executeRequest(service.gain(device.number)) {
+        service.gain(device.number).doRequest {
             if (it.value != gain) {
                 gain = it.value
 
@@ -397,8 +406,8 @@ data class ASCOMCamera(
     }
 
     private fun processOffsetMinMax() {
-        executeRequest(service.offsetMin(device.number)) { min ->
-            executeRequest(service.offsetMax(device.number)) { max ->
+        service.offsetMin(device.number).doRequest { min ->
+            service.offsetMax(device.number).doRequest { max ->
                 offsetMin = min.value
                 offsetMax = max.value
                 offset = max(offsetMin, min(offset, offsetMax))
@@ -409,7 +418,7 @@ data class ASCOMCamera(
     }
 
     private fun processOffset() {
-        executeRequest(service.offset(device.number)) {
+        service.offset(device.number).doRequest {
             if (it.value != offset) {
                 offset = it.value
 
@@ -419,8 +428,8 @@ data class ASCOMCamera(
     }
 
     private fun processFrameMinMax() {
-        executeRequest(service.x(device.number)) { w ->
-            executeRequest(service.y(device.number)) { h ->
+        service.x(device.number).doRequest { w ->
+            service.y(device.number).doRequest { h ->
                 width = w.value
                 height = h.value
                 minWidth = 0
@@ -442,10 +451,10 @@ data class ASCOMCamera(
     }
 
     private fun processFrame(): Boolean {
-        executeRequest(service.numX(device.number)) { w ->
-            executeRequest(service.numY(device.number)) { h ->
-                executeRequest(service.startX(device.number)) { x ->
-                    executeRequest(service.startY(device.number)) { y ->
+        service.numX(device.number).doRequest { w ->
+            service.numY(device.number).doRequest { h ->
+                service.startX(device.number).doRequest { x ->
+                    service.startY(device.number).doRequest { y ->
                         if (w.value != width || h.value != height || x.value != this.x || y.value != this.y) {
                             width = w.value
                             height = h.value
@@ -466,7 +475,7 @@ data class ASCOMCamera(
 
     private fun processCooler() {
         if (hasCoolerControl) {
-            executeRequest(service.coolerPower(device.number)) {
+            service.coolerPower(device.number).doRequest {
                 if (coolerPower != it.value) {
                     coolerPower = it.value
 
@@ -476,7 +485,7 @@ data class ASCOMCamera(
         }
 
         if (hasCooler) {
-            executeRequest(service.isCoolerOn(device.number)) {
+            service.isCoolerOn(device.number).doRequest {
                 if (cooler != it.value) {
                     cooler = it.value
 
@@ -487,8 +496,8 @@ data class ASCOMCamera(
     }
 
     private fun processPixelSize() {
-        executeRequest(service.pixelSizeX(device.number)) { x ->
-            executeRequest(service.pixelSizeY(device.number)) { y ->
+        service.pixelSizeX(device.number).doRequest { x ->
+            service.pixelSizeY(device.number).doRequest { y ->
                 if (pixelSizeX != x.value || pixelSizeY != y.value) {
                     pixelSizeX = x.value
                     pixelSizeY = y.value
@@ -500,8 +509,8 @@ data class ASCOMCamera(
     }
 
     private fun processCfaOffset() {
-        executeRequest(service.bayerOffsetX(device.number)) { x ->
-            executeRequest(service.bayerOffsetY(device.number)) { y ->
+        service.bayerOffsetX(device.number).doRequest { x ->
+            service.bayerOffsetY(device.number).doRequest { y ->
                 if (cfaOffsetX != x.value || cfaOffsetY != y.value) {
                     cfaOffsetX = x.value
                     cfaOffsetY = y.value
@@ -512,11 +521,19 @@ data class ASCOMCamera(
         }
     }
 
+    private fun processReadoutModes() {
+        service.readoutModes(device.number).doRequest {
+            frameFormats = it.value.toList()
+
+            client.fireOnEventReceived(CameraFrameFormatsChanged(this))
+        }
+    }
+
     private fun processExposureMinMax() {
-        executeRequest(service.exposureMin(device.number)) { min ->
-            executeRequest(service.exposureMax(device.number)) { max ->
-                exposureMin = Duration.ofNanos((min.value * 1000000000.0).toLong())
-                exposureMax = Duration.ofNanos((max.value * 1000000000.0).toLong())
+        service.exposureMin(device.number).doRequest { min ->
+            service.exposureMax(device.number).doRequest { max ->
+                exposureMin = Duration.ofNanos((min.value * NANO_SECONDS).toLong())
+                exposureMax = Duration.ofNanos((max.value * NANO_SECONDS).toLong())
 
                 client.fireOnEventReceived(CameraExposureMinMaxChanged(this))
             }
@@ -524,7 +541,7 @@ data class ASCOMCamera(
     }
 
     private fun processCapabilities() {
-        executeRequest(service.canAbortExposure(device.number)) {
+        service.canAbortExposure(device.number).doRequest {
             if (it.value != canAbort) {
                 canAbort = it.value
 
@@ -532,7 +549,7 @@ data class ASCOMCamera(
             }
         }
 
-        executeRequest(service.canCoolerPower(device.number)) {
+        service.canCoolerPower(device.number).doRequest {
             if (it.value != hasCoolerControl) {
                 hasCoolerControl = it.value
 
@@ -540,7 +557,7 @@ data class ASCOMCamera(
             }
         }
 
-        executeRequest(service.canPulseGuide(device.number)) {
+        service.canPulseGuide(device.number).doRequest {
             if (it.value != canPulseGuide) {
                 canPulseGuide = it.value
 
@@ -550,7 +567,7 @@ data class ASCOMCamera(
             }
         }
 
-        executeRequest(service.canSetCCDTemperature(device.number)) {
+        service.canSetCCDTemperature(device.number).doRequest {
             if (it.value != canSetTemperature) {
                 canSetTemperature = it.value
                 hasCooler = canSetTemperature
