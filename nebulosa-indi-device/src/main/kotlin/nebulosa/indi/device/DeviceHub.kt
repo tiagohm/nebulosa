@@ -7,8 +7,13 @@ import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.thermometer.Thermometer
+import java.io.Closeable
 
-interface DeviceHub {
+interface DeviceHub : Closeable {
+
+    fun registerDeviceEventHandler(handler: DeviceEventHandler)
+
+    fun unregisterDeviceEventHandler(handler: DeviceEventHandler)
 
     fun cameras(): List<Camera>
 

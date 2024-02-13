@@ -2,7 +2,7 @@ package nebulosa.alpaca.api
 
 import retrofit2.Call
 
-sealed interface DeviceService {
+sealed interface AlpacaDeviceService {
 
     fun isConnected(id: Int): Call<BoolResponse>
 

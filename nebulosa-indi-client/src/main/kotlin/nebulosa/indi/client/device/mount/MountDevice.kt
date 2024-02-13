@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device.mount
 
-import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.client.device.DeviceProtocolHandler
+import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.firstOnSwitchOrNull
 import nebulosa.indi.device.gps.GPS
@@ -20,34 +20,60 @@ internal open class MountDevice(
     name: String,
 ) : INDIDevice(handler, name), Mount {
 
-    override var slewing = false
-    override var tracking = false
-    override var parking = false
-    override var parked = false
-    override var canAbort = false
-    override var canSync = false
-    override var canGoTo = false
-    override var canPark = false
-    override var canHome = false
-    override var slewRates = emptyList<SlewRate>()
-    override var slewRate: SlewRate? = null
-    override var mountType = MountType.EQ_GEM // TODO: Ver os telescópios possui tipos.
-    override var trackModes = emptyList<TrackMode>()
-    override var trackMode = TrackMode.SIDEREAL
-    override var pierSide = PierSide.NEITHER
-    override var guideRateWE = 0.0 // TODO: Tratar para cada driver. iOptronV3 tem RA/DE. LX200 tem 1.0x, 0.8x, 0.6x, 0.4x.
-    override var guideRateNS = 0.0
-    override var rightAscension = 0.0
-    override var declination = 0.0
+    @Volatile final override var slewing = false
+        private set
+    @Volatile final override var tracking = false
+        private set
+    @Volatile final override var parking = false
+        private set
+    @Volatile final override var parked = false
+        private set
+    @Volatile final override var canAbort = false
+        private set
+    @Volatile final override var canSync = false
+        private set
+    @Volatile final override var canGoTo = false
+        private set
+    @Volatile final override var canPark = false
+        private set
+    @Volatile final override var canHome = false
+        protected set
+    @Volatile final override var slewRates = emptyList<SlewRate>()
+        private set
+    @Volatile final override var slewRate: SlewRate? = null
+        private set
+    @Volatile final override var mountType = MountType.EQ_GEM // TODO: Ver os telescópios possui tipos.
+        private set
+    @Volatile final override var trackModes = emptyList<TrackMode>()
+        private set
+    @Volatile final override var trackMode = TrackMode.SIDEREAL
+        private set
+    @Volatile final override var pierSide = PierSide.NEITHER
+        private set
+    @Volatile final override var guideRateWE = 0.0 // TODO: Tratar para cada driver. iOptronV3 tem RA/DE. LX200 tem 1.0x, 0.8x, 0.6x, 0.4x.
+        private set
+    @Volatile final override var guideRateNS = 0.0
+        private set
+    @Volatile final override var rightAscension = 0.0
+        private set
+    @Volatile final override var declination = 0.0
+        private set
 
-    override var canPulseGuide = false
-    override var pulseGuiding = false
+    @Volatile final override var canPulseGuide = false
+        private set
+    @Volatile final override var pulseGuiding = false
+        private set
 
-    override var hasGPS = false
-    override var longitude = 0.0
-    override var latitude = 0.0
-    override var elevation = 0.0
-    override var dateTime = OffsetDateTime.now()!!
+    @Volatile final override var hasGPS = false
+        private set
+    @Volatile final override var longitude = 0.0
+        private set
+    @Volatile final override var latitude = 0.0
+        private set
+    @Volatile final override var elevation = 0.0
+        private set
+    @Volatile final override var dateTime = OffsetDateTime.now()!!
+        private set
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

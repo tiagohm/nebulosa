@@ -155,6 +155,8 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
             wheels.clear()
             focusers.clear()
             gps.clear()
+            guideOutputs.clear()
+            thermometers.clear()
 
             notRegisteredDevices.clear()
             messageQueueCounter.clear()

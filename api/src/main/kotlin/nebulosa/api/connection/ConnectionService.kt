@@ -62,7 +62,7 @@ class ConnectionService(
 
     @Synchronized
     fun disconnect() {
-        (deviceHub as? Closeable)?.close()
+        deviceHub?.close()
         deviceHub = null
     }
 

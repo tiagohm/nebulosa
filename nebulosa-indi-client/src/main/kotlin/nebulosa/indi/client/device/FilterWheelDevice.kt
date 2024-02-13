@@ -11,9 +11,12 @@ internal open class FilterWheelDevice(
     name: String,
 ) : INDIDevice(handler, name), FilterWheel {
 
-    override var count = 0
-    override var position = -1
-    override var moving = false
+    @Volatile final override var count = 0
+        private set
+    @Volatile final override var position = -1
+        private set
+    @Volatile final override var moving = false
+        private set
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

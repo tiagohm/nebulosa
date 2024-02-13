@@ -21,7 +21,7 @@ internal abstract class INDIDevice(
     override val properties = linkedMapOf<String, PropertyVector<*, *>>()
     override val messages = LinkedList<String>()
 
-    override var connected = false
+    @Volatile override var connected = false
         protected set
 
     override fun sendMessageToServer(message: INDIProtocol) {

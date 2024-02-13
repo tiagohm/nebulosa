@@ -1,8 +1,8 @@
 package nebulosa.indi.client.device.camera
 
 import nebulosa.imaging.algorithms.transformation.CfaPattern
-import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.client.device.DeviceProtocolHandler
+import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.protocol.*
@@ -15,56 +15,104 @@ internal open class CameraDevice(
     name: String,
 ) : INDIDevice(handler, name), Camera {
 
-    override var exposuring = false
-    override var hasCoolerControl = false
-    override var coolerPower = 0.0
-    override var cooler = false
-    override var hasDewHeater = false
-    override var dewHeater = false
-    override var frameFormats = emptyList<String>()
-    override var canAbort = false
-    override var cfaOffsetX = 0
-    override var cfaOffsetY = 0
-    override var cfaType = CfaPattern.RGGB
-    override var exposureMin: Duration = Duration.ZERO
-    override var exposureMax: Duration = Duration.ZERO
-    override var exposureState = PropertyState.IDLE
-    override var exposureTime: Duration = Duration.ZERO
-    override var hasCooler = false
-    override var canSetTemperature = false
-    override var canSubFrame = false
-    override var x = 0
-    override var minX = 0
-    override var maxX = 0
-    override var y = 0
-    override var minY = 0
-    override var maxY = 0
-    override var width = 0
-    override var minWidth = 0
-    override var maxWidth = 0
-    override var height = 0
-    override var minHeight = 0
-    override var maxHeight = 0
-    override var canBin = false
-    override var maxBinX = 1
-    override var maxBinY = 1
-    override var binX = 1
-    override var binY = 1
-    override var gain = 0
-    override var gainMin = 0
-    override var gainMax = 0
-    override var offset = 0
-    override var offsetMin = 0
-    override var offsetMax = 0
-    override var hasGuiderHead = false // TODO: Handle guider head.
-    override var pixelSizeX = 0.0
-    override var pixelSizeY = 0.0
+    @Volatile final override var exposuring = false
+        private set
+    @Volatile final override var hasCoolerControl = false
+        private set
+    @Volatile final override var coolerPower = 0.0
+        private set
+    @Volatile final override var cooler = false
+        private set
+    @Volatile final override var hasDewHeater = false
+        private set
+    @Volatile final override var dewHeater = false
+        private set
+    @Volatile final override var frameFormats = emptyList<String>()
+        private set
+    @Volatile final override var canAbort = false
+        private set
+    @Volatile final override var cfaOffsetX = 0
+        private set
+    @Volatile final override var cfaOffsetY = 0
+        private set
+    @Volatile final override var cfaType = CfaPattern.RGGB
+        private set
+    @Volatile final override var exposureMin: Duration = Duration.ZERO
+        private set
+    @Volatile final override var exposureMax: Duration = Duration.ZERO
+        private set
+    @Volatile final override var exposureState = PropertyState.IDLE
+        private set
+    @Volatile final override var exposureTime: Duration = Duration.ZERO
+        private set
+    @Volatile final override var hasCooler = false
+        private set
+    @Volatile final override var canSetTemperature = false
+        private set
+    @Volatile final override var canSubFrame = false
+        private set
+    @Volatile final override var x = 0
+        private set
+    @Volatile final override var minX = 0
+        private set
+    @Volatile final override var maxX = 0
+        private set
+    @Volatile final override var y = 0
+        private set
+    @Volatile final override var minY = 0
+        private set
+    @Volatile final override var maxY = 0
+        private set
+    @Volatile final override var width = 0
+        private set
+    @Volatile final override var minWidth = 0
+        private set
+    @Volatile final override var maxWidth = 0
+        private set
+    @Volatile final override var height = 0
+        private set
+    @Volatile final override var minHeight = 0
+        private set
+    @Volatile final override var maxHeight = 0
+        private set
+    @Volatile final override var canBin = false
+        private set
+    @Volatile final override var maxBinX = 1
+        private set
+    @Volatile final override var maxBinY = 1
+        private set
+    @Volatile final override var binX = 1
+        private set
+    @Volatile final override var binY = 1
+        private set
+    @Volatile final override var gain = 0
+        private set
+    @Volatile final override var gainMin = 0
+        private set
+    @Volatile final override var gainMax = 0
+        private set
+    @Volatile final override var offset = 0
+        private set
+    @Volatile final override var offsetMin = 0
+        private set
+    @Volatile final override var offsetMax = 0
+        private set
+    @Volatile final override var hasGuiderHead = false // TODO: Handle guider head.
+        private set
+    @Volatile final override var pixelSizeX = 0.0
+        private set
+    @Volatile final override var pixelSizeY = 0.0
+        private set
 
-    override var hasThermometer = false
-    override var temperature = 0.0
+    @Volatile final override var hasThermometer = false
+        private set
+    @Volatile final override var temperature = 0.0
+        private set
 
-    override var canPulseGuide = false
-    override var pulseGuiding = false
+    @Volatile final override var canPulseGuide = false
+        private set
+    @Volatile final override var pulseGuiding = false
+        private set
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -138,9 +186,7 @@ internal open class CameraDevice(
                             handler.fireOnEventReceived(CameraExposuringChanged(this))
                         }
 
-                        if (exposureState == PropertyState.IDLE
-                            && (prevExposureState == PropertyState.BUSY || exposuring)
-                        ) {
+                        if (exposureState == PropertyState.IDLE && (prevExposureState == PropertyState.BUSY || exposuring)) {
                             handler.fireOnEventReceived(CameraExposureAborted(this))
                         } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
                             handler.fireOnEventReceived(CameraExposureFinished(this))

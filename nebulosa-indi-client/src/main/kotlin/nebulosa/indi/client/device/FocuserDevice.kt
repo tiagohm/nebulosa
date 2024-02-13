@@ -11,19 +11,31 @@ internal open class FocuserDevice(
     name: String,
 ) : INDIDevice(handler, name), Focuser {
 
-    override var moving = false
-    override var position = 0
-    override var canAbsoluteMove = false
-    override var canRelativeMove = false
-    override var canAbort = false
-    override var canReverse = false
-    override var reverse = false
-    override var canSync = false
-    override var hasBacklash = false
-    override var maxPosition = 0
+    @Volatile final override var moving = false
+        private set
+    @Volatile final override var position = 0
+        private set
+    @Volatile final override var canAbsoluteMove = false
+        private set
+    @Volatile final override var canRelativeMove = false
+        private set
+    @Volatile final override var canAbort = false
+        private set
+    @Volatile final override var canReverse = false
+        private set
+    @Volatile final override var reverse = false
+        private set
+    @Volatile final override var canSync = false
+        private set
+    @Volatile final override var hasBacklash = false
+        private set
+    @Volatile final override var maxPosition = 0
+        private set
 
-    override var hasThermometer = false
-    override var temperature = 0.0
+    @Volatile final override var hasThermometer = false
+        private set
+    @Volatile final override var temperature = 0.0
+        private set
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

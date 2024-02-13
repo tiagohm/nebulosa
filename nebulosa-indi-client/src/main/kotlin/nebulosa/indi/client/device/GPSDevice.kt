@@ -11,16 +11,21 @@ import nebulosa.math.m
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-internal class GPSDevice(
+internal open class GPSDevice(
     handler: DeviceProtocolHandler,
     name: String,
 ) : INDIDevice(handler, name), GPS {
 
-    override val hasGPS = true
-    override var longitude = 0.0
-    override var latitude = 0.0
-    override var elevation = 0.0
-    override var dateTime = OffsetDateTime.MIN!!
+    @Volatile final override var hasGPS = true
+        private set
+    @Volatile final override var longitude = 0.0
+        private set
+    @Volatile final override var latitude = 0.0
+        private set
+    @Volatile final override var elevation = 0.0
+        private set
+    @Volatile final override var dateTime = OffsetDateTime.MIN!!
+        private set
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

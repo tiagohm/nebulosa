@@ -2,16 +2,19 @@ package nebulosa.alpaca.indi.client
 
 import nebulosa.alpaca.api.AlpacaService
 import nebulosa.alpaca.api.DeviceType
-import nebulosa.alpaca.indi.devices.ASCOMCamera
+import nebulosa.alpaca.indi.devices.ASCOMDevice
+import nebulosa.alpaca.indi.devices.cameras.ASCOMCamera
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.DeviceHub
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
+import nebulosa.indi.device.camera.CameraDetached
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guide.GuideOutputAttached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.log.loggerFor
@@ -25,17 +28,18 @@ class AlpacaClient(
 
     private val service = AlpacaService("http://$host:$port/", httpClient)
     private val handlers = LinkedHashSet<DeviceEventHandler>()
-    private val cameras = HashMap<String, ASCOMCamera>()
+    private val cameras = HashMap<String, Camera>()
+    private val guideOutputs = HashMap<String, GuideOutput>()
 
-    fun registerDeviceEventHandler(handler: DeviceEventHandler) {
+    override fun registerDeviceEventHandler(handler: DeviceEventHandler) {
         handlers.add(handler)
     }
 
-    fun unregisterDeviceEventHandler(handler: DeviceEventHandler) {
+    override fun unregisterDeviceEventHandler(handler: DeviceEventHandler) {
         handlers.remove(handler)
     }
 
-    fun fireOnEventReceived(event: DeviceEvent<*>) {
+    internal fun fireOnEventReceived(event: DeviceEvent<*>) {
         handlers.forEach { it.onEventReceived(event) }
     }
 
@@ -106,7 +110,7 @@ class AlpacaClient(
                     if (device.uid in cameras) continue
 
                     synchronized(cameras) {
-                        with(ASCOMCamera(device, service.camera)) {
+                        with(ASCOMCamera(device, service.camera, this)) {
                             cameras[device.uid] = this
                             LOG.info("camera attached: {}", device.name)
                             fireOnEventReceived(CameraAttached(this))
@@ -119,6 +123,53 @@ class AlpacaClient(
             LOG.warn("unsuccessful response. code={}, body={}", response.code(), body?.string())
             body?.close()
         }
+    }
+
+    internal fun registerGuideOutput(device: GuideOutput) {
+        if (device is ASCOMDevice) {
+            guideOutputs[device.uid] = device
+            fireOnEventReceived(GuideOutputAttached(device))
+        }
+    }
+
+    override fun close() {
+        for ((_, device) in cameras) {
+            device.close()
+            LOG.info("camera detached: {}", device.name)
+            fireOnEventReceived(CameraDetached(device))
+        }
+
+        // for ((_, device) in mounts) {
+        //     device.close()
+        //     LOG.info("mount detached: {}", device.name)
+        //     fireOnEventReceived(MountDetached(device))
+        // }
+
+        // for ((_, device) in wheels) {
+        //     device.close()
+        //     LOG.info("filter wheel detached: {}", device.name)
+        //     fireOnEventReceived(FilterWheelDetached(device))
+        // }
+
+        // for ((_, device) in focusers) {
+        //     device.close()
+        //     LOG.info("focuser detached: {}", device.name)
+        //     fireOnEventReceived(FocuserDetached(device))
+        // }
+
+        // for ((_, device) in gps) {
+        //     device.close()
+        //     LOG.info("gps detached: {}", device.name)
+        //     fireOnEventReceived(GPSDetached(device))
+        // }
+
+        cameras.clear()
+        // mounts.clear()
+        // wheels.clear()
+        // focusers.clear()
+        // gps.clear()
+
+        handlers.clear()
     }
 
     companion object {
