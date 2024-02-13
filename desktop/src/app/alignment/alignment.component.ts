@@ -8,7 +8,7 @@ import { Angle } from '../../shared/types/atlas.types'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit } from '../../shared/types/camera.types'
 import { EMPTY_GUIDE_OUTPUT, GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { EMPTY_MOUNT, Mount } from '../../shared/types/mount.types'
-import { DEFAULT_SOLVER_TYPES, EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverType } from '../../shared/types/settings.types'
+import { DEFAULT_SOLVER_TYPES, EMPTY_PLATE_SOLVER_OPTIONS } from '../../shared/types/settings.types'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
@@ -48,7 +48,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         stepDistance: 10,
     }
 
-    readonly plateSolverTypes: PlateSolverType[] = Object.assign([], DEFAULT_SOLVER_TYPES)
+    readonly plateSolverTypes = Array.from(DEFAULT_SOLVER_TYPES)
     tppaAzimuthError: Angle = `00°00'00"`
     tppaAzimuthErrorDirection = ''
     tppaAltitudeError: Angle = `00°00'00"`
@@ -334,7 +334,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadPreference() {
-        const preference = this.preference.alignmentPreference().get()
+        const preference = this.preference.alignmentPreference.get()
 
         this.tppaRequest.startFromCurrentPosition = preference.tppaStartFromCurrentPosition
         this.tppaRequest.eastDirection = preference.tppaEastDirection
@@ -373,6 +373,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             darvHemisphere: this.darvHemisphere,
         }
 
-        this.preference.alignmentPreference().set(preference)
+        this.preference.alignmentPreference.set(preference)
     }
 }

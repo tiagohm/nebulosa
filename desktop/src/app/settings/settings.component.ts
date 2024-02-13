@@ -22,7 +22,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     locations: Location[] = []
     location = Object.assign({}, EMPTY_LOCATION)
 
-    readonly plateSolverTypes: PlateSolverType[] = Object.assign([], DEFAULT_SOLVER_TYPES)
+    readonly plateSolverTypes = Array.from(DEFAULT_SOLVER_TYPES)
     plateSolverType = this.plateSolverTypes[0]
     readonly plateSolvers = new Map<PlateSolverType, PlateSolverOptions>()
 

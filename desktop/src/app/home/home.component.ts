@@ -7,11 +7,11 @@ import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { Camera } from '../../shared/types/camera.types'
 import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { ConnectionDetails, EMPTY_CONNECTION_DETAILS, HomeWindowType } from '../../shared/types/home.types'
+import { ConnectionDetails, HomeWindowType } from '../../shared/types/home.types'
 import { Mount } from '../../shared/types/mount.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { compareDevice } from '../../shared/utils/comparators'
@@ -23,9 +23,6 @@ type MappedDevice = {
     'FOCUSER': Focuser
     'WHEEL': FilterWheel
 }
-
-export const IMAGE_DIR_KEY = 'home.image.directory'
-export const LAST_CONNECTED_HOSTS_KEY = 'home.lastConnectedHosts'
 
 @Component({
     selector: 'app-home',
@@ -43,6 +40,21 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     connected = false
     lastConnectedHosts: ConnectionDetails[] = []
     connection: ConnectionDetails
+
+    readonly connectionTypeModel: MenuItem[] = [
+        {
+            label: 'INDI',
+            command: () => {
+                this.connection.type = 'INDI'
+            },
+        },
+        {
+            label: 'ASCOM Alpaca',
+            command: () => {
+                this.connection.type = 'ALPACA'
+            },
+        }
+    ]
 
     cameras: Camera[] = []
     mounts: Mount[] = []
@@ -137,7 +149,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private api: ApiService,
         private message: MessageService,
-        private storage: LocalStorageService,
+        private preference: PreferenceService,
         private ngZone: NgZone,
     ) {
         app.title = 'Nebulosa'
@@ -182,8 +194,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             },
         )
 
-        this.lastConnectedHosts = storage.get<ConnectionDetails[]>(LAST_CONNECTED_HOSTS_KEY, [])
-        this.connection = Object.assign({}, this.lastConnectedHosts[0] ?? EMPTY_CONNECTION_DETAILS)
+        this.lastConnectedHosts = this.preference.lastConnectedHosts.get()
+        this.connection = Object.assign({}, this.lastConnectedHosts[0])
+        this.connection.type ??= 'INDI'
     }
 
     async ngAfterContentInit() {
@@ -212,7 +225,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
         if (index >= 0) {
             this.lastConnectedHosts.splice(index, 1)
-            this.storage.set(LAST_CONNECTED_HOSTS_KEY, this.lastConnectedHosts)
+            this.preference.lastConnectedHosts.set(this.lastConnectedHosts)
         }
 
         event.stopImmediatePropagation()
@@ -223,12 +236,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             if (this.connected) {
                 await this.api.disconnect()
             } else {
-                let { host, port } = this.connection
+                let { host, port, type } = this.connection
 
                 host ||= 'localhost'
                 port ||= 7624
+                type || 'INDI'
 
-                await this.api.connect(host, port)
+                await this.api.connect(host, port, type)
 
                 const index = this.lastConnectedHosts.findIndex(e => e.host === host && e.port === port)
 
@@ -236,10 +250,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                     this.lastConnectedHosts.splice(index, 1)
                 }
 
-                this.lastConnectedHosts.splice(0, 0, Object.assign({}, this.connection))
+                this.lastConnectedHosts.splice(0, 0, this.connection)
                 this.lastConnectedHosts[0].connectedAt = Date.now()
 
-                this.storage.set(LAST_CONNECTED_HOSTS_KEY, this.lastConnectedHosts)
+                this.preference.lastConnectedHosts.set(this.lastConnectedHosts)
             }
         } catch (e) {
             console.error(e)
@@ -298,11 +312,11 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const defaultPath = this.storage.get(IMAGE_DIR_KEY, '')
+            const defaultPath = this.preference.homeImageDefaultDirectory.get()
             const filePath = await this.electron.openFits({ defaultPath })
 
             if (filePath) {
-                this.storage.set(IMAGE_DIR_KEY, path.dirname(filePath))
+                this.preference.homeImageDefaultDirectory.set(path.dirname(filePath))
                 this.browserWindow.openImage({ path: filePath, source: 'PATH' })
             }
         } else {

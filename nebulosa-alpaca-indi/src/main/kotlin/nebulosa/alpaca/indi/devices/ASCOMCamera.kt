@@ -66,6 +66,8 @@ data class ASCOMCamera(
     override var canPulseGuide = false
     override var pulseGuiding = false
 
+    override var connected = false
+
     override fun cooler(enabled: Boolean) {
         TODO("Not yet implemented")
     }
@@ -126,9 +128,6 @@ data class ASCOMCamera(
         TODO("Not yet implemented")
     }
 
-    override val connected: Boolean
-        get() = TODO("Not yet implemented")
-
     override fun connect() {
         TODO("Not yet implemented")
     }
@@ -156,4 +155,22 @@ data class ASCOMCamera(
     override fun refresh() {
         TODO("Not yet implemented")
     }
+
+    override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
+        " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
+        " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
+        " frameFormats=$frameFormats, canAbort=$canAbort," +
+        " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
+        " exposureMin=$exposureMin, exposureMax=$exposureMax," +
+        " exposureState=$exposureState, exposureTime=$exposureTime," +
+        " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
+        " temperature=$temperature, canSubFrame=$canSubFrame," +
+        " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
+        " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
+        " minHeight=$minHeight, maxHeight=$maxHeight," +
+        " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
+        " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
+        " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
+        " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
+        " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
 }

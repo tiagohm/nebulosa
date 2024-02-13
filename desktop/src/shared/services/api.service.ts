@@ -15,6 +15,7 @@ import { SequencePlan } from '../types/sequencer.types'
 import { PlateSolverOptions } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
 import { HttpService } from './http.service'
+import { ConnectionType } from '../types/home.types'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -27,8 +28,8 @@ export class ApiService {
 
     // CONNECTION
 
-    connect(host: string, port: number) {
-        const query = this.http.query({ host, port })
+    connect(host: string, port: number, type: ConnectionType) {
+        const query = this.http.query({ host, port, type })
         return this.http.put<void>(`connection?${query}`)
     }
 

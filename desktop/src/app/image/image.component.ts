@@ -77,7 +77,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solverCenterDEC = ''
     solverRadius = 4
     readonly solvedData = Object.assign({}, EMPTY_IMAGE_SOLVED)
-    readonly solverTypes: PlateSolverType[] = Object.assign([], DEFAULT_SOLVER_TYPES)
+    readonly solverTypes = Array.from(DEFAULT_SOLVER_TYPES)
     solverType = this.solverTypes[0]
 
     crossHair = false

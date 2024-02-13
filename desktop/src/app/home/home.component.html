@@ -1,6 +1,6 @@
 <div class="container px-4 pt-4">
     <div class="grid flex justify-content-center align-items-center">
-        <div class="col-7 px-0">
+        <div class="col-6 px-0">
             <span class="p-float-label">
                 <p-dropdown [disabled]="connected" [options]="lastConnectedHosts" [ngModel]="connection" [editable]="true" optionLabel="host"
                             styleClass="border-0 p-inputtext-sm w-full" (ngModelChange)="hostChanged($event)"
@@ -13,7 +13,7 @@
                     <ng-template let-item pTemplate="item">
                         <div class="flex flex-column gap-1">
                             <div class="flex flex-row justify-content-between gap-1">
-                                <span class="font-bold">{{ item.host }}:{{ item.port }}</span>
+                                <span class="font-bold text-sm">{{ item.host }}:{{ item.port }}</span>
                                 <i class="mdi mdi-close" pTooltip="Remove" tooltipPosition="bottom" (click)="removeConnection(item, $event)"></i>
                             </div>
                             <div class="flex flex-row align-items-center gap-1 text-xs">
@@ -23,17 +23,18 @@
                         </div>
                     </ng-template>
                 </p-dropdown>
-                <label>Host</label>
+                <label>{{ connection.type }} Host</label>
             </span>
         </div>
-        <div class="col-5 gap-2">
-            <span class="p-float-label">
+        <div class="col-6 gap-2">
+            <span class="p-float-label" style="min-width: 80px;">
                 <p-inputNumber [disabled]="connected" [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" placeholder="7624"
                                [(ngModel)]="connection.port" [format]="false" />
                 <label>Port</label>
             </span>
             <p-button *ngIf="connected" (onClick)="connect()" size="small" icon="mdi mdi-close" severity="danger" />
-            <p-button *ngIf="!connected" (onClick)="connect()" size="small" icon="mdi mdi-connection" severity="info" />
+            <p-splitButton *ngIf="!connected" [model]="connectionTypeModel" icon="mdi mdi-connection" size="small" severity="info"
+                           (onClick)="connect()" />
         </div>
     </div>
     <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 112px);">

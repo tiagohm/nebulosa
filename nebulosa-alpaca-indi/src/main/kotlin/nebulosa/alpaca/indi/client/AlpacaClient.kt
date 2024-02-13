@@ -40,11 +40,11 @@ class AlpacaClient(
     }
 
     override fun cameras(): List<Camera> {
-        return cameras.values.toList()
+        return synchronized(cameras) { cameras.values.toList() }
     }
 
     override fun camera(name: String): Camera? {
-        return cameras[name] ?: cameras.values.find { it.name == name }
+        return synchronized(cameras) { cameras[name] ?: cameras.values.find { it.name == name } }
     }
 
     override fun mounts(): List<Mount> {
@@ -95,7 +95,6 @@ class AlpacaClient(
         return null
     }
 
-    @Synchronized
     fun discovery() {
         val response = service.management.configuredDevices().execute()
 
@@ -106,9 +105,12 @@ class AlpacaClient(
                 if (device.type == DeviceType.CAMERA) {
                     if (device.uid in cameras) continue
 
-                    with(ASCOMCamera(device, service.camera)) {
-                        cameras[device.uid] = this
-                        fireOnEventReceived(CameraAttached(this))
+                    synchronized(cameras) {
+                        with(ASCOMCamera(device, service.camera)) {
+                            cameras[device.uid] = this
+                            LOG.info("camera attached: {}", device.name)
+                            fireOnEventReceived(CameraAttached(this))
+                        }
                     }
                 }
             }
