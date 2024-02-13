@@ -15,9 +15,9 @@ class AlpacaService(
     httpClient: OkHttpClient? = null,
 ) : RetrofitService(url, httpClient) {
 
-    val management by lazy { retrofit.create<Management>() }
+    val management by lazy { retrofit.create<ManagementService>() }
 
-    val camera by lazy { retrofit.create<Camera>() }
+    val camera by lazy { retrofit.create<CameraService>() }
 
-    val telescope by lazy { retrofit.create<Telescope>() }
+    val telescope by lazy { retrofit.create<TelescopeService>() }
 }

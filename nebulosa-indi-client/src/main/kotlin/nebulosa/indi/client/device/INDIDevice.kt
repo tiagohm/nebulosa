@@ -13,13 +13,12 @@ import nebulosa.indi.protocol.Vector
 import nebulosa.log.loggerFor
 import java.util.*
 
-internal abstract class AbstractDevice(
+internal abstract class INDIDevice(
     @JvmField internal val handler: DeviceProtocolHandler,
     override val name: String,
 ) : Device {
 
     override val properties = linkedMapOf<String, PropertyVector<*, *>>()
-
     override val messages = LinkedList<String>()
 
     override var connected = false
@@ -209,7 +208,7 @@ internal abstract class AbstractDevice(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<AbstractDevice>()
+        @JvmStatic private val LOG = loggerFor<INDIDevice>()
 
         @JvmStatic
         fun <T : Device> Class<out T>.create(handler: DeviceProtocolHandler, name: String): T {

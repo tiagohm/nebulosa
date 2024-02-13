@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":nebulosa-alignment"))
     implementation(project(":nebulosa-astap"))
     implementation(project(":nebulosa-astrometrynet"))
+    implementation(project(":nebulosa-alpaca-indi"))
     implementation(project(":nebulosa-batch-processing"))
     implementation(project(":nebulosa-common"))
     implementation(project(":nebulosa-guiding-phd2"))

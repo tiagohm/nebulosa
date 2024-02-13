@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device.camera
 
 import nebulosa.imaging.algorithms.transformation.CfaPattern
-import nebulosa.indi.client.device.AbstractDevice
+import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
@@ -13,7 +13,7 @@ import java.time.Duration
 internal open class CameraDevice(
     handler: DeviceProtocolHandler,
     name: String,
-) : AbstractDevice(handler, name), Camera {
+) : INDIDevice(handler, name), Camera {
 
     override var exposuring = false
     override var hasCoolerControl = false
@@ -26,10 +26,10 @@ internal open class CameraDevice(
     override var cfaOffsetX = 0
     override var cfaOffsetY = 0
     override var cfaType = CfaPattern.RGGB
-    override var exposureMin = Duration.ZERO
-    override var exposureMax = Duration.ZERO
+    override var exposureMin: Duration = Duration.ZERO
+    override var exposureMax: Duration = Duration.ZERO
     override var exposureState = PropertyState.IDLE
-    override var exposureTime = Duration.ZERO
+    override var exposureTime: Duration = Duration.ZERO
     override var hasCooler = false
     override var canSetTemperature = false
     override var canSubFrame = false

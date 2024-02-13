@@ -1,6 +1,6 @@
 package nebulosa.indi.client.device.mount
 
-import nebulosa.indi.client.device.AbstractDevice
+import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.client.device.DeviceProtocolHandler
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.firstOnSwitchOrNull
@@ -18,7 +18,7 @@ import java.time.ZoneOffset
 internal open class MountDevice(
     handler: DeviceProtocolHandler,
     name: String,
-) : AbstractDevice(handler, name), Mount {
+) : INDIDevice(handler, name), Mount {
 
     override var slewing = false
     override var tracking = false

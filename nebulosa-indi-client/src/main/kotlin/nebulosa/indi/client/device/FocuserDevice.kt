@@ -9,7 +9,7 @@ import nebulosa.indi.protocol.*
 internal open class FocuserDevice(
     handler: DeviceProtocolHandler,
     name: String,
-) : AbstractDevice(handler, name), Focuser {
+) : INDIDevice(handler, name), Focuser {
 
     override var moving = false
     override var position = 0

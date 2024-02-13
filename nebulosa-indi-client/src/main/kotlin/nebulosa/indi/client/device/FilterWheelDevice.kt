@@ -9,7 +9,7 @@ import nebulosa.indi.protocol.PropertyState
 internal open class FilterWheelDevice(
     handler: DeviceProtocolHandler,
     name: String,
-) : AbstractDevice(handler, name), FilterWheel {
+) : INDIDevice(handler, name), FilterWheel {
 
     override var count = 0
     override var position = -1

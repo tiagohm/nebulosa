@@ -1,6 +1,6 @@
 package nebulosa.indi.client.device
 
-import nebulosa.indi.client.device.AbstractDevice.Companion.create
+import nebulosa.indi.client.device.INDIDevice.Companion.create
 import nebulosa.indi.client.device.camera.AsiCamera
 import nebulosa.indi.client.device.camera.CameraDevice
 import nebulosa.indi.client.device.camera.SVBonyCamera
@@ -52,7 +52,7 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
     private val notRegisteredDevices = HashSet<String>()
     @Volatile private var protocolReader: INDIProtocolReader? = null
     private val messageQueueCounter = HashMap<INDIProtocol, Int>(2048)
-    private val handlers = ArrayList<DeviceEventHandler>()
+    private val handlers = LinkedHashSet<DeviceEventHandler>()
 
     val isRunning
         get() = protocolReader != null

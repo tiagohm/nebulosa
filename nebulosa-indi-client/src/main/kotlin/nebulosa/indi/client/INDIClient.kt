@@ -1,5 +1,9 @@
 package nebulosa.indi.client
 
+import nebulosa.indi.client.connection.INDIProccessConnection
+import nebulosa.indi.client.connection.INDISocketConnection
+import nebulosa.indi.client.device.DeviceProtocolHandler
+import nebulosa.indi.device.DeviceHub
 import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
@@ -8,40 +12,103 @@ import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.thermometer.Thermometer
+import nebulosa.indi.protocol.GetProperties
+import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIConnection
-import nebulosa.indi.protocol.parser.INDIProtocolParser
+import nebulosa.log.debug
+import nebulosa.log.loggerFor
 
-interface INDIClient : INDIProtocolParser, MessageSender {
+class INDIClient(private val connection: INDIConnection) : DeviceProtocolHandler(), MessageSender, DeviceHub {
 
-    val connection: INDIConnection
+    constructor(
+        host: String,
+        port: Int = INDIProtocol.DEFAULT_PORT,
+    ) : this(INDISocketConnection(host, port))
 
-    fun start()
+    constructor(
+        process: Process,
+    ) : this(INDIProccessConnection(process))
 
-    fun cameras(): List<Camera>
+    override val isClosed
+        get() = !connection.isOpen
 
-    fun camera(name: String): Camera?
+    override val input
+        get() = connection.input
 
-    fun mounts(): List<Mount>
+    override fun start() {
+        super.start()
+        sendMessageToServer(GetProperties())
+    }
 
-    fun mount(name: String): Mount?
+    override fun sendMessageToServer(message: INDIProtocol) {
+        LOG.debug { "sending message: $message" }
+        connection.writeINDIProtocol(message)
+    }
 
-    fun focusers(): List<Focuser>
+    override fun cameras(): List<Camera> {
+        return cameras.values.toList()
+    }
 
-    fun focuser(name: String): Focuser?
+    override fun camera(name: String): Camera? {
+        return cameras[name]
+    }
 
-    fun wheels(): List<FilterWheel>
+    override fun mounts(): List<Mount> {
+        return mounts.values.toList()
+    }
 
-    fun wheel(name: String): FilterWheel?
+    override fun mount(name: String): Mount? {
+        return mounts[name]
+    }
 
-    fun gps(): List<GPS>
+    override fun focusers(): List<Focuser> {
+        return focusers.values.toList()
+    }
 
-    fun gps(name: String): GPS?
+    override fun focuser(name: String): Focuser? {
+        return focusers[name]
+    }
 
-    fun guideOutputs(): List<GuideOutput>
+    override fun wheels(): List<FilterWheel> {
+        return wheels.values.toList()
+    }
 
-    fun guideOutput(name: String): GuideOutput?
+    override fun wheel(name: String): FilterWheel? {
+        return wheels[name]
+    }
 
-    fun thermometers(): List<Thermometer>
+    override fun gps(): List<GPS> {
+        return gps.values.toList()
+    }
 
-    fun thermometer(name: String): Thermometer?
+    override fun gps(name: String): GPS? {
+        return gps[name]
+    }
+
+    override fun guideOutputs(): List<GuideOutput> {
+        return guideOutputs.values.toList()
+    }
+
+    override fun guideOutput(name: String): GuideOutput? {
+        return guideOutputs[name]
+    }
+
+    override fun thermometers(): List<Thermometer> {
+        return thermometers.values.toList()
+    }
+
+    override fun thermometer(name: String): Thermometer? {
+        return thermometers[name]
+    }
+
+    override fun close() {
+        super.close()
+
+        connection.close()
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<INDIClient>()
+    }
 }

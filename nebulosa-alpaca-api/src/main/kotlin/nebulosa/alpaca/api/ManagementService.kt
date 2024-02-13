@@ -3,8 +3,8 @@ package nebulosa.alpaca.api
 import retrofit2.Call
 import retrofit2.http.GET
 
-interface Management {
+interface ManagementService {
 
     @GET("management/v1/configureddevices")
-    fun configuredDevices(): Call<AlpacaResponse<List<ConfiguredDevice>>>
+    fun configuredDevices(): Call<ListResponse<ConfiguredDevice>>
 }

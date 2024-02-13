@@ -14,7 +14,7 @@ import java.time.ZoneOffset
 internal class GPSDevice(
     handler: DeviceProtocolHandler,
     name: String,
-) : AbstractDevice(handler, name), GPS {
+) : INDIDevice(handler, name), GPS {
 
     override val hasGPS = true
     override var longitude = 0.0

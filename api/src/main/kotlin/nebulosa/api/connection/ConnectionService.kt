@@ -1,8 +1,9 @@
 package nebulosa.api.connection
 
-import nebulosa.indi.client.DefaultINDIClient
+import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.device.Device
+import nebulosa.indi.device.DeviceHub
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
@@ -12,6 +13,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.log.error
 import nebulosa.log.loggerFor
+import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ServerErrorException
@@ -21,25 +23,36 @@ import java.io.Closeable
 class ConnectionService(
     private val eventBus: EventBus,
     private val connectionEventHandler: ConnectionEventHandler,
+    private val httpClient: OkHttpClient,
 ) : Closeable {
 
-    @Volatile private var client: INDIClient? = null
+    @Volatile private var deviceHub: DeviceHub? = null
 
     fun connectionStatus(): Boolean {
-        return client != null
+        return deviceHub != null
     }
 
     @Synchronized
-    fun connect(host: String, port: Int) {
+    fun connect(host: String, port: Int, type: ConnectionType) {
         try {
             disconnect()
 
-            val client = DefaultINDIClient(host, port)
-            client.registerDeviceEventHandler(eventBus::post)
-            client.registerDeviceEventHandler(connectionEventHandler)
-            client.start()
-
-            this.client = client
+            deviceHub = when (type) {
+                ConnectionType.INDI -> {
+                    val client = INDIClient(host, port)
+                    client.registerDeviceEventHandler(eventBus::post)
+                    client.registerDeviceEventHandler(connectionEventHandler)
+                    client.start()
+                    client
+                }
+                else -> {
+                    val client = AlpacaClient(host, port, httpClient)
+                    client.registerDeviceEventHandler(eventBus::post)
+                    client.registerDeviceEventHandler(connectionEventHandler)
+                    client.discovery()
+                    client
+                }
+            }
         } catch (e: Throwable) {
             LOG.error(e)
 
@@ -49,8 +62,8 @@ class ConnectionService(
 
     @Synchronized
     fun disconnect() {
-        runCatching { client?.close() }
-        client = null
+        (deviceHub as? Closeable)?.close()
+        deviceHub = null
     }
 
     override fun close() {
@@ -58,59 +71,59 @@ class ConnectionService(
     }
 
     fun cameras(): List<Camera> {
-        return client?.cameras() ?: emptyList()
+        return deviceHub?.cameras() ?: emptyList()
     }
 
     fun mounts(): List<Mount> {
-        return client?.mounts() ?: emptyList()
+        return deviceHub?.mounts() ?: emptyList()
     }
 
     fun focusers(): List<Focuser> {
-        return client?.focusers() ?: emptyList()
+        return deviceHub?.focusers() ?: emptyList()
     }
 
     fun wheels(): List<FilterWheel> {
-        return client?.wheels() ?: emptyList()
+        return deviceHub?.wheels() ?: emptyList()
     }
 
     fun gps(): List<GPS> {
-        return client?.gps() ?: emptyList()
+        return deviceHub?.gps() ?: emptyList()
     }
 
     fun guideOutputs(): List<GuideOutput> {
-        return client?.guideOutputs() ?: emptyList()
+        return deviceHub?.guideOutputs() ?: emptyList()
     }
 
     fun thermometers(): List<Thermometer> {
-        return client?.thermometers() ?: emptyList()
+        return deviceHub?.thermometers() ?: emptyList()
     }
 
     fun camera(name: String): Camera? {
-        return client?.camera(name)
+        return deviceHub?.camera(name)
     }
 
     fun mount(name: String): Mount? {
-        return client?.mount(name)
+        return deviceHub?.mount(name)
     }
 
     fun focuser(name: String): Focuser? {
-        return client?.focuser(name)
+        return deviceHub?.focuser(name)
     }
 
     fun wheel(name: String): FilterWheel? {
-        return client?.wheel(name)
+        return deviceHub?.wheel(name)
     }
 
     fun gps(name: String): GPS? {
-        return client?.gps(name)
+        return deviceHub?.gps(name)
     }
 
     fun guideOutput(name: String): GuideOutput? {
-        return client?.guideOutput(name)
+        return deviceHub?.guideOutput(name)
     }
 
     fun thermometer(name: String): Thermometer? {
-        return client?.thermometer(name)
+        return deviceHub?.thermometer(name)
     }
 
     fun device(name: String): Device? {
