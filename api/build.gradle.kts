@@ -62,6 +62,6 @@ tasks.withType<BootJar> {
 kapt {
     arguments {
         arg("objectbox.modelPath", "$projectDir/schemas/objectbox.json")
-        arg("objectbox.myObjectBoxPackage", "nebulosa.api.entities")
+        arg("objectbox.myObjectBoxPackage", "nebulosa.api.database")
     }
 }

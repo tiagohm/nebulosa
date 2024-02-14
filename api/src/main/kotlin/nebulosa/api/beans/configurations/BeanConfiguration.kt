@@ -9,7 +9,7 @@ import io.objectbox.BoxStore
 import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
-import nebulosa.api.entities.MyObjectBox
+import nebulosa.api.database.MyObjectBox
 import nebulosa.api.locations.LocationEntity
 import nebulosa.api.preferences.PreferenceEntity
 import nebulosa.batch.processing.AsyncJobLauncher

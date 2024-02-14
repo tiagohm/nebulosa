@@ -1,4 +1,4 @@
-package nebulosa.api.beans.converters
+package nebulosa.api.beans.converters.database
 
 import io.objectbox.converter.PropertyConverter
 import nebulosa.nova.astrometry.Constellation

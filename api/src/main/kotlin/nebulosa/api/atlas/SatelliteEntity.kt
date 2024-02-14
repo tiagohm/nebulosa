@@ -2,7 +2,7 @@ package nebulosa.api.atlas
 
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
-import nebulosa.api.entities.BoxEntity
+import nebulosa.api.database.BoxEntity
 
 @Entity
 data class SatelliteEntity(

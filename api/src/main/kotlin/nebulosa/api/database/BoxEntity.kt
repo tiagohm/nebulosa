@@ -1,4 +1,4 @@
-package nebulosa.api.entities
+package nebulosa.api.database
 
 interface BoxEntity {
 

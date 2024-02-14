@@ -1,4 +1,4 @@
-package nebulosa.api.beans.converters.indi
+package nebulosa.api.indi
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider

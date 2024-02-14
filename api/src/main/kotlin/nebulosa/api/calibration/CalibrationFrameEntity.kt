@@ -1,8 +1,8 @@
 package nebulosa.api.calibration
 
 import io.objectbox.annotation.*
-import nebulosa.api.entities.BoxEntity
-import nebulosa.api.beans.converters.FrameTypePropertyConverter
+import nebulosa.api.beans.converters.database.FrameTypePropertyConverter
+import nebulosa.api.database.BoxEntity
 import nebulosa.indi.device.camera.FrameType
 
 @Entity

@@ -185,8 +185,7 @@ URL: `localhost:{PORT}/ws`
 
 ```json5
 {
-    "camera": {},
-    "guideOutput": {},
+    "id": "",
     "remainingTime": 0,
     "progress": 0.0,
     "direction": "EAST",
