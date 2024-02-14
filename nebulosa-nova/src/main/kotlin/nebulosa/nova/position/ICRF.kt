@@ -221,7 +221,10 @@ open class ICRF protected constructor(
         (target as Frame).rotationAt(time)
     }
 
-    operator fun minus(other: ICRF) = of(position - other.position, velocity - other.velocity, time, other.target, target)
+    operator fun minus(other: ICRF): ICRF {
+        require(center == other.center) { "you can only subtract two ICRF vectors if they both start at the same center" }
+        return of(position - other.position, velocity - other.velocity, time, other.target, target)
+    }
 
     operator fun unaryMinus() = of(-position, -velocity, time, target, center, javaClass)
 
