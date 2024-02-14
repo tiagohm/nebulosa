@@ -1,5 +1,6 @@
 package nebulosa.alpaca.api
 
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -236,4 +237,9 @@ interface AlpacaCameraService : AlpacaDeviceService {
 
     @PUT("api/v1/camera/{id}/stopexposure")
     fun stopExposure(@Path("id") id: Int): Call<NoneResponse>
+
+    // https://github.com/ASCOMInitiative/ASCOMRemote/blob/main/Documentation/AlpacaImageBytes.pdf
+    @Headers("Accept: application/imagebytes")
+    @GET("api/v1/camera/{id}/imagearray")
+    fun imageArray(@Path("id") id: Int): Call<ResponseBody>
 }

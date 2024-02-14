@@ -129,9 +129,13 @@ abstract class ASCOMDevice : Device {
         }
     }
 
-    private inner class Refresher : Thread() {
+    private inner class Refresher : Thread("$name ASCOM Refresher") {
 
         private val stopwatch = Stopwatch()
+
+        init {
+            isDaemon = true
+        }
 
         override fun run() {
             stopwatch.start()

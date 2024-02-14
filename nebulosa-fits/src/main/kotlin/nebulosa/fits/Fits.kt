@@ -9,11 +9,11 @@ import java.io.File
 import java.nio.file.Path
 
 class Fits private constructor(
-    val source: SeekableSource,
+    val source: SeekableSource?,
     private val hdus: ArrayList<Hdu<*>>,
 ) : List<Hdu<*>> by hdus, Closeable {
 
-    constructor(source: SeekableSource) : this(source, ArrayList(4))
+    constructor(source: SeekableSource? = null) : this(source, ArrayList(4))
 
     constructor(path: File) : this(path.seekableSource())
 
@@ -22,6 +22,8 @@ class Fits private constructor(
     constructor(path: String) : this(File(path))
 
     fun readHdu(): Hdu<*>? {
+        if (source == null) return null
+
         return try {
             return FitsIO.read(source).also(::add)
         } catch (ignored: EOFException) {
@@ -52,6 +54,6 @@ class Fits private constructor(
     }
 
     override fun close() {
-        source.close()
+        source?.close()
     }
 }

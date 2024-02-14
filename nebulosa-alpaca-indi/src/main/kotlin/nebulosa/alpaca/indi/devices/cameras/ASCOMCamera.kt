@@ -6,13 +6,18 @@ import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.api.PulseGuideDirection
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.devices.ASCOMDevice
+import nebulosa.common.concurrency.latch.CountUpDownLatch
+import nebulosa.fits.*
 import nebulosa.imaging.algorithms.transformation.CfaPattern
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.camera.Camera.Companion.NANO_SECONDS
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
+import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
+import java.nio.ByteBuffer
+import java.nio.file.Files
 import java.time.Duration
 import kotlin.math.max
 import kotlin.math.min
@@ -124,9 +129,14 @@ data class ASCOMCamera(
 
     @Volatile private var cameraState = CameraState.IDLE
     @Volatile private var frameType = FrameType.LIGHT
+    @Volatile private var mount: Mount? = null
+
+    private val imageReadyWaiter = ImageReadyWaiter()
+    private val savedImagePath = Files.createTempFile(name, ".fits")
 
     init {
         refresh(0L)
+        imageReadyWaiter.start()
     }
 
     override fun cooler(enabled: Boolean) {
@@ -175,11 +185,14 @@ data class ASCOMCamera(
 
     override fun startCapture(exposureTime: Duration) {
         this.exposureTime = exposureTime
-        service.startExposure(device.number, exposureTime.toNanos() / NANO_SECONDS, frameType == FrameType.DARK).doRequest()
+        service.startExposure(device.number, exposureTime.toNanos() / NANO_SECONDS, frameType == FrameType.DARK).doRequest {
+            imageReadyWaiter.captureStarted()
+        }
     }
 
     override fun abortCapture() {
         service.abortExposure(device.number).doRequest()
+        imageReadyWaiter.captureAborted()
     }
 
     private fun pulseGuide(direction: PulseGuideDirection, duration: Duration) {
@@ -213,6 +226,9 @@ data class ASCOMCamera(
     }
 
     override fun snoop(devices: Iterable<Device?>) {
+        for (device in devices) {
+            if (device is Mount) mount = device
+        }
     }
 
     override fun handleMessage(message: INDIProtocol) {
@@ -289,6 +305,7 @@ data class ASCOMCamera(
     override fun close() {
         super.close()
         reset()
+        imageReadyWaiter.interrupt()
     }
 
     @Synchronized
@@ -578,6 +595,34 @@ data class ASCOMCamera(
         }
     }
 
+    private fun readImage() {
+        service.imageArray(device.number).execute().body()?.use {
+            val bytes = it.byteStream()
+            val metadata = ImageMetadata.from(bytes.readNBytes(44))
+
+            if (metadata.errorNumber != 0) {
+                LOG.error("failed to read image. device={}, error={}", name, metadata.errorNumber)
+                return
+            }
+
+            val width = metadata.dimension1
+            val height = metadata.dimension2
+
+            val header = Header()
+            header.add(Standard.SIMPLE, true)
+
+            val imageData1 = FloatArrayImageData(width, height)
+
+            val hdu = ImageHdu(header, arrayOf(imageData1))
+
+            val fits = Fits()
+            fits.add(hdu)
+            fits.writeTo()
+
+            client.fireOnEventReceived(CameraFrameCaptured(this, fits, false))
+        } ?: LOG.error("image body is null. device={}", name)
+    }
+
     override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
         " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
         " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
@@ -595,4 +640,75 @@ data class ASCOMCamera(
         " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
         " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
         " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
+
+    data class ImageMetadata(
+        @JvmField val metadataVersion: Int, // Bytes 0..3 - Metadata version = 1
+        @JvmField val errorNumber: Int, // Bytes 4..7 - Alpaca error number or zero for success
+        @JvmField val clientTransactionID: Int, // Bytes 8..11 - Client's transaction ID
+        @JvmField val serverTransactionID: Int, // Bytes 12..15 - Device's transaction ID
+        @JvmField val dataStart: Int, // Bytes 16..19 - Offset of the start of the data bytes
+        @JvmField val imageElementType: ImageArrayElementType, // Bytes 20..23 - Element type of the source image array
+        @JvmField val transmissionElementType: Int, // Bytes 24..27 - Element type as sent over the network
+        @JvmField val rank: Int, // Bytes 28..31 - Image array rank (2 or 3)
+        @JvmField val dimension1: Int, // Bytes 32..35 - Length of image array first dimension
+        @JvmField val dimension2: Int, // Bytes 36..39 - Length of image array second dimension
+        @JvmField val dimension3: Int, // Bytes 40..43 - Length of image array third dimension (0 for 2D array)
+    ) {
+
+        companion object {
+
+            @JvmStatic
+            fun from(data: ByteBuffer) = ImageMetadata(
+                data.getInt(), data.getInt(), data.getInt(), data.getInt(), data.getInt(),
+                ImageArrayElementType.entries[data.getInt()], data.getInt(), data.getInt(),
+                data.getInt(), data.getInt(), data.getInt()
+            )
+
+            @JvmStatic
+            fun from(data: ByteArray) = from(ByteBuffer.wrap(data, 0, 44))
+        }
+    }
+
+    private inner class ImageReadyWaiter : Thread("$name ASCOM Image Ready Waiter") {
+
+        private val latch = CountUpDownLatch(1)
+
+        init {
+            isDaemon = true
+        }
+
+        fun captureStarted() {
+            latch.reset()
+        }
+
+        fun captureAborted() {
+            latch.countUp()
+        }
+
+        override fun run() {
+            while (true) {
+                latch.await()
+
+                while (latch.get()) {
+                    val startTime = System.currentTimeMillis()
+
+                    service.isImageReady(device.number).doRequest {
+                        if (it.value) {
+                            latch.countUp()
+                            readImage()
+                        }
+                    }
+
+                    if (!latch.get()) {
+                        val endTime = System.currentTimeMillis()
+                        val delayTime = 1000L - (endTime - startTime)
+
+                        if (delayTime > 1L) {
+                            sleep(delayTime)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
