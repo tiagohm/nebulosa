@@ -47,6 +47,12 @@ object SimbadDatabaseGenerator {
         .commentCharacter('#')
         .commentStrategy(CommentStrategy.SKIP)
 
+    @JvmStatic private val MELOTTE = resource("melotte.csv")!!
+        .use { stream ->
+            CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
+                .associate { it.getField(1) to it.getField(0) }
+        }
+
     @JvmStatic private val CALDWELL = resource("caldwell.csv")!!
         .use { stream ->
             CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
@@ -128,6 +134,9 @@ object SimbadDatabaseGenerator {
         }
 
         for (name in names) {
+            if (name in MELOTTE) {
+                moreNames.add("Mel ${MELOTTE[name]}")
+            }
             if (name in CALDWELL) {
                 moreNames.add("C ${CALDWELL[name]}")
             }
@@ -145,14 +154,14 @@ object SimbadDatabaseGenerator {
         name = buildString {
             var i = 0
 
-            moreNames.forEach {
+            names.forEach {
                 if (i > 0) append(SkyObject.NAME_SEPARATOR)
                 append(it)
                 i++
             }
 
-            names.forEach { n ->
-                if (moreNames.none { it.equals(n, true) }) {
+            moreNames.forEach { n ->
+                if (names.none { it.equals(n, true) }) {
                     if (i > 0) append(SkyObject.NAME_SEPARATOR)
                     append(n)
                     i++

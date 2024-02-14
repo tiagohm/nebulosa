@@ -16,7 +16,7 @@ import kotlin.math.atan2
 /**
  * An |xyz| position and velocity oriented to the ICRF axes.
  *
- * The International Coordinate Reference Frame (ICRF) is a permanent
+ * The International Celestial Reference Frame (ICRF) is a permanent
  * reference frame that is the replacement for J2000. Their axes agree
  * to within 0.02 arcseconds. It also supersedes older equinox-based
  * systems like B1900 and B1950.
@@ -221,7 +221,10 @@ open class ICRF protected constructor(
         (target as Frame).rotationAt(time)
     }
 
-    operator fun minus(other: ICRF) = of(position - other.position, velocity - other.velocity, time, other.target, target)
+    operator fun minus(other: ICRF): ICRF {
+        require(center == other.center) { "you can only subtract two ICRF vectors if they both start at the same center" }
+        return of(position - other.position, velocity - other.velocity, time, other.target, target)
+    }
 
     operator fun unaryMinus() = of(-position, -velocity, time, target, center, javaClass)
 

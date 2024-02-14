@@ -1,5 +1,7 @@
 package nebulosa.api.atlas
 
+import nebulosa.api.messages.MessageService
+import nebulosa.api.notifications.NotificationEvent
 import nebulosa.api.preferences.PreferenceService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
@@ -14,7 +16,20 @@ class SkyAtlasUpdateTask(
     private val httpClient: OkHttpClient,
     private val simbadEntityRepository: SimbadEntityRepository,
     private val preferenceService: PreferenceService,
+    private val messageService: MessageService,
 ) : Runnable {
+
+    data object UpdateStarted : NotificationEvent {
+
+        override val type = "SKY_ATLAS.UPDATE_STARTED"
+        override val body = "Sky Atlas is being updated"
+    }
+
+    data object UpdateFinished : NotificationEvent {
+
+        override val type = "SKY_ATLAS.UPDATE_FINISHED"
+        override val body = "Sky Atlas was updated"
+    }
 
     @Scheduled(fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
     override fun run() {
@@ -26,6 +41,8 @@ class SkyAtlasUpdateTask(
 
                 if (newestVersion != preferenceService.getText(VERSION_KEY) || simbadEntityRepository.isEmpty()) {
                     LOG.info("Sky Atlas is out of date. Downloading...")
+
+                    messageService.sendMessage(UpdateStarted)
 
                     var finished = false
 
@@ -52,6 +69,9 @@ class SkyAtlasUpdateTask(
                     }
 
                     preferenceService.putText(VERSION_KEY, newestVersion)
+                    messageService.sendMessage(UpdateFinished)
+
+                    LOG.info("Sky Atlas was updated. version={}, size={}", newestVersion, simbadEntityRepository.size)
                 } else {
                     LOG.info("Sky Atlas is up to date. version={}, size={}", newestVersion, simbadEntityRepository.size)
                 }
