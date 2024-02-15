@@ -6,7 +6,7 @@ import okio.Sink
 import java.nio.ByteBuffer
 
 @Suppress("ArrayInDataClass")
-data class FloatArrayImageData(
+data class FloatImageData(
     override val width: Int,
     override val height: Int,
     @JvmField val data: FloatArray,
@@ -19,22 +19,22 @@ data class FloatArrayImageData(
         val stride = ByteBuffer.allocate(strideSizeInBytes)
 
         repeat(height) {
-            val offset = it * width
+            var offset = it * width
             stride.clear()
-            for (i in offset until offset + width) stride.putFloat(data[i])
+            repeat(width) { stride.putFloat(data[offset++]) }
             stride.flip()
             block(stride)
         }
     }
 
     override fun writeTo(sink: Sink): Long {
-        return Buffer().use { buffer ->
+        return Buffer().use { b ->
             var byteCount = 0L
 
             repeat(height) {
-                val offset = it * width
-                for (i in offset until offset + width) buffer.writeFloat(data[i])
-                byteCount += buffer.readAll(sink)
+                var offset = it * width
+                repeat(width) { b.writeFloat(data[offset++]) }
+                byteCount += b.readAll(sink)
             }
 
             byteCount

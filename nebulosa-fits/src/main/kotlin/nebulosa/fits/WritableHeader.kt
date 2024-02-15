@@ -12,6 +12,14 @@ interface WritableHeader {
 
     fun add(key: FitsHeader, value: String): HeaderCard
 
+    fun add(key: String, value: Boolean, comment: String = ""): HeaderCard
+
+    fun add(key: String, value: Int, comment: String = ""): HeaderCard
+
+    fun add(key: String, value: Double, comment: String = ""): HeaderCard
+
+    fun add(key: String, value: String, comment: String = ""): HeaderCard
+
     fun add(card: HeaderCard)
 
     fun delete(key: FitsHeader): Boolean

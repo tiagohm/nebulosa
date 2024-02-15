@@ -19,10 +19,10 @@ inline val Header.naxis
 inline fun Header.naxis(n: Int) = getInt(Standard.NAXISn.n(n), 0)
 
 inline val Header.width
-    get() = naxis(1)
+    get() = getInt(Standard.NAXIS1, 0)
 
 inline val Header.height
-    get() = naxis(2)
+    get() = getInt(Standard.NAXIS2, 0)
 
 val Header.rightAscension
     get() = Angle(getStringOrNull(Standard.RA), isHours = true, decimalIsHours = false).takeIf { it.isFinite() }

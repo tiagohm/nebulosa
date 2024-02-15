@@ -1,11 +1,8 @@
 package nebulosa.fits
 
 import nebulosa.io.SeekableSource
-import nebulosa.io.seekableSource
 import okio.Sink
-import java.io.File
 import java.io.IOException
-import java.nio.file.Path
 
 object FitsIO : FitsReader, FitsWriter {
 

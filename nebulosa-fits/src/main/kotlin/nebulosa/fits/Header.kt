@@ -77,11 +77,11 @@ open class Header internal constructor(@JvmField internal val cards: LinkedList<
 
     override fun add(key: FitsHeader, value: Boolean): HeaderCard {
         checkType(key, ValueType.LOGICAL)
-        val card = HeaderCard.create(key, value)
-        val index = cards.indexOfFirst { it.key == key.key }
-        if (index >= 0) cards[index] = card
-        else cards.add(card)
-        return card
+        return HeaderCard.create(key, value).also(::add)
+    }
+
+    override fun add(key: String, value: Boolean, comment: String): HeaderCard {
+        return HeaderCard.create(key, value, comment).also(::add)
     }
 
     override fun add(key: FitsHeader, value: Int): HeaderCard {
@@ -89,14 +89,26 @@ open class Header internal constructor(@JvmField internal val cards: LinkedList<
         return HeaderCard.create(key, value).also(::add)
     }
 
+    override fun add(key: String, value: Int, comment: String): HeaderCard {
+        return HeaderCard.create(key, value, comment).also(::add)
+    }
+
     override fun add(key: FitsHeader, value: Double): HeaderCard {
         checkType(key, ValueType.REAL)
         return HeaderCard.create(key, value).also(::add)
     }
 
+    override fun add(key: String, value: Double, comment: String): HeaderCard {
+        return HeaderCard.create(key, value, comment).also(::add)
+    }
+
     override fun add(key: FitsHeader, value: String): HeaderCard {
         checkType(key, ValueType.STRING)
         return HeaderCard.create(key, value).also(::add)
+    }
+
+    override fun add(key: String, value: String, comment: String): HeaderCard {
+        return HeaderCard.create(key, value, comment).also(::add)
     }
 
     override fun add(card: HeaderCard) {
