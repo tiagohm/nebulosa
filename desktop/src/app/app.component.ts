@@ -49,6 +49,14 @@ export class AppComponent implements AfterViewInit {
         this.route.queryParams.subscribe(e => {
             this.maximizable = e.resizable === 'true'
         })
+
+        setTimeout(() => {
+            const size = document.getElementsByTagName('app-root')[0]?.getBoundingClientRect()?.height
+
+            if (size) {
+                this.electron.send('WINDOW.RESIZE', Math.ceil(size))
+            }
+        }, 1000)
     }
 
     pin() {

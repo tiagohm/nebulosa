@@ -413,6 +413,18 @@ try {
         return window?.isMaximized() ?? false
     })
 
+    ipcMain.handle('WINDOW.RESIZE', (event, data: number) => {
+        const window = findWindowById(event.sender.id)?.window
+
+        if (!window || window.isResizable()) return false
+
+        const size = window.getSize()
+        window.setSize(size[0], Math.max(size[1], data))
+        console.info('window resized', size[0], data)
+
+        return true
+    })
+
     ipcMain.handle('WINDOW.CLOSE', (event, data: CloseWindow<any>) => {
         if (data.id) {
             for (const [key, value] of browserWindows) {
