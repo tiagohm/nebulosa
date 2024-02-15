@@ -295,7 +295,7 @@ internal open class CameraDevice(
                         val ccd1 = message["CCD1"]!!
                         val fits = Base64InputStream(ccd1.value)
                         val compressed = COMPRESSION_FORMATS.any { ccd1.format.endsWith(it, true) }
-                        handler.fireOnEventReceived(CameraFrameCaptured(this, fits, compressed))
+                        handler.fireOnEventReceived(CameraFrameCaptured(this, fits, null, compressed))
                     }
                     "CCD2" -> {
                         // TODO: Handle Guider Head frame.
@@ -425,22 +425,22 @@ internal open class CameraDevice(
     }
 
     override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
-            " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
-            " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
-            " frameFormats=$frameFormats, canAbort=$canAbort," +
-            " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
-            " exposureMin=$exposureMin, exposureMax=$exposureMax," +
-            " exposureState=$exposureState, exposureTime=$exposureTime," +
-            " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
-            " temperature=$temperature, canSubFrame=$canSubFrame," +
-            " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
-            " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
-            " minHeight=$minHeight, maxHeight=$maxHeight," +
-            " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
-            " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
-            " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
-            " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
-            " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
+        " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
+        " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
+        " frameFormats=$frameFormats, canAbort=$canAbort," +
+        " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
+        " exposureMin=$exposureMin, exposureMax=$exposureMax," +
+        " exposureState=$exposureState, exposureTime=$exposureTime," +
+        " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
+        " temperature=$temperature, canSubFrame=$canSubFrame," +
+        " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
+        " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
+        " minHeight=$minHeight, maxHeight=$maxHeight," +
+        " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
+        " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
+        " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
+        " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
+        " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
 
     companion object {
 

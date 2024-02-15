@@ -2,12 +2,13 @@ import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.fits.Fits
 import nebulosa.fits.Header
+import nebulosa.fits.fits
 import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
 import nebulosa.test.NonGitHubOnlyCondition
 import nebulosa.wcs.WCS
+import java.io.File
 import kotlin.random.Random
 
 // https://www.atnf.csiro.au/people/mcalabre/WCS/example_data.html
@@ -53,7 +54,7 @@ class LibWCSTest : StringSpec() {
     }
 
     private fun readHeaderFromFits(name: String): Header {
-        return Fits("src/test/resources/$name.fits").use { it.readHdu()!!.header }
+        return File("src/test/resources/$name.fits").fits().first!!.header
     }
 
     companion object {

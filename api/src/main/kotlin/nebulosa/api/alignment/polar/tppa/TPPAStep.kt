@@ -12,7 +12,7 @@ import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
 import nebulosa.common.concurrency.latch.Pauseable
 import nebulosa.common.time.Stopwatch
-import nebulosa.fits.Fits
+import nebulosa.fits.fits
 import nebulosa.imaging.Image
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.mount.Mount
@@ -120,7 +120,7 @@ data class TPPAStep(
 
         if (!cancellationToken.isCancelled) {
             val savedPath = cameraExposureStep.savedPath ?: return StepResult.FINISHED
-            image = Fits(savedPath).also(Fits::read).use { image?.load(it, false) ?: Image.open(it, false) }
+            image = savedPath.fits().let { image?.load(it, false) ?: Image.open(it, false) }
 
             val radius = if (mount == null) 0.0 else ThreePointPolarAlignment.DEFAULT_RADIUS
 

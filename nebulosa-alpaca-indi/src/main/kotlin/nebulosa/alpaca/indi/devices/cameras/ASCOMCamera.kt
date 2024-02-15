@@ -16,6 +16,10 @@ import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
+import nebulosa.io.readDoubleLe
+import nebulosa.io.readFloatLe
+import okio.buffer
+import okio.source
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.time.Duration
@@ -607,19 +611,43 @@ data class ASCOMCamera(
 
             val width = metadata.dimension1
             val height = metadata.dimension2
+            val planes = max(1, metadata.dimension3)
+            val source = bytes.source().buffer()
+            val imageData = Array(planes) { FloatArrayImageData(width, height, FloatArray(width * height)) }
+            var i = 0
+
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    for (p in 0 until planes) {
+                        val pixel = when (metadata.imageElementType) {
+                            ImageArrayElementType.BYTE -> (source.readByte().toInt() and 0xFF) / 255f
+                            ImageArrayElementType.INT16,
+                            ImageArrayElementType.UINT16 -> (source.readShortLe().toInt() + 32768) / 65535f
+                            ImageArrayElementType.INT32,
+                            ImageArrayElementType.UINT32 -> ((source.readIntLe().toLong() + 2147483648) / 4294967295.0).toFloat()
+                            ImageArrayElementType.INT64,
+                            ImageArrayElementType.UINT64 -> return
+                            ImageArrayElementType.SINGLE -> source.readFloatLe()
+                            ImageArrayElementType.DOUBLE -> source.readDoubleLe().toFloat()
+                            ImageArrayElementType.UNKNOWN -> return
+                        }
+
+                        imageData[p].data[i] = pixel
+                    }
+
+                    i++
+                }
+            }
 
             val header = Header()
             header.add(Standard.SIMPLE, true)
 
-            val imageData1 = FloatArrayImageData(width, height)
-
-            val hdu = ImageHdu(header, arrayOf(imageData1))
+            val hdu = ImageHdu(header, imageData)
 
             val fits = Fits()
             fits.add(hdu)
-            fits.writeTo()
 
-            client.fireOnEventReceived(CameraFrameCaptured(this, fits, false))
+            client.fireOnEventReceived(CameraFrameCaptured(this, null, fits, false))
         } ?: LOG.error("image body is null. device={}", name)
     }
 
