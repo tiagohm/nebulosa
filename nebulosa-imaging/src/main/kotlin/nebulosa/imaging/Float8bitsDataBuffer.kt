@@ -2,7 +2,8 @@ package nebulosa.imaging
 
 import java.awt.image.DataBuffer
 
-class Float8bitsDataBuffer(
+@Suppress("ArrayInDataClass")
+data class Float8bitsDataBuffer(
     @JvmField val mono: Boolean,
     @JvmField val r: FloatArray, // or gray.
     @JvmField val g: FloatArray = r,

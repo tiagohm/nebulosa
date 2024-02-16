@@ -207,8 +207,7 @@ class Image(
     }
 
     fun hdu(): Hdu<ImageData> {
-        val data = Array(numberOfChannels) { FloatImageData(width, height, this.data[it]) }
-        return ImageHdu(header, data)
+        return ImageHdu(header, Array(numberOfChannels) { FloatImageData(width, height, data[it]) })
     }
 
     /**

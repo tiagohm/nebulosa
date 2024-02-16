@@ -9,7 +9,7 @@ import java.nio.ByteBuffer
 data class FloatImageData(
     override val width: Int,
     override val height: Int,
-    @JvmField val data: FloatArray,
+    @JvmField val data: FloatArray = FloatArray(width * height),
 ) : ImageData {
 
     override val bitpix = Bitpix.FLOAT

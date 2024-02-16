@@ -28,7 +28,6 @@ import nebulosa.time.CurrentTime
 import okio.buffer
 import okio.source
 import java.nio.ByteBuffer
-import java.nio.file.Files
 import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -145,7 +144,6 @@ data class ASCOMCamera(
     @Volatile private var mount: Mount? = null
 
     private val imageReadyWaiter = ImageReadyWaiter()
-    private val savedImagePath = Files.createTempFile(name, ".fits")
 
     init {
         refresh(0L)
@@ -623,27 +621,23 @@ data class ASCOMCamera(
             val height = metadata.dimension2
             val planes = max(1, metadata.dimension3)
             val source = stream.source().buffer()
-            val imageData = Array(planes) { FloatImageData(width, height, FloatArray(width * height)) }
+            val data = Array(planes) { FloatImageData(width, height) }
 
             for (x in 0 until width) {
                 for (y in 0 until height) {
                     val idx = y * width + x
 
                     for (p in 0 until planes) {
-                        val pixel = when (metadata.imageElementType) {
-                            ImageArrayElementType.BYTE -> (source.readByte().toInt() and 0xFF) / 255f
-                            ImageArrayElementType.INT16,
-                            ImageArrayElementType.UINT16 -> (source.readShortLe().toInt() + 32768) / 65535f
-                            ImageArrayElementType.INT32,
-                            ImageArrayElementType.UINT32 -> ((source.readIntLe().toLong() + 2147483648) / 4294967295.0).toFloat()
-                            ImageArrayElementType.INT64,
-                            ImageArrayElementType.UINT64 -> return
-                            ImageArrayElementType.SINGLE -> source.readFloatLe()
-                            ImageArrayElementType.DOUBLE -> source.readDoubleLe().toFloat()
-                            ImageArrayElementType.UNKNOWN -> return
+                        val pixel = when (metadata.imageElementType.bitpix) {
+                            Bitpix.BYTE -> (source.readByte().toInt() and 0xFF) / 255f
+                            Bitpix.SHORT -> (source.readShortLe().toInt() + 32768) / 65535f
+                            Bitpix.INTEGER -> ((source.readIntLe().toLong() + 2147483648) / 4294967295.0).toFloat()
+                            Bitpix.FLOAT -> source.readFloatLe()
+                            Bitpix.DOUBLE -> source.readDoubleLe().toFloat()
+                            Bitpix.LONG -> return
                         }
 
-                        imageData[p].data[idx] = pixel
+                        data[p].data[idx] = pixel
                     }
                 }
             }
@@ -689,7 +683,7 @@ data class ASCOMCamera(
                 header.add("OFFSET", offset, "Offset")
             }
 
-            val hdu = ImageHdu(header, imageData)
+            val hdu = ImageHdu(header, data)
 
             val fits = Fits()
             fits.add(hdu)

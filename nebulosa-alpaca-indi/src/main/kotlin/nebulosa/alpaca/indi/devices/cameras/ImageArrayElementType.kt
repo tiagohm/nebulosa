@@ -2,7 +2,7 @@ package nebulosa.alpaca.indi.devices.cameras
 
 import nebulosa.fits.Bitpix
 
-enum class ImageArrayElementType(val bitpix: Bitpix) {
+enum class ImageArrayElementType(@JvmField val bitpix: Bitpix) {
     UNKNOWN(Bitpix.BYTE), // 0 to 3 are values already used in the Alpaca standard
     INT16(Bitpix.SHORT),
     INT32(Bitpix.INTEGER),
