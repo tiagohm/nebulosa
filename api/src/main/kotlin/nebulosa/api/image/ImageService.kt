@@ -17,10 +17,14 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.math.*
+import nebulosa.nova.astrometry.VSOP87E
+import nebulosa.nova.position.Barycentric
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.star.detection.ImageStar
 import nebulosa.star.detection.StarDetector
+import nebulosa.time.TimeYMDHMS
+import nebulosa.time.UTC
 import nebulosa.wcs.WCS
 import nebulosa.wcs.WCSException
 import org.springframework.http.HttpStatus
@@ -28,6 +32,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Path
+import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
@@ -63,8 +68,8 @@ class ImageService(
         var stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
 
         val shouldBeTransformed = autoStretch || manualStretch
-                || mirrorHorizontal || mirrorVertical || invert
-                || scnrEnabled
+            || mirrorHorizontal || mirrorVertical || invert
+            || scnrEnabled
 
         var transformedImage = if (shouldBeTransformed) image.clone() else image
         val instrument = camera?.name ?: image.header.instrument
@@ -143,9 +148,9 @@ class ImageService(
         val annotations = Vector<ImageAnnotation>()
         val tasks = ArrayList<CompletableFuture<*>>()
 
-        val dateTime = image.header.observationDate
+        val dateTime = image.header.observationDate ?: LocalDateTime.now()
 
-        if (minorPlanets && dateTime != null) {
+        if (minorPlanets) {
             threadPoolTaskExecutor.submitCompletable {
                 val latitude = image.header.latitude ?: 0.0
                 val longitude = image.header.longitude ?: 0.0
@@ -183,9 +188,9 @@ class ImageService(
                 .also(tasks::add)
         }
 
-        // val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
-
         if (starsAndDSOs) {
+            val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
+
             threadPoolTaskExecutor.submitCompletable {
                 LOG.info("finding star/DSO annotations. dateTime={}, calibration={}", dateTime, calibration)
 
@@ -194,7 +199,8 @@ class ImageService(
                 var count = 0
 
                 for (entry in catalog) {
-                    val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
+                    val astrometric = barycentric.observe(entry).equatorial()
+                    val (x, y) = wcs.skyToPix(astrometric.longitude.normalized, astrometric.latitude)
                     val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
                     else ImageAnnotation(x, y, dso = entry)
                     annotations.add(annotation)
