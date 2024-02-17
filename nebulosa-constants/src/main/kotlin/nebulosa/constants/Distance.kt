@@ -28,6 +28,6 @@ const val LIGHT_TIME_AU = AU_M / SPEED_OF_LIGHT
 const val SCHWARZSCHILD_RADIUS_OF_THE_SUN = 1.97412574336e-8
 
 /**
- * Speed of light (au per s).
+ * Speed of light (au per day).
  */
 const val SPEED_OF_LIGHT_AU_DAY = SPEED_OF_LIGHT * DAYSEC / AU_M

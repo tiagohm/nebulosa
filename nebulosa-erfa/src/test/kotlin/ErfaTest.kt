@@ -1089,5 +1089,45 @@ class ErfaTest : StringSpec() {
             ri shouldBe (2.710126504531716819 plusOrMinus 1e-12)
             di shouldBe (0.1740632537627034482 plusOrMinus 1e-12)
         }
+        "eraAtic13" {
+            val (rc, dc, eo) = eraAtic13(2.710121572969038991, 0.1729371367218230438, 2456165.5, 0.401182685)
+
+            rc shouldBe (2.710126504531716819 plusOrMinus 1e-12)
+            dc shouldBe (0.1740632537627034482 plusOrMinus 1e-12)
+            eo shouldBe (-0.002900618712657375647 plusOrMinus 1e-14)
+        }
+        "eraS2pv" {
+            val pv = eraS2pv(-3.21, 0.123, 0.456, -7.8e-6, 9.01e-6, -1.23e-5)
+
+            pv.position[0] shouldBe (-0.4514964673880165228 plusOrMinus 1e-12)
+            pv.position[1] shouldBe (0.0309339427734258688 plusOrMinus 1e-12)
+            pv.position[2] shouldBe (0.0559466810510877933 plusOrMinus 1e-12)
+
+            pv.velocity[0] shouldBe (0.1292270850663260170e-4 plusOrMinus 1e-16)
+            pv.velocity[1] shouldBe (0.2652814182060691422e-5 plusOrMinus 1e-16)
+            pv.velocity[2] shouldBe (0.2568431853930292259e-5 plusOrMinus 1e-16)
+        }
+        "eraStarpv" {
+            val pv = eraStarpv(0.01686756, -1.093989828, -1.78323516e-5, 2.336024047e-6, 0.74723, -21.6)
+
+            pv.position[0] shouldBe (126668.5912743160601 plusOrMinus 1e-10)
+            pv.position[1] shouldBe (2136.792716839935195 plusOrMinus 1e-12)
+            pv.position[2] shouldBe (-245251.2339876830091 plusOrMinus 1e-10)
+
+            pv.velocity[0] shouldBe (-0.4051854008955659551e-2 plusOrMinus 1e-13)
+            pv.velocity[1] shouldBe (-0.6253919754414777970e-2 plusOrMinus 1e-15)
+            pv.velocity[2] shouldBe (0.1189353714588109341e-1 plusOrMinus 1e-13)
+        }
+        "eraStarpvMod" {
+            val pv = eraStarpvMod(0.01686756, -1.093989828, -1.78323516e-5, 2.336024047e-6, 0.74723.arcsec, (-21.6).kms)
+
+            pv.position[0] shouldBe (126668.5912743160601 plusOrMinus 1e-10)
+            pv.position[1] shouldBe (2136.792716839935195 plusOrMinus 1e-12)
+            pv.position[2] shouldBe (-245251.2339876830091 plusOrMinus 1e-10)
+
+            pv.velocity[0] shouldBe (-0.4051854008955659551e-2 plusOrMinus 1e-13)
+            pv.velocity[1] shouldBe (-0.6253919754414777970e-2 plusOrMinus 1e-15)
+            pv.velocity[2] shouldBe (0.1189353714588109341e-1 plusOrMinus 1e-13)
+        }
     }
 }
