@@ -22,13 +22,13 @@ class SkyAtlasUpdateTask(
     data object UpdateStarted : NotificationEvent {
 
         override val type = "SKY_ATLAS.UPDATE_STARTED"
-        override val body = "Sky Atlas is being updated"
+        override val body = "Sky Atlas database is being updated"
     }
 
     data object UpdateFinished : NotificationEvent {
 
         override val type = "SKY_ATLAS.UPDATE_FINISHED"
-        override val body = "Sky Atlas was updated"
+        override val body = "Sky Atlas database was updated"
     }
 
     @Scheduled(fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
@@ -40,7 +40,7 @@ class SkyAtlasUpdateTask(
                 val newestVersion = response.body!!.string()
 
                 if (newestVersion != preferenceService.getText(VERSION_KEY) || simbadEntityRepository.isEmpty()) {
-                    LOG.info("Sky Atlas is out of date. Downloading...")
+                    LOG.info("Sky Atlas database is out of date. Downloading...")
 
                     messageService.sendMessage(UpdateStarted)
 
@@ -71,9 +71,9 @@ class SkyAtlasUpdateTask(
                     preferenceService.putText(VERSION_KEY, newestVersion)
                     messageService.sendMessage(UpdateFinished)
 
-                    LOG.info("Sky Atlas was updated. version={}, size={}", newestVersion, simbadEntityRepository.size)
+                    LOG.info("Sky Atlas database was updated. version={}, size={}", newestVersion, simbadEntityRepository.size)
                 } else {
-                    LOG.info("Sky Atlas is up to date. version={}, size={}", newestVersion, simbadEntityRepository.size)
+                    LOG.info("Sky Atlas database is up to date. version={}, size={}", newestVersion, simbadEntityRepository.size)
                 }
             }
         }
