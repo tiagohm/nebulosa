@@ -27,7 +27,7 @@ class ImageBucket {
     fun open(path: Path, debayer: Boolean = true, solution: PlateSolution? = null, force: Boolean = false): Image {
         val openedImage = this[path]
         if (openedImage != null && !force) return openedImage.first
-        val image = path.fits().let { openedImage?.first?.load(it) ?: Image.open(it, debayer) }
+        val image = path.fits().use { openedImage?.first?.load(it) ?: Image.open(it, debayer) }
         put(path, image, solution ?: PlateSolution.from(image.header))
         return image
     }

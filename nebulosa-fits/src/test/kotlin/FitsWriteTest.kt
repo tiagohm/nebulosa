@@ -15,7 +15,7 @@ class FitsWriteTest : FitsStringSpec() {
             hdu0.write(data.sink())
             data.toByteString(2880, 66240).md5().hex() shouldBe "e1735e21c94dc49885fabc429406e573"
 
-            val fits = data.source().fits()
+            val fits = data.source().use { it.fits() }
             val hdu1 = fits.filterIsInstance<ImageHdu>().first()
 
             hdu0.header shouldBe hdu1.header

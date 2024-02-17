@@ -32,7 +32,7 @@ class FramingService(private val hips2FitsService: Hips2FitsService) {
         ).execute().body() ?: return null
 
         responseBody.use { it.byteStream().transferAndCloseOutput(DEFAULT_PATH.outputStream()) }
-        val image = DEFAULT_PATH.fits().let(Image::open)
+        val image = DEFAULT_PATH.fits().use(Image::open)
         val solution = PlateSolution.from(image.header)
         LOG.info("framing file loaded. calibration={}", solution)
         return Triple(image, solution, DEFAULT_PATH)

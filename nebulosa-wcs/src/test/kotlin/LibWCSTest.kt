@@ -8,7 +8,6 @@ import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
 import nebulosa.test.NonGitHubOnlyCondition
 import nebulosa.wcs.WCS
-import java.io.File
 import kotlin.random.Random
 
 // https://www.atnf.csiro.au/people/mcalabre/WCS/example_data.html
@@ -54,7 +53,7 @@ class LibWCSTest : StringSpec() {
     }
 
     private fun readHeaderFromFits(name: String): Header {
-        return File("src/test/resources/$name.fits").fits().first!!.header
+        return "src/test/resources/$name.fits".fits().use { it.first!!.header }
     }
 
     companion object {

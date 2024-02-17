@@ -120,7 +120,7 @@ data class TPPAStep(
 
         if (!cancellationToken.isCancelled) {
             val savedPath = cameraExposureStep.savedPath ?: return StepResult.FINISHED
-            image = savedPath.fits().let { image?.load(it, false) ?: Image.open(it, false) }
+            image = savedPath.fits().use { image?.load(it, false) ?: Image.open(it, false) }
 
             val radius = if (mount == null) 0.0 else ThreePointPolarAlignment.DEFAULT_RADIUS
 

@@ -3,7 +3,6 @@
 package nebulosa.fits
 
 import nebulosa.io.SeekableSource
-import nebulosa.io.seekableSource
 import nebulosa.math.Angle
 import nebulosa.math.deg
 import java.io.File
@@ -80,6 +79,8 @@ inline val Header.instrument
 
 inline fun SeekableSource.fits() = Fits().also { it.read(this) }
 
-inline fun Path.fits() = toFile().fits()
+inline fun String.fits() = FitsPath(this).also(FitsPath::read)
 
-inline fun File.fits() = Fits().also { seekableSource().use(it::read) }
+inline fun Path.fits() = FitsPath(this).also(FitsPath::read)
+
+inline fun File.fits() = FitsPath(this).also(FitsPath::read)

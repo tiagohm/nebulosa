@@ -86,7 +86,7 @@ data class FlatWizardStep(
         val savedPath = cameraExposureStep.savedPath
 
         if (!stopped && savedPath != null) {
-            image = savedPath.fits().let { image?.load(it, false) ?: Image.open(it, false) }
+            image = savedPath.fits().use { image?.load(it, false) ?: Image.open(it, false) }
 
             val statistics = STATISTICS.compute(image!!)
             LOG.info("flat frame captured. duration={}, statistics={}", exposureTime, statistics)

@@ -47,7 +47,7 @@ data class WatneyPlateSolver(
         downsampleFactor: Int, timeout: Duration?,
         cancellationToken: CancellationToken,
     ): PlateSolution {
-        val image = image ?: path!!.fits().let(Image::open)
+        val image = image ?: path!!.fits().use(Image::open)
         val stars = (starDetector ?: DEFAULT_STAR_DETECTOR).detect(image)
 
         LOG.debug { "detected ${stars.size} stars from the image" }
