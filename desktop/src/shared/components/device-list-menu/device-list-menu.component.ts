@@ -2,8 +2,8 @@ import { Component, Input, ViewChild } from '@angular/core'
 import { MenuItem, MessageService } from 'primeng/api'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
 import { Device } from '../../types/device.types'
+import { deviceComparator } from '../../utils/comparators'
 import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
-import { compareDevice } from '../../utils/comparators'
 
 @Component({
     selector: 'neb-device-list-menu',
@@ -48,7 +48,7 @@ export class DeviceListMenuComponent {
                 model.push(SEPARATOR_MENU_ITEM)
             }
 
-            for (const device of devices.sort(compareDevice)) {
+            for (const device of devices.sort(deviceComparator)) {
                 model.push({
                     icon: 'mdi mdi-connection',
                     label: device.name,

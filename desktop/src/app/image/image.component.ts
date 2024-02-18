@@ -19,7 +19,7 @@ import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, St
 import { Camera } from '../../shared/types/camera.types'
 import { DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageData, ImageInfo, ImagePreference, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
-import { DEFAULT_SOLVER_TYPES, PlateSolverType } from '../../shared/types/settings.types'
+import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
 

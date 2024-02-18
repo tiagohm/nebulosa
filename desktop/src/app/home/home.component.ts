@@ -14,7 +14,7 @@ import { Focuser } from '../../shared/types/focuser.types'
 import { ConnectionDetails, HomeWindowType } from '../../shared/types/home.types'
 import { Mount } from '../../shared/types/mount.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
-import { compareDevice } from '../../shared/utils/comparators'
+import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 type MappedDevice = {
@@ -280,7 +280,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         if (devices.length === 0) return
         if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
 
-        for (const device of [...devices].sort(compareDevice)) {
+        for (const device of [...devices].sort(deviceComparator)) {
             this.deviceModel.push({
                 icon: 'mdi mdi-connection',
                 label: device.name,

@@ -9,6 +9,7 @@ import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit } fr
 import { EMPTY_GUIDE_OUTPUT, GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { EMPTY_MOUNT, Mount } from '../../shared/types/mount.types'
 import { DEFAULT_SOLVER_TYPES, EMPTY_PLATE_SOLVER_OPTIONS } from '../../shared/types/settings.types'
+import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
@@ -91,6 +92,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         electron.on('CAMERA.ATTACHED', event => {
             ngZone.run(() => {
                 this.cameras.push(event.device)
+                this.cameras.sort(deviceComparator)
             })
         })
 
@@ -100,10 +102,11 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
                 if (index >= 0) {
                     if (this.cameras[index] === this.camera) {
-                        Object.assign(this.camera, EMPTY_CAMERA)
+                        Object.assign(this.camera, this.cameras[0] ?? EMPTY_CAMERA)
                     }
 
                     this.cameras.splice(index, 1)
+                    this.cameras.sort(deviceComparator)
                 }
             })
         })
@@ -119,6 +122,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         electron.on('MOUNT.ATTACHED', event => {
             ngZone.run(() => {
                 this.mounts.push(event.device)
+                this.mounts.sort(deviceComparator)
             })
         })
 
@@ -128,10 +132,11 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
                 if (index >= 0) {
                     if (this.mounts[index] === this.mount) {
-                        Object.assign(this.mount, EMPTY_MOUNT)
+                        Object.assign(this.mount, this.mounts[0] ?? EMPTY_MOUNT)
                     }
 
                     this.mounts.splice(index, 1)
+                    this.mounts.sort(deviceComparator)
                 }
             })
         })
@@ -147,6 +152,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         electron.on('GUIDE_OUTPUT.ATTACHED', event => {
             ngZone.run(() => {
                 this.guideOutputs.push(event.device)
+                this.guideOutputs.sort(deviceComparator)
             })
         })
 
@@ -156,10 +162,11 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
                 if (index >= 0) {
                     if (this.guideOutputs[index] === this.guideOutput) {
-                        Object.assign(this.guideOutput, EMPTY_GUIDE_OUTPUT)
+                        Object.assign(this.guideOutput, this.guideOutputs[0] ?? EMPTY_GUIDE_OUTPUT)
                     }
 
                     this.guideOutputs.splice(index, 1)
+                    this.guideOutputs.sort(deviceComparator)
                 }
             })
         })
@@ -215,9 +222,9 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngAfterViewInit() {
-        this.cameras = await this.api.cameras()
-        this.mounts = await this.api.mounts()
-        this.guideOutputs = await this.api.guideOutputs()
+        this.cameras = (await this.api.cameras()).sort(deviceComparator)
+        this.mounts = (await this.api.mounts()).sort(deviceComparator)
+        this.guideOutputs = (await this.api.guideOutputs()).sort(deviceComparator)
         this.loadPreference()
     }
 
