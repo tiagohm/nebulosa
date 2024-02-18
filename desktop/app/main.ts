@@ -416,7 +416,7 @@ try {
     ipcMain.handle('WINDOW.RESIZE', (event, data: number) => {
         const window = findWindowById(event.sender.id)?.window
 
-        if (!window || window.isResizable()) return false
+        if (!window || (!serve && window.isResizable())) return false
 
         const size = window.getSize()
         window.setSize(size[0], Math.max(size[1], data))
