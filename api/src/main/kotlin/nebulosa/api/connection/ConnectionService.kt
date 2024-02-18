@@ -2,6 +2,7 @@ package nebulosa.api.connection
 
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.indi.client.INDIClient
+import nebulosa.indi.client.connection.INDISocketConnection
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
@@ -28,8 +29,25 @@ class ConnectionService(
 
     private val providers = LinkedHashMap<String, INDIDeviceProvider>()
 
-    fun connectionStatus(id: String): Boolean {
-        return id in providers
+    fun connectionStatuses(): List<ConnectionStatus> {
+        return providers.keys.map { connectionStatus(it)!! }
+    }
+
+    fun connectionStatus(id: String): ConnectionStatus? {
+        when (val client = providers[id]) {
+            is INDIClient -> {
+                when (val connection = client.connection) {
+                    is INDISocketConnection -> {
+                        return ConnectionStatus(id, ConnectionType.INDI, connection.host, connection.port)
+                    }
+                }
+            }
+            is AlpacaClient -> {
+                return ConnectionStatus(id, ConnectionType.INDI, client.host, client.port)
+            }
+        }
+
+        return null
     }
 
     @Synchronized

@@ -25,8 +25,13 @@ class ConnectionController(
         connectionService.disconnect(id)
     }
 
+    @GetMapping
+    fun connectionStatuses(): List<ConnectionStatus> {
+        return connectionService.connectionStatuses()
+    }
+
     @GetMapping("{id}")
-    fun connectionStatus(@PathVariable id: String): Boolean {
+    fun connectionStatus(@PathVariable id: String): ConnectionStatus? {
         return connectionService.connectionStatus(id)
     }
 }

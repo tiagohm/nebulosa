@@ -366,13 +366,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     private async updateConnection() {
         if (this.connection && this.connection.id) {
             try {
-                const connected = await this.api.connectionStatus(this.connection.id!)
+                const status = await this.api.connectionStatus(this.connection.id!)
 
-                if (connected && !this.connection.connected) {
+                if (status && !this.connection.connected) {
                     this.connection.connectedAt = Date.now()
                     this.preference.connections.set(this.connections)
                     this.connection.connected = true
-                } else if (!connected) {
+                } else if (!status) {
                     this.connection.connected = false
                 }
             } catch {

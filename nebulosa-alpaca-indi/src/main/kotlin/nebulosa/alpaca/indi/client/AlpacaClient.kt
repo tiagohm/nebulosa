@@ -28,9 +28,9 @@ import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import java.util.*
 
-class AlpacaClient(
-    host: String, port: Int,
-    httpClient: OkHttpClient? = null,
+data class AlpacaClient(
+    val host: String, val port: Int,
+    private val httpClient: OkHttpClient? = null,
 ) : INDIDeviceProvider {
 
     private val service = AlpacaService("http://$host:$port/", httpClient)

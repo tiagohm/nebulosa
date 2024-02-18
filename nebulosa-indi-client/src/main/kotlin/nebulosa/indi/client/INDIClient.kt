@@ -28,7 +28,7 @@ import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import java.util.*
 
-class INDIClient(private val connection: INDIConnection) : INDIDeviceProtocolHandler(), INDIDeviceProvider {
+data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandler(), INDIDeviceProvider {
 
     constructor(
         host: String,

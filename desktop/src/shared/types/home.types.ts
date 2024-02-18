@@ -15,6 +15,8 @@ export interface ConnectionDetails {
     id?: string
 }
 
+export type ConnectionStatus = Omit<Required<ConnectionDetails>, 'connected' | 'name' | 'connectedAt'>
+
 export const EMPTY_CONNECTION_DETAILS: ConnectionDetails = {
     name: '',
     host: 'localhost',

@@ -9,7 +9,7 @@ import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
-import { ConnectionType } from '../types/home.types'
+import { ConnectionStatus, ConnectionType } from '../types/home.types'
 import { CoordinateInterpolation, DetectedStar, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, SCNRProtectionMethod } from '../types/image.types'
 import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
 import { SequencePlan } from '../types/sequencer.types'
@@ -37,8 +37,12 @@ export class ApiService {
         return this.http.delete<void>(`connection/${id}`)
     }
 
+    connectionStatuses() {
+        return this.http.get<ConnectionStatus[]>(`connection`)
+    }
+
     connectionStatus(id: string) {
-        return this.http.get<boolean>(`connection/${id}`)
+        return this.http.get<ConnectionStatus | undefined>(`connection/${id}`)
     }
 
     // CAMERA
