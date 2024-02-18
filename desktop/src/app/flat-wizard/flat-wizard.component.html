@@ -2,7 +2,7 @@
     <div class="grid">
         <div class="col-6 align-items-center gap-2">
             <span class="p-float-label device">
-                <p-dropdown [disabled]="running" [options]="cameras" [(ngModel)]="camera" optionLabel="name"
+                <p-dropdown [disabled]="running" [options]="cameras" [(ngModel)]="camera" optionLabel="name" [autoDisplayFirst]="false"
                             styleClass="p-inputtext-sm border-0" (ngModelChange)="cameraChanged()" emptyMessage="No camera found" />
                 <label>Camera</label>
             </span>
@@ -10,7 +10,7 @@
         </div>
         <div class="col-6 align-items-center gap-2">
             <span class="p-float-label device">
-                <p-dropdown [disabled]="running" [options]="wheels" [(ngModel)]="wheel" optionLabel="name"
+                <p-dropdown [disabled]="running" [options]="wheels" [(ngModel)]="wheel" optionLabel="name" [autoDisplayFirst]="false"
                             styleClass="p-inputtext-sm border-0" (ngModelChange)="wheelChanged()" emptyMessage="No filter wheel found" />
                 <label>Filter Wheel</label>
             </span>

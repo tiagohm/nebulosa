@@ -42,7 +42,7 @@
     <div class="col-12">
         <span class="p-float-label">
             <p-dropdown [options]="hipsSurveys" [(ngModel)]="hipsSurvey" styleClass="border-0" emptyMessage="No HiPS survey found">
-                <ng-template let-item pTemplate="selectedItem">
+                <ng-template let-item pTemplate="selectedItem" [autoDisplayFirst]="false">
                     <div class="flex flex-column">
                         <span class="text-xs">{{ item.regime }}</span>
                         <span>{{ item.id }}</span>

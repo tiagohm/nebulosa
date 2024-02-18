@@ -3,7 +3,7 @@
         <div class="col-12 sm:col-4">
             <span class="p-float-label">
                 <p-dropdown [options]="devices" [ngModel]="device" (ngModelChange)="deviceChanged($event)" optionLabel="name"
-                            styleClass="border-0" emptyMessage="No device found" />
+                            styleClass="border-0" emptyMessage="No device found" [autoDisplayFirst]="false" />
                 <label>Device</label>
             </span>
         </div>

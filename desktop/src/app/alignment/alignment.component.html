@@ -2,7 +2,7 @@
     <div class="grid">
         <div class="col-6 align-items-center gap-2">
             <span class="p-float-label device">
-                <p-dropdown [disabled]="running" [options]="cameras" [(ngModel)]="camera" optionLabel="name"
+                <p-dropdown [disabled]="running" [options]="cameras" [(ngModel)]="camera" optionLabel="name" [autoDisplayFirst]="false"
                             (ngModelChange)="cameraChanged()" styleClass="p-inputtext-sm border-0 max-w-full" emptyMessage="No camera found" />
                 <label>Camera</label>
             </span>
@@ -10,7 +10,7 @@
         </div>
         <div class="col-6 align-items-center gap-2" *ngIf="tab === 0">
             <span class="p-float-label device">
-                <p-dropdown [disabled]="running" [options]="mounts" [(ngModel)]="mount" optionLabel="name"
+                <p-dropdown [disabled]="running" [options]="mounts" [(ngModel)]="mount" optionLabel="name" [autoDisplayFirst]="false"
                             (ngModelChange)="mountChanged()" styleClass="p-inputtext-sm border-0 max-w-full" emptyMessage="No mount found" />
                 <label>Mount</label>
             </span>
@@ -23,7 +23,7 @@
             <span class="p-float-label device">
                 <p-dropdown [disabled]="running" [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name"
                             (ngModelChange)="guideOutputChanged()" styleClass="p-inputtext-sm border-0 max-w-full"
-                            emptyMessage="No guide output found" />
+                            emptyMessage="No guide output found" [autoDisplayFirst]="false" />
                 <label>Guide Output</label>
             </span>
             <p-button *ngIf="guideOutput.connected" [disabled]="!guideOutput.name || running" (onClick)="guideOutputConnect()"

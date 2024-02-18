@@ -15,7 +15,8 @@
             <div class="col-8 md:col-6 lg:col-4">
                 <span class="p-float-label">
                     <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()"
-                                optionLabel="name" dataKey="id" styleClass="p-inputtext-sm border-0" emptyMessage="No location found" />
+                                optionLabel="name" dataKey="id" styleClass="p-inputtext-sm border-0" emptyMessage="No location found"
+                                [autoDisplayFirst]="false" />
                     <label>Location</label>
                 </span>
             </div>
@@ -30,7 +31,7 @@
             <div class="col-8">
                 <span class="p-float-label">
                     <p-dropdown [options]="plateSolverTypes" [(ngModel)]="plateSolverType" styleClass="p-inputtext-sm border-0"
-                                (ngModelChange)="plateSolvers.get(plateSolverType)!.type = $event; save()" />
+                                (ngModelChange)="plateSolvers.get(plateSolverType)!.type = $event; save()" [autoDisplayFirst]="false" />
                     <label>Type</label>
                 </span>
             </div>

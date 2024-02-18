@@ -308,7 +308,7 @@
         <div class="col-6">
             <span class="p-float-label">
                 <p-dropdown [options]="constellationOptions" [(ngModel)]="skyObjectFilter.constellation" [filter]="true" appendTo="body"
-                            styleClass="border-0">
+                            styleClass="border-0" [autoDisplayFirst]="false">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -326,7 +326,7 @@
         <div class="col-6">
             <span class="p-float-label">
                 <p-dropdown [options]="skyObjectFilter.types" [(ngModel)]="skyObjectFilter.type" appendTo="body" [filter]="true"
-                            styleClass="border-0">
+                            styleClass="border-0" [autoDisplayFirst]="false">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
