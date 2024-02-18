@@ -1,11 +1,11 @@
-package nebulosa.alpaca.indi.devices.cameras
+package nebulosa.alpaca.indi.device.cameras
 
 import nebulosa.alpaca.api.AlpacaCameraService
 import nebulosa.alpaca.api.CameraState
 import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.api.PulseGuideDirection
 import nebulosa.alpaca.indi.client.AlpacaClient
-import nebulosa.alpaca.indi.devices.ASCOMDevice
+import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.fits.*
 import nebulosa.imaging.algorithms.transformation.CfaPattern
@@ -208,13 +208,15 @@ data class ASCOMCamera(
     }
 
     private fun pulseGuide(direction: PulseGuideDirection, duration: Duration) {
-        val durationInMilliseconds = duration.toMillis()
+        if (canPulseGuide) {
+            val durationInMilliseconds = duration.toMillis()
 
-        service.pulseGuide(device.number, direction, durationInMilliseconds).doRequest() ?: return
+            service.pulseGuide(device.number, direction, durationInMilliseconds).doRequest() ?: return
 
-        if (durationInMilliseconds > 0) {
-            pulseGuiding = true
-            sender.fireOnEventReceived(GuideOutputPulsingChanged(this))
+            if (durationInMilliseconds > 0) {
+                pulseGuiding = true
+                sender.fireOnEventReceived(GuideOutputPulsingChanged(this))
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.camera.CameraDevice
+import nebulosa.indi.client.device.cameras.CameraDevice
 import nebulosa.indi.device.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.dome.Dome

@@ -1,4 +1,4 @@
-package nebulosa.indi.client.device.mount
+package nebulosa.indi.client.device.mounts
 
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.device.mount.MountCanHomeChanged

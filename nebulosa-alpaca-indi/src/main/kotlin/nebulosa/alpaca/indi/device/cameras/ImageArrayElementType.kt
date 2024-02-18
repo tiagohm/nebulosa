@@ -1,4 +1,4 @@
-package nebulosa.alpaca.indi.devices.cameras
+package nebulosa.alpaca.indi.device.cameras
 
 import nebulosa.fits.Bitpix
 

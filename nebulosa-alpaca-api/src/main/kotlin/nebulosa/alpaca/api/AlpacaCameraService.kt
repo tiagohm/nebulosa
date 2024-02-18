@@ -4,7 +4,7 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
 
-interface AlpacaCameraService : AlpacaDeviceService {
+interface AlpacaCameraService : AlpacaGuideOutputService {
 
     @GET("api/v1/camera/{id}/connected")
     override fun isConnected(@Path("id") id: Int): Call<BoolResponse>
@@ -55,7 +55,7 @@ interface AlpacaCameraService : AlpacaDeviceService {
     fun canCoolerPower(@Path("id") id: Int): Call<BoolResponse>
 
     @GET("api/v1/camera/{id}/canpulseguide")
-    fun canPulseGuide(@Path("id") id: Int): Call<BoolResponse>
+    override fun canPulseGuide(@Path("id") id: Int): Call<BoolResponse>
 
     @GET("api/v1/camera/{id}/cansetccdtemperature")
     fun canSetCCDTemperature(@Path("id") id: Int): Call<BoolResponse>
@@ -112,7 +112,7 @@ interface AlpacaCameraService : AlpacaDeviceService {
     fun gainMin(@Path("id") id: Int): Call<IntResponse>
 
     @GET("api/v1/camera/{id}/gains")
-    fun gains(@Path("id") id: Int): Call<StringArrayResponse>
+    fun gains(@Path("id") id: Int): Call<ArrayResponse<String>>
 
     @GET("api/v1/camera/{id}/hasshutter")
     fun hasShutter(@Path("id") id: Int): Call<BoolResponse>
@@ -124,7 +124,7 @@ interface AlpacaCameraService : AlpacaDeviceService {
     fun isImageReady(@Path("id") id: Int): Call<BoolResponse>
 
     @GET("api/v1/camera/{id}/ispulseguiding")
-    fun isPulseGuiding(@Path("id") id: Int): Call<BoolResponse>
+    override fun isPulseGuiding(@Path("id") id: Int): Call<BoolResponse>
 
     @GET("api/v1/camera/{id}/lastexposureduration")
     fun lastExposureDuration(@Path("id") id: Int): Call<DoubleResponse>
@@ -169,7 +169,7 @@ interface AlpacaCameraService : AlpacaDeviceService {
     fun offsetMin(@Path("id") id: Int): Call<IntResponse>
 
     @GET("api/v1/camera/{id}/offsets")
-    fun offsets(@Path("id") id: Int): Call<StringArrayResponse>
+    fun offsets(@Path("id") id: Int): Call<ArrayResponse<String>>
 
     @GET("api/v1/camera/{id}/percentcompleted")
     fun percentCompleted(@Path("id") id: Int): Call<IntResponse>
@@ -188,7 +188,7 @@ interface AlpacaCameraService : AlpacaDeviceService {
     fun readoutMode(@Path("id") id: Int, @Field("ReadoutMode") value: Int): Call<NoneResponse>
 
     @GET("api/v1/camera/{id}/readoutmodes")
-    fun readoutModes(@Path("id") id: Int): Call<StringArrayResponse>
+    fun readoutModes(@Path("id") id: Int): Call<ArrayResponse<String>>
 
     @GET("api/v1/camera/{id}/sensorname")
     fun sensorName(@Path("id") id: Int): Call<StringResponse>
@@ -229,7 +229,11 @@ interface AlpacaCameraService : AlpacaDeviceService {
 
     @FormUrlEncoded
     @PUT("api/v1/camera/{id}/pulseguide")
-    fun pulseGuide(@Path("id") id: Int, @Field("Direction") direction: PulseGuideDirection, @Field("Duration") durationMs: Long): Call<NoneResponse>
+    override fun pulseGuide(
+        @Path("id") id: Int,
+        @Field("Direction") direction: PulseGuideDirection,
+        @Field("Duration") durationMs: Long
+    ): Call<NoneResponse>
 
     @FormUrlEncoded
     @PUT("api/v1/camera/{id}/startexposure")

@@ -1,4 +1,4 @@
-package nebulosa.indi.client.device.camera
+package nebulosa.indi.client.device.cameras
 
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.protocol.INDIProtocol

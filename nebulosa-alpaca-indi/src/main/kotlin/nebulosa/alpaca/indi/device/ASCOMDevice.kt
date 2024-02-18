@@ -1,4 +1,4 @@
-package nebulosa.alpaca.indi.devices
+package nebulosa.alpaca.indi.device
 
 import nebulosa.alpaca.api.AlpacaDeviceService
 import nebulosa.alpaca.api.AlpacaResponse
