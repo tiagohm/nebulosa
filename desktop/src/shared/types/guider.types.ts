@@ -61,6 +61,8 @@ export interface GuideOutput extends Device {
 }
 
 export const EMPTY_GUIDE_OUTPUT: GuideOutput = {
+    sender: '',
+    id: '',
     canPulseGuide: false,
     pulseGuiding: false,
     name: '',

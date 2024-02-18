@@ -16,7 +16,7 @@ abstract class ASCOMDevice : Device {
 
     protected abstract val device: ConfiguredDevice
     protected abstract val service: AlpacaDeviceService
-    protected abstract val client: AlpacaClient
+    abstract override val sender: AlpacaClient
 
     @Suppress("PropertyName")
     @JvmField protected val LOG = loggerFor(javaClass)
@@ -24,7 +24,7 @@ abstract class ASCOMDevice : Device {
     override val name
         get() = device.name
 
-    val uid
+    override val id
         get() = device.uid
 
     @Volatile final override var connected = false
@@ -64,7 +64,7 @@ abstract class ASCOMDevice : Device {
         synchronized(messages) {
             messages.addFirst(text)
 
-            client.fireOnEventReceived(DeviceMessageReceived(this, text))
+            sender.fireOnEventReceived(DeviceMessageReceived(this, text))
 
             if (messages.size > 100) {
                 messages.removeLast()
@@ -110,7 +110,7 @@ abstract class ASCOMDevice : Device {
             connected = value
 
             if (value) {
-                client.fireOnEventReceived(DeviceConnected(this))
+                sender.fireOnEventReceived(DeviceConnected(this))
 
                 onConnected()
 
@@ -119,7 +119,7 @@ abstract class ASCOMDevice : Device {
                     refresher!!.start()
                 }
             } else {
-                client.fireOnEventReceived(DeviceDisconnected(this))
+                sender.fireOnEventReceived(DeviceDisconnected(this))
 
                 onDisconnected()
 

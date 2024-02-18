@@ -1,13 +1,13 @@
 package nebulosa.indi.client.device.camera
 
-import nebulosa.indi.client.device.DeviceProtocolHandler
+import nebulosa.indi.client.INDIClient
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
 
 internal class SimCamera(
-    handler: DeviceProtocolHandler,
+    provider: INDIClient,
     name: String,
-) : CameraDevice(handler, name) {
+) : CameraDevice(provider, name) {
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

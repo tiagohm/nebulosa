@@ -37,7 +37,7 @@ import kotlin.math.min
 data class ASCOMCamera(
     override val device: ConfiguredDevice,
     override val service: AlpacaCameraService,
-    override val client: AlpacaClient,
+    override val sender: AlpacaClient,
 ) : ASCOMDevice(), Camera {
 
     @Volatile override var exposuring = false
@@ -214,7 +214,7 @@ data class ASCOMCamera(
 
         if (durationInMilliseconds > 0) {
             pulseGuiding = true
-            client.fireOnEventReceived(GuideOutputPulsingChanged(this))
+            sender.fireOnEventReceived(GuideOutputPulsingChanged(this))
         }
     }
 
@@ -232,9 +232,6 @@ data class ASCOMCamera(
 
     override fun guideWest(duration: Duration) {
         pulseGuide(PulseGuideDirection.WEST, duration)
-    }
-
-    override fun sendMessageToServer(message: INDIProtocol) {
     }
 
     override fun snoop(devices: Iterable<Device?>) {
@@ -380,8 +377,8 @@ data class ASCOMCamera(
                 }
             }
 
-            if (prevExposuring != exposuring) client.fireOnEventReceived(CameraExposuringChanged(this))
-            if (prevExposureState != exposureState) client.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+            if (prevExposuring != exposuring) sender.fireOnEventReceived(CameraExposuringChanged(this))
+            if (prevExposureState != exposureState) sender.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
 
             if (exposuring) {
                 service.percentCompleted(device.number).doRequest {
@@ -390,11 +387,11 @@ data class ASCOMCamera(
             }
 
             if (exposureState == PropertyState.IDLE && (prevExposureState == PropertyState.BUSY || exposuring)) {
-                client.fireOnEventReceived(CameraExposureAborted(this))
+                sender.fireOnEventReceived(CameraExposureAborted(this))
             } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
-                client.fireOnEventReceived(CameraExposureFinished(this))
+                sender.fireOnEventReceived(CameraExposureFinished(this))
             } else if (exposureState == PropertyState.ALERT && prevExposureState != PropertyState.ALERT) {
-                client.fireOnEventReceived(CameraExposureFailed(this))
+                sender.fireOnEventReceived(CameraExposureFailed(this))
             }
         }
     }
@@ -406,7 +403,7 @@ data class ASCOMCamera(
                     binX = x.value
                     binY = y.value
 
-                    client.fireOnEventReceived(CameraBinChanged(this))
+                    sender.fireOnEventReceived(CameraBinChanged(this))
                 }
             }
         }
@@ -419,7 +416,7 @@ data class ASCOMCamera(
                 gainMax = max.value
                 gain = max(gainMin, min(gain, gainMax))
 
-                client.fireOnEventReceived(CameraGainMinMaxChanged(this))
+                sender.fireOnEventReceived(CameraGainMinMaxChanged(this))
             }
         }
     }
@@ -429,7 +426,7 @@ data class ASCOMCamera(
             if (it.value != gain) {
                 gain = it.value
 
-                client.fireOnEventReceived(CameraGainChanged(this))
+                sender.fireOnEventReceived(CameraGainChanged(this))
             }
         }
     }
@@ -441,7 +438,7 @@ data class ASCOMCamera(
                 offsetMax = max.value
                 offset = max(offsetMin, min(offset, offsetMax))
 
-                client.fireOnEventReceived(CameraOffsetMinMaxChanged(this))
+                sender.fireOnEventReceived(CameraOffsetMinMaxChanged(this))
             }
         }
     }
@@ -451,7 +448,7 @@ data class ASCOMCamera(
             if (it.value != offset) {
                 offset = it.value
 
-                client.fireOnEventReceived(CameraOffsetChanged(this))
+                sender.fireOnEventReceived(CameraOffsetChanged(this))
             }
         }
     }
@@ -473,7 +470,7 @@ data class ASCOMCamera(
                 maxY = height - 1
 
                 if (!processFrame()) {
-                    client.fireOnEventReceived(CameraFrameChanged(this))
+                    sender.fireOnEventReceived(CameraFrameChanged(this))
                 }
             }
         }
@@ -490,7 +487,7 @@ data class ASCOMCamera(
                             this.x = x.value
                             this.y = y.value
 
-                            client.fireOnEventReceived(CameraFrameChanged(this))
+                            sender.fireOnEventReceived(CameraFrameChanged(this))
 
                             return true
                         }
@@ -508,7 +505,7 @@ data class ASCOMCamera(
                 if (coolerPower != it.value) {
                     coolerPower = it.value
 
-                    client.fireOnEventReceived(CameraCoolerPowerChanged(this))
+                    sender.fireOnEventReceived(CameraCoolerPowerChanged(this))
                 }
             }
         }
@@ -518,7 +515,7 @@ data class ASCOMCamera(
                 if (cooler != it.value) {
                     cooler = it.value
 
-                    client.fireOnEventReceived(CameraCoolerChanged(this))
+                    sender.fireOnEventReceived(CameraCoolerChanged(this))
                 }
             }
         }
@@ -531,7 +528,7 @@ data class ASCOMCamera(
                     pixelSizeX = x.value
                     pixelSizeY = y.value
 
-                    client.fireOnEventReceived(CameraPixelSizeChanged(this))
+                    sender.fireOnEventReceived(CameraPixelSizeChanged(this))
                 }
             }
         }
@@ -544,7 +541,7 @@ data class ASCOMCamera(
                     cfaOffsetX = x.value
                     cfaOffsetY = y.value
 
-                    client.fireOnEventReceived(CameraCfaChanged(this))
+                    sender.fireOnEventReceived(CameraCfaChanged(this))
                 }
             }
         }
@@ -554,7 +551,7 @@ data class ASCOMCamera(
         service.readoutModes(device.number).doRequest {
             frameFormats = it.value.toList()
 
-            client.fireOnEventReceived(CameraFrameFormatsChanged(this))
+            sender.fireOnEventReceived(CameraFrameFormatsChanged(this))
         }
     }
 
@@ -564,7 +561,7 @@ data class ASCOMCamera(
                 exposureMin = Duration.ofNanos((min.value * NANO_SECONDS).toLong())
                 exposureMax = Duration.ofNanos((max.value * NANO_SECONDS).toLong())
 
-                client.fireOnEventReceived(CameraExposureMinMaxChanged(this))
+                sender.fireOnEventReceived(CameraExposureMinMaxChanged(this))
             }
         }
     }
@@ -574,7 +571,7 @@ data class ASCOMCamera(
             if (it.value != canAbort) {
                 canAbort = it.value
 
-                client.fireOnEventReceived(CameraCanAbortChanged(this))
+                sender.fireOnEventReceived(CameraCanAbortChanged(this))
             }
         }
 
@@ -582,7 +579,7 @@ data class ASCOMCamera(
             if (it.value != hasCoolerControl) {
                 hasCoolerControl = it.value
 
-                client.fireOnEventReceived(CameraCoolerControlChanged(this))
+                sender.fireOnEventReceived(CameraCoolerControlChanged(this))
             }
         }
 
@@ -590,7 +587,7 @@ data class ASCOMCamera(
             if (it.value != canPulseGuide) {
                 canPulseGuide = it.value
 
-                client.registerGuideOutput(this)
+                sender.registerGuideOutput(this)
 
                 LOG.info("guide output attached: {}", name)
             }
@@ -601,8 +598,8 @@ data class ASCOMCamera(
                 canSetTemperature = it.value
                 hasCooler = canSetTemperature
 
-                client.fireOnEventReceived(CameraHasCoolerChanged(this))
-                client.fireOnEventReceived(CameraCanSetTemperatureChanged(this))
+                sender.fireOnEventReceived(CameraHasCoolerChanged(this))
+                sender.fireOnEventReceived(CameraCanSetTemperatureChanged(this))
             }
         }
     }
@@ -688,7 +685,7 @@ data class ASCOMCamera(
             val fits = Fits()
             fits.add(hdu)
 
-            client.fireOnEventReceived(CameraFrameCaptured(this, null, fits, false))
+            sender.fireOnEventReceived(CameraFrameCaptured(this, null, fits, false))
         } ?: LOG.error("image body is null. device={}", name)
     }
 

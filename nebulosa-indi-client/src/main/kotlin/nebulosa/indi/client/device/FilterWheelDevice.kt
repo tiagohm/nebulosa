@@ -1,5 +1,6 @@
 package nebulosa.indi.client.device
 
+import nebulosa.indi.client.INDIClient
 import nebulosa.indi.device.filterwheel.*
 import nebulosa.indi.protocol.DefNumberVector
 import nebulosa.indi.protocol.INDIProtocol
@@ -7,9 +8,9 @@ import nebulosa.indi.protocol.NumberVector
 import nebulosa.indi.protocol.PropertyState
 
 internal open class FilterWheelDevice(
-    handler: DeviceProtocolHandler,
-    name: String,
-) : INDIDevice(handler, name), FilterWheel {
+    override val sender: INDIClient,
+    override val name: String,
+) : INDIDevice(), FilterWheel {
 
     @Volatile final override var count = 0
         private set
@@ -27,25 +28,25 @@ internal open class FilterWheelDevice(
 
                         if (message is DefNumberVector) {
                             count = slot.max.toInt() - slot.min.toInt() + 1
-                            handler.fireOnEventReceived(FilterWheelCountChanged(this))
+                            sender.fireOnEventReceived(FilterWheelCountChanged(this))
                         }
 
                         if (message.state == PropertyState.ALERT) {
-                            handler.fireOnEventReceived(FilterWheelMoveFailed(this))
+                            sender.fireOnEventReceived(FilterWheelMoveFailed(this))
                         }
 
                         val prevPosition = position
                         position = slot.value.toInt()
 
                         if (prevPosition != position) {
-                            handler.fireOnEventReceived(FilterWheelPositionChanged(this, prevPosition))
+                            sender.fireOnEventReceived(FilterWheelPositionChanged(this, prevPosition))
                         }
 
                         val prevIsMoving = moving
                         moving = message.isBusy
 
                         if (prevIsMoving != moving) {
-                            handler.fireOnEventReceived(FilterWheelMovingChanged(this))
+                            sender.fireOnEventReceived(FilterWheelMovingChanged(this))
                         }
                     }
                 }
@@ -70,6 +71,6 @@ internal open class FilterWheelDevice(
 
     override fun toString(): String {
         return "FilterWheel(name=$name, slotCount=$count, position=$position," +
-                " moving=$moving)"
+            " moving=$moving)"
     }
 }

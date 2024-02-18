@@ -6,6 +6,10 @@ import java.io.Closeable
 
 interface Device : INDIProtocolHandler, Closeable {
 
+    val sender: MessageSender
+
+    val id: String
+
     val name: String
 
     val connected: Boolean
@@ -18,7 +22,9 @@ interface Device : INDIProtocolHandler, Closeable {
 
     fun disconnect()
 
-    fun sendMessageToServer(message: INDIProtocol)
+    fun sendMessageToServer(message: INDIProtocol) {
+        sender.sendMessageToServer(message)
+    }
 
     fun ask() {
         sendMessageToServer(GetProperties().also { it.device = name })

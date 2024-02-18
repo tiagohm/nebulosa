@@ -61,7 +61,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         if (app) app.title = 'Filter Wheel'
 
         electron.on('WHEEL.UPDATED', event => {
-            if (event.device.name === this.wheel.name) {
+            if (event.device.id === this.wheel.id) {
                 ngZone.run(() => {
                     const wasConnected = this.wheel.connected
                     Object.assign(this.wheel, event.device)
@@ -71,7 +71,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         })
 
         electron.on('WHEEL.DETACHED', event => {
-            if (event.device.name === this.wheel.name) {
+            if (event.device.id === this.wheel.id) {
                 ngZone.run(() => {
                     Object.assign(this.wheel, EMPTY_WHEEL)
                 })

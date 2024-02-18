@@ -10,6 +10,8 @@ export interface FilterWheel extends Device {
 }
 
 export const EMPTY_WHEEL: FilterWheel = {
+    sender: '',
+    id: '',
     count: 0,
     position: 0,
     moving: false,

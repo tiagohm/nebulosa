@@ -9,13 +9,13 @@ import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
+import { ConnectionType } from '../types/home.types'
 import { CoordinateInterpolation, DetectedStar, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, SCNRProtectionMethod } from '../types/image.types'
 import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
 import { SequencePlan } from '../types/sequencer.types'
 import { PlateSolverOptions } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
 import { HttpService } from './http.service'
-import { ConnectionType } from '../types/home.types'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -30,15 +30,15 @@ export class ApiService {
 
     connect(host: string, port: number, type: ConnectionType) {
         const query = this.http.query({ host, port, type })
-        return this.http.put<void>(`connection?${query}`)
+        return this.http.put<string>(`connection?${query}`)
     }
 
-    disconnect() {
-        return this.http.delete<void>(`connection`)
+    disconnect(id: string) {
+        return this.http.delete<void>(`connection/${id}`)
     }
 
-    connectionStatus() {
-        return this.http.get<boolean>(`connection`)
+    connectionStatus(id: string) {
+        return this.http.get<boolean>(`connection/${id}`)
     }
 
     // CAMERA

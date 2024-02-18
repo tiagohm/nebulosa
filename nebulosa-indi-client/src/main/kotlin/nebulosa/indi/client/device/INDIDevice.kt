@@ -1,5 +1,7 @@
 package nebulosa.indi.client.device
 
+import nebulosa.indi.client.INDIClient
+import nebulosa.indi.client.device.camera.CameraDevice
 import nebulosa.indi.device.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.dome.Dome
@@ -13,26 +15,23 @@ import nebulosa.indi.protocol.Vector
 import nebulosa.log.loggerFor
 import java.util.*
 
-internal abstract class INDIDevice(
-    @JvmField internal val handler: DeviceProtocolHandler,
-    override val name: String,
-) : Device {
+internal abstract class INDIDevice : Device {
+
+    abstract override val sender: INDIClient
 
     override val properties = linkedMapOf<String, PropertyVector<*, *>>()
     override val messages = LinkedList<String>()
 
+    override val id = UUID.randomUUID().toString()
+
     @Volatile override var connected = false
         protected set
-
-    override fun sendMessageToServer(message: INDIProtocol) {
-        handler.sendMessageToServer(message)
-    }
 
     private fun addMessageAndFireEvent(text: String) {
         synchronized(messages) {
             messages.addFirst(text)
 
-            handler.fireOnEventReceived(DeviceMessageReceived(this, text))
+            sender.fireOnEventReceived(DeviceMessageReceived(this, text))
 
             if (messages.size > 100) {
                 messages.removeLast()
@@ -51,23 +50,23 @@ internal abstract class INDIDevice(
                             if (connected) {
                                 this.connected = true
 
-                                handler.fireOnEventReceived(DeviceConnected(this))
+                                sender.fireOnEventReceived(DeviceConnected(this))
 
                                 ask()
                             } else if (this.connected) {
                                 this.connected = false
 
-                                handler.fireOnEventReceived(DeviceDisconnected(this))
+                                sender.fireOnEventReceived(DeviceDisconnected(this))
                             }
                         } else if (!connected && message.state == PropertyState.ALERT) {
-                            handler.fireOnEventReceived(DeviceConnectionFailed(this))
+                            sender.fireOnEventReceived(DeviceConnectionFailed(this))
                         }
                     }
                 }
             }
             is DelProperty -> {
                 val property = properties.remove(message.name) ?: return
-                handler.fireOnEventReceived(DevicePropertyDeleted(property))
+                sender.fireOnEventReceived(DevicePropertyDeleted(property))
             }
             is Message -> {
                 addMessageAndFireEvent("[%s]: %s".format(message.timestamp, message.message))
@@ -135,7 +134,7 @@ internal abstract class INDIDevice(
 
                 properties[property.name] = property
 
-                handler.fireOnEventReceived(DevicePropertyChanged(property))
+                sender.fireOnEventReceived(DevicePropertyChanged(property))
             }
             is SetVector<*> -> {
                 val property = when (message) {
@@ -179,7 +178,7 @@ internal abstract class INDIDevice(
                     else -> return
                 }
 
-                handler.fireOnEventReceived(DevicePropertyChanged(property))
+                sender.fireOnEventReceived(DevicePropertyChanged(property))
             }
             else -> return
         }
@@ -216,14 +215,24 @@ internal abstract class INDIDevice(
         sendNewSwitch("CONNECTION", "DISCONNECT" to true)
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is CameraDevice) return false
+
+        if (sender != other.sender) return false
+        if (name != other.name) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = sender.hashCode()
+        result = 31 * result + name.hashCode()
+        return result
+    }
+
     companion object {
 
         @JvmStatic private val LOG = loggerFor<INDIDevice>()
-
-        @JvmStatic
-        fun <T : Device> Class<out T>.create(handler: DeviceProtocolHandler, name: String): T {
-            return getConstructor(DeviceProtocolHandler::class.java, String::class.java)
-                .newInstance(handler, name)
-        }
     }
 }

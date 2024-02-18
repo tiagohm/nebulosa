@@ -1,5 +1,6 @@
 package nebulosa.indi.client.device
 
+import nebulosa.indi.client.INDIClient
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.gps.GPSCoordinateChanged
 import nebulosa.indi.device.gps.GPSTimeChanged
@@ -12,9 +13,9 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 internal open class GPSDevice(
-    handler: DeviceProtocolHandler,
-    name: String,
-) : INDIDevice(handler, name), GPS {
+    override val sender: INDIClient,
+    override val name: String,
+) : INDIDevice(), GPS {
 
     @Volatile final override var hasGPS = true
         private set
@@ -36,7 +37,7 @@ internal open class GPSDevice(
                         longitude = message["LONG"]!!.value.deg
                         elevation = message["ELEV"]!!.value.m
 
-                        handler.fireOnEventReceived(GPSCoordinateChanged(this))
+                        sender.fireOnEventReceived(GPSCoordinateChanged(this))
                     }
                 }
             }
@@ -48,7 +49,7 @@ internal open class GPSDevice(
 
                         dateTime = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 60.0).toInt()))
 
-                        handler.fireOnEventReceived(GPSTimeChanged(this))
+                        sender.fireOnEventReceived(GPSTimeChanged(this))
                     }
                 }
             }
@@ -62,6 +63,6 @@ internal open class GPSDevice(
 
     override fun toString(): String {
         return "GPS(hasGPS=$hasGPS, longitude=$longitude, latitude=$latitude," +
-                " elevation=$elevation, dateTime=$dateTime)"
+            " elevation=$elevation, dateTime=$dateTime)"
     }
 }

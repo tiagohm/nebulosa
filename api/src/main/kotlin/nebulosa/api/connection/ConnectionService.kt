@@ -26,18 +26,16 @@ class ConnectionService(
     private val alpacaHttpClient: OkHttpClient,
 ) : Closeable {
 
-    @Volatile private var provider: INDIDeviceProvider? = null
+    private val providers = LinkedHashMap<String, INDIDeviceProvider>()
 
-    fun connectionStatus(): Boolean {
-        return provider != null
+    fun connectionStatus(id: String): Boolean {
+        return id in providers
     }
 
     @Synchronized
-    fun connect(host: String, port: Int, type: ConnectionType) {
+    fun connect(host: String, port: Int, type: ConnectionType): String {
         try {
-            disconnect()
-
-            provider = when (type) {
+            val provider = when (type) {
                 ConnectionType.INDI -> {
                     val client = INDIClient(host, port)
                     client.registerDeviceEventHandler(eventBus::post)
@@ -53,6 +51,10 @@ class ConnectionService(
                     client
                 }
             }
+
+            providers[provider.id] = provider
+
+            return provider.id
         } catch (e: Throwable) {
             LOG.error(e)
 
@@ -61,69 +63,130 @@ class ConnectionService(
     }
 
     @Synchronized
-    fun disconnect() {
-        provider?.close()
-        provider = null
+    fun disconnect(id: String) {
+        providers[id]?.close()
+        providers.remove(id)
+    }
+
+    fun disconnectAll() {
+        providers.forEach { it.value.close() }
+        providers.clear()
     }
 
     override fun close() {
-        disconnect()
+        disconnectAll()
+    }
+
+    fun cameras(id: String): List<Camera> {
+        return providers[id]?.cameras() ?: emptyList()
+    }
+
+    fun mounts(id: String): List<Mount> {
+        return providers[id]?.mounts() ?: emptyList()
+    }
+
+    fun focusers(id: String): List<Focuser> {
+        return providers[id]?.focusers() ?: emptyList()
+    }
+
+    fun wheels(id: String): List<FilterWheel> {
+        return providers[id]?.wheels() ?: emptyList()
+    }
+
+    fun gpss(id: String): List<GPS> {
+        return providers[id]?.gps() ?: emptyList()
+    }
+
+    fun guideOutputs(id: String): List<GuideOutput> {
+        return providers[id]?.guideOutputs() ?: emptyList()
+    }
+
+    fun thermometers(id: String): List<Thermometer> {
+        return providers[id]?.thermometers() ?: emptyList()
     }
 
     fun cameras(): List<Camera> {
-        return provider?.cameras() ?: emptyList()
+        return providers.values.flatMap { it.cameras() }
     }
 
     fun mounts(): List<Mount> {
-        return provider?.mounts() ?: emptyList()
+        return providers.values.flatMap { it.mounts() }
     }
 
     fun focusers(): List<Focuser> {
-        return provider?.focusers() ?: emptyList()
+        return providers.values.flatMap { it.focusers() }
     }
 
     fun wheels(): List<FilterWheel> {
-        return provider?.wheels() ?: emptyList()
+        return providers.values.flatMap { it.wheels() }
     }
 
-    fun gps(): List<GPS> {
-        return provider?.gps() ?: emptyList()
+    fun gpss(): List<GPS> {
+        return providers.values.flatMap { it.gps() }
     }
 
     fun guideOutputs(): List<GuideOutput> {
-        return provider?.guideOutputs() ?: emptyList()
+        return providers.values.flatMap { it.guideOutputs() }
     }
 
     fun thermometers(): List<Thermometer> {
-        return provider?.thermometers() ?: emptyList()
+        return providers.values.flatMap { it.thermometers() }
+    }
+
+    fun camera(id: String, name: String): Camera? {
+        return providers[id]?.camera(name)
+    }
+
+    fun mount(id: String, name: String): Mount? {
+        return providers[id]?.mount(name)
+    }
+
+    fun focuser(id: String, name: String): Focuser? {
+        return providers[id]?.focuser(name)
+    }
+
+    fun wheel(id: String, name: String): FilterWheel? {
+        return providers[id]?.wheel(name)
+    }
+
+    fun gps(id: String, name: String): GPS? {
+        return providers[id]?.gps(name)
+    }
+
+    fun guideOutput(id: String, name: String): GuideOutput? {
+        return providers[id]?.guideOutput(name)
+    }
+
+    fun thermometer(id: String, name: String): Thermometer? {
+        return providers[id]?.thermometer(name)
     }
 
     fun camera(name: String): Camera? {
-        return provider?.camera(name)
+        return providers.firstNotNullOfOrNull { it.value.camera(name) }
     }
 
     fun mount(name: String): Mount? {
-        return provider?.mount(name)
+        return providers.firstNotNullOfOrNull { it.value.mount(name) }
     }
 
     fun focuser(name: String): Focuser? {
-        return provider?.focuser(name)
+        return providers.firstNotNullOfOrNull { it.value.focuser(name) }
     }
 
     fun wheel(name: String): FilterWheel? {
-        return provider?.wheel(name)
+        return providers.firstNotNullOfOrNull { it.value.wheel(name) }
     }
 
     fun gps(name: String): GPS? {
-        return provider?.gps(name)
+        return providers.firstNotNullOfOrNull { it.value.gps(name) }
     }
 
     fun guideOutput(name: String): GuideOutput? {
-        return provider?.guideOutput(name)
+        return providers.firstNotNullOfOrNull { it.value.guideOutput(name) }
     }
 
     fun thermometer(name: String): Thermometer? {
-        return provider?.thermometer(name)
+        return providers.firstNotNullOfOrNull { it.value.thermometer(name) }
     }
 
     fun device(name: String): Device? {

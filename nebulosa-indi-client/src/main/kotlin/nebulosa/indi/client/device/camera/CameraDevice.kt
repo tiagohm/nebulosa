@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device.camera
 
 import nebulosa.imaging.algorithms.transformation.CfaPattern
-import nebulosa.indi.client.device.DeviceProtocolHandler
+import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.camera.Camera.Companion.NANO_SECONDS
@@ -12,9 +12,9 @@ import nebulosa.log.loggerFor
 import java.time.Duration
 
 internal open class CameraDevice(
-    handler: DeviceProtocolHandler,
-    name: String,
-) : INDIDevice(handler, name), Camera {
+    override val sender: INDIClient,
+    override val name: String,
+) : INDIDevice(), Camera {
 
     @Volatile final override var exposuring = false
         private set
@@ -123,23 +123,23 @@ internal open class CameraDevice(
                         if (message is DefSwitchVector) {
                             hasCoolerControl = true
 
-                            handler.fireOnEventReceived(CameraCoolerControlChanged(this))
+                            sender.fireOnEventReceived(CameraCoolerControlChanged(this))
                         }
 
                         cooler = message["COOLER_ON"]?.value ?: false
 
-                        handler.fireOnEventReceived(CameraCoolerChanged(this))
+                        sender.fireOnEventReceived(CameraCoolerChanged(this))
                     }
                     "CCD_CAPTURE_FORMAT" -> {
                         if (message is DefSwitchVector && message.isNotEmpty()) {
                             frameFormats = message.map { it.name }
-                            handler.fireOnEventReceived(CameraFrameFormatsChanged(this))
+                            sender.fireOnEventReceived(CameraFrameFormatsChanged(this))
                         }
                     }
                     "CCD_ABORT_EXPOSURE" -> {
                         if (message is DefSwitchVector) {
                             canAbort = message.isNotReadOnly
-                            handler.fireOnEventReceived(CameraCanAbortChanged(this))
+                            sender.fireOnEventReceived(CameraCanAbortChanged(this))
                         }
                     }
                 }
@@ -150,7 +150,7 @@ internal open class CameraDevice(
                         cfaOffsetX = message["CFA_OFFSET_X"]!!.value.toInt()
                         cfaOffsetY = message["CFA_OFFSET_Y"]!!.value.toInt()
                         cfaType = CfaPattern.valueOf(message["CFA_TYPE"]!!.value)
-                        handler.fireOnEventReceived(CameraCfaChanged(this))
+                        sender.fireOnEventReceived(CameraCfaChanged(this))
                     }
                 }
             }
@@ -160,7 +160,7 @@ internal open class CameraDevice(
                         pixelSizeX = message["CCD_PIXEL_SIZE_X"]?.value ?: 0.0
                         pixelSizeY = message["CCD_PIXEL_SIZE_Y"]?.value ?: 0.0
 
-                        handler.fireOnEventReceived(CameraPixelSizeChanged(this))
+                        sender.fireOnEventReceived(CameraPixelSizeChanged(this))
                     }
                     "CCD_EXPOSURE" -> {
                         val element = message["CCD_EXPOSURE_VALUE"]!!
@@ -168,7 +168,7 @@ internal open class CameraDevice(
                         if (element is DefNumber) {
                             exposureMin = Duration.ofNanos((element.min * NANO_SECONDS).toLong())
                             exposureMax = Duration.ofNanos((element.max * NANO_SECONDS).toLong())
-                            handler.fireOnEventReceived(CameraExposureMinMaxChanged(this))
+                            sender.fireOnEventReceived(CameraExposureMinMaxChanged(this))
                         }
 
                         val prevExposureState = exposureState
@@ -177,53 +177,53 @@ internal open class CameraDevice(
                         if (exposureState == PropertyState.BUSY || exposureState == PropertyState.OK) {
                             exposureTime = Duration.ofNanos((element.value * NANO_SECONDS).toLong())
 
-                            handler.fireOnEventReceived(CameraExposureProgressChanged(this))
+                            sender.fireOnEventReceived(CameraExposureProgressChanged(this))
                         }
 
                         val prevIsExposuring = exposuring
                         exposuring = exposureState == PropertyState.BUSY
 
                         if (prevIsExposuring != exposuring) {
-                            handler.fireOnEventReceived(CameraExposuringChanged(this))
+                            sender.fireOnEventReceived(CameraExposuringChanged(this))
                         }
 
                         if (exposureState == PropertyState.IDLE && (prevExposureState == PropertyState.BUSY || exposuring)) {
-                            handler.fireOnEventReceived(CameraExposureAborted(this))
+                            sender.fireOnEventReceived(CameraExposureAborted(this))
                         } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
-                            handler.fireOnEventReceived(CameraExposureFinished(this))
+                            sender.fireOnEventReceived(CameraExposureFinished(this))
                         } else if (exposureState == PropertyState.ALERT && prevExposureState != PropertyState.ALERT) {
-                            handler.fireOnEventReceived(CameraExposureFailed(this))
+                            sender.fireOnEventReceived(CameraExposureFailed(this))
                         }
 
                         if (prevExposureState != exposureState) {
-                            handler.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+                            sender.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
                         }
                     }
                     "CCD_COOLER_POWER" -> {
                         coolerPower = message.first().value
-                        handler.fireOnEventReceived(CameraCoolerPowerChanged(this))
+                        sender.fireOnEventReceived(CameraCoolerPowerChanged(this))
                     }
                     "CCD_TEMPERATURE" -> {
                         if (message is DefNumberVector) {
                             hasCooler = true
                             canSetTemperature = message.isNotReadOnly
 
-                            handler.fireOnEventReceived(CameraHasCoolerChanged(this))
-                            handler.fireOnEventReceived(CameraCanSetTemperatureChanged(this))
+                            sender.fireOnEventReceived(CameraHasCoolerChanged(this))
+                            sender.fireOnEventReceived(CameraCanSetTemperatureChanged(this))
 
                             if (!hasThermometer) {
                                 hasThermometer = true
-                                handler.registerThermometer(this)
+                                sender.registerThermometer(this)
                             }
                         }
 
                         temperature = message["CCD_TEMPERATURE_VALUE"]!!.value
-                        handler.fireOnEventReceived(CameraTemperatureChanged(this))
+                        sender.fireOnEventReceived(CameraTemperatureChanged(this))
                     }
                     "CCD_FRAME" -> {
                         if (message is DefNumberVector) {
                             canSubFrame = message.isNotReadOnly
-                            handler.fireOnEventReceived(CameraCanSubFrameChanged(this))
+                            sender.fireOnEventReceived(CameraCanSubFrameChanged(this))
 
                             val minX = message["X"]!!.min.toInt()
                             val maxX = message["X"]!!.max.toInt()
@@ -254,7 +254,7 @@ internal open class CameraDevice(
                         this.width = width
                         this.height = height
 
-                        handler.fireOnEventReceived(CameraFrameChanged(this))
+                        sender.fireOnEventReceived(CameraFrameChanged(this))
                     }
                     "CCD_BINNING" -> {
                         if (message is DefNumberVector) {
@@ -262,20 +262,20 @@ internal open class CameraDevice(
                             maxBinX = message["HOR_BIN"]!!.max.toInt()
                             maxBinY = message["VER_BIN"]!!.max.toInt()
 
-                            handler.fireOnEventReceived(CameraCanBinChanged(this))
+                            sender.fireOnEventReceived(CameraCanBinChanged(this))
                         }
 
                         binX = message["HOR_BIN"]!!.value.toInt()
                         binY = message["VER_BIN"]!!.value.toInt()
 
-                        handler.fireOnEventReceived(CameraBinChanged(this))
+                        sender.fireOnEventReceived(CameraBinChanged(this))
                     }
                     "TELESCOPE_TIMED_GUIDE_NS",
                     "TELESCOPE_TIMED_GUIDE_WE" -> {
                         if (!canPulseGuide && message is DefNumberVector) {
                             canPulseGuide = true
 
-                            handler.registerGuideOutput(this)
+                            sender.registerGuideOutput(this)
 
                             LOG.info("guide output attached: {}", name)
                         } else {
@@ -283,7 +283,7 @@ internal open class CameraDevice(
                             pulseGuiding = message.isBusy
 
                             if (pulseGuiding != prevIsPulseGuiding) {
-                                handler.fireOnEventReceived(GuideOutputPulsingChanged(this))
+                                sender.fireOnEventReceived(GuideOutputPulsingChanged(this))
                             }
                         }
                     }
@@ -295,7 +295,7 @@ internal open class CameraDevice(
                         val ccd1 = message["CCD1"]!!
                         val fits = Base64InputStream(ccd1.value)
                         val compressed = COMPRESSION_FORMATS.any { ccd1.format.endsWith(it, true) }
-                        handler.fireOnEventReceived(CameraFrameCaptured(this, fits, null, compressed))
+                        sender.fireOnEventReceived(CameraFrameCaptured(this, fits, null, compressed))
                     }
                     "CCD2" -> {
                         // TODO: Handle Guider Head frame.
@@ -386,13 +386,13 @@ internal open class CameraDevice(
 
     override fun close() {
         if (hasThermometer) {
-            handler.unregisterThermometer(this)
+            sender.unregisterThermometer(this)
             hasThermometer = false
             LOG.info("thermometer detached: {}", name)
         }
 
         if (canPulseGuide) {
-            handler.unregisterGuideOutput(this)
+            sender.unregisterGuideOutput(this)
             canPulseGuide = false
             LOG.info("guide output detached: {}", name)
         }
@@ -403,12 +403,12 @@ internal open class CameraDevice(
             gainMin = element.min.toInt()
             gainMax = element.max.toInt()
 
-            handler.fireOnEventReceived(CameraGainMinMaxChanged(this))
+            sender.fireOnEventReceived(CameraGainMinMaxChanged(this))
         }
 
         gain = element.value.toInt()
 
-        handler.fireOnEventReceived(CameraGainChanged(this))
+        sender.fireOnEventReceived(CameraGainChanged(this))
     }
 
     protected fun processOffset(message: NumberVector<*>, element: NumberElement) {
@@ -416,12 +416,12 @@ internal open class CameraDevice(
             offsetMin = element.min.toInt()
             offsetMax = element.max.toInt()
 
-            handler.fireOnEventReceived(CameraOffsetMinMaxChanged(this))
+            sender.fireOnEventReceived(CameraOffsetMinMaxChanged(this))
         }
 
         offset = element.value.toInt()
 
-        handler.fireOnEventReceived(CameraOffsetChanged(this))
+        sender.fireOnEventReceived(CameraOffsetChanged(this))
     }
 
     override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +

@@ -18,17 +18,15 @@ class ConnectionController(
         @RequestParam @Valid @NotBlank host: String,
         @RequestParam @Valid @Range(min = 1, max = 65535) port: Int,
         @RequestParam(required = false, defaultValue = "INDI") type: ConnectionType,
-    ) {
-        connectionService.connect(host, port, type)
+    ) = connectionService.connect(host, port, type)
+
+    @DeleteMapping("{id}")
+    fun disconnect(@PathVariable id: String) {
+        connectionService.disconnect(id)
     }
 
-    @DeleteMapping
-    fun disconnect() {
-        connectionService.disconnect()
-    }
-
-    @GetMapping
-    fun connectionStatus(): Boolean {
-        return connectionService.connectionStatus()
+    @GetMapping("{id}")
+    fun connectionStatus(@PathVariable id: String): Boolean {
+        return connectionService.connectionStatus(id)
     }
 }

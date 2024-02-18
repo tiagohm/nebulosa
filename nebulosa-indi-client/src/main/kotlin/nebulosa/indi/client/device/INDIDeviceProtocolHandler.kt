@@ -1,12 +1,5 @@
 package nebulosa.indi.client.device
 
-import nebulosa.indi.client.device.INDIDevice.Companion.create
-import nebulosa.indi.client.device.camera.AsiCamera
-import nebulosa.indi.client.device.camera.CameraDevice
-import nebulosa.indi.client.device.camera.SVBonyCamera
-import nebulosa.indi.client.device.camera.SimCamera
-import nebulosa.indi.client.device.mount.IoptronV3Mount
-import nebulosa.indi.client.device.mount.MountDevice
 import nebulosa.indi.device.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
@@ -39,7 +32,7 @@ import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import java.util.concurrent.LinkedBlockingQueue
 
-abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
+abstract class INDIDeviceProtocolHandler : MessageSender, INDIProtocolParser {
 
     @JvmField protected val cameras = HashMap<String, Camera>(2)
     @JvmField protected val mounts = HashMap<String, Mount>(1)
@@ -56,6 +49,16 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
 
     val isRunning
         get() = protocolReader != null
+
+    protected abstract fun newCamera(message: INDIProtocol, executable: String): Camera
+
+    protected abstract fun newMount(message: INDIProtocol, executable: String): Mount
+
+    protected abstract fun newFocuser(message: INDIProtocol): Focuser
+
+    protected abstract fun newFilterWheel(message: INDIProtocol): FilterWheel
+
+    protected abstract fun newGPS(message: INDIProtocol): GPS
 
     fun registerDeviceEventHandler(handler: DeviceEventHandler) {
         handlers.add(handler)
@@ -199,8 +202,7 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
                         registered = true
 
                         if (message.device !in cameras) {
-                            val device = CAMERAS[executable]?.create(this, message.device)
-                                ?: CameraDevice(this, message.device)
+                            val device = newCamera(message, executable)
                             cameras[message.device] = device
                             takeMessageFromReorderingQueue(device)
                             LOG.info("camera attached: {}", device.name)
@@ -212,8 +214,7 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
                         registered = true
 
                         if (message.device !in mounts) {
-                            val device = MOUNTS[executable]?.create(this, message.device)
-                                ?: MountDevice(this, message.device)
+                            val device = newMount(message, executable)
                             mounts[message.device] = device
                             takeMessageFromReorderingQueue(device)
                             LOG.info("mount attached: {}", device.name)
@@ -225,7 +226,7 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
                         registered = true
 
                         if (message.device !in wheels) {
-                            val device = FilterWheelDevice(this, message.device)
+                            val device = newFilterWheel(message)
                             wheels[message.device] = device
                             takeMessageFromReorderingQueue(device)
                             LOG.info("filter wheel attached: {}", device.name)
@@ -237,7 +238,7 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
                         registered = true
 
                         if (message.device !in focusers) {
-                            val device = FocuserDevice(this, message.device)
+                            val device = newFocuser(message)
                             focusers[message.device] = device
                             takeMessageFromReorderingQueue(device)
                             LOG.info("focuser attached: {}", device.name)
@@ -249,7 +250,7 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
                         registered = true
 
                         if (message.device !in gps) {
-                            val device = GPSDevice(this, message.device)
+                            val device = newGPS(message)
                             gps[message.device] = device
                             takeMessageFromReorderingQueue(device)
                             LOG.info("gps attached: {}", device.name)
@@ -355,19 +356,6 @@ abstract class DeviceProtocolHandler : MessageSender, INDIProtocolParser {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<DeviceProtocolHandler>()
-
-        @JvmStatic private val CAMERAS = mapOf(
-            "indi_asi_ccd" to AsiCamera::class.java,
-            "indi_asi_single_ccd" to AsiCamera::class.java,
-            "indi_svbony_ccd" to SVBonyCamera::class.java,
-            "indi_sv305_ccd" to SVBonyCamera::class.java, // legacy name.
-            "indi_simulator_ccd" to SimCamera::class.java,
-            "indi_simulator_guide" to SimCamera::class.java,
-        )
-
-        @JvmStatic private val MOUNTS = mapOf(
-            "indi_ioptronv3_telescope" to IoptronV3Mount::class.java,
-        )
+        @JvmStatic private val LOG = loggerFor<INDIDeviceProtocolHandler>()
     }
 }

@@ -221,7 +221,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         title.setTitle('Guider')
 
         electron.on('GUIDE_OUTPUT.UPDATED', event => {
-            if (event.device.name === this.guideOutput?.name) {
+            if (event.device.id === this.guideOutput?.id) {
                 ngZone.run(() => {
                     Object.assign(this.guideOutput!, event.device)
                     this.update()
@@ -237,7 +237,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
         electron.on('GUIDE_OUTPUT.DETACHED', event => {
             ngZone.run(() => {
-                const index = this.guideOutputs.findIndex(e => e.name === event.device.name)
+                const index = this.guideOutputs.findIndex(e => e.id === event.device.id)
                 if (index >= 0) this.guideOutputs.splice(index, 1)
             })
         })

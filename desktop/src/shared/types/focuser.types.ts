@@ -15,6 +15,8 @@ export interface Focuser extends Device, Thermometer {
 }
 
 export const EMPTY_FOCUSER: Focuser = {
+    sender: '',
+    id: '',
     moving: false,
     position: 0,
     canAbsoluteMove: false,

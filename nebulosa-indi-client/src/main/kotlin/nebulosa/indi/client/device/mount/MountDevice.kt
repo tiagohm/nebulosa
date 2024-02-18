@@ -1,6 +1,6 @@
 package nebulosa.indi.client.device.mount
 
-import nebulosa.indi.client.device.DeviceProtocolHandler
+import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.firstOnSwitchOrNull
@@ -16,9 +16,9 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 internal open class MountDevice(
-    handler: DeviceProtocolHandler,
-    name: String,
-) : INDIDevice(handler, name), Mount {
+    override val sender: INDIClient,
+    override val name: String,
+) : INDIDevice(), Mount {
 
     @Volatile final override var slewing = false
         private set
@@ -83,36 +83,36 @@ internal open class MountDevice(
                         if (message is DefSwitchVector) {
                             slewRates = message.map { SlewRate(it.name, it.label) }
 
-                            handler.fireOnEventReceived(MountSlewRatesChanged(this))
+                            sender.fireOnEventReceived(MountSlewRatesChanged(this))
                         }
 
                         val name = message.firstOnSwitch().name
 
                         if (slewRate?.name != name) {
                             slewRate = slewRates.firstOrNull { it.name == name }
-                            handler.fireOnEventReceived(MountSlewRateChanged(this))
+                            sender.fireOnEventReceived(MountSlewRateChanged(this))
                         }
                     }
                     // "MOUNT_TYPE" -> {
                     //     mountType = MountType.valueOf(message.firstOnSwitch().name)
                     //
-                    //     handler.fireOnEventReceived(MountTypeChanged(this))
+                    //     provider.fireOnEventReceived(MountTypeChanged(this))
                     // }
                     "TELESCOPE_TRACK_MODE" -> {
                         if (message is DefSwitchVector) {
                             trackModes = message.map { TrackMode.valueOf(it.name.replace("TRACK_", "")) }
 
-                            handler.fireOnEventReceived(MountTrackModesChanged(this))
+                            sender.fireOnEventReceived(MountTrackModesChanged(this))
                         }
 
                         trackMode = TrackMode.valueOf(message.firstOnSwitch().name.replace("TRACK_", ""))
 
-                        handler.fireOnEventReceived(MountTrackModeChanged(this))
+                        sender.fireOnEventReceived(MountTrackModeChanged(this))
                     }
                     "TELESCOPE_TRACK_STATE" -> {
                         tracking = message.firstOnSwitch().name == "TRACK_ON"
 
-                        handler.fireOnEventReceived(MountTrackingChanged(this))
+                        sender.fireOnEventReceived(MountTrackingChanged(this))
                     }
                     "TELESCOPE_PIER_SIDE" -> {
                         val side = message.firstOnSwitchOrNull()
@@ -121,31 +121,31 @@ internal open class MountDevice(
                         else if (side.name == "PIER_WEST") PierSide.WEST
                         else PierSide.EAST
 
-                        handler.fireOnEventReceived(MountPierSideChanged(this))
+                        sender.fireOnEventReceived(MountPierSideChanged(this))
                     }
                     "TELESCOPE_PARK" -> {
                         if (message is DefSwitchVector) {
                             canPark = message.isNotReadOnly
 
-                            handler.fireOnEventReceived(MountCanParkChanged(this))
+                            sender.fireOnEventReceived(MountCanParkChanged(this))
                         }
 
                         parking = message.isBusy
                         parked = message.firstOnSwitchOrNull()?.name == "PARK"
 
-                        handler.fireOnEventReceived(MountParkChanged(this))
+                        sender.fireOnEventReceived(MountParkChanged(this))
                     }
                     "TELESCOPE_ABORT_MOTION" -> {
                         canAbort = true
 
-                        handler.fireOnEventReceived(MountCanAbortChanged(this))
+                        sender.fireOnEventReceived(MountCanAbortChanged(this))
                     }
                     "ON_COORD_SET" -> {
                         canSync = message.any { it.name == "SYNC" }
                         canGoTo = message.any { it.name == "TRACK" }
 
-                        handler.fireOnEventReceived(MountCanSyncChanged(this))
-                        handler.fireOnEventReceived(MountCanGoToChanged(this))
+                        sender.fireOnEventReceived(MountCanSyncChanged(this))
+                        sender.fireOnEventReceived(MountCanGoToChanged(this))
                     }
                 }
             }
@@ -155,31 +155,31 @@ internal open class MountDevice(
                     //     guideRateWE = message["GUIDE_RATE_WE"]!!.value
                     //     guideRateNS = message["GUIDE_RATE_NS"]!!.value
                     //
-                    //     handler.fireOnEventReceived(MountGuideRateChanged(this))
+                    //     provider.fireOnEventReceived(MountGuideRateChanged(this))
                     // }
                     "EQUATORIAL_EOD_COORD" -> {
                         if (message.state == PropertyState.ALERT) {
-                            handler.fireOnEventReceived(MountSlewFailed(this))
+                            sender.fireOnEventReceived(MountSlewFailed(this))
                         }
 
                         val prevIsIslewing = slewing
                         slewing = message.isBusy
 
                         if (slewing != prevIsIslewing) {
-                            handler.fireOnEventReceived(MountSlewingChanged(this))
+                            sender.fireOnEventReceived(MountSlewingChanged(this))
                         }
 
                         rightAscension = message["RA"]!!.value.hours
                         declination = message["DEC"]!!.value.deg
 
-                        handler.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
+                        sender.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
                     }
                     "TELESCOPE_TIMED_GUIDE_NS",
                     "TELESCOPE_TIMED_GUIDE_WE" -> {
                         if (!canPulseGuide && message is DefNumberVector) {
                             canPulseGuide = true
 
-                            handler.registerGuideOutput(this)
+                            sender.registerGuideOutput(this)
 
                             LOG.info("guide output attached: {}", name)
                         }
@@ -189,7 +189,7 @@ internal open class MountDevice(
                             pulseGuiding = message.isBusy
 
                             if (pulseGuiding != prevIsPulseGuiding) {
-                                handler.fireOnEventReceived(GuideOutputPulsingChanged(this))
+                                sender.fireOnEventReceived(GuideOutputPulsingChanged(this))
                             }
                         }
                     }
@@ -198,7 +198,7 @@ internal open class MountDevice(
                         longitude = message["LONG"]!!.value.deg
                         elevation = message["ELEV"]!!.value.m
 
-                        handler.fireOnEventReceived(MountGeographicCoordinateChanged(this))
+                        sender.fireOnEventReceived(MountGeographicCoordinateChanged(this))
                     }
                 }
             }
@@ -210,7 +210,7 @@ internal open class MountDevice(
 
                         dateTime = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 3600.0).toInt()))
 
-                        handler.fireOnEventReceived(MountTimeChanged(this))
+                        sender.fireOnEventReceived(MountTimeChanged(this))
                     }
                 }
             }
@@ -341,13 +341,13 @@ internal open class MountDevice(
     override fun close() {
         if (canPulseGuide) {
             canPulseGuide = false
-            handler.unregisterGuideOutput(this)
+            sender.unregisterGuideOutput(this)
             LOG.info("guide output detached: {}", name)
         }
 
         if (hasGPS) {
             hasGPS = false
-            handler.unregisterGPS(this)
+            sender.unregisterGPS(this)
             LOG.info("GPS detached: {}", name)
         }
     }

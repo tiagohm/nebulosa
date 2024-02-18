@@ -82,7 +82,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         app.title = 'Alignment'
 
         electron.on('CAMERA.UPDATED', event => {
-            if (event.device.name === this.camera.name) {
+            if (event.device.id === this.camera.id) {
                 ngZone.run(() => {
                     Object.assign(this.camera, event.device)
                 })
@@ -98,7 +98,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
         electron.on('CAMERA.DETACHED', event => {
             ngZone.run(() => {
-                const index = this.cameras.findIndex(e => e.name === event.device.name)
+                const index = this.cameras.findIndex(e => e.id === event.device.id)
 
                 if (index >= 0) {
                     if (this.cameras[index] === this.camera) {
@@ -112,7 +112,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('MOUNT.UPDATED', event => {
-            if (event.device.name === this.mount.name) {
+            if (event.device.id === this.mount.id) {
                 ngZone.run(() => {
                     Object.assign(this.mount, event.device)
                 })
@@ -128,7 +128,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
         electron.on('MOUNT.DETACHED', event => {
             ngZone.run(() => {
-                const index = this.mounts.findIndex(e => e.name === event.device.name)
+                const index = this.mounts.findIndex(e => e.id === event.device.id)
 
                 if (index >= 0) {
                     if (this.mounts[index] === this.mount) {
@@ -142,7 +142,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('GUIDE_OUTPUT.UPDATED', event => {
-            if (event.device.name === this.guideOutput.name) {
+            if (event.device.id === this.guideOutput.id) {
                 ngZone.run(() => {
                     Object.assign(this.guideOutput, event.device)
                 })
@@ -158,7 +158,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
         electron.on('GUIDE_OUTPUT.DETACHED', event => {
             ngZone.run(() => {
-                const index = this.guideOutputs.findIndex(e => e.name === event.device.name)
+                const index = this.guideOutputs.findIndex(e => e.id === event.device.id)
 
                 if (index >= 0) {
                     if (this.guideOutputs[index] === this.guideOutput) {

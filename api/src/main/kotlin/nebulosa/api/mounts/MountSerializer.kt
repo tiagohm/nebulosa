@@ -16,6 +16,8 @@ class MountSerializer : StdSerializer<Mount>(Mount::class.java) {
 
     override fun serialize(value: Mount, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()
+        gen.writeStringField("sender", value.sender.id)
+        gen.writeStringField("id", value.id)
         gen.writeStringField("name", value.name)
         gen.writeBooleanField("connected", value.connected)
         gen.writeBooleanField("slewing", value.slewing)

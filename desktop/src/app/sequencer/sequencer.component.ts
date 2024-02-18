@@ -124,7 +124,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         electron.on('CAMERA.UPDATED', event => {
             ngZone.run(() => {
-                const camera = this.cameras.find(e => e.name === event.device.name)
+                const camera = this.cameras.find(e => e.id === event.device.id)
 
                 if (camera) {
                     Object.assign(camera, event.device)
@@ -134,7 +134,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         electron.on('WHEEL.UPDATED', event => {
             ngZone.run(() => {
-                const wheel = this.wheels.find(e => e.name === event.device.name)
+                const wheel = this.wheels.find(e => e.id === event.device.id)
 
                 if (wheel) {
                     Object.assign(wheel, event.device)
@@ -144,7 +144,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         electron.on('FOCUSER.UPDATED', event => {
             ngZone.run(() => {
-                const focuser = this.focusers.find(e => e.name === event.device.name)
+                const focuser = this.focusers.find(e => e.id === event.device.id)
 
                 if (focuser) {
                     Object.assign(focuser, event.device)

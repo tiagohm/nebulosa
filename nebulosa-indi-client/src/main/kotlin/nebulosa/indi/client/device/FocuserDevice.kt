@@ -1,5 +1,6 @@
 package nebulosa.indi.client.device
 
+import nebulosa.indi.client.INDIClient
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.focuser.*
 import nebulosa.indi.device.thermometer.ThermometerAttached
@@ -7,9 +8,9 @@ import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.*
 
 internal open class FocuserDevice(
-    handler: DeviceProtocolHandler,
-    name: String,
-) : INDIDevice(handler, name), Focuser {
+    override val sender: INDIClient,
+    override val name: String,
+) : INDIDevice(), Focuser {
 
     @Volatile final override var moving = false
         private set
@@ -45,19 +46,19 @@ internal open class FocuserDevice(
                         if (message is DefSwitchVector) {
                             canAbort = true
 
-                            handler.fireOnEventReceived(FocuserCanAbortChanged(this))
+                            sender.fireOnEventReceived(FocuserCanAbortChanged(this))
                         }
                     }
                     "FOCUS_REVERSE_MOTION" -> {
                         if (message is DefSwitchVector) {
                             canReverse = true
 
-                            handler.fireOnEventReceived(FocuserCanReverseChanged(this))
+                            sender.fireOnEventReceived(FocuserCanReverseChanged(this))
                         }
 
                         reverse = message.firstOnSwitch().name == "INDI_ENABLED"
 
-                        handler.fireOnEventReceived(FocuserReverseChanged(this))
+                        sender.fireOnEventReceived(FocuserReverseChanged(this))
                     }
                     "FOCUS_BACKLASH_TOGGLE" -> {
 
@@ -72,22 +73,22 @@ internal open class FocuserDevice(
                             val prevMaxPosition = maxPosition
                             maxPosition = message["FOCUS_RELATIVE_POSITION"]!!.max.toInt()
 
-                            handler.fireOnEventReceived(FocuserCanRelativeMoveChanged(this))
+                            sender.fireOnEventReceived(FocuserCanRelativeMoveChanged(this))
 
                             if (prevMaxPosition != maxPosition) {
-                                handler.fireOnEventReceived(FocuserMaxPositionChanged(this))
+                                sender.fireOnEventReceived(FocuserMaxPositionChanged(this))
                             }
                         }
 
                         if (message.state == PropertyState.ALERT) {
-                            handler.fireOnEventReceived(FocuserMoveFailed(this))
+                            sender.fireOnEventReceived(FocuserMoveFailed(this))
                         }
 
                         val prevIsMoving = moving
                         moving = message.isBusy
 
                         if (prevIsMoving != moving) {
-                            handler.fireOnEventReceived(FocuserMovingChanged(this))
+                            sender.fireOnEventReceived(FocuserMovingChanged(this))
                         }
                     }
                     "ABS_FOCUS_POSITION" -> {
@@ -96,36 +97,36 @@ internal open class FocuserDevice(
                             val prevMaxPosition = maxPosition
                             maxPosition = message["FOCUS_ABSOLUTE_POSITION"]!!.max.toInt()
 
-                            handler.fireOnEventReceived(FocuserCanAbsoluteMoveChanged(this))
+                            sender.fireOnEventReceived(FocuserCanAbsoluteMoveChanged(this))
 
                             if (prevMaxPosition != maxPosition) {
-                                handler.fireOnEventReceived(FocuserMaxPositionChanged(this))
+                                sender.fireOnEventReceived(FocuserMaxPositionChanged(this))
                             }
                         }
 
                         if (message.state == PropertyState.ALERT) {
-                            handler.fireOnEventReceived(FocuserMoveFailed(this))
+                            sender.fireOnEventReceived(FocuserMoveFailed(this))
                         }
 
                         val prevPosition = position
                         position = message["FOCUS_ABSOLUTE_POSITION"]!!.value.toInt()
 
                         if (prevPosition != position) {
-                            handler.fireOnEventReceived(FocuserPositionChanged(this))
+                            sender.fireOnEventReceived(FocuserPositionChanged(this))
                         }
 
                         val prevIsMoving = moving
                         moving = message.isBusy
 
                         if (prevIsMoving != moving) {
-                            handler.fireOnEventReceived(FocuserMovingChanged(this))
+                            sender.fireOnEventReceived(FocuserMovingChanged(this))
                         }
                     }
                     "FOCUS_SYNC" -> {
                         if (message is DefNumberVector) {
                             canSync = true
 
-                            handler.fireOnEventReceived(FocuserCanSyncChanged(this))
+                            sender.fireOnEventReceived(FocuserCanSyncChanged(this))
                         }
                     }
                     "FOCUS_BACKLASH_STEPS" -> {
@@ -134,12 +135,12 @@ internal open class FocuserDevice(
                     "FOCUS_TEMPERATURE" -> {
                         if (message is DefNumberVector) {
                             hasThermometer = true
-                            handler.fireOnEventReceived(ThermometerAttached(this))
+                            sender.fireOnEventReceived(ThermometerAttached(this))
                         }
 
                         temperature = message["TEMPERATURE"]!!.value
 
-                        handler.fireOnEventReceived(FocuserTemperatureChanged(this))
+                        sender.fireOnEventReceived(FocuserTemperatureChanged(this))
                     }
                 }
             }
@@ -190,16 +191,16 @@ internal open class FocuserDevice(
     override fun close() {
         if (hasThermometer) {
             hasThermometer = false
-            handler.fireOnEventReceived(ThermometerDetached(this))
+            sender.fireOnEventReceived(ThermometerDetached(this))
         }
     }
 
     override fun toString(): String {
         return "Focuser(name=$name, moving=$moving, position=$position," +
-                " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
-                " canAbort=$canAbort, canReverse=$canReverse, reverse=$reverse," +
-                " canSync=$canSync, hasBacklash=$hasBacklash," +
-                " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
-                " temperature=$temperature)"
+            " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
+            " canAbort=$canAbort, canReverse=$canReverse, reverse=$reverse," +
+            " canSync=$canSync, hasBacklash=$hasBacklash," +
+            " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
+            " temperature=$temperature)"
     }
 }

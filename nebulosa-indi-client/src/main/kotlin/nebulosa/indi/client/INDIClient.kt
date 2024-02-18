@@ -2,9 +2,18 @@ package nebulosa.indi.client
 
 import nebulosa.indi.client.connection.INDIProccessConnection
 import nebulosa.indi.client.connection.INDISocketConnection
-import nebulosa.indi.client.device.DeviceProtocolHandler
+import nebulosa.indi.client.device.FilterWheelDevice
+import nebulosa.indi.client.device.FocuserDevice
+import nebulosa.indi.client.device.GPSDevice
+import nebulosa.indi.client.device.INDIDeviceProtocolHandler
+import nebulosa.indi.client.device.camera.AsiCamera
+import nebulosa.indi.client.device.camera.CameraDevice
+import nebulosa.indi.client.device.camera.SVBonyCamera
+import nebulosa.indi.client.device.camera.SimCamera
+import nebulosa.indi.client.device.mount.IoptronV3Mount
+import nebulosa.indi.client.device.mount.MountDevice
+import nebulosa.indi.device.Device
 import nebulosa.indi.device.INDIDeviceProvider
-import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
@@ -17,8 +26,9 @@ import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIConnection
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import java.util.*
 
-class INDIClient(private val connection: INDIConnection) : DeviceProtocolHandler(), MessageSender, INDIDeviceProvider {
+class INDIClient(private val connection: INDIConnection) : INDIDeviceProtocolHandler(), INDIDeviceProvider {
 
     constructor(
         host: String,
@@ -29,11 +39,33 @@ class INDIClient(private val connection: INDIConnection) : DeviceProtocolHandler
         process: Process,
     ) : this(INDIProccessConnection(process))
 
+    override val id = UUID.randomUUID().toString()
+
     override val isClosed
         get() = !connection.isOpen
 
     override val input
         get() = connection.input
+
+    override fun newCamera(message: INDIProtocol, executable: String): Camera {
+        return CAMERAS[executable]?.create(this, message.device) ?: CameraDevice(this, message.device)
+    }
+
+    override fun newMount(message: INDIProtocol, executable: String): Mount {
+        return MOUNTS[executable]?.create(this, message.device) ?: MountDevice(this, message.device)
+    }
+
+    override fun newFocuser(message: INDIProtocol): Focuser {
+        return FocuserDevice(this, message.device)
+    }
+
+    override fun newFilterWheel(message: INDIProtocol): FilterWheel {
+        return FilterWheelDevice(this, message.device)
+    }
+
+    override fun newGPS(message: INDIProtocol): GPS {
+        return GPSDevice(this, message.device)
+    }
 
     override fun start() {
         super.start()
@@ -110,5 +142,24 @@ class INDIClient(private val connection: INDIConnection) : DeviceProtocolHandler
     companion object {
 
         @JvmStatic private val LOG = loggerFor<INDIClient>()
+
+        @JvmStatic private val CAMERAS = mapOf(
+            "indi_asi_ccd" to AsiCamera::class.java,
+            "indi_asi_single_ccd" to AsiCamera::class.java,
+            "indi_svbony_ccd" to SVBonyCamera::class.java,
+            "indi_sv305_ccd" to SVBonyCamera::class.java, // legacy name.
+            "indi_simulator_ccd" to SimCamera::class.java,
+            "indi_simulator_guide" to SimCamera::class.java,
+        )
+
+        @JvmStatic private val MOUNTS = mapOf(
+            "indi_ioptronv3_telescope" to IoptronV3Mount::class.java,
+        )
+
+        @JvmStatic
+        fun <T : Device> Class<out T>.create(handler: INDIClient, name: String): T {
+            return getConstructor(INDIClient::class.java, String::class.java)
+                .newInstance(handler, name)
+        }
     }
 }

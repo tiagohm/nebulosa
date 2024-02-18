@@ -38,6 +38,8 @@ export interface Mount extends EquatorialCoordinate, GPS, GuideOutput, Parkable 
 }
 
 export const EMPTY_MOUNT: Mount = {
+    sender: '',
+    id: '',
     slewing: false,
     tracking: false,
     canAbort: false,

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { AlignmentPreference, EMPTY_ALIGNMENT_PREFERENCE } from '../types/alignment.types'
 import { Camera, CameraPreference, CameraStartCapture, EMPTY_CAMERA_PREFERENCE } from '../types/camera.types'
-import { ConnectionDetails, EMPTY_CONNECTION_DETAILS } from '../types/home.types'
+import { ConnectionDetails } from '../types/home.types'
 import { EMPTY_IMAGE_PREFERENCE, ImagePreference } from '../types/image.types'
 import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverOptions, PlateSolverType } from '../types/settings.types'
 import { FilterWheel, WheelPreference } from '../types/wheel.types'
@@ -63,6 +63,6 @@ export class PreferenceService {
     }
 
     readonly alignmentPreference = new PreferenceData<AlignmentPreference>(this.storage, `alignment`, () => Object.assign({}, EMPTY_ALIGNMENT_PREFERENCE))
-    readonly lastConnectedHosts = new PreferenceData<ConnectionDetails[]>(this.storage, 'home.lastConnectedHosts', () => [Object.assign({}, EMPTY_CONNECTION_DETAILS)])
+    readonly connections = new PreferenceData<ConnectionDetails[]>(this.storage, 'home.connections', () => [])
     readonly homeImageDefaultDirectory = new PreferenceData<string>(this.storage, 'home.image.directory', '')
 }

@@ -12,6 +12,8 @@ class CameraSerializer(private val capturesPath: Path) : StdSerializer<Camera>(C
 
     override fun serialize(value: Camera, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()
+        gen.writeStringField("sender", value.sender.id)
+        gen.writeStringField("id", value.id)
         gen.writeStringField("name", value.name)
         gen.writeBooleanField("connected", value.connected)
         gen.writeBooleanField("exposuring", value.exposuring)

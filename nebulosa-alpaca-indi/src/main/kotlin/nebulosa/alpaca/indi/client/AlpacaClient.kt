@@ -17,12 +17,13 @@ import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.guide.GuideOutputAttached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.thermometer.Thermometer
+import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
+import java.util.*
 
 class AlpacaClient(
-    host: String,
-    port: Int,
+    host: String, port: Int,
     httpClient: OkHttpClient? = null,
 ) : INDIDeviceProvider {
 
@@ -31,6 +32,8 @@ class AlpacaClient(
     private val cameras = HashMap<String, Camera>()
     private val guideOutputs = HashMap<String, GuideOutput>()
 
+    override val id = UUID.randomUUID().toString()
+
     override fun registerDeviceEventHandler(handler: DeviceEventHandler) {
         handlers.add(handler)
     }
@@ -38,6 +41,8 @@ class AlpacaClient(
     override fun unregisterDeviceEventHandler(handler: DeviceEventHandler) {
         handlers.remove(handler)
     }
+
+    override fun sendMessageToServer(message: INDIProtocol) {}
 
     internal fun fireOnEventReceived(event: DeviceEvent<*>) {
         handlers.forEach { it.onEventReceived(event) }
@@ -127,7 +132,7 @@ class AlpacaClient(
 
     internal fun registerGuideOutput(device: GuideOutput) {
         if (device is ASCOMDevice) {
-            guideOutputs[device.uid] = device
+            guideOutputs[device.id] = device
             fireOnEventReceived(GuideOutputAttached(device))
         }
     }

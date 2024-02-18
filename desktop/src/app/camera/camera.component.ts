@@ -137,7 +137,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         if (app) app.title = 'Camera'
 
         electron.on('CAMERA.UPDATED', event => {
-            if (event.device.name === this.camera.name) {
+            if (event.device.id === this.camera.id) {
                 ngZone.run(() => {
                     Object.assign(this.camera, event.device)
                     this.update()
@@ -146,7 +146,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         })
 
         electron.on('CAMERA.DETACHED', event => {
-            if (event.device.name === this.camera.name) {
+            if (event.device.id === this.camera.id) {
                 ngZone.run(() => {
                     Object.assign(this.camera, EMPTY_CAMERA)
                 })
@@ -154,7 +154,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         })
 
         electron.on('CAMERA.CAPTURE_ELAPSED', event => {
-            if (event.camera.name === this.camera.name) {
+            if (event.camera.id === this.camera.id) {
                 ngZone.run(() => {
                     this.running = this.cameraExposure.handleCameraCaptureEvent(event)
                 })

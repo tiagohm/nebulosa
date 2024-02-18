@@ -69,6 +69,8 @@ export interface Camera extends GuideOutput, Thermometer {
 }
 
 export const EMPTY_CAMERA: Camera = {
+    sender: '',
+    id: '',
     exposuring: false,
     hasCoolerControl: false,
     coolerPower: 0,

@@ -63,7 +63,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
         app.title = 'Flat Wizard'
 
         electron.on('FLAT_WIZARD.ELAPSED', event => {
-            if (event.state === 'EXPOSURING' && event.capture && event.capture.camera?.name === this.camera?.name) {
+            if (event.state === 'EXPOSURING' && event.capture && event.capture.camera?.id === this.camera?.id) {
                 ngZone.run(() => {
                     this.running = this.cameraExposure.handleCameraCaptureEvent(event.capture!, true)
                 })
@@ -87,7 +87,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('CAMERA.UPDATED', event => {
-            if (event.device.name === this.camera.name) {
+            if (event.device.id === this.camera.id) {
                 ngZone.run(() => {
                     Object.assign(this.camera, event.device)
                     this.cameraChanged()
@@ -104,7 +104,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
 
         electron.on('CAMERA.DETACHED', event => {
             ngZone.run(() => {
-                const index = this.cameras.findIndex(e => e.name === event.device.name)
+                const index = this.cameras.findIndex(e => e.id === event.device.id)
 
                 if (index >= 0) {
                     if (this.cameras[index] === this.camera) {
@@ -118,7 +118,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('WHEEL.UPDATED', event => {
-            if (event.device.name === this.wheel.name) {
+            if (event.device.id === this.wheel.id) {
                 ngZone.run(() => {
                     Object.assign(this.wheel, event.device)
                     this.wheelChanged()
@@ -135,7 +135,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
 
         electron.on('WHEEL.DETACHED', event => {
             ngZone.run(() => {
-                const index = this.wheels.findIndex(e => e.name === event.device.name)
+                const index = this.wheels.findIndex(e => e.id === event.device.id)
 
                 if (index >= 0) {
                     if (this.wheels[index] === this.wheel) {

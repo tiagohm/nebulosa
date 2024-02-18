@@ -1,40 +1,38 @@
 <div class="container px-4 pt-4">
     <div class="grid flex justify-content-center align-items-center">
-        <div class="col-6 px-0">
+        <div class="col-12 px-2 gap-1">
             <span class="p-float-label">
-                <p-dropdown [disabled]="connected" [options]="lastConnectedHosts" [ngModel]="connection" [editable]="true" optionLabel="host"
-                            styleClass="border-0 p-inputtext-sm w-full" (ngModelChange)="hostChanged($event)"
-                            [autoDisplayFirst]="false" emptyMessage="No connection found">
+                <p-dropdown [disabled]="connected" [options]="connections" [(ngModel)]="connection"
+                            styleClass="border-0 p-inputtext-sm w-full" [autoDisplayFirst]="false" emptyMessage="No connection found">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex flex-row justify-content-between gap-1">
-                            <span>{{ item.host }}</span>
+                            <span>{{ item?.name }}</span>
                         </div>
                     </ng-template>
                     <ng-template let-item pTemplate="item">
-                        <div class="flex flex-column gap-1">
-                            <div class="flex flex-row justify-content-between gap-1">
-                                <span class="font-bold text-sm">{{ item.host }}:{{ item.port }}</span>
-                                <i class="mdi mdi-close" pTooltip="Remove" tooltipPosition="bottom" (click)="removeConnection(item, $event)"></i>
+                        <div class="flex flex-row align-items-center justify-content-between gap-1 text-xs">
+                            <div class="flex flex-column gap-1">
+                                <span class="font-bold text-lg">{{ item.name }}</span>
+                                <span class="text-sm">{{ item.host }}:{{ item.port }}</span>
+                                <div class="flex flex-row align-items-center gap-1 text-xs">
+                                    <i class="mdi mdi-sm mdi-clock"></i>
+                                    <span>{{ (item.connectedAt | date:'yyyy-MM-dd HH:mm:ss') ?? 'never' }}</span>
+                                </div>
                             </div>
-                            <div class="flex flex-row align-items-center gap-1 text-xs">
-                                <i class="mdi mdi-sm mdi-clock"></i>
-                                <span>{{ item.connectedAt | date:'yyyy-MM-dd HH:mm:ss' }}</span>
+                            <div class="flex flex-column gap-3">
+                                <i class="mdi mdi-18px mdi-pencil" pTooltip="Edit" tooltipPosition="bottom"
+                                   (click)="editConnection(item, $event)"></i>
+                                <i class="mdi mdi-18px mdi-close" pTooltip="Remove" tooltipPosition="bottom"
+                                   (click)="deleteConnection(item, $event)"></i>
                             </div>
                         </div>
                     </ng-template>
                 </p-dropdown>
-                <label>{{ connection.type }} Host</label>
+                <label>Connection</label>
             </span>
-        </div>
-        <div class="col-6 gap-2">
-            <span class="p-float-label" style="min-width: 80px;">
-                <p-inputNumber [disabled]="connected" [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" placeholder="7624"
-                               [(ngModel)]="connection.port" [format]="false" />
-                <label>Port</label>
-            </span>
-            <p-button *ngIf="connected" (onClick)="connect()" size="small" icon="mdi mdi-close" severity="danger" />
-            <p-splitButton *ngIf="!connected" [model]="connectionTypeModel" icon="mdi mdi-connection" size="small" severity="info"
-                           (onClick)="connect()" />
+            <p-button (onClick)="addConnection()" size="small" icon="mdi mdi-plus" severity="success" />
+            <p-button *ngIf="!connected" [disabled]="!connection" (onClick)="connect()" size="small" icon="mdi mdi-connection" />
+            <p-button *ngIf="connected" [disabled]="!connection" (onClick)="connect()" size="small" icon="mdi mdi-close" severity="danger" />
         </div>
     </div>
     <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 112px);">
@@ -151,6 +149,38 @@
         </div>
     </div>
 </div>
+
+<p-dialog header="Connection" [modal]="true" [draggable]="false" [(visible)]="showConnectionDialog" [style]="{width: '90vw'}">
+    <div class="grid p-2" *ngIf="newConnection">
+        <div class="col-12">
+            <span class="p-float-label">
+                <input pInputText class="p-inputtext-sm border-0 w-full" [maxLength]="32" [(ngModel)]="newConnection[0].name" />
+                <label>Name</label>
+            </span>
+        </div>
+        <div class="col-12">
+            <span class="p-float-label">
+                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="newConnection[0].host" />
+                <label>Host</label>
+            </span>
+        </div>
+        <div class="col-4">
+            <span class="p-float-label" style="min-width: 80px;">
+                <p-inputNumber [disabled]="connected" [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" placeholder="7624"
+                               [(ngModel)]="newConnection[0].port" [format]="false" />
+                <label>Port</label>
+            </span>
+        </div>
+        <div class="col-8">
+            <p-selectButton [disabled]="connected" [options]="connectionTypes"
+                            [(ngModel)]="newConnection[0].type" styleClass="border-0 w-full" />
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button *ngIf="newConnection" [disabled]="!newConnection[0].name || !newConnection[0].host || !newConnection[0].port"
+                  icon="mdi mdi-content-save" label="Save" (onClick)="saveConnection()" [text]="true" size="small" />
+    </ng-template>
+</p-dialog>
 
 <neb-dialog-menu #deviceMenu [model]="deviceModel" />
 <neb-device-list-menu #imageMenu [model]="imageModel" [disableIfNotConnected]="false" />
