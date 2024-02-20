@@ -570,35 +570,31 @@ data class ASCOMCamera(
 
     private fun processCapabilities() {
         service.canAbortExposure(device.number).doRequest {
-            if (it.value != canAbort) {
-                canAbort = it.value
-
+            if (it.value) {
+                canAbort = true
                 sender.fireOnEventReceived(CameraCanAbortChanged(this))
             }
         }
 
         service.canCoolerPower(device.number).doRequest {
-            if (it.value != hasCoolerControl) {
-                hasCoolerControl = it.value
-
+            if (it.value) {
+                hasCoolerControl = true
                 sender.fireOnEventReceived(CameraCoolerControlChanged(this))
             }
         }
 
         service.canPulseGuide(device.number).doRequest {
-            if (it.value != canPulseGuide) {
-                canPulseGuide = it.value
-
+            if (it.value) {
+                canPulseGuide = true
                 sender.registerGuideOutput(this)
-
                 LOG.info("guide output attached: {}", name)
             }
         }
 
         service.canSetCCDTemperature(device.number).doRequest {
-            if (it.value != canSetTemperature) {
-                canSetTemperature = it.value
-                hasCooler = canSetTemperature
+            if (it.value) {
+                canSetTemperature = true
+                hasCooler = true
 
                 sender.fireOnEventReceived(CameraHasCoolerChanged(this))
                 sender.fireOnEventReceived(CameraCanSetTemperatureChanged(this))

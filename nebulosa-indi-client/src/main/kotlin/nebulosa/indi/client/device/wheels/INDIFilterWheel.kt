@@ -1,23 +1,23 @@
-package nebulosa.indi.client.device
+package nebulosa.indi.client.device.wheels
 
 import nebulosa.indi.client.INDIClient
+import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.filterwheel.*
-import nebulosa.indi.protocol.DefNumberVector
-import nebulosa.indi.protocol.INDIProtocol
-import nebulosa.indi.protocol.NumberVector
-import nebulosa.indi.protocol.PropertyState
+import nebulosa.indi.protocol.*
 
-internal open class FilterWheelDevice(
+internal open class INDIFilterWheel(
     override val sender: INDIClient,
     override val name: String,
 ) : INDIDevice(), FilterWheel {
 
     @Volatile final override var count = 0
         private set
-    @Volatile final override var position = -1
+    @Volatile final override var position = 0
         private set
     @Volatile final override var moving = false
         private set
+
+    final override val names = ArrayList<String>(12)
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -48,6 +48,23 @@ internal open class FilterWheelDevice(
                         if (prevIsMoving != moving) {
                             sender.fireOnEventReceived(FilterWheelMovingChanged(this))
                         }
+                    }
+                }
+            }
+            is TextVector<*> -> {
+                when (message.name) {
+                    "FILTER_NAME" -> {
+                        names.clear()
+
+                        repeat(16) {
+                            val key = "FILTER_SLOT_NAME_${it + 1}"
+
+                            if (key in message) {
+                                names.add(message[key]!!.value)
+                            }
+                        }
+
+                        sender.fireOnEventReceived(FilterWheelNamesChanged(this))
                     }
                 }
             }

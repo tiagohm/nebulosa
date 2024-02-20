@@ -10,6 +10,8 @@ interface FilterWheel : Device {
 
     val moving: Boolean
 
+    val names: List<String>
+
     fun moveTo(position: Int)
 
     fun names(names: Iterable<String>)

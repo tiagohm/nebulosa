@@ -15,7 +15,7 @@ import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-internal open class MountDevice(
+internal open class INDIMount(
     override val sender: INDIClient,
     override val name: String,
 ) : INDIDevice(), Mount {
@@ -365,6 +365,6 @@ internal open class MountDevice(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<MountDevice>()
+        @JvmStatic private val LOG = loggerFor<INDIMount>()
     }
 }

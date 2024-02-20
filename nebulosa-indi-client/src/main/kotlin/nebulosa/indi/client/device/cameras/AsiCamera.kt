@@ -7,7 +7,7 @@ import nebulosa.indi.protocol.NumberVector
 internal class AsiCamera(
     provider: INDIClient,
     name: String,
-) : CameraDevice(provider, name) {
+) : INDICamera(provider, name) {
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

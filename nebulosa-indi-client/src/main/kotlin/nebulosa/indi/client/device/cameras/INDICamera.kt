@@ -11,7 +11,7 @@ import nebulosa.io.Base64InputStream
 import nebulosa.log.loggerFor
 import java.time.Duration
 
-internal open class CameraDevice(
+internal open class INDICamera(
     override val sender: INDIClient,
     override val name: String,
 ) : INDIDevice(), Camera {
@@ -445,6 +445,6 @@ internal open class CameraDevice(
     companion object {
 
         @JvmStatic private val COMPRESSION_FORMATS = arrayOf(".fz", ".gz")
-        @JvmStatic private val LOG = loggerFor<CameraDevice>()
+        @JvmStatic private val LOG = loggerFor<INDICamera>()
     }
 }

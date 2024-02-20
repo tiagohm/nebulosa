@@ -1,13 +1,14 @@
-package nebulosa.indi.client.device
+package nebulosa.indi.client.device.focusers
 
 import nebulosa.indi.client.INDIClient
+import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.focuser.*
 import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.*
 
-internal open class FocuserDevice(
+internal open class INDIFocuser(
     override val sender: INDIClient,
     override val name: String,
 ) : INDIDevice(), Focuser {
@@ -24,7 +25,7 @@ internal open class FocuserDevice(
         private set
     @Volatile final override var canReverse = false
         private set
-    @Volatile final override var reverse = false
+    @Volatile final override var reversed = false
         private set
     @Volatile final override var canSync = false
         private set
@@ -56,7 +57,7 @@ internal open class FocuserDevice(
                             sender.fireOnEventReceived(FocuserCanReverseChanged(this))
                         }
 
-                        reverse = message.firstOnSwitch().name == "INDI_ENABLED"
+                        reversed = message.firstOnSwitch().name == "INDI_ENABLED"
 
                         sender.fireOnEventReceived(FocuserReverseChanged(this))
                     }
@@ -198,7 +199,7 @@ internal open class FocuserDevice(
     override fun toString(): String {
         return "Focuser(name=$name, moving=$moving, position=$position," +
             " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
-            " canAbort=$canAbort, canReverse=$canReverse, reverse=$reverse," +
+            " canAbort=$canAbort, canReverse=$canReverse, reversed=$reversed," +
             " canSync=$canSync, hasBacklash=$hasBacklash," +
             " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
             " temperature=$temperature)"

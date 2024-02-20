@@ -7,7 +7,7 @@ import nebulosa.indi.protocol.NumberVector
 internal class SVBonyCamera(
     provider: INDIClient,
     name: String,
-) : CameraDevice(provider, name) {
+) : INDICamera(provider, name) {
 
     @Volatile private var legacyProperties = false
 

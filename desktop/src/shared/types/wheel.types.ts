@@ -7,6 +7,7 @@ export interface FilterWheel extends Device {
     count: number
     position: number
     moving: boolean
+    names: string[]
 }
 
 export const EMPTY_WHEEL: FilterWheel = {
@@ -16,7 +17,8 @@ export const EMPTY_WHEEL: FilterWheel = {
     position: 0,
     moving: false,
     name: '',
-    connected: false
+    connected: false,
+    names: [],
 }
 
 export interface WheelDialogInput {

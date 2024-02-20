@@ -3,9 +3,10 @@ package nebulosa.alpaca.indi.client
 import nebulosa.alpaca.api.AlpacaService
 import nebulosa.alpaca.api.DeviceType
 import nebulosa.alpaca.indi.device.ASCOMDevice
-import nebulosa.alpaca.indi.device.ASCOMFilterWheel
 import nebulosa.alpaca.indi.device.cameras.ASCOMCamera
+import nebulosa.alpaca.indi.device.focusers.ASCOMFocuser
 import nebulosa.alpaca.indi.device.mounts.ASCOMMount
+import nebulosa.alpaca.indi.device.wheels.ASCOMFilterWheel
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.INDIDeviceProvider
@@ -16,9 +17,12 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelAttached
 import nebulosa.indi.device.filterwheel.FilterWheelDetached
 import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.focuser.FocuserAttached
+import nebulosa.indi.device.focuser.FocuserDetached
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.guide.GuideOutputAttached
+import nebulosa.indi.device.guide.GuideOutputDetached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
@@ -38,6 +42,7 @@ data class AlpacaClient(
     private val cameras = HashMap<String, Camera>()
     private val mounts = HashMap<String, Mount>()
     private val wheels = HashMap<String, FilterWheel>()
+    private val focusers = HashMap<String, Focuser>()
     private val guideOutputs = HashMap<String, GuideOutput>()
 
     override val id = UUID.randomUUID().toString()
@@ -153,7 +158,17 @@ data class AlpacaClient(
                             }
                         }
                     }
-                    DeviceType.FOCUSER -> Unit
+                    DeviceType.FOCUSER -> {
+                        if (device.uid in focusers) continue
+
+                        synchronized(focusers) {
+                            with(ASCOMFocuser(device, service.focuser, this)) {
+                                focusers[device.uid] = this
+                                LOG.info("focuser attached: {}", device.name)
+                                fireOnEventReceived(FocuserAttached(this))
+                            }
+                        }
+                    }
                     DeviceType.ROTATOR -> Unit
                     DeviceType.DOME -> Unit
                     DeviceType.SWITCH -> Unit
@@ -177,6 +192,13 @@ data class AlpacaClient(
         }
     }
 
+    internal fun unregisterGuideOutput(device: GuideOutput) {
+        if (device.name in guideOutputs) {
+            guideOutputs.remove(device.name)
+            fireOnEventReceived(GuideOutputDetached(device))
+        }
+    }
+
     override fun close() {
         for ((_, device) in cameras) {
             device.close()
@@ -196,11 +218,11 @@ data class AlpacaClient(
             fireOnEventReceived(FilterWheelDetached(device))
         }
 
-        // for ((_, device) in focusers) {
-        //     device.close()
-        //     LOG.info("focuser detached: {}", device.name)
-        //     fireOnEventReceived(FocuserDetached(device))
-        // }
+        for ((_, device) in focusers) {
+            device.close()
+            LOG.info("focuser detached: {}", device.name)
+            fireOnEventReceived(FocuserDetached(device))
+        }
 
         // for ((_, device) in gps) {
         //     device.close()
@@ -211,7 +233,7 @@ data class AlpacaClient(
         cameras.clear()
         mounts.clear()
         wheels.clear()
-        // focusers.clear()
+        focusers.clear()
         // gps.clear()
 
         handlers.clear()

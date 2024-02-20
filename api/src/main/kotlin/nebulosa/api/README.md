@@ -152,7 +152,7 @@ URL: `localhost:{PORT}/ws`
         "canRelativeMove": false,
         "canAbort": false,
         "canReverse": false,
-        "reverse": false,
+        "reversed": false,
         "canSync": false,
         "hasBacklash": false,
         "maxPosition": 0,

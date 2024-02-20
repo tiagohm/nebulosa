@@ -2,16 +2,16 @@ package nebulosa.indi.client
 
 import nebulosa.indi.client.connection.INDIProccessConnection
 import nebulosa.indi.client.connection.INDISocketConnection
-import nebulosa.indi.client.device.FilterWheelDevice
-import nebulosa.indi.client.device.FocuserDevice
 import nebulosa.indi.client.device.GPSDevice
 import nebulosa.indi.client.device.INDIDeviceProtocolHandler
 import nebulosa.indi.client.device.cameras.AsiCamera
-import nebulosa.indi.client.device.cameras.CameraDevice
+import nebulosa.indi.client.device.cameras.INDICamera
 import nebulosa.indi.client.device.cameras.SVBonyCamera
 import nebulosa.indi.client.device.cameras.SimCamera
+import nebulosa.indi.client.device.focusers.INDIFocuser
+import nebulosa.indi.client.device.mounts.INDIMount
 import nebulosa.indi.client.device.mounts.IoptronV3Mount
-import nebulosa.indi.client.device.mounts.MountDevice
+import nebulosa.indi.client.device.wheels.INDIFilterWheel
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
@@ -48,19 +48,19 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
         get() = connection.input
 
     override fun newCamera(message: INDIProtocol, executable: String): Camera {
-        return CAMERAS[executable]?.create(this, message.device) ?: CameraDevice(this, message.device)
+        return CAMERAS[executable]?.create(this, message.device) ?: INDICamera(this, message.device)
     }
 
     override fun newMount(message: INDIProtocol, executable: String): Mount {
-        return MOUNTS[executable]?.create(this, message.device) ?: MountDevice(this, message.device)
+        return MOUNTS[executable]?.create(this, message.device) ?: INDIMount(this, message.device)
     }
 
     override fun newFocuser(message: INDIProtocol): Focuser {
-        return FocuserDevice(this, message.device)
+        return INDIFocuser(this, message.device)
     }
 
     override fun newFilterWheel(message: INDIProtocol): FilterWheel {
-        return FilterWheelDevice(this, message.device)
+        return INDIFilterWheel(this, message.device)
     }
 
     override fun newGPS(message: INDIProtocol): GPS {

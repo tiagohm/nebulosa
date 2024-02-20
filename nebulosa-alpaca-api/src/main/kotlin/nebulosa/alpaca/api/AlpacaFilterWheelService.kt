@@ -16,7 +16,7 @@ interface AlpacaFilterWheelService : AlpacaDeviceService {
     fun focusOffsets(@Path("id") id: Int): Call<IntArrayResponse>
 
     @GET("api/v1/filterwheel/{id}/names")
-    fun names(@Path("id") id: Int): Call<ArrayResponse<String>>
+    fun names(@Path("id") id: Int): Call<ListResponse<String>>
 
     @GET("api/v1/filterwheel/{id}/position")
     fun position(@Path("id") id: Int): Call<IntResponse>

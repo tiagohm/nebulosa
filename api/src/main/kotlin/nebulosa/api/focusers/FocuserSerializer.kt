@@ -21,7 +21,7 @@ class FocuserSerializer : StdSerializer<Focuser>(Focuser::class.java) {
         gen.writeBooleanField("canRelativeMove", value.canRelativeMove)
         gen.writeBooleanField("canAbort", value.canAbort)
         gen.writeBooleanField("canReverse", value.canReverse)
-        gen.writeBooleanField("reverse", value.reverse)
+        gen.writeBooleanField("reversed", value.reversed)
         gen.writeBooleanField("canSync", value.canSync)
         gen.writeBooleanField("hasBacklash", value.hasBacklash)
         gen.writeNumberField("maxPosition", value.maxPosition)

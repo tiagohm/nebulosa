@@ -22,4 +22,6 @@ class AlpacaService(
     val telescope by lazy { retrofit.create<AlpacaTelescopeService>() }
 
     val filterWheel by lazy { retrofit.create<AlpacaFilterWheelService>() }
+
+    val focuser by lazy { retrofit.create<AlpacaFocuserService>() }
 }

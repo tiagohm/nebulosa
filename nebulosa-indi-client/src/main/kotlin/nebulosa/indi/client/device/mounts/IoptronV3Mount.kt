@@ -8,7 +8,7 @@ import nebulosa.indi.protocol.SwitchVector
 internal class IoptronV3Mount(
     provider: INDIClient,
     name: String,
-) : MountDevice(provider, name) {
+) : INDIMount(provider, name) {
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

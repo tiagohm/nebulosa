@@ -11,10 +11,12 @@ import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.math.*
+import nebulosa.nova.position.ICRF
+import nebulosa.time.CurrentTime
 import java.time.Duration
 import java.time.OffsetDateTime
 
-class ASCOMMount(
+data class ASCOMMount(
     override val device: ConfiguredDevice,
     override val service: AlpacaTelescopeService,
     override val sender: AlpacaClient,
@@ -28,7 +30,7 @@ class ASCOMMount(
         private set
     @Volatile override var parked = false
         private set
-    @Volatile override var canAbort = false
+    @Volatile override var canAbort = true
         private set
     @Volatile override var canSync = false
         private set
@@ -74,12 +76,6 @@ class ASCOMMount(
         private set
     @Volatile override var dateTime = OffsetDateTime.now()!!
         private set
-
-    override fun onConnected() {}
-
-    override fun onDisconnected() {}
-
-    override fun snoop(devices: Iterable<Device?>) {}
 
     override fun park() {
         if (canPark) {
@@ -133,7 +129,11 @@ class ASCOMMount(
     }
 
     override fun syncJ2000(ra: Angle, dec: Angle) {
-        TODO("Not yet implemented")
+        if (canSync) {
+            with(ICRF.equatorial(ra, dec, epoch = CurrentTime).equatorial()) {
+                sync(longitude.normalized, latitude)
+            }
+        }
     }
 
     override fun slewTo(ra: Angle, dec: Angle) {
@@ -141,15 +141,19 @@ class ASCOMMount(
     }
 
     override fun slewToJ2000(ra: Angle, dec: Angle) {
-        TODO("Not yet implemented")
+        if (canSync) {
+            with(ICRF.equatorial(ra, dec, epoch = CurrentTime).equatorial()) {
+                slewTo(longitude.normalized, latitude)
+            }
+        }
     }
 
     override fun goTo(ra: Angle, dec: Angle) {
-        TODO("Not yet implemented")
+        slewTo(ra, dec)
     }
 
     override fun goToJ2000(ra: Angle, dec: Angle) {
-        TODO("Not yet implemented")
+        slewToJ2000(ra, dec)
     }
 
     override fun home() {
@@ -171,23 +175,18 @@ class ASCOMMount(
     }
 
     override fun slewRate(rate: SlewRate) {
-        TODO("Not yet implemented")
     }
 
     override fun moveNorth(enabled: Boolean) {
-        TODO("Not yet implemented")
     }
 
     override fun moveSouth(enabled: Boolean) {
-        TODO("Not yet implemented")
     }
 
     override fun moveWest(enabled: Boolean) {
-        TODO("Not yet implemented")
     }
 
     override fun moveEast(enabled: Boolean) {
-        TODO("Not yet implemented")
     }
 
     override fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance) {
@@ -200,5 +199,131 @@ class ASCOMMount(
         service.utcDate(device.number, dateTime.toInstant())
     }
 
+    override fun snoop(devices: Iterable<Device?>) {}
+
     override fun handleMessage(message: INDIProtocol) {}
+
+    override fun onConnected() {
+        processCapabilities()
+        processSiteCoordinates()
+    }
+
+    override fun onDisconnected() {}
+
+    override fun reset() {
+        super.reset()
+
+        slewing = false
+        tracking = false
+        parking = false
+        parked = false
+        canAbort = false
+        canSync = false
+        canGoTo = false
+        canPark = false
+        canHome = false
+        slewRates = emptyList()
+        slewRate = null
+        mountType = MountType.EQ_GEM
+        trackModes = emptyList()
+        trackMode = TrackMode.SIDEREAL
+        pierSide = PierSide.NEITHER
+        guideRateWE = 0.0
+        guideRateNS = 0.0
+        rightAscension = 0.0
+        declination = 0.0
+
+        canPulseGuide = false
+        pulseGuiding = false
+
+        hasGPS = false
+        longitude = 0.0
+        latitude = 0.0
+        elevation = 0.0
+        dateTime = OffsetDateTime.now()!!
+    }
+
+    override fun close() {
+        super.close()
+
+        if (canPulseGuide) {
+            canPulseGuide = false
+            sender.unregisterGuideOutput(this)
+        }
+    }
+
+    override fun refresh(elapsedTimeInSeconds: Long) {
+        super.refresh(elapsedTimeInSeconds)
+
+        processParked()
+        processSiteCoordinates()
+    }
+
+    private fun processCapabilities() {
+        service.canFindHome(device.number).doRequest {
+            if (it.value) {
+                canHome = true
+
+                sender.fireOnEventReceived(MountCanHomeChanged(this))
+            }
+        }
+
+        service.canPark(device.number).doRequest {
+            if (it.value) {
+                canPark = true
+
+                sender.fireOnEventReceived(MountCanParkChanged(this))
+            }
+        }
+
+        service.canPulseGuide(device.number).doRequest {
+            if (it.value) {
+                canPulseGuide = true
+                sender.registerGuideOutput(this)
+                LOG.info("guide output attached: {}", name)
+            }
+        }
+
+        service.canSync(device.number).doRequest {
+            if (it.value) {
+                canSync = true
+
+                sender.fireOnEventReceived(MountCanSyncChanged(this))
+            }
+        }
+    }
+
+    private fun processParked() {
+        if (canPark) {
+            service.isAtPark(device.number).doRequest {
+                if (it.value != parked) {
+                    parked = it.value
+
+                    sender.fireOnEventReceived(MountParkChanged(this))
+                }
+            }
+        }
+    }
+
+    private fun processSiteCoordinates() {
+        service.siteLongitude(device.number).doRequest { a ->
+            val lng = a.value.deg
+
+            service.siteLatitude(device.number).doRequest { b ->
+                val lat = b.value.deg
+
+                service.siteLatitude(device.number).doRequest { c ->
+                    val elev = c.value.m
+
+                    if (lng != longitude || lat != latitude || elev != elevation) {
+                        longitude = lng
+                        latitude = lat
+                        elevation = elev
+
+                        sender.fireOnEventReceived(MountGeographicCoordinateChanged(this))
+                    }
+                }
+            }
+        }
+    }
 }

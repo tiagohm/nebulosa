@@ -157,7 +157,7 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
     fun siteLatitude(@Path("id") id: Int, @Field("SiteLatitude") latitude: Double): Call<NoneResponse>
 
     @GET("api/v1/telescope/{id}/sitelongitude")
-    fun siteLongitude(@Path("id") id: Int): Call<NoneResponse>
+    fun siteLongitude(@Path("id") id: Int): Call<DoubleResponse>
 
     @FormUrlEncoded
     @PUT("api/v1/telescope/{id}/sitelongitude")

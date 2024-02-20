@@ -1,7 +1,7 @@
 package nebulosa.indi.client.device
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.cameras.CameraDevice
+import nebulosa.indi.client.device.cameras.INDICamera
 import nebulosa.indi.device.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.dome.Dome
@@ -217,7 +217,7 @@ internal abstract class INDIDevice : Device {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is CameraDevice) return false
+        if (other !is INDICamera) return false
 
         if (sender != other.sender) return false
         if (name != other.name) return false
