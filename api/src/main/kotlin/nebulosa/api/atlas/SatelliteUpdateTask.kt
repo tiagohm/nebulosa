@@ -1,5 +1,7 @@
 package nebulosa.api.atlas
 
+import nebulosa.api.messages.MessageService
+import nebulosa.api.notifications.NotificationEvent
 import nebulosa.api.preferences.PreferenceService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
@@ -14,7 +16,14 @@ class SatelliteUpdateTask(
     private val httpClient: OkHttpClient,
     private val preferenceService: PreferenceService,
     private val satelliteRepository: SatelliteRepository,
+    private val messageService: MessageService,
 ) : Runnable {
+
+    data class UpdateFinished(val numberOfSatellites: Int) : NotificationEvent {
+
+        override val type = "SATELLITE.UPDATE_FINISHED"
+        override val body = "%d satellites was updated".format(numberOfSatellites)
+    }
 
     @Scheduled(fixedDelay = UPDATE_INTERVAL, timeUnit = TimeUnit.MILLISECONDS)
     override fun run() {
@@ -57,6 +66,7 @@ class SatelliteUpdateTask(
         return satelliteRepository
             .save(data.values)
             .also { LOG.info("{} satellites updated", it.size) }
+            .also { messageService.sendMessage(UpdateFinished(it.size)) }
             .isNotEmpty()
     }
 

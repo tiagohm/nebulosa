@@ -2,7 +2,7 @@
     <div class="grid">
         <div class="col-6 align-items-center gap-2">
             <span class="p-float-label device">
-                <p-dropdown [disabled]="running" [options]="cameras" [(ngModel)]="camera" optionLabel="name"
+                <p-dropdown [disabled]="running" [options]="cameras" [(ngModel)]="camera" optionLabel="name" [autoDisplayFirst]="false"
                             (ngModelChange)="cameraChanged()" styleClass="p-inputtext-sm border-0 max-w-full" emptyMessage="No camera found" />
                 <label>Camera</label>
             </span>
@@ -10,25 +10,25 @@
         </div>
         <div class="col-6 align-items-center gap-2" *ngIf="tab === 0">
             <span class="p-float-label device">
-                <p-dropdown [disabled]="running" [options]="mounts" [(ngModel)]="mount" optionLabel="name"
+                <p-dropdown [disabled]="running" [options]="mounts" [(ngModel)]="mount" optionLabel="name" [autoDisplayFirst]="false"
                             (ngModelChange)="mountChanged()" styleClass="p-inputtext-sm border-0 max-w-full" emptyMessage="No mount found" />
                 <label>Mount</label>
             </span>
-            <p-button *ngIf="mount.connected" [disabled]="!mount || running" (onClick)="mountConnect()" icon="mdi mdi-close"
+            <p-button *ngIf="mount.connected" [disabled]="!mount.name || running" (onClick)="mountConnect()" icon="mdi mdi-close"
                       size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
-            <p-button *ngIf="!mount.connected" [disabled]="!mount || running" (onClick)="mountConnect()" icon="mdi mdi-connection"
+            <p-button *ngIf="!mount.connected" [disabled]="!mount.name || running" (onClick)="mountConnect()" icon="mdi mdi-connection"
                       size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-6 align-items-center gap-2" *ngIf="tab === 1">
             <span class="p-float-label device">
                 <p-dropdown [disabled]="running" [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name"
                             (ngModelChange)="guideOutputChanged()" styleClass="p-inputtext-sm border-0 max-w-full"
-                            emptyMessage="No guide output found" />
+                            emptyMessage="No guide output found" [autoDisplayFirst]="false" />
                 <label>Guide Output</label>
             </span>
-            <p-button *ngIf="guideOutput.connected" [disabled]="!guideOutput || running" (onClick)="guideOutputConnect()"
+            <p-button *ngIf="guideOutput.connected" [disabled]="!guideOutput.name || running" (onClick)="guideOutputConnect()"
                       icon="mdi mdi-close" size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
-            <p-button *ngIf="!guideOutput.connected" [disabled]="!guideOutput || running" (onClick)="guideOutputConnect()"
+            <p-button *ngIf="!guideOutput.connected" [disabled]="!guideOutput.name || running" (onClick)="guideOutputConnect()"
                       icon="mdi mdi-connection" size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-sm" style="min-height: 25px;">

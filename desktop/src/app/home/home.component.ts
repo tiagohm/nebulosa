@@ -1,20 +1,19 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import path from 'path'
 import { MenuItem, MessageService } from 'primeng/api'
-import { AutoCompleteCompleteEvent } from 'primeng/autocomplete'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { Camera } from '../../shared/types/camera.types'
 import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { ConnectionDetails, EMPTY_CONNECTION_DETAILS, HomeWindowType } from '../../shared/types/home.types'
+import { CONNECTION_TYPES, ConnectionDetails, EMPTY_CONNECTION_DETAILS, HomeWindowType } from '../../shared/types/home.types'
 import { Mount } from '../../shared/types/mount.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
-import { compareDevice } from '../../shared/utils/comparators'
+import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 type MappedDevice = {
@@ -23,9 +22,6 @@ type MappedDevice = {
     'FOCUSER': Focuser
     'WHEEL': FilterWheel
 }
-
-export const IMAGE_DIR_KEY = 'home.image.directory'
-export const LAST_CONNECTED_HOSTS_KEY = 'home.lastConnectedHosts'
 
 @Component({
     selector: 'app-home',
@@ -40,9 +36,11 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     @ViewChild('imageMenu')
     private readonly imageMenu!: DeviceListMenuComponent
 
-    connected = false
-    lastConnectedHosts: ConnectionDetails[] = []
-    connection: ConnectionDetails
+    readonly connectionTypes = Array.from(CONNECTION_TYPES)
+    showConnectionDialog = false
+    readonly connections: ConnectionDetails[] = []
+    connection?: ConnectionDetails
+    newConnection?: [ConnectionDetails, ConnectionDetails | undefined]
 
     cameras: Camera[] = []
     mounts: Mount[] = []
@@ -51,6 +49,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     domes: Camera[] = []
     rotators: Camera[] = []
     switches: Camera[] = []
+
+    get connected() {
+        return !!this.connection && this.connection.connected
+    }
 
     get hasCamera() {
         return this.cameras.length > 0
@@ -137,7 +139,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private api: ApiService,
         private message: MessageService,
-        private storage: LocalStorageService,
+        private preference: PreferenceService,
         private ngZone: NgZone,
     ) {
         app.title = 'Nebulosa'
@@ -147,7 +149,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 return this.cameras.push(device)
             },
             (device) => {
-                this.cameras.splice(this.cameras.findIndex(e => e.name === device.name), 1)
+                this.cameras.splice(this.cameras.findIndex(e => e.id === device.id), 1)
                 return this.cameras.length
             },
         )
@@ -157,7 +159,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 return this.mounts.push(device)
             },
             (device) => {
-                this.mounts.splice(this.mounts.findIndex(e => e.name === device.name), 1)
+                this.mounts.splice(this.mounts.findIndex(e => e.id === device.id), 1)
                 return this.mounts.length
             },
         )
@@ -167,7 +169,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 return this.focusers.push(device)
             },
             (device) => {
-                this.focusers.splice(this.focusers.findIndex(e => e.name === device.name), 1)
+                this.focusers.splice(this.focusers.findIndex(e => e.id === device.id), 1)
                 return this.focusers.length
             },
         )
@@ -177,13 +179,14 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 return this.wheels.push(device)
             },
             (device) => {
-                this.wheels.splice(this.wheels.findIndex(e => e.name === device.name), 1)
+                this.wheels.splice(this.wheels.findIndex(e => e.id === device.id), 1)
                 return this.wheels.length
             },
         )
 
-        this.lastConnectedHosts = storage.get<ConnectionDetails[]>(LAST_CONNECTED_HOSTS_KEY, [])
-        this.connection = Object.assign({}, this.lastConnectedHosts[0] ?? EMPTY_CONNECTION_DETAILS)
+        this.connections = preference.connections.get()
+        this.connections.forEach(e => e.connected = false)
+        this.connection = this.connections[0]
     }
 
     async ngAfterContentInit() {
@@ -198,48 +201,57 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     @HostListener('window:unload')
     ngOnDestroy() { }
 
-    hostChanged(event: string | ConnectionDetails) {
-        if (typeof event === 'string') {
-            this.connection.host = event
-        } else {
-            Object.assign(this.connection, event)
-        }
+    addConnection() {
+        this.newConnection = [Object.assign({}, EMPTY_CONNECTION_DETAILS), undefined]
+        this.showConnectionDialog = true
     }
 
-    removeConnection(connection: ConnectionDetails, event: MouseEvent) {
-        const { host, port } = connection
-        const index = this.lastConnectedHosts.findIndex(e => e.host === host && e.port === port)
+    editConnection(connection: ConnectionDetails, event: MouseEvent) {
+        this.newConnection = [Object.assign({}, connection), connection]
+        this.showConnectionDialog = true
+        event.stopImmediatePropagation()
+    }
 
-        if (index >= 0) {
-            this.lastConnectedHosts.splice(index, 1)
-            this.storage.set(LAST_CONNECTED_HOSTS_KEY, this.lastConnectedHosts)
+    deleteConnection(connection: ConnectionDetails, event: MouseEvent) {
+        const index = this.connections.findIndex(e => e === connection)
+
+        if (index >= 0 && !connection.connected) {
+            this.connections.splice(index, 1)
+
+            if (connection === this.connection) {
+                this.connection = undefined
+            }
+
+            this.preference.connections.set(this.connections)
         }
 
         event.stopImmediatePropagation()
     }
 
+    saveConnection() {
+        if (this.newConnection) {
+            // Edit.
+            if (this.newConnection[1]) {
+                Object.assign(this.newConnection[1], this.newConnection[0])
+            }
+            // New.
+            else {
+                this.connections.push(this.newConnection[0])
+            }
+        }
+
+        this.preference.connections.set(this.connections)
+
+        this.newConnection = undefined
+        this.showConnectionDialog = false
+    }
+
     async connect() {
         try {
-            if (this.connected) {
-                await this.api.disconnect()
-            } else {
-                let { host, port } = this.connection
-
-                host ||= 'localhost'
-                port ||= 7624
-
-                await this.api.connect(host, port)
-
-                const index = this.lastConnectedHosts.findIndex(e => e.host === host && e.port === port)
-
-                if (index >= 0) {
-                    this.lastConnectedHosts.splice(index, 1)
-                }
-
-                this.lastConnectedHosts.splice(0, 0, Object.assign({}, this.connection))
-                this.lastConnectedHosts[0].connectedAt = Date.now()
-
-                this.storage.set(LAST_CONNECTED_HOSTS_KEY, this.lastConnectedHosts)
+            if (this.connection && this.connection.connected) {
+                await this.api.disconnect(this.connection.id!)
+            } else if (this.connection) {
+                this.connection.id = await this.api.connect(this.connection.host, this.connection.port, this.connection.type)
             }
         } catch (e) {
             console.error(e)
@@ -248,10 +260,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         } finally {
             this.updateConnection()
         }
-    }
-
-    filterLastConnected(event: AutoCompleteCompleteEvent) {
-
     }
 
     private openDevice<K extends keyof MappedDevice>(type: K) {
@@ -266,7 +274,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         if (devices.length === 0) return
         if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
 
-        for (const device of [...devices].sort(compareDevice)) {
+        for (const device of [...devices].sort(deviceComparator)) {
             this.deviceModel.push({
                 icon: 'mdi mdi-connection',
                 label: device.name,
@@ -298,11 +306,11 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const defaultPath = this.storage.get(IMAGE_DIR_KEY, '')
+            const defaultPath = this.preference.homeImageDefaultDirectory.get()
             const filePath = await this.electron.openFits({ defaultPath })
 
             if (filePath) {
-                this.storage.set(IMAGE_DIR_KEY, path.dirname(filePath))
+                this.preference.homeImageDefaultDirectory.set(path.dirname(filePath))
                 this.browserWindow.openImage({ path: filePath, source: 'PATH' })
             }
         } else {
@@ -356,20 +364,28 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     }
 
     private async updateConnection() {
-        try {
-            this.connected = await this.api.connectionStatus()
-        } catch {
-            this.connected = false
-        }
+        if (this.connection && this.connection.id) {
+            try {
+                const status = await this.api.connectionStatus(this.connection.id!)
 
-        if (!this.connected) {
-            this.cameras = []
-            this.mounts = []
-            this.focusers = []
-            this.wheels = []
-            this.domes = []
-            this.rotators = []
-            this.switches = []
+                if (status && !this.connection.connected) {
+                    this.connection.connectedAt = Date.now()
+                    this.preference.connections.set(this.connections)
+                    this.connection.connected = true
+                } else if (!status) {
+                    this.connection.connected = false
+                }
+            } catch {
+                this.connection.connected = false
+
+                this.cameras = []
+                this.mounts = []
+                this.focusers = []
+                this.wheels = []
+                this.domes = []
+                this.rotators = []
+                this.switches = []
+            }
         }
     }
 }

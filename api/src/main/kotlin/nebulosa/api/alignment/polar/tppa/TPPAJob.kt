@@ -27,6 +27,7 @@ data class TPPAJob(
     @JvmField val cameraRequest = request.capture.copy(
         savePath = Files.createTempDirectory("tppa"),
         exposureAmount = 1, exposureDelay = Duration.ZERO,
+        exposureTime = maxOf(request.capture.exposureTime, MIN_EXPOSURE_TIME),
         frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
     )
 
@@ -84,5 +85,10 @@ data class TPPAJob(
 
     override fun contains(data: Any): Boolean {
         return data === camera || data === mount || super.contains(data)
+    }
+
+    companion object {
+
+        @JvmStatic private val MIN_EXPOSURE_TIME: Duration = Duration.ofSeconds(1L)
     }
 }

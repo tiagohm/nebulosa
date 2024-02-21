@@ -10,9 +10,11 @@ interface FilterWheel : Device {
 
     val moving: Boolean
 
+    val names: List<String>
+
     fun moveTo(position: Int)
 
-    fun syncNames(names: Iterable<String>)
+    fun names(names: Iterable<String>)
 
     companion object {
 

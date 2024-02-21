@@ -11,6 +11,8 @@ class WheelSerializer : StdSerializer<FilterWheel>(FilterWheel::class.java) {
 
     override fun serialize(value: FilterWheel, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()
+        gen.writeStringField("sender", value.sender.id)
+        gen.writeStringField("id", value.id)
         gen.writeStringField("name", value.name)
         gen.writeBooleanField("connected", value.connected)
         gen.writeNumberField("count", value.count)

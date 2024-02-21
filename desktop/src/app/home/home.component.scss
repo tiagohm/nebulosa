@@ -1,19 +1,28 @@
-p-button ::ng-deep {
-    display: contents;
-
-    &.open {
-        min-height: 56px;
-        max-height: 56px;
-        display: flex;
-
-        img {
-            height: 32px;
+:host {
+    p-splitbutton ::ng-deep {
+        .p-splitbutton-menubutton {
+            width: 0rem;
+            padding: 4px;
         }
     }
 
-    &.p-disabled {
-        img {
-            filter: grayscale(1);
+    p-button ::ng-deep {
+        display: contents;
+
+        &.open {
+            min-height: 56px;
+            max-height: 56px;
+            display: flex;
+
+            img {
+                height: 32px;
+            }
+        }
+
+        &.p-disabled {
+            img {
+                filter: grayscale(1);
+            }
         }
     }
 }

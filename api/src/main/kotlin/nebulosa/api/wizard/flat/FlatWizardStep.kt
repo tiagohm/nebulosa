@@ -7,7 +7,7 @@ import nebulosa.api.cameras.CameraExposureStep.Companion.makeSavePath
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
-import nebulosa.fits.Fits
+import nebulosa.fits.fits
 import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.computation.Statistics
 import nebulosa.indi.device.camera.Camera
@@ -86,9 +86,7 @@ data class FlatWizardStep(
         val savedPath = cameraExposureStep.savedPath
 
         if (!stopped && savedPath != null) {
-            image = Fits(savedPath).also(Fits::read).use { fits ->
-                image?.load(fits, false) ?: Image.open(fits, false)
-            }
+            image = savedPath.fits().use { image?.load(it, false) ?: Image.open(it, false) }
 
             val statistics = STATISTICS.compute(image!!)
             LOG.info("flat frame captured. duration={}, statistics={}", exposureTime, statistics)

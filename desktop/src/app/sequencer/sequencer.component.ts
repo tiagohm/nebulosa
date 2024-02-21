@@ -11,6 +11,7 @@ import { Camera, CameraCaptureElapsed, CameraStartCapture } from '../../shared/t
 import { Focuser } from '../../shared/types/focuser.types'
 import { EMPTY_SEQUENCE_PLAN, SequenceCaptureMode, SequencePlan, SequencerElapsed } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
+import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
@@ -123,7 +124,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         electron.on('CAMERA.UPDATED', event => {
             ngZone.run(() => {
-                const camera = this.cameras.find(e => e.name === event.device.name)
+                const camera = this.cameras.find(e => e.id === event.device.id)
 
                 if (camera) {
                     Object.assign(camera, event.device)
@@ -133,7 +134,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         electron.on('WHEEL.UPDATED', event => {
             ngZone.run(() => {
-                const wheel = this.wheels.find(e => e.name === event.device.name)
+                const wheel = this.wheels.find(e => e.id === event.device.id)
 
                 if (wheel) {
                     Object.assign(wheel, event.device)
@@ -143,7 +144,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         electron.on('FOCUSER.UPDATED', event => {
             ngZone.run(() => {
-                const focuser = this.focusers.find(e => e.name === event.device.name)
+                const focuser = this.focusers.find(e => e.id === event.device.id)
 
                 if (focuser) {
                     Object.assign(focuser, event.device)
@@ -173,9 +174,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     async ngAfterContentInit() {
-        this.cameras = await this.api.cameras()
-        this.wheels = await this.api.wheels()
-        this.focusers = await this.api.focusers()
+        this.cameras = (await this.api.cameras()).sort(deviceComparator)
+        this.wheels = (await this.api.wheels()).sort(deviceComparator)
+        this.focusers = (await this.api.focusers()).sort(deviceComparator)
 
         this.loadSavedJsonFileFromPathOrAddDefault()
 
@@ -191,8 +192,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
     add() {
         const camera = this.camera ?? this.cameras[0]
-        const wheel = this.wheel ?? this.wheels[0]
-        const focuser = this.focuser ?? this.focusers[0]
+        // const wheel = this.wheel ?? this.wheels[0]
+        // const focuser = this.focuser ?? this.focusers[0]
 
         this.plan.entries.push({
             enabled: true,

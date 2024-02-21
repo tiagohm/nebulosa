@@ -1,24 +1,27 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package nebulosa.fits
 
+import nebulosa.io.SeekableSource
 import nebulosa.math.Angle
 import nebulosa.math.deg
+import java.io.File
+import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun Header.clone() = Header(this)
 
 inline val Header.naxis
     get() = getInt(Standard.NAXIS, -1)
 
-@Suppress("NOTHING_TO_INLINE")
 inline fun Header.naxis(n: Int) = getInt(Standard.NAXISn.n(n), 0)
 
 inline val Header.width
-    get() = naxis(1)
+    get() = getInt(Standard.NAXIS1, 0)
 
 inline val Header.height
-    get() = naxis(2)
+    get() = getInt(Standard.NAXIS2, 0)
 
 val Header.rightAscension
     get() = Angle(getStringOrNull(Standard.RA), isHours = true, decimalIsHours = false).takeIf { it.isFinite() }
@@ -73,3 +76,11 @@ inline val Header.frame
 
 inline val Header.instrument
     get() = getStringOrNull(Standard.INSTRUME)?.ifBlank { null }?.trim()
+
+inline fun SeekableSource.fits() = Fits().also { it.read(this) }
+
+inline fun String.fits() = FitsPath(this).also(FitsPath::read)
+
+inline fun Path.fits() = FitsPath(this).also(FitsPath::read)
+
+inline fun File.fits() = FitsPath(this).also(FitsPath::read)

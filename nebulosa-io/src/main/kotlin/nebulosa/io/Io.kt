@@ -158,6 +158,9 @@ inline fun <T> Buffer.read(source: Source, byteCount: Long, block: (Buffer) -> T
     }
 }
 
+/**
+ * Reads [byteCount] bytes from [source] to this buffer.
+ */
 fun Buffer.readFully(source: Source, byteCount: Long) {
     var remainingCount = byteCount
 
@@ -168,6 +171,9 @@ fun Buffer.readFully(source: Source, byteCount: Long) {
     }
 }
 
+/**
+ * Transfers [byteCount] bytes from [source] to [sink] using this buffer as intermediate.
+ */
 fun Buffer.transferFully(source: Source, sink: Sink, byteCount: Long) {
     var remainingCount = byteCount
 

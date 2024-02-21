@@ -4,7 +4,7 @@ import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Unique
-import nebulosa.api.entities.BoxEntity
+import nebulosa.api.database.BoxEntity
 
 @Entity
 data class PreferenceEntity(

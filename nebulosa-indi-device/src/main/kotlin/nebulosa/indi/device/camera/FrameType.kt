@@ -1,8 +1,8 @@
 package nebulosa.indi.device.camera
 
-enum class FrameType {
-    LIGHT,
-    DARK,
-    FLAT,
-    BIAS,
+enum class FrameType(@JvmField val description: String) {
+    LIGHT("Light"),
+    DARK("Dark"),
+    FLAT("Flat"),
+    BIAS("Bias"),
 }

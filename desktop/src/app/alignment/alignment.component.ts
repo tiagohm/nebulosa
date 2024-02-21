@@ -8,7 +8,8 @@ import { Angle } from '../../shared/types/atlas.types'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit } from '../../shared/types/camera.types'
 import { EMPTY_GUIDE_OUTPUT, GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { EMPTY_MOUNT, Mount } from '../../shared/types/mount.types'
-import { DEFAULT_SOLVER_TYPES, EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverType } from '../../shared/types/settings.types'
+import { DEFAULT_SOLVER_TYPES, EMPTY_PLATE_SOLVER_OPTIONS } from '../../shared/types/settings.types'
+import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
@@ -48,7 +49,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         stepDistance: 10,
     }
 
-    readonly plateSolverTypes: PlateSolverType[] = Object.assign([], DEFAULT_SOLVER_TYPES)
+    readonly plateSolverTypes = Array.from(DEFAULT_SOLVER_TYPES)
     tppaAzimuthError: Angle = `00°00'00"`
     tppaAzimuthErrorDirection = ''
     tppaAltitudeError: Angle = `00°00'00"`
@@ -81,7 +82,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         app.title = 'Alignment'
 
         electron.on('CAMERA.UPDATED', event => {
-            if (event.device.name === this.camera.name) {
+            if (event.device.id === this.camera.id) {
                 ngZone.run(() => {
                     Object.assign(this.camera, event.device)
                 })
@@ -91,25 +92,27 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         electron.on('CAMERA.ATTACHED', event => {
             ngZone.run(() => {
                 this.cameras.push(event.device)
+                this.cameras.sort(deviceComparator)
             })
         })
 
         electron.on('CAMERA.DETACHED', event => {
             ngZone.run(() => {
-                const index = this.cameras.findIndex(e => e.name === event.device.name)
+                const index = this.cameras.findIndex(e => e.id === event.device.id)
 
                 if (index >= 0) {
                     if (this.cameras[index] === this.camera) {
-                        Object.assign(this.camera, EMPTY_CAMERA)
+                        Object.assign(this.camera, this.cameras[0] ?? EMPTY_CAMERA)
                     }
 
                     this.cameras.splice(index, 1)
+                    this.cameras.sort(deviceComparator)
                 }
             })
         })
 
         electron.on('MOUNT.UPDATED', event => {
-            if (event.device.name === this.mount.name) {
+            if (event.device.id === this.mount.id) {
                 ngZone.run(() => {
                     Object.assign(this.mount, event.device)
                 })
@@ -119,25 +122,27 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         electron.on('MOUNT.ATTACHED', event => {
             ngZone.run(() => {
                 this.mounts.push(event.device)
+                this.mounts.sort(deviceComparator)
             })
         })
 
         electron.on('MOUNT.DETACHED', event => {
             ngZone.run(() => {
-                const index = this.mounts.findIndex(e => e.name === event.device.name)
+                const index = this.mounts.findIndex(e => e.id === event.device.id)
 
                 if (index >= 0) {
                     if (this.mounts[index] === this.mount) {
-                        Object.assign(this.mount, EMPTY_MOUNT)
+                        Object.assign(this.mount, this.mounts[0] ?? EMPTY_MOUNT)
                     }
 
                     this.mounts.splice(index, 1)
+                    this.mounts.sort(deviceComparator)
                 }
             })
         })
 
         electron.on('GUIDE_OUTPUT.UPDATED', event => {
-            if (event.device.name === this.guideOutput.name) {
+            if (event.device.id === this.guideOutput.id) {
                 ngZone.run(() => {
                     Object.assign(this.guideOutput, event.device)
                 })
@@ -147,19 +152,21 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         electron.on('GUIDE_OUTPUT.ATTACHED', event => {
             ngZone.run(() => {
                 this.guideOutputs.push(event.device)
+                this.guideOutputs.sort(deviceComparator)
             })
         })
 
         electron.on('GUIDE_OUTPUT.DETACHED', event => {
             ngZone.run(() => {
-                const index = this.guideOutputs.findIndex(e => e.name === event.device.name)
+                const index = this.guideOutputs.findIndex(e => e.id === event.device.id)
 
                 if (index >= 0) {
                     if (this.guideOutputs[index] === this.guideOutput) {
-                        Object.assign(this.guideOutput, EMPTY_GUIDE_OUTPUT)
+                        Object.assign(this.guideOutput, this.guideOutputs[0] ?? EMPTY_GUIDE_OUTPUT)
                     }
 
                     this.guideOutputs.splice(index, 1)
+                    this.guideOutputs.sort(deviceComparator)
                 }
             })
         })
@@ -215,9 +222,9 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     async ngAfterViewInit() {
-        this.cameras = await this.api.cameras()
-        this.mounts = await this.api.mounts()
-        this.guideOutputs = await this.api.guideOutputs()
+        this.cameras = (await this.api.cameras()).sort(deviceComparator)
+        this.mounts = (await this.api.mounts()).sort(deviceComparator)
+        this.guideOutputs = (await this.api.guideOutputs()).sort(deviceComparator)
         this.loadPreference()
     }
 
@@ -334,7 +341,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadPreference() {
-        const preference = this.preference.alignmentPreference().get()
+        const preference = this.preference.alignmentPreference.get()
 
         this.tppaRequest.startFromCurrentPosition = preference.tppaStartFromCurrentPosition
         this.tppaRequest.eastDirection = preference.tppaEastDirection
@@ -373,6 +380,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
             darvHemisphere: this.darvHemisphere,
         }
 
-        this.preference.alignmentPreference().set(preference)
+        this.preference.alignmentPreference.set(preference)
     }
 }

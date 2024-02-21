@@ -1,6 +1,6 @@
 package nebulosa.api.framing
 
-import nebulosa.fits.Fits
+import nebulosa.fits.fits
 import nebulosa.hips2fits.FormatOutputType
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.imaging.Image
@@ -32,7 +32,7 @@ class FramingService(private val hips2FitsService: Hips2FitsService) {
         ).execute().body() ?: return null
 
         responseBody.use { it.byteStream().transferAndCloseOutput(DEFAULT_PATH.outputStream()) }
-        val image = Fits(DEFAULT_PATH).also(Fits::read).use(Image::open)
+        val image = DEFAULT_PATH.fits().use(Image::open)
         val solution = PlateSolution.from(image.header)
         LOG.info("framing file loaded. calibration={}", solution)
         return Triple(image, solution, DEFAULT_PATH)

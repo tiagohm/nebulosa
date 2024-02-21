@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.node.TextNode
 
-sealed class DeviceDeserializer<T>(type: Class<out T>) : StdDeserializer<T>(type) {
+abstract class DeviceDeserializer<T>(type: Class<out T>) : StdDeserializer<T>(type) {
 
     protected abstract fun deviceFor(name: String): T?
 

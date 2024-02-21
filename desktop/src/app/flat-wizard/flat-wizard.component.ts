@@ -8,6 +8,7 @@ import { PrimeService } from '../../shared/services/prime.service'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { FlatWizardRequest } from '../../shared/types/flat-wizard.types'
 import { EMPTY_WHEEL, FilterSlot, FilterWheel } from '../../shared/types/wheel.types'
+import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
@@ -62,7 +63,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
         app.title = 'Flat Wizard'
 
         electron.on('FLAT_WIZARD.ELAPSED', event => {
-            if (event.state === 'EXPOSURING' && event.capture && event.capture.camera?.name === this.camera?.name) {
+            if (event.state === 'EXPOSURING' && event.capture && event.capture.camera?.id === this.camera?.id) {
                 ngZone.run(() => {
                     this.running = this.cameraExposure.handleCameraCaptureEvent(event.capture!, true)
                 })
@@ -86,7 +87,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('CAMERA.UPDATED', event => {
-            if (event.device.name === this.camera.name) {
+            if (event.device.id === this.camera.id) {
                 ngZone.run(() => {
                     Object.assign(this.camera, event.device)
                     this.cameraChanged()
@@ -94,19 +95,63 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
             }
         })
 
+        electron.on('CAMERA.ATTACHED', event => {
+            ngZone.run(() => {
+                this.cameras.push(event.device)
+                this.cameras.sort(deviceComparator)
+            })
+        })
+
+        electron.on('CAMERA.DETACHED', event => {
+            ngZone.run(() => {
+                const index = this.cameras.findIndex(e => e.id === event.device.id)
+
+                if (index >= 0) {
+                    if (this.cameras[index] === this.camera) {
+                        Object.assign(this.camera, this.cameras[0] ?? EMPTY_CAMERA)
+                    }
+
+                    this.cameras.splice(index, 1)
+                    this.cameras.sort(deviceComparator)
+                }
+            })
+        })
+
         electron.on('WHEEL.UPDATED', event => {
-            if (event.device.name === this.wheel.name) {
+            if (event.device.id === this.wheel.id) {
                 ngZone.run(() => {
                     Object.assign(this.wheel, event.device)
                     this.wheelChanged()
                 })
             }
         })
+
+        electron.on('WHEEL.ATTACHED', event => {
+            ngZone.run(() => {
+                this.wheels.push(event.device)
+                this.wheels.sort(deviceComparator)
+            })
+        })
+
+        electron.on('WHEEL.DETACHED', event => {
+            ngZone.run(() => {
+                const index = this.wheels.findIndex(e => e.id === event.device.id)
+
+                if (index >= 0) {
+                    if (this.wheels[index] === this.wheel) {
+                        Object.assign(this.wheel, this.wheels[0] ?? EMPTY_WHEEL)
+                    }
+
+                    this.wheels.splice(index, 1)
+                    this.wheels.sort(deviceComparator)
+                }
+            })
+        })
     }
 
     async ngAfterViewInit() {
-        this.cameras = await this.api.cameras()
-        this.wheels = await this.api.wheels()
+        this.cameras = (await this.api.cameras()).sort(deviceComparator)
+        this.wheels = (await this.api.wheels()).sort(deviceComparator)
     }
 
     @HostListener('window:unload')

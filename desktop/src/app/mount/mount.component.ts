@@ -212,7 +212,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         app.title = 'Mount'
 
         electron.on('MOUNT.UPDATED', event => {
-            if (event.device.name === this.mount?.name) {
+            if (event.device.id === this.mount?.id) {
                 ngZone.run(() => {
                     const wasConnected = this.mount.connected
                     Object.assign(this.mount, event.device)
@@ -226,7 +226,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         })
 
         electron.on('MOUNT.DETACHED', event => {
-            if (event.device.name === this.mount?.name) {
+            if (event.device.id === this.mount?.id) {
                 ngZone.run(() => {
                     Object.assign(this.mount, EMPTY_MOUNT)
                 })

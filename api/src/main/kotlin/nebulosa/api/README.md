@@ -152,7 +152,7 @@ URL: `localhost:{PORT}/ws`
         "canRelativeMove": false,
         "canAbort": false,
         "canReverse": false,
-        "reverse": false,
+        "reversed": false,
         "canSync": false,
         "hasBacklash": false,
         "maxPosition": 0,
@@ -185,8 +185,7 @@ URL: `localhost:{PORT}/ws`
 
 ```json5
 {
-    "camera": {},
-    "guideOutput": {},
+    "id": "",
     "remainingTime": 0,
     "progress": 0.0,
     "direction": "EAST",

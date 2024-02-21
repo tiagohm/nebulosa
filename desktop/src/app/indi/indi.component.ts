@@ -4,7 +4,7 @@ import { MenuItem } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types/device.types'
-import { compareDevice, compareText } from '../../shared/utils/comparators'
+import { deviceComparator, textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -51,7 +51,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('DEVICE.MESSAGE_RECEIVED', event => {
-            if (this.device && event.device?.name === this.device.name) {
+            if (this.device && event.device?.id === this.device.id) {
                 ngZone.run(() => {
                     this.messages.splice(0, 0, event.message!)
                 })
@@ -73,7 +73,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
             ...await this.api.mounts(),
             ...await this.api.focusers(),
             ...await this.api.wheels(),
-        ].sort(compareDevice)
+        ].sort(deviceComparator)
 
         this.device = this.devices[0]
     }
@@ -130,7 +130,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
         if (this.groups.length === 0 || groupsChanged) {
             this.groups = Array.from(groups)
-                .sort(compareText)
+                .sort(textComparator)
                 .map(e => <MenuItem>{
                     icon: 'mdi mdi-sitemap',
                     label: e,

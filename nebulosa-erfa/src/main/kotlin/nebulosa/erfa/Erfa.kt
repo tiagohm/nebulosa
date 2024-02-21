@@ -3561,3 +3561,149 @@ fun eraAtic13(rightAscension: Angle, declination: Angle, tdb1: Double, tdb2: Dou
 
     return doubleArrayOf(ri, di, eo)
 }
+
+/**
+ * Convert position/velocity from spherical to Cartesian coordinates.
+ *
+ * theta longitude angle (radians)
+ * phi   latitude angle (radians)
+ * r     radial distance
+ * td    rate of change of theta
+ * pd    rate of change of phi
+ * rd    rate of change of r
+ */
+fun eraS2pv(
+    theta: Angle, phi: Angle, r: Double,
+    td: Double, pd: Double, rd: Double
+): PositionAndVelocity {
+    val st = sin(theta)
+    val ct = cos(theta)
+    val sp = sin(phi)
+    val cp = cos(phi)
+    val rcp = r * cp
+    val x = rcp * ct
+    val y = rcp * st
+    val rpd = r * pd
+    val w = rpd * sp - cp * rd
+
+    return PositionAndVelocity(Vector3D(x, y, r * sp), Vector3D(-y * td - w * ct, x * td - w * st, rpd * cp + sp * rd))
+}
+
+/**
+ * Convert star catalog coordinates to position+velocity vector.
+ *
+ * @param rightAscension Right ascension (radians)
+ * @param declination Declination (radians)
+ * @param pmRA RA proper motion (radians/year)
+ * @param pmDEC Dec proper motion (radians/year)
+ * @param parallax Parallax (arcseconds)
+ * @param rv Radial velocity (km/s, positive = receding)
+ *
+ * @return pv-vector (au, au/day).
+ */
+fun eraStarpv(
+    rightAscension: Angle, declination: Angle,
+    pmRA: Angle, pmDEC: Angle, parallax: Double, rv: Double,
+): PositionAndVelocity {
+    // Distance (au).
+    var w = max(parallax, 1e-7)
+    val r = (180.0 * 3600.0 / PI) / w
+
+    val rd = DAYSEC * rv / AU_KM
+
+    // Proper motion (radian/day).
+    val rad = pmRA / DAYSPERJY
+    val decd = pmDEC / DAYSPERJY
+
+    // To pv-vector (au,au/day).
+    val pv = eraS2pv(rightAscension, declination, r, rad, decd, rd)
+
+    return eraStarpv(pv)
+}
+
+/**
+ * Convert star catalog coordinates to position+velocity vector.
+ *
+ * Modified to accept radians and au/day instead of arcseconds and km/s.
+ *
+ * @param rightAscension Right ascension (radians)
+ * @param declination Declination (radians)
+ * @param pmRA RA proper motion (radians/year)
+ * @param pmDEC Dec proper motion (radians/year)
+ * @param parallax Parallax (radians)
+ * @param rv Radial velocity (au/day, positive = receding)
+ *
+ * @return pv-vector (au, au/day).
+ */
+fun eraStarpvMod(
+    rightAscension: Angle, declination: Angle,
+    pmRA: Angle, pmDEC: Angle, parallax: Angle, rv: Velocity,
+): PositionAndVelocity {
+    // Distance (au).
+    val r = 1 / max(parallax, 1e-13)
+
+    // Proper motion (radian/day).
+    val rad = pmRA / DAYSPERJY
+    val decd = pmDEC / DAYSPERJY
+
+    // To pv-vector (au,au/day).
+    val pv = eraS2pv(rightAscension, declination, r, rad, decd, rv)
+
+    return eraStarpv(pv)
+}
+
+private fun eraStarpv(pv: PositionAndVelocity): PositionAndVelocity {
+    // Isolate the radial component of the velocity (au/day).
+    val pu = pv.position.normalized
+    val vsr = pu.dot(pv.velocity)
+    val usr = pu * vsr
+
+    // Isolate the transverse component of the velocity (au/day).
+    val ust = pv.velocity - usr
+    val vst = ust.length
+
+    // Special-relativity dimensionless parameters.
+    val betsr = vsr / SPEED_OF_LIGHT_AU_DAY
+    val betst = vst / SPEED_OF_LIGHT_AU_DAY
+
+    // Determine the observed-to-inertial correction terms.
+    var bett = betst
+    var betr = betsr
+
+    var d = 0.0
+    var del = 0.0
+    var odd = 0.0
+    var oddel = 0.0
+    var od = 0.0
+    var odel = 0.0
+
+    for (i in 0..99) {
+        d = 1.0 + betr
+        val w = betr * betr + bett * bett
+        del = -w / (sqrt(1.0 - w) + 1.0)
+        betr = d * betsr + del
+        bett = d * betst
+
+        if (i > 0) {
+            val dd = abs(d - od)
+            val ddel = abs(del - odel)
+            if (i > 1 && dd >= odd && ddel >= oddel) break
+            odd = dd
+            oddel = ddel
+        }
+
+        od = d
+        odel = del
+    }
+
+    // Scale observed tangential velocity vector into inertial (au/d).
+    val ut = ust * d
+
+    // Compute inertial radial velocity vector (au/d).
+    val ur = pu * (SPEED_OF_LIGHT_AU_DAY * (d * betsr + del))
+
+    // Combine the two to obtain the inertial space velocity vector.
+    val v = ur + ut
+
+    return PositionAndVelocity(pv.position, v)
+}

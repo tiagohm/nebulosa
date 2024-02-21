@@ -1,7 +1,7 @@
 package nebulosa.api.repositories
 
 import io.objectbox.Box
-import nebulosa.api.entities.BoxEntity
+import nebulosa.api.database.BoxEntity
 
 abstract class BoxRepository<T : BoxEntity> : Collection<T> {
 

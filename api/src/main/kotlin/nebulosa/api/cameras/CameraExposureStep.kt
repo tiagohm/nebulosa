@@ -11,10 +11,12 @@ import nebulosa.batch.processing.StepResult
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.batch.processing.delay.DelayStepListener
 import nebulosa.common.concurrency.latch.CountUpDownLatch
+import nebulosa.fits.Fits
 import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import okio.sink
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -64,7 +66,7 @@ data class CameraExposureStep(
         if (event.device === camera) {
             when (event) {
                 is CameraFrameCaptured -> {
-                    save(event.fits)
+                    save(event.stream, event.fits)
                 }
                 is CameraExposureAborted,
                 is CameraExposureFailed,
@@ -166,14 +168,21 @@ data class CameraExposureStep(
         }
     }
 
-    private fun save(stream: InputStream) {
+    private fun save(stream: InputStream?, fits: Fits?) {
         try {
             savedPath = request.makeSavePath(camera)
 
             LOG.info("saving FITS. path={}", savedPath)
 
             savedPath!!.createParentDirectories()
-            stream.transferAndClose(savedPath!!.outputStream())
+
+            if (stream != null) {
+                stream.transferAndClose(savedPath!!.outputStream())
+            } else if (fits != null) {
+                savedPath!!.outputStream().use { fits.writeTo(it.sink()) }
+            } else {
+                return
+            }
 
             listeners.forEach { it.onExposureFinished(this, stepExecution!!) }
         } catch (e: Throwable) {

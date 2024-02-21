@@ -17,7 +17,7 @@ interface Focuser : Device, Thermometer {
 
     val canReverse: Boolean
 
-    val reverse: Boolean
+    val reversed: Boolean
 
     val canSync: Boolean
 

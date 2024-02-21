@@ -12,10 +12,10 @@ class INDISocketConnection(private val socket: Socket) : INDIConnection {
         socket.connect(InetSocketAddress(host, port), 30000)
     }
 
-    val host: String
+    val host
         get() = socket.localAddress.hostName
 
-    val port: Int
+    val port
         get() = socket.localPort
 
     override val input by lazy { INDIProtocolFactory.createInputStream(socket.getInputStream()) }

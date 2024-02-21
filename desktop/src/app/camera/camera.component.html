@@ -176,8 +176,9 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [disabled]="!camera.connected || running" [options]="camera.frameFormats" [(ngModel)]="request.frameFormat"
-                            styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" [autoDisplayFirst]="false" />
+                <p-dropdown [disabled]="!camera.connected || running || !camera.frameFormats.length" [options]="camera.frameFormats"
+                            [(ngModel)]="request.frameFormat" styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()"
+                            [autoDisplayFirst]="false" />
                 <label>Frame Format</label>
             </span>
         </div>
@@ -191,9 +192,9 @@
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.offset" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="camera.offsetMin" [max]="camera.offsetMax" styleClass="p-inputtext-sm border-0"
-                               [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                <p-inputNumber [disabled]="!camera.connected || running || !camera.offsetMax" [(ngModel)]="request.offset" mode="decimal"
+                               [showButtons]="true" [step]="1.0" [min]="camera.offsetMin" [max]="camera.offsetMax"
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Offset</label>
             </span>
         </div>

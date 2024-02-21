@@ -11,6 +11,8 @@ class FocuserSerializer : StdSerializer<Focuser>(Focuser::class.java) {
 
     override fun serialize(value: Focuser, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()
+        gen.writeStringField("sender", value.sender.id)
+        gen.writeStringField("id", value.id)
         gen.writeStringField("name", value.name)
         gen.writeBooleanField("connected", value.connected)
         gen.writeBooleanField("moving", value.moving)
@@ -19,7 +21,7 @@ class FocuserSerializer : StdSerializer<Focuser>(Focuser::class.java) {
         gen.writeBooleanField("canRelativeMove", value.canRelativeMove)
         gen.writeBooleanField("canAbort", value.canAbort)
         gen.writeBooleanField("canReverse", value.canReverse)
-        gen.writeBooleanField("reverse", value.reverse)
+        gen.writeBooleanField("reversed", value.reversed)
         gen.writeBooleanField("canSync", value.canSync)
         gen.writeBooleanField("hasBacklash", value.hasBacklash)
         gen.writeNumberField("maxPosition", value.maxPosition)

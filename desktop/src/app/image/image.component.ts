@@ -19,7 +19,7 @@ import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, St
 import { Camera } from '../../shared/types/camera.types'
 import { DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageData, ImageInfo, ImagePreference, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
-import { DEFAULT_SOLVER_TYPES, PlateSolverType } from '../../shared/types/settings.types'
+import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
 
@@ -77,7 +77,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solverCenterDEC = ''
     solverRadius = 4
     readonly solvedData = Object.assign({}, EMPTY_IMAGE_SOLVED)
-    readonly solverTypes: PlateSolverType[] = Object.assign([], DEFAULT_SOLVER_TYPES)
+    readonly solverTypes = Array.from(DEFAULT_SOLVER_TYPES)
     solverType = this.solverTypes[0]
 
     crossHair = false
@@ -367,7 +367,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         app.title = 'Image'
 
         electron.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
-            if (event.state === 'EXPOSURE_FINISHED' && event.camera.name === this.imageData.camera?.name) {
+            if (event.state === 'EXPOSURE_FINISHED' && event.camera.id === this.imageData.camera?.id) {
                 await this.closeImage(event.savePath !== this.imageData.path)
 
                 ngZone.run(() => {

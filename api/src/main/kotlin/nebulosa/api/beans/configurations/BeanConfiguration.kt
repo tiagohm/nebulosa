@@ -9,7 +9,7 @@ import io.objectbox.BoxStore
 import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
-import nebulosa.api.entities.MyObjectBox
+import nebulosa.api.database.MyObjectBox
 import nebulosa.api.locations.LocationEntity
 import nebulosa.api.preferences.PreferenceEntity
 import nebulosa.batch.processing.AsyncJobLauncher
@@ -20,6 +20,7 @@ import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
 import nebulosa.imaging.Image
+import nebulosa.log.loggerFor
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
@@ -93,10 +94,22 @@ class BeanConfiguration {
     fun cache(cachePath: Path) = Cache(cachePath.toFile(), MAX_CACHE_SIZE)
 
     @Bean
-    fun httpClient(connectionPool: ConnectionPool, cache: Cache) = OkHttpClient.Builder()
+    fun httpLogger() = HttpLoggingInterceptor.Logger { OKHTTP_LOGGER.info(it) }
+
+    @Bean
+    fun httpClient(connectionPool: ConnectionPool, cache: Cache, httpLogger: HttpLoggingInterceptor.Logger) = OkHttpClient.Builder()
         .connectionPool(connectionPool)
         .cache(cache)
-        .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
+        .addInterceptor(HttpLoggingInterceptor(httpLogger).setLevel(HttpLoggingInterceptor.Level.BASIC))
+        .readTimeout(60L, TimeUnit.SECONDS)
+        .writeTimeout(60L, TimeUnit.SECONDS)
+        .connectTimeout(60L, TimeUnit.SECONDS)
+        .callTimeout(60L, TimeUnit.SECONDS)
+        .build()
+
+    @Bean
+    fun alpacaHttpClient(connectionPool: ConnectionPool) = OkHttpClient.Builder()
+        .connectionPool(connectionPool)
         .readTimeout(60L, TimeUnit.SECONDS)
         .writeTimeout(60L, TimeUnit.SECONDS)
         .connectTimeout(60L, TimeUnit.SECONDS)
@@ -206,5 +219,7 @@ class BeanConfiguration {
     companion object {
 
         const val MAX_CACHE_SIZE = 1024L * 1024L * 32L // 32MB
+
+        @JvmStatic private val OKHTTP_LOGGER = loggerFor<OkHttpClient>()
     }
 }

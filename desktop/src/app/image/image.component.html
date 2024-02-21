@@ -142,7 +142,7 @@
     <div class="grid pt-2">
         <div class="col-12 gap-2 align-items-center">
             <span class="p-float-label">
-                <p-dropdown [options]="solverTypes" [(ngModel)]="solverType" styleClass="p-inputtext-sm border-0" />
+                <p-dropdown [options]="solverTypes" [(ngModel)]="solverType" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
                 <label>Type</label>
             </span>
             <p-checkbox [binary]="true" label="Blind" [(ngModel)]="solverBlind" />
@@ -276,7 +276,7 @@
         <div class="col-7 flex align-items-center">
             <span class="p-float-label w-full max-w-full">
                 <p-dropdown [disabled]="scnrChannel === 'NONE'" appendTo="body" [(ngModel)]="scnrProtectionMethod"
-                            [options]="scnrProtectionMethodOptions" styleClass="border-0">
+                            [options]="scnrProtectionMethodOptions" styleClass="border-0" [autoDisplayFirst]="false">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -386,7 +386,8 @@
         <div class="col-6">
             <span class="p-float-label device">
                 <p-dropdown [options]="statisticsBitOptions" [(ngModel)]="statisticsBitLength" optionLabel="name"
-                            styleClass="p-inputtext-sm border-0" appendTo="body" (ngModelChange)="statisticsBitLengthChanged()" />
+                            [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0" appendTo="body"
+                            (ngModelChange)="statisticsBitLengthChanged()" />
                 <label>Bits</label>
             </span>
         </div>

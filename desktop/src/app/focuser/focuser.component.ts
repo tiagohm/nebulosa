@@ -23,7 +23,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     canRelativeMove = false
     canAbort = false
     canReverse = false
-    reverse = false
+    reversed = false
     canSync = false
     hasBacklash = false
     maxPosition = 0
@@ -42,7 +42,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         app.title = 'Focuser'
 
         electron.on('FOCUSER.UPDATED', event => {
-            if (event.device.name === this.focuser.name) {
+            if (event.device.id === this.focuser.id) {
                 ngZone.run(() => {
                     Object.assign(this.focuser, event.device)
                     this.update()
@@ -51,7 +51,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('FOCUSER.DETACHED', event => {
-            if (event.device.name === this.focuser.name) {
+            if (event.device.id === this.focuser.id) {
                 ngZone.run(() => {
                     Object.assign(this.focuser, EMPTY_FOCUSER)
                 })
@@ -133,7 +133,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         this.canRelativeMove = this.focuser.canRelativeMove
         this.canAbort = this.focuser.canAbort
         this.canReverse = this.focuser.canReverse
-        this.reverse = this.focuser.reverse
+        this.reversed = this.focuser.reversed
         this.canSync = this.focuser.canSync
         this.hasBacklash = this.focuser.hasBacklash
         this.maxPosition = this.focuser.maxPosition
