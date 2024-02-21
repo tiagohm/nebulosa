@@ -1,20 +1,19 @@
 package nebulosa.alpaca.indi.device.mounts
 
-import nebulosa.alpaca.api.AlpacaTelescopeService
-import nebulosa.alpaca.api.ConfiguredDevice
-import nebulosa.alpaca.api.DriveRate
-import nebulosa.alpaca.api.PulseGuideDirection
+import nebulosa.alpaca.api.*
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
+import nebulosa.indi.device.mount.PierSide
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.math.*
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
 import java.time.Duration
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 data class ASCOMMount(
     override val device: ConfiguredDevice,
@@ -77,6 +76,10 @@ data class ASCOMMount(
     @Volatile override var dateTime = OffsetDateTime.now()!!
         private set
 
+    private val axisRates = HashMap<String, AxisRate>(4)
+    @Volatile private var axisRate: AxisRate? = null
+    @Volatile private var equatorialSystem = EquatorialCoordinateType.J2000
+
     override fun park() {
         if (canPark) {
             service.park(device.number).doRequest()
@@ -124,26 +127,52 @@ data class ASCOMMount(
 
     override fun sync(ra: Angle, dec: Angle) {
         if (canSync) {
-            service.syncToCoordinates(device.number, ra.toHours, dec.toDegrees).doRequest()
+            if (equatorialSystem != EquatorialCoordinateType.J2000) {
+                service.syncToCoordinates(device.number, ra.toHours, dec.toDegrees).doRequest()
+            } else {
+                // J2000 -> JNOW.
+                with(ICRF.equatorial(ra, dec).equatorialAtDate()) {
+                    service.syncToCoordinates(device.number, longitude.normalized.toHours, latitude.toDegrees).doRequest()
+                }
+            }
         }
     }
 
     override fun syncJ2000(ra: Angle, dec: Angle) {
         if (canSync) {
-            with(ICRF.equatorial(ra, dec, epoch = CurrentTime).equatorial()) {
-                sync(longitude.normalized, latitude)
+            if (equatorialSystem == EquatorialCoordinateType.J2000) {
+                service.syncToCoordinates(device.number, ra.toHours, dec.toDegrees).doRequest()
+            } else {
+                // JNOW -> J2000.
+                with(ICRF.equatorial(ra, dec, epoch = CurrentTime).equatorial()) {
+                    service.syncToCoordinates(device.number, longitude.normalized.toHours, latitude.toDegrees).doRequest()
+                }
             }
         }
     }
 
     override fun slewTo(ra: Angle, dec: Angle) {
-        service.slewToCoordinates(device.number, ra.toHours, dec.toDegrees).doRequest()
+        service.tracking(device.number, true)
+
+        if (equatorialSystem != EquatorialCoordinateType.J2000) {
+            service.slewToCoordinates(device.number, ra.toHours, dec.toDegrees).doRequest()
+        } else {
+            // J2000 -> JNOW.
+            with(ICRF.equatorial(ra, dec).equatorialAtDate()) {
+                service.slewToCoordinates(device.number, longitude.normalized.toHours, latitude.toDegrees).doRequest()
+            }
+        }
     }
 
     override fun slewToJ2000(ra: Angle, dec: Angle) {
-        if (canSync) {
+        service.tracking(device.number, true)
+
+        if (equatorialSystem == EquatorialCoordinateType.J2000) {
+            service.slewToCoordinates(device.number, ra.toHours, dec.toDegrees).doRequest()
+        } else {
+            // JNOW -> J2000.
             with(ICRF.equatorial(ra, dec, epoch = CurrentTime).equatorial()) {
-                slewTo(longitude.normalized, latitude)
+                service.slewToCoordinates(device.number, longitude.normalized.toHours, latitude.toDegrees).doRequest()
             }
         }
     }
@@ -175,18 +204,34 @@ data class ASCOMMount(
     }
 
     override fun slewRate(rate: SlewRate) {
+        axisRate = axisRates[rate.name]?.takeIf { it !== axisRate } ?: return
+        sender.fireOnEventReceived(MountSlewRateChanged(this))
+    }
+
+    private fun moveAxis(axisType: AxisType, negative: Boolean, enabled: Boolean) {
+        val rate = axisRate?.maximum ?: return
+
+        service.moveAxis(device.number, axisType, 0.0).doRequest()
+
+        if (enabled) {
+            service.moveAxis(device.number, axisType, if (negative) -rate else rate).doRequest()
+        }
     }
 
     override fun moveNorth(enabled: Boolean) {
+        moveAxis(AxisType.SECONDARY, false, enabled)
     }
 
     override fun moveSouth(enabled: Boolean) {
+        moveAxis(AxisType.SECONDARY, true, enabled)
     }
 
     override fun moveWest(enabled: Boolean) {
+        moveAxis(AxisType.PRIMARY, true, enabled)
     }
 
     override fun moveEast(enabled: Boolean) {
+        moveAxis(AxisType.PRIMARY, false, enabled)
     }
 
     override fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance) {
@@ -205,7 +250,13 @@ data class ASCOMMount(
 
     override fun onConnected() {
         processCapabilities()
+        processGuideRates()
         processSiteCoordinates()
+        processDateTime()
+
+        equatorialSystem = service.equatorialSystem(device.number).doRequest()?.value ?: equatorialSystem
+
+        LOG.info("The mount {} uses {} equatorial system", name, equatorialSystem)
     }
 
     override fun onDisconnected() {}
@@ -241,6 +292,9 @@ data class ASCOMMount(
         latitude = 0.0
         elevation = 0.0
         dateTime = OffsetDateTime.now()!!
+
+        axisRates.clear()
+        axisRate = null
     }
 
     override fun close() {
@@ -255,15 +309,18 @@ data class ASCOMMount(
     override fun refresh(elapsedTimeInSeconds: Long) {
         super.refresh(elapsedTimeInSeconds)
 
+        processTracking()
+        processSlewing()
         processParked()
+        processEquatorialCoordinates()
         processSiteCoordinates()
+        processTrackMode()
     }
 
     private fun processCapabilities() {
         service.canFindHome(device.number).doRequest {
             if (it.value) {
                 canHome = true
-
                 sender.fireOnEventReceived(MountCanHomeChanged(this))
             }
         }
@@ -271,7 +328,6 @@ data class ASCOMMount(
         service.canPark(device.number).doRequest {
             if (it.value) {
                 canPark = true
-
                 sender.fireOnEventReceived(MountCanParkChanged(this))
             }
         }
@@ -287,8 +343,50 @@ data class ASCOMMount(
         service.canSync(device.number).doRequest {
             if (it.value) {
                 canSync = true
-
                 sender.fireOnEventReceived(MountCanSyncChanged(this))
+            }
+        }
+
+        service.trackingRates(device.number).doRequest {
+            trackModes = it.value.map { m -> TrackMode.valueOf(m.name) }
+            sender.fireOnEventReceived(MountTrackModesChanged(this))
+            processTrackMode()
+        }
+
+        service.axisRates(device.number).doRequest {
+            val rates = ArrayList<SlewRate>(it.value.size)
+
+            axisRates.clear()
+
+            for (i in it.value.indices) {
+                val rate = it.value[i]
+                val name = "RATE_$i"
+                axisRates[name] = rate
+                rates.add(SlewRate(name, "%f.1f deg/s".format(rate.maximum)))
+            }
+
+            axisRate = it.value.firstOrNull()
+
+            if (axisRate != null) {
+                sender.fireOnEventReceived(MountSlewRateChanged(this))
+            }
+        }
+    }
+
+    private fun processTracking() {
+        service.isTracking(device.number).doRequest {
+            if (it.value != tracking) {
+                tracking = it.value
+                sender.fireOnEventReceived(MountTrackingChanged(this))
+            }
+        }
+    }
+
+    private fun processSlewing() {
+        service.isSlewing(device.number).doRequest {
+            if (it.value != slewing) {
+                slewing = it.value
+                sender.fireOnEventReceived(MountSlewingChanged(this))
             }
         }
     }
@@ -298,7 +396,6 @@ data class ASCOMMount(
             service.isAtPark(device.number).doRequest {
                 if (it.value != parked) {
                     parked = it.value
-
                     sender.fireOnEventReceived(MountParkChanged(this))
                 }
             }
@@ -312,7 +409,7 @@ data class ASCOMMount(
             service.siteLatitude(device.number).doRequest { b ->
                 val lat = b.value.deg
 
-                service.siteLatitude(device.number).doRequest { c ->
+                service.siteElevation(device.number).doRequest { c ->
                     val elev = c.value.m
 
                     if (lng != longitude || lat != latitude || elev != elevation) {
@@ -322,6 +419,58 @@ data class ASCOMMount(
 
                         sender.fireOnEventReceived(MountGeographicCoordinateChanged(this))
                     }
+                }
+            }
+        }
+    }
+
+    private fun processDateTime() {
+        service.utcDate(device.number).doRequest {
+            dateTime = it.value.atOffset(ZoneOffset.systemDefault().rules.getOffset(it.value))
+            sender.fireOnEventReceived(MountTimeChanged(this))
+        }
+    }
+
+    private fun processTrackMode() {
+        service.trackingRate(device.number).doRequest {
+            if (it.value.name != trackMode.name) {
+                trackMode = TrackMode.valueOf(it.value.name)
+                sender.fireOnEventReceived(MountTrackModeChanged(this))
+            }
+        }
+    }
+
+    private fun processGuideRates() {
+        service.guideRateRightAscension(device.number).doRequest { ra ->
+            // TODO: deg/s is the same for INDI?
+            guideRateWE = ra.value
+
+            service.guideRateDeclination(device.number).doRequest { de ->
+                guideRateNS = de.value
+            }
+        }
+    }
+
+    private fun processEquatorialCoordinates() {
+        service.rightAscension(device.number).doRequest { a ->
+            var ra = a.value.hours
+
+            service.declination(device.number).doRequest { b ->
+                var dec = b.value.deg
+
+                // J2000 -> JNOW.
+                if (equatorialSystem == EquatorialCoordinateType.J2000) {
+                    with(ICRF.equatorial(ra, dec).equatorialAtDate()) {
+                        ra = longitude.normalized
+                        dec = latitude
+                    }
+                }
+
+                if (ra != rightAscension || dec != declination) {
+                    rightAscension = ra
+                    declination = dec
+
+                    sender.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
                 }
             }
         }

@@ -232,7 +232,7 @@ interface AlpacaCameraService : AlpacaGuideOutputService {
     override fun pulseGuide(
         @Path("id") id: Int,
         @Field("Direction") direction: PulseGuideDirection,
-        @Field("Duration") durationMs: Long
+        @Field("Duration") durationInMilliseconds: Long
     ): Call<NoneResponse>
 
     @FormUrlEncoded

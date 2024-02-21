@@ -4,7 +4,7 @@ import nebulosa.common.time.Stopwatch
 
 object CurrentTime : InstantOfTime() {
 
-    const val ELAPSED_INTERVAL = 1000L
+    @JvmField @Volatile var ELAPSED_INTERVAL = 5L
 
     private val stopwatch = Stopwatch()
 
@@ -15,7 +15,7 @@ object CurrentTime : InstantOfTime() {
     private var time = UTC.now()
         get() {
             synchronized(stopwatch) {
-                if (stopwatch.elapsedMilliseconds >= ELAPSED_INTERVAL) {
+                if (stopwatch.elapsedSeconds >= ELAPSED_INTERVAL) {
                     stopwatch.reset()
                     field = UTC.now()
                 }

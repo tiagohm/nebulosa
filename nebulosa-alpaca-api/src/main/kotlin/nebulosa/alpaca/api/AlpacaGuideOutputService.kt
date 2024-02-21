@@ -8,5 +8,5 @@ interface AlpacaGuideOutputService : AlpacaDeviceService {
 
     fun isPulseGuiding(id: Int): Call<BoolResponse>
 
-    fun pulseGuide(id: Int, direction: PulseGuideDirection, durationMs: Long): Call<NoneResponse>
+    fun pulseGuide(id: Int, direction: PulseGuideDirection, durationInMilliseconds: Long): Call<NoneResponse>
 }
