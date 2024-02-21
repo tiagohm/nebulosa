@@ -40,7 +40,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ## Alignment
 
-![](alignment.darv.png)
+![](alignment.png)
 
 ## Flat Wizard
 
