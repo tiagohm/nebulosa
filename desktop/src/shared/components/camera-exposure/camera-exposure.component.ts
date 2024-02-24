@@ -12,6 +12,9 @@ export class CameraExposureComponent {
     state?: CameraCaptureState = 'IDLE'
 
     @Input()
+    showRemainingTime: boolean = true
+
+    @Input()
     readonly exposure = Object.assign({}, EMPTY_CAMERA_EXPOSURE_INFO)
 
     @Input()
@@ -56,5 +59,9 @@ export class CameraExposureComponent {
         Object.assign(this.exposure, EMPTY_CAMERA_EXPOSURE_INFO)
         Object.assign(this.capture, EMPTY_CAMERA_CAPTURE_INFO)
         Object.assign(this.wait, EMPTY_CAMERA_WAIT_INFO)
+    }
+
+    toggleRemainingTime() {
+        this.showRemainingTime = !this.showRemainingTime
     }
 }

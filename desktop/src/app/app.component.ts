@@ -54,7 +54,7 @@ export class AppComponent implements AfterViewInit {
             const size = document.getElementsByTagName('app-root')[0]?.getBoundingClientRect()?.height
 
             if (size) {
-                this.electron.send('WINDOW.RESIZE', Math.ceil(size))
+                this.electron.send('WINDOW.RESIZE', Math.floor(size))
             }
         }, 1000)
     }

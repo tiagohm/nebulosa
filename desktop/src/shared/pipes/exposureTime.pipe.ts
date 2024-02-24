@@ -51,7 +51,8 @@ function minutes(value: number) {
 }
 
 function seconds(value: number) {
-    return format(value, [1000000, 1000], [secondFormatter, millisecondFormatter])
+    return `${TWO_DIGITS_FORMATTER.format(value / 1000000)}s`
+    // return format(value, [1000000, 1000], [secondFormatter, millisecondFormatter])
 }
 
 function milliseconds(value: number) {

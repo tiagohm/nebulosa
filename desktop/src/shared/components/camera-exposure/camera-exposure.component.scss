@@ -1,12 +1,10 @@
 :host {
     min-height: 29px;
-    display: flex;
-    flex-direction: row;
-    gap: 4px;
-    align-items: end;
+    width: 100%;
 
     .state {
         padding: 1px 6px;
+        height: 13px;
 
         &.percentage {
             min-width: 50px;
@@ -22,18 +20,6 @@
 
         .mdi:before {
             font-size: 0.9rem !important;
-        }
-    }
-
-    .state-group {
-        .state:first-child {
-            border-top-left-radius: 4px;
-            border-bottom-left-radius: 4px;
-        }
-
-        .state:last-child {
-            border-top-right-radius: 4px;
-            border-bottom-right-radius: 4px;
         }
     }
 

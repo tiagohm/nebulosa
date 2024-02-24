@@ -419,7 +419,7 @@ try {
         if (!window || (!serve && window.isResizable())) return false
 
         const size = window.getSize()
-        window.setSize(size[0], Math.max(size[1], data))
+        window.setSize(size[0], Math.max(0, data))
         console.info('window resized', size[0], data)
 
         return true
