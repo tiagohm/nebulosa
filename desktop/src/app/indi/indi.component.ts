@@ -33,20 +33,24 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         app.title = 'INDI'
 
         electron.on('DEVICE.PROPERTY_CHANGED', event => {
-            ngZone.run(() => {
-                this.addOrUpdateProperty(event.property!)
-                this.updateGroups()
-            })
+            if (this.device?.id === event.device.id) {
+                ngZone.run(() => {
+                    this.addOrUpdateProperty(event.property!)
+                    this.updateGroups()
+                })
+            }
         })
 
         electron.on('DEVICE.PROPERTY_DELETED', event => {
-            const index = this.properties.findIndex((e) => e.name === event.property!.name)
+            if (this.device?.id === event.device.id) {
+                const index = this.properties.findIndex((e) => e.name === event.property!.name)
 
-            if (index >= 0) {
-                ngZone.run(() => {
-                    this.properties.splice(index, 1)
-                    this.updateGroups()
-                })
+                if (index >= 0) {
+                    ngZone.run(() => {
+                        this.properties.splice(index, 1)
+                        this.updateGroups()
+                    })
+                }
             }
         })
 
@@ -76,6 +80,10 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         ].sort(deviceComparator)
 
         this.device = this.devices[0]
+
+        if (this.device) {
+            this.deviceChanged(this.device)
+        }
     }
 
     @HostListener('window:unload')
@@ -116,10 +124,14 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         let groupsChanged = false
 
         if (this.groups.length === groups.size) {
-            let index = 0
-
-            for (const item of groups) {
-                if (this.groups[index++].label !== item) {
+            for (const group of groups) {
+                if (!this.groups.find(e => e.label === group)) {
+                    groupsChanged = true
+                    break
+                }
+            }
+            for (const group of this.groups) {
+                if (!groups.has(group.label!)) {
                     groupsChanged = true
                     break
                 }
