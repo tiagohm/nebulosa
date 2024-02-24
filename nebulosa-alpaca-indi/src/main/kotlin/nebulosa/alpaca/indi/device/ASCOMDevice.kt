@@ -5,6 +5,7 @@ import nebulosa.alpaca.api.AlpacaResponse
 import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.common.time.Stopwatch
+import nebulosa.indi.connection.ConnectionClosed
 import nebulosa.indi.device.*
 import nebulosa.log.loggerFor
 import retrofit2.Call
@@ -95,6 +96,7 @@ abstract class ASCOMDevice : Device {
         } catch (e: HttpException) {
             LOG.error("unexpected response. device=$name", e)
         } catch (e: Throwable) {
+            sender.fireOnEventReceived(ConnectionClosed(sender))
             LOG.error("unexpected error. device=$name", e)
         }
 

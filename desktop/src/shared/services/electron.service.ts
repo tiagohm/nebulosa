@@ -20,6 +20,7 @@ import { Mount } from '../types/mount.types'
 import { SequencerElapsed } from '../types/sequencer.types'
 import { FilterWheel } from '../types/wheel.types'
 import { ApiService } from './api.service'
+import { ConnectionClosed } from '../types/home.types'
 
 type EventMappedType = {
     'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
@@ -52,6 +53,7 @@ type EventMappedType = {
     'LOCATION.CHANGED': Location
     'SEQUENCER.ELAPSED': SequencerElapsed
     'FLAT_WIZARD.ELAPSED': FlatWizardElapsed
+    'CONNECTION.CLOSED': ConnectionClosed
 }
 
 @Injectable({ providedIn: 'root' })

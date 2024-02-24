@@ -24,3 +24,7 @@ export const EMPTY_CONNECTION_DETAILS: ConnectionDetails = {
     type: 'INDI',
     connected: false
 }
+
+export interface ConnectionClosed {
+    id: string
+}

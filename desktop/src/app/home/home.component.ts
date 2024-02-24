@@ -184,6 +184,14 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             },
         )
 
+        electron.on('CONNECTION.CLOSED', event => {
+            if (this.connection?.id === event.id) {
+                ngZone.run(() => {
+                    this.updateConnection()
+                })
+            }
+        })
+
         this.connections = preference.connections.get()
         this.connections.forEach(e => e.connected = false)
         this.connection = this.connections[0]

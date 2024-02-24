@@ -5,7 +5,7 @@ import nebulosa.api.focusers.FocuserEventHandler
 import nebulosa.api.guiding.GuideOutputEventHandler
 import nebulosa.api.mounts.MountEventHandler
 import nebulosa.api.wheels.WheelEventHandler
-import nebulosa.indi.device.ConnectionEvent
+import nebulosa.indi.device.DeviceConnectionEvent
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.camera.Camera
@@ -26,7 +26,7 @@ class ConnectionEventHandler(
 
     @Suppress("CascadeIf")
     override fun onEventReceived(event: DeviceEvent<*>) {
-        if (event is ConnectionEvent) {
+        if (event is DeviceConnectionEvent) {
             val device = event.device ?: return
 
             if (device is Camera) cameraEventHandler.sendUpdate(device)

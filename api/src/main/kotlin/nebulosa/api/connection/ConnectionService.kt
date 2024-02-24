@@ -1,9 +1,13 @@
 package nebulosa.api.connection
 
 import nebulosa.alpaca.indi.client.AlpacaClient
+import nebulosa.api.messages.MessageService
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.connection.INDISocketConnection
+import nebulosa.indi.connection.ConnectionClosed
 import nebulosa.indi.device.Device
+import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
@@ -25,7 +29,8 @@ class ConnectionService(
     private val eventBus: EventBus,
     private val connectionEventHandler: ConnectionEventHandler,
     private val alpacaHttpClient: OkHttpClient,
-) : Closeable {
+    private val messageService: MessageService,
+) : DeviceEventHandler, Closeable {
 
     private val providers = LinkedHashMap<String, INDIDeviceProvider>()
 
@@ -58,6 +63,7 @@ class ConnectionService(
                     val client = INDIClient(host, port)
                     client.registerDeviceEventHandler(eventBus::post)
                     client.registerDeviceEventHandler(connectionEventHandler)
+                    client.registerDeviceEventHandler(this)
                     client.start()
                     client
                 }
@@ -89,6 +95,14 @@ class ConnectionService(
     fun disconnectAll() {
         providers.forEach { it.value.close() }
         providers.clear()
+    }
+
+    override fun onEventReceived(event: DeviceEvent<*>) {
+        if (event is ConnectionClosed) {
+            LOG.info("client connection was closed. id={}", event.provider.id)
+            providers.remove(event.provider.id)
+            messageService.sendMessage(ConnectionClosedWithClient(event.provider.id))
+        }
     }
 
     override fun close() {

@@ -12,6 +12,7 @@ import nebulosa.indi.client.device.focusers.INDIFocuser
 import nebulosa.indi.client.device.mounts.INDIMount
 import nebulosa.indi.client.device.mounts.IoptronV3Mount
 import nebulosa.indi.client.device.wheels.INDIFilterWheel
+import nebulosa.indi.connection.ConnectionClosed
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
@@ -42,7 +43,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     override val id = UUID.randomUUID().toString()
 
     override val isClosed
-        get() = !connection.isOpen
+        get() = !connection.isOpen || super.isClosed
 
     override val input
         get() = connection.input
@@ -75,6 +76,10 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     override fun sendMessageToServer(message: INDIProtocol) {
         LOG.debug { "sending message: $message" }
         connection.writeINDIProtocol(message)
+    }
+
+    override fun onConnectionClosed() {
+        fireOnEventReceived(ConnectionClosed(this))
     }
 
     override fun cameras(): List<Camera> {

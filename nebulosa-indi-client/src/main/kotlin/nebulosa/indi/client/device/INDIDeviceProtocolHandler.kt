@@ -26,13 +26,14 @@ import nebulosa.indi.protocol.DefTextVector
 import nebulosa.indi.protocol.DelProperty
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.Message
+import nebulosa.indi.protocol.parser.CloseConnectionListener
 import nebulosa.indi.protocol.parser.INDIProtocolParser
 import nebulosa.indi.protocol.parser.INDIProtocolReader
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import java.util.concurrent.LinkedBlockingQueue
 
-abstract class INDIDeviceProtocolHandler : MessageSender, INDIProtocolParser {
+abstract class INDIDeviceProtocolHandler : MessageSender, INDIProtocolParser, CloseConnectionListener {
 
     @JvmField protected val cameras = HashMap<String, Camera>(2)
     @JvmField protected val mounts = HashMap<String, Mount>(1)
@@ -47,8 +48,8 @@ abstract class INDIDeviceProtocolHandler : MessageSender, INDIProtocolParser {
     private val messageQueueCounter = HashMap<INDIProtocol, Int>(2048)
     private val handlers = LinkedHashSet<DeviceEventHandler>()
 
-    val isRunning
-        get() = protocolReader != null
+    override val isClosed
+        get() = protocolReader == null || !protocolReader!!.isRunning
 
     protected abstract fun newCamera(message: INDIProtocol, executable: String): Camera
 
@@ -73,8 +74,10 @@ abstract class INDIDeviceProtocolHandler : MessageSender, INDIProtocolParser {
     }
 
     internal fun registerGPS(device: GPS) {
-        gps[device.name] = device
-        fireOnEventReceived(GPSAttached(device))
+        if (device.name !in gps) {
+            gps[device.name] = device
+            fireOnEventReceived(GPSAttached(device))
+        }
     }
 
     internal fun unregisterGPS(device: GPS) {
@@ -85,8 +88,10 @@ abstract class INDIDeviceProtocolHandler : MessageSender, INDIProtocolParser {
     }
 
     internal fun registerGuideOutput(device: GuideOutput) {
-        guideOutputs[device.name] = device
-        fireOnEventReceived(GuideOutputAttached(device))
+        if (device.name !in guideOutputs) {
+            guideOutputs[device.name] = device
+            fireOnEventReceived(GuideOutputAttached(device))
+        }
     }
 
     internal fun unregisterGuideOutput(device: GuideOutput) {
@@ -97,8 +102,10 @@ abstract class INDIDeviceProtocolHandler : MessageSender, INDIProtocolParser {
     }
 
     internal fun registerThermometer(device: Thermometer) {
-        thermometers[device.name] = device
-        fireOnEventReceived(ThermometerAttached(device))
+        if (device.name !in thermometers) {
+            thermometers[device.name] = device
+            fireOnEventReceived(ThermometerAttached(device))
+        }
     }
 
     internal fun unregisterThermometer(device: Thermometer) {
@@ -111,6 +118,7 @@ abstract class INDIDeviceProtocolHandler : MessageSender, INDIProtocolParser {
     open fun start() {
         if (protocolReader == null) {
             protocolReader = INDIProtocolReader(this, Thread.MIN_PRIORITY)
+            protocolReader!!.registerCloseConnectionListener(this)
             protocolReader!!.start()
         }
     }
