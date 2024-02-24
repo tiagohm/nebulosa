@@ -35,7 +35,7 @@
             <p-button *ngIf="connected" [disabled]="!connection" (onClick)="connect()" size="small" icon="mdi mdi-close" severity="danger" />
         </div>
     </div>
-    <div class="grid mt-2 overflow-y-auto" style="max-height: calc(100vh - 112px);">
+    <div class="grid my-2 overflow-y-auto" style="height: calc(62px * 5);">
         <div class="col-4 p-1">
             <p-button [text]="true" [disabled]="!connected || !hasCamera" (onClick)="open('CAMERA')"
                       styleClass="open min-w-full w-full px-1 py-2 flex-column">
