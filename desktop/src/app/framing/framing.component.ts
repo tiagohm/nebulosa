@@ -67,11 +67,11 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         electron.on('DATA.CHANGED', (event: FramingData) => {
             ngZone.run(() => this.frameFromData(event))
         })
+
+        this.loadPreference()
     }
 
     ngAfterViewInit() {
-        this.loadPreference()
-
         this.route.queryParams.subscribe(e => {
             const data = JSON.parse(decodeURIComponent(e.data)) as FramingData
             this.frameFromData(data)

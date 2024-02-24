@@ -393,11 +393,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         hotkeys('ctrl+-', (event) => { event.preventDefault(); this.zoomOut() })
         hotkeys('ctrl+=', (event) => { event.preventDefault(); this.zoomIn() })
         hotkeys('ctrl+0', (event) => { event.preventDefault(); this.resetZoom() })
+
+        this.loadPreference()
     }
 
     ngAfterViewInit() {
-        this.loadPreference()
-
         this.route.queryParams.subscribe(e => {
             const data = JSON.parse(decodeURIComponent(e.data)) as ImageData
             this.loadImageFromData(data)

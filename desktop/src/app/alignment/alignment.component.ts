@@ -219,13 +219,14 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                 })
             }
         })
+
+        this.loadPreference()
     }
 
     async ngAfterViewInit() {
         this.cameras = (await this.api.cameras()).sort(deviceComparator)
         this.mounts = (await this.api.mounts()).sort(deviceComparator)
         this.guideOutputs = (await this.api.guideOutputs()).sort(deviceComparator)
-        this.loadPreference()
     }
 
     @HostListener('window:unload')
