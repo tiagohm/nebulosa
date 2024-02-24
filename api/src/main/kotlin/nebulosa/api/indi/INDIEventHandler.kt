@@ -14,37 +14,41 @@ class INDIEventHandler(
     private val messageService: MessageService,
 ) : LinkedList<String>() {
 
-    val canSendEvents = HashSet<Device>()
+    private val canSendEvents = HashSet<String>()
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onDeviceEvent(event: DeviceEvent<*>) {
         when (event) {
             is DevicePropertyChanged -> sendINDIPropertyChanged(event)
             is DevicePropertyDeleted -> sendINDIPropertyDeleted(event)
-            is DeviceMessageReceived -> {
-                if (event.device == null) {
-                    addFirst(event.message)
-                }
-
-                sendINDIMessageReceived(event)
-            }
+            is DeviceMessageReceived -> if (event.device == null) addFirst(event.message)
+            else sendINDIMessageReceived(event)
+            is DeviceDetached<*> -> unregisterDevice(event.device)
         }
     }
 
+    fun registerDevice(device: Device) {
+        canSendEvents.add(device.id)
+    }
+
+    fun unregisterDevice(device: Device) {
+        canSendEvents.remove(device.id)
+    }
+
     fun sendINDIPropertyChanged(event: DevicePropertyEvent) {
-        if (event.device in canSendEvents) {
+        if (event.device.id in canSendEvents) {
             messageService.sendMessage(INDIMessageEvent(DEVICE_PROPERTY_CHANGED, event))
         }
     }
 
     fun sendINDIPropertyDeleted(event: DevicePropertyEvent) {
-        if (event.device in canSendEvents) {
+        if (event.device.id in canSendEvents) {
             messageService.sendMessage(INDIMessageEvent(DEVICE_PROPERTY_DELETED, event))
         }
     }
 
     fun sendINDIMessageReceived(event: DeviceMessageReceived) {
-        if (event.device in canSendEvents) {
+        if (event.device != null && event.device!!.id in canSendEvents) {
             messageService.sendMessage(INDIMessageEvent(DEVICE_MESSAGE_RECEIVED, event))
         }
     }

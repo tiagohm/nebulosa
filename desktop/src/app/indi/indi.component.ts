@@ -100,13 +100,13 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
     async deviceChanged(device: Device) {
         if (this.device) {
-            this.api.indiStopListening(this.device)
+            await this.api.indiStopListening(this.device)
         }
 
         this.device = device
 
         this.updateProperties()
-        this.api.indiStartListening(device)
+        await this.api.indiStartListening(device)
         this.messages = await this.api.indiLog(device)
     }
 

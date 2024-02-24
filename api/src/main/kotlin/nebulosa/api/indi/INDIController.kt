@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("indi")
 class INDIController(
     private val indiService: INDIService,
-    private val indiEventHandler: INDIEventHandler,
 ) {
 
     @GetMapping("{device}/properties")
@@ -39,12 +38,12 @@ class INDIController(
     @Synchronized
     @PutMapping("listener/{device}/start")
     fun startListening(device: Device) {
-        indiEventHandler.canSendEvents.add(device)
+        indiService.registerDeviceToSendMessage(device)
     }
 
     @Synchronized
     @PutMapping("listener/{device}/stop")
     fun stopListening(device: Device) {
-        indiEventHandler.canSendEvents.remove(device)
+        indiService.unregisterDeviceToSendMessage(device)
     }
 }
