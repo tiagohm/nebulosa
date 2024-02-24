@@ -45,13 +45,13 @@
                         [autoDisplayFirst]="false">
                 <ng-template let-item pTemplate="selectedItem">
                     <div class="flex flex-column">
-                        <span class="text-xs">{{ item?.regime }}</span>
+                        <span class="text-xs">{{ item?.regime }} ({{ item?.skyFraction | percent:'1.1-1' }})</span>
                         <span>{{ item?.id }}</span>
                     </div>
                 </ng-template>
                 <ng-template let-item pTemplate="item">
                     <div class="flex flex-column">
-                        <span class="text-xs">{{ item.regime }}</span>
+                        <span class="text-xs">{{ item.regime }} ({{ item?.skyFraction | percent:'1.1-1' }})</span>
                         <span>{{ item.id }}</span>
                     </div>
                 </ng-template>

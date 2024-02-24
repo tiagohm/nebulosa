@@ -8,17 +8,17 @@ import nebulosa.api.image.ImageService
 import nebulosa.math.deg
 import nebulosa.math.hours
 import org.hibernate.validator.constraints.Range
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
-import java.nio.file.Path
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("framing")
 class FramingController(
     private val imageService: ImageService,
+    private val framingService: FramingService,
 ) {
+
+    @GetMapping("hips-surveys")
+    fun hipsSurveys() = framingService.availableHipsSurveys
 
     @PutMapping
     fun frame(
@@ -28,8 +28,6 @@ class FramingController(
         @RequestParam(required = false, defaultValue = "720") @Valid @Range(min = 1, max = 4320) height: Int,
         @RequestParam(required = false, defaultValue = "1.0") @Valid @Positive @Max(90) fov: Double,
         @RequestParam(required = false, defaultValue = "0.0") rotation: Double,
-        @RequestParam(required = false, defaultValue = "CDS_P_DSS2_COLOR") hipsSurvey: HipsSurveyType,
-    ): Path {
-        return imageService.frame(rightAscension.hours, declination.deg, width, height, fov.deg, rotation.deg, hipsSurvey)
-    }
+        @RequestParam(required = false, defaultValue = "CDS/P/DSS2/COLOR") hipsSurvey: String,
+    ) = imageService.frame(rightAscension.hours, declination.deg, width, height, fov.deg, rotation.deg, hipsSurvey)
 }

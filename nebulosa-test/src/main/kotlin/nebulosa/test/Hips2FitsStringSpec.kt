@@ -27,7 +27,7 @@ abstract class Hips2FitsStringSpec : FitsStringSpec() {
         }
 
         HIPS_SERVICE
-            .query(CDS_P_DSS2_NIR, centerRA, centerDEC, 1280, 720, 0.0, fov)
+            .query(CDS_P_DSS2_NIR.id, centerRA, centerDEC, 1280, 720, 0.0, fov)
             .execute()
             .body()!!
             .use { it.byteStream().transferAndCloseOutput(path.outputStream()) }

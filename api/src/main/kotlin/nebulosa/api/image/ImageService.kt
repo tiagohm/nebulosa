@@ -6,7 +6,6 @@ import nebulosa.api.atlas.SimbadEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
-import nebulosa.api.framing.HipsSurveyType
 import nebulosa.fits.*
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
@@ -238,10 +237,10 @@ class ImageService(
     fun frame(
         rightAscension: Angle, declination: Angle,
         width: Int, height: Int, fov: Angle,
-        rotation: Angle = 0.0, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
+        rotation: Angle = 0.0, id: String = "CDS/P/DSS2/COLOR",
     ): Path {
         val (image, calibration, path) = framingService
-            .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
+            .frame(rightAscension, declination, width, height, fov, rotation, id)!!
         imageBucket.put(path, image, calibration)
         return path
     }

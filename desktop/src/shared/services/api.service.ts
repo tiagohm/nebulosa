@@ -526,11 +526,15 @@ export class ApiService {
 
     // FRAMING
 
+    hipsSurveys() {
+        return this.http.get<HipsSurvey[]>('framing/hips-surveys')
+    }
+
     frame(rightAscension: Angle, declination: Angle,
         width: number, height: number,
         fov: number, rotation: number, hipsSurvey: HipsSurvey,
     ) {
-        const query = this.http.query({ rightAscension, declination, width, height, fov, rotation, hipsSurvey: hipsSurvey.type })
+        const query = this.http.query({ rightAscension, declination, width, height, fov, rotation, hipsSurvey: hipsSurvey.id })
         return this.http.put<string>(`framing?${query}`)
     }
 

@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MessageService } from 'primeng/api'
-import hipsSurveys from '../../assets/data/hipsSurveys.json'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -44,8 +43,8 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
     height = 720
     fov = 1.0
     rotation = 0.0
-    readonly hipsSurveys: HipsSurvey[] = hipsSurveys
-    hipsSurvey: HipsSurvey = hipsSurveys[0]
+    hipsSurveys: HipsSurvey[] = []
+    hipsSurvey?: HipsSurvey
 
     loading = false
 
@@ -71,7 +70,19 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         this.loadPreference()
     }
 
-    ngAfterViewInit() {
+    async ngAfterViewInit() {
+        this.hipsSurveys = await this.api.hipsSurveys()
+
+        if (this.hipsSurvey) {
+            this.hipsSurvey = this.hipsSurveys.find(e => e.id === this.hipsSurvey!.id)
+        }
+
+        if (!this.hipsSurvey) {
+            this.hipsSurvey = this.hipsSurveys[0]
+        }
+
+        setTimeout(() => this.electron.autoResizeWindow(), 1000)
+
         this.route.queryParams.subscribe(e => {
             const data = JSON.parse(decodeURIComponent(e.data)) as FramingData
             this.frameFromData(data)
@@ -130,7 +141,11 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         this.height = preference.height ?? 720
         this.fov = preference.fov ?? 1
         this.rotation = preference.rotation ?? 0
-        this.hipsSurvey ??= preference.hipsSurvey ?? this.hipsSurvey
+
+        if (preference.hipsSurvey) {
+            this.hipsSurveys = [preference.hipsSurvey]
+            this.hipsSurvey = this.hipsSurveys[0]
+        }
     }
 
     private savePreference() {
