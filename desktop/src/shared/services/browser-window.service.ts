@@ -79,7 +79,7 @@ export class BrowserWindowService {
     }
 
     openSkyAtlas(options: OpenWindowOptionsWithData<SkyAtlasData | undefined>) {
-        Object.assign(options, { icon: 'atlas', width: 450, height: 565 })
+        Object.assign(options, { icon: 'atlas', width: 450, height: 530, autoResizable: false })
         this.openWindow({ ...options, id: 'atlas', path: 'atlas' })
     }
 

@@ -3,7 +3,7 @@
         <i class="mdi mdi-information text-blue-600"></i> {{ (state ?? 'IDLE') | enum | lowercase }}
     </span>
 
-    <span class="flex flex-row" style="gap: 1px">
+    <span class="flex flex-row gap-1px">
         <span class="bg-orange-500 state counter flex align-items-center gap-1 justify-content-center text-gray-900">
             <i class="mdi mdi-counter"></i> {{ exposure.count }} <span *ngIf="!capture.looping">/ {{ capture.amount }}</span>
         </span>

@@ -135,7 +135,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
             nodeIntegration: true,
             allowRunningInsecureContent: serve,
             contextIsolation: false,
-            additionalArguments: [`--port=${apiPort}`, `--id=${options.id}`, `--modal=${options.modal ?? false}`],
+            additionalArguments: [`--port=${apiPort}`, `--options=${Buffer.from(JSON.stringify(options)).toString('base64')}`],
             preload: path.join(__dirname, 'preload.js'),
             devTools: serve,
         },
@@ -168,7 +168,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         }
     })
 
-    if (!serve && window.isResizable()) {
+    if (!serve && window.isResizable() && options.autoResizable !== false) {
         window.on('resized', () => {
             if (window) {
                 const [width, height] = window.getSize()
@@ -438,7 +438,7 @@ try {
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
         const height = Math.max(0, Math.min(data, maxHeight))
         window.setSize(size[0], height)
-        console.info('window resized', size[0], height)
+        console.info('window resized:', size[0], height)
 
         return true
     })

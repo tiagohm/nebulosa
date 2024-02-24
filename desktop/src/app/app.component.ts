@@ -18,7 +18,7 @@ export class AppComponent implements AfterViewInit {
 
     pinned = false
     maximizable = false
-    readonly modal = window.modal
+    readonly modal = window.options.modal ?? false
     subTitle? = ''
     backgroundColor = '#212121'
     topMenu: ExtendedMenuItem[] = []
@@ -39,9 +39,9 @@ export class AppComponent implements AfterViewInit {
         console.info('APP_CONFIG', APP_CONFIG)
 
         if (electron.isElectron) {
-            console.info('Run in electron')
+            console.info('Run in electron', window.options)
         } else {
-            console.info('Run in browser')
+            console.info('Run in browser', window.options)
         }
     }
 
@@ -50,7 +50,9 @@ export class AppComponent implements AfterViewInit {
             this.maximizable = e.resizable === 'true'
         })
 
-        setTimeout(() => this.electron.autoResizeWindow(), 1000)
+        if (window.options.autoResizable !== false) {
+            setTimeout(() => this.electron.autoResizeWindow(), 1000)
+        }
     }
 
     pin() {

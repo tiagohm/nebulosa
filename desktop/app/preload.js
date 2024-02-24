@@ -4,4 +4,4 @@ function argWith(name) {
 
 window.apiPort = parseInt(argWith('port'))
 window.id = argWith('id')
-window.modal = argWith('modal') === 'true'
+window.options = JSON.parse(Buffer.from(argWith('options'), 'base64').toString('utf-8'))

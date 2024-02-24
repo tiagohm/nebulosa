@@ -45,6 +45,7 @@ export interface OpenWindow<T> extends OpenWindowOptionsWithData<T> {
     id: string
     path: string
     modal?: boolean
+    autoResizable?: boolean
 }
 
 export interface CloseWindow<T = undefined> {
