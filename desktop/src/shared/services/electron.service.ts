@@ -16,11 +16,11 @@ import { INDIMessageEvent } from '../types/device.types'
 import { FlatWizardElapsed } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
+import { ConnectionClosed } from '../types/home.types'
 import { Mount } from '../types/mount.types'
 import { SequencerElapsed } from '../types/sequencer.types'
 import { FilterWheel } from '../types/wheel.types'
 import { ApiService } from './api.service'
-import { ConnectionClosed } from '../types/home.types'
 
 type EventMappedType = {
     'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
@@ -155,6 +155,34 @@ export class ElectronService {
 
     readJson<T>(path: string): Promise<JsonFile<T> | false> {
         return this.send('JSON.READ', path)
+    }
+
+    resizeWindow(size: number) {
+        this.send('WINDOW.RESIZE', Math.floor(size))
+    }
+
+    autoResizeWindow() {
+        const size = document.getElementsByTagName('app-root')[0]?.getBoundingClientRect()?.height
+
+        if (size > 0) {
+            this.resizeWindow(size)
+        }
+    }
+
+    pinWindow() {
+        this.send('WINDOW.PIN')
+    }
+
+    unpinWindow() {
+        this.send('WINDOW.UNPIN')
+    }
+
+    minimizeWindow() {
+        this.send('WINDOW.MINIMIZE')
+    }
+
+    maximizeWindow() {
+        this.send('WINDOW.MAXIMIZE')
     }
 
     closeWindow<T>(data: CloseWindow<T>) {

@@ -50,27 +50,21 @@ export class AppComponent implements AfterViewInit {
             this.maximizable = e.resizable === 'true'
         })
 
-        setTimeout(() => {
-            const size = document.getElementsByTagName('app-root')[0]?.getBoundingClientRect()?.height
-
-            if (size) {
-                this.electron.send('WINDOW.RESIZE', Math.floor(size))
-            }
-        }, 1000)
+        setTimeout(() => this.electron.autoResizeWindow(), 1000)
     }
 
     pin() {
         this.pinned = !this.pinned
-        if (this.pinned) this.electron.send('WINDOW.PIN')
-        else this.electron.send('WINDOW.UNPIN')
+        if (this.pinned) this.electron.pinWindow()
+        else this.electron.unpinWindow()
     }
 
     minimize() {
-        this.electron.send('WINDOW.MINIMIZE')
+        this.electron.minimizeWindow()
     }
 
     maximize() {
-        this.electron.send('WINDOW.MAXIMIZE')
+        this.electron.maximizeWindow()
     }
 
     close(data?: any) {

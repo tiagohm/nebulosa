@@ -25,12 +25,12 @@ export class BrowserWindowService {
     }
 
     openMount(options: OpenWindowOptionsWithData<Mount>) {
-        Object.assign(options, { icon: 'telescope', width: 400, height: 469 })
+        Object.assign(options, { icon: 'telescope', width: 400, height: 477 })
         this.openWindow({ ...options, id: `mount.${options.data.name}`, path: 'mount' })
     }
 
     openCamera(options: OpenWindowOptionsWithData<Camera>) {
-        Object.assign(options, { icon: 'camera', width: 400, height: 476 })
+        Object.assign(options, { icon: 'camera', width: 400, height: 470 })
         return this.openWindow({ ...options, id: `camera.${options.data.name}`, path: 'camera' })
     }
 
@@ -45,7 +45,7 @@ export class BrowserWindowService {
     }
 
     openWheel(options: OpenWindowOptionsWithData<FilterWheel>) {
-        Object.assign(options, { icon: 'filter-wheel', width: 300, height: 283 })
+        Object.assign(options, { icon: 'filter-wheel', width: 285, height: 195 })
         this.openWindow({ ...options, id: `wheel.${options.data.name}`, path: 'wheel' })
     }
 
@@ -55,7 +55,7 @@ export class BrowserWindowService {
     }
 
     openGuider(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'guider', width: 425, height: 450 })
+        Object.assign(options, { icon: 'guider', width: 425, height: 438 })
         this.openWindow({ ...options, id: 'guider', path: 'guider', data: undefined })
     }
 
@@ -79,17 +79,17 @@ export class BrowserWindowService {
     }
 
     openSkyAtlas(options: OpenWindowOptionsWithData<SkyAtlasData | undefined>) {
-        Object.assign(options, { icon: 'atlas', width: 450, height: 523 })
+        Object.assign(options, { icon: 'atlas', width: 450, height: 565 })
         this.openWindow({ ...options, id: 'atlas', path: 'atlas' })
     }
 
     openFraming(options: OpenWindowOptionsWithData<FramingData | undefined>) {
-        Object.assign(options, { icon: 'framing', width: 280, height: 310 })
+        Object.assign(options, { icon: 'framing', width: 280, height: 303 })
         this.openWindow({ ...options, id: 'framing', path: 'framing' })
     }
 
     openAlignment(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 450, height: 360 })
+        Object.assign(options, { icon: 'star', width: 450, height: 343 })
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
 
@@ -99,12 +99,12 @@ export class BrowserWindowService {
     }
 
     openFlatWizard(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 410, height: 330 })
+        Object.assign(options, { icon: 'star', width: 410, height: 326 })
         this.openWindow({ ...options, id: 'flat-wizard', path: 'flat-wizard', data: undefined })
     }
 
     openSettings(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'settings', width: 580, height: 445 })
+        Object.assign(options, { icon: 'settings', width: 580, height: 451 })
         this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined })
     }
 
@@ -114,6 +114,6 @@ export class BrowserWindowService {
     }
 
     openAbout() {
-        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 480, height: 252, bringToFront: true, data: undefined })
+        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 430, height: 246, bringToFront: true, data: undefined })
     }
 }

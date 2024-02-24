@@ -66,6 +66,10 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                     const wasConnected = this.wheel.connected
                     Object.assign(this.wheel, event.device)
                     this.update()
+
+                    if (wasConnected !== event.device.connected) {
+                        setTimeout(() => electron.autoResizeWindow(), 1000)
+                    }
                 })
             }
         })

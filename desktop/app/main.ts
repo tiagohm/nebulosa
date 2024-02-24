@@ -100,7 +100,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         }
     }
 
-    const height = options.height ? Math.trunc(computeHeight(options.height)) : 420
+    const height = options.height ? Math.trunc(computeHeight(options.height)) : 416
 
     const resizable = options.resizable ?? false
     const icon = options.icon ?? 'nebulosa'
@@ -419,8 +419,10 @@ try {
         if (!window || (!serve && window.isResizable())) return false
 
         const size = window.getSize()
-        window.setSize(size[0], Math.max(0, data))
-        console.info('window resized', size[0], data)
+        const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
+        const height = Math.max(0, Math.min(data, maxHeight))
+        window.setSize(size[0], height)
+        console.info('window resized', size[0], height)
 
         return true
     })
