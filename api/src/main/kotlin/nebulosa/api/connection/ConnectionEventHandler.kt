@@ -22,7 +22,7 @@ class ConnectionEventHandler(
     private val focuserEventHandler: FocuserEventHandler,
     private val wheelEventHandler: WheelEventHandler,
     private val guideOutputEventHandler: GuideOutputEventHandler,
-) : DeviceEventHandler {
+) : DeviceEventHandler.EventReceived {
 
     @Suppress("CascadeIf")
     override fun onEventReceived(event: DeviceEvent<*>) {

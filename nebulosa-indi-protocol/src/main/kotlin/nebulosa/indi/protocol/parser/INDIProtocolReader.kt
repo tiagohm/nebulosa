@@ -2,7 +2,6 @@ package nebulosa.indi.protocol.parser
 
 import nebulosa.log.loggerFor
 import java.io.Closeable
-import java.net.SocketException
 
 class INDIProtocolReader(
     private val parser: INDIProtocolParser,
@@ -47,12 +46,10 @@ class INDIProtocolReader(
             parser.close()
         } catch (_: InterruptedException) {
             running = false
-            LOG.info("protocol parser interrupted")
-        } catch (e: SocketException) {
-            listeners.onEach { it.onConnectionClosed() }.clear()
-            LOG.info("protocol parser socket error")
+            LOG.error("protocol parser interrupted")
         } catch (e: Throwable) {
             running = false
+            listeners.onEach { it.onConnectionClosed() }.clear()
             LOG.error("protocol parser error", e)
             parser.close()
         }

@@ -1,8 +1,18 @@
 package nebulosa.indi.device
 
-fun interface DeviceEventHandler {
+interface DeviceEventHandler {
 
     fun onEventReceived(event: DeviceEvent<*>)
 
-    fun onConnectionClosed() = Unit
+    fun onConnectionClosed()
+
+    fun interface EventReceived : DeviceEventHandler {
+
+        override fun onConnectionClosed() = Unit
+    }
+
+    fun interface ConnectionClosed : DeviceEventHandler {
+
+        override fun onEventReceived(event: DeviceEvent<*>) = Unit
+    }
 }

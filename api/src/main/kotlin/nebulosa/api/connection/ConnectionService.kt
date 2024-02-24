@@ -5,6 +5,7 @@ import nebulosa.api.messages.MessageService
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.connection.INDISocketConnection
 import nebulosa.indi.device.Device
+import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
@@ -58,17 +59,17 @@ class ConnectionService(
             val provider = when (type) {
                 ConnectionType.INDI -> {
                     val client = INDIClient(host, port)
-                    client.registerDeviceEventHandler(eventBus::post)
+                    client.registerDeviceEventHandler(DeviceEventHandler.EventReceived(eventBus::post))
                     client.registerDeviceEventHandler(connectionEventHandler)
-                    client.registerDeviceEventHandler { sendConnectionClosedEvent(client) }
+                    client.registerDeviceEventHandler(DeviceEventHandler.ConnectionClosed { sendConnectionClosedEvent(client) })
                     client.start()
                     client
                 }
                 else -> {
                     val client = AlpacaClient(host, port, alpacaHttpClient)
-                    client.registerDeviceEventHandler(eventBus::post)
+                    client.registerDeviceEventHandler(DeviceEventHandler.EventReceived(eventBus::post))
                     client.registerDeviceEventHandler(connectionEventHandler)
-                    client.registerDeviceEventHandler { sendConnectionClosedEvent(client) }
+                    client.registerDeviceEventHandler(DeviceEventHandler.ConnectionClosed { sendConnectionClosedEvent(client) })
                     client.discovery()
                     client
                 }
