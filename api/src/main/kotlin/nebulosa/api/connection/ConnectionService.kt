@@ -4,10 +4,7 @@ import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.connection.INDISocketConnection
-import nebulosa.indi.connection.ConnectionClosed
 import nebulosa.indi.device.Device
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
@@ -30,7 +27,7 @@ class ConnectionService(
     private val connectionEventHandler: ConnectionEventHandler,
     private val alpacaHttpClient: OkHttpClient,
     private val messageService: MessageService,
-) : DeviceEventHandler, Closeable {
+) : Closeable {
 
     private val providers = LinkedHashMap<String, INDIDeviceProvider>()
 
@@ -63,7 +60,7 @@ class ConnectionService(
                     val client = INDIClient(host, port)
                     client.registerDeviceEventHandler(eventBus::post)
                     client.registerDeviceEventHandler(connectionEventHandler)
-                    client.registerDeviceEventHandler(this)
+                    client.registerDeviceEventHandler { sendConnectionClosedEvent(client) }
                     client.start()
                     client
                 }
@@ -71,6 +68,7 @@ class ConnectionService(
                     val client = AlpacaClient(host, port, alpacaHttpClient)
                     client.registerDeviceEventHandler(eventBus::post)
                     client.registerDeviceEventHandler(connectionEventHandler)
+                    client.registerDeviceEventHandler { sendConnectionClosedEvent(client) }
                     client.discovery()
                     client
                 }
@@ -97,12 +95,10 @@ class ConnectionService(
         providers.clear()
     }
 
-    override fun onEventReceived(event: DeviceEvent<*>) {
-        if (event is ConnectionClosed) {
-            LOG.info("client connection was closed. id={}", event.provider.id)
-            providers.remove(event.provider.id)
-            messageService.sendMessage(ConnectionClosedWithClient(event.provider.id))
-        }
+    private fun sendConnectionClosedEvent(provider: INDIDeviceProvider) {
+        LOG.info("client connection was closed. id={}", provider.id)
+        providers.remove(provider.id)
+        messageService.sendMessage(ConnectionClosedWithClient(provider.id))
     }
 
     override fun close() {

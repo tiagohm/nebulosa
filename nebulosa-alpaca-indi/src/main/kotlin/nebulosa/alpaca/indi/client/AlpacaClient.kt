@@ -61,6 +61,10 @@ data class AlpacaClient(
         handlers.forEach { it.onEventReceived(event) }
     }
 
+    internal fun fireOnConnectionClosed() {
+        handlers.forEach { it.onConnectionClosed() }
+    }
+
     override fun cameras(): List<Camera> {
         return synchronized(cameras) { cameras.values.toList() }
     }

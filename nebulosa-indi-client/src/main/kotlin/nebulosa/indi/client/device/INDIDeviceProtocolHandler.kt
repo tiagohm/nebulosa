@@ -73,6 +73,10 @@ abstract class INDIDeviceProtocolHandler : MessageSender, INDIProtocolParser, Cl
         handlers.forEach { it.onEventReceived(event) }
     }
 
+    fun fireOnConnectionClosed() {
+        handlers.forEach { it.onConnectionClosed() }
+    }
+
     internal fun registerGPS(device: GPS) {
         if (device.name !in gps) {
             gps[device.name] = device
