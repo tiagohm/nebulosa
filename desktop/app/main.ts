@@ -16,7 +16,7 @@ const browserWindows = new Map<string, BrowserWindow>()
 const modalWindows = new Map<string, { window: BrowserWindow, resolve: (data: any) => void }>()
 let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
-let wsClient: Client
+let webSocket: Client
 
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
@@ -29,10 +29,10 @@ function createMainWindow() {
 
     createWindow({ id: 'home', path: 'home', data: undefined })
 
-    wsClient = new Client({
+    webSocket = new Client({
         brokerURL: `ws://localhost:${apiPort}/ws`,
         onConnect: () => {
-            wsClient.subscribe('NEBULOSA.EVENT', message => {
+            webSocket.subscribe('NEBULOSA.EVENT', message => {
                 const event = JSON.parse(message.body) as MessageEvent
 
                 if (event.eventName) {
@@ -59,7 +59,7 @@ function createMainWindow() {
         },
     })
 
-    wsClient.activate()
+    webSocket.activate()
 }
 
 function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
@@ -74,13 +74,13 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         return window
     }
 
-    const size = screen.getPrimaryDisplay().workAreaSize
+    const screenSize = screen.getPrimaryDisplay().workAreaSize
 
     function computeWidth(value: number | string) {
         if (typeof value === 'number') {
             return value
         } else if (value.endsWith('%')) {
-            return parseFloat(value.substring(0, value.length - 1)) * size.width / 100
+            return parseFloat(value.substring(0, value.length - 1)) * screenSize.width / 100
         } else {
             return parseFloat(value)
         }
@@ -92,7 +92,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         if (typeof value === 'number') {
             return value
         } else if (value.endsWith('%')) {
-            return parseFloat(value.substring(0, value.length - 1)) * size.height / 100
+            return parseFloat(value.substring(0, value.length - 1)) * screenSize.height / 100
         } else if (value.endsWith('w')) {
             return parseFloat(value.substring(0, value.length - 1)) * width
         } else {
@@ -106,11 +106,17 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
     const icon = options.icon ?? 'nebulosa'
     const data = encodeURIComponent(JSON.stringify(options.data || {}))
 
-    const position = !options.modal ? store.get(`window.${options.id}.position`, undefined) as { x: number, y: number } | undefined : undefined
+    const savedPos = !options.modal ? store.get(`window.${options.id}.position`, undefined) as { x: number, y: number } | undefined : undefined
+    const savedSize = !options.modal && options.resizable ? store.get(`window.${options.id}.size`, undefined) as { width: number, height: number } | undefined : undefined
 
-    if (position) {
-        position.x = Math.max(0, Math.min(position.x, size.width))
-        position.y = Math.max(0, Math.min(position.y, size.height))
+    if (savedPos) {
+        savedPos.x = Math.max(0, Math.min(savedPos.x, screenSize.width))
+        savedPos.y = Math.max(0, Math.min(savedPos.y, screenSize.height))
+    }
+
+    if (savedSize) {
+        savedSize.width = Math.max(0, Math.min(savedSize.width, screenSize.width))
+        savedSize.height = Math.max(0, Math.min(savedSize.height, screenSize.height))
     }
 
     window = new BrowserWindow({
@@ -118,9 +124,10 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         frame: false,
         modal: options.modal,
         parent,
-        width, height,
-        x: position?.x ?? undefined,
-        y: position?.y ?? undefined,
+        width: savedSize?.width || width,
+        height: savedSize?.height || height,
+        x: savedPos?.x ?? undefined,
+        y: savedPos?.y ?? undefined,
         resizable: serve || resizable,
         autoHideMenuBar: true,
         icon: path.join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
@@ -134,7 +141,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         },
     })
 
-    if (!position) {
+    if (!savedPos) {
         window.center()
     }
 
@@ -160,6 +167,15 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
             store.set(`window.${options.id}.position`, { x, y })
         }
     })
+
+    if (!serve && window.isResizable()) {
+        window.on('resized', () => {
+            if (window) {
+                const [width, height] = window.getSize()
+                store.set(`window.${options.id}.size`, { width, height })
+            }
+        })
+    }
 
     window.on('close', () => {
         const homeWindow = browserWindows.get('home')
