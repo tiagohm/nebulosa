@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
+import { Listbox } from 'primeng/listbox'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types/device.types'
@@ -22,6 +23,9 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
     group = ''
     showLog = false
     messages: string[] = []
+
+    @ViewChild('listbox')
+    readonly messageListbox!: Listbox
 
     constructor(
         app: AppComponent,
@@ -58,6 +62,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
             if (this.device && event.device?.id === this.device.id) {
                 ngZone.run(() => {
                     this.messages.splice(0, 0, event.message!)
+                    this.messageListbox.cd.markForCheck()
                 })
             }
         })
