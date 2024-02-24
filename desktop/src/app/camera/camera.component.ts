@@ -44,7 +44,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     get canExposureTimeUnit() {
-        return this.mode !== 'TPPA' && this.mode !== 'DARV'
+        return this.mode !== 'DARV'
     }
 
     get canExposureAmount() {
@@ -199,8 +199,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.request.frameType = 'FLAT'
         } else if (mode === 'TPPA') {
             this.exposureMode = 'FIXED'
-            this.exposureTimeUnit = ExposureTimeUnit.SECOND
             this.request.exposureAmount = 1
+        } else if (mode === 'DARV') {
+            this.exposureTimeUnit = ExposureTimeUnit.SECOND
         }
     }
 
@@ -321,12 +322,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private updateExposureUnit(unit: ExposureTimeUnit, from: ExposureTimeUnit = this.exposureTimeUnit) {
-        if (this.camera.exposureMax) {
+        const exposureMax = this.camera.exposureMax || 60000000
+
+        if (exposureMax) {
             const a = CameraComponent.exposureUnitFactor(from)
             const b = CameraComponent.exposureUnitFactor(unit)
             const exposureTime = Math.trunc(this.request.exposureTime * b / a)
             const exposureTimeMin = Math.trunc(this.camera.exposureMin * b / 60000000)
-            const exposureTimeMax = Math.trunc(this.camera.exposureMax * b / 60000000)
+            const exposureTimeMax = Math.trunc(exposureMax * b / 60000000)
             this.exposureTimeMax = Math.max(1, exposureTimeMax)
             this.exposureTimeMin = Math.max(1, exposureTimeMin)
             this.request.exposureTime = Math.max(this.exposureTimeMin, Math.min(exposureTime, this.exposureTimeMax))

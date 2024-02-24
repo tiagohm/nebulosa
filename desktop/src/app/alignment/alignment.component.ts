@@ -279,12 +279,17 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
     async showCameraDialog() {
         if (this.camera.name) {
-            if (this.tab === 0 && await CameraComponent.showAsDialog(this.browserWindow, 'TPPA', this.camera, this.tppaRequest.capture)) {
-                this.savePreference()
-            } else if (this.tab === 1 && await CameraComponent.showAsDialog(this.browserWindow, 'DARV', this.camera, this.darvRequest.capture)) {
-                this.savePreference()
-                this.darvRequest.exposureTime = this.darvRequest.capture.exposureTime / 1000000
-                this.darvRequest.initialPause = this.darvRequest.capture.exposureDelay
+            if (this.tab === 0) {
+                if (await CameraComponent.showAsDialog(this.browserWindow, 'TPPA', this.camera, this.tppaRequest.capture)) {
+                    this.savePreference()
+                }
+            } else if (this.tab === 1) {
+                this.darvRequest.capture.exposureTime = this.darvRequest.exposureTime * 1000000
+                this.darvRequest.capture.exposureDelay = this.darvRequest.initialPause
+
+                if (await CameraComponent.showAsDialog(this.browserWindow, 'DARV', this.camera, this.darvRequest.capture)) {
+                    this.savePreference()
+                }
             }
         }
     }
