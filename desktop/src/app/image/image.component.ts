@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { Interactable } from '@interactjs/types/index'
+import hotkeys from 'hotkeys-js'
 import interact from 'interactjs'
 import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
@@ -386,21 +387,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        window.addEventListener('keydown', event => {
-            if (event.ctrlKey && !event.shiftKey && !event.altKey) {
-                switch (event.key) {
-                    case 'a': this.toggleStretch(); break
-                    case 'i': this.invertImage(); break
-                    case 'x': this.toggleCrosshair(); break
-                    case '-': this.zoomOut(); break
-                    case '=': this.zoomIn(); break
-                    case '0': this.resetZoom(); break
-                    default: return
-                }
-
-                event.preventDefault()
-            }
-        }, true)
+        hotkeys('ctrl+a', (event) => { event.preventDefault(); this.toggleStretch() })
+        hotkeys('ctrl+i', (event) => { event.preventDefault(); this.invertImage() })
+        hotkeys('ctrl+x', (event) => { event.preventDefault(); this.toggleCrosshair() })
+        hotkeys('ctrl+-', (event) => { event.preventDefault(); this.zoomOut() })
+        hotkeys('ctrl+=', (event) => { event.preventDefault(); this.zoomIn() })
+        hotkeys('ctrl+0', (event) => { event.preventDefault(); this.resetZoom() })
     }
 
     ngAfterViewInit() {

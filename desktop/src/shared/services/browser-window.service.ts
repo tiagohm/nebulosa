@@ -40,7 +40,7 @@ export class BrowserWindowService {
     }
 
     openFocuser(options: OpenWindowOptionsWithData<Focuser>) {
-        Object.assign(options, { icon: 'focus', width: 360, height: 203 })
+        Object.assign(options, { icon: 'focus', width: 348, height: 202 })
         this.openWindow({ ...options, id: `focuser.${options.data.name}`, path: 'focuser' })
     }
 

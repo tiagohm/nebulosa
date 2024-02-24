@@ -391,7 +391,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     private update() {
-        if (this.mount) {
+        if (this.mount.name) {
             this.slewing = this.mount.slewing
             this.parking = this.mount.parking
             this.parked = this.mount.parked
