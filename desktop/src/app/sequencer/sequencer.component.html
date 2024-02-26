@@ -214,7 +214,7 @@
                     </ng-template>
                     <div class="grid">
                         <div class="col-12 pt-0 flex">
-                            <div class="flex gap-1 align-items-center">
+                            <div class="flex gap-1 align-items-center flex-wrap">
                                 <p-tag [value]="entry.frameType" severity="success" />
                                 <p-tag value="{{ entry.exposureAmount }} of {{ entry.exposureTime | exposureTime }}" severity="info" />
                                 <p-tag value="DELAY: {{ entry.exposureDelay * 1000000 | exposureTime }}" />
@@ -249,5 +249,66 @@
     <p-button [disabled]="running || plan.entries.length > 32" [rounded]="true" icon="mdi mdi-plus" size="large" severity="success" (onClick)="add()"
               styleClass="fixed" [style]="{bottom: '16px', right: '16px'}" />
 </div>
+
+<p-dialog header="Apply" [modal]="true" [(visible)]="showEntryPropertiesToApplyDialog" [style]="{maxWidth: '400px'}">
+    <div class="grid p-2">
+        <div class="col-12 gap-2 justify-content-end">
+            <p-button [text]="true" icon="mdi mdi-checkbox-marked" label="Select All" (onClick)="updateAllAvailableEntryPropertiesToApply(true)" />
+            <p-button [text]="true" icon="mdi mdi-checkbox-blank-outline" label="Unselect All"
+                      (onClick)="updateAllAvailableEntryPropertiesToApply(false)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="Exposure Time" [ngModel]="availableEntryPropertiesToApply.get('EXPOSURE_TIME')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('EXPOSURE_TIME', $event)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="Exposure Amount" [ngModel]="availableEntryPropertiesToApply.get('EXPOSURE_AMOUNT')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('EXPOSURE_AMOUNT', $event)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="Exposure Delay" [ngModel]="availableEntryPropertiesToApply.get('EXPOSURE_DELAY')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('EXPOSURE_DELAY', $event)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="Frame Type" [ngModel]="availableEntryPropertiesToApply.get('FRAME_TYPE')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('FRAME_TYPE', $event)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="X" [ngModel]="availableEntryPropertiesToApply.get('X')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('X', $event)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="Y" [ngModel]="availableEntryPropertiesToApply.get('Y')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('Y', $event)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="Width" [ngModel]="availableEntryPropertiesToApply.get('WIDTH')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('WIDTH', $event)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="Height" [ngModel]="availableEntryPropertiesToApply.get('HEIGHT')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('HEIGHT', $event)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="Bin" [ngModel]="availableEntryPropertiesToApply.get('BIN')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('BIN', $event)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="Frame Format" [ngModel]="availableEntryPropertiesToApply.get('FRAME_FORMAT')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('FRAME_FORMAT', $event)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="Gain" [ngModel]="availableEntryPropertiesToApply.get('GAIN')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('GAIN', $event)" />
+        </div>
+        <div class="col-6">
+            <p-checkbox [binary]="true" label="Offset" [ngModel]="availableEntryPropertiesToApply.get('OFFSET')"
+                        (ngModelChange)="availableEntryPropertiesToApply.set('OFFSET', $event)" />
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button [text]="true" icon="mdi mdi-check" label="Apply" size="small" (onClick)="applyCameraStartCaptureToEntries()" />
+    </ng-template>
+</p-dialog>
 
 <neb-dialog-menu #entryMenu [model]="entryMenuModel" />

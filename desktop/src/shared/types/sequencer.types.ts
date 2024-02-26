@@ -4,6 +4,14 @@ import { FilterWheel } from './wheel.types'
 
 export type SequenceCaptureMode = 'FULLY' | 'INTERLEAVED'
 
+export const SEQUENCE_ENTRY_PROPERTIES = [
+    'EXPOSURE_TIME', 'EXPOSURE_AMOUNT', 'EXPOSURE_DELAY',
+    'FRAME_TYPE', 'X', 'Y', 'WIDTH', 'HEIGHT',
+    'BIN', 'FRAME_FORMAT', 'GAIN', 'OFFSET'
+] as const
+
+export type SequenceEntryProperty = (typeof SEQUENCE_ENTRY_PROPERTIES)[number]
+
 export interface AutoFocusAfterConditions {
     enabled: boolean
     onStart: boolean

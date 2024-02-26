@@ -10,7 +10,7 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { JsonFile } from '../../shared/types/app.types'
 import { Camera, CameraCaptureElapsed, CameraStartCapture, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { EMPTY_SEQUENCE_PLAN, SequenceCaptureMode, SequencePlan, SequencerElapsed } from '../../shared/types/sequencer.types'
+import { EMPTY_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerElapsed } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
@@ -38,35 +38,50 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     readonly captureModes: SequenceCaptureMode[] = ['FULLY', 'INTERLEAVED']
     readonly plan = Object.assign({}, EMPTY_SEQUENCE_PLAN)
 
-    selectedMenuEntry?: CameraStartCapture
+    private entryToApply?: CameraStartCapture
+    private entryToApplyCount: [number, number] = [0, 0]
+    readonly availableEntryPropertiesToApply = new Map<SequenceEntryProperty, boolean>()
+    showEntryPropertiesToApplyDialog = false
     readonly entryMenuModel: MenuItem[] = [
         {
             icon: 'mdi mdi-content-copy',
             label: 'Apply to all',
             command: () => {
-                this.applyCameraStartCaptureToEntries(-1000)
-                this.applyCameraStartCaptureToEntries(1000)
+                this.entryToApplyCount = [-1000, 1000]
+                this.showEntryPropertiesToApplyDialog = true
             }
         },
         {
             icon: 'mdi mdi-content-copy',
             label: 'Apply to all above',
-            command: () => this.applyCameraStartCaptureToEntries(-1000)
+            command: () => {
+                this.entryToApplyCount = [-1000, 0]
+                this.showEntryPropertiesToApplyDialog = true
+            }
         },
         {
             icon: 'mdi mdi-content-copy',
             label: 'Apply to above',
-            command: () => this.applyCameraStartCaptureToEntries(-1)
+            command: () => {
+                this.entryToApplyCount = [-1, 0]
+                this.showEntryPropertiesToApplyDialog = true
+            }
         },
         {
             icon: 'mdi mdi-content-copy',
             label: 'Apply to below',
-            command: () => this.applyCameraStartCaptureToEntries(1)
+            command: () => {
+                this.entryToApplyCount = [1, 0]
+                this.showEntryPropertiesToApplyDialog = true
+            }
         },
         {
             icon: 'mdi mdi-content-copy',
             label: 'Apply to all below',
-            command: () => this.applyCameraStartCaptureToEntries(1000)
+            command: () => {
+                this.entryToApplyCount = [1000, 0]
+                this.showEntryPropertiesToApplyDialog = true
+            }
         },
     ]
 
@@ -204,6 +219,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
                 }
             })
         })
+
+        for (const p of SEQUENCE_ENTRY_PROPERTIES) {
+            this.availableEntryPropertiesToApply.set(p, true)
+        }
     }
 
     async ngAfterContentInit() {
@@ -357,7 +376,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     showEntryMenu(entry: CameraStartCapture, dialogMenu: DialogMenuComponent) {
-        this.selectedMenuEntry = entry
+        this.entryToApply = entry
         const index = this.plan.entries.indexOf(entry)
 
         this.entryMenuModel.forEach(e => e.visible = true)
@@ -383,42 +402,51 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         dialogMenu.show()
     }
 
-    private applyCameraStartCaptureToEntries(count: number) {
-        const source = this.selectedMenuEntry!
+    updateAllAvailableEntryPropertiesToApply(selected: boolean) {
+        for (const p of SEQUENCE_ENTRY_PROPERTIES) {
+            this.availableEntryPropertiesToApply.set(p, selected)
+        }
+    }
+
+    applyCameraStartCaptureToEntries() {
+        const source = this.entryToApply!
         const index = this.plan.entries.indexOf(source)
 
-        if (index < 0 || count === 0) return
+        for (let count of this.entryToApplyCount) {
+            if (index < 0 || count === 0) continue
 
-        const below = Math.sign(count)
+            const below = Math.sign(count)
 
-        count = Math.abs(count)
+            count = Math.abs(count)
 
-        console.log(index, below, count)
+            for (let i = 1; i <= count; i++) {
+                const pos = index + (i * below)
 
-        for (let i = 1; i <= count; i++) {
-            const pos = index + (i * below)
+                if (pos >= 0 && pos < this.plan.entries.length) {
+                    const dest = this.plan.entries[pos]
 
-            if (pos >= 0 && pos < this.plan.entries.length) {
-                const dest = this.plan.entries[pos]
+                    if (!dest.enabled) continue
 
-                if (!dest.enabled) continue
-
-                dest.exposureTime = source.exposureTime
-                dest.exposureAmount = source.exposureAmount
-                dest.exposureDelay = source.exposureDelay
-                dest.x = source.x
-                dest.y = source.y
-                dest.width = source.width
-                dest.height = source.height
-                dest.binX = source.binX
-                dest.binY = source.binY
-                dest.frameFormat = source.frameFormat
-                dest.gain = source.gain
-                dest.offset = source.offset
-            } else {
-                break
+                    if (this.availableEntryPropertiesToApply.get('EXPOSURE_TIME')) dest.exposureTime = source.exposureTime
+                    if (this.availableEntryPropertiesToApply.get('EXPOSURE_AMOUNT')) dest.exposureAmount = source.exposureAmount
+                    if (this.availableEntryPropertiesToApply.get('EXPOSURE_DELAY')) dest.exposureDelay = source.exposureDelay
+                    if (this.availableEntryPropertiesToApply.get('FRAME_TYPE')) dest.frameType = source.frameType
+                    if (this.availableEntryPropertiesToApply.get('X')) dest.x = source.x
+                    if (this.availableEntryPropertiesToApply.get('Y')) dest.y = source.y
+                    if (this.availableEntryPropertiesToApply.get('WIDTH')) dest.width = source.width
+                    if (this.availableEntryPropertiesToApply.get('HEIGHT')) dest.height = source.height
+                    if (this.availableEntryPropertiesToApply.get('BIN')) dest.binX = source.binX
+                    if (this.availableEntryPropertiesToApply.get('BIN')) dest.binY = source.binY
+                    if (this.availableEntryPropertiesToApply.get('FRAME_FORMAT')) dest.frameFormat = source.frameFormat
+                    if (this.availableEntryPropertiesToApply.get('GAIN')) dest.gain = source.gain
+                    if (this.availableEntryPropertiesToApply.get('OFFSET')) dest.offset = source.offset
+                } else {
+                    break
+                }
             }
         }
+
+        this.showEntryPropertiesToApplyDialog = false
     }
 
     deleteEntry(entry: CameraStartCapture, index: number) {
