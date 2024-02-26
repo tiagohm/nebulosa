@@ -1,13 +1,14 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren } from '@angular/core'
-import { MessageService } from 'primeng/api'
+import { MenuItem, MessageService } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
+import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureElapsed, CameraStartCapture } from '../../shared/types/camera.types'
+import { Camera, CameraCaptureElapsed, CameraStartCapture, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { EMPTY_SEQUENCE_PLAN, SequenceCaptureMode, SequencePlan, SequencerElapsed } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
@@ -36,6 +37,38 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
     readonly captureModes: SequenceCaptureMode[] = ['FULLY', 'INTERLEAVED']
     readonly plan = Object.assign({}, EMPTY_SEQUENCE_PLAN)
+
+    selectedMenuEntry?: CameraStartCapture
+    readonly entryMenuModel: MenuItem[] = [
+        {
+            icon: 'mdi mdi-content-copy',
+            label: 'Apply to all',
+            command: () => {
+                this.applyCameraStartCaptureToEntries(-1000)
+                this.applyCameraStartCaptureToEntries(1000)
+            }
+        },
+        {
+            icon: 'mdi mdi-content-copy',
+            label: 'Apply to all above',
+            command: () => this.applyCameraStartCaptureToEntries(-1000)
+        },
+        {
+            icon: 'mdi mdi-content-copy',
+            label: 'Apply to above',
+            command: () => this.applyCameraStartCaptureToEntries(-1)
+        },
+        {
+            icon: 'mdi mdi-content-copy',
+            label: 'Apply to below',
+            command: () => this.applyCameraStartCaptureToEntries(1)
+        },
+        {
+            icon: 'mdi mdi-content-copy',
+            label: 'Apply to all below',
+            command: () => this.applyCameraStartCaptureToEntries(1000)
+        },
+    ]
 
     readonly sequenceEvents: CameraCaptureElapsed[] = []
 
@@ -260,18 +293,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     updateEntryFromCamera(entry: CameraStartCapture, camera?: Camera) {
         if (camera) {
             if (camera.connected) {
-                if (camera.maxX > 1) entry.x = Math.max(camera.minX, Math.min(entry.x, camera.maxX))
-                if (camera.maxY > 1) entry.y = Math.max(camera.minY, Math.min(entry.y, camera.maxY))
-
-                if (camera.maxWidth > 1 && (entry.width <= 0 || entry.width > camera.maxWidth)) entry.width = camera.maxWidth
-                if (camera.maxHeight > 1 && (entry.height <= 0 || entry.height > camera.maxHeight)) entry.height = camera.maxHeight
-
-                if (camera.maxBinX > 1) entry.binX = Math.max(1, Math.min(entry.binX, camera.maxBinX))
-                if (camera.maxBinY > 1) entry.binY = Math.max(1, Math.min(entry.binY, camera.maxBinY))
-                if (camera.gainMax) entry.gain = Math.max(camera.gainMin, Math.min(entry.gain, camera.gainMax))
-                if (camera.offsetMax) entry.offset = Math.max(camera.offsetMin, Math.min(entry.offset, camera.offsetMax))
-                if (!entry.frameFormat || !camera.frameFormats.includes(entry.frameFormat)) entry.frameFormat = camera.frameFormats[0]
-
+                updateCameraStartCaptureFromCamera(entry, camera)
                 this.savePlan()
             }
         }
@@ -332,6 +354,71 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         this.plan.focuser = this.focuser
         this.storage.set(SEQUENCER_PLAN_KEY, this.plan)
         this.savedPathWasModified = !!this.savedPath
+    }
+
+    showEntryMenu(entry: CameraStartCapture, dialogMenu: DialogMenuComponent) {
+        this.selectedMenuEntry = entry
+        const index = this.plan.entries.indexOf(entry)
+
+        this.entryMenuModel.forEach(e => e.visible = true)
+
+        if (index === 0 || this.plan.entries.length === 1) {
+            // Hides all above and above.
+            this.entryMenuModel[1].visible = false
+            this.entryMenuModel[2].visible = false
+        } else if (index === 1) {
+            // Hides all above.
+            this.entryMenuModel[1].visible = false
+        }
+
+        if (index === this.plan.entries.length - 1 || this.plan.entries.length === 1) {
+            // Hides below and all below.
+            this.entryMenuModel[3].visible = false
+            this.entryMenuModel[4].visible = false
+        } else if (index === this.plan.entries.length - 2) {
+            // Hides all below.
+            this.entryMenuModel[4].visible = false
+        }
+
+        dialogMenu.show()
+    }
+
+    private applyCameraStartCaptureToEntries(count: number) {
+        const source = this.selectedMenuEntry!
+        const index = this.plan.entries.indexOf(source)
+
+        if (index < 0 || count === 0) return
+
+        const below = Math.sign(count)
+
+        count = Math.abs(count)
+
+        console.log(index, below, count)
+
+        for (let i = 1; i <= count; i++) {
+            const pos = index + (i * below)
+
+            if (pos >= 0 && pos < this.plan.entries.length) {
+                const dest = this.plan.entries[pos]
+
+                if (!dest.enabled) continue
+
+                dest.exposureTime = source.exposureTime
+                dest.exposureAmount = source.exposureAmount
+                dest.exposureDelay = source.exposureDelay
+                dest.x = source.x
+                dest.y = source.y
+                dest.width = source.width
+                dest.height = source.height
+                dest.binX = source.binX
+                dest.binY = source.binY
+                dest.frameFormat = source.frameFormat
+                dest.gain = source.gain
+                dest.offset = source.offset
+            } else {
+                break
+            }
+        }
     }
 
     deleteEntry(entry: CameraStartCapture, index: number) {
