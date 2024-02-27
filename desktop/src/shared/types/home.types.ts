@@ -1,5 +1,5 @@
 export type HomeWindowType = 'CAMERA' | 'MOUNT' | 'GUIDER' | 'WHEEL' | 'FOCUSER' | 'DOME' | 'ROTATOR' | 'SWITCH' |
-    'SKY_ATLAS' | 'ALIGNMENT' | 'SEQUENCER' | 'IMAGE' | 'FRAMING' | 'INDI' | 'SETTINGS' | 'ABOUT' | 'FLAT_WIZARD'
+    'SKY_ATLAS' | 'ALIGNMENT' | 'SEQUENCER' | 'IMAGE' | 'FRAMING' | 'INDI' | 'SETTINGS' | 'CALCULATOR' | 'ABOUT' | 'FLAT_WIZARD'
 
 export const CONNECTION_TYPES = ['INDI', 'ALPACA'] as const
 

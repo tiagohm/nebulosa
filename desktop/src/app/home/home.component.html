@@ -136,6 +136,12 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
+            <p-button [text]="true" (onClick)="open('CALCULATOR')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
+                <img src="assets/icons/calculator.png" />
+                <div class="mt-1 text-sm">Calculator</div>
+            </p-button>
+        </div>
+        <div class="col-4 p-1">
             <p-button [text]="true" (onClick)="open('SETTINGS')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/settings.png" />
                 <div class="mt-1 text-sm">Settings</div>

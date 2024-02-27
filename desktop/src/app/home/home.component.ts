@@ -365,6 +365,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'SETTINGS':
                 this.browserWindow.openSettings()
                 break
+            case 'CALCULATOR':
+                this.browserWindow.openCalculator()
+                break
             case 'ABOUT':
                 this.browserWindow.openAbout()
                 break

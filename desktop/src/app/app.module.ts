@@ -57,6 +57,8 @@ import { AlignmentComponent } from './alignment/alignment.component'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { AtlasComponent } from './atlas/atlas.component'
+import { CalculatorComponent } from './calculator/calculator.component'
+import { FormulaComponent } from './calculator/formula/formula.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
@@ -79,6 +81,7 @@ import { SettingsComponent } from './settings/settings.component'
         AnglePipe,
         AppComponent,
         AtlasComponent,
+        CalculatorComponent,
         CalibrationComponent,
         CameraComponent,
         CameraExposureComponent,
@@ -90,6 +93,7 @@ import { SettingsComponent } from './settings/settings.component'
         FilterWheelComponent,
         FlatWizardComponent,
         FocuserComponent,
+        FormulaComponent,
         FramingComponent,
         GuiderComponent,
         HistogramComponent,

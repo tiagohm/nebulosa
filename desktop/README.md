@@ -54,6 +54,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](indi.png)
 
+## Calculator
+
+![](calculator.png)
+
 ## Settings
 
 ![](settings.png)
