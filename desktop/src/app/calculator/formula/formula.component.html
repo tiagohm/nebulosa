@@ -1,6 +1,6 @@
 <p class="text-center mb-2"> {{ formula.description }}</p>
 <div class="flex align-items-center justify-content-center">
-    <p-tag styleClass="text-xl" [value]="formula.expression" />
+    <p-tag styleClass="text-lg py-1" [value]="formula.expression" />
 </div>
 <div class="flex flex-column align-items-center justify-content-center gap-1 mt-4">
     @for (item of formula.operands; track $index) {
@@ -12,7 +12,7 @@
             <span class="p-float-label">
                 <p-inputNumber [(ngModel)]="item.value" (ngModelChange)="calculateFormula()"
                                [minFractionDigits]="item.minFractionDigits ?? 0" [maxFractionDigits]="item.maxFractionDigits ?? 4"
-                               [showButtons]="true" styleClass="border-0" locale="en" />
+                               [showButtons]="true" styleClass="border-0 p-inputtext-sm" locale="en" />
                 <label>{{ item.label }}</label>
             </span>
         </div>
@@ -28,8 +28,11 @@
     <span class="p-float-label">
         <p-inputNumber [readonly]="true" [ngModel]="formula.result.value"
                        [minFractionDigits]="formula.result.minFractionDigits ?? 0" [maxFractionDigits]="formula.result.maxFractionDigits ?? 4"
-                       styleClass="border-0" locale="en" />
+                       styleClass="border-0 p-inputtext-sm" locale="en" />
         <label>{{ formula.result.label }}</label>
     </span>
-    <span class="text-2xl text-bold">{{ formula.result.suffix }}</span>
+    <span class="text-xl text-bold">{{ formula.result.suffix }}</span>
+</div>
+<div class="flex justify-content-center mt-3 text-sm" *ngIf="formula.tip">
+    <p-message severity="info" [text]="formula.tip" />
 </div>

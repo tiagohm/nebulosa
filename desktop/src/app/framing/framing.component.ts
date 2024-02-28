@@ -81,7 +81,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
             this.hipsSurvey = this.hipsSurveys[0]
         }
 
-        setTimeout(() => this.electron.autoResizeWindow(), 1000)
+        setTimeout(() => this.electron.autoResizeWindow(), 250)
 
         this.route.queryParams.subscribe(e => {
             const data = JSON.parse(decodeURIComponent(e.data)) as FramingData

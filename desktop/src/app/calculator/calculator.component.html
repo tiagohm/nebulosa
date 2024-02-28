@@ -1,7 +1,7 @@
 <div class="grid p-4">
     <div class="col-12">
         <p-dropdown [options]="formulae" [(ngModel)]="formula" styleClass="border-0" [autoDisplayFirst]="false"
-                    (ngModelChange)="formulaChanged()">
+                    (ngModelChange)="formulaChanged()" [panelStyle]="{maxWidth: '100px'}">
             <ng-template let-item pTemplate="selectedItem">
                 <div class="flex align-items-center gap-2">
                     <span>{{ item?.formula?.title }}</span>
@@ -10,7 +10,7 @@
             <ng-template let-item pTemplate="item">
                 <div class="flex flex-column">
                     <span class="text-bold">{{ item.formula.title }}</span>
-                    <span class="text-sm">{{ item.formula.description }}</span>
+                    <span class="text-sm white-space-normal">{{ item.formula.description }}</span>
                 </div>
             </ng-template>
         </p-dropdown>

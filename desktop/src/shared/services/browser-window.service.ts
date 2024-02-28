@@ -109,7 +109,7 @@ export class BrowserWindowService {
     }
 
     openCalculator(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'calculator', width: 345, height: 354 })
+        Object.assign(options, { icon: 'calculator', width: 345, height: 340 })
         this.openWindow({ ...options, id: 'calculator', path: 'calculator', data: undefined })
     }
 

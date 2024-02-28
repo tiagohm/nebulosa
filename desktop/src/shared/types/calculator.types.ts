@@ -14,6 +14,7 @@ export interface CalculatorFormula {
     expression: string
     operands: CalculatorOperand[]
     result: CalculatorOperand
+    tip?: string
     calculate: (...operands: (number | undefined)[]) => number | undefined
 }
 

@@ -23,6 +23,7 @@ import { InputSwitchModule } from 'primeng/inputswitch'
 import { InputTextModule } from 'primeng/inputtext'
 import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
+import { MessageModule } from 'primeng/message'
 import { MultiSelectModule } from 'primeng/multiselect'
 import { OverlayPanelModule } from 'primeng/overlaypanel'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
@@ -138,6 +139,7 @@ import { SettingsComponent } from './settings/settings.component'
         InputTextModule,
         ListboxModule,
         MenuModule,
+        MessageModule,
         MultiSelectModule,
         OverlayPanelModule,
         ScrollPanelModule,
