@@ -12,6 +12,7 @@ import { CalendarModule } from 'primeng/calendar'
 import { CardModule } from 'primeng/card'
 import { ChartModule } from 'primeng/chart'
 import { CheckboxModule } from 'primeng/checkbox'
+import { ColorPickerModule } from 'primeng/colorpicker'
 import { ConfirmDialogModule } from 'primeng/confirmdialog'
 import { ContextMenuModule } from 'primeng/contextmenu'
 import { DialogModule } from 'primeng/dialog'
@@ -124,6 +125,7 @@ import { SettingsComponent } from './settings/settings.component'
         CardModule,
         ChartModule,
         CheckboxModule,
+        ColorPickerModule,
         CommonModule,
         ConfirmDialogModule,
         ContextMenuModule,

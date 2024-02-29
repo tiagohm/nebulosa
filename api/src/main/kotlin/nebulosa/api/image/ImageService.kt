@@ -107,7 +107,7 @@ class ImageService(
             stretchParams.shadow, stretchParams.highlight, stretchParams.midtone,
             transformedImage.header.rightAscension.takeIf { it.isFinite() },
             transformedImage.header.declination.takeIf { it.isFinite() },
-            imageBucket[path]?.second != null,
+            imageBucket[path]?.second?.let(::ImageSolved),
             transformedImage.header.mapNotNull { if (it.isCommentStyle) null else ImageHeaderItem(it.key, it.value) },
             instrument?.let(connectionService::camera),
             statistics,

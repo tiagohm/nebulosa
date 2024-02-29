@@ -1,4 +1,5 @@
-import { AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
+import { Point, Size } from 'electron'
+import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
 import { Camera } from './camera.types'
 import { PlateSolverType } from './settings.types'
 
@@ -23,9 +24,9 @@ export interface ImageInfo {
     stretchShadow: number
     stretchHighlight: number
     stretchMidtone: number
-    rightAscension?: string
-    declination?: string
-    solved: boolean
+    rightAscension?: Angle
+    declination?: Angle
+    solved?: ImageSolved
     headers: FITSHeaderItem[]
     statistics: ImageStatistics
 }
@@ -109,4 +110,40 @@ export interface ImageData {
     path?: string
     source?: ImageSource
     title?: string
+}
+
+export interface FOV {
+    enabled: boolean
+    focalLength: number
+    aperture: number
+    cameraSize: Size
+    pixelSize: Size
+    barlowReducer: number
+    bin: number
+    rotation: number
+    color: string
+    computed?: {
+        cameraResolution: Size
+        focalRatio: number
+        fieldSize: Size
+        svg: Size & Point
+    }
+}
+
+export const DEFAULT_FOV: FOV = {
+    enabled: true,
+    focalLength: 600,
+    aperture: 80,
+    cameraSize: {
+        width: 1392,
+        height: 1040,
+    },
+    pixelSize: {
+        width: 6.45,
+        height: 6.45,
+    },
+    barlowReducer: 1,
+    bin: 1,
+    rotation: 0,
+    color: '#FFFF00',
 }

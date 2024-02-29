@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 import { AlignmentPreference, EMPTY_ALIGNMENT_PREFERENCE } from '../types/alignment.types'
 import { Camera, CameraPreference, CameraStartCapture, EMPTY_CAMERA_PREFERENCE } from '../types/camera.types'
 import { ConnectionDetails } from '../types/home.types'
-import { EMPTY_IMAGE_PREFERENCE, ImagePreference } from '../types/image.types'
+import { EMPTY_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
 import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverOptions, PlateSolverType } from '../types/settings.types'
 import { FilterWheel, WheelPreference } from '../types/wheel.types'
 import { LocalStorageService } from './local-storage.service'
@@ -65,4 +65,5 @@ export class PreferenceService {
     readonly alignmentPreference = new PreferenceData<AlignmentPreference>(this.storage, `alignment`, () => structuredClone(EMPTY_ALIGNMENT_PREFERENCE))
     readonly connections = new PreferenceData<ConnectionDetails[]>(this.storage, 'home.connections', () => [])
     readonly homeImageDefaultDirectory = new PreferenceData<string>(this.storage, 'home.image.directory', '')
+    readonly imageFOVs = new PreferenceData<FOV[]>(this.storage, 'image.fovs', () => [])
 }

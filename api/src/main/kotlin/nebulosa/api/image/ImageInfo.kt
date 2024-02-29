@@ -14,7 +14,7 @@ data class ImageInfo(
     val stretchShadow: Float = 0.0f, val stretchHighlight: Float = 1.0f, val stretchMidtone: Float = 0.5f,
     @field:JsonSerialize(using = RightAscensionSerializer::class) val rightAscension: Double? = null,
     @field:JsonSerialize(using = DeclinationSerializer::class) val declination: Double? = null,
-    val solved: Boolean = false,
+    val solved: ImageSolved? = null,
     val headers: List<ImageHeaderItem> = emptyList(),
     val camera: Camera? = null,
     @JsonIgnoreProperties("histogram") val statistics: Statistics.Data? = null,
