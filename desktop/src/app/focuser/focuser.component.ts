@@ -14,7 +14,7 @@ import { AppComponent } from '../app.component'
 })
 export class FocuserComponent implements AfterViewInit, OnDestroy {
 
-    readonly focuser = Object.assign({}, EMPTY_FOCUSER)
+    readonly focuser = structuredClone(EMPTY_FOCUSER)
 
     moving = false
     position = 0

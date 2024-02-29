@@ -17,7 +17,7 @@ import { AppComponent } from '../app.component'
 })
 export class CameraComponent implements AfterContentInit, OnDestroy {
 
-    readonly camera = Object.assign({}, EMPTY_CAMERA)
+    readonly camera = structuredClone(EMPTY_CAMERA)
 
     savePath = ''
     capturesPath = ''
@@ -85,7 +85,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     exposureMode: ExposureMode = 'SINGLE'
     subFrame = false
 
-    readonly request = Object.assign({}, EMPTY_CAMERA_START_CAPTURE)
+    readonly request = structuredClone(EMPTY_CAMERA_START_CAPTURE)
     running = false
 
     readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']

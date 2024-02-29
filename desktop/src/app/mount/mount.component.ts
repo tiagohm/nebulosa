@@ -29,7 +29,7 @@ export interface MountPreference {
 })
 export class MountComponent implements AfterContentInit, OnDestroy {
 
-    readonly mount = Object.assign({}, EMPTY_MOUNT)
+    readonly mount = structuredClone(EMPTY_MOUNT)
 
     slewing = false
     parking = false
@@ -57,7 +57,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     targetCoordinateType: TargetCoordinateType = 'JNOW'
     targetRightAscension: Angle = '00h00m00s'
     targetDeclination: Angle = `00°00'00"`
-    targetComputedLocation: ComputedLocation = Object.assign({}, EMPTY_COMPUTED_LOCATION)
+    targetComputedLocation = structuredClone(EMPTY_COMPUTED_LOCATION)
 
     private readonly computeCoordinatePublisher = new Subject<void>()
     private readonly computeTargetCoordinatePublisher = new Subject<void>()

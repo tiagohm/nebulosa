@@ -15,13 +15,13 @@ export class CameraExposureComponent {
     showRemainingTime: boolean = true
 
     @Input()
-    readonly exposure = Object.assign({}, EMPTY_CAMERA_EXPOSURE_INFO)
+    readonly exposure = structuredClone(EMPTY_CAMERA_EXPOSURE_INFO)
 
     @Input()
-    readonly capture = Object.assign({}, EMPTY_CAMERA_CAPTURE_INFO)
+    readonly capture = structuredClone(EMPTY_CAMERA_CAPTURE_INFO)
 
     @Input()
-    readonly wait = Object.assign({}, EMPTY_CAMERA_WAIT_INFO)
+    readonly wait = structuredClone(EMPTY_CAMERA_WAIT_INFO)
 
     handleCameraCaptureEvent(event: CameraCaptureElapsed, looping: boolean = false) {
         this.capture.elapsedTime = event.captureElapsedTime

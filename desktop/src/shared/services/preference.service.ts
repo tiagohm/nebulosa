@@ -38,7 +38,7 @@ export class PreferenceService {
     }
 
     cameraPreference(camera: Camera) {
-        return new PreferenceData<CameraPreference>(this.storage, `camera.${camera.name}`, () => Object.assign({}, EMPTY_CAMERA_PREFERENCE))
+        return new PreferenceData<CameraPreference>(this.storage, `camera.${camera.name}`, () => structuredClone(EMPTY_CAMERA_PREFERENCE))
     }
 
     cameraStartCaptureForFlatWizard(camera: Camera) {
@@ -62,7 +62,7 @@ export class PreferenceService {
         return new PreferenceData<ImagePreference>(this.storage, key, () => EMPTY_IMAGE_PREFERENCE)
     }
 
-    readonly alignmentPreference = new PreferenceData<AlignmentPreference>(this.storage, `alignment`, () => Object.assign({}, EMPTY_ALIGNMENT_PREFERENCE))
+    readonly alignmentPreference = new PreferenceData<AlignmentPreference>(this.storage, `alignment`, () => structuredClone(EMPTY_ALIGNMENT_PREFERENCE))
     readonly connections = new PreferenceData<ConnectionDetails[]>(this.storage, 'home.connections', () => [])
     readonly homeImageDefaultDirectory = new PreferenceData<string>(this.storage, 'home.image.directory', '')
 }

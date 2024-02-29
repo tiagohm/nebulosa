@@ -80,7 +80,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     refreshing = false
     tab = SkyAtlasTab.SUN
 
-    readonly bodyPosition = Object.assign({}, EMPTY_BODY_POSITION)
+    readonly bodyPosition = structuredClone(EMPTY_BODY_POSITION)
     moonIlluminated = 1
     moonWaning = false
 
@@ -136,7 +136,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     skyObject?: DeepSkyObject
     skyObjectItems: DeepSkyObject[] = []
     skyObjectSearchText = ''
-    readonly skyObjectFilter = Object.assign({}, EMPTY_SEARCH_FILTER)
+    readonly skyObjectFilter = structuredClone(EMPTY_SEARCH_FILTER)
     showSkyObjectFilter = false
     readonly constellationOptions: (Constellation | 'ALL')[] = ['ALL', ...CONSTELLATIONS]
 

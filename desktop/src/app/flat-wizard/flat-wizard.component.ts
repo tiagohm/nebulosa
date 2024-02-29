@@ -20,10 +20,10 @@ import { CameraComponent } from '../camera/camera.component'
 export class FlatWizardComponent implements AfterViewInit, OnDestroy {
 
     cameras: Camera[] = []
-    camera = Object.assign({}, EMPTY_CAMERA)
+    camera = structuredClone(EMPTY_CAMERA)
 
     wheels: FilterWheel[] = []
-    wheel = Object.assign({}, EMPTY_WHEEL)
+    wheel = structuredClone(EMPTY_WHEEL)
 
     running = false
 
@@ -36,7 +36,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     private readonly selectedFiltersMap = new Map<string, FilterSlot[]>()
 
     readonly request: FlatWizardRequest = {
-        captureRequest: Object.assign({}, EMPTY_CAMERA_START_CAPTURE),
+        captureRequest: structuredClone(EMPTY_CAMERA_START_CAPTURE),
         exposureMin: 1,
         exposureMax: 2000,
         meanTarget: 32768,

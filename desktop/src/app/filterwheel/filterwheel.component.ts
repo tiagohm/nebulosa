@@ -17,8 +17,8 @@ import { AppComponent } from '../app.component'
 })
 export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
-    readonly wheel = Object.assign({}, EMPTY_WHEEL)
-    readonly request = Object.assign({}, EMPTY_CAMERA_START_CAPTURE)
+    readonly wheel = structuredClone(EMPTY_WHEEL)
+    readonly request = structuredClone(EMPTY_CAMERA_START_CAPTURE)
 
     moving = false
     position = 0
@@ -139,17 +139,17 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     shutterToggled(filter: FilterSlot, event: CheckboxChangeEvent) {
         this.filters.forEach(e => e.dark = event.checked && e === filter)
-        this.filterChangedPublisher.next(Object.assign({}, filter))
+        this.filterChangedPublisher.next(structuredClone(filter))
     }
 
     filterNameChanged(filter: FilterSlot) {
         if (filter.name) {
-            this.filterChangedPublisher.next(Object.assign({}, filter))
+            this.filterChangedPublisher.next(structuredClone(filter))
         }
     }
 
     focusOffsetChanged(filter: FilterSlot) {
-        this.filterChangedPublisher.next(Object.assign({}, filter))
+        this.filterChangedPublisher.next(structuredClone(filter))
     }
 
     private update() {

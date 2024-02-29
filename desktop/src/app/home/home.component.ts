@@ -210,12 +210,12 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     ngOnDestroy() { }
 
     addConnection() {
-        this.newConnection = [Object.assign({}, EMPTY_CONNECTION_DETAILS), undefined]
+        this.newConnection = [structuredClone(EMPTY_CONNECTION_DETAILS), undefined]
         this.showConnectionDialog = true
     }
 
     editConnection(connection: ConnectionDetails, event: MouseEvent) {
-        this.newConnection = [Object.assign({}, connection), connection]
+        this.newConnection = [structuredClone(connection), connection]
         this.showConnectionDialog = true
         event.stopImmediatePropagation()
     }

@@ -21,13 +21,13 @@ import { CameraComponent } from '../camera/camera.component'
 export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
     cameras: Camera[] = []
-    camera = Object.assign({}, EMPTY_CAMERA)
+    camera = structuredClone(EMPTY_CAMERA)
 
     mounts: Mount[] = []
-    mount = Object.assign({}, EMPTY_MOUNT)
+    mount = structuredClone(EMPTY_MOUNT)
 
     guideOutputs: GuideOutput[] = []
-    guideOutput = Object.assign({}, EMPTY_GUIDE_OUTPUT)
+    guideOutput = structuredClone(EMPTY_GUIDE_OUTPUT)
 
     tab = 0
 
@@ -40,8 +40,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     private id = ''
 
     readonly tppaRequest: TPPAStart = {
-        capture: Object.assign({}, EMPTY_CAMERA_START_CAPTURE),
-        plateSolver: Object.assign({}, EMPTY_PLATE_SOLVER_OPTIONS),
+        capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
+        plateSolver: structuredClone(EMPTY_PLATE_SOLVER_OPTIONS),
         startFromCurrentPosition: true,
         eastDirection: true,
         compensateRefraction: true,
@@ -59,7 +59,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     tppaDeclination: Angle = `00°00'00"`
 
     readonly darvRequest: DARVStart = {
-        capture: Object.assign({}, EMPTY_CAMERA_START_CAPTURE),
+        capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
         initialPause: 5,
         exposureTime: 30,
         direction: 'NORTH',

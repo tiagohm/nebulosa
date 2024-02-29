@@ -36,7 +36,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     focuser?: Focuser
 
     readonly captureModes: SequenceCaptureMode[] = ['FULLY', 'INTERLEAVED']
-    readonly plan = Object.assign({}, EMPTY_SEQUENCE_PLAN)
+    readonly plan = structuredClone(EMPTY_SEQUENCE_PLAN)
 
     private entryToApply?: CameraStartCapture
     private entryToApplyCount: [number, number] = [0, 0]
@@ -132,7 +132,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
                 this.savedPathWasModified = false
                 this.storage.delete(SEQUENCER_SAVED_PATH_KEY)
 
-                Object.assign(this.plan, EMPTY_SEQUENCE_PLAN)
+                Object.assign(this.plan, structuredClone(EMPTY_SEQUENCE_PLAN))
                 this.add()
             },
         })
@@ -321,7 +321,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     private loadPlan(plan?: SequencePlan) {
         plan ??= this.storage.get(SEQUENCER_PLAN_KEY, this.plan)
 
-        Object.assign(this.plan, plan)
+        Object.assign(this.plan, structuredClone(plan))
 
         this.camera = this.cameras.find(e => e.name === this.plan.camera?.name) ?? this.cameras[0]
         this.focuser = this.focusers.find(e => e.name === this.plan.focuser?.name) ?? this.focusers[0]
@@ -454,7 +454,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     duplicateEntry(entry: CameraStartCapture, index: number) {
-        this.plan.entries.splice(index + 1, 0, Object.assign({}, entry))
+        this.plan.entries.splice(index + 1, 0, structuredClone(entry))
     }
 
     async start() {

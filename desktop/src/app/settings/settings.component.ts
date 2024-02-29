@@ -20,7 +20,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     activeTab = 0
 
     locations: Location[] = []
-    location = Object.assign({}, EMPTY_LOCATION)
+    location = structuredClone(EMPTY_LOCATION)
 
     readonly plateSolverTypes = Array.from(DEFAULT_SOLVER_TYPES)
     plateSolverType = this.plateSolverTypes[0]
@@ -61,7 +61,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     ngOnDestroy() { }
 
     addLocation() {
-        this.showLocation(Object.assign({}, EMPTY_LOCATION))
+        this.showLocation(structuredClone(EMPTY_LOCATION))
     }
 
     editLocation() {
