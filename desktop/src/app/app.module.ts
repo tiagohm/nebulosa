@@ -27,6 +27,7 @@ import { MenuModule } from 'primeng/menu'
 import { MessageModule } from 'primeng/message'
 import { MultiSelectModule } from 'primeng/multiselect'
 import { OverlayPanelModule } from 'primeng/overlaypanel'
+import { ProgressBarModule } from 'primeng/progressbar'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
 import { SelectButtonModule } from 'primeng/selectbutton'
 import { SlideMenuModule } from 'primeng/slidemenu'
@@ -144,6 +145,7 @@ import { SettingsComponent } from './settings/settings.component'
         MessageModule,
         MultiSelectModule,
         OverlayPanelModule,
+        ProgressBarModule,
         ScrollPanelModule,
         SelectButtonModule,
         SlideMenuModule,

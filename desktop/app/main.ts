@@ -20,6 +20,7 @@ let webSocket: Client
 
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
+const appIcon = path.join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
 
 app.commandLine.appendSwitch('disable-http-cache')
 
@@ -236,11 +237,13 @@ function createSplashScreen() {
 }
 
 function showNotification(event: NotificationEvent) {
-    const icon = path.join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
-
-    new Notification({ ...event, icon })
-        .on('click', () => sendToAllWindows(event.type, event))
-        .show()
+    if (event.silent) {
+        sendToAllWindows(event.type, event)
+    } else {
+        new Notification({ ...event, icon: appIcon })
+            .on('click', () => sendToAllWindows(event.type, event))
+            .show()
+    }
 }
 
 function findWindowById(id: number) {

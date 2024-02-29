@@ -93,6 +93,8 @@
             <p-button [text]="true" (onClick)="open('SKY_ATLAS')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/atlas.png" />
                 <div class="mt-1 text-sm">Sky Atlas</div>
+                <p-progressBar *ngIf="skyAtlasProgress !== undefined" mode="indeterminate" class="w-full" styleClass="ml-auto mr-auto"
+                               [style]="{width: '50%', height: '2px', marginTop: '2px'}" />
             </p-button>
         </div>
         <div class="col-4 p-1">
