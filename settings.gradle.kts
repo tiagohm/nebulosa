@@ -28,7 +28,7 @@ dependencyResolutionManagement {
             library("xml", "com.fasterxml:aalto-xml:1.3.2")
             library("csv", "de.siegmar:fastcsv:3.0.0")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.14.0")
-            library("apache-codec", "commons-codec:commons-codec:1.16.0")
+            library("apache-codec", "commons-codec:commons-codec:1.16.1")
             library("apache-collections", "org.apache.commons:commons-collections4:4.4")
             library("oshi", "com.github.oshi:oshi-core:6.4.11")
             library("timeshape", "net.iakovlev:timeshape:2022g.17")
