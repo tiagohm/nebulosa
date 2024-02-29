@@ -51,7 +51,7 @@ export class AppComponent implements AfterViewInit {
         })
 
         if (window.options.autoResizable !== false) {
-            setTimeout(() => this.electron.autoResizeWindow(), 250)
+            this.electron.autoResizeWindow()
         }
     }
 

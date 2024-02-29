@@ -161,11 +161,15 @@ export class ElectronService {
         this.send('WINDOW.RESIZE', Math.floor(size))
     }
 
-    autoResizeWindow() {
-        const size = document.getElementsByTagName('app-root')[0]?.getBoundingClientRect()?.height
+    autoResizeWindow(timeout: number = 500): any {
+        if (timeout <= 0) {
+            const size = document.getElementsByTagName('app-root')[0]?.getBoundingClientRect()?.height
 
-        if (size > 0) {
-            this.resizeWindow(size)
+            if (size > 0) {
+                this.resizeWindow(size)
+            }
+        } else {
+            return setTimeout(() => this.autoResizeWindow(), timeout)
         }
     }
 

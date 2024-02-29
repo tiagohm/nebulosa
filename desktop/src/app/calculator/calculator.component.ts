@@ -203,6 +203,6 @@ export class CalculatorComponent {
 
     formulaChanged() {
         clearTimeout(this.autoResizeTimeout)
-        this.autoResizeTimeout = setTimeout(() => this.electron.autoResizeWindow(), 250)
+        this.autoResizeTimeout = this.electron.autoResizeWindow()
     }
 }
