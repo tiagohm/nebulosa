@@ -57,11 +57,7 @@ export class PreferenceService {
         return new PreferenceData<PlateSolverOptions>(this.storage, `settings.plateSolver.${type}`, () => <PlateSolverOptions>{ ...EMPTY_PLATE_SOLVER_OPTIONS, type })
     }
 
-    imagePreference(camera?: Camera) {
-        const key = camera ? `image.${camera.name}` : 'image'
-        return new PreferenceData<ImagePreference>(this.storage, key, () => EMPTY_IMAGE_PREFERENCE)
-    }
-
+    readonly imagePreference = new PreferenceData<ImagePreference>(this.storage, 'image', () => structuredClone(EMPTY_IMAGE_PREFERENCE))
     readonly alignmentPreference = new PreferenceData<AlignmentPreference>(this.storage, `alignment`, () => structuredClone(EMPTY_ALIGNMENT_PREFERENCE))
     readonly connections = new PreferenceData<ConnectionDetails[]>(this.storage, 'home.connections', () => [])
     readonly homeImageDefaultDirectory = new PreferenceData<string>(this.storage, 'home.image.directory', '')

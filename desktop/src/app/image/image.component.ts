@@ -17,7 +17,6 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
-import { Camera } from '../../shared/types/camera.types'
 import { DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, FOV, ImageAnnotation, ImageChannel, ImageData, ImageInfo, ImagePreference, ImageSolved, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
@@ -546,8 +545,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             await this.loadImageFromPath(this.imageData.path)
         }
 
-        this.loadPreference(this.imageData.camera)
-
         if (this.imageData.title) {
             this.app.subTitle = this.imageData.title
         } else if (this.imageData.camera) {
@@ -871,8 +868,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    private loadPreference(camera?: Camera) {
-        const preference = this.preference.imagePreference(camera).get()
+    private loadPreference() {
+        const preference = this.preference.imagePreference.get()
         this.solverRadius = preference.solverRadius ?? this.solverRadius
         this.solverType = preference.solverType ?? this.solverTypes[0]
         this.fovs = this.preference.imageFOVs.get()
@@ -885,7 +882,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             solverType: this.solverType
         }
 
-        this.preference.imagePreference(this.imageData.camera).set(preference)
+        this.preference.imagePreference.set(preference)
     }
 
     private async executeMount(action: (mount: Mount) => void) {
