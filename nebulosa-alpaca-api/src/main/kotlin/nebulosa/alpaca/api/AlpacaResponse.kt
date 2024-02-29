@@ -1,11 +1,14 @@
 package nebulosa.alpaca.api
 
-import com.fasterxml.jackson.annotation.JsonProperty
+sealed interface AlpacaResponse<out T> {
 
-data class AlpacaResponse<out T>(
-    @field:JsonProperty("ClientTransactionID") val clientTransactionID: Int = 0,
-    @field:JsonProperty("ServerTransactionID") val serverTransactionID: Int = 0,
-    @field:JsonProperty("ErrorNumber") val errorNumber: Int = 0,
-    @field:JsonProperty("ErrorMessage") val errorMessage: String = "",
-    @field:JsonProperty("Value") val value: T? = null,
-)
+    val clientTransactionID: Int
+
+    val serverTransactionID: Int
+
+    val errorNumber: Int
+
+    val errorMessage: String
+
+    val value: T
+}

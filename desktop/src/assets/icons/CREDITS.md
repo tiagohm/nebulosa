@@ -28,4 +28,5 @@
 * https://www.flaticon.com/free-icon/witch-hat_5606276
 * https://www.flaticon.com/free-icon/picture_2659360
 * https://www.flaticon.com/free-icon/magnifier_13113714
+* https://www.flaticon.com/free-icon/calculator_7182540
 * https://thenounproject.com/icon/random-dither-4259782

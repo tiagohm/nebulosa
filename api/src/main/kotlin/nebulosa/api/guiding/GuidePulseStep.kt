@@ -10,7 +10,10 @@ import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.guide.GuideOutput
 import java.time.Duration
 
-data class GuidePulseStep(@JvmField val request: GuidePulseRequest) : Step, DelayStepListener {
+data class GuidePulseStep(
+    @JvmField val guideOutput: GuideOutput,
+    @JvmField val request: GuidePulseRequest,
+) : Step, DelayStepListener {
 
     private val listeners = LinkedHashSet<GuidePulseListener>()
     private val delayStep = DelayStep(request.duration)
@@ -28,8 +31,6 @@ data class GuidePulseStep(@JvmField val request: GuidePulseRequest) : Step, Dela
     }
 
     override fun execute(stepExecution: StepExecution): StepResult {
-        val guideOutput = requireNotNull(request.guideOutput)
-
         if (guideOutput.pulseGuide(request.duration, request.direction)) {
             delayStep.execute(stepExecution)
         }
@@ -38,11 +39,11 @@ data class GuidePulseStep(@JvmField val request: GuidePulseRequest) : Step, Dela
     }
 
     override fun afterJob(jobExecution: JobExecution) {
-        request.guideOutput?.stop()
+        guideOutput.stop()
     }
 
     override fun stop(mayInterruptIfRunning: Boolean) {
-        request.guideOutput?.stop()
+        guideOutput.stop()
         delayStep.stop()
     }
 

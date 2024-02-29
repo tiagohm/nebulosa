@@ -14,4 +14,10 @@ data class PlateSolverOptions(
     val apiUrl: String = "",
     val apiKey: String = "",
     @field:DurationMin(seconds = 0) @field:DurationMax(minutes = 5) @field:DurationUnit(ChronoUnit.SECONDS) val timeout: Duration = Duration.ZERO,
-)
+) {
+
+    companion object {
+
+        @JvmStatic val EMPTY = PlateSolverOptions()
+    }
+}

@@ -4,6 +4,8 @@ plugins {
 }
 
 dependencies {
+    api(project(":nebulosa-erfa"))
+    api(project(":nebulosa-time"))
     api(project(":nebulosa-plate-solving"))
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))

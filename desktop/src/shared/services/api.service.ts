@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
-import { DARVStart } from '../types/alignment.types'
+import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { Angle, BodyPosition, ComputedLocation, Constellation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
 import { CalibrationFrame, CalibrationFrameGroup } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
@@ -9,6 +9,7 @@ import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
+import { ConnectionStatus, ConnectionType } from '../types/home.types'
 import { CoordinateInterpolation, DetectedStar, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, SCNRProtectionMethod } from '../types/image.types'
 import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
 import { SequencePlan } from '../types/sequencer.types'
@@ -27,17 +28,21 @@ export class ApiService {
 
     // CONNECTION
 
-    connect(host: string, port: number) {
-        const query = this.http.query({ host, port })
-        return this.http.put<void>(`connection?${query}`)
+    connect(host: string, port: number, type: ConnectionType) {
+        const query = this.http.query({ host, port, type })
+        return this.http.put<string>(`connection?${query}`)
     }
 
-    disconnect() {
-        return this.http.delete<void>(`connection`)
+    disconnect(id: string) {
+        return this.http.delete<void>(`connection/${id}`)
     }
 
-    connectionStatus() {
-        return this.http.get<boolean>(`connection`)
+    connectionStatuses() {
+        return this.http.get<ConnectionStatus[]>(`connection`)
+    }
+
+    connectionStatus(id: string) {
+        return this.http.get<ConnectionStatus | undefined>(`connection/${id}`)
     }
 
     // CAMERA
@@ -521,34 +526,55 @@ export class ApiService {
 
     // FRAMING
 
+    hipsSurveys() {
+        return this.http.get<HipsSurvey[]>('framing/hips-surveys')
+    }
+
     frame(rightAscension: Angle, declination: Angle,
         width: number, height: number,
         fov: number, rotation: number, hipsSurvey: HipsSurvey,
     ) {
-        const query = this.http.query({ rightAscension, declination, width, height, fov, rotation, hipsSurvey: hipsSurvey.type })
+        const query = this.http.query({ rightAscension, declination, width, height, fov, rotation, hipsSurvey: hipsSurvey.id })
         return this.http.put<string>(`framing?${query}`)
     }
 
     // DARV
 
-    darvStart(camera: Camera, guideOutput: GuideOutput,
-        exposureTime: number, initialPause: number, direction: GuideDirection, reversed: boolean = false, capture?: CameraStartCapture) {
-        const data: DARVStart = { capture, exposureTime, initialPause, direction, reversed }
-        return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
+    darvStart(camera: Camera, guideOutput: GuideOutput, data: DARVStart) {
+        return this.http.put<string>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
     }
 
-    darvStop(camera: Camera, guideOutput: GuideOutput) {
-        return this.http.put<void>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/stop`)
+    darvStop(id: string) {
+        return this.http.put<void>(`polar-alignment/darv/${id}/stop`)
+    }
+
+    // TPPA
+
+    tppaStart(camera: Camera, mount: Mount, data: TPPAStart) {
+        return this.http.put<string>(`polar-alignment/tppa/${camera.name}/${mount.name}/start`, data)
+    }
+
+    tppaStop(id: string) {
+        return this.http.put<void>(`polar-alignment/tppa/${id}/stop`)
+    }
+
+    tppaPause(id: string) {
+        return this.http.put<void>(`polar-alignment/tppa/${id}/pause`)
+    }
+
+    tppaUnpause(id: string) {
+        return this.http.put<void>(`polar-alignment/tppa/${id}/unpause`)
     }
 
     // SEQUENCER
 
-    sequencerStart(plan: SequencePlan) {
-        return this.http.put<void>(`sequencer/start`, plan)
+    sequencerStart(camera: Camera, plan: SequencePlan) {
+        const body: SequencePlan = { ...plan, camera: undefined, wheel: undefined, focuser: undefined }
+        return this.http.put<void>(`sequencer/${camera.name}/start`, body)
     }
 
-    sequencerStop() {
-        return this.http.put<void>(`sequencer/stop`)
+    sequencerStop(camera: Camera) {
+        return this.http.put<void>(`sequencer/${camera.name}/stop`)
     }
 
     // FLAT WIZARD

@@ -3,7 +3,7 @@ package nebulosa.fits
 import nebulosa.io.SeekableSource
 import java.util.*
 
-internal class ReadOnlyHeader : Header {
+open class ReadOnlyHeader : Header {
 
     constructor() : super(LinkedList<HeaderCard>())
 
@@ -26,4 +26,6 @@ internal class ReadOnlyHeader : Header {
     override fun add(card: HeaderCard) = throw UnsupportedOperationException("Header is read-only")
 
     override fun delete(key: FitsHeader) = throw UnsupportedOperationException("Header is read-only")
+
+    override fun readOnly() = this
 }

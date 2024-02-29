@@ -10,6 +10,14 @@ class INDIService(
     private val indiEventHandler: INDIEventHandler,
 ) {
 
+    fun registerDeviceToSendMessage(device: Device) {
+        indiEventHandler.registerDevice(device)
+    }
+
+    fun unregisterDeviceToSendMessage(device: Device) {
+        indiEventHandler.unregisterDevice(device)
+    }
+
     fun messages(): List<String> {
         return indiEventHandler
     }

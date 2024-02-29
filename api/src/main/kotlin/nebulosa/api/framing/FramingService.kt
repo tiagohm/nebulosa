@@ -1,6 +1,6 @@
 package nebulosa.api.framing
 
-import nebulosa.fits.Fits
+import nebulosa.fits.fits
 import nebulosa.hips2fits.FormatOutputType
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.imaging.Image
@@ -16,25 +16,28 @@ import kotlin.io.path.outputStream
 @Service
 class FramingService(private val hips2FitsService: Hips2FitsService) {
 
+    val availableHipsSurveys by lazy { hips2FitsService.availableSurveys().execute().body()!!.sorted() }
+
     @Synchronized
     fun frame(
         rightAscension: Angle, declination: Angle,
         width: Int, height: Int, fov: Angle,
         rotation: Angle = 0.0,
-        hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
+        id: String = "CDS/P/DSS2/COLOR",
     ): Triple<Image, PlateSolution?, Path>? {
         val responseBody = hips2FitsService.query(
-            hipsSurveyType.hipsSurvey,
-            rightAscension, declination,
-            width, height,
-            rotation, fov,
+            id, rightAscension, declination,
+            width, height, rotation, fov,
             format = FormatOutputType.FITS,
         ).execute().body() ?: return null
 
         responseBody.use { it.byteStream().transferAndCloseOutput(DEFAULT_PATH.outputStream()) }
-        val image = Fits(DEFAULT_PATH).also(Fits::read).use(Image::open)
+
+        val image = DEFAULT_PATH.fits().use(Image::open)
         val solution = PlateSolution.from(image.header)
+
         LOG.info("framing file loaded. calibration={}", solution)
+
         return Triple(image, solution, DEFAULT_PATH)
     }
 

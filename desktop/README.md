@@ -40,7 +40,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ## Alignment
 
-![](alignment.darv.png)
+![](alignment.png)
 
 ## Flat Wizard
 
@@ -53,6 +53,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 ## INDI
 
 ![](indi.png)
+
+## Calculator
+
+![](calculator.png)
 
 ## Settings
 

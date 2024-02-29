@@ -7,7 +7,6 @@ import nebulosa.math.rad
 import nebulosa.skycatalog.SkyCatalog
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
-import nebulosa.time.UTC
 import okio.BufferedSource
 import okio.Source
 import okio.buffer
@@ -25,7 +24,6 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
             source.readString() // Version.
             source.readString() // Edition.
 
-            val currentTime = UTC.now()
             val commonNames = namesSource?.let(::namesFor) ?: emptyList()
             val names = ArrayList<String>(8)
 
@@ -87,10 +85,10 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
                 if (ngc > 0) "NGC $ngc".findNames()
                 if (ic > 0) "IC $ic".findNames()
                 if (m > 0) "M $m".findNames()
-                if (mel > 0) "Mellote $mel".findNames()
-                if (b > 0) "Barnard $b".findNames()
-                if (c > 0) "Caldwell $c".findNames()
-                if (cr > 0) "Collinder $cr".findNames()
+                if (mel > 0) "Mel $mel".findNames()
+                if (b > 0) "B $b".findNames()
+                if (c > 0) "C $c".findNames()
+                if (cr > 0) "Cr $cr".findNames()
                 if (ced.isNotEmpty()) "CED $ced".findNames()
                 if (sh2 > 0) "SH 2-$sh2".findNames()
                 if (rcw > 0) "RCW $rcw".findNames()
@@ -106,12 +104,12 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
                 if (eso.isNotEmpty()) "ESO $eso".findNames()
                 if (snrg.isNotEmpty()) "SNRG $snrg".findNames()
                 if (dwb > 0) "DWB $dwb".findNames()
-                if (st > 0) "Stock $st".findNames()
+                if (st > 0) "St $st".findNames()
                 if (ldn > 0) "LDN $ldn".findNames()
                 if (hcg.isNotEmpty()) "HCG $hcg".findNames()
                 if (vdbh.isNotEmpty()) "VdBH $vdbh".findNames()
-                if (tr > 0) "Trumpler $tr".findNames()
-                if (ru > 0) "Ruprecht $ru".findNames()
+                if (tr > 0) "Tr $tr".findNames()
+                if (ru > 0) "Ru $ru".findNames()
                 if (vdbha > 0) "VdBHA $vdbha".findNames()
 
                 val nebula = NebulaEntry(
@@ -122,7 +120,7 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
                     majorAxis, minorAxis, orientation,
                     parallax = parallax, redshift = redshift,
                     // distance * 3261.5637769,
-                    constellation = SkyObject.constellationFor(ra, dec, currentTime),
+                    constellation = SkyObject.constellationFor(ra, dec),
                 )
 
                 add(nebula)

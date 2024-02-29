@@ -12,13 +12,13 @@
         </div>
         <div class="col-4 flex justify-content-end align-items-center gap-2">
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-image-multiple" (click)="openCameraImage()"
-                      pTooltip="View image" tooltipPosition="bottom" />
+                      pTooltip="View image" tooltipPosition="bottom" size="small" />
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-wrench" (click)="openCameraCalibration()"
-                      pTooltip="Calibration" tooltipPosition="bottom" />
+                      pTooltip="Calibration" tooltipPosition="bottom" size="small" />
             <p-button *ngIf="canShowMenu" [disabled]="!camera || !camera.connected || running" [text]="true" [rounded]="true"
-                      icon="mdi mdi-dots-vertical" (click)="cameraMenu.show()" />
+                      icon="mdi mdi-dots-vertical" (click)="cameraMenu.show()" size="small" />
         </div>
-        <div *ngIf="canShowSavePath" class="col-12 py-0 text-sm text-gray-400 flex align-items-center gap-1">
+        <div *ngIf="canShowSavePath" class="col-12 py-0 text-sm text-gray-400 flex align-items-center gap-2">
             <i *ngIf="request.autoSave" class="mdi mdi-content-save cursor-pointer" (click)="toggleAutoSaveAllExposures()" pTooltip="Auto save: ON"
                tooltipPosition="bottom" [positionLeft]="24" [positionTop]="8"></i>
             <i *ngIf="!request.autoSave" class="mdi mdi-content-save-off cursor-pointer" (click)="toggleAutoSaveAllExposures()"
@@ -32,7 +32,7 @@
                class="mdi mdi-weather-night text-blue-600 cursor-pointer" pTooltip="Auto sub folder: MIDNIGHT" tooltipPosition="bottom"
                [positionLeft]="32" [positionTop]="8"></i>
             <span *ngIf="camera && (savePath || capturesPath)" style="padding-top: 1px; padding-bottom: 1px; height: 14px;"
-                  class="flex flex-1 align-items-center gap-2 bg-gray-800 border-round-2xl px-3 text-overflow-scroll">
+                  class="flex flex-1 align-items-center gap-2 bg-gray-800 border-round px-3 text-overflow-scroll">
                 <i class="mdi mdi-folder-open cursor-pointer" pTooltip="Choose new folder" tooltipPosition="bottom" (click)="chooseSavePath()"
                    [positionTop]="8"></i>
                 <i *ngIf="savePath" class="mdi mdi-close cursor-pointer" pTooltip="Reset" tooltipPosition="bottom" (click)="clearSavePath()"
@@ -77,8 +77,8 @@
                     <label>Exposure Time</label>
                 </span>
                 <p-menu #exposureTimeMenu [model]="exposureTimeUnitModel" [popup]="true" appendTo="body" />
-                <button [disabled]="!canExposureTime || !camera.connected || running" pButton type="button" (click)="exposureTimeMenu.toggle($event)"
-                        [label]="exposureTimeUnit"></button>
+                <button pButton [disabled]="!canExposureTime || !canExposureTimeUnit || !camera.connected || running" type="button"
+                        (click)="exposureTimeMenu.toggle($event)" [label]="exposureTimeUnit"></button>
             </div>
         </div>
         <div class="col-6">
@@ -106,9 +106,9 @@
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || exposureMode !== 'FIXED' || running" [(ngModel)]="request.exposureAmount"
-                               mode="decimal" [showButtons]="true" [step]="1.0" [min]="1" [max]="1000" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                <p-inputNumber [disabled]="!canExposureAmount || !camera.connected || exposureMode !== 'FIXED' || running"
+                               [(ngModel)]="request.exposureAmount" mode="decimal" [showButtons]="true" [step]="1.0" [min]="1" [max]="1000"
+                               locale="en" styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Count</label>
             </span>
         </div>
@@ -154,7 +154,7 @@
         </div>
         <div class="col-3 flex pt-3 flex-row align-items-center justify-content-center">
             <p-button [disabled]="!camera.connected || running" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
-                      severity="info" pTooltip="Full size" tooltipPosition="bottom" />
+                      severity="info" size="small" pTooltip="Full size" tooltipPosition="bottom" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
@@ -176,8 +176,9 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6">
             <span class="p-float-label">
-                <p-dropdown [disabled]="!camera.connected || running" [options]="camera.frameFormats" [(ngModel)]="request.frameFormat"
-                            styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" [autoDisplayFirst]="false" />
+                <p-dropdown [disabled]="!camera.connected || running || !camera.frameFormats.length" [options]="camera.frameFormats"
+                            [(ngModel)]="request.frameFormat" styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()"
+                            [autoDisplayFirst]="false" />
                 <label>Frame Format</label>
             </span>
         </div>
@@ -191,9 +192,9 @@
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.offset" mode="decimal" [showButtons]="true"
-                               [step]="1.0" [min]="camera.offsetMin" [max]="camera.offsetMax" styleClass="p-inputtext-sm border-0"
-                               [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                <p-inputNumber [disabled]="!camera.connected || running || !camera.offsetMax" [(ngModel)]="request.offset" mode="decimal"
+                               [showButtons]="true" [step]="1.0" [min]="camera.offsetMin" [max]="camera.offsetMax"
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Offset</label>
             </span>
         </div>
@@ -201,11 +202,11 @@
     <div class="grid mt-1">
         <div class="col-12 flex align-items-center justify-content-center gap-1">
             <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || running" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
-                      severity="success" />
+                      severity="success" size="small" />
             <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || !running" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
-                      severity="danger" />
+                      severity="danger" size="small" />
             <p-button *ngIf="canSave" [disabled]="!camera.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
-                      severity="info" />
+                      severity="info" size="small" />
         </div>
     </div>
 </div>

@@ -31,7 +31,7 @@ data class HeaderCard(
 
     val isDecimalType
         get() = DECIMAL_TYPES.any { it === type }
-                || BigDecimal::class.java.isAssignableFrom(type)
+            || BigDecimal::class.java.isAssignableFrom(type)
 
     val isIntegerType
         get() = INTEGET_TYPES.any { it === type }
@@ -174,6 +174,36 @@ data class HeaderCard(
         @JvmStatic
         fun create(header: FitsHeader, value: String): HeaderCard {
             return HeaderCard(header.key, value, header.comment, String::class.javaObjectType)
+        }
+
+        @JvmStatic
+        fun create(key: String, value: Boolean, comment: String = ""): HeaderCard {
+            return HeaderCard(key, if (value) "T" else "F", comment, Boolean::class.javaPrimitiveType!!)
+        }
+
+        @JvmStatic
+        fun create(key: String, value: Int, comment: String = ""): HeaderCard {
+            return HeaderCard(key, "$value", comment, Int::class.javaPrimitiveType!!)
+        }
+
+        @JvmStatic
+        fun create(key: String, value: Long, comment: String = ""): HeaderCard {
+            return HeaderCard(key, "$value", comment, Long::class.javaPrimitiveType!!)
+        }
+
+        @JvmStatic
+        fun create(key: String, value: Float, comment: String = ""): HeaderCard {
+            return HeaderCard(key, "$value", comment, Float::class.javaPrimitiveType!!)
+        }
+
+        @JvmStatic
+        fun create(key: String, value: Double, comment: String = ""): HeaderCard {
+            return HeaderCard(key, "$value", comment, Double::class.javaPrimitiveType!!)
+        }
+
+        @JvmStatic
+        fun create(key: String, value: String, comment: String = ""): HeaderCard {
+            return HeaderCard(key, value, comment, String::class.javaObjectType)
         }
 
         @JvmStatic

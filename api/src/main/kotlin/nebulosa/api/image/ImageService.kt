@@ -6,8 +6,8 @@ import nebulosa.api.atlas.SimbadEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
-import nebulosa.api.framing.HipsSurveyType
 import nebulosa.fits.*
+import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.computation.Histogram
 import nebulosa.imaging.algorithms.computation.Statistics
@@ -16,17 +16,22 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.math.*
+import nebulosa.nova.astrometry.VSOP87E
+import nebulosa.nova.position.Barycentric
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.star.detection.ImageStar
-import nebulosa.watney.star.detection.WatneyStarDetector
-import nebulosa.wcs.WCSException
+import nebulosa.star.detection.StarDetector
+import nebulosa.time.TimeYMDHMS
+import nebulosa.time.UTC
 import nebulosa.wcs.WCS
+import nebulosa.wcs.WCSException
 import org.springframework.http.HttpStatus
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Path
+import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
@@ -44,6 +49,7 @@ class ImageService(
     private val imageBucket: ImageBucket,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val connectionService: ConnectionService,
+    private val starDetector: StarDetector<Image>,
 ) {
 
     @Synchronized
@@ -61,8 +67,8 @@ class ImageService(
         var stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
 
         val shouldBeTransformed = autoStretch || manualStretch
-                || mirrorHorizontal || mirrorVertical || invert
-                || scnrEnabled
+            || mirrorHorizontal || mirrorVertical || invert
+            || scnrEnabled
 
         var transformedImage = if (shouldBeTransformed) image.clone() else image
         val instrument = camera?.name ?: image.header.instrument
@@ -101,7 +107,7 @@ class ImageService(
             stretchParams.shadow, stretchParams.highlight, stretchParams.midtone,
             transformedImage.header.rightAscension.takeIf { it.isFinite() },
             transformedImage.header.declination.takeIf { it.isFinite() },
-            imageBucket[path]?.second != null,
+            imageBucket[path]?.second?.let(::ImageSolved),
             transformedImage.header.mapNotNull { if (it.isCommentStyle) null else ImageHeaderItem(it.key, it.value) },
             instrument?.let(connectionService::camera),
             statistics,
@@ -141,9 +147,9 @@ class ImageService(
         val annotations = Vector<ImageAnnotation>()
         val tasks = ArrayList<CompletableFuture<*>>()
 
-        val dateTime = image.header.observationDate
+        val dateTime = image.header.observationDate ?: LocalDateTime.now()
 
-        if (minorPlanets && dateTime != null) {
+        if (minorPlanets) {
             threadPoolTaskExecutor.submitCompletable {
                 val latitude = image.header.latitude ?: 0.0
                 val longitude = image.header.longitude ?: 0.0
@@ -181,9 +187,9 @@ class ImageService(
                 .also(tasks::add)
         }
 
-        // val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
-
         if (starsAndDSOs) {
+            val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
+
             threadPoolTaskExecutor.submitCompletable {
                 LOG.info("finding star/DSO annotations. dateTime={}, calibration={}", dateTime, calibration)
 
@@ -192,7 +198,8 @@ class ImageService(
                 var count = 0
 
                 for (entry in catalog) {
-                    val (x, y) = wcs.skyToPix(entry.rightAscensionJ2000, entry.declinationJ2000)
+                    val astrometric = barycentric.observe(entry).equatorial()
+                    val (x, y) = wcs.skyToPix(astrometric.longitude.normalized, astrometric.latitude)
                     val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
                     else ImageAnnotation(x, y, dso = entry)
                     annotations.add(annotation)
@@ -230,10 +237,10 @@ class ImageService(
     fun frame(
         rightAscension: Angle, declination: Angle,
         width: Int, height: Int, fov: Angle,
-        rotation: Angle = 0.0, hipsSurveyType: HipsSurveyType = HipsSurveyType.CDS_P_DSS2_COLOR,
+        rotation: Angle = 0.0, id: String = "CDS/P/DSS2/COLOR",
     ): Path {
         val (image, calibration, path) = framingService
-            .frame(rightAscension, declination, width, height, fov, rotation, hipsSurveyType)!!
+            .frame(rightAscension, declination, width, height, fov, rotation, id)!!
         imageBucket.put(path, image, calibration)
         return path
     }
@@ -276,7 +283,7 @@ class ImageService(
 
     fun detectStars(path: Path): List<ImageStar> {
         val (image) = imageBucket[path] ?: return emptyList()
-        return WATNEY_STAR_DETECTOR.detect(image)
+        return starDetector.detect(image)
     }
 
     fun histogram(path: Path, bitLength: Int = 16): IntArray {
@@ -287,7 +294,6 @@ class ImageService(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<ImageService>()
-        @JvmStatic private val WATNEY_STAR_DETECTOR = WatneyStarDetector(computeHFD = true)
 
         private const val COORDINATE_INTERPOLATION_DELTA = 24
     }

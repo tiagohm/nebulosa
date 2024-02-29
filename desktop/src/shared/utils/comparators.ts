@@ -1,9 +1,6 @@
 import { Device } from '../types/device.types'
 
-export function compareText(a: string, b: string) {
-    return a.localeCompare(b)
-}
+export type Comparator<T = any> = (a: T, b: T) => number
 
-export function compareDevice(a: Device, b: Device) {
-    return compareText(a.name, b.name)
-}
+export const textComparator: Comparator<string> = (a: string, b: string) => a.localeCompare(b)
+export const deviceComparator: Comparator<Device> = (a: Device, b: Device) => textComparator(a.name, b.name)

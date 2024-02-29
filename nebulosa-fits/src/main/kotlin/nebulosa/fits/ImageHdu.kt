@@ -9,10 +9,8 @@ data class ImageHdu(
     override var data: Array<out ImageData> = emptyArray(),
 ) : Hdu<ImageData> {
 
-    val width = header.getInt(Standard.NAXIS1, 0)
-
-    val height = header.getInt(Standard.NAXIS2, 0)
-
+    val width = header.width
+    val height = header.height
     val bitpix = Bitpix.from(header)
 
     override fun read(source: SeekableSource) {

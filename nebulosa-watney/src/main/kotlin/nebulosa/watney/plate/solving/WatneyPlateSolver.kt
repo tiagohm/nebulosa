@@ -1,10 +1,11 @@
 package nebulosa.watney.plate.solving
 
+import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.erfa.SphericalCoordinate
-import nebulosa.fits.Fits
 import nebulosa.fits.Header
 import nebulosa.fits.NOAOExt
 import nebulosa.fits.Standard
+import nebulosa.fits.fits
 import nebulosa.imaging.Image
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
@@ -44,8 +45,9 @@ data class WatneyPlateSolver(
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration?,
+        cancellationToken: CancellationToken,
     ): PlateSolution {
-        val image = image ?: Fits(path!!).also(Fits::read).use(Image::open)
+        val image = image ?: path!!.fits().use(Image::open)
         val stars = (starDetector ?: DEFAULT_STAR_DETECTOR).detect(image)
 
         LOG.debug { "detected ${stars.size} stars from the image" }
@@ -285,7 +287,7 @@ data class WatneyPlateSolver(
         @JvmStatic
         private fun isValidSolution(solution: ComputedPlateSolution?): Boolean {
             return solution != null && solution.centerRA.isFinite() && solution.centerDEC.isFinite()
-                    && solution.orientation.isFinite() && solution.plateConstants.isValid
+                && solution.orientation.isFinite() && solution.plateConstants.isValid
         }
 
         @JvmStatic

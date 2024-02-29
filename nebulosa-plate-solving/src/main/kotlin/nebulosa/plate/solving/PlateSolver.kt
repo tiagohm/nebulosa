@@ -1,5 +1,6 @@
 package nebulosa.plate.solving
 
+import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.imaging.Image
 import nebulosa.math.Angle
 import java.nio.file.Path
@@ -11,5 +12,6 @@ interface PlateSolver {
         path: Path?, image: Image?,
         centerRA: Angle = 0.0, centerDEC: Angle = 0.0, radius: Angle = 0.0,
         downsampleFactor: Int = 0, timeout: Duration? = null,
+        cancellationToken: CancellationToken = CancellationToken.NONE,
     ): PlateSolution
 }

@@ -3,19 +3,21 @@ package nebulosa.indi.client.connection
 import nebulosa.indi.client.io.INDIProtocolFactory
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIConnection
+import nebulosa.log.loggerFor
 import java.net.InetSocketAddress
 import java.net.Socket
 
-class INDISocketConnection(private val socket: Socket) : INDIConnection {
+data class INDISocketConnection(private val socket: Socket) : INDIConnection {
 
     constructor(host: String, port: Int = INDIProtocol.DEFAULT_PORT) : this(Socket()) {
+        socket.reuseAddress = false
         socket.connect(InetSocketAddress(host, port), 30000)
     }
 
     val host: String
         get() = socket.localAddress.hostName
 
-    val port: Int
+    val port
         get() = socket.localPort
 
     override val input by lazy { INDIProtocolFactory.createInputStream(socket.getInputStream()) }
@@ -26,32 +28,15 @@ class INDISocketConnection(private val socket: Socket) : INDIConnection {
         get() = !socket.isClosed
 
     override fun close() {
-        var thrown: Throwable? = null
-
-        try {
-            socket.shutdownInput()
-        } catch (e: Throwable) {
-            thrown = e
-        }
-
-        try {
-            socket.shutdownOutput()
-        } catch (e: Throwable) {
-            if (thrown == null) {
-                thrown = e
-            }
-        }
-
         try {
             socket.close()
         } catch (e: Throwable) {
-            if (thrown == null) {
-                thrown = e
-            }
+            LOG.error("socket close error", e)
         }
+    }
 
-        if (thrown != null) {
-            throw thrown
-        }
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<INDISocketConnection>()
     }
 }

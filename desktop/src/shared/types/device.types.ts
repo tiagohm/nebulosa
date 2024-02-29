@@ -9,6 +9,8 @@ export type INDIPropertyType = 'NUMBER' | 'SWITCH' | 'TEXT'
 export type SwitchRule = 'ONE_OF_MANY' | 'AT_MOST_ONE' | 'ANY_OF_MANY'
 
 export interface Device {
+    readonly sender: string
+    readonly id: string
     readonly name: string
     connected: boolean
 }

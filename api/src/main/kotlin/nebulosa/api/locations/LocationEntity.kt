@@ -3,7 +3,7 @@ package nebulosa.api.locations
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import jakarta.validation.constraints.NotBlank
-import nebulosa.api.entities.BoxEntity
+import nebulosa.api.database.BoxEntity
 import nebulosa.math.deg
 import nebulosa.math.m
 import nebulosa.nova.position.GeographicPosition

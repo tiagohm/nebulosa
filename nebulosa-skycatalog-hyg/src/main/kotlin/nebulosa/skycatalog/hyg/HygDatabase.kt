@@ -10,7 +10,6 @@ import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyCatalog
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
-import nebulosa.time.UTC
 import java.io.InputStream
 import java.io.InputStreamReader
 
@@ -27,7 +26,6 @@ class HygDatabase : SkyCatalog<HygEntry>(118005) {
         val reader = CSV_READER.ofNamedCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
 
         val names = ArrayList<String>(7)
-        val currentTime = UTC.now()
 
         for (record in reader) {
             val id = record.getField("id").toLong()
@@ -51,7 +49,7 @@ class HygDatabase : SkyCatalog<HygEntry>(118005) {
                 .takeIf { it.isNotEmpty() }
                 ?.uppercase()
                 ?.let(Constellation::valueOf)
-                ?: SkyObject.constellationFor(rightAscension, declination, currentTime)
+                ?: SkyObject.constellationFor(rightAscension, declination)
 
             names.clear()
 

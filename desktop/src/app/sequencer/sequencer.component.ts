@@ -1,16 +1,18 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren } from '@angular/core'
-import { MessageService } from 'primeng/api'
+import { MenuItem, MessageService } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
+import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureEvent, CameraStartCapture } from '../../shared/types/camera.types'
+import { Camera, CameraCaptureElapsed, CameraStartCapture, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { EMPTY_SEQUENCE_PLAN, SequenceCaptureMode, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
+import { EMPTY_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerElapsed } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
+import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
@@ -34,18 +36,65 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     focuser?: Focuser
 
     readonly captureModes: SequenceCaptureMode[] = ['FULLY', 'INTERLEAVED']
-    readonly plan = Object.assign({}, EMPTY_SEQUENCE_PLAN)
+    readonly plan = structuredClone(EMPTY_SEQUENCE_PLAN)
 
-    readonly sequenceEvents: CameraCaptureEvent[] = []
+    private entryToApply?: CameraStartCapture
+    private entryToApplyCount: [number, number] = [0, 0]
+    readonly availableEntryPropertiesToApply = new Map<SequenceEntryProperty, boolean>()
+    showEntryPropertiesToApplyDialog = false
+    readonly entryMenuModel: MenuItem[] = [
+        {
+            icon: 'mdi mdi-content-copy',
+            label: 'Apply to all',
+            command: () => {
+                this.entryToApplyCount = [-1000, 1000]
+                this.showEntryPropertiesToApplyDialog = true
+            }
+        },
+        {
+            icon: 'mdi mdi-content-copy',
+            label: 'Apply to all above',
+            command: () => {
+                this.entryToApplyCount = [-1000, 0]
+                this.showEntryPropertiesToApplyDialog = true
+            }
+        },
+        {
+            icon: 'mdi mdi-content-copy',
+            label: 'Apply to above',
+            command: () => {
+                this.entryToApplyCount = [-1, 0]
+                this.showEntryPropertiesToApplyDialog = true
+            }
+        },
+        {
+            icon: 'mdi mdi-content-copy',
+            label: 'Apply to below',
+            command: () => {
+                this.entryToApplyCount = [1, 0]
+                this.showEntryPropertiesToApplyDialog = true
+            }
+        },
+        {
+            icon: 'mdi mdi-content-copy',
+            label: 'Apply to all below',
+            command: () => {
+                this.entryToApplyCount = [1000, 0]
+                this.showEntryPropertiesToApplyDialog = true
+            }
+        },
+    ]
 
-    event?: SequencerEvent
+    readonly sequenceEvents: CameraCaptureElapsed[] = []
+
+    event?: SequencerElapsed
     running = false
 
     @ViewChildren('cameraExposure')
     private readonly cameraExposures!: QueryList<CameraExposureComponent>
 
     get canStart() {
-        return !this.plan.entries.find(e => e.enabled && !e.camera?.connected)
+        return !!this.camera && this.camera.connected && !!this.plan.entries.find(e => e.enabled)
     }
 
     get savedPath() {
@@ -83,7 +132,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
                 this.savedPathWasModified = false
                 this.storage.delete(SEQUENCER_SAVED_PATH_KEY)
 
-                Object.assign(this.plan, EMPTY_SEQUENCE_PLAN)
+                Object.assign(this.plan, structuredClone(EMPTY_SEQUENCE_PLAN))
                 this.add()
             },
         })
@@ -123,33 +172,30 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         electron.on('CAMERA.UPDATED', event => {
             ngZone.run(() => {
-                const camera = this.cameras.find(e => e.name === event.device.name)
+                const camera = this.cameras.find(e => e.id === event.device.id)
 
                 if (camera) {
                     Object.assign(camera, event.device)
-                    this.updateEntriesFromCamera(camera)
                 }
             })
         })
 
         electron.on('WHEEL.UPDATED', event => {
             ngZone.run(() => {
-                const wheel = this.wheels.find(e => e.name === event.device.name)
+                const wheel = this.wheels.find(e => e.id === event.device.id)
 
                 if (wheel) {
                     Object.assign(wheel, event.device)
-                    this.updateEntriesFromWheel(wheel)
                 }
             })
         })
 
         electron.on('FOCUSER.UPDATED', event => {
             ngZone.run(() => {
-                const focuser = this.focusers.find(e => e.name === event.device.name)
+                const focuser = this.focusers.find(e => e.id === event.device.id)
 
                 if (focuser) {
                     Object.assign(focuser, event.device)
-                    this.updateEntriesFromFocuser(focuser)
                 }
             })
         })
@@ -173,12 +219,16 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
                 }
             })
         })
+
+        for (const p of SEQUENCE_ENTRY_PROPERTIES) {
+            this.availableEntryPropertiesToApply.set(p, true)
+        }
     }
 
     async ngAfterContentInit() {
-        this.cameras = await this.api.cameras()
-        this.wheels = await this.api.wheels()
-        this.focusers = await this.api.focusers()
+        this.cameras = (await this.api.cameras()).sort(deviceComparator)
+        this.wheels = (await this.api.wheels()).sort(deviceComparator)
+        this.focusers = (await this.api.focusers()).sort(deviceComparator)
 
         this.loadSavedJsonFileFromPathOrAddDefault()
 
@@ -194,12 +244,11 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
     add() {
         const camera = this.camera ?? this.cameras[0]
-        const wheel = this.wheel ?? this.wheels[0]
-        const focuser = this.focuser ?? this.focusers[0]
+        // const wheel = this.wheel ?? this.wheels[0]
+        // const focuser = this.focuser ?? this.focusers[0]
 
         this.plan.entries.push({
             enabled: true,
-            camera,
             exposureTime: 1000000,
             exposureAmount: 1,
             exposureDelay: 0,
@@ -215,8 +264,6 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
             frameFormat: camera?.frameFormats[0],
             autoSave: true,
             autoSubFolderMode: 'OFF',
-            wheel,
-            focuser,
         })
 
         this.savePlan()
@@ -263,77 +310,22 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     updateEntryFromCamera(entry: CameraStartCapture, camera?: Camera) {
-        entry.camera = camera
-
         if (camera) {
             if (camera.connected) {
-                if (camera.maxX > 1) entry.x = Math.max(camera.minX, Math.min(entry.x, camera.maxX))
-                if (camera.maxY > 1) entry.y = Math.max(camera.minY, Math.min(entry.y, camera.maxY))
-
-                if (camera.maxWidth > 1 && (entry.width <= 0 || entry.width > camera.maxWidth)) entry.width = camera.maxWidth
-                if (camera.maxHeight > 1 && (entry.height <= 0 || entry.height > camera.maxHeight)) entry.height = camera.maxHeight
-
-                if (camera.maxBinX > 1) entry.binX = Math.max(1, Math.min(entry.binX, camera.maxBinX))
-                if (camera.maxBinY > 1) entry.binY = Math.max(1, Math.min(entry.binY, camera.maxBinY))
-                if (camera.gainMax) entry.gain = Math.max(camera.gainMin, Math.min(entry.gain, camera.gainMax))
-                if (camera.offsetMax) entry.offset = Math.max(camera.offsetMin, Math.min(entry.offset, camera.offsetMax))
-                if (!entry.frameFormat || !camera.frameFormats.includes(entry.frameFormat)) entry.frameFormat = camera.frameFormats[0]
-
+                updateCameraStartCaptureFromCamera(entry, camera)
                 this.savePlan()
             }
-        }
-    }
-
-    updateEntriesFromCamera(camera?: Camera) {
-        for (const entry of this.plan.entries) {
-            this.updateEntryFromCamera(entry, camera)
-        }
-    }
-
-    updateEntryFromWheel(entry: CameraStartCapture, wheel?: FilterWheel) {
-        entry.wheel = wheel
-
-        if (wheel) {
-            if (wheel.connected) {
-                this.savePlan()
-            }
-        }
-    }
-
-    updateEntriesFromWheel(wheel?: FilterWheel) {
-        for (const entry of this.plan.entries) {
-            this.updateEntryFromWheel(entry, wheel)
-        }
-    }
-
-    updateEntryFromFocuser(entry: CameraStartCapture, focuser?: Focuser) {
-        entry.focuser = focuser
-
-        if (focuser) {
-            if (focuser.connected) {
-                this.savePlan()
-            }
-        }
-    }
-
-    updateEntriesFromFocuser(focuser?: Focuser) {
-        for (const entry of this.plan.entries) {
-            this.updateEntryFromFocuser(entry, focuser)
         }
     }
 
     private loadPlan(plan?: SequencePlan) {
         plan ??= this.storage.get(SEQUENCER_PLAN_KEY, this.plan)
 
-        Object.assign(this.plan, plan)
+        Object.assign(this.plan, structuredClone(plan))
 
-        this.camera = this.cameras.find(e => e.name === this.plan.entries[0]?.camera?.name) ?? this.cameras[0]
-        this.focuser = this.focusers.find(e => e.name === this.plan.entries[0]?.focuser?.name) ?? this.focusers[0]
-        this.wheel = this.wheels.find(e => e.name === this.plan.entries[0]?.wheel?.name) ?? this.wheels[0]
-
-        this.updateEntriesFromCamera(this.camera)
-        this.updateEntriesFromWheel(this.wheel)
-        this.updateEntriesFromFocuser(this.focuser)
+        this.camera = this.cameras.find(e => e.name === this.plan.camera?.name) ?? this.cameras[0]
+        this.focuser = this.focusers.find(e => e.name === this.plan.focuser?.name) ?? this.focusers[0]
+        this.wheel = this.wheels.find(e => e.name === this.plan.wheel?.name) ?? this.wheels[0]
 
         return plan.entries.length
     }
@@ -364,20 +356,97 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     async showCameraDialog(entry: CameraStartCapture) {
-        if (await CameraComponent.showAsDialog(this.browserWindow, 'SEQUENCER', entry)) {
+        if (await CameraComponent.showAsDialog(this.browserWindow, 'SEQUENCER', this.camera!, entry)) {
             this.savePlan()
         }
     }
 
     async showWheelDialog(entry: CameraStartCapture) {
-        if (await FilterWheelComponent.showAsDialog(this.browserWindow, 'SEQUENCER', entry)) {
+        if (await FilterWheelComponent.showAsDialog(this.browserWindow, 'SEQUENCER', this.wheel!, entry)) {
             this.savePlan()
         }
     }
 
     savePlan() {
+        this.plan.camera = this.camera
+        this.plan.wheel = this.wheel
+        this.plan.focuser = this.focuser
         this.storage.set(SEQUENCER_PLAN_KEY, this.plan)
         this.savedPathWasModified = !!this.savedPath
+    }
+
+    showEntryMenu(entry: CameraStartCapture, dialogMenu: DialogMenuComponent) {
+        this.entryToApply = entry
+        const index = this.plan.entries.indexOf(entry)
+
+        this.entryMenuModel.forEach(e => e.visible = true)
+
+        if (index === 0 || this.plan.entries.length === 1) {
+            // Hides all above and above.
+            this.entryMenuModel[1].visible = false
+            this.entryMenuModel[2].visible = false
+        } else if (index === 1) {
+            // Hides all above.
+            this.entryMenuModel[1].visible = false
+        }
+
+        if (index === this.plan.entries.length - 1 || this.plan.entries.length === 1) {
+            // Hides below and all below.
+            this.entryMenuModel[3].visible = false
+            this.entryMenuModel[4].visible = false
+        } else if (index === this.plan.entries.length - 2) {
+            // Hides all below.
+            this.entryMenuModel[4].visible = false
+        }
+
+        dialogMenu.show()
+    }
+
+    updateAllAvailableEntryPropertiesToApply(selected: boolean) {
+        for (const p of SEQUENCE_ENTRY_PROPERTIES) {
+            this.availableEntryPropertiesToApply.set(p, selected)
+        }
+    }
+
+    applyCameraStartCaptureToEntries() {
+        const source = this.entryToApply!
+        const index = this.plan.entries.indexOf(source)
+
+        for (let count of this.entryToApplyCount) {
+            if (index < 0 || count === 0) continue
+
+            const below = Math.sign(count)
+
+            count = Math.abs(count)
+
+            for (let i = 1; i <= count; i++) {
+                const pos = index + (i * below)
+
+                if (pos >= 0 && pos < this.plan.entries.length) {
+                    const dest = this.plan.entries[pos]
+
+                    if (!dest.enabled) continue
+
+                    if (this.availableEntryPropertiesToApply.get('EXPOSURE_TIME')) dest.exposureTime = source.exposureTime
+                    if (this.availableEntryPropertiesToApply.get('EXPOSURE_AMOUNT')) dest.exposureAmount = source.exposureAmount
+                    if (this.availableEntryPropertiesToApply.get('EXPOSURE_DELAY')) dest.exposureDelay = source.exposureDelay
+                    if (this.availableEntryPropertiesToApply.get('FRAME_TYPE')) dest.frameType = source.frameType
+                    if (this.availableEntryPropertiesToApply.get('X')) dest.x = source.x
+                    if (this.availableEntryPropertiesToApply.get('Y')) dest.y = source.y
+                    if (this.availableEntryPropertiesToApply.get('WIDTH')) dest.width = source.width
+                    if (this.availableEntryPropertiesToApply.get('HEIGHT')) dest.height = source.height
+                    if (this.availableEntryPropertiesToApply.get('BIN')) dest.binX = source.binX
+                    if (this.availableEntryPropertiesToApply.get('BIN')) dest.binY = source.binY
+                    if (this.availableEntryPropertiesToApply.get('FRAME_FORMAT')) dest.frameFormat = source.frameFormat
+                    if (this.availableEntryPropertiesToApply.get('GAIN')) dest.gain = source.gain
+                    if (this.availableEntryPropertiesToApply.get('OFFSET')) dest.offset = source.offset
+                } else {
+                    break
+                }
+            }
+        }
+
+        this.showEntryPropertiesToApplyDialog = false
     }
 
     deleteEntry(entry: CameraStartCapture, index: number) {
@@ -385,11 +454,11 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
     }
 
     duplicateEntry(entry: CameraStartCapture, index: number) {
-        this.plan.entries.splice(index + 1, 0, Object.assign({}, entry))
+        this.plan.entries.splice(index + 1, 0, structuredClone(entry))
     }
 
     async start() {
-        for (let i = 0; i < this.plan.entries.length; i++) {
+        for (let i = 0; i < this.cameraExposures.length; i++) {
             this.cameraExposures.get(i)?.reset()
         }
 
@@ -397,10 +466,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         await this.browserWindow.openCameraImage(this.camera!)
 
-        this.api.sequencerStart(this.plan)
+        this.api.sequencerStart(this.camera!, this.plan)
     }
 
     stop() {
-        this.api.sequencerStop()
+        this.api.sequencerStop(this.camera!)
     }
 }

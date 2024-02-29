@@ -30,19 +30,19 @@ open class TimeJD internal constructor(private val jd: DoubleArray, normalize: B
 
     override fun minus(delta: TimeDelta) = TimeJD(whole, fraction - delta.delta(this))
 
-    override val ut1 get() = UT1(whole, fraction)
+    override val ut1 by lazy { UT1(whole, fraction) }
 
-    override val utc get() = UTC(whole, fraction)
+    override val utc by lazy { UTC(whole, fraction) }
 
-    override val tai get() = TAI(whole, fraction)
+    override val tai by lazy { TAI(whole, fraction) }
 
-    override val tt get() = TT(whole, fraction)
+    override val tt by lazy { TT(whole, fraction) }
 
-    override val tcg get() = TCG(whole, fraction)
+    override val tcg by lazy { TCG(whole, fraction) }
 
-    override val tdb get() = TDB(whole, fraction)
+    override val tdb by lazy { TDB(whole, fraction) }
 
-    override val tcb get() = TCB(whole, fraction)
+    override val tcb by lazy { TCB(whole, fraction) }
 
     companion object {
 

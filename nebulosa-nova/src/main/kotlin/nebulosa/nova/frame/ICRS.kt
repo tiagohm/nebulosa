@@ -3,7 +3,7 @@ package nebulosa.nova.frame
 import nebulosa.math.Matrix3D
 
 /**
- * The International Coordinate Reference System (ICRS).
+ * The International Celestial Reference System (ICRS).
  *
  * The ICRS is a permanent reference frame which has replaced J2000,
  * with which its axes agree to within 0.02 arcseconds (closer than the

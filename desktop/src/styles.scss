@@ -151,7 +151,8 @@ p-calendar.border-0 .p-calendar-w-btn {
 }
 
 .p-tag {
-    padding: 0.13rem 0.4rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
 
     .p-tag-value {
         line-height: 1.2 !important;
@@ -248,6 +249,10 @@ p-dropdownitem *,
 
 .monospaced {
     font-family: monospace !important;
+}
+
+.gap-1px {
+    gap: 1px;
 }
 
 ::-webkit-scrollbar {

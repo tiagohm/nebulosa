@@ -8,20 +8,22 @@ export interface Focuser extends Device, Thermometer {
     canRelativeMove: boolean
     canAbort: boolean
     canReverse: boolean
-    reverse: boolean
+    reversed: boolean
     canSync: boolean
     hasBacklash: boolean
     maxPosition: number
 }
 
 export const EMPTY_FOCUSER: Focuser = {
+    sender: '',
+    id: '',
     moving: false,
     position: 0,
     canAbsoluteMove: false,
     canRelativeMove: false,
     canAbort: false,
     canReverse: false,
-    reverse: false,
+    reversed: false,
     canSync: false,
     hasBacklash: false,
     maxPosition: 0,

@@ -32,10 +32,8 @@ class SimbadEntityRepository(@Qualifier("simbadEntityBox") override val box: Box
                 if (type != null) it.equal(SimbadEntity_.type, type.ordinal)
                 if (constellation != null) it.equal(SimbadEntity_.constellation, constellation.ordinal)
 
-                if (name != null && name.trim().trim('%').isNotEmpty()) {
-                    if (name.startsWith("%") == name.endsWith("%")) it.contains(SimbadEntity_.name, name.replace("%", ""), CASE_INSENSITIVE)
-                    else if (name.endsWith("%")) it.startsWith(SimbadEntity_.name, name.replace("%", ""), CASE_INSENSITIVE)
-                    else if (name.startsWith("%")) it.endsWith(SimbadEntity_.name, name.replace("%", ""), CASE_INSENSITIVE)
+                if (!name.isNullOrBlank()) {
+                    it.contains(SimbadEntity_.name, name, CASE_INSENSITIVE)
                 }
 
                 if (useFilter) it.filter(object : QueryFilter<SimbadEntity> {

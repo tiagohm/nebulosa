@@ -5,10 +5,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0-Beta3")
-        classpath("org.jetbrains.kotlin:kotlin-allopen:2.0.0-Beta3")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0-Beta4")
+        classpath("org.jetbrains.kotlin:kotlin-allopen:2.0.0-Beta4")
         classpath("com.adarshr:gradle-test-logger-plugin:4.0.0")
-        classpath("io.objectbox:objectbox-gradle-plugin:3.7.1")
+        classpath("io.objectbox:objectbox-gradle-plugin:3.8.0")
     }
 
     repositories {

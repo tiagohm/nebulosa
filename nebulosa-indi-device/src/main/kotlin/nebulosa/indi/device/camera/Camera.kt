@@ -120,6 +120,8 @@ interface Camera : GuideOutput, Thermometer {
 
     companion object {
 
+        const val NANO_SECONDS = 1_000_000_000.0
+
         @JvmStatic val DRIVERS = setOf(
             "indi_altair_ccd",
             "indi_apogee_ccd",

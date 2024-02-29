@@ -1,5 +1,6 @@
 package nebulosa.indi.client.device
 
+import nebulosa.indi.client.INDIClient
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.gps.GPSCoordinateChanged
 import nebulosa.indi.device.gps.GPSTimeChanged
@@ -11,16 +12,21 @@ import nebulosa.math.m
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-internal class GPSDevice(
-    handler: DeviceProtocolHandler,
-    name: String,
-) : AbstractDevice(handler, name), GPS {
+internal open class GPSDevice(
+    override val sender: INDIClient,
+    override val name: String,
+) : INDIDevice(), GPS {
 
-    override val hasGPS = true
-    override var longitude = 0.0
-    override var latitude = 0.0
-    override var elevation = 0.0
-    override var dateTime = OffsetDateTime.MIN!!
+    @Volatile final override var hasGPS = true
+        private set
+    @Volatile final override var longitude = 0.0
+        private set
+    @Volatile final override var latitude = 0.0
+        private set
+    @Volatile final override var elevation = 0.0
+        private set
+    @Volatile final override var dateTime = OffsetDateTime.MIN!!
+        private set
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -31,7 +37,7 @@ internal class GPSDevice(
                         longitude = message["LONG"]!!.value.deg
                         elevation = message["ELEV"]!!.value.m
 
-                        handler.fireOnEventReceived(GPSCoordinateChanged(this))
+                        sender.fireOnEventReceived(GPSCoordinateChanged(this))
                     }
                 }
             }
@@ -43,7 +49,7 @@ internal class GPSDevice(
 
                         dateTime = OffsetDateTime.of(utcTime, ZoneOffset.ofTotalSeconds((utcOffset * 60.0).toInt()))
 
-                        handler.fireOnEventReceived(GPSTimeChanged(this))
+                        sender.fireOnEventReceived(GPSTimeChanged(this))
                     }
                 }
             }
@@ -57,6 +63,6 @@ internal class GPSDevice(
 
     override fun toString(): String {
         return "GPS(hasGPS=$hasGPS, longitude=$longitude, latitude=$latitude," +
-                " elevation=$elevation, dateTime=$dateTime)"
+            " elevation=$elevation, dateTime=$dateTime)"
     }
 }

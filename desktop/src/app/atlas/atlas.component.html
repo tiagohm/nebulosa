@@ -7,9 +7,11 @@
                         <img src="assets/icons/sun.png">
                     </div>
                 </ng-template>
-                <div class="grid flex flex-column align-items-center justify-content-center" style="height: 206px;">
-                    <img #imageOfSun style="width: 191px">
-                    <a class="text-sm" target="_blank" href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">SDO/HMI</a>
+                <div class="grid flex flex-column align-items-center justify-content-center" style="height: 235px;">
+                    <img #imageOfSun style="width: 215px">
+                    <a class="text-sm" target="_blank" href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
+                        <p-tag severity="success">SDO/HMI</p-tag>
+                    </a>
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Moon" [disabled]="refreshing">
@@ -18,8 +20,8 @@
                         <img src="assets/icons/moon.png">
                     </div>
                 </ng-template>
-                <div class="grid flex align-items-center justify-content-center" style="height: 206px;">
-                    <neb-moon [width]="187" [height]="187" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
+                <div class="grid flex align-items-center justify-content-center" style="height: 235px;">
+                    <neb-moon [width]="215" [height]="215" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
                 </div>
             </p-tabPanel>
             <p-tabPanel header="Planets" [disabled]="refreshing">
@@ -96,8 +98,10 @@
                             <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="skyObjectSearchText" />
                             <label>Search</label>
                         </span>
-                        <p-button [disabled]="refreshing" (onClick)="searchSkyObject()" icon="mdi mdi-magnify" size="small" severity="info" />
-                        <p-button [disabled]="refreshing" (onClick)="showSkyObjectFilterDialog()" icon="mdi mdi-filter" size="small" />
+                        <div class="flex flex-row gap-1">
+                            <p-button [disabled]="refreshing" (onClick)="searchSkyObject()" icon="mdi mdi-magnify" size="small" severity="info" />
+                            <p-button [disabled]="refreshing" (onClick)="showSkyObjectFilterDialog()" icon="mdi mdi-filter" size="small" />
+                        </div>
                     </div>
                 </div>
                 <div class="flex align-items-center justify-content-center mt-2 px-1">
@@ -136,10 +140,12 @@
                             <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="satelliteSearchText" />
                             <label>Search</label>
                         </span>
-                        <p-button [disabled]="refreshing" (onClick)="searchSatellite()" icon="mdi mdi-magnify"
-                                  size="small" severity="info" />
-                        <p-button [disabled]="refreshing" (onClick)="showSatelliteFilterDialog = true" icon="mdi mdi-filter"
-                                  size="small" />
+                        <div class="flex flex-row gap-1">
+                            <p-button [disabled]="refreshing" (onClick)="searchSatellite()" icon="mdi mdi-magnify"
+                                      size="small" severity="info" />
+                            <p-button [disabled]="refreshing" (onClick)="showSatelliteFilterDialog = true" icon="mdi mdi-filter"
+                                      size="small" />
+                        </div>
                     </div>
                 </div>
                 <div class="flex align-items-center justify-content-center mt-2 px-1">
@@ -252,12 +258,12 @@
                 </div>
                 <div class="col-12 pt-0 flex justify-content-center">
                     <p-button [disabled]="!name || refreshing" [text]="true" severity="info" (onClick)="mountSync()" icon="mdi mdi-sync"
-                              label="Sync" />
+                              label="Sync" size="small" />
                     <p-button [disabled]="!name || refreshing" [text]="true" severity="success" (onClick)="mountGoTo()" icon="mdi mdi-telescope"
-                              label="Go To" />
+                              label="Go To" size="small" />
                     <p-button [disabled]="!name || refreshing" [text]="true" severity="success" (onClick)="mountSlew()" icon="mdi mdi-telescope"
-                              label="Slew" />
-                    <p-button [disabled]="!name || refreshing" [text]="true" (onClick)="frame()" icon="mdi mdi-image" label="Frame" />
+                              label="Slew" size="small" />
+                    <p-button [disabled]="!name || refreshing" [text]="true" (onClick)="frame()" icon="mdi mdi-image" label="Frame" size="small" />
                 </div>
             </div>
         </p-tabPanel>
@@ -267,13 +273,13 @@
             </div>
         </p-tabPanel>
     </p-tabView>
-    <div class="col-9 flex align-items-center justify-content-between absolute" style="height: 32px; right: 14px; top: 2px;">
-        <span class="flex w-full align-items-center gap-2 justify-content-center">
+    <div class="col-9 flex align-items-center justify-content-between absolute gap-2" style="height: 32px; left: 90px; top: 2px;">
+        <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-md mdi-dots-vertical"
+                  (click)="ephemerisMenu.show()" />
+        <span class="flex w-full align-items-center gap-1 justify-content-center">
             <span class="text-overflow-scroll font-bold">{{ name ?? '' }}</span>
             <p-tag *ngFor="let tag of tags" [severity]="tag.severity" [value]="tag.title" />
         </span>
-        <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-md mdi-dots-vertical"
-                  (click)="ephemerisMenu.show()" />
     </div>
 </div>
 
@@ -308,7 +314,7 @@
         <div class="col-6">
             <span class="p-float-label">
                 <p-dropdown [options]="constellationOptions" [(ngModel)]="skyObjectFilter.constellation" [filter]="true" appendTo="body"
-                            styleClass="border-0">
+                            styleClass="border-0" [autoDisplayFirst]="false">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -326,7 +332,7 @@
         <div class="col-6">
             <span class="p-float-label">
                 <p-dropdown [options]="skyObjectFilter.types" [(ngModel)]="skyObjectFilter.type" appendTo="body" [filter]="true"
-                            styleClass="border-0">
+                            styleClass="border-0" [autoDisplayFirst]="false">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -347,7 +353,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterSkyObject()" />
+        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" size="small" (onClick)="filterSkyObject()" />
     </ng-template>
 </p-dialog>
 
@@ -361,8 +367,9 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" [text]="true" severity="danger" icon="mdi mdi-restore" label="Reset" (onClick)="resetSatelliteFilter()" />
-        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" (onClick)="filterSatellite()" />
+        <p-button [disabled]="refreshing" [text]="true" severity="danger" icon="mdi mdi-restore" label="Reset" size="small"
+                  (onClick)="resetSatelliteFilter()" />
+        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" size="small" (onClick)="filterSatellite()" />
     </ng-template>
 </p-dialog>
 

@@ -8,6 +8,8 @@ class INDIProtocolReader(
     priority: Int = NORM_PRIORITY,
 ) : Thread(), Closeable {
 
+    private val listeners = HashSet<CloseConnectionListener>(1)
+
     @Volatile private var running = false
 
     init {
@@ -17,21 +19,37 @@ class INDIProtocolReader(
     val isRunning
         get() = running
 
-    override fun run() {
-        val input = parser.input ?: return parser.close()
+    fun registerCloseConnectionListener(listener: CloseConnectionListener) {
+        listeners.add(listener)
+    }
 
+    fun unregisterCloseConnectionListener(listener: CloseConnectionListener) {
+        listeners.remove(listener)
+    }
+
+    override fun start() {
         running = true
+        super.start()
+    }
+
+    override fun run() {
+        val input = parser.input
 
         try {
             while (running) {
-                val message = input.readINDIProtocol() ?: break
+                val message = input?.readINDIProtocol() ?: break
                 parser.handleMessage(message)
             }
 
             LOG.info("protocol parser finished")
+            listeners.onEach { it.onConnectionClosed() }.clear()
+            parser.close()
         } catch (_: InterruptedException) {
-            LOG.info("protocol parser interrupted")
+            running = false
+            LOG.error("protocol parser interrupted")
         } catch (e: Throwable) {
+            running = false
+            listeners.onEach { it.onConnectionClosed() }.clear()
             LOG.error("protocol parser error", e)
             parser.close()
         }

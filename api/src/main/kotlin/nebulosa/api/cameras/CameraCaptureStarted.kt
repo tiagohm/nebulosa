@@ -11,7 +11,7 @@ data class CameraCaptureStarted(
     override val exposureAmount: Int,
     override val captureRemainingTime: Duration,
     override val exposureRemainingTime: Duration,
-) : CameraCaptureEvent {
+) : CameraCaptureElapsed {
 
     override val exposureCount = 1
     override val captureElapsedTime = Duration.ZERO!!

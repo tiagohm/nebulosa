@@ -6,10 +6,7 @@ import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.beans.converters.time.DurationDeserializer
 import nebulosa.api.guiding.DitherAfterExposureRequest
-import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
-import nebulosa.indi.device.filterwheel.FilterWheel
-import nebulosa.indi.device.focuser.Focuser
 import org.hibernate.validator.constraints.Range
 import org.hibernate.validator.constraints.time.DurationMax
 import org.hibernate.validator.constraints.time.DurationMin
@@ -21,7 +18,6 @@ import java.time.temporal.ChronoUnit
 data class CameraStartCaptureRequest(
     val enabled: Boolean = true,
     // Capture.
-    val camera: Camera? = null,
     @field:DurationMin(nanos = 1000L) @field:DurationMax(minutes = 60L) val exposureTime: Duration = Duration.ZERO,
     @field:Range(min = 0L, max = 1000L) val exposureAmount: Int = 1, // 0 = looping
     @field:JsonDeserialize(using = DurationDeserializer::class) @field:DurationUnit(ChronoUnit.SECONDS)
@@ -41,14 +37,17 @@ data class CameraStartCaptureRequest(
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.OFF,
     @field:Valid val dither: DitherAfterExposureRequest = DitherAfterExposureRequest.DISABLED,
     // Filter Wheel.
-    val wheel: FilterWheel? = null,
     val filterPosition: Int = 0,
     val shutterPosition: Int = 0,
     // Focuser.
-    val focuser: Focuser? = null,
     val focusOffset: Int = 0,
 ) {
 
     inline val isLoop
         get() = exposureAmount <= 0
+
+    companion object {
+
+        @JvmStatic val EMPTY = CameraStartCaptureRequest()
+    }
 }

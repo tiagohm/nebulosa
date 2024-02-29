@@ -4,6 +4,7 @@ import { APP_CONFIG } from '../environments/environment'
 import { AboutComponent } from './about/about.component'
 import { AlignmentComponent } from './alignment/alignment.component'
 import { AtlasComponent } from './atlas/atlas.component'
+import { CalculatorComponent } from './calculator/calculator.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
@@ -79,6 +80,10 @@ const routes: Routes = [
     {
         path: 'calibration',
         component: CalibrationComponent,
+    },
+    {
+        path: 'calculator',
+        component: CalculatorComponent,
     },
     {
         path: 'settings',

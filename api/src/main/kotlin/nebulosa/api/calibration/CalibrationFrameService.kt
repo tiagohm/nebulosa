@@ -5,7 +5,6 @@ import nebulosa.imaging.Image
 import nebulosa.imaging.algorithms.transformation.correction.BiasSubtraction
 import nebulosa.imaging.algorithms.transformation.correction.DarkSubtraction
 import nebulosa.imaging.algorithms.transformation.correction.FlatCorrection
-import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.log.loggerFor
 import org.springframework.stereotype.Service
@@ -32,10 +31,10 @@ class CalibrationFrameService(
 
         return if (darkFrame != null || biasFrame != null || flatFrame != null) {
             var transformedImage = if (createNew) image.clone() else image
-            var calibrationImage = Image(transformedImage.width, transformedImage.height, Header(), transformedImage.mono)
+            var calibrationImage = Image(transformedImage.width, transformedImage.height, Header.EMPTY, transformedImage.mono)
 
             if (biasFrame != null) {
-                calibrationImage = Fits(biasFrame.path!!).also(Fits::read).use(calibrationImage::load)!!
+                calibrationImage = biasFrame.path!!.fits().use(calibrationImage::load)!!
                 transformedImage = transformedImage.transform(BiasSubtraction(calibrationImage))
                 LOG.info("bias frame subtraction applied. frame={}", biasFrame)
             } else {
@@ -46,7 +45,7 @@ class CalibrationFrameService(
             }
 
             if (darkFrame != null) {
-                calibrationImage = Fits(darkFrame.path!!).also(Fits::read).use(calibrationImage::load)!!
+                calibrationImage = darkFrame.path!!.fits().use(calibrationImage::load)!!
                 transformedImage = transformedImage.transform(DarkSubtraction(calibrationImage))
                 LOG.info("dark frame subtraction applied. frame={}", darkFrame)
             } else {
@@ -57,7 +56,7 @@ class CalibrationFrameService(
             }
 
             if (flatFrame != null) {
-                calibrationImage = Fits(flatFrame.path!!).also(Fits::read).use(calibrationImage::load)!!
+                calibrationImage = flatFrame.path!!.fits().use(calibrationImage::load)!!
                 transformedImage = transformedImage.transform(FlatCorrection(calibrationImage))
                 LOG.info("flat frame correction applied. frame={}", flatFrame)
             } else {
@@ -98,7 +97,7 @@ class CalibrationFrameService(
             calibrationFrameRepository.delete(camera, "$file")
 
             try {
-                Fits(file).also(Fits::read).use { fits ->
+                file.fits().use { fits ->
                     val (header) = fits.filterIsInstance<ImageHdu>().firstOrNull() ?: return@use
                     val frameType = header.frameType?.takeIf { it != FrameType.LIGHT } ?: return@use
 

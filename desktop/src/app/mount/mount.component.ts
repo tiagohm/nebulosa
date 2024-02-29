@@ -29,7 +29,7 @@ export interface MountPreference {
 })
 export class MountComponent implements AfterContentInit, OnDestroy {
 
-    readonly mount = Object.assign({}, EMPTY_MOUNT)
+    readonly mount = structuredClone(EMPTY_MOUNT)
 
     slewing = false
     parking = false
@@ -57,7 +57,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     targetCoordinateType: TargetCoordinateType = 'JNOW'
     targetRightAscension: Angle = '00h00m00s'
     targetDeclination: Angle = `00°00'00"`
-    targetComputedLocation: ComputedLocation = Object.assign({}, EMPTY_COMPUTED_LOCATION)
+    targetComputedLocation = structuredClone(EMPTY_COMPUTED_LOCATION)
 
     private readonly computeCoordinatePublisher = new Subject<void>()
     private readonly computeTargetCoordinatePublisher = new Subject<void>()
@@ -212,7 +212,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         app.title = 'Mount'
 
         electron.on('MOUNT.UPDATED', event => {
-            if (event.device.name === this.mount?.name) {
+            if (event.device.id === this.mount?.id) {
                 ngZone.run(() => {
                     const wasConnected = this.mount.connected
                     Object.assign(this.mount, event.device)
@@ -226,9 +226,9 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         })
 
         electron.on('MOUNT.DETACHED', event => {
-            if (event.device.name === this.mount?.name) {
+            if (event.device.id === this.mount?.id) {
                 ngZone.run(() => {
-                    Object.assign(this.mount, event.device)
+                    Object.assign(this.mount, EMPTY_MOUNT)
                 })
             }
         })
@@ -391,7 +391,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     private update() {
-        if (this.mount) {
+        if (this.mount.name) {
             this.slewing = this.mount.slewing
             this.parking = this.mount.parking
             this.parked = this.mount.parked

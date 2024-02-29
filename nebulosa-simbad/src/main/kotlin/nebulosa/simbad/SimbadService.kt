@@ -10,7 +10,6 @@ import nebulosa.retrofit.CSVRecordListConverterFactory
 import nebulosa.retrofit.RetrofitService
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
-import nebulosa.time.UTC
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -52,7 +51,6 @@ class SimbadService(
     fun search(query: Query): List<SimbadEntry> {
         val rows = query(query).execute().body() ?: return emptyList()
         val res = ArrayList<SimbadEntry>()
-        val currentTime = UTC.now()
 
         fun matchName(name: String): String? {
             for (type in SimbadCatalogType.entries) {
@@ -93,7 +91,7 @@ class SimbadService(
             }
 
             val distance = SkyObject.distanceFor(parallax)
-            val constellation = SkyObject.constellationFor(rightAscensionJ2000, declinationJ2000, currentTime)
+            val constellation = SkyObject.constellationFor(rightAscensionJ2000, declinationJ2000)
 
             val entity = SimbadEntry(
                 id, name.joinToString("") { "[$it]" }, magnitude,

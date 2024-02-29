@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import hotkeys from 'hotkeys-js'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
@@ -13,7 +14,7 @@ import { AppComponent } from '../app.component'
 })
 export class FocuserComponent implements AfterViewInit, OnDestroy {
 
-    readonly focuser = Object.assign({}, EMPTY_FOCUSER)
+    readonly focuser = structuredClone(EMPTY_FOCUSER)
 
     moving = false
     position = 0
@@ -23,7 +24,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     canRelativeMove = false
     canAbort = false
     canReverse = false
-    reverse = false
+    reversed = false
     canSync = false
     hasBacklash = false
     maxPosition = 0
@@ -42,7 +43,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         app.title = 'Focuser'
 
         electron.on('FOCUSER.UPDATED', event => {
-            if (event.device.name === this.focuser.name) {
+            if (event.device.id === this.focuser.id) {
                 ngZone.run(() => {
                     Object.assign(this.focuser, event.device)
                     this.update()
@@ -51,12 +52,27 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('FOCUSER.DETACHED', event => {
-            if (event.device.name === this.focuser.name) {
+            if (event.device.id === this.focuser.id) {
                 ngZone.run(() => {
-                    Object.assign(this.focuser, event.device)
+                    Object.assign(this.focuser, EMPTY_FOCUSER)
                 })
             }
         })
+
+        hotkeys('left', (event) => { event.preventDefault(); this.moveIn() })
+        hotkeys('alt+left', (event) => { event.preventDefault(); this.moveIn(10) })
+        hotkeys('ctrl+left', (event) => { event.preventDefault(); this.moveIn(2) })
+        hotkeys('shift+left', (event) => { event.preventDefault(); this.moveIn(0.5) })
+        hotkeys('right', (event) => { event.preventDefault(); this.moveOut() })
+        hotkeys('alt+right', (event) => { event.preventDefault(); this.moveOut(10) })
+        hotkeys('ctrl+right', (event) => { event.preventDefault(); this.moveOut(2) })
+        hotkeys('shift+right', (event) => { event.preventDefault(); this.moveOut(0.5) })
+        hotkeys('space', (event) => { event.preventDefault(); this.abort() })
+        hotkeys('ctrl+enter', (event) => { event.preventDefault(); this.moveTo() })
+        hotkeys('up', (event) => { event.preventDefault(); this.stepsRelative = Math.min(this.maxPosition, this.stepsRelative + 1) })
+        hotkeys('down', (event) => { event.preventDefault(); this.stepsRelative = Math.max(0, this.stepsRelative - 1) })
+        hotkeys('-', (event) => { event.preventDefault(); this.stepsAbsolute = Math.max(0, this.stepsAbsolute - 1) })
+        hotkeys('=', (event) => { event.preventDefault(); this.stepsAbsolute = Math.min(this.maxPosition, this.stepsAbsolute + 1) })
     }
 
     async ngAfterViewInit() {
@@ -93,27 +109,35 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    moveIn() {
-        this.moving = true
-        this.api.focuserMoveIn(this.focuser, this.stepsRelative)
-        this.savePreference()
+    moveIn(stepSize: number = 1) {
+        if (!this.moving) {
+            this.moving = true
+            this.api.focuserMoveIn(this.focuser, Math.trunc(this.stepsRelative * stepSize))
+            this.savePreference()
+        }
     }
 
-    moveOut() {
-        this.moving = true
-        this.api.focuserMoveOut(this.focuser, this.stepsRelative)
-        this.savePreference()
+    moveOut(stepSize: number = 1) {
+        if (!this.moving) {
+            this.moving = true
+            this.api.focuserMoveOut(this.focuser, Math.trunc(this.stepsRelative * stepSize))
+            this.savePreference()
+        }
     }
 
     moveTo() {
-        this.moving = true
-        this.api.focuserMoveTo(this.focuser, this.stepsAbsolute)
-        this.savePreference()
+        if (!this.moving && this.stepsAbsolute !== this.position) {
+            this.moving = true
+            this.api.focuserMoveTo(this.focuser, this.stepsAbsolute)
+            this.savePreference()
+        }
     }
 
     sync() {
-        this.api.focuserSync(this.focuser, this.stepsAbsolute)
-        this.savePreference()
+        if (!this.moving) {
+            this.api.focuserSync(this.focuser, this.stepsAbsolute)
+            this.savePreference()
+        }
     }
 
     abort() {
@@ -121,7 +145,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     private update() {
-        if (!this.focuser) {
+        if (!this.focuser.name) {
             return
         }
 
@@ -133,7 +157,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         this.canRelativeMove = this.focuser.canRelativeMove
         this.canAbort = this.focuser.canAbort
         this.canReverse = this.focuser.canReverse
-        this.reverse = this.focuser.reverse
+        this.reversed = this.focuser.reversed
         this.canSync = this.focuser.canSync
         this.hasBacklash = this.focuser.hasBacklash
         this.maxPosition = this.focuser.maxPosition

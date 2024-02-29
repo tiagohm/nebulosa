@@ -1,20 +1,21 @@
+import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import nebulosa.alpaca.api.AlpacaService
+import nebulosa.test.NonGitHubOnlyCondition
 
+@EnabledIf(NonGitHubOnlyCondition::class)
 class AlpacaServiceTest : StringSpec() {
 
     init {
-        val client = AlpacaService("https://virtserver.swaggerhub.com/ASCOMInitiative/api/v1/")
+        val client = AlpacaService("http://localhost:11111/")
 
-        "camera" {
-            client.camera.isConnected(0).execute().body()!!.value!!.shouldBeTrue()
-            client.camera.connect(0, true).execute().body()!!.value.shouldBeNull()
-        }
-        "telescope" {
-            client.telescope.isConnected(0).execute().body()!!.value!!.shouldBeTrue()
-            client.telescope.connect(0, true).execute().body()!!.value.shouldBeNull()
+        "management" {
+            val body = client.management.configuredDevices().execute().body().shouldNotBeNull()
+
+            for (device in body.value) {
+                println(device)
+            }
         }
     }
 }

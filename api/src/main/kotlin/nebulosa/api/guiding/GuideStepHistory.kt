@@ -1,6 +1,6 @@
 package nebulosa.api.guiding
 
-import nebulosa.common.concurrency.Incrementer
+import nebulosa.common.concurrency.atomic.Incrementer
 import nebulosa.guiding.GuideStep
 import java.util.*
 

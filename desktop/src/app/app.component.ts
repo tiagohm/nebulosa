@@ -18,7 +18,7 @@ export class AppComponent implements AfterViewInit {
 
     pinned = false
     maximizable = false
-    readonly modal = window.modal
+    readonly modal = window.options.modal ?? false
     subTitle? = ''
     backgroundColor = '#212121'
     topMenu: ExtendedMenuItem[] = []
@@ -39,9 +39,9 @@ export class AppComponent implements AfterViewInit {
         console.info('APP_CONFIG', APP_CONFIG)
 
         if (electron.isElectron) {
-            console.info('Run in electron')
+            console.info('Run in electron', window.options)
         } else {
-            console.info('Run in browser')
+            console.info('Run in browser', window.options)
         }
     }
 
@@ -49,20 +49,24 @@ export class AppComponent implements AfterViewInit {
         this.route.queryParams.subscribe(e => {
             this.maximizable = e.resizable === 'true'
         })
+
+        if (window.options.autoResizable !== false) {
+            this.electron.autoResizeWindow()
+        }
     }
 
     pin() {
         this.pinned = !this.pinned
-        if (this.pinned) this.electron.send('WINDOW.PIN')
-        else this.electron.send('WINDOW.UNPIN')
+        if (this.pinned) this.electron.pinWindow()
+        else this.electron.unpinWindow()
     }
 
     minimize() {
-        this.electron.send('WINDOW.MINIMIZE')
+        this.electron.minimizeWindow()
     }
 
     maximize() {
-        this.electron.send('WINDOW.MAXIMIZE')
+        this.electron.maximizeWindow()
     }
 
     close(data?: any) {

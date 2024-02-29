@@ -12,6 +12,7 @@ import { CalendarModule } from 'primeng/calendar'
 import { CardModule } from 'primeng/card'
 import { ChartModule } from 'primeng/chart'
 import { CheckboxModule } from 'primeng/checkbox'
+import { ColorPickerModule } from 'primeng/colorpicker'
 import { ConfirmDialogModule } from 'primeng/confirmdialog'
 import { ContextMenuModule } from 'primeng/contextmenu'
 import { DialogModule } from 'primeng/dialog'
@@ -23,6 +24,7 @@ import { InputSwitchModule } from 'primeng/inputswitch'
 import { InputTextModule } from 'primeng/inputtext'
 import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
+import { MessageModule } from 'primeng/message'
 import { MultiSelectModule } from 'primeng/multiselect'
 import { OverlayPanelModule } from 'primeng/overlaypanel'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
@@ -57,6 +59,8 @@ import { AlignmentComponent } from './alignment/alignment.component'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { AtlasComponent } from './atlas/atlas.component'
+import { CalculatorComponent } from './calculator/calculator.component'
+import { FormulaComponent } from './calculator/formula/formula.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
@@ -79,6 +83,7 @@ import { SettingsComponent } from './settings/settings.component'
         AnglePipe,
         AppComponent,
         AtlasComponent,
+        CalculatorComponent,
         CalibrationComponent,
         CameraComponent,
         CameraExposureComponent,
@@ -90,6 +95,7 @@ import { SettingsComponent } from './settings/settings.component'
         FilterWheelComponent,
         FlatWizardComponent,
         FocuserComponent,
+        FormulaComponent,
         FramingComponent,
         GuiderComponent,
         HistogramComponent,
@@ -119,6 +125,7 @@ import { SettingsComponent } from './settings/settings.component'
         CardModule,
         ChartModule,
         CheckboxModule,
+        ColorPickerModule,
         CommonModule,
         ConfirmDialogModule,
         ContextMenuModule,
@@ -134,6 +141,7 @@ import { SettingsComponent } from './settings/settings.component'
         InputTextModule,
         ListboxModule,
         MenuModule,
+        MessageModule,
         MultiSelectModule,
         OverlayPanelModule,
         ScrollPanelModule,

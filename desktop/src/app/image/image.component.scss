@@ -2,6 +2,11 @@
     width: 100vw;
     height: 100vh;
     display: block;
+
+    svg.fov {
+        fill: transparent;
+        stroke-width: 0.25rem;
+    }
 }
 
 .roi {

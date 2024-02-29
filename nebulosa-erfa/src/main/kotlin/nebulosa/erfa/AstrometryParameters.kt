@@ -3,13 +3,14 @@ package nebulosa.erfa
 import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.math.Matrix3D
+import nebulosa.math.Vector3D
 
 data class AstrometryParameters(
     @JvmField val pmt: Double = 0.0, // PM time interval (SSB, Julian years).
-    @JvmField val eb: CartesianCoordinate = CartesianCoordinate.ZERO, // SSB to observer (vector, au).
-    @JvmField val ehx: Double = 0.0, val ehy: Double = 0.0, val ehz: Double = 0.0, // Sun to observer (unit vector).
+    @JvmField val eb: Vector3D = Vector3D.EMPTY, // SSB to observer (vector, au).
+    @JvmField val eh: Vector3D = Vector3D.EMPTY, // Sun to observer (unit vector).
     @JvmField val em: Distance = 0.0, // Distance from Sun to observer.
-    @JvmField val vx: Double = 0.0, val vy: Double = 0.0, val vz: Double = 0.0, // Barycentric observer velocity (c)
+    @JvmField val v: Vector3D = Vector3D.EMPTY, // Barycentric observer velocity (c)
     @JvmField val bm1: Double = 0.0, // sqrt(1-|v|^2): reciprocal of Lorenz factor.
     @JvmField val bpn: Matrix3D = Matrix3D.IDENTITY, // Bias-precession-nutation matrix.
     @JvmField val along: Angle = 0.0, // Longitude + s' + dERA(DUT).

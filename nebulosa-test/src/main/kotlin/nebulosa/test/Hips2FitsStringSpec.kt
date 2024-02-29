@@ -1,6 +1,6 @@
 package nebulosa.test
 
-import nebulosa.fits.Fits
+import nebulosa.fits.fits
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.hips2fits.HipsSurvey
 import nebulosa.io.transferAndCloseOutput
@@ -13,9 +13,10 @@ import kotlin.io.path.exists
 import kotlin.io.path.fileSize
 import kotlin.io.path.outputStream
 
+@Suppress("PropertyName")
 abstract class Hips2FitsStringSpec : FitsStringSpec() {
 
-    protected val M31 by lazy { Fits(download("00 42 44.3".hours, "41 16 9".deg, 3.deg)).also(Fits::read) }
+    protected val M31 by lazy { download("00 42 44.3".hours, "41 16 9".deg, 3.deg).fits() }
 
     protected fun download(centerRA: Angle, centerDEC: Angle, fov: Angle): Path {
         val name = "$centerRA@$centerDEC@$fov".toByteArray().toByteString().md5().hex()
@@ -26,7 +27,7 @@ abstract class Hips2FitsStringSpec : FitsStringSpec() {
         }
 
         HIPS_SERVICE
-            .query(CDS_P_DSS2_NIR, centerRA, centerDEC, 1280, 720, 0.0, fov)
+            .query(CDS_P_DSS2_NIR.id, centerRA, centerDEC, 1280, 720, 0.0, fov)
             .execute()
             .body()!!
             .use { it.byteStream().transferAndCloseOutput(path.outputStream()) }

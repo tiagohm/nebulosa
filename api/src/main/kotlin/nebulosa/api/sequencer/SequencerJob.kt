@@ -14,7 +14,10 @@ import nebulosa.batch.processing.ExecutionContext.Companion.getInt
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.batch.processing.delay.DelayStepListener
 import nebulosa.guiding.Guider
+import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.focuser.Focuser
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -23,8 +26,11 @@ import java.time.LocalDateTime
 // https://nighttime-imaging.eu/docs/master/site/sequencer/advanced/advanced/
 
 data class SequencerJob(
+    @JvmField val camera: Camera,
     @JvmField val plan: SequencePlanRequest,
     @JvmField val guider: Guider,
+    @JvmField val wheel: FilterWheel? = null,
+    @JvmField val focuser: Focuser? = null,
 ) : SimpleJob(), PublishSubscribe<MessageEvent>, DelayStepListener {
 
     private val cameraCaptureEventHandler = CameraCaptureEventHandler(this)
@@ -40,7 +46,7 @@ data class SequencerJob(
 
         val initialDelayStep = DelayStep(plan.initialDelay)
         initialDelayStep.registerDelayStepListener(this)
-        add(initialDelayStep)
+        register(initialDelayStep)
 
         val waitForSettleStep = WaitForSettleStep(guider)
 
@@ -63,7 +69,7 @@ data class SequencerJob(
         if (plan.captureMode == SequenceCaptureMode.FULLY || usedEntries.size == 1) {
             for (i in usedEntries.indices) {
                 val request = mapRequest(usedEntries[i])
-                val cameraExposureStep = CameraExposureStep(request)
+                val cameraExposureStep = CameraExposureStep(camera, request)
                 val delayStep = DelayStep(request.exposureDelay)
                 delayStep.registerDelayStepListener(cameraExposureStep)
                 val delayAndWaitForSettleStep = SimpleSplitStep(waitForSettleStep, delayStep)
@@ -72,21 +78,21 @@ data class SequencerJob(
                 val focusStep = request.focusStep()
                 var estimatedCaptureTimeForEntry = Duration.ZERO
 
-                add(SequenceIdStep(plan.entries.indexOf(usedEntries[i]) + 1))
+                register(SequenceIdStep(plan.entries.indexOf(usedEntries[i]) + 1))
 
                 repeat(request.exposureAmount) {
                     if (i == 0 && it == 0) {
-                        add(waitForSettleStep)
+                        register(waitForSettleStep)
                     } else {
-                        add(delayAndWaitForSettleStep)
+                        register(delayAndWaitForSettleStep)
                         estimatedCaptureTime += request.exposureDelay
                         estimatedCaptureTimeForEntry += request.exposureDelay
                     }
 
-                    wheelStep?.also(::add)
-                    focusStep?.also(::add)
-                    add(cameraExposureStep)
-                    add(ditherStep)
+                    wheelStep?.also(::register)
+                    focusStep?.also(::register)
+                    register(cameraExposureStep)
+                    register(ditherStep)
 
                     estimatedCaptureTime += request.exposureTime
                     estimatedCaptureTimeForEntry += request.exposureTime
@@ -101,7 +107,7 @@ data class SequencerJob(
             val count = IntArray(requests.size)
             val delaySteps = requests.map { DelayStep(it.exposureDelay) }
             val ditherSteps = requests.map { DitherAfterExposureStep(it.dither, guider) }
-            val cameraExposureSteps = requests.map { CameraExposureStep(it) }
+            val cameraExposureSteps = requests.map { CameraExposureStep(camera, it) }
             delaySteps.indices.forEach { delaySteps[it].registerDelayStepListener(cameraExposureSteps[it]) }
             val delayAndWaitForSettleSteps = requests.indices.map { SimpleSplitStep(waitForSettleStep, delaySteps[it]) }
             val wheelSteps = requests.map { it.wheelStep() }
@@ -115,20 +121,20 @@ data class SequencerJob(
                     val request = requests[i]
 
                     if (count[i] < request.exposureAmount) {
-                        add(sequenceIdSteps[i])
+                        register(sequenceIdSteps[i])
 
                         if (i == 0 && count[i] == 0) {
-                            add(waitForSettleStep)
+                            register(waitForSettleStep)
                         } else {
-                            add(delayAndWaitForSettleSteps[i])
+                            register(delayAndWaitForSettleSteps[i])
                             estimatedCaptureTime += delaySteps[i].duration
                             estimatedCaptureTimeForEntry[i] += delaySteps[i].duration
                         }
 
-                        wheelSteps[i]?.also(::add)
-                        focusSteps[i]?.also(::add)
-                        add(cameraExposureSteps[i])
-                        add(ditherSteps[i])
+                        wheelSteps[i]?.also(::register)
+                        focusSteps[i]?.also(::register)
+                        register(cameraExposureSteps[i])
+                        register(ditherSteps[i])
 
                         estimatedCaptureTime += cameraExposureSteps[i].exposureTime
                         estimatedCaptureTimeForEntry[i] += cameraExposureSteps[i].exposureTime
@@ -152,11 +158,11 @@ data class SequencerJob(
 
     override fun afterJob(jobExecution: JobExecution) {
         val id = jobExecution.context.getInt(SequenceIdStep.ID)
-        super.onNext(SequencerEvent(id, estimatedCaptureTime, Duration.ZERO, 1.0))
+        super.onNext(SequencerElapsed(id, estimatedCaptureTime, Duration.ZERO, 1.0))
     }
 
     override fun onNext(event: MessageEvent) {
-        if (event is CameraCaptureEvent) {
+        if (event is CameraCaptureElapsed) {
             val context = event.jobExecution.context
             val id = context.getInt(SequenceIdStep.ID)
 
@@ -172,7 +178,7 @@ data class SequencerJob(
 
             val progress = elapsedTime.toMillis() / estimatedCaptureTime.toMillis().toDouble()
 
-            super.onNext(SequencerEvent(id, elapsedTime, estimatedCaptureTime - elapsedTime, progress, event))
+            super.onNext(SequencerElapsed(id, elapsedTime, estimatedCaptureTime - elapsedTime, progress, event))
         }
 
         if (event is CameraExposureFinished) {
@@ -186,7 +192,11 @@ data class SequencerJob(
         val elapsedTime = step.duration - remainingTime
         val progress = elapsedTime.toMillis() / estimatedCaptureTime.toMillis().toDouble()
 
-        super.onNext(SequencerEvent(0, elapsedTime, estimatedCaptureTime - elapsedTime, progress))
+        super.onNext(SequencerElapsed(0, elapsedTime, estimatedCaptureTime - elapsedTime, progress))
+    }
+
+    override fun contains(data: Any): Boolean {
+        return data === camera || data === focuser || data === wheel || super.contains(data)
     }
 
     private data class SequenceIdStep(private val id: Int) : Step {

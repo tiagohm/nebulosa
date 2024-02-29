@@ -9,16 +9,16 @@
             padding-right: 0.21rem;
 
             p-table.planet .p-datatable-wrapper {
-                height: calc(100vh - 301px);
+                height: 229px;
             }
 
             p-table.minorPlanet .p-datatable-wrapper {
-                height: calc(100vh - 343px);
+                height: 189px;
             }
 
             p-table.skyObject .p-datatable-wrapper,
             p-table.satellite .p-datatable-wrapper {
-                height: calc(100vh - 389px);
+                height: 143px;
             }
 
             .p-tabview-nav li {

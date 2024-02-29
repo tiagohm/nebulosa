@@ -207,8 +207,7 @@ class Image(
     }
 
     fun hdu(): Hdu<ImageData> {
-        val data = Array(numberOfChannels) { FloatArrayImageData(width, height, this.data[it]) }
-        return ImageHdu(header, data)
+        return ImageHdu(header, Array(numberOfChannels) { FloatImageData(width, height, data[it]) })
     }
 
     /**
@@ -364,7 +363,7 @@ class Image(
             val width = bufferedImage.width
             val height = bufferedImage.height
             val mono = bufferedImage.type == TYPE_BYTE_GRAY
-                    || bufferedImage.type == TYPE_USHORT_GRAY
+                || bufferedImage.type == TYPE_USHORT_GRAY
 
             header.add(Standard.SIMPLE, true)
             header.add(Standard.BITPIX, Bitpix.FLOAT.code)

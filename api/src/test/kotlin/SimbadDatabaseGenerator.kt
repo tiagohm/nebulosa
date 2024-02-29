@@ -18,10 +18,7 @@ import okio.source
 import org.slf4j.LoggerFactory
 import java.io.InputStreamReader
 import java.nio.file.Path
-import java.util.concurrent.Callable
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteRecursively
 import kotlin.math.min
@@ -47,25 +44,31 @@ object SimbadDatabaseGenerator {
         .commentCharacter('#')
         .commentStrategy(CommentStrategy.SKIP)
 
-    @JvmStatic private val CALDWELL = resource("caldwell.csv")!!
+    @JvmStatic private val MELOTTE = resource("MELOTTE.csv")!!
+        .use { stream ->
+            CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
+                .associate { it.getField(1) to it.getField(0) }
+        }
+
+    @JvmStatic private val CALDWELL = resource("CALDWELL.csv")!!
         .use { stream ->
             CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1).ifEmpty { it.getField(2) } to it.getField(0) }
         }
 
-    @JvmStatic private val BENNETT = resource("bennett.csv")!!
+    @JvmStatic private val BENNETT = resource("BENNETT.csv")!!
         .use { stream ->
             CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1) to it.getField(0) }
         }
 
-    @JvmStatic private val DUNLOP = resource("dunlop.csv")!!
+    @JvmStatic private val DUNLOP = resource("DUNLOP.csv")!!
         .use { stream ->
             CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1) to it.getField(0) }
         }
 
-    @JvmStatic private val HERSHEL = resource("hershel.csv")!!
+    @JvmStatic private val HERSHEL = resource("HERSHEL.csv")!!
         .use { stream ->
             CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1) to it.getField(0) }
@@ -96,7 +99,8 @@ object SimbadDatabaseGenerator {
     @JvmStatic private val MAG_H = FLUX_TABLE.column("H")
     @JvmStatic private val MAG_K = FLUX_TABLE.column("K")
 
-    @JvmStatic private val STELLARIUM_NAMES = Nebula.namesFor(Path.of("data", "names.dat").source()).toMutableList().also { it.reverse() }
+    @JvmStatic private val STELLARIUM_NAMES = Path.of("data", "names.dat").source().use(Nebula::namesFor).toMutableList()
+    @JvmStatic private val ENTITY_IDS = ConcurrentHashMap.newKeySet<Long>(64000)
 
     @JvmStatic
     fun SimbadEntity.generateNames(): Boolean {
@@ -128,6 +132,9 @@ object SimbadDatabaseGenerator {
         }
 
         for (name in names) {
+            if (name in MELOTTE) {
+                moreNames.add("Mel ${MELOTTE[name]}")
+            }
             if (name in CALDWELL) {
                 moreNames.add("C ${CALDWELL[name]}")
             }
@@ -145,14 +152,14 @@ object SimbadDatabaseGenerator {
         name = buildString {
             var i = 0
 
-            moreNames.forEach {
+            names.forEach {
                 if (i > 0) append(SkyObject.NAME_SEPARATOR)
                 append(it)
                 i++
             }
 
-            names.forEach { n ->
-                if (moreNames.none { it.equals(n, true) }) {
+            moreNames.forEach { n ->
+                if (names.none { it.equals(n, true) }) {
                     if (i > 0) append(SkyObject.NAME_SEPARATOR)
                     append(n)
                     i++
@@ -265,6 +272,7 @@ object SimbadDatabaseGenerator {
             if (entity.generateNames()) {
                 entities.add(entity)
                 writeCount++
+                ENTITY_IDS.add(entity.id)
             }
         }
 
@@ -321,6 +329,7 @@ object SimbadDatabaseGenerator {
                     try {
                         val rows = SIMBAD_SERVICE.query(query).execute().body().takeIf { !it.isNullOrEmpty() } ?: return entities
                         ids = LongArray(rows.size) { rows[it].getField("oidref").toLong() }
+                        ids = ids.filter { it !in ENTITY_IDS }.toLongArray()
                         break
                     } catch (e: Throwable) {
                         log.error("Failed to retrieve IDs. attempt=${attempt++}, query=$query", e)
@@ -329,7 +338,10 @@ object SimbadDatabaseGenerator {
                     }
                 }
 
-                if (ids.isEmpty()) break
+                if (ids.isEmpty()) {
+                    log.info("no IDs")
+                    break
+                }
 
                 lastID = ids.last()
 

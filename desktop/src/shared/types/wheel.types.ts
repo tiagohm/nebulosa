@@ -7,23 +7,24 @@ export interface FilterWheel extends Device {
     count: number
     position: number
     moving: boolean
+    names: string[]
 }
 
 export const EMPTY_WHEEL: FilterWheel = {
+    sender: '',
+    id: '',
     count: 0,
     position: 0,
     moving: false,
     name: '',
-    connected: false
+    connected: false,
+    names: [],
 }
 
 export interface WheelDialogInput {
     mode: WheelDialogMode
+    wheel: FilterWheel
     request: CameraStartCapture
-}
-
-export function wheelPreferenceKey(wheel: FilterWheel) {
-    return `wheel.${wheel.name}`
 }
 
 export interface WheelPreference {

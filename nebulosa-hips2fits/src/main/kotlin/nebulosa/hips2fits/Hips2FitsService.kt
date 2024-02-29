@@ -22,7 +22,7 @@ class Hips2FitsService(
      * the center of projection, the type of projection and the field of view.
      */
     fun query(
-        hips: HipsSurvey,
+        id: String,
         ra: Angle, dec: Angle,
         width: Int = 1200, height: Int = 900,
         rotation: Angle = 0.0,
@@ -31,9 +31,12 @@ class Hips2FitsService(
         coordSystem: CoordinateFrameType = CoordinateFrameType.ICRS,
         format: FormatOutputType = FormatOutputType.FITS,
     ) = service.query(
-        hips.id, ra.toDegrees, dec.toDegrees, width, height, projection.name, fov.toDegrees,
+        id, ra.toDegrees, dec.toDegrees, width, height, projection.name, fov.toDegrees,
         coordSystem.name.lowercase(), rotation.toDegrees, format.name.lowercase(),
     )
+
+    fun availableSurveys() = service
+        .availableSurveys("ID=CDS* && hips_service_url*=*alasky* && dataproduct_type=image && moc_sky_fraction >= 0.99 && obs_regime=Optical,Infrared,UV,Radio,X-ray,Gamma-ray")
 
     companion object {
 

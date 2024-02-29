@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { Interactable } from '@interactjs/types/index'
+import hotkeys from 'hotkeys-js'
 import interact from 'interactjs'
 import createPanZoom, { PanZoom } from 'panzoom'
 import * as path from 'path'
@@ -12,32 +13,15 @@ import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
-import { Camera } from '../../shared/types/camera.types'
-import { DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, ImageAnnotation, ImageChannel, ImageInfo, ImageSource, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, FOV, ImageAnnotation, ImageChannel, ImageData, ImageInfo, ImagePreference, ImageSolved, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
-import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverType } from '../../shared/types/settings.types'
+import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
-import { SETTINGS_PLATE_SOLVER_KEY } from '../settings/settings.component'
-
-export function imagePreferenceKey(camera?: Camera) {
-    return camera ? `image.${camera.name}` : 'image'
-}
-
-export interface ImagePreference {
-    solverRadius?: number
-}
-
-export interface ImageData {
-    camera?: Camera
-    path?: string
-    source?: ImageSource
-    title?: string
-}
 
 @Component({
     selector: 'app-image',
@@ -89,12 +73,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     solving = false
     solved = false
     solverBlind = true
-    solverCenterRA = ''
-    solverCenterDEC = ''
+    solverCenterRA: Angle = ''
+    solverCenterDEC: Angle = ''
     solverRadius = 4
-    readonly solvedData = Object.assign({}, EMPTY_IMAGE_SOLVED)
-    readonly solverTypes: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET_ONLINE']
-    solverType: PlateSolverType
+    readonly imageSolved = structuredClone(EMPTY_IMAGE_SOLVED)
+    readonly solverTypes = Array.from(DEFAULT_SOLVER_TYPES)
+    solverType = this.solverTypes[0]
 
     crossHair = false
     annotations: ImageAnnotation[] = []
@@ -123,6 +107,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     statisticsBitLength = this.statisticsBitOptions[0]
     imageInfo?: ImageInfo
+
+    showFOVDialog = false
+    readonly fov = structuredClone(DEFAULT_FOV)
+    fovs: FOV[] = []
+    editedFOV?: FOV
 
     private panZoom?: PanZoom
     private imageURL!: string
@@ -250,6 +239,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
+    private readonly frameAtThisCoordinateMenuItem: MenuItem = {
+        label: 'Frame at this coordinate',
+        icon: 'mdi mdi-image',
+        disabled: true,
+        command: () => {
+            const coordinate = this.mouseCoordinateInterpolation?.interpolateAsText(this.imageMouseX, this.imageMouseY, false, false, false)
+
+            if (coordinate) {
+                this.browserWindow.openFraming({ data: { rightAscension: coordinate.alpha, declination: coordinate.delta } })
+            }
+        },
+    }
+
     private readonly crosshairMenuItem: CheckableMenuItem = {
         label: 'Crosshair',
         icon: 'mdi mdi-bullseye',
@@ -332,6 +334,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
+    private readonly fovMenuItem: MenuItem = {
+        label: 'Field of View',
+        icon: 'mdi mdi-camera-metering-spot',
+        command: () => {
+            this.showFOVDialog = !this.showFOVDialog
+
+            if (this.showFOVDialog) {
+                this.fovs.forEach(e => this.computeFOV(e))
+            }
+        },
+    }
+
     private readonly overlayMenuItem: MenuItem = {
         label: 'Overlay',
         icon: 'mdi mdi-layers',
@@ -340,6 +354,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.annotationMenuItem,
             this.detectStarsMenuItem,
             this.roiMenuItem,
+            this.fovMenuItem,
         ]
     }
 
@@ -361,6 +376,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.fitsHeaderMenuItem,
         SEPARATOR_MENU_ITEM,
         this.pointMountHereMenuItem,
+        this.frameAtThisCoordinateMenuItem,
     ]
 
     mouseCoordinate?: InterpolatedCoordinate<Angle> & Partial<{ x: number, y: number }>
@@ -376,14 +392,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
-        private storage: LocalStorageService,
+        private preference: PreferenceService,
         private prime: PrimeService,
         private ngZone: NgZone,
     ) {
         app.title = 'Image'
 
         electron.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
-            if (event.state === 'EXPOSURE_FINISHED' && event.camera.name === this.imageData.camera?.name) {
+            if (event.state === 'EXPOSURE_FINISHED' && event.camera.id === this.imageData.camera?.id) {
                 await this.closeImage(event.savePath !== this.imageData.path)
 
                 ngZone.run(() => {
@@ -402,28 +418,17 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        window.addEventListener('keydown', event => {
-            if (event.ctrlKey && !event.shiftKey && !event.altKey) {
-                switch (event.key) {
-                    case 'a': this.toggleStretch(); break
-                    case 'i': this.invertImage(); break
-                    case 'x': this.toggleCrosshair(); break
-                    case '-': this.zoomOut(); break
-                    case '=': this.zoomIn(); break
-                    case '0': this.resetZoom(); break
-                    default: return
-                }
+        hotkeys('ctrl+a', (event) => { event.preventDefault(); this.toggleStretch() })
+        hotkeys('ctrl+i', (event) => { event.preventDefault(); this.invertImage() })
+        hotkeys('ctrl+x', (event) => { event.preventDefault(); this.toggleCrosshair() })
+        hotkeys('ctrl+-', (event) => { event.preventDefault(); this.zoomOut() })
+        hotkeys('ctrl+=', (event) => { event.preventDefault(); this.zoomIn() })
+        hotkeys('ctrl+0', (event) => { event.preventDefault(); this.resetZoom() })
 
-                event.preventDefault()
-            }
-        }, true)
-
-        this.solverType = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS).type
+        this.loadPreference()
     }
 
     ngAfterViewInit() {
-        this.loadPreference()
-
         this.route.queryParams.subscribe(e => {
             const data = JSON.parse(decodeURIComponent(e.data)) as ImageData
             this.loadImageFromData(data)
@@ -498,6 +503,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         if (data.source === 'FRAMING') {
             this.disableAutoStretch()
+            this.resetStretch(false)
         } else if (data.source === 'FLAT_WIZARD') {
             this.disableCalibrate(false)
         }
@@ -520,7 +526,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.detectedStarsIsVisible = false
         this.detectStarsMenuItem.toggleable = false
 
-        Object.assign(this.solvedData, EMPTY_IMAGE_SOLVED)
+        Object.assign(this.imageSolved, EMPTY_IMAGE_SOLVED)
 
         this.histogram?.update([])
     }
@@ -538,8 +544,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         if (this.imageData.path) {
             await this.loadImageFromPath(this.imageData.path)
         }
-
-        this.loadPreference(this.imageData.camera)
 
         if (this.imageData.title) {
             this.app.subTitle = this.imageData.title
@@ -571,8 +575,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.stretchMidtone = Math.trunc(info.stretchMidtone * 65536)
         }
 
-        this.annotationMenuItem.disabled = !info.solved
-        this.pointMountHereMenuItem.disabled = !info.solved
+        this.updateImageSolved(info.solved)
+
         this.fitsHeaders = info.headers
 
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
@@ -643,11 +647,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.loadImage()
     }
 
-    resetStretch() {
+    resetStretch(load: boolean = true) {
         this.stretchShadowHighlight = [0, 65536]
         this.stretchMidtone = 32768
 
-        this.stretchImage()
+        if (load) {
+            this.stretchImage()
+        }
     }
 
     toggleStretch() {
@@ -663,7 +669,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     stretchImage() {
         this.disableAutoStretch()
-        this.loadImage()
+        return this.loadImage()
     }
 
     invertImage() {
@@ -717,27 +723,30 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solving = true
 
         try {
-            const options = this.storage.get(SETTINGS_PLATE_SOLVER_KEY, EMPTY_PLATE_SOLVER_OPTIONS)
-            options.type = this.solverType
-
-            Object.assign(this.solvedData,
-                await this.api.solveImage(options, this.imageData.path!, this.solverBlind,
-                    this.solverCenterRA, this.solverCenterDEC, this.solverRadius))
+            const options = this.preference.plateSolverOptions(this.solverType).get()
+            const solved = await this.api.solveImage(options, this.imageData.path!, this.solverBlind,
+                this.solverCenterRA, this.solverCenterDEC, this.solverRadius)
 
             this.savePreference()
-
-            this.solved = true
-            this.annotationMenuItem.disabled = false
-            this.pointMountHereMenuItem.disabled = false
+            this.updateImageSolved(solved)
         } catch {
-            this.solved = false
-            Object.assign(this.solvedData, EMPTY_IMAGE_SOLVED)
-            this.annotationMenuItem.disabled = true
-            this.pointMountHereMenuItem.disabled = true
+            this.updateImageSolved(this.imageInfo?.solved)
         } finally {
             this.solving = false
             this.retrieveCoordinateInterpolation()
         }
+    }
+
+    private updateImageSolved(solved?: ImageSolved) {
+        this.solved = !!solved
+        Object.assign(this.imageSolved, solved ?? EMPTY_IMAGE_SOLVED)
+        this.annotationMenuItem.disabled = !this.solved
+        this.fovMenuItem.disabled = !this.solved
+        this.pointMountHereMenuItem.disabled = !this.solved
+        this.frameAtThisCoordinateMenuItem.disabled = !this.solved
+
+        if (solved) this.fovs.forEach(e => this.computeFOV(e))
+        else this.fovs.forEach(e => e.computed = undefined)
     }
 
     mountSync(coordinate: EquatorialCoordinateJ2000) {
@@ -759,7 +768,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     frame(coordinate: EquatorialCoordinateJ2000) {
-        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000, fov: this.solvedData!.width / 60, rotation: this.solvedData!.orientation } })
+        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000, fov: this.imageSolved!.width / 60, rotation: this.imageSolved!.orientation } })
     }
 
     imageLoaded() {
@@ -782,17 +791,98 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    private loadPreference(camera?: Camera) {
-        const preference = this.storage.get<ImagePreference>(imagePreferenceKey(camera), {})
+    addFOV() {
+        if (this.computeFOV(this.fov)) {
+            this.fovs.push(structuredClone(this.fov))
+            this.preference.imageFOVs.set(this.fovs)
+        }
+    }
+
+    editFOV(fov: FOV) {
+        Object.assign(this.fov, structuredClone(fov))
+        this.editedFOV = fov
+    }
+
+    cancelEditFOV() {
+        this.editedFOV = undefined
+    }
+
+    saveFOV() {
+        if (this.editedFOV && this.computeFOV(this.fov)) {
+            Object.assign(this.editedFOV, structuredClone(this.fov))
+            this.preference.imageFOVs.set(this.fovs)
+            this.editedFOV = undefined
+        }
+    }
+
+    private computeFOV(fov: FOV) {
+        if (this.imageInfo && this.imageSolved.scale > 0) {
+            const focalLength = fov.focalLength * (fov.barlowReducer || 1)
+
+            const resolution = {
+                width: fov.pixelSize.width / focalLength * 206.265, // arcsec/pixel
+                height: fov.pixelSize.height / focalLength * 206.265, // arcsec/pixel
+            }
+
+            const svg = {
+                x: this.imageInfo.width / 2,
+                y: this.imageInfo.height / 2,
+                width: fov.cameraSize.width * (resolution.width / this.imageSolved.scale),
+                height: fov.cameraSize.height * (resolution.height / this.imageSolved.scale),
+            }
+
+            svg.x += (this.imageInfo.width - svg.width) / 2
+            svg.y += (this.imageInfo.height - svg.height) / 2
+
+            fov.computed = {
+                cameraResolution: {
+                    width: resolution.width * fov.bin,
+                    height: resolution.height * fov.bin,
+                },
+                focalRatio: focalLength / fov.aperture,
+                fieldSize: {
+                    width: resolution.width * fov.cameraSize.width / 3600, // deg
+                    height: resolution.height * fov.cameraSize.height / 3600, // deg
+                },
+                svg,
+            }
+
+            console.info(fov.computed)
+
+            return true
+        } else {
+            return false
+        }
+    }
+
+    deleteFOV(fov: FOV) {
+        const index = this.fovs.indexOf(fov)
+
+        if (index >= 0) {
+            if (this.fovs[index] === this.editedFOV) {
+                this.editedFOV = undefined
+            }
+
+            this.fovs.splice(index, 1)
+            this.preference.imageFOVs.set(this.fovs)
+        }
+    }
+
+    private loadPreference() {
+        const preference = this.preference.imagePreference.get()
         this.solverRadius = preference.solverRadius ?? this.solverRadius
+        this.solverType = preference.solverType ?? this.solverTypes[0]
+        this.fovs = this.preference.imageFOVs.get()
+        this.fovs.forEach(e => { e.enabled = false; e.computed = undefined })
     }
 
     private savePreference() {
         const preference: ImagePreference = {
-            solverRadius: this.solverRadius
+            solverRadius: this.solverRadius,
+            solverType: this.solverType
         }
 
-        this.storage.set(imagePreferenceKey(this.imageData.camera), preference)
+        this.preference.imagePreference.set(preference)
     }
 
     private async executeMount(action: (mount: Mount) => void) {

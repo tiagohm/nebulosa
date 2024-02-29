@@ -16,7 +16,7 @@ data class CameraCaptureIsWaiting(
     override val waitProgress: Double,
     override val waitRemainingTime: Duration,
     override val state: CameraCaptureState = CameraCaptureState.WAITING,
-) : CameraCaptureEvent {
+) : CameraCaptureElapsed {
 
     override val exposureProgress = 1.0
     override val exposureRemainingTime = Duration.ZERO!!

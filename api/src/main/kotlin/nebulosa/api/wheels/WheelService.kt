@@ -18,7 +18,7 @@ class WheelService {
         wheel.moveTo(steps)
     }
 
-    fun sync(wheel: FilterWheel, filterNames: List<String>) {
-        wheel.syncNames(filterNames)
+    fun sync(wheel: FilterWheel, names: List<String>) {
+        wheel.names(names)
     }
 }

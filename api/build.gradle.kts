@@ -2,7 +2,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     kotlin("jvm")
-    id("org.springframework.boot") version "3.2.2"
+    id("org.springframework.boot") version "3.2.3"
     id("io.spring.dependency-management") version "1.1.4"
     kotlin("plugin.spring")
     kotlin("kapt")
@@ -10,8 +10,10 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":nebulosa-alignment"))
     implementation(project(":nebulosa-astap"))
     implementation(project(":nebulosa-astrometrynet"))
+    implementation(project(":nebulosa-alpaca-indi"))
     implementation(project(":nebulosa-batch-processing"))
     implementation(project(":nebulosa-common"))
     implementation(project(":nebulosa-guiding-phd2"))
@@ -43,7 +45,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    kapt("org.springframework:spring-context-indexer:6.1.3")
+    kapt("org.springframework:spring-context-indexer:6.1.4")
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))
 }
@@ -60,6 +62,6 @@ tasks.withType<BootJar> {
 kapt {
     arguments {
         arg("objectbox.modelPath", "$projectDir/schemas/objectbox.json")
-        arg("objectbox.myObjectBoxPackage", "nebulosa.api.entities")
+        arg("objectbox.myObjectBoxPackage", "nebulosa.api.database")
     }
 }

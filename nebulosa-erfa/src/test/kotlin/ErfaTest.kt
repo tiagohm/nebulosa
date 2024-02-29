@@ -81,6 +81,12 @@ class ErfaTest : StringSpec() {
             theta shouldBe (-0.4636476090008061162 plusOrMinus 1e-14)
             phi shouldBe (0.2199879773954594463 plusOrMinus 1e-14)
         }
+        "eraS2c" {
+            val c = eraS2c(3.0123, -0.999)
+            c[0] shouldBe (-0.5366267667260523906 plusOrMinus 1e-12)
+            c[1] shouldBe (0.0697711109765145365 plusOrMinus 1e-12)
+            c[2] shouldBe (-0.8409302618566214041 plusOrMinus 1e-12)
+        }
         "eraP2s" {
             val (theta, phi, r) = eraP2s(100.0.au, (-50.0).au, 25.0.au)
             theta shouldBe (-0.4636476090008061162 plusOrMinus 1e-12)
@@ -91,36 +97,36 @@ class ErfaTest : StringSpec() {
             eraAnpm((-4.0).rad) shouldBe (2.283185307179586477 plusOrMinus 1e-12)
         }
         "eraGc2Gde" {
-            val (e1, p1, h1) = eraGc2Gde(6378137.0.m, 1.0 / 298.257223563, 2e6.m, 3e6.m, 5.244e6.m)
+            val (e1, p1, h1) = eraGc2Gde(6378137.0, 1.0 / 298.257223563, 2e6, 3e6, 5.244e6)
             e1 shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
             p1 shouldBe (0.97160184819075459 plusOrMinus 1e-14)
-            h1.toMeters shouldBe (331.4172461426059892 plusOrMinus 1e-8)
+            h1 shouldBe (331.4172461426059892 plusOrMinus 1e-8)
 
-            val (e2, p2, h2) = eraGc2Gde(6378137.0.m, 1.0 / 298.257222101, 2e6.m, 3e6.m, 5.244e6.m)
+            val (e2, p2, h2) = eraGc2Gde(6378137.0, 1.0 / 298.257222101, 2e6, 3e6, 5.244e6)
             e2 shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
             p2 shouldBe (0.97160184820607853 plusOrMinus 1e-14)
-            h2.toMeters shouldBe (331.41731754844348 plusOrMinus 1e-8)
+            h2 shouldBe (331.41731754844348 plusOrMinus 1e-8)
 
-            val (e3, p3, h3) = eraGc2Gde(6378135.0.m, 1.0 / 298.26, 2e6.m, 3e6.m, 5.244e6.m)
+            val (e3, p3, h3) = eraGc2Gde(6378135.0, 1.0 / 298.26, 2e6, 3e6, 5.244e6)
             e3 shouldBe (0.9827937232473290680 plusOrMinus 1e-14)
             p3 shouldBe (0.9716018181101511937 plusOrMinus 1e-14)
-            h3.toMeters shouldBe (333.2770726130318123 plusOrMinus 1e-8)
+            h3 shouldBe (333.2770726130318123 plusOrMinus 1e-8)
         }
         "eraGd2Gc" {
-            val (x1, y1, z1) = eraGd2Gce(6378137.0.m, 1.0 / 298.257223563, 3.1.rad, (-0.5).rad, 2500.0.m)
-            x1.toMeters shouldBe (-5599000.5577049947 plusOrMinus 1e-7)
-            y1.toMeters shouldBe (233011.67223479203 plusOrMinus 1e-7)
-            z1.toMeters shouldBe (-3040909.4706983363 plusOrMinus 1e-7)
+            val (x1, y1, z1) = eraGd2Gce(6378137.0, 1.0 / 298.257223563, 3.1.rad, (-0.5).rad, 2500.0)
+            x1 shouldBe (-5599000.5577049947 plusOrMinus 1e-7)
+            y1 shouldBe (233011.67223479203 plusOrMinus 1e-7)
+            z1 shouldBe (-3040909.4706983363 plusOrMinus 1e-7)
 
-            val (x2, y2, z2) = eraGd2Gce(6378137.0.m, 1.0 / 298.257222101, 3.1.rad, (-0.5).rad, 2500.0.m)
-            x2.toMeters shouldBe (-5599000.5577260984 plusOrMinus 1e-7)
-            y2.toMeters shouldBe (233011.6722356702949 plusOrMinus 1e-7)
-            z2.toMeters shouldBe (-3040909.4706095476 plusOrMinus 1e-7)
+            val (x2, y2, z2) = eraGd2Gce(6378137.0, 1.0 / 298.257222101, 3.1.rad, (-0.5).rad, 2500.0)
+            x2 shouldBe (-5599000.5577260984 plusOrMinus 1e-7)
+            y2 shouldBe (233011.6722356702949 plusOrMinus 1e-7)
+            z2 shouldBe (-3040909.4706095476 plusOrMinus 1e-7)
 
-            val (x3, y3, z3) = eraGd2Gce(6378135.0.m, 1.0 / 298.26, 3.1.rad, (-0.5).rad, 2500.0.m)
-            x3.toMeters shouldBe (-5598998.7626301490 plusOrMinus 1e-7)
-            y3.toMeters shouldBe (233011.5975297822211 plusOrMinus 1e-7)
-            z3.toMeters shouldBe (-3040908.6861467111 plusOrMinus 1e-7)
+            val (x3, y3, z3) = eraGd2Gce(6378135.0, 1.0 / 298.26, 3.1.rad, (-0.5).rad, 2500.0)
+            x3 shouldBe (-5598998.7626301490 plusOrMinus 1e-7)
+            y3 shouldBe (233011.5975297822211 plusOrMinus 1e-7)
+            z3 shouldBe (-3040908.6861467111 plusOrMinus 1e-7)
         }
         "eraC2ixys" {
             val m = eraC2ixys(0.5791308486706011000e-3, 0.4020579816732961219e-4, (-0.1220040848472271978e-7).rad)
@@ -149,35 +155,35 @@ class ErfaTest : StringSpec() {
         "eraApcs" {
             val astro = eraApcs(
                 2456384.5, 0.970031644,
-                (-1836024.09).m, 1056607.72.m, (-5998795.26).m,
-                -77.0361767, -133.310856, 0.0971855934,
-                (-0.974170438).au, (-0.211520082).au, (-0.0917583024).au,
-                0.00364365824.auDay, (-0.0154287319).auDay, (-0.00668922024).auDay,
-                (-0.973458265).au, (-0.209215307).au, (-0.0906996477).au,
+                Vector3D(-1836024.09, 1056607.7, -5998795.26),
+                Vector3D(-77.0361767, -133.310856, 0.0971855934),
+                Vector3D(-0.974170438, -0.211520082, -0.0917583024),
+                Vector3D(0.00364365824, -0.0154287319, -0.00668922024),
+                Vector3D(-0.973458265, -0.209215307, -0.0906996477),
             )
 
             astro.pmt shouldBe (13.25248468622587269 plusOrMinus 1e-11)
             astro.eb.x shouldBe (-0.9741827110629881886 plusOrMinus 1e-12)
             astro.eb.y shouldBe (-0.2115130190136415986 plusOrMinus 1e-12)
             astro.eb.z shouldBe (-0.09179840186954412099 plusOrMinus 1e-12)
-            astro.ehx shouldBe (-0.9736425571689454706 plusOrMinus 1e-12)
-            astro.ehy shouldBe (-0.2092452125850435930 plusOrMinus 1e-12)
-            astro.ehz shouldBe (-0.09075578152248299218 plusOrMinus 1e-12)
+            astro.eh.x shouldBe (-0.9736425571689454706 plusOrMinus 1e-12)
+            astro.eh.y shouldBe (-0.2092452125850435930 plusOrMinus 1e-12)
+            astro.eh.z shouldBe (-0.09075578152248299218 plusOrMinus 1e-12)
             astro.em shouldBe (0.9998233241709796859 plusOrMinus 1e-12)
-            astro.vx shouldBe (0.2078704993282685510e-4 plusOrMinus 1e-16)
-            astro.vy shouldBe (-0.8955360106989405683e-4 plusOrMinus 1e-16)
-            astro.vz shouldBe (-0.3863338994289409097e-4 plusOrMinus 1e-16)
+            astro.v.x shouldBe (0.2078704993282685510e-4 plusOrMinus 1e-16)
+            astro.v.y shouldBe (-0.8955360106989405683e-4 plusOrMinus 1e-16)
+            astro.v.z shouldBe (-0.3863338994289409097e-4 plusOrMinus 1e-16)
             astro.bm1 shouldBe (0.9999999950277561237 plusOrMinus 1e-12)
         }
         "eraApco" {
             val astro = eraApco(
                 2456384.5, 0.970031644,
-                (-0.974170438).au, (-0.211520082).au, (-0.0917583024).au,
-                0.00364365824.auDay, (-0.0154287319).auDay, (-0.00668922024).auDay,
-                (-0.973458265).au, (-0.209215307).au, (-0.0906996477).au,
+                Vector3D(-0.974170438, -0.211520082, -0.0917583024),
+                Vector3D(0.00364365824, -0.0154287319, -0.00668922024),
+                Vector3D(-0.973458265, -0.209215307, -0.0906996477),
                 0.0013122272, -2.92808623e-5, 3.05749468e-8.rad,
                 3.14540971.rad, (-0.527800806).rad, (-1.2345856).rad,
-                2738.0.m,
+                2738.0,
                 2.47230737e-7.rad, 1.82640464e-6.rad, (-3.01974337e-11).rad,
                 0.000201418779.rad, (-2.36140831e-7).rad,
             )
@@ -186,13 +192,13 @@ class ErfaTest : StringSpec() {
             astro.eb.x shouldBe (-0.9741827110630322720 plusOrMinus 1e-12)
             astro.eb.y shouldBe (-0.2115130190135344832 plusOrMinus 1e-12)
             astro.eb.z shouldBe (-0.09179840186949532298 plusOrMinus 1e-12)
-            astro.ehx shouldBe (-0.9736425571689739035 plusOrMinus 1e-12)
-            astro.ehy shouldBe (-0.2092452125849330936 plusOrMinus 1e-12)
-            astro.ehz shouldBe (-0.09075578152243272599 plusOrMinus 1e-12)
+            astro.eh.x shouldBe (-0.9736425571689739035 plusOrMinus 1e-12)
+            astro.eh.y shouldBe (-0.2092452125849330936 plusOrMinus 1e-12)
+            astro.eh.z shouldBe (-0.09075578152243272599 plusOrMinus 1e-12)
             astro.em shouldBe (0.9998233241709957653 plusOrMinus 1e-12)
-            astro.vx shouldBe (0.2078704992916728762e-4 plusOrMinus 1e-16)
-            astro.vy shouldBe (-0.8955360107151952319e-4 plusOrMinus 1e-16)
-            astro.vz shouldBe (-0.3863338994288951082e-4 plusOrMinus 1e-16)
+            astro.v.x shouldBe (0.2078704992916728762e-4 plusOrMinus 1e-16)
+            astro.v.y shouldBe (-0.8955360107151952319e-4 plusOrMinus 1e-16)
+            astro.v.z shouldBe (-0.3863338994288951082e-4 plusOrMinus 1e-16)
             astro.bm1 shouldBe (0.9999999950277561236 plusOrMinus 1e-12)
             astro.bpn[0, 0] shouldBe (0.9999991390295159156 plusOrMinus 1e-12)
             astro.bpn[1, 0] shouldBe (0.4978650072505016932e-7 plusOrMinus 1e-12)
@@ -282,22 +288,22 @@ class ErfaTest : StringSpec() {
         "eraApcg" {
             val astrom = eraApcg(
                 2456165.5, 0.401182685,
-                0.901310875.au, (-0.417402664).au, (-0.180982288).au,
-                0.00742727954.auDay, 0.0140507459.auDay, 0.00609045792.auDay,
-                0.903358544.au, (-0.415395237).au, (-0.180084014).au
+                Vector3D(0.901310875, -0.417402664, -0.180982288),
+                Vector3D(0.00742727954, 0.0140507459, 0.00609045792),
+                Vector3D(0.903358544, -0.415395237, -0.180084014),
             )
 
             astrom.pmt shouldBe (12.65133794027378508 plusOrMinus 1e-11)
             astrom.eb.x shouldBe (0.901310875 plusOrMinus 1e-12)
             astrom.eb.y shouldBe (-0.417402664 plusOrMinus 1e-12)
             astrom.eb.z shouldBe (-0.180982288 plusOrMinus 1e-12)
-            astrom.ehx shouldBe (0.8940025429324143045 plusOrMinus 1e-12)
-            astrom.ehy shouldBe (-0.4110930268679817955 plusOrMinus 1e-12)
-            astrom.ehz shouldBe (-0.1782189004872870264 plusOrMinus 1e-12)
+            astrom.eh.x shouldBe (0.8940025429324143045 plusOrMinus 1e-12)
+            astrom.eh.y shouldBe (-0.4110930268679817955 plusOrMinus 1e-12)
+            astrom.eh.z shouldBe (-0.1782189004872870264 plusOrMinus 1e-12)
             astrom.em shouldBe (1.010465295811013146 plusOrMinus 1e-12)
-            astrom.vx shouldBe (0.4289638913597693554e-4 plusOrMinus 1e-16)
-            astrom.vy shouldBe (0.8115034051581320575e-4 plusOrMinus 1e-16)
-            astrom.vz shouldBe (0.3517555136380563427e-4 plusOrMinus 1e-16)
+            astrom.v.x shouldBe (0.4289638913597693554e-4 plusOrMinus 1e-16)
+            astrom.v.y shouldBe (0.8115034051581320575e-4 plusOrMinus 1e-16)
+            astrom.v.z shouldBe (0.3517555136380563427e-4 plusOrMinus 1e-16)
             astrom.bm1 shouldBe (0.9999999951686012981 plusOrMinus 1e-12)
         }
         "eraEpv00" {
@@ -325,13 +331,13 @@ class ErfaTest : StringSpec() {
             astrom.eb.x shouldBe (0.9013108747340644755 plusOrMinus 1e-12)
             astrom.eb.y shouldBe (-0.4174026640406119957 plusOrMinus 1e-12)
             astrom.eb.z shouldBe (-0.1809822877867817771 plusOrMinus 1e-12)
-            astrom.ehx shouldBe (0.8940025429255499549 plusOrMinus 1e-12)
-            astrom.ehy shouldBe (-0.4110930268331896318 plusOrMinus 1e-12)
-            astrom.ehz shouldBe (-0.1782189006019749850 plusOrMinus 1e-12)
+            astrom.eh.x shouldBe (0.8940025429255499549 plusOrMinus 1e-12)
+            astrom.eh.y shouldBe (-0.4110930268331896318 plusOrMinus 1e-12)
+            astrom.eh.z shouldBe (-0.1782189006019749850 plusOrMinus 1e-12)
             astrom.em shouldBe (1.010465295964664178 plusOrMinus 1e-12)
-            astrom.vx shouldBe (0.4289638912941341125e-4 plusOrMinus 1e-16)
-            astrom.vy shouldBe (0.8115034032405042132e-4 plusOrMinus 1e-16)
-            astrom.vz shouldBe (0.3517555135536470279e-4 plusOrMinus 1e-16)
+            astrom.v.x shouldBe (0.4289638912941341125e-4 plusOrMinus 1e-16)
+            astrom.v.y shouldBe (0.8115034032405042132e-4 plusOrMinus 1e-16)
+            astrom.v.z shouldBe (0.3517555135536470279e-4 plusOrMinus 1e-16)
             astrom.bm1 shouldBe (0.9999999951686013142 plusOrMinus 1e-12)
         }
         "eraAe2hd" {
@@ -365,7 +371,7 @@ class ErfaTest : StringSpec() {
             dt shouldBe (-0.1280368005936998991e-2 plusOrMinus 1E-15)
         }
         "eraPvtob" {
-            val (p, v) = eraPvtob(2.0.rad, 0.5.rad, 3000.0.m, 1e-6.rad, (-0.5e-6).rad, 1e-8.rad, 5.0.rad)
+            val (p, v) = eraPvtob(2.0.rad, 0.5.rad, 3000.0, 1e-6.rad, (-0.5e-6).rad, 1e-8.rad, 5.0.rad)
             p[0] shouldBe (4225081.367071159207 plusOrMinus 1e-5)
             p[1] shouldBe (3681943.215856198144 plusOrMinus 1e-5)
             p[2] shouldBe (3041149.399241260785 plusOrMinus 1e-5)
@@ -776,7 +782,7 @@ class ErfaTest : StringSpec() {
             rbp[2, 2] shouldBe (0.9999999285680153377 plusOrMinus 1e-12)
         }
         "eraPn00" {
-            val (epsa, rb, rp, rbp, rn, rbpn) = eraPn00(2400000.5, 53736.0, -0.9632552291149335877e-5, 0.4063197106621141414e-4)
+            val (_, _, epsa, rb, rp, rbp, rn, rbpn) = eraPn00(2400000.5, 53736.0, -0.9632552291149335877e-5, 0.4063197106621141414e-4)
 
             epsa shouldBe (0.4090791789404229916 plusOrMinus 1e-12)
 
@@ -855,6 +861,273 @@ class ErfaTest : StringSpec() {
             rc2t[2, 0] shouldBe (0.1059685430673215247e-2 plusOrMinus 1e-12)
             rc2t[2, 1] shouldBe (0.3977631855605078674 plusOrMinus 1e-12)
             rc2t[2, 2] shouldBe (0.9174875068792735362 plusOrMinus 1e-12)
+        }
+        "eraS00" {
+            val s = eraS00(2400000.5, 53736.0, 0.5791308486706011000e-3, 0.4020579816732961219e-4)
+            s shouldBe (-0.1220036263270905693e-7 plusOrMinus 1e-18)
+        }
+        "eraS00b" {
+            val s = eraS00b(2400000.5, 52541.0)
+            s shouldBe (-0.1340695782951026584e-7 plusOrMinus 1e-18)
+        }
+        "eraS00a" {
+            val s = eraS00a(2400000.5, 52541.0)
+            s shouldBe (-0.1340684448919163584e-7 plusOrMinus 1e-18)
+        }
+        "eraApco13" {
+            val (astrom, eo) = eraApco13(
+                2456384.5, 0.969254051, 0.1550675,
+                -0.527800806, -1.2345856, 2738.0,
+                2.47230737e-7, 1.82640464e-6,
+                731.0, 12.8, 0.59, 0.55
+            )
+
+            astrom.pmt shouldBe (13.25248468622475727 plusOrMinus 1e-11)
+            astrom.eb.x shouldBe (-0.9741827107320875162 plusOrMinus 1e-12)
+            astrom.eb.y shouldBe (-0.2115130190489716682 plusOrMinus 1e-12)
+            astrom.eb.z shouldBe (-0.09179840189496755339 plusOrMinus 1e-12)
+            astrom.eh.x shouldBe (-0.9736425572586935247 plusOrMinus 1e-12)
+            astrom.eh.y shouldBe (-0.2092452121603336166 plusOrMinus 1e-12)
+            astrom.eh.z shouldBe (-0.09075578153885665295 plusOrMinus 1e-12)
+            astrom.em shouldBe (0.9998233240913898141 plusOrMinus 1e-12)
+            astrom.v.x shouldBe (0.2078704994520489246e-4 plusOrMinus 1e-16)
+            astrom.v.y shouldBe (-0.8955360133238868938e-4 plusOrMinus 1e-16)
+            astrom.v.z shouldBe (-0.3863338993055887398e-4 plusOrMinus 1e-16)
+            astrom.bm1 shouldBe (0.9999999950277561004 plusOrMinus 1e-12)
+            astrom.bpn[0, 0] shouldBe (0.9999991390295147999 plusOrMinus 1e-12)
+            astrom.bpn[1, 0] shouldBe (0.4978650075315529277e-7 plusOrMinus 1e-12)
+            astrom.bpn[2, 0] shouldBe (0.001312227200850293372 plusOrMinus 1e-12)
+            astrom.bpn[0, 1] shouldBe (-0.1136336652812486604e-7 plusOrMinus 1e-12)
+            astrom.bpn[1, 1] shouldBe (0.9999999995713154865 plusOrMinus 1e-12)
+            astrom.bpn[2, 1] shouldBe (-0.2928086230975367296e-4 plusOrMinus 1e-12)
+            astrom.bpn[0, 2] shouldBe (-0.001312227201745553566 plusOrMinus 1e-12)
+            astrom.bpn[1, 2] shouldBe (0.2928082218847679162e-4 plusOrMinus 1e-12)
+            astrom.bpn[2, 2] shouldBe (0.9999991386008312212 plusOrMinus 1e-12)
+            astrom.along shouldBe (-0.5278008060295995733 plusOrMinus 1e-12)
+            astrom.xpl shouldBe (0.1133427418130752958e-5 plusOrMinus 1e-17)
+            astrom.ypl shouldBe (0.1453347595780646207e-5 plusOrMinus 1e-17)
+            astrom.sphi shouldBe (-0.9440115679003211329 plusOrMinus 1e-12)
+            astrom.cphi shouldBe (0.3299123514971474711 plusOrMinus 1e-12)
+            astrom.diurab shouldBeExactly 0.0
+            astrom.eral shouldBe (2.617608909189664000 plusOrMinus 1e-12)
+            astrom.refa shouldBe (0.2014187785940396921e-3 plusOrMinus 1e-15)
+            astrom.refb shouldBe (-0.2361408314943696227e-6 plusOrMinus 1e-18)
+            eo shouldBe (-0.003020548354802412839 plusOrMinus 1e-14)
+        }
+        "eraPmpx" {
+            val pco = eraPmpx(1.234, 0.789, 1e-5, -2e-5, 1e-2, 10.0, 8.75, Vector3D(0.9, 0.4, 0.1))
+            pco[0] shouldBe (0.2328137623960308438 plusOrMinus 1e-12)
+            pco[1] shouldBe (0.6651097085397855328 plusOrMinus 1e-12)
+            pco[2] shouldBe (0.7095257765896359837 plusOrMinus 1e-12)
+        }
+        "eraAtciq" {
+            val (astrom) = eraApci13(2456165.5, 0.401182685)
+            val (ri, di) = eraAtciq(2.71, 0.174, 1e-5, 5e-6, 0.1, 55.0, astrom)
+            ri shouldBe (2.710121572968696744 plusOrMinus 1e-12)
+            di shouldBe (0.1729371367219539137 plusOrMinus 1e-12)
+        }
+        "eraAtciqz" {
+            val (astrom) = eraApci13(2456165.5, 0.401182685)
+            val (ri, di) = eraAtciqz(2.71, 0.174, astrom)
+            ri shouldBe (2.709994899247256984 plusOrMinus 1e-12)
+            di shouldBe (0.1728740720984931891 plusOrMinus 1e-12)
+        }
+        "eraAtci13" {
+            val (ri, di, eo) = eraAtci13(2.71, 0.174, 1e-5, 5e-6, 0.1, 55.0, 2456165.5, 0.401182685)
+            ri shouldBe (2.710121572968696744 plusOrMinus 1e-12)
+            di shouldBe (0.1729371367219539137 plusOrMinus 1e-12)
+            eo shouldBe (-0.002900618712657375647 plusOrMinus 1e-14)
+        }
+        "eraApci13" {
+            val (astrom, eo) = eraApci13(2456165.5, 0.401182685)
+
+            astrom.pmt shouldBe (12.65133794027378508 plusOrMinus 1e-11)
+            astrom.eb[0] shouldBe (0.9013108747340644755 plusOrMinus 1e-12)
+            astrom.eb[1] shouldBe (-0.4174026640406119957 plusOrMinus 1e-12)
+            astrom.eb[2] shouldBe (-0.1809822877867817771 plusOrMinus 1e-12)
+            astrom.eh[0] shouldBe (0.8940025429255499549 plusOrMinus 1e-12)
+            astrom.eh[1] shouldBe (-0.4110930268331896318 plusOrMinus 1e-12)
+            astrom.eh[2] shouldBe (-0.1782189006019749850 plusOrMinus 1e-12)
+            astrom.em shouldBe (1.010465295964664178 plusOrMinus 1e-12)
+            astrom.v[0] shouldBe (0.4289638912941341125e-4 plusOrMinus 1e-16)
+            astrom.v[1] shouldBe (0.8115034032405042132e-4 plusOrMinus 1e-16)
+            astrom.v[2] shouldBe (0.3517555135536470279e-4 plusOrMinus 1e-16)
+            astrom.bm1 shouldBe (0.9999999951686013142 plusOrMinus 1e-12)
+            astrom.bpn[0, 0] shouldBe (0.9999992060376761710 plusOrMinus 1e-12)
+            astrom.bpn[1, 0] shouldBe (0.4124244860106037157e-7 plusOrMinus 1e-12)
+            astrom.bpn[2, 0] shouldBe (0.1260128571051709670e-2 plusOrMinus 1e-12)
+            astrom.bpn[0, 1] shouldBe (-0.1282291987222130690e-7 plusOrMinus 1e-12)
+            astrom.bpn[1, 1] shouldBe (0.9999999997456835325 plusOrMinus 1e-12)
+            astrom.bpn[2, 1] shouldBe (-0.2255288829420524935e-4 plusOrMinus 1e-12)
+            astrom.bpn[0, 2] shouldBe (-0.1260128571661374559e-2 plusOrMinus 1e-12)
+            astrom.bpn[1, 2] shouldBe (0.2255285422953395494e-4 plusOrMinus 1e-12)
+            astrom.bpn[2, 2] shouldBe (0.9999992057833604343 plusOrMinus 1e-12)
+            eo shouldBe (-0.2900618712657375647e-2 plusOrMinus 1e-12)
+        }
+        "eraLdsun" {
+            val p = Vector3D(-0.763276255, -0.608633767, -0.216735543)
+            val e = Vector3D(-0.973644023, -0.20925523, -0.0907169552)
+            val p1 = eraLdsun(p, e, 0.999809214)
+            p1[0] shouldBe (-0.7632762580731413169 plusOrMinus 1e-12)
+            p1[1] shouldBe (-0.6086337635262647900 plusOrMinus 1e-12)
+            p1[2] shouldBe (-0.2167355419322321302 plusOrMinus 1e-12)
+        }
+        "eraLd" {
+            val p = Vector3D(-0.763276255, -0.608633767, -0.216735543)
+            val q = Vector3D(-0.763276255, -0.608633767, -0.216735543)
+            val e = Vector3D(0.76700421, 0.605629598, 0.211937094)
+            val p1 = eraLd(0.00028574, p, q, e, 8.91276983, 3e-10)
+            p1[0] shouldBe (-0.7632762548968159627 plusOrMinus 1e-12)
+            p1[1] shouldBe (-0.6086337670823762701 plusOrMinus 1e-12)
+            p1[2] shouldBe (-0.2167355431320546947 plusOrMinus 1e-12)
+        }
+        "eraApci" {
+            val ebp = Vector3D(0.901310875, -0.417402664, -0.180982288)
+            val ebv = Vector3D(0.00742727954, 0.0140507459, 0.00609045792)
+            val ehp = Vector3D(0.903358544, -0.415395237, -0.180084014)
+            val astrom = eraApci(2456165.5, 0.401182685, ebp, ebv, ehp, 0.0013122272, -2.92808623e-5, 3.05749468e-8)
+
+            astrom.pmt shouldBe (12.65133794027378508 plusOrMinus 1e-11)
+            astrom.eb[0] shouldBe (0.901310875 plusOrMinus 1e-12)
+            astrom.eb[1] shouldBe (-0.417402664 plusOrMinus 1e-12)
+            astrom.eb[2] shouldBe (-0.180982288 plusOrMinus 1e-12)
+            astrom.eh[0] shouldBe (0.8940025429324143045 plusOrMinus 1e-12)
+            astrom.eh[1] shouldBe (-0.4110930268679817955 plusOrMinus 1e-12)
+            astrom.eh[2] shouldBe (-0.1782189004872870264 plusOrMinus 1e-12)
+            astrom.em shouldBe (1.010465295811013146 plusOrMinus 1e-12)
+            astrom.v[0] shouldBe (0.4289638913597693554e-4 plusOrMinus 1e-16)
+            astrom.v[1] shouldBe (0.8115034051581320575e-4 plusOrMinus 1e-16)
+            astrom.v[2] shouldBe (0.3517555136380563427e-4 plusOrMinus 1e-16)
+            astrom.bm1 shouldBe (0.9999999951686012981 plusOrMinus 1e-12)
+            astrom.bpn[0, 0] shouldBe (0.9999991390295159156 plusOrMinus 1e-12)
+            astrom.bpn[1, 0] shouldBe (0.4978650072505016932e-7 plusOrMinus 1e-12)
+            astrom.bpn[2, 0] shouldBe (0.1312227200000000000e-2 plusOrMinus 1e-12)
+            astrom.bpn[0, 1] shouldBe (-0.1136336653771609630e-7 plusOrMinus 1e-12)
+            astrom.bpn[1, 1] shouldBe (0.9999999995713154868 plusOrMinus 1e-12)
+            astrom.bpn[2, 1] shouldBe (-0.2928086230000000000e-4 plusOrMinus 1e-12)
+            astrom.bpn[0, 2] shouldBe (-0.1312227200895260194e-2 plusOrMinus 1e-12)
+            astrom.bpn[1, 2] shouldBe (0.2928082217872315680e-4 plusOrMinus 1e-12)
+            astrom.bpn[2, 2] shouldBe (0.9999991386008323373 plusOrMinus 1e-12)
+        }
+        "eraApcs13" {
+            val p = Vector3D(-6241497.16, 401346.896, -1251136.04)
+            val v = Vector3D(-29.264597, -455.021831, 0.0266151194)
+            val astrom = eraApcs13(2456165.5, 0.401182685, p, v)
+
+            astrom.pmt shouldBe (12.65133794027378508 plusOrMinus 1e-11)
+            astrom.eb[0] shouldBe (0.9012691529025250644 plusOrMinus 1e-12)
+            astrom.eb[1] shouldBe (-0.4173999812023194317 plusOrMinus 1e-12)
+            astrom.eb[2] shouldBe (-0.1809906511146429670 plusOrMinus 1e-12)
+            astrom.eh[0] shouldBe (0.8939939101760130792 plusOrMinus 1e-12)
+            astrom.eh[1] shouldBe (-0.4111053891734021478 plusOrMinus 1e-12)
+            astrom.eh[2] shouldBe (-0.1782336880636997374 plusOrMinus 1e-12)
+            astrom.em shouldBe (1.010428384373491095 plusOrMinus 1e-12)
+            astrom.v[0] shouldBe (0.4279877294121697570e-4 plusOrMinus 1e-16)
+            astrom.v[1] shouldBe (0.7963255087052120678e-4 plusOrMinus 1e-16)
+            astrom.v[2] shouldBe (0.3517564013384691531e-4 plusOrMinus 1e-16)
+            astrom.bm1 shouldBe (0.9999999952947980978 plusOrMinus 1e-12)
+            astrom.bpn shouldBe Matrix3D.IDENTITY
+        }
+        "eraAtioq" {
+            val astrom =
+                eraApio13(2456384.5, 0.969254051, 0.1550675, -0.527800806, -1.2345856, 2738.0, 2.47230737e-7, 1.82640464e-6, 731.0, 12.8, 0.59, 0.55)
+            val (aob, zob, hob, dob, rob) = eraAtioq(2.710121572969038991, 0.1729371367218230438, astrom)
+
+            aob shouldBe (0.9233952224895122499e-1 plusOrMinus 1e-12)
+            zob shouldBe (1.407758704513549991 plusOrMinus 1e-12)
+            hob shouldBe (-0.9247619879881698140e-1 plusOrMinus 1e-12)
+            dob shouldBe (0.1717653435756234676 plusOrMinus 1e-12)
+            rob shouldBe (2.710085107988480746 plusOrMinus 1e-12)
+        }
+        "eraApio13" {
+            val astrom =
+                eraApio13(2456384.5, 0.969254051, 0.1550675, -0.527800806, -1.2345856, 2738.0, 2.47230737e-7, 1.82640464e-6, 731.0, 12.8, 0.59, 0.55)
+
+            astrom.along shouldBe (-0.5278008060295995733 plusOrMinus 1e-12)
+            astrom.xpl shouldBe (0.1133427418130752958e-5 plusOrMinus 1e-17)
+            astrom.ypl shouldBe (0.1453347595780646207e-5 plusOrMinus 1e-17)
+            astrom.sphi shouldBe (-0.9440115679003211329 plusOrMinus 1e-12)
+            astrom.cphi shouldBe (0.3299123514971474711 plusOrMinus 1e-12)
+            astrom.diurab shouldBe (0.5135843661699913529e-6 plusOrMinus 1e-12)
+            astrom.eral shouldBe (2.617608909189664000 plusOrMinus 1e-12)
+            astrom.refa shouldBe (0.2014187785940396921e-3 plusOrMinus 1e-15)
+            astrom.refb shouldBe (-0.2361408314943696227e-6 plusOrMinus 1e-18)
+        }
+        "eraApio" {
+            val astrom =
+                eraApio(-3.01974337e-11, 3.14540971, -0.527800806, -1.2345856, 2738.0, 2.47230737e-7, 1.82640464e-6, 0.000201418779, -2.36140831e-7)
+
+            astrom.along shouldBe (-0.5278008060295995734 plusOrMinus 1e-12)
+            astrom.xpl shouldBe (0.1133427418130752958e-5 plusOrMinus 1e-17)
+            astrom.ypl shouldBe (0.1453347595780646207e-5 plusOrMinus 1e-17)
+            astrom.sphi shouldBe (-0.9440115679003211329 plusOrMinus 1e-12)
+            astrom.cphi shouldBe (0.3299123514971474711 plusOrMinus 1e-12)
+            astrom.diurab shouldBe (0.5135843661699913529e-6 plusOrMinus 1e-12)
+            astrom.eral shouldBe (2.617608903970400427 plusOrMinus 1e-12)
+            astrom.refa shouldBe (0.2014187790000000000e-3 plusOrMinus 1e-15)
+            astrom.refb shouldBe (-0.2361408310000000000e-6 plusOrMinus 1e-18)
+        }
+        "eraAtco13" {
+            val (b, eo) = eraAtco13(
+                2.71, 0.174, 1e-5, 5e-6, 0.1, 55.0, 2456384.5, 0.969254051,
+                0.1550675, -0.527800806, -1.2345856, 2738.0, 2.47230737e-7, 1.82640464e-6, 731.0, 12.8,
+                0.59, 0.55
+            )
+
+            val (aob, zob, hob, dob, rob) = b
+
+            aob shouldBe (0.9251774485485515207e-1 plusOrMinus 1e-12)
+            zob shouldBe (1.407661405256499357 plusOrMinus 1e-12)
+            hob shouldBe (-0.9265154431529724692e-1 plusOrMinus 1e-12)
+            dob shouldBe (0.1716626560072526200 plusOrMinus 1e-12)
+            rob shouldBe (2.710260453504961012 plusOrMinus 1e-12)
+            eo shouldBe (-0.003020548354802412839 plusOrMinus 1e-14)
+        }
+        "eraAticq" {
+            val (astrom) = eraApci13(2456165.5, 0.401182685)
+            val (ri, di) = eraAticq(2.710121572969038991, 0.1729371367218230438, astrom)
+            ri shouldBe (2.710126504531716819 plusOrMinus 1e-12)
+            di shouldBe (0.1740632537627034482 plusOrMinus 1e-12)
+        }
+        "eraAtic13" {
+            val (rc, dc, eo) = eraAtic13(2.710121572969038991, 0.1729371367218230438, 2456165.5, 0.401182685)
+
+            rc shouldBe (2.710126504531716819 plusOrMinus 1e-12)
+            dc shouldBe (0.1740632537627034482 plusOrMinus 1e-12)
+            eo shouldBe (-0.002900618712657375647 plusOrMinus 1e-14)
+        }
+        "eraS2pv" {
+            val pv = eraS2pv(-3.21, 0.123, 0.456, -7.8e-6, 9.01e-6, -1.23e-5)
+
+            pv.position[0] shouldBe (-0.4514964673880165228 plusOrMinus 1e-12)
+            pv.position[1] shouldBe (0.0309339427734258688 plusOrMinus 1e-12)
+            pv.position[2] shouldBe (0.0559466810510877933 plusOrMinus 1e-12)
+
+            pv.velocity[0] shouldBe (0.1292270850663260170e-4 plusOrMinus 1e-16)
+            pv.velocity[1] shouldBe (0.2652814182060691422e-5 plusOrMinus 1e-16)
+            pv.velocity[2] shouldBe (0.2568431853930292259e-5 plusOrMinus 1e-16)
+        }
+        "eraStarpv" {
+            val pv = eraStarpv(0.01686756, -1.093989828, -1.78323516e-5, 2.336024047e-6, 0.74723, -21.6)
+
+            pv.position[0] shouldBe (126668.5912743160601 plusOrMinus 1e-10)
+            pv.position[1] shouldBe (2136.792716839935195 plusOrMinus 1e-12)
+            pv.position[2] shouldBe (-245251.2339876830091 plusOrMinus 1e-10)
+
+            pv.velocity[0] shouldBe (-0.4051854008955659551e-2 plusOrMinus 1e-13)
+            pv.velocity[1] shouldBe (-0.6253919754414777970e-2 plusOrMinus 1e-15)
+            pv.velocity[2] shouldBe (0.1189353714588109341e-1 plusOrMinus 1e-13)
+        }
+        "eraStarpvMod" {
+            val pv = eraStarpvMod(0.01686756, -1.093989828, -1.78323516e-5, 2.336024047e-6, 0.74723.arcsec, (-21.6).kms)
+
+            pv.position[0] shouldBe (126668.5912743160601 plusOrMinus 1e-10)
+            pv.position[1] shouldBe (2136.792716839935195 plusOrMinus 1e-12)
+            pv.position[2] shouldBe (-245251.2339876830091 plusOrMinus 1e-10)
+
+            pv.velocity[0] shouldBe (-0.4051854008955659551e-2 plusOrMinus 1e-13)
+            pv.velocity[1] shouldBe (-0.6253919754414777970e-2 plusOrMinus 1e-15)
+            pv.velocity[2] shouldBe (0.1189353714588109341e-1 plusOrMinus 1e-13)
         }
     }
 }

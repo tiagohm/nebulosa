@@ -2,8 +2,8 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import nebulosa.common.concurrency.CancellationSource
-import nebulosa.common.concurrency.CancellationToken
+import nebulosa.common.concurrency.cancel.CancellationSource
+import nebulosa.common.concurrency.cancel.CancellationToken
 
 class CancellationTokenTest : StringSpec() {
 

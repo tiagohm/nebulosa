@@ -1,10 +1,11 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
+import { Listbox } from 'primeng/listbox'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { Device, INDIProperty, INDIPropertyItem, INDISendProperty } from '../../shared/types/device.types'
-import { compareDevice, compareText } from '../../shared/utils/comparators'
+import { deviceComparator, textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -23,6 +24,9 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
     showLog = false
     messages: string[] = []
 
+    @ViewChild('listbox')
+    readonly messageListbox!: Listbox
+
     constructor(
         app: AppComponent,
         private route: ActivatedRoute,
@@ -33,27 +37,32 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         app.title = 'INDI'
 
         electron.on('DEVICE.PROPERTY_CHANGED', event => {
-            ngZone.run(() => {
-                this.addOrUpdateProperty(event.property!)
-                this.updateGroups()
-            })
-        })
-
-        electron.on('DEVICE.PROPERTY_DELETED', event => {
-            const index = this.properties.findIndex((e) => e.name === event.property!.name)
-
-            if (index >= 0) {
+            if (this.device?.id === event.device.id) {
                 ngZone.run(() => {
-                    this.properties.splice(index, 1)
+                    this.addOrUpdateProperty(event.property!)
                     this.updateGroups()
                 })
             }
         })
 
+        electron.on('DEVICE.PROPERTY_DELETED', event => {
+            if (this.device?.id === event.device.id) {
+                const index = this.properties.findIndex((e) => e.name === event.property!.name)
+
+                if (index >= 0) {
+                    ngZone.run(() => {
+                        this.properties.splice(index, 1)
+                        this.updateGroups()
+                    })
+                }
+            }
+        })
+
         electron.on('DEVICE.MESSAGE_RECEIVED', event => {
-            if (this.device && event.device?.name === this.device.name) {
+            if (this.device && event.device?.id === this.device.id) {
                 ngZone.run(() => {
                     this.messages.splice(0, 0, event.message!)
+                    this.messageListbox.cd.markForCheck()
                 })
             }
         })
@@ -73,9 +82,13 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
             ...await this.api.mounts(),
             ...await this.api.focusers(),
             ...await this.api.wheels(),
-        ].sort(compareDevice)
+        ].sort(deviceComparator)
 
         this.device = this.devices[0]
+
+        if (this.device) {
+            this.deviceChanged(this.device)
+        }
     }
 
     @HostListener('window:unload')
@@ -87,13 +100,13 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
     async deviceChanged(device: Device) {
         if (this.device) {
-            this.api.indiStopListening(this.device)
+            await this.api.indiStopListening(this.device)
         }
 
         this.device = device
 
         this.updateProperties()
-        this.api.indiStartListening(device)
+        await this.api.indiStartListening(device)
         this.messages = await this.api.indiLog(device)
     }
 
@@ -116,10 +129,14 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         let groupsChanged = false
 
         if (this.groups.length === groups.size) {
-            let index = 0
-
-            for (const item of groups) {
-                if (this.groups[index++].label !== item) {
+            for (const group of groups) {
+                if (!this.groups.find(e => e.label === group)) {
+                    groupsChanged = true
+                    break
+                }
+            }
+            for (const group of this.groups) {
+                if (!groups.has(group.label!)) {
                     groupsChanged = true
                     break
                 }
@@ -130,7 +147,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
         if (this.groups.length === 0 || groupsChanged) {
             this.groups = Array.from(groups)
-                .sort(compareText)
+                .sort(textComparator)
                 .map(e => <MenuItem>{
                     icon: 'mdi mdi-sitemap',
                     label: e,

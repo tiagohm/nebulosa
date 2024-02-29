@@ -1,6 +1,6 @@
 package nebulosa.imaging.algorithms.transformation.convolution
 
-object Blur : Convolution(
+data object Blur : Convolution(
     floatArrayOf(
         1f, 2f, 3f, 2f, 1f,
         2f, 4f, 5f, 4f, 2f,

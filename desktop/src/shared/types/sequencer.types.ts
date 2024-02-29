@@ -1,6 +1,16 @@
-import { AutoSubFolderMode, CameraCaptureEvent, CameraStartCapture, Dither } from './camera.types'
+import { AutoSubFolderMode, Camera, CameraCaptureElapsed, CameraStartCapture, Dither } from './camera.types'
+import { Focuser } from './focuser.types'
+import { FilterWheel } from './wheel.types'
 
 export type SequenceCaptureMode = 'FULLY' | 'INTERLEAVED'
+
+export const SEQUENCE_ENTRY_PROPERTIES = [
+    'EXPOSURE_TIME', 'EXPOSURE_AMOUNT', 'EXPOSURE_DELAY',
+    'FRAME_TYPE', 'X', 'Y', 'WIDTH', 'HEIGHT',
+    'BIN', 'FRAME_FORMAT', 'GAIN', 'OFFSET'
+] as const
+
+export type SequenceEntryProperty = (typeof SEQUENCE_ENTRY_PROPERTIES)[number]
 
 export interface AutoFocusAfterConditions {
     enabled: boolean
@@ -24,6 +34,9 @@ export interface SequencePlan {
     entries: CameraStartCapture[]
     dither: Dither
     autoFocus: AutoFocusAfterConditions
+    camera?: Camera
+    wheel?: FilterWheel
+    focuser?: Focuser
 }
 
 export const EMPTY_SEQUENCE_PLAN: SequencePlan = {
@@ -52,10 +65,10 @@ export const EMPTY_SEQUENCE_PLAN: SequencePlan = {
     },
 }
 
-export interface SequencerEvent extends MessageEvent {
+export interface SequencerElapsed extends MessageEvent {
     id: number
     elapsedTime: number
     remainingTime: number
     progress: number
-    capture?: CameraCaptureEvent
+    capture?: CameraCaptureElapsed
 }

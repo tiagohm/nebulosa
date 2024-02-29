@@ -41,16 +41,17 @@
     </div>
     <div class="col-12">
         <span class="p-float-label">
-            <p-dropdown [options]="hipsSurveys" [(ngModel)]="hipsSurvey" styleClass="border-0" emptyMessage="No HiPS survey found">
+            <p-dropdown [options]="hipsSurveys" [(ngModel)]="hipsSurvey" styleClass="border-0" emptyMessage="No HiPS survey found"
+                        [autoDisplayFirst]="false">
                 <ng-template let-item pTemplate="selectedItem">
                     <div class="flex flex-column">
-                        <span class="text-xs">{{ item.regime }}</span>
-                        <span>{{ item.id }}</span>
+                        <span class="text-xs">{{ item?.regime }} ({{ item?.skyFraction | percent:'1.1-1' }})</span>
+                        <span>{{ item?.id }}</span>
                     </div>
                 </ng-template>
                 <ng-template let-item pTemplate="item">
                     <div class="flex flex-column">
-                        <span class="text-xs">{{ item.regime }}</span>
+                        <span class="text-xs">{{ item.regime }} ({{ item?.skyFraction | percent:'1.1-1' }})</span>
                         <span>{{ item.id }}</span>
                     </div>
                 </ng-template>
@@ -59,7 +60,7 @@
         </span>
     </div>
     <div class="col-12 justify-content-center mt-2">
-        <p-button [disabled]="loading" icon="mdi mdi-download" label="Load" (onClick)="frame()" [text]="true" />
+        <p-button [disabled]="loading" icon="mdi mdi-download" label="Load" (onClick)="frame()" [text]="true" size="small" />
     </div>
     <div class="col-12 justify-content-center">
         <span class="text-sm text-gray-700">Made use of <a target="_blank"

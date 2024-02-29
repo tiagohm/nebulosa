@@ -3,7 +3,7 @@ package nebulosa.indi.client.connection
 import nebulosa.indi.client.io.INDIProtocolFactory
 import nebulosa.indi.protocol.io.INDIConnection
 
-class INDIProccessConnection(val process: Process) : INDIConnection {
+data class INDIProccessConnection(private val process: Process) : INDIConnection {
 
     override val input = INDIProtocolFactory.createInputStream(process.inputStream)
 

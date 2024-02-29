@@ -128,11 +128,11 @@
                     <div class="mt-1 absolute" style="top: -12px; right: 10px">
                         <div class="flex align-items-center justify-content-center gap-1">
                             <!-- <p-button [disabled]="!connected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
-                                      icon="mdi mdi-play" severity="success" /> -->
+                                      icon="mdi mdi-play" severity="success" size="small" /> -->
                             <p-button [disabled]="!connected" label="Clear" (onClick)="guidingClearHistory()" icon="mdi mdi-broom"
-                                      severity="info" />
+                                      severity="info" size="small" />
                             <p-button [disabled]="!connected || !guiding" label="Stop" (onClick)="guidingStop()" icon="mdi mdi-stop"
-                                      severity="danger" />
+                                      severity="danger" size="small" />
                         </div>
                     </div>
                 </p-tabView>
@@ -141,7 +141,7 @@
                 <div class="col-12 flex flex-row align-items-center gap-2">
                     <span class="p-float-label w-full">
                         <p-dropdown [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name" (ngModelChange)="guideOutputChanged()"
-                                    styleClass="p-inputtext-sm border-0" emptyMessage="No guide output found" />
+                                    [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0" emptyMessage="No guide output found" />
                         <label>Guide Output</label>
                     </span>
 

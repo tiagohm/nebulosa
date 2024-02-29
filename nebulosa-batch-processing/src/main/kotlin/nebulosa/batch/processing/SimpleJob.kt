@@ -1,36 +1,93 @@
 package nebulosa.batch.processing
 
-abstract class SimpleJob : Job, ArrayList<Step> {
+import nebulosa.common.concurrency.latch.Pauseable
+import java.util.*
 
-    constructor(initialCapacity: Int = 4) : super(initialCapacity)
+abstract class SimpleJob : Job, Pauseable, Iterable<Step> {
 
-    constructor(steps: Collection<Step>) : super(steps)
+    private val steps = ArrayList<Step>()
 
-    constructor(vararg steps: Step) : this(steps.toList())
+    constructor(steps: Collection<Step>) {
+        this.steps.addAll(steps)
+    }
+
+    constructor(vararg steps: Step) {
+        steps.forEach(this.steps::add)
+    }
+
+    override val id = UUID.randomUUID().toString()
 
     @Volatile private var position = 0
-    @Volatile private var stopped = false
+    @Volatile private var isEnded = false
 
-    override fun hasNext(jobExecution: JobExecution): Boolean {
-        return !stopped && position < size
+    protected fun register(step: Step): Boolean {
+        return steps.add(step)
     }
 
-    override fun next(jobExecution: JobExecution): Step {
-        return this[position++]
+    protected fun unregister(step: Step): Boolean {
+        return steps.remove(step)
     }
 
-    override fun stop(mayInterruptIfRunning: Boolean) {
-        if (stopped) return
+    protected fun clear() {
+        return steps.clear()
+    }
 
-        stopped = true
+    final override fun hasNext(jobExecution: JobExecution): Boolean {
+        return !isEnded && position < steps.size
+    }
 
-        if (position in 1..size) {
-            this[position - 1].stop(mayInterruptIfRunning)
+    final override fun next(jobExecution: JobExecution): Step {
+        check(!isEnded) { "this job is ended" }
+        return steps[position++]
+    }
+
+    final override fun stop(mayInterruptIfRunning: Boolean) {
+        if (isEnded) return
+
+        isEnded = true
+
+        if (position in 1..steps.size) {
+            steps[position - 1].stop(mayInterruptIfRunning)
+        }
+    }
+
+    final override val isPaused
+        get() = steps.any { it !== this && it is Pauseable && it.isPaused }
+
+    final override fun pause() {
+        if (isEnded) return
+
+        if (position in 1..steps.size) {
+            val step = steps[position - 1]
+
+            if (step is Pauseable) {
+                step.pause()
+            }
+        }
+    }
+
+    final override fun unpause() {
+        if (isEnded) return
+
+        if (position in 1..steps.size) {
+            val step = steps[position - 1]
+
+            if (step is Pauseable) {
+                step.unpause()
+            }
         }
     }
 
     fun reset() {
-        stopped = false
+        isEnded = false
         position = 0
+    }
+
+    final override fun iterator(): Iterator<Step> {
+        return steps.iterator()
+    }
+
+    override fun contains(data: Any): Boolean {
+        return data is Step && data in steps
     }
 }

@@ -35,6 +35,10 @@ class UTC : TimeJD, Timescale {
 
     companion object {
 
+        @JvmStatic val J2000 = UTC(TimeJD.J2000)
+
+        @JvmStatic val B1950 = UTC(TimeJD.B1950)
+
         @JvmStatic
         fun now() = UTC(TimeJD.now())
     }
