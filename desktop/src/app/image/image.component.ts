@@ -504,6 +504,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         if (data.source === 'FRAMING') {
             this.disableAutoStretch()
+            this.resetStretch(false)
         } else if (data.source === 'FLAT_WIZARD') {
             this.disableCalibrate(false)
         }
@@ -649,11 +650,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.loadImage()
     }
 
-    resetStretch() {
+    resetStretch(load: boolean = true) {
         this.stretchShadowHighlight = [0, 65536]
         this.stretchMidtone = 32768
 
-        this.stretchImage()
+        if (load) {
+            this.stretchImage()
+        }
     }
 
     toggleStretch() {
@@ -669,7 +672,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     stretchImage() {
         this.disableAutoStretch()
-        this.loadImage()
+        return this.loadImage()
     }
 
     invertImage() {
