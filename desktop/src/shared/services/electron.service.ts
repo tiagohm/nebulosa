@@ -169,7 +169,7 @@ export class ElectronService {
                 this.resizeWindow(size)
             }
         } else {
-            return setTimeout(() => this.autoResizeWindow(), timeout)
+            return setTimeout(() => this.autoResizeWindow(0), timeout)
         }
     }
 
