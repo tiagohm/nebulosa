@@ -12,7 +12,7 @@ buildCache {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("okio", "com.squareup.okio:okio:3.7.0")
+            library("okio", "com.squareup.okio:okio:3.8.0")
             library("okhttp", "com.squareup.okhttp3:okhttp:4.12.0")
             library("okhttp-logging", "com.squareup.okhttp3:logging-interceptor:4.12.0")
             library("jackson-core", "com.fasterxml.jackson.core:jackson-databind:2.16.1")
