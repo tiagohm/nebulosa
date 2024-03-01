@@ -257,6 +257,7 @@ p-dropdownitem *,
 
 ::-webkit-scrollbar {
     width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -267,6 +268,14 @@ p-dropdownitem *,
 
 ::-webkit-scrollbar-track {
     border-radius: 10px;
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-track-piece {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-corner {
     background-color: transparent;
 }
 

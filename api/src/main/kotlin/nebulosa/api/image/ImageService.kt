@@ -30,6 +30,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
+import java.net.URI
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.util.*
@@ -51,6 +52,16 @@ class ImageService(
     private val connectionService: ConnectionService,
     private val starDetector: StarDetector<Image>,
 ) {
+
+    val fovCameras by lazy {
+        URI.create("https://github.com/tiagohm/nebulosa.data/raw/main/astrobin/cameras.json")
+            .toURL().openConnection().getInputStream().readAllBytes()
+    }
+
+    val fovTelescopes by lazy {
+        URI.create("https://github.com/tiagohm/nebulosa.data/raw/main/astrobin/telescopes.json")
+            .toURL().openConnection().getInputStream().readAllBytes()
+    }
 
     @Synchronized
     fun openImage(

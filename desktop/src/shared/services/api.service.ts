@@ -10,7 +10,7 @@ import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
 import { ConnectionStatus, ConnectionType } from '../types/home.types'
-import { CoordinateInterpolation, DetectedStar, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, SCNRProtectionMethod } from '../types/image.types'
+import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, SCNRProtectionMethod } from '../types/image.types'
 import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
 import { SequencePlan } from '../types/sequencer.types'
 import { PlateSolverOptions } from '../types/settings.types'
@@ -502,6 +502,14 @@ export class ApiService {
     imageHistogram(path: string, bitLength: number = 16) {
         const query = this.http.query({ path, bitLength })
         return this.http.get<number[]>(`image/histogram?${query}`)
+    }
+
+    fovCameras() {
+        return this.http.get<FOVCamera[]>('image/fov-cameras')
+    }
+
+    fovTelescopes() {
+        return this.http.get<FOVTelescope[]>('image/fov-telescopes')
     }
 
     // CALIBRATION

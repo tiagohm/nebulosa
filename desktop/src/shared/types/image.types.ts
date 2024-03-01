@@ -147,3 +147,20 @@ export const DEFAULT_FOV: FOV = {
     rotation: 0,
     color: '#FFFF00',
 }
+
+export interface FOVEquipment {
+    id: number
+    name: string
+}
+
+export interface FOVCamera extends FOVEquipment {
+    sensor: string
+    width: number
+    height: number
+    pixelSize: number
+}
+
+export interface FOVTelescope extends FOVEquipment {
+    aperture: number
+    focalLength: number
+}

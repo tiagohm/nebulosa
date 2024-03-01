@@ -17,7 +17,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
-import { DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, FOV, ImageAnnotation, ImageChannel, ImageData, ImageInfo, ImagePreference, ImageSolved, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, FOV, FOVCamera, FOVTelescope, ImageAnnotation, ImageChannel, ImageData, ImageInfo, ImagePreference, ImageSolved, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
@@ -112,6 +112,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     readonly fov = structuredClone(DEFAULT_FOV)
     fovs: FOV[] = []
     editedFOV?: FOV
+    showFOVCamerasDialog = false
+    fovCameras: FOVCamera[] = []
+    fovCamera?: FOVCamera
+    showFOVTelescopesDialog = false
+    fovTelescopes: FOVTelescope[] = []
+    fovTelescope?: FOVTelescope
+
+    get canAddFOV() {
+        return this.fov.aperture && this.fov.focalLength &&
+            this.fov.cameraSize.width && this.fov.cameraSize.height &&
+            this.fov.pixelSize.width && this.fov.pixelSize.height &&
+            this.fov.bin
+    }
 
     private panZoom?: PanZoom
     private imageURL!: string
@@ -788,6 +801,44 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                     return e.target !== this.image.nativeElement
                 },
             })
+        }
+    }
+
+    async showFOVCameras() {
+        if (!this.fovCameras.length) {
+            this.fovCameras = await this.api.fovCameras()
+        }
+
+        this.fovCamera = undefined
+        this.showFOVCamerasDialog = true
+    }
+
+    async showFOVTelescopes() {
+        if (!this.fovTelescopes.length) {
+            this.fovTelescopes = await this.api.fovTelescopes()
+        }
+
+        this.fovTelescope = undefined
+        this.showFOVTelescopesDialog = true
+    }
+
+    chooseCamera() {
+        if (this.fovCamera) {
+            this.fov.cameraSize.width = this.fovCamera.width
+            this.fov.cameraSize.height = this.fovCamera.height
+            this.fov.pixelSize.width = this.fovCamera.pixelSize
+            this.fov.pixelSize.height = this.fovCamera.pixelSize
+            this.fovCamera = undefined
+            this.showFOVCamerasDialog = false
+        }
+    }
+
+    chooseTelescope() {
+        if (this.fovTelescope) {
+            this.fov.aperture = this.fovTelescope.aperture
+            this.fov.focalLength = this.fovTelescope.focalLength
+            this.fovTelescope = undefined
+            this.showFOVTelescopesDialog = false
         }
     }
 
