@@ -489,7 +489,7 @@ fun eraApcs(
 /**
  * For a terrestrial observer, prepare star-independent astrometry
  * parameters for transformations between ICRS and observed
- * coordinates.  The caller supplies the Earth ephemeris, the Earth
+ * coordinates. The caller supplies the Earth ephemeris, the Earth
  * rotation information and the refraction constants as well as the
  * site coordinates.
  *
@@ -1712,7 +1712,7 @@ private const val OBLCOR = -0.02524 * ASEC2RAD
  * Although the precession adjustments are stated to be with respect
  * to Lieske et al. (1977), the MHB2000 model does not specify which
  * set of Euler angles are to be used and how the adjustments are to
- * be applied.  The most literal and straightforward procedure is to
+ * be applied. The most literal and straightforward procedure is to
  * adopt the 4-rotation epsilon_0, psi_A, omega_A, xi_A option, and
  * to add dpsipr to psi_A and depspr to both omega_A and eps_A.
  *
@@ -2662,7 +2662,7 @@ const val DBL_EPSILON = 2.220446049250313E-16
 /**
  * For a terrestrial observer, prepare star-independent astrometry
  * parameters for transformations between ICRS and geocentric CIRS
- * coordinates.  The Earth ephemeris and CIP/CIO are supplied by the
+ * coordinates. The Earth ephemeris and CIP/CIO are supplied by the
  * caller.
  *
  * The parameters produced by this function are required in the
@@ -2693,7 +2693,7 @@ fun eraApci(
 /**
  * For a terrestrial observer, prepare star-independent astrometry
  * parameters for transformations between ICRS and geocentric CIRS
- * coordinates.  The caller supplies the date, and ERFA models are used
+ * coordinates. The caller supplies the date, and ERFA models are used
  * to predict the Earth ephemeris and CIP/CIO.
  *
  * The parameters produced by this function are required in the
@@ -2746,7 +2746,7 @@ fun eraAtci13(
  * star-independent astrometry parameters.
  *
  * Use of this function is appropriate when efficiency is important and
- * where many star positions are to be transformed for one date.  The
+ * where many star positions are to be transformed for one date. The
  * star-independent parameters can be obtained by calling one of the
  * functions [eraApci13], [eraApcg13], [eraApco13] or [eraApcs13].
  *
@@ -2784,7 +2784,7 @@ fun eraAtciq(
  * proper motion.
  *
  * Use of this function is appropriate when efficiency is important and
- * where many star positions are to be transformed for one date.  The
+ * where many star positions are to be transformed for one date. The
  * star-independent parameters can be obtained by calling one of the
  * functions eraApci[13], eraApcg[13], eraApco[13] or eraApcs[13].
  *
@@ -2844,8 +2844,7 @@ fun eraLd(bm: Double, p: Vector3D, q: Vector3D, e: Vector3D, em: Distance, dlim:
     val qpe = DoubleArray(3) { q[it] + e[it] }
     val w = bm * SCHWARZSCHILD_RADIUS_OF_THE_SUN / em / max(q.dot(qpe), dlim)
     // p x (e x q).
-    val eq = e.cross(q)
-    val peq = p.cross(eq)
+    val peq = p.cross(e.cross(q))
 
     // Apply the deflection.
     repeat(3) {
@@ -2862,8 +2861,8 @@ fun eraLd(bm: Double, p: Vector3D, q: Vector3D, e: Vector3D, em: Distance, dlim:
  * @param declination    ICRS Dec at catalog epoch (radians)
  * @param pmRA           RA proper motion (radians/year, Note 1)
  * @param pmDEC          Dec proper motion (radians/year)
- * @param parallax       parallax (arcsec)
- * @param rv             radial velocity (km/s, +ve if receding)
+ * @param parallax       parallax (radians)
+ * @param rv             radial velocity (au/day, +ve if receding)
  * @param pmt            proper motion time interval (SSB, Julian years)
  * @param pob            SSB to observer vector (au)
  *
@@ -2890,8 +2889,7 @@ fun eraPmpx(
     val dt = pmt + pob.dot(p) * (LIGHT_TIME_AU / DAYSEC / DAYSPERJY)
 
     // Space motion (radians per year).
-    val pxr = parallax * ASEC2RAD
-    val w = (DAYSEC * DAYSPERJM / AU_M) * rv * pxr
+    val w = DAYSPERJY * rv * parallax
     val pdz = pmDEC * p[2]
     pm[0] = -pmRA * p[1] - pdz * cr + w * p[0]
     pm[1] = pmRA * p[0] - pdz * sr + w * p[1]
@@ -2899,7 +2897,7 @@ fun eraPmpx(
 
     // Coordinate direction of star (unit vector, BCRS).
     repeat(3) {
-        p[it] += dt * pm[it] - pxr * pob[it]
+        p[it] += dt * pm[it] - parallax * pob[it]
     }
 
     return Vector3D(p).normalized
@@ -3231,7 +3229,7 @@ fun eraApcs13(tdb1: Double, tdb2: Double, p: Vector3D, v: Vector3D): AstrometryP
 /**
  * For a terrestrial observer, prepare star-independent astrometry
  * parameters for transformations between CIRS and observed
- * coordinates.  The caller supplies the Earth orientation information
+ * coordinates. The caller supplies the Earth orientation information
  * and the refraction constants as well as the site coordinates.
  *
  * @param sp     The TIO locator s (radians)
@@ -3285,7 +3283,7 @@ fun eraApio(
 /**
  * For a terrestrial observer, prepare star-independent astrometry
  * parameters for transformations between CIRS and observed
- * coordinates.  The caller supplies UTC, site coordinates, ambient air
+ * coordinates. The caller supplies UTC, site coordinates, ambient air
  * conditions and observing wavelength.
  *
  * @param utc1   UTC as a 2-part...
@@ -3398,7 +3396,7 @@ fun eraAtioq(rightAscension: Angle, declination: Angle, astrom: AstrometryParame
 }
 
 /**
- * ICRS RA,Dec to observed place.  The caller supplies UTC, site
+ * ICRS RA,Dec to observed place. The caller supplies UTC, site
  * coordinates, ambient air conditions and observing wavelength.
  *
  * ERFA models are used for the Earth ephemeris, bias-precession-
@@ -3408,8 +3406,8 @@ fun eraAtioq(rightAscension: Angle, declination: Angle, astrom: AstrometryParame
  * @param declination    ICRS Dec at catalog epoch (radians)
  * @param pmRA           RA proper motion (radians/year, Note 1)
  * @param pmDEC          Dec proper motion (radians/year)
- * @param parallax       parallax (arcsec)
- * @param rv             radial velocity (km/s, +ve if receding)
+ * @param parallax       parallax (radians)
+ * @param rv             radial velocity (au/day, +ve if receding)
  * @param utc1   UTC as a 2-part...
  * @param utc2   ...Julian Date
  * @param dut1   UT1-UTC (seconds)
@@ -3596,46 +3594,12 @@ fun eraS2pv(
  * @param declination Declination (radians)
  * @param pmRA RA proper motion (radians/year)
  * @param pmDEC Dec proper motion (radians/year)
- * @param parallax Parallax (arcseconds)
- * @param rv Radial velocity (km/s, positive = receding)
- *
- * @return pv-vector (au, au/day).
- */
-fun eraStarpv(
-    rightAscension: Angle, declination: Angle,
-    pmRA: Angle, pmDEC: Angle, parallax: Double, rv: Double,
-): PositionAndVelocity {
-    // Distance (au).
-    var w = max(parallax, 1e-7)
-    val r = (180.0 * 3600.0 / PI) / w
-
-    val rd = DAYSEC * rv / AU_KM
-
-    // Proper motion (radian/day).
-    val rad = pmRA / DAYSPERJY
-    val decd = pmDEC / DAYSPERJY
-
-    // To pv-vector (au,au/day).
-    val pv = eraS2pv(rightAscension, declination, r, rad, decd, rd)
-
-    return eraStarpv(pv)
-}
-
-/**
- * Convert star catalog coordinates to position+velocity vector.
- *
- * Modified to accept radians and au/day instead of arcseconds and km/s.
- *
- * @param rightAscension Right ascension (radians)
- * @param declination Declination (radians)
- * @param pmRA RA proper motion (radians/year)
- * @param pmDEC Dec proper motion (radians/year)
  * @param parallax Parallax (radians)
  * @param rv Radial velocity (au/day, positive = receding)
  *
  * @return pv-vector (au, au/day).
  */
-fun eraStarpvMod(
+fun eraStarpv(
     rightAscension: Angle, declination: Angle,
     pmRA: Angle, pmDEC: Angle, parallax: Angle, rv: Velocity,
 ): PositionAndVelocity {
@@ -3648,6 +3612,11 @@ fun eraStarpvMod(
 
     // To pv-vector (au,au/day).
     val pv = eraS2pv(rightAscension, declination, r, rad, decd, rv)
+
+    if (pv.velocity.length / SPEED_OF_LIGHT_AU_DAY > 0.5) {
+        pv.velocity.unsafe { fill(0.0) }
+        return pv
+    }
 
     return eraStarpv(pv)
 }

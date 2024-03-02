@@ -2,7 +2,6 @@ package nebulosa.nova.astrometry
 
 import nebulosa.constants.*
 import nebulosa.erfa.PositionAndVelocity
-import nebulosa.erfa.eraStarpvMod
 import nebulosa.math.Angle
 import nebulosa.math.Vector3D
 import nebulosa.math.Velocity
@@ -35,9 +34,10 @@ data class FixedStar(
     val epoch: InstantOfTime = UTC.J2000,
 ) : Body {
 
-    // val positionAndVelocity by lazy { computePositionAndVelocity(ra, dec, pmRA, pmDEC, parallax, radialVelocity) }
-    // eraStarpvMod computes wrong values for Polaris ???
-    val positionAndVelocity by lazy { eraStarpvMod(ra, dec, pmRA, pmDEC, parallax, radialVelocity) }
+    val positionAndVelocity by lazy { computePositionAndVelocity(ra, dec, pmRA, pmDEC, parallax, radialVelocity) }
+
+    // eraStarpv: wrong values when parallax is zero?
+    // val positionAndVelocity by lazy { eraStarpv(ra, dec, pmRA, pmDEC, parallax, radialVelocity) }
 
     override val center = 0
 

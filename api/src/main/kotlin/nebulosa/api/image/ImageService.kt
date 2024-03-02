@@ -14,12 +14,14 @@ import nebulosa.imaging.algorithms.computation.Statistics
 import nebulosa.imaging.algorithms.transformation.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.ClassificationType
+import nebulosa.skycatalog.SkyObjectType
 import nebulosa.star.detection.ImageStar
 import nebulosa.star.detection.StarDetector
 import nebulosa.time.TimeYMDHMS
@@ -53,12 +55,12 @@ class ImageService(
     private val starDetector: StarDetector<Image>,
 ) {
 
-    val fovCameras by lazy {
+    val fovCameras: ByteArray by lazy {
         URI.create("https://github.com/tiagohm/nebulosa.data/raw/main/astrobin/cameras.json")
             .toURL().openConnection().getInputStream().readAllBytes()
     }
 
-    val fovTelescopes by lazy {
+    val fovTelescopes: ByteArray by lazy {
         URI.create("https://github.com/tiagohm/nebulosa.data/raw/main/astrobin/telescopes.json")
             .toURL().openConnection().getInputStream().readAllBytes()
     }
@@ -199,9 +201,9 @@ class ImageService(
         }
 
         if (starsAndDSOs) {
-            val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
-
             threadPoolTaskExecutor.submitCompletable {
+                val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
+
                 LOG.info("finding star/DSO annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 val catalog = simbadEntityRepository.find(null, null, calibration.rightAscension, calibration.declination, calibration.radius)
@@ -209,7 +211,18 @@ class ImageService(
                 var count = 0
 
                 for (entry in catalog) {
+                    if (entry.type == SkyObjectType.EXTRA_SOLAR_PLANET) continue
+
                     val astrometric = barycentric.observe(entry).equatorial()
+
+                    LOG.debug {
+                        "%s: %s %s -> %s %s".format(
+                            entry.name,
+                            entry.rightAscensionJ2000.formatHMS(), entry.declinationJ2000.formatSignedDMS(),
+                            astrometric.longitude.normalized.formatHMS(), astrometric.latitude.formatSignedDMS(),
+                        )
+                    }
+
                     val (x, y) = wcs.skyToPix(astrometric.longitude.normalized, astrometric.latitude)
                     val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
                     else ImageAnnotation(x, y, dso = entry)
