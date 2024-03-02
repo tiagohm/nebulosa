@@ -15,9 +15,8 @@ class LocationService(
         return locationRepository.find(id)!!
     }
 
-    fun selected(): LocationEntity? {
-        return locationRepository.findFirstBySelectedTrueOrderById()
-    }
+    val selected
+        get() = locationRepository.findFirstBySelectedTrueOrderById()
 
     @Synchronized
     fun save(location: LocationEntity): LocationEntity {

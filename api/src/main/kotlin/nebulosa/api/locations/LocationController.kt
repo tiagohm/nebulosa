@@ -21,7 +21,7 @@ class LocationController(
 
     @GetMapping("selected")
     fun selected(): LocationEntity? {
-        return locationService.selected()
+        return locationService.selected
     }
 
     @PutMapping

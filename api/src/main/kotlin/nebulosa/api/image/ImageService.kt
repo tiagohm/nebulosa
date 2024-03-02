@@ -6,6 +6,7 @@ import nebulosa.api.atlas.SimbadEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
+import nebulosa.api.locations.LocationService
 import nebulosa.fits.*
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
@@ -53,6 +54,7 @@ class ImageService(
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val connectionService: ConnectionService,
     private val starDetector: StarDetector<Image>,
+    private val locationService: LocationService,
 ) {
 
     val fovCameras: ByteArray by lazy {
@@ -157,22 +159,23 @@ class ImageService(
             return emptyList()
         }
 
-        val annotations = Vector<ImageAnnotation>()
-        val tasks = ArrayList<CompletableFuture<*>>()
+        val annotations = Vector<ImageAnnotation>(64)
+        val tasks = ArrayList<CompletableFuture<*>>(2)
 
         val dateTime = image.header.observationDate ?: LocalDateTime.now()
 
         if (minorPlanets) {
             threadPoolTaskExecutor.submitCompletable {
-                val latitude = image.header.latitude ?: 0.0
-                val longitude = image.header.longitude ?: 0.0
+                val location = locationService.selected
+                val latitude = image.header.latitude ?: location?.latitude ?: 0.0
+                val longitude = image.header.longitude ?: location?.longitude ?: 0.0
 
                 LOG.info(
                     "finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}",
-                    dateTime, latitude, longitude, calibration
+                    dateTime, latitude.formatSignedDMS(), longitude.formatSignedDMS(), calibration
                 )
 
-                val data = smallBodyDatabaseService.identify(
+                val identifiedBody = smallBodyDatabaseService.identify(
                     dateTime, latitude, longitude, 0.0,
                     calibration.rightAscension, calibration.declination, calibration.radius,
                     minorPlanetMagLimit,
@@ -181,7 +184,7 @@ class ImageService(
                 val radiusInSeconds = calibration.radius.toArcsec
                 var count = 0
 
-                data.data.forEach {
+                identifiedBody.data.forEach {
                     val distance = it[5].toDouble()
 
                     if (distance <= radiusInSeconds) {
@@ -235,7 +238,7 @@ class ImageService(
                 .also(tasks::add)
         }
 
-        CompletableFuture.allOf(*tasks.toTypedArray()).join()
+        tasks.forEach { it.get() }
 
         wcs.close()
 
