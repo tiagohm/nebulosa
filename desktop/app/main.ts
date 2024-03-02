@@ -10,6 +10,8 @@ import { CloseWindow, InternalEventType, JsonFile, NotificationEvent, OpenDirect
 
 Object.assign(global, { WebSocket })
 
+app.commandLine.appendSwitch('disable-http-cache')
+
 const browserWindows = new Map<string, BrowserWindow>()
 const modalWindows = new Map<string, { window: BrowserWindow, resolve: (data: any) => void }>()
 let api: ChildProcessWithoutNullStreams | null = null
@@ -22,7 +24,6 @@ const appDir = path.join(app.getPath('appData'), 'nebulosa')
 const appIcon = path.join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
 
 if (!fs.existsSync(appDir)) {
-    console.info(appDir)
     fs.mkdirSync(appDir)
 }
 
@@ -64,9 +65,7 @@ class SimpleDB {
     }
 }
 
-const database = new SimpleDB(path.join(appDir, 'nebulosa.electron.json'))
-
-app.commandLine.appendSwitch('disable-http-cache')
+const database = new SimpleDB(path.join(appDir, 'nebulosa.data.json'))
 
 function isNotificationEvent(event: MessageEvent): event is NotificationEvent {
     return event.eventName === 'NOTIFICATION.SENT'
@@ -208,20 +207,6 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         shell.openExternal(url)
         return { action: 'deny' }
     })
-
-    window.on('moved', () => {
-        const [x, y] = window!.getPosition()
-        database.set(`window.${id}.position`, { x, y })
-        console.info('window moved:', x, y)
-    })
-
-    if (resizable && autoResizable !== false) {
-        window.on('resized', () => {
-            const [width, height] = window!.getSize()
-            database.set(`window.${id}.size`, { width, height })
-            console.info('window resized:', width, height)
-        })
-    }
 
     window.on('close', () => {
         const homeWindow = browserWindows.get('home')
