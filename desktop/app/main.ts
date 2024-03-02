@@ -1,6 +1,5 @@
 import { Client } from '@stomp/stompjs'
-import { BrowserWindow, Menu, Notification, app, dialog, ipcMain, screen, shell } from 'electron'
-import * as ElectronStore from 'electron-store'
+import { BrowserWindow, Menu, Notification, Point, Size, app, dialog, ipcMain, screen, shell } from 'electron'
 import * as fs from 'fs'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import * as path from 'path'
@@ -8,9 +7,8 @@ import * as path from 'path'
 import { WebSocket } from 'ws'
 import { MessageEvent } from '../src/shared/types/api.types'
 import { CloseWindow, InternalEventType, JsonFile, NotificationEvent, OpenDirectory, OpenFile, OpenWindow } from '../src/shared/types/app.types'
-Object.assign(global, { WebSocket })
 
-const store = new ElectronStore()
+Object.assign(global, { WebSocket })
 
 const browserWindows = new Map<string, BrowserWindow>()
 const modalWindows = new Map<string, { window: BrowserWindow, resolve: (data: any) => void }>()
@@ -20,9 +18,59 @@ let webSocket: Client
 
 const args = process.argv.slice(1)
 const serve = args.some(e => e === '--serve')
+const appDir = path.join(app.getPath('appData'), 'nebulosa')
 const appIcon = path.join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
 
+if (!fs.existsSync(appDir)) {
+    console.info(appDir)
+    fs.mkdirSync(appDir)
+}
+
+class SimpleDB {
+
+    private readonly data: Record<string, any>
+
+    constructor(private path: fs.PathLike) {
+        try {
+            if (fs.existsSync(path)) {
+                const text = fs.readFileSync(path).toString('utf-8')
+                this.data = text.length > 0 ? JSON.parse(text) : {}
+            } else {
+                this.data = {}
+            }
+        } catch (e) {
+            this.data = {}
+            console.error(e)
+        }
+    }
+
+    get<T = any>(key: string) {
+        return this.data[key] as T | undefined
+    }
+
+    set(key: string, value: any) {
+        if (value === undefined || value === null) delete this.data[key]
+        else this.data[key] = value
+
+        try {
+            this.save()
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    save() {
+        fs.writeFileSync(this.path, JSON.stringify(this.data))
+    }
+}
+
+const database = new SimpleDB(path.join(appDir, 'nebulosa.electron.json'))
+
 app.commandLine.appendSwitch('disable-http-cache')
+
+function isNotificationEvent(event: MessageEvent): event is NotificationEvent {
+    return event.eventName === 'NOTIFICATION.SENT'
+}
 
 function createMainWindow() {
     browserWindows.get('splash')?.close()
@@ -36,12 +84,10 @@ function createMainWindow() {
             webSocket.subscribe('NEBULOSA.EVENT', message => {
                 const event = JSON.parse(message.body) as MessageEvent
 
-                if (event.eventName) {
-                    if (event.eventName === 'NOTIFICATION.SENT') {
-                        showNotification(event as NotificationEvent)
-                    } else {
-                        sendToAllWindows(event.eventName, event)
-                    }
+                if (isNotificationEvent(event)) {
+                    showNotification(event)
+                } else if (event.eventName) {
+                    sendToAllWindows(event.eventName, event)
                 } else {
                     console.warn('invalid message event', event)
                 }
@@ -103,12 +149,15 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
 
     const height = options.height ? Math.trunc(computeHeight(options.height)) : 416
 
+    const id = options.id
     const resizable = options.resizable ?? false
+    const autoResizable = options.autoResizable !== false
+    const modal = options.modal ?? false
     const icon = options.icon ?? 'nebulosa'
     const data = encodeURIComponent(JSON.stringify(options.data || {}))
 
-    const savedPos = !options.modal ? store.get(`window.${options.id}.position`, undefined) as { x: number, y: number } | undefined : undefined
-    const savedSize = !options.modal && options.resizable ? store.get(`window.${options.id}.size`, undefined) as { width: number, height: number } | undefined : undefined
+    const savedPos = !modal ? database.get<Point>(`window.${id}.position`) : undefined
+    const savedSize = !modal && resizable ? database.get<Size>(`window.${id}.size`) : undefined
 
     if (savedPos) {
         savedPos.x = Math.max(0, Math.min(savedPos.x, screenSize.width))
@@ -122,9 +171,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
 
     window = new BrowserWindow({
         title: 'Nebulosa',
-        frame: false,
-        modal: options.modal,
-        parent,
+        frame: false, modal, parent,
         width: savedSize?.width || width,
         height: savedSize?.height || height,
         x: savedPos?.x ?? undefined,
@@ -151,9 +198,9 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         debug({ showDevTools: false })
 
         require('electron-reloader')(module)
-        window.loadURL(`http://localhost:4200/${options.path}?data=${data}&resizable=${resizable}`)
+        window.loadURL(`http://localhost:4200/${options.path}?data=${data}`)
     } else {
-        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${options.path}?data=${data}&resizable=${resizable}`)
+        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${options.path}?data=${data}`)
         window.loadURL(url.href)
     }
 
@@ -163,23 +210,32 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
     })
 
     window.on('moved', () => {
-        if (window) {
-            const [x, y] = window.getPosition()
-            store.set(`window.${options.id}.position`, { x, y })
-        }
+        const [x, y] = window!.getPosition()
+        database.set(`window.${id}.position`, { x, y })
+        console.info('window moved:', x, y)
     })
 
-    if (!serve && window.isResizable() && options.autoResizable !== false) {
+    if (resizable && autoResizable !== false) {
         window.on('resized', () => {
-            if (window) {
-                const [width, height] = window.getSize()
-                store.set(`window.${options.id}.size`, { width, height })
-            }
+            const [width, height] = window!.getSize()
+            database.set(`window.${id}.size`, { width, height })
+            console.info('window resized:', width, height)
         })
     }
 
     window.on('close', () => {
         const homeWindow = browserWindows.get('home')
+
+        if (!modal) {
+            const [x, y] = window!.getPosition()
+            const [width, height] = window!.getSize()
+
+            database.set(`window.${id}.position`, { x, y })
+
+            if (resizable) {
+                database.set(`window.${id}.size`, { width, height })
+            }
+        }
 
         if (window === homeWindow) {
             browserWindows.delete('home')
@@ -208,7 +264,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         }
     })
 
-    browserWindows.set(options.id, window)
+    browserWindows.set(id, window)
 
     return window
 }
@@ -441,7 +497,7 @@ try {
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
         const height = Math.max(0, Math.min(data, maxHeight))
         window.setSize(size[0], height)
-        console.info('window resized:', size[0], height)
+        console.info('window auto resized:', size[0], height)
 
         return true
     })

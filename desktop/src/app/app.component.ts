@@ -17,7 +17,7 @@ export interface ExtendedMenuItem extends MenuItem {
 export class AppComponent implements AfterViewInit {
 
     pinned = false
-    maximizable = false
+    readonly maximizable = !!window.options.resizable
     readonly modal = window.options.modal ?? false
     subTitle? = ''
     backgroundColor = '#212121'
@@ -46,10 +46,6 @@ export class AppComponent implements AfterViewInit {
     }
 
     async ngAfterViewInit() {
-        this.route.queryParams.subscribe(e => {
-            this.maximizable = e.resizable === 'true'
-        })
-
         if (window.options.autoResizable !== false) {
             this.electron.autoResizeWindow()
         }
