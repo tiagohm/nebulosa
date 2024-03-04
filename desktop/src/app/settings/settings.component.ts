@@ -7,7 +7,8 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
-import { DEFAULT_SOLVER_TYPES, PlateSolverOptions, PlateSolverType } from '../../shared/types/settings.types'
+import { DEFAULT_SOLVER_TYPES, DatabaseEntry, PlateSolverOptions, PlateSolverType } from '../../shared/types/settings.types'
+import { compareBy, textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -17,14 +18,15 @@ import { AppComponent } from '../app.component'
 })
 export class SettingsComponent implements AfterViewInit, OnDestroy {
 
-    activeTab = 0
-
     locations: Location[] = []
     location = structuredClone(EMPTY_LOCATION)
 
-    readonly plateSolverTypes = Array.from(DEFAULT_SOLVER_TYPES)
-    plateSolverType = this.plateSolverTypes[0]
-    readonly plateSolvers = new Map<PlateSolverType, PlateSolverOptions>()
+    readonly solverTypes = Array.from(DEFAULT_SOLVER_TYPES)
+    solverType = this.solverTypes[0]
+    readonly solvers = new Map<PlateSolverType, PlateSolverOptions>()
+
+    readonly database: DatabaseEntry[] = []
+    databaseEntry?: DatabaseEntry
 
     readonly items: MenuItem[] = [
         {
@@ -34,6 +36,10 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         {
             icon: 'mdi mdi-sigma',
             label: 'Plate Solver',
+        },
+        {
+            icon: 'mdi mdi-database',
+            label: 'Local Storage',
         },
     ]
 
@@ -48,9 +54,17 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Settings'
 
-        for (const type of this.plateSolverTypes) {
-            this.plateSolvers.set(type, preference.plateSolverOptions(type).get())
+        for (const type of this.solverTypes) {
+            this.solvers.set(type, preference.plateSolverOptions(type).get())
         }
+
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i)!
+            const value = localStorage.getItem(key)
+            this.database.push({ key, value })
+        }
+
+        this.database.sort(compareBy('key', textComparator))
     }
 
     async ngAfterViewInit() {
@@ -80,7 +94,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 
     private async loadLocations() {
         this.locations = await this.api.locations()
-        this.location = this.locations.find(e => e.selected) ?? this.locations[0] ?? EMPTY_LOCATION
+        this.location = this.locations.find(e => e.selected) ?? this.locations[0] ?? structuredClone(EMPTY_LOCATION)
 
         if (this.location.id && !this.location.selected) {
             this.location.selected = true
@@ -102,7 +116,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     }
 
     async chooseExecutablePath() {
-        const options = this.plateSolvers.get(this.plateSolverType)!
+        const options = this.solvers.get(this.solverType)!
         const executablePath = await this.electron.openFile({ defaultPath: path.dirname(options.executablePath) })
 
         if (executablePath) {
@@ -111,9 +125,19 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    async save() {
-        for (const type of this.plateSolverTypes) {
-            this.preference.plateSolverOptions(type).set(this.plateSolvers.get(type)!)
+    deleteDatabaseEntry() {
+        if (this.databaseEntry) {
+            localStorage.removeItem(this.databaseEntry.key)
+
+            const index = this.database.indexOf(this.databaseEntry)
+            this.database.splice(index, 1)
+            this.databaseEntry = undefined
+        }
+    }
+
+    save() {
+        for (const type of this.solverTypes) {
+            this.preference.plateSolverOptions(type).set(this.solvers.get(type)!)
         }
     }
 }

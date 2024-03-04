@@ -476,7 +476,7 @@ try {
     ipcMain.handle('WINDOW.RESIZE', (event, data: number) => {
         const window = findWindowById(event.sender.id)?.window
 
-        if (!window || (!serve && window.isResizable())) return false
+        if (!window || window.isResizable()) return false
 
         const size = window.getSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height

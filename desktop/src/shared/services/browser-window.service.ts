@@ -105,7 +105,7 @@ export class BrowserWindowService {
 
     openSettings(options: OpenWindowOptions = {}) {
         Object.assign(options, { icon: 'settings', width: 580, height: 451 })
-        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined })
+        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined, resizable: true })
     }
 
     openCalculator(options: OpenWindowOptions = {}) {
