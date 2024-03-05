@@ -236,8 +236,8 @@ data class ASCOMMount(
 
     override fun coordinates(longitude: Angle, latitude: Angle, elevation: Distance) {
         service.siteLongitude(device.number, longitude.toDegrees).doRequest {} &&
-            service.siteLatitude(device.number, latitude.toDegrees).doRequest {} &&
-            service.siteElevation(device.number, elevation.toMeters).doRequest {}
+                service.siteLatitude(device.number, latitude.toDegrees).doRequest {} &&
+                service.siteElevation(device.number, elevation.toMeters).doRequest {}
     }
 
     override fun dateTime(dateTime: OffsetDateTime) {
@@ -475,4 +475,13 @@ data class ASCOMMount(
             }
         }
     }
+
+    override fun toString() = "Mount(name=$name, connected=$connected, slewing=$slewing, tracking=$tracking," +
+            " parking=$parking, parked=$parked, canAbort=$canAbort," +
+            " canSync=$canSync, canPark=$canPark, slewRates=$slewRates," +
+            " slewRate=$slewRate, mountType=$mountType, trackModes=$trackModes," +
+            " trackMode=$trackMode, pierSide=$pierSide, guideRateWE=$guideRateWE," +
+            " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
+            " declination=$declination, canPulseGuide=$canPulseGuide," +
+            " pulseGuiding=$pulseGuiding)"
 }

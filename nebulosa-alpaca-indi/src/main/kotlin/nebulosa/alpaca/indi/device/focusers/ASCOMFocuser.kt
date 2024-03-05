@@ -169,4 +169,11 @@ data class ASCOMFocuser(
             }
         }
     }
+
+    override fun toString() = "Focuser(name=$name, moving=$moving, position=$position," +
+            " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
+            " canAbort=$canAbort, canReverse=$canReverse, reversed=$reversed," +
+            " canSync=$canSync, hasBacklash=$hasBacklash," +
+            " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
+            " temperature=$temperature)"
 }

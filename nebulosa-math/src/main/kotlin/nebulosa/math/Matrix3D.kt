@@ -169,8 +169,8 @@ open class Matrix3D(@PublishedApi @JvmField internal val matrix: DoubleArray) : 
     override fun clone() = Matrix3D(matrix.copyOf())
 
     fun isEmpty() = a11 == 0.0 && a12 == 0.0 && a13 == 0.0 &&
-        a21 == 0.0 && a22 == 0.0 && a23 == 0.0 &&
-        a31 == 0.0 && a32 == 0.0 && a33 == 0.0
+            a21 == 0.0 && a22 == 0.0 && a23 == 0.0 &&
+            a31 == 0.0 && a32 == 0.0 && a33 == 0.0
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

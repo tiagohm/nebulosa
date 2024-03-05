@@ -31,7 +31,7 @@ data class HeaderCard(
 
     val isDecimalType
         get() = DECIMAL_TYPES.any { it === type }
-            || BigDecimal::class.java.isAssignableFrom(type)
+                || BigDecimal::class.java.isAssignableFrom(type)
 
     val isIntegerType
         get() = INTEGET_TYPES.any { it === type }

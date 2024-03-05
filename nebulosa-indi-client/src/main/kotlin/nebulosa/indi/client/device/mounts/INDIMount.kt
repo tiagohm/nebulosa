@@ -352,8 +352,7 @@ internal open class INDIMount(
         }
     }
 
-    override fun toString(): String {
-        return "Mount(name=$name, connected=$connected, slewing=$slewing, tracking=$tracking," +
+    override fun toString() = "Mount(name=$name, connected=$connected, slewing=$slewing, tracking=$tracking," +
             " parking=$parking, parked=$parked, canAbort=$canAbort," +
             " canSync=$canSync, canPark=$canPark, slewRates=$slewRates," +
             " slewRate=$slewRate, mountType=$mountType, trackModes=$trackModes," +
@@ -361,7 +360,6 @@ internal open class INDIMount(
             " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
             " declination=$declination, canPulseGuide=$canPulseGuide," +
             " pulseGuiding=$pulseGuiding)"
-    }
 
     companion object {
 

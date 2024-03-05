@@ -81,8 +81,8 @@ class ImageService(
         var stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
 
         val shouldBeTransformed = autoStretch || manualStretch
-            || mirrorHorizontal || mirrorVertical || invert
-            || scnrEnabled
+                || mirrorHorizontal || mirrorVertical || invert
+                || scnrEnabled
 
         var transformedImage = if (shouldBeTransformed) image.clone() else image
         val instrument = camera?.name ?: image.header.instrument

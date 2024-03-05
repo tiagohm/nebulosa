@@ -50,8 +50,8 @@ data class FixedStar(
         // unit vector "u1", divided by the speed of light.
         val lightTime = u1.dot(observer.position) / SPEED_OF_LIGHT_AU_DAY
         val position = (positionAndVelocity.position + positionAndVelocity.velocity *
-            (observer.time.tdb.whole - epoch.tdb.whole + lightTime + observer.time.tdb.fraction - epoch.tdb.fraction) -
-            observer.position)
+                (observer.time.tdb.whole - epoch.tdb.whole + lightTime + observer.time.tdb.fraction - epoch.tdb.fraction) -
+                observer.position)
         return PositionAndVelocity(position, observer.velocity - positionAndVelocity.velocity)
     }
 

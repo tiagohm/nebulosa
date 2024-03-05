@@ -11,8 +11,8 @@ import kotlin.math.sign
 
 val Header.hasCd
     get() = "CD1_1" in this ||
-        "CDELT1" in this && "CROTA2" in this ||
-        "CDELT1" in this && "PC1_1" in this
+            "CDELT1" in this && "CROTA2" in this ||
+            "CDELT1" in this && "PC1_1" in this
 
 fun Header.computeCdMatrix(): DoubleArray {
     return if (hasCd) {

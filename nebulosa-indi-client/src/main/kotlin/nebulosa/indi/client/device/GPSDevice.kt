@@ -61,8 +61,6 @@ internal open class GPSDevice(
 
     override fun close() = Unit
 
-    override fun toString(): String {
-        return "GPS(hasGPS=$hasGPS, longitude=$longitude, latitude=$latitude," +
+    override fun toString() = "GPS(hasGPS=$hasGPS, longitude=$longitude, latitude=$latitude," +
             " elevation=$elevation, dateTime=$dateTime)"
-    }
 }

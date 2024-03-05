@@ -819,8 +819,8 @@ fun eraNut00a(tt1: Double, tt2: Double): DoubleArray {
 
     for (i in xpl.indices.reversed()) {
         val arg = (xpl[i].nl * al + xpl[i].nf * af + xpl[i].nd * ad + xpl[i].nom * aom + xpl[i].nme * alme +
-            xpl[i].nve * alve + xpl[i].nea * alea + xpl[i].nma * alma + xpl[i].nju * alju +
-            xpl[i].nsa * alsa + xpl[i].nur * alur + xpl[i].nne * alne + xpl[i].npa * apa).mod(TAU)
+                xpl[i].nve * alve + xpl[i].nea * alea + xpl[i].nma * alma + xpl[i].nju * alju +
+                xpl[i].nsa * alsa + xpl[i].nur * alur + xpl[i].nne * alne + xpl[i].npa * apa).mod(TAU)
 
         val sarg = sin(arg)
         val carg = cos(arg)
@@ -1311,7 +1311,7 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
     val vbz = AM32 * vb[1] + AM33 * vb[2]
 
     return PositionAndVelocity(Vector3D(phx, phy, phz), Vector3D(vhx, vhy, vhz)) to
-        PositionAndVelocity(Vector3D(pbx, pby, pbz), Vector3D(vbx, vby, vbz))
+            PositionAndVelocity(Vector3D(pbx, pby, pbz), Vector3D(vbx, vby, vbz))
 }
 
 /**
@@ -1560,7 +1560,7 @@ fun eraGmst06(ut11: Double, ut12: Double, tt1: Double, tt2: Double): Angle {
 
     // Greenwich Mean Sidereal Time, IAU 2006.
     return (eraEra00(ut11, ut12) +
-        (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
+            (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
 }
 
 /**

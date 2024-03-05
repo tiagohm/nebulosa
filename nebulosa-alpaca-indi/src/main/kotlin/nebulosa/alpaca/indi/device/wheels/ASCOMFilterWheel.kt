@@ -77,4 +77,6 @@ data class ASCOMFilterWheel(
             }
         }
     }
+
+    override fun toString() = "FilterWheel(name=$name, slotCount=$count, position=$position, moving=$moving)"
 }
