@@ -1,4 +1,4 @@
-package nebulosa.api.beans.converters.indi
+package nebulosa.api.beans.converters.device
 
 @Retention
 @Target(AnnotationTarget.VALUE_PARAMETER)

@@ -4,9 +4,9 @@ import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
-import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
+import nebulosa.api.beans.converters.device.DeviceOrEntityParam
+import nebulosa.api.beans.converters.location.LocationParam
 import nebulosa.api.beans.converters.time.DateAndTimeParam
-import nebulosa.api.locations.LocationEntity
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.nova.astrometry.Constellation
@@ -28,26 +28,26 @@ class SkyAtlasController(
 
     @GetMapping("sun/position")
     fun positionOfSun(
-        @DeviceOrEntityParam location: LocationEntity,
+        @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDateTime,
     ) = skyAtlasService.positionOfSun(location, dateTime)
 
     @GetMapping("sun/altitude-points")
     fun altitudePointsOfSun(
-        @DeviceOrEntityParam location: LocationEntity,
+        @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
     ) = skyAtlasService.altitudePointsOfSun(location, dateTime, stepSize)
 
     @GetMapping("moon/position")
     fun positionOfMoon(
-        @DeviceOrEntityParam location: LocationEntity,
+        @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDateTime,
     ) = skyAtlasService.positionOfMoon(location, dateTime)
 
     @GetMapping("moon/altitude-points")
     fun altitudePointsOfMoon(
-        @DeviceOrEntityParam location: LocationEntity,
+        @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
     ) = skyAtlasService.altitudePointsOfMoon(location, dateTime, stepSize)
@@ -55,14 +55,14 @@ class SkyAtlasController(
     @GetMapping("planets/{code}/position")
     fun positionOfPlanet(
         @PathVariable code: String,
-        @DeviceOrEntityParam location: LocationEntity,
+        @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDateTime,
     ) = skyAtlasService.positionOfPlanet(location, code, dateTime)
 
     @GetMapping("planets/{code}/altitude-points")
     fun altitudePointsOfPlanet(
         @PathVariable code: String,
-        @DeviceOrEntityParam location: LocationEntity,
+        @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
     ) = skyAtlasService.altitudePointsOfPlanet(location, code, dateTime, stepSize)
@@ -73,14 +73,14 @@ class SkyAtlasController(
     @GetMapping("sky-objects/{id}/position")
     fun positionOfSkyObject(
         @PathVariable id: Long,
-        @DeviceOrEntityParam location: LocationEntity,
+        @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDateTime,
     ) = skyAtlasService.positionOfSkyObject(location, id, dateTime)
 
     @GetMapping("sky-objects/{id}/altitude-points")
     fun altitudePointsOfSkyObject(
         @PathVariable id: Long,
-        @DeviceOrEntityParam location: LocationEntity,
+        @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
     ) = skyAtlasService.altitudePointsOfSkyObject(location, id, dateTime, stepSize)
@@ -106,14 +106,14 @@ class SkyAtlasController(
     @GetMapping("satellites/{satellite}/position")
     fun positionOfSatellite(
         @DeviceOrEntityParam satellite: SatelliteEntity,
-        @DeviceOrEntityParam location: LocationEntity,
+        @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDateTime,
     ) = skyAtlasService.positionOfSatellite(location, satellite, dateTime)
 
     @GetMapping("satellites/{satellite}/altitude-points")
     fun altitudePointsOfSatellite(
         @DeviceOrEntityParam satellite: SatelliteEntity,
-        @DeviceOrEntityParam location: LocationEntity,
+        @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,
     ) = skyAtlasService.altitudePointsOfSatellite(location, satellite, dateTime, stepSize)
@@ -126,7 +126,7 @@ class SkyAtlasController(
 
     @GetMapping("twilight")
     fun twilight(
-        @DeviceOrEntityParam location: LocationEntity,
+        @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
     ) = skyAtlasService.twilight(location, dateTime)
 }

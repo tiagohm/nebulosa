@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { HttpClientModule } from '@angular/common/http'
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http'
 import { LOCALE_ID, NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
@@ -49,6 +49,7 @@ import { MoonComponent } from '../shared/components/moon/moon.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
+import { LocationInterceptor } from '../shared/interceptors/location.interceptor'
 import { AnglePipe } from '../shared/pipes/angle.pipe'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
 import { EnvPipe } from '../shared/pipes/env.pipe'
@@ -171,6 +172,11 @@ import { SettingsComponent } from './settings/settings.component'
         {
             provide: LOCALE_ID,
             useValue: 'en-US',
+        },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: LocationInterceptor,
+            multi: true,
         },
     ],
     bootstrap: [AppComponent]

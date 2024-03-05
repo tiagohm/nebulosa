@@ -2,7 +2,9 @@ package nebulosa.api.image
 
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
-import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
+import nebulosa.api.atlas.Location
+import nebulosa.api.beans.converters.device.DeviceOrEntityParam
+import nebulosa.api.beans.converters.location.LocationParam
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.transformation.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
@@ -61,7 +63,8 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "true") starsAndDSOs: Boolean,
         @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
         @RequestParam(required = false, defaultValue = "12.0") minorPlanetMagLimit: Double,
-    ) = imageService.annotations(path, starsAndDSOs, minorPlanets, minorPlanetMagLimit)
+        @LocationParam location: Location? = null,
+    ) = imageService.annotations(path, starsAndDSOs, minorPlanets, minorPlanetMagLimit, location)
 
     @GetMapping("coordinate-interpolation")
     fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {

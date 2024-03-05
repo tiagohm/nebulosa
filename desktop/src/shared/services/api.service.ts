@@ -361,28 +361,6 @@ export class ApiService {
         return this.http.get<string[]>(`indi/${device.name}/log`)
     }
 
-    // LOCATION
-
-    locations() {
-        return this.http.get<Location[]>(`locations`)
-    }
-
-    location(id: number) {
-        return this.http.get<Location | undefined>(`locations/${id}`)
-    }
-
-    selectedLocation() {
-        return this.http.get<Location>(`locations/selected`)
-    }
-
-    saveLocation(location: Location) {
-        return this.http.put<Location>(`locations`, location)
-    }
-
-    deleteLocation(location: Location) {
-        return this.http.delete<void>(`locations/${location.id}`)
-    }
-
     // SKY ATLAS
 
     positionOfSun(location: Location, dateTime: Date) {

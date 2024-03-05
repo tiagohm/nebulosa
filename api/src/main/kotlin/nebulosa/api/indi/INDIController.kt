@@ -1,7 +1,7 @@
 package nebulosa.api.indi
 
 import jakarta.validation.Valid
-import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
+import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.PropertyVector
 import org.springframework.web.bind.annotation.*

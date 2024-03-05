@@ -14,7 +14,7 @@ import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType } from '../../shared/types/atlas.types'
 import { Mount } from '../../shared/types/mount.types'
@@ -425,7 +425,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         private browserWindow: BrowserWindowService,
         private route: ActivatedRoute,
         electron: ElectronService,
-        private storage: LocalStorageService,
+        private preference: PreferenceService,
         private skyObjectPipe: SkyObjectPipe,
         private prime: PrimeService,
         ngZone: NgZone,
@@ -452,7 +452,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     }
 
     async ngOnInit() {
-        const preference = this.storage.get<SkyAtlasPreference>(ATLAS_KEY, {})
+        const preference = this.preference.skyAtlasPreference.get()
 
         for (const group of SATELLITE_GROUPS) {
             const satellite = preference.satellites?.find(e => e.group === group)
@@ -463,7 +463,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         this.skyObjectFilter.types.push(... await this.api.skyObjectTypes())
     }
 
-    async ngAfterContentInit() {
+    ngAfterContentInit() {
         // const canvas = this.chart.getCanvas() as HTMLCanvasElement
         // const chart = this.chart.chart as Chart
 
@@ -481,8 +481,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
                 }
             })
 
-        await this.refreshTab()
-
         this.route.queryParams.subscribe(e => {
             const data = JSON.parse(decodeURIComponent(e.data)) as SkyAtlasData
             this.loadTabFromData(data)
@@ -490,6 +488,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     }
 
     ngAfterViewInit() {
+        this.refreshTab()
+
         this.calendarPanel.onOverlayClick = (e) => {
             e.stopImmediatePropagation()
         }
@@ -598,13 +598,13 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         this.refreshing = true
 
         try {
-            const preference = this.storage.get<SkyAtlasPreference>(ATLAS_KEY, {})
+            const preference = this.preference.skyAtlasPreference.get()
 
             preference.satellites = SATELLITE_GROUPS.map(group => {
                 return { group, enabled: this.satelliteSearchGroup.get(group) ?? false }
             })
 
-            this.storage.set(ATLAS_KEY, preference)
+            this.preference.skyAtlasPreference.set(preference)
 
             const groups = SATELLITE_GROUPS.filter(e => this.satelliteSearchGroup.get(e))
             this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText, groups)
@@ -614,7 +614,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     }
 
     resetSatelliteFilter() {
-        const preference = this.storage.get<SkyAtlasPreference>(ATLAS_KEY, {})
+        const preference = this.preference.skyAtlasPreference.get()
 
         preference.satellites = []
 
@@ -624,7 +624,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             this.satelliteSearchGroup.set(group, enabled)
         }
 
-        this.storage.set(ATLAS_KEY, preference)
+        this.preference.skyAtlasPreference.set(preference)
     }
 
     async filterSatellite() {
@@ -669,7 +669,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         refreshChart: boolean = false,
         location?: Location,
     ) {
-        location ??= await this.api.selectedLocation()
+        location ??= this.preference.selectedLocation.get()
 
         this.refreshing = true
         this.refreshTabCount++
@@ -686,6 +686,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         this.app.subTitle = `${location.name} · ${moment(this.dateTime).format('YYYY-MM-DD HH:mm')}`
 
         try {
+            if (this.tab === undefined) {
+                this.tab = SkyAtlasTab.SUN
+            }
+
             // Sun.
             if (this.tab === SkyAtlasTab.SUN) {
                 this.name = 'Sun'

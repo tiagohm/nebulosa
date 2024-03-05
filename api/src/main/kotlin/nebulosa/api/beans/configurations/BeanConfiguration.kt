@@ -10,7 +10,6 @@ import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.database.MyObjectBox
-import nebulosa.api.locations.LocationEntity
 import nebulosa.api.preferences.PreferenceEntity
 import nebulosa.batch.processing.AsyncJobLauncher
 import nebulosa.common.json.PathDeserializer
@@ -173,9 +172,6 @@ class BeanConfiguration {
         .build()!!
 
     @Bean
-    fun locationBox(boxStore: BoxStore) = boxStore.boxFor(LocationEntity::class.java)!!
-
-    @Bean
     fun calibrationFrameBox(boxStore: BoxStore) = boxStore.boxFor(CalibrationFrameEntity::class.java)!!
 
     @Bean
@@ -193,6 +189,7 @@ class BeanConfiguration {
         dateAndTimeParamMethodArgumentResolver: HandlerMethodArgumentResolver,
         angleParamMethodArgumentResolver: HandlerMethodArgumentResolver,
         durationUnitMethodArgumentResolver: HandlerMethodArgumentResolver,
+        locationParamMethodArgumentResolver: HandlerMethodArgumentResolver,
     ) = object : WebMvcConfigurer {
 
         override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
@@ -213,6 +210,7 @@ class BeanConfiguration {
             resolvers.add(dateAndTimeParamMethodArgumentResolver)
             resolvers.add(angleParamMethodArgumentResolver)
             resolvers.add(durationUnitMethodArgumentResolver)
+            resolvers.add(locationParamMethodArgumentResolver)
         }
     }
 

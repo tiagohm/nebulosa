@@ -262,17 +262,15 @@ export interface Location {
     longitude: number
     elevation: number
     offsetInMinutes: number
-    selected: boolean
 }
 
 export const EMPTY_LOCATION: Location = {
     id: 0,
-    name: '',
+    name: 'Null Island',
     latitude: 0,
     longitude: 0,
     elevation: 0,
     offsetInMinutes: 0,
-    selected: false,
 }
 
 export interface SkyAtlasUpdated extends NotificationEvent {

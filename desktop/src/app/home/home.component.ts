@@ -204,17 +204,19 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         })
 
         this.connections = preference.connections.get()
-        this.connections.forEach(e => e.connected = false)
+        this.connections.forEach(e => { e.id = undefined; e.connected = false })
         this.connection = this.connections[0]
     }
 
     async ngAfterContentInit() {
-        this.updateConnection()
+        await this.updateConnection()
 
-        this.cameras = await this.api.cameras()
-        this.mounts = await this.api.mounts()
-        this.focusers = await this.api.focusers()
-        this.wheels = await this.api.wheels()
+        if (this.connection?.connected) {
+            this.cameras = await this.api.cameras()
+            this.mounts = await this.api.mounts()
+            this.focusers = await this.api.focusers()
+            this.wheels = await this.api.wheels()
+        }
     }
 
     @HostListener('window:unload')
@@ -325,11 +327,11 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const defaultPath = this.preference.homeImageDefaultDirectory.get()
+            const defaultPath = this.preference.homeImageDirectory.get()
             const filePath = await this.electron.openFits({ defaultPath })
 
             if (filePath) {
-                this.preference.homeImageDefaultDirectory.set(path.dirname(filePath))
+                this.preference.homeImageDirectory.set(path.dirname(filePath))
                 this.browserWindow.openImage({ path: filePath, source: 'PATH' })
             }
         } else {

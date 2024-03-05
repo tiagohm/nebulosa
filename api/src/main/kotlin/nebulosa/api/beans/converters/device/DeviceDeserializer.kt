@@ -1,4 +1,4 @@
-package nebulosa.api.beans.converters.indi
+package nebulosa.api.beans.converters.device
 
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext

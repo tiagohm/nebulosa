@@ -1,7 +1,7 @@
 package nebulosa.api.cameras
 
 import jakarta.validation.Valid
-import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
+import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.camera.Camera
 import org.hibernate.validator.constraints.Range

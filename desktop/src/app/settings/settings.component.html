@@ -1,6 +1,6 @@
 <div class="grid p-2 relative">
     <div class="col-4 md:col-3 lg:col-2">
-        <p-listbox [options]="items" [(ngModel)]="item" [listStyle]="{ height: 'calc(100vh - 58px)', maxHeight: '100vh' }"
+        <p-listbox [options]="menu" [(ngModel)]="selectedMenu" [listStyle]="{ height: 'calc(100vh - 58px)', maxHeight: '100vh' }"
                    styleClass="border-0" [style]="{ width: '100%' }">
             <ng-template let-item pTemplate="item">
                 <div class="flex align-items-center gap-2">
@@ -11,7 +11,7 @@
         </p-listbox>
     </div>
     <div class="col-8 md:col-9 lg:col-10">
-        <div *ngIf="item === items[0]" class="grid p-2">
+        <div *ngIf="selectedMenu === menu[0]" class="grid p-2">
             <div class="col-8 md:col-6 lg:col-4">
                 <span class="p-float-label">
                     <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()"
@@ -27,7 +27,7 @@
                           size="small" severity="danger" />
             </div>
         </div>
-        <div *ngIf="item === items[1]" class="grid p-2">
+        <div *ngIf="selectedMenu === menu[1]" class="grid p-2">
             <div class="col-12 md:col-8 lg:col-6">
                 <div class="grid">
                     <div class="col-8">
@@ -85,7 +85,7 @@
                 </div>
             </div>
         </div>
-        <div *ngIf="item === items[2]" class="grid p-2 relative">
+        <div *ngIf="selectedMenu === menu[2]" class="grid p-2 relative">
             <div class="col-12">
                 <p-listbox [options]="database" [(ngModel)]="databaseEntry" dataKey="key" optionLabel="key"
                            [listStyle]="{ height: 'calc(100vh - 200px)', maxHeight: '100vh' }" [multiple]="false" [metaKeySelection]="false"

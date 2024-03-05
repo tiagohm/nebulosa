@@ -2,11 +2,11 @@ package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
+import nebulosa.api.atlas.Location
 import nebulosa.api.atlas.SimbadEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
-import nebulosa.api.locations.LocationService
 import nebulosa.fits.*
 import nebulosa.imaging.Image
 import nebulosa.imaging.ImageChannel
@@ -54,7 +54,6 @@ class ImageService(
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val connectionService: ConnectionService,
     private val starDetector: StarDetector<Image>,
-    private val locationService: LocationService,
 ) {
 
     val fovCameras: ByteArray by lazy {
@@ -145,6 +144,7 @@ class ImageService(
         path: Path,
         starsAndDSOs: Boolean, minorPlanets: Boolean,
         minorPlanetMagLimit: Double = 12.0,
+        location: Location? = null,
     ): List<ImageAnnotation> {
         val (image, calibration) = imageBucket[path] ?: return emptyList()
 
@@ -166,7 +166,6 @@ class ImageService(
 
         if (minorPlanets) {
             threadPoolTaskExecutor.submitCompletable {
-                val location = locationService.selected
                 val latitude = image.header.latitude ?: location?.latitude ?: 0.0
                 val longitude = image.header.longitude ?: location?.longitude ?: 0.0
 

@@ -18,8 +18,8 @@ import { AppComponent } from '../app.component'
 })
 export class SettingsComponent implements AfterViewInit, OnDestroy {
 
-    locations: Location[] = []
-    location = structuredClone(EMPTY_LOCATION)
+    readonly locations: Location[]
+    location: Location
 
     readonly solverTypes = Array.from(DEFAULT_SOLVER_TYPES)
     solverType = this.solverTypes[0]
@@ -28,7 +28,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     readonly database: DatabaseEntry[] = []
     databaseEntry?: DatabaseEntry
 
-    readonly items: MenuItem[] = [
+    readonly menu: MenuItem[] = [
         {
             icon: 'mdi mdi-map-marker',
             label: 'Location',
@@ -43,7 +43,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         },
     ]
 
-    item = this.items[0]
+    selectedMenu = this.menu[0]
 
     constructor(
         app: AppComponent,
@@ -53,6 +53,9 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         private prime: PrimeService,
     ) {
         app.title = 'Settings'
+
+        this.locations = preference.locations.get()
+        this.location = preference.selectedLocation.get(this.locations[0])
 
         for (const type of this.solverTypes) {
             this.solvers.set(type, preference.plateSolverOptions(type).get())
@@ -67,9 +70,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         this.database.sort(compareBy('key', textComparator))
     }
 
-    async ngAfterViewInit() {
-        this.loadLocations()
-    }
+    async ngAfterViewInit() { }
 
     @HostListener('window:unload')
     ngOnDestroy() { }
@@ -86,32 +87,45 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         const result = await this.prime.open(LocationDialog, { header: 'Location', data: location })
 
         if (result) {
-            await this.api.saveLocation(result)
-            await this.loadLocations()
+            const index = this.locations.findIndex(e => e.id === result.id)
+
+            if (result.id === 0) {
+                result.id = Date.now()
+            }
+
+            if (index >= 0) {
+                Object.assign(this.locations[index], result)
+                this.location = this.locations[index]
+            } else {
+                this.locations.push(result)
+                this.location = result
+            }
+
+            this.preference.locations.set(this.locations)
+            this.preference.selectedLocation.set(this.location)
+
             this.electron.send('LOCATION.CHANGED', this.location)
         }
     }
 
-    private async loadLocations() {
-        this.locations = await this.api.locations()
-        this.location = this.locations.find(e => e.selected) ?? this.locations[0] ?? structuredClone(EMPTY_LOCATION)
+    async deleteLocation() {
+        if (this.locations.length > 1) {
+            const index = this.locations.findIndex(e => e.id === this.location.id)
 
-        if (this.location.id && !this.location.selected) {
-            this.location.selected = true
-            this.api.saveLocation(this.location)
+            if (index >= 0) {
+                this.locations.splice(index, 1)
+                this.location = this.locations[0]
+
+                this.preference.locations.set(this.locations)
+                this.preference.selectedLocation.set(this.location)
+
+                this.electron.send('LOCATION.CHANGED', this.location)
+            }
         }
     }
 
-    async deleteLocation() {
-        await this.api.deleteLocation(this.location)
-        await this.loadLocations()
-        this.electron.send('LOCATION.CHANGED', this.location)
-    }
-
     locationChanged() {
-        this.locations.forEach(e => e.selected = false)
-        this.location.selected = true
-        this.locations.forEach(e => this.api.saveLocation(e))
+        this.preference.selectedLocation.set(this.location)
         this.electron.send('LOCATION.CHANGED', this.location)
     }
 

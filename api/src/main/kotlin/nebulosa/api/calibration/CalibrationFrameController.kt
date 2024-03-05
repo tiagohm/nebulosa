@@ -1,6 +1,6 @@
 package nebulosa.api.calibration
 
-import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
+import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.indi.device.camera.Camera
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path

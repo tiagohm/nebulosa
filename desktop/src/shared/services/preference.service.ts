@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core'
+import { SkyAtlasPreference } from '../../app/atlas/atlas.component'
 import { AlignmentPreference, EMPTY_ALIGNMENT_PREFERENCE } from '../types/alignment.types'
+import { EMPTY_LOCATION, Location } from '../types/atlas.types'
 import { Camera, CameraPreference, CameraStartCapture, EMPTY_CAMERA_PREFERENCE } from '../types/camera.types'
 import { ConnectionDetails } from '../types/home.types'
 import { EMPTY_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
@@ -9,7 +11,11 @@ import { LocalStorageService } from './local-storage.service'
 
 export class PreferenceData<T> {
 
-    constructor(private storage: LocalStorageService, private key: string, private defaultValue: T | (() => T)) { }
+    constructor(
+        private storage: LocalStorageService,
+        private key: string,
+        private defaultValue: T | (() => T),
+    ) { }
 
     has() {
         return this.storage.has(this.key)
@@ -57,9 +63,12 @@ export class PreferenceService {
         return new PreferenceData<PlateSolverOptions>(this.storage, `settings.plateSolver.${type}`, () => <PlateSolverOptions>{ ...EMPTY_PLATE_SOLVER_OPTIONS, type })
     }
 
+    readonly locations = new PreferenceData<Location[]>(this.storage, 'locations', () => [structuredClone(EMPTY_LOCATION)])
+    readonly selectedLocation = new PreferenceData<Location>(this.storage, 'locations.selected', () => structuredClone(EMPTY_LOCATION))
     readonly imagePreference = new PreferenceData<ImagePreference>(this.storage, 'image', () => structuredClone(EMPTY_IMAGE_PREFERENCE))
-    readonly alignmentPreference = new PreferenceData<AlignmentPreference>(this.storage, `alignment`, () => structuredClone(EMPTY_ALIGNMENT_PREFERENCE))
+    readonly skyAtlasPreference = new PreferenceData<SkyAtlasPreference>(this.storage, 'atlas', () => <SkyAtlasPreference>{})
+    readonly alignmentPreference = new PreferenceData<AlignmentPreference>(this.storage, 'alignment', () => structuredClone(EMPTY_ALIGNMENT_PREFERENCE))
     readonly connections = new PreferenceData<ConnectionDetails[]>(this.storage, 'home.connections', () => [])
-    readonly homeImageDefaultDirectory = new PreferenceData<string>(this.storage, 'home.image.directory', '')
+    readonly homeImageDirectory = new PreferenceData<string>(this.storage, 'home.image.directory', '')
     readonly imageFOVs = new PreferenceData<FOV[]>(this.storage, 'image.fovs', () => [])
 }

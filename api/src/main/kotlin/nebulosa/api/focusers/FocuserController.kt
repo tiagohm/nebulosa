@@ -2,7 +2,7 @@ package nebulosa.api.focusers
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
+import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.focuser.Focuser
 import org.springframework.web.bind.annotation.*
