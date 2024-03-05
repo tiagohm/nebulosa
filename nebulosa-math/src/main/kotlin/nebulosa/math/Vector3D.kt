@@ -3,7 +3,6 @@ package nebulosa.math
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.atan2
-import kotlin.math.sqrt
 
 @Suppress("NOTHING_TO_INLINE")
 open class Vector3D protected constructor(@PublishedApi @JvmField internal val vector: DoubleArray) : Point3D, Cloneable {
@@ -55,9 +54,6 @@ open class Vector3D protected constructor(@PublishedApi @JvmField internal val v
         vector[2] * other[0] - vector[0] * other[2],
         vector[0] * other[1] - vector[1] * other[0]
     )
-
-    inline val length
-        get() = sqrt(dot(this))
 
     inline val normalized
         get() = length.let { if (it == 0.0) this else this / it }
