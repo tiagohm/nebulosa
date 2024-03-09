@@ -1,22 +1,27 @@
 package nebulosa.curve.fitting
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction
+import nebulosa.curve.fitting.Curve.Companion.polynomial
+import org.apache.commons.math3.analysis.UnivariateFunction
 import org.apache.commons.math3.fitting.PolynomialCurveFitter
 
-object QuadraticFitting : CurveFitting {
+data object QuadraticFitting : CurveFitting<QuadraticFitting.Curve> {
 
-    private val fitter = PolynomialCurveFitter.create(2)
+    data class Curve(
+        private val poly: UnivariateFunction,
+        override val minimum: CurvePoint,
+        override val rSquared: Double,
+    ) : FittedCurve {
 
-    override fun calculate(points: Collection<CurvePoint>) = object : FittedCurve {
-
-        private val poly by lazy { PolynomialFunction(fitter.fit(points)) }
-
-        override val rSquared by lazy { RSquared.calculate(points, poly) }
-
-        override val minimumX by lazy { poly.coefficients[1] / (-2.0 * poly.coefficients[2]) }
-
-        override val minimumY by lazy { this(minimumX) }
-
-        override fun invoke(x: Double) = poly.value(x)
+        override fun value(x: Double) = poly.value(x)
     }
+
+    override fun calculate(points: Collection<CurvePoint>) = with(FITTER.fit(points).polynomial()) {
+        val rSquared = RSquared.calculate(points, this)
+        val minimumX = coefficients[1] / (-2.0 * coefficients[2])
+        val minimumY = value(minimumX)
+        val minimum = CurvePoint(minimumX, minimumY)
+        Curve(this, minimum, rSquared)
+    }
+
+    @JvmStatic private val FITTER = PolynomialCurveFitter.create(2)
 }

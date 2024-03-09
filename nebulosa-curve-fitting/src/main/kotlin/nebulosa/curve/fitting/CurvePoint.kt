@@ -20,4 +20,9 @@ class CurvePoint(x: Double, y: Double) : WeightedObservedPoint(1.0, x, y) {
     }
 
     override fun toString() = "CurvePoint(x=$x, y=$y)"
+
+    companion object {
+
+        @JvmStatic val ZERO = CurvePoint(0.0, 0.0)
+    }
 }

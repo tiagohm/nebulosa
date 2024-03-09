@@ -1,12 +1,14 @@
 package nebulosa.curve.fitting
 
-interface FittedCurve {
+interface FittedCurve : Curve {
 
-    val minimumX: Double
-
-    val minimumY: Double
+    val minimum: CurvePoint
 
     val rSquared: Double
 
-    operator fun invoke(x: Double): Double
+    val minimumX
+        get() = minimum.x
+
+    val minimumY
+        get() = minimum.y
 }
