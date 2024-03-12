@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
 @Component
-class SimbadEntityRepository(@Qualifier("simbadEntityBox") override val box: Box<SimbadEntity>) : BoxRepository<SimbadEntity>() {
+class SimbadEntityRepository(@Qualifier("simbadBox") override val box: Box<SimbadEntity>) : BoxRepository<SimbadEntity>() {
 
     fun find(
         name: String? = null, constellation: Constellation? = null,
