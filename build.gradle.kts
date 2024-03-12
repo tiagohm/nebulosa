@@ -60,12 +60,15 @@ subprojects {
     }
 
     tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
-        kotlinOptions.freeCompilerArgs = listOf(
-            "-Xjvm-default=all", "-Xjsr305=strict",
-            "-opt-in=kotlin.io.path.ExperimentalPathApi",
-            "-opt-in=kotlin.io.encoding.ExperimentalEncodingApi",
-        )
+        kotlinOptions {
+            jvmTarget = JavaVersion.VERSION_17.toString()
+            freeCompilerArgs = listOf(
+                "-Xjvm-default=all", "-Xjsr305=strict",
+                "-opt-in=kotlin.io.path.ExperimentalPathApi",
+                "-opt-in=kotlin.io.encoding.ExperimentalEncodingApi",
+                "-Xno-param-assertions", "-Xno-call-assertions", "-Xno-receiver-assertions",
+            )
+        }
     }
 
     tasks.withType<Test> {
