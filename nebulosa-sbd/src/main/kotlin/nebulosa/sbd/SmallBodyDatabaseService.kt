@@ -44,7 +44,7 @@ class SmallBodyDatabaseService(
     )
 
     fun closeApproaches(
-        days: Long = 7L, distance: Int = 2, date: LocalDate? = null,
+        days: Long = 7L, distance: Double = 2.0, date: LocalDate? = null,
     ) = service.closeApproaches(date?.toString() ?: "now", date?.plusDays(days)?.toString() ?: "+$days", "${distance}LD")
 
     companion object {

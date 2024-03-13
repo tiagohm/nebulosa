@@ -76,7 +76,7 @@ class SkyAtlasController(
     @GetMapping("minor-planets/close-approaches")
     fun closeApproachesForMinorPlanets(
         @RequestParam(required = false, defaultValue = "7") @Valid @Positive days: Long,
-        @RequestParam(required = false, defaultValue = "10") @Valid @Positive distance: Int,
+        @RequestParam(required = false, defaultValue = "10") @Valid @Positive distance: Double,
         @DateAndTimeParam(nullable = true) dateTime: LocalDate?,
     ) = skyAtlasService.closeApproachesForMinorPlanets(days, distance, dateTime)
 

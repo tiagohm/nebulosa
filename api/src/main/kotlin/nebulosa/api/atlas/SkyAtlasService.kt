@@ -176,7 +176,7 @@ class SkyAtlasService(
         ?.let(MinorPlanet::of)
         ?: MinorPlanet.EMPTY
 
-    fun closeApproachesForMinorPlanets(days: Long, distance: Int, date: LocalDate?) = smallBodyDatabaseService
+    fun closeApproachesForMinorPlanets(days: Long, distance: Double, date: LocalDate?) = smallBodyDatabaseService
         .closeApproaches(days, distance, date).execute().body()
         ?.let(CloseApproach::of)
         ?: emptyList()
