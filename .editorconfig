@@ -24,8 +24,8 @@ trim_trailing_whitespace = false
 ij_kotlin_line_break_after_multiline_when_entry = false
 ij_kotlin_variable_annotation_wrap = off
 ij_kotlin_field_annotation_wrap = off
+ij_kotlin_continuation_indent_size = 8
 
 [*.py]
 ij_python_wrap_long_lines = false
 ij_python_method_parameters_wrap = off
-
