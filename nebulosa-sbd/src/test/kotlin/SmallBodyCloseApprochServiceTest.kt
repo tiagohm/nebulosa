@@ -20,7 +20,7 @@ class SmallBodyCloseApprochServiceTest : StringSpec() {
             data.shouldNotBeNull()
             data.count shouldBeGreaterThanOrEqual 1
 
-            data.fields shouldHaveSize 13
+            data.fields shouldHaveSize 14
             data.data shouldHaveSize 10
 
             data.data[0][0] shouldBe "2024 EC3"

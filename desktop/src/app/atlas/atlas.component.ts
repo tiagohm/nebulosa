@@ -16,7 +16,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { Angle, CONSTELLATIONS, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType } from '../../shared/types/atlas.types'
+import { Angle, CONSTELLATIONS, CloseApproach, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType } from '../../shared/types/atlas.types'
 import { Mount } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
@@ -128,10 +128,15 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         { name: '4 Vesta', type: 'Asteroid', code: '4;' },
     ]
 
+    minorPlanetTab = 0
     minorPlanet?: MinorPlanet
     minorPlanetSearchText = ''
     minorPlanetChoiceItems: { name: string, pdes: string }[] = []
     showMinorPlanetChoiceDialog = false
+    closeApproach?: CloseApproach
+    closeApproaches: CloseApproach[] = []
+    closeApproachDays = 7
+    closeApproachDistance = 10
 
     skyObject?: DeepSkyObject
     skyObjectItems: DeepSkyObject[] = []
@@ -548,6 +553,24 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         this.minorPlanetSearchText = event.value.pdes
         this.searchMinorPlanet()
         this.showMinorPlanetChoiceDialog = false
+    }
+
+    async closeApproachesForMinorPlanets() {
+        this.refreshing = true
+
+        try {
+            this.closeApproaches = await this.api.closeApproachesForMinorPlanets(this.closeApproachDays, this.closeApproachDistance, this.dateTime)
+        } finally {
+            this.refreshing = false
+        }
+    }
+
+    closeApproachChanged() {
+        if (this.closeApproach) {
+            this.minorPlanetSearchText = this.closeApproach.designation
+            this.minorPlanetTab = 0
+            this.searchMinorPlanet()
+        }
     }
 
     async starChanged() {

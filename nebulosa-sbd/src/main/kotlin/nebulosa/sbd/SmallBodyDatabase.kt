@@ -23,7 +23,7 @@ internal interface SmallBodyDatabase {
         @Query("vmag-lim") magLimit: Double = 12.0,
     ): Call<SmallBodyIdentified>
 
-    @GET("cad.api?neo=false&diameter=true")
+    @GET("cad.api?neo=false&diameter=true&fullname=true")
     fun closeApproaches(
         @Query("date-min") dateMin: String, @Query("date-max") dateMax: String, @Query("dist-max") distMax: String,
     ): Call<SmallBodyIdentified>

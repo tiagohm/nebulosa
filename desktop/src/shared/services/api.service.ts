@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import moment from 'moment'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
-import { Angle, BodyPosition, ComputedLocation, Constellation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
+import { Angle, BodyPosition, CloseApproach, ComputedLocation, Constellation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
 import { CalibrationFrame, CalibrationFrameGroup } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
 import { Device, INDIProperty, INDISendProperty } from '../types/device.types'
@@ -451,6 +451,12 @@ export class ApiService {
     searchMinorPlanet(text: string) {
         const query = this.http.query({ text })
         return this.http.get<MinorPlanet>(`sky-atlas/minor-planets?${query}`)
+    }
+
+    closeApproachesForMinorPlanets(days: number = 7, distance: number = 10, dateTime?: Date | string) {
+        const date = !dateTime || typeof dateTime === 'string' ? dateTime : moment(dateTime).format('YYYY-MM-DD')
+        const query = this.http.query({ days, distance, date })
+        return this.http.get<CloseApproach[]>(`sky-atlas/minor-planets/close-approaches?${query}`)
     }
 
     annotationsOfImage(

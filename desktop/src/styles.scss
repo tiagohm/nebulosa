@@ -207,13 +207,9 @@ i.mdi {
 }
 
 .p-tabview {
-    .p-tabview-title {
-        line-height: 0;
-    }
-
     .p-tabview-nav li .p-tabview-nav-link {
         border-color: transparent !important;
-        min-height: 32px;
+        min-height: 28px;
     }
 }
 

@@ -3,7 +3,6 @@ package nebulosa.sbd
 import nebulosa.math.*
 import nebulosa.retrofit.RetrofitService
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.create
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -28,8 +27,6 @@ class SmallBodyDatabaseService(
                 response
             }
         }
-
-        builder.addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
     }
 
     fun search(text: String) = service.search(text)
@@ -47,8 +44,8 @@ class SmallBodyDatabaseService(
     )
 
     fun closeApproaches(
-        days: Int = 7, distance: Int = 2, date: LocalDate? = null,
-    ) = service.closeApproaches(date?.toString() ?: "now", "+$days", "${distance}LD")
+        days: Long = 7L, distance: Int = 2, date: LocalDate? = null,
+    ) = service.closeApproaches(date?.toString() ?: "now", date?.plusDays(days)?.toString() ?: "+$days", "${distance}LD")
 
     companion object {
 

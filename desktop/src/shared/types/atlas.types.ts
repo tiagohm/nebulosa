@@ -176,6 +176,14 @@ export interface OrbitalPhysicalParameter {
     value: string
 }
 
+export interface CloseApproach {
+    name: string
+    designation: string
+    dateTime: number
+    distance: number
+    absoluteMagnitude: number
+}
+
 export interface AstronomicalObject extends EquatorialCoordinateJ2000 {
     id: number
     name: string
