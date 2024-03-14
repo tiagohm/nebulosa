@@ -476,12 +476,12 @@ try {
     ipcMain.handle('WINDOW.RESIZE', (event, data: number) => {
         const window = findWindowById(event.sender.id)?.window
 
-        if (!window || window.isResizable()) return false
+        if (!window || (!serve && window.isResizable())) return false
 
-        const size = window.getSize()
+        const size = window.getContentSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
         const height = Math.max(0, Math.min(data, maxHeight))
-        window.setSize(size[0], height)
+        window.setContentSize(size[0], height)
         console.info('window auto resized:', size[0], height)
 
         return true
