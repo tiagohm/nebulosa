@@ -16,7 +16,7 @@ class CameraController(
 
     @GetMapping
     fun cameras(): List<Camera> {
-        return connectionService.cameras()
+        return connectionService.cameras().sorted()
     }
 
     @GetMapping("{camera}")

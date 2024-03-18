@@ -17,7 +17,7 @@ class WheelController(
 
     @GetMapping
     fun wheels(): List<FilterWheel> {
-        return connectionService.wheels()
+        return connectionService.wheels().sorted()
     }
 
     @GetMapping("{wheel}")

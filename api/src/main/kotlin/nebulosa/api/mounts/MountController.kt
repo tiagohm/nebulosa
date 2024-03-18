@@ -28,7 +28,7 @@ class MountController(
 
     @GetMapping
     fun mounts(): List<Mount> {
-        return connectionService.mounts()
+        return connectionService.mounts().sorted()
     }
 
     @GetMapping("{mount}")
