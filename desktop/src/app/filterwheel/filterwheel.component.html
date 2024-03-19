@@ -20,12 +20,12 @@
         <div class="col-9">
             <span class="p-float-label">
                 <p-dropdown [disabled]="!wheel.connected || moving" [options]="filters" [(ngModel)]="filter" styleClass="border-0"
-                            emptyMessage="No filter found" [autoDisplayFirst]="false" appendTo="body">
+                            emptyMessage="No filter found" [autoDisplayFirst]="false" (ngModelChange)="filterChanged()" appendTo="body">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex flex-column justify-content-center gap-1">
                             <span class="flex align-items-center text-xs gap-1" style="min-height: 15px">
                                 <p-tag *ngIf="filter" value="#{{ filter.position }}" />
-                                <p-tag *ngIf="filter" value="OFFSET: {{ filter.offset }}" severity="success" />
+                                <p-tag *ngIf="filter" value="OFFSET: {{ focusOffsetForFilter(filter) }}" severity="success" />
                                 <i *ngIf="filter?.dark" class="mdi mdi-camera-iris"></i>
                             </span>
                             <span>{{ filter?.name }}</span>
@@ -35,7 +35,7 @@
                         <div class="flex flex-column justify-content-center gap-1">
                             <span class="flex align-items-center text-xs gap-1" style="min-height: 15px">
                                 <p-tag value="#{{ item.position }}" />
-                                <p-tag value="OFFSET: {{ item.offset }}" severity="success" />
+                                <p-tag value="OFFSET: {{ focusOffsetForFilter(item) }}" severity="success" />
                                 <i *ngIf="item.dark" class="mdi mdi-camera-iris"></i>
                             </span>
                             <span>{{ item.name }}</span>
@@ -51,23 +51,27 @@
         </div>
     </div>
     <div class="grid mt-2" *ngIf="filter && canEdit">
-        <div class="col-7">
+        <div class="col-8">
             <span class="p-float-label">
                 <input pInputText [disabled]="!wheel.connected || moving" [(ngModel)]="filter.name"
                        (ngModelChange)="filterNameChanged(filter)" [maxLength]="16" class="border-0 w-full p-inputtext-sm">
                 <label>Name</label>
             </span>
         </div>
-        <div class="col-5">
-            <span class="p-float-label">
-                <p-inputNumber [disabled]="!wheel.connected || moving" [(ngModel)]="filter.offset" [min]="-1000000" [max]="1000000"
-                               [showButtons]="true" locale="en" styleClass="border-0 w-full p-inputtext-sm" />
-                <label>Focus offset</label>
-            </span>
-        </div>
-        <div class="col-12 flex flex-column justify-content-center gap-2">
+        <div class="col-4 flex flex-column justify-content-center gap-2">
             <p-checkbox [binary]="true" [disabled]="!wheel.connected || moving" [ngModel]="filter.dark"
                         (onChange)="shutterToggled(filter, $event)" label="Shutter" />
+        </div>
+        <div class="col-12 flex align-items-center justify-content-between gap-1">
+            <neb-device-list-button title="FOCUSER" icon="mdi mdi-image-filter-center-focus" [devices]="focusers" [(device)]="focuser"
+                                    (deviceChange)="focuserChanged()" />
+
+            <span class="p-float-label">
+                <p-inputNumber [disabled]="!wheel.connected || moving || !focuser" [(ngModel)]="focusOffset" [min]="focusOffsetMin"
+                               [max]="focusOffsetMax" [showButtons]="true" locale="en" styleClass="border-0 w-full p-inputtext-sm"
+                               (ngModelChange)="focusOffsetChanged()" />
+                <label>Focus offset</label>
+            </span>
         </div>
     </div>
     <div class="grid mt-2" *ngIf="canApply">

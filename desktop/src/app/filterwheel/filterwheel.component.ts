@@ -7,6 +7,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
+import { Focuser } from '../../shared/types/focuser.types'
 import { EMPTY_WHEEL, FilterSlot, FilterWheel, WheelDialogInput, WheelDialogMode, WheelPreference } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
@@ -19,6 +20,12 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     readonly wheel = structuredClone(EMPTY_WHEEL)
     readonly request = structuredClone(EMPTY_CAMERA_START_CAPTURE)
+
+    focusers: Focuser[] = []
+    focuser?: Focuser
+    focusOffset = 0
+    focusOffsetMin = 0
+    focusOffsetMax = 0
 
     moving = false
     position = 0
@@ -68,7 +75,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                     this.update()
 
                     if (wasConnected !== event.device.connected) {
-                        electron.autoResizeWindow()
+                        electron.autoResizeWindow(1000)
                     }
                 })
             }
@@ -78,6 +85,29 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             if (event.device.id === this.wheel.id) {
                 ngZone.run(() => {
                     Object.assign(this.wheel, EMPTY_WHEEL)
+                })
+            }
+        })
+
+        electron.on('FOCUSER.UPDATED', event => {
+            if (event.device.id === this.focuser?.id) {
+                ngZone.run(() => {
+                    Object.assign(this.focuser!, event.device)
+                })
+            }
+        })
+
+        electron.on('FOCUSER.DETACHED', event => {
+            if (event.device.id === this.focuser?.id) {
+                ngZone.run(() => {
+                    this.focuser = undefined
+                    this.updateFocusOffset()
+
+                    const index = this.focusers.findIndex(e => e.id === event.device.id)
+
+                    if (index >= 0) {
+                        this.focusers.splice(index, 1)
+                    }
                 })
             }
         })
@@ -103,6 +133,13 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 this.wheelChanged(decodedData)
             }
         })
+
+        this.focusers = await this.api.focusers()
+
+        if (this.focusers.length === 1) {
+            this.focuser = this.focusers[0]
+            this.focuserChanged()
+        }
     }
 
     @HostListener('window:unload')
@@ -117,6 +154,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
             this.loadPreference()
             this.update()
+            this.electron.autoResizeWindow()
         }
 
         if (this.app) {
@@ -132,9 +170,23 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    filterChanged() {
+        this.updateFocusOffset()
+    }
+
     async moveTo(filter: FilterSlot) {
-        await this.api.wheelMoveTo(this.wheel, filter.position)
-        this.moving = true
+        try {
+            this.moving = true
+
+            await this.api.wheelMoveTo(this.wheel, filter.position)
+
+            if (this.focuser && this.focuser?.connected && this.focusOffset !== 0) {
+                if (this.focusOffset < 0) this.api.focuserMoveIn(this.focuser, this.focusOffset)
+                else this.api.focuserMoveOut(this.focuser, this.focusOffset)
+            }
+        } catch {
+            this.moving = false
+        }
     }
 
     shutterToggled(filter: FilterSlot, event: CheckboxChangeEvent) {
@@ -148,8 +200,26 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    focusOffsetChanged(filter: FilterSlot) {
-        this.filterChangedPublisher.next(structuredClone(filter))
+    focuserChanged() {
+        this.focusOffsetMax = this.focuser?.maxPosition ?? 0
+        this.focusOffsetMin = -this.focusOffsetMax
+        this.updateFocusOffset()
+    }
+
+    focusOffsetForFilter(filter: FilterSlot) {
+        return this.focuser ? this.preference.focusOffset(this.wheel, this.focuser, filter.position).get() : 0
+    }
+
+    private updateFocusOffset() {
+        if (this.filter) {
+            this.focusOffset = this.focuser ? this.preference.focusOffset(this.wheel, this.focuser, this.filter.position).get() : 0
+        }
+    }
+
+    focusOffsetChanged() {
+        if (this.filter && this.focuser) {
+            this.preference.focusOffset(this.wheel, this.focuser, this.filter.position).set(this.focusOffset)
+        }
     }
 
     private update() {
@@ -187,6 +257,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
         this.filters = filters
         this.filter = filters[this.position - 1] ?? filters[0]
+
+        this.updateFocusOffset()
     }
 
     private loadPreference() {

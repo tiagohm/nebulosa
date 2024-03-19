@@ -4,6 +4,7 @@ import { AlignmentPreference, EMPTY_ALIGNMENT_PREFERENCE } from '../types/alignm
 import { EMPTY_LOCATION, Location } from '../types/atlas.types'
 import { Camera, CameraPreference, CameraStartCapture, EMPTY_CAMERA_PREFERENCE } from '../types/camera.types'
 import { Device } from '../types/device.types'
+import { Focuser } from '../types/focuser.types'
 import { ConnectionDetails, Equipment } from '../types/home.types'
 import { EMPTY_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
 import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverOptions, PlateSolverType } from '../types/settings.types'
@@ -66,6 +67,10 @@ export class PreferenceService {
 
     equipmentForDevice(device: Device) {
         return new PreferenceData<Equipment>(this.storage, `equipment.${device.name}`, () => <Equipment>{})
+    }
+
+    focusOffset(wheel: FilterWheel, focuser: Focuser, position: number) {
+        return new PreferenceData<number>(this.storage, `focusOffset.${wheel.name}.${position}.${focuser.name}`, () => 0)
     }
 
     readonly locations = new PreferenceData<Location[]>(this.storage, 'locations', () => [structuredClone(EMPTY_LOCATION)])
