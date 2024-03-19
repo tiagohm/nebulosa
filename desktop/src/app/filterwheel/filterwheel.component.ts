@@ -50,7 +50,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         return this.mode !== 'CAPTURE'
     }
 
-    get selectedFilter(): FilterSlot | undefined {
+    get currentFilter(): FilterSlot | undefined {
         return this.filters[this.position - 1]
     }
 
@@ -178,11 +178,18 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         try {
             this.moving = true
 
+            const currentFocusOffset = this.focusOffsetForFilter(this.currentFilter!)
+            const nextFocusOffset = this.focusOffsetForFilter(filter)
+
             await this.api.wheelMoveTo(this.wheel, filter.position)
 
-            if (this.focuser && this.focuser?.connected && this.focusOffset !== 0) {
-                if (this.focusOffset < 0) this.api.focuserMoveIn(this.focuser, this.focusOffset)
-                else this.api.focuserMoveOut(this.focuser, this.focusOffset)
+            const offset = nextFocusOffset - currentFocusOffset
+
+            if (this.focuser && offset !== 0) {
+                console.info('moving focuser %d steps', offset)
+
+                if (offset < 0) this.api.focuserMoveIn(this.focuser, -offset)
+                else this.api.focuserMoveOut(this.focuser, offset)
             }
         } catch {
             this.moving = false

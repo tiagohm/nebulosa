@@ -13,7 +13,7 @@
         <div *ngIf="canShowInfo" class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>
             <span class="mr-3">{{ moving ? 'moving' : 'idle' }}</span>
-            <p-tag *ngIf="wheel.connected && selectedFilter" [value]="selectedFilter.name" severity="info" />
+            <p-tag *ngIf="wheel.connected && currentFilter" [value]="currentFilter.name" severity="info" />
         </div>
     </div>
     <div class="grid mt-2">
