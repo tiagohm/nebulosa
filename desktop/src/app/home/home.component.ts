@@ -422,6 +422,24 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 this.rotators = []
                 this.switches = []
             }
+        } else {
+            const statuses = await this.api.connectionStatuses()
+
+            for (const status of statuses) {
+                for (const connection of this.connections) {
+                    if (!connection.connected &&
+                        (status.host === connection.host || status.ip === connection.host) &&
+                        status.port === connection.port) {
+                        connection.connected = true
+                        this.connection = connection
+                        break
+                    }
+                }
+
+                if (this.connection?.connected) {
+                    break
+                }
+            }
         }
     }
 }

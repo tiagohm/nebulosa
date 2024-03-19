@@ -14,6 +14,7 @@ export interface ConnectionDetails {
     name: string
     host: string
     port: number
+    ip?: string
     type: ConnectionType
     connected: boolean
     connectedAt?: number
