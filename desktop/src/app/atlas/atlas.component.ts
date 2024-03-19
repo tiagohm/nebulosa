@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import moment from 'moment'
-import { MenuItem, MessageService } from 'primeng/api'
+import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { OverlayPanel } from 'primeng/overlaypanel'
@@ -435,7 +435,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         private preference: PreferenceService,
         private skyObjectPipe: SkyObjectPipe,
         private prime: PrimeService,
-        private message: MessageService,
         ngZone: NgZone,
     ) {
         app.title = 'Sky Atlas'
@@ -570,7 +569,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             this.closeApproaches = await this.api.closeApproachesForMinorPlanets(this.closeApproachDays, this.closeApproachDistance, this.dateTime)
 
             if (!this.closeApproaches.length) {
-                this.message.add({ severity: 'warn', detail: 'No close approaches found for the given days and lunar distance' })
+                this.prime.message('No close approaches found for the given days and lunar distance', 'warn')
             }
         } finally {
             this.refreshing = false

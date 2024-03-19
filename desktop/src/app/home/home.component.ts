@@ -1,12 +1,13 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import path from 'path'
-import { MenuItem, MessageService } from 'primeng/api'
+import { MenuItem } from 'primeng/api'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
+import { PrimeService } from '../../shared/services/prime.service'
 import { Camera } from '../../shared/types/camera.types'
 import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
@@ -139,7 +140,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private api: ApiService,
-        private message: MessageService,
+        private prime: PrimeService,
         private preference: PreferenceService,
         private ngZone: NgZone,
     ) {
@@ -277,7 +278,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         } catch (e) {
             console.error(e)
 
-            this.message.add({ severity: 'error', detail: 'Connection failed' })
+            this.prime.message('Connection failed', 'error')
         } finally {
             await this.updateConnection()
         }
