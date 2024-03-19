@@ -166,8 +166,8 @@ class ImageService(
 
         if (minorPlanets) {
             threadPoolTaskExecutor.submitCompletable {
-                val latitude = image.header.latitude ?: location?.latitude ?: 0.0
-                val longitude = image.header.longitude ?: location?.longitude ?: 0.0
+                val latitude = image.header.latitude ?: location?.latitude?.deg ?: 0.0
+                val longitude = image.header.longitude ?: location?.longitude?.deg ?: 0.0
 
                 LOG.info(
                     "finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}",

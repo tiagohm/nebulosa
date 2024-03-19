@@ -57,10 +57,10 @@ inline val Header.gain
     get() = getDouble(NOAOExt.GAIN, 0.0)
 
 inline val Header.latitude
-    get() = (getDoubleOrNull(SBFitsExt.SITELAT) ?: getDoubleOrNull("LAT-OBS"))?.deg
+    get() = (getDoubleOrNull(SBFitsExt.SITELAT)?.deg ?: getDoubleOrNull("LAT-OBS"))?.deg
 
 inline val Header.longitude
-    get() = (getDoubleOrNull(SBFitsExt.SITELONG) ?: getDoubleOrNull("LONG-OBS"))?.deg
+    get() = (getDoubleOrNull(SBFitsExt.SITELONG)?.deg ?: getDoubleOrNull("LONG-OBS"))?.deg
 
 inline val Header.observationDate
     get() = getStringOrNull(Standard.DATE_OBS)?.let(LocalDateTime::parse)
