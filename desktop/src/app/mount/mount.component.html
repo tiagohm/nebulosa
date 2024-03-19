@@ -6,9 +6,9 @@
                 <label>Mount</label>
             </span>
             <p-button *ngIf="mount.connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-close"
-                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
+                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!mount.connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-connection"
-                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
+                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>

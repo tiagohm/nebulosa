@@ -6,9 +6,9 @@
                 <label>Filter Wheel</label>
             </span>
             <p-button *ngIf="wheel.connected" [disabled]="!wheel || moving" (onClick)="connect()" icon="mdi mdi-close"
-                      size="small" severity="danger" />
+                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!wheel.connected" [disabled]="!wheel || moving" (onClick)="connect()" icon="mdi mdi-connection"
-                      size="small" severity="info" />
+                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
         </div>
         <div *ngIf="canShowInfo" class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>

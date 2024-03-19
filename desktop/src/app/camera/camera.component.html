@@ -6,9 +6,9 @@
                 <label>Camera</label>
             </span>
             <p-button *ngIf="!camera || camera.connected" [disabled]="!camera || running" (onClick)="connect()" icon="mdi mdi-close"
-                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
+                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!camera.connected" [disabled]="!camera || running" (onClick)="connect()" icon="mdi mdi-connection"
-                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
+                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
         </div>
         <div class="col-4 flex justify-content-end align-items-center gap-2">
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-image-multiple" (click)="openCameraImage()"
