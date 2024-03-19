@@ -194,14 +194,13 @@ internal abstract class INDIDevice : Device {
             ccd, telescope, focuser, filter, rotator
         )
 
-        sendNewText(
-            "ACTIVE_DEVICES",
-            "ACTIVE_CCD" to ccd,
-            "ACTIVE_TELESCOPE" to telescope,
-            "ACTIVE_ROTATOR" to rotator,
-            "ACTIVE_FOCUSER" to focuser,
-            "ACTIVE_FILTER" to filter,
-        )
+        if (this is Camera) {
+            sendNewText(
+                "ACTIVE_DEVICES",
+                "ACTIVE_TELESCOPE" to telescope, "ACTIVE_ROTATOR" to rotator,
+                "ACTIVE_FOCUSER" to focuser, "ACTIVE_FILTER" to filter,
+            )
+        }
     }
 
     override fun connect() {

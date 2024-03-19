@@ -3,7 +3,8 @@ import { SkyAtlasPreference } from '../../app/atlas/atlas.component'
 import { AlignmentPreference, EMPTY_ALIGNMENT_PREFERENCE } from '../types/alignment.types'
 import { EMPTY_LOCATION, Location } from '../types/atlas.types'
 import { Camera, CameraPreference, CameraStartCapture, EMPTY_CAMERA_PREFERENCE } from '../types/camera.types'
-import { ConnectionDetails } from '../types/home.types'
+import { Device } from '../types/device.types'
+import { ConnectionDetails, Equipment } from '../types/home.types'
 import { EMPTY_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
 import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverOptions, PlateSolverType } from '../types/settings.types'
 import { FilterWheel, WheelPreference } from '../types/wheel.types'
@@ -61,6 +62,10 @@ export class PreferenceService {
 
     plateSolverOptions(type: PlateSolverType) {
         return new PreferenceData<PlateSolverOptions>(this.storage, `settings.plateSolver.${type}`, () => <PlateSolverOptions>{ ...EMPTY_PLATE_SOLVER_OPTIONS, type })
+    }
+
+    equipmentForDevice(device: Device) {
+        return new PreferenceData<Equipment>(this.storage, `equipment.${device.name}`, () => <Equipment>{})
     }
 
     readonly locations = new PreferenceData<Location[]>(this.storage, 'locations', () => [structuredClone(EMPTY_LOCATION)])

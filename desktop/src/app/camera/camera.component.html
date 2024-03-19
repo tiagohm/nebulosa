@@ -199,7 +199,19 @@
             </span>
         </div>
     </div>
-    <div class="grid mt-1">
+    <div class="grid mt-0">
+        <div class="col-12 flex flex-row align-items-center justify-content-center gap-2 py-0 text-300">
+            <span *ngIf="equipment.mount?.id" class="text-xs flex gap-1px align-items-end"><i class="mdi mdi-sm mdi-telescope"></i>
+                {{ equipment.mount?.name }}
+            </span>
+            <span *ngIf="equipment.wheel?.id" class="text-xs flex gap-1px align-items-end"><i class="mdi mdi-sm mdi-palette"></i>
+                {{ equipment.wheel?.name }}
+            </span>
+            <span *ngIf="equipment.focuser?.id" class="text-xs flex gap-1px align-items-end"><i
+                   class="mdi mdi-sm mdi-image-filter-center-focus"></i>
+                {{ equipment.focuser?.name }}
+            </span>
+        </div>
         <div class="col-12 flex align-items-center justify-content-center gap-1">
             <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || running" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
                       severity="success" size="small" />
