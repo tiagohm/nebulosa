@@ -23,6 +23,8 @@ export class DialogMenuComponent {
 
     viewportHeight = 35
 
+    private readonly items: any[][] = []
+
     show() {
         this.visible = true
         this.visibleChange.emit(true)
@@ -33,14 +35,34 @@ export class DialogMenuComponent {
         this.visibleChange.emit(false)
     }
 
+    private computeViewportHeightFromProcessedItem() {
+        const size = this.items[this.items.length - 1].length
+
+        if (size) {
+            console.info(size)
+            this.viewportHeight = 35 * (size + 1)
+        } else {
+            this.hide()
+        }
+    }
+
     protected onShow() {
         const onItemClick = this.menu.onItemClick
 
+        this.items.push(this.menu.processedItems)
+
         this.menu.onItemClick = (e) => {
-            const size = e.processedItem.items.length
-            if (size) this.viewportHeight = 35 * (size + 1)
+            this.items.push(e.processedItem.items)
+            this.computeViewportHeightFromProcessedItem()
             onItemClick.call(this.menu, e)
-            if (size === 0) this.hide()
+        }
+
+        const goBack = this.menu.goBack
+
+        this.menu.goBack = (e) => {
+            this.items.splice(this.items.length - 1, 1)
+            this.computeViewportHeightFromProcessedItem()
+            goBack.call(this.menu, e)
         }
     }
 }
