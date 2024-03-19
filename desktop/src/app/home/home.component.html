@@ -31,8 +31,8 @@
                 <label>Connection</label>
             </span>
             <p-button (onClick)="addConnection()" size="small" icon="mdi mdi-plus" severity="success" />
-            <p-button *ngIf="!connected" [disabled]="!connection" (onClick)="connect()" size="small" icon="mdi mdi-connection" />
-            <p-button *ngIf="connected" [disabled]="!connection" (onClick)="connect()" size="small" icon="mdi mdi-close" severity="danger" />
+            <p-button *ngIf="!connected" [disabled]="!connection" (onClick)="connect()" size="small" icon="mdi mdi-connection" severity="info" />
+            <p-button *ngIf="connected" [disabled]="!connection" (onClick)="disconnect()" size="small" icon="mdi mdi-close" severity="danger" />
         </div>
     </div>
     <div class="grid my-2 overflow-y-auto" style="height: calc(62px * 5);">

@@ -99,7 +99,7 @@ export class BrowserWindowService {
     }
 
     openFlatWizard(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 410, height: 326 })
+        Object.assign(options, { icon: 'star', width: 410, height: 331 })
         this.openWindow({ ...options, id: 'flat-wizard', path: 'flat-wizard', data: undefined })
     }
 

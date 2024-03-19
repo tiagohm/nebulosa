@@ -123,13 +123,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     ) {
         this.electron.on(`${type}.ATTACHED`, event => {
             this.ngZone.run(() => {
-                onAdd(event.device as any)
+                onAdd(event.device as never)
             })
         })
 
         this.electron.on(`${type}.DETACHED`, event => {
             this.ngZone.run(() => {
-                onRemove(event.device as any)
+                onRemove(event.device as never)
             })
         })
     }
@@ -211,7 +211,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     async ngAfterContentInit() {
         await this.updateConnection()
 
-        if (this.connection?.connected) {
+        if (this.connected) {
             this.cameras = await this.api.cameras()
             this.mounts = await this.api.mounts()
             this.focusers = await this.api.focusers()
@@ -220,7 +220,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() { }
+    ngOnDestroy() {
+        this.disconnect()
+    }
 
     addConnection() {
         this.newConnection = [structuredClone(EMPTY_CONNECTION_DETAILS), undefined]
@@ -269,15 +271,25 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     async connect() {
         try {
-            if (this.connection && this.connection.connected) {
-                await this.api.disconnect(this.connection.id!)
-            } else if (this.connection) {
+            if (this.connection && !this.connection.connected) {
                 this.connection.id = await this.api.connect(this.connection.host, this.connection.port, this.connection.type)
             }
         } catch (e) {
             console.error(e)
 
             this.message.add({ severity: 'error', detail: 'Connection failed' })
+        } finally {
+            await this.updateConnection()
+        }
+    }
+
+    async disconnect() {
+        try {
+            if (this.connection && this.connection.connected) {
+                await this.api.disconnect(this.connection.id!)
+            }
+        } catch (e) {
+            console.error(e)
         } finally {
             this.updateConnection()
         }

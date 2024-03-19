@@ -19,7 +19,7 @@ export class DeviceListMenuComponent {
     readonly modelAtFirst: boolean = true
 
     @Input()
-    readonly disableIfNotConnected: boolean = true
+    readonly disableIfDeviceIsNotConnected: boolean = true
 
     @ViewChild('menu')
     private readonly menu!: DialogMenuComponent
@@ -52,7 +52,7 @@ export class DeviceListMenuComponent {
                 model.push({
                     icon: 'mdi mdi-connection',
                     label: device.name,
-                    disabled: this.disableIfNotConnected && !device.connected,
+                    disabled: this.disableIfDeviceIsNotConnected && !device.connected,
                     command: () => {
                         resolve(device)
                     },

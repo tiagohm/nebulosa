@@ -134,29 +134,10 @@
         </p-tabView>
     </div>
     <div class="grid">
-        <div class="col-4 align-items-center pt-4">
-            <span class="p-float-label">
-                <p-dropdown [disabled]="running" [options]="cameras" [autoDisplayFirst]="false"
-                            [(ngModel)]="camera" optionLabel="name" styleClass="p-inputtext-sm border-0"
-                            [style]="{'min-width': '131px'}" (ngModelChange)="savePlan()"
-                            emptyMessage="No camera found" />
-                <label>Camera</label>
-            </span>
-        </div>
-        <div class="col-4 align-items-center pt-4">
-            <span class="p-float-label" *ngIf="wheels.length">
-                <p-dropdown [disabled]="running" [options]="wheels" [(ngModel)]="wheel"
-                            optionLabel="name" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false"
-                            emptyMessage="No filter wheel found" (ngModelChange)="savePlan()" />
-                <label>Filter Wheel</label>
-            </span>
-        </div>
-        <div class="col-4 align-items-center pt-4">
-            <span class="p-float-label" *ngIf="focusers.length">
-                <p-dropdown [disabled]="running" [options]="focusers" [(ngModel)]="focuser" optionLabel="name" [autoDisplayFirst]="false"
-                            styleClass="p-inputtext-sm border-0" emptyMessage="No focuser found" (ngModelChange)="savePlan()" />
-                <label>Focuser</label>
-            </span>
+        <div class="col-12 align-items-center justify-content-center pt-4 gap-2">
+            <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera" />
+            <neb-device-list-button title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel" />
+            <neb-device-list-button title="FOCUSER" icon="mdi mdi-image-filter-center-focus" [devices]="focusers" [(device)]="focuser" />
         </div>
     </div>
     <div class="grid mt-0">

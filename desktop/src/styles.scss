@@ -133,8 +133,12 @@ p-dropdown,
     border: 1px solid rgba(255, 255, 255, 0) !important;
 }
 
-.p-button.p-button-icon-only {
-    min-width: fit-content;
+.p-button {
+    white-space: nowrap;
+
+    &.p-button-icon-only {
+        min-width: fit-content;
+    }
 }
 
 p-calendar.border-0 .p-calendar-w-btn {
