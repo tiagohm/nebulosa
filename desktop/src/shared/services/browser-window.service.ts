@@ -30,7 +30,7 @@ export class BrowserWindowService {
     }
 
     openCamera(options: OpenWindowOptionsWithData<Camera>) {
-        Object.assign(options, { icon: 'camera', width: 400, height: 470 })
+        Object.assign(options, { icon: 'camera', width: 400, height: 479 })
         return this.openWindow({ ...options, id: `camera.${options.data.name}`, path: 'camera' })
     }
 
