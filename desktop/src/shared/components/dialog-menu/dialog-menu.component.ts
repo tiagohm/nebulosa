@@ -39,7 +39,6 @@ export class DialogMenuComponent {
         const size = this.items[this.items.length - 1].length
 
         if (size) {
-            console.info(size)
             this.viewportHeight = 35 * (size + 1)
         } else {
             this.hide()
@@ -49,6 +48,7 @@ export class DialogMenuComponent {
     protected onShow() {
         const onItemClick = this.menu.onItemClick
 
+        this.items.length = 0
         this.items.push(this.menu.processedItems)
 
         this.menu.onItemClick = (e) => {
