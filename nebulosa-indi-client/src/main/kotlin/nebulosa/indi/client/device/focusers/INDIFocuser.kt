@@ -8,6 +8,8 @@ import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.*
 
+// https://github.com/indilib/indi/blob/master/libs/indibase/indifocuser.cpp
+
 internal open class INDIFocuser(
     override val sender: INDIClient,
     override val name: String,

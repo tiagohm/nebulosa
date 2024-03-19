@@ -15,6 +15,8 @@ import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
+// https://github.com/indilib/indi/blob/master/libs/indibase/inditelescope.cpp
+
 internal open class INDIMount(
     override val sender: INDIClient,
     override val name: String,

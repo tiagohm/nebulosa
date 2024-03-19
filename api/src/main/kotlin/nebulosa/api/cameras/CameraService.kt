@@ -1,5 +1,6 @@
 package nebulosa.api.cameras
 
+import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.Camera
 import org.springframework.stereotype.Service
 import java.nio.file.Path
@@ -18,6 +19,10 @@ class CameraService(
 
     fun disconnect(camera: Camera) {
         camera.disconnect()
+    }
+
+    fun snoop(camera: Camera, vararg devices: Device?) {
+        camera.snoop(devices.toList())
     }
 
     fun setpointTemperature(camera: Camera, temperature: Double) {

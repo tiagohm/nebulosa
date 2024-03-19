@@ -11,6 +11,8 @@ import nebulosa.io.Base64InputStream
 import nebulosa.log.loggerFor
 import java.time.Duration
 
+// https://github.com/indilib/indi/blob/master/libs/indibase/indiccd.cpp
+
 internal open class INDICamera(
     override val sender: INDIClient,
     override val name: String,

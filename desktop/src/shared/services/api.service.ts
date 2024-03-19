@@ -67,6 +67,12 @@ export class ApiService {
         return this.http.get<boolean>(`cameras/${camera.name}/capturing`)
     }
 
+    // TODO: Rotator
+    cameraSnoop(camera: Camera, mount?: Mount, wheel?: FilterWheel, focuser?: Focuser) {
+        const query = this.http.query({ mount: mount?.name, wheel: wheel?.name, focuser: focuser?.name })
+        return this.http.put<void>(`cameras/${camera.name}/snoop?${query}`)
+    }
+
     cameraCooler(camera: Camera, enabled: boolean) {
         return this.http.put<void>(`cameras/${camera.name}/cooler?enabled=${enabled}`)
     }
