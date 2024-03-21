@@ -196,7 +196,6 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         const debug = require('electron-debug')
         debug({ showDevTools: false })
 
-        require('electron-reloader')(module)
         window.loadURL(`http://localhost:4200/${options.path}?data=${data}`)
     } else {
         const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${options.path}?data=${data}`)
