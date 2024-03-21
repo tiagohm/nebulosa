@@ -161,7 +161,7 @@
         </div>
     </div>
     <div class="grid mt-1 flex align-items-center">
-        <p-scrollPanel class="w-full" [style]="{ width: '100%', height: 'calc(100vh - 168px)' }" cdkDropList (cdkDropListDropped)="drop($event)">
+        <p-scrollPanel class="w-full" [style]="{ width: '100%', height: 'calc(100vh - 250px)' }" cdkDropList (cdkDropListDropped)="drop($event)">
             <div *ngFor="let entry of plan.entries; index as i" class="col-12" cdkDrag>
                 <p-card>
                     <ng-template pTemplate="header">
@@ -169,16 +169,16 @@
                             <div class="col-1 pb-1 align-items-center justify-content-center gap-2">
                                 <span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
                             </div>
-                            <div class="col pb-1 align-items-center gap-2">
+                            <div class="col pb-1 align-items-center gap-1">
                                 <p-button [disabled]="running || !camera || !entry.enabled" icon="mdi mdi-camera-iris" label="Camera"
-                                          [severity]="camera?.connected ? 'success' : 'danger'" styleClass="px-2 py-1"
+                                          [severity]="camera?.connected ? 'success' : 'danger'" styleClass="px-2 py-1" [text]="true"
                                           (onClick)="showCameraDialog(entry)" size="small" />
                                 <p-button [disabled]="running || !wheel || !entry.enabled" icon="mdi mdi-palette" label="Filter Wheel"
-                                          [severity]="wheel?.connected ? 'success' : 'danger'" styleClass="px-2 py-1"
+                                          [severity]="wheel?.connected ? 'success' : 'danger'" styleClass="px-2 py-1" [text]="true"
                                           (onClick)="showWheelDialog(entry)" size="small" />
-                                <p-button [disabled]="running || !focuser || !entry.enabled" icon="mdi mdi-image-filter-center-focus"
+                                <!-- <p-button [disabled]="running || !focuser || !entry.enabled" icon="mdi mdi-image-filter-center-focus"
                                           label="Focuser" [severity]="focuser?.connected ? 'success' : 'danger'" styleClass="px-2 py-1"
-                                          (onClick)="showCameraDialog(entry)" size="small" />
+                                          (onClick)="showCameraDialog(entry)" size="small" /> -->
                             </div>
                             <div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
                                 <p-button [disabled]="running" [text]="true" [rounded]="true" icon="mdi mdi-md mdi-dots-vertical"
