@@ -1,5 +1,7 @@
 package nebulosa.fits
 
+import nebulosa.image.format.Header
+import nebulosa.image.format.ReadableHeader
 import nebulosa.io.SeekableSource
 import okio.Buffer
 import okio.Sink
@@ -16,8 +18,7 @@ data class ImageHdu(
     override fun read(source: SeekableSource) {
         val imageSize = (width * height * bitpix.byteSize).toLong()
         var position = source.position
-
-        val n = header.getInt(Standard.NAXIS3, 1)
+        val n = header.getInt(FitsKeywordDictionary.NAXIS3, 1)
         data = Array(n) { SeekableSourceImageData(source, position, width, height, bitpix).also { position += imageSize } }
 
         val skipBytes = Hdu.computeRemainingBytesToSkip(imageSize * size)
@@ -58,6 +59,7 @@ data class ImageHdu(
     companion object {
 
         @JvmStatic
-        fun isValid(header: Header) = header.getBoolean(Standard.SIMPLE) || header.getStringOrNull(Standard.XTENSION) == "IMAGE"
+        fun isValid(header: ReadableHeader) =
+            header.getBoolean(FitsKeywordDictionary.SIMPLE) || header.getStringOrNull(FitsKeywordDictionary.XTENSION) == "IMAGE"
     }
 }

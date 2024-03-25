@@ -2,8 +2,8 @@ package nebulosa.guiding.internal
 
 import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.GuideDirection
-import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.transformation.convolution.Mean
+import nebulosa.image.Image
+import nebulosa.image.algorithms.transformation.convolution.Mean
 import nebulosa.log.loggerFor
 import nebulosa.math.cos
 import nebulosa.math.sin

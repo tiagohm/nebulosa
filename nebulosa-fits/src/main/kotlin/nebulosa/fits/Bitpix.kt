@@ -1,5 +1,6 @@
 package nebulosa.fits
 
+import nebulosa.image.format.ReadableHeader
 import kotlin.math.abs
 
 enum class Bitpix(val type: Class<out Number>, val code: Int, val description: String) {
@@ -10,15 +11,15 @@ enum class Bitpix(val type: Class<out Number>, val code: Int, val description: S
     FLOAT(Float::class.javaPrimitiveType!!, -32, "32-bit floating point"),
     DOUBLE(Double::class.javaPrimitiveType!!, -64, "64-bit floating point");
 
-    val card = HeaderCard.create(Standard.BITPIX, code)
+    val card = FitsHeaderCard.create(FitsKeywordDictionary.BITPIX, code)
 
     val byteSize = abs(code) / 8
 
     companion object {
 
         @JvmStatic
-        fun from(header: Header): Bitpix {
-            return of(header.getInt(Standard.BITPIX, 0))
+        fun from(header: ReadableHeader): Bitpix {
+            return of(header.getInt(FitsKeywordDictionary.BITPIX, 0))
         }
 
         @JvmStatic

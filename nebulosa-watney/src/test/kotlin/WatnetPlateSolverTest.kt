@@ -3,7 +3,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.math.deg
 import nebulosa.test.Hips2FitsStringSpec
 import nebulosa.test.NonGitHubOnlyCondition

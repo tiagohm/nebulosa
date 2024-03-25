@@ -3,7 +3,7 @@ package nebulosa.api.framing
 import nebulosa.fits.fits
 import nebulosa.hips2fits.FormatOutputType
 import nebulosa.hips2fits.Hips2FitsService
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.io.transferAndCloseOutput
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle

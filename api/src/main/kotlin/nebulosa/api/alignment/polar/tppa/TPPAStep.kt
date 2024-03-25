@@ -13,7 +13,7 @@ import nebulosa.batch.processing.StepResult
 import nebulosa.common.concurrency.latch.Pauseable
 import nebulosa.common.time.Stopwatch
 import nebulosa.fits.fits
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.mount.Mount
 import nebulosa.log.debug

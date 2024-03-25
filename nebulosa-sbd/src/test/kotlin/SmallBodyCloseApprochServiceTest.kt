@@ -15,7 +15,7 @@ class SmallBodyCloseApprochServiceTest : StringSpec() {
         val service = SmallBodyDatabaseService()
 
         "search" {
-            val data = service.closeApproaches(distance = 10, date = LocalDate.of(2024, 3, 13)).execute().body()
+            val data = service.closeApproaches(distance = 10.0, date = LocalDate.of(2024, 3, 13)).execute().body()
 
             data.shouldNotBeNull()
             data.count shouldBeGreaterThanOrEqual 1

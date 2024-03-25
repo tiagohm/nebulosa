@@ -1,7 +1,7 @@
 package nebulosa.api.image
 
 import nebulosa.fits.fits
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.plate.solving.PlateSolution
 import org.springframework.stereotype.Component
 import java.nio.file.Path

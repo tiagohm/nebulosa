@@ -1,7 +1,7 @@
 package nebulosa.astrometrynet.plate.solving
 
 import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.math.Angle
 import nebulosa.plate.solving.PlateSolution
 import nebulosa.plate.solving.PlateSolver

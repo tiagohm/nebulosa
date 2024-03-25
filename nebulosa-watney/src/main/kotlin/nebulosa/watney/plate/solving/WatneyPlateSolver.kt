@@ -2,11 +2,10 @@ package nebulosa.watney.plate.solving
 
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.erfa.SphericalCoordinate
-import nebulosa.fits.Header
-import nebulosa.fits.NOAOExt
-import nebulosa.fits.Standard
+import nebulosa.fits.FitsHeader
+import nebulosa.fits.FitsKeywordDictionary
 import nebulosa.fits.fits
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
@@ -391,19 +390,19 @@ data class WatneyPlateSolver(
             val scopePxX = (-pc.b * scopePxY + (-pc.c)) / pc.a
             val parity = if (sign < 0) Parity.NORMAL else Parity.FLIPPED
 
-            val header = Header()
-            header.add(Standard.CDELT1, cdelt1)
-            header.add(Standard.CDELT2, cdelt2)
-            header.add(Standard.CROTA1, crota1.toDegrees)
-            header.add(Standard.CROTA2, crota2.toDegrees)
-            header.add(Standard.CRVAL1, scopeCoordsRA.toDegrees)
-            header.add(Standard.CRVAL2, scopeCoordsDEC.toDegrees)
-            header.add(Standard.CRPIX1, scopePxX)
-            header.add(Standard.CRPIX2, scopePxY)
-            header.add(NOAOExt.CD1_1, cd11)
-            header.add(NOAOExt.CD1_2, cd12)
-            header.add(NOAOExt.CD1_1, cd11)
-            header.add(NOAOExt.CD2_2, cd22)
+            val header = FitsHeader()
+            header.add(FitsKeywordDictionary.CDELT1, cdelt1)
+            header.add(FitsKeywordDictionary.CDELT2, cdelt2)
+            header.add(FitsKeywordDictionary.CROTA1, crota1.toDegrees)
+            header.add(FitsKeywordDictionary.CROTA2, crota2.toDegrees)
+            header.add(FitsKeywordDictionary.CRVAL1, scopeCoordsRA.toDegrees)
+            header.add(FitsKeywordDictionary.CRVAL2, scopeCoordsDEC.toDegrees)
+            header.add(FitsKeywordDictionary.CRPIX1, scopePxX)
+            header.add(FitsKeywordDictionary.CRPIX2, scopePxY)
+            header.add(FitsKeywordDictionary.CD1_1, cd11)
+            header.add(FitsKeywordDictionary.CD1_2, cd12)
+            header.add(FitsKeywordDictionary.CD1_1, cd11)
+            header.add(FitsKeywordDictionary.CD2_2, cd22)
 
             return ComputedPlateSolution(
                 header, crota1, pixScale, scopeCoordsRA, scopeCoordsDEC,

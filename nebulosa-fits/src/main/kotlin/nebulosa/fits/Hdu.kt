@@ -1,10 +1,11 @@
 package nebulosa.fits
 
+import nebulosa.image.format.ReadableHeader
 import kotlin.math.max
 
 interface Hdu<T> : FitsElement, Collection<T> {
 
-    val header: Header
+    val header: ReadableHeader
 
     val data: Array<out T>
 

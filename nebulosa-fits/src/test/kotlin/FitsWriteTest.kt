@@ -10,7 +10,7 @@ class FitsWriteTest : FitsStringSpec() {
 
     init {
         "mono" {
-            val hdu0 = NGC3344_MONO_8.filterIsInstance<ImageHdu>().first()
+            val hdu0 = NGC3344_MONO_8_FITS.filterIsInstance<ImageHdu>().first()
             val data = ByteArray(69120)
             hdu0.write(data.sink())
             data.toByteString(2880, 66240).md5().hex() shouldBe "e1735e21c94dc49885fabc429406e573"

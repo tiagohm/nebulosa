@@ -11,7 +11,7 @@ open class Fits : LinkedList<Hdu<*>> {
 
     constructor(hdus: Collection<Hdu<*>>) : super(hdus)
 
-    fun readHdu(source: SeekableSource): Hdu<*>? {
+    open fun readHdu(source: SeekableSource): Hdu<*>? {
         return try {
             return FitsIO.read(source).also(::add)
         } catch (ignored: EOFException) {
@@ -19,13 +19,17 @@ open class Fits : LinkedList<Hdu<*>> {
         }
     }
 
-    fun read(source: SeekableSource) {
+    open fun read(source: SeekableSource) {
         while (true) {
             readHdu(source) ?: break
         }
     }
 
-    fun writeTo(sink: Sink) {
-        forEach { FitsIO.write(sink, it) }
+    open fun writeTo(sink: Sink) {
+        writeTo(sink, FitsIO)
+    }
+
+    open fun writeTo(sink: Sink, writer: FitsWriter) {
+        forEach { writer.write(sink, it) }
     }
 }

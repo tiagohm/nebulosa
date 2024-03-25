@@ -1,11 +1,6 @@
 package nebulosa.fits
 
-import nebulosa.io.SeekableSource
-import okio.Sink
+import nebulosa.image.format.ImageSink
+import nebulosa.image.format.ImageSource
 
-interface FitsElement {
-
-    fun read(source: SeekableSource)
-
-    fun write(sink: Sink)
-}
+interface FitsElement : ImageSource, ImageSink

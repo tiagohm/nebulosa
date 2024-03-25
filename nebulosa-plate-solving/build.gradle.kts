@@ -7,7 +7,7 @@ dependencies {
     api(project(":nebulosa-math"))
     api(project(":nebulosa-common"))
     api(project(":nebulosa-wcs"))
-    api(project(":nebulosa-imaging"))
+    api(project(":nebulosa-image"))
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }

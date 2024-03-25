@@ -12,6 +12,7 @@
 *.jar           binary
 *.fit           binary
 *.fits          binary
+*.xisf          binary
 *.ttf           binary
 *.xcf           binary
 *.png           binary

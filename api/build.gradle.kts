@@ -19,7 +19,7 @@ dependencies {
     implementation(project(":nebulosa-guiding-phd2"))
     implementation(project(":nebulosa-hips2fits"))
     implementation(project(":nebulosa-horizons"))
-    implementation(project(":nebulosa-imaging"))
+    implementation(project(":nebulosa-image"))
     implementation(project(":nebulosa-indi-client"))
     implementation(project(":nebulosa-log"))
     implementation(project(":nebulosa-lx200-protocol"))

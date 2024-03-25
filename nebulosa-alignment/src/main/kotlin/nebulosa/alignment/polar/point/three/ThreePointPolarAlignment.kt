@@ -5,7 +5,7 @@ import nebulosa.constants.DEG2RAD
 import nebulosa.fits.declination
 import nebulosa.fits.observationDate
 import nebulosa.fits.rightAscension
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.math.Angle
 import nebulosa.plate.solving.PlateSolution
 import nebulosa.plate.solving.PlateSolver

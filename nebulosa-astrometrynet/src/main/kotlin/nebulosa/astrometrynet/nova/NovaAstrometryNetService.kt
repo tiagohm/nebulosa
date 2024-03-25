@@ -1,7 +1,7 @@
 package nebulosa.astrometrynet.nova
 
 import nebulosa.fits.FitsIO
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.retrofit.RetrofitService
 import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaType

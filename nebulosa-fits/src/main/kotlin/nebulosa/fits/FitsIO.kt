@@ -7,7 +7,7 @@ import java.io.IOException
 object FitsIO : FitsReader, FitsWriter {
 
     override fun read(source: SeekableSource): Hdu<*> {
-        val header = Header.from(source)
+        val header = FitsHeader.from(source)
 
         val hdu = when {
             ImageHdu.isValid(header) -> ImageHdu(header)

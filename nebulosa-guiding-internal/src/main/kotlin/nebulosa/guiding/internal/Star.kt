@@ -1,7 +1,7 @@
 package nebulosa.guiding.internal
 
-import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.computation.hfd.HFD
+import nebulosa.image.Image
+import nebulosa.image.algorithms.computation.hfd.HFD
 import kotlin.math.roundToInt
 
 /**

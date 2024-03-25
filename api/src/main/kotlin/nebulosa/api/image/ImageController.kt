@@ -5,8 +5,8 @@ import jakarta.validation.Valid
 import nebulosa.api.atlas.Location
 import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.beans.converters.location.LocationParam
-import nebulosa.imaging.ImageChannel
-import nebulosa.imaging.algorithms.transformation.ProtectionMethod
+import nebulosa.image.ImageChannel
+import nebulosa.image.algorithms.transformation.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import nebulosa.star.detection.ImageStar
 import org.hibernate.validator.constraints.Range

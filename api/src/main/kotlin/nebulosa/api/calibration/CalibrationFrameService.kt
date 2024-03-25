@@ -1,10 +1,11 @@
 package nebulosa.api.calibration
 
 import nebulosa.fits.*
-import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.transformation.correction.BiasSubtraction
-import nebulosa.imaging.algorithms.transformation.correction.DarkSubtraction
-import nebulosa.imaging.algorithms.transformation.correction.FlatCorrection
+import nebulosa.image.Image
+import nebulosa.image.algorithms.transformation.correction.BiasSubtraction
+import nebulosa.image.algorithms.transformation.correction.DarkSubtraction
+import nebulosa.image.algorithms.transformation.correction.FlatCorrection
+import nebulosa.image.format.Header
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.log.loggerFor
 import org.springframework.stereotype.Service
@@ -31,7 +32,7 @@ class CalibrationFrameService(
 
         return if (darkFrame != null || biasFrame != null || flatFrame != null) {
             var transformedImage = if (createNew) image.clone() else image
-            var calibrationImage = Image(transformedImage.width, transformedImage.height, Header.EMPTY, transformedImage.mono)
+            var calibrationImage = Image(transformedImage.width, transformedImage.height, Header.Empty, transformedImage.mono)
 
             if (biasFrame != null) {
                 calibrationImage = biasFrame.path!!.fits().use(calibrationImage::load)!!

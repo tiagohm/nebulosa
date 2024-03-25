@@ -8,8 +8,8 @@ import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
 import nebulosa.fits.fits
-import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.computation.Statistics
+import nebulosa.image.Image
+import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import org.slf4j.LoggerFactory
