@@ -206,17 +206,17 @@ class Image internal constructor(
         }
 
         with(newHeader) {
-            add(FitsKeywordDictionary.NAXIS, 3)
-            add(FitsKeywordDictionary.NAXIS1, width)
-            add(FitsKeywordDictionary.NAXIS2, height)
-            add(FitsKeywordDictionary.NAXIS3, 3)
+            add(FitsKeyword.NAXIS, 3)
+            add(FitsKeyword.NAXIS1, width)
+            add(FitsKeyword.NAXIS2, height)
+            add(FitsKeyword.NAXIS3, 3)
         }
 
         return image
     }
 
     fun canLoad(hdu: ImageHdu, debayer: Boolean = true): Boolean {
-        return hdu.width == width && hdu.height == height && (isMono(hdu) || !debayer) == this.mono
+        return hdu.width == width && hdu.height == height && (isMono(hdu) || !debayer) == mono
     }
 
     fun canLoad(image: ImageRepresentation, debayer: Boolean = true): Boolean {
@@ -248,19 +248,6 @@ class Image internal constructor(
         }
 
         @JvmStatic
-        internal fun raster(width: Int, height: Int, mono: Boolean): WritableRaster {
-            val pixelStride = if (mono) 1 else 3
-            val bandOffsets = if (mono) intArrayOf(0) else intArrayOf(0, 1, 2)
-            val sampleModel = PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, width, height, pixelStride, width * pixelStride, bandOffsets)
-            val size = width * height
-
-            val buffer = if (mono) Float8bitsDataBuffer.mono(size)
-            else Float8bitsDataBuffer.rgb(size)
-
-            return Raster.createWritableRaster(sampleModel, buffer, null)
-        }
-
-        @JvmStatic
         internal fun raster(width: Int, height: Int, mono: Boolean, red: FloatArray, green: FloatArray, blue: FloatArray): WritableRaster {
             val pixelStride = if (mono) 1 else 3
             val bandOffsets = if (mono) intArrayOf(0) else intArrayOf(0, 1, 2)
@@ -271,7 +258,7 @@ class Image internal constructor(
 
         @JvmStatic
         internal fun raster(hdu: ImageHdu, mono: Boolean): WritableRaster {
-            return raster(hdu.width, hdu.height, hdu.isMono || mono, hdu.data.red, hdu.data.green, hdu.data.blue)
+            return raster(hdu.width, hdu.height, isMono(hdu) || mono, hdu.data.red, hdu.data.green, hdu.data.blue)
         }
 
         @JvmStatic
@@ -281,28 +268,31 @@ class Image internal constructor(
 
         @JvmStatic
         fun open(hdu: ImageHdu, debayer: Boolean = true): Image {
-            val mono = isMono(hdu) || !debayer
-            val image = Image(hdu.width, hdu.height, hdu.header, mono)
-            load(image, hdu, debayer)
+            val image = Image(hdu.width, hdu.height, isMono(hdu) || !debayer, hdu)
+
+            if (image.mono && debayer) {
+                image.debayer()
+            }
+
             return image
+        }
+
+        private inline fun Image.debayer(bayer: CfaPattern? = CfaPattern.from(header)) {
+            if (bayer != null) {
+                Debayer(bayer).transform(this)
+            }
         }
 
         @JvmStatic
         private fun load(image: Image, hdu: ImageHdu, debayer: Boolean) {
-            require(image.width == hdu.width)
-            require(image.height == hdu.height)
+            hdu.data.red.copyInto(image.red)
 
-            if (image.mono || !debayer) {
-                hdu.data.red.copyInto(image.red)
-            } else {
-                hdu.data.red.copyInto(image.red)
+            if (!image.mono) {
                 hdu.data.green.copyInto(image.green)
                 hdu.data.blue.copyInto(image.blue)
 
-                val bayer = CfaPattern.from(image.header)
-
-                if (bayer != null) {
-                    Debayer(bayer).transform(image)
+                if (debayer) {
+                    image.debayer()
                 }
             }
         }
@@ -354,15 +344,15 @@ class Image internal constructor(
             val mono = bufferedImage.type == TYPE_BYTE_GRAY
                     || bufferedImage.type == TYPE_USHORT_GRAY
 
-            header.add(FitsKeywordDictionary.SIMPLE, true)
-            header.add(FitsKeywordDictionary.BITPIX, Bitpix.FLOAT.code)
-            header.add(FitsKeywordDictionary.NAXIS, if (mono) 2 else 3)
-            header.add(FitsKeywordDictionary.NAXISn.n(1), width)
-            header.add(FitsKeywordDictionary.NAXISn.n(2), height)
-            if (!mono) header.add(FitsKeywordDictionary.NAXISn.n(3), 3)
-            header.add(FitsKeywordDictionary.BSCALE, 1.0)
-            header.add(FitsKeywordDictionary.BZERO, 0.0)
-            header.add(FitsKeywordDictionary.EXTEND, true)
+            header.add(FitsKeyword.SIMPLE, true)
+            header.add(FitsKeyword.BITPIX, Bitpix.FLOAT.code)
+            header.add(FitsKeyword.NAXIS, if (mono) 2 else 3)
+            header.add(FitsKeyword.NAXISn.n(1), width)
+            header.add(FitsKeyword.NAXISn.n(2), height)
+            if (!mono) header.add(FitsKeyword.NAXISn.n(3), 3)
+            header.add(FitsKeyword.BSCALE, 1.0)
+            header.add(FitsKeyword.BZERO, 0.0)
+            header.add(FitsKeyword.EXTEND, true)
 
             val image = Image(width, height, header, mono)
 

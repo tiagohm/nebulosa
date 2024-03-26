@@ -1,6 +1,6 @@
 package nebulosa.fits
 
-class StandardHierarchKeyFormatter(override val isCaseSensitive: Boolean) : HierarchKeyFormatter {
+data class StandardHierarchKeyFormatter(override val isCaseSensitive: Boolean) : HierarchKeyFormatter {
 
     override fun format(key: String): String {
         // cfitsio specifies a required space before the '=', so let's play nice with it.

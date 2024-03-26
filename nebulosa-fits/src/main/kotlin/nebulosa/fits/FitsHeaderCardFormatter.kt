@@ -30,7 +30,7 @@ object FitsHeaderCardFormatter {
         var key = card.key
 
         if (card.hasHierarchKey) {
-            key = HierarchKeyFormatter.INSTANCE.format(key)
+            key = HierarchKeyFormatter.format(key)
 
             if (key.length > FitsHeaderCard.MAX_HIERARCH_KEYWORD_LENGTH) {
                 // Truncate HIERARCH keywords as necessary to fit.
@@ -73,7 +73,7 @@ object FitsHeaderCardFormatter {
 
             while (from < value.length) {
                 pad()
-                append(FitsKeywordDictionary.CONTINUE.key + "  ")
+                append(FitsKeyword.CONTINUE.key + "  ")
                 from += appendQuotedValue(card, from)
             }
         } else {
@@ -182,7 +182,7 @@ object FitsHeaderCardFormatter {
         if (available < COMMENT_PREFIX.length) {
             // Add a CONTINUE card with an empty string and try again...
             pad()
-            append(FitsKeywordDictionary.CONTINUE.key + "  ''")
+            append(FitsKeyword.CONTINUE.key + "  ''")
             appendComment(card)
             return
         }
@@ -193,7 +193,7 @@ object FitsHeaderCardFormatter {
         // Now add records as needed to write the comment fully...
         while (from < comment.length) {
             pad()
-            append(FitsKeywordDictionary.CONTINUE.key + "  ")
+            append(FitsKeyword.CONTINUE.key + "  ")
             append(if (comment.length >= from + MAX_LONG_END_COMMENT) "'&'" else "''")
             append(LONG_COMMENT_PREFIX)
             from += append(comment, from)

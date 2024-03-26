@@ -23,12 +23,12 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
 
     private fun parseKey() {
         // Find the '=' in the line, if any...
-        val iEq: Int = line.indexOf('=')
+        val iEq = line.indexOf('=')
 
         // The stem is in the first 8 characters or what precedes an '=' character
         // before that.
-        var endStem = if (iEq >= 0 && iEq <= FitsHeaderCard.MAX_KEYWORD_LENGTH) iEq else FitsHeaderCard.MAX_KEYWORD_LENGTH
-        endStem = min(line.length.toDouble(), endStem.toDouble()).toInt()
+        var endStem = if (iEq in 0..FitsHeaderCard.MAX_KEYWORD_LENGTH) iEq else FitsHeaderCard.MAX_KEYWORD_LENGTH
+        endStem = min(line.length, endStem)
         val rawStem = line.substring(0, endStem).trim { it <= ' ' }
 
         // Check for space at the start of the keyword...
@@ -52,7 +52,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
 
         // If the line does not have an '=', can only be a simple key
         // If it's not a HIERARCH keyword, then return the simple key.
-        if (iEq < 0 || stem != FitsKeywordDictionary.HIERARCH.key) {
+        if (iEq < 0 || stem != FitsKeyword.HIERARCH.key) {
             return
         }
 
@@ -68,9 +68,10 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
             builder.append('.')
             builder.append(token)
         }
+
         key = builder.toString()
 
-        if (FitsKeywordDictionary.HIERARCH.key == key) {
+        if (FitsKeyword.HIERARCH.key == key) {
             // The key is only HIERARCH, without a hierarchical keyword after it...
             LOG.warn("HIERARCH base keyword without HIERARCH-style long key after it.")
             return
@@ -110,7 +111,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
             }
         }
 
-        comment = line.substring(parsePos)
+        comment = line.substring(parsePos).trim()
         parsePos = line.length
     }
 
@@ -120,7 +121,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
             return
         }
 
-        if (FitsKeywordDictionary.CONTINUE.key == key) {
+        if (FitsKeyword.CONTINUE.key == key) {
             parseValueBody()
         } else if (line[parsePos] == '=') {
             if (parsePos < FitsHeaderCard.MAX_KEYWORD_LENGTH) {
@@ -135,7 +136,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
 
             if (parsePos > FitsHeaderCard.MAX_KEYWORD_LENGTH) {
                 // equal sign = after the 9th char -- only supported with hierarch keys...
-                if (!key.startsWith(FitsKeywordDictionary.HIERARCH.key + ".")) {
+                if (!key.startsWith(FitsKeyword.HIERARCH.key + ".")) {
                     LOG.warn("[$key] possibly misplaced '=' (after byte 9).")
                     // It's not a HIERARCH key
                     return
@@ -284,11 +285,18 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
 
     companion object {
 
+        const val MIN_VALID_CHAR = 0x20.toChar()
+        const val MAX_VALID_CHAR = 0x7e.toChar()
+
         @JvmStatic private val LOG = loggerFor<FitsHeaderCardParser>()
 
         @JvmStatic private val DECIMAL_REGEX = Regex("[+-]?\\d+(\\.\\d*)?([dDeE][+-]?\\d+)?")
         @JvmStatic private val COMPLEX_REGEX = Regex("\\(\\s*$DECIMAL_REGEX\\s*,\\s*$DECIMAL_REGEX\\s*\\)")
         @JvmStatic private val INT_REGEX = Regex("[+-]?\\d+")
 
+        @JvmStatic
+        fun isValidChar(c: Char): Boolean {
+            return c in MIN_VALID_CHAR..MAX_VALID_CHAR
+        }
     }
 }

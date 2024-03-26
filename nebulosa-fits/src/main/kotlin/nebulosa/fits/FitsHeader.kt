@@ -127,7 +127,7 @@ open class FitsHeader : AbstractHeader {
 
         @JvmStatic
         fun checkType(key: HeaderKey, type: ValueType): Boolean {
-            if (key is FitsKeyword) {
+            if (key is FitsHeaderKey) {
                 if (key.valueType == type || key.valueType == ValueType.ANY) {
                     return true
                 }
@@ -150,7 +150,7 @@ open class FitsHeader : AbstractHeader {
 
         @JvmStatic
         fun isFirstCard(key: String): Boolean {
-            return FitsKeywordDictionary.SIMPLE.key == key || FitsKeywordDictionary.XTENSION.key == key
+            return FitsKeyword.SIMPLE.key == key || FitsKeyword.XTENSION.key == key
         }
     }
 }

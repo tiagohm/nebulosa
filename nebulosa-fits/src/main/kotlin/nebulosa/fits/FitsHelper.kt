@@ -12,40 +12,40 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 inline val ReadableHeader.naxis
-    get() = getInt(FitsKeywordDictionary.NAXIS, -1)
+    get() = getInt(FitsKeyword.NAXIS, -1)
 
-inline fun ReadableHeader.naxis(n: Int) = getInt(FitsKeywordDictionary.NAXISn.n(n), 0)
+inline fun ReadableHeader.naxis(n: Int) = getInt(FitsKeyword.NAXISn.n(n), 0)
 
 inline val ReadableHeader.width
-    get() = getInt(FitsKeywordDictionary.NAXIS1, 0)
+    get() = getInt(FitsKeyword.NAXIS1, 0)
 
 inline val ReadableHeader.height
-    get() = getInt(FitsKeywordDictionary.NAXIS2, 0)
+    get() = getInt(FitsKeyword.NAXIS2, 0)
 
 inline val ReadableHeader.numberOfChannels
-    get() = getInt(FitsKeywordDictionary.NAXIS3, 1)
+    get() = getInt(FitsKeyword.NAXIS3, 1)
 
 inline val ReadableHeader.bitpix
     get() = Bitpix.from(this)
 
 val ReadableHeader.rightAscension
-    get() = Angle(getStringOrNull(FitsKeywordDictionary.RA), isHours = true, decimalIsHours = false).takeIf { it.isFinite() }
-        ?: Angle(getStringOrNull(FitsKeywordDictionary.OBJCTRA), true).takeIf { it.isFinite() }
-        ?: getDouble(FitsKeywordDictionary.CRVAL1, Double.NaN).deg
+    get() = Angle(getStringOrNull(FitsKeyword.RA), isHours = true, decimalIsHours = false).takeIf { it.isFinite() }
+        ?: Angle(getStringOrNull(FitsKeyword.OBJCTRA), true).takeIf { it.isFinite() }
+        ?: getDouble(FitsKeyword.CRVAL1, Double.NaN).deg
 
 val ReadableHeader.declination
-    get() = Angle(getStringOrNull(FitsKeywordDictionary.DEC)).takeIf { it.isFinite() }
-        ?: Angle(getStringOrNull(FitsKeywordDictionary.OBJCTDEC)).takeIf { it.isFinite() }
-        ?: getDouble(FitsKeywordDictionary.CRVAL2, Double.NaN).deg
+    get() = Angle(getStringOrNull(FitsKeyword.DEC)).takeIf { it.isFinite() }
+        ?: Angle(getStringOrNull(FitsKeyword.OBJCTDEC)).takeIf { it.isFinite() }
+        ?: getDouble(FitsKeyword.CRVAL2, Double.NaN).deg
 
 inline val ReadableHeader.binX
-    get() = getInt(FitsKeywordDictionary.XBINNING, 1)
+    get() = getInt(FitsKeyword.XBINNING, 1)
 
 inline val ReadableHeader.binY
-    get() = getIntOrNull(FitsKeywordDictionary.YBINNING) ?: binX
+    get() = getIntOrNull(FitsKeyword.YBINNING) ?: binX
 
 inline val ReadableHeader.exposureTimeInSeconds
-    get() = getDoubleOrNull(FitsKeywordDictionary.EXPTIME) ?: getDouble(FitsKeywordDictionary.EXPOSURE, 0.0)
+    get() = getDoubleOrNull(FitsKeyword.EXPTIME) ?: getDouble(FitsKeyword.EXPOSURE, 0.0)
 
 inline val ReadableHeader.exposureTime: Duration
     get() = Duration.ofNanos((exposureTimeInSeconds * 1000000000.0).toLong())
@@ -56,31 +56,31 @@ inline val ReadableHeader.exposureTimeInMicroseconds
 const val INVALID_TEMPERATURE = 999.0
 
 inline val ReadableHeader.temperature
-    get() = getDoubleOrNull(FitsKeywordDictionary.CCDTEM) ?: getDouble(FitsKeywordDictionary.CCD_TEMP, INVALID_TEMPERATURE)
+    get() = getDoubleOrNull(FitsKeyword.CCDTEM) ?: getDouble(FitsKeyword.CCD_TEMP, INVALID_TEMPERATURE)
 
 inline val ReadableHeader.gain
-    get() = getDouble(FitsKeywordDictionary.GAIN, 0.0)
+    get() = getDouble(FitsKeyword.GAIN, 0.0)
 
 inline val ReadableHeader.latitude
-    get() = (getDoubleOrNull(FitsKeywordDictionary.SITELAT)?.deg ?: getDoubleOrNull("LAT-OBS"))?.deg
+    get() = (getDoubleOrNull(FitsKeyword.SITELAT)?.deg ?: getDoubleOrNull("LAT-OBS"))?.deg
 
 inline val ReadableHeader.longitude
-    get() = (getDoubleOrNull(FitsKeywordDictionary.SITELONG)?.deg ?: getDoubleOrNull("LONG-OBS"))?.deg
+    get() = (getDoubleOrNull(FitsKeyword.SITELONG)?.deg ?: getDoubleOrNull("LONG-OBS"))?.deg
 
 inline val ReadableHeader.observationDate
-    get() = getStringOrNull(FitsKeywordDictionary.DATE_OBS)?.let(LocalDateTime::parse)
+    get() = getStringOrNull(FitsKeyword.DATE_OBS)?.let(LocalDateTime::parse)
 
 inline val ReadableHeader.cfaPattern
-    get() = getStringOrNull(FitsKeywordDictionary.BAYERPAT)?.ifBlank { null }?.trim()
+    get() = getStringOrNull(FitsKeyword.BAYERPAT)?.ifBlank { null }?.trim()
 
 inline val ReadableHeader.filter
-    get() = getStringOrNull(FitsKeywordDictionary.FILTER)?.ifBlank { null }?.trim()
+    get() = getStringOrNull(FitsKeyword.FILTER)?.ifBlank { null }?.trim()
 
 inline val ReadableHeader.frame
-    get() = (getStringOrNull("FRAME") ?: getStringOrNull(FitsKeywordDictionary.IMAGETYP))?.ifBlank { null }?.trim()
+    get() = (getStringOrNull("FRAME") ?: getStringOrNull(FitsKeyword.IMAGETYP))?.ifBlank { null }?.trim()
 
 inline val ReadableHeader.instrument
-    get() = getStringOrNull(FitsKeywordDictionary.INSTRUME)?.ifBlank { null }?.trim()
+    get() = getStringOrNull(FitsKeyword.INSTRUME)?.ifBlank { null }?.trim()
 
 inline fun SeekableSource.fits() = Fits().also { it.read(this) }
 

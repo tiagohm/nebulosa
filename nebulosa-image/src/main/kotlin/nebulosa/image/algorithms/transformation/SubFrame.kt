@@ -1,7 +1,7 @@
 package nebulosa.image.algorithms.transformation
 
 import nebulosa.fits.FitsHeader
-import nebulosa.fits.FitsKeywordDictionary
+import nebulosa.fits.FitsKeyword
 import nebulosa.image.Image
 import nebulosa.image.algorithms.TransformAlgorithm
 
@@ -22,8 +22,8 @@ data class SubFrame(
         require(y + height <= source.height) { "subframe.height < source.height: ${y + height} > ${source.height}" }
 
         val newHeader = FitsHeader(source.header)
-        newHeader.add(FitsKeywordDictionary.NAXIS1, width)
-        newHeader.add(FitsKeywordDictionary.NAXIS2, height)
+        newHeader.add(FitsKeyword.NAXIS1, width)
+        newHeader.add(FitsKeyword.NAXIS2, height)
         val subframe = Image(width, height, newHeader, source.mono)
 
         var index = 0

@@ -1,7 +1,7 @@
 package nebulosa.image.algorithms.transformation
 
 import nebulosa.fits.FitsHeader
-import nebulosa.fits.FitsKeywordDictionary
+import nebulosa.fits.FitsKeyword
 import nebulosa.image.Image
 import nebulosa.image.algorithms.TransformAlgorithm
 import kotlin.math.max
@@ -17,8 +17,8 @@ data class Grayscale(
         if (source.mono) return source
 
         val newHeader = FitsHeader(source.header)
-        newHeader.add(FitsKeywordDictionary.NAXIS, 2)
-        newHeader.delete(FitsKeywordDictionary.NAXIS3)
+        newHeader.add(FitsKeyword.NAXIS, 2)
+        newHeader.delete(FitsKeyword.NAXIS3)
 
         val result = Image(source.width, source.height, newHeader, true)
 

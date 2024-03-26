@@ -15,14 +15,9 @@ internal data class XisfMonolithicFileHeaderImageData(
     private val source: SeekableSource,
 ) : ImageData {
 
-    override val width
-        get() = image.width
-
-    override val height
-        get() = image.height
-
-    override val numberOfChannels
-        get() = image.numberOfChannels
+    override val width = image.width
+    override val height = image.height
+    override val numberOfChannels = image.numberOfChannels
 
     init {
         val uncompressedSize = image.compressionFormat?.uncompressedSize ?: image.size
@@ -126,9 +121,9 @@ internal data class XisfMonolithicFileHeaderImageData(
     private fun readNormal(channel: ImageChannel): FloatArray {
         source.seek(image.position)
 
-        val pixelBlockSizeInBytes = numberOfChannels * image.sampleFormat.byteLength
+        val blockSizeInBytes = numberOfChannels * image.sampleFormat.byteLength
         val bytesToSkipBefore = channel.index * image.sampleFormat.byteLength
-        val bytesToSkipAfter = pixelBlockSizeInBytes - bytesToSkipBefore - image.sampleFormat.byteLength
+        val bytesToSkipAfter = blockSizeInBytes - bytesToSkipBefore - image.sampleFormat.byteLength
         val data = FloatArray(numberOfPixels)
         var remainingPixels = data.size
         var pos = 0
@@ -136,7 +131,7 @@ internal data class XisfMonolithicFileHeaderImageData(
         Buffer().use { buffer ->
             while (remainingPixels > 0) {
                 val n = min(PIXEL_COUNT, remainingPixels)
-                val byteCount = n * pixelBlockSizeInBytes
+                val byteCount = n * blockSizeInBytes
 
                 check(source.read(buffer, byteCount) == byteCount)
 

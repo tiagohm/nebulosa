@@ -4,7 +4,7 @@ import org.apache.commons.numbers.complex.Complex
 import java.math.BigDecimal
 import java.math.BigInteger
 
-enum class FitsHeaderCardType(@JvmField val type: Class<*>) {
+enum class FitsHeaderCardType(@JvmField internal val type: Class<*>) {
     NONE(Nothing::class.javaObjectType),
     TEXT(String::class.javaObjectType),
     BOOLEAN(Boolean::class.javaObjectType),

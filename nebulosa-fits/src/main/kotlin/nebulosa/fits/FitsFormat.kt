@@ -9,7 +9,7 @@ import okio.Sink
 import java.io.EOFException
 import kotlin.math.max
 
-object FitsFormat : ImageFormat {
+data object FitsFormat : ImageFormat {
 
     const val BLOCK_SIZE = 2880
 
@@ -21,7 +21,7 @@ object FitsFormat : ImageFormat {
     }
 
     fun isImageHdu(header: ReadableHeader) =
-        header.getBoolean(FitsKeywordDictionary.SIMPLE) || header.getStringOrNull(FitsKeywordDictionary.XTENSION) == "IMAGE"
+        header.getBoolean(FitsKeyword.SIMPLE) || header.getStringOrNull(FitsKeyword.XTENSION) == "IMAGE"
 
     fun readHeader(source: SeekableSource): FitsHeader {
         val header = FitsHeader()
@@ -34,15 +34,19 @@ object FitsFormat : ImageFormat {
 
                 if (source.read(buffer, 80L) != 80L) throw EOFException()
 
-                val card = FitsHeaderCard.from(buffer)
-
                 count++
+
+                val card = try {
+                    FitsHeaderCard.from(buffer)
+                } catch (e: IllegalArgumentException) {
+                    break
+                }
 
                 if (header.isEmpty()) {
                     require(isFirstCard(card.key)) { "Not a proper FITS header: ${card.key}" }
                 } else if (card.isBlank) {
                     continue
-                } else if (card.key == FitsKeywordDictionary.END.key) {
+                } else if (card.key == FitsKeyword.END.key) {
                     break
                 }
 
@@ -64,19 +68,25 @@ object FitsFormat : ImageFormat {
         val position = source.position
 
         val data = SeekableSourceImageData(source, position, width, height, numberOfChannels, bitpix)
-        val skipBytes = computeRemainingBytesToSkip(data.channelBlockSize * numberOfChannels)
-        if (skipBytes > 0L) source.seek(position + skipBytes)
+        val skipBytes = computeRemainingBytesToSkip(data.totalSizeInBytes)
+        if (skipBytes > 0L) source.seek(position + data.totalSizeInBytes + skipBytes)
 
         return data
     }
 
     override fun read(source: SeekableSource): List<Hdu<*>> {
-        val header = readHeader(source)
-        val hdus = ArrayList<ImageHdu>(2)
+        val hdus = ArrayList<ImageHdu>(1)
 
         while (!source.exhausted) {
+            val header = try {
+                readHeader(source)
+            } catch (e: Throwable) {
+                LOG.error("failed to read FITS header", e)
+                break
+            }
+
             val hdu = when {
-                isImageHdu(header) -> SeekableSourceImageHdu(header, readImageData(header, source))
+                isImageHdu(header) -> BasicImageHdu(header.width, header.height, header.numberOfChannels, header, readImageData(header, source))
                 else -> {
                     LOG.warn("unsupported FITS header: {}", header)
                     continue
@@ -142,8 +152,8 @@ object FitsFormat : ImageFormat {
     internal fun Buffer.readPixel(bitpix: Bitpix): Float {
         return when (bitpix) {
             Bitpix.BYTE -> (buffer.readByte().toInt() and 0xFF) / 255f
-            Bitpix.SHORT -> (buffer.readShort().toInt() and 0xFFFF) / 65535f
-            Bitpix.INTEGER -> ((buffer.readInt().toLong() and 0xFFFFFFFF) / 4294967295.0).toFloat()
+            Bitpix.SHORT -> (buffer.readShort().toInt() + 32768) / 65535f
+            Bitpix.INTEGER -> ((buffer.readInt().toLong() + 2147483648L) / 4294967295.0).toFloat()
             Bitpix.LONG -> TODO("Unsupported UInt64 sample format")
             Bitpix.FLOAT -> buffer.readFloat()
             Bitpix.DOUBLE -> buffer.readDouble().toFloat()

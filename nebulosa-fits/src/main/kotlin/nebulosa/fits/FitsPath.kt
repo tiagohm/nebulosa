@@ -6,7 +6,7 @@ import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
 
-class FitsPath(val path: Path) : Fits(), Closeable {
+data class FitsPath(val path: Path) : Fits(), Closeable {
 
     private val source = path.seekableSource()
     private val sink = path.seekableSink()

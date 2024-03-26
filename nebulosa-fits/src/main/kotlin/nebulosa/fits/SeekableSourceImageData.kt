@@ -18,7 +18,8 @@ internal data class SeekableSourceImageData(
     private val bitpix: Bitpix,
 ) : ImageData {
 
-    @JvmField internal val channelBlockSize = (numberOfPixels * bitpix.byteLength).toLong()
+    @JvmField internal val channelSizeInBytes = (numberOfPixels * bitpix.byteLength).toLong()
+    @JvmField internal val totalSizeInBytes = channelSizeInBytes * numberOfChannels
 
     override val red by lazy { readImage(ImageChannel.RED) }
 
@@ -56,7 +57,7 @@ internal data class SeekableSourceImageData(
     }
 
     private fun readChannel(channel: ImageChannel): FloatArray {
-        val startIndex = channelBlockSize * channel.index
+        val startIndex = channelSizeInBytes * channel.index
         source.seek(position + startIndex)
 
         val data = FloatArray(numberOfPixels)
@@ -91,8 +92,8 @@ internal data class SeekableSourceImageData(
 
         Buffer().use { buffer ->
             for (i in 0 until numberOfChannels) {
-                val startIndex = channelBlockSize * i
-                var bytesToWrite = channelBlockSize
+                val startIndex = channelSizeInBytes * i
+                var bytesToWrite = channelSizeInBytes
 
                 source.seek(position + startIndex)
 

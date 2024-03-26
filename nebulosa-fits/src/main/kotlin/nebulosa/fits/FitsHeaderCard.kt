@@ -110,8 +110,6 @@ data class FitsHeaderCard(
         const val MAX_LONG_STRING_VALUE_WITH_COMMENT_LENGTH = MAX_LONG_STRING_VALUE_LENGTH - 2
         const val MAX_HIERARCH_KEYWORD_LENGTH = FITS_HEADER_CARD_SIZE - 6
         const val MAX_LONG_STRING_CONTINUE_OVERHEAD = 3
-        const val MIN_VALID_CHAR = 0x20.toChar()
-        const val MAX_VALID_CHAR = 0x7e.toChar()
         const val HIERARCH_WITH_DOT = "HIERARCH."
 
         @JvmStatic val END = FitsHeaderCard("END", "", "", FitsHeaderCardType.NONE)
@@ -212,17 +210,12 @@ data class FitsHeaderCard(
         }
 
         @JvmStatic
-        fun isValidChar(c: Char): Boolean {
-            return c in MIN_VALID_CHAR..MAX_VALID_CHAR
-        }
-
-        @JvmStatic
         fun sanitize(input: CharSequence): String {
             val data = CharArray(input.length)
 
             for (i in input.indices) {
                 val char = input[i]
-                data[i] = if (isValidChar(char)) char else '?'
+                data[i] = if (FitsHeaderCardParser.isValidChar(char)) char else '?'
             }
 
             return data.concatToString()

@@ -1,6 +1,6 @@
 package nebulosa.wcs
 
-import nebulosa.fits.FitsKeywordDictionary
+import nebulosa.fits.FitsKeyword
 import nebulosa.image.format.ReadableHeader
 import nebulosa.math.Angle
 import nebulosa.math.cos
@@ -18,9 +18,9 @@ fun ReadableHeader.computeCdMatrix(): DoubleArray {
     return if (hasCd) {
         doubleArrayOf(cd(1, 1), cd(1, 2), cd(2, 1), cd(2, 2))
     } else {
-        val a = getDouble(FitsKeywordDictionary.CDELT1, 0.0)
-        val b = getDouble(FitsKeywordDictionary.CDELT2, 0.0)
-        val c = getDouble(FitsKeywordDictionary.CROTA2, 0.0).deg
+        val a = getDouble(FitsKeyword.CDELT1, 0.0)
+        val b = getDouble(FitsKeyword.CDELT2, 0.0)
+        val c = getDouble(FitsKeyword.CROTA2, 0.0).deg
         computeCdFromCdelt(a, b, c)
     }
 }

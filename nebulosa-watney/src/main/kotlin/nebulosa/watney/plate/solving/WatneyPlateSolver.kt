@@ -3,7 +3,7 @@ package nebulosa.watney.plate.solving
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.erfa.SphericalCoordinate
 import nebulosa.fits.FitsHeader
-import nebulosa.fits.FitsKeywordDictionary
+import nebulosa.fits.FitsKeyword
 import nebulosa.fits.fits
 import nebulosa.image.Image
 import nebulosa.log.debug
@@ -391,18 +391,18 @@ data class WatneyPlateSolver(
             val parity = if (sign < 0) Parity.NORMAL else Parity.FLIPPED
 
             val header = FitsHeader()
-            header.add(FitsKeywordDictionary.CDELT1, cdelt1)
-            header.add(FitsKeywordDictionary.CDELT2, cdelt2)
-            header.add(FitsKeywordDictionary.CROTA1, crota1.toDegrees)
-            header.add(FitsKeywordDictionary.CROTA2, crota2.toDegrees)
-            header.add(FitsKeywordDictionary.CRVAL1, scopeCoordsRA.toDegrees)
-            header.add(FitsKeywordDictionary.CRVAL2, scopeCoordsDEC.toDegrees)
-            header.add(FitsKeywordDictionary.CRPIX1, scopePxX)
-            header.add(FitsKeywordDictionary.CRPIX2, scopePxY)
-            header.add(FitsKeywordDictionary.CD1_1, cd11)
-            header.add(FitsKeywordDictionary.CD1_2, cd12)
-            header.add(FitsKeywordDictionary.CD1_1, cd11)
-            header.add(FitsKeywordDictionary.CD2_2, cd22)
+            header.add(FitsKeyword.CDELT1, cdelt1)
+            header.add(FitsKeyword.CDELT2, cdelt2)
+            header.add(FitsKeyword.CROTA1, crota1.toDegrees)
+            header.add(FitsKeyword.CROTA2, crota2.toDegrees)
+            header.add(FitsKeyword.CRVAL1, scopeCoordsRA.toDegrees)
+            header.add(FitsKeyword.CRVAL2, scopeCoordsDEC.toDegrees)
+            header.add(FitsKeyword.CRPIX1, scopePxX)
+            header.add(FitsKeyword.CRPIX2, scopePxY)
+            header.add(FitsKeyword.CD1_1, cd11)
+            header.add(FitsKeyword.CD1_2, cd12)
+            header.add(FitsKeyword.CD1_1, cd11)
+            header.add(FitsKeyword.CD2_2, cd22)
 
             return ComputedPlateSolution(
                 header, crota1, pixScale, scopeCoordsRA, scopeCoordsDEC,

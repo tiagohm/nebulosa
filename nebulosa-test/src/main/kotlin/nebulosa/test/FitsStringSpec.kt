@@ -56,17 +56,6 @@ abstract class FitsStringSpec : StringSpec() {
     protected val NGC3344_MONO_F32_FITS_PATH by lazy { download("NGC3344.Mono.F32.fits", GITHUB_FITS_URL) }
     protected val NGC3344_MONO_F64_FITS_PATH by lazy { download("NGC3344.Mono.F64.fits", GITHUB_FITS_URL) }
 
-    protected val NGC3344_COLOR_8_FITS by lazy { NGC3344_COLOR_8_FITS_PATH.fits() }
-    protected val NGC3344_COLOR_16_FITS by lazy { NGC3344_COLOR_16_FITS_PATH.fits() }
-    protected val NGC3344_COLOR_32_FITS by lazy { NGC3344_COLOR_32_FITS_PATH.fits() }
-    protected val NGC3344_COLOR_F32_FITS by lazy { NGC3344_COLOR_F32_FITS_PATH.fits() }
-    protected val NGC3344_COLOR_F64_FITS by lazy { NGC3344_COLOR_F64_FITS_PATH.fits() }
-    protected val NGC3344_MONO_8_FITS by lazy { NGC3344_MONO_8_FITS_PATH.fits() }
-    protected val NGC3344_MONO_16_FITS by lazy { NGC3344_MONO_16_FITS_PATH.fits() }
-    protected val NGC3344_MONO_32_FITS by lazy { NGC3344_MONO_32_FITS_PATH.fits() }
-    protected val NGC3344_MONO_F32_FITS by lazy { NGC3344_MONO_F32_FITS_PATH.fits() }
-    protected val NGC3344_MONO_F64_FITS by lazy { NGC3344_MONO_F64_FITS_PATH.fits() }
-
     protected val M6707HH by lazyFITS("M6707HH.fits", ASTROPY_PHOTOMETRY_URL)
 
     protected val STAR_FOCUS_1 by lazyFITS("STAR.FOCUS.1.fits")
