@@ -25,12 +25,13 @@ internal class RandomAccessFileSource(
         val size = file.length()
         if (size <= 0) return
         val newPos = if (position < 0) size + position else position
-        file.seek(max(0L, min(newPos, size - 1L)))
+        file.seek(max(0L, min(newPos, size)))
     }
 
     @Synchronized
     override fun read(sink: Buffer, byteCount: Long): Long {
         if (!file.channel.isOpen) throw IllegalStateException("closed")
+        if (exhausted) throw IllegalStateException("exhausted")
 
         return sink.readAndWriteUnsafe(cursor).use {
             timeout.throwIfReached()

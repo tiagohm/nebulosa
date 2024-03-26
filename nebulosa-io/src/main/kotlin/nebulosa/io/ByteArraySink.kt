@@ -29,12 +29,14 @@ internal class ByteArraySink(
     @Synchronized
     override fun seek(position: Long) {
         val newPos = if (position < 0) byteCount + position else position
-        this.position = max(0L, min(newPos, byteCount - 1L))
+        this.position = max(0L, min(newPos, byteCount.toLong()))
     }
 
     @Synchronized
     override fun write(source: Buffer, byteCount: Long) {
         if (byteCount == 0L) return
+
+        if (exhausted) throw IllegalStateException("exhausted")
 
         var remaining = byteCount
 

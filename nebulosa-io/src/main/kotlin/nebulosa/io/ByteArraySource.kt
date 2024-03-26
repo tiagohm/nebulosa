@@ -28,11 +28,13 @@ internal class ByteArraySource(
     @Synchronized
     override fun seek(position: Long) {
         val newPos = if (position < 0) byteCount + position else position
-        this.position = max(0L, min(newPos, byteCount - 1L))
+        this.position = max(0L, min(newPos, byteCount.toLong()))
     }
 
     @Synchronized
     override fun read(sink: Buffer, byteCount: Long): Long {
+        if (exhausted) throw IllegalStateException("exhausted")
+
         return sink.readAndWriteUnsafe(cursor).use {
             timeout.throwIfReached()
 
