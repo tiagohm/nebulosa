@@ -1,5 +1,6 @@
 package nebulosa.fits
 
+import nebulosa.image.format.HeaderCard
 import nebulosa.image.format.ReadableHeader
 import kotlin.math.abs
 
@@ -11,9 +12,9 @@ enum class Bitpix(val type: Class<out Number>, val code: Int, val description: S
     FLOAT(Float::class.javaPrimitiveType!!, -32, "32-bit floating point"),
     DOUBLE(Double::class.javaPrimitiveType!!, -64, "64-bit floating point");
 
-    val card = FitsHeaderCard.create(FitsKeywordDictionary.BITPIX, code)
+    val card: HeaderCard = FitsHeaderCard.create(FitsKeywordDictionary.BITPIX, code)
 
-    val byteSize = abs(code) / 8
+    @JvmField internal val byteLength = abs(code) / 8
 
     companion object {
 

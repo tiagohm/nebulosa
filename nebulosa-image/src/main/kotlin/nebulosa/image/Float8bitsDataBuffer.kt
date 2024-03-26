@@ -5,12 +5,12 @@ import java.awt.image.DataBuffer
 @Suppress("ArrayInDataClass")
 data class Float8bitsDataBuffer(
     @JvmField val mono: Boolean,
-    @JvmField val r: FloatArray, // or gray.
-    @JvmField val g: FloatArray = r,
-    @JvmField val b: FloatArray = r,
-) : DataBuffer(TYPE_FLOAT, if (mono) r.size else r.size + g.size + b.size) {
+    @JvmField val red: FloatArray, // or gray.
+    @JvmField val green: FloatArray = red,
+    @JvmField val blue: FloatArray = red,
+) : DataBuffer(TYPE_FLOAT, if (mono) red.size else red.size + green.size + blue.size) {
 
-    @JvmField val data = arrayOf(r, g, b)
+    @JvmField val data = arrayOf(red, green, blue)
 
     @Suppress("NOTHING_TO_INLINE")
     private inline operator fun get(i: Int): Float {

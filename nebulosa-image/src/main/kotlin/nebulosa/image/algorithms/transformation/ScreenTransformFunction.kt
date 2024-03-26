@@ -40,12 +40,12 @@ data class ScreenTransformFunction(
 
         lut.fill(Float.NaN)
 
-        for (i in source.r.indices) {
-            source.r[i] = source.r[i].df(midtone, shadow, highlight, k1, k2)
+        for (i in source.red.indices) {
+            source.red[i] = source.red[i].df(midtone, shadow, highlight, k1, k2)
 
             if (!source.mono) {
-                source.g[i] = source.g[i].df(midtone, shadow, highlight, k1, k2)
-                source.b[i] = source.b[i].df(midtone, shadow, highlight, k1, k2)
+                source.green[i] = source.green[i].df(midtone, shadow, highlight, k1, k2)
+                source.blue[i] = source.blue[i].df(midtone, shadow, highlight, k1, k2)
             }
         }
 

@@ -7,8 +7,13 @@ import nebulosa.alpaca.api.PulseGuideDirection
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.common.concurrency.latch.CountUpDownLatch
-import nebulosa.fits.*
+import nebulosa.fits.Bitpix
+import nebulosa.fits.Fits
+import nebulosa.fits.FitsHeader
+import nebulosa.fits.FitsKeywordDictionary
 import nebulosa.image.algorithms.transformation.CfaPattern
+import nebulosa.image.format.BasicImageHdu
+import nebulosa.image.format.FloatImageData
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.camera.Camera.Companion.NANO_SECONDS
@@ -614,15 +619,15 @@ data class ASCOMCamera(
 
             val width = metadata.dimension1
             val height = metadata.dimension2
-            val planes = max(1, metadata.dimension3)
+            val numberOfChannels = max(1, metadata.dimension3)
             val source = stream.source().buffer()
-            val data = Array(planes) { FloatImageData(width, height) }
+            val data = FloatImageData(width, height, numberOfChannels)
 
             for (x in 0 until width) {
                 for (y in 0 until height) {
                     val idx = y * width + x
 
-                    for (p in 0 until planes) {
+                    for (p in 0 until numberOfChannels) {
                         val pixel = when (metadata.imageElementType.bitpix) {
                             Bitpix.BYTE -> (source.readByte().toInt() and 0xFF) / 255f
                             Bitpix.SHORT -> (source.readShortLe().toInt() + 32768) / 65535f
@@ -632,7 +637,13 @@ data class ASCOMCamera(
                             Bitpix.LONG -> return
                         }
 
-                        data[p].data[idx] = pixel
+                        val channel = when (p) {
+                            0 -> data.red
+                            1 -> data.green
+                            else -> data.blue
+                        }
+
+                        channel[idx] = pixel
                     }
                 }
             }
@@ -642,10 +653,10 @@ data class ASCOMCamera(
             val header = FitsHeader()
             header.add(FitsKeywordDictionary.SIMPLE, true)
             header.add(FitsKeywordDictionary.BITPIX, -32)
-            header.add(FitsKeywordDictionary.NAXIS, if (planes == 3) 3 else 2)
+            header.add(FitsKeywordDictionary.NAXIS, if (numberOfChannels == 3) 3 else 2)
             header.add(FitsKeywordDictionary.NAXIS1, width)
             header.add(FitsKeywordDictionary.NAXIS2, height)
-            if (planes == 3) header.add(FitsKeywordDictionary.NAXIS3, planes)
+            if (numberOfChannels == 3) header.add(FitsKeywordDictionary.NAXIS3, numberOfChannels)
             header.add(FitsKeywordDictionary.EXTEND, true)
             header.add(FitsKeywordDictionary.INSTRUME, name)
             header.add(FitsKeywordDictionary.EXPTIME, 0.0) // TODO
@@ -678,7 +689,7 @@ data class ASCOMCamera(
                 header.add("OFFSET", offset, "Offset")
             }
 
-            val hdu = ImageHdu(header, data)
+            val hdu = BasicImageHdu(width, height, numberOfChannels, header, data)
 
             val fits = Fits()
             fits.add(hdu)

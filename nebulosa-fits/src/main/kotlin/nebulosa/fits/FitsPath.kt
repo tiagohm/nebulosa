@@ -16,15 +16,11 @@ class FitsPath(val path: Path) : Fits(), Closeable {
     constructor(path: String) : this(Path.of(path))
 
     fun read() {
-        return read(source)
+        read(source)
     }
 
-    fun readHdu(): Hdu<*>? {
-        return readHdu(source)
-    }
-
-    fun writeTo() {
-        writeTo(sink)
+    fun write() {
+        write(sink)
     }
 
     override fun close() {

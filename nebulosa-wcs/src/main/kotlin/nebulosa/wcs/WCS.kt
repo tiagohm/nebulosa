@@ -23,7 +23,7 @@ class WCS(header: ReadableHeader) : Closeable {
             val card = headerIter.next()
 
             if (isKeywordValid(card.key)) {
-                headerText.append(card.formattedValue())
+                headerText.append(card.formatted())
                 keyCount++
             }
         }

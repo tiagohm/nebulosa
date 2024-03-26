@@ -1,6 +1,7 @@
 import io.kotest.matchers.shouldBe
-import nebulosa.fits.ImageHdu
+import nebulosa.fits.FitsFormat
 import nebulosa.fits.fits
+import nebulosa.image.format.ImageHdu
 import nebulosa.io.sink
 import nebulosa.io.source
 import nebulosa.test.FitsStringSpec
@@ -12,7 +13,7 @@ class FitsWriteTest : FitsStringSpec() {
         "mono" {
             val hdu0 = NGC3344_MONO_8_FITS.filterIsInstance<ImageHdu>().first()
             val data = ByteArray(69120)
-            hdu0.write(data.sink())
+            FitsFormat.write(data.sink(), listOf(hdu0))
             data.toByteString(2880, 66240).md5().hex() shouldBe "e1735e21c94dc49885fabc429406e573"
 
             val fits = data.source().use { it.fits() }

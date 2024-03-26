@@ -6,6 +6,7 @@ import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import nebulosa.fits.*
 import nebulosa.hips2fits.Hips2FitsService
+import nebulosa.image.format.ImageHdu
 import nebulosa.io.source
 import nebulosa.math.deg
 import nebulosa.math.toDegrees

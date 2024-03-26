@@ -7,7 +7,7 @@ import nebulosa.image.algorithms.transform
 import nebulosa.image.algorithms.transformation.CfaPattern
 import nebulosa.image.algorithms.transformation.Debayer
 import nebulosa.image.algorithms.transformation.Grayscale
-import nebulosa.image.format.Header
+import nebulosa.image.format.*
 import okio.Sink
 import java.awt.color.ColorSpace
 import java.awt.image.*
@@ -15,11 +15,21 @@ import kotlin.math.max
 import kotlin.math.min
 
 @Suppress("NOTHING_TO_INLINE")
-class Image(
-    width: Int, height: Int,
-    val header: Header, val mono: Boolean,
-) : BufferedImage(colorModel(mono), raster(width, height, mono), false, null) {
+class Image internal constructor(
+    width: Int, height: Int, val mono: Boolean,
+    @JvmField val hdu: ImageHdu,
+) : BufferedImage(colorModel(mono), raster(hdu, mono), false, null) {
 
+    constructor(width: Int, height: Int, header: ReadableHeader, mono: Boolean)
+            : this(width, height, mono, BasicImageHdu(width, height, if (mono) 1 else 3, header, FloatImageData(width, height, if (mono) 1 else 3)))
+
+    constructor(width: Int, height: Int, header: ReadableHeader, red: FloatArray)
+            : this(width, height, true, BasicImageHdu(width, height, 1, header, FloatImageData(width, height, 1, red)))
+
+    constructor(width: Int, height: Int, header: ReadableHeader, red: FloatArray, green: FloatArray, blue: FloatArray)
+            : this(width, height, false, BasicImageHdu(width, height, 3, header, FloatImageData(width, height, 3, red, green, blue)))
+
+    @JvmField val header = hdu.header
     @JvmField val numberOfChannels = if (mono) 1 else 3
     @JvmField val stride = width
     @JvmField val buffer = raster.dataBuffer as Float8bitsDataBuffer
@@ -28,14 +38,14 @@ class Image(
     inline val data
         get() = buffer.data
 
-    inline val r
-        get() = buffer.r
+    inline val red
+        get() = buffer.red
 
-    inline val g
-        get() = buffer.g
+    inline val green
+        get() = buffer.green
 
-    inline val b
-        get() = buffer.b
+    inline val blue
+        get() = buffer.blue
 
     inline fun indexAt(x: Int, y: Int): Int {
         return y * stride + x
@@ -58,7 +68,7 @@ class Image(
     }
 
     inline fun writeRed(index: Int, color: Float) {
-        r[index] = color
+        red[index] = color
     }
 
     inline fun writeRed(x: Int, y: Int, color: Float) {
@@ -66,7 +76,7 @@ class Image(
     }
 
     inline fun writeGreen(index: Int, color: Float) {
-        g[index] = color
+        green[index] = color
     }
 
     inline fun writeGreen(x: Int, y: Int, color: Float) {
@@ -74,7 +84,7 @@ class Image(
     }
 
     inline fun writeBlue(index: Int, color: Float) {
-        b[index] = color
+        blue[index] = color
     }
 
     inline fun writeBlue(x: Int, y: Int, color: Float) {
@@ -82,11 +92,11 @@ class Image(
     }
 
     inline fun writeGray(index: Int, color: Float) {
-        r[index] = color
+        red[index] = color
 
         if (!mono) {
-            g[index] = color
-            b[index] = color
+            green[index] = color
+            blue[index] = color
         }
     }
 
@@ -111,7 +121,7 @@ class Image(
     }
 
     inline fun readRed(index: Int): Float {
-        return r[index]
+        return red[index]
     }
 
     inline fun readRed(x: Int, y: Int): Float {
@@ -119,7 +129,7 @@ class Image(
     }
 
     inline fun readGreen(index: Int): Float {
-        return g[index]
+        return green[index]
     }
 
     inline fun readGreen(x: Int, y: Int): Float {
@@ -127,7 +137,7 @@ class Image(
     }
 
     inline fun readBlue(index: Int): Float {
-        return b[index]
+        return blue[index]
     }
 
     inline fun readBlue(x: Int, y: Int): Float {
@@ -135,50 +145,15 @@ class Image(
     }
 
     inline fun readGray(index: Int): Float {
-        return if (mono) r[index] else (r[index] + g[index] + b[index]) / 3f
+        return if (mono) red[index] else (red[index] + green[index] + blue[index]) / 3f
     }
 
     inline fun readGrayBT709(index: Int): Float {
-        return if (mono) r[index] else (r[index] * 0.2125f + g[index] * 0.7154f + b[index] * 0.0721f)
+        return if (mono) red[index] else (red[index] * 0.2125f + green[index] * 0.7154f + blue[index] * 0.0721f)
     }
 
     inline fun readGray(x: Int, y: Int): Float {
         return readGray(indexAt(x, y))
-    }
-
-    fun writeImageData(channel: ImageChannel, data: ImageData) {
-        var idx = 0
-
-        when (data.bitpix) {
-            Bitpix.BYTE -> data.read {
-                while (it.hasRemaining()) {
-                    write(idx++, channel, (it.get().toInt() and 0xFF) / 255f)
-                }
-            }
-            Bitpix.SHORT -> data.read {
-                while (it.hasRemaining()) {
-                    write(idx++, channel, (it.getShort().toInt() + 32768) / 65535f)
-                }
-            }
-            Bitpix.INTEGER -> data.read {
-                while (it.hasRemaining()) {
-                    write(idx++, channel, ((it.getInt().toLong() + 2147483648) / 4294967295.0).toFloat())
-                }
-            }
-            Bitpix.FLOAT -> data.read {
-                while (it.hasRemaining()) {
-                    write(idx++, channel, it.getFloat())
-                }
-            }
-            Bitpix.DOUBLE -> data.read {
-                while (it.hasRemaining()) {
-                    write(idx++, channel, it.getDouble().toFloat())
-                }
-            }
-            Bitpix.LONG -> {
-                throw UnsupportedOperationException("BITPIX 64-bit integer is not supported")
-            }
-        }
     }
 
     fun writeTo(output: IntArray) {
@@ -189,13 +164,13 @@ class Image(
                 val index = indexAt(x, y)
 
                 if (mono) {
-                    val c = (r[index] * 255f).toInt()
+                    val c = (red[index] * 255f).toInt()
                     val p = 0xFF000000.toInt() or (c shl 16) or (c shl 8) or c
                     output[idx++] = p
                 } else {
-                    val ri = (r[index] * 255f).toInt()
-                    val gi = (g[index] * 255f).toInt()
-                    val bi = (b[index] * 255f).toInt()
+                    val ri = (red[index] * 255f).toInt()
+                    val gi = (green[index] * 255f).toInt()
+                    val bi = (blue[index] * 255f).toInt()
                     val p = 0xFF000000.toInt() or (ri shl 16) or (gi shl 8) or bi
                     output[idx++] = p
                 }
@@ -203,44 +178,34 @@ class Image(
         }
     }
 
-    fun writeTo(sink: Sink) {
-        hdu().write(sink)
-    }
-
-    fun hdu(): Hdu<ImageData> {
-        return ImageHdu(header, Array(numberOfChannels) { FloatImageData(width, height, data[it]) })
+    fun writeTo(sink: Sink, format: ImageFormat) {
+        format.write(sink, listOf(hdu))
     }
 
     /**
      * Creates a new [Image] and returns a mono version of this image.
      */
     fun mono(grayscale: Grayscale = Grayscale.BT709): Image {
-        val image = Image(width, height, header.clone(), true)
-
-        if (mono) {
-            r.copyInto(image.r)
+        return if (mono) {
+            Image(width, height, FitsHeader(header), red.clone())
+        } else {
+            grayscale.transform(this)
         }
-
-        return grayscale.transform(image)
     }
 
     /**
      * Creates a new [Image] and returns a RGB version of this image.
      */
     fun color(): Image {
-        val image = Image(width, height, header.clone(), false)
+        val newHeader = FitsHeader(header)
 
-        if (mono) {
-            r.copyInto(image.r)
-            r.copyInto(image.g)
-            r.copyInto(image.b)
+        val image = if (mono) {
+            Image(width, height, newHeader, red.clone(), red.clone(), red.clone())
         } else {
-            r.copyInto(image.r)
-            g.copyInto(image.g)
-            b.copyInto(image.b)
+            Image(width, height, newHeader, red.clone(), green.clone(), blue.clone())
         }
 
-        with(image.header) {
+        with(newHeader) {
             add(FitsKeywordDictionary.NAXIS, 3)
             add(FitsKeywordDictionary.NAXIS1, width)
             add(FitsKeywordDictionary.NAXIS2, height)
@@ -254,12 +219,12 @@ class Image(
         return hdu.width == width && hdu.height == height && (isMono(hdu) || !debayer) == this.mono
     }
 
-    fun canLoad(fits: Fits, debayer: Boolean = true): Boolean {
-        return canLoad(fits.filterIsInstance<ImageHdu>().first(), debayer)
+    fun canLoad(image: ImageRepresentation, debayer: Boolean = true): Boolean {
+        return canLoad(image.filterIsInstance<ImageHdu>().first(), debayer)
     }
 
-    fun load(fits: Fits, debayer: Boolean = true): Image? {
-        return load(fits.filterIsInstance<ImageHdu>().first(), debayer)
+    fun load(image: ImageRepresentation, debayer: Boolean = true): Image? {
+        return load(image.filterIsInstance<ImageHdu>().first(), debayer)
     }
 
     fun load(hdu: ImageHdu, debayer: Boolean = true): Image? {
@@ -296,16 +261,26 @@ class Image(
         }
 
         @JvmStatic
-        fun open(
-            fits: Fits,
-            debayer: Boolean = true,
-        ) = open(fits.filterIsInstance<ImageHdu>().first(), debayer)
+        internal fun raster(width: Int, height: Int, mono: Boolean, red: FloatArray, green: FloatArray, blue: FloatArray): WritableRaster {
+            val pixelStride = if (mono) 1 else 3
+            val bandOffsets = if (mono) intArrayOf(0) else intArrayOf(0, 1, 2)
+            val sampleModel = PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, width, height, pixelStride, width * pixelStride, bandOffsets)
+            val buffer = Float8bitsDataBuffer(mono, red, green, blue)
+            return Raster.createWritableRaster(sampleModel, buffer, null)
+        }
 
         @JvmStatic
-        fun open(
-            hdu: ImageHdu,
-            debayer: Boolean = true,
-        ): Image {
+        internal fun raster(hdu: ImageHdu, mono: Boolean): WritableRaster {
+            return raster(hdu.width, hdu.height, hdu.isMono || mono, hdu.data.red, hdu.data.green, hdu.data.blue)
+        }
+
+        @JvmStatic
+        fun open(image: ImageRepresentation, debayer: Boolean = true): Image {
+            return open(image.filterIsInstance<ImageHdu>().first(), debayer)
+        }
+
+        @JvmStatic
+        fun open(hdu: ImageHdu, debayer: Boolean = true): Image {
             val mono = isMono(hdu) || !debayer
             val image = Image(hdu.width, hdu.height, hdu.header, mono)
             load(image, hdu, debayer)
@@ -314,8 +289,26 @@ class Image(
 
         @JvmStatic
         private fun load(image: Image, hdu: ImageHdu, debayer: Boolean) {
-            val pixels = hdu.data
+            require(image.width == hdu.width)
+            require(image.height == hdu.height)
 
+            if (image.mono || !debayer) {
+                hdu.data.red.copyInto(image.red)
+            } else {
+                hdu.data.red.copyInto(image.red)
+                hdu.data.green.copyInto(image.green)
+                hdu.data.blue.copyInto(image.blue)
+
+                val bayer = CfaPattern.from(image.header)
+
+                if (bayer != null) {
+                    Debayer(bayer).transform(image)
+                }
+            }
+        }
+
+        @JvmStatic
+        private fun load(image: Image, debayer: Boolean) {
             fun rescaling() {
                 for (p in 0 until image.numberOfChannels) {
                     val minMax = floatArrayOf(Float.MAX_VALUE, Float.MIN_VALUE)
@@ -340,18 +333,13 @@ class Image(
             // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
 
             // Mono.
-            if (hdu.size == 1) {
-                val bayer = CfaPattern.from(hdu.header)
-                image.writeImageData(ImageChannel.GRAY, pixels[0])
-
+            if (image.mono) {
                 rescaling()
+            } else {
+                val bayer = CfaPattern.from(image.header)
 
                 if (debayer && bayer != null) {
                     Debayer(bayer).transform(image)
-                }
-            } else {
-                for (channel in ImageChannel.RGB) {
-                    image.writeImageData(channel, pixels[channel.offset])
                 }
 
                 rescaling()
@@ -386,11 +374,11 @@ class Image(
                     val rgb = bufferedImage.getRGB(x, y)
 
                     if (mono) {
-                        image.r[idx++] = (rgb and 0xff) / 255f
+                        image.red[idx++] = (rgb and 0xff) / 255f
                     } else {
-                        image.r[idx] = (rgb ushr 16 and 0xff) / 255f
-                        image.g[idx] = (rgb ushr 8 and 0xff) / 255f
-                        image.b[idx++] = (rgb and 0xff) / 255f
+                        image.red[idx] = (rgb ushr 16 and 0xff) / 255f
+                        image.green[idx] = (rgb ushr 8 and 0xff) / 255f
+                        image.blue[idx++] = (rgb and 0xff) / 255f
                     }
                 }
             }
@@ -405,7 +393,7 @@ class Image(
 
         @JvmStatic
         fun isMono(hdu: ImageHdu): Boolean {
-            return hdu.size == 1 && !canDebayer(hdu)
+            return hdu.isMono && !canDebayer(hdu)
         }
 
         inline fun Image.forEach(

@@ -179,7 +179,7 @@ data class CameraExposureStep(
             if (stream != null) {
                 stream.transferAndClose(savedPath!!.outputStream())
             } else if (fits != null) {
-                savedPath!!.outputStream().use { fits.writeTo(it.sink()) }
+                savedPath!!.outputStream().use { fits.write(it.sink()) }
             } else {
                 return
             }

@@ -17,30 +17,30 @@ import okio.Sink
 data object XisfFormat : ImageFormat {
 
     override fun read(source: SeekableSource): List<ImageHdu> {
-        val buffer = Buffer()
+        return Buffer().use { buffer ->
+            source.read(buffer, 8) // XISF0100
+            buffer.readString(Charsets.US_ASCII)
 
-        source.read(buffer, 8) // XISF0100
-        buffer.readString(Charsets.US_ASCII)
+            // Header length (4) + reserved (4)
+            source.read(buffer, 4 + 4)
+            val headerLength = buffer.readIntLe().toLong()
+            buffer.skip(4) // reserved
 
-        // Header length (4) + reserved (4)
-        source.read(buffer, 4 + 4)
-        val headerLength = buffer.readIntLe().toLong()
-        buffer.skip(4) // reserved
+            // XISF Header.
+            source.read(buffer, headerLength)
+            val stream = XisfHeaderInputStream(buffer.inputStream())
+            val hdus = ArrayList<XisfMonolithicFileHeaderImageHdu>(2)
 
-        // XISF Header.
-        source.read(buffer, headerLength)
-        val stream = XisfHeaderInputStream(buffer.inputStream())
-        val hdus = ArrayList<XisfMonolithicFileHeaderImageHdu>(2)
+            while (true) {
+                val header = stream.read() ?: break
 
-        while (true) {
-            val header = stream.read() ?: break
-
-            when (header) {
-                is XisfMonolithicFileHeader.Image -> hdus.add(XisfMonolithicFileHeaderImageHdu(header, source))
+                when (header) {
+                    is XisfMonolithicFileHeader.Image -> hdus.add(XisfMonolithicFileHeaderImageHdu(header, source))
+                }
             }
-        }
 
-        return hdus
+            hdus
+        }
     }
 
     override fun write(sink: Sink, hdus: Iterable<Hdu<*>>) {

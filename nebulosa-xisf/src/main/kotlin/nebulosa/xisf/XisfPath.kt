@@ -6,7 +6,7 @@ import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
 
-class XisfPath(val path: Path) : Closeable {
+class XisfPath(val path: Path) : Xisf(), Closeable {
 
     private val source = path.seekableSource()
     private val sink = path.seekableSink()
@@ -16,6 +16,11 @@ class XisfPath(val path: Path) : Closeable {
     constructor(path: String) : this(Path.of(path))
 
     fun read() {
+        read(source)
+    }
+
+    fun write() {
+        write(sink)
     }
 
     override fun close() {

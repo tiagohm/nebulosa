@@ -1,5 +1,6 @@
 package nebulosa.xisf
 
+import nebulosa.fits.FitsHeader
 import nebulosa.image.format.ImageHdu
 import nebulosa.io.SeekableSource
 
@@ -17,7 +18,7 @@ internal data class XisfMonolithicFileHeaderImageHdu(
     override val numberOfChannels
         get() = image.numberOfChannels
 
-    override val header = XisfHeader(image.keywords)
+    override val header = FitsHeader(image.keywords)
 
     override val data = XisfMonolithicFileHeaderImageData(image, source)
 }

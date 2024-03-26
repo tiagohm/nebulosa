@@ -1,6 +1,6 @@
 package nebulosa.image.format
 
-interface WritableHeader : ImageSource {
+interface WritableHeader {
 
     fun clear()
 

@@ -34,7 +34,7 @@ data class SubtractiveChromaticNoiseReduction(
         val p0 = (channel.offset + 2) % 3
         val p1 = (channel.offset + 1) % 3
 
-        for (i in source.r.indices) {
+        for (i in source.red.indices) {
             source.data[channel.offset][i] = protectionMethod
                 .compute(source.data[p0][i], source.data[p1][i], source.data[channel.offset][i], amount)
         }

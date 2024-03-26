@@ -24,8 +24,6 @@ internal data class XisfMonolithicFileHeaderImageData(
     override val numberOfChannels
         get() = image.numberOfChannels
 
-    private val numberOfPixels = width * height
-
     init {
         val uncompressedSize = image.compressionFormat?.uncompressedSize ?: image.size
         val expectedSize = numberOfChannels * numberOfPixels * image.sampleFormat.byteLength

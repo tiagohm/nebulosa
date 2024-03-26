@@ -29,11 +29,7 @@ abstract class AbstractHeader protected constructor(@JvmField protected val card
         return true
     }
 
-    override fun hashCode(): Int {
-        return cards.hashCode()
-    }
+    override fun hashCode() = cards.hashCode()
 
-    override fun toString(): String {
-        return "Header(cards=$cards)"
-    }
+    override fun toString() = "${javaClass.simpleName}(cards=$cards)"
 }

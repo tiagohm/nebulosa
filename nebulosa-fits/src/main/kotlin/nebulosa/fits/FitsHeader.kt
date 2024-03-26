@@ -6,12 +6,9 @@ import nebulosa.image.format.HeaderKey
 import nebulosa.io.SeekableSource
 import nebulosa.io.source
 import nebulosa.log.loggerFor
-import okio.Buffer
-import okio.Sink
-import java.io.EOFException
 import java.util.*
 
-open class FitsHeader : AbstractHeader, FitsElement {
+open class FitsHeader : AbstractHeader {
 
     constructor() : super()
 
@@ -20,57 +17,6 @@ open class FitsHeader : AbstractHeader, FitsElement {
     override fun readOnly(): FitsHeader = ReadOnly(this)
 
     override fun clone() = FitsHeader(this)
-
-    override fun read(source: SeekableSource) {
-        clear()
-
-        var count = 0
-        val buffer = Buffer()
-
-        while (true) {
-            buffer.clear()
-
-            if (source.read(buffer, 80L) != 80L) throw EOFException()
-
-            val card = FitsHeaderCard.from(buffer)
-            count++
-
-            if (cards.isEmpty()) {
-                require(isFirstCard(card.key)) { "Not a proper FITS header: ${card.key}" }
-            } else if (card.isBlank) {
-                continue
-            } else if (card.key == FitsKeywordDictionary.END.key) {
-                break
-            }
-
-            add(card)
-        }
-
-        val skipBytes = Hdu.computeRemainingBytesToSkip(count * 80L)
-        if (skipBytes > 0L) source.skip(skipBytes)
-
-        buffer.clear()
-    }
-
-    override fun write(sink: Sink) {
-        val buffer = Buffer()
-
-        for (card in cards) {
-            buffer.writeString(card.formattedValue(), Charsets.US_ASCII)
-        }
-
-        if (cards.last.key != "END") {
-            buffer.writeString(FitsHeaderCard.END.formattedValue(), Charsets.US_ASCII)
-        }
-
-        var remainingBytes = Hdu.computeRemainingBytesToSkip(buffer.size)
-
-        while (remainingBytes-- > 0) {
-            buffer.writeByte(0)
-        }
-
-        buffer.readAll(sink)
-    }
 
     override fun add(key: HeaderKey, value: Boolean) {
         checkType(key, ValueType.LOGICAL)
@@ -123,8 +69,6 @@ open class FitsHeader : AbstractHeader, FitsElement {
 
         constructor(cards: Collection<HeaderCard>) : super(cards)
 
-        final override fun read(source: SeekableSource) = Unit
-
         final override fun clear() = Unit
 
         final override fun add(key: HeaderKey, value: Boolean) = Unit
@@ -134,8 +78,6 @@ open class FitsHeader : AbstractHeader, FitsElement {
         final override fun add(key: HeaderKey, value: Double) = Unit
 
         final override fun add(key: HeaderKey, value: String) = Unit
-
-        final override fun write(sink: Sink) = Unit
 
         final override fun add(key: String, value: Boolean, comment: String) = Unit
 
@@ -170,9 +112,7 @@ open class FitsHeader : AbstractHeader, FitsElement {
 
         @JvmStatic
         fun from(source: SeekableSource): FitsHeader {
-            val header = FitsHeader()
-            header.read(source)
-            return header
+            return FitsFormat.readHeader(source)
         }
 
         @JvmStatic

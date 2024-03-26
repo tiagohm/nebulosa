@@ -1,6 +1,6 @@
 package nebulosa.image.format
 
-interface Hdu<T> {
+sealed interface Hdu<out T> {
 
     val header: ReadableHeader
 

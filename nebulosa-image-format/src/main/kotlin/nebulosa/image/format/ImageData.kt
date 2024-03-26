@@ -8,6 +8,9 @@ interface ImageData {
 
     val numberOfChannels: Int
 
+    val numberOfPixels
+        get() = width * height
+
     val red: FloatArray
 
     val green: FloatArray

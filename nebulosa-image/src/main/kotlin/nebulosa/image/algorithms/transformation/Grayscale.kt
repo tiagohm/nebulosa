@@ -1,5 +1,6 @@
 package nebulosa.image.algorithms.transformation
 
+import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsKeywordDictionary
 import nebulosa.image.Image
 import nebulosa.image.algorithms.TransformAlgorithm
@@ -15,13 +16,14 @@ data class Grayscale(
     override fun transform(source: Image): Image {
         if (source.mono) return source
 
-        val header = source.header.clone()
-        header.add(FitsKeywordDictionary.NAXIS, 2)
-        header.delete(FitsKeywordDictionary.NAXIS3)
-        val result = Image(source.width, source.height, header, true)
+        val newHeader = FitsHeader(source.header)
+        newHeader.add(FitsKeywordDictionary.NAXIS, 2)
+        newHeader.delete(FitsKeywordDictionary.NAXIS3)
 
-        for (i in source.r.indices) {
-            result.r[i] = max(0f, min(red * source.r[i] + green * source.g[i] + blue * source.b[i], 1f))
+        val result = Image(source.width, source.height, newHeader, true)
+
+        for (i in source.red.indices) {
+            result.red[i] = max(0f, min(red * source.red[i] + green * source.green[i] + blue * source.blue[i], 1f))
         }
 
         return result

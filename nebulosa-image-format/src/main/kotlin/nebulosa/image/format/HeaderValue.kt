@@ -6,5 +6,5 @@ interface HeaderValue {
 
     fun <T> getValue(asType: Class<out T>, defaultValue: T): T
 
-    fun formattedValue(): String
+    fun formatted(): String
 }

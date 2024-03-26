@@ -6,6 +6,8 @@ import nebulosa.image.algorithms.transformation.correction.BiasSubtraction
 import nebulosa.image.algorithms.transformation.correction.DarkSubtraction
 import nebulosa.image.algorithms.transformation.correction.FlatCorrection
 import nebulosa.image.format.Header
+import nebulosa.image.format.ImageHdu
+import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.log.loggerFor
 import org.springframework.stereotype.Service
@@ -99,7 +101,8 @@ class CalibrationFrameService(
 
             try {
                 file.fits().use { fits ->
-                    val (header) = fits.filterIsInstance<ImageHdu>().firstOrNull() ?: return@use
+                    val hdu = fits.filterIsInstance<ImageHdu>().firstOrNull() ?: return@use
+                    val header = hdu.header
                     val frameType = header.frameType?.takeIf { it != FrameType.LIGHT } ?: return@use
 
                     val exposureTime = if (frameType == FrameType.DARK) header.exposureTimeInMicroseconds else 0L
@@ -175,7 +178,7 @@ class CalibrationFrameService(
 
         @JvmStatic private val LOG = loggerFor<CalibrationFrameService>()
 
-        @JvmStatic val Header.frameType
+        @JvmStatic val ReadableHeader.frameType
             get() = frame?.uppercase()?.let {
                 if ("LIGHT" in it) FrameType.LIGHT
                 else if ("DARK" in it) FrameType.DARK

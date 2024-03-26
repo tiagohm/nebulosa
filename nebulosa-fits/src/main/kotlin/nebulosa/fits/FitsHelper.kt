@@ -22,6 +22,12 @@ inline val ReadableHeader.width
 inline val ReadableHeader.height
     get() = getInt(FitsKeywordDictionary.NAXIS2, 0)
 
+inline val ReadableHeader.numberOfChannels
+    get() = getInt(FitsKeywordDictionary.NAXIS3, 1)
+
+inline val ReadableHeader.bitpix
+    get() = Bitpix.from(this)
+
 val ReadableHeader.rightAscension
     get() = Angle(getStringOrNull(FitsKeywordDictionary.RA), isHours = true, decimalIsHours = false).takeIf { it.isFinite() }
         ?: Angle(getStringOrNull(FitsKeywordDictionary.OBJCTRA), true).takeIf { it.isFinite() }

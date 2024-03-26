@@ -1,8 +1,5 @@
 package nebulosa.image.format
 
-import nebulosa.io.SeekableSource
-import okio.Sink
-
 interface Header : ReadableHeader, WritableHeader, Cloneable {
 
     public override fun clone(): Header
@@ -21,8 +18,6 @@ interface Header : ReadableHeader, WritableHeader, Cloneable {
 
         override fun iterator() = this
 
-        override fun write(sink: Sink) = Unit
-
         override fun clear() = Unit
 
         override fun add(key: String, value: Boolean, comment: String) = Unit
@@ -34,8 +29,6 @@ interface Header : ReadableHeader, WritableHeader, Cloneable {
         override fun add(key: String, value: String, comment: String) = Unit
 
         override fun delete(key: String) = false
-
-        override fun read(source: SeekableSource) = Unit
 
         override fun hasNext() = false
 

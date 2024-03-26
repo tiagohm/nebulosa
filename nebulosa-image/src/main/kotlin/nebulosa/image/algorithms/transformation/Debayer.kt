@@ -31,7 +31,7 @@ data class Debayer(private val pattern: CfaPattern? = null) : TransformAlgorithm
                 val startIndex = rowIndex - width
 
                 for (x in 0 until width) {
-                    source.r[startIndex + x] = cache[cacheIndex][x]
+                    source.red[startIndex + x] = cache[cacheIndex][x]
                 }
             }
         }
@@ -98,8 +98,8 @@ data class Debayer(private val pattern: CfaPattern? = null) : TransformAlgorithm
                 }
 
                 cache[y and 1][x] = rgbValues[0] / rgbCounters[0]
-                source.g[index] = rgbValues[1] / rgbCounters[1]
-                source.b[index] = rgbValues[2] / rgbCounters[2]
+                source.green[index] = rgbValues[1] / rgbCounters[1]
+                source.blue[index] = rgbValues[2] / rgbCounters[2]
             }
 
             copyCacheToRedChannel(rowIndex, y)

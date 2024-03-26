@@ -6,11 +6,11 @@ import nebulosa.image.algorithms.TransformAlgorithm
 data object Invert : TransformAlgorithm {
 
     override fun transform(source: Image): Image {
-        for (i in source.r.indices) source.r[i] = 1f - source.r[i]
+        for (i in source.red.indices) source.red[i] = 1f - source.red[i]
 
         if (!source.mono) {
-            for (i in source.g.indices) source.g[i] = 1f - source.g[i]
-            for (i in source.b.indices) source.b[i] = 1f - source.b[i]
+            for (i in source.green.indices) source.green[i] = 1f - source.green[i]
+            for (i in source.blue.indices) source.blue[i] = 1f - source.blue[i]
         }
 
         return source

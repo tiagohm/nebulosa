@@ -1,6 +1,6 @@
 package nebulosa.image.format
 
-interface ReadableHeader : Collection<HeaderCard>, ImageSink {
+interface ReadableHeader : Collection<HeaderCard> {
 
     operator fun contains(key: String): Boolean {
         return any { it.key == key }

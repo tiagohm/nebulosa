@@ -92,7 +92,7 @@ data class FitsHeaderCard(
         }
     }
 
-    override fun formattedValue(): String {
+    override fun formatted(): String {
         return FitsHeaderCardFormatter.format(this)
     }
 
