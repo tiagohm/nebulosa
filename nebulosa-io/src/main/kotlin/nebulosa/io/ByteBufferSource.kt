@@ -15,11 +15,8 @@ internal class ByteBufferSource(
 
     private val cursor = Buffer.UnsafeCursor()
 
-    override var position
-        get() = data.position().toLong()
-        private set(value) {
-            data.position(value.toInt())
-        }
+    override var position = 0L
+        private set
 
     override val exhausted
         get() = position >= byteCount
@@ -37,7 +34,7 @@ internal class ByteBufferSource(
 
     @Synchronized
     override fun read(sink: Buffer, byteCount: Long): Long {
-        if (exhausted) throw IllegalStateException("exhausted")
+        if (exhausted) return -1L
 
         return sink.readAndWriteUnsafe(cursor).use {
             timeout.throwIfReached()
@@ -45,10 +42,11 @@ internal class ByteBufferSource(
             val size = sink.size
             val length = min(min(this.byteCount - position, 8192L), byteCount)
 
-            if (length > 0) {
+            if (length > 0L) {
                 it.expandBuffer(length.toInt())
-                data.get(it.data!!, it.start, length.toInt())
+                data.get(offset + position.toInt(), it.data!!, it.start, length.toInt())
                 it.resizeBuffer(size + length)
+                position += length
                 length
             } else {
                 it.resizeBuffer(size)

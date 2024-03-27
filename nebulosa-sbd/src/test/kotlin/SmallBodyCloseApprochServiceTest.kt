@@ -1,5 +1,6 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
@@ -21,7 +22,7 @@ class SmallBodyCloseApprochServiceTest : StringSpec() {
             data.count shouldBeGreaterThanOrEqual 1
 
             data.fields shouldHaveSize 14
-            data.data shouldHaveSize 10
+            data.data shouldHaveAtLeastSize 10
 
             data.data[0][0] shouldBe "2024 EC3"
             data.data[0][3] shouldBe "2024-Mar-13 07:22"

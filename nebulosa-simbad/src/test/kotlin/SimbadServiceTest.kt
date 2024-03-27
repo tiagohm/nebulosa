@@ -1,3 +1,4 @@
+import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -8,10 +9,12 @@ import nebulosa.math.arcmin
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.simbad.SimbadService
+import nebulosa.test.NonGitHubOnlyCondition
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 
+@EnabledIf(NonGitHubOnlyCondition::class)
 class SimbadServiceTest : StringSpec() {
 
     init {

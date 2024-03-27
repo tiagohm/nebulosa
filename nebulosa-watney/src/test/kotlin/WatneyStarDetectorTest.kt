@@ -1,5 +1,6 @@
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import nebulosa.fits.fits
 import nebulosa.image.Image
 import nebulosa.image.algorithms.transformation.Draw
 import nebulosa.image.algorithms.transformation.convolution.Mean
@@ -16,7 +17,7 @@ class WatneyStarDetectorTest : FitsStringSpec() {
         val detector = WatneyStarDetector(computeHFD = true)
 
         "detect stars" {
-            var image = Image.open(NGC3344_COLOR_32_FITS)
+            var image = Image.open(NGC3344_COLOR_32_FITS_PATH.fits())
             var stars = detector.detect(image.transform(Mean))
             stars shouldHaveSize 1
             image.transform(ImageStarsDraw(stars)).save("color-detected-stars-1")

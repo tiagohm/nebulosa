@@ -16,11 +16,8 @@ internal class ByteBufferSink(
 
     private val cursor = Buffer.UnsafeCursor()
 
-    override var position
-        get() = data.position().toLong()
-        private set(value) {
-            data.position(value.toInt())
-        }
+    override var position = 0L
+        private set
 
     override val exhausted
         get() = position >= byteCount
@@ -40,7 +37,7 @@ internal class ByteBufferSink(
     override fun write(source: Buffer, byteCount: Long) {
         if (byteCount == 0L) return
 
-        if (exhausted) throw IllegalStateException("exhausted")
+        if (exhausted) throw EOFException("exhausted")
 
         var remaining = byteCount
 
@@ -52,9 +49,10 @@ internal class ByteBufferSink(
 
                 val length = min(min(this.byteCount - position, it.remaining.toLong()), remaining)
 
-                if (length > 0) {
-                    data.put(it.data!!, it.start, length.toInt())
+                if (length > 0L) {
+                    data.put(offset + position.toInt(), it.data!!, it.start, length.toInt())
                     remaining -= length
+                    position += length
                     source.skip(length)
                 } else {
                     throw EOFException("exhausted")

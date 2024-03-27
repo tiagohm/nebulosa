@@ -36,7 +36,7 @@ internal class ByteArraySink(
     override fun write(source: Buffer, byteCount: Long) {
         if (byteCount == 0L) return
 
-        if (exhausted) throw IllegalStateException("exhausted")
+        if (exhausted) throw EOFException("exhausted")
 
         var remaining = byteCount
 

@@ -30,7 +30,6 @@ internal class RandomAccessFileSink(
     @Synchronized
     override fun write(source: Buffer, byteCount: Long) {
         if (!file.channel.isOpen) throw IllegalStateException("closed")
-        if (exhausted) throw IllegalStateException("exhausted")
 
         if (byteCount == 0L) return
 

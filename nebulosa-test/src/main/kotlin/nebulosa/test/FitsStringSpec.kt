@@ -44,6 +44,7 @@ abstract class FitsStringSpec : StringSpec() {
     protected val M82_COLOR_32_XISF by lazy { download("M82.Color.32.xisf", GITHUB_XISF_URL) }
     protected val M82_COLOR_F32_XISF by lazy { download("M82.Color.F32.xisf", GITHUB_XISF_URL) }
     protected val M82_COLOR_F64_XISF by lazy { download("M82.Color.F64.xisf", GITHUB_XISF_URL) }
+    protected val DEBAYER_XISF_PATH by lazy { download("Debayer.xisf", GITHUB_XISF_URL) }
 
     protected val NGC3344_COLOR_8_FITS_PATH by lazy { download("NGC3344.Color.8.fits", GITHUB_FITS_URL) }
     protected val NGC3344_COLOR_16_FITS_PATH by lazy { download("NGC3344.Color.16.fits", GITHUB_FITS_URL) }
@@ -55,6 +56,7 @@ abstract class FitsStringSpec : StringSpec() {
     protected val NGC3344_MONO_32_FITS_PATH by lazy { download("NGC3344.Mono.32.fits", GITHUB_FITS_URL) }
     protected val NGC3344_MONO_F32_FITS_PATH by lazy { download("NGC3344.Mono.F32.fits", GITHUB_FITS_URL) }
     protected val NGC3344_MONO_F64_FITS_PATH by lazy { download("NGC3344.Mono.F64.fits", GITHUB_FITS_URL) }
+    protected val DEBAYER_FITS_PATH by lazy { download("Debayer.fits", GITHUB_FITS_URL) }
 
     protected val M6707HH by lazyFITS("M6707HH.fits", ASTROPY_PHOTOMETRY_URL)
 

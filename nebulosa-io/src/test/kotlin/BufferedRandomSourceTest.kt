@@ -28,7 +28,7 @@ class BufferedRandomSourceTest : StringSpec() {
         val counter = IntArray(256)
 
         for (byte in this) {
-            counter[byte.toInt() and 0xff]++
+            counter[byte.toInt() and 0xFF]++
         }
 
         val average = counter.average()

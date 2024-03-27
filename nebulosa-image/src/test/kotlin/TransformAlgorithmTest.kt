@@ -8,7 +8,6 @@ import nebulosa.image.ImageChannel
 import nebulosa.image.algorithms.transformation.*
 import nebulosa.image.algorithms.transformation.convolution.*
 import nebulosa.test.FitsStringSpec
-import java.io.File
 
 class TransformAlgorithmTest : FitsStringSpec() {
 
@@ -268,14 +267,12 @@ class TransformAlgorithmTest : FitsStringSpec() {
             nImage.save("color-grayscale-y").second shouldBe "24dd4a7e0fa9e4be34c53c924a78a940"
         }
         "color:debayer" {
-            val fits = File("src/test/resources/Debayer.fits").fits()
-            val mImage = Image.open(fits)
+            val mImage = Image.open(DEBAYER_FITS_PATH.fits())
             val nImage = mImage.transform(AutoScreenTransformFunction)
             nImage.save("color-debayer").second shouldBe "86b5bdd67dfd6bbf5495afae4bf2bc04"
         }
         "color:no-debayer" {
-            val fits = File("src/test/resources/Debayer.fits").fits()
-            val mImage = Image.open(fits, false)
+            val mImage = Image.open(DEBAYER_FITS_PATH.fits(), false)
             val nImage = mImage.transform(AutoScreenTransformFunction)
             nImage.save("color-no-debayer").second shouldBe "958ccea020deec1f0c075042a9ba37c3"
         }

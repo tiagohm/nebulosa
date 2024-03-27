@@ -1,4 +1,4 @@
-import io.kotest.core.spec.style.StringSpec
+import io.kotest.engine.spec.tempfile
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.doubles.shouldBeExactly
@@ -9,95 +9,97 @@ import io.kotest.matchers.shouldBe
 import nebulosa.io.*
 import okio.buffer
 import okio.utf8Size
+import java.io.File
 
-class BufferedRandomAccessFileTest : StringSpec() {
+class BufferedRandomAccessFileTest : BufferedStringSpec() {
 
     init {
-        val file = createFile()
-
-        "write" {
-            val sink = file.seekableSink()
-
-            val buffer = sink.buffer()
-            buffer.writeByte(0xab)
-            buffer.writeShort(0xabcd)
-            buffer.writeShortLe(0x2143)
-            buffer.writeInt(-0x543210ff)
-            buffer.writeIntLe(-0x789abcdf)
-            buffer.writeLong(-0x543210fe789abcdfL)
-            buffer.writeLongLe(-0x350145414f4ea400L)
-            buffer.writeFloat(3.14f)
-            buffer.writeFloatLe(3.14f)
-            buffer.writeDouble(3.14)
-            buffer.writeDoubleLe(3.14)
-            buffer.writeUtf8("təˈranəˌsôr")
-            buffer.writeUtf8CodePoint("µ".codePointAt(0))
-            buffer.writeString("c", charset = Charsets.UTF_32BE)
-            buffer.write(byteArrayOf(1, 2, 3))
-            buffer.writeByte(0xf9)
-            buffer.flush()
-        }
         "read" {
+            val file = makeFile()
             val source = file.seekableSource()
 
-            val buffer = source.buffer()
-            buffer.readUnsignedByte() shouldBeExactly 0xab
-            buffer.readShort().toInt() and 0xffff shouldBeExactly 0xabcd
-            buffer.readShortLe().toInt() and 0xffff shouldBeExactly 0x2143
-            buffer.readInt() shouldBeExactly -0x543210ff
-            buffer.readIntLe() shouldBeExactly -0x789abcdf
-            buffer.readLong() shouldBeExactly -0x543210fe789abcdfL
-            buffer.readLongLe() shouldBeExactly -0x350145414f4ea400L
-            buffer.readFloat() shouldBeExactly 3.14f
-            buffer.readFloatLe() shouldBeExactly 3.14f
-            buffer.readDouble() shouldBeExactly 3.14
-            buffer.readDoubleLe() shouldBeExactly 3.14
-            buffer.readUtf8("təˈranəˌsôr".utf8Size()) shouldBe "təˈranəˌsôr"
-            buffer.readUtf8CodePoint() shouldBeExactly "µ".codePointAt(0)
-            buffer.readString(4, Charsets.UTF_32BE) shouldBe "c"
-            buffer.readByteArray(3) shouldBe byteArrayOf(1, 2, 3)
-            buffer.exhausted().shouldBeFalse()
-            buffer.readUnsignedByte() shouldBeExactly 0xf9
-            buffer.exhausted().shouldBeTrue()
+            with(source.buffer()) {
+                readUnsignedByte() shouldBeExactly 0xab
+                readShort().toInt() and 0xffff shouldBeExactly 0xabcd
+                readShortLe().toInt() and 0xffff shouldBeExactly 0x2143
+                readInt() shouldBeExactly -0x543210ff
+                readIntLe() shouldBeExactly -0x789abcdf
+                readLong() shouldBeExactly -0x543210fe789abcdfL
+                readLongLe() shouldBeExactly -0x350145414f4ea400L
+                readFloat() shouldBeExactly 3.14f
+                readFloatLe() shouldBeExactly 3.14f
+                readDouble() shouldBeExactly 3.14
+                readDoubleLe() shouldBeExactly 3.14
+                readUtf8("təˈranəˌsôr".utf8Size()) shouldBe "təˈranəˌsôr"
+                readUtf8CodePoint() shouldBeExactly "µ".codePointAt(0)
+                readString(4, Charsets.UTF_32BE) shouldBe "c"
+                readByteArray(3) shouldBe byteArrayOf(1, 2, 3)
+                exhausted().shouldBeFalse()
+                readUnsignedByte() shouldBeExactly 0xf9
+                exhausted().shouldBeTrue()
+            }
         }
         "seek and write" {
+            val file = makeFile()
             val sink = file.seekableSink()
             sink.seek(-1L)
 
-            val buffer = sink.buffer()
-            buffer.writeByte(0x44)
-            buffer.flush()
-        }
-        "skip and read" {
-            val source = file.seekableSource()
-            source.skip(78)
-
-            val buffer = source.buffer()
-            buffer.exhausted().shouldBeFalse()
-            buffer.readSignedByte() shouldBeExactly 0x44
-            buffer.exhausted().shouldBeTrue()
-        }
-        "seek and read" {
-            val source = file.seekableSource()
-            source.seek(-1L)
-
-            val buffer = source.buffer()
-            buffer.exhausted().shouldBeFalse()
-            buffer.readSignedByte() shouldBeExactly 0x44
-            buffer.exhausted().shouldBeTrue()
-        }
-        "close emits buffered bytes" {
-            file.writeBytes(EMPTY_BYTE_ARRAY)
-
-            val sink = file.seekableSink()
-
-            sink.buffer().use {
-                it.writeByte(0x99)
+            with(sink.buffer()) {
+                writeByte(0x44)
+                flush()
             }
 
             val source = file.seekableSource()
-            val buffer = source.buffer()
-            buffer.readUnsignedByte() shouldBeExactly 0x99
+            source.seek(-1L)
+
+            with(source.buffer()) {
+                readByte().toInt() shouldBeExactly 0x44
+            }
         }
+        "skip and read" {
+            val file = makeFile()
+            val source = file.seekableSource()
+            source.skip(78)
+
+            with(source.buffer()) {
+                exhausted().shouldBeFalse()
+                readSignedByte() shouldBeExactly 0xF9.toByte().toInt()
+                exhausted().shouldBeTrue()
+            }
+        }
+        "seek and read" {
+            val file = makeFile()
+            val source = file.seekableSource()
+
+            with(source.buffer()) {
+                source.seek(-1L)
+                exhausted().shouldBeFalse()
+                readSignedByte() shouldBeExactly 0xF9.toByte().toInt()
+                exhausted().shouldBeTrue()
+
+                source.seek(37)
+                exhausted().shouldBeFalse()
+                readDouble() shouldBeExactly 3.14
+                exhausted().shouldBeFalse()
+            }
+        }
+        "close emits buffered bytes" {
+            val file = makeFile()
+            file.writeBytes(ByteArray(79) { 1 })
+
+            val sink = file.seekableSink()
+            sink.buffer().use { it.writeByte(0x99) }
+
+            file.seekableSource().buffer().use {
+                it.readUnsignedByte() shouldBeExactly 0x99
+                it.readUnsignedByte() shouldBeExactly 1
+            }
+        }
+    }
+
+    private fun makeFile(): File {
+        val file = tempfile()
+        file.seekableSink().use { it.initialize() }
+        return file
     }
 }

@@ -11,20 +11,21 @@ import nebulosa.io.*
 import okio.buffer
 import okio.utf8Size
 import java.io.EOFException
+import java.nio.ByteBuffer
 
-class BufferedByteArrayTest : BufferedStringSpec() {
+class BufferedByteBufferTest : BufferedStringSpec() {
 
     init {
         "read" {
-            val data = ByteArray(79)
+            val data = ByteBuffer.allocate(79)
             data.sink().use { it.initialize() }
 
             val source = data.source()
 
             with(source.buffer()) {
                 readUnsignedByte() shouldBeExactly 0xAB
-                readShort().toInt() and 0xFFFF shouldBeExactly 0xABCD
-                readShortLe().toInt() and 0xFFFF shouldBeExactly 0x2143
+                readShort().toInt() and 0xFFFF shouldBeExactly 0XABCD
+                readShortLe().toInt() and 0xFFFF shouldBeExactly 0X2143
                 readInt() shouldBeExactly -0x543210FF
                 readIntLe() shouldBeExactly -0x789ABCDF
                 readLong() shouldBeExactly -0x543210FE789ABCDFL
@@ -43,8 +44,10 @@ class BufferedByteArrayTest : BufferedStringSpec() {
             }
         }
         "seek and write" {
-            val data = ByteArray(79)
+            val data = ByteBuffer.allocate(79)
+
             val sink = data.sink()
+            sink.initialize()
             sink.seek(-1L)
 
             with(sink.buffer()) {
@@ -53,7 +56,7 @@ class BufferedByteArrayTest : BufferedStringSpec() {
             }
         }
         "skip and read" {
-            val data = ByteArray(79)
+            val data = ByteBuffer.allocate(79)
             data.sink().use { it.initialize() }
 
             val source = data.source()
@@ -66,7 +69,7 @@ class BufferedByteArrayTest : BufferedStringSpec() {
             }
         }
         "seek and read" {
-            val data = ByteArray(79)
+            val data = ByteBuffer.allocate(79)
             data.sink().use { it.initialize() }
 
             val source = data.source()
@@ -84,10 +87,10 @@ class BufferedByteArrayTest : BufferedStringSpec() {
             }
         }
         "write with offset and byte count" {
-            val data = ByteArray(79)
+            val data = ByteBuffer.allocate(79)
             data.sink().use { it.initialize() }
 
-            val sink = data.sink(36, 8)
+            val sink = data.sink(2, 8)
 
             with(sink.buffer()) {
                 writeDouble(3.14)
@@ -98,7 +101,7 @@ class BufferedByteArrayTest : BufferedStringSpec() {
             }
         }
         "read with offset and byte count" {
-            val data = ByteArray(79)
+            val data = ByteBuffer.allocate(79)
             data.sink().use { it.initialize() }
 
             val source = data.source(37, 8)
@@ -110,7 +113,8 @@ class BufferedByteArrayTest : BufferedStringSpec() {
             }
         }
         "close emits buffered bytes" {
-            val data = ByteArray(79) { 1 }
+            val data = ByteBuffer.allocate(79)
+            repeat(data.capacity()) { data.put(1) }
 
             val sink = data.sink()
             sink.buffer().use { it.writeByte(0x99) }

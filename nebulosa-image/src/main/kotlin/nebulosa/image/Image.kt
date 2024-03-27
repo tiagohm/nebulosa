@@ -258,7 +258,11 @@ class Image internal constructor(
 
         @JvmStatic
         internal fun raster(hdu: ImageHdu, mono: Boolean): WritableRaster {
-            return raster(hdu.width, hdu.height, isMono(hdu) || mono, hdu.data.red, hdu.data.green, hdu.data.blue)
+            return if (mono || hdu.data.numberOfChannels >= 3) {
+                raster(hdu.width, hdu.height, mono, hdu.data.red, hdu.data.green, hdu.data.blue)
+            } else {
+                raster(hdu.width, hdu.height, false, hdu.data.red, FloatArray(hdu.data.numberOfPixels), FloatArray(hdu.data.numberOfPixels))
+            }
         }
 
         @JvmStatic
@@ -270,7 +274,7 @@ class Image internal constructor(
         fun open(hdu: ImageHdu, debayer: Boolean = true): Image {
             val image = Image(hdu.width, hdu.height, isMono(hdu) || !debayer, hdu)
 
-            if (image.mono && debayer) {
+            if (!image.mono && debayer) {
                 image.debayer()
             }
 

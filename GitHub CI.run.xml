@@ -10,7 +10,7 @@
             <option name="externalSystemIdString"
                     value="GRADLE"/>
             <option name="scriptParameters"
-                    value="-Dgithub=true"/>
+                    value="-Dgithub=true --continue"/>
             <option name="taskDescriptions">
                 <list/>
             </option>

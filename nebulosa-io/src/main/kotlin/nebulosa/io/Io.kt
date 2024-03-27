@@ -13,8 +13,6 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 import java.util.*
 
-val EMPTY_BYTE_ARRAY = ByteArray(0)
-
 inline fun BufferedSource.readSignedByte() = readByte().toInt()
 
 inline fun BufferedSource.readUnsignedByte() = readSignedByte() and 0xFF
@@ -101,6 +99,12 @@ fun ByteArray.sink(
     byteCount: Int = size - offset,
     timeout: Timeout = Timeout.NONE,
 ): SeekableSink = ByteArraySink(this, offset, byteCount, timeout)
+
+fun ByteBuffer.sink(
+    offset: Int = 0,
+    byteCount: Int = capacity() - offset,
+    timeout: Timeout = Timeout.NONE,
+): SeekableSink = ByteBufferSink(this, offset, byteCount, timeout)
 
 fun ByteBuffer.source(
     offset: Int = 0,

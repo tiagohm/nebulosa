@@ -31,7 +31,8 @@ internal class RandomAccessFileSource(
     @Synchronized
     override fun read(sink: Buffer, byteCount: Long): Long {
         if (!file.channel.isOpen) throw IllegalStateException("closed")
-        if (exhausted) throw IllegalStateException("exhausted")
+
+        if (exhausted) return -1L
 
         return sink.readAndWriteUnsafe(cursor).use {
             timeout.throwIfReached()
