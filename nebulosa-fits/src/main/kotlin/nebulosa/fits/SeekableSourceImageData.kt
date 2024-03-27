@@ -57,11 +57,18 @@ internal data class SeekableSourceImageData(
     }
 
     private fun readChannel(channel: ImageChannel): FloatArray {
+        val data = FloatArray(numberOfPixels)
+        readChannelTo(channel, data)
+        return data
+    }
+
+    override fun readChannelTo(channel: ImageChannel, output: FloatArray) {
+        // TODO: Read channel from source only if not initialized (remove lazy from red, green and blue).
+
         val startIndex = channelSizeInBytes * channel.index
         source.seek(position + startIndex)
 
-        val data = FloatArray(numberOfPixels)
-        var remainingPixels = data.size
+        var remainingPixels = output.size
         var pos = 0
 
         Buffer().use { buffer ->
@@ -77,14 +84,12 @@ internal data class SeekableSourceImageData(
                 n = (size / bitpix.byteLength).toInt()
 
                 repeat(n) {
-                    data[pos++] = buffer.readPixel(bitpix)
+                    output[pos++] = buffer.readPixel(bitpix)
                 }
 
                 remainingPixels -= n
             }
         }
-
-        return data
     }
 
     internal fun writeTo(sink: Sink): Long {

@@ -1,7 +1,7 @@
 package nebulosa.image.algorithms.transformation
 
 import nebulosa.fits.cfaPattern
-import nebulosa.image.ImageChannel
+import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ReadableHeader
 
 enum class CfaPattern(private val pattern: Array<Array<ImageChannel>>) {

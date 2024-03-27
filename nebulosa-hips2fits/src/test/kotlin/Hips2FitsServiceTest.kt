@@ -1,3 +1,4 @@
+import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -10,7 +11,9 @@ import nebulosa.image.format.ImageHdu
 import nebulosa.io.source
 import nebulosa.math.deg
 import nebulosa.math.toDegrees
+import nebulosa.test.NonGitHubOnlyCondition
 
+@EnabledIf(NonGitHubOnlyCondition::class)
 class Hips2FitsServiceTest : StringSpec() {
 
     init {

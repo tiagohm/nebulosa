@@ -111,7 +111,12 @@ export class ElectronService {
     }
 
     openFits(data?: OpenFile): Promise<string | undefined> {
-        return this.openFile({ ...data, filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }] })
+        return this.openFile({
+            ...data, filters: [
+                { name: 'FITS files', extensions: ['fits', 'fit'] },
+                { name: 'XISF files', extensions: ['xisf'] },
+            ]
+        })
     }
 
     saveFits(data?: OpenFile) {

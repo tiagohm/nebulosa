@@ -60,20 +60,26 @@ internal data class XisfMonolithicFileHeaderImageData(
     }
 
     private fun readChannel(channel: ImageChannel): FloatArray {
-        return if (image.pixelStorage == PixelStorageModel.NORMAL) readNormal(channel)
-        else readPlanar(channel)
+        val output = FloatArray(numberOfPixels)
+        readChannelTo(channel, output)
+        return output
+    }
+
+    override fun readChannelTo(channel: ImageChannel, output: FloatArray) {
+        // TODO: Read channel from source only if not initialized (remove lazy from red, green and blue).
+        if (image.pixelStorage == PixelStorageModel.NORMAL) readNormal(channel, output)
+        else readPlanar(channel, output)
     }
 
     /**
      * In the planar storage model, each channel of an image shall be stored as
      * a contiguous sequence of pixel samples (each channel is stored in a separate block).
      */
-    private fun readPlanar(channel: ImageChannel): FloatArray {
+    private fun readPlanar(channel: ImageChannel, data: FloatArray): FloatArray {
         val startIndex = numberOfPixels * image.sampleFormat.byteLength * channel.index
 
         source.seek(image.position + startIndex)
 
-        val data = FloatArray(numberOfPixels)
         var remainingPixels = data.size
         var pos = 0
 
@@ -118,13 +124,12 @@ internal data class XisfMonolithicFileHeaderImageData(
      * In the normal storage model, all pixel samples of an image shall be stored as
      * a contiguous sequence (all pixel samples are stored in a single block).
      */
-    private fun readNormal(channel: ImageChannel): FloatArray {
+    private fun readNormal(channel: ImageChannel, data: FloatArray): FloatArray {
         source.seek(image.position)
 
         val blockSizeInBytes = numberOfChannels * image.sampleFormat.byteLength
         val bytesToSkipBefore = channel.index * image.sampleFormat.byteLength
         val bytesToSkipAfter = blockSizeInBytes - bytesToSkipBefore - image.sampleFormat.byteLength
-        val data = FloatArray(numberOfPixels)
         var remainingPixels = data.size
         var pos = 0
 

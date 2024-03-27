@@ -12,8 +12,7 @@ import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
 import nebulosa.common.concurrency.latch.Pauseable
 import nebulosa.common.time.Stopwatch
-import nebulosa.fits.fits
-import nebulosa.image.Image
+import nebulosa.image.format.ImageRepresentation
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.mount.Mount
 import nebulosa.log.debug
@@ -21,6 +20,7 @@ import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.plate.solving.PlateSolver
+import java.nio.file.Path
 
 data class TPPAStep(
     @JvmField val camera: Camera,
@@ -30,7 +30,7 @@ data class TPPAStep(
     private val longitude: Angle = mount!!.longitude,
     private val latitude: Angle = mount!!.latitude,
     private val cameraRequest: CameraStartCaptureRequest = request.capture,
-) : Step, Pauseable {
+) : Step, Pauseable, CameraCaptureListener {
 
     private val cameraExposureStep = CameraExposureStep(camera, cameraRequest)
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
@@ -38,10 +38,10 @@ data class TPPAStep(
     private val stopwatch = Stopwatch()
     private val stepDistances = DoubleArray(2) { if (request.eastDirection) request.stepDistance else -request.stepDistance }
 
-    @Volatile private var image: Image? = null
     @Volatile private var mountSlewStep: MountSlewStep? = null
     @Volatile private var noSolutionAttempts = 0
     @Volatile private var stepExecution: StepExecution? = null
+    @Volatile private var savedImage: Pair<ImageRepresentation, Path>? = null
 
     val stepCount
         get() = alignment.state
@@ -65,20 +65,26 @@ data class TPPAStep(
         return listeners.remove(listener)
     }
 
+    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation, savedPath: Path) {
+        savedImage = image to savedPath
+    }
+
     override fun beforeJob(jobExecution: JobExecution) {
+        cameraExposureStep.registerCameraCaptureListener(this)
         cameraExposureStep.beforeJob(jobExecution)
         mount?.tracking(true)
     }
 
     override fun afterJob(jobExecution: JobExecution) {
         cameraExposureStep.afterJob(jobExecution)
+        cameraExposureStep.unregisterCameraCaptureListener(this)
 
         if (mount != null && request.stopTrackingWhenDone) {
             mount.tracking(false)
         }
 
+        savedImage = null
         stopwatch.stop()
-
         listeners.forEach { it.polarAlignmentFinished(this, jobExecution.cancellationToken.isCancelled) }
     }
 
@@ -119,14 +125,13 @@ data class TPPAStep(
         cameraExposureStep.execute(stepExecution)
 
         if (!cancellationToken.isCancelled) {
-            val savedPath = cameraExposureStep.savedPath ?: return StepResult.FINISHED
-            image = savedPath.fits().use { image?.load(it, false) ?: Image.open(it, false) }
+            val saved = savedImage ?: return StepResult.FINISHED
 
             val radius = if (mount == null) 0.0 else ThreePointPolarAlignment.DEFAULT_RADIUS
 
             // Polar alignment step.
             val result = alignment.align(
-                savedPath, image!!, mount?.rightAscension ?: 0.0, mount?.declination ?: 0.0, radius,
+                saved.second, mount?.rightAscension ?: 0.0, mount?.declination ?: 0.0, radius,
                 request.compensateRefraction, cancellationToken
             )
 

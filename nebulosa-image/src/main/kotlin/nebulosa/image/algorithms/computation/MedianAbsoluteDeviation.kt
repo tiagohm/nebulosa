@@ -2,8 +2,8 @@ package nebulosa.image.algorithms.computation
 
 import nebulosa.image.Image
 import nebulosa.image.Image.Companion.forEach
-import nebulosa.image.ImageChannel
 import nebulosa.image.algorithms.ComputationAlgorithm
+import nebulosa.image.format.ImageChannel
 import kotlin.math.abs
 import kotlin.math.min
 

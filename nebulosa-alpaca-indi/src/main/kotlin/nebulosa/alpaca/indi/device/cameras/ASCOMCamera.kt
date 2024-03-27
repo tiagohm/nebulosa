@@ -694,27 +694,27 @@ data class ASCOMCamera(
             val fits = Fits()
             fits.add(hdu)
 
-            sender.fireOnEventReceived(CameraFrameCaptured(this, null, fits, false))
+            sender.fireOnEventReceived(CameraFrameCaptured(this, fits, false, CameraFrameCaptured.Format.FITS))
         } ?: LOG.error("image body is null. device={}", name)
     }
 
     override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
-        " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
-        " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
-        " frameFormats=$frameFormats, canAbort=$canAbort," +
-        " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
-        " exposureMin=$exposureMin, exposureMax=$exposureMax," +
-        " exposureState=$exposureState, exposureTime=$exposureTime," +
-        " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
-        " temperature=$temperature, canSubFrame=$canSubFrame," +
-        " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
-        " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
-        " minHeight=$minHeight, maxHeight=$maxHeight," +
-        " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
-        " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
-        " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
-        " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
-        " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
+            " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
+            " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
+            " frameFormats=$frameFormats, canAbort=$canAbort," +
+            " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
+            " exposureMin=$exposureMin, exposureMax=$exposureMax," +
+            " exposureState=$exposureState, exposureTime=$exposureTime," +
+            " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
+            " temperature=$temperature, canSubFrame=$canSubFrame," +
+            " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
+            " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
+            " minHeight=$minHeight, maxHeight=$maxHeight," +
+            " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
+            " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
+            " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
+            " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
+            " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
 
     data class ImageMetadata(
         @JvmField val metadataVersion: Int, // Bytes 0..3 - Metadata version = 1

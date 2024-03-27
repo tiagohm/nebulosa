@@ -9,10 +9,10 @@ import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
 import nebulosa.fits.*
 import nebulosa.image.Image
-import nebulosa.image.ImageChannel
 import nebulosa.image.algorithms.computation.Histogram
 import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.algorithms.transformation.*
+import nebulosa.image.format.ImageChannel
 import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
 import nebulosa.log.debug

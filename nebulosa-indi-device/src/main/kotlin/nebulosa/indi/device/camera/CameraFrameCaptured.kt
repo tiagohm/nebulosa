@@ -1,11 +1,23 @@
 package nebulosa.indi.device.camera
 
-import nebulosa.fits.Fits
-import java.io.InputStream
+import nebulosa.image.format.ImageRepresentation
 
 data class CameraFrameCaptured(
     override val device: Camera,
-    @JvmField val stream: InputStream?,
-    @JvmField val fits: Fits?,
+    @JvmField val image: ImageRepresentation,
     @JvmField val compressed: Boolean,
-) : CameraEvent
+    @JvmField val format: Format,
+) : CameraEvent {
+
+    enum class Format(@JvmField val extension: String) {
+        FITS("fits"),
+        XISF("xisf"),
+        RAW("bin");
+
+        companion object {
+
+            @JvmStatic
+            fun from(format: String) = entries.first { format.contains(it.extension, true) }
+        }
+    }
+}

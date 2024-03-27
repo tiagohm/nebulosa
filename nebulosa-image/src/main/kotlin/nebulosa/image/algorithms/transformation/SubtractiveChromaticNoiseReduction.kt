@@ -1,8 +1,8 @@
 package nebulosa.image.algorithms.transformation
 
 import nebulosa.image.Image
-import nebulosa.image.ImageChannel
 import nebulosa.image.algorithms.TransformAlgorithm
+import nebulosa.image.format.ImageChannel
 
 /**
  * The Subtractive Chromatic Noise Reduction (SCNR) technique
@@ -31,12 +31,12 @@ data class SubtractiveChromaticNoiseReduction(
     override fun transform(source: Image): Image {
         if (source.mono || channel == ImageChannel.GRAY) return source
 
-        val p0 = (channel.offset + 2) % 3
-        val p1 = (channel.offset + 1) % 3
+        val p0 = (channel.index + 2) % 3
+        val p1 = (channel.index + 1) % 3
 
         for (i in source.red.indices) {
-            source.data[channel.offset][i] = protectionMethod
-                .compute(source.data[p0][i], source.data[p1][i], source.data[channel.offset][i], amount)
+            source.data[channel.index][i] = protectionMethod
+                .compute(source.data[p0][i], source.data[p1][i], source.data[channel.index][i], amount)
         }
 
         return source

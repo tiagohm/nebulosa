@@ -1,5 +1,6 @@
 package nebulosa.indi.client.device.cameras
 
+import nebulosa.fits.fits
 import nebulosa.image.algorithms.transformation.CfaPattern
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice
@@ -8,14 +9,18 @@ import nebulosa.indi.device.camera.Camera.Companion.NANO_SECONDS
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.protocol.*
 import nebulosa.io.Base64InputStream
+import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
+import nebulosa.xisf.xisf
+import java.nio.file.Files
 import java.time.Duration
+import kotlin.io.path.outputStream
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indiccd.cpp
 
 internal open class INDICamera(
-    override val sender: INDIClient,
-    override val name: String,
+    final override val sender: INDIClient,
+    final override val name: String,
 ) : INDIDevice(), Camera {
 
     @Volatile final override var exposuring = false
@@ -116,6 +121,8 @@ internal open class INDICamera(
         private set
     @Volatile final override var pulseGuiding = false
         private set
+
+    private val savePath = Files.createTempFile(name, ".camera")
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -295,9 +302,25 @@ internal open class INDICamera(
                 when (message.name) {
                     "CCD1" -> {
                         val ccd1 = message["CCD1"]!!
-                        val fits = Base64InputStream(ccd1.value)
-                        val compressed = COMPRESSION_FORMATS.any { ccd1.format.endsWith(it, true) }
-                        sender.fireOnEventReceived(CameraFrameCaptured(this, fits, null, compressed))
+
+                        val format = CameraFrameCaptured.Format.from(ccd1.format)
+
+                        if (format != CameraFrameCaptured.Format.RAW) {
+                            val stream = Base64InputStream(ccd1.value)
+                            stream.transferAndClose(savePath.outputStream())
+
+                            val compressed = COMPRESSION_FORMATS.any { ccd1.format.endsWith(it, true) }
+
+                            val image = when (format) {
+                                CameraFrameCaptured.Format.FITS -> savePath.fits()
+                                CameraFrameCaptured.Format.XISF -> savePath.xisf()
+                                else -> throw IllegalStateException("impossible format")
+                            }
+
+                            LOG.info("saved {} file at {}. compressed={}", format, savePath, compressed)
+
+                            sender.fireOnEventReceived(CameraFrameCaptured(this, image, compressed, format))
+                        }
                     }
                     "CCD2" -> {
                         // TODO: Handle Guider Head frame.
@@ -427,26 +450,26 @@ internal open class INDICamera(
     }
 
     override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
-        " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
-        " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
-        " frameFormats=$frameFormats, canAbort=$canAbort," +
-        " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
-        " exposureMin=$exposureMin, exposureMax=$exposureMax," +
-        " exposureState=$exposureState, exposureTime=$exposureTime," +
-        " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
-        " temperature=$temperature, canSubFrame=$canSubFrame," +
-        " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
-        " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
-        " minHeight=$minHeight, maxHeight=$maxHeight," +
-        " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
-        " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
-        " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
-        " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
-        " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
+            " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
+            " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
+            " frameFormats=$frameFormats, canAbort=$canAbort," +
+            " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
+            " exposureMin=$exposureMin, exposureMax=$exposureMax," +
+            " exposureState=$exposureState, exposureTime=$exposureTime," +
+            " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
+            " temperature=$temperature, canSubFrame=$canSubFrame," +
+            " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
+            " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
+            " minHeight=$minHeight, maxHeight=$maxHeight," +
+            " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
+            " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
+            " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
+            " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
+            " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
 
     companion object {
 
-        @JvmStatic private val COMPRESSION_FORMATS = arrayOf(".fz", ".gz")
+        @JvmStatic private val COMPRESSION_FORMATS = arrayOf(".fz", ".gz", ".z")
         @JvmStatic private val LOG = loggerFor<INDICamera>()
     }
 }

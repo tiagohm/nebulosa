@@ -16,4 +16,6 @@ interface ImageData {
     val green: FloatArray
 
     val blue: FloatArray
+
+    fun readChannelTo(channel: ImageChannel, output: FloatArray)
 }

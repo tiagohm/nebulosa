@@ -4,9 +4,9 @@ import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import nebulosa.fits.fits
 import nebulosa.image.Image
-import nebulosa.image.ImageChannel
 import nebulosa.image.algorithms.computation.MedianAbsoluteDeviation
 import nebulosa.image.algorithms.computation.Statistics
+import nebulosa.image.format.ImageChannel
 import nebulosa.test.FitsStringSpec
 
 class ComputationAlgorithmTest : FitsStringSpec() {

@@ -1,9 +1,9 @@
 package nebulosa.image.algorithms.transformation.correction
 
 import nebulosa.image.Image
-import nebulosa.image.ImageChannel
 import nebulosa.image.algorithms.TransformAlgorithm
 import nebulosa.image.algorithms.computation.Statistics
+import nebulosa.image.format.ImageChannel
 
 data class FlatCorrection(private val flatFrame: Image) : TransformAlgorithm {
 

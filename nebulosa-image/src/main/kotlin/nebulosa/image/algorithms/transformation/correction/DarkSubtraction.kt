@@ -1,8 +1,8 @@
 package nebulosa.image.algorithms.transformation.correction
 
 import nebulosa.image.Image
-import nebulosa.image.ImageChannel
 import nebulosa.image.algorithms.TransformAlgorithm
+import nebulosa.image.format.ImageChannel
 import kotlin.math.max
 
 data class DarkSubtraction(private val darkFrame: Image) : TransformAlgorithm {

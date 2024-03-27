@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":nebulosa-stellarium-protocol"))
     implementation(project(":nebulosa-watney"))
     implementation(project(":nebulosa-wcs"))
+    implementation(project(":nebulosa-xisf"))
     implementation(libs.apache.codec)
     implementation(libs.csv)
     implementation(libs.eventbus)

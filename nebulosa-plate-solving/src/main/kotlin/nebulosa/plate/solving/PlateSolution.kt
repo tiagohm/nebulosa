@@ -35,13 +35,13 @@ data class PlateSolution(
 
         @JvmStatic
         fun from(header: ReadableHeader): PlateSolution? {
+            val crval1 = header.getDoubleOrNull(FitsKeyword.CRVAL1)?.deg ?: return null
+            val crval2 = header.getDoubleOrNull(FitsKeyword.CRVAL2)?.deg ?: return null
             val (cd11, cd12, _, cd22) = header.computeCdMatrix()
             val crota2 = header.getDoubleOrNull(FitsKeyword.CROTA2)?.deg ?: atan2(cd12, cd11).rad
             // https://danmoser.github.io/notes/gai_fits-imgs.html
             val cdelt1 = header.getDoubleOrNull(FitsKeyword.CDELT1)?.deg ?: (cd11 / cos(crota2)).deg
             val cdelt2 = header.getDoubleOrNull(FitsKeyword.CDELT2)?.deg ?: (cd22 / cos(crota2)).deg
-            val crval1 = header.getDoubleOrNull(FitsKeyword.CRVAL1)?.deg ?: return null
-            val crval2 = header.getDoubleOrNull(FitsKeyword.CRVAL2)?.deg ?: return null
             val width = header.getIntOrNull(FitsKeyword.NAXIS1) ?: header.getInt("IMAGEW", 0)
             val height = header.getIntOrNull(FitsKeyword.NAXIS2) ?: header.getInt("IMAGEH", 0)
 

@@ -18,7 +18,7 @@ import kotlin.math.min
 class Image internal constructor(
     width: Int, height: Int, val mono: Boolean,
     @JvmField val hdu: ImageHdu,
-) : BufferedImage(colorModel(mono), raster(hdu, mono), false, null) {
+) : BufferedImage(colorModel(mono), raster(hdu, mono), false, null), Cloneable {
 
     constructor(width: Int, height: Int, header: ReadableHeader, mono: Boolean)
             : this(width, height, mono, BasicImageHdu(width, height, if (mono) 1 else 3, header, FloatImageData(width, height, if (mono) 1 else 3)))
@@ -52,7 +52,7 @@ class Image internal constructor(
     }
 
     inline fun write(index: Int, channel: ImageChannel, color: Float) {
-        write(index, channel.offset, color)
+        write(index, channel.index, color)
     }
 
     inline fun write(index: Int, channel: Int, color: Float) {
@@ -60,7 +60,7 @@ class Image internal constructor(
     }
 
     inline fun write(x: Int, y: Int, channel: ImageChannel, color: Float) {
-        write(x, y, channel.offset, color)
+        write(x, y, channel.index, color)
     }
 
     inline fun write(x: Int, y: Int, channel: Int, color: Float) {
@@ -105,7 +105,7 @@ class Image internal constructor(
     }
 
     inline fun read(index: Int, channel: ImageChannel): Float {
-        return read(index, channel.offset)
+        return read(index, channel.index)
     }
 
     inline fun read(index: Int, channel: Int): Float {
@@ -113,7 +113,7 @@ class Image internal constructor(
     }
 
     inline fun read(x: Int, y: Int, channel: ImageChannel): Float {
-        return read(x, y, channel.offset)
+        return read(x, y, channel.index)
     }
 
     inline fun read(x: Int, y: Int, channel: Int): Float {
@@ -215,25 +215,29 @@ class Image internal constructor(
         return image
     }
 
-    fun canLoad(hdu: ImageHdu, debayer: Boolean = true): Boolean {
-        return hdu.width == width && hdu.height == height && (isMono(hdu) || !debayer) == mono
+    fun canLoad(hdu: ImageHdu): Boolean {
+        return hdu.width == width && hdu.height == height && hdu.isMono == mono
     }
 
-    fun canLoad(image: ImageRepresentation, debayer: Boolean = true): Boolean {
-        return canLoad(image.filterIsInstance<ImageHdu>().first(), debayer)
+    fun canLoad(image: ImageRepresentation): Boolean {
+        return canLoad(image.filterIsInstance<ImageHdu>().first())
     }
 
-    fun load(image: ImageRepresentation, debayer: Boolean = true): Image? {
-        return load(image.filterIsInstance<ImageHdu>().first(), debayer)
+    fun load(image: ImageRepresentation): Image? {
+        return load(image.filterIsInstance<ImageHdu>().first())
     }
 
-    fun load(hdu: ImageHdu, debayer: Boolean = true): Image? {
-        if (!canLoad(hdu, debayer)) return null
-        load(this, hdu, debayer)
+    fun load(image: Image): Image? {
+        return load(image.hdu)
+    }
+
+    fun load(hdu: ImageHdu): Image? {
+        if (!canLoad(hdu)) return null
+        load(this, hdu, false)
         return this
     }
 
-    fun clone() = if (mono) mono() else color()
+    public override fun clone() = if (mono) mono() else color()
 
     fun transform(vararg algorithms: TransformAlgorithm) = algorithms.transform(this)
 
@@ -289,14 +293,14 @@ class Image internal constructor(
 
         @JvmStatic
         private fun load(image: Image, hdu: ImageHdu, debayer: Boolean) {
-            hdu.data.red.copyInto(image.red)
+            hdu.data.readChannelTo(ImageChannel.RED, image.red)
 
             if (!image.mono) {
-                hdu.data.green.copyInto(image.green)
-                hdu.data.blue.copyInto(image.blue)
-
                 if (debayer) {
                     image.debayer()
+                } else {
+                    hdu.data.readChannelTo(ImageChannel.GREEN, image.green)
+                    hdu.data.readChannelTo(ImageChannel.BLUE, image.blue)
                 }
             }
         }

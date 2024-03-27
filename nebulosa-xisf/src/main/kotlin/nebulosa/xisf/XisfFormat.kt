@@ -4,8 +4,11 @@ import nebulosa.image.format.Hdu
 import nebulosa.image.format.ImageFormat
 import nebulosa.image.format.ImageHdu
 import nebulosa.io.SeekableSource
+import nebulosa.io.sink
+import nebulosa.io.transferFully
 import okio.Buffer
 import okio.Sink
+import java.io.ByteArrayInputStream
 
 /**
  * Extensible Image Serialization Format (XISF) is the native file format of PixInsight.
@@ -23,12 +26,15 @@ data object XisfFormat : ImageFormat {
 
             // Header length (4) + reserved (4)
             source.read(buffer, 4 + 4)
-            val headerLength = buffer.readIntLe().toLong()
-            buffer.skip(4) // reserved
+            val headerLength = buffer.readIntLe()
+            // buffer.skip(4) // reserved
+            buffer.clear()
 
             // XISF Header.
-            source.read(buffer, headerLength)
-            val stream = XisfHeaderInputStream(buffer.inputStream())
+            val headerData = ByteArray(headerLength)
+            val headerSink = headerData.sink()
+            buffer.transferFully(source, headerSink, headerLength.toLong())
+            val stream = XisfHeaderInputStream(ByteArrayInputStream(headerData))
             val hdus = ArrayList<XisfMonolithicFileHeaderImageHdu>(2)
 
             while (true) {

@@ -1,10 +1,10 @@
 package nebulosa.image.algorithms.transformation
 
 import nebulosa.image.Image
-import nebulosa.image.ImageChannel
 import nebulosa.image.algorithms.ComputationAlgorithm
 import nebulosa.image.algorithms.TransformAlgorithm
 import nebulosa.image.algorithms.computation.Statistics
+import nebulosa.image.format.ImageChannel
 import kotlin.math.max
 import kotlin.math.min
 
