@@ -19,7 +19,8 @@ interface HeaderCard : HeaderKey, HeaderValue, Map.Entry<String, String> {
     val isNumericType
         get() = isDecimalType || isIntegerType
 
-    val isBlank: Boolean
+    val isBlank
+        get() = if (!isCommentStyle || key.isNotBlank()) false else comment.isBlank()
 
     companion object {
 

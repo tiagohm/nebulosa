@@ -2,9 +2,7 @@ package nebulosa.fits
 
 import nebulosa.image.format.HeaderCard
 import nebulosa.image.format.HeaderKey
-import nebulosa.log.loggerFor
 import okio.Buffer
-import org.apache.commons.numbers.complex.Complex
 import java.io.Serializable
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -37,68 +35,14 @@ data class FitsHeaderCard(
     override val isIntegerType
         get() = type == FitsHeaderCardType.INTEGER || type == FitsHeaderCardType.BIG_INTEGER
 
-    override val isBlank
-        get() = if (!isCommentStyle || key.isNotBlank()) false else comment.isBlank()
-
     val hasHierarchKey
         get() = isHierarchKey(key)
-
-    private fun getBooleanValue(defaultValue: Boolean): Boolean {
-        return if (value == "T") true else if (value == "F") false else defaultValue
-    }
-
-    private fun <T> getNumericValue(asType: Class<out T>, defaultValue: T): T {
-        return try {
-            val decimal = BigDecimal(value.uppercase().replace('D', 'E'))
-
-            if (Byte::class.javaObjectType.isAssignableFrom(asType)) {
-                asType.cast(decimal.toByte())
-            } else if (Short::class.javaObjectType.isAssignableFrom(asType)) {
-                asType.cast(decimal.toShort())
-            } else if (Int::class.javaObjectType.isAssignableFrom(asType)) {
-                asType.cast(decimal.toInt())
-            } else if (Long::class.javaObjectType.isAssignableFrom(asType)) {
-                asType.cast(decimal.toLong())
-            } else if (Float::class.javaObjectType.isAssignableFrom(asType)) {
-                asType.cast(decimal.toFloat())
-            } else if (Double::class.javaObjectType.isAssignableFrom(asType)) {
-                asType.cast(decimal.toDouble())
-            } else if (BigInteger::class.javaObjectType.isAssignableFrom(asType)) {
-                asType.cast(decimal.toBigInteger())
-            } else if (BigDecimal::class.javaObjectType.isAssignableFrom(asType)) {
-                asType.cast(decimal)
-            } else {
-                throw IllegalArgumentException("unsupported class $asType")
-            }
-        } catch (e: NumberFormatException) {
-            LOG.error("failed to parse numeric value", e)
-            defaultValue
-        }
-    }
-
-    override fun <T> getValue(asType: Class<out T>, defaultValue: T): T {
-        return if (Boolean::class.javaObjectType.isAssignableFrom(asType)) {
-            asType.cast(getBooleanValue(defaultValue as Boolean))
-        } else if (Number::class.javaObjectType.isAssignableFrom(asType)) {
-            getNumericValue(asType, defaultValue)
-        } else if (String::class.javaObjectType.isAssignableFrom(asType)) {
-            asType.cast(value)
-        } else if (Complex::class.java.isAssignableFrom(asType)) {
-            asType.cast(Complex.parse(value.trim().uppercase().replace('D', 'E')))
-        } else if (value.isBlank()) {
-            defaultValue
-        } else {
-            throw IllegalArgumentException("unsupported class $asType")
-        }
-    }
 
     override fun formatted(): String {
         return FitsHeaderCardFormatter.format(this)
     }
 
     companion object {
-
-        @JvmStatic private val LOG = loggerFor<FitsHeaderCard>()
 
         const val FITS_HEADER_CARD_SIZE = 80
         const val MAX_KEYWORD_LENGTH = 8
