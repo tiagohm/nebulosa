@@ -1,8 +1,7 @@
 package nebulosa.xisf
 
 import com.fasterxml.aalto.stax.InputFactoryImpl
-import nebulosa.fits.FitsHeaderCard
-import nebulosa.fits.FitsHeaderCardType
+import nebulosa.image.format.HeaderCard
 import nebulosa.io.ByteOrder
 import nebulosa.xisf.XisfMonolithicFileHeader.*
 import nebulosa.xml.attribute
@@ -45,9 +44,8 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
         val pixelStorage = reader.attribute("pixelStorage")?.uppercase()?.let(PixelStorageModel::valueOf)
         val byteOrder = reader.attribute("byteOrder")?.uppercase()?.let(ByteOrder::valueOf)
         val compression = reader.attribute("compression")?.let { CompressionFormat.parse(it) }
+        val bounds = reader.attribute("bounds")?.split(":")?.let { it[0].toFloat()..it[1].toFloat() }
         val (keywords, thumbnail) = parseKeywords()
-        // TODO: bounds (Representable Range)
-        // TODO: Convert metadata into FITS keywords?
 
         return Image(
             width.toInt(), height.toInt(), numberOfChannels.toInt(),
@@ -55,14 +53,15 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
             sampleFormat, colorSpace ?: ColorSpace.GRAY,
             pixelStorage ?: PixelStorageModel.PLANAR,
             byteOrder ?: ByteOrder.LITTLE,
-            compression, keywords, thumbnail,
+            compression, bounds ?: XisfMonolithicFileHeader.DEFAULT_BOUNDS,
+            keywords, thumbnail,
         )
     }
 
-    private fun parseKeywords(): Pair<List<FitsHeaderCard>, Image?> {
+    private fun parseKeywords(): Pair<List<HeaderCard>, Image?> {
         val name = reader.localName
 
-        val keywords = ArrayList<FitsHeaderCard>()
+        val keywords = ArrayList<HeaderCard>()
         var thumbnail: Image? = null
 
         while (reader.hasNext()) {
@@ -74,6 +73,7 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
                 when (reader.localName) {
                     "FITSKeyword" -> keywords.add(parseFITSKeyword())
                     "Thumbnail" -> thumbnail = parseImage()
+                    "Property" -> keywords.add(parseProperty() ?: continue)
                 }
             }
         }
@@ -81,15 +81,20 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
         return keywords to thumbnail
     }
 
-    private fun parseFITSKeyword(): FitsHeaderCard {
+    private fun parseFITSKeyword(): HeaderCard {
         val name = reader.attribute("name") ?: ""
         val value = reader.attribute("value")?.trim() ?: ""
-        val trimmedValue = value.trim('\'')
         val comment = reader.attribute("comment") ?: ""
-        val isStringType = value.startsWith('\'') && value.endsWith('\'')
-        // TODO: Identify other types
-        val type = if (isStringType) FitsHeaderCardType.TEXT else FitsHeaderCardType.NONE
-        return FitsHeaderCard(name, trimmedValue, comment, type)
+        val type = XisfPropertyType.fromValue(value)
+        return XisfHeaderCard(name, value.trim('\'').trim(), comment, type)
+    }
+
+    private fun parseProperty(): HeaderCard? {
+        val id = reader.attribute("id")!!
+        val key = AstronomicalImageProperties[id] ?: return null
+        val propertyType = XisfPropertyType.fromTypeName(reader.attribute("type")!!) ?: return null
+        val value = reader.attribute("value") ?: reader.elementText.trim()
+        return XisfHeaderCard(key.key, value, key.comment, propertyType)
     }
 
     override fun close() {

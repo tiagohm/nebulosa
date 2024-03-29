@@ -2,6 +2,8 @@ package nebulosa.image.format
 
 interface HeaderCard : HeaderKey, HeaderValue, Map.Entry<String, String> {
 
+    val type: HeaderCardType
+
     val isCommentStyle: Boolean
 
     val isKeyValuePair: Boolean

@@ -1,11 +1,12 @@
 package nebulosa.fits
 
+import nebulosa.image.format.HeaderCard
 import java.util.*
 import kotlin.math.min
 
 object FitsHeaderCardFormatter {
 
-    fun format(card: FitsHeaderCard): String {
+    fun format(card: HeaderCard): String {
         return with(StringBuilder(FitsHeaderCard.FITS_HEADER_CARD_SIZE)) {
             appendKey(card)
 
@@ -26,10 +27,10 @@ object FitsHeaderCardFormatter {
     }
 
     @JvmStatic
-    private fun StringBuilder.appendKey(card: FitsHeaderCard) {
+    private fun StringBuilder.appendKey(card: HeaderCard) {
         var key = card.key
 
-        if (card.hasHierarchKey) {
+        if (card is FitsHeaderCard && card.hasHierarchKey) {
             key = HierarchKeyFormatter.format(key)
 
             if (key.length > FitsHeaderCard.MAX_HIERARCH_KEYWORD_LENGTH) {
@@ -50,7 +51,7 @@ object FitsHeaderCardFormatter {
     }
 
     @JvmStatic
-    private fun StringBuilder.appendValue(card: FitsHeaderCard): Int {
+    private fun StringBuilder.appendValue(card: HeaderCard): Int {
         val value = card.value
 
         if (card.isCommentStyle) {
@@ -84,7 +85,7 @@ object FitsHeaderCardFormatter {
     }
 
     @JvmStatic
-    private fun StringBuilder.appendQuotedValue(card: FitsHeaderCard, from: Int): Int {
+    private fun StringBuilder.appendQuotedValue(card: HeaderCard, from: Int): Int {
         // Always leave room for an extra & character at the end...
         var available = availableCharCount() - QUOTES_LENGTH
 
@@ -158,7 +159,7 @@ object FitsHeaderCardFormatter {
     }
 
     @JvmStatic
-    private fun StringBuilder.appendLongStringComment(card: FitsHeaderCard) {
+    private fun StringBuilder.appendLongStringComment(card: HeaderCard) {
         // We can wrap the comment to our delight, with CONTINUE!
         val iLast = length - 1
         val comment = card.comment
@@ -211,7 +212,7 @@ object FitsHeaderCardFormatter {
     }
 
     @JvmStatic
-    private fun StringBuilder.appendComment(card: FitsHeaderCard): Boolean {
+    private fun StringBuilder.appendComment(card: HeaderCard): Boolean {
         val comment = card.comment
 
         if (comment.isEmpty()) {
@@ -318,7 +319,7 @@ object FitsHeaderCardFormatter {
     }
 
     @JvmStatic
-    private fun FitsHeaderCard.minTruncatedCommentSize(): Int {
+    private fun HeaderCard.minTruncatedCommentSize(): Int {
         var firstWordLength = comment.indexOf(' ')
 
         if (firstWordLength < 0) {

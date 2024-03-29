@@ -12,7 +12,7 @@ import kotlin.math.max
 
 data class FitsHeaderCard(
     override val key: String, override val value: String,
-    override val comment: String, val type: FitsHeaderCardType,
+    override val comment: String, override val type: FitsHeaderCardType,
 ) : HeaderCard, Serializable {
 
     internal constructor(parsed: FitsHeaderCardParser) : this(

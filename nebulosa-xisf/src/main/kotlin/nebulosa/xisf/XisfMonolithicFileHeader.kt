@@ -1,6 +1,6 @@
 package nebulosa.xisf
 
-import nebulosa.fits.FitsHeaderCard
+import nebulosa.image.format.HeaderCard
 import nebulosa.io.ByteOrder
 
 sealed interface XisfMonolithicFileHeader {
@@ -68,7 +68,13 @@ sealed interface XisfMonolithicFileHeader {
         @JvmField val sampleFormat: SampleFormat, @JvmField val colorSpace: ColorSpace,
         @JvmField val pixelStorage: PixelStorageModel, @JvmField val byteOrder: ByteOrder,
         @JvmField val compressionFormat: CompressionFormat? = null,
-        @JvmField val keywords: List<FitsHeaderCard> = emptyList(),
+        @JvmField val bounds: ClosedFloatingPointRange<Float> = DEFAULT_BOUNDS,
+        @JvmField val keywords: List<HeaderCard> = emptyList(),
         @JvmField val thumbnail: Image? = null,
     ) : XisfMonolithicFileHeader
+
+    companion object {
+
+        @JvmStatic val DEFAULT_BOUNDS = 0f..1f
+    }
 }

@@ -1,10 +1,11 @@
 package nebulosa.fits
 
+import nebulosa.image.format.HeaderCardType
 import org.apache.commons.numbers.complex.Complex
 import java.math.BigDecimal
 import java.math.BigInteger
 
-enum class FitsHeaderCardType(@JvmField internal val type: Class<*>) {
+enum class FitsHeaderCardType(@JvmField internal val type: Class<*>) : HeaderCardType {
     NONE(Nothing::class.javaObjectType),
     TEXT(String::class.javaObjectType),
     BOOLEAN(Boolean::class.javaObjectType),

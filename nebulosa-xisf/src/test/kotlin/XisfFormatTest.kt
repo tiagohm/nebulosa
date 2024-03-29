@@ -24,7 +24,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 22
+                header shouldHaveSize 29
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
@@ -43,7 +43,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 22
+                header shouldHaveSize 29
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
@@ -62,7 +62,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 22
+                header shouldHaveSize 29
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
@@ -81,7 +81,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 22
+                header shouldHaveSize 29
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
@@ -100,7 +100,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 22
+                header shouldHaveSize 29
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
@@ -119,7 +119,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 3
-                header shouldHaveSize 22
+                header shouldHaveSize 29
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldNotBeSameInstanceAs data.red
                 data.blue shouldNotBeSameInstanceAs data.green
@@ -138,7 +138,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 3
-                header shouldHaveSize 22
+                header shouldHaveSize 29
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldNotBeSameInstanceAs data.red
                 data.blue shouldNotBeSameInstanceAs data.green
@@ -157,7 +157,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 3
-                header shouldHaveSize 22
+                header shouldHaveSize 29
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldNotBeSameInstanceAs data.red
                 data.blue shouldNotBeSameInstanceAs data.green
@@ -176,7 +176,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 3
-                header shouldHaveSize 22
+                header shouldHaveSize 29
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldNotBeSameInstanceAs data.red
                 data.blue shouldNotBeSameInstanceAs data.green
@@ -195,7 +195,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 3
-                header shouldHaveSize 22
+                header shouldHaveSize 29
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldNotBeSameInstanceAs data.red
                 data.blue shouldNotBeSameInstanceAs data.green
@@ -214,7 +214,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 22
+                header shouldHaveSize 29
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
