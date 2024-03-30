@@ -5,12 +5,9 @@ on:
     branches: [ main ]
     paths:
       - '**.kt'
-      - '**/src/test/resources/**'
   pull_request:
-    branches: [ main ]
     paths:
       - '**.kt'
-      - '**/src/test/resources/**'
   workflow_dispatch:
 
 jobs:
