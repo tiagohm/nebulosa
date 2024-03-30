@@ -20,6 +20,8 @@ interface WritableHeader {
 
     fun add(key: String, value: String, comment: String = "")
 
+    fun add(card: HeaderCard)
+
     fun delete(key: HeaderKey) = delete(key.key)
 
     fun delete(key: String): Boolean

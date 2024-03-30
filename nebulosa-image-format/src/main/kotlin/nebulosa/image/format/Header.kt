@@ -28,6 +28,8 @@ interface Header : ReadableHeader, WritableHeader, Cloneable {
 
         override fun add(key: String, value: String, comment: String) = Unit
 
+        override fun add(card: HeaderCard) = Unit
+
         override fun delete(key: String) = false
 
         override fun hasNext() = false

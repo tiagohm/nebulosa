@@ -54,7 +54,7 @@ open class FitsHeader : AbstractHeader {
         FitsHeaderCard.create(key, value, comment).also(::add)
     }
 
-    open fun add(card: FitsHeaderCard) {
+    override fun add(card: HeaderCard) {
         if (!card.isKeyValuePair) cards.add(card)
         else {
             val index = cards.indexOfFirst { it.key == card.key }
@@ -87,7 +87,7 @@ open class FitsHeader : AbstractHeader {
 
         final override fun add(key: String, value: String, comment: String) = Unit
 
-        final override fun add(card: FitsHeaderCard) = Unit
+        final override fun add(card: HeaderCard) = Unit
 
         final override fun delete(key: HeaderKey) = false
 

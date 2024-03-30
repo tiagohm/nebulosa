@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.GuideHead
 import org.springframework.stereotype.Component
 import java.nio.file.Path
 
@@ -57,7 +58,7 @@ class CameraSerializer(private val capturesPath: Path) : StdSerializer<Camera>(C
         gen.writeNumberField("offset", value.offset)
         gen.writeNumberField("offsetMin", value.offsetMin)
         gen.writeNumberField("offsetMax", value.offsetMax)
-        gen.writeBooleanField("hasGuiderHead", value.hasGuiderHead)
+        gen.writeBooleanField("hasGuideHead", value.guideHead != null)
         gen.writeNumberField("pixelSizeX", value.pixelSizeX)
         gen.writeNumberField("pixelSizeY", value.pixelSizeY)
         gen.writeBooleanField("canPulseGuide", value.canPulseGuide)
@@ -65,6 +66,22 @@ class CameraSerializer(private val capturesPath: Path) : StdSerializer<Camera>(C
         gen.writeBooleanField("hasThermometer", value.hasThermometer)
         gen.writeNumberField("temperature", value.temperature)
         gen.writeObjectField("capturesPath", Path.of("$capturesPath", value.name))
+
+        if (value is GuideHead) {
+            gen.writeMainOrGuideHead(value.main, "main")
+        } else if (value.guideHead != null) {
+            gen.writeMainOrGuideHead(value.guideHead!!, "guideHead")
+        }
+
         gen.writeEndObject()
+    }
+
+    private fun JsonGenerator.writeMainOrGuideHead(camera: Camera, fieldName: String) {
+        writeObjectFieldStart(fieldName)
+        writeStringField("id", camera.id)
+        writeStringField("name", camera.name)
+        writeStringField("sender", camera.sender.id)
+        writeBooleanField("connected", camera.connected)
+        writeEndObject()
     }
 }

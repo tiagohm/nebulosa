@@ -13,7 +13,7 @@ interface CameraCaptureListener {
 
     fun onExposureElapsed(step: CameraExposureStep, stepExecution: StepExecution) = Unit
 
-    fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation, savedPath: Path) = Unit
+    fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation?, savedPath: Path) = Unit
 
     fun onCaptureFinished(step: CameraExposureStep, jobExecution: JobExecution) = Unit
 }

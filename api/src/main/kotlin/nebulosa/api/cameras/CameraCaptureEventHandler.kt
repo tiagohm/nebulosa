@@ -33,7 +33,7 @@ data class CameraCaptureEventHandler(private val observer: Observer<MessageEvent
         sendCameraExposureEvent(step, stepExecution, state)
     }
 
-    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation, savedPath: Path) {
+    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation?, savedPath: Path) {
         sendCameraExposureEvent(step, stepExecution, CameraCaptureState.EXPOSURE_FINISHED, savedPath)
     }
 

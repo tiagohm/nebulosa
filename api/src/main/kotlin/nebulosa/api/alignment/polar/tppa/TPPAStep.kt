@@ -41,7 +41,7 @@ data class TPPAStep(
     @Volatile private var mountSlewStep: MountSlewStep? = null
     @Volatile private var noSolutionAttempts = 0
     @Volatile private var stepExecution: StepExecution? = null
-    @Volatile private var savedImage: Pair<ImageRepresentation, Path>? = null
+    @Volatile private var savedImage: Pair<ImageRepresentation?, Path>? = null
 
     val stepCount
         get() = alignment.state
@@ -65,7 +65,7 @@ data class TPPAStep(
         return listeners.remove(listener)
     }
 
-    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation, savedPath: Path) {
+    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation?, savedPath: Path) {
         savedImage = image to savedPath
     }
 

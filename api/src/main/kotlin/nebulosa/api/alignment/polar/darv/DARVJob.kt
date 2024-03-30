@@ -67,7 +67,7 @@ data class DARVJob(
         onNext(DARVEvent.Finished(id))
     }
 
-    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation, savedPath: Path) {
+    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation?, savedPath: Path) {
         onNext(CameraExposureFinished(stepExecution.jobExecution, step.camera, 1, 1, Duration.ZERO, 1.0, Duration.ZERO, savedPath))
     }
 

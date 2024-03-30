@@ -18,6 +18,8 @@ interface Device : INDIProtocolHandler, Closeable, Comparable<Device> {
 
     val messages: List<String>
 
+    val snoopedDevices: List<Device>
+
     fun connect()
 
     fun disconnect()
@@ -52,7 +54,7 @@ interface Device : INDIProtocolHandler, Closeable, Comparable<Device> {
         elements: Iterable<Pair<String, Boolean>>,
     ) {
         val vector = NewSwitchVector()
-        vector.device = this.name
+        vector.device = if (this is CompanionDevice) main.name else this.name
         vector.name = name
 
         for ((first, second) in elements) {
@@ -77,7 +79,7 @@ interface Device : INDIProtocolHandler, Closeable, Comparable<Device> {
         elements: Iterable<Pair<String, Double>>,
     ) {
         val vector = NewNumberVector()
-        vector.device = this.name
+        vector.device = if (this is CompanionDevice) main.name else this.name
         vector.name = name
 
         for ((first, second) in elements) {
@@ -102,7 +104,7 @@ interface Device : INDIProtocolHandler, Closeable, Comparable<Device> {
         elements: Iterable<Pair<String, String>>,
     ) {
         val vector = NewTextVector()
-        vector.device = this.name
+        vector.device = if (this is CompanionDevice) main.name else this.name
         vector.name = name
 
         for ((first, second) in elements) {

@@ -7,6 +7,7 @@ import nebulosa.api.image.ImageBucket
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
+import nebulosa.fits.fits
 import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.format.ImageRepresentation
@@ -76,11 +77,11 @@ data class FlatWizardStep(
             )
         )
 
-        var saved: Pair<ImageRepresentation, Path>? = null
+        var saved: Pair<ImageRepresentation?, Path>? = null
 
         val listener = object : CameraCaptureListener {
 
-            override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation, savedPath: Path) {
+            override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation?, savedPath: Path) {
                 saved = image to savedPath
             }
         }
@@ -93,7 +94,9 @@ data class FlatWizardStep(
         if (!stopped && saved != null) {
             val (imageRepresentation, savedPath) = saved!!
 
-            image = image?.load(imageRepresentation) ?: Image.open(imageRepresentation, false)
+            image = if (imageRepresentation != null) image?.load(imageRepresentation) ?: Image.open(imageRepresentation, false)
+            else savedPath.fits().use { image?.load(it) ?: Image.open(it, false) }
+
             imageBucket?.put(savedPath, image!!)
 
             val statistics = STATISTICS.compute(image!!)

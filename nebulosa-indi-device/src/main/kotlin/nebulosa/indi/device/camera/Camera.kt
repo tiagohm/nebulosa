@@ -1,6 +1,7 @@
 package nebulosa.indi.device.camera
 
 import nebulosa.image.algorithms.transformation.CfaPattern
+import nebulosa.image.format.HeaderCard
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.protocol.PropertyState
@@ -90,7 +91,7 @@ interface Camera : GuideOutput, Thermometer {
 
     val offsetMax: Int
 
-    val hasGuiderHead: Boolean
+    val guideHead: GuideHead?
 
     val pixelSizeX: Double
 
@@ -118,9 +119,11 @@ interface Camera : GuideOutput, Thermometer {
 
     fun abortCapture()
 
+    fun fitsKeywords(vararg cards: HeaderCard)
+
     companion object {
 
-        const val NANO_SECONDS = 1_000_000_000.0
+        const val NANO_TO_SECONDS = 1_000_000_000.0
 
         @JvmStatic val DRIVERS = setOf(
             "indi_altair_ccd",

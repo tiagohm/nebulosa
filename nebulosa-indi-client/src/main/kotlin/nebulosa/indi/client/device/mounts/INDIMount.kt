@@ -23,59 +23,34 @@ internal open class INDIMount(
 ) : INDIDevice(), Mount {
 
     @Volatile final override var slewing = false
-        private set
     @Volatile final override var tracking = false
-        private set
     @Volatile final override var parking = false
-        private set
     @Volatile final override var parked = false
-        private set
     @Volatile final override var canAbort = false
-        private set
     @Volatile final override var canSync = false
-        private set
     @Volatile final override var canGoTo = false
-        private set
     @Volatile final override var canPark = false
-        private set
     @Volatile final override var canHome = false
         protected set
     @Volatile final override var slewRates = emptyList<SlewRate>()
-        private set
     @Volatile final override var slewRate: SlewRate? = null
-        private set
     @Volatile final override var mountType = MountType.EQ_GEM // TODO: Ver os telescópios possui tipos.
-        private set
     @Volatile final override var trackModes = emptyList<TrackMode>()
-        private set
     @Volatile final override var trackMode = TrackMode.SIDEREAL
-        private set
     @Volatile final override var pierSide = PierSide.NEITHER
-        private set
     @Volatile final override var guideRateWE = 0.0 // TODO: Tratar para cada driver. iOptronV3 tem RA/DE. LX200 tem 1.0x, 0.8x, 0.6x, 0.4x.
-        private set
     @Volatile final override var guideRateNS = 0.0
-        private set
     @Volatile final override var rightAscension = 0.0
-        private set
     @Volatile final override var declination = 0.0
-        private set
 
     @Volatile final override var canPulseGuide = false
-        private set
     @Volatile final override var pulseGuiding = false
-        private set
 
     @Volatile final override var hasGPS = false
-        private set
     @Volatile final override var longitude = 0.0
-        private set
     @Volatile final override var latitude = 0.0
-        private set
     @Volatile final override var elevation = 0.0
-        private set
     @Volatile final override var dateTime = OffsetDateTime.now()!!
-        private set
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -356,13 +331,13 @@ internal open class INDIMount(
 
     override fun toString(): String {
         return "Mount(name=$name, connected=$connected, slewing=$slewing, tracking=$tracking," +
-            " parking=$parking, parked=$parked, canAbort=$canAbort," +
-            " canSync=$canSync, canPark=$canPark, slewRates=$slewRates," +
-            " slewRate=$slewRate, mountType=$mountType, trackModes=$trackModes," +
-            " trackMode=$trackMode, pierSide=$pierSide, guideRateWE=$guideRateWE," +
-            " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
-            " declination=$declination, canPulseGuide=$canPulseGuide," +
-            " pulseGuiding=$pulseGuiding)"
+                " parking=$parking, parked=$parked, canAbort=$canAbort," +
+                " canSync=$canSync, canPark=$canPark, slewRates=$slewRates," +
+                " slewRate=$slewRate, mountType=$mountType, trackModes=$trackModes," +
+                " trackMode=$trackMode, pierSide=$pierSide, guideRateWE=$guideRateWE," +
+                " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
+                " declination=$declination, canPulseGuide=$canPulseGuide," +
+                " pulseGuiding=$pulseGuiding)"
     }
 
     companion object {

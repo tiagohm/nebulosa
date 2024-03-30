@@ -11,8 +11,8 @@ import nebulosa.batch.processing.StepResult
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.batch.processing.delay.DelayStepListener
 import nebulosa.common.concurrency.latch.CountUpDownLatch
-import nebulosa.image.format.ImageRepresentation
 import nebulosa.indi.device.camera.*
+import nebulosa.io.transferAndClose
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import okio.sink
@@ -61,7 +61,7 @@ data class CameraExposureStep(
         if (event.device === camera) {
             when (event) {
                 is CameraFrameCaptured -> {
-                    save(event.image, event.format)
+                    save(event)
                 }
                 is CameraExposureAborted,
                 is CameraExposureFailed,
@@ -163,18 +163,26 @@ data class CameraExposureStep(
         }
     }
 
-    private fun save(image: ImageRepresentation, format: CameraFrameCaptured.Format) {
+    private fun save(event: CameraFrameCaptured) {
         try {
-            val savedPath = request.makeSavePath(camera, format)
+            val savedPath = request.makeSavePath(camera)
 
-            LOG.info("saving {} image at {}", format, savedPath)
+            LOG.info("saving FITS image at {}", savedPath)
 
             savedPath.createParentDirectories()
-            savedPath.outputStream().use { image.write(it.sink()) }
 
-            listeners.forEach { it.onExposureFinished(this, stepExecution!!, image, savedPath) }
+            if (event.stream != null) {
+                event.stream!!.transferAndClose(savedPath.outputStream())
+            } else if (event.image != null) {
+                savedPath.sink().use(event.image!!::write)
+            } else {
+                LOG.warn("invalid event. camera={}", event.device)
+                return
+            }
+
+            listeners.forEach { it.onExposureFinished(this, stepExecution!!, event.image, savedPath) }
         } catch (e: Throwable) {
-            LOG.error("failed to save $format image", e)
+            LOG.error("failed to save FITS image", e)
             aborted = true
         } finally {
             latch.countDown()
@@ -219,16 +227,15 @@ data class CameraExposureStep(
 
         @JvmStatic
         internal fun CameraStartCaptureRequest.makeSavePath(
-            camera: Camera, format: CameraFrameCaptured.Format,
-            autoSave: Boolean = this.autoSave,
+            camera: Camera, autoSave: Boolean = this.autoSave,
         ): Path {
             return if (autoSave) {
                 val now = LocalDateTime.now()
                 val savePath = autoSubFolderMode.pathFor(savePath!!, now)
-                val fileName = "%s-%s.%s".format(now.format(DATE_TIME_FORMAT), frameType, format.extension)
+                val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), frameType)
                 Path.of("$savePath", fileName)
             } else {
-                val fileName = "%s.%s".format(camera.name, format.extension)
+                val fileName = "%s.fits".format(camera.name)
                 Path.of("$savePath", fileName)
             }
         }
