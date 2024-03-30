@@ -79,6 +79,9 @@ inline val ReadableHeader.filter
 inline val ReadableHeader.frame
     get() = (getStringOrNull("FRAME") ?: getStringOrNull(FitsKeyword.IMAGETYP))?.ifBlank { null }?.trim()
 
+inline val ReadableHeader.camera
+    get() = getStringOrNull(FitsKeyword.CAMERA)?.ifBlank { null }?.trim()
+
 inline val ReadableHeader.instrument
     get() = getStringOrNull(FitsKeyword.INSTRUME)?.ifBlank { null }?.trim()
 

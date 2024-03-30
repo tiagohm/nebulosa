@@ -4,7 +4,7 @@ import nebulosa.image.format.HeaderCard
 import nebulosa.image.format.ReadableHeader
 import kotlin.math.abs
 
-enum class Bitpix(val code: Int) : HeaderCard by FitsHeaderCard.create(FitsKeyword.BITPIX, code) {
+enum class Bitpix(@JvmField val code: Int) : HeaderCard by FitsHeaderCard.create(FitsKeyword.BITPIX, code) {
     BYTE(8),
     SHORT(16),
     INTEGER(32),

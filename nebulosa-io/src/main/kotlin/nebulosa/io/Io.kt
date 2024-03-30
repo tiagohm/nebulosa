@@ -92,25 +92,25 @@ fun ByteArray.source(
     offset: Int = 0,
     byteCount: Int = size - offset,
     timeout: Timeout = Timeout.NONE,
-): SeekableSource = ByteArraySource(this, offset, byteCount, timeout)
+): SeekableSource = ByteArraySource(this, offset, byteCount.toLong(), timeout)
 
 fun ByteArray.sink(
     offset: Int = 0,
     byteCount: Int = size - offset,
     timeout: Timeout = Timeout.NONE,
-): SeekableSink = ByteArraySink(this, offset, byteCount, timeout)
+): SeekableSink = ByteArraySink(this, offset, byteCount.toLong(), timeout)
 
 fun ByteBuffer.sink(
     offset: Int = 0,
-    byteCount: Int = capacity() - offset,
+    byteCount: Int = remaining() - offset,
     timeout: Timeout = Timeout.NONE,
-): SeekableSink = ByteBufferSink(this, offset, byteCount, timeout)
+): SeekableSink = ByteBufferSink(this, offset, byteCount.toLong(), timeout)
 
 fun ByteBuffer.source(
     offset: Int = 0,
-    byteCount: Int = capacity() - offset,
+    byteCount: Int = remaining() - offset,
     timeout: Timeout = Timeout.NONE,
-): SeekableSource = ByteBufferSource(this, offset, byteCount, timeout)
+): SeekableSource = ByteBufferSource(this, offset, byteCount.toLong(), timeout)
 
 fun Random.source(
     maxSize: Long = Long.MAX_VALUE,

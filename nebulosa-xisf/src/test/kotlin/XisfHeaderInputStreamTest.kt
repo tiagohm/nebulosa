@@ -24,7 +24,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 sampleFormat shouldBe XisfMonolithicFileHeader.SampleFormat.UINT8
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.GRAY
                 byteOrder shouldBe ByteOrder.LITTLE
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:8:gray:zlib" {
@@ -40,7 +40,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.GRAY
                 byteOrder shouldBe ByteOrder.LITTLE
                 compressionFormat.shouldNotBeNull().type shouldBe XisfMonolithicFileHeader.CompressionType.ZLIB
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:8:gray:lz4" {
@@ -56,7 +56,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.GRAY
                 byteOrder shouldBe ByteOrder.LITTLE
                 compressionFormat.shouldNotBeNull().type shouldBe XisfMonolithicFileHeader.CompressionType.LZ4
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:8:gray:lz4-hc" {
@@ -72,7 +72,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.GRAY
                 byteOrder shouldBe ByteOrder.LITTLE
                 compressionFormat.shouldNotBeNull().type shouldBe XisfMonolithicFileHeader.CompressionType.LZ4_HC
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:8:gray:zstd" {
@@ -88,7 +88,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.GRAY
                 byteOrder shouldBe ByteOrder.LITTLE
                 compressionFormat.shouldNotBeNull().type shouldBe XisfMonolithicFileHeader.CompressionType.ZSTD
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:16:gray" {
@@ -103,7 +103,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 sampleFormat shouldBe XisfMonolithicFileHeader.SampleFormat.UINT16
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.GRAY
                 byteOrder shouldBe ByteOrder.LITTLE
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:32:gray" {
@@ -118,7 +118,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 sampleFormat shouldBe XisfMonolithicFileHeader.SampleFormat.UINT32
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.GRAY
                 byteOrder shouldBe ByteOrder.LITTLE
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:F32:gray" {
@@ -133,7 +133,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 sampleFormat shouldBe XisfMonolithicFileHeader.SampleFormat.FLOAT32
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.GRAY
                 byteOrder shouldBe ByteOrder.LITTLE
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:F64:gray" {
@@ -148,7 +148,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 sampleFormat shouldBe XisfMonolithicFileHeader.SampleFormat.FLOAT64
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.GRAY
                 byteOrder shouldBe ByteOrder.LITTLE
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:8:rgb" {
@@ -163,7 +163,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 sampleFormat shouldBe XisfMonolithicFileHeader.SampleFormat.UINT8
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.RGB
                 byteOrder shouldBe ByteOrder.LITTLE
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:16:rgb" {
@@ -178,7 +178,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 sampleFormat shouldBe XisfMonolithicFileHeader.SampleFormat.UINT16
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.RGB
                 byteOrder shouldBe ByteOrder.LITTLE
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:32:rgb" {
@@ -193,7 +193,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 sampleFormat shouldBe XisfMonolithicFileHeader.SampleFormat.UINT32
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.RGB
                 byteOrder shouldBe ByteOrder.LITTLE
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:F32:rgb" {
@@ -208,7 +208,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 sampleFormat shouldBe XisfMonolithicFileHeader.SampleFormat.FLOAT32
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.RGB
                 byteOrder shouldBe ByteOrder.LITTLE
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
         "read:F64:rgb" {
@@ -223,7 +223,7 @@ class XisfHeaderInputStreamTest : FitsStringSpec() {
                 sampleFormat shouldBe XisfMonolithicFileHeader.SampleFormat.FLOAT64
                 colorSpace shouldBe XisfMonolithicFileHeader.ColorSpace.RGB
                 byteOrder shouldBe ByteOrder.LITTLE
-                keywords shouldHaveSize 22
+                keywords shouldHaveSize 29
             }
         }
     }

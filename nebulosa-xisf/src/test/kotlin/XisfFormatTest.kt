@@ -1,9 +1,11 @@
+import io.kotest.engine.spec.tempfile
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import io.kotest.matchers.types.shouldNotBeSameInstanceAs
 import nebulosa.image.format.ImageHdu
+import nebulosa.io.seekableSink
 import nebulosa.io.seekableSource
 import nebulosa.test.FitsStringSpec
 import nebulosa.xisf.XisfFormat
@@ -222,6 +224,21 @@ class XisfFormatTest : FitsStringSpec() {
                 val image = makeImage()
                 image.save("xisf-mono-planar-8-zlib").second shouldBe "0dca7efedef5b3525f8037f401518b0b"
             }
+        }
+        "mono:write" {
+            val source0 = closeAfterEach(M82_MONO_8_XISF.seekableSource())
+            val hdus0 = XisfFormat.read(source0)
+
+            val outputPath = tempfile()
+            val sink = closeAfterEach(outputPath.seekableSink())
+
+            XisfFormat.write(sink, hdus0)
+
+            val source1 = closeAfterEach(outputPath.seekableSource())
+            val hdus1 = XisfFormat.read(source1)
+
+            hdus1 shouldHaveSize 1
+            hdus1[0].header.size shouldBeExactly hdus0[0].header.size
         }
     }
 

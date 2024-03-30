@@ -4,7 +4,7 @@ import nebulosa.io.source
 import okio.buffer
 import java.util.*
 
-class BufferedRandomSourceTest : StringSpec() {
+class RandomSourceTest : StringSpec() {
 
     init {
         "read full segment" {

@@ -43,6 +43,7 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
         val colorSpace = reader.attribute("colorSpace")?.uppercase()?.let(ColorSpace::valueOf)
         val pixelStorage = reader.attribute("pixelStorage")?.uppercase()?.let(PixelStorageModel::valueOf)
         val byteOrder = reader.attribute("byteOrder")?.uppercase()?.let(ByteOrder::valueOf)
+        val imageType = reader.attribute("imageType")?.let { ImageType.parse(it) }
         val compression = reader.attribute("compression")?.let { CompressionFormat.parse(it) }
         val bounds = reader.attribute("bounds")?.split(":")?.let { it[0].toFloat()..it[1].toFloat() }
         val (keywords, thumbnail) = parseKeywords()
@@ -53,7 +54,8 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
             sampleFormat, colorSpace ?: ColorSpace.GRAY,
             pixelStorage ?: PixelStorageModel.PLANAR,
             byteOrder ?: ByteOrder.LITTLE,
-            compression, bounds ?: XisfMonolithicFileHeader.DEFAULT_BOUNDS,
+            compression, imageType ?: ImageType.LIGHT,
+            bounds ?: XisfMonolithicFileHeader.DEFAULT_BOUNDS,
             keywords, thumbnail,
         )
     }

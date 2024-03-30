@@ -1,5 +1,7 @@
 package nebulosa.xisf
 
+import nebulosa.fits.FitsHeaderCard
+import nebulosa.fits.FitsKeyword
 import nebulosa.image.format.HeaderCard
 import nebulosa.io.ByteOrder
 
@@ -14,10 +16,10 @@ sealed interface XisfMonolithicFileHeader {
         FLOAT64(8L),
     }
 
-    enum class ColorSpace {
-        GRAY,
-        RGB,
-        CIELAB,
+    enum class ColorSpace(@JvmField val code: String) {
+        GRAY("Gray"),
+        RGB("RGB"),
+        CIELAB("CIELab"),
     }
 
     enum class PixelStorageModel {
@@ -30,6 +32,32 @@ sealed interface XisfMonolithicFileHeader {
         LZ4,
         LZ4_HC,
         ZSTD,
+    }
+
+    enum class ImageType(@JvmField val code: String) : HeaderCard by FitsHeaderCard.create(FitsKeyword.IMAGETYP, code) {
+        BIAS("Bias"),
+        DARK("Dark"),
+        FLAT("Flat"),
+        LIGHT("Light"),
+        MASTER_BIAS("MasterBias"),
+        MASTER_DARK("MasterDark"),
+        MASTER_FLAT("MasterFlat"),
+        MASTER_LIGHT("MasterLight"),
+        DEFECT_MAP("DefectMap"),
+        REJECTION_MAP_HIGH("RejectionMapHigh"),
+        REJECTION_MAP_LOW("RejectionMapLow"),
+        BINARY_REJECTION_MAP_HIGH("BinaryRejectionMapHigh"),
+        BINARY_REJECTION_MAP_LOW("BinaryRejectionMapLow"),
+        SLOPE_MAP("SlopeMap"),
+        WEIGHT_MAP("WeightMap");
+
+        companion object {
+
+            @JvmStatic private val MAPPED = entries.associateBy { it.value }
+
+            @JvmStatic
+            fun parse(text: String) = MAPPED[text]
+        }
     }
 
     data class CompressionFormat(
@@ -68,6 +96,7 @@ sealed interface XisfMonolithicFileHeader {
         @JvmField val sampleFormat: SampleFormat, @JvmField val colorSpace: ColorSpace,
         @JvmField val pixelStorage: PixelStorageModel, @JvmField val byteOrder: ByteOrder,
         @JvmField val compressionFormat: CompressionFormat? = null,
+        @JvmField val imageType: ImageType = ImageType.LIGHT,
         @JvmField val bounds: ClosedFloatingPointRange<Float> = DEFAULT_BOUNDS,
         @JvmField val keywords: List<HeaderCard> = emptyList(),
         @JvmField val thumbnail: Image? = null,
