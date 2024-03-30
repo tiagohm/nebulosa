@@ -43,6 +43,10 @@ value class UnsafeVector3D(@JvmField @PublishedApi internal val vector: Vector3D
     inline operator fun set(index: Int, value: Double) {
         vector.vector[index] = value
     }
+
+    inline fun fill(value: Double) {
+        vector.vector.fill(value)
+    }
 }
 
 @JvmInline

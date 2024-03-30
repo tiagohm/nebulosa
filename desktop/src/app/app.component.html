@@ -19,7 +19,7 @@
               styleClass="select-none cursor-pointer"></p-button>
     <p-button *ngIf="!modal" [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-minimize" (onClick)="minimize()"
               styleClass="select-none cursor-pointer"></p-button>
-    <p-button *ngIf="!modal" [disabled]="!maximizable" [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-maximize"
+    <p-button *ngIf="!modal && maximizable" [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-maximize"
               (onClick)="maximize()" styleClass="select-none cursor-pointer"></p-button>
     <p-button [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-close" (onClick)="close()"
               styleClass="select-none cursor-pointer mr-1"></p-button>

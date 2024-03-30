@@ -4,7 +4,7 @@ import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.parser.INDIProtocolHandler
 import java.io.Closeable
 
-interface Device : INDIProtocolHandler, Closeable {
+interface Device : INDIProtocolHandler, Closeable, Comparable<Device> {
 
     val sender: MessageSender
 
@@ -114,4 +114,6 @@ interface Device : INDIProtocolHandler, Closeable {
 
         sendMessageToServer(vector)
     }
+
+    override fun compareTo(other: Device) = name.compareTo(other.name)
 }

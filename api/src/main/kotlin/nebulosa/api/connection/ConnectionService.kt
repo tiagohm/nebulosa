@@ -30,7 +30,7 @@ class ConnectionService(
     private val messageService: MessageService,
 ) : Closeable {
 
-    private val providers = LinkedHashMap<String, INDIDeviceProvider>()
+    private val providers = linkedMapOf<String, INDIDeviceProvider>()
 
     fun connectionStatuses(): List<ConnectionStatus> {
         return providers.keys.map { connectionStatus(it)!! }
@@ -41,12 +41,12 @@ class ConnectionService(
             is INDIClient -> {
                 when (val connection = client.connection) {
                     is INDISocketConnection -> {
-                        return ConnectionStatus(id, ConnectionType.INDI, connection.host, connection.port)
+                        return ConnectionStatus(id, ConnectionType.INDI, connection.remoteHost, connection.remotePort, connection.remoteIP)
                     }
                 }
             }
             is AlpacaClient -> {
-                return ConnectionStatus(id, ConnectionType.INDI, client.host, client.port)
+                return ConnectionStatus(id, ConnectionType.ALPACA, client.host, client.port)
             }
         }
 

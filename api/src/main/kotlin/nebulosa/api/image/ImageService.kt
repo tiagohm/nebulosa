@@ -2,6 +2,7 @@ package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
+import nebulosa.api.atlas.Location
 import nebulosa.api.atlas.SimbadEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
@@ -14,12 +15,14 @@ import nebulosa.imaging.algorithms.computation.Statistics
 import nebulosa.imaging.algorithms.transformation.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.io.transferAndClose
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.ClassificationType
+import nebulosa.skycatalog.SkyObjectType
 import nebulosa.star.detection.ImageStar
 import nebulosa.star.detection.StarDetector
 import nebulosa.time.TimeYMDHMS
@@ -30,6 +33,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
+import java.net.URI
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.util.*
@@ -51,6 +55,16 @@ class ImageService(
     private val connectionService: ConnectionService,
     private val starDetector: StarDetector<Image>,
 ) {
+
+    val fovCameras: ByteArray by lazy {
+        URI.create("https://github.com/tiagohm/nebulosa.data/raw/main/astrobin/cameras.json")
+            .toURL().openConnection().getInputStream().readAllBytes()
+    }
+
+    val fovTelescopes: ByteArray by lazy {
+        URI.create("https://github.com/tiagohm/nebulosa.data/raw/main/astrobin/telescopes.json")
+            .toURL().openConnection().getInputStream().readAllBytes()
+    }
 
     @Synchronized
     fun openImage(
@@ -130,6 +144,7 @@ class ImageService(
         path: Path,
         starsAndDSOs: Boolean, minorPlanets: Boolean,
         minorPlanetMagLimit: Double = 12.0,
+        location: Location? = null,
     ): List<ImageAnnotation> {
         val (image, calibration) = imageBucket[path] ?: return emptyList()
 
@@ -144,22 +159,22 @@ class ImageService(
             return emptyList()
         }
 
-        val annotations = Vector<ImageAnnotation>()
-        val tasks = ArrayList<CompletableFuture<*>>()
+        val annotations = Vector<ImageAnnotation>(64)
+        val tasks = ArrayList<CompletableFuture<*>>(2)
 
         val dateTime = image.header.observationDate ?: LocalDateTime.now()
 
         if (minorPlanets) {
             threadPoolTaskExecutor.submitCompletable {
-                val latitude = image.header.latitude ?: 0.0
-                val longitude = image.header.longitude ?: 0.0
+                val latitude = image.header.latitude ?: location?.latitude?.deg ?: 0.0
+                val longitude = image.header.longitude ?: location?.longitude?.deg ?: 0.0
 
                 LOG.info(
                     "finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}",
-                    dateTime, latitude, longitude, calibration
+                    dateTime, latitude.formatSignedDMS(), longitude.formatSignedDMS(), calibration
                 )
 
-                val data = smallBodyDatabaseService.identify(
+                val identifiedBody = smallBodyDatabaseService.identify(
                     dateTime, latitude, longitude, 0.0,
                     calibration.rightAscension, calibration.declination, calibration.radius,
                     minorPlanetMagLimit,
@@ -168,7 +183,7 @@ class ImageService(
                 val radiusInSeconds = calibration.radius.toArcsec
                 var count = 0
 
-                data.data.forEach {
+                identifiedBody.data.forEach {
                     val distance = it[5].toDouble()
 
                     if (distance <= radiusInSeconds) {
@@ -188,9 +203,9 @@ class ImageService(
         }
 
         if (starsAndDSOs) {
-            val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
-
             threadPoolTaskExecutor.submitCompletable {
+                val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
+
                 LOG.info("finding star/DSO annotations. dateTime={}, calibration={}", dateTime, calibration)
 
                 val catalog = simbadEntityRepository.find(null, null, calibration.rightAscension, calibration.declination, calibration.radius)
@@ -198,7 +213,18 @@ class ImageService(
                 var count = 0
 
                 for (entry in catalog) {
+                    if (entry.type == SkyObjectType.EXTRA_SOLAR_PLANET) continue
+
                     val astrometric = barycentric.observe(entry).equatorial()
+
+                    LOG.debug {
+                        "%s: %s %s -> %s %s".format(
+                            entry.name,
+                            entry.rightAscensionJ2000.formatHMS(), entry.declinationJ2000.formatSignedDMS(),
+                            astrometric.longitude.normalized.formatHMS(), astrometric.latitude.formatSignedDMS(),
+                        )
+                    }
+
                     val (x, y) = wcs.skyToPix(astrometric.longitude.normalized, astrometric.latitude)
                     val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
                     else ImageAnnotation(x, y, dso = entry)
@@ -211,7 +237,7 @@ class ImageService(
                 .also(tasks::add)
         }
 
-        CompletableFuture.allOf(*tasks.toTypedArray()).join()
+        tasks.forEach { it.get() }
 
         wcs.close()
 

@@ -23,7 +23,7 @@ class MessageService(
     private fun handleSessionSubscribe(event: SessionSubscribeEvent) {
         val destination = SimpMessageHeaderAccessor.wrap(event.message).destination ?: return
 
-        if (destination == EVENT_NAME && connected.compareAndSet(false, true)) {
+        if (destination == DESTINATION && connected.compareAndSet(false, true)) {
             while (messageQueue.isNotEmpty()) {
                 sendMessage(messageQueue.take())
             }
@@ -37,7 +37,7 @@ class MessageService(
 
     fun sendMessage(event: MessageEvent) {
         if (connected.get()) {
-            simpleMessageTemplate.convertAndSend(EVENT_NAME, event)
+            simpleMessageTemplate.convertAndSend(DESTINATION, event)
         } else if (event is QueueableEvent) {
             LOG.debug { "queueing message. event=$event" }
             messageQueue.offer(event)
@@ -46,7 +46,7 @@ class MessageService(
 
     companion object {
 
-        const val EVENT_NAME = "NEBULOSA.EVENT"
+        const val DESTINATION = "NEBULOSA.EVENT"
 
         @JvmStatic private val LOG = loggerFor<MessageService>()
     }

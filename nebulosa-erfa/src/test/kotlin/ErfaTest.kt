@@ -915,14 +915,14 @@ class ErfaTest : StringSpec() {
             eo shouldBe (-0.003020548354802412839 plusOrMinus 1e-14)
         }
         "eraPmpx" {
-            val pco = eraPmpx(1.234, 0.789, 1e-5, -2e-5, 1e-2, 10.0, 8.75, Vector3D(0.9, 0.4, 0.1))
+            val pco = eraPmpx(1.234, 0.789, 1e-5, -2e-5, 1e-2.arcsec, 10.0.kms, 8.75, Vector3D(0.9, 0.4, 0.1))
             pco[0] shouldBe (0.2328137623960308438 plusOrMinus 1e-12)
             pco[1] shouldBe (0.6651097085397855328 plusOrMinus 1e-12)
             pco[2] shouldBe (0.7095257765896359837 plusOrMinus 1e-12)
         }
         "eraAtciq" {
             val (astrom) = eraApci13(2456165.5, 0.401182685)
-            val (ri, di) = eraAtciq(2.71, 0.174, 1e-5, 5e-6, 0.1, 55.0, astrom)
+            val (ri, di) = eraAtciq(2.71, 0.174, 1e-5, 5e-6, 0.1.arcsec, 55.0.kms, astrom)
             ri shouldBe (2.710121572968696744 plusOrMinus 1e-12)
             di shouldBe (0.1729371367219539137 plusOrMinus 1e-12)
         }
@@ -933,7 +933,7 @@ class ErfaTest : StringSpec() {
             di shouldBe (0.1728740720984931891 plusOrMinus 1e-12)
         }
         "eraAtci13" {
-            val (ri, di, eo) = eraAtci13(2.71, 0.174, 1e-5, 5e-6, 0.1, 55.0, 2456165.5, 0.401182685)
+            val (ri, di, eo) = eraAtci13(2.71, 0.174, 1e-5, 5e-6, 0.1.arcsec, 55.0.kms, 2456165.5, 0.401182685)
             ri shouldBe (2.710121572968696744 plusOrMinus 1e-12)
             di shouldBe (0.1729371367219539137 plusOrMinus 1e-12)
             eo shouldBe (-0.002900618712657375647 plusOrMinus 1e-14)
@@ -1069,7 +1069,7 @@ class ErfaTest : StringSpec() {
         }
         "eraAtco13" {
             val (b, eo) = eraAtco13(
-                2.71, 0.174, 1e-5, 5e-6, 0.1, 55.0, 2456384.5, 0.969254051,
+                2.71, 0.174, 1e-5, 5e-6, 0.1.arcsec, 55.0.kms, 2456384.5, 0.969254051,
                 0.1550675, -0.527800806, -1.2345856, 2738.0, 2.47230737e-7, 1.82640464e-6, 731.0, 12.8,
                 0.59, 0.55
             )
@@ -1108,18 +1108,7 @@ class ErfaTest : StringSpec() {
             pv.velocity[2] shouldBe (0.2568431853930292259e-5 plusOrMinus 1e-16)
         }
         "eraStarpv" {
-            val pv = eraStarpv(0.01686756, -1.093989828, -1.78323516e-5, 2.336024047e-6, 0.74723, -21.6)
-
-            pv.position[0] shouldBe (126668.5912743160601 plusOrMinus 1e-10)
-            pv.position[1] shouldBe (2136.792716839935195 plusOrMinus 1e-12)
-            pv.position[2] shouldBe (-245251.2339876830091 plusOrMinus 1e-10)
-
-            pv.velocity[0] shouldBe (-0.4051854008955659551e-2 plusOrMinus 1e-13)
-            pv.velocity[1] shouldBe (-0.6253919754414777970e-2 plusOrMinus 1e-15)
-            pv.velocity[2] shouldBe (0.1189353714588109341e-1 plusOrMinus 1e-13)
-        }
-        "eraStarpvMod" {
-            val pv = eraStarpvMod(0.01686756, -1.093989828, -1.78323516e-5, 2.336024047e-6, 0.74723.arcsec, (-21.6).kms)
+            val pv = eraStarpv(0.01686756, -1.093989828, -1.78323516e-5, 2.336024047e-6, 0.74723.arcsec, (-21.6).kms)
 
             pv.position[0] shouldBe (126668.5912743160601 plusOrMinus 1e-10)
             pv.position[1] shouldBe (2136.792716839935195 plusOrMinus 1e-12)

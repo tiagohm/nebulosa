@@ -1,6 +1,6 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
+import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.guide.GuideOutput
@@ -18,7 +18,7 @@ class GuideOutputController(
 
     @GetMapping
     fun guideOutputs(): List<GuideOutput> {
-        return connectionService.guideOutputs()
+        return connectionService.guideOutputs().sorted()
     }
 
     @GetMapping("{guideOutput}")

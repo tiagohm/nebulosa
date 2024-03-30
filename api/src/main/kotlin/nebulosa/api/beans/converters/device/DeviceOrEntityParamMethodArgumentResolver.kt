@@ -1,12 +1,10 @@
-package nebulosa.api.beans.converters.indi
+package nebulosa.api.beans.converters.device
 
 import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SatelliteRepository
 import nebulosa.api.beans.converters.annotation
 import nebulosa.api.beans.converters.parameter
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.locations.LocationEntity
-import nebulosa.api.locations.LocationRepository
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
@@ -25,13 +23,11 @@ import org.springframework.web.server.ResponseStatusException
 
 @Component
 class DeviceOrEntityParamMethodArgumentResolver(
-    private val locationRepository: LocationRepository,
     private val satelliteRepository: SatelliteRepository,
     private val connectionService: ConnectionService,
 ) : HandlerMethodArgumentResolver {
 
     private val entityResolvers = mapOf<Class<*>, (String) -> Any?>(
-        LocationEntity::class.java to { locationRepository.find(it.toLong()) },
         SatelliteEntity::class.java to { satelliteRepository.find(it.toLong()) },
         Device::class.java to { connectionService.device(it) },
         Camera::class.java to { connectionService.camera(it) },

@@ -11,6 +11,7 @@
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
+    "noUncheckedIndexedAccess": false,
     "allowJs": true,
     "skipLibCheck": true,
     "target": "ES2022",

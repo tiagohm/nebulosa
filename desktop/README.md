@@ -65,5 +65,3 @@ The complete integrated solution for all of your astronomical imaging needs.
 ## Support me
 
 [![](src/assets/images/donate-with-paypal-blue.svg)](https://www.paypal.com/donate/?hosted_button_id=U8TGGJTKSZUCA)
-
-[![](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/tiagohm)

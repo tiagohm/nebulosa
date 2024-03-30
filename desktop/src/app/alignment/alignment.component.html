@@ -1,37 +1,23 @@
 <div class="container px-4 py-3">
     <div class="grid">
-        <div class="col-6 align-items-center gap-2">
-            <span class="p-float-label device">
-                <p-dropdown [disabled]="running" [options]="cameras" [(ngModel)]="camera" optionLabel="name" [autoDisplayFirst]="false"
-                            (ngModelChange)="cameraChanged()" styleClass="p-inputtext-sm border-0 max-w-full" emptyMessage="No camera found" />
-                <label>Camera</label>
-            </span>
+        <div class="col-12 align-items-center justify-content-center gap-2">
+            <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera" />
             <p-button [disabled]="!camera.name || running" icon="mdi mdi-cog" (onClick)="showCameraDialog()" size="small" />
-        </div>
-        <div class="col-6 align-items-center gap-2" *ngIf="tab === 0">
-            <span class="p-float-label device">
-                <p-dropdown [disabled]="running" [options]="mounts" [(ngModel)]="mount" optionLabel="name" [autoDisplayFirst]="false"
-                            (ngModelChange)="mountChanged()" styleClass="p-inputtext-sm border-0 max-w-full" emptyMessage="No mount found" />
-                <label>Mount</label>
-            </span>
+            @if (tab === 0) {
+            <neb-device-list-button title="MOUNT" icon="mdi mdi-telescope" [devices]="mounts" [(device)]="mount" />
             <p-button *ngIf="mount.connected" [disabled]="!mount.name || running" (onClick)="mountConnect()" icon="mdi mdi-close"
-                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
+                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!mount.connected" [disabled]="!mount.name || running" (onClick)="mountConnect()" icon="mdi mdi-connection"
-                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
-        </div>
-        <div class="col-6 align-items-center gap-2" *ngIf="tab === 1">
-            <span class="p-float-label device">
-                <p-dropdown [disabled]="running" [options]="guideOutputs" [(ngModel)]="guideOutput" optionLabel="name"
-                            (ngModelChange)="guideOutputChanged()" styleClass="p-inputtext-sm border-0 max-w-full"
-                            emptyMessage="No guide output found" [autoDisplayFirst]="false" />
-                <label>Guide Output</label>
-            </span>
+                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
+            } @else {
+            <neb-device-list-button title="GUIDE OUTPUT" icon="mdi mdi-target" [devices]="guideOutputs" [(device)]="guideOutput" />
             <p-button *ngIf="guideOutput.connected" [disabled]="!guideOutput.name || running" (onClick)="guideOutputConnect()"
-                      icon="mdi mdi-close" size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
+                      icon="mdi mdi-close" size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!guideOutput.connected" [disabled]="!guideOutput.name || running" (onClick)="guideOutputConnect()"
-                      icon="mdi mdi-connection" size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
+                      icon="mdi mdi-connection" size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
+            }
         </div>
-        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-sm" style="min-height: 25px;">
+        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center mt-1 gap-1 text-sm" style="min-height: 25px;">
             <i class="mdi mdi-information text-blue-600"></i>
             <span style="min-width: 60px" class="text-left mr-2">{{ status | enum | lowercase }}</span>
             <ng-container *ngIf="running && alignmentMethod === 'DARV'">
@@ -94,18 +80,18 @@
                     </div>
                     <div class="grid mt-2">
                         <div class="col-4 flex flex-column align-items-center justify-content-center">
-                            <span>Azimuth</span>
-                            <span>{{ tppaAzimuthError }}</span>
-                            <span>{{ tppaAzimuthErrorDirection }}</span>
+                            <span class="font-bold">Azimuth</span>
+                            <span class="text-lg">{{ tppaAzimuthError }}</span>
+                            <span class="text-lg">{{ tppaAzimuthErrorDirection }}</span>
                         </div>
                         <div class="col-4 flex flex-column align-items-center justify-content-center">
-                            <span>Altitude</span>
-                            <span>{{ tppaAltitudeError }}</span>
-                            <span>{{ tppaAltitudeErrorDirection }}</span>
+                            <span class="font-bold">Altitude</span>
+                            <span class="text-lg">{{ tppaAltitudeError }}</span>
+                            <span class="text-lg">{{ tppaAltitudeErrorDirection }}</span>
                         </div>
                         <div class="col-4 flex flex-column align-items-center justify-content-center">
-                            <span>Total</span>
-                            <span>{{ tppaTotalError }}</span>
+                            <span class="font-bold">Total</span>
+                            <span class="text-lg">{{ tppaTotalError }}</span>
                         </div>
                     </div>
                     <div class="grid mt-2">

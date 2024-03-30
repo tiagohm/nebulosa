@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { HttpClientModule } from '@angular/common/http'
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http'
 import { LOCALE_ID, NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
@@ -27,6 +27,7 @@ import { MenuModule } from 'primeng/menu'
 import { MessageModule } from 'primeng/message'
 import { MultiSelectModule } from 'primeng/multiselect'
 import { OverlayPanelModule } from 'primeng/overlaypanel'
+import { ProgressBarModule } from 'primeng/progressbar'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
 import { SelectButtonModule } from 'primeng/selectbutton'
 import { SlideMenuModule } from 'primeng/slidemenu'
@@ -39,6 +40,7 @@ import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { CameraExposureComponent } from '../shared/components/camera-exposure/camera-exposure.component'
+import { DeviceListButtonComponent } from '../shared/components/device-list-button/device-list-button.component'
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
@@ -48,6 +50,7 @@ import { MoonComponent } from '../shared/components/moon/moon.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
+import { LocationInterceptor } from '../shared/interceptors/location.interceptor'
 import { AnglePipe } from '../shared/pipes/angle.pipe'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
 import { EnvPipe } from '../shared/pipes/env.pipe'
@@ -87,6 +90,7 @@ import { SettingsComponent } from './settings/settings.component'
         CalibrationComponent,
         CameraComponent,
         CameraExposureComponent,
+        DeviceListButtonComponent,
         DeviceListMenuComponent,
         DialogMenuComponent,
         EnumPipe,
@@ -144,6 +148,7 @@ import { SettingsComponent } from './settings/settings.component'
         MessageModule,
         MultiSelectModule,
         OverlayPanelModule,
+        ProgressBarModule,
         ScrollPanelModule,
         SelectButtonModule,
         SlideMenuModule,
@@ -169,6 +174,11 @@ import { SettingsComponent } from './settings/settings.component'
         {
             provide: LOCALE_ID,
             useValue: 'en-US',
+        },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: LocationInterceptor,
+            multi: true,
         },
     ],
     bootstrap: [AppComponent]

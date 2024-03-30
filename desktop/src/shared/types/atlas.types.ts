@@ -1,3 +1,4 @@
+import { NotificationEvent } from './app.types'
 import { PierSide } from './mount.types'
 
 export type Angle = string | number
@@ -175,6 +176,14 @@ export interface OrbitalPhysicalParameter {
     value: string
 }
 
+export interface CloseApproach {
+    name: string
+    designation: string
+    dateTime: number
+    distance: number
+    absoluteMagnitude: number
+}
+
 export interface AstronomicalObject extends EquatorialCoordinateJ2000 {
     id: number
     name: string
@@ -261,15 +270,17 @@ export interface Location {
     longitude: number
     elevation: number
     offsetInMinutes: number
-    selected: boolean
 }
 
 export const EMPTY_LOCATION: Location = {
     id: 0,
-    name: '',
+    name: 'Null Island',
     latitude: 0,
     longitude: 0,
     elevation: 0,
     offsetInMinutes: 0,
-    selected: false,
+}
+
+export interface SkyAtlasUpdated extends NotificationEvent {
+    progress: number
 }

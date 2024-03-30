@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { MessageService } from 'primeng/api'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PrimeService } from '../../shared/services/prime.service'
 import { Angle } from '../../shared/types/atlas.types'
 import { HipsSurvey } from '../../shared/types/framing.types'
 import { AppComponent } from '../app.component'
@@ -58,7 +58,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private storage: LocalStorageService,
-        private message: MessageService,
+        private prime: PrimeService,
         ngZone: NgZone,
     ) {
         app.title = 'Framing'
@@ -126,7 +126,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
         } catch (e: any) {
             console.error(e)
 
-            this.message.add({ severity: 'error', detail: e.message || 'Failed to retrieve the image' })
+            this.prime.message(e.message || 'Failed to retrieve the image', 'error')
         } finally {
             this.loading = false
         }

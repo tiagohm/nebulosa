@@ -1,12 +1,13 @@
 import com.adarshr.gradle.testlogger.TestLoggerExtension
 import com.adarshr.gradle.testlogger.theme.ThemeType
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0-Beta4")
-        classpath("org.jetbrains.kotlin:kotlin-allopen:2.0.0-Beta4")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0-Beta5")
+        classpath("org.jetbrains.kotlin:kotlin-allopen:2.0.0-Beta5")
         classpath("com.adarshr:gradle-test-logger-plugin:4.0.0")
         classpath("io.objectbox:objectbox-gradle-plugin:3.8.0")
     }
@@ -60,12 +61,16 @@ subprojects {
     }
 
     tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
-        kotlinOptions.freeCompilerArgs = listOf(
-            "-Xjvm-default=all", "-Xjsr305=strict",
-            "-opt-in=kotlin.io.path.ExperimentalPathApi",
-            "-opt-in=kotlin.io.encoding.ExperimentalEncodingApi",
-        )
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+
+            freeCompilerArgs = listOf(
+                "-Xjvm-default=all", "-Xjsr305=strict",
+                "-opt-in=kotlin.io.path.ExperimentalPathApi",
+                "-opt-in=kotlin.io.encoding.ExperimentalEncodingApi",
+                "-Xno-param-assertions", "-Xno-call-assertions", "-Xno-receiver-assertions",
+            )
+        }
     }
 
     tasks.withType<Test> {

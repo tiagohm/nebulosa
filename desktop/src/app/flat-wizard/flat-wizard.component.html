@@ -1,23 +1,14 @@
 <div class="container px-4 py-3">
     <div class="grid">
-        <div class="col-6 align-items-center gap-2">
-            <span class="p-float-label device">
-                <p-dropdown [disabled]="running" [options]="cameras" [(ngModel)]="camera" optionLabel="name" [autoDisplayFirst]="false"
-                            styleClass="p-inputtext-sm border-0" (ngModelChange)="cameraChanged()" emptyMessage="No camera found" />
-                <label>Camera</label>
-            </span>
+        <div class="col-12 align-items-center justify-content-center gap-2">
+            <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera" />
             <p-button [disabled]="!camera.name || running" icon="mdi mdi-cog" size="small" (onClick)="showCameraDialog()" />
-        </div>
-        <div class="col-6 align-items-center gap-2">
-            <span class="p-float-label device">
-                <p-dropdown [disabled]="running" [options]="wheels" [(ngModel)]="wheel" optionLabel="name" [autoDisplayFirst]="false"
-                            styleClass="p-inputtext-sm border-0" (ngModelChange)="wheelChanged()" emptyMessage="No filter wheel found" />
-                <label>Filter Wheel</label>
-            </span>
+            <neb-device-list-button title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel" />
+
             <p-button *ngIf="wheel?.connected" [disabled]="!wheel.name || running" (onClick)="wheelConnect()" icon="mdi mdi-close"
-                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
+                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!wheel?.connected" [disabled]="!wheel.name || running" (onClick)="wheelConnect()" icon="mdi mdi-connection"
-                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
+                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
         </div>
         <div class="col-12 pt-0 pb-1 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-xs">
             <neb-camera-exposure #cameraExposure />

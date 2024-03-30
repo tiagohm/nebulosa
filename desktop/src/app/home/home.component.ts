@@ -1,12 +1,13 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import path from 'path'
-import { MenuItem, MessageService } from 'primeng/api'
+import { MenuItem } from 'primeng/api'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
+import { PrimeService } from '../../shared/services/prime.service'
 import { Camera } from '../../shared/types/camera.types'
 import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
@@ -41,6 +42,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     readonly connections: ConnectionDetails[] = []
     connection?: ConnectionDetails
     newConnection?: [ConnectionDetails, ConnectionDetails | undefined]
+    skyAtlasProgress?: number = undefined
 
     cameras: Camera[] = []
     mounts: Mount[] = []
@@ -122,13 +124,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     ) {
         this.electron.on(`${type}.ATTACHED`, event => {
             this.ngZone.run(() => {
-                onAdd(event.device as any)
+                onAdd(event.device as never)
             })
         })
 
         this.electron.on(`${type}.DETACHED`, event => {
             this.ngZone.run(() => {
-                onRemove(event.device as any)
+                onRemove(event.device as never)
             })
         })
     }
@@ -138,7 +140,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private api: ApiService,
-        private message: MessageService,
+        private prime: PrimeService,
         private preference: PreferenceService,
         private ngZone: NgZone,
     ) {
@@ -192,22 +194,36 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             }
         })
 
+        electron.on('SKY_ATLAS.PROGRESS_CHANGED', event => {
+            ngZone.run(() => {
+                if (event.progress >= 100) {
+                    this.skyAtlasProgress = undefined
+                } else {
+                    this.skyAtlasProgress = event.progress
+                }
+            })
+        })
+
         this.connections = preference.connections.get()
-        this.connections.forEach(e => e.connected = false)
+        this.connections.forEach(e => { e.id = undefined; e.connected = false })
         this.connection = this.connections[0]
     }
 
     async ngAfterContentInit() {
-        this.updateConnection()
+        await this.updateConnection()
 
-        this.cameras = await this.api.cameras()
-        this.mounts = await this.api.mounts()
-        this.focusers = await this.api.focusers()
-        this.wheels = await this.api.wheels()
+        if (this.connected) {
+            this.cameras = await this.api.cameras()
+            this.mounts = await this.api.mounts()
+            this.focusers = await this.api.focusers()
+            this.wheels = await this.api.wheels()
+        }
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() { }
+    ngOnDestroy() {
+        this.disconnect()
+    }
 
     addConnection() {
         this.newConnection = [structuredClone(EMPTY_CONNECTION_DETAILS), undefined]
@@ -256,15 +272,25 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     async connect() {
         try {
-            if (this.connection && this.connection.connected) {
-                await this.api.disconnect(this.connection.id!)
-            } else if (this.connection) {
+            if (this.connection && !this.connection.connected) {
                 this.connection.id = await this.api.connect(this.connection.host, this.connection.port, this.connection.type)
             }
         } catch (e) {
             console.error(e)
 
-            this.message.add({ severity: 'error', detail: 'Connection failed' })
+            this.prime.message('Connection failed', 'error')
+        } finally {
+            await this.updateConnection()
+        }
+    }
+
+    async disconnect() {
+        try {
+            if (this.connection && this.connection.connected) {
+                await this.api.disconnect(this.connection.id!)
+            }
+        } catch (e) {
+            console.error(e)
         } finally {
             this.updateConnection()
         }
@@ -314,11 +340,11 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const defaultPath = this.preference.homeImageDefaultDirectory.get()
+            const defaultPath = this.preference.homeImageDirectory.get()
             const filePath = await this.electron.openFits({ defaultPath })
 
             if (filePath) {
-                this.preference.homeImageDefaultDirectory.set(path.dirname(filePath))
+                this.preference.homeImageDirectory.set(path.dirname(filePath))
                 this.browserWindow.openImage({ path: filePath, source: 'PATH' })
             }
         } else {
@@ -396,6 +422,24 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 this.domes = []
                 this.rotators = []
                 this.switches = []
+            }
+        } else {
+            const statuses = await this.api.connectionStatuses()
+
+            for (const status of statuses) {
+                for (const connection of this.connections) {
+                    if (!connection.connected &&
+                        (status.host === connection.host || status.ip === connection.host) &&
+                        status.port === connection.port) {
+                        connection.connected = true
+                        this.connection = connection
+                        break
+                    }
+                }
+
+                if (this.connection?.connected) {
+                    break
+                }
             }
         }
     }

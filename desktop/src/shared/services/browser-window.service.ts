@@ -30,7 +30,7 @@ export class BrowserWindowService {
     }
 
     openCamera(options: OpenWindowOptionsWithData<Camera>) {
-        Object.assign(options, { icon: 'camera', width: 400, height: 470 })
+        Object.assign(options, { icon: 'camera', width: 400, height: 479 })
         return this.openWindow({ ...options, id: `camera.${options.data.name}`, path: 'camera' })
     }
 
@@ -40,7 +40,7 @@ export class BrowserWindowService {
     }
 
     openFocuser(options: OpenWindowOptionsWithData<Focuser>) {
-        Object.assign(options, { icon: 'focus', width: 348, height: 202 })
+        Object.assign(options, { icon: 'focus', width: 252, height: 252 })
         this.openWindow({ ...options, id: `focuser.${options.data.name}`, path: 'focuser' })
     }
 
@@ -89,7 +89,7 @@ export class BrowserWindowService {
     }
 
     openAlignment(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 450, height: 343 })
+        Object.assign(options, { icon: 'star', width: 450, height: 344 })
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
 
@@ -99,13 +99,13 @@ export class BrowserWindowService {
     }
 
     openFlatWizard(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 410, height: 326 })
+        Object.assign(options, { icon: 'star', width: 410, height: 331 })
         this.openWindow({ ...options, id: 'flat-wizard', path: 'flat-wizard', data: undefined })
     }
 
     openSettings(options: OpenWindowOptions = {}) {
         Object.assign(options, { icon: 'settings', width: 580, height: 451 })
-        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined })
+        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined, resizable: true })
     }
 
     openCalculator(options: OpenWindowOptions = {}) {

@@ -1,12 +1,13 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren } from '@angular/core'
-import { MenuItem, MessageService } from 'primeng/api'
+import { MenuItem } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PrimeService } from '../../shared/services/prime.service'
 import { JsonFile } from '../../shared/types/app.types'
 import { Camera, CameraCaptureElapsed, CameraStartCapture, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
@@ -119,7 +120,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private electron: ElectronService,
         private storage: LocalStorageService,
-        private message: MessageService,
+        private prime: PrimeService,
         ngZone: NgZone,
     ) {
         app.title = 'Sequencer'
@@ -283,7 +284,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         if (this.loadPlan(file.json)) {
             this.afterSavedJsonFile(file)
         } else {
-            this.message.add({ severity: 'warn', detail: `No entry found for the saved Sequence at: ${file.path}` })
+            this.prime.message(`No entry found for the saved Sequence at: ${file.path}`, 'warn')
 
             this.add()
         }
@@ -299,7 +300,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
                 return this.loadSavedJsonFile(file)
             }
 
-            this.message.add({ severity: 'error', detail: `Failed to load the saved Sequence at: ${savedPath}` })
+            this.prime.message(`Failed to load the saved Sequence at: ${savedPath}`, 'error')
 
             this.storage.delete(SEQUENCER_SAVED_PATH_KEY)
         }

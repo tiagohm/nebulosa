@@ -6,27 +6,26 @@
                 <label>Focuser</label>
             </span>
             <p-button *ngIf="focuser.connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-close"
-                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" />
+                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!focuser.connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-connection"
-                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" />
+                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
         </div>
-        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
-            <i class="mdi mdi-information text-blue-600"></i>
-            <span style="display: contents">{{ moving ? 'moving' : 'idle' }}</span>
+        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center justify-content-between my-1 gap-1">
+            <div class="flex align-items-center gap-1">
+                <i class="mdi mdi-information text-blue-600"></i>
+                <span style="display: contents">{{ moving ? 'moving' : 'idle' }}</span>
+            </div>
+            <div class="flex align-items-center gap-1" *ngIf="focuser.hasThermometer">
+                <i class="mdi mdi-thermometer text-red-600"></i>
+                <span style="display: contents">{{ temperature }}°C</span>
+            </div>
         </div>
     </div>
-    <div class="grid">
-        <div class="col-5">
+    <div class="grid mt-1">
+        <div class="col-8">
             <span class="p-float-label">
                 <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="position" locale="en" />
                 <label>Position (max: {{ maxPosition }})</label>
-            </span>
-        </div>
-        <div class="col-4">
-            <span class="p-float-label">
-                <p-inputNumber [readonly]="true" [disabled]="!hasThermometer" styleClass="p-inputtext-sm border-0 max-w-full"
-                               [(ngModel)]="temperature" locale="en" />
-                <label>Temperature (°C)</label>
             </span>
         </div>
         <div class="col-3 text-center justify-content-between gap-2">
@@ -35,7 +34,7 @@
             <p-button [disabled]="!focuser.connected || !canSync || moving" (onClick)="sync()" icon="mdi mdi-sync"
                       [text]="true" severity="info" size="small" pTooltip="Sync" tooltipPosition="bottom" />
         </div>
-        <div class="col-6 flex align-items-center gap-1">
+        <div class="col-12 flex align-items-center gap-1">
             <p-button [disabled]="!focuser.connected || !canRelativeMove || moving || !stepsRelative" (onClick)="moveIn()"
                       icon="mdi mdi-arrow-left-bold" [text]="true" size="small" pTooltip="Move In" tooltipPosition="bottom" />
             <span class="p-float-label">
@@ -46,7 +45,7 @@
             <p-button [disabled]="!focuser.connected || !canRelativeMove || moving || !stepsRelative" (onClick)="moveOut()"
                       icon="mdi mdi-arrow-right-bold" [text]="true" size="small" pTooltip="Move Out" tooltipPosition="bottom" />
         </div>
-        <div class="col-6 flex align-items-center gap-1">
+        <div class="col-12 flex align-items-center gap-1">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!focuser.connected || !canAbsoluteMove" [min]="0" [max]="maxPosition" [showButtons]="true"
                                styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="stepsAbsolute" [allowEmpty]="false" locale="en" />

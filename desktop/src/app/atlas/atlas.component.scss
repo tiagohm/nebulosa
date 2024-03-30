@@ -4,7 +4,7 @@
     height: 100vh;
 
     ::ng-deep {
-        .main.p-tabview {
+        .p-tabview {
             padding-left: 0.21rem;
             padding-right: 0.21rem;
 
@@ -13,7 +13,7 @@
             }
 
             p-table.minorPlanet .p-datatable-wrapper {
-                height: 189px;
+                height: 154px;
             }
 
             p-table.skyObject .p-datatable-wrapper,
@@ -21,7 +21,7 @@
                 height: 143px;
             }
 
-            .p-tabview-nav li {
+            .p-tabview-nav li.main {
                 width: calc(100% / 6) !important;
 
                 .p-tabview-nav-link {

@@ -10,7 +10,7 @@ import * as fs from 'fs'
 import { DARVElapsed, TPPAElapsed } from '../types/alignment.types'
 import { ApiEventType, DeviceMessageEvent } from '../types/api.types'
 import { CloseWindow, InternalEventType, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
-import { Location } from '../types/atlas.types'
+import { Location, SkyAtlasUpdated } from '../types/atlas.types'
 import { Camera, CameraCaptureElapsed } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
 import { FlatWizardElapsed } from '../types/flat-wizard.types'
@@ -54,6 +54,7 @@ type EventMappedType = {
     'SEQUENCER.ELAPSED': SequencerElapsed
     'FLAT_WIZARD.ELAPSED': FlatWizardElapsed
     'CONNECTION.CLOSED': ConnectionClosed
+    'SKY_ATLAS.PROGRESS_CHANGED': SkyAtlasUpdated
 }
 
 @Injectable({ providedIn: 'root' })
@@ -169,7 +170,7 @@ export class ElectronService {
                 this.resizeWindow(size)
             }
         } else {
-            return setTimeout(() => this.autoResizeWindow(), timeout)
+            return setTimeout(() => this.autoResizeWindow(0), timeout)
         }
     }
 

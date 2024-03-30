@@ -25,56 +25,83 @@ class SkyAtlasUpdateTask(
         override val body = "Sky Atlas database is being updated"
     }
 
+    data class ProgressChanged(val progress: Int) : NotificationEvent {
+
+        override val type = "SKY_ATLAS.PROGRESS_CHANGED"
+        override val body = "Sky Atlas database is updating"
+        override val silent = true
+    }
+
     data object UpdateFinished : NotificationEvent {
 
         override val type = "SKY_ATLAS.UPDATE_FINISHED"
         override val body = "Sky Atlas database was updated"
     }
 
+    data object UpdateFailed : NotificationEvent {
+
+        override val type = "SKY_ATLAS.UPDATE_FINISHED"
+        override val body = "Sky Atlas database update failed"
+        override val severity = NotificationEvent.Severity.ERROR
+    }
+
     @Scheduled(fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
     override fun run() {
+        var needsUpdate = false
         var request = Request.Builder().get().url(VERSION_URL).build()
 
-        httpClient.newCall(request).execute().use { response ->
-            if (response.isSuccessful) {
-                val newestVersion = response.body!!.string()
+        try {
+            httpClient.newCall(request).execute().use { response ->
+                if (response.isSuccessful) {
+                    val newestVersion = response.body!!.string().trim()
 
-                if (newestVersion != preferenceService.getText(VERSION_KEY) || simbadEntityRepository.isEmpty()) {
-                    LOG.info("Sky Atlas database is out of date. Downloading...")
+                    if (newestVersion != preferenceService.getText(VERSION_KEY) || simbadEntityRepository.isEmpty()) {
+                        needsUpdate = true
 
-                    messageService.sendMessage(UpdateStarted)
+                        LOG.info("Sky Atlas database is out of date. Downloading...")
 
-                    var finished = false
+                        messageService.sendMessage(UpdateStarted)
 
-                    for (i in 0 until MAX_DATA_COUNT) {
-                        if (finished) break
+                        var finished = false
 
-                        val url = DATA_URL.format(i)
-                        request = Request.Builder().get().url(url).build()
+                        for (i in 0 until MAX_DATA_COUNT) {
+                            if (finished) break
 
-                        httpClient.newCall(request).execute().use {
-                            if (it.isSuccessful) {
-                                val reader = SimbadDatabaseReader(it.body!!.byteStream().source())
+                            val url = DATA_URL.format(i)
+                            request = Request.Builder().get().url(url).build()
 
-                                for (entity in reader) {
-                                    simbadEntityRepository.save(entity)
+                            messageService.sendMessage(ProgressChanged(i))
+
+                            httpClient.newCall(request).execute().use {
+                                if (it.isSuccessful) {
+                                    val reader = SimbadDatabaseReader(it.body!!.byteStream().source())
+
+                                    for (entity in reader) {
+                                        simbadEntityRepository.save(entity)
+                                    }
+                                } else if (it.code == 404) {
+                                    finished = true
+                                } else {
+                                    messageService.sendMessage(UpdateFailed)
+
+                                    LOG.error("Failed to download. url={}, code={}", url, it.code)
+                                    return
                                 }
-                            } else if (it.code == 404) {
-                                finished = true
-                            } else {
-                                LOG.error("Failed to download. url={}, code={}", url, it.code)
-                                return
                             }
                         }
+
+                        preferenceService.putText(VERSION_KEY, newestVersion)
+                        messageService.sendMessage(UpdateFinished)
+
+                        LOG.info("Sky Atlas database was updated. version={}, size={}", newestVersion, simbadEntityRepository.size)
+                    } else {
+                        LOG.info("Sky Atlas database is up to date. version={}, size={}", newestVersion, simbadEntityRepository.size)
                     }
-
-                    preferenceService.putText(VERSION_KEY, newestVersion)
-                    messageService.sendMessage(UpdateFinished)
-
-                    LOG.info("Sky Atlas database was updated. version={}, size={}", newestVersion, simbadEntityRepository.size)
-                } else {
-                    LOG.info("Sky Atlas database is up to date. version={}, size={}", newestVersion, simbadEntityRepository.size)
                 }
+            }
+        } finally {
+            if (needsUpdate) {
+                messageService.sendMessage(ProgressChanged(100))
             }
         }
     }

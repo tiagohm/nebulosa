@@ -12,7 +12,6 @@
   "private": true,
   "dependencies": {
     "@stomp/stompjs": "7.0.0",
-    "electron-store": "8.1.0",
     "ws": "8.16.0"
   }
 }

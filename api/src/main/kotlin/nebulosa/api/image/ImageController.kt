@@ -2,12 +2,15 @@ package nebulosa.api.image
 
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
-import nebulosa.api.beans.converters.indi.DeviceOrEntityParam
+import nebulosa.api.atlas.Location
+import nebulosa.api.beans.converters.device.DeviceOrEntityParam
+import nebulosa.api.beans.converters.location.LocationParam
 import nebulosa.imaging.ImageChannel
 import nebulosa.imaging.algorithms.transformation.ProtectionMethod
 import nebulosa.indi.device.camera.Camera
 import nebulosa.star.detection.ImageStar
 import org.hibernate.validator.constraints.Range
+import org.springframework.http.HttpHeaders
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 
@@ -60,7 +63,8 @@ class ImageController(
         @RequestParam(required = false, defaultValue = "true") starsAndDSOs: Boolean,
         @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
         @RequestParam(required = false, defaultValue = "12.0") minorPlanetMagLimit: Double,
-    ) = imageService.annotations(path, starsAndDSOs, minorPlanets, minorPlanetMagLimit)
+        @LocationParam location: Location? = null,
+    ) = imageService.annotations(path, starsAndDSOs, minorPlanets, minorPlanetMagLimit, location)
 
     @GetMapping("coordinate-interpolation")
     fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {
@@ -77,4 +81,16 @@ class ImageController(
         @RequestParam path: Path,
         @RequestParam(required = false, defaultValue = "16") @Valid @Range(min = 8, max = 16) bitLength: Int,
     ) = imageService.histogram(path, bitLength)
+
+    @GetMapping("fov-cameras")
+    fun fovCameras(response: HttpServletResponse) {
+        response.addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+        return response.outputStream.write(imageService.fovCameras)
+    }
+
+    @GetMapping("fov-telescopes")
+    fun fovTelescopes(response: HttpServletResponse) {
+        response.addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+        return response.outputStream.write(imageService.fovTelescopes)
+    }
 }

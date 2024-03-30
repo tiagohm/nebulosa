@@ -4,6 +4,7 @@ import nebulosa.indi.client.io.INDIProtocolFactory
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIConnection
 import nebulosa.log.loggerFor
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
 
@@ -14,10 +15,22 @@ data class INDISocketConnection(private val socket: Socket) : INDIConnection {
         socket.connect(InetSocketAddress(host, port), 30000)
     }
 
-    val host: String
-        get() = socket.localAddress.hostName
+    val remoteAddress
+        get() = socket.remoteSocketAddress as InetSocketAddress
 
-    val port
+    val localAddress: InetAddress
+        get() = socket.localAddress
+
+    val remoteHost: String
+        get() = remoteAddress.hostName
+
+    val remoteIP: String
+        get() = remoteAddress.address.hostAddress
+
+    val remotePort
+        get() = socket.port
+
+    val localPort
         get() = socket.localPort
 
     override val input by lazy { INDIProtocolFactory.createInputStream(socket.getInputStream()) }

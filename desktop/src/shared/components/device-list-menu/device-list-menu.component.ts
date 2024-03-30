@@ -1,6 +1,7 @@
 import { Component, Input, ViewChild } from '@angular/core'
-import { MenuItem, MessageService } from 'primeng/api'
+import { MenuItem } from 'primeng/api'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
+import { PrimeService } from '../../services/prime.service'
 import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
 import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
@@ -19,12 +20,12 @@ export class DeviceListMenuComponent {
     readonly modelAtFirst: boolean = true
 
     @Input()
-    readonly disableIfNotConnected: boolean = true
+    readonly disableIfDeviceIsNotConnected: boolean = true
 
     @ViewChild('menu')
     private readonly menu!: DialogMenuComponent
 
-    constructor(private message: MessageService) { }
+    constructor(private prime: PrimeService) { }
 
     show<T extends Device>(devices: T[]) {
         const model: MenuItem[] = []
@@ -32,7 +33,7 @@ export class DeviceListMenuComponent {
         return new Promise<T | undefined>((resolve) => {
             if (devices.length <= 0) {
                 resolve(undefined)
-                this.message.add({ severity: 'warn', detail: 'Please connect your equipment first!' })
+                this.prime.message('Please connect your equipment first!', 'warn')
                 return
             }
 
@@ -52,7 +53,7 @@ export class DeviceListMenuComponent {
                 model.push({
                     icon: 'mdi mdi-connection',
                     label: device.name,
-                    disabled: this.disableIfNotConnected && !device.connected,
+                    disabled: this.disableIfDeviceIsNotConnected && !device.connected,
                     command: () => {
                         resolve(device)
                     },

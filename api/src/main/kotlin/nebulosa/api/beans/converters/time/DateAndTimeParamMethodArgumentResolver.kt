@@ -31,22 +31,22 @@ class DateAndTimeParamMethodArgumentResolver : HandlerMethodArgumentResolver {
         val dateAndTimeParam = parameter.annotation<DateAndTimeParam>()!!
         val type = parameter.parameterType
 
-        val dateValue = webRequest.parameter("date")
-        val timeValue = webRequest.parameter("time")
+        val dateValue = webRequest.parameter("date")?.ifBlank { null }
+        val timeValue = webRequest.parameter("time")?.ifBlank { null }
 
-        val date = dateValue?.ifBlank { null }
+        val date = dateValue
             ?.let { LocalDate.parse(it, DateTimeFormatter.ofPattern(dateAndTimeParam.datePattern)) }
-            ?: LocalDate.now()
+            ?: if (dateAndTimeParam.nullable) null else LocalDate.now()
 
         if (type === LocalDate::class.java) return date
 
-        val time = timeValue?.ifBlank { null }
+        val time = timeValue
             ?.let { LocalTime.parse(it, DateTimeFormatter.ofPattern(dateAndTimeParam.timePattern)) }
-            ?: LocalTime.now()
+            ?: if (dateAndTimeParam.nullable) null else LocalTime.now()
 
         if (type === LocalTime::class.java) return time
 
-        return LocalDateTime.of(date, time)
+        return LocalDateTime.of(date ?: LocalDate.now(), time ?: LocalTime.now())
             .let { if (dateAndTimeParam.noSeconds) it.withSecond(0).withNano(0) else it }
     }
 }

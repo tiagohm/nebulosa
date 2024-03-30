@@ -133,8 +133,12 @@ p-dropdown,
     border: 1px solid rgba(255, 255, 255, 0) !important;
 }
 
-.p-button.p-button-icon-only {
-    min-width: fit-content;
+.p-button {
+    white-space: nowrap;
+
+    &.p-button-icon-only {
+        min-width: fit-content;
+    }
 }
 
 p-calendar.border-0 .p-calendar-w-btn {
@@ -207,13 +211,9 @@ i.mdi {
 }
 
 .p-tabview {
-    .p-tabview-title {
-        line-height: 0;
-    }
-
     .p-tabview-nav li .p-tabview-nav-link {
         border-color: transparent !important;
-        min-height: 32px;
+        min-height: 28px;
     }
 }
 
@@ -257,6 +257,7 @@ p-dropdownitem *,
 
 ::-webkit-scrollbar {
     width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -267,6 +268,14 @@ p-dropdownitem *,
 
 ::-webkit-scrollbar-track {
     border-radius: 10px;
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-track-piece {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-corner {
     background-color: transparent;
 }
 

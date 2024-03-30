@@ -3,8 +3,8 @@ package nebulosa.sbd
 import nebulosa.math.*
 import nebulosa.retrofit.RetrofitService
 import okhttp3.OkHttpClient
-import retrofit2.Call
 import retrofit2.create
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -36,16 +36,16 @@ class SmallBodyDatabaseService(
         latitude: Angle, longitude: Angle, elevation: Distance = 0.m,
         centerRA: Angle, centerDEC: Angle, fov: Angle = DEFAULT_FOV,
         magLimit: Double = 12.0,
-    ): Call<SmallBodyIdentified> {
-        val fovDeg = fov.toDegrees
+    ) = service.identify(
+        dateTime.format(DATE_TIME_FORMAT),
+        latitude.toDegrees, longitude.toDegrees, elevation.toKilometers,
+        centerRA.format(RA_FORMAT), centerDEC.format(DEC_FORMAT), fovRAWidth = fov.toDegrees,
+        magLimit = magLimit,
+    )
 
-        return service.identify(
-            dateTime.format(DATE_TIME_FORMAT),
-            latitude.toDegrees, longitude.toDegrees, elevation.toKilometers,
-            centerRA.format(RA_FORMAT), centerDEC.format(DEC_FORMAT), fovDeg, fovDeg,
-            magLimit,
-        )
-    }
+    fun closeApproaches(
+        days: Long = 7L, distance: Double = 2.0, date: LocalDate? = null,
+    ) = service.closeApproaches(date?.toString() ?: "now", date?.plusDays(days)?.toString() ?: "+$days", "${distance}LD")
 
     companion object {
 

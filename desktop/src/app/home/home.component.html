@@ -1,6 +1,8 @@
 <div class="container px-4 pt-4">
     <div class="grid flex justify-content-center align-items-center">
         <div class="col-12 px-2 gap-1">
+            <p-button (onClick)="addConnection()" size="small" icon="mdi mdi-plus" severity="success" [text]="true" pTooltip="New connection"
+                      tooltipPosition="bottom" />
             <span class="p-float-label">
                 <p-dropdown [disabled]="connected" [options]="connections" [(ngModel)]="connection"
                             styleClass="border-0 p-inputtext-sm w-full" [autoDisplayFirst]="false" emptyMessage="No connection found">
@@ -30,9 +32,10 @@
                 </p-dropdown>
                 <label>Connection</label>
             </span>
-            <p-button (onClick)="addConnection()" size="small" icon="mdi mdi-plus" severity="success" />
-            <p-button *ngIf="!connected" [disabled]="!connection" (onClick)="connect()" size="small" icon="mdi mdi-connection" />
-            <p-button *ngIf="connected" [disabled]="!connection" (onClick)="connect()" size="small" icon="mdi mdi-close" severity="danger" />
+            <p-button *ngIf="!connected" [disabled]="!connection" (onClick)="connect()" size="small" icon="mdi mdi-connection" severity="info"
+                      [text]="true" pTooltip="Connect" tooltipPosition="bottom" />
+            <p-button *ngIf="connected" [disabled]="!connection" (onClick)="disconnect()" size="small" icon="mdi mdi-close" severity="danger"
+                      [text]="true" pTooltip="Disconnect" tooltipPosition="bottom" />
         </div>
     </div>
     <div class="grid my-2 overflow-y-auto" style="height: calc(62px * 5);">
@@ -93,6 +96,8 @@
             <p-button [text]="true" (onClick)="open('SKY_ATLAS')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/atlas.png" />
                 <div class="mt-1 text-sm">Sky Atlas</div>
+                <p-progressBar *ngIf="skyAtlasProgress !== undefined" mode="indeterminate" class="w-full" styleClass="ml-auto mr-auto"
+                               [style]="{width: '50%', height: '2px', marginTop: '2px'}" />
             </p-button>
         </div>
         <div class="col-4 p-1">
@@ -172,14 +177,13 @@
         </div>
         <div class="col-4">
             <span class="p-float-label" style="min-width: 80px;">
-                <p-inputNumber [disabled]="connected" [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" placeholder="7624"
+                <p-inputNumber [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" placeholder="7624"
                                [(ngModel)]="newConnection[0].port" [format]="false" />
                 <label>Port</label>
             </span>
         </div>
         <div class="col-8">
-            <p-selectButton [disabled]="connected" [options]="connectionTypes"
-                            [(ngModel)]="newConnection[0].type" styleClass="border-0 w-full" />
+            <p-selectButton [options]="connectionTypes" [(ngModel)]="newConnection[0].type" styleClass="border-0 w-full" />
         </div>
     </div>
     <ng-template pTemplate="footer">
@@ -189,4 +193,4 @@
 </p-dialog>
 
 <neb-dialog-menu #deviceMenu [model]="deviceModel" />
-<neb-device-list-menu #imageMenu [model]="imageModel" [disableIfNotConnected]="false" />
+<neb-device-list-menu #imageMenu [model]="imageModel" [disableIfDeviceIsNotConnected]="false" />
