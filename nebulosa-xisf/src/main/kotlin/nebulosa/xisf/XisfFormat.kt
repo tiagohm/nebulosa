@@ -36,8 +36,7 @@ data object XisfFormat : ImageFormat {
 
             // XISF Header.
             val headerData = ByteArray(headerLength)
-            val headerSink = headerData.sink()
-            buffer.transferFully(source, headerSink, headerLength.toLong())
+            headerData.sink().use { buffer.transferFully(source, it, headerLength.toLong()) }
             val stream = XisfHeaderInputStream(ByteArrayInputStream(headerData))
             val hdus = ArrayList<XisfMonolithicFileHeaderImageHdu>(2)
 

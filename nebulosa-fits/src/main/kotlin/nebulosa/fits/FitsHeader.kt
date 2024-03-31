@@ -122,7 +122,7 @@ open class FitsHeader : AbstractHeader {
 
         @JvmStatic
         fun from(source: ByteArray): FitsHeader {
-            return from(source.source())
+            return source.source().use(::from)
         }
 
         @JvmStatic
