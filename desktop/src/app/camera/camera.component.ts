@@ -7,6 +7,9 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import { Focuser } from '../../shared/types/focuser.types'
+import { Equipment } from '../../shared/types/home.types'
+import { Mount } from '../../shared/types/mount.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
@@ -18,6 +21,7 @@ import { AppComponent } from '../app.component'
 export class CameraComponent implements AfterContentInit, OnDestroy {
 
     readonly camera = structuredClone(EMPTY_CAMERA)
+    equipment: Equipment = {}
 
     savePath = ''
     capturesPath = ''
@@ -74,6 +78,27 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             command: () => {
                 this.showDitherDialog = true
             },
+        },
+        {
+            icon: 'mdi mdi-connection',
+            label: 'Snoop Devices',
+            items: [
+                {
+                    icon: 'mdi mdi-telescope',
+                    label: 'Mount',
+                    items: [],
+                },
+                {
+                    icon: 'mdi mdi-palette',
+                    label: 'Filter Wheel',
+                    items: [],
+                },
+                {
+                    icon: 'mdi mdi-image-filter-center-focus',
+                    label: 'Focuser',
+                    items: [],
+                },
+            ]
         },
     ]
 
@@ -160,6 +185,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 })
             }
         })
+
+        this.cameraModel[1].visible = !app.modal
     }
 
     async ngAfterContentInit() {
@@ -172,6 +199,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 this.cameraChanged(decodedData)
             }
         })
+
+        if (!this.app.modal) {
+            this.loadEquipment()
+        }
     }
 
     @HostListener('window:unload')
@@ -220,6 +251,76 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         if (this.mode !== 'CAPTURE') {
             this.app.subTitle += ` · ${this.mode}`
         }
+    }
+
+    private async loadEquipment() {
+        const makeMountItem = (mount?: Mount) => {
+            return {
+                icon: mount ? 'mdi mdi-connection' : 'mdi mdi-close',
+                label: mount?.name ?? 'None',
+                command: () => {
+                    this.equipment.mount = mount
+                    this.preference.equipmentForDevice(this.camera).set(this.equipment)
+                    this.electron.autoResizeWindow()
+                },
+            }
+        }
+
+        const mounts = await this.api.mounts()
+
+        this.cameraModel[1].items![0].items!.push(makeMountItem())
+
+        for (const mount of mounts) {
+            this.cameraModel[1].items![0].items!.push(makeMountItem(mount))
+        }
+
+        this.equipment.mount = mounts.find(e => e.name === this.equipment.mount?.name)
+
+        const makeWheelItem = (wheel?: FilterWheel) => {
+            return {
+                icon: wheel ? 'mdi mdi-connection' : 'mdi mdi-close',
+                label: wheel?.name ?? 'None',
+                command: () => {
+                    this.equipment.wheel = wheel
+                    this.preference.equipmentForDevice(this.camera).set(this.equipment)
+                    this.electron.autoResizeWindow()
+                },
+            }
+        }
+
+        const wheels = await this.api.wheels()
+
+        this.cameraModel[1].items![1].items!.push(makeWheelItem())
+
+        for (const wheel of wheels) {
+            this.cameraModel[1].items![1].items!.push(makeWheelItem(wheel))
+        }
+
+        this.equipment.wheel = wheels.find(e => e.name === this.equipment.wheel?.name)
+
+        const makeFocuserItem = (focuser?: Focuser) => {
+            return {
+                icon: focuser ? 'mdi mdi-connection' : 'mdi mdi-close',
+                label: focuser?.name ?? 'None',
+                command: () => {
+                    this.equipment.focuser = focuser
+                    this.preference.equipmentForDevice(this.camera).set(this.equipment)
+                    this.electron.autoResizeWindow()
+                },
+            }
+        }
+
+        const focusers = await this.api.focusers()
+
+        this.cameraModel[1].items![2].items!.push(makeFocuserItem())
+
+        for (const focuser of focusers) {
+            this.cameraModel[1].items![2].items!.push(makeFocuserItem(focuser))
+        }
+
+        this.equipment.focuser = focusers.find(e => e.name === this.equipment.focuser?.name)
+
+        this.electron.autoResizeWindow()
     }
 
     connect() {
@@ -305,7 +406,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     async startCapture() {
         await this.openCameraImage()
-        this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
+        await this.api.cameraSnoop(this.camera, this.equipment.mount, this.equipment.wheel, this.equipment.focuser)
+        await this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
+        this.preference.equipmentForDevice(this.camera).set(this.equipment)
     }
 
     abortCapture() {
@@ -410,6 +513,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.request.dither!.raOnly = preference.dither?.raOnly ?? false
             this.request.dither!.amount = preference.dither?.amount ?? 1.5
             this.request.dither!.afterExposures = preference.dither?.afterExposures ?? 1
+
+            this.equipment = this.preference.equipmentForDevice(this.camera).get()
         }
     }
 

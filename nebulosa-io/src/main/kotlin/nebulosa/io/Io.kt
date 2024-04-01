@@ -13,8 +13,6 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 import java.util.*
 
-val EMPTY_BYTE_ARRAY = ByteArray(0)
-
 inline fun BufferedSource.readSignedByte() = readByte().toInt()
 
 inline fun BufferedSource.readUnsignedByte() = readSignedByte() and 0xFF
@@ -63,13 +61,24 @@ inline fun BufferedSource.readLatin1() = readString(Charsets.ISO_8859_1)
 
 inline fun BufferedSource.readLatin1(byteCount: Long) = readString(byteCount, Charsets.ISO_8859_1)
 
-inline fun BufferedSink.writeFloat(f: Float) = writeInt(f.toBits())
+inline fun BufferedSink.writeShort(value: Int, order: ByteOrder) = if (order.isBigEndian) writeShort(value) else writeShortLe(value)
 
-inline fun BufferedSink.writeFloatLe(f: Float) = writeIntLe(f.toBits())
+inline fun BufferedSink.writeInt(value: Int, order: ByteOrder) = if (order.isBigEndian) writeInt(value) else writeIntLe(value)
 
-inline fun BufferedSink.writeDouble(d: Double) = writeLong(d.toBits())
+inline fun BufferedSink.writeLong(value: Long, order: ByteOrder) = if (order.isBigEndian) writeLong(value) else writeLongLe(value)
 
-inline fun BufferedSink.writeDoubleLe(d: Double) = writeLongLe(d.toBits())
+inline fun BufferedSink.writeFloat(value: Float) = writeInt(value.toBits())
+
+inline fun BufferedSink.writeFloatLe(value: Float) = writeIntLe(value.toBits())
+
+inline fun BufferedSink.writeFloat(value: Float, order: ByteOrder) = if (order.isBigEndian) writeInt(value.toBits()) else writeIntLe(value.toBits())
+
+inline fun BufferedSink.writeDouble(value: Double) = writeLong(value.toBits())
+
+inline fun BufferedSink.writeDoubleLe(value: Double) = writeLongLe(value.toBits())
+
+inline fun BufferedSink.writeDouble(value: Double, order: ByteOrder) =
+    if (order.isBigEndian) writeLong(value.toBits()) else writeLongLe(value.toBits())
 
 inline fun ClassLoader.resource(name: String): InputStream? = getResourceAsStream(name)
 
@@ -94,19 +103,25 @@ fun ByteArray.source(
     offset: Int = 0,
     byteCount: Int = size - offset,
     timeout: Timeout = Timeout.NONE,
-): SeekableSource = ByteArraySource(this, offset, byteCount, timeout)
+): SeekableSource = ByteArraySource(this, offset, byteCount.toLong(), timeout)
 
 fun ByteArray.sink(
     offset: Int = 0,
     byteCount: Int = size - offset,
     timeout: Timeout = Timeout.NONE,
-): SeekableSink = ByteArraySink(this, offset, byteCount, timeout)
+): SeekableSink = ByteArraySink(this, offset, byteCount.toLong(), timeout)
+
+fun ByteBuffer.sink(
+    offset: Int = 0,
+    byteCount: Int = remaining() - offset,
+    timeout: Timeout = Timeout.NONE,
+): SeekableSink = ByteBufferSink(this, offset, byteCount.toLong(), timeout)
 
 fun ByteBuffer.source(
     offset: Int = 0,
-    byteCount: Int = capacity() - offset,
+    byteCount: Int = remaining() - offset,
     timeout: Timeout = Timeout.NONE,
-): SeekableSource = ByteBufferSource(this, offset, byteCount, timeout)
+): SeekableSource = ByteBufferSource(this, offset, byteCount.toLong(), timeout)
 
 fun Random.source(
     maxSize: Long = Long.MAX_VALUE,
@@ -179,7 +194,7 @@ fun Buffer.transferFully(source: Source, sink: Sink, byteCount: Long) {
 
     while (remainingCount > 0L) {
         val size = source.read(this, remainingCount)
-        require(size > 0) { "unexpected end of file" }
+        if (size < 0L) throw EOFException("unexpected end of file")
         sink.write(this, size)
         remainingCount -= size
     }

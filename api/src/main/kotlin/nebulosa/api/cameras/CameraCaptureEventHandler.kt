@@ -11,6 +11,8 @@ import nebulosa.batch.processing.JobExecution
 import nebulosa.batch.processing.JobStatus
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.delay.DelayStep
+import nebulosa.image.format.ImageRepresentation
+import java.nio.file.Path
 
 data class CameraCaptureEventHandler(private val observer: Observer<MessageEvent>) : CameraCaptureListener {
 
@@ -31,8 +33,8 @@ data class CameraCaptureEventHandler(private val observer: Observer<MessageEvent
         sendCameraExposureEvent(step, stepExecution, state)
     }
 
-    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution) {
-        sendCameraExposureEvent(step, stepExecution, CameraCaptureState.EXPOSURE_FINISHED)
+    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation?, savedPath: Path) {
+        sendCameraExposureEvent(step, stepExecution, CameraCaptureState.EXPOSURE_FINISHED, savedPath)
     }
 
     override fun onCaptureFinished(step: CameraExposureStep, jobExecution: JobExecution) {
@@ -41,7 +43,7 @@ data class CameraCaptureEventHandler(private val observer: Observer<MessageEvent
         observer.onNext(CameraCaptureFinished(jobExecution, step.camera, step.exposureAmount, captureElapsedTime, aborted))
     }
 
-    fun sendCameraExposureEvent(step: CameraExposureStep, stepExecution: StepExecution, state: CameraCaptureState) {
+    fun sendCameraExposureEvent(step: CameraExposureStep, stepExecution: StepExecution, state: CameraCaptureState, savedPath: Path? = null) {
         val exposureCount = stepExecution.context.getInt(CameraExposureStep.EXPOSURE_COUNT)
         val captureElapsedTime = stepExecution.context.getDuration(CameraExposureStep.CAPTURE_ELAPSED_TIME)
         val captureProgress = stepExecution.context.getDouble(CameraExposureStep.CAPTURE_PROGRESS)
@@ -83,7 +85,7 @@ data class CameraCaptureEventHandler(private val observer: Observer<MessageEvent
                     stepExecution.jobExecution, step.camera,
                     step.exposureAmount, exposureCount,
                     captureElapsedTime, captureProgress, captureRemainingTime,
-                    step.savedPath!!
+                    savedPath!!,
                 )
             }
             else -> return

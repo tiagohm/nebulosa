@@ -3,13 +3,6 @@ package nebulosa.indi.client.device
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.cameras.INDICamera
 import nebulosa.indi.device.*
-import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.dome.Dome
-import nebulosa.indi.device.filterwheel.FilterWheel
-import nebulosa.indi.device.focuser.Focuser
-import nebulosa.indi.device.gps.GPS
-import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.Vector
 import nebulosa.log.loggerFor
@@ -26,6 +19,8 @@ internal abstract class INDIDevice : Device {
 
     @Volatile override var connected = false
         protected set
+
+    override val snoopedDevices = ArrayList<Device>(4)
 
     private fun addMessageAndFireEvent(text: String) {
         synchronized(messages) {
@@ -185,24 +180,11 @@ internal abstract class INDIDevice : Device {
     }
 
     override fun snoop(devices: Iterable<Device?>) {
-        val message = devices.mapNotNull {
-            when (it) {
-                is Camera -> "ACTIVE_CCD"
-                is Mount -> "ACTIVE_TELESCOPE"
-                is Focuser -> "ACTIVE_FOCUSER"
-                is FilterWheel -> "ACTIVE_FILTER"
-                is Rotator -> "ACTIVE_ROTATOR"
-                is Dome -> "ACTIVE_DOME"
-                is GPS -> "ACTIVE_GPS"
-                else -> return@mapNotNull null
-            } to it.name
+        snoopedDevices.clear()
+
+        for (device in devices) {
+            device?.also(snoopedDevices::add)
         }
-
-        // TODO:ACTIVE_SKYQUALITY, ACTIVE_WEATHER
-
-        LOG.info("$name is snooping the devices: $message")
-
-        sendNewText("ACTIVE_DEVICES", message)
     }
 
     override fun connect() {

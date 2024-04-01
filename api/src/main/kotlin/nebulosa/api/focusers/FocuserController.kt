@@ -16,7 +16,7 @@ class FocuserController(
 
     @GetMapping
     fun focusers(): List<Focuser> {
-        return connectionService.focusers()
+        return connectionService.focusers().sorted()
     }
 
     @GetMapping("{focuser}")

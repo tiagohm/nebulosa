@@ -4,7 +4,7 @@ import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.parser.INDIProtocolHandler
 import java.io.Closeable
 
-interface Device : INDIProtocolHandler, Closeable {
+interface Device : INDIProtocolHandler, Closeable, Comparable<Device> {
 
     val sender: MessageSender
 
@@ -17,6 +17,8 @@ interface Device : INDIProtocolHandler, Closeable {
     val properties: Map<String, PropertyVector<*, *>>
 
     val messages: List<String>
+
+    val snoopedDevices: List<Device>
 
     fun connect()
 
@@ -52,7 +54,7 @@ interface Device : INDIProtocolHandler, Closeable {
         elements: Iterable<Pair<String, Boolean>>,
     ) {
         val vector = NewSwitchVector()
-        vector.device = this.name
+        vector.device = if (this is CompanionDevice) main.name else this.name
         vector.name = name
 
         for ((first, second) in elements) {
@@ -77,7 +79,7 @@ interface Device : INDIProtocolHandler, Closeable {
         elements: Iterable<Pair<String, Double>>,
     ) {
         val vector = NewNumberVector()
-        vector.device = this.name
+        vector.device = if (this is CompanionDevice) main.name else this.name
         vector.name = name
 
         for ((first, second) in elements) {
@@ -102,7 +104,7 @@ interface Device : INDIProtocolHandler, Closeable {
         elements: Iterable<Pair<String, String>>,
     ) {
         val vector = NewTextVector()
-        vector.device = this.name
+        vector.device = if (this is CompanionDevice) main.name else this.name
         vector.name = name
 
         for ((first, second) in elements) {
@@ -114,4 +116,6 @@ interface Device : INDIProtocolHandler, Closeable {
 
         sendMessageToServer(vector)
     }
+
+    override fun compareTo(other: Device) = name.compareTo(other.name)
 }

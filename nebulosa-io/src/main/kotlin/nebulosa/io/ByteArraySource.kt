@@ -1,59 +1,23 @@
 package nebulosa.io
 
-import okio.Buffer
 import okio.Timeout
-import kotlin.math.max
-import kotlin.math.min
 
-internal class ByteArraySource(
+@Suppress("ArrayInDataClass")
+internal data class ByteArraySource(
     private val data: ByteArray,
     private val offset: Int = 0,
-    private val byteCount: Int = data.size - offset,
-    private val timeout: Timeout = Timeout.NONE,
-) : SeekableSource {
-
-    private val cursor = Buffer.UnsafeCursor()
-
-    override var position = 0L
-        private set
-
-    override val exhausted
-        get() = position >= byteCount
+    override val size: Long = (data.size - offset).toLong(),
+    override val timeout: Timeout = Timeout.NONE,
+) : AbstractSeekableSource() {
 
     init {
-        require(byteCount > 0) { "byteCount <= 0: $byteCount" }
-        checkOffsetAndCount(data.size, offset, byteCount)
+        require(size > 0) { "size <= 0: $size" }
+        checkOffsetAndCount(data.size, offset, size.toInt())
     }
 
-    @Synchronized
-    override fun seek(position: Long) {
-        val newPos = if (position < 0) byteCount + position else position
-        this.position = max(0L, min(newPos, byteCount - 1L))
+    override fun transfer(output: ByteArray, start: Int, length: Int): Int {
+        val startIndex = (offset + position).toInt()
+        data.copyInto(output, start, startIndex, startIndex + length)
+        return length
     }
-
-    @Synchronized
-    override fun read(sink: Buffer, byteCount: Long): Long {
-        return sink.readAndWriteUnsafe(cursor).use {
-            timeout.throwIfReached()
-
-            val size = sink.size
-            val length = min(min(this.byteCount - position, 8192L), byteCount)
-
-            if (length > 0) {
-                it.expandBuffer(length.toInt())
-                val startIndex = offset + position
-                data.copyInto(it.data!!, it.start, startIndex.toInt(), (startIndex + length).toInt())
-                it.resizeBuffer(size + length)
-                position += length
-                length
-            } else {
-                it.resizeBuffer(size)
-                -1L
-            }
-        }
-    }
-
-    override fun timeout() = timeout
-
-    override fun close() = Unit
 }

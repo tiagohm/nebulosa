@@ -8,36 +8,26 @@ import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.*
 
+// https://github.com/indilib/indi/blob/master/libs/indibase/indifocuser.cpp
+
 internal open class INDIFocuser(
     override val sender: INDIClient,
     override val name: String,
 ) : INDIDevice(), Focuser {
 
     @Volatile final override var moving = false
-        private set
     @Volatile final override var position = 0
-        private set
     @Volatile final override var canAbsoluteMove = false
-        private set
     @Volatile final override var canRelativeMove = false
-        private set
     @Volatile final override var canAbort = false
-        private set
     @Volatile final override var canReverse = false
-        private set
     @Volatile final override var reversed = false
-        private set
     @Volatile final override var canSync = false
-        private set
     @Volatile final override var hasBacklash = false
-        private set
     @Volatile final override var maxPosition = 0
-        private set
 
     @Volatile final override var hasThermometer = false
-        private set
     @Volatile final override var temperature = 0.0
-        private set
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

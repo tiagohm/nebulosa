@@ -4,6 +4,9 @@ import jakarta.validation.Valid
 import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.mount.Mount
 import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
 
@@ -16,7 +19,7 @@ class CameraController(
 
     @GetMapping
     fun cameras(): List<Camera> {
-        return connectionService.cameras()
+        return connectionService.cameras().sorted()
     }
 
     @GetMapping("{camera}")
@@ -32,6 +35,16 @@ class CameraController(
     @PutMapping("{camera}/disconnect")
     fun disconnect(@DeviceOrEntityParam camera: Camera) {
         cameraService.disconnect(camera)
+    }
+
+    @PutMapping("{camera}/snoop")
+    fun snoop(
+        @DeviceOrEntityParam camera: Camera,
+        @DeviceOrEntityParam(required = false) mount: Mount?,
+        @DeviceOrEntityParam(required = false) wheel: FilterWheel?,
+        @DeviceOrEntityParam(required = false) focuser: Focuser?,
+    ) {
+        cameraService.snoop(camera, mount, wheel, focuser)
     }
 
     @PutMapping("{camera}/cooler")

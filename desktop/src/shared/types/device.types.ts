@@ -15,6 +15,10 @@ export interface Device {
     connected: boolean
 }
 
+export interface CompanionDevice<D = Device> extends Device {
+    main: D
+}
+
 export interface INDIMessageEvent extends DeviceMessageEvent<Device> {
     property?: INDIProperty<any>
     message?: string

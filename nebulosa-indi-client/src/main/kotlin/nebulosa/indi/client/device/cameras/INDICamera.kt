@@ -1,133 +1,97 @@
 package nebulosa.indi.client.device.cameras
 
-import nebulosa.imaging.algorithms.transformation.CfaPattern
+import nebulosa.fits.FitsHeaderCard
+import nebulosa.image.algorithms.transformation.CfaPattern
+import nebulosa.image.format.HeaderCard
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice
+import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.*
-import nebulosa.indi.device.camera.Camera.Companion.NANO_SECONDS
+import nebulosa.indi.device.camera.Camera.Companion.NANO_TO_SECONDS
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.*
 import nebulosa.io.Base64InputStream
 import nebulosa.log.loggerFor
 import java.time.Duration
 
+// https://github.com/indilib/indi/blob/master/libs/indibase/indiccd.cpp
+
 internal open class INDICamera(
-    override val sender: INDIClient,
-    override val name: String,
+    final override val sender: INDIClient,
+    final override val name: String,
 ) : INDIDevice(), Camera {
 
     @Volatile final override var exposuring = false
-        private set
     @Volatile final override var hasCoolerControl = false
-        private set
     @Volatile final override var coolerPower = 0.0
-        private set
     @Volatile final override var cooler = false
-        private set
     @Volatile final override var hasDewHeater = false
-        private set
     @Volatile final override var dewHeater = false
-        private set
     @Volatile final override var frameFormats = emptyList<String>()
-        private set
     @Volatile final override var canAbort = false
-        private set
     @Volatile final override var cfaOffsetX = 0
-        private set
     @Volatile final override var cfaOffsetY = 0
-        private set
     @Volatile final override var cfaType = CfaPattern.RGGB
-        private set
     @Volatile final override var exposureMin: Duration = Duration.ZERO
-        private set
     @Volatile final override var exposureMax: Duration = Duration.ZERO
-        private set
     @Volatile final override var exposureState = PropertyState.IDLE
-        private set
     @Volatile final override var exposureTime: Duration = Duration.ZERO
-        private set
     @Volatile final override var hasCooler = false
-        private set
     @Volatile final override var canSetTemperature = false
-        private set
     @Volatile final override var canSubFrame = false
-        private set
     @Volatile final override var x = 0
-        private set
     @Volatile final override var minX = 0
-        private set
     @Volatile final override var maxX = 0
-        private set
     @Volatile final override var y = 0
-        private set
     @Volatile final override var minY = 0
-        private set
     @Volatile final override var maxY = 0
-        private set
     @Volatile final override var width = 0
-        private set
     @Volatile final override var minWidth = 0
-        private set
     @Volatile final override var maxWidth = 0
-        private set
     @Volatile final override var height = 0
-        private set
     @Volatile final override var minHeight = 0
-        private set
     @Volatile final override var maxHeight = 0
-        private set
     @Volatile final override var canBin = false
-        private set
     @Volatile final override var maxBinX = 1
-        private set
     @Volatile final override var maxBinY = 1
-        private set
     @Volatile final override var binX = 1
-        private set
     @Volatile final override var binY = 1
-        private set
     @Volatile final override var gain = 0
-        private set
     @Volatile final override var gainMin = 0
-        private set
     @Volatile final override var gainMax = 0
-        private set
     @Volatile final override var offset = 0
-        private set
     @Volatile final override var offsetMin = 0
-        private set
     @Volatile final override var offsetMax = 0
-        private set
-    @Volatile final override var hasGuiderHead = false // TODO: Handle guider head.
-        private set
     @Volatile final override var pixelSizeX = 0.0
-        private set
     @Volatile final override var pixelSizeY = 0.0
-        private set
 
     @Volatile final override var hasThermometer = false
-        private set
     @Volatile final override var temperature = 0.0
-        private set
 
     @Volatile final override var canPulseGuide = false
-        private set
     @Volatile final override var pulseGuiding = false
+
+    final override var guideHead: GuideHeadCamera? = null
         private set
 
     override fun handleMessage(message: INDIProtocol) {
+        val isGuider = message.name[0] == 'G'
+        val isGuideHead = this is GuideHead
+
         when (message) {
             is SwitchVector<*> -> {
                 when (message.name) {
                     "CCD_COOLER" -> {
                         if (message is DefSwitchVector) {
                             hasCoolerControl = true
-
                             sender.fireOnEventReceived(CameraCoolerControlChanged(this))
                         }
 
                         cooler = message["COOLER_ON"]?.value ?: false
-
                         sender.fireOnEventReceived(CameraCoolerChanged(this))
                     }
                     "CCD_CAPTURE_FORMAT" -> {
@@ -136,8 +100,9 @@ internal open class INDICamera(
                             sender.fireOnEventReceived(CameraFrameFormatsChanged(this))
                         }
                     }
-                    "CCD_ABORT_EXPOSURE" -> {
-                        if (message is DefSwitchVector) {
+                    "CCD_ABORT_EXPOSURE",
+                    "GUIDER_ABORT_EXPOSURE" -> {
+                        if (isGuider == isGuideHead && message is DefSwitchVector) {
                             canAbort = message.isNotReadOnly
                             sender.fireOnEventReceived(CameraCanAbortChanged(this))
                         }
@@ -156,47 +121,53 @@ internal open class INDICamera(
             }
             is NumberVector<*> -> {
                 when (message.name) {
-                    "CCD_INFO" -> {
-                        pixelSizeX = message["CCD_PIXEL_SIZE_X"]?.value ?: 0.0
-                        pixelSizeY = message["CCD_PIXEL_SIZE_Y"]?.value ?: 0.0
+                    "CCD_INFO",
+                    "GUIDER_INFO" -> {
+                        if (isGuider == isGuideHead) {
+                            pixelSizeX = message["CCD_PIXEL_SIZE_X"]?.value ?: 0.0
+                            pixelSizeY = message["CCD_PIXEL_SIZE_Y"]?.value ?: 0.0
 
-                        sender.fireOnEventReceived(CameraPixelSizeChanged(this))
+                            sender.fireOnEventReceived(CameraPixelSizeChanged(this))
+                        }
                     }
-                    "CCD_EXPOSURE" -> {
-                        val element = message["CCD_EXPOSURE_VALUE"]!!
+                    "CCD_EXPOSURE",
+                    "GUIDER_EXPOSURE" -> {
+                        if (isGuider == isGuideHead) {
+                            val element = message[if (isGuider) "GUIDER_EXPOSURE_VALUE" else "CCD_EXPOSURE_VALUE"]!!
 
-                        if (element is DefNumber) {
-                            exposureMin = Duration.ofNanos((element.min * NANO_SECONDS).toLong())
-                            exposureMax = Duration.ofNanos((element.max * NANO_SECONDS).toLong())
-                            sender.fireOnEventReceived(CameraExposureMinMaxChanged(this))
-                        }
+                            if (element is DefNumber) {
+                                exposureMin = Duration.ofNanos((element.min * NANO_TO_SECONDS).toLong())
+                                exposureMax = Duration.ofNanos((element.max * NANO_TO_SECONDS).toLong())
+                                sender.fireOnEventReceived(CameraExposureMinMaxChanged(this))
+                            }
 
-                        val prevExposureState = exposureState
-                        exposureState = message.state
+                            val prevExposureState = exposureState
+                            exposureState = message.state
 
-                        if (exposureState == PropertyState.BUSY || exposureState == PropertyState.OK) {
-                            exposureTime = Duration.ofNanos((element.value * NANO_SECONDS).toLong())
+                            if (exposureState == PropertyState.BUSY || exposureState == PropertyState.OK) {
+                                exposureTime = Duration.ofNanos((element.value * NANO_TO_SECONDS).toLong())
 
-                            sender.fireOnEventReceived(CameraExposureProgressChanged(this))
-                        }
+                                sender.fireOnEventReceived(CameraExposureProgressChanged(this))
+                            }
 
-                        val prevIsExposuring = exposuring
-                        exposuring = exposureState == PropertyState.BUSY
+                            val prevIsExposuring = exposuring
+                            exposuring = exposureState == PropertyState.BUSY
 
-                        if (prevIsExposuring != exposuring) {
-                            sender.fireOnEventReceived(CameraExposuringChanged(this))
-                        }
+                            if (prevIsExposuring != exposuring) {
+                                sender.fireOnEventReceived(CameraExposuringChanged(this))
+                            }
 
-                        if (exposureState == PropertyState.IDLE && (prevExposureState == PropertyState.BUSY || exposuring)) {
-                            sender.fireOnEventReceived(CameraExposureAborted(this))
-                        } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
-                            sender.fireOnEventReceived(CameraExposureFinished(this))
-                        } else if (exposureState == PropertyState.ALERT && prevExposureState != PropertyState.ALERT) {
-                            sender.fireOnEventReceived(CameraExposureFailed(this))
-                        }
+                            if (exposureState == PropertyState.IDLE && (prevExposureState == PropertyState.BUSY || exposuring)) {
+                                sender.fireOnEventReceived(CameraExposureAborted(this))
+                            } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
+                                sender.fireOnEventReceived(CameraExposureFinished(this))
+                            } else if (exposureState == PropertyState.ALERT && prevExposureState != PropertyState.ALERT) {
+                                sender.fireOnEventReceived(CameraExposureFailed(this))
+                            }
 
-                        if (prevExposureState != exposureState) {
-                            sender.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+                            if (prevExposureState != exposureState) {
+                                sender.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+                            }
                         }
                     }
                     "CCD_COOLER_POWER" -> {
@@ -211,7 +182,7 @@ internal open class INDICamera(
                             sender.fireOnEventReceived(CameraHasCoolerChanged(this))
                             sender.fireOnEventReceived(CameraCanSetTemperatureChanged(this))
 
-                            if (!hasThermometer) {
+                            if (!hasThermometer && !isGuideHead) {
                                 hasThermometer = true
                                 sender.registerThermometer(this)
                             }
@@ -220,92 +191,104 @@ internal open class INDICamera(
                         temperature = message["CCD_TEMPERATURE_VALUE"]!!.value
                         sender.fireOnEventReceived(CameraTemperatureChanged(this))
                     }
-                    "CCD_FRAME" -> {
-                        if (message is DefNumberVector) {
-                            canSubFrame = message.isNotReadOnly
-                            sender.fireOnEventReceived(CameraCanSubFrameChanged(this))
+                    "CCD_FRAME",
+                    "GUIDER_FRAME" -> {
+                        if (isGuider == isGuideHead) {
+                            if (message is DefNumberVector) {
+                                canSubFrame = message.isNotReadOnly
+                                sender.fireOnEventReceived(CameraCanSubFrameChanged(this))
 
-                            val minX = message["X"]!!.min.toInt()
-                            val maxX = message["X"]!!.max.toInt()
-                            val minY = message["Y"]!!.min.toInt()
-                            val maxY = message["Y"]!!.max.toInt()
-                            val minWidth = message["WIDTH"]!!.min.toInt()
-                            val maxWidth = message["WIDTH"]!!.max.toInt()
-                            val minHeight = message["HEIGHT"]!!.min.toInt()
-                            val maxHeight = message["HEIGHT"]!!.max.toInt()
+                                minX = message["X"]!!.min.toInt()
+                                maxX = message["X"]!!.max.toInt()
+                                minY = message["Y"]!!.min.toInt()
+                                maxY = message["Y"]!!.max.toInt()
+                                minWidth = message["WIDTH"]!!.min.toInt()
+                                maxWidth = message["WIDTH"]!!.max.toInt()
+                                minHeight = message["HEIGHT"]!!.min.toInt()
+                                maxHeight = message["HEIGHT"]!!.max.toInt()
+                            }
 
-                            this.minX = minX
-                            this.maxX = maxX
-                            this.minY = minY
-                            this.maxY = maxY
-                            this.minWidth = minWidth
-                            this.maxWidth = maxWidth
-                            this.minHeight = minHeight
-                            this.maxHeight = maxHeight
+                            x = message["X"]!!.value.toInt()
+                            y = message["Y"]!!.value.toInt()
+                            width = message["WIDTH"]!!.value.toInt()
+                            height = message["HEIGHT"]!!.value.toInt()
+
+                            sender.fireOnEventReceived(CameraFrameChanged(this))
                         }
-
-                        val x = message["X"]!!.value.toInt()
-                        val y = message["Y"]!!.value.toInt()
-                        val width = message["WIDTH"]!!.value.toInt()
-                        val height = message["HEIGHT"]!!.value.toInt()
-
-                        this.x = x
-                        this.y = y
-                        this.width = width
-                        this.height = height
-
-                        sender.fireOnEventReceived(CameraFrameChanged(this))
                     }
-                    "CCD_BINNING" -> {
-                        if (message is DefNumberVector) {
-                            canBin = message.isNotReadOnly
-                            maxBinX = message["HOR_BIN"]!!.max.toInt()
-                            maxBinY = message["VER_BIN"]!!.max.toInt()
+                    "CCD_BINNING",
+                    "GUIDER_BINNING" -> {
+                        if (isGuider == isGuideHead) {
+                            if (message is DefNumberVector) {
+                                canBin = message.isNotReadOnly
+                                maxBinX = message["HOR_BIN"]!!.max.toInt()
+                                maxBinY = message["VER_BIN"]!!.max.toInt()
+                                sender.fireOnEventReceived(CameraCanBinChanged(this))
+                            }
 
-                            sender.fireOnEventReceived(CameraCanBinChanged(this))
+                            binX = message["HOR_BIN"]!!.value.toInt()
+                            binY = message["VER_BIN"]!!.value.toInt()
+                            sender.fireOnEventReceived(CameraBinChanged(this))
                         }
-
-                        binX = message["HOR_BIN"]!!.value.toInt()
-                        binY = message["VER_BIN"]!!.value.toInt()
-
-                        sender.fireOnEventReceived(CameraBinChanged(this))
                     }
                     "TELESCOPE_TIMED_GUIDE_NS",
                     "TELESCOPE_TIMED_GUIDE_WE" -> {
-                        if (!canPulseGuide && message is DefNumberVector) {
-                            canPulseGuide = true
+                        if (!isGuideHead) {
+                            if (!canPulseGuide && message is DefNumberVector) {
+                                canPulseGuide = true
 
-                            sender.registerGuideOutput(this)
+                                sender.registerGuideOutput(this)
 
-                            LOG.info("guide output attached: {}", name)
-                        } else {
-                            val prevIsPulseGuiding = pulseGuiding
-                            pulseGuiding = message.isBusy
+                                LOG.info("guide output attached: {}", name)
+                            } else {
+                                val prevIsPulseGuiding = pulseGuiding
+                                pulseGuiding = message.isBusy
 
-                            if (pulseGuiding != prevIsPulseGuiding) {
-                                sender.fireOnEventReceived(GuideOutputPulsingChanged(this))
+                                if (pulseGuiding != prevIsPulseGuiding) {
+                                    sender.fireOnEventReceived(GuideOutputPulsingChanged(this))
+                                }
                             }
+
+                            return
                         }
                     }
                 }
             }
+            is DefBLOBVector -> {
+                if (!isGuideHead && message.name == "CCD2" && guideHead == null) {
+                    guideHead = GuideHeadCamera(this)
+                    sender.registerGuideHead(guideHead!!)
+
+                    LOG.info("guide head attached: {}", name)
+
+                    return
+                }
+            }
             is SetBLOBVector -> {
-                when (message.name) {
-                    "CCD1" -> {
-                        val ccd1 = message["CCD1"]!!
-                        val fits = Base64InputStream(ccd1.value)
-                        val compressed = COMPRESSION_FORMATS.any { ccd1.format.endsWith(it, true) }
-                        sender.fireOnEventReceived(CameraFrameCaptured(this, fits, null, compressed))
+                // Main camera handles both messages.
+                if (!isGuideHead) {
+                    val ccd = message[message.name]!!
+
+                    if (ccd.format.contains("fits", true)) {
+                        val compressed = COMPRESSION_FORMATS.any { ccd.format.endsWith(it, true) }
+
+                        if (!compressed) {
+                            val stream = Base64InputStream(ccd.value)
+                            val camera = if (message.name == "CCD2") guideHead!! else this
+                            sender.fireOnEventReceived(CameraFrameCaptured(camera, stream = stream))
+                        } else {
+                            LOG.warn("compressed FITS is not supported yet")
+                        }
                     }
-                    "CCD2" -> {
-                        // TODO: Handle Guider Head frame.
-                    }
+
+                    return
                 }
             }
             else -> Unit
         }
 
         super.handleMessage(message)
+        guideHead?.handleMessage(message)
     }
 
     override fun cooler(enabled: Boolean) {
@@ -329,7 +312,8 @@ internal open class INDICamera(
     }
 
     override fun frameType(type: FrameType) {
-        sendNewSwitch("CCD_FRAME_TYPE", "FRAME_$type" to true)
+        val name = if (this is GuideHead) "GUIDER_FRAME_TYPE" else "CCD_FRAME_TYPE"
+        sendNewSwitch(name, "FRAME_$type" to true)
     }
 
     override fun frame(x: Int, y: Int, width: Int, height: Int) {
@@ -350,13 +334,21 @@ internal open class INDICamera(
     override fun offset(value: Int) = Unit
 
     override fun startCapture(exposureTime: Duration) {
-        val exposureInSeconds = exposureTime.toNanos() / NANO_SECONDS
-        sendNewNumber("CCD_EXPOSURE", "CCD_EXPOSURE_VALUE" to exposureInSeconds)
+        sendNewSwitch("CCD_TRANSFER_FORMAT", "FORMAT_FITS" to true)
+
+        val exposureInSeconds = exposureTime.toNanos() / NANO_TO_SECONDS
+
+        if (this is GuideHead) {
+            sendNewNumber("GUIDER_EXPOSURE", "GUIDER_EXPOSURE_VALUE" to exposureInSeconds)
+        } else {
+            sendNewNumber("CCD_EXPOSURE", "CCD_EXPOSURE_VALUE" to exposureInSeconds)
+        }
     }
 
     override fun abortCapture() {
         if (canAbort) {
-            sendNewSwitch("CCD_ABORT_EXPOSURE", "ABORT" to true)
+            val name = if (this is GuideHead) "GUIDER_ABORT_EXPOSURE" else "CCD_ABORT_EXPOSURE"
+            sendNewSwitch(name, "ABORT" to true)
         }
     }
 
@@ -384,6 +376,30 @@ internal open class INDICamera(
         }
     }
 
+    override fun snoop(devices: Iterable<Device?>) {
+        super.snoop(devices)
+
+        val telescope = devices.firstOrNull { it is Mount }?.name ?: ""
+        val focuser = devices.firstOrNull { it is Focuser }?.name ?: ""
+        val filter = devices.firstOrNull { it is FilterWheel }?.name ?: ""
+        val rotator = devices.firstOrNull { it is Rotator }?.name ?: ""
+
+        sendNewText(
+            "ACTIVE_DEVICES",
+            "ACTIVE_TELESCOPE" to telescope, "ACTIVE_ROTATOR" to rotator,
+            "ACTIVE_FOCUSER" to focuser, "ACTIVE_FILTER" to filter,
+        )
+    }
+
+    private fun sendFITSKeyword(card: HeaderCard) {
+        sendNewText("FITS_HEADER", "KEYWORD_NAME" to card.key, "KEYWORD_VALUE" to card.value, "KEYWORD_COMMENT" to card.comment)
+    }
+
+    override fun fitsKeywords(vararg cards: HeaderCard) {
+        sendFITSKeyword(INDI_CLEAR)
+        cards.forEach(::sendFITSKeyword)
+    }
+
     override fun close() {
         if (hasThermometer) {
             sender.unregisterThermometer(this)
@@ -395,6 +411,12 @@ internal open class INDICamera(
             sender.unregisterGuideOutput(this)
             canPulseGuide = false
             LOG.info("guide output detached: {}", name)
+        }
+
+        if (guideHead != null) {
+            guideHead?.also(sender::unregisterGuiderHead)
+            guideHead = null
+            LOG.info("guide head detached: {}", name)
         }
     }
 
@@ -439,12 +461,65 @@ internal open class INDICamera(
             " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
             " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
             " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
-            " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
-            " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
+            " offsetMax=$offsetMax, canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
+
+    internal data class GuideHeadCamera(override val main: INDICamera) : GuideHead, INDICamera(main.sender, main.name + " $GUIDE_HEAD_SUFFIX") {
+
+        init {
+            exposuring = main.exposuring
+            hasCoolerControl = main.hasCoolerControl
+            coolerPower = main.coolerPower
+            cooler = main.cooler
+            hasDewHeater = main.hasDewHeater
+            dewHeater = main.dewHeater
+            frameFormats = main.frameFormats
+            canAbort = main.canAbort
+            cfaOffsetX = main.cfaOffsetX
+            cfaOffsetY = main.cfaOffsetY
+            cfaType = main.cfaType
+            exposureMin = main.exposureMin
+            exposureMax = main.exposureMax
+            exposureState = main.exposureState
+            exposureTime = main.exposureTime
+            hasCooler = main.hasCooler
+            canSetTemperature = main.canSetTemperature
+            canSubFrame = main.canSubFrame
+            x = main.x
+            minX = main.minX
+            maxX = main.maxX
+            y = main.y
+            minY = main.minY
+            maxY = main.maxY
+            width = main.width
+            minWidth = main.minWidth
+            maxWidth = main.maxWidth
+            height = main.height
+            minHeight = main.minHeight
+            maxHeight = main.maxHeight
+            canBin = main.canBin
+            maxBinX = main.maxBinX
+            maxBinY = main.maxBinY
+            binX = main.binX
+            binY = main.binY
+            gain = main.gain
+            gainMin = main.gainMin
+            gainMax = main.gainMax
+            offset = main.offset
+            offsetMin = main.offsetMin
+            offsetMax = main.offsetMax
+            pixelSizeX = main.pixelSizeX
+            pixelSizeY = main.pixelSizeY
+        }
+
+        override fun toString() = "GuideHead(guideHead=${super.toString()}, main=$main)"
+    }
 
     companion object {
 
+        const val GUIDE_HEAD_SUFFIX = "(Guide Head)"
+
         @JvmStatic private val COMPRESSION_FORMATS = arrayOf(".fz", ".gz")
         @JvmStatic private val LOG = loggerFor<INDICamera>()
+        @JvmStatic private val INDI_CLEAR = FitsHeaderCard.create("INDI_CLEAR", "", "")
     }
 }

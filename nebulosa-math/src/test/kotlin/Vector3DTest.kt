@@ -8,7 +8,7 @@ import nebulosa.constants.PIOVERTWO
 import nebulosa.math.Vector3D
 import nebulosa.math.deg
 import nebulosa.math.toDegrees
-import nebulosa.test.plusOrMinus
+import nebulosa.test.matchers.plusOrMinus
 
 class Vector3DTest : StringSpec() {
 

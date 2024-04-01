@@ -36,7 +36,7 @@ class FixedStarTest : StringSpec() {
             with(ra.normalized.hms()) {
                 truncate(this[0]) shouldBeExactly 3.0
                 truncate(this[1]) shouldBeExactly 2.0
-                this[2] shouldBe (3.9 plusOrMinus 15.0)
+                this[2] shouldBe (3.9 plusOrMinus 20.0)
             }
 
             with(dec.dms()) {

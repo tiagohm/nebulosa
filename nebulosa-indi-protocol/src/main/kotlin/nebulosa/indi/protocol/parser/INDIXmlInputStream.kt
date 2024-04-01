@@ -3,11 +3,11 @@ package nebulosa.indi.protocol.parser
 import com.fasterxml.aalto.stax.InputFactoryImpl
 import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.io.INDIInputStream
+import nebulosa.xml.attribute
 import java.io.InputStream
 import javax.xml.stream.XMLStreamConstants
-import javax.xml.stream.XMLStreamReader
 
-class INDIXmlInputStream(private val source: InputStream) : INDIInputStream {
+class INDIXmlInputStream(source: InputStream) : INDIInputStream {
 
     private val reader = XML_INPUT_FACTORY.createXMLStreamReader(source)
 
@@ -300,7 +300,7 @@ class INDIXmlInputStream(private val source: InputStream) : INDIInputStream {
     }
 
     override fun close() {
-        source.close()
+        reader.close()
     }
 
     companion object {
@@ -341,16 +341,5 @@ class INDIXmlInputStream(private val source: InputStream) : INDIInputStream {
         private const val MAX_ATTR_NAME = "max"
         private const val STEP_ATTR_NAME = "step"
         private const val MESSAGE_ATTR_NAME = "message"
-
-        @JvmStatic
-        private fun XMLStreamReader.attribute(name: String): String? {
-            for (i in 0 until attributeCount) {
-                if (getAttributeLocalName(i) == name) {
-                    return getAttributeValue(i)
-                }
-            }
-
-            return null
-        }
     }
 }

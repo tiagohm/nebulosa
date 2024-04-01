@@ -5,17 +5,16 @@ import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.filterwheel.*
 import nebulosa.indi.protocol.*
 
+// https://github.com/indilib/indi/blob/master/libs/indibase/indifilterwheel.cpp
+
 internal open class INDIFilterWheel(
     override val sender: INDIClient,
     override val name: String,
 ) : INDIDevice(), FilterWheel {
 
     @Volatile final override var count = 0
-        private set
     @Volatile final override var position = 0
-        private set
     @Volatile final override var moving = false
-        private set
 
     final override val names = ArrayList<String>(12)
 

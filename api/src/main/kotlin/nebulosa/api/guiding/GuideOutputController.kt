@@ -18,7 +18,7 @@ class GuideOutputController(
 
     @GetMapping
     fun guideOutputs(): List<GuideOutput> {
-        return connectionService.guideOutputs()
+        return connectionService.guideOutputs().sorted()
     }
 
     @GetMapping("{guideOutput}")

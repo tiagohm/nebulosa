@@ -37,5 +37,4 @@ export interface FilterSlot {
     position: number
     name: string
     dark: boolean
-    offset: number
 }

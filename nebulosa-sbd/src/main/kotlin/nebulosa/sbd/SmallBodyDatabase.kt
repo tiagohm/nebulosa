@@ -19,7 +19,12 @@ internal interface SmallBodyDatabase {
         @Query("obs-time") dateTime: String,
         @Query("lat") lat: Double, @Query("lon") lon: Double, @Query("alt") alt: Double,
         @Query("fov-ra-center") fovRA: String, @Query("fov-dec-center") fovDEC: String,
-        @Query("fov-ra-hwidth") fovRAWidth: Double, @Query("fov-dec-hwidth") fovDECWidth: Double,
-        @Query("vmag-lim") magLimit: Double,
+        @Query("fov-ra-hwidth") fovRAWidth: Double, @Query("fov-dec-hwidth") fovDECWidth: Double = fovRAWidth,
+        @Query("vmag-lim") magLimit: Double = 12.0,
+    ): Call<SmallBodyIdentified>
+
+    @GET("cad.api?neo=false&diameter=true&fullname=true")
+    fun closeApproaches(
+        @Query("date-min") dateMin: String, @Query("date-max") dateMax: String, @Query("dist-max") distMax: String,
     ): Call<SmallBodyIdentified>
 }

@@ -1,6 +1,6 @@
 package nebulosa.watney.star.detection
 
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 
 /**
  * Interface for filtering stars after initial star detection.

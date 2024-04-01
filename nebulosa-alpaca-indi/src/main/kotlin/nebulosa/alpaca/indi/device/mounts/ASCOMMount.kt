@@ -8,6 +8,7 @@ import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
 import nebulosa.indi.device.mount.PierSide
 import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
@@ -15,66 +16,43 @@ import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
+@Suppress("RedundantModalityModifier")
 data class ASCOMMount(
     override val device: ConfiguredDevice,
     override val service: AlpacaTelescopeService,
     override val sender: AlpacaClient,
 ) : ASCOMDevice(), Mount {
 
-    @Volatile override var slewing = false
-        private set
-    @Volatile override var tracking = false
-        private set
-    @Volatile override var parking = false
-        private set
-    @Volatile override var parked = false
-        private set
-    @Volatile override var canAbort = true
-        private set
-    @Volatile override var canSync = false
-        private set
-    @Volatile override var canGoTo = false
-        private set
-    @Volatile override var canPark = false
-        private set
-    @Volatile override var canHome = false
-        private set
-    @Volatile override var slewRates = emptyList<SlewRate>()
-        private set
-    @Volatile override var slewRate: SlewRate? = null
-        private set
-    @Volatile override var mountType = MountType.EQ_GEM
-        private set
-    @Volatile override var trackModes = emptyList<TrackMode>()
-        private set
-    @Volatile override var trackMode = TrackMode.SIDEREAL
-        private set
-    @Volatile override var pierSide = PierSide.NEITHER
-        private set
-    @Volatile override var guideRateWE = 0.0
-        private set
-    @Volatile override var guideRateNS = 0.0
-        private set
-    @Volatile override var rightAscension = 0.0
-        private set
-    @Volatile override var declination = 0.0
-        private set
+    @Volatile final override var slewing = false
+    @Volatile final override var tracking = false
+    @Volatile final override var parking = false
+    @Volatile final override var parked = false
+    @Volatile final override var canAbort = true
+    @Volatile final override var canSync = false
+    @Volatile final override var canGoTo = false
+    @Volatile final override var canPark = false
+    @Volatile final override var canHome = false
+    @Volatile final override var slewRates = emptyList<SlewRate>()
+    @Volatile final override var slewRate: SlewRate? = null
+    @Volatile final override var mountType = MountType.EQ_GEM
+    @Volatile final override var trackModes = emptyList<TrackMode>()
+    @Volatile final override var trackMode = TrackMode.SIDEREAL
+    @Volatile final override var pierSide = PierSide.NEITHER
+    @Volatile final override var guideRateWE = 0.0
+    @Volatile final override var guideRateNS = 0.0
+    @Volatile final override var rightAscension = 0.0
+    @Volatile final override var declination = 0.0
 
-    @Volatile override var canPulseGuide = false
-        private set
-    @Volatile override var pulseGuiding = false
-        private set
+    @Volatile final override var canPulseGuide = false
+    @Volatile final override var pulseGuiding = false
 
-    @Volatile override var hasGPS = false
-        private set
-    @Volatile override var longitude = 0.0
-        private set
-    @Volatile override var latitude = 0.0
-        private set
-    @Volatile override var elevation = 0.0
-        private set
-    @Volatile override var dateTime = OffsetDateTime.now()!!
-        private set
+    @Volatile final override var hasGPS = false
+    @Volatile final override var longitude = 0.0
+    @Volatile final override var latitude = 0.0
+    @Volatile final override var elevation = 0.0
+    @Volatile final override var dateTime = OffsetDateTime.now()!!
+
+    override val snoopedDevices = emptyList<Device>()
 
     private val axisRates = HashMap<String, AxisRate>(4)
     @Volatile private var axisRate: AxisRate? = null
@@ -255,8 +233,6 @@ data class ASCOMMount(
         processDateTime()
 
         equatorialSystem = service.equatorialSystem(device.number).doRequest()?.value ?: equatorialSystem
-
-        LOG.info("The mount {} uses {} equatorial system", name, equatorialSystem)
     }
 
     override fun onDisconnected() {}
@@ -484,4 +460,9 @@ data class ASCOMMount(
             " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
             " declination=$declination, canPulseGuide=$canPulseGuide," +
             " pulseGuiding=$pulseGuiding)"
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<ASCOMMount>()
+    }
 }

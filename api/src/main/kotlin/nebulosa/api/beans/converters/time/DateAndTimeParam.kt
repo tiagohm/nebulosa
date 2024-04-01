@@ -6,4 +6,5 @@ annotation class DateAndTimeParam(
     val datePattern: String = "yyyy-MM-dd",
     val timePattern: String = "HH:mm",
     val noSeconds: Boolean = true,
+    val nullable: Boolean = false,
 )

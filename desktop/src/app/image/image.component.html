@@ -409,20 +409,18 @@
 <p-dialog header="Field of View" [draggable]="true" [(visible)]="showFOVDialog" [modal]="false"
           [style]="{width: '390px'}" class="pointer-events-none">
     <div class="grid p-2">
-        <div class="col-10 col-offset-2 justify-content-start align-items-center gap-2">
-            Telescope
-            <p-button [text]="true" label="Choose" icon="mdi mdi-telescope" (onClick)="showFOVTelescopes()" />
-        </div>
-        <div class="col-2 justify-content-center">
+        <div class="col-2 align-items-center justify-content-center gap-2">
             <p-colorPicker [(ngModel)]="fov.color" appendTo="body" [style]="{width: '23px', height: '23px'}" />
         </div>
-        <div class="col-5">
+        <div class="col-6 align-items-center justify-content-start gap-2">
+            <p-button [text]="true" icon="mdi mdi-telescope" (onClick)="showFOVTelescopes()" pTooltip="Choose telescope"
+                      tooltipPosition="bottom" />
             <span class="p-float-label">
                 <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.focalLength" />
                 <label>Focal Length (mm)</label>
             </span>
         </div>
-        <div class="col-5">
+        <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.aperture" />
                 <label>Aperture (mm)</label>
@@ -432,7 +430,8 @@
             Resolution (px)
         </div>
         <div class="col-4 justify-content-center align-items-center gap-2">
-            <p-button [text]="true" label="Choose" icon="mdi mdi-camera-iris" (onClick)="showFOVCameras()" />
+            <p-button [text]="true" icon="mdi mdi-camera-iris" (onClick)="showFOVCameras()" pTooltip="Choose camera"
+                      tooltipPosition="bottom" />
         </div>
         <div class="col-4 justify-content-center align-items-center">
             Pixel Size (µm)
@@ -483,7 +482,7 @@
                 <label>Rotation (°)</label>
             </span>
         </div> -->
-        <div class="col-12 flex align-items-center justify-content-end gap-2">
+        <div class="col-12 flex align-items-center justify-content-center gap-2">
             <p-button *ngIf="editedFOV" [text]="true" label="Cancel" icon="mdi mdi-close" severity="danger" styleClass="p-button-sm"
                       (onClick)="cancelEditFOV()" />
             <p-button *ngIf="editedFOV" [disabled]="!canAddFOV" [text]="true" label="Save" icon="mdi mdi-content-save" severity="info"

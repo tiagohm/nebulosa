@@ -1,7 +1,7 @@
 package nebulosa.plate.solving
 
 import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.math.Angle
 import java.nio.file.Path
 import java.time.Duration

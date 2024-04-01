@@ -1,6 +1,6 @@
 import { MessageEvent } from './api.types'
 import { Thermometer } from './auxiliary.types'
-import { PropertyState } from './device.types'
+import { CompanionDevice, Device, PropertyState } from './device.types'
 import { GuideOutput } from './guider.types'
 
 export type CameraDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD' | 'TPPA' | 'DARV'
@@ -62,10 +62,15 @@ export interface Camera extends GuideOutput, Thermometer {
     offset: number
     offsetMin: number
     offsetMax: number
-    hasGuiderHead: boolean
+    hasGuideHead: boolean
     pixelSizeX: number
     pixelSizeY: number
     capturesPath: string
+    guideHead?: Device
+}
+
+export interface GuideHead extends Camera, CompanionDevice<Camera> {
+
 }
 
 export const EMPTY_CAMERA: Camera = {
@@ -112,7 +117,7 @@ export const EMPTY_CAMERA: Camera = {
     offset: 0,
     offsetMin: 0,
     offsetMax: 0,
-    hasGuiderHead: false,
+    hasGuideHead: false,
     pixelSizeX: 0,
     pixelSizeY: 0,
     capturesPath: '',

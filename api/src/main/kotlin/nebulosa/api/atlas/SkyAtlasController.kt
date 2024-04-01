@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Positive
 import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.beans.converters.location.LocationParam
 import nebulosa.api.beans.converters.time.DateAndTimeParam
@@ -11,10 +12,12 @@ import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObjectType
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+@Validated
 @RestController
 @RequestMapping("sky-atlas")
 class SkyAtlasController(
@@ -69,6 +72,13 @@ class SkyAtlasController(
 
     @GetMapping("minor-planets")
     fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String) = skyAtlasService.searchMinorPlanet(text)
+
+    @GetMapping("minor-planets/close-approaches")
+    fun closeApproachesForMinorPlanets(
+        @RequestParam(required = false, defaultValue = "7") @Valid @Positive days: Long,
+        @RequestParam(required = false, defaultValue = "10") @Valid @Positive distance: Double,
+        @DateAndTimeParam(nullable = true) dateTime: LocalDate?,
+    ) = skyAtlasService.closeApproachesForMinorPlanets(days, distance, dateTime)
 
     @GetMapping("sky-objects/{id}/position")
     fun positionOfSkyObject(

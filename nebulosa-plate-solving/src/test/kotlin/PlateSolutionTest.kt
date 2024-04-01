@@ -2,7 +2,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import nebulosa.fits.Header
+import nebulosa.fits.FitsHeader
 import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
 import nebulosa.math.toArcsec
@@ -38,7 +38,7 @@ class PlateSolutionTest : StringSpec() {
                 "END                                                                             "
 
         "astrometry.net" {
-            val header = Header.from(astrometryNet)
+            val header = FitsHeader.from(astrometryNet)
             val solution = PlateSolution.from(header).shouldNotBeNull()
 
             solution.rightAscension.formatHMS() shouldBe "03h19m07.7s"

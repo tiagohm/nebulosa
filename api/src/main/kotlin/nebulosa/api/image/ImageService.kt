@@ -8,13 +8,12 @@ import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
 import nebulosa.fits.*
-import nebulosa.imaging.Image
-import nebulosa.imaging.ImageChannel
-import nebulosa.imaging.algorithms.computation.Histogram
-import nebulosa.imaging.algorithms.computation.Statistics
-import nebulosa.imaging.algorithms.transformation.*
+import nebulosa.image.Image
+import nebulosa.image.algorithms.computation.Histogram
+import nebulosa.image.algorithms.computation.Statistics
+import nebulosa.image.algorithms.transformation.*
+import nebulosa.image.format.ImageChannel
 import nebulosa.indi.device.camera.Camera
-import nebulosa.io.transferAndClose
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.*
@@ -29,6 +28,8 @@ import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import nebulosa.wcs.WCS
 import nebulosa.wcs.WCSException
+import nebulosa.xisf.XisfFormat
+import okio.sink
 import org.springframework.http.HttpStatus
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
@@ -40,7 +41,6 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
 import kotlin.io.path.extension
-import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
 @Service
@@ -166,8 +166,8 @@ class ImageService(
 
         if (minorPlanets) {
             threadPoolTaskExecutor.submitCompletable {
-                val latitude = image.header.latitude ?: location?.latitude ?: 0.0
-                val longitude = image.header.longitude ?: location?.longitude ?: 0.0
+                val latitude = image.header.latitude ?: location?.latitude?.deg ?: 0.0
+                val longitude = image.header.longitude ?: location?.longitude?.deg ?: 0.0
 
                 LOG.info(
                     "finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}",
@@ -246,16 +246,15 @@ class ImageService(
 
     fun saveImageAs(inputPath: Path, outputPath: Path) {
         if (inputPath != outputPath) {
-            if (inputPath.extension == outputPath.extension) {
-                inputPath.inputStream().transferAndClose(outputPath.outputStream())
-            } else {
-                val image = imageBucket[inputPath]?.first ?: return
+            val image = imageBucket[inputPath]?.first
+                ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found")
 
-                when (outputPath.extension.uppercase()) {
-                    "PNG" -> outputPath.outputStream().use { ImageIO.write(image, "PNG", it) }
-                    "JPG", "JPEG" -> outputPath.outputStream().use { ImageIO.write(image, "JPEG", it) }
-                    else -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid format")
-                }
+            when (outputPath.extension.uppercase()) {
+                "PNG" -> outputPath.outputStream().use { ImageIO.write(image, "PNG", it) }
+                "JPG", "JPEG" -> outputPath.outputStream().use { ImageIO.write(image, "JPEG", it) }
+                "FIT", "FITS" -> outputPath.sink().use { image.writeTo(it, FitsFormat) }
+                "XISF" -> outputPath.sink().use { image.writeTo(it, XisfFormat) }
+                else -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid format")
             }
         }
     }

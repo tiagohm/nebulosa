@@ -176,6 +176,11 @@ class SkyAtlasService(
         ?.let(MinorPlanet::of)
         ?: MinorPlanet.EMPTY
 
+    fun closeApproachesForMinorPlanets(days: Long, distance: Double, date: LocalDate?) = smallBodyDatabaseService
+        .closeApproaches(days, distance, date).execute().body()
+        ?.let(CloseApproach::of)
+        ?: emptyList()
+
     fun searchSkyObject(
         text: String? = null,
         rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,

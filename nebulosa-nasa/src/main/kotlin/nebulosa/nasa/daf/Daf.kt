@@ -18,43 +18,40 @@ abstract class Daf : Closeable {
     inline operator fun component2() = summaries
 
     open fun read() {
-        val buffer = Buffer()
-
-        try {
+        Buffer().use { buffer ->
             // File record.
-            val source = buffer.readRecord(1)
-            // Gets the file format.
-            val format = buffer.read(source, 8L) { it.readAscii().uppercase() }
+            buffer.readRecord(1).use { source ->
+                // Gets the file format.
+                val format = buffer.read(source, 8L) { it.readAscii().uppercase() }
 
-            if (format == "NAIF/DAF") {
-                source.seek(0L)
-                record = buffer.read(source, 88L) { it.parseFileRecord(false) }
-
-                if (record.nd != 2) {
+                if (format == "NAIF/DAF") {
                     source.seek(0L)
-                    record = buffer.read(source, 88L) { it.parseFileRecord(true) }
+                    record = buffer.read(source, 88L) { it.parseFileRecord(false) }
 
                     if (record.nd != 2) {
-                        throw IOException("neither a big nor a little-endian scan of this file produces the expected ND=2")
+                        source.seek(0L)
+                        record = buffer.read(source, 88L) { it.parseFileRecord(true) }
+
+                        if (record.nd != 2) {
+                            throw IOException("neither a big nor a little-endian scan of this file produces the expected ND=2")
+                        }
                     }
+                } else if (format.startsWith("DAF/")) {
+                    source.seek(699L)
+
+                    val magic = buffer.read(source, FTPSTR.length.toLong()) { it.readLatin1() }
+
+                    if (magic != FTPSTR) throw IOException("file has been damaged")
+
+                    source.seek(88L)
+                    val littleEndian = buffer.read(source, 8L) { it.readAscii().uppercase() == "LTL-IEEE" }
+
+                    source.seek(0L)
+                    record = buffer.read(source, 88L) { it.parseFileRecord(littleEndian) }
+                } else {
+                    throw IOException("unsupported format: $format")
                 }
-            } else if (format.startsWith("DAF/")) {
-                source.seek(699L)
-
-                val magic = buffer.read(source, FTPSTR.length.toLong()) { it.readLatin1() }
-
-                if (magic != FTPSTR) throw IOException("file has been damaged")
-
-                source.seek(88L)
-                val littleEndian = buffer.read(source, 8L) { it.readAscii().uppercase() == "LTL-IEEE" }
-
-                source.seek(0L)
-                record = buffer.read(source, 88L) { it.parseFileRecord(littleEndian) }
-            } else {
-                throw IOException("unsupported format: $format")
             }
-        } finally {
-            buffer.clear()
         }
     }
 
@@ -66,18 +63,20 @@ abstract class Daf : Closeable {
         val summaries = ArrayList<Summary>()
         var recordNumber = record.fward
 
-        val buffer = Buffer()
-        val length = record.nd * 8L + record.ni * 4L
-        val step = length - length % 8
+        Buffer().use { buffer ->
+            val length = record.nd * 8L + record.ni * 4L
+            val step = length - length % 8
 
-        while (recordNumber != 0) {
-            val data = buffer.readRecord(recordNumber)
-            val sc = buffer.read(data, 24L) { it.parseSummaryControlRecord() }
-            summaries.addAll(parseSummaries(recordNumber, sc.numberOfSummaries, data, step))
-            recordNumber = sc.nextNumber
+            while (recordNumber != 0) {
+                buffer.readRecord(recordNumber).use { source ->
+                    val sc = buffer.read(source, 24L) { it.parseSummaryControlRecord() }
+                    summaries.addAll(parseSummaries(recordNumber, sc.numberOfSummaries, source, step))
+                    recordNumber = sc.nextNumber
+                }
+            }
+
+            summaries
         }
-
-        summaries
     }
 
     private fun parseSummaries(
@@ -89,17 +88,19 @@ abstract class Daf : Closeable {
     ): List<Summary> {
         val summaries = ArrayList<Summary>()
 
-        val buffer = Buffer()
-        val nameData = buffer.readRecord(recordNumber + 1)
-        val elementRecordSizeInBytes = record.nd * 8L + record.ni * 4L
+        Buffer().use { buffer ->
+            buffer.readRecord(recordNumber + 1).use { source ->
+                val elementRecordSizeInBytes = record.nd * 8L + record.ni * 4L
 
-        for (i in 0 until numberOfSummaries * step step step) {
-            nameData.seek(i)
-            val name = buffer.read(nameData, step).use { it.readAscii().trim() }
+                for (i in 0 until numberOfSummaries * step step step) {
+                    source.seek(i)
+                    val name = buffer.read(source, step).use { it.readAscii().trim() }
 
-            data.seek(24 + i)
-            val elements = buffer.read(data, elementRecordSizeInBytes) { it.parseElementRecords() }
-            summaries.add(Summary(name, elements.first, elements.second))
+                    data.seek(24 + i)
+                    val elements = buffer.read(data, elementRecordSizeInBytes) { it.parseElementRecords() }
+                    summaries.add(Summary(name, elements.first, elements.second))
+                }
+            }
         }
 
         return summaries
