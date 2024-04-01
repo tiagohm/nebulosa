@@ -97,11 +97,13 @@ data object XisfFormat : ImageFormat {
                 val bitpix = hdu.header.bitpix
                 val sampleFormat = SampleFormat.from(bitpix)
                 val imageSize = hdu.width * hdu.height * hdu.numberOfChannels * sampleFormat.byteLength
+                val extra = if (bitpix.code < 0) " bounds=\"0:1\"" else ""
 
                 IMAGE_START_TAG
                     .format(
                         hdu.width, hdu.height, hdu.numberOfChannels,
-                        sampleFormat.code, colorSpace.code, imageType.code, initialHeaderSize, imageSize
+                        sampleFormat.code, colorSpace.code, imageType.code,
+                        initialHeaderSize, imageSize, extra
                     ).also(buffer::writeUtf8)
 
                 for ((name, key) in AstronomicalImageProperties) {
@@ -196,7 +198,7 @@ data object XisfFormat : ImageFormat {
         """<xisf version="1.0" xmlns="http://www.pixinsight.com/xisf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.pixinsight.com/xisf http://pixinsight.com/xisf/xisf-1.0.xsd">"""
     private const val XISF_END_TAG = "</xisf>"
     private const val IMAGE_START_TAG =
-        """<Image geometry="%d:%d:%d" sampleFormat="%s" colorSpace="%s" imageType="%s" pixelStorage="Planar" location="attachment:%d:%d">"""
+        """<Image geometry="%d:%d:%d" sampleFormat="%s" colorSpace="%s" imageType="%s" pixelStorage="Planar" location="attachment:%d:%d"%s>"""
     private const val IMAGE_END_TAG = "</Image>"
     private const val STRING_PROPERTY_TAG = """<Property id="%s" type="String">%s</Property>"""
     private const val NON_STRING_PROPERTY_TAG = """<Property id="%s" type="%s" value="%s" />"""
