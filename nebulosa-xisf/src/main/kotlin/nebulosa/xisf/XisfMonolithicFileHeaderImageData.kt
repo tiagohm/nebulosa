@@ -2,7 +2,8 @@ package nebulosa.xisf
 
 import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ImageData
-import nebulosa.io.*
+import nebulosa.io.SeekableSource
+import nebulosa.xisf.XisfFormat.readPixel
 import nebulosa.xisf.XisfMonolithicFileHeader.*
 import okio.Buffer
 import okio.InflaterSource
@@ -151,17 +152,6 @@ internal data class XisfMonolithicFileHeaderImageData(
         }
 
         return data
-    }
-
-    private fun Buffer.readPixel(format: SampleFormat, byteOrder: ByteOrder): Float {
-        return when (format) {
-            SampleFormat.UINT8 -> (buffer.readByte().toInt() and 0xFF) / 255f
-            SampleFormat.UINT16 -> (buffer.readShort(byteOrder).toInt() and 0xFFFF) / 65535f
-            SampleFormat.UINT32 -> ((buffer.readInt(byteOrder).toLong() and 0xFFFFFFFF) / 4294967295.0).toFloat()
-            SampleFormat.UINT64 -> TODO("Unsupported UInt64 sample format")
-            SampleFormat.FLOAT32 -> buffer.readFloat(byteOrder)
-            SampleFormat.FLOAT64 -> buffer.readDouble(byteOrder).toFloat()
-        }
     }
 
     companion object {

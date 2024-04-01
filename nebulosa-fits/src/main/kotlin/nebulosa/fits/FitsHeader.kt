@@ -89,6 +89,8 @@ open class FitsHeader : AbstractHeader {
 
         final override fun add(card: HeaderCard) = Unit
 
+        final override fun addAll(cards: Iterable<HeaderCard>) = Unit
+
         final override fun delete(key: HeaderKey) = false
 
         final override fun delete(key: String) = false
@@ -102,6 +104,7 @@ open class FitsHeader : AbstractHeader {
         const val MIN_COMMENT_ALIGN = 20
         const val MAX_COMMENT_ALIGN = 70
 
+        @JvmStatic val EMPTY = ReadOnly()
         @JvmStatic private val LOG = loggerFor<FitsHeader>()
 
         var commentAlignPosition = DEFAULT_COMMENT_ALIGN

@@ -56,7 +56,9 @@ data class FitsHeaderCard(
         const val MAX_LONG_STRING_CONTINUE_OVERHEAD = 3
         const val HIERARCH_WITH_DOT = "HIERARCH."
 
+        @JvmStatic val SIMPLE = create(FitsKeyword.SIMPLE, true)
         @JvmStatic val END = FitsHeaderCard("END", "", "", FitsHeaderCardType.NONE)
+        @JvmStatic val EXTENDED = create(FitsKeyword.EXTEND, true)
 
         @JvmStatic
         fun from(source: Buffer): FitsHeaderCard {
@@ -75,32 +77,32 @@ data class FitsHeaderCard(
 
         @JvmStatic
         fun create(header: HeaderKey, value: Int): FitsHeaderCard {
-            return create(header.key, "$value", header.comment)
+            return create(header.key, value, header.comment)
         }
 
         @JvmStatic
         fun create(header: HeaderKey, value: Long): FitsHeaderCard {
-            return create(header.key, "$value", header.comment)
+            return create(header.key, value, header.comment)
         }
 
         @JvmStatic
         fun create(header: HeaderKey, value: BigInteger): FitsHeaderCard {
-            return create(header.key, "$value", header.comment)
+            return create(header.key, value, header.comment)
         }
 
         @JvmStatic
         fun create(header: HeaderKey, value: Float): FitsHeaderCard {
-            return create(header.key, "$value", header.comment)
+            return create(header.key, value, header.comment)
         }
 
         @JvmStatic
         fun create(header: HeaderKey, value: Double): FitsHeaderCard {
-            return create(header.key, "$value", header.comment)
+            return create(header.key, value, header.comment)
         }
 
         @JvmStatic
         fun create(key: HeaderKey, value: BigDecimal, comment: String = ""): FitsHeaderCard {
-            return create(key.key, "$value", comment)
+            return create(key.key, value, comment)
         }
 
         @JvmStatic

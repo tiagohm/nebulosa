@@ -1,5 +1,7 @@
 package nebulosa.xisf
 
+import nebulosa.fits.Bitpix
+import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsHeaderCard
 import nebulosa.fits.FitsKeyword
 import nebulosa.image.format.HeaderCard
@@ -7,13 +9,29 @@ import nebulosa.io.ByteOrder
 
 sealed interface XisfMonolithicFileHeader {
 
-    enum class SampleFormat(val byteLength: Long) {
-        UINT8(1L),
-        UINT16(2L),
-        UINT32(4L),
-        UINT64(8L),
-        FLOAT32(4L),
-        FLOAT64(8L),
+    enum class SampleFormat(
+        @JvmField val byteLength: Long,
+        @JvmField val code: String, @JvmField val bitpix: Bitpix,
+    ) {
+        UINT8(1L, "UInt8", Bitpix.BYTE),
+        UINT16(2L, "UInt16", Bitpix.SHORT),
+        UINT32(4L, "UInt32", Bitpix.INTEGER),
+        UINT64(8L, "UInt64", Bitpix.LONG),
+        FLOAT32(4L, "Float32", Bitpix.FLOAT),
+        FLOAT64(8L, "Float64", Bitpix.DOUBLE);
+
+        companion object {
+
+            @JvmStatic
+            fun from(bitpix: Bitpix) = when (bitpix) {
+                Bitpix.BYTE -> UINT8
+                Bitpix.SHORT -> UINT16
+                Bitpix.INTEGER -> UINT32
+                Bitpix.LONG -> UINT64
+                Bitpix.FLOAT -> FLOAT32
+                Bitpix.DOUBLE -> FLOAT64
+            }
+        }
     }
 
     enum class ColorSpace(@JvmField val code: String) {
@@ -98,7 +116,7 @@ sealed interface XisfMonolithicFileHeader {
         @JvmField val compressionFormat: CompressionFormat? = null,
         @JvmField val imageType: ImageType = ImageType.LIGHT,
         @JvmField val bounds: ClosedFloatingPointRange<Float> = DEFAULT_BOUNDS,
-        @JvmField val keywords: Collection<HeaderCard> = emptyList(),
+        @JvmField val keywords: FitsHeader = FitsHeader.EMPTY,
         @JvmField val thumbnail: Image? = null,
     ) : XisfMonolithicFileHeader
 

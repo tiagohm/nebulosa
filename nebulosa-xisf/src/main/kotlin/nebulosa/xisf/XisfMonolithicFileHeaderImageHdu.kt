@@ -12,6 +12,6 @@ internal data class XisfMonolithicFileHeaderImageHdu(
     override val width = image.width
     override val height = image.height
     override val numberOfChannels = image.numberOfChannels
-    override val header = FitsHeader(image.keywords)
+    override val header = image.keywords
     override val data = XisfMonolithicFileHeaderImageData(image, source)
 }

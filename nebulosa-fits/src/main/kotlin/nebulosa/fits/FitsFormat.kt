@@ -149,25 +149,27 @@ data object FitsFormat : ImageFormat {
         }
     }
 
+    @JvmStatic
     internal fun Buffer.readPixel(bitpix: Bitpix): Float {
         return when (bitpix) {
-            Bitpix.BYTE -> (buffer.readByte().toInt() and 0xFF) / 255f
-            Bitpix.SHORT -> (buffer.readShort().toInt() + 32768) / 65535f
-            Bitpix.INTEGER -> ((buffer.readInt().toLong() + 2147483648L) / 4294967295.0).toFloat()
+            Bitpix.BYTE -> (readByte().toInt() and 0xFF) / 255f
+            Bitpix.SHORT -> (readShort().toInt() + 32768) / 65535f
+            Bitpix.INTEGER -> ((readInt().toLong() + 2147483648L) / 4294967295.0).toFloat()
             Bitpix.LONG -> TODO("Unsupported UInt64 sample format")
-            Bitpix.FLOAT -> buffer.readFloat()
-            Bitpix.DOUBLE -> buffer.readDouble().toFloat()
+            Bitpix.FLOAT -> readFloat()
+            Bitpix.DOUBLE -> readDouble().toFloat()
         }
     }
 
+    @JvmStatic
     internal fun Buffer.writePixel(pixel: Float, bitpix: Bitpix) {
         when (bitpix) {
-            Bitpix.BYTE -> buffer.writeByte((pixel * 255f).toInt())
-            Bitpix.SHORT -> buffer.writeShort((pixel * 65535f).toInt())
-            Bitpix.INTEGER -> buffer.writeInt((pixel * 4294967295.0).toInt())
+            Bitpix.BYTE -> writeByte((pixel * 255f).toInt())
+            Bitpix.SHORT -> writeShort((pixel * 65535f).toInt())
+            Bitpix.INTEGER -> writeInt((pixel * 4294967295.0).toInt())
             Bitpix.LONG -> TODO("Unsupported UInt64 sample format")
-            Bitpix.FLOAT -> buffer.writeFloat(pixel)
-            Bitpix.DOUBLE -> buffer.writeDouble(pixel.toDouble())
+            Bitpix.FLOAT -> writeFloat(pixel)
+            Bitpix.DOUBLE -> writeDouble(pixel.toDouble())
         }
     }
 

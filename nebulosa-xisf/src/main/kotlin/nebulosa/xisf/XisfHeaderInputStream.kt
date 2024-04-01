@@ -1,6 +1,9 @@
 package nebulosa.xisf
 
 import com.fasterxml.aalto.stax.InputFactoryImpl
+import nebulosa.fits.FitsHeader
+import nebulosa.fits.FitsHeaderCard
+import nebulosa.fits.FitsKeyword
 import nebulosa.image.format.HeaderCard
 import nebulosa.io.ByteOrder
 import nebulosa.xisf.XisfMonolithicFileHeader.*
@@ -47,6 +50,17 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
         val compression = reader.attribute("compression")?.let { CompressionFormat.parse(it) }
         val bounds = reader.attribute("bounds")?.split(":")?.let { it[0].toFloat()..it[1].toFloat() }
         val (keywords, thumbnail) = parseKeywords()
+        val header = FitsHeader()
+        val isMono = numberOfChannels == "1"
+
+        header.add(FitsHeaderCard.SIMPLE)
+        header.add(sampleFormat.bitpix)
+        header.add(FitsHeaderCard.create(FitsKeyword.NAXIS, if (isMono) 2 else 3))
+        header.add(FitsHeaderCard.create(FitsKeyword.NAXIS1, width.toInt()))
+        header.add(FitsHeaderCard.create(FitsKeyword.NAXIS2, height.toInt()))
+        if (!isMono) header.add(FitsHeaderCard.create(FitsKeyword.NAXIS3, 3))
+        header.add(FitsHeaderCard.EXTENDED)
+        header.addAll(keywords)
 
         return Image(
             width.toInt(), height.toInt(), numberOfChannels.toInt(),
@@ -56,7 +70,7 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
             byteOrder ?: ByteOrder.LITTLE,
             compression, imageType ?: ImageType.LIGHT,
             bounds ?: XisfMonolithicFileHeader.DEFAULT_BOUNDS,
-            keywords, thumbnail,
+            header, thumbnail,
         )
     }
 

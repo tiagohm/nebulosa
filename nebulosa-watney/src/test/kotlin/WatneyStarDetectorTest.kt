@@ -17,7 +17,7 @@ class WatneyStarDetectorTest : FitsStringSpec() {
         val detector = WatneyStarDetector(computeHFD = true)
 
         "detect stars" {
-            var image = Image.open(NGC3344_COLOR_32_FITS_PATH.fits())
+            var image = Image.open(NGC3344_COLOR_32_FITS.fits())
             var stars = detector.detect(image.transform(Mean))
             stars shouldHaveSize 1
             image.transform(ImageStarsDraw(stars)).save("color-detected-stars-1")

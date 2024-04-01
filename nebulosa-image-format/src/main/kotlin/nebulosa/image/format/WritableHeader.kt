@@ -22,6 +22,8 @@ interface WritableHeader {
 
     fun add(card: HeaderCard)
 
+    fun addAll(cards: Iterable<HeaderCard>) = cards.forEach(::add)
+
     fun delete(key: HeaderKey) = delete(key.key)
 
     fun delete(key: String): Boolean

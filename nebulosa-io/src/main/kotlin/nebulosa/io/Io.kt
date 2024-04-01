@@ -61,13 +61,24 @@ inline fun BufferedSource.readLatin1() = readString(Charsets.ISO_8859_1)
 
 inline fun BufferedSource.readLatin1(byteCount: Long) = readString(byteCount, Charsets.ISO_8859_1)
 
-inline fun BufferedSink.writeFloat(f: Float) = writeInt(f.toBits())
+inline fun BufferedSink.writeShort(value: Int, order: ByteOrder) = if (order.isBigEndian) writeShort(value) else writeShortLe(value)
 
-inline fun BufferedSink.writeFloatLe(f: Float) = writeIntLe(f.toBits())
+inline fun BufferedSink.writeInt(value: Int, order: ByteOrder) = if (order.isBigEndian) writeInt(value) else writeIntLe(value)
 
-inline fun BufferedSink.writeDouble(d: Double) = writeLong(d.toBits())
+inline fun BufferedSink.writeLong(value: Long, order: ByteOrder) = if (order.isBigEndian) writeLong(value) else writeLongLe(value)
 
-inline fun BufferedSink.writeDoubleLe(d: Double) = writeLongLe(d.toBits())
+inline fun BufferedSink.writeFloat(value: Float) = writeInt(value.toBits())
+
+inline fun BufferedSink.writeFloatLe(value: Float) = writeIntLe(value.toBits())
+
+inline fun BufferedSink.writeFloat(value: Float, order: ByteOrder) = if (order.isBigEndian) writeInt(value.toBits()) else writeIntLe(value.toBits())
+
+inline fun BufferedSink.writeDouble(value: Double) = writeLong(value.toBits())
+
+inline fun BufferedSink.writeDoubleLe(value: Double) = writeLongLe(value.toBits())
+
+inline fun BufferedSink.writeDouble(value: Double, order: ByteOrder) =
+    if (order.isBigEndian) writeLong(value.toBits()) else writeLongLe(value.toBits())
 
 inline fun ClassLoader.resource(name: String): InputStream? = getResourceAsStream(name)
 
