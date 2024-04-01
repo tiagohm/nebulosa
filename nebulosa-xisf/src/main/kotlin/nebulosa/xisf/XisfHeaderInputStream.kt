@@ -60,11 +60,17 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
         )
     }
 
-    private fun parseKeywords(): Pair<List<HeaderCard>, Image?> {
+    private fun parseKeywords(): Pair<Collection<HeaderCard>, Image?> {
         val name = reader.localName
 
-        val keywords = ArrayList<HeaderCard>()
+        val cards = ArrayList<HeaderCard>()
         var thumbnail: Image? = null
+
+        fun addHeaderCard(card: HeaderCard) {
+            if (cards.find { it.key == card.key } == null) {
+                cards.add(card)
+            }
+        }
 
         while (reader.hasNext()) {
             val type = reader.next()
@@ -73,14 +79,14 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
                 break
             } else if (type == XMLStreamConstants.START_ELEMENT) {
                 when (reader.localName) {
-                    "FITSKeyword" -> keywords.add(parseFITSKeyword())
+                    "FITSKeyword" -> addHeaderCard(parseFITSKeyword())
                     "Thumbnail" -> thumbnail = parseImage()
-                    "Property" -> keywords.add(parseProperty() ?: continue)
+                    "Property" -> addHeaderCard(parseProperty() ?: continue)
                 }
             }
         }
 
-        return keywords to thumbnail
+        return cards to thumbnail
     }
 
     private fun parseFITSKeyword(): HeaderCard {

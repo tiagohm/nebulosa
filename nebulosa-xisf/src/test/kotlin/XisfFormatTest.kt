@@ -1,5 +1,6 @@
 import io.kotest.engine.spec.tempfile
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.floats.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
@@ -26,7 +27,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 29
+                header shouldHaveSize 17
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
@@ -45,7 +46,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 29
+                header shouldHaveSize 17
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
@@ -64,7 +65,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 29
+                header shouldHaveSize 17
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
@@ -83,7 +84,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 29
+                header shouldHaveSize 17
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
@@ -102,7 +103,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 29
+                header shouldHaveSize 17
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
@@ -121,7 +122,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 3
-                header shouldHaveSize 29
+                header shouldHaveSize 17
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldNotBeSameInstanceAs data.red
                 data.blue shouldNotBeSameInstanceAs data.green
@@ -140,7 +141,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 3
-                header shouldHaveSize 29
+                header shouldHaveSize 17
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldNotBeSameInstanceAs data.red
                 data.blue shouldNotBeSameInstanceAs data.green
@@ -159,7 +160,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 3
-                header shouldHaveSize 29
+                header shouldHaveSize 17
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldNotBeSameInstanceAs data.red
                 data.blue shouldNotBeSameInstanceAs data.green
@@ -178,7 +179,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 3
-                header shouldHaveSize 29
+                header shouldHaveSize 17
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldNotBeSameInstanceAs data.red
                 data.blue shouldNotBeSameInstanceAs data.green
@@ -197,7 +198,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 3
-                header shouldHaveSize 29
+                header shouldHaveSize 17
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldNotBeSameInstanceAs data.red
                 data.blue shouldNotBeSameInstanceAs data.green
@@ -216,7 +217,7 @@ class XisfFormatTest : FitsStringSpec() {
                 width shouldBeExactly 512
                 height shouldBeExactly 512
                 numberOfChannels shouldBeExactly 1
-                header shouldHaveSize 29
+                header shouldHaveSize 17
                 data.red.size shouldBeExactly 512 * 512
                 data.green shouldBeSameInstanceAs data.red
                 data.blue shouldBeSameInstanceAs data.green
@@ -238,7 +239,40 @@ class XisfFormatTest : FitsStringSpec() {
             val hdus1 = XisfFormat.read(source1)
 
             hdus1 shouldHaveSize 1
+            hdus1[0].data.numberOfChannels shouldBeExactly 1
             hdus1[0].header.size shouldBeExactly hdus0[0].header.size
+            hdus1[0].data.red.size shouldBeExactly hdus0[0].data.red.size
+            hdus1[0].data.red shouldNotBeSameInstanceAs hdus0[0].data.red
+            hdus1[0].data.red.forEachIndexed { i, value -> value shouldBeExactly hdus0[0].data.red[i] }
+
+            val image = hdus1[0].makeImage()
+            image.save("xisf-mono-write").second shouldBe "0dca7efedef5b3525f8037f401518b0b"
+        }
+        "color:write" {
+            val source0 = closeAfterEach(M82_COLOR_32_XISF.seekableSource())
+            val hdus0 = XisfFormat.read(source0)
+
+            val outputPath = tempfile()
+            val sink = closeAfterEach(outputPath.seekableSink())
+
+            XisfFormat.write(sink, hdus0)
+
+            val source1 = closeAfterEach(outputPath.seekableSource())
+            val hdus1 = XisfFormat.read(source1)
+
+            hdus1 shouldHaveSize 1
+            hdus1[0].data.numberOfChannels shouldBeExactly 3
+            hdus1[0].header.size shouldBeExactly hdus0[0].header.size
+            hdus1[0].data.red.size shouldBeExactly hdus0[0].data.red.size
+            hdus1[0].data.red shouldNotBeSameInstanceAs hdus0[0].data.red
+            hdus1[0].data.red.forEachIndexed { i, value -> value shouldBeExactly hdus0[0].data.red[i] }
+            hdus1[0].data.green shouldNotBeSameInstanceAs hdus0[0].data.green
+            hdus1[0].data.green.forEachIndexed { i, value -> value shouldBeExactly hdus0[0].data.green[i] }
+            hdus1[0].data.blue shouldNotBeSameInstanceAs hdus0[0].data.blue
+            hdus1[0].data.blue.forEachIndexed { i, value -> value shouldBeExactly hdus0[0].data.blue[i] }
+
+            val image = hdus1[0].makeImage()
+            image.save("xisf-color-write").second shouldBe "89beed384ee9e97ce033ba447a377937"
         }
     }
 

@@ -37,10 +37,10 @@ abstract class AbstractSeekableSink : SeekableSink {
 
         var remaining = byteCount
 
-        while (remaining > 0L) {
-            timeout.throwIfReached()
+        source.readUnsafe(cursor).use {
+            while (remaining > 0L) {
+                timeout.throwIfReached()
 
-            source.readUnsafe(cursor).use {
                 it.seek(0L)
 
                 val length = computeTransferedSize(it, remaining)
@@ -62,5 +62,5 @@ abstract class AbstractSeekableSink : SeekableSink {
 
     override fun flush() = Unit
 
-    override fun close() = cursor.close()
+    override fun close() = Unit
 }

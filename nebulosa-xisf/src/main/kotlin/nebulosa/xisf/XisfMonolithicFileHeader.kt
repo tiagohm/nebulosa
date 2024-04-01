@@ -98,7 +98,7 @@ sealed interface XisfMonolithicFileHeader {
         @JvmField val compressionFormat: CompressionFormat? = null,
         @JvmField val imageType: ImageType = ImageType.LIGHT,
         @JvmField val bounds: ClosedFloatingPointRange<Float> = DEFAULT_BOUNDS,
-        @JvmField val keywords: List<HeaderCard> = emptyList(),
+        @JvmField val keywords: Collection<HeaderCard> = emptyList(),
         @JvmField val thumbnail: Image? = null,
     ) : XisfMonolithicFileHeader
 

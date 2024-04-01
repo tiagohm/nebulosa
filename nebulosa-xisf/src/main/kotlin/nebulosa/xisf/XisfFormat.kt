@@ -8,6 +8,7 @@ import nebulosa.image.format.ImageHdu
 import nebulosa.io.*
 import nebulosa.xisf.XisfMonolithicFileHeader.ColorSpace
 import nebulosa.xisf.XisfMonolithicFileHeader.ImageType
+import nebulosa.xml.escapeXml
 import okio.Buffer
 import okio.Sink
 import okio.Timeout
@@ -75,7 +76,7 @@ data object XisfFormat : ImageFormat {
                         if (key != null) {
                             if (key.valueType == ValueType.STRING || key.valueType == ValueType.ANY) {
                                 val value = header.getStringOrNull(key) ?: continue
-                                buffer.writeUtf8(STRING_PROPERTY_TAG.format(name, value))
+                                buffer.writeUtf8(STRING_PROPERTY_TAG.format(name, value.escapeXml()))
                             } else if (key.valueType == ValueType.LOGICAL) {
                                 val value = header.getBooleanOrNull(key) ?: continue
                                 buffer.writeUtf8(NON_STRING_PROPERTY_TAG.format(name, XisfPropertyType.BOOLEAN.typeName, if (value) 1 else 0))
@@ -90,7 +91,8 @@ data object XisfFormat : ImageFormat {
                     }
 
                     for (keyword in header) {
-                        buffer.writeUtf8(FITS_KEYWORD_TAG.format(keyword.key, keyword.value, keyword.comment))
+                        val value = if (keyword.isStringType) "'${keyword.value.escapeXml()}'" else keyword.value
+                        buffer.writeUtf8(FITS_KEYWORD_TAG.format(keyword.key, value, keyword.comment.escapeXml()))
                     }
                 }
             }
@@ -98,7 +100,7 @@ data object XisfFormat : ImageFormat {
             buffer.writeUtf8(IMAGE_END_TAG)
             buffer.writeUtf8(XISF_END_TAG)
 
-            val headerSize = buffer.size - 8
+            val headerSize = buffer.size - 16
 
             buffer.readAndWriteUnsafe().use {
                 it.seek(8L)

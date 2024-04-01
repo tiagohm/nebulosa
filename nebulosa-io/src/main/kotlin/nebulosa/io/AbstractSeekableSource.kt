@@ -55,5 +55,5 @@ abstract class AbstractSeekableSource : SeekableSource {
 
     override fun timeout() = timeout
 
-    override fun close() = cursor.close()
+    override fun close() = Unit
 }
