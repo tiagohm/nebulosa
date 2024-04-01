@@ -16,30 +16,18 @@ internal open class INDIFocuser(
 ) : INDIDevice(), Focuser {
 
     @Volatile final override var moving = false
-        private set
     @Volatile final override var position = 0
-        private set
     @Volatile final override var canAbsoluteMove = false
-        private set
     @Volatile final override var canRelativeMove = false
-        private set
     @Volatile final override var canAbort = false
-        private set
     @Volatile final override var canReverse = false
-        private set
     @Volatile final override var reversed = false
-        private set
     @Volatile final override var canSync = false
-        private set
     @Volatile final override var hasBacklash = false
-        private set
     @Volatile final override var maxPosition = 0
-        private set
 
     @Volatile final override var hasThermometer = false
-        private set
     @Volatile final override var temperature = 0.0
-        private set
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -200,10 +188,10 @@ internal open class INDIFocuser(
 
     override fun toString(): String {
         return "Focuser(name=$name, moving=$moving, position=$position," +
-            " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
-            " canAbort=$canAbort, canReverse=$canReverse, reversed=$reversed," +
-            " canSync=$canSync, hasBacklash=$hasBacklash," +
-            " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
-            " temperature=$temperature)"
+                " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
+                " canAbort=$canAbort, canReverse=$canReverse, reversed=$reversed," +
+                " canSync=$canSync, hasBacklash=$hasBacklash," +
+                " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
+                " temperature=$temperature)"
     }
 }

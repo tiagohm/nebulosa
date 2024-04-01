@@ -16,8 +16,6 @@ import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
-import nebulosa.time.TimeJD
-import nebulosa.time.UTC
 import nebulosa.wcs.WCS
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode

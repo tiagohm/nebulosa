@@ -88,7 +88,7 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
             }
         }
 
-        buffer.clear()
+        buffer.close()
         source.close()
 
         return matchingQuadsWithinRange

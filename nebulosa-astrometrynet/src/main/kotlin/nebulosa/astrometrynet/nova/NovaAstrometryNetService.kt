@@ -1,7 +1,7 @@
 package nebulosa.astrometrynet.nova
 
-import nebulosa.fits.FitsIO
-import nebulosa.imaging.Image
+import nebulosa.fits.FitsFormat
+import nebulosa.image.Image
 import nebulosa.retrofit.RetrofitService
 import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaType
@@ -62,7 +62,7 @@ class NovaAstrometryNetService(
             override fun contentType() = OCTET_STREAM_MEDIA_TYPE
 
             override fun writeTo(sink: BufferedSink) {
-                FitsIO.write(sink, image.hdu())
+                image.writeTo(sink, FitsFormat)
             }
         }
 

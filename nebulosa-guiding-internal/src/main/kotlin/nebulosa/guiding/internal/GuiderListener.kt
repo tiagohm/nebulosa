@@ -1,7 +1,7 @@
 package nebulosa.guiding.internal
 
 import nebulosa.guiding.GuideDirection
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 
 interface GuiderListener {
 

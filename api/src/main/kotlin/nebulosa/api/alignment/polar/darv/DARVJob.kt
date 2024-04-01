@@ -14,10 +14,12 @@ import nebulosa.batch.processing.ExecutionContext.Companion.getDouble
 import nebulosa.batch.processing.ExecutionContext.Companion.getDuration
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.batch.processing.delay.DelayStepListener
+import nebulosa.image.format.ImageRepresentation
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.guide.GuideOutput
 import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
 
 data class DARVJob(
@@ -65,8 +67,8 @@ data class DARVJob(
         onNext(DARVEvent.Finished(id))
     }
 
-    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution) {
-        onNext(CameraExposureFinished(stepExecution.jobExecution, step.camera, 1, 1, Duration.ZERO, 1.0, Duration.ZERO, step.savedPath!!))
+    override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation?, savedPath: Path) {
+        onNext(CameraExposureFinished(stepExecution.jobExecution, step.camera, 1, 1, Duration.ZERO, 1.0, Duration.ZERO, savedPath))
     }
 
     override fun onGuidePulseElapsed(step: GuidePulseStep, stepExecution: StepExecution) {

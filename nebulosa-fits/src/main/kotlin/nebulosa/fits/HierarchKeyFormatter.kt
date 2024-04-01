@@ -8,8 +8,5 @@ interface HierarchKeyFormatter {
 
     val isCaseSensitive: Boolean
 
-    companion object {
-
-        @JvmStatic var INSTANCE: HierarchKeyFormatter = StandardHierarchKeyFormatter.DEFAULT
-    }
+    companion object : HierarchKeyFormatter by StandardHierarchKeyFormatter.DEFAULT
 }

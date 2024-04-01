@@ -2,7 +2,7 @@ package nebulosa.astrometrynet.plate.solving
 
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.common.process.ProcessExecutor
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.plate.solving.PlateSolution

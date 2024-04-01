@@ -111,15 +111,23 @@ export class ElectronService {
     }
 
     openFits(data?: OpenFile): Promise<string | undefined> {
-        return this.openFile({ ...data, filters: [{ name: 'FITS files', extensions: ['fits', 'fit'] }] })
+        return this.openFile({
+            ...data, filters: [
+                { name: 'All', extensions: ['fits', 'fit', 'xisf'] },
+                { name: 'FITS', extensions: ['fits', 'fit'] },
+                { name: 'XISF', extensions: ['xisf'] },
+            ]
+        })
     }
 
     saveFits(data?: OpenFile) {
         return this.saveFile({
             ...data,
             filters: [
-                { name: 'FITS files', extensions: ['fits', 'fit'] },
-                { name: 'Image files', extensions: ['png', 'jpe?g'] },
+                { name: 'All', extensions: ['fits', 'fit', 'xisf', 'png', 'jpe?g'] },
+                { name: 'FITS', extensions: ['fits', 'fit'] },
+                { name: 'XISF', extensions: ['xisf'] },
+                { name: 'Image', extensions: ['png', 'jpe?g'] },
             ]
         })
     }

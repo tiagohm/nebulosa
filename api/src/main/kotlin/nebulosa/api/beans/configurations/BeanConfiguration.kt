@@ -18,7 +18,7 @@ import nebulosa.guiding.Guider
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.log.loggerFor
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService

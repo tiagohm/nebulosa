@@ -2,15 +2,10 @@ package nebulosa.alignment.polar.point.three
 
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.constants.DEG2RAD
-import nebulosa.fits.declination
-import nebulosa.fits.observationDate
-import nebulosa.fits.rightAscension
-import nebulosa.imaging.Image
 import nebulosa.math.Angle
 import nebulosa.plate.solving.PlateSolution
 import nebulosa.plate.solving.PlateSolver
 import nebulosa.plate.solving.PlateSolvingException
-import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import java.nio.file.Path
 import kotlin.math.min
@@ -34,15 +29,13 @@ data class ThreePointPolarAlignment(
         private set
 
     fun align(
-        path: Path, image: Image,
-        rightAscension: Angle = image.header.rightAscension,
-        declination: Angle = image.header.declination,
-        radius: Angle = DEFAULT_RADIUS,
+        path: Path,
+        rightAscension: Angle, declination: Angle, radius: Angle = DEFAULT_RADIUS,
         compensateRefraction: Boolean = false,
         cancellationToken: CancellationToken = CancellationToken.NONE,
     ): ThreePointPolarAlignmentResult {
         val solution = try {
-            solver.solve(path, image, rightAscension, declination, radius, cancellationToken = cancellationToken)
+            solver.solve(path, null, rightAscension, declination, radius, cancellationToken = cancellationToken)
         } catch (e: PlateSolvingException) {
             return ThreePointPolarAlignmentResult.NoPlateSolution(e)
         }
@@ -50,7 +43,7 @@ data class ThreePointPolarAlignment(
         if (!solution.solved || cancellationToken.isCancelled) {
             return ThreePointPolarAlignmentResult.NoPlateSolution(null)
         } else {
-            val time = image.header.observationDate?.let { UTC(TimeYMDHMS(it)) } ?: UTC.now()
+            val time = UTC.now()
 
             positions[min(state, 2)] = solution.position(time, compensateRefraction)
 

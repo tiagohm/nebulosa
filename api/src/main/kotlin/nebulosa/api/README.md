@@ -52,7 +52,7 @@ URL: `localhost:{PORT}/ws`
         "offset": 0,
         "offsetMin": 0,
         "offsetMax": 0,
-        "hasGuiderHead": false,
+        "hasGuideHead": false,
         "pixelSizeX": 0,
         "pixelSizeY": 0,
         "capturesPath": "",

@@ -1,11 +1,12 @@
 package nebulosa.watney.plate.solving
 
-import nebulosa.fits.Header
+import nebulosa.image.format.Header
+import nebulosa.image.format.ReadableHeader
 import nebulosa.math.Angle
 import nebulosa.plate.solving.Parity
 
 internal data class ComputedPlateSolution(
-    @JvmField val header: Header = Header(),
+    @JvmField val header: ReadableHeader = Header.Empty,
     @JvmField val orientation: Angle = 0.0,
     @JvmField val pixelScale: Double = 0.0, // arcsec/px
     @JvmField val centerRA: Angle = 0.0,

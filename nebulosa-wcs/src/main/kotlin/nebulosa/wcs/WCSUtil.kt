@@ -1,7 +1,7 @@
 package nebulosa.wcs
 
-import nebulosa.fits.Header
-import nebulosa.fits.Standard
+import nebulosa.fits.FitsKeyword
+import nebulosa.image.format.ReadableHeader
 import nebulosa.math.Angle
 import nebulosa.math.cos
 import nebulosa.math.deg
@@ -9,23 +9,23 @@ import nebulosa.math.sin
 import kotlin.math.abs
 import kotlin.math.sign
 
-val Header.hasCd
+val ReadableHeader.hasCd
     get() = "CD1_1" in this ||
-        "CDELT1" in this && "CROTA2" in this ||
-        "CDELT1" in this && "PC1_1" in this
+            "CDELT1" in this && "CROTA2" in this ||
+            "CDELT1" in this && "PC1_1" in this
 
-fun Header.computeCdMatrix(): DoubleArray {
+fun ReadableHeader.computeCdMatrix(): DoubleArray {
     return if (hasCd) {
         doubleArrayOf(cd(1, 1), cd(1, 2), cd(2, 1), cd(2, 2))
     } else {
-        val a = getDouble(Standard.CDELT1, 0.0)
-        val b = getDouble(Standard.CDELT2, 0.0)
-        val c = getDouble(Standard.CROTA2, 0.0).deg
+        val a = getDouble(FitsKeyword.CDELT1, 0.0)
+        val b = getDouble(FitsKeyword.CDELT2, 0.0)
+        val c = getDouble(FitsKeyword.CROTA2, 0.0).deg
         computeCdFromCdelt(a, b, c)
     }
 }
 
-fun Header.cd(i: Int, j: Int): Double {
+fun ReadableHeader.cd(i: Int, j: Int): Double {
     return if ("CD1_1" in this) {
         getDouble("CD${i}_$j", 0.0)
     } else if ("CROTA2" in this) {

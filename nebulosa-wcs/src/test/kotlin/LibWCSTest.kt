@@ -2,8 +2,8 @@ import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.fits.Header
 import nebulosa.fits.fits
+import nebulosa.image.format.ReadableHeader
 import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
 import nebulosa.test.NonGitHubOnlyCondition
@@ -52,7 +52,7 @@ class LibWCSTest : StringSpec() {
         }
     }
 
-    private fun readHeaderFromFits(name: String): Header {
+    private fun readHeaderFromFits(name: String): ReadableHeader {
         return "src/test/resources/$name.fits".fits().use { it.first!!.header }
     }
 

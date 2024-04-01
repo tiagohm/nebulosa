@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import nebulosa.api.beans.converters.angle.DeclinationSerializer
 import nebulosa.api.beans.converters.angle.RightAscensionSerializer
-import nebulosa.imaging.algorithms.computation.Statistics
+import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.indi.device.camera.Camera
 import java.nio.file.Path
 

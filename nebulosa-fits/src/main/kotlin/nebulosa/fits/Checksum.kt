@@ -1,6 +1,6 @@
 package nebulosa.fits
 
-enum class Checksum(hduType: HduType, valueType: ValueType, comment: String) : FitsHeader {
+enum class Checksum(hduType: HduType, valueType: ValueType, comment: String) : FitsHeaderKey {
     /**
      * The value field of the CHECKSUM keyword shall contain a 16 character string, left justified starting in column
      * 12, containing the ASCII encoded complement of the checksum of the FITS HDU (Header and Data Unit). The algorithm
@@ -28,7 +28,7 @@ enum class Checksum(hduType: HduType, valueType: ValueType, comment: String) : F
      */
     DATASUM(HduType.ANY, ValueType.STRING, "checksum of the data records");
 
-    private val header = FitsHeaderImpl(name, hduType, valueType, comment)
+    private val header = FitsHeaderKeyItem(name, hduType, valueType, comment)
 
     override val key
         get() = header.key

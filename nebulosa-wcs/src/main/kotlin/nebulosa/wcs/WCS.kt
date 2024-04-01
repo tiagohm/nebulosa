@@ -4,13 +4,13 @@ import com.sun.jna.Pointer
 import com.sun.jna.ptr.DoubleByReference
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.PointerByReference
-import nebulosa.fits.Header
+import nebulosa.image.format.ReadableHeader
 import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.math.toDegrees
 import java.io.Closeable
 
-class WCS(header: Header) : Closeable {
+class WCS(header: ReadableHeader) : Closeable {
 
     private val wcs: Pointer
 
@@ -23,7 +23,7 @@ class WCS(header: Header) : Closeable {
             val card = headerIter.next()
 
             if (isKeywordValid(card.key)) {
-                headerText.append(card.format())
+                headerText.append(card.formatted())
                 keyCount++
             }
         }

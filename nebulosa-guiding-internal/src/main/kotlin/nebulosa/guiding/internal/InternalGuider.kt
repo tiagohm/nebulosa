@@ -1,6 +1,6 @@
 package nebulosa.guiding.internal
 
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 
 interface InternalGuider : Iterable<GuidePoint> {
 

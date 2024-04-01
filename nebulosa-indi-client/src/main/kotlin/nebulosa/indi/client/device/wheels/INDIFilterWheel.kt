@@ -13,11 +13,8 @@ internal open class INDIFilterWheel(
 ) : INDIDevice(), FilterWheel {
 
     @Volatile final override var count = 0
-        private set
     @Volatile final override var position = 0
-        private set
     @Volatile final override var moving = false
-        private set
 
     final override val names = ArrayList<String>(12)
 
@@ -90,6 +87,6 @@ internal open class INDIFilterWheel(
 
     override fun toString(): String {
         return "FilterWheel(name=$name, slotCount=$count, position=$position," +
-            " moving=$moving)"
+                " moving=$moving)"
     }
 }
