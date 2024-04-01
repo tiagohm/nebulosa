@@ -7,17 +7,24 @@ import nebulosa.alpaca.api.PulseGuideDirection
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.common.concurrency.latch.CountUpDownLatch
-import nebulosa.fits.*
-import nebulosa.imaging.algorithms.transformation.CfaPattern
+import nebulosa.fits.Bitpix
+import nebulosa.fits.Fits
+import nebulosa.fits.FitsHeader
+import nebulosa.fits.FitsKeyword
+import nebulosa.image.algorithms.transformation.CfaPattern
+import nebulosa.image.format.BasicImageHdu
+import nebulosa.image.format.FloatImageData
+import nebulosa.image.format.HeaderCard
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.*
-import nebulosa.indi.device.camera.Camera.Companion.NANO_SECONDS
+import nebulosa.indi.device.camera.Camera.Companion.NANO_TO_SECONDS
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
 import nebulosa.io.readDoubleLe
 import nebulosa.io.readFloatLe
+import nebulosa.log.loggerFor
 import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
 import nebulosa.math.normalized
@@ -34,116 +41,72 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.max
 import kotlin.math.min
 
+@Suppress("RedundantModalityModifier")
 data class ASCOMCamera(
     override val device: ConfiguredDevice,
     override val service: AlpacaCameraService,
     override val sender: AlpacaClient,
 ) : ASCOMDevice(), Camera {
 
-    @Volatile override var exposuring = false
-        private set
-    @Volatile override var hasCoolerControl = false
-        private set
-    @Volatile override var coolerPower = 0.0
-        private set
-    @Volatile override var cooler = false
-        private set
-    @Volatile override var hasDewHeater = false
-        private set
-    @Volatile override var dewHeater = false
-        private set
-    @Volatile override var frameFormats = emptyList<String>()
-        private set
-    @Volatile override var canAbort = false
-        private set
-    @Volatile override var cfaOffsetX = 0
-        private set
-    @Volatile override var cfaOffsetY = 0
-        private set
-    @Volatile override var cfaType = CfaPattern.RGGB
-        private set
-    @Volatile override var exposureMin: Duration = Duration.ZERO
-        private set
-    @Volatile override var exposureMax: Duration = Duration.ZERO
-        private set
-    @Volatile override var exposureState = PropertyState.IDLE
-        private set
-    @Volatile override var exposureTime: Duration = Duration.ZERO
-        private set
-    @Volatile override var hasCooler = false
-        private set
-    @Volatile override var canSetTemperature = false
-        private set
-    @Volatile override var canSubFrame = true
-        private set
-    @Volatile override var x = 0
-        private set
-    @Volatile override var minX = 0
-        private set
-    @Volatile override var maxX = 0
-        private set
-    @Volatile override var y = 0
-        private set
-    @Volatile override var minY = 0
-        private set
-    @Volatile override var maxY = 0
-        private set
-    @Volatile override var width = 0
-        private set
-    @Volatile override var minWidth = 0
-        private set
-    @Volatile override var maxWidth = 0
-        private set
-    @Volatile override var height = 0
-        private set
-    @Volatile override var minHeight = 0
-        private set
-    @Volatile override var maxHeight = 0
-        private set
-    @Volatile override var canBin = true
-        private set
-    @Volatile override var maxBinX = 1
-        private set
-    @Volatile override var maxBinY = 1
-        private set
-    @Volatile override var binX = 1
-        private set
-    @Volatile override var binY = 1
-        private set
-    @Volatile override var gain = 0
-        private set
-    @Volatile override var gainMin = 0
-        private set
-    @Volatile override var gainMax = 0
-        private set
-    @Volatile override var offset = 0
-        private set
-    @Volatile override var offsetMin = 0
-        private set
-    @Volatile override var offsetMax = 0
-        private set
-    @Volatile override var hasGuiderHead = false // TODO: ASCOM has guider head?
-        private set
-    @Volatile override var pixelSizeX = 0.0
-        private set
-    @Volatile override var pixelSizeY = 0.0
-        private set
+    @Volatile final override var exposuring = false
+    @Volatile final override var hasCoolerControl = false
+    @Volatile final override var coolerPower = 0.0
+    @Volatile final override var cooler = false
+    @Volatile final override var hasDewHeater = false
+    @Volatile final override var dewHeater = false
+    @Volatile final override var frameFormats = emptyList<String>()
+    @Volatile final override var canAbort = false
+    @Volatile final override var cfaOffsetX = 0
+    @Volatile final override var cfaOffsetY = 0
+    @Volatile final override var cfaType = CfaPattern.RGGB
+    @Volatile final override var exposureMin: Duration = Duration.ZERO
+    @Volatile final override var exposureMax: Duration = Duration.ZERO
+    @Volatile final override var exposureState = PropertyState.IDLE
+    @Volatile final override var exposureTime: Duration = Duration.ZERO
+    @Volatile final override var hasCooler = false
+    @Volatile final override var canSetTemperature = false
+    @Volatile final override var canSubFrame = true
+    @Volatile final override var x = 0
+    @Volatile final override var minX = 0
+    @Volatile final override var maxX = 0
+    @Volatile final override var y = 0
+    @Volatile final override var minY = 0
+    @Volatile final override var maxY = 0
+    @Volatile final override var width = 0
+    @Volatile final override var minWidth = 0
+    @Volatile final override var maxWidth = 0
+    @Volatile final override var height = 0
+    @Volatile final override var minHeight = 0
+    @Volatile final override var maxHeight = 0
+    @Volatile final override var canBin = true
+    @Volatile final override var maxBinX = 1
+    @Volatile final override var maxBinY = 1
+    @Volatile final override var binX = 1
+    @Volatile final override var binY = 1
+    @Volatile final override var gain = 0
+    @Volatile final override var gainMin = 0
+    @Volatile final override var gainMax = 0
+    @Volatile final override var offset = 0
+    @Volatile final override var offsetMin = 0
+    @Volatile final override var offsetMax = 0
+    @Volatile final override var pixelSizeX = 0.0
+    @Volatile final override var pixelSizeY = 0.0
 
-    @Volatile override var hasThermometer = false
-        private set
-    @Volatile override var temperature = 0.0
-        private set
+    @Volatile final override var hasThermometer = false
+    @Volatile final override var temperature = 0.0
 
-    @Volatile override var canPulseGuide = false
-        private set
-    @Volatile override var pulseGuiding = false
-        private set
+    @Volatile final override var canPulseGuide = false
+    @Volatile final override var pulseGuiding = false
+
+    final override val guideHead = null // TODO: ASCOM has guide head?
 
     @Volatile private var cameraState = CameraState.IDLE
     @Volatile private var frameType = FrameType.LIGHT
-    @Volatile private var mount: Mount? = null
+    @Volatile private var fitsKeywords: Array<out HeaderCard> = emptyArray()
 
     private val imageReadyWaiter = ImageReadyWaiter()
+
+    override val snoopedDevices = ArrayList<Device>(4)
 
     init {
         refresh(0L)
@@ -197,7 +160,7 @@ data class ASCOMCamera(
     override fun startCapture(exposureTime: Duration) {
         this.exposureTime = exposureTime
 
-        service.startExposure(device.number, exposureTime.toNanos() / NANO_SECONDS, frameType == FrameType.DARK).doRequest {
+        service.startExposure(device.number, exposureTime.toNanos() / NANO_TO_SECONDS, frameType == FrameType.DARK).doRequest {
             imageReadyWaiter.captureStarted()
         }
     }
@@ -238,12 +201,15 @@ data class ASCOMCamera(
 
     override fun snoop(devices: Iterable<Device?>) {
         for (device in devices) {
-            if (device is Mount) mount = device
+            device?.also(snoopedDevices::add)
         }
     }
 
-    override fun handleMessage(message: INDIProtocol) {
+    override fun fitsKeywords(vararg cards: HeaderCard) {
+        fitsKeywords = cards
     }
+
+    override fun handleMessage(message: INDIProtocol) = Unit
 
     override fun onConnected() {
         processExposureMinMax()
@@ -256,8 +222,7 @@ data class ASCOMCamera(
         processReadoutModes()
     }
 
-    override fun onDisconnected() {
-    }
+    override fun onDisconnected() = Unit
 
     override fun reset() {
         super.reset()
@@ -303,7 +268,6 @@ data class ASCOMCamera(
         offset = 0
         offsetMin = 0
         offsetMax = 0
-        hasGuiderHead = false
         pixelSizeX = 0.0
         pixelSizeY = 0.0
         hasThermometer = false
@@ -560,8 +524,8 @@ data class ASCOMCamera(
     private fun processExposureMinMax() {
         service.exposureMin(device.number).doRequest { min ->
             service.exposureMax(device.number).doRequest { max ->
-                exposureMin = Duration.ofNanos((min.value * NANO_SECONDS).toLong())
-                exposureMax = Duration.ofNanos((max.value * NANO_SECONDS).toLong())
+                exposureMin = Duration.ofNanos((min.value * NANO_TO_SECONDS).toLong())
+                exposureMax = Duration.ofNanos((max.value * NANO_TO_SECONDS).toLong())
 
                 sender.fireOnEventReceived(CameraExposureMinMaxChanged(this))
             }
@@ -614,96 +578,98 @@ data class ASCOMCamera(
 
             val width = metadata.dimension1
             val height = metadata.dimension2
-            val planes = max(1, metadata.dimension3)
+            val numberOfChannels = max(1, metadata.dimension3)
             val source = stream.source().buffer()
-            val data = Array(planes) { FloatImageData(width, height) }
+            val data = FloatImageData(width, height, numberOfChannels)
+            val channels = arrayOf(data.red, data.green, data.blue)
 
             for (x in 0 until width) {
                 for (y in 0 until height) {
                     val idx = y * width + x
 
-                    for (p in 0 until planes) {
-                        val pixel = when (metadata.imageElementType.bitpix) {
+                    for (p in 0 until numberOfChannels) {
+                        channels[p][idx] = when (metadata.imageElementType.bitpix) {
                             Bitpix.BYTE -> (source.readByte().toInt() and 0xFF) / 255f
                             Bitpix.SHORT -> (source.readShortLe().toInt() + 32768) / 65535f
-                            Bitpix.INTEGER -> ((source.readIntLe().toLong() + 2147483648) / 4294967295.0).toFloat()
+                            Bitpix.INTEGER -> ((source.readIntLe().toLong() + 2147483648L) / 4294967295.0).toFloat()
                             Bitpix.FLOAT -> source.readFloatLe()
                             Bitpix.DOUBLE -> source.readDoubleLe().toFloat()
                             Bitpix.LONG -> return
                         }
-
-                        data[p].data[idx] = pixel
                     }
                 }
             }
 
             source.close()
 
-            val header = Header()
-            header.add(Standard.SIMPLE, true)
-            header.add(Standard.BITPIX, -32)
-            header.add(Standard.NAXIS, if (planes == 3) 3 else 2)
-            header.add(Standard.NAXIS1, width)
-            header.add(Standard.NAXIS2, height)
-            if (planes == 3) header.add(Standard.NAXIS3, planes)
-            header.add(Standard.EXTEND, true)
-            header.add(Standard.INSTRUME, name)
-            header.add(Standard.EXPTIME, 0.0) // TODO
-            header.add(SBFitsExt.CCD_TEMP, temperature)
-            header.add(NOAOExt.PIXSIZEn.n(1), pixelSizeX)
-            header.add(NOAOExt.PIXSIZEn.n(2), pixelSizeY)
-            header.add(SBFitsExt.XBINNING, binX)
-            header.add(SBFitsExt.YBINNING, binY)
-            header.add(SBFitsExt.XPIXSZ, pixelSizeX * binX)
-            header.add(SBFitsExt.YPIXSZ, pixelSizeY * binY)
+            val header = FitsHeader()
+            header.add(FitsKeyword.SIMPLE, true)
+            header.add(FitsKeyword.BITPIX, -32)
+            header.add(FitsKeyword.NAXIS, if (numberOfChannels == 3) 3 else 2)
+            header.add(FitsKeyword.NAXIS1, width)
+            header.add(FitsKeyword.NAXIS2, height)
+            if (numberOfChannels == 3) header.add(FitsKeyword.NAXIS3, numberOfChannels)
+            header.add(FitsKeyword.EXTEND, true)
+            header.add(FitsKeyword.INSTRUME, name)
+            header.add(FitsKeyword.EXPTIME, 0.0) // TODO
+            header.add(FitsKeyword.CCD_TEMP, temperature)
+            header.add(FitsKeyword.PIXSIZEn.n(1), pixelSizeX)
+            header.add(FitsKeyword.PIXSIZEn.n(2), pixelSizeY)
+            header.add(FitsKeyword.XBINNING, binX)
+            header.add(FitsKeyword.YBINNING, binY)
+            header.add(FitsKeyword.XPIXSZ, pixelSizeX * binX)
+            header.add(FitsKeyword.YPIXSZ, pixelSizeY * binY)
             header.add("FRAME", frameType.description, "Frame Type")
-            header.add(SBFitsExt.IMAGETYP, "${frameType.description} Frame")
+            header.add(FitsKeyword.IMAGETYP, "${frameType.description} Frame")
+
+            val mount = snoopedDevices.firstOrNull { it is Mount } as? Mount
 
             mount?.also {
-                header.add(Standard.TELESCOP, it.name)
-                header.add(SBFitsExt.SITELAT, it.latitude.toDegrees)
-                header.add(SBFitsExt.SITELONG, it.longitude.toDegrees)
+                header.add(FitsKeyword.TELESCOP, it.name)
+                header.add(FitsKeyword.SITELAT, it.latitude.toDegrees)
+                header.add(FitsKeyword.SITELONG, it.longitude.toDegrees)
                 val center = Geoid.IERS2010.lonLat(it.longitude, it.latitude, it.elevation)
                 val icrf = ICRF.equatorial(it.rightAscension, it.declination, epoch = CurrentTime, center = center)
                 val raDec = icrf.equatorial()
-                header.add(SBFitsExt.OBJCTRA, raDec.longitude.normalized.formatHMS())
-                header.add(SBFitsExt.OBJCTDEC, raDec.longitude.formatSignedDMS())
-                header.add(Standard.RA, raDec.longitude.normalized.toDegrees)
-                header.add(Standard.DEC, raDec.longitude.toDegrees)
-                header.add(MaxImDLExt.PIERSIDE, it.pierSide.name)
-                header.add(Standard.EQUINOX, 2000)
-                header.add(Standard.DATE_OBS, LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                header.add(Standard.COMMENT, "Generated by Nebulosa via ASCOM")
-                header.add(NOAOExt.GAIN, gain)
+                header.add(FitsKeyword.OBJCTRA, raDec.longitude.normalized.formatHMS())
+                header.add(FitsKeyword.OBJCTDEC, raDec.longitude.formatSignedDMS())
+                header.add(FitsKeyword.RA, raDec.longitude.normalized.toDegrees)
+                header.add(FitsKeyword.DEC, raDec.longitude.toDegrees)
+                header.add(FitsKeyword.PIERSIDE, it.pierSide.name)
+                header.add(FitsKeyword.EQUINOX, 2000)
+                header.add(FitsKeyword.DATE_OBS, LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                header.add(FitsKeyword.COMMENT, "Generated by Nebulosa via ASCOM")
+                header.add(FitsKeyword.GAIN, gain)
                 header.add("OFFSET", offset, "Offset")
             }
 
-            val hdu = ImageHdu(header, data)
+            fitsKeywords.forEach(header::add)
 
-            val fits = Fits()
-            fits.add(hdu)
+            val hdu = BasicImageHdu(width, height, numberOfChannels, header, data)
 
-            sender.fireOnEventReceived(CameraFrameCaptured(this, null, fits, false))
+            val image = Fits()
+            image.add(hdu)
+
+            sender.fireOnEventReceived(CameraFrameCaptured(this, image = image))
         } ?: LOG.error("image body is null. device={}", name)
     }
 
     override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
-        " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
-        " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
-        " frameFormats=$frameFormats, canAbort=$canAbort," +
-        " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
-        " exposureMin=$exposureMin, exposureMax=$exposureMax," +
-        " exposureState=$exposureState, exposureTime=$exposureTime," +
-        " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
-        " temperature=$temperature, canSubFrame=$canSubFrame," +
-        " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
-        " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
-        " minHeight=$minHeight, maxHeight=$maxHeight," +
-        " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
-        " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
-        " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
-        " offsetMax=$offsetMax, hasGuiderHead=$hasGuiderHead," +
-        " canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
+            " hasCoolerControl=$hasCoolerControl, cooler=$cooler," +
+            " hasDewHeater=$hasDewHeater, dewHeater=$dewHeater," +
+            " frameFormats=$frameFormats, canAbort=$canAbort," +
+            " cfaOffsetX=$cfaOffsetX, cfaOffsetY=$cfaOffsetY, cfaType=$cfaType," +
+            " exposureMin=$exposureMin, exposureMax=$exposureMax," +
+            " exposureState=$exposureState, exposureTime=$exposureTime," +
+            " hasCooler=$hasCooler, hasThermometer=$hasThermometer, canSetTemperature=$canSetTemperature," +
+            " temperature=$temperature, canSubFrame=$canSubFrame," +
+            " x=$x, minX=$minX, maxX=$maxX, y=$y, minY=$minY, maxY=$maxY," +
+            " width=$width, minWidth=$minWidth, maxWidth=$maxWidth, height=$height," +
+            " minHeight=$minHeight, maxHeight=$maxHeight," +
+            " canBin=$canBin, maxBinX=$maxBinX, maxBinY=$maxBinY," +
+            " binX=$binX, binY=$binY, gain=$gain, gainMin=$gainMin," +
+            " gainMax=$gainMax, offset=$offset, offsetMin=$offsetMin," +
+            " offsetMax=$offsetMax, canPulseGuide=$canPulseGuide, pulseGuiding=$pulseGuiding)"
 
     data class ImageMetadata(
         @JvmField val metadataVersion: Int, // Bytes 0..3 - Metadata version = 1
@@ -774,5 +740,10 @@ data class ASCOMCamera(
                 }
             }
         }
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<ASCOMCamera>()
     }
 }

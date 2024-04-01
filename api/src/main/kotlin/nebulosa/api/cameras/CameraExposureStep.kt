@@ -11,7 +11,6 @@ import nebulosa.batch.processing.StepResult
 import nebulosa.batch.processing.delay.DelayStep
 import nebulosa.batch.processing.delay.DelayStepListener
 import nebulosa.common.concurrency.latch.CountUpDownLatch
-import nebulosa.fits.Fits
 import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
 import nebulosa.log.debug
@@ -20,7 +19,6 @@ import okio.sink
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.io.InputStream
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
@@ -50,9 +48,6 @@ data class CameraExposureStep(
 
     @Volatile private var stepExecution: StepExecution? = null
 
-    @Volatile override var savedPath: Path? = null
-        private set
-
     override fun registerCameraCaptureListener(listener: CameraCaptureListener): Boolean {
         return listeners.add(listener)
     }
@@ -66,7 +61,7 @@ data class CameraExposureStep(
         if (event.device === camera) {
             when (event) {
                 is CameraFrameCaptured -> {
-                    save(event.stream, event.fits)
+                    save(event)
                 }
                 is CameraExposureAborted,
                 is CameraExposureFailed,
@@ -168,25 +163,26 @@ data class CameraExposureStep(
         }
     }
 
-    private fun save(stream: InputStream?, fits: Fits?) {
+    private fun save(event: CameraFrameCaptured) {
         try {
-            savedPath = request.makeSavePath(camera)
+            val savedPath = request.makeSavePath(camera)
 
-            LOG.info("saving FITS. path={}", savedPath)
+            LOG.info("saving FITS image at {}", savedPath)
 
-            savedPath!!.createParentDirectories()
+            savedPath.createParentDirectories()
 
-            if (stream != null) {
-                stream.transferAndClose(savedPath!!.outputStream())
-            } else if (fits != null) {
-                savedPath!!.outputStream().use { fits.writeTo(it.sink()) }
+            if (event.stream != null) {
+                event.stream!!.transferAndClose(savedPath.outputStream())
+            } else if (event.image != null) {
+                savedPath.sink().use(event.image!!::write)
             } else {
+                LOG.warn("invalid event. camera={}", event.device)
                 return
             }
 
-            listeners.forEach { it.onExposureFinished(this, stepExecution!!) }
+            listeners.forEach { it.onExposureFinished(this, stepExecution!!, event.image, savedPath) }
         } catch (e: Throwable) {
-            LOG.error("failed to save FITS", e)
+            LOG.error("failed to save FITS image", e)
             aborted = true
         } finally {
             latch.countDown()
@@ -230,7 +226,9 @@ data class CameraExposureStep(
         @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmssSSS")
 
         @JvmStatic
-        fun CameraStartCaptureRequest.makeSavePath(camera: Camera, autoSave: Boolean = this.autoSave): Path {
+        internal fun CameraStartCaptureRequest.makeSavePath(
+            camera: Camera, autoSave: Boolean = this.autoSave,
+        ): Path {
             return if (autoSave) {
                 val now = LocalDateTime.now()
                 val savePath = autoSubFolderMode.pathFor(savePath!!, now)

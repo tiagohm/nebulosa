@@ -2,8 +2,8 @@ package nebulosa.fits
 
 enum class Compression(
     hduType: HduType, valueType: ValueType, comment: String,
-    val uncompressedKey: FitsHeader? = null,
-) : FitsHeader {
+    val keyword: FitsHeaderKey? = null,
+) : FitsHeaderKey {
     /**
      * (required keyword) This keyword must have the logical value T. The value field of this keyword shall be ’T’ to
      * indicate that the FITS binary table extension contains a compressed BINTABLE, and that logically this extension
@@ -30,19 +30,19 @@ enum class Compression(
      * (required keyword) The value field of this keyword shall contain an integer that gives the value of the BITPIX
      * keyword in the uncompressed FITS image. 1
      */
-    ZBITPIX(HduType.ANY, ValueType.INTEGER, "", Standard.BITPIX),
+    ZBITPIX(HduType.ANY, ValueType.INTEGER, "", FitsKeyword.BITPIX),
 
     /**
      * (required keyword) The value field of this keyword shall contain an integer that gives the value of the NAXIS
      * keyword in the uncompressed FITS image.
      */
-    ZNAXIS(HduType.ANY, ValueType.INTEGER, "", Standard.NAXIS),
+    ZNAXIS(HduType.ANY, ValueType.INTEGER, "", FitsKeyword.NAXIS),
 
     /**
      * (required keywords) The value field of these keywords shall contain a positive integer that gives the value of
      * the NAXISn keywords in the uncompressed FITS image.
      */
-    ZNAXISn(HduType.ANY, ValueType.INTEGER, "", Standard.NAXISn),
+    ZNAXISn(HduType.ANY, ValueType.INTEGER, "", FitsKeyword.NAXISn),
 
     /**
      * (optional keywords) The value of these indexed keywords (where n ranges from 1 to ZNAXIS ) shall contain a
@@ -89,7 +89,7 @@ enum class Compression(
      * identical copy of the original FITS file when the image is uncompressed.preserves the original SIMPLE keyword.may
      * only be used if the original uncompressed image was contained in the primary array of the FITS file.
      */
-    ZSIMPLE(HduType.PRIMARY, ValueType.LOGICAL, "", Standard.SIMPLE),
+    ZSIMPLE(HduType.PRIMARY, ValueType.LOGICAL, "", FitsKeyword.SIMPLE),
 
     /**
      * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
@@ -98,7 +98,7 @@ enum class Compression(
      * keyword.may only be used if the original uncompressed image was contained in in IMAGE extension.
      */
 
-    ZTENSION(HduType.ANY, ValueType.STRING, "", Standard.XTENSION),
+    ZTENSION(HduType.ANY, ValueType.STRING, "", FitsKeyword.XTENSION),
 
     /**
      * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
@@ -106,7 +106,7 @@ enum class Compression(
      * identical copy of the original FITS file when the image is uncompressed.preserves the original EXTEND keyword.may
      * only be used if the original uncompressed image was contained in the primary array of the FITS file.
      */
-    ZEXTEND(HduType.PRIMARY, ValueType.LOGICAL, "", Standard.EXTEND),
+    ZEXTEND(HduType.PRIMARY, ValueType.LOGICAL, "", FitsKeyword.EXTEND),
 
     /**
      * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
@@ -115,7 +115,7 @@ enum class Compression(
      * keyword.may only be used if the original uncompressed image was contained in the primary array of the FITS file,
      */
     @Deprecated("no blocksize other that 2880 may be used")
-    ZBLOCKED(HduType.PRIMARY, ValueType.LOGICAL, "", Standard.BLOCKED),
+    ZBLOCKED(HduType.PRIMARY, ValueType.LOGICAL, "", FitsKeyword.BLOCKED),
 
     /**
      * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
@@ -123,7 +123,7 @@ enum class Compression(
      * identical copy o f the original FITS file when the image is uncompressed.preserves the original PCOUNT
      * keyword.may only be used if the original uncompressed image was contained in in IMAGE extension.
      */
-    ZPCOUNT(HduType.EXTENSION, ValueType.INTEGER, "", Standard.PCOUNT),
+    ZPCOUNT(HduType.EXTENSION, ValueType.INTEGER, "", FitsKeyword.PCOUNT),
 
     /**
      * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
@@ -131,7 +131,7 @@ enum class Compression(
      * identical copy o f the original FITS file when the image is uncompressed.preserves the original GCOUNT
      * keyword.may only be used if the original uncompressed image was contained in in IMAGE extension.
      */
-    ZGCOUNT(HduType.EXTENSION, ValueType.INTEGER, "", Standard.GCOUNT),
+    ZGCOUNT(HduType.EXTENSION, ValueType.INTEGER, "", FitsKeyword.GCOUNT),
 
     /**
      * The following optional keyword is defined to store a verbatim copy of the value and comment field of the
@@ -181,7 +181,7 @@ enum class Compression(
      * The value field of these keywords shall contain the character string values of the corresponding TFORMn keywords
      * that defines the data type of column n in the original uncompressed FITS table.
      */
-    ZFORMn(HduType.ANY, ValueType.STRING, "", Standard.TFORMn),
+    ZFORMn(HduType.ANY, ValueType.STRING, "", FitsKeyword.TFORMn),
 
     /**
      * The value field of these keywords shall contain a charac- ter string giving the mnemonic name of the algorithm
@@ -190,7 +190,7 @@ enum class Compression(
      */
     ZCTYPn(HduType.ANY, ValueType.STRING, "");
 
-    private val header = FitsHeaderImpl(name, hduType, valueType, comment)
+    private val header = FitsHeaderKeyItem(name, hduType, valueType, comment)
 
     override val key
         get() = header.key

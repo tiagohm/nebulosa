@@ -163,10 +163,10 @@ enum class SkyObjectType(
 
     companion object {
 
-        @JvmStatic private val MAPPED_ENTRIES = HashMap<String, SkyObjectType>(entries.size * 2)
+        @JvmStatic private val MAPPED = HashMap<String, SkyObjectType>(entries.size * 2)
             .apply { SkyObjectType.entries.forEach { entry -> entry.codes.forEach { this[it] = entry } } }
 
         @JvmStatic
-        fun parse(type: String) = MAPPED_ENTRIES[type]
+        fun parse(type: String) = MAPPED[type]
     }
 }

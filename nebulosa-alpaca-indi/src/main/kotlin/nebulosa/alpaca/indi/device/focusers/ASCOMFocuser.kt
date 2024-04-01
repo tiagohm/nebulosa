@@ -14,37 +14,28 @@ import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.device.thermometer.ThermometerTemperatureChanged
 import nebulosa.indi.protocol.INDIProtocol
 
+@Suppress("RedundantModalityModifier")
 data class ASCOMFocuser(
     override val device: ConfiguredDevice,
     override val service: AlpacaFocuserService,
     override val sender: AlpacaClient,
 ) : ASCOMDevice(), Focuser {
 
-    @Volatile override var moving = false
-        private set
-    @Volatile override var position = 0
-        private set
-    @Volatile override var canAbsoluteMove = false
-        private set
-    @Volatile override var canRelativeMove = false
-        private set
-    @Volatile override var canAbort = false
-        private set
-    @Volatile override var canReverse = false
-        private set
-    @Volatile override var reversed = false
-        private set
-    @Volatile override var canSync = false
-        private set
-    @Volatile override var hasBacklash = false
-        private set
-    @Volatile override var maxPosition = 0
-        private set
+    @Volatile final override var moving = false
+    @Volatile final override var position = 0
+    @Volatile final override var canAbsoluteMove = false
+    @Volatile final override var canRelativeMove = false
+    @Volatile final override var canAbort = false
+    @Volatile final override var canReverse = false
+    @Volatile final override var reversed = false
+    @Volatile final override var canSync = false
+    @Volatile final override var hasBacklash = false
+    @Volatile final override var maxPosition = 0
 
-    @Volatile override var hasThermometer = false
-        private set
-    @Volatile override var temperature = 0.0
-        private set
+    @Volatile final override var hasThermometer = false
+    @Volatile final override var temperature = 0.0
+
+    override val snoopedDevices = emptyList<Device>()
 
     override fun moveFocusIn(steps: Int) {
         if (canAbsoluteMove) {

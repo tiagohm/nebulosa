@@ -3,25 +3,24 @@ package nebulosa.api.wizard.flat
 import nebulosa.api.cameras.AutoSubFolderMode
 import nebulosa.api.cameras.CameraCaptureListener
 import nebulosa.api.cameras.CameraExposureStep
-import nebulosa.api.cameras.CameraExposureStep.Companion.makeSavePath
+import nebulosa.api.image.ImageBucket
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution
 import nebulosa.batch.processing.StepResult
 import nebulosa.fits.fits
-import nebulosa.imaging.Image
-import nebulosa.imaging.algorithms.computation.Statistics
+import nebulosa.image.Image
+import nebulosa.image.algorithms.computation.Statistics
+import nebulosa.image.format.ImageRepresentation
 import nebulosa.indi.device.camera.Camera
-import nebulosa.io.transferAndClose
 import org.slf4j.LoggerFactory
+import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.inputStream
-import kotlin.io.path.outputStream
 
 data class FlatWizardStep(
     @JvmField val camera: Camera,
     @JvmField val request: FlatWizardRequest,
+    @JvmField val imageBucket: ImageBucket? = null,
 ) : Step {
 
     @Volatile var exposureMin = request.exposureMin
@@ -72,31 +71,40 @@ data class FlatWizardStep(
         exposureTime = (exposureMax + exposureMin).dividedBy(2L)
 
         val cameraExposureStep = CameraExposureStep(
-            camera,
-            request.captureRequest.copy(
+            camera, request.captureRequest.copy(
                 exposureTime = exposureTime, exposureAmount = 1,
                 autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF,
             )
         )
 
+        var saved: Pair<ImageRepresentation?, Path>? = null
+
+        val listener = object : CameraCaptureListener {
+
+            override fun onExposureFinished(step: CameraExposureStep, stepExecution: StepExecution, image: ImageRepresentation?, savedPath: Path) {
+                saved = image to savedPath
+            }
+        }
+
         this.cameraExposureStep.set(cameraExposureStep)
         cameraCaptureListeners.forEach(cameraExposureStep::registerCameraCaptureListener)
+        cameraExposureStep.registerCameraCaptureListener(listener)
         cameraExposureStep.executeSingle(stepExecution)
 
-        val savedPath = cameraExposureStep.savedPath
+        if (!stopped && saved != null) {
+            val (imageRepresentation, savedPath) = saved!!
 
-        if (!stopped && savedPath != null) {
-            image = savedPath.fits().use { image?.load(it, false) ?: Image.open(it, false) }
+            image = if (imageRepresentation != null) image?.load(imageRepresentation) ?: Image.open(imageRepresentation, false)
+            else savedPath.fits().use { image?.load(it) ?: Image.open(it, false) }
+
+            imageBucket?.put(savedPath, image!!)
 
             val statistics = STATISTICS.compute(image!!)
             LOG.info("flat frame captured. duration={}, statistics={}", exposureTime, statistics)
 
             if (statistics.mean in meanRange) {
-                val path = request.captureRequest.makeSavePath(camera, true)
-                savedPath.inputStream().transferAndClose(path.outputStream())
-                savedPath.deleteIfExists()
-                LOG.info("Found an optimal exposure time. exposure={}, path={}", exposureTime, path)
-                flatWizardExecutionListeners.forEach { it.onFlatCaptured(this, path, exposureTime) }
+                LOG.info("Found an optimal exposure time. exposure={}, path={}", exposureTime, savedPath)
+                flatWizardExecutionListeners.forEach { it.onFlatCaptured(this, savedPath, exposureTime) }
             } else if (statistics.mean < meanRange.start) {
                 exposureMin = cameraExposureStep.exposureTime
                 return StepResult.CONTINUABLE

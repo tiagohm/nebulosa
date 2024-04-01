@@ -18,15 +18,10 @@ internal open class GPSDevice(
 ) : INDIDevice(), GPS {
 
     @Volatile final override var hasGPS = true
-        private set
     @Volatile final override var longitude = 0.0
-        private set
     @Volatile final override var latitude = 0.0
-        private set
     @Volatile final override var elevation = 0.0
-        private set
     @Volatile final override var dateTime = OffsetDateTime.MIN!!
-        private set
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {
@@ -63,6 +58,6 @@ internal open class GPSDevice(
 
     override fun toString(): String {
         return "GPS(hasGPS=$hasGPS, longitude=$longitude, latitude=$latitude," +
-            " elevation=$elevation, dateTime=$dateTime)"
+                " elevation=$elevation, dateTime=$dateTime)"
     }
 }

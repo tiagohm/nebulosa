@@ -2,7 +2,7 @@ package nebulosa.watney.star.detection
 
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import kotlin.math.max
 
 object DefaultStarDetectionFilter : StarDetectionFilter {

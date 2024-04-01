@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.xml)
+    api(project(":nebulosa-xml"))
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }

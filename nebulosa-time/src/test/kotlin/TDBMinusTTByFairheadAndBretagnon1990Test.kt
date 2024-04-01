@@ -1,9 +1,9 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.time.TimeDelta
 import nebulosa.time.TDB
 import nebulosa.time.TDBMinusTTByFairheadAndBretagnon1990
+import nebulosa.time.TimeDelta
 
 class TDBMinusTTByFairheadAndBretagnon1990Test : StringSpec(), TimeDelta by TDBMinusTTByFairheadAndBretagnon1990 {
 

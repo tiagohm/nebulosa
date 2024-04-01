@@ -18,9 +18,6 @@ abstract class ASCOMDevice : Device {
     protected abstract val service: AlpacaDeviceService
     abstract override val sender: AlpacaClient
 
-    @Suppress("PropertyName")
-    @JvmField protected val LOG = loggerFor(javaClass)
-
     override val name
         get() = device.name
 
@@ -152,5 +149,10 @@ abstract class ASCOMDevice : Device {
                 }
             }
         }
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<ASCOMDevice>()
     }
 }

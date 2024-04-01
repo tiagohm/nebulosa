@@ -4,6 +4,7 @@ import nebulosa.indi.device.*
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
 import nebulosa.indi.device.camera.CameraDetached
+import nebulosa.indi.device.camera.GuideHead
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelAttached
 import nebulosa.indi.device.filterwheel.FilterWheelDetached
@@ -86,8 +87,22 @@ abstract class INDIDeviceProtocolHandler : MessageSender, INDIProtocolParser, Cl
 
     internal fun unregisterGPS(device: GPS) {
         if (device.name in gps) {
-            guideOutputs.remove(device.name)
+            gps.remove(device.name)
             fireOnEventReceived(GPSDetached(device))
+        }
+    }
+
+    internal fun registerGuideHead(device: GuideHead) {
+        if (device.name !in cameras) {
+            cameras[device.name] = device
+            fireOnEventReceived(CameraAttached(device))
+        }
+    }
+
+    internal fun unregisterGuiderHead(device: GuideHead) {
+        if (device.name in cameras) {
+            cameras.remove(device.name)
+            fireOnEventReceived(CameraDetached(device))
         }
     }
 
@@ -287,7 +302,7 @@ abstract class INDIDeviceProtocolHandler : MessageSender, INDIProtocolParser, Cl
                 if (device == null) {
                     val text = "[%s]: %s\n".format(message.timestamp, message.message)
                     fireOnEventReceived(DeviceMessageReceived(null, text))
-                } else {
+                } else if (message.name.isNotEmpty()) {
                     device.handleMessage(message)
                 }
 

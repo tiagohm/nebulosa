@@ -74,10 +74,12 @@ class SkyAtlasUpdateTask(
 
                             httpClient.newCall(request).execute().use {
                                 if (it.isSuccessful) {
-                                    val reader = SimbadDatabaseReader(it.body!!.byteStream().source())
-
-                                    for (entity in reader) {
-                                        simbadEntityRepository.save(entity)
+                                    it.body!!.byteStream().source().use { source ->
+                                        SimbadDatabaseReader(source).use { reader ->
+                                            for (entity in reader) {
+                                                simbadEntityRepository.save(entity)
+                                            }
+                                        }
                                     }
                                 } else if (it.code == 404) {
                                     finished = true

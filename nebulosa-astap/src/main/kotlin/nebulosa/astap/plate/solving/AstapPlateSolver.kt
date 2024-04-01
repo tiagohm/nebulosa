@@ -2,10 +2,9 @@ package nebulosa.astap.plate.solving
 
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.common.process.ProcessExecutor
-import nebulosa.fits.Header
-import nebulosa.fits.NOAOExt
-import nebulosa.fits.Standard
-import nebulosa.imaging.Image
+import nebulosa.fits.FitsHeader
+import nebulosa.fits.FitsKeyword
+import nebulosa.image.Image
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg
@@ -94,21 +93,21 @@ class AstapPlateSolver(path: Path) : PlateSolver {
                 val width = cdelt1 * dimensions[0].trim().toDouble()
                 val height = cdelt2 * dimensions[1].trim().toDouble()
 
-                val header = Header()
-                header.add(Standard.CTYPE1, ctype1)
-                header.add(Standard.CTYPE2, ctype2)
-                header.add(Standard.CRPIX1, crpix1)
-                header.add(Standard.CRPIX2, crpix2)
-                header.add(Standard.CRVAL1, crval1)
-                header.add(Standard.CRVAL2, crval2)
-                header.add(Standard.CDELT1, cdelt1)
-                header.add(Standard.CDELT2, cdelt2)
-                header.add(Standard.CROTA1, crota1)
-                header.add(Standard.CROTA2, crota2)
-                header.add(NOAOExt.CD1_1, cd11)
-                header.add(NOAOExt.CD1_2, cd12)
-                header.add(NOAOExt.CD2_1, cd21)
-                header.add(NOAOExt.CD2_2, cd22)
+                val header = FitsHeader()
+                header.add(FitsKeyword.CTYPE1, ctype1)
+                header.add(FitsKeyword.CTYPE2, ctype2)
+                header.add(FitsKeyword.CRPIX1, crpix1)
+                header.add(FitsKeyword.CRPIX2, crpix2)
+                header.add(FitsKeyword.CRVAL1, crval1)
+                header.add(FitsKeyword.CRVAL2, crval2)
+                header.add(FitsKeyword.CDELT1, cdelt1)
+                header.add(FitsKeyword.CDELT2, cdelt2)
+                header.add(FitsKeyword.CROTA1, crota1)
+                header.add(FitsKeyword.CROTA2, crota2)
+                header.add(FitsKeyword.CD1_1, cd11)
+                header.add(FitsKeyword.CD1_2, cd12)
+                header.add(FitsKeyword.CD2_1, cd21)
+                header.add(FitsKeyword.CD2_2, cd22)
 
                 val solution = PlateSolution(true, crota2.deg, cdelt2.deg, crval1.deg, crval2.deg, width.deg, height.deg, header = header)
 

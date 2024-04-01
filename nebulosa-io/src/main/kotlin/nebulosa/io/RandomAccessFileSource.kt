@@ -2,54 +2,38 @@ package nebulosa.io
 
 import okio.Buffer
 import okio.Timeout
-import java.io.Closeable
 import java.io.RandomAccessFile
-import kotlin.math.max
 import kotlin.math.min
 
-internal class RandomAccessFileSource(
+internal data class RandomAccessFileSource(
     private val file: RandomAccessFile,
-    private val timeout: Timeout = Timeout.NONE,
-) : SeekableSource, Closeable by file {
+    override val timeout: Timeout = Timeout.NONE,
+) : AbstractSeekableSource() {
 
-    private val cursor = Buffer.UnsafeCursor()
+    override val size
+        get() = file.length()
 
-    override val position
+    override var position
         get() = file.filePointer
-
-    override val exhausted
-        get() = position >= file.length()
-
-    @Synchronized
-    override fun seek(position: Long) {
-        val size = file.length()
-        if (size <= 0) return
-        val newPos = if (position < 0) size + position else position
-        file.seek(max(0L, min(newPos, size - 1L)))
-    }
-
-    @Synchronized
-    override fun read(sink: Buffer, byteCount: Long): Long {
-        if (!file.channel.isOpen) throw IllegalStateException("closed")
-
-        return sink.readAndWriteUnsafe(cursor).use {
-            timeout.throwIfReached()
-
-            val size = sink.size
-            val length = min(8192L, byteCount)
-
-            it.expandBuffer(length.toInt())
-            val readCount = file.read(it.data!!, it.start, length.toInt())
-
-            if (readCount == -1) {
-                it.resizeBuffer(size)
-                -1L
-            } else {
-                cursor.resizeBuffer(size + readCount)
-                return readCount.toLong()
-            }
+        set(value) {
+            file.seek(value)
         }
+
+    override fun computeTransferedSize(unsafeCursor: Buffer.UnsafeCursor, byteCount: Long): Long {
+        return min(8192L, byteCount)
     }
 
-    override fun timeout() = timeout
+    override fun transfer(output: ByteArray, start: Int, length: Int): Int {
+        return file.read(output, start, length)
+    }
+
+    override fun read(sink: Buffer, byteCount: Long): Long {
+        check(file.channel.isOpen) { "closed" }
+        return super.read(sink, byteCount)
+    }
+
+    override fun close() {
+        super.close()
+        file.close()
+    }
 }

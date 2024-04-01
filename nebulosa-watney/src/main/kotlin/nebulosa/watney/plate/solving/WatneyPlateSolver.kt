@@ -2,11 +2,10 @@ package nebulosa.watney.plate.solving
 
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.erfa.SphericalCoordinate
-import nebulosa.fits.Header
-import nebulosa.fits.NOAOExt
-import nebulosa.fits.Standard
+import nebulosa.fits.FitsHeader
+import nebulosa.fits.FitsKeyword
 import nebulosa.fits.fits
-import nebulosa.imaging.Image
+import nebulosa.image.Image
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
@@ -391,19 +390,19 @@ data class WatneyPlateSolver(
             val scopePxX = (-pc.b * scopePxY + (-pc.c)) / pc.a
             val parity = if (sign < 0) Parity.NORMAL else Parity.FLIPPED
 
-            val header = Header()
-            header.add(Standard.CDELT1, cdelt1)
-            header.add(Standard.CDELT2, cdelt2)
-            header.add(Standard.CROTA1, crota1.toDegrees)
-            header.add(Standard.CROTA2, crota2.toDegrees)
-            header.add(Standard.CRVAL1, scopeCoordsRA.toDegrees)
-            header.add(Standard.CRVAL2, scopeCoordsDEC.toDegrees)
-            header.add(Standard.CRPIX1, scopePxX)
-            header.add(Standard.CRPIX2, scopePxY)
-            header.add(NOAOExt.CD1_1, cd11)
-            header.add(NOAOExt.CD1_2, cd12)
-            header.add(NOAOExt.CD1_1, cd11)
-            header.add(NOAOExt.CD2_2, cd22)
+            val header = FitsHeader()
+            header.add(FitsKeyword.CDELT1, cdelt1)
+            header.add(FitsKeyword.CDELT2, cdelt2)
+            header.add(FitsKeyword.CROTA1, crota1.toDegrees)
+            header.add(FitsKeyword.CROTA2, crota2.toDegrees)
+            header.add(FitsKeyword.CRVAL1, scopeCoordsRA.toDegrees)
+            header.add(FitsKeyword.CRVAL2, scopeCoordsDEC.toDegrees)
+            header.add(FitsKeyword.CRPIX1, scopePxX)
+            header.add(FitsKeyword.CRPIX2, scopePxY)
+            header.add(FitsKeyword.CD1_1, cd11)
+            header.add(FitsKeyword.CD1_2, cd12)
+            header.add(FitsKeyword.CD1_1, cd11)
+            header.add(FitsKeyword.CD2_2, cd22)
 
             return ComputedPlateSolution(
                 header, crota1, pixScale, scopeCoordsRA, scopeCoordsDEC,

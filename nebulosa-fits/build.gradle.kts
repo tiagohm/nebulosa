@@ -6,7 +6,8 @@ plugins {
 dependencies {
     api(project(":nebulosa-math"))
     api(project(":nebulosa-io"))
-    api("org.apache.commons:commons-numbers-complex:1.1")
+    api(project(":nebulosa-image-format"))
+    api(libs.apache.numbers.complex)
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }

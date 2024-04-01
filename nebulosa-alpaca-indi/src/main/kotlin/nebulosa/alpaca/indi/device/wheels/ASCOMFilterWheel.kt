@@ -10,20 +10,19 @@ import nebulosa.indi.device.filterwheel.FilterWheelNamesChanged
 import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
 import nebulosa.indi.protocol.INDIProtocol
 
+@Suppress("RedundantModalityModifier")
 data class ASCOMFilterWheel(
     override val device: ConfiguredDevice,
     override val service: AlpacaFilterWheelService,
     override val sender: AlpacaClient,
 ) : ASCOMDevice(), FilterWheel {
 
-    @Volatile override var count = 0
-        private set
-    @Volatile override var position = 0
-        private set
-    @Volatile override var moving = false
-        private set
-    @Volatile override var names: List<String> = emptyList()
-        private set
+    @Volatile final override var count = 0
+    @Volatile final override var position = 0
+    @Volatile final override var moving = false
+    @Volatile final override var names = emptyList<String>()
+
+    override val snoopedDevices = emptyList<Device>()
 
     override fun onConnected() {
         processPosition()

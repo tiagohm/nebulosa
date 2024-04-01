@@ -1,56 +1,127 @@
 package nebulosa.fits
 
+import nebulosa.fits.FitsFormat.readPixel
+import nebulosa.image.format.ImageChannel
+import nebulosa.image.format.ImageData
 import nebulosa.io.SeekableSource
-import nebulosa.io.sink
-import nebulosa.io.transferFully
 import okio.Buffer
 import okio.Sink
-import java.nio.ByteBuffer
+import kotlin.math.min
 
-data class SeekableSourceImageData(
+@Suppress("NOTHING_TO_INLINE")
+internal data class SeekableSourceImageData(
     private val source: SeekableSource,
     private val position: Long,
     override val width: Int,
     override val height: Int,
-    override val bitpix: Bitpix,
+    override val numberOfChannels: Int,
+    private val bitpix: Bitpix,
 ) : ImageData {
 
-    private val strideSizeInBytes = (width * bitpix.byteSize).toLong()
+    @JvmField internal val channelSizeInBytes = (numberOfPixels * bitpix.byteLength).toLong()
+    @JvmField internal val totalSizeInBytes = channelSizeInBytes * numberOfChannels
 
-    override fun read(block: (ByteBuffer) -> Unit) {
-        val data = ByteArray(strideSizeInBytes.toInt())
-        val sink = data.sink()
+    override val red by lazy { readImage(ImageChannel.RED) }
 
-        synchronized(source) {
-            source.seek(position)
+    override val green by lazy { readImage(ImageChannel.GREEN) }
 
-            Buffer().use { b ->
-                repeat(height) {
-                    sink.seek(0L)
+    override val blue by lazy { readImage(ImageChannel.BLUE) }
 
-                    b.transferFully(source, sink, strideSizeInBytes)
-                    block(ByteBuffer.wrap(data))
-                    b.clear()
-                }
+    @Synchronized
+    private fun readImage(channel: ImageChannel): FloatArray {
+        return if (numberOfChannels == 1) {
+            if (channel.index == 0) readGray() else red
+        } else {
+            when (channel) {
+                ImageChannel.GREEN -> readGreen()
+                ImageChannel.BLUE -> readBlue()
+                else -> readRed()
             }
         }
     }
 
-    override fun writeTo(sink: Sink): Long {
+    private inline fun readGray(): FloatArray {
+        return readChannel(ImageChannel.GRAY)
+    }
+
+    private inline fun readRed(): FloatArray {
+        return readChannel(ImageChannel.RED)
+    }
+
+    private inline fun readGreen(): FloatArray {
+        return readChannel(ImageChannel.GREEN)
+    }
+
+    private inline fun readBlue(): FloatArray {
+        return readChannel(ImageChannel.BLUE)
+    }
+
+    private fun readChannel(channel: ImageChannel): FloatArray {
+        val data = FloatArray(numberOfPixels)
+        readChannelTo(channel, data)
+        return data
+    }
+
+    override fun readChannelTo(channel: ImageChannel, output: FloatArray) {
+        // TODO: Read channel from source only if not initialized (remove lazy from red, green and blue).
+
+        val startIndex = channelSizeInBytes * channel.index
+        source.seek(position + startIndex)
+
+        var remainingPixels = output.size
+        var pos = 0
+
+        Buffer().use { buffer ->
+            while (remainingPixels > 0) {
+                var n = min(PIXEL_COUNT, remainingPixels)
+                val byteCount = n * bitpix.byteLength.toLong()
+
+                val size = source.read(buffer, byteCount)
+
+                if (size == 0L) break
+
+                // require(size % bitpix.byteLength == 0L)
+                n = (size / bitpix.byteLength).toInt()
+
+                repeat(n) {
+                    output[pos++] = buffer.readPixel(bitpix)
+                }
+
+                remainingPixels -= n
+            }
+        }
+    }
+
+    internal fun writeTo(sink: Sink): Long {
         var byteCount = 0L
 
-        return synchronized(source) {
-            source.seek(position)
+        Buffer().use { buffer ->
+            for (i in 0 until numberOfChannels) {
+                val startIndex = channelSizeInBytes * i
+                var bytesToWrite = channelSizeInBytes
 
-            Buffer().use { b ->
-                repeat(height) {
-                    b.transferFully(source, sink, strideSizeInBytes)
-                    b.clear()
-                    byteCount += strideSizeInBytes
+                source.seek(position + startIndex)
+
+                while (bytesToWrite > 0L) {
+                    val length = source.read(buffer, min(bytesToWrite, 1024L))
+
+                    if (length > 0L) {
+                        sink.write(buffer, length)
+
+                        buffer.clear()
+
+                        byteCount += length
+                        bytesToWrite -= length
+                    }
                 }
             }
-
-            byteCount
         }
+
+        return byteCount
+    }
+
+    companion object {
+
+        const val PIXEL_COUNT = 64
     }
 }

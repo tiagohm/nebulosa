@@ -6,51 +6,31 @@ import java.io.RandomAccessFile
 import kotlin.math.max
 import kotlin.math.min
 
-internal class RandomAccessFileSink(
+internal data class RandomAccessFileSink(
     private val file: RandomAccessFile,
-    private val timeout: Timeout = Timeout.NONE,
-) : SeekableSink {
+    override val timeout: Timeout = Timeout.NONE,
+) : AbstractSeekableSink() {
 
-    private val cursor = Buffer.UnsafeCursor()
+    override val size
+        get() = file.length()
 
-    override val position
+    override var position
         get() = file.filePointer
-
-    override val exhausted
-        get() = position >= file.length()
-
-    @Synchronized
-    override fun seek(position: Long) {
-        val size = file.length()
-        if (size <= 0) return
-        val newPos = if (position < 0) size + position else position
-        file.seek(max(0L, min(newPos, size - 1L)))
-    }
-
-    @Synchronized
-    override fun write(source: Buffer, byteCount: Long) {
-        if (!file.channel.isOpen) throw IllegalStateException("closed")
-
-        if (byteCount == 0L) return
-
-        var remaining = byteCount
-
-        while (remaining > 0) {
-            timeout.throwIfReached()
-
-            source.readUnsafe(cursor).use {
-                it.seek(0L)
-                val length = min(it.remaining.toLong(), remaining)
-                file.write(it.data!!, it.start, length.toInt())
-                remaining -= length
-                source.skip(length)
-            }
+        set(value) {
+            file.seek(max(0L, min(value, size)))
         }
+
+    override fun computeTransferedSize(unsafeCursor: Buffer.UnsafeCursor, byteCount: Long): Long {
+        return min(unsafeCursor.remaining.toLong(), byteCount)
     }
 
-    override fun timeout() = timeout
+    override fun transfer(input: ByteArray, start: Int, length: Int): Int {
+        file.write(input, start, length)
+        return length
+    }
 
-    override fun flush() = Unit
-
-    override fun close() = Unit
+    override fun write(source: Buffer, byteCount: Long) {
+        check(file.channel.isOpen) { "closed" }
+        super.write(source, byteCount)
+    }
 }

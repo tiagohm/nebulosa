@@ -1,7 +1,7 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.shouldBeExactly
-import nebulosa.time.TimeDelta
 import nebulosa.time.TAIMinusUTC
+import nebulosa.time.TimeDelta
 import nebulosa.time.TimeYMDHMS
 
 class TAIMinusUTCTest : StringSpec(), TimeDelta by TAIMinusUTC {

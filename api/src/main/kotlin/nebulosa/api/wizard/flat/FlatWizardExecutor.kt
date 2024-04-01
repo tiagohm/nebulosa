@@ -1,5 +1,6 @@
 package nebulosa.api.wizard.flat
 
+import nebulosa.api.image.ImageBucket
 import nebulosa.api.messages.MessageService
 import nebulosa.batch.processing.JobExecutor
 import nebulosa.batch.processing.JobLauncher
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component
 class FlatWizardExecutor(
     private val messageService: MessageService,
     override val jobLauncher: JobLauncher,
+    private val imageBucket: ImageBucket,
 ) : JobExecutor() {
 
     fun execute(camera: Camera, request: FlatWizardRequest): String {
@@ -20,7 +22,7 @@ class FlatWizardExecutor(
 
         LOG.info { "starting flat wizard capture. camera=$camera, request=$request" }
 
-        val flatWizardJob = FlatWizardJob(camera, request)
+        val flatWizardJob = FlatWizardJob(camera, request, imageBucket = imageBucket)
         flatWizardJob.subscribe(messageService::sendMessage)
         register(jobLauncher.launch(flatWizardJob))
         return flatWizardJob.id
