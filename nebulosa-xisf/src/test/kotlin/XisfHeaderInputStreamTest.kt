@@ -4,12 +4,12 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import nebulosa.io.ByteOrder
-import nebulosa.test.FitsStringSpec
+import nebulosa.test.AbstractFitsAndXisfTest
 import nebulosa.xisf.XisfHeaderInputStream
 import nebulosa.xisf.XisfMonolithicFileHeader
 import kotlin.io.path.inputStream
 
-class XisfHeaderInputStreamTest : FitsStringSpec() {
+class XisfHeaderInputStreamTest : AbstractFitsAndXisfTest() {
 
     init {
         "read:8:gray" {

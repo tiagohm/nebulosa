@@ -4,9 +4,9 @@ import nebulosa.fits.Bitpix
 import nebulosa.fits.bitpix
 import nebulosa.fits.fits
 import nebulosa.image.format.ImageHdu
-import nebulosa.test.FitsStringSpec
+import nebulosa.test.AbstractFitsAndXisfTest
 
-class FitsReadTest : FitsStringSpec() {
+class FitsReadTest : AbstractFitsAndXisfTest() {
 
     init {
         "mono:8-bit" {

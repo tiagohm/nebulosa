@@ -7,9 +7,9 @@ import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.MedianAbsoluteDeviation
 import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.format.ImageChannel
-import nebulosa.test.FitsStringSpec
+import nebulosa.test.AbstractFitsAndXisfTest
 
-class ComputationAlgorithmTest : FitsStringSpec() {
+class ComputationAlgorithmTest : AbstractFitsAndXisfTest() {
 
     init {
         "mono:median absolute deviation" {

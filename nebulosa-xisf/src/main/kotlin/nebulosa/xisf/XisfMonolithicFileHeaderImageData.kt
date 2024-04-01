@@ -3,6 +3,7 @@ package nebulosa.xisf
 import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ImageData
 import nebulosa.io.SeekableSource
+import nebulosa.io.source
 import nebulosa.xisf.XisfFormat.readPixel
 import nebulosa.xisf.XisfMonolithicFileHeader.*
 import okio.Buffer
@@ -20,10 +21,14 @@ internal data class XisfMonolithicFileHeaderImageData(
     override val height = image.height
     override val numberOfChannels = image.numberOfChannels
 
+    private val isEmbedded = image.embedded.isNotEmpty()
+
+    private val realSource by lazy { if (isEmbedded) image.embedded.source() else source }
+
     init {
         val uncompressedSize = image.compressionFormat?.uncompressedSize ?: image.size
         val expectedSize = numberOfChannels * numberOfPixels * image.sampleFormat.byteLength
-        check(uncompressedSize == expectedSize) { "invalid size. $uncompressedSize != $expectedSize" }
+        check(isEmbedded || uncompressedSize == expectedSize) { "invalid size. $uncompressedSize != $expectedSize" }
     }
 
     override val red by lazy { readImage(ImageChannel.RED) }
@@ -79,7 +84,7 @@ internal data class XisfMonolithicFileHeaderImageData(
     private fun readPlanar(channel: ImageChannel, data: FloatArray): FloatArray {
         val startIndex = numberOfPixels * image.sampleFormat.byteLength * channel.index
 
-        source.seek(image.position + startIndex)
+        realSource.seek(image.position + startIndex)
 
         var remainingPixels = data.size
         var pos = 0
@@ -87,11 +92,11 @@ internal data class XisfMonolithicFileHeaderImageData(
         var closeable: (() -> Unit)? = null
 
         val compressedSource = when (image.compressionFormat?.type) {
-            CompressionType.ZLIB -> InflaterSource(source, Inflater(false).also { closeable = it::end })
+            CompressionType.ZLIB -> InflaterSource(realSource, Inflater(false).also { closeable = it::end })
             CompressionType.LZ4 -> TODO("Not implemented yet")
             CompressionType.LZ4_HC -> TODO("Not implemented yet")
             CompressionType.ZSTD -> TODO("Not implemented yet")
-            null -> source
+            null -> realSource
         }
 
         try {
@@ -126,7 +131,7 @@ internal data class XisfMonolithicFileHeaderImageData(
      * a contiguous sequence (all pixel samples are stored in a single block).
      */
     private fun readNormal(channel: ImageChannel, data: FloatArray): FloatArray {
-        source.seek(image.position)
+        realSource.seek(image.position)
 
         val blockSizeInBytes = numberOfChannels * image.sampleFormat.byteLength
         val bytesToSkipBefore = channel.index * image.sampleFormat.byteLength
@@ -139,7 +144,7 @@ internal data class XisfMonolithicFileHeaderImageData(
                 val n = min(PIXEL_COUNT, remainingPixels)
                 val byteCount = n * blockSizeInBytes
 
-                check(source.read(buffer, byteCount) == byteCount)
+                check(realSource.read(buffer, byteCount) == byteCount)
 
                 repeat(n) {
                     if (bytesToSkipBefore > 0) buffer.skip(bytesToSkipBefore)

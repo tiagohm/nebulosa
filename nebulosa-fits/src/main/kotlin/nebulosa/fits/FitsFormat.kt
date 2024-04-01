@@ -123,7 +123,7 @@ data object FitsFormat : ImageFormat {
         Buffer().use { buffer ->
             for (channel in 0 until data.numberOfChannels) {
                 for (i in 0 until data.numberOfPixels) {
-                    buffer.writePixel(channels[0][i], bitpix)
+                    buffer.writePixel(channels[channel][i], bitpix)
 
                     if (buffer.size >= 1024L) {
                         byteCount += buffer.readAll(sink)
@@ -131,6 +131,7 @@ data object FitsFormat : ImageFormat {
                 }
             }
 
+            byteCount += buffer.readAll(sink)
             val remainingBytes = computeRemainingBytesToSkip(byteCount)
 
             if (remainingBytes > 0) {
@@ -165,9 +166,9 @@ data object FitsFormat : ImageFormat {
     internal fun Buffer.writePixel(pixel: Float, bitpix: Bitpix) {
         when (bitpix) {
             Bitpix.BYTE -> writeByte((pixel * 255f).toInt())
-            Bitpix.SHORT -> writeShort((pixel * 65535f).toInt())
-            Bitpix.INTEGER -> writeInt((pixel * 4294967295.0).toInt())
-            Bitpix.LONG -> TODO("Unsupported UInt64 sample format")
+            Bitpix.SHORT -> writeShort((pixel * 65535f).toInt() - 32768)
+            Bitpix.INTEGER -> writeInt(((pixel * 4294967295.0).toLong() - 2147483648L).toInt())
+            Bitpix.LONG -> TODO("Unsupported 64-bit format")
             Bitpix.FLOAT -> writeFloat(pixel)
             Bitpix.DOUBLE -> writeDouble(pixel.toDouble())
         }

@@ -1,6 +1,5 @@
 package nebulosa.xisf
 
-import nebulosa.fits.FitsHeader
 import nebulosa.image.format.ImageHdu
 import nebulosa.io.SeekableSource
 

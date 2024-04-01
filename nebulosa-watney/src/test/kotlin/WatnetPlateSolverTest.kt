@@ -3,9 +3,10 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
+import nebulosa.fits.fits
 import nebulosa.image.Image
 import nebulosa.math.deg
-import nebulosa.test.Hips2FitsStringSpec
+import nebulosa.test.AbstractFitsAndXisfTest
 import nebulosa.test.NonGitHubOnlyCondition
 import nebulosa.watney.plate.solving.WatneyPlateSolver
 import nebulosa.watney.plate.solving.quad.CompactQuadDatabase
@@ -13,7 +14,7 @@ import nebulosa.watney.star.detection.Star
 import java.nio.file.Path
 
 @EnabledIf(NonGitHubOnlyCondition::class)
-class WatnetPlateSolverTest : Hips2FitsStringSpec() {
+class WatnetPlateSolverTest : AbstractFitsAndXisfTest() {
 
     init {
         val quadDir = Path.of("/home/tiagohm/Downloads/watneyqdb")
@@ -21,7 +22,7 @@ class WatnetPlateSolverTest : Hips2FitsStringSpec() {
         val solver = WatneyPlateSolver(quadDatabase)
 
         "blind" {
-            val image = Image.open(M31)
+            val image = Image.open(closeAfterEach(M31_FITS.fits()))
             println(solver.solve(null, image, 0.0, 0.0, 0.deg))
         }
         "form image star quads" {

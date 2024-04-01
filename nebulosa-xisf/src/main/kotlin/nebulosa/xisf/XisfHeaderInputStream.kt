@@ -8,6 +8,7 @@ import nebulosa.image.format.HeaderCard
 import nebulosa.io.ByteOrder
 import nebulosa.xisf.XisfMonolithicFileHeader.*
 import nebulosa.xml.attribute
+import okio.ByteString.Companion.decodeBase64
 import java.io.Closeable
 import java.io.InputStream
 import javax.xml.stream.XMLStreamConstants
@@ -15,6 +16,13 @@ import javax.xml.stream.XMLStreamConstants
 class XisfHeaderInputStream(source: InputStream) : Closeable {
 
     private val reader = XML_INPUT_FACTORY.createXMLStreamReader(source)
+
+    @Suppress("ArrayInDataClass")
+    private data class ParsedAttributes(
+        @JvmField val cards: Collection<HeaderCard>,
+        @JvmField val image: Image?,
+        @JvmField val embedded: ByteArray,
+    )
 
     fun read(): XisfMonolithicFileHeader? {
         while (reader.hasNext()) {
@@ -39,9 +47,6 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
         val (width, height, numberOfChannels) = reader.attribute("geometry")!!.split(":")
 
         val location = reader.attribute("location")!!
-        check(location.startsWith("attachment"))
-        val (_, position, size) = location.split(":")
-
         val sampleFormat = SampleFormat.valueOf(reader.attribute("sampleFormat")!!.uppercase())
         val colorSpace = reader.attribute("colorSpace")?.uppercase()?.let(ColorSpace::valueOf)
         val pixelStorage = reader.attribute("pixelStorage")?.uppercase()?.let(PixelStorageModel::valueOf)
@@ -49,9 +54,18 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
         val imageType = reader.attribute("imageType")?.let { ImageType.parse(it) }
         val compression = reader.attribute("compression")?.let { CompressionFormat.parse(it) }
         val bounds = reader.attribute("bounds")?.split(":")?.let { it[0].toFloat()..it[1].toFloat() }
-        val (keywords, thumbnail) = parseKeywords()
+        val (keywords, thumbnail, embedded) = parseAttributes()
         val header = FitsHeader()
         val isMono = numberOfChannels == "1"
+        var position = 0L
+        var size = 0L
+
+        if (location.startsWith("attachment")) {
+            with(location.split(":")) {
+                position = this[1].toLong()
+                size = this[2].toLong()
+            }
+        }
 
         header.add(FitsHeaderCard.SIMPLE)
         header.add(sampleFormat.bitpix)
@@ -64,21 +78,22 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
 
         return Image(
             width.toInt(), height.toInt(), numberOfChannels.toInt(),
-            position.toLong(), size.toLong(),
+            position, size,
             sampleFormat, colorSpace ?: ColorSpace.GRAY,
             pixelStorage ?: PixelStorageModel.PLANAR,
             byteOrder ?: ByteOrder.LITTLE,
             compression, imageType ?: ImageType.LIGHT,
             bounds ?: XisfMonolithicFileHeader.DEFAULT_BOUNDS,
-            header, thumbnail,
+            header, thumbnail, embedded,
         )
     }
 
-    private fun parseKeywords(): Pair<Collection<HeaderCard>, Image?> {
+    private fun parseAttributes(): ParsedAttributes {
         val name = reader.localName
 
         val cards = ArrayList<HeaderCard>()
         var thumbnail: Image? = null
+        var embeddedData = ByteArray(0)
 
         fun addHeaderCard(card: HeaderCard) {
             if (cards.find { it.key == card.key } == null) {
@@ -96,11 +111,12 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
                     "FITSKeyword" -> addHeaderCard(parseFITSKeyword())
                     "Thumbnail" -> thumbnail = parseImage()
                     "Property" -> addHeaderCard(parseProperty() ?: continue)
+                    "Data" -> embeddedData = parseEmbeddedData()
                 }
             }
         }
 
-        return cards to thumbnail
+        return ParsedAttributes(cards, thumbnail, embeddedData)
     }
 
     private fun parseFITSKeyword(): HeaderCard {
@@ -117,6 +133,10 @@ class XisfHeaderInputStream(source: InputStream) : Closeable {
         val propertyType = XisfPropertyType.fromTypeName(reader.attribute("type")!!) ?: return null
         val value = reader.attribute("value") ?: reader.elementText.trim()
         return XisfHeaderCard(key.key, value, key.comment, propertyType)
+    }
+
+    private fun parseEmbeddedData(): ByteArray {
+        return reader.elementText.trim().decodeBase64()!!.toByteArray()
     }
 
     override fun close() {

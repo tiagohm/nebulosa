@@ -1,10 +1,11 @@
 import io.kotest.matchers.floats.plusOrMinus
 import io.kotest.matchers.shouldBe
+import nebulosa.fits.fits
 import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.hfd.HFD
-import nebulosa.test.FitsStringSpec
+import nebulosa.test.AbstractFitsAndXisfTest
 
-class HFDTest : FitsStringSpec() {
+class HFDTest : AbstractFitsAndXisfTest() {
 
     init {
         "focus" {
@@ -29,7 +30,7 @@ class HFDTest : FitsStringSpec() {
             )
 
             for ((first, second) in starFocus) {
-                val focusImage = Image.open(first)
+                val focusImage = Image.open(closeAfterEach(first.fits()))
                 val star = focusImage.compute(HFD(focusImage.width / 2, focusImage.height / 2, 50))
                 star.hfd shouldBe (second[0] plusOrMinus 0.1f)
                 star.snr shouldBe (second[1] plusOrMinus 0.1f)

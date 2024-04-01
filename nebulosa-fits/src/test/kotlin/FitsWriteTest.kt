@@ -4,10 +4,10 @@ import nebulosa.fits.fits
 import nebulosa.image.format.ImageHdu
 import nebulosa.io.sink
 import nebulosa.io.source
-import nebulosa.test.FitsStringSpec
+import nebulosa.test.AbstractFitsAndXisfTest
 import okio.ByteString.Companion.toByteString
 
-class FitsWriteTest : FitsStringSpec() {
+class FitsWriteTest : AbstractFitsAndXisfTest() {
 
     init {
         "mono" {

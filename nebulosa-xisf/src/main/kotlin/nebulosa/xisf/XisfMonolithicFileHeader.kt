@@ -108,6 +108,7 @@ sealed interface XisfMonolithicFileHeader {
         }
     }
 
+    @Suppress("ArrayInDataClass")
     data class Image(
         @JvmField val width: Int, @JvmField val height: Int, @JvmField val numberOfChannels: Int,
         @JvmField val position: Long, @JvmField val size: Long,
@@ -118,6 +119,7 @@ sealed interface XisfMonolithicFileHeader {
         @JvmField val bounds: ClosedFloatingPointRange<Float> = DEFAULT_BOUNDS,
         @JvmField val keywords: FitsHeader = FitsHeader.EMPTY,
         @JvmField val thumbnail: Image? = null,
+        @JvmField val embedded: ByteArray = ByteArray(0),
     ) : XisfMonolithicFileHeader
 
     companion object {

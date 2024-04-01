@@ -9,9 +9,9 @@ import nebulosa.image.Image
 import nebulosa.image.algorithms.transformation.*
 import nebulosa.image.algorithms.transformation.convolution.*
 import nebulosa.image.format.ImageChannel
-import nebulosa.test.FitsStringSpec
+import nebulosa.test.AbstractFitsAndXisfTest
 
-class FitsTransformAlgorithmTest : FitsStringSpec() {
+class FitsTransformAlgorithmTest : AbstractFitsAndXisfTest() {
 
     init {
         "mono:raw" {
@@ -278,23 +278,23 @@ class FitsTransformAlgorithmTest : FitsStringSpec() {
             nImage.save("fits-color-grayscale-y").second shouldBe "24dd4a7e0fa9e4be34c53c924a78a940"
         }
         "color:debayer" {
-            val mImage = Image.open(DEBAYER_FITS_PATH.fits())
+            val mImage = Image.open(DEBAYER_FITS.fits())
             val nImage = mImage.transform(AutoScreenTransformFunction)
             nImage.save("fits-color-debayer").second shouldBe "86b5bdd67dfd6bbf5495afae4bf2bc04"
         }
         "color:no-debayer" {
-            val mImage = Image.open(DEBAYER_FITS_PATH.fits(), false)
+            val mImage = Image.open(DEBAYER_FITS.fits(), false)
             val nImage = mImage.transform(AutoScreenTransformFunction)
             nImage.save("fits-color-no-debayer").second shouldBe "958ccea020deec1f0c075042a9ba37c3"
         }
         "color:reload" {
             val mImage0 = Image.open(NGC3344_COLOR_32_FITS.fits())
-            var mImage1 = Image.open(DEBAYER_FITS_PATH.fits())
+            var mImage1 = Image.open(DEBAYER_FITS.fits())
 
             mImage1.load(mImage0.hdu).shouldNotBeNull()
             mImage1.save("fits-color-reload").second shouldBe "18fb83e240bc7a4cbafbc1aba2741db6"
 
-            mImage1 = Image.open(DEBAYER_FITS_PATH.fits(), false)
+            mImage1 = Image.open(DEBAYER_FITS.fits(), false)
 
             mImage1.load(mImage0.hdu).shouldBeNull()
             mImage0.load(mImage1.hdu).shouldBeNull()
