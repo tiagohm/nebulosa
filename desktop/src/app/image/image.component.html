@@ -583,7 +583,7 @@
         <div class="col-12 align-items-center justify-content-center">
             <span class="p-float-label">
                 <p-dropdown [disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
-                            [options]="['BYTE', 'SHORT', 'INTEGER', 'LONG', 'FLOAT', 'DOUBLE']" [(ngModel)]="saveAs.bitpix"
+                            [options]="['BYTE', 'SHORT', 'INTEGER', 'FLOAT', 'DOUBLE']" [(ngModel)]="saveAs.bitpix"
                             styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" appendTo="body" />
                 <label>Format</label>
             </span>
