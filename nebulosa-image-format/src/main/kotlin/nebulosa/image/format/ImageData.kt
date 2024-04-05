@@ -18,4 +18,14 @@ interface ImageData {
     val blue: FloatArray
 
     fun readChannelTo(channel: ImageChannel, output: FloatArray)
+
+    companion object {
+
+        @Suppress("NOTHING_TO_INLINE")
+        inline fun Float.representableRange(rangeMin: Float, rangeMax: Float, rangeDelta: Float = rangeMax - rangeMin): Float {
+            return if (this < rangeMin) 0f
+            else if (this > rangeMax) 1f
+            else (this - rangeMin) / rangeDelta
+        }
+    }
 }

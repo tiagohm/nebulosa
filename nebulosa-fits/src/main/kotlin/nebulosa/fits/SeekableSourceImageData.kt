@@ -3,6 +3,7 @@ package nebulosa.fits
 import nebulosa.fits.FitsFormat.readPixel
 import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ImageData
+import nebulosa.image.format.ImageData.Companion.representableRange
 import nebulosa.io.SeekableSource
 import okio.Buffer
 import okio.Sink
@@ -16,7 +17,11 @@ internal data class SeekableSourceImageData(
     override val height: Int,
     override val numberOfChannels: Int,
     private val bitpix: Bitpix,
+    private val range: ClosedFloatingPointRange<Float>,
 ) : ImageData {
+
+    private val rangeDelta = range.endInclusive - range.start
+    private val rescale = range.start != 0f || range.endInclusive != 1f
 
     @JvmField internal val channelSizeInBytes = (numberOfPixels * bitpix.byteLength).toLong()
     @JvmField internal val totalSizeInBytes = channelSizeInBytes * numberOfChannels
@@ -84,7 +89,9 @@ internal data class SeekableSourceImageData(
                 n = (size / bitpix.byteLength).toInt()
 
                 repeat(n) {
-                    output[pos++] = buffer.readPixel(bitpix)
+                    val pixel = buffer.readPixel(bitpix)
+                    output[pos++] = if (rescale) pixel.representableRange(range.start, range.endInclusive, rangeDelta)
+                    else pixel
                 }
 
                 remainingPixels -= n
