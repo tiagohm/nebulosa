@@ -4,7 +4,7 @@ import { Interactable } from '@interactjs/types/index'
 import hotkeys from 'hotkeys-js'
 import interact from 'interactjs'
 import createPanZoom, { PanZoom } from 'panzoom'
-import { basename, extname } from 'path'
+import { basename, dirname, extname } from 'path'
 import { MenuItem } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
@@ -166,7 +166,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Save as...',
         icon: 'mdi mdi-content-save',
         command: async () => {
-            const path = await this.electron.saveFits()
+            const preference = this.preference.imagePreference.get()
+
+            const path = await this.electron.saveImage({ defaultPath: preference.savePath })
 
             if (path) {
                 const extension = extname(path).toLowerCase()
@@ -175,6 +177,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 this.saveAs.bitpix = this.imageInfo?.bitpix || 'BYTE'
                 this.saveAs.path = path
                 this.saveAs.showDialog = true
+
+                preference.savePath = dirname(path)
+                this.preference.imagePreference.set(preference)
             }
         },
     }
@@ -786,8 +791,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solver.solving = true
 
         try {
-            const options = this.preference.plateSolverOptions(this.solver.type).get()
-            const solved = await this.api.solveImage(options, this.imageData.path!, this.solver.blind,
+            const solver = this.preference.plateSolverPreference(this.solver.type).get()
+            const solved = await this.api.solveImage(solver, this.imageData.path!, this.solver.blind,
                 this.solver.centerRA, this.solver.centerDEC, this.solver.radius)
 
             this.savePreference()

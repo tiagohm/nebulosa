@@ -13,7 +13,7 @@ import { ConnectionStatus, ConnectionType } from '../types/home.types'
 import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageSave, ImageSolved, ImageTransformation } from '../types/image.types'
 import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
 import { SequencePlan } from '../types/sequencer.types'
-import { PlateSolverOptions } from '../types/settings.types'
+import { PlateSolverPreference } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
 import { HttpService } from './http.service'
 
@@ -569,10 +569,10 @@ export class ApiService {
     // SOLVER
 
     solveImage(
-        options: PlateSolverOptions, path: string, blind: boolean,
+        solver: PlateSolverPreference, path: string, blind: boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ) {
-        const query = this.http.query({ ...options, path, blind, centerRA, centerDEC, radius })
+        const query = this.http.query({ ...solver, path, blind, centerRA, centerDEC, radius })
         return this.http.put<ImageSolved>(`plate-solver?${query}`)
     }
 

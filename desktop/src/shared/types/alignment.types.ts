@@ -1,7 +1,7 @@
 import { Angle } from './atlas.types'
 import { CameraStartCapture } from './camera.types'
 import { GuideDirection } from './guider.types'
-import { PlateSolverOptions, PlateSolverType } from './settings.types'
+import { PlateSolverPreference, PlateSolverType } from './settings.types'
 
 export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
 
@@ -53,7 +53,7 @@ export interface DARVElapsed extends MessageEvent {
 
 export interface TPPAStart {
     capture: CameraStartCapture
-    plateSolver: PlateSolverOptions
+    plateSolver: PlateSolverPreference
     startFromCurrentPosition: boolean
     eastDirection: boolean
     compensateRefraction: boolean

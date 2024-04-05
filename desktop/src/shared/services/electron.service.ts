@@ -110,7 +110,7 @@ export class ElectronService {
         return this.send('FILE.SAVE', data)
     }
 
-    openFits(data?: OpenFile): Promise<string | undefined> {
+    openImage(data?: OpenFile): Promise<string | undefined> {
         return this.openFile({
             ...data, filters: [
                 { name: 'All', extensions: ['fits', 'fit', 'xisf'] },
@@ -120,7 +120,7 @@ export class ElectronService {
         })
     }
 
-    saveFits(data?: OpenFile) {
+    saveImage(data?: OpenFile) {
         return this.saveFile({
             ...data,
             filters: [

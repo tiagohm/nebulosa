@@ -35,6 +35,10 @@ export interface ConnectionClosed {
     id: string
 }
 
+export interface HomePreference {
+    imagePath?: string
+}
+
 export interface Equipment {
     camera?: Camera
     guider?: Camera

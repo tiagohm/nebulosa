@@ -1,11 +1,11 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import path from 'path'
+import { dirname } from 'path'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { CalibrationFrame, CalibrationFrameGroup } from '../../shared/types/calibration.types'
 import { Camera } from '../../shared/types/camera.types'
 import { AppComponent } from '../app.component'
@@ -35,7 +35,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
         electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private route: ActivatedRoute,
-        private storage: LocalStorageService,
+        private preference: PreferenceService,
         ngZone: NgZone,
     ) {
         app.title = 'Calibration'
@@ -44,12 +44,13 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             icon: 'mdi mdi-image-plus',
             tooltip: 'Add file',
             command: async () => {
-                const defaultPath = this.storage.get(CALIBRATION_DIR_KEY, '')
-                const filePath = await electron.openFits({ defaultPath })
+                const preference = this.preference.calibrationPreference.get()
+                const path = await electron.openImage({ defaultPath: preference.openPath })
 
-                if (filePath) {
-                    this.storage.set(CALIBRATION_DIR_KEY, path.dirname(filePath))
-                    this.upload(filePath)
+                if (path) {
+                    preference.openPath = dirname(path)
+                    this.preference.calibrationPreference.set(preference)
+                    this.upload(path)
                 }
             },
         })
@@ -58,12 +59,13 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             icon: 'mdi mdi-folder-plus',
             tooltip: 'Add folder',
             command: async () => {
-                const defaultPath = this.storage.get(CALIBRATION_DIR_KEY, '')
-                const dirPath = await electron.openDirectory({ defaultPath })
+                const preference = this.preference.calibrationPreference.get()
+                const path = await electron.openDirectory({ defaultPath: preference.openPath })
 
-                if (dirPath) {
-                    this.storage.set(CALIBRATION_DIR_KEY, dirPath)
-                    this.upload(dirPath)
+                if (path) {
+                    preference.openPath = path
+                    this.preference.calibrationPreference.set(preference)
+                    this.upload(path)
                 }
             },
         })

@@ -115,6 +115,7 @@ export interface ImageStatistics {
 export interface ImagePreference {
     solverRadius?: number
     solverType?: PlateSolverType
+    savePath?: string
 }
 
 export const EMPTY_IMAGE_PREFERENCE: ImagePreference = {
