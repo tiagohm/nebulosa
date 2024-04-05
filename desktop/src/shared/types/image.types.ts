@@ -243,6 +243,7 @@ export interface ImageSave {
     showDialog: boolean
     format: ImageFormat
     bitpix: Bitpix
+    shouldBeTransformed: boolean
     transformation: ImageTransformation
     path: string
 }

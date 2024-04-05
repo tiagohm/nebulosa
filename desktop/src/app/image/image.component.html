@@ -580,13 +580,17 @@
             <p-selectButton class="w-full" styleClass="border-0" [options]="['FITS', 'XISF', 'PNG', 'JPG']" [(ngModel)]="saveAs.format"
                             [multiple]="false" />
         </div>
-        <div class="col-12 align-items-center justify-content-center">
+        <div class="col-7 align-items-center justify-content-center">
             <span class="p-float-label">
                 <p-dropdown [disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
                             [options]="['BYTE', 'SHORT', 'INTEGER', 'FLOAT', 'DOUBLE']" [(ngModel)]="saveAs.bitpix"
                             styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" appendTo="body" />
                 <label>Format</label>
             </span>
+        </div>
+        <div class="col-5 flex-column align-items-center justify-content-center gap-1">
+            <span class="text-sm">Transformed</span>
+            <p-checkbox [binary]="true" [(ngModel)]="saveAs.shouldBeTransformed" />
         </div>
     </div>
     <ng-template pTemplate="footer">

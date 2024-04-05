@@ -83,7 +83,7 @@ class ImageService(
         output: HttpServletResponse,
     ) {
         val image = imageBucket.open(path, transformation.debayer, force = transformation.force)
-        val (transformedImage, statistics, stretchParams, instrument) = image.transform(transformation, ImageOperation.OPEN, camera)
+        val (transformedImage, statistics, stretchParams, instrument) = image.transform(true, transformation, ImageOperation.OPEN, camera)
 
         val info = ImageInfo(
             path,
@@ -103,7 +103,7 @@ class ImageService(
     }
 
     private fun Image.transform(
-        transformation: ImageTransformation,
+        enabled: Boolean, transformation: ImageTransformation,
         operation: ImageOperation, camera: Camera? = null
     ): TransformedImage {
         val instrument = camera ?: header.instrument?.let(connectionService::camera)
@@ -113,24 +113,24 @@ class ImageService(
         val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
         var stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
 
-        val shouldBeTransformed = autoStretch || manualStretch
+        val shouldBeTransformed = enabled && (autoStretch || manualStretch
                 || transformation.mirrorHorizontal || transformation.mirrorVertical || transformation.invert
-                || scnrEnabled
+                || scnrEnabled)
 
         var transformedImage = if (shouldBeTransformed) clone() else this
 
-        if (transformation.calibrate && instrument != null) {
+        if (enabled && transformation.calibrate && instrument != null) {
             transformedImage = calibrationFrameService.calibrate(instrument.name, transformedImage, transformedImage === this)
         }
 
-        if (transformation.mirrorHorizontal) {
+        if (enabled && transformation.mirrorHorizontal) {
             transformedImage = HorizontalFlip.transform(transformedImage)
         }
-        if (transformation.mirrorVertical) {
+        if (enabled && transformation.mirrorVertical) {
             transformedImage = VerticalFlip.transform(transformedImage)
         }
 
-        if (scnrEnabled) {
+        if (enabled && scnrEnabled) {
             val (channel, amount, method) = transformation.scnr
             transformedImage = SubtractiveChromaticNoiseReduction(channel!!, amount, method)
                 .transform(transformedImage)
@@ -139,14 +139,16 @@ class ImageService(
         val statistics = if (operation == ImageOperation.OPEN) transformedImage.compute(Statistics.GRAY)
         else null
 
-        if (autoStretch) {
-            stretchParams = AutoScreenTransformFunction.compute(transformedImage)
-            transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
-        } else if (manualStretch) {
-            transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
+        if (enabled) {
+            if (autoStretch) {
+                stretchParams = AutoScreenTransformFunction.compute(transformedImage)
+                transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
+            } else if (manualStretch) {
+                transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
+            }
         }
 
-        if (transformation.invert) {
+        if (enabled && transformation.invert) {
             transformedImage = Invert.transform(transformedImage)
         }
 
@@ -265,7 +267,7 @@ class ImageService(
     }
 
     fun saveImageAs(inputPath: Path, save: SaveImage, camera: Camera?) {
-        val (image) = imageBucket[inputPath]?.first?.transform(save.transformation, ImageOperation.SAVE)
+        val (image) = imageBucket[inputPath]?.first?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found")
 
         require(save.path != null)

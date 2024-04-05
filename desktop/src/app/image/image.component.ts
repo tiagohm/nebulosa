@@ -159,6 +159,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         format: 'FITS',
         bitpix: 'BYTE',
         path: '',
+        shouldBeTransformed: true,
         transformation: this.transformation
     }
 
