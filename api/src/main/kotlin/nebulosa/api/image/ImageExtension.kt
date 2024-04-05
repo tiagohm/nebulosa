@@ -1,6 +1,6 @@
 package nebulosa.api.image
 
-enum class ImageFormat {
+enum class ImageExtension {
     FITS,
     XISF,
     PNG,

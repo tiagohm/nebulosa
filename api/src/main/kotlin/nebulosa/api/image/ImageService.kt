@@ -12,6 +12,7 @@ import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Histogram
 import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.algorithms.transformation.*
+import nebulosa.image.format.ImageModifier
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
@@ -269,11 +270,14 @@ class ImageService(
 
         require(save.path != null)
 
+        val modifier = ImageModifier
+            .bitpix(save.bitpix)
+
         when (save.format) {
-            ImageFormat.FITS -> save.path.sink().use { image.writeTo(it, FitsFormat) }
-            ImageFormat.XISF -> save.path.sink().use { image.writeTo(it, XisfFormat) }
-            ImageFormat.PNG -> save.path.outputStream().use { ImageIO.write(image, "PNG", it) }
-            ImageFormat.JPG -> save.path.outputStream().use { ImageIO.write(image, "JPEG", it) }
+            ImageExtension.FITS -> save.path.sink().use { image.writeTo(it, FitsFormat, modifier) }
+            ImageExtension.XISF -> save.path.sink().use { image.writeTo(it, XisfFormat, modifier) }
+            ImageExtension.PNG -> save.path.outputStream().use { ImageIO.write(image, "PNG", it) }
+            ImageExtension.JPG -> save.path.outputStream().use { ImageIO.write(image, "JPEG", it) }
         }
     }
 
