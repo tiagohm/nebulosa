@@ -10,7 +10,7 @@
         <circle cx="50%" cy="50%" r="32%" stroke="#E53935" stroke-width="3" fill="transparent"></circle>
     </svg>
 
-    <svg *ngIf="!mirrorHorizontal && !mirrorVertical && annotationIsVisible"
+    <svg *ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotationIsVisible"
          class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
         <g *ngFor="let a of annotations" (dblclick)="showAnnotationInfo(a)" class="pointer-events-auto cursor-pointer">
             <circle [attr.cx]="a.x" [attr.cy]="a.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"></circle>
@@ -20,9 +20,9 @@
         </g>
     </svg>
 
-    <svg *ngIf="!mirrorHorizontal && !mirrorVertical && detectedStarsIsVisible"
+    <svg *ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && detectedStars.visible"
          class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
-        <g *ngFor="let s of detectedStars" class="pointer-events-auto cursor-pointer">
+        <g *ngFor="let s of detectedStars.stars" class="pointer-events-auto cursor-pointer">
             <circle [attr.cx]="s.x" [attr.cy]="s.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"></circle>
             <text [attr.x]="s.x" [attr.y]="s.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">
                 {{ s.hfd.toFixed(1) }}
@@ -31,7 +31,7 @@
     </svg>
 
     <svg class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible" *ngIf="imageInfo">
-        @for (item of fovs; track $index) {
+        @for (item of fov.fovs; track $index) {
         @if (item.enabled && item.computed) {
         <rect [attr.width]="item.computed.svg.width" [attr.height]="item.computed.svg.height" [attr.x]="item.computed.svg.x"
               [attr.y]="item.computed.svg.y" [attr.stroke]="item.color" style="transform: translate(-50%, -50%)" />
@@ -40,7 +40,7 @@
     </svg>
 
     <div #roi [class.hidden]="!roiInteractable" class="roi absolute left-0 top-0" data-x="0" data-y="0" (contextmenu)="imageClicked($event, true)">
-        <span class="absolute">X: {{ roiX }} Y: {{ roiY }} W: {{ roiWidth }} H: {{ roiHeight }}</span>
+        <span class="absolute">X: {{ imageROI.x }} Y: {{ imageROI.y }} W: {{ imageROI.width }} H: {{ imageROI.height }}</span>
     </div>
 </div>
 
@@ -146,27 +146,27 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Plate Solver" [draggable]="true" [(visible)]="showSolverDialog" [modal]="false" [style]="{width: 'min-content', minWidth: '340px'}"
+<p-dialog header="Plate Solver" [draggable]="true" [(visible)]="solver.showDialog" [modal]="false" [style]="{width: 'min-content', minWidth: '340px'}"
           class="pointer-events-none">
     <div class="grid pt-2">
         <div class="col-12 gap-2 align-items-center">
             <span class="p-float-label">
-                <p-dropdown [options]="solverTypes" [(ngModel)]="solverType" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
+                <p-dropdown [options]="solver.types" [(ngModel)]="solver.type" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
                 <label>Type</label>
             </span>
-            <p-checkbox [binary]="true" label="Blind" [(ngModel)]="solverBlind" />
+            <p-checkbox [binary]="true" label="Blind" [(ngModel)]="solver.blind" />
         </div>
         <div class="col-8">
             <div class="grid">
                 <div class="col-6">
                     <span class="p-float-label">
-                        <input pInputText [disabled]="solverBlind" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterRA" />
+                        <input pInputText [disabled]="solver.blind" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solver.centerRA" />
                         <label>Center RA (h)</label>
                     </span>
                 </div>
                 <div class="col-6">
                     <span class="p-float-label">
-                        <input pInputText [disabled]="solverBlind" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solverCenterDEC" />
+                        <input pInputText [disabled]="solver.blind" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solver.centerDEC" />
                         <label>Center DEC (°)</label>
                     </span>
                 </div>
@@ -174,8 +174,8 @@
         </div>
         <div class="col-4 flex flex-row align-items-center gap-2">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="solverBlind" [min]="1" [max]="180" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true"
-                               [(ngModel)]="solverRadius" />
+                <p-inputNumber [disabled]="solver.blind" [min]="1" [max]="180" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true"
+                               [(ngModel)]="solver.radius" />
                 <label>Radius (°)</label>
             </span>
         </div>
@@ -184,60 +184,60 @@
         <div class="grid pt-2">
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="imageSolved.rightAscensionJ2000" />
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.rightAscensionJ2000" />
                     <label>RA (J2000)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="imageSolved.declinationJ2000" />
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.declinationJ2000" />
                     <label>DEC (J2000)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="imageSolved.orientation.toFixed(4)" />
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.orientation.toFixed(4)" />
                     <label>Orientation (°)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="imageSolved.scale.toFixed(4)" />
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.scale.toFixed(4)" />
                     <label>Scale (arcsec/px)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
                     <input readonly pInputText class="p-inputtext-sm border-0 w-full"
-                           [value]="(imageSolved.width.toFixed(2)) + ' x ' + (imageSolved.height.toFixed(2))" />
+                           [value]="(solver.solved.width.toFixed(2)) + ' x ' + (solver.solved.height.toFixed(2))" />
                     <label>Field size (arcmin)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="imageSolved.radius.toFixed(4)" />
+                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.radius.toFixed(4)" />
                     <label>Radius (°)</label>
                 </span>
             </div>
         </div>
         <div class="grid mb-2 mt-2">
             <div class="col-12 flex justify-content-center">
-                <p-button [disabled]="solving || !solved" (onClick)="mountSync(imageSolved!)" icon="mdi mdi-sync" label="Sync"
+                <p-button [disabled]="solver.solving || !solver.solved.solved" (onClick)="mountSync(solver.solved)" icon="mdi mdi-sync" label="Sync"
                           [text]="true" severity="info" size="small" />
-                <p-button [disabled]="solving || !solved" (onClick)="mountGoTo(imageSolved!)" icon="mdi mdi-telescope" label="Go To"
-                          [text]="true" severity="success" size="small" />
-                <p-button [disabled]="solving || !solved" (onClick)="mountSlew(imageSolved!)" icon="mdi mdi-telescope" label="Slew"
-                          [text]="true" severity="success" size="small" />
-                <p-button [disabled]="solving || !solved" (onClick)="frame(imageSolved!)" icon="mdi mdi-image" label="Frame"
+                <p-button [disabled]="solver.solving || !solver.solved.solved" (onClick)="mountGoTo(solver.solved)" icon="mdi mdi-telescope"
+                          label="Go To" [text]="true" severity="success" size="small" />
+                <p-button [disabled]="solver.solving || !solver.solved.solved" (onClick)="mountSlew(solver.solved)" icon="mdi mdi-telescope"
+                          label="Slew" [text]="true" severity="success" size="small" />
+                <p-button [disabled]="solver.solving || !solver.solved.solved" (onClick)="frame(solver.solved)" icon="mdi mdi-image" label="Frame"
                           [text]="true" size="small" />
             </div>
         </div>
 
-        <p-button [disabled]="solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" size="small" />
+        <p-button [disabled]="solver.solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" size="small" />
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Stretching" [draggable]="true" [(visible)]="showStretchingDialog" [modal]="false"
+<p-dialog header="Stretching" [draggable]="true" [(visible)]="stretch.showDialog" [modal]="false"
           [style]="{width: 'min-content', minWidth: '320px'}"
           class="pointer-events-none">
     <div class="grid px-2 pt-2">
@@ -245,17 +245,18 @@
             <div class="flex flex-row gap-2 align-items-center justify-content-between">
                 <span class="p-float-label">
                     <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchShadowHighlight[0]" locale="en" />
+                                   [(ngModel)]="stretchShadow" locale="en" />
                     <label>Shadow</label>
                 </span>
                 <span class="p-float-label">
                     <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchShadowHighlight[1]" locale="en" />
+                                   [(ngModel)]="stretchHighlight" locale="en" />
                     <label>Highlight</label>
                 </span>
             </div>
 
-            <p-slider class="mt-3 px-2" [min]="0" [max]="65536" [(ngModel)]="stretchShadowHighlight" [range]="true" />
+            <p-slider class="mt-3 px-2" [min]="0" [max]="65536" [ngModel]="stretchShadowAndHighlight()"
+                      (ngModelChange)="stretchShadow.set($event[0]); stretchHighlight.set($event[1])" [range]="true" />
         </div>
         <div class="col-4 flex flex-column">
             <div class="text-center w-full">
@@ -276,16 +277,17 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="SCNR" [draggable]="true" [(visible)]="showSCNRDialog" [modal]="false" [style]="{width: '270px'}"
+<p-dialog header="SCNR" [draggable]="true" [(visible)]="scnr.showDialog" [modal]="false" [style]="{width: '270px'}"
           class="pointer-events-none">
     <div class="grid px-2">
         <div class="col-12 flex align-items-center">
-            <p-selectButton class="w-full" styleClass="border-0" [options]="scnrChannelOptions" [(ngModel)]="scnrChannel" [multiple]="false" />
+            <p-selectButton class="w-full" styleClass="border-0" [options]="scnrChannels" optionLabel="name" optionValue="value"
+                            [(ngModel)]="scnr.channel" [multiple]="false" />
         </div>
         <div class="col-7 flex align-items-center">
             <span class="p-float-label w-full max-w-full">
-                <p-dropdown [disabled]="scnrChannel === 'NONE'" appendTo="body" [(ngModel)]="scnrProtectionMethod"
-                            [options]="scnrProtectionMethodOptions" styleClass="border-0" [autoDisplayFirst]="false">
+                <p-dropdown [disabled]="!scnr.channel" appendTo="body" [(ngModel)]="scnr.method"
+                            [options]="scnrMethods" styleClass="border-0" [autoDisplayFirst]="false">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -302,9 +304,9 @@
         </div>
         <div class="col-5 flex align-items-center">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="scnrChannel === 'NONE' || !scnrProtectionMethod.endsWith('MASK')" [min]="0" [max]="1" [step]="0.1"
+                <p-inputNumber [disabled]="!scnr.channel || !scnr.method.endsWith('MASK')" [min]="0" [max]="1" [step]="0.1"
                                [showButtons]="true" class="w-full" inputStyleClass="border-0 w-full" [minFractionDigits]="1"
-                               [(ngModel)]="scnrAmount" locale="en" [allowEmpty]="false" />
+                               [(ngModel)]="scnr.amount" locale="en" [allowEmpty]="false" />
                 <label>Amount</label>
             </span>
         </div>
@@ -314,10 +316,10 @@
     </ng-template>
 </p-dialog>
 
-<p-dialog header="FITS Headers" [draggable]="true" [(visible)]="showFITSHeadersDialog" [modal]="false"
+<p-dialog header="FITS Headers" [draggable]="true" [(visible)]="fitsHeaders.showDialog" [modal]="false"
           [style]="{width: 'min-content', minWidth: '340px', minHeight: '340px'}" class="pointer-events-none">
     <div class="p-2">
-        <p-table [value]="fitsHeaders" class="w-full" dataKey="name" styleClass="w-full pb-4 p-datatable-striped">
+        <p-table [value]="fitsHeaders.headers" class="w-full" dataKey="name" styleClass="w-full pb-4 p-datatable-striped">
             <ng-template pTemplate="header">
                 <tr>
                     <th>Name</th>
@@ -406,7 +408,7 @@
     </div>
 </p-dialog>
 
-<p-dialog header="Field of View" [draggable]="true" [(visible)]="showFOVDialog" [modal]="false"
+<p-dialog header="Field of View" [draggable]="true" [(visible)]="fov.showDialog" [modal]="false"
           [style]="{width: '390px'}" class="pointer-events-none">
     <div class="grid p-2">
         <div class="col-2 align-items-center justify-content-center gap-2">
@@ -483,15 +485,15 @@
             </span>
         </div> -->
         <div class="col-12 flex align-items-center justify-content-center gap-2">
-            <p-button *ngIf="editedFOV" [text]="true" label="Cancel" icon="mdi mdi-close" severity="danger" styleClass="p-button-sm"
+            <p-button *ngIf="fov.edited" [text]="true" label="Cancel" icon="mdi mdi-close" severity="danger" styleClass="p-button-sm"
                       (onClick)="cancelEditFOV()" />
-            <p-button *ngIf="editedFOV" [disabled]="!canAddFOV" [text]="true" label="Save" icon="mdi mdi-content-save" severity="info"
+            <p-button *ngIf="fov.edited" [disabled]="!canAddFOV" [text]="true" label="Save" icon="mdi mdi-content-save" severity="info"
                       styleClass="p-button-sm" (onClick)="saveFOV()" />
-            <p-button *ngIf="!editedFOV" [disabled]="!canAddFOV" [text]="true" label="Add" icon="mdi mdi-plus" severity="success"
+            <p-button *ngIf="!fov.edited" [disabled]="!canAddFOV" [text]="true" label="Add" icon="mdi mdi-plus" severity="success"
                       styleClass="p-button-sm" (onClick)="addFOV()" />
         </div>
-        <div class="col-12 p-0 flex-column overflow-auto" *ngIf="fovs.length" style="max-height: 123px">
-            @for (item of fovs; track $index) {
+        <div class="col-12 p-0 flex-column overflow-auto" *ngIf="fov.fovs.length" style="max-height: 123px">
+            @for (item of fov.fovs; track $index) {
             <div class="flex align-items-center gap-2 border-left-3 px-2" [style.border-color]="item.color">
                 <div class="flex align-items-center justify-content-center">
                     <p-checkbox [binary]="true" [(ngModel)]="item.enabled" />
@@ -522,11 +524,11 @@
     </div>
 </p-dialog>
 
-<p-dialog header="Cameras" [draggable]="true" [(visible)]="showFOVCamerasDialog" [modal]="false"
+<p-dialog header="Cameras" [draggable]="true" [(visible)]="fov.showCameraDialog" [modal]="false"
           [style]="{width: '300px'}" class="pointer-events-none">
     <div class="grid">
         <div class="col-12">
-            <p-listbox [options]="fovCameras" [(ngModel)]="fovCamera" [filter]="true" [style]="{ width: '100%' }"
+            <p-listbox [options]="fov.cameras" [(ngModel)]="fov.camera" [filter]="true" [style]="{ width: '100%' }"
                        [listStyle]="{'max-height': '210px'}" [virtualScroll]="true" [virtualScrollItemSize]="42" filterBy="name,sensor"
                        filterMatchMode="contains" [filterFields]="['name', 'sensor']" styleClass="border-0">
                 <ng-template let-item pTemplate="item">
@@ -540,15 +542,15 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="!fovCamera" icon="mdi mdi-check" label="Choose" (onClick)="chooseCamera()" [text]="true" size="small" />
+        <p-button [disabled]="!fov.camera" icon="mdi mdi-check" label="Choose" (onClick)="chooseCamera()" [text]="true" size="small" />
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Telescopes" [draggable]="true" [(visible)]="showFOVTelescopesDialog" [modal]="false"
+<p-dialog header="Telescopes" [draggable]="true" [(visible)]="fov.showTelescopeDialog" [modal]="false"
           [style]="{width: '300px'}" class="pointer-events-none">
     <div class="grid">
         <div class="col-12">
-            <p-listbox [options]="fovTelescopes" [(ngModel)]="fovTelescope" [filter]="true" [style]="{ width: '100%' }"
+            <p-listbox [options]="fov.telescopes" [(ngModel)]="fov.telescope" [filter]="true" [style]="{ width: '100%' }"
                        [listStyle]="{'max-height': '210px'}" [virtualScroll]="true" [virtualScrollItemSize]="42" filterBy="name"
                        filterMatchMode="contains" [filterFields]="['name']" styleClass="border-0">
                 <ng-template let-item pTemplate="item">
@@ -561,7 +563,34 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="!fovTelescope" icon="mdi mdi-check" label="Choose" (onClick)="chooseTelescope()" [text]="true" size="small" />
+        <p-button [disabled]="!fov.telescope" icon="mdi mdi-check" label="Choose" (onClick)="chooseTelescope()" [text]="true" size="small" />
+    </ng-template>
+</p-dialog>
+
+<p-dialog header="Save As" [draggable]="true" [(visible)]="saveAs.showDialog" [modal]="false"
+          [style]="{width: '260px'}" class="pointer-events-none">
+    <div class="grid mt-2">
+        <div class="col-12">
+            <span class="p-float-label">
+                <input pInputText readonly type="text" [value]="saveAs.path" class="border-0 p-inputtext-sm" />
+                <label>Path</label>
+            </span>
+        </div>
+        <div class="col-12 flex align-items-center justify-content-center">
+            <p-selectButton class="w-full" styleClass="border-0" [options]="['FITS', 'XISF', 'PNG', 'JPG']" [(ngModel)]="saveAs.format"
+                            [multiple]="false" />
+        </div>
+        <div class="col-12 align-items-center justify-content-center">
+            <span class="p-float-label">
+                <p-dropdown [disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
+                            [options]="['BYTE', 'SHORT', 'INTEGER', 'LONG', 'FLOAT', 'DOUBLE']" [(ngModel)]="saveAs.bitpix"
+                            styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" appendTo="body" />
+                <label>Format</label>
+            </span>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button icon="mdi mdi-content-save" label="Save" (onClick)="saveImageAs()" [text]="true" size="small" />
     </ng-template>
 </p-dialog>
 

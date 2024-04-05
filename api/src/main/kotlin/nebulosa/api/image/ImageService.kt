@@ -12,7 +12,6 @@ import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Histogram
 import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.algorithms.transformation.*
-import nebulosa.image.format.ImageChannel
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
@@ -40,7 +39,6 @@ import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
-import kotlin.io.path.extension
 import kotlin.io.path.outputStream
 
 @Service
@@ -56,6 +54,18 @@ class ImageService(
     private val starDetector: StarDetector<Image>,
 ) {
 
+    private enum class ImageOperation {
+        OPEN,
+        SAVE,
+    }
+
+    private data class TransformedImage(
+        @JvmField val image: Image,
+        @JvmField val statistics: Statistics.Data? = null,
+        @JvmField val strectchParams: ScreenTransformFunction.Parameters? = null,
+        @JvmField val instrument: Camera? = null,
+    )
+
     val fovCameras: ByteArray by lazy {
         URI.create("https://github.com/tiagohm/nebulosa.data/raw/main/astrobin/cameras.json")
             .toURL().openConnection().getInputStream().readAllBytes()
@@ -68,41 +78,65 @@ class ImageService(
 
     @Synchronized
     fun openImage(
-        path: Path, camera: Camera?, debayer: Boolean = true, calibrate: Boolean = false, force: Boolean = false,
-        autoStretch: Boolean = false, shadow: Float = 0f, highlight: Float = 1f, midtone: Float = 0.5f,
-        mirrorHorizontal: Boolean = false, mirrorVertical: Boolean = false, invert: Boolean = false,
-        scnrEnabled: Boolean = false, scnrChannel: ImageChannel = ImageChannel.GREEN, scnrAmount: Float = 0.5f,
-        scnrProtectionMode: ProtectionMethod = ProtectionMethod.AVERAGE_NEUTRAL,
+        path: Path, camera: Camera?, transformation: ImageTransformation,
         output: HttpServletResponse,
     ) {
-        val image = imageBucket.open(path, debayer, force = force)
+        val image = imageBucket.open(path, transformation.debayer, force = transformation.force)
+        val (transformedImage, statistics, stretchParams, instrument) = image.transform(transformation, ImageOperation.OPEN, camera)
 
+        val info = ImageInfo(
+            path,
+            transformedImage.width, transformedImage.height, transformedImage.mono,
+            stretchParams!!.shadow, stretchParams.highlight, stretchParams.midtone,
+            transformedImage.header.rightAscension.takeIf { it.isFinite() },
+            transformedImage.header.declination.takeIf { it.isFinite() },
+            imageBucket[path]?.second?.let(::ImageSolved),
+            transformedImage.header.mapNotNull { if (it.isCommentStyle) null else ImageHeaderItem(it.key, it.value) },
+            transformedImage.header.bitpix, instrument, statistics,
+        )
+
+        output.addHeader(IMAGE_INFO_HEADER, objectMapper.writeValueAsString(info))
+        output.contentType = "image/png"
+
+        ImageIO.write(transformedImage, "PNG", output.outputStream)
+    }
+
+    private fun Image.transform(
+        transformation: ImageTransformation,
+        operation: ImageOperation, camera: Camera? = null
+    ): TransformedImage {
+        val instrument = camera ?: header.instrument?.let(connectionService::camera)
+
+        val (autoStretch, shadow, highlight, midtone) = transformation.stretch
+        val scnrEnabled = transformation.scnr.channel != null
         val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
         var stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
 
         val shouldBeTransformed = autoStretch || manualStretch
-                || mirrorHorizontal || mirrorVertical || invert
+                || transformation.mirrorHorizontal || transformation.mirrorVertical || transformation.invert
                 || scnrEnabled
 
-        var transformedImage = if (shouldBeTransformed) image.clone() else image
-        val instrument = camera?.name ?: image.header.instrument
+        var transformedImage = if (shouldBeTransformed) clone() else this
 
-        if (calibrate && !instrument.isNullOrBlank()) {
-            transformedImage = calibrationFrameService.calibrate(instrument, transformedImage, transformedImage === image)
+        if (transformation.calibrate && instrument != null) {
+            transformedImage = calibrationFrameService.calibrate(instrument.name, transformedImage, transformedImage === this)
         }
 
-        if (mirrorHorizontal) {
+        if (transformation.mirrorHorizontal) {
             transformedImage = HorizontalFlip.transform(transformedImage)
         }
-        if (mirrorVertical) {
+        if (transformation.mirrorVertical) {
             transformedImage = VerticalFlip.transform(transformedImage)
         }
 
         if (scnrEnabled) {
-            transformedImage = SubtractiveChromaticNoiseReduction(scnrChannel, scnrAmount, scnrProtectionMode).transform(transformedImage)
+            val (channel, amount, method) = transformation.scnr
+            transformedImage = SubtractiveChromaticNoiseReduction(channel!!, amount, method)
+                .transform(transformedImage)
         }
 
-        val statistics = transformedImage.compute(Statistics.GRAY)
+        val statistics = if (operation == ImageOperation.OPEN) transformedImage.compute(Statistics.GRAY)
+        else null
 
         if (autoStretch) {
             stretchParams = AutoScreenTransformFunction.compute(transformedImage)
@@ -111,26 +145,11 @@ class ImageService(
             transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
         }
 
-        if (invert) {
+        if (transformation.invert) {
             transformedImage = Invert.transform(transformedImage)
         }
 
-        val info = ImageInfo(
-            path,
-            transformedImage.width, transformedImage.height, transformedImage.mono,
-            stretchParams.shadow, stretchParams.highlight, stretchParams.midtone,
-            transformedImage.header.rightAscension.takeIf { it.isFinite() },
-            transformedImage.header.declination.takeIf { it.isFinite() },
-            imageBucket[path]?.second?.let(::ImageSolved),
-            transformedImage.header.mapNotNull { if (it.isCommentStyle) null else ImageHeaderItem(it.key, it.value) },
-            instrument?.let(connectionService::camera),
-            statistics,
-        )
-
-        output.addHeader("X-Image-Info", objectMapper.writeValueAsString(info))
-        output.contentType = "image/png"
-
-        ImageIO.write(transformedImage, "PNG", output.outputStream)
+        return TransformedImage(transformedImage, statistics, stretchParams, instrument)
     }
 
     @Synchronized
@@ -244,18 +263,15 @@ class ImageService(
         return annotations
     }
 
-    fun saveImageAs(inputPath: Path, outputPath: Path) {
-        if (inputPath != outputPath) {
-            val image = imageBucket[inputPath]?.first
-                ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found")
+    fun saveImageAs(inputPath: Path, save: ImageSave, camera: Camera?) {
+        val (image) = imageBucket[inputPath]?.first?.transform(save.transformation, ImageOperation.SAVE)
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found")
 
-            when (outputPath.extension.uppercase()) {
-                "PNG" -> outputPath.outputStream().use { ImageIO.write(image, "PNG", it) }
-                "JPG", "JPEG" -> outputPath.outputStream().use { ImageIO.write(image, "JPEG", it) }
-                "FIT", "FITS" -> outputPath.sink().use { image.writeTo(it, FitsFormat) }
-                "XISF" -> outputPath.sink().use { image.writeTo(it, XisfFormat) }
-                else -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid format")
-            }
+        when (save.format) {
+            ImageFormat.FITS -> save.path.sink().use { image.writeTo(it, FitsFormat) }
+            ImageFormat.XISF -> save.path.sink().use { image.writeTo(it, XisfFormat) }
+            ImageFormat.PNG -> save.path.outputStream().use { ImageIO.write(image, "PNG", it) }
+            ImageFormat.JPG -> save.path.outputStream().use { ImageIO.write(image, "JPEG", it) }
         }
     }
 
@@ -320,6 +336,7 @@ class ImageService(
 
         @JvmStatic private val LOG = loggerFor<ImageService>()
 
+        private const val IMAGE_INFO_HEADER = "X-Image-Info"
         private const val COORDINATE_INTERPOLATION_DELTA = 24
     }
 }
