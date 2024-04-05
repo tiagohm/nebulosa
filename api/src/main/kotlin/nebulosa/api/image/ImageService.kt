@@ -263,9 +263,11 @@ class ImageService(
         return annotations
     }
 
-    fun saveImageAs(inputPath: Path, save: ImageSave, camera: Camera?) {
+    fun saveImageAs(inputPath: Path, save: SaveImage, camera: Camera?) {
         val (image) = imageBucket[inputPath]?.first?.transform(save.transformation, ImageOperation.SAVE)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found")
+
+        require(save.path != null)
 
         when (save.format) {
             ImageFormat.FITS -> save.path.sink().use { image.writeTo(it, FitsFormat) }

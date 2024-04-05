@@ -35,7 +35,7 @@ class ImageController(
     fun saveImageAs(
         @RequestParam path: Path,
         @DeviceOrEntityParam(required = false) camera: Camera?,
-        @RequestBody save: ImageSave
+        @RequestBody save: SaveImage
     ) {
         imageService.saveImageAs(path, save, camera)
     }
