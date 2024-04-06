@@ -23,7 +23,7 @@ data class ScreenTransformFunction(
 
         companion object {
 
-            @JvmStatic val EMPTY = Parameters()
+            @JvmStatic val DEFAULT = Parameters()
         }
     }
 

@@ -3,10 +3,11 @@ package nebulosa.fits
 import nebulosa.fits.FitsFormat.readPixel
 import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ImageData
-import nebulosa.image.format.ImageData.Companion.representableRange
 import nebulosa.io.SeekableSource
+import nebulosa.log.loggerFor
 import okio.Buffer
 import okio.Sink
+import kotlin.math.max
 import kotlin.math.min
 
 @Suppress("NOTHING_TO_INLINE")
@@ -19,9 +20,6 @@ internal data class SeekableSourceImageData(
     private val bitpix: Bitpix,
     private val range: ClosedFloatingPointRange<Float>,
 ) : ImageData {
-
-    private val rangeDelta = range.endInclusive - range.start
-    private val rescale = range.start != 0f || range.endInclusive != 1f
 
     @JvmField internal val channelSizeInBytes = (numberOfPixels * bitpix.byteLength).toLong()
     @JvmField internal val totalSizeInBytes = channelSizeInBytes * numberOfChannels
@@ -77,6 +75,9 @@ internal data class SeekableSourceImageData(
         var pos = 0
 
         Buffer().use { buffer ->
+            var min = Float.MAX_VALUE
+            var max = Float.MIN_VALUE
+
             while (remainingPixels > 0) {
                 var n = min(PIXEL_COUNT, remainingPixels)
                 val byteCount = n * bitpix.byteLength.toLong()
@@ -90,11 +91,24 @@ internal data class SeekableSourceImageData(
 
                 repeat(n) {
                     val pixel = buffer.readPixel(bitpix)
-                    output[pos++] = if (rescale) pixel.representableRange(range.start, range.endInclusive, rangeDelta)
-                    else pixel
+                    if (pixel < min) min = pixel
+                    if (pixel > max) max = pixel
+                    output[pos++] = pixel
                 }
 
                 remainingPixels -= n
+            }
+
+            if (min < 0f || max > 1f) {
+                val rangeMin = min(range.start, min)
+                val rangeMax = max(range.endInclusive, max)
+                val rangeDelta = rangeMax - rangeMin
+
+                LOG.info("rescaling [{}, {}] to [0, 1]. channel={}, delta={}", rangeMin, rangeMax, channel, rangeDelta)
+
+                for (i in output.indices) {
+                    output[i] = (output[i] - rangeMin) / rangeDelta
+                }
             }
         }
     }
@@ -130,5 +144,7 @@ internal data class SeekableSourceImageData(
     companion object {
 
         const val PIXEL_COUNT = 64
+
+        @JvmStatic private val LOG = loggerFor<SeekableSourceImageData>()
     }
 }

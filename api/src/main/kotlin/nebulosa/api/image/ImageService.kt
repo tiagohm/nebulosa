@@ -111,7 +111,6 @@ class ImageService(
         val (autoStretch, shadow, highlight, midtone) = transformation.stretch
         val scnrEnabled = transformation.scnr.channel != null
         val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
-        var stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
 
         val shouldBeTransformed = enabled && (autoStretch || manualStretch
                 || transformation.mirrorHorizontal || transformation.mirrorVertical || transformation.invert
@@ -139,11 +138,14 @@ class ImageService(
         val statistics = if (operation == ImageOperation.OPEN) transformedImage.compute(Statistics.GRAY)
         else null
 
+        var stretchParams = ScreenTransformFunction.Parameters.DEFAULT
+
         if (enabled) {
             if (autoStretch) {
                 stretchParams = AutoScreenTransformFunction.compute(transformedImage)
                 transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
             } else if (manualStretch) {
+                stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
                 transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
             }
         }
