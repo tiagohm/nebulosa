@@ -10,6 +10,7 @@ import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.database.MyObjectBox
+import nebulosa.api.image.SavedImageEntity
 import nebulosa.api.preferences.PreferenceEntity
 import nebulosa.batch.processing.AsyncJobLauncher
 import nebulosa.common.json.PathDeserializer
@@ -181,7 +182,10 @@ class BeanConfiguration {
     fun satelliteBox(boxStore: BoxStore) = boxStore.boxFor(SatelliteEntity::class.java)!!
 
     @Bean
-    fun simbadEntityBox(@Qualifier("simbadBoxStore") boxStore: BoxStore) = boxStore.boxFor(SimbadEntity::class.java)!!
+    fun simbadBox(@Qualifier("simbadBoxStore") boxStore: BoxStore) = boxStore.boxFor(SimbadEntity::class.java)!!
+
+    @Bean
+    fun savedImageBox(boxStore: BoxStore) = boxStore.boxFor(SavedImageEntity::class.java)!!
 
     @Bean
     fun webMvcConfigurer(

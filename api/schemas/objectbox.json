@@ -208,9 +208,73 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "5:3145808847447148529",
+      "lastPropertyId": "11:3062965845680024498",
+      "name": "SavedImageEntity",
+      "properties": [
+        {
+          "id": "1:3044083390341127924",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1877627778923112289",
+          "name": "path",
+          "type": 9
+        },
+        {
+          "id": "3:776127690522558217",
+          "name": "thumbnailPath",
+          "type": 9
+        },
+        {
+          "id": "4:5741413184886938818",
+          "name": "camera",
+          "type": 9
+        },
+        {
+          "id": "5:6254940313442363557",
+          "name": "filter",
+          "type": 9
+        },
+        {
+          "id": "6:6720297114027756965",
+          "name": "savedAt",
+          "type": 6
+        },
+        {
+          "id": "7:690360643566182861",
+          "name": "width",
+          "type": 5
+        },
+        {
+          "id": "8:5186766837753367919",
+          "name": "height",
+          "type": 5
+        },
+        {
+          "id": "9:2529949403025358116",
+          "name": "exposureTime",
+          "type": 6
+        },
+        {
+          "id": "10:7818441646537282748",
+          "name": "mean",
+          "type": 8
+        },
+        {
+          "id": "11:3062965845680024498",
+          "name": "hfd",
+          "type": 8
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "4:1799461706223884117",
+  "lastEntityId": "5:3145808847447148529",
   "lastIndexId": "5:3959175721933196667",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
