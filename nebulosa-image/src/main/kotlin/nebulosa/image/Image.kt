@@ -178,8 +178,8 @@ class Image internal constructor(
         }
     }
 
-    fun writeTo(sink: Sink, format: ImageFormat) {
-        format.write(sink, listOf(hdu))
+    fun writeTo(sink: Sink, format: ImageFormat, modifier: ImageModifier = ImageModifier) {
+        format.write(sink, listOf(hdu), modifier)
     }
 
     /**

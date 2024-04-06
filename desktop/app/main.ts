@@ -250,6 +250,8 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
 
     browserWindows.set(id, window)
 
+    console.info('window created: ', id, window.id)
+
     return window
 }
 

@@ -1,5 +1,5 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import path from 'path'
+import { dirname } from 'path'
 import { MenuItem } from 'primeng/api'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
@@ -340,12 +340,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const defaultPath = this.preference.homeImageDirectory.get()
-            const filePath = await this.electron.openFits({ defaultPath })
+            const preference = this.preference.homePreference.get()
+            const path = await this.electron.openImage({ defaultPath: preference.imagePath })
 
-            if (filePath) {
-                this.preference.homeImageDirectory.set(path.dirname(filePath))
-                this.browserWindow.openImage({ path: filePath, source: 'PATH' })
+            if (path) {
+                preference.imagePath = dirname(path)
+                this.preference.homePreference.set(preference)
+                this.browserWindow.openImage({ path, source: 'PATH' })
             }
         } else {
             const camera = await this.imageMenu.show(this.cameras)

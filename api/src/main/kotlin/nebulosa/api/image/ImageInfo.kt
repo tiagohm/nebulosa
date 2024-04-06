@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import nebulosa.api.beans.converters.angle.DeclinationSerializer
 import nebulosa.api.beans.converters.angle.RightAscensionSerializer
+import nebulosa.fits.Bitpix
 import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.indi.device.camera.Camera
 import java.nio.file.Path
@@ -16,6 +17,7 @@ data class ImageInfo(
     @field:JsonSerialize(using = DeclinationSerializer::class) val declination: Double? = null,
     val solved: ImageSolved? = null,
     val headers: List<ImageHeaderItem> = emptyList(),
+    val bitpix: Bitpix = Bitpix.BYTE,
     val camera: Camera? = null,
     @JsonIgnoreProperties("histogram") val statistics: Statistics.Data? = null,
 )

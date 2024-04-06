@@ -7,7 +7,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
-import { DEFAULT_SOLVER_TYPES, DatabaseEntry, PlateSolverOptions, PlateSolverType } from '../../shared/types/settings.types'
+import { DEFAULT_SOLVER_TYPES, DatabaseEntry, PlateSolverPreference, PlateSolverType } from '../../shared/types/settings.types'
 import { compareBy, textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
@@ -23,7 +23,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 
     readonly solverTypes = Array.from(DEFAULT_SOLVER_TYPES)
     solverType = this.solverTypes[0]
-    readonly solvers = new Map<PlateSolverType, PlateSolverOptions>()
+    readonly solvers = new Map<PlateSolverType, PlateSolverPreference>()
 
     readonly database: DatabaseEntry[] = []
     databaseEntry?: DatabaseEntry
@@ -58,7 +58,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         this.location = preference.selectedLocation.get(this.locations[0])
 
         for (const type of this.solverTypes) {
-            this.solvers.set(type, preference.plateSolverOptions(type).get())
+            this.solvers.set(type, preference.plateSolverPreference(type).get())
         }
 
         for (let i = 0; i < localStorage.length; i++) {
@@ -151,7 +151,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 
     save() {
         for (const type of this.solverTypes) {
-            this.preference.plateSolverOptions(type).set(this.solvers.get(type)!)
+            this.preference.plateSolverPreference(type).set(this.solvers.get(type)!)
         }
     }
 }

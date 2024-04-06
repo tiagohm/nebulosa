@@ -1,10 +1,10 @@
-import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild, computed, model } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { Interactable } from '@interactjs/types/index'
 import hotkeys from 'hotkeys-js'
 import interact from 'interactjs'
 import createPanZoom, { PanZoom } from 'panzoom'
-import * as path from 'path'
+import { basename, dirname, extname } from 'path'
 import { MenuItem } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
@@ -17,7 +17,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
-import { DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, FOV, FOVCamera, FOVTelescope, ImageAnnotation, ImageChannel, ImageData, ImageInfo, ImagePreference, ImageSolved, ImageStatisticsBitOption, SCNRProtectionMethod, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeaders, ImageFOV, ImageInfo, ImagePreference, ImageROI, ImageSCNR, ImageSave, ImageSolved, ImageSolver, ImageStatisticsBitOption, ImageStretch, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
@@ -45,40 +45,63 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     @ViewChild('histogram')
     private readonly histogram!: HistogramComponent
 
-    debayer = true
-    calibrate = true
-    mirrorHorizontal = false
-    mirrorVertical = false
-    invert = false
+    imageInfo?: ImageInfo
+    private imageURL!: string
+    imageData: ImageData = {}
 
-    readonly scnrChannelOptions: ImageChannel[] = ['NONE', 'RED', 'GREEN', 'BLUE']
-    readonly scnrProtectionMethodOptions: SCNRProtectionMethod[] = [...SCNR_PROTECTION_METHODS]
+    readonly scnrChannels: { name: string, value?: ImageChannel }[] = [
+        { name: 'None', value: undefined },
+        { name: 'Red', value: 'RED' },
+        { name: 'Green', value: 'GREEN' },
+        { name: 'Blue', value: 'BLUE' },
+    ]
+    readonly scnrMethods = Array.from(SCNR_PROTECTION_METHODS)
+    readonly scnr: ImageSCNR = {
+        showDialog: false,
+        amount: 0.5,
+        method: 'AVERAGE_NEUTRAL',
+    }
 
-    showSCNRDialog = false
-    scnrChannel: ImageChannel = 'NONE'
-    scnrAmount = 0.5
-    scnrProtectionMethod: SCNRProtectionMethod = 'AVERAGE_NEUTRAL'
+    readonly stretch: ImageStretch = {
+        showDialog: false,
+        auto: true,
+        shadow: 0,
+        highlight: 1,
+        midtone: 0.5
+    }
+
+    readonly stretchShadow = model<number>(0)
+    readonly stretchHighlight = model<number>(65536)
+    readonly stretchMidtone = model<number>(32768)
+    readonly stretchShadowAndHighlight = computed(() => [this.stretchShadow(), this.stretchHighlight()])
+
+    readonly transformation: ImageTransformation = {
+        force: false,
+        calibrate: true,
+        debayer: true,
+        stretch: this.stretch,
+        mirrorHorizontal: false,
+        mirrorVertical: false,
+        invert: false,
+        scnr: this.scnr
+    }
 
     showAnnotationDialog = false
     annotateWithStarsAndDSOs = true
     annotateWithMinorPlanets = false
     annotateWithMinorPlanetsMagLimit = 12.0
 
-    autoStretched = true
-    showStretchingDialog = false
-    stretchShadowHighlight = [0, 65536]
-    stretchMidtone = 32768
-
-    showSolverDialog = false
-    solving = false
-    solved = false
-    solverBlind = true
-    solverCenterRA: Angle = ''
-    solverCenterDEC: Angle = ''
-    solverRadius = 4
-    readonly imageSolved = structuredClone(EMPTY_IMAGE_SOLVED)
-    readonly solverTypes = Array.from(DEFAULT_SOLVER_TYPES)
-    solverType = this.solverTypes[0]
+    readonly solver: ImageSolver = {
+        showDialog: false,
+        solving: false,
+        blind: true,
+        centerRA: '',
+        centerDEC: '',
+        radius: 4,
+        solved: structuredClone(EMPTY_IMAGE_SOLVED),
+        types: Array.from(DEFAULT_SOLVER_TYPES),
+        type: 'ASTAP'
+    }
 
     crossHair = false
     annotations: ImageAnnotation[] = []
@@ -87,37 +110,30 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     annotationInfo?: AstronomicalObject & Partial<Star & DeepSkyObject>
     annotationIsVisible = false
 
-    detectedStars: DetectedStar[] = []
-    detectedStarsIsVisible = false
+    readonly detectedStars: ImageDetectStars = {
+        visible: false,
+        stars: []
+    }
 
-    showFITSHeadersDialog = false
-    fitsHeaders: FITSHeaderItem[] = []
+    readonly fitsHeaders: ImageFITSHeaders = {
+        showDialog: false,
+        headers: []
+    }
 
     showStatisticsDialog = false
 
-    readonly statisticsBitOptions: ImageStatisticsBitOption[] = [
-        { name: 'Normalized: [0, 1]', rangeMax: 1, bitLength: 16 },
-        { name: '8-bit: [0, 255]', rangeMax: 255, bitLength: 8 },
-        { name: '9-bit: [0, 511]', rangeMax: 511, bitLength: 9 },
-        { name: '10-bit: [0, 1023]', rangeMax: 1023, bitLength: 10 },
-        { name: '12-bit: [0, 4095]', rangeMax: 4095, bitLength: 12 },
-        { name: '14-bit: [0, 16383]', rangeMax: 16383, bitLength: 14 },
-        { name: '16-bit: [0, 65535]', rangeMax: 65535, bitLength: 16 },
-    ]
-
+    readonly statisticsBitOptions: ImageStatisticsBitOption[] = IMAGE_STATISTICS_BIT_OPTIONS
     statisticsBitLength = this.statisticsBitOptions[0]
-    imageInfo?: ImageInfo
 
-    showFOVDialog = false
-    readonly fov = structuredClone(DEFAULT_FOV)
-    fovs: FOV[] = []
-    editedFOV?: FOV
-    showFOVCamerasDialog = false
-    fovCameras: FOVCamera[] = []
-    fovCamera?: FOVCamera
-    showFOVTelescopesDialog = false
-    fovTelescopes: FOVTelescope[] = []
-    fovTelescope?: FOVTelescope
+    readonly fov: ImageFOV = {
+        ...structuredClone(DEFAULT_FOV),
+        showDialog: false,
+        fovs: [],
+        showCameraDialog: false,
+        cameras: [],
+        showTelescopeDialog: false,
+        telescopes: [],
+    }
 
     get canAddFOV() {
         return this.fov.aperture && this.fov.focalLength &&
@@ -127,23 +143,45 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private panZoom?: PanZoom
-    private imageURL!: string
     private imageMouseX = 0
     private imageMouseY = 0
-    private imageData: ImageData = {}
 
-    roiX = 0
-    roiY = 0
-    roiWidth = 128
-    roiHeight = 128
     roiInteractable?: Interactable
+    readonly imageROI: ImageROI = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+    }
+
+    readonly saveAs: ImageSave = {
+        showDialog: false,
+        format: 'FITS',
+        bitpix: 'BYTE',
+        path: '',
+        shouldBeTransformed: true,
+        transformation: this.transformation
+    }
 
     private readonly saveAsMenuItem: MenuItem = {
         label: 'Save as...',
         icon: 'mdi mdi-content-save',
         command: async () => {
-            const path = await this.electron.saveFits()
-            if (path) this.api.saveImageAs(this.imageData.path!, path)
+            const preference = this.preference.imagePreference.get()
+
+            const path = await this.electron.saveImage({ defaultPath: preference.savePath })
+
+            if (path) {
+                const extension = extname(path).toLowerCase()
+                this.saveAs.format = extension === '.xisf' ? 'XISF' :
+                    extension === '.png' ? 'PNG' : extension === '.jpg' ? 'JPG' : 'FITS'
+                this.saveAs.bitpix = this.imageInfo?.bitpix || 'BYTE'
+                this.saveAs.path = path
+                this.saveAs.showDialog = true
+
+                preference.savePath = dirname(path)
+                this.preference.imagePreference.set(preference)
+            }
         },
     }
 
@@ -151,7 +189,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Plate Solve',
         icon: 'mdi mdi-sigma',
         command: () => {
-            this.showSolverDialog = true
+            this.solver.showDialog = true
         },
     }
 
@@ -159,7 +197,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Stretch',
         icon: 'mdi mdi-chart-histogram',
         command: () => {
-            this.showStretchingDialog = true
+            this.stretch.showDialog = true
         },
     }
 
@@ -178,7 +216,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-palette',
         disabled: true,
         command: () => {
-            this.showSCNRDialog = true
+            this.scnr.showDialog = true
         },
     }
 
@@ -187,8 +225,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-flip-horizontal',
         checked: false,
         command: () => {
-            this.mirrorHorizontal = !this.mirrorHorizontal
-            this.horizontalMirrorMenuItem.checked = this.mirrorHorizontal
+            this.transformation.mirrorHorizontal = !this.transformation.mirrorHorizontal
+            this.horizontalMirrorMenuItem.checked = this.transformation.mirrorHorizontal
             this.loadImage()
         },
     }
@@ -198,8 +236,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-flip-vertical',
         checked: false,
         command: () => {
-            this.mirrorVertical = !this.mirrorVertical
-            this.verticalMirrorMenuItem.checked = this.mirrorVertical
+            this.transformation.mirrorVertical = !this.transformation.mirrorVertical
+            this.verticalMirrorMenuItem.checked = this.transformation.mirrorVertical
             this.loadImage()
         },
     }
@@ -218,8 +256,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-tools',
         checked: true,
         command: () => {
-            this.calibrate = !this.calibrate
-            this.calibrateMenuItem.checked = this.calibrate
+            this.transformation.calibrate = !this.transformation.calibrate
+            this.calibrateMenuItem.checked = this.transformation.calibrate
             this.loadImage()
         },
     }
@@ -237,7 +275,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-list-box',
         label: 'FITS Header',
         command: () => {
-            this.showFITSHeadersDialog = true
+            this.fitsHeaders.showDialog = true
         },
     }
 
@@ -296,14 +334,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         toggleable: false,
         toggled: false,
         command: async () => {
-            this.detectedStars = await this.api.detectStars(this.imageData.path!)
-            this.detectedStarsIsVisible = this.detectedStars.length > 0
-            this.detectStarsMenuItem.toggleable = this.detectedStarsIsVisible
-            this.detectStarsMenuItem.toggled = this.detectedStarsIsVisible
+            this.detectedStars.stars = await this.api.detectStars(this.imageData.path!)
+            this.detectedStars.visible = this.detectedStars.stars.length > 0
+            this.detectStarsMenuItem.toggleable = this.detectedStars.visible
+            this.detectStarsMenuItem.toggled = this.detectedStars.visible
         },
         toggle: (event) => {
             event.originalEvent?.stopImmediatePropagation()
-            this.detectedStarsIsVisible = event.checked
+            this.detectedStars.visible = event.checked
         },
     }
 
@@ -351,10 +389,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Field of View',
         icon: 'mdi mdi-camera-metering-spot',
         command: () => {
-            this.showFOVDialog = !this.showFOVDialog
+            this.fov.showDialog = !this.fov.showDialog
 
-            if (this.showFOVDialog) {
-                this.fovs.forEach(e => this.computeFOV(e))
+            if (this.fov.showDialog) {
+                this.fov.fovs.forEach(e => this.computeFOV(e))
             }
         },
     }
@@ -396,7 +434,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private mouseCoordinateInterpolation?: CoordinateInterpolator
 
     get isMouseCoordinateVisible() {
-        return !!this.mouseCoordinate && !this.mirrorHorizontal && !this.mirrorVertical
+        return !!this.mouseCoordinate && !this.transformation.mirrorHorizontal
+            && !this.transformation.mirrorVertical
     }
 
     constructor(
@@ -410,6 +449,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         private ngZone: NgZone,
     ) {
         app.title = 'Image'
+
+        this.stretchShadow.subscribe(value => {
+            this.stretch.shadow = value / 65536
+        })
+
+        this.stretchHighlight.subscribe(value => {
+            this.stretch.highlight = value / 65536
+        })
+
+        this.stretchMidtone.subscribe(value => {
+            this.stretch.midtone = value / 65536
+        })
 
         electron.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
             if (event.state === 'EXPOSURE_FINISHED' && event.camera.id === this.imageData.camera?.id) {
@@ -483,10 +534,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         target.setAttribute('data-y', y)
 
         this.ngZone.run(() => {
-            this.roiX = Math.round(x)
-            this.roiY = Math.round(y)
-            this.roiWidth = Math.round(event.rect.width / scale)
-            this.roiHeight = Math.round(event.rect.height / scale)
+            this.imageROI.x = Math.round(x)
+            this.imageROI.y = Math.round(y)
+            this.imageROI.width = Math.round(event.rect.width / scale)
+            this.imageROI.height = Math.round(event.rect.height / scale)
         })
     }
 
@@ -504,8 +555,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         target.setAttribute('data-y', y)
 
         this.ngZone.run(() => {
-            this.roiX = Math.round(x)
-            this.roiY = Math.round(y)
+            this.imageROI.x = Math.round(x)
+            this.imageROI.y = Math.round(y)
         })
     }
 
@@ -535,11 +586,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.annotationIsVisible = false
         this.annotationMenuItem.toggleable = false
 
-        this.detectedStars = []
-        this.detectedStarsIsVisible = false
+        this.detectedStars.stars = []
+        this.detectedStars.visible = false
         this.detectStarsMenuItem.toggleable = false
 
-        Object.assign(this.imageSolved, EMPTY_IMAGE_SOLVED)
+        Object.assign(this.solver.solved, EMPTY_IMAGE_SOLVED)
 
         this.histogram?.update([])
     }
@@ -563,7 +614,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         } else if (this.imageData.camera) {
             this.app.subTitle = this.imageData.camera.name
         } else if (this.imageData.path) {
-            this.app.subTitle = path.basename(this.imageData.path)
+            this.app.subTitle = basename(this.imageData.path)
         } else {
             this.app.subTitle = ''
         }
@@ -571,26 +622,25 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private async loadImageFromPath(path: string) {
         const image = this.image.nativeElement
-        const scnrEnabled = this.scnrChannel !== 'NONE'
-        const { info, blob } = await this.api.openImage(path, this.imageData.camera, this.calibrate, this.debayer, !!this.imageData.camera, this.autoStretched,
-            this.stretchShadowHighlight[0] / 65536, this.stretchShadowHighlight[1] / 65536, this.stretchMidtone / 65536,
-            this.mirrorHorizontal, this.mirrorVertical, this.invert, scnrEnabled, scnrEnabled ? this.scnrChannel : 'GREEN', this.scnrAmount, this.scnrProtectionMethod)
+
+        const { info, blob } = await this.api.openImage(path, this.transformation, this.imageData.camera)
 
         this.imageInfo = info
         this.scnrMenuItem.disabled = info.mono
 
-        if (info.rightAscension) this.solverCenterRA = info.rightAscension
-        if (info.declination) this.solverCenterDEC = info.declination
-        this.solverBlind = !this.solverCenterRA || !this.solverCenterDEC
+        if (info.rightAscension) this.solver.centerRA = info.rightAscension
+        if (info.declination) this.solver.centerDEC = info.declination
+        this.solver.blind = !this.solver.centerRA || !this.solver.centerDEC
 
-        if (this.autoStretched) {
-            this.stretchShadowHighlight = [Math.trunc(info.stretchShadow * 65536), Math.trunc(info.stretchHighlight * 65536)]
-            this.stretchMidtone = Math.trunc(info.stretchMidtone * 65536)
+        if (this.stretch.auto) {
+            this.stretchShadow.set(Math.trunc(info.stretchShadow * 65536))
+            this.stretchHighlight.set(Math.trunc(info.stretchHighlight * 65536))
+            this.stretchMidtone.set(Math.trunc(info.stretchMidtone * 65536))
         }
 
         this.updateImageSolved(info.solved)
 
-        this.fitsHeaders = info.headers
+        this.fitsHeaders.headers = info.headers
 
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
         this.imageURL = window.URL.createObjectURL(blob)
@@ -623,6 +673,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
     }
 
+    async saveImageAs() {
+        await this.api.saveImageAs(this.imageData!.path!, this.saveAs, this.imageData.camera)
+        this.saveAs.showDialog = false
+    }
+
     async annotateImage() {
         try {
             this.annotating = true
@@ -643,26 +698,27 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private disableAutoStretch() {
-        this.autoStretched = false
+        this.stretch.auto = false
         this.autoStretchMenuItem.checked = false
     }
 
     private disableCalibrate(canEnable: boolean = true) {
-        this.calibrate = false
+        this.transformation.calibrate = false
         this.calibrateMenuItem.checked = false
         this.calibrateMenuItem.disabled = !canEnable
     }
 
     autoStretch() {
-        this.autoStretched = true
+        this.stretch.auto = true
         this.autoStretchMenuItem.checked = true
 
         this.loadImage()
     }
 
     resetStretch(load: boolean = true) {
-        this.stretchShadowHighlight = [0, 65536]
-        this.stretchMidtone = 32768
+        this.stretchShadow.set(0)
+        this.stretchHighlight.set(65536)
+        this.stretchMidtone.set(32768)
 
         if (load) {
             this.stretchImage()
@@ -670,10 +726,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     toggleStretch() {
-        this.autoStretched = !this.autoStretched
-        this.autoStretchMenuItem.checked = this.autoStretched
+        this.stretch.auto = !this.stretch.auto
+        this.autoStretchMenuItem.checked = this.stretch.auto
 
-        if (!this.autoStretched) {
+        if (!this.stretch.auto) {
             this.resetStretch()
         } else {
             this.loadImage()
@@ -686,8 +742,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     invertImage() {
-        this.invert = !this.invert
-        this.invertMenuItem.checked = this.invert
+        this.transformation.invert = !this.transformation.invert
+        this.invertMenuItem.checked = this.transformation.invert
         this.loadImage()
     }
 
@@ -733,33 +789,32 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     async solveImage() {
-        this.solving = true
+        this.solver.solving = true
 
         try {
-            const options = this.preference.plateSolverOptions(this.solverType).get()
-            const solved = await this.api.solveImage(options, this.imageData.path!, this.solverBlind,
-                this.solverCenterRA, this.solverCenterDEC, this.solverRadius)
+            const solver = this.preference.plateSolverPreference(this.solver.type).get()
+            const solved = await this.api.solveImage(solver, this.imageData.path!, this.solver.blind,
+                this.solver.centerRA, this.solver.centerDEC, this.solver.radius)
 
             this.savePreference()
             this.updateImageSolved(solved)
         } catch {
             this.updateImageSolved(this.imageInfo?.solved)
         } finally {
-            this.solving = false
+            this.solver.solving = false
             this.retrieveCoordinateInterpolation()
         }
     }
 
     private updateImageSolved(solved?: ImageSolved) {
-        this.solved = !!solved
-        Object.assign(this.imageSolved, solved ?? EMPTY_IMAGE_SOLVED)
-        this.annotationMenuItem.disabled = !this.solved
-        this.fovMenuItem.disabled = !this.solved
-        this.pointMountHereMenuItem.disabled = !this.solved
-        this.frameAtThisCoordinateMenuItem.disabled = !this.solved
+        Object.assign(this.solver.solved, solved ?? EMPTY_IMAGE_SOLVED)
+        this.annotationMenuItem.disabled = !this.solver.solved.solved
+        this.fovMenuItem.disabled = !this.solver.solved.solved
+        this.pointMountHereMenuItem.disabled = !this.solver.solved.solved
+        this.frameAtThisCoordinateMenuItem.disabled = !this.solver.solved.solved
 
-        if (solved) this.fovs.forEach(e => this.computeFOV(e))
-        else this.fovs.forEach(e => e.computed = undefined)
+        if (solved) this.fov.fovs.forEach(e => this.computeFOV(e))
+        else this.fov.fovs.forEach(e => e.computed = undefined)
     }
 
     mountSync(coordinate: EquatorialCoordinateJ2000) {
@@ -781,7 +836,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     frame(coordinate: EquatorialCoordinateJ2000) {
-        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000, fov: this.imageSolved!.width / 60, rotation: this.imageSolved!.orientation } })
+        this.browserWindow.openFraming({ data: { rightAscension: coordinate.rightAscensionJ2000, declination: coordinate.declinationJ2000, fov: this.solver.solved!.width / 60, rotation: this.solver.solved!.orientation } })
     }
 
     imageLoaded() {
@@ -805,69 +860,69 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     async showFOVCameras() {
-        if (!this.fovCameras.length) {
-            this.fovCameras = await this.api.fovCameras()
+        if (!this.fov.cameras.length) {
+            this.fov.cameras = await this.api.fovCameras()
         }
 
-        this.fovCamera = undefined
-        this.showFOVCamerasDialog = true
+        this.fov.camera = undefined
+        this.fov.showCameraDialog = true
     }
 
     async showFOVTelescopes() {
-        if (!this.fovTelescopes.length) {
-            this.fovTelescopes = await this.api.fovTelescopes()
+        if (!this.fov.telescopes.length) {
+            this.fov.telescopes = await this.api.fovTelescopes()
         }
 
-        this.fovTelescope = undefined
-        this.showFOVTelescopesDialog = true
+        this.fov.telescope = undefined
+        this.fov.showTelescopeDialog = true
     }
 
     chooseCamera() {
-        if (this.fovCamera) {
-            this.fov.cameraSize.width = this.fovCamera.width
-            this.fov.cameraSize.height = this.fovCamera.height
-            this.fov.pixelSize.width = this.fovCamera.pixelSize
-            this.fov.pixelSize.height = this.fovCamera.pixelSize
-            this.fovCamera = undefined
-            this.showFOVCamerasDialog = false
+        if (this.fov.camera) {
+            this.fov.cameraSize.width = this.fov.camera.width
+            this.fov.cameraSize.height = this.fov.camera.height
+            this.fov.pixelSize.width = this.fov.camera.pixelSize
+            this.fov.pixelSize.height = this.fov.camera.pixelSize
+            this.fov.camera = undefined
+            this.fov.showCameraDialog = false
         }
     }
 
     chooseTelescope() {
-        if (this.fovTelescope) {
-            this.fov.aperture = this.fovTelescope.aperture
-            this.fov.focalLength = this.fovTelescope.focalLength
-            this.fovTelescope = undefined
-            this.showFOVTelescopesDialog = false
+        if (this.fov.telescope) {
+            this.fov.aperture = this.fov.telescope.aperture
+            this.fov.focalLength = this.fov.telescope.focalLength
+            this.fov.telescope = undefined
+            this.fov.showTelescopeDialog = false
         }
     }
 
     addFOV() {
         if (this.computeFOV(this.fov)) {
-            this.fovs.push(structuredClone(this.fov))
-            this.preference.imageFOVs.set(this.fovs)
+            this.fov.fovs.push(structuredClone(this.fov))
+            this.preference.imageFOVs.set(this.fov.fovs)
         }
     }
 
     editFOV(fov: FOV) {
         Object.assign(this.fov, structuredClone(fov))
-        this.editedFOV = fov
+        this.fov.edited = fov
     }
 
     cancelEditFOV() {
-        this.editedFOV = undefined
+        this.fov.edited = undefined
     }
 
     saveFOV() {
-        if (this.editedFOV && this.computeFOV(this.fov)) {
-            Object.assign(this.editedFOV, structuredClone(this.fov))
-            this.preference.imageFOVs.set(this.fovs)
-            this.editedFOV = undefined
+        if (this.fov.edited && this.computeFOV(this.fov)) {
+            Object.assign(this.fov.edited, structuredClone(this.fov))
+            this.preference.imageFOVs.set(this.fov.fovs)
+            this.fov.edited = undefined
         }
     }
 
     private computeFOV(fov: FOV) {
-        if (this.imageInfo && this.imageSolved.scale > 0) {
+        if (this.imageInfo && this.solver.solved.scale > 0) {
             const focalLength = fov.focalLength * (fov.barlowReducer || 1)
 
             const resolution = {
@@ -878,8 +933,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             const svg = {
                 x: this.imageInfo.width / 2,
                 y: this.imageInfo.height / 2,
-                width: fov.cameraSize.width * (resolution.width / this.imageSolved.scale),
-                height: fov.cameraSize.height * (resolution.height / this.imageSolved.scale),
+                width: fov.cameraSize.width * (resolution.width / this.solver.solved.scale),
+                height: fov.cameraSize.height * (resolution.height / this.solver.solved.scale),
             }
 
             svg.x += (this.imageInfo.width - svg.width) / 2
@@ -907,30 +962,30 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     deleteFOV(fov: FOV) {
-        const index = this.fovs.indexOf(fov)
+        const index = this.fov.fovs.indexOf(fov)
 
         if (index >= 0) {
-            if (this.fovs[index] === this.editedFOV) {
-                this.editedFOV = undefined
+            if (this.fov.fovs[index] === this.fov.edited) {
+                this.fov.edited = undefined
             }
 
-            this.fovs.splice(index, 1)
-            this.preference.imageFOVs.set(this.fovs)
+            this.fov.fovs.splice(index, 1)
+            this.preference.imageFOVs.set(this.fov.fovs)
         }
     }
 
     private loadPreference() {
         const preference = this.preference.imagePreference.get()
-        this.solverRadius = preference.solverRadius ?? this.solverRadius
-        this.solverType = preference.solverType ?? this.solverTypes[0]
-        this.fovs = this.preference.imageFOVs.get()
-        this.fovs.forEach(e => { e.enabled = false; e.computed = undefined })
+        this.solver.radius = preference.solverRadius ?? this.solver.radius
+        this.solver.type = preference.solverType ?? this.solver.types[0]
+        this.fov.fovs = this.preference.imageFOVs.get()
+        this.fov.fovs.forEach(e => { e.enabled = false; e.computed = undefined })
     }
 
     private savePreference() {
         const preference: ImagePreference = {
-            solverRadius: this.solverRadius,
-            solverType: this.solverType
+            solverRadius: this.solver.radius,
+            solverType: this.solver.type
         }
 
         this.preference.imagePreference.set(preference)

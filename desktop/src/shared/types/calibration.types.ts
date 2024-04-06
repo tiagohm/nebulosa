@@ -21,3 +21,7 @@ export interface CalibrationFrameGroup {
     key: Omit<CalibrationFrame, 'id' | 'camera' | 'path' | 'enabled'>
     frames: CalibrationFrame[]
 }
+
+export interface CalibrationPreference {
+    openPath?: string
+}

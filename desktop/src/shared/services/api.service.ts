@@ -10,10 +10,10 @@ import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
 import { ConnectionStatus, ConnectionType } from '../types/home.types'
-import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, SCNRProtectionMethod } from '../types/image.types'
+import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageSave, ImageSolved, ImageTransformation } from '../types/image.types'
 import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
 import { SequencePlan } from '../types/sequencer.types'
-import { PlateSolverOptions } from '../types/settings.types'
+import { PlateSolverPreference } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
 import { HttpService } from './http.service'
 
@@ -314,29 +314,10 @@ export class ApiService {
 
     // IMAGE
 
-    async openImage(
-        path: string,
-        camera?: Camera,
-        calibrate: boolean = false,
-        debayer: boolean = false,
-        force: boolean = false,
-        autoStretch: boolean = true,
-        shadow: number = 0,
-        highlight: number = 1,
-        midtone: number = 0.5,
-        mirrorHorizontal: boolean = false,
-        mirrorVertical: boolean = false,
-        invert: boolean = false,
-        scnrEnabled: boolean = false,
-        scnrChannel: ImageChannel = 'GREEN',
-        scnrAmount: number = 0.5,
-        scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL',
-    ) {
-        const query = this.http.query({ path, camera: camera?.name, calibrate, force, debayer, autoStretch, shadow, highlight, midtone, mirrorHorizontal, mirrorVertical, invert, scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode })
-        const response = await this.http.getBlob(`image?${query}`)
-
+    async openImage(path: string, transformation: ImageTransformation, camera?: Camera) {
+        const query = this.http.query({ path, camera: camera?.name })
+        const response = await this.http.postBlob(`image?${query}`, transformation)
         const info = JSON.parse(response.headers.get('X-Image-Info')!) as ImageInfo
-
         return { info, blob: response.body! }
     }
 
@@ -474,9 +455,9 @@ export class ApiService {
         return this.http.get<ImageAnnotation[]>(`image/annotations?${query}`)
     }
 
-    saveImageAs(inputPath: string, outputPath: string) {
-        const query = this.http.query({ inputPath, outputPath })
-        return this.http.put<void>(`image/save-as?${query}`)
+    saveImageAs(path: string, save: ImageSave, camera?: Camera) {
+        const query = this.http.query({ path, camera: camera?.name })
+        return this.http.put<void>(`image/save-as?${query}`, save)
     }
 
     coordinateInterpolation(path: string) {
@@ -588,10 +569,10 @@ export class ApiService {
     // SOLVER
 
     solveImage(
-        options: PlateSolverOptions, path: string, blind: boolean,
+        solver: PlateSolverPreference, path: string, blind: boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ) {
-        const query = this.http.query({ ...options, path, blind, centerRA, centerDEC, radius })
+        const query = this.http.query({ ...solver, path, blind, centerRA, centerDEC, radius })
         return this.http.put<ImageSolved>(`plate-solver?${query}`)
     }
 
