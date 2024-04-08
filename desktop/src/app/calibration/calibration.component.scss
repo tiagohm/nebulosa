@@ -1,0 +1,11 @@
+:host {
+    ::ng-deep {
+        .p-treenode-label {
+            width: 100%;
+        }
+
+        .p-tree-wrapper {
+            max-height: 288px;
+        }
+    }
+}

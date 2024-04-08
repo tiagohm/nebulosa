@@ -21,7 +21,7 @@ class ImageController(
     @PostMapping
     fun openImage(
         @RequestParam path: Path,
-        @DeviceOrEntityParam(required = false) camera: Camera?,
+        @RequestParam(required = false) camera: Camera?,
         @RequestBody transformation: ImageTransformation,
         output: HttpServletResponse,
     ) = imageService.openImage(path, camera, transformation, output)
@@ -34,7 +34,7 @@ class ImageController(
     @PutMapping("save-as")
     fun saveImageAs(
         @RequestParam path: Path,
-        @DeviceOrEntityParam(required = false) camera: Camera?,
+        @RequestParam(required = false) camera: Camera?,
         @RequestBody save: SaveImage
     ) {
         imageService.saveImageAs(path, save, camera)

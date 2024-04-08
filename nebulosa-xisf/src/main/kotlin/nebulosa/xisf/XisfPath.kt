@@ -13,8 +13,6 @@ data class XisfPath(val path: Path) : Xisf(), Closeable {
 
     constructor(file: File) : this(file.toPath())
 
-    constructor(path: String) : this(Path.of(path))
-
     fun read() {
         read(source)
     }

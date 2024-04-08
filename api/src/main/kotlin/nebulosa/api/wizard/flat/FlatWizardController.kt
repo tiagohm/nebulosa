@@ -15,12 +15,12 @@ class FlatWizardController(
 ) {
 
     @PutMapping("{camera}/start")
-    fun startCapture(@DeviceOrEntityParam camera: Camera, @RequestBody @Valid body: FlatWizardRequest) {
+    fun startCapture(camera: Camera, @RequestBody @Valid body: FlatWizardRequest) {
         flatWizardService.startCapture(camera, body)
     }
 
     @PutMapping("{camera}/stop")
-    fun stopCapture(@DeviceOrEntityParam camera: Camera) {
+    fun stopCapture(camera: Camera) {
         flatWizardService.stopCapture(camera)
     }
 }

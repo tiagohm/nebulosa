@@ -16,7 +16,7 @@ class PolarAlignmentController(
 
     @PutMapping("darv/{camera}/{guideOutput}/start")
     fun darvStart(
-        @DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam guideOutput: GuideOutput,
+        camera: Camera, guideOutput: GuideOutput,
         @RequestBody body: DARVStartRequest,
     ) = polarAlignmentService.darvStart(camera, guideOutput, body)
 
@@ -27,7 +27,7 @@ class PolarAlignmentController(
 
     @PutMapping("tppa/{camera}/{mount}/start")
     fun tppaStart(
-        @DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam mount: Mount,
+        camera: Camera, mount: Mount,
         @RequestBody body: TPPAStartRequest,
     ) = polarAlignmentService.tppaStart(camera, mount, body)
 

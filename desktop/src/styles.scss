@@ -235,7 +235,8 @@ p-contextmenu *,
 p-dropdown *,
 p-dropdownitem *,
 .p-multiselect-header *,
-.no-draggable-region {
+.no-draggable-region,
+.p-button.p-dialog-header-close {
     -webkit-app-region: no-drag;
 }
 

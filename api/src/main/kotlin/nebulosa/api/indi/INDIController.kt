@@ -13,20 +13,20 @@ class INDIController(
 ) {
 
     @GetMapping("{device}/properties")
-    fun properties(@DeviceOrEntityParam device: Device): Collection<PropertyVector<*, *>> {
+    fun properties(device: Device): Collection<PropertyVector<*, *>> {
         return indiService.properties(device)
     }
 
     @PutMapping("{device}/send")
     fun sendProperty(
-        @DeviceOrEntityParam device: Device,
+        device: Device,
         @RequestBody @Valid body: INDISendProperty,
     ) {
         return indiService.sendProperty(device, body)
     }
 
     @GetMapping("{device}/log")
-    fun log(@DeviceOrEntityParam device: Device): List<String> {
+    fun log(device: Device): List<String> {
         return synchronized(device.messages) { device.messages }
     }
 

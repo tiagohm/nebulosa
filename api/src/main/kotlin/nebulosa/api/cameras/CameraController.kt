@@ -23,33 +23,33 @@ class CameraController(
     }
 
     @GetMapping("{camera}")
-    fun camera(@DeviceOrEntityParam camera: Camera): Camera {
+    fun camera(camera: Camera): Camera {
         return camera
     }
 
     @PutMapping("{camera}/connect")
-    fun connect(@DeviceOrEntityParam camera: Camera) {
+    fun connect(camera: Camera) {
         cameraService.connect(camera)
     }
 
     @PutMapping("{camera}/disconnect")
-    fun disconnect(@DeviceOrEntityParam camera: Camera) {
+    fun disconnect(camera: Camera) {
         cameraService.disconnect(camera)
     }
 
     @PutMapping("{camera}/snoop")
     fun snoop(
-        @DeviceOrEntityParam camera: Camera,
-        @DeviceOrEntityParam(required = false) mount: Mount?,
-        @DeviceOrEntityParam(required = false) wheel: FilterWheel?,
-        @DeviceOrEntityParam(required = false) focuser: Focuser?,
+        camera: Camera,
+        @RequestParam(required = false) mount: Mount?,
+        @RequestParam(required = false) wheel: FilterWheel?,
+        @RequestParam(required = false) focuser: Focuser?,
     ) {
         cameraService.snoop(camera, mount, wheel, focuser)
     }
 
     @PutMapping("{camera}/cooler")
     fun cooler(
-        @DeviceOrEntityParam camera: Camera,
+        camera: Camera,
         @RequestParam enabled: Boolean,
     ) {
         cameraService.cooler(camera, enabled)
@@ -57,7 +57,7 @@ class CameraController(
 
     @PutMapping("{camera}/temperature/setpoint")
     fun setpointTemperature(
-        @DeviceOrEntityParam camera: Camera,
+        camera: Camera,
         @RequestParam @Valid @Range(min = -50, max = 50) temperature: Double,
     ) {
         cameraService.setpointTemperature(camera, temperature)
@@ -65,12 +65,12 @@ class CameraController(
 
     @PutMapping("{camera}/capture/start")
     fun startCapture(
-        @DeviceOrEntityParam camera: Camera,
+        camera: Camera,
         @RequestBody body: CameraStartCaptureRequest,
     ) = cameraService.startCapture(camera, body)
 
     @PutMapping("{camera}/capture/abort")
-    fun abortCapture(@DeviceOrEntityParam camera: Camera) {
+    fun abortCapture(camera: Camera) {
         cameraService.abortCapture(camera)
     }
 }

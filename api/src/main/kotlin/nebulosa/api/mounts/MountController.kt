@@ -32,23 +32,23 @@ class MountController(
     }
 
     @GetMapping("{mount}")
-    fun mount(@DeviceOrEntityParam mount: Mount): Mount {
+    fun mount(mount: Mount): Mount {
         return mount
     }
 
     @PutMapping("{mount}/connect")
-    fun connect(@DeviceOrEntityParam mount: Mount) {
+    fun connect(mount: Mount) {
         mountService.connect(mount)
     }
 
     @PutMapping("{mount}/disconnect")
-    fun disconnect(@DeviceOrEntityParam mount: Mount) {
+    fun disconnect(mount: Mount) {
         mountService.disconnect(mount)
     }
 
     @PutMapping("{mount}/tracking")
     fun tracking(
-        @DeviceOrEntityParam mount: Mount,
+        mount: Mount,
         @RequestParam enabled: Boolean,
     ) {
         mountService.tracking(mount, enabled)
@@ -56,7 +56,7 @@ class MountController(
 
     @PutMapping("{mount}/sync")
     fun sync(
-        @DeviceOrEntityParam mount: Mount,
+        mount: Mount,
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
@@ -66,7 +66,7 @@ class MountController(
 
     @PutMapping("{mount}/slew")
     fun slew(
-        @DeviceOrEntityParam mount: Mount,
+        mount: Mount,
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
@@ -76,7 +76,7 @@ class MountController(
 
     @PutMapping("{mount}/goto")
     fun goTo(
-        @DeviceOrEntityParam mount: Mount,
+        mount: Mount,
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
@@ -85,18 +85,18 @@ class MountController(
     }
 
     @PutMapping("{mount}/home")
-    fun home(@DeviceOrEntityParam mount: Mount) {
+    fun home(mount: Mount) {
         mountService.home(mount)
     }
 
     @PutMapping("{mount}/abort")
-    fun abort(@DeviceOrEntityParam mount: Mount) {
+    fun abort(mount: Mount) {
         mountService.abort(mount)
     }
 
     @PutMapping("{mount}/track-mode")
     fun trackMode(
-        @DeviceOrEntityParam mount: Mount,
+        mount: Mount,
         @RequestParam mode: TrackMode,
     ) {
         mountService.trackMode(mount, mode)
@@ -104,7 +104,7 @@ class MountController(
 
     @PutMapping("{mount}/slew-rate")
     fun slewRate(
-        @DeviceOrEntityParam mount: Mount,
+        mount: Mount,
         @RequestParam @Valid @NotBlank rate: String,
     ) {
         mountService.slewRate(mount, mount.slewRates.first { it.name == rate })
@@ -112,7 +112,7 @@ class MountController(
 
     @PutMapping("{mount}/move")
     fun move(
-        @DeviceOrEntityParam mount: Mount,
+        mount: Mount,
         @RequestParam direction: GuideDirection,
         @RequestParam enabled: Boolean,
     ) {
@@ -120,18 +120,18 @@ class MountController(
     }
 
     @PutMapping("{mount}/park")
-    fun park(@DeviceOrEntityParam mount: Mount) {
+    fun park(mount: Mount) {
         mountService.park(mount)
     }
 
     @PutMapping("{mount}/unpark")
-    fun unpark(@DeviceOrEntityParam mount: Mount) {
+    fun unpark(mount: Mount) {
         mountService.unpark(mount)
     }
 
     @PutMapping("{mount}/coordinates")
     fun coordinates(
-        @DeviceOrEntityParam mount: Mount,
+        mount: Mount,
         @RequestParam @Valid @NotBlank longitude: String,
         @RequestParam @Valid @NotBlank latitude: String,
         @RequestParam(required = false, defaultValue = "0.0") elevation: Double,
@@ -141,7 +141,7 @@ class MountController(
 
     @PutMapping("{mount}/datetime")
     fun dateTime(
-        @DeviceOrEntityParam mount: Mount,
+        mount: Mount,
         @DateAndTimeParam dateTime: LocalDateTime,
         @RequestParam @Valid @Range(min = -720, max = 720) offsetInMinutes: Int,
     ) {
@@ -149,7 +149,7 @@ class MountController(
     }
 
     @GetMapping("{mount}/location/{type}")
-    fun celestialLocation(@DeviceOrEntityParam mount: Mount, @PathVariable type: CelestialLocationType): ComputedLocation {
+    fun celestialLocation(mount: Mount, @PathVariable type: CelestialLocationType): ComputedLocation {
         return when (type) {
             CelestialLocationType.ZENITH -> mountService.computeZenithLocation(mount)
             CelestialLocationType.NORTH_POLE -> mountService.computeNorthCelestialPoleLocation(mount)
@@ -162,7 +162,7 @@ class MountController(
 
     @GetMapping("{mount}/location")
     fun location(
-        @DeviceOrEntityParam mount: Mount,
+        mount: Mount,
         @RequestParam rightAscension: String, @RequestParam declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
         @RequestParam(required = false, defaultValue = "true") equatorial: Boolean,
@@ -177,7 +177,7 @@ class MountController(
 
     @PutMapping("{mount}/point-here")
     fun pointMountHere(
-        @DeviceOrEntityParam mount: Mount,
+        mount: Mount,
         @RequestParam path: Path,
         @RequestParam @Valid @PositiveOrZero x: Double,
         @RequestParam @Valid @PositiveOrZero y: Double,

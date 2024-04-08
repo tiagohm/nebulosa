@@ -16,12 +16,12 @@ class SequencerController(
 
     @PutMapping("{camera}/start")
     fun startSequencer(
-        @DeviceOrEntityParam camera: Camera,
+        camera: Camera,
         @RequestBody @Valid body: SequencePlanRequest,
     ) = sequencerService.start(camera, body)
 
     @PutMapping("{camera}/stop")
-    fun stopSequencer(@DeviceOrEntityParam camera: Camera) {
+    fun stopSequencer(camera: Camera) {
         sequencerService.stop(camera)
     }
 }

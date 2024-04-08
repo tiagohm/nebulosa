@@ -115,14 +115,14 @@ class SkyAtlasController(
 
     @GetMapping("satellites/{satellite}/position")
     fun positionOfSatellite(
-        @DeviceOrEntityParam satellite: SatelliteEntity,
+        satellite: SatelliteEntity,
         @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDateTime,
     ) = skyAtlasService.positionOfSatellite(location, satellite, dateTime)
 
     @GetMapping("satellites/{satellite}/altitude-points")
     fun altitudePointsOfSatellite(
-        @DeviceOrEntityParam satellite: SatelliteEntity,
+        satellite: SatelliteEntity,
         @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") stepSize: Int,

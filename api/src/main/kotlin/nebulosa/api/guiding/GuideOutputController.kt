@@ -22,23 +22,23 @@ class GuideOutputController(
     }
 
     @GetMapping("{guideOutput}")
-    fun guideOutput(@DeviceOrEntityParam guideOutput: GuideOutput): GuideOutput {
+    fun guideOutput(guideOutput: GuideOutput): GuideOutput {
         return guideOutput
     }
 
     @PutMapping("{guideOutput}/connect")
-    fun connect(@DeviceOrEntityParam guideOutput: GuideOutput) {
+    fun connect(guideOutput: GuideOutput) {
         guideOutputService.connect(guideOutput)
     }
 
     @PutMapping("{guideOutput}/disconnect")
-    fun disconnect(@DeviceOrEntityParam guideOutput: GuideOutput) {
+    fun disconnect(guideOutput: GuideOutput) {
         guideOutputService.disconnect(guideOutput)
     }
 
     @PutMapping("{guideOutput}/pulse")
     fun pulse(
-        @DeviceOrEntityParam guideOutput: GuideOutput,
+        guideOutput: GuideOutput,
         @RequestParam direction: GuideDirection,
         @RequestParam @DurationMin(nanos = 0L) @DurationMax(seconds = 60L) duration: Duration,
     ) {

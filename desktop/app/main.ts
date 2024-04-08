@@ -173,6 +173,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         frame: false, modal, parent,
         width: savedSize?.width || width,
         height: savedSize?.height || height,
+        minHeight: options.minHeight || 200,
         x: savedPos?.x ?? undefined,
         y: savedPos?.y ?? undefined,
         resizable: serve || resizable,
@@ -208,6 +209,8 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
     })
 
     window.on('close', () => {
+        console.info('window closed: ', id, window.id)
+
         const homeWindow = browserWindows.get('home')
 
         if (!modal) {
@@ -392,7 +395,6 @@ try {
 
     ipcMain.handle('FILE.OPEN', async (event, data?: OpenFile) => {
         const ownerWindow = findWindowById(event.sender.id)
-
         const value = await dialog.showOpenDialog(ownerWindow!.window, {
             filters: data?.filters,
             properties: ['openFile'],

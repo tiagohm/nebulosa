@@ -21,23 +21,23 @@ class WheelController(
     }
 
     @GetMapping("{wheel}")
-    fun wheel(@DeviceOrEntityParam wheel: FilterWheel): FilterWheel {
+    fun wheel(wheel: FilterWheel): FilterWheel {
         return wheel
     }
 
     @PutMapping("{wheel}/connect")
-    fun connect(@DeviceOrEntityParam wheel: FilterWheel) {
+    fun connect(wheel: FilterWheel) {
         wheelService.connect(wheel)
     }
 
     @PutMapping("{wheel}/disconnect")
-    fun disconnect(@DeviceOrEntityParam wheel: FilterWheel) {
+    fun disconnect(wheel: FilterWheel) {
         wheelService.disconnect(wheel)
     }
 
     @PutMapping("{wheel}/move-to")
     fun moveTo(
-        @DeviceOrEntityParam wheel: FilterWheel,
+        wheel: FilterWheel,
         @RequestParam @Valid @PositiveOrZero position: Int,
     ) {
         wheelService.moveTo(wheel, position)
@@ -45,7 +45,7 @@ class WheelController(
 
     @PutMapping("{wheel}/sync")
     fun sync(
-        @DeviceOrEntityParam wheel: FilterWheel,
+        wheel: FilterWheel,
         @RequestParam @Valid @NotEmpty names: String,
     ) {
         wheelService.sync(wheel, names.split(","))

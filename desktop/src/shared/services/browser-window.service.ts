@@ -113,9 +113,9 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'calculator', path: 'calculator', data: undefined })
     }
 
-    openCalibration(options: OpenWindowOptionsWithData<Camera>) {
-        Object.assign(options, { icon: 'stack', width: 510, height: 508 })
-        this.openWindow({ ...options, id: 'calibration', path: 'calibration' })
+    openCalibration(options: OpenWindowOptions = {}) {
+        Object.assign(options, { icon: 'stack', width: 420, height: 400, minHeight: 400 })
+        this.openWindow({ ...options, id: 'calibration', path: 'calibration', data: undefined })
     }
 
     openAbout() {

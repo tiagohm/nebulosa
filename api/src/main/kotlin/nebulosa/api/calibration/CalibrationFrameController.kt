@@ -1,37 +1,41 @@
 package nebulosa.api.calibration
 
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
-import nebulosa.indi.device.camera.Camera
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
 
+@Validated
 @RestController
 @RequestMapping("calibration-frames")
 class CalibrationFrameController(
     private val calibrationFrameService: CalibrationFrameService,
 ) {
 
-    @GetMapping("{camera}")
-    fun groups(@DeviceOrEntityParam camera: Camera): List<CalibrationFrameGroup> {
+    @GetMapping
+    fun groups() = calibrationFrameService.groups()
+
+    @GetMapping("{name}")
+    fun groupedCalibrationFrames(@PathVariable name: String): List<CalibrationFrameGroup> {
         var id = 0
-        val groupedFrames = calibrationFrameService.groupedCalibrationFrames(camera.name)
-        return groupedFrames.map { CalibrationFrameGroup(id++, it.key, it.value) }
+        val groupedFrames = calibrationFrameService.groupedCalibrationFrames(name)
+        return groupedFrames.map { CalibrationFrameGroup(++id, name, it.key, it.value) }
     }
 
-    @PutMapping("{camera}")
-    fun upload(@DeviceOrEntityParam camera: Camera, @RequestParam path: Path): List<CalibrationFrameEntity> {
-        return calibrationFrameService.upload(camera.name, path)
+    @PutMapping("{name}")
+    fun upload(@PathVariable name: String, @RequestParam path: Path): List<CalibrationFrameEntity> {
+        return calibrationFrameService.upload(name, path)
     }
 
-    @PatchMapping("{id}")
+    @PatchMapping("{frame}")
     fun edit(
-        @PathVariable id: Long,
-        @RequestParam(required = false) path: String? = "",
-        @RequestParam enabled: Boolean,
-    ) = calibrationFrameService.edit(id, path, enabled)
+        frame: CalibrationFrameEntity,
+        @Valid @NotBlank @RequestParam name: String, @RequestParam enabled: Boolean,
+    ) = calibrationFrameService.edit(frame, name, enabled)
 
-    @DeleteMapping("{id}")
-    fun delete(@PathVariable id: Long) {
-        calibrationFrameService.delete(id)
+    @DeleteMapping("{frame}")
+    fun delete(frame: CalibrationFrameEntity) {
+        calibrationFrameService.delete(frame)
     }
 }
