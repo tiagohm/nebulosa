@@ -1,7 +1,6 @@
 package nebulosa.api.wizard.flat
 
 import jakarta.validation.Valid
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.indi.device.camera.Camera
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody

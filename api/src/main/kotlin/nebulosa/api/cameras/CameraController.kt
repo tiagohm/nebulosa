@@ -1,7 +1,6 @@
 package nebulosa.api.cameras
 
 import jakarta.validation.Valid
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel

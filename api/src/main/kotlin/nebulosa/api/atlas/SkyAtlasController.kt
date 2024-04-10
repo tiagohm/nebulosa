@@ -5,7 +5,6 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.beans.converters.location.LocationParam
 import nebulosa.api.beans.converters.time.DateAndTimeParam
 import nebulosa.math.deg

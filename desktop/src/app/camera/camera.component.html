@@ -201,15 +201,19 @@
     </div>
     <div class="grid mt-0">
         <div class="col-12 flex flex-row align-items-center justify-content-center gap-2 py-0 text-300">
-            @if (equipment.mount?.id || equipment.wheel?.id || equipment.focuser?.id) {
-            <span *ngIf="equipment.mount?.id" class="text-xs flex gap-1px align-items-end"><i class="mdi mdi-sm mdi-telescope"></i>
+            @if ((equipment.mount?.id && equipment.mount?.connected) ||
+            (equipment.wheel?.id && equipment.wheel?.connected) ||
+            (equipment.focuser?.id && equipment.focuser?.connected)) {
+            <span *ngIf="equipment.mount?.id && equipment.mount?.connected" class="text-xs flex gap-1px align-items-end">
+                <i class="mdi mdi-sm mdi-telescope"></i>
                 {{ equipment.mount?.name }}
             </span>
-            <span *ngIf="equipment.wheel?.id" class="text-xs flex gap-1px align-items-end"><i class="mdi mdi-sm mdi-palette"></i>
+            <span *ngIf="equipment.wheel?.id && equipment.wheel?.connected" class="text-xs flex gap-1px align-items-end">
+                <i class="mdi mdi-sm mdi-palette"></i>
                 {{ equipment.wheel?.name }}
             </span>
-            <span *ngIf="equipment.focuser?.id" class="text-xs flex gap-1px align-items-end"><i
-                   class="mdi mdi-sm mdi-image-filter-center-focus"></i>
+            <span *ngIf="equipment.focuser?.id && equipment.focuser?.connected" class="text-xs flex gap-1px align-items-end">
+                <i class="mdi mdi-sm mdi-image-filter-center-focus"></i>
                 {{ equipment.focuser?.name }}
             </span>
             } @else {

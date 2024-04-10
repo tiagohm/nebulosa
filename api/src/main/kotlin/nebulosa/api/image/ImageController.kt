@@ -3,7 +3,6 @@ package nebulosa.api.image
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import nebulosa.api.atlas.Location
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.beans.converters.location.LocationParam
 import nebulosa.indi.device.camera.Camera
 import nebulosa.star.detection.ImageStar

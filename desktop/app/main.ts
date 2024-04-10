@@ -146,7 +146,8 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         }
     }
 
-    const height = options.height ? Math.trunc(computeHeight(options.height)) : 416
+    const minHeight = options.minHeight ?? 0
+    const height = Math.max(minHeight, options.height ? Math.trunc(computeHeight(options.height)) : 416)
 
     const id = options.id
     const resizable = options.resizable ?? false
@@ -155,12 +156,12 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
     const icon = options.icon ?? 'nebulosa'
     const data = encodeURIComponent(JSON.stringify(options.data || {}))
 
-    const savedPos = !modal ? database.get<Point>(`window.${id}.position`) : undefined
+    const savedPosition = !modal ? database.get<Point>(`window.${id}.position`) : undefined
     const savedSize = !modal && resizable ? database.get<Size>(`window.${id}.size`) : undefined
 
-    if (savedPos) {
-        savedPos.x = Math.max(0, Math.min(savedPos.x, screenSize.width))
-        savedPos.y = Math.max(0, Math.min(savedPos.y, screenSize.height))
+    if (savedPosition) {
+        savedPosition.x = Math.max(0, Math.min(savedPosition.x, screenSize.width))
+        savedPosition.y = Math.max(0, Math.min(savedPosition.y, screenSize.height))
     }
 
     if (savedSize) {
@@ -173,9 +174,9 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         frame: false, modal, parent,
         width: savedSize?.width || width,
         height: savedSize?.height || height,
-        minHeight: options.minHeight || 200,
-        x: savedPos?.x ?? undefined,
-        y: savedPos?.y ?? undefined,
+        minHeight,
+        x: savedPosition?.x ?? undefined,
+        y: savedPosition?.y ?? undefined,
         resizable: serve || resizable,
         autoHideMenuBar: true,
         icon: path.join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
@@ -189,7 +190,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         },
     })
 
-    if (!savedPos) {
+    if (!savedPosition) {
         window.center()
     }
 
@@ -483,7 +484,7 @@ try {
 
         const size = window.getContentSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
-        const height = Math.max(0, Math.min(data, maxHeight))
+        const height = Math.max(window.getMinimumSize()[1] || 0, Math.max(0, Math.min(data, maxHeight)))
         window.setContentSize(size[0], height)
         console.info('window auto resized:', size[0], height)
 

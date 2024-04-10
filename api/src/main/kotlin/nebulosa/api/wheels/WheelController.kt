@@ -3,7 +3,6 @@ package nebulosa.api.wheels
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.filterwheel.FilterWheel
 import org.springframework.web.bind.annotation.*

@@ -77,7 +77,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     readonly transformation: ImageTransformation = {
         force: false,
-        calibrate: true,
         debayer: true,
         stretch: this.stretch,
         mirrorHorizontal: false,
@@ -251,15 +250,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly calibrateMenuItem: CheckableMenuItem = {
-        label: 'Calibrate',
-        icon: 'mdi mdi-tools',
-        checked: true,
-        command: () => {
-            this.transformation.calibrate = !this.transformation.calibrate
-            this.calibrateMenuItem.checked = this.transformation.calibrate
-            this.loadImage()
-        },
+    private readonly calibrationMenuItem: MenuItem = {
+        label: 'Calibration',
+        icon: 'mdi mdi-wrench',
+        items: [],
     }
 
     private readonly statisticsMenuItem: MenuItem = {
@@ -420,7 +414,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.horizontalMirrorMenuItem,
         this.verticalMirrorMenuItem,
         this.invertMenuItem,
-        this.calibrateMenuItem,
+        this.calibrationMenuItem,
         SEPARATOR_MENU_ITEM,
         this.overlayMenuItem,
         this.statisticsMenuItem,
@@ -492,7 +486,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.loadPreference()
     }
 
-    ngAfterViewInit() {
+    async ngAfterViewInit() {
+        await this.loadCalibrationGroups()
+
         this.route.queryParams.subscribe(e => {
             const data = JSON.parse(decodeURIComponent(e.data)) as ImageData
             this.loadImageFromData(data)
@@ -504,6 +500,45 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.closeImage(true)
 
         this.roiInteractable?.unset()
+    }
+
+    private markCalibrationGroupItem(name: string) {
+        for (const item of this.calibrationMenuItem.items!) {
+            (item as CheckableMenuItem).checked = item.label === name
+        }
+    }
+
+    private async loadCalibrationGroups() {
+        const groups = await this.api.calibrationGroups()
+
+        const makeItem = (name?: string) => {
+            const label = name ?? 'None'
+            const icon = name ? 'mdi mdi-wrench' : 'mdi mdi-close'
+
+            return <CheckableMenuItem>{
+                label, icon, checked: false,
+                command: async () => {
+                    this.transformation.calibrationGroup = name
+                    this.markCalibrationGroupItem(label)
+                    await this.loadImage()
+                },
+            }
+        }
+
+        this.calibrationMenuItem.items!.push({
+            label: 'Open',
+            icon: 'mdi mdi-wrench',
+            command: () => this.browserWindow.openCalibration()
+        })
+
+        this.calibrationMenuItem.items!.push(SEPARATOR_MENU_ITEM)
+        this.calibrationMenuItem.items!.push(makeItem())
+
+        for (const group of groups) {
+            this.calibrationMenuItem.items!.push(makeItem(group))
+        }
+
+        this.menu.model = this.contextMenuItems
     }
 
     private async closeImage(force: boolean = false) {
@@ -565,15 +600,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         this.imageData = data
 
+        this.transformation.calibrationGroup = data.capture?.calibrationGroup
+        this.markCalibrationGroupItem(this.transformation.calibrationGroup ?? 'None')
+
         if (data.source === 'FRAMING') {
             this.disableAutoStretch()
             this.resetStretch(false)
         } else if (data.source === 'FLAT_WIZARD') {
-            this.disableCalibrate(false)
-        }
-
-        if (!data.camera) {
-            this.disableCalibrate()
+            this.disableCalibration(false)
         }
 
         this.clearOverlay()
@@ -702,10 +736,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.autoStretchMenuItem.checked = false
     }
 
-    private disableCalibrate(canEnable: boolean = true) {
-        this.transformation.calibrate = false
-        this.calibrateMenuItem.checked = false
-        this.calibrateMenuItem.disabled = !canEnable
+    private disableCalibration(canEnable: boolean = true) {
+        this.transformation.calibrationGroup = undefined
+        this.markCalibrationGroupItem('None')
+        this.calibrationMenuItem.disabled = !canEnable
     }
 
     autoStretch() {

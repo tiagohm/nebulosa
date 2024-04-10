@@ -66,11 +66,11 @@ data class AlpacaClient(
     }
 
     override fun cameras(): List<Camera> {
-        return synchronized(cameras) { cameras.values.toList() }
+        return cameras.values.toList()
     }
 
     override fun camera(name: String): Camera? {
-        return synchronized(cameras) { cameras[name] ?: cameras.values.find { it.name == name } }
+        return cameras[name] ?: cameras.values.find { it.name == name }
     }
 
     override fun mounts(): List<Mount> {

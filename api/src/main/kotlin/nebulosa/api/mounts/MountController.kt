@@ -3,7 +3,6 @@ package nebulosa.api.mounts
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.beans.converters.time.DateAndTimeParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.guiding.GuideDirection
