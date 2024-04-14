@@ -4,7 +4,9 @@
             <p-button styleClass="p-button-sm" label="New group" icon="mdi mdi-plus" (onClick)="showNewGroupDialogForAdd()" />
         </div>
         <div class="col-12">
-            <p-tree class="w-full" styleClass="border-0 p-0" [value]="frames" emptyMessage="No frames found">
+            <p-tree class="w-full" styleClass="border-0 p-0" [value]="frames" emptyMessage="No frames found"
+                    [draggableNodes]="true" [droppableNodes]="true" draggableScope="self" droppableScope="self"
+                    [validateDrop]="true" (onNodeDrop)="frameDropped($event)">
                 <ng-template let-node pTemplate="default">
                     <div class="w-full flex align-items-center justify-content-between gap-2">
                         @if (node.data.type === 'NAME') {

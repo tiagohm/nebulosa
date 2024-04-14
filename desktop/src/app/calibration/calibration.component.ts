@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
 import { dirname } from 'path'
-import { TreeNode } from 'primeng/api'
+import { TreeDragDropService, TreeNode } from 'primeng/api'
+import { TreeNodeDropEvent } from 'primeng/tree'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -25,6 +26,7 @@ export type TreeNodeData =
     selector: 'app-calibration',
     templateUrl: './calibration.component.html',
     styleUrls: ['./calibration.component.scss'],
+    providers: [TreeDragDropService],
 })
 export class CalibrationComponent implements AfterViewInit, OnDestroy {
 
@@ -52,7 +54,9 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
     ngOnDestroy() { }
 
     private makeTreeNode(key: string, label: string, data: TreeNodeData, parent?: CalibrationNode): CalibrationNode {
-        return { key, label, data, children: [], parent }
+        const draggable = data.type === 'FRAME'
+        const droppable = data.type === 'NAME'
+        return { key, label, data, children: [], parent, draggable, droppable }
     }
 
     addGroup(name: string) {
@@ -246,5 +250,18 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 
     editGroupName() {
         this.showNewGroupDialog = false
+    }
+
+    async frameDropped(event: TreeNodeDropEvent) {
+        const dragNode = event.dragNode as CalibrationNode
+        const dropNode = event.dropNode as CalibrationNode
+
+        if (dragNode.data.type === 'FRAME' && dropNode.data.type === 'NAME' &&
+            dragNode.data.data.name !== dropNode.data.data
+        ) {
+            dragNode.data.data.name = dropNode.data.data
+            await this.api.editCalibrationFrame(dragNode.data.data)
+            this.load()
+        }
     }
 }
