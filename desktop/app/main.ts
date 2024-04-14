@@ -485,7 +485,7 @@ try {
         const size = window.getContentSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
         const height = Math.max(window.getMinimumSize()[1] || 0, Math.max(0, Math.min(data, maxHeight)))
-        window.setContentSize(size[0], height)
+        resizeWindow(window, size[0], height)
         console.info('window auto resized:', size[0], height)
 
         return true
@@ -535,5 +535,13 @@ function sendToAllWindows(channel: string, data: any, home: boolean = true) {
 
     if (serve) {
         console.info(data)
+    }
+}
+
+function resizeWindow(window: BrowserWindow, width: number, height: number) {
+    if (process.platform === 'win32') {
+        window.setSize(width, height, false)
+    } else {
+        window.setContentSize(width, height, false)
     }
 }
