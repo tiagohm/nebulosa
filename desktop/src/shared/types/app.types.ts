@@ -35,6 +35,7 @@ export interface OpenWindowOptions {
     height?: number | string
     bringToFront?: boolean
     requestFocus?: boolean
+    minHeight?: number
 }
 
 export interface OpenWindowOptionsWithData<T> extends OpenWindowOptions {

@@ -1,5 +1,5 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import path from 'path'
+import { dirname } from 'path'
 import { MenuItem } from 'primeng/api'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
@@ -51,6 +51,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     domes: Camera[] = []
     rotators: Camera[] = []
     switches: Camera[] = []
+
+    currentPage = 0
 
     get connected() {
         return !!this.connection && this.connection.connected
@@ -340,12 +342,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const defaultPath = this.preference.homeImageDirectory.get()
-            const filePath = await this.electron.openFits({ defaultPath })
+            const preference = this.preference.homePreference.get()
+            const path = await this.electron.openImage({ defaultPath: preference.imagePath })
 
-            if (filePath) {
-                this.preference.homeImageDirectory.set(path.dirname(filePath))
-                this.browserWindow.openImage({ path: filePath, source: 'PATH' })
+            if (path) {
+                preference.imagePath = dirname(path)
+                this.preference.homePreference.set(preference)
+                this.browserWindow.openImage({ path, source: 'PATH' })
             }
         } else {
             const camera = await this.imageMenu.show(this.cameras)
@@ -440,6 +443,53 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 if (this.connection?.connected) {
                     break
                 }
+            }
+        }
+    }
+
+    private scrollPageOf(element: Element) {
+        return parseInt(element.getAttribute('scroll-page') || '0')
+    }
+
+    scrolled(event: Event) {
+        function isVisible(element: Element) {
+            const bound = element.getBoundingClientRect()
+
+            return bound.top >= 0 &&
+                bound.left >= 0 &&
+                bound.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                bound.right <= (window.innerWidth || document.documentElement.clientWidth)
+        }
+
+        let page = 0
+        const scrollChidren = document.getElementsByClassName('scroll-child')
+
+        for (let i = 0; i < scrollChidren.length; i++) {
+            const child = scrollChidren[i]
+
+            if (isVisible(child)) {
+                page = Math.max(page, this.scrollPageOf(child))
+            }
+        }
+
+        this.currentPage = page
+    }
+
+    scrollTo(event: Event, page: number) {
+        this.currentPage = page
+        this.scrollToPage(page)
+        event.stopImmediatePropagation()
+    }
+
+    scrollToPage(page: number) {
+        const scrollChidren = document.getElementsByClassName('scroll-child')
+
+        for (let i = 0; i < scrollChidren.length; i++) {
+            const child = scrollChidren[i]
+
+            if (this.scrollPageOf(child) === page) {
+                child.scrollIntoView({ behavior: 'smooth' })
+                break
             }
         }
     }

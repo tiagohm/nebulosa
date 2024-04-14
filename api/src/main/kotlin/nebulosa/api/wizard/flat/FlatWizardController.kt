@@ -1,7 +1,6 @@
 package nebulosa.api.wizard.flat
 
 import jakarta.validation.Valid
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.indi.device.camera.Camera
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -15,12 +14,12 @@ class FlatWizardController(
 ) {
 
     @PutMapping("{camera}/start")
-    fun startCapture(@DeviceOrEntityParam camera: Camera, @RequestBody @Valid body: FlatWizardRequest) {
+    fun startCapture(camera: Camera, @RequestBody @Valid body: FlatWizardRequest) {
         flatWizardService.startCapture(camera, body)
     }
 
     @PutMapping("{camera}/stop")
-    fun stopCapture(@DeviceOrEntityParam camera: Camera) {
+    fun stopCapture(camera: Camera) {
         flatWizardService.stopCapture(camera)
     }
 }

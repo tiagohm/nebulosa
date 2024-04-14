@@ -86,7 +86,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun camera(name: String): Camera? {
-        return cameras[name]
+        return cameras[name] ?: cameras.values.find { it.id == name }
     }
 
     override fun mounts(): List<Mount> {
@@ -94,7 +94,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun mount(name: String): Mount? {
-        return mounts[name]
+        return mounts[name] ?: mounts.values.find { it.id == name }
     }
 
     override fun focusers(): List<Focuser> {
@@ -102,7 +102,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun focuser(name: String): Focuser? {
-        return focusers[name]
+        return focusers[name] ?: focusers.values.find { it.id == name }
     }
 
     override fun wheels(): List<FilterWheel> {
@@ -110,7 +110,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun wheel(name: String): FilterWheel? {
-        return wheels[name]
+        return wheels[name] ?: wheels.values.find { it.id == name }
     }
 
     override fun gps(): List<GPS> {
@@ -118,7 +118,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun gps(name: String): GPS? {
-        return gps[name]
+        return gps[name] ?: gps.values.find { it.id == name }
     }
 
     override fun guideOutputs(): List<GuideOutput> {
@@ -126,7 +126,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun guideOutput(name: String): GuideOutput? {
-        return guideOutputs[name]
+        return guideOutputs[name] ?: guideOutputs.values.find { it.id == name }
     }
 
     override fun thermometers(): List<Thermometer> {
@@ -134,7 +134,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun thermometer(name: String): Thermometer? {
-        return thermometers[name]
+        return thermometers[name] ?: thermometers.values.find { it.id == name }
     }
 
     override fun close() {

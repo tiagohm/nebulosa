@@ -2,7 +2,6 @@ package nebulosa.api.alignment.polar
 
 import nebulosa.api.alignment.polar.darv.DARVStartRequest
 import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
@@ -16,7 +15,7 @@ class PolarAlignmentController(
 
     @PutMapping("darv/{camera}/{guideOutput}/start")
     fun darvStart(
-        @DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam guideOutput: GuideOutput,
+        camera: Camera, guideOutput: GuideOutput,
         @RequestBody body: DARVStartRequest,
     ) = polarAlignmentService.darvStart(camera, guideOutput, body)
 
@@ -27,7 +26,7 @@ class PolarAlignmentController(
 
     @PutMapping("tppa/{camera}/{mount}/start")
     fun tppaStart(
-        @DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam mount: Mount,
+        camera: Camera, mount: Mount,
         @RequestBody body: TPPAStartRequest,
     ) = polarAlignmentService.tppaStart(camera, mount, body)
 

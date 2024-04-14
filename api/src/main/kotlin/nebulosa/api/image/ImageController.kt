@@ -3,10 +3,7 @@ package nebulosa.api.image
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import nebulosa.api.atlas.Location
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.beans.converters.location.LocationParam
-import nebulosa.image.algorithms.transformation.ProtectionMethod
-import nebulosa.image.format.ImageChannel
 import nebulosa.indi.device.camera.Camera
 import nebulosa.star.detection.ImageStar
 import org.hibernate.validator.constraints.Range
@@ -20,32 +17,13 @@ class ImageController(
     private val imageService: ImageService,
 ) {
 
-    @GetMapping
+    @PostMapping
     fun openImage(
         @RequestParam path: Path,
-        @DeviceOrEntityParam(required = false) camera: Camera?,
-        @RequestParam(required = false, defaultValue = "true") debayer: Boolean,
-        @RequestParam(required = false, defaultValue = "false") calibrate: Boolean,
-        @RequestParam(required = false, defaultValue = "false") force: Boolean,
-        @RequestParam(required = false, defaultValue = "false") autoStretch: Boolean,
-        @RequestParam(required = false, defaultValue = "0.0") shadow: Float,
-        @RequestParam(required = false, defaultValue = "1.0") highlight: Float,
-        @RequestParam(required = false, defaultValue = "0.5") midtone: Float,
-        @RequestParam(required = false, defaultValue = "false") mirrorHorizontal: Boolean,
-        @RequestParam(required = false, defaultValue = "false") mirrorVertical: Boolean,
-        @RequestParam(required = false, defaultValue = "false") invert: Boolean,
-        @RequestParam(required = false, defaultValue = "false") scnrEnabled: Boolean,
-        @RequestParam(required = false, defaultValue = "GREEN") scnrChannel: ImageChannel,
-        @RequestParam(required = false, defaultValue = "0.5") scnrAmount: Float,
-        @RequestParam(required = false, defaultValue = "AVERAGE_NEUTRAL") scnrProtectionMode: ProtectionMethod,
+        @RequestParam(required = false) camera: Camera?,
+        @RequestBody transformation: ImageTransformation,
         output: HttpServletResponse,
-    ) = imageService.openImage(
-        path, camera,
-        debayer, calibrate, force, autoStretch, shadow, highlight, midtone,
-        mirrorHorizontal, mirrorVertical, invert,
-        scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode,
-        output,
-    )
+    ) = imageService.openImage(path, camera, transformation, output)
 
     @DeleteMapping
     fun closeImage(@RequestParam path: Path) {
@@ -53,8 +31,12 @@ class ImageController(
     }
 
     @PutMapping("save-as")
-    fun saveImageAs(@RequestParam inputPath: Path, @RequestParam outputPath: Path) {
-        imageService.saveImageAs(inputPath, outputPath)
+    fun saveImageAs(
+        @RequestParam path: Path,
+        @RequestParam(required = false) camera: Camera?,
+        @RequestBody save: SaveImage
+    ) {
+        imageService.saveImageAs(path, save, camera)
     }
 
     @GetMapping("annotations")

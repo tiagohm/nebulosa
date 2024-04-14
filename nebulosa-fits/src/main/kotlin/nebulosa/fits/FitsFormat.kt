@@ -5,12 +5,14 @@ import nebulosa.image.format.*
 import nebulosa.io.*
 import nebulosa.log.loggerFor
 import okio.Buffer
+import okio.BufferedSource
 import okio.Sink
 import java.io.EOFException
 import kotlin.math.max
 
 data object FitsFormat : ImageFormat {
 
+    const val SIGNATURE = "SIMPLE"
     const val BLOCK_SIZE = 2880
 
     @JvmStatic
@@ -19,6 +21,9 @@ data object FitsFormat : ImageFormat {
         val remainingByteCount = (numberOfBlocks * BLOCK_SIZE) - sizeInBytes
         return max(0L, remainingByteCount)
     }
+
+    @JvmStatic
+    fun BufferedSource.readSignature() = readString(6L, Charsets.US_ASCII)
 
     fun isImageHdu(header: ReadableHeader) =
         header.getBoolean(FitsKeyword.SIMPLE) || header.getStringOrNull(FitsKeyword.XTENSION) == "IMAGE"
@@ -66,8 +71,11 @@ data object FitsFormat : ImageFormat {
         val numberOfChannels = header.numberOfChannels
         val bitpix = header.bitpix
         val position = source.position
+        val rangeMin = header.getFloat(FitsKeyword.DATAMIN, 0f)
+        val rangeMax = header.getFloat(FitsKeyword.DATAMAX, 1f)
+        val range = rangeMin..rangeMax
 
-        val data = SeekableSourceImageData(source, position, width, height, numberOfChannels, bitpix)
+        val data = SeekableSourceImageData(source, position, width, height, numberOfChannels, bitpix, range)
         val skipBytes = computeRemainingBytesToSkip(data.totalSizeInBytes)
         if (skipBytes > 0L) source.seek(position + data.totalSizeInBytes + skipBytes)
 
@@ -99,10 +107,11 @@ data object FitsFormat : ImageFormat {
         return hdus
     }
 
-    fun writeHeader(header: ReadableHeader, sink: Sink) {
+    fun writeHeader(header: ReadableHeader, bitpix: Bitpix, sink: Sink) {
         Buffer().use { buffer ->
             for (card in header) {
-                buffer.writeString(card.formatted(), Charsets.US_ASCII)
+                if (card.key == bitpix.key) buffer.writeCard(bitpix)
+                else buffer.writeCard(card)
             }
 
             if (header.last().key != FitsHeaderCard.END.key) {
@@ -115,8 +124,7 @@ data object FitsFormat : ImageFormat {
         }
     }
 
-    fun writeImageData(data: ImageData, header: ReadableHeader, sink: Sink) {
-        val bitpix = header.bitpix
+    fun writeImageData(data: ImageData, bitpix: Bitpix, sink: Sink) {
         val channels = arrayOf(data.red, data.green, data.blue)
         var byteCount = 0L
 
@@ -141,11 +149,15 @@ data object FitsFormat : ImageFormat {
         }
     }
 
-    override fun write(sink: Sink, hdus: Iterable<Hdu<*>>) {
+    override fun write(sink: Sink, hdus: Iterable<Hdu<*>>, modifier: ImageModifier) {
+        val bitpix = modifier.bitpix()
+
         for (hdu in hdus) {
             if (hdu is ImageHdu) {
-                writeHeader(hdu.header, sink)
-                writeImageData(hdu.data, hdu.header, sink)
+                with(bitpix ?: hdu.header.bitpix) {
+                    writeHeader(hdu.header, this, sink)
+                    writeImageData(hdu.data, this, sink)
+                }
             }
         }
     }
@@ -172,6 +184,11 @@ data object FitsFormat : ImageFormat {
             Bitpix.FLOAT -> writeFloat(pixel)
             Bitpix.DOUBLE -> writeDouble(pixel.toDouble())
         }
+    }
+
+    @JvmStatic
+    private fun Buffer.writeCard(card: HeaderCard) {
+        writeString(card.formatted(), Charsets.US_ASCII)
     }
 
     @JvmStatic private val LOG = loggerFor<FitsFormat>()

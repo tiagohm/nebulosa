@@ -1,14 +1,18 @@
 import { Point, Size } from 'electron'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
-import { Camera } from './camera.types'
+import { Camera, CameraStartCapture } from './camera.types'
 import { PlateSolverType } from './settings.types'
 
-export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY' | 'NONE'
+export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
 
 export const SCNR_PROTECTION_METHODS = ['MAXIMUM_MASK', 'ADDITIVE_MASK', 'AVERAGE_NEUTRAL', 'MAXIMUM_NEUTRAL', 'MINIMUM_NEUTRAL'] as const
 export type SCNRProtectionMethod = (typeof SCNR_PROTECTION_METHODS)[number]
 
 export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD'
+
+export type ImageFormat = 'FITS' | 'XISF' | 'PNG' | 'JPG'
+
+export type Bitpix = 'BYTE' | 'SHORT' | 'INTEGER' | 'LONG' | 'FLOAT' | 'DOUBLE'
 
 export interface FITSHeaderItem {
     name: string
@@ -28,6 +32,7 @@ export interface ImageInfo {
     declination?: Angle
     solved?: ImageSolved
     headers: FITSHeaderItem[]
+    bitpix: Bitpix
     statistics: ImageStatistics
 }
 
@@ -40,6 +45,7 @@ export interface ImageAnnotation {
 }
 
 export interface ImageSolved extends EquatorialCoordinateJ2000 {
+    solved: boolean
     orientation: number
     scale: number
     width: number
@@ -48,6 +54,7 @@ export interface ImageSolved extends EquatorialCoordinateJ2000 {
 }
 
 export const EMPTY_IMAGE_SOLVED: ImageSolved = {
+    solved: false,
     orientation: 0,
     scale: 0,
     width: 0,
@@ -82,6 +89,16 @@ export interface ImageStatisticsBitOption {
     bitLength: number
 }
 
+export const IMAGE_STATISTICS_BIT_OPTIONS: ImageStatisticsBitOption[] = [
+    { name: 'Normalized: [0, 1]', rangeMax: 1, bitLength: 16 },
+    { name: '8-bit: [0, 255]', rangeMax: 255, bitLength: 8 },
+    { name: '9-bit: [0, 511]', rangeMax: 511, bitLength: 9 },
+    { name: '10-bit: [0, 1023]', rangeMax: 1023, bitLength: 10 },
+    { name: '12-bit: [0, 4095]', rangeMax: 4095, bitLength: 12 },
+    { name: '14-bit: [0, 16383]', rangeMax: 16383, bitLength: 14 },
+    { name: '16-bit: [0, 65535]', rangeMax: 65535, bitLength: 16 },
+] as const
+
 export interface ImageStatistics {
     count: number
     maxCount: number
@@ -98,6 +115,7 @@ export interface ImageStatistics {
 export interface ImagePreference {
     solverRadius?: number
     solverType?: PlateSolverType
+    savePath?: string
 }
 
 export const EMPTY_IMAGE_PREFERENCE: ImagePreference = {
@@ -110,6 +128,7 @@ export interface ImageData {
     path?: string
     source?: ImageSource
     title?: string
+    capture?: CameraStartCapture
 }
 
 export interface FOV {
@@ -163,4 +182,80 @@ export interface FOVCamera extends FOVEquipment {
 export interface FOVTelescope extends FOVEquipment {
     aperture: number
     focalLength: number
+}
+
+export interface ImageSCNR {
+    showDialog: boolean
+    channel?: ImageChannel
+    amount: number
+    method: SCNRProtectionMethod
+}
+
+export interface ImageDetectStars {
+    visible: boolean
+    stars: DetectedStar[]
+}
+
+export interface ImageFITSHeaders {
+    showDialog: boolean
+    headers: FITSHeaderItem[]
+}
+
+export interface ImageStretch {
+    showDialog: boolean
+    auto: boolean
+    shadow: number
+    highlight: number
+    midtone: number
+}
+
+export interface ImageSolver {
+    showDialog: boolean
+    solving: boolean
+    blind: boolean
+    centerRA: Angle
+    centerDEC: Angle
+    radius: number
+    readonly solved: ImageSolved
+    readonly types: PlateSolverType[]
+    type: PlateSolverType
+}
+
+export interface ImageFOV extends FOV {
+    showDialog: boolean
+    fovs: FOV[]
+    edited?: FOV
+    showCameraDialog: boolean
+    cameras: FOVCamera[]
+    camera?: FOVCamera
+    showTelescopeDialog: boolean
+    telescopes: FOVTelescope[]
+    telescope?: FOVTelescope
+}
+
+export interface ImageROI {
+    x: number
+    y: number
+    width: number
+    height: number
+}
+
+export interface ImageSave {
+    showDialog: boolean
+    format: ImageFormat
+    bitpix: Bitpix
+    shouldBeTransformed: boolean
+    transformation: ImageTransformation
+    path: string
+}
+
+export interface ImageTransformation {
+    force: boolean
+    calibrationGroup?: string
+    debayer: boolean
+    stretch: Omit<ImageStretch, 'showDialog'>
+    mirrorHorizontal: boolean
+    mirrorVertical: boolean
+    invert: boolean
+    scnr: Pick<ImageSCNR, 'channel' | 'amount' | 'method'>
 }

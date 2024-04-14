@@ -39,6 +39,7 @@ import { TagModule } from 'primeng/tag'
 import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
+import { TreeModule } from 'primeng/tree'
 import { CameraExposureComponent } from '../shared/components/camera-exposure/camera-exposure.component'
 import { DeviceListButtonComponent } from '../shared/components/device-list-button/device-list-button.component'
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
@@ -160,6 +161,7 @@ import { SettingsComponent } from './settings/settings.component'
         TieredMenuModule,
         ToastModule,
         TooltipModule,
+        TreeModule,
     ],
     providers: [
         AnglePipe,
