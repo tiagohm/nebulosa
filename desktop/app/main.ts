@@ -279,6 +279,7 @@ function createSplashScreen() {
             frame: false,
             alwaysOnTop: true,
             show: false,
+            resizable: false,
         })
 
         const url = new URL(path.join('file:', __dirname, 'assets', 'images', 'splash.png'))
