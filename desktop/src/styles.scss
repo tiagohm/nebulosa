@@ -240,6 +240,12 @@ p-dropdownitem *,
     -webkit-app-region: no-drag;
 }
 
+.p-dialog .p-dialog-header .p-dialog-header-icon {
+    min-width: 3rem;
+    width: 3rem;
+    height: 3rem;
+}
+
 .pixelated {
     image-rendering: pixelated;
 }
