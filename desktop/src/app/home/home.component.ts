@@ -52,6 +52,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     rotators: Camera[] = []
     switches: Camera[] = []
 
+    currentPage = 0
+
     get connected() {
         return !!this.connection && this.connection.connected
     }
@@ -441,6 +443,53 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 if (this.connection?.connected) {
                     break
                 }
+            }
+        }
+    }
+
+    private scrollPageOf(element: Element) {
+        return parseInt(element.getAttribute('scroll-page') || '0')
+    }
+
+    scrolled(event: Event) {
+        function isVisible(element: Element) {
+            const bound = element.getBoundingClientRect()
+
+            return bound.top >= 0 &&
+                bound.left >= 0 &&
+                bound.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                bound.right <= (window.innerWidth || document.documentElement.clientWidth)
+        }
+
+        let page = 0
+        const scrollChidren = document.getElementsByClassName('scroll-child')
+
+        for (let i = 0; i < scrollChidren.length; i++) {
+            const child = scrollChidren[i]
+
+            if (isVisible(child)) {
+                page = Math.max(page, this.scrollPageOf(child))
+            }
+        }
+
+        this.currentPage = page
+    }
+
+    scrollTo(event: Event, page: number) {
+        this.currentPage = page
+        this.scrollToPage(page)
+        event.stopImmediatePropagation()
+    }
+
+    scrollToPage(page: number) {
+        const scrollChidren = document.getElementsByClassName('scroll-child')
+
+        for (let i = 0; i < scrollChidren.length; i++) {
+            const child = scrollChidren[i]
+
+            if (this.scrollPageOf(child) === page) {
+                child.scrollIntoView({ behavior: 'smooth' })
+                break
             }
         }
     }

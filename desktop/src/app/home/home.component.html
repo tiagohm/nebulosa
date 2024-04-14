@@ -38,8 +38,8 @@
                       [text]="true" pTooltip="Disconnect" tooltipPosition="bottom" />
         </div>
     </div>
-    <div class="grid my-2 overflow-y-auto" style="height: calc(62px * 5);">
-        <div class="col-4 p-1">
+    <div class="grid my-2 overflow-y-auto relative" style="height: calc(62px * 5);" (scroll)="scrolled($event)">
+        <div class="col-4 p-1 scroll-child" scroll-page="0">
             <p-button [text]="true" [disabled]="!connected || !hasCamera" (onClick)="open('CAMERA')"
                       styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/camera.png" />
@@ -140,7 +140,7 @@
                 <div class="mt-1 text-sm">INDI</div>
             </p-button>
         </div>
-        <div class="col-4 p-1">
+        <div class="col-4 p-1 scroll-child" scroll-page="1">
             <p-button [text]="true" (onClick)="open('CALCULATOR')" styleClass="open min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/calculator.png" />
                 <div class="mt-1 text-sm">Calculator</div>
@@ -157,6 +157,10 @@
                 <img src="assets/icons/about.png" />
                 <div class="mt-1 text-sm">About</div>
             </p-button>
+        </div>
+        <div class="fixed flex flex-column align-items-center justify-content-center indicators">
+            <span class="indicator" [class.selected]="currentPage === 0" (click)="scrollTo($event, 0)"></span>
+            <span class="indicator" [class.selected]="currentPage === 1" (click)="scrollTo($event, 1)"></span>
         </div>
     </div>
 </div>
