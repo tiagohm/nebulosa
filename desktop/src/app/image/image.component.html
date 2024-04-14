@@ -60,7 +60,7 @@
                 <p-checkbox [(ngModel)]="annotateWithMinorPlanets" class="py-1" [binary]="true" label="Annotate with minor planets" />
 
                 <span class="p-float-label">
-                    <p-inputNumber [disabled]="!annotateWithMinorPlanets" [min]="-10" [max]="20" class="max-w-10rem w-full" [showButtons]="true"
+                    <p-inputNumber [disabled]="!annotateWithMinorPlanets" [min]="-10" [max]="30" class="max-w-10rem w-full" [showButtons]="true"
                                    inputStyleClass="border-0 w-full" [step]="0.1" [(ngModel)]="annotateWithMinorPlanetsMagLimit"
                                    [minFractionDigits]="1" locale="en" />
                     <label>Mag. Limit</label>
