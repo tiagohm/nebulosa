@@ -7,5 +7,27 @@
         .p-tree-wrapper {
             max-height: 288px;
         }
+
+        .p-tree {
+            .p-tree-container {
+                padding-right: 4px;
+
+                .p-treenode {
+                    padding: 0;
+
+                    .p-treenode-content {
+                        padding: 0 0.5rem 0 0.5rem;
+                    }
+                }
+            }
+        }
+
+        .p-treenode-leaf>.p-treenode-content .p-tree-toggler {
+            display: none;
+        }
+
+        .p-tree-empty-message {
+            padding: 1rem 0.5rem 1rem 0.5rem;
+        }
     }
 }

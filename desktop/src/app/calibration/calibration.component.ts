@@ -8,7 +8,13 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { CalibrationFrame, CalibrationFrameGroup } from '../../shared/types/calibration.types'
 import { AppComponent } from '../app.component'
 
-export type CalibrationNode = Required<Pick<TreeNode<TreeNodeData>, 'key' | 'label' | 'data' | 'children'>> & TreeNode<TreeNodeData>
+export interface CalibrationNode extends TreeNode<TreeNodeData> {
+    key: string
+    label: string
+    data: TreeNodeData
+    children: CalibrationNode[]
+    parent?: CalibrationNode
+}
 
 export type TreeNodeData =
     { type: 'NAME', data: string } |
@@ -45,8 +51,8 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
     @HostListener('window:unload')
     ngOnDestroy() { }
 
-    private makeTreeNode(key: string, label: string, data: TreeNodeData): CalibrationNode {
-        return { key, label, data, children: [] }
+    private makeTreeNode(key: string, label: string, data: TreeNodeData, parent?: CalibrationNode): CalibrationNode {
+        return { key, label, data, children: [], parent }
     }
 
     addGroup(name: string) {
@@ -66,7 +72,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             : name
 
         if (parent) {
-            const node = this.makeTreeNode(`frame-group-${group.id}`, `Frame`, { type: 'GROUP', data: group })
+            const node = this.makeTreeNode(`frame-group-${group.id}`, `Frame`, { type: 'GROUP', data: group }, parent)
             parent.children.push(node)
             return node
         }
@@ -80,7 +86,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             : group
 
         if (parent) {
-            const node = this.makeTreeNode(`frame-${frame.id}`, `Frame`, { type: 'FRAME', data: frame })
+            const node = this.makeTreeNode(`frame-${frame.id}`, `Frame`, { type: 'FRAME', data: frame }, parent)
             parent.children.push(node)
             return node
         }
@@ -155,9 +161,39 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
     }
 
     async deleteFrame(node: CalibrationNode) {
+        const deleteFromParent = async () => {
+            if (node.parent) {
+                const idx = node.parent.children.indexOf(node)
+
+                if (idx >= 0) {
+                    node.parent.children.splice(idx, 1)
+                    console.info('frame deleted', node)
+                }
+
+                if (!node.parent.children.length) {
+                    await this.deleteFrame(node.parent)
+                }
+            } else {
+                const idx = this.frames.indexOf(node)
+
+                if (idx >= 0) {
+                    this.frames.splice(idx, 1)
+                    console.info('frame deleted', node)
+                }
+            }
+        }
+
         if (node.data.type === 'FRAME') {
             await this.api.deleteCalibrationFrame(node.data.data)
-            this.load()
+            await deleteFromParent()
+        } else {
+            for (const frame of Array.from(node.children)) {
+                await this.deleteFrame(frame)
+            }
+
+            if (!node.children.length) {
+                await deleteFromParent()
+            }
         }
     }
 

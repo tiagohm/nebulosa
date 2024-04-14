@@ -22,10 +22,10 @@
                             <p-tag *ngIf="node.data.data.key.type !== 'FLAT'" value="GAIN: {{ node.data.data.key.gain }}" severity="info" />
                         </div>
                         } @else if (node.data.type === 'FRAME') {
-                        <p-checkbox [binary]="true" [(ngModel)]="node.data.data.enabled" (ngModelChange)="toggleCalibrationFrame(node, $event)" />
-                        <span class="text-sm text-overflow-scroll" style="max-width: 240px;">{{ node.data.data.path }}</span>
-                        <p-button styleClass="p-button-sm" [text]="true" [rounded]="true" icon="mdi mdi-delete" pTooltip="Delete"
-                                  tooltipPosition="bottom" (onClick)="deleteFrame(node)" severity="danger" />
+                        <div class="flex align-items-center gap-2">
+                            <p-checkbox [binary]="true" [(ngModel)]="node.data.data.enabled" (ngModelChange)="toggleCalibrationFrame(node, $event)" />
+                            <span class="text-sm text-overflow-scroll" style="max-width: 276px;">{{ node.data.data.path }}</span>
+                        </div>
                         }
                         <div class="flex align-items-center justify-content-end gap-1">
                             @if (node.data.type === 'NAME') {
@@ -36,6 +36,8 @@
                             <p-button styleClass="p-button-sm" [text]="true" [rounded]="true" icon="mdi mdi-folder-plus" pTooltip="Add folder"
                                       tooltipPosition="bottom" (onClick)="openDirectoryToUpload(node)" />
                             }
+                            <p-button styleClass="p-button-sm" [text]="true" [rounded]="true" icon="mdi mdi-delete" pTooltip="Delete"
+                                      tooltipPosition="bottom" (onClick)="deleteFrame(node)" severity="danger" />
                         </div>
                     </div>
                 </ng-template>
