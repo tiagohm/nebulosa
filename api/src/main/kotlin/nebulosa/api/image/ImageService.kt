@@ -118,8 +118,8 @@ class ImageService(
 
         var transformedImage = if (shouldBeTransformed) clone() else this
 
-        if (enabled && transformation.calibrate && instrument != null) {
-            transformedImage = calibrationFrameService.calibrate(instrument.name, transformedImage, transformedImage === this)
+        if (enabled && !transformation.calibrationGroup.isNullOrBlank()) {
+            transformedImage = calibrationFrameService.calibrate(transformation.calibrationGroup, transformedImage, transformedImage === this)
         }
 
         if (enabled && transformation.mirrorHorizontal) {

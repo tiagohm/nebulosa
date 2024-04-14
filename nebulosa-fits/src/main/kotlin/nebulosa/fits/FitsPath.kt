@@ -13,8 +13,6 @@ data class FitsPath(val path: Path) : Fits(), Closeable {
 
     constructor(file: File) : this(file.toPath())
 
-    constructor(path: String) : this(Path.of(path))
-
     fun read() {
         read(source)
     }

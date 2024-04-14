@@ -1,6 +1,6 @@
 import { Point, Size } from 'electron'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
-import { Camera } from './camera.types'
+import { Camera, CameraStartCapture } from './camera.types'
 import { PlateSolverType } from './settings.types'
 
 export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
@@ -128,6 +128,7 @@ export interface ImageData {
     path?: string
     source?: ImageSource
     title?: string
+    capture?: CameraStartCapture
 }
 
 export interface FOV {
@@ -250,7 +251,7 @@ export interface ImageSave {
 
 export interface ImageTransformation {
     force: boolean
-    calibrate: boolean
+    calibrationGroup?: string
     debayer: boolean
     stretch: Omit<ImageStretch, 'showDialog'>
     mirrorHorizontal: boolean

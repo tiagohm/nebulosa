@@ -1,7 +1,6 @@
 package nebulosa.api.sequencer
 
 import jakarta.validation.Valid
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.indi.device.camera.Camera
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -16,12 +15,12 @@ class SequencerController(
 
     @PutMapping("{camera}/start")
     fun startSequencer(
-        @DeviceOrEntityParam camera: Camera,
+        camera: Camera,
         @RequestBody @Valid body: SequencePlanRequest,
     ) = sequencerService.start(camera, body)
 
     @PutMapping("{camera}/stop")
-    fun stopSequencer(@DeviceOrEntityParam camera: Camera) {
+    fun stopSequencer(camera: Camera) {
         sequencerService.stop(camera)
     }
 }

@@ -36,6 +36,7 @@ data class CameraStartCaptureRequest(
     val savePath: Path? = null,
     val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.OFF,
     @field:Valid val dither: DitherAfterExposureRequest = DitherAfterExposureRequest.DISABLED,
+    val calibrationGroup: String? = null,
     // Filter Wheel.
     val filterPosition: Int = 0,
     val shutterPosition: Int = 0,

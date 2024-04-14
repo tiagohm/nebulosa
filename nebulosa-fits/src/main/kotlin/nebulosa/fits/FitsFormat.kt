@@ -5,12 +5,14 @@ import nebulosa.image.format.*
 import nebulosa.io.*
 import nebulosa.log.loggerFor
 import okio.Buffer
+import okio.BufferedSource
 import okio.Sink
 import java.io.EOFException
 import kotlin.math.max
 
 data object FitsFormat : ImageFormat {
 
+    const val SIGNATURE = "SIMPLE"
     const val BLOCK_SIZE = 2880
 
     @JvmStatic
@@ -19,6 +21,9 @@ data object FitsFormat : ImageFormat {
         val remainingByteCount = (numberOfBlocks * BLOCK_SIZE) - sizeInBytes
         return max(0L, remainingByteCount)
     }
+
+    @JvmStatic
+    fun BufferedSource.readSignature() = readString(6L, Charsets.US_ASCII)
 
     fun isImageHdu(header: ReadableHeader) =
         header.getBoolean(FitsKeyword.SIMPLE) || header.getStringOrNull(FitsKeyword.XTENSION) == "IMAGE"

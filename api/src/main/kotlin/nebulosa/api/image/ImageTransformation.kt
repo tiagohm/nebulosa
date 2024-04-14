@@ -5,7 +5,7 @@ import nebulosa.image.format.ImageChannel
 
 data class ImageTransformation(
     val force: Boolean = false,
-    val calibrate: Boolean = false,
+    val calibrationGroup: String? = null,
     val debayer: Boolean = true,
     val stretch: Stretch = Stretch.EMPTY,
     val mirrorHorizontal: Boolean = false,

@@ -3,7 +3,7 @@ import { FrameType } from './camera.types'
 export interface CalibrationFrame {
     id: number
     type: FrameType
-    camera: string
+    name: string
     filter?: string
     exposureTime: number
     temperature: number
@@ -18,7 +18,8 @@ export interface CalibrationFrame {
 
 export interface CalibrationFrameGroup {
     id: number
-    key: Omit<CalibrationFrame, 'id' | 'camera' | 'path' | 'enabled'>
+    name: string
+    key: Omit<CalibrationFrame, 'id' | 'name' | 'path' | 'enabled'>
     frames: CalibrationFrame[]
 }
 

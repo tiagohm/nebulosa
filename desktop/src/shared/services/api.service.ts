@@ -485,17 +485,21 @@ export class ApiService {
 
     // CALIBRATION
 
-    calibrationFrames(camera: Camera) {
-        return this.http.get<CalibrationFrameGroup[]>(`calibration-frames/${camera.name}`)
+    calibrationGroups() {
+        return this.http.get<string[]>('calibration-frames')
     }
 
-    uploadCalibrationFrame(camera: Camera, path: string) {
+    calibrationFrames(name: string) {
+        return this.http.get<CalibrationFrameGroup[]>(`calibration-frames/${name}`)
+    }
+
+    uploadCalibrationFrame(name: string, path: string) {
         const query = this.http.query({ path })
-        return this.http.put<CalibrationFrame[]>(`calibration-frames/${camera.name}?${query}`)
+        return this.http.put<CalibrationFrame[]>(`calibration-frames/${name}?${query}`)
     }
 
     editCalibrationFrame(frame: CalibrationFrame) {
-        const query = this.http.query({ path: frame.path, enabled: frame.enabled })
+        const query = this.http.query({ name: frame.name, enabled: frame.enabled })
         return this.http.patch<CalibrationFrame>(`calibration-frames/${frame.id}?${query}`)
     }
 

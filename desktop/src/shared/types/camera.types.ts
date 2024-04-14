@@ -158,6 +158,7 @@ export interface CameraStartCapture {
     filterPosition?: number
     shutterPosition?: number
     focusOffset?: number
+    calibrationGroup?: string
 }
 
 export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {

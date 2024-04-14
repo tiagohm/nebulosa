@@ -3,7 +3,6 @@ package nebulosa.api.image
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import nebulosa.api.atlas.Location
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.beans.converters.location.LocationParam
 import nebulosa.indi.device.camera.Camera
 import nebulosa.star.detection.ImageStar
@@ -21,7 +20,7 @@ class ImageController(
     @PostMapping
     fun openImage(
         @RequestParam path: Path,
-        @DeviceOrEntityParam(required = false) camera: Camera?,
+        @RequestParam(required = false) camera: Camera?,
         @RequestBody transformation: ImageTransformation,
         output: HttpServletResponse,
     ) = imageService.openImage(path, camera, transformation, output)
@@ -34,7 +33,7 @@ class ImageController(
     @PutMapping("save-as")
     fun saveImageAs(
         @RequestParam path: Path,
-        @DeviceOrEntityParam(required = false) camera: Camera?,
+        @RequestParam(required = false) camera: Camera?,
         @RequestBody save: SaveImage
     ) {
         imageService.saveImageAs(path, save, camera)

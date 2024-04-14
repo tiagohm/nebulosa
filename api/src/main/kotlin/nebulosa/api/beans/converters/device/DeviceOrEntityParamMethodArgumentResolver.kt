@@ -4,6 +4,8 @@ import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SatelliteRepository
 import nebulosa.api.beans.converters.annotation
 import nebulosa.api.beans.converters.parameter
+import nebulosa.api.calibration.CalibrationFrameEntity
+import nebulosa.api.calibration.CalibrationFrameRepository
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.Camera
@@ -24,11 +26,13 @@ import org.springframework.web.server.ResponseStatusException
 @Component
 class DeviceOrEntityParamMethodArgumentResolver(
     private val satelliteRepository: SatelliteRepository,
+    private val calibrationFrameRepository: CalibrationFrameRepository,
     private val connectionService: ConnectionService,
 ) : HandlerMethodArgumentResolver {
 
     private val entityResolvers = mapOf<Class<*>, (String) -> Any?>(
         SatelliteEntity::class.java to { satelliteRepository.find(it.toLong()) },
+        CalibrationFrameEntity::class.java to { calibrationFrameRepository.find(it.toLong()) },
         Device::class.java to { connectionService.device(it) },
         Camera::class.java to { connectionService.camera(it) },
         Mount::class.java to { connectionService.mount(it) },
@@ -49,7 +53,7 @@ class DeviceOrEntityParamMethodArgumentResolver(
     ): Any? {
         val requestParam = parameter.annotation<RequestParam>()
         val parameterName = requestParam?.name?.ifBlank { null } ?: parameter.parameterName ?: "id"
-        val parameterValue = webRequest.parameter(parameterName) ?: requestParam?.defaultValue
+        val parameterValue = webRequest.parameter(parameterName) ?: requestParam?.defaultValue?.ifBlank { null }
 
         val entity = entityByParameterValue(parameter.parameterType, parameterValue)
 

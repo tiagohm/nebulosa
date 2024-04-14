@@ -21,7 +21,7 @@ import { AppComponent } from '../app.component'
 export class CameraComponent implements AfterContentInit, OnDestroy {
 
     readonly camera = structuredClone(EMPTY_CAMERA)
-    equipment: Equipment = {}
+    readonly equipment: Equipment = {}
 
     savePath = ''
     capturesPath = ''
@@ -99,6 +99,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                     items: [],
                 },
             ]
+        },
+        {
+            icon: 'mdi mdi-wrench',
+            label: 'Calibration',
+            items: [],
         },
     ]
 
@@ -186,6 +191,30 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
+        electron.on('MOUNT.UPDATED', event => {
+            if (event.device.id === this.equipment.mount?.id) {
+                ngZone.run(() => {
+                    Object.assign(this.equipment.mount!, event.device)
+                })
+            }
+        })
+
+        electron.on('WHEEL.UPDATED', event => {
+            if (event.device.id === this.equipment.wheel?.id) {
+                ngZone.run(() => {
+                    Object.assign(this.equipment.wheel!, event.device)
+                })
+            }
+        })
+
+        electron.on('FOCUSER.UPDATED', event => {
+            if (event.device.id === this.equipment.focuser?.id) {
+                ngZone.run(() => {
+                    Object.assign(this.equipment.focuser!, event.device)
+                })
+            }
+        })
+
         this.cameraModel[1].visible = !app.modal
     }
 
@@ -203,6 +232,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         if (!this.app.modal) {
             this.loadEquipment()
         }
+
+        this.loadCalibrationGroups()
     }
 
     @HostListener('window:unload')
@@ -258,8 +289,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             return {
                 icon: mount ? 'mdi mdi-connection' : 'mdi mdi-close',
                 label: mount?.name ?? 'None',
-                command: () => {
-                    this.equipment.mount = mount
+                command: async () => {
+                    this.equipment.mount = mount ? await this.api.mount(mount.id) : undefined
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
                     this.electron.autoResizeWindow()
                 },
@@ -280,8 +311,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             return {
                 icon: wheel ? 'mdi mdi-connection' : 'mdi mdi-close',
                 label: wheel?.name ?? 'None',
-                command: () => {
-                    this.equipment.wheel = wheel
+                command: async () => {
+                    this.equipment.wheel = wheel ? await this.api.wheel(wheel.id) : undefined
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
                     this.electron.autoResizeWindow()
                 },
@@ -302,8 +333,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             return {
                 icon: focuser ? 'mdi mdi-connection' : 'mdi mdi-close',
                 label: focuser?.name ?? 'None',
-                command: () => {
-                    this.equipment.focuser = focuser
+                command: async () => {
+                    this.equipment.focuser = focuser ? await this.api.focuser(focuser.id) : undefined
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
                     this.electron.autoResizeWindow()
                 },
@@ -321,6 +352,26 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         this.equipment.focuser = focusers.find(e => e.name === this.equipment.focuser?.name)
 
         this.electron.autoResizeWindow()
+    }
+
+    private async loadCalibrationGroups() {
+        const groups = await this.api.calibrationGroups()
+
+        const makeItem = (name?: string) => {
+            return {
+                label: name ?? 'None',
+                icon: name ? 'mdi mdi-wrench' : 'mdi mdi-close',
+                command: () => {
+                    this.request.calibrationGroup = name
+                },
+            }
+        }
+
+        this.cameraModel[2].items!.push(makeItem())
+
+        for (const group of groups) {
+            this.cameraModel[2].items!.push(makeItem(group))
+        }
     }
 
     connect() {
@@ -379,11 +430,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     openCameraImage() {
-        return this.browserWindow.openCameraImage(this.camera)
+        return this.browserWindow.openCameraImage(this.camera, 'CAMERA', this.request)
     }
 
     openCameraCalibration() {
-        return this.browserWindow.openCalibration({ data: this.camera, bringToFront: true })
+        return this.browserWindow.openCalibration({ bringToFront: true })
     }
 
     private makeCameraStartCapture(): CameraStartCapture {
@@ -514,7 +565,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.request.dither!.amount = preference.dither?.amount ?? 1.5
             this.request.dither!.afterExposures = preference.dither?.afterExposures ?? 1
 
-            this.equipment = this.preference.equipmentForDevice(this.camera).get()
+            Object.assign(this.equipment, this.preference.equipmentForDevice(this.camera).get())
         }
     }
 

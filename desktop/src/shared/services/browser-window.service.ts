@@ -59,10 +59,10 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'guider', path: 'guider', data: undefined })
     }
 
-    async openCameraImage(camera: Camera, source: ImageSource = 'CAMERA') {
+    async openCameraImage(camera: Camera, source: ImageSource = 'CAMERA', capture?: CameraStartCapture) {
         const factor = camera.height / camera.width
         const id = `image.${camera.name}`
-        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `${factor}w`, resizable: true, data: { camera, source } })
+        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `${factor}w`, resizable: true, data: { camera, source, capture } })
         return id
     }
 
@@ -113,9 +113,9 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'calculator', path: 'calculator', data: undefined })
     }
 
-    openCalibration(options: OpenWindowOptionsWithData<Camera>) {
-        Object.assign(options, { icon: 'stack', width: 510, height: 508 })
-        this.openWindow({ ...options, id: 'calibration', path: 'calibration' })
+    openCalibration(options: OpenWindowOptions = {}) {
+        Object.assign(options, { icon: 'stack', width: 420, height: 400, minHeight: 400 })
+        this.openWindow({ ...options, id: 'calibration', path: 'calibration', data: undefined })
     }
 
     openAbout() {

@@ -12,8 +12,17 @@ Object.assign(global, { WebSocket })
 
 app.commandLine.appendSwitch('disable-http-cache')
 
-const browserWindows = new Map<string, BrowserWindow>()
-const modalWindows = new Map<string, { window: BrowserWindow, resolve: (data: any) => void }>()
+interface CreatedWindow {
+    options: OpenWindow<any>
+    window: BrowserWindow
+}
+
+interface CreatedModalWindow extends CreatedWindow {
+    resolve: (data: any) => void
+}
+
+const browserWindows = new Map<string, CreatedWindow>()
+const modalWindows = new Map<string, CreatedModalWindow>()
 let api: ChildProcessWithoutNullStreams | null = null
 let apiPort = 7000
 let webSocket: Client
@@ -72,7 +81,7 @@ function isNotificationEvent(event: MessageEvent): event is NotificationEvent {
 }
 
 function createMainWindow() {
-    browserWindows.get('splash')?.close()
+    browserWindows.get('splash')?.window?.close()
     browserWindows.delete('splash')
 
     createWindow({ id: 'home', path: 'home', data: undefined })
@@ -109,7 +118,9 @@ function createMainWindow() {
 }
 
 function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
-    let window = browserWindows.get(options.id)
+    const createdWindow = browserWindows.get(options.id)
+
+    let window = createdWindow?.window
 
     if (window && !options.modal) {
         if (options.data) {
@@ -146,7 +157,8 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         }
     }
 
-    const height = options.height ? Math.trunc(computeHeight(options.height)) : 416
+    const minHeight = options.minHeight ?? 0
+    const height = Math.max(minHeight, options.height ? Math.trunc(computeHeight(options.height)) : 416)
 
     const id = options.id
     const resizable = options.resizable ?? false
@@ -155,12 +167,12 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
     const icon = options.icon ?? 'nebulosa'
     const data = encodeURIComponent(JSON.stringify(options.data || {}))
 
-    const savedPos = !modal ? database.get<Point>(`window.${id}.position`) : undefined
+    const savedPosition = !modal ? database.get<Point>(`window.${id}.position`) : undefined
     const savedSize = !modal && resizable ? database.get<Size>(`window.${id}.size`) : undefined
 
-    if (savedPos) {
-        savedPos.x = Math.max(0, Math.min(savedPos.x, screenSize.width))
-        savedPos.y = Math.max(0, Math.min(savedPos.y, screenSize.height))
+    if (savedPosition) {
+        savedPosition.x = Math.max(0, Math.min(savedPosition.x, screenSize.width))
+        savedPosition.y = Math.max(0, Math.min(savedPosition.y, screenSize.height))
     }
 
     if (savedSize) {
@@ -173,8 +185,9 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         frame: false, modal, parent,
         width: savedSize?.width || width,
         height: savedSize?.height || height,
-        x: savedPos?.x ?? undefined,
-        y: savedPos?.y ?? undefined,
+        minHeight,
+        x: savedPosition?.x ?? undefined,
+        y: savedPosition?.y ?? undefined,
         resizable: serve || resizable,
         autoHideMenuBar: true,
         icon: path.join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
@@ -188,7 +201,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         },
     })
 
-    if (!savedPos) {
+    if (!savedPosition) {
         window.center()
     }
 
@@ -208,6 +221,8 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
     })
 
     window.on('close', () => {
+        console.info('window closed:', id, window.id)
+
         const homeWindow = browserWindows.get('home')
 
         if (!modal) {
@@ -221,11 +236,11 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
             }
         }
 
-        if (window === homeWindow) {
+        if (window === homeWindow?.window || id === homeWindow?.options?.id) {
             browserWindows.delete('home')
 
             for (const [_, value] of browserWindows) {
-                value.close()
+                value.window.close()
             }
 
             browserWindows.clear()
@@ -233,14 +248,14 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
             api?.kill()
         } else {
             for (const [key, value] of browserWindows) {
-                if (value === window) {
+                if (value.window === window || value.options.id === id) {
                     browserWindows.delete(key)
                     break
                 }
             }
 
             for (const [key, value] of modalWindows) {
-                if (value.window === window) {
+                if (value.window === window || value.options.id === id) {
                     modalWindows.delete(key)
                     break
                 }
@@ -248,33 +263,32 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         }
     })
 
-    browserWindows.set(id, window)
+    browserWindows.set(id, { window, options })
 
-    console.info('window created: ', id, window.id)
+    console.info('window created:', id, window.id)
 
     return window
 }
 
 function createSplashScreen() {
-    let splashWindow = browserWindows.get('splash')
-
-    if (!serve && !splashWindow) {
-        splashWindow = new BrowserWindow({
+    if (!serve && !browserWindows.has('splash')) {
+        const window = new BrowserWindow({
             width: 512,
             height: 512,
             transparent: true,
             frame: false,
             alwaysOnTop: true,
             show: false,
+            resizable: false,
         })
 
         const url = new URL(path.join('file:', __dirname, 'assets', 'images', 'splash.png'))
-        splashWindow.loadURL(url.href)
+        window.loadURL(url.href)
 
-        splashWindow.show()
-        splashWindow.center()
+        window.show()
+        window.center()
 
-        browserWindows.set('splash', splashWindow)
+        browserWindows.set('splash', { window, options: { id: 'splash', path: '', data: undefined } })
     }
 }
 
@@ -288,9 +302,9 @@ function showNotification(event: NotificationEvent) {
     }
 }
 
-function findWindowById(id: number) {
-    for (const [key, window] of browserWindows) if (window.id === id) return { window, key }
-    for (const [key, window] of modalWindows) if (window.window.id === id) return { window: window.window, key }
+function findWindowById(id: number | string) {
+    for (const [_, window] of browserWindows) if (window.window.id === id || window.options.id === id) return window
+    for (const [_, window] of modalWindows) if (window.window.id === id || window.options.id === id) return window
     return undefined
 }
 
@@ -352,14 +366,14 @@ try {
         }
     })
 
-    ipcMain.handle('WINDOW.OPEN', async (event, data: OpenWindow<any>) => {
-        if (data.modal) {
+    ipcMain.handle('WINDOW.OPEN', async (event, options: OpenWindow<any>) => {
+        if (options.modal) {
             const parent = findWindowById(event.sender.id)
-            const window = createWindow(data, parent?.window)
+            const window = createWindow(options, parent?.window)
 
             const promise = new Promise<any>((resolve) => {
-                modalWindows.set(data.id, {
-                    window, resolve: (value) => {
+                modalWindows.set(options.id, {
+                    window, options, resolve: (value) => {
                         window.close()
                         resolve(value)
                     }
@@ -369,13 +383,13 @@ try {
             return promise
         }
 
-        const isNew = !browserWindows.has(data.id)
+        const isNew = !browserWindows.has(options.id)
 
-        const window = createWindow(data)
+        const window = createWindow(options)
 
-        if (data.bringToFront) {
+        if (options.bringToFront) {
             window.show()
-        } else if (data.requestFocus) {
+        } else if (options.requestFocus) {
             window.focus()
         }
 
@@ -392,7 +406,6 @@ try {
 
     ipcMain.handle('FILE.OPEN', async (event, data?: OpenFile) => {
         const ownerWindow = findWindowById(event.sender.id)
-
         const value = await dialog.showOpenDialog(ownerWindow!.window, {
             filters: data?.filters,
             properties: ['openFile'],
@@ -481,8 +494,8 @@ try {
 
         const size = window.getContentSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
-        const height = Math.max(0, Math.min(data, maxHeight))
-        window.setContentSize(size[0], height)
+        const height = Math.max(window.getMinimumSize()[1] || 0, Math.max(0, Math.min(data, maxHeight)))
+        resizeWindow(window, size[0], height)
         console.info('window auto resized:', size[0], height)
 
         return true
@@ -491,8 +504,8 @@ try {
     ipcMain.handle('WINDOW.CLOSE', (event, data: CloseWindow<any>) => {
         if (data.id) {
             for (const [key, value] of browserWindows) {
-                if (key === data.id) {
-                    value.close()
+                if (key === data.id || value.options.id === data.id) {
+                    value.window.close()
                     return true
                 }
             }
@@ -500,7 +513,7 @@ try {
             const window = findWindowById(event.sender.id)
 
             if (window) {
-                modalWindows.get(window.key)?.resolve(data.data)
+                modalWindows.get(window.options.id)?.resolve(data.data)
                 window.window.close()
                 return true
             }
@@ -525,12 +538,20 @@ function sendToAllWindows(channel: string, data: any, home: boolean = true) {
     const homeWindow = browserWindows.get('home')
 
     for (const [_, window] of browserWindows) {
-        if (window !== homeWindow || home) {
-            window.webContents.send(channel, data)
+        if (window.window !== homeWindow?.window || home) {
+            window.window.webContents.send(channel, data)
         }
     }
 
     if (serve) {
         console.info(data)
+    }
+}
+
+function resizeWindow(window: BrowserWindow, width: number, height: number) {
+    if (process.platform === 'win32') {
+        window.setSize(width, height, false)
+    } else {
+        window.setContentSize(width, height, false)
     }
 }
