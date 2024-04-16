@@ -263,6 +263,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             // New.
             else {
                 this.connections.push(this.newConnection[0])
+
+                if (!this.connection) {
+                    this.connection = this.newConnection[0]
+                }
             }
         }
 
