@@ -39,9 +39,9 @@ class CameraController(
     @PutMapping("{camera}/snoop")
     fun snoop(
         camera: Camera,
-        @RequestParam(required = false) mount: Mount?,
-        @RequestParam(required = false) wheel: FilterWheel?,
-        @RequestParam(required = false) focuser: Focuser?,
+        mount: Mount?,
+        wheel: FilterWheel?,
+        focuser: Focuser?,
     ) {
         cameraService.snoop(camera, mount, wheel, focuser)
     }
