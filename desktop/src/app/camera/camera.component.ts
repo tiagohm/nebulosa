@@ -268,8 +268,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     async cameraChanged(camera?: Camera) {
-        if (camera && camera.name) {
-            camera = await this.api.camera(camera.name)
+        if (camera && camera.id) {
+            camera = await this.api.camera(camera.id)
             Object.assign(this.camera, camera)
 
             this.loadPreference()
@@ -516,7 +516,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private update() {
-        if (this.camera.name) {
+        if (this.camera.id) {
             if (this.camera.connected) {
                 updateCameraStartCaptureFromCamera(this.request, this.camera)
                 this.updateExposureUnit(this.exposureTimeUnit)

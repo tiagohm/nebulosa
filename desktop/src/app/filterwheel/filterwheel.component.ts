@@ -148,8 +148,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     async wheelChanged(wheel?: FilterWheel) {
-        if (wheel && wheel.name) {
-            wheel = await this.api.wheel(wheel.name)
+        if (wheel && wheel.id) {
+            wheel = await this.api.wheel(wheel.id)
             Object.assign(this.wheel, wheel)
 
             this.loadPreference()
@@ -230,7 +230,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     private update() {
-        if (!this.wheel.name) {
+        if (!this.wheel.id) {
             return
         }
 

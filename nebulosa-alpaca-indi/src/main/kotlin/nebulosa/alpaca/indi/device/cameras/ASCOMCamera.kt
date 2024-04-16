@@ -42,6 +42,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.max
 import kotlin.math.min
 
+@Suppress("RedundantModalityModifier")
 data class ASCOMCamera(
     override val device: ConfiguredDevice,
     override val service: AlpacaCameraService,
@@ -108,8 +109,8 @@ data class ASCOMCamera(
 
     override val snoopedDevices = ArrayList<Device>(4)
 
-    init {
-        refresh(0L)
+    override fun initialize() {
+        super.initialize()
         imageReadyWaiter.start()
     }
 

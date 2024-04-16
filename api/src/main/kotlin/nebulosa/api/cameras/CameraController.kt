@@ -39,28 +39,20 @@ class CameraController(
     @PutMapping("{camera}/snoop")
     fun snoop(
         camera: Camera,
-        mount: Mount?,
-        wheel: FilterWheel?,
-        focuser: Focuser?,
-    ) {
-        cameraService.snoop(camera, mount, wheel, focuser)
-    }
+        mount: Mount?, wheel: FilterWheel?, focuser: Focuser?,
+    ) = cameraService.snoop(camera, mount, wheel, focuser)
 
     @PutMapping("{camera}/cooler")
     fun cooler(
         camera: Camera,
         @RequestParam enabled: Boolean,
-    ) {
-        cameraService.cooler(camera, enabled)
-    }
+    ) = cameraService.cooler(camera, enabled)
 
     @PutMapping("{camera}/temperature/setpoint")
     fun setpointTemperature(
         camera: Camera,
         @RequestParam @Valid @Range(min = -50, max = 50) temperature: Double,
-    ) {
-        cameraService.setpointTemperature(camera, temperature)
-    }
+    ) = cameraService.setpointTemperature(camera, temperature)
 
     @PutMapping("{camera}/capture/start")
     fun startCapture(

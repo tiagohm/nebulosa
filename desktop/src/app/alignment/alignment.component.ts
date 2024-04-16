@@ -236,29 +236,29 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     async cameraChanged() {
-        if (this.camera.name) {
-            const camera = await this.api.camera(this.camera.name)
+        if (this.camera.id) {
+            const camera = await this.api.camera(this.camera.id)
             Object.assign(this.camera, camera)
             this.loadPreference()
         }
     }
 
     async mountChanged() {
-        if (this.mount.name) {
-            const mount = await this.api.mount(this.mount.name)
+        if (this.mount.id) {
+            const mount = await this.api.mount(this.mount.id)
             Object.assign(this.mount, mount)
         }
     }
 
     async guideOutputChanged() {
-        if (this.guideOutput.name) {
-            const guideOutput = await this.api.guideOutput(this.guideOutput.name)
+        if (this.guideOutput.id) {
+            const guideOutput = await this.api.guideOutput(this.guideOutput.id)
             Object.assign(this.guideOutput, guideOutput)
         }
     }
 
     mountConnect() {
-        if (this.mount.name) {
+        if (this.mount.id) {
             if (this.mount.connected) {
                 this.api.mountDisconnect(this.mount)
             } else {
@@ -268,7 +268,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     guideOutputConnect() {
-        if (this.guideOutput.name) {
+        if (this.guideOutput.id) {
             if (this.guideOutput.connected) {
                 this.api.guideOutputDisconnect(this.guideOutput)
             } else {
@@ -278,7 +278,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     async showCameraDialog() {
-        if (this.camera.name) {
+        if (this.camera.id) {
             if (this.tab === 0) {
                 if (await CameraComponent.showAsDialog(this.browserWindow, 'TPPA', this.camera, this.tppaRequest.capture)) {
                     this.savePreference()
@@ -359,7 +359,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         this.darvRequest.exposureTime = preference.darvExposureTime
         this.darvHemisphere = preference.darvHemisphere
 
-        if (this.camera.name) {
+        if (this.camera.id) {
             Object.assign(this.tppaRequest.capture, this.preference.cameraStartCaptureForTPPA(this.camera).get(this.tppaRequest.capture))
             Object.assign(this.darvRequest.capture, this.preference.cameraStartCaptureForDARV(this.camera).get(this.darvRequest.capture))
         }

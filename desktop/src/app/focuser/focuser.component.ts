@@ -88,8 +88,8 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     async focuserChanged(focuser?: Focuser) {
-        if (focuser && focuser.name) {
-            focuser = await this.api.focuser(focuser.name)
+        if (focuser && focuser.id) {
+            focuser = await this.api.focuser(focuser.id)
             Object.assign(this.focuser, focuser)
 
             this.loadPreference()
@@ -145,7 +145,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     private update() {
-        if (!this.focuser.name) {
+        if (!this.focuser.id) {
             return
         }
 
@@ -164,7 +164,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadPreference() {
-        if (this.focuser.name) {
+        if (this.focuser.id) {
             const preference = this.storage.get<FocuserPreference>(focuserPreferenceKey(this.focuser), {})
             this.stepsRelative = preference.stepsRelative ?? 100
             this.stepsAbsolute = preference.stepsAbsolute ?? this.focuser.position

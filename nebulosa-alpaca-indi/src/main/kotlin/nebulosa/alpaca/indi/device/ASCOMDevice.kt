@@ -32,6 +32,15 @@ abstract class ASCOMDevice : Device {
 
     @Volatile private var refresher: Refresher? = null
 
+    internal open fun initialize() {
+        refresh(0L)
+
+        if (refresher == null) {
+            refresher = Refresher()
+            refresher!!.start()
+        }
+    }
+
     override fun connect() {
         service.connect(device.number, true).doRequest()
     }
@@ -109,20 +118,10 @@ abstract class ASCOMDevice : Device {
 
             if (value) {
                 sender.fireOnEventReceived(DeviceConnected(this))
-
                 onConnected()
-
-                if (refresher == null) {
-                    refresher = Refresher()
-                    refresher!!.start()
-                }
             } else {
                 sender.fireOnEventReceived(DeviceDisconnected(this))
-
                 onDisconnected()
-
-                refresher?.interrupt()
-                refresher = null
             }
         }
     }
@@ -140,7 +139,7 @@ abstract class ASCOMDevice : Device {
 
             while (true) {
                 val startTime = System.currentTimeMillis()
-                refresh(stopwatch.elapsedSeconds)
+                if (connected) refresh(stopwatch.elapsedSeconds)
                 val endTime = System.currentTimeMillis()
                 val delayTime = 2000L - (endTime - startTime)
 
