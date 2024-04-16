@@ -2,7 +2,6 @@ package nebulosa.alpaca.indi.client
 
 import nebulosa.alpaca.api.AlpacaService
 import nebulosa.alpaca.api.DeviceType
-import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.alpaca.indi.device.cameras.ASCOMCamera
 import nebulosa.alpaca.indi.device.focusers.ASCOMFocuser
 import nebulosa.alpaca.indi.device.mounts.ASCOMMount
@@ -13,6 +12,7 @@ import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
 import nebulosa.indi.device.camera.CameraDetached
+import nebulosa.indi.device.camera.GuideHead
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelAttached
 import nebulosa.indi.device.filterwheel.FilterWheelDetached
@@ -20,6 +20,8 @@ import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserAttached
 import nebulosa.indi.device.focuser.FocuserDetached
 import nebulosa.indi.device.gps.GPS
+import nebulosa.indi.device.gps.GPSAttached
+import nebulosa.indi.device.gps.GPSDetached
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.guide.GuideOutputAttached
 import nebulosa.indi.device.guide.GuideOutputDetached
@@ -27,6 +29,8 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
 import nebulosa.indi.device.thermometer.Thermometer
+import nebulosa.indi.device.thermometer.ThermometerAttached
+import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
@@ -39,11 +43,13 @@ data class AlpacaClient(
 
     private val service = AlpacaService("http://$host:$port/", httpClient)
     private val handlers = LinkedHashSet<DeviceEventHandler>()
-    private val cameras = HashMap<String, Camera>()
-    private val mounts = HashMap<String, Mount>()
-    private val wheels = HashMap<String, FilterWheel>()
-    private val focusers = HashMap<String, Focuser>()
-    private val guideOutputs = HashMap<String, GuideOutput>()
+    private val cameras = HashMap<String, Camera>(2)
+    private val mounts = HashMap<String, Mount>(2)
+    private val wheels = HashMap<String, FilterWheel>(2)
+    private val focusers = HashMap<String, Focuser>(2)
+    private val gps = HashMap<String, GPS>(2)
+    private val guideOutputs = HashMap<String, GuideOutput>(2)
+    private val thermometers = HashMap<String, Thermometer>(2)
 
     override val id = UUID.randomUUID().toString()
 
@@ -74,51 +80,51 @@ data class AlpacaClient(
     }
 
     override fun mounts(): List<Mount> {
-        return emptyList()
+        return mounts.values.toList()
     }
 
     override fun mount(name: String): Mount? {
-        return null
+        return mounts[name] ?: mounts.values.find { it.name == name }
     }
 
     override fun focusers(): List<Focuser> {
-        return emptyList()
+        return focusers.values.toList()
     }
 
     override fun focuser(name: String): Focuser? {
-        return null
+        return focusers[name] ?: focusers.values.find { it.name == name }
     }
 
     override fun wheels(): List<FilterWheel> {
-        return emptyList()
+        return wheels.values.toList()
     }
 
     override fun wheel(name: String): FilterWheel? {
-        return null
+        return wheels[name] ?: wheels.values.find { it.name == name }
     }
 
     override fun gps(): List<GPS> {
-        return emptyList()
+        return gps.values.toList()
     }
 
     override fun gps(name: String): GPS? {
-        return null
+        return gps[name] ?: gps.values.find { it.name == name }
     }
 
     override fun guideOutputs(): List<GuideOutput> {
-        return emptyList()
+        return guideOutputs.values.toList()
     }
 
     override fun guideOutput(name: String): GuideOutput? {
-        return null
+        return guideOutputs[name] ?: guideOutputs.values.find { it.name == name }
     }
 
     override fun thermometers(): List<Thermometer> {
-        return emptyList()
+        return thermometers.values.toList()
     }
 
     override fun thermometer(name: String): Thermometer? {
-        return null
+        return thermometers[name] ?: thermometers.values.find { it.name == name }
     }
 
     fun discovery() {
@@ -189,17 +195,59 @@ data class AlpacaClient(
         }
     }
 
+    internal fun registerGPS(device: GPS) {
+        if (device.id !in gps) {
+            gps[device.id] = device
+            fireOnEventReceived(GPSAttached(device))
+        }
+    }
+
+    internal fun unregisterGPS(device: GPS) {
+        if (device.id in gps) {
+            gps.remove(device.id)
+            fireOnEventReceived(GPSDetached(device))
+        }
+    }
+
+    internal fun registerGuideHead(device: GuideHead) {
+        if (device.id !in cameras) {
+            cameras[device.id] = device
+            fireOnEventReceived(CameraAttached(device))
+        }
+    }
+
+    internal fun unregisterGuiderHead(device: GuideHead) {
+        if (device.id in cameras) {
+            cameras.remove(device.id)
+            fireOnEventReceived(CameraDetached(device))
+        }
+    }
+
     internal fun registerGuideOutput(device: GuideOutput) {
-        if (device is ASCOMDevice) {
+        if (device.id !in guideOutputs) {
             guideOutputs[device.id] = device
             fireOnEventReceived(GuideOutputAttached(device))
         }
     }
 
     internal fun unregisterGuideOutput(device: GuideOutput) {
-        if (device.name in guideOutputs) {
-            guideOutputs.remove(device.name)
+        if (device.id in guideOutputs) {
+            guideOutputs.remove(device.id)
             fireOnEventReceived(GuideOutputDetached(device))
+        }
+    }
+
+    internal fun registerThermometer(device: Thermometer) {
+        if (device.id !in thermometers) {
+            thermometers[device.id] = device
+            fireOnEventReceived(ThermometerAttached(device))
+        }
+    }
+
+    internal fun unregisterThermometer(device: Thermometer) {
+        if (device.id in thermometers) {
+            thermometers.remove(device.id)
+            fireOnEventReceived(ThermometerDetached(device))
         }
     }
 
@@ -228,17 +276,17 @@ data class AlpacaClient(
             fireOnEventReceived(FocuserDetached(device))
         }
 
-        // for ((_, device) in gps) {
-        //     device.close()
-        //     LOG.info("gps detached: {}", device.name)
-        //     fireOnEventReceived(GPSDetached(device))
-        // }
+        for ((_, device) in gps) {
+            device.close()
+            LOG.info("gps detached: {}", device.name)
+            fireOnEventReceived(GPSDetached(device))
+        }
 
         cameras.clear()
         mounts.clear()
         wheels.clear()
         focusers.clear()
-        // gps.clear()
+        gps.clear()
 
         handlers.clear()
     }
