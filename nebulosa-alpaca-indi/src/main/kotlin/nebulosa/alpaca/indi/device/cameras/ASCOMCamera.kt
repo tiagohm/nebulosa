@@ -280,6 +280,16 @@ data class ASCOMCamera(
     }
 
     override fun close() {
+        if (hasThermometer) {
+            sender.unregisterThermometer(this)
+            hasThermometer = false
+        }
+
+        if (canPulseGuide) {
+            sender.unregisterGuideOutput(this)
+            canPulseGuide = false
+        }
+
         super.close()
         reset()
         imageReadyWaiter.interrupt()
@@ -296,6 +306,7 @@ data class ASCOMCamera(
             processGain()
             processOffset()
             processCooler()
+            processTemperature(false)
         }
     }
 
@@ -567,6 +578,24 @@ data class ASCOMCamera(
                 sender.fireOnEventReceived(CameraCanSetTemperatureChanged(this))
             }
         }
+
+        processTemperature(true)
+    }
+
+    private fun processTemperature(init: Boolean) {
+        if (hasThermometer || init) {
+            service.ccdTemperature(device.number).doRequest {
+                if (it.errorNumber == 0) {
+                    if (!hasThermometer) {
+                        hasThermometer = true
+                        sender.registerThermometer(this)
+                    }
+
+                    temperature = it.value
+                    sender.fireOnEventReceived(CameraTemperatureChanged(this))
+                }
+            }
+        }
     }
 
     private fun readImage(exposureTime: Duration) {
@@ -615,7 +644,7 @@ data class ASCOMCamera(
             header.add(FitsKeyword.EXTEND, true)
             header.add(FitsKeyword.INSTRUME, name)
             header.add(FitsKeyword.EXPTIME, exposureTime.toNanos() / NANO_TO_SECONDS)
-            header.add(FitsKeyword.CCD_TEMP, temperature)
+            if (hasThermometer) header.add(FitsKeyword.CCD_TEMP, temperature)
             header.add(FitsKeyword.PIXSIZEn.n(1), pixelSizeX)
             header.add(FitsKeyword.PIXSIZEn.n(2), pixelSizeY)
             header.add(FitsKeyword.XBINNING, binX)

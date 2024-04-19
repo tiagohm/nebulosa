@@ -399,19 +399,16 @@ internal open class INDICamera(
         if (hasThermometer) {
             sender.unregisterThermometer(this)
             hasThermometer = false
-            LOG.info("thermometer detached: {}", name)
         }
 
         if (canPulseGuide) {
             sender.unregisterGuideOutput(this)
             canPulseGuide = false
-            LOG.info("guide output detached: {}", name)
         }
 
         if (guideHead != null) {
             guideHead?.also(sender::unregisterGuiderHead)
             guideHead = null
-            LOG.info("guide head detached: {}", name)
         }
     }
 
