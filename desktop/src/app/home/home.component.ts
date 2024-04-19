@@ -102,9 +102,17 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         return this.hasCamera
     }
 
-    get hasINDI() {
+    get hasDevices() {
         return this.hasCamera || this.hasMount || this.hasFocuser
             || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
+    }
+
+    get hasINDI() {
+        return this.connection?.type === 'INDI' && this.hasDevices
+    }
+
+    get hasAlpaca() {
+        return this.connection?.type === 'ALPACA' && this.hasDevices
     }
 
     readonly deviceModel: MenuItem[] = []
