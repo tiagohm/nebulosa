@@ -37,7 +37,7 @@ class ImageBucket {
             else -> throw IllegalArgumentException("invalid extension: $path")
         }
 
-        val image = representation.use { openedImage?.first?.load(it) ?: Image.open(it, debayer) }
+        val image = representation.use { Image.open(it, debayer) }
         put(path, image, solution)
         return image
     }

@@ -1,8 +1,6 @@
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.ints.shouldBeExactly
-import io.kotest.matchers.nulls.shouldBeNull
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.image.Image
 import nebulosa.image.algorithms.transformation.*
@@ -120,15 +118,6 @@ class XisfTransformAlgorithmTest : AbstractFitsAndXisfTest() {
             val mImage = Image.open(M82_MONO_8_XISF.xisf())
             mImage.transform(AutoScreenTransformFunction)
             mImage.save("xisf-mono-auto-stf").second shouldBe "9204a71df3770e8fe5ca49e3420eed72"
-        }
-        "!mono:reload" {
-            val mImage0 = Image.open(M82_MONO_8_XISF.xisf())
-
-            val mImage1 = Image.open(M82_MONO_8_XISF.xisf())
-            mImage1.transform(Invert)
-
-            mImage0.load(mImage1.hdu)
-            mImage0.save("xisf-mono-reload").second shouldBe "6e94463bb5b9561de1f0ee0a154db53e"
         }
         "color:raw" {
             val mImage = Image.open(M82_COLOR_32_XISF.xisf())
@@ -286,18 +275,6 @@ class XisfTransformAlgorithmTest : AbstractFitsAndXisfTest() {
             val mImage = Image.open(DEBAYER_FITS.xisf(), false)
             val nImage = mImage.transform(AutoScreenTransformFunction)
             nImage.save("xisf-color-no-debayer").second shouldBe "958ccea020deec1f0c075042a9ba37c3"
-        }
-        "!color:reload" {
-            val mImage0 = Image.open(M82_COLOR_32_XISF.xisf())
-            var mImage1 = Image.open(DEBAYER_FITS.xisf())
-
-            mImage1.load(mImage0.hdu).shouldNotBeNull()
-            mImage1.save("xisf-color-reload").second shouldBe "18fb83e240bc7a4cbafbc1aba2741db6"
-
-            mImage1 = Image.open(DEBAYER_FITS.xisf(), false)
-
-            mImage1.load(mImage0.hdu).shouldBeNull()
-            mImage0.load(mImage1.hdu).shouldBeNull()
         }
     }
 }
