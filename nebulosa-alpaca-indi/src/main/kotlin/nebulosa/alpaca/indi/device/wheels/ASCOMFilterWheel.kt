@@ -32,12 +32,10 @@ data class ASCOMFilterWheel(
     override fun onDisconnected() {}
 
     override fun moveTo(position: Int) {
-        val newPosition = position - 1
+        if (position in 1..count && position != this.position) {
+            targetPosition = position - 1
 
-        if (newPosition >= 0 && position != this.position) {
-            targetPosition = newPosition
-
-            if (service.position(device.number, newPosition).doRequest() != null) {
+            if (service.position(device.number, targetPosition).doRequest() != null) {
                 moving = true
                 sender.fireOnEventReceived(FilterWheelMovingChanged(this))
             }
@@ -65,12 +63,11 @@ data class ASCOMFilterWheel(
         service.position(device.number).doRequest {
             val value = it.value + 1
 
-            if (value > 0 && value != position) {
-                val prevPosition = position
+            if (value >= 1 && value != position) {
                 position = value
-                sender.fireOnEventReceived(FilterWheelPositionChanged(this, prevPosition))
+                sender.fireOnEventReceived(FilterWheelPositionChanged(this))
 
-                if (moving && value == targetPosition) {
+                if (moving && it.value == targetPosition) {
                     moving = false
                     sender.fireOnEventReceived(FilterWheelMovingChanged(this))
                 }

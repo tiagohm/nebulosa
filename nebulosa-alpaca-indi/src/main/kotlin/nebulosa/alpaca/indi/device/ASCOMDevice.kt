@@ -50,7 +50,7 @@ abstract class ASCOMDevice : Device {
     }
 
     open fun refresh(elapsedTimeInSeconds: Long) {
-        service.isConnected(device.number).doRequest { processConnected(it.value) }
+        processConnected()
     }
 
     open fun reset() {
@@ -110,6 +110,10 @@ abstract class ASCOMDevice : Device {
 
     protected inline fun <T : AlpacaResponse<*>> Call<T>.doRequest(action: (T) -> Unit): Boolean {
         return doRequest()?.also(action) != null
+    }
+
+    private fun processConnected() {
+        service.isConnected(device.number).doRequest { processConnected(it.value) }
     }
 
     protected fun processConnected(value: Boolean) {

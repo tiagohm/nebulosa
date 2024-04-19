@@ -17,7 +17,7 @@
             </div>
             <div class="flex align-items-center gap-1" *ngIf="focuser.hasThermometer">
                 <i class="mdi mdi-thermometer text-red-600"></i>
-                <span style="display: contents">{{ temperature }}°C</span>
+                <span style="display: contents">{{ temperature | number: '1.2-2' }}°C</span>
             </div>
         </div>
     </div>

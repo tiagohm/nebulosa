@@ -99,9 +99,11 @@ data class ASCOMFocuser(
     override fun refresh(elapsedTimeInSeconds: Long) {
         super.refresh(elapsedTimeInSeconds)
 
-        processMoving()
-        processPosition()
-        processTemperature(false)
+        if (connected) {
+            processMoving()
+            processPosition()
+            processTemperature(false)
+        }
     }
 
     private fun processCapabilities() {

@@ -245,6 +245,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         if (this.moving) return
 
         let filters: FilterSlot[] = []
+        let filtersChanged = true
 
         if (this.wheel.count <= 0) {
             this.filters = []
@@ -253,20 +254,23 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             filters = new Array(this.wheel.count)
         } else {
             filters = this.filters
+            filtersChanged = false
         }
 
-        const preference = this.preference.wheelPreference(this.wheel).get()
+        if (filtersChanged) {
+            const preference = this.preference.wheelPreference(this.wheel).get()
 
-        for (let position = 1; position <= filters.length; position++) {
-            const name = preference.names?.[position - 1] ?? `Filter #${position}`
-            const offset = preference.offsets?.[position - 1] ?? 0
-            const dark = position === preference.shutterPosition
-            const filter = { position, name, dark, offset }
-            filters[position - 1] = filter
+            for (let position = 1; position <= filters.length; position++) {
+                const name = preference.names?.[position - 1] ?? `Filter #${position}`
+                const offset = preference.offsets?.[position - 1] ?? 0
+                const dark = position === preference.shutterPosition
+                const filter = { position, name, dark, offset }
+                filters[position - 1] = filter
+            }
+
+            this.filters = filters
+            this.filter = filters[(this.filter?.position ?? this.position) - 1] ?? filters[0]
         }
-
-        this.filters = filters
-        this.filter = filters[this.position - 1] ?? filters[0]
 
         this.updateFocusOffset()
     }

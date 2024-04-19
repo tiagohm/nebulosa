@@ -300,14 +300,17 @@ data class ASCOMCamera(
         super.refresh(elapsedTimeInSeconds)
 
         if (connected) {
-            service.cameraState(device.number).doRequest { processCameraState(it.value) }
-
+            processCameraState()
             processBin()
             processGain()
             processOffset()
             processCooler()
             processTemperature(false)
         }
+    }
+
+    private fun processCameraState() {
+        service.cameraState(device.number).doRequest { processCameraState(it.value) }
     }
 
     private fun processCameraState(value: CameraState) {

@@ -284,12 +284,14 @@ data class ASCOMMount(
     override fun refresh(elapsedTimeInSeconds: Long) {
         super.refresh(elapsedTimeInSeconds)
 
-        processTracking()
-        processSlewing()
-        processParked()
-        processEquatorialCoordinates()
-        processSiteCoordinates()
-        processTrackMode()
+        if (connected) {
+            processTracking()
+            processSlewing()
+            processParked()
+            processEquatorialCoordinates()
+            processSiteCoordinates()
+            processTrackMode()
+        }
     }
 
     private fun processCapabilities() {
