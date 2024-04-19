@@ -5,13 +5,8 @@ import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.indi.device.Device
-import nebulosa.indi.device.focuser.Focuser
-import nebulosa.indi.device.focuser.FocuserCanAbsoluteMoveChanged
-import nebulosa.indi.device.focuser.FocuserMovingChanged
-import nebulosa.indi.device.focuser.FocuserPositionChanged
+import nebulosa.indi.device.focuser.*
 import nebulosa.indi.device.thermometer.ThermometerAttached
-import nebulosa.indi.device.thermometer.ThermometerDetached
-import nebulosa.indi.device.thermometer.ThermometerTemperatureChanged
 import nebulosa.indi.protocol.INDIProtocol
 
 @Suppress("RedundantModalityModifier")
@@ -75,7 +70,6 @@ data class ASCOMFocuser(
     override fun onConnected() {
         processCapabilities()
         processPosition()
-        processTemperature()
     }
 
     override fun onDisconnected() {
@@ -99,12 +93,12 @@ data class ASCOMFocuser(
     }
 
     override fun close() {
-        super.close()
-
         if (hasThermometer) {
             hasThermometer = false
-            sender.fireOnEventReceived(ThermometerDetached(this))
+            sender.unregisterThermometer(this)
         }
+
+        super.close()
     }
 
     override fun refresh(elapsedTimeInSeconds: Long) {
@@ -112,7 +106,7 @@ data class ASCOMFocuser(
 
         processMoving()
         processPosition()
-        processTemperature()
+        processTemperature(false)
     }
 
     private fun processCapabilities() {
@@ -127,6 +121,8 @@ data class ASCOMFocuser(
             hasThermometer = true
             sender.fireOnEventReceived(ThermometerAttached(this))
         }
+
+        processTemperature(true)
     }
 
     private fun processMoving() {
@@ -149,13 +145,19 @@ data class ASCOMFocuser(
         }
     }
 
-    private fun processTemperature() {
-        if (hasThermometer) {
+    private fun processTemperature(init: Boolean) {
+        if (hasThermometer || init) {
             service.temperature(device.number).doRequest {
-                if (it.value != temperature) {
-                    temperature = it.value
+                if (it.errorNumber == 0) {
+                    if (!hasThermometer) {
+                        hasThermometer = true
+                        sender.registerThermometer(this)
+                    }
 
-                    sender.fireOnEventReceived(ThermometerTemperatureChanged(this))
+                    if (it.value != temperature) {
+                        temperature = it.value
+                        sender.fireOnEventReceived(FocuserTemperatureChanged(this))
+                    }
                 }
             }
         }

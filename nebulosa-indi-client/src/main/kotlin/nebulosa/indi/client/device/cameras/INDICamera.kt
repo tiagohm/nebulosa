@@ -397,13 +397,13 @@ internal open class INDICamera(
 
     override fun close() {
         if (hasThermometer) {
-            sender.unregisterThermometer(this)
             hasThermometer = false
+            sender.unregisterThermometer(this)
         }
 
         if (canPulseGuide) {
-            sender.unregisterGuideOutput(this)
             canPulseGuide = false
+            sender.unregisterGuideOutput(this)
         }
 
         if (guideHead != null) {

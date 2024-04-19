@@ -281,13 +281,13 @@ data class ASCOMCamera(
 
     override fun close() {
         if (hasThermometer) {
-            sender.unregisterThermometer(this)
             hasThermometer = false
+            sender.unregisterThermometer(this)
         }
 
         if (canPulseGuide) {
-            sender.unregisterGuideOutput(this)
             canPulseGuide = false
+            sender.unregisterGuideOutput(this)
         }
 
         super.close()
@@ -591,8 +591,10 @@ data class ASCOMCamera(
                         sender.registerThermometer(this)
                     }
 
-                    temperature = it.value
-                    sender.fireOnEventReceived(CameraTemperatureChanged(this))
+                    if (it.value != temperature) {
+                        temperature = it.value
+                        sender.fireOnEventReceived(CameraTemperatureChanged(this))
+                    }
                 }
             }
         }
