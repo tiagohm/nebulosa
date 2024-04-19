@@ -83,7 +83,7 @@ abstract class ASCOMDevice : Device {
             val response = execute().body()
 
             return if (response == null) {
-                LOG.warn("response has no body. device={}", name)
+                LOG.warn("response has no body. device={}, url={}", name, request().url)
                 null
             } else if (response.errorNumber != 0) {
                 val message = response.errorMessage

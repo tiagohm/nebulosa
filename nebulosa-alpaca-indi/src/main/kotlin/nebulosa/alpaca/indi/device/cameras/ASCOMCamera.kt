@@ -554,7 +554,6 @@ data class ASCOMCamera(
             if (it.value) {
                 canPulseGuide = true
                 sender.registerGuideOutput(this)
-                LOG.info("guide output attached: {}", name)
             }
         }
 

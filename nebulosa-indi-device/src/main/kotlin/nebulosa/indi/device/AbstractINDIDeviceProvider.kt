@@ -115,7 +115,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         if (device.id in wheels) return false
         wheels[device.id] = device
         fireOnEventReceived(FilterWheelAttached(device))
-        LOG.info("focuser attached: {} ({})", device.name, device.id)
+        LOG.info("filter wheel attached: {} ({})", device.name, device.id)
         return true
     }
 

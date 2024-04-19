@@ -238,8 +238,6 @@ internal open class INDICamera(
                                 canPulseGuide = true
 
                                 sender.registerGuideOutput(this)
-
-                                LOG.info("guide output attached: {}", name)
                             } else {
                                 val prevIsPulseGuiding = pulseGuiding
                                 pulseGuiding = message.isBusy
@@ -258,9 +256,6 @@ internal open class INDICamera(
                 if (!isGuideHead && message.name == "CCD2" && guideHead == null) {
                     guideHead = GuideHeadCamera(this)
                     sender.registerGuideHead(guideHead!!)
-
-                    LOG.info("guide head attached: {}", name)
-
                     return
                 }
             }
