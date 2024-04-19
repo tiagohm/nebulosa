@@ -519,7 +519,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             if (this.tab === SkyAtlasTab.SKY_OBJECT) {
                 this.skyObjectFilter.rightAscension = data.filter?.rightAscension || this.skyObjectFilter.rightAscension
                 this.skyObjectFilter.declination = data.filter?.declination || this.skyObjectFilter.declination
-                if (data.filter?.radius) this.skyObjectFilter.radius = data.filter?.radius || this.skyObjectFilter.radius
+                this.skyObjectFilter.radius = data.filter?.radius || this.skyObjectFilter.radius || 4.0
                 this.skyObjectFilter.constellation = data.filter?.constellation || this.skyObjectFilter.constellation
                 this.skyObjectFilter.magnitude = data.filter?.magnitude || this.skyObjectFilter.magnitude
                 this.skyObjectFilter.type = data.filter?.type || this.skyObjectFilter.type
