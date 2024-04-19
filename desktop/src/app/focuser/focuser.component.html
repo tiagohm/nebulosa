@@ -30,7 +30,7 @@
         </div>
         <div class="col-3 text-center justify-content-between gap-2">
             <p-button [disabled]="!focuser.connected || !canRelativeMove || !moving" icon="mdi mdi-stop" [text]="true" severity="danger" size="small"
-                      pTooltip="Abort" tooltipPosition="bottom" />
+                      pTooltip="Abort" tooltipPosition="bottom" (onClick)="abort()" />
             <p-button [disabled]="!focuser.connected || !canSync || moving" (onClick)="sync()" icon="mdi mdi-sync"
                       [text]="true" severity="info" size="small" pTooltip="Sync" tooltipPosition="bottom" />
         </div>

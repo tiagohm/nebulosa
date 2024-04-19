@@ -109,33 +109,33 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    moveIn(stepSize: number = 1) {
+    async moveIn(stepSize: number = 1) {
         if (!this.moving) {
             this.moving = true
-            this.api.focuserMoveIn(this.focuser, Math.trunc(this.stepsRelative * stepSize))
+            await this.api.focuserMoveIn(this.focuser, Math.trunc(this.stepsRelative * stepSize))
             this.savePreference()
         }
     }
 
-    moveOut(stepSize: number = 1) {
+    async moveOut(stepSize: number = 1) {
         if (!this.moving) {
             this.moving = true
-            this.api.focuserMoveOut(this.focuser, Math.trunc(this.stepsRelative * stepSize))
+            await this.api.focuserMoveOut(this.focuser, Math.trunc(this.stepsRelative * stepSize))
             this.savePreference()
         }
     }
 
-    moveTo() {
+    async moveTo() {
         if (!this.moving && this.stepsAbsolute !== this.position) {
             this.moving = true
-            this.api.focuserMoveTo(this.focuser, this.stepsAbsolute)
+            await this.api.focuserMoveTo(this.focuser, this.stepsAbsolute)
             this.savePreference()
         }
     }
 
-    sync() {
+    async sync() {
         if (!this.moving) {
-            this.api.focuserSync(this.focuser, this.stepsAbsolute)
+            await this.api.focuserSync(this.focuser, this.stepsAbsolute)
             this.savePreference()
         }
     }

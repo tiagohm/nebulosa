@@ -6,7 +6,6 @@ import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.focuser.*
-import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.protocol.INDIProtocol
 
 @Suppress("RedundantModalityModifier")
@@ -19,8 +18,8 @@ data class ASCOMFocuser(
     @Volatile final override var moving = false
     @Volatile final override var position = 0
     @Volatile final override var canAbsoluteMove = false
-    @Volatile final override var canRelativeMove = false
-    @Volatile final override var canAbort = false
+    @Volatile final override var canRelativeMove = true
+    @Volatile final override var canAbort = true
     @Volatile final override var canReverse = false
     @Volatile final override var reversed = false
     @Volatile final override var canSync = false
@@ -49,31 +48,27 @@ data class ASCOMFocuser(
     }
 
     override fun moveFocusTo(steps: Int) {
+        service.move(device.number, steps).doRequest()
     }
 
     override fun abortFocus() {
         service.halt(device.number).doRequest()
     }
 
-    override fun reverseFocus(enable: Boolean) {
-    }
+    override fun reverseFocus(enable: Boolean) = Unit
 
-    override fun syncFocusTo(steps: Int) {
-    }
+    override fun syncFocusTo(steps: Int) = Unit
 
-    override fun snoop(devices: Iterable<Device?>) {
-    }
+    override fun snoop(devices: Iterable<Device?>) = Unit
 
-    override fun handleMessage(message: INDIProtocol) {
-    }
+    override fun handleMessage(message: INDIProtocol) = Unit
 
     override fun onConnected() {
         processCapabilities()
         processPosition()
     }
 
-    override fun onDisconnected() {
-    }
+    override fun onDisconnected() = Unit
 
     override fun reset() {
         super.reset()
@@ -117,9 +112,9 @@ data class ASCOMFocuser(
             }
         }
 
-        service.temperature(device.number).doRequest {
-            hasThermometer = true
-            sender.fireOnEventReceived(ThermometerAttached(this))
+        service.maxStep(device.number).doRequest {
+            maxPosition = it.value
+            sender.fireOnEventReceived(FocuserMaxPositionChanged(this))
         }
 
         processTemperature(true)
