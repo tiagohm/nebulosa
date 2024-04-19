@@ -148,16 +148,14 @@ data class ASCOMFocuser(
     private fun processTemperature(init: Boolean) {
         if (hasThermometer || init) {
             service.temperature(device.number).doRequest {
-                if (it.errorNumber == 0) {
-                    if (!hasThermometer) {
-                        hasThermometer = true
-                        sender.registerThermometer(this)
-                    }
+                if (!hasThermometer) {
+                    hasThermometer = true
+                    sender.registerThermometer(this)
+                }
 
-                    if (it.value != temperature) {
-                        temperature = it.value
-                        sender.fireOnEventReceived(FocuserTemperatureChanged(this))
-                    }
+                if (it.value != temperature) {
+                    temperature = it.value
+                    sender.fireOnEventReceived(FocuserTemperatureChanged(this))
                 }
             }
         }

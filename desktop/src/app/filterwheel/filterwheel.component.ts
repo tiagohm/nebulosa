@@ -191,7 +191,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 if (offset < 0) this.api.focuserMoveIn(this.focuser, -offset)
                 else this.api.focuserMoveOut(this.focuser, offset)
             }
-        } catch {
+        } catch (e) {
+            console.error(e)
             this.moving = false
         }
     }
@@ -240,6 +241,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         } else {
             this.position = this.request.filterPosition || 1
         }
+
+        if (this.moving) return
 
         let filters: FilterSlot[] = []
 
