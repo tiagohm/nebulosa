@@ -438,6 +438,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                     if (!connection.connected &&
                         (status.host === connection.host || status.ip === connection.host) &&
                         status.port === connection.port) {
+                        connection.id = status.id
                         connection.connected = true
                         this.connection = connection
                         break
