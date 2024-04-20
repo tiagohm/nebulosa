@@ -21,6 +21,7 @@ interface AlpacaFilterWheelService : AlpacaDeviceService {
     @GET("api/v1/filterwheel/{id}/position")
     fun position(@Path("id") id: Int): Call<IntResponse>
 
-    @GET("api/v1/filterwheel/{id}/alignmentmode")
+    @FormUrlEncoded
+    @PUT("api/v1/filterwheel/{id}/position")
     fun position(@Path("id") id: Int, @Field("Position") position: Int): Call<NoneResponse>
 }

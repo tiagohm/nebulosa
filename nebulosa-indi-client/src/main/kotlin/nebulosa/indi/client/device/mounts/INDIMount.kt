@@ -157,8 +157,6 @@ internal open class INDIMount(
                             canPulseGuide = true
 
                             sender.registerGuideOutput(this)
-
-                            LOG.info("guide output attached: {}", name)
                         }
 
                         if (canPulseGuide) {
@@ -319,13 +317,11 @@ internal open class INDIMount(
         if (canPulseGuide) {
             canPulseGuide = false
             sender.unregisterGuideOutput(this)
-            LOG.info("guide output detached: {}", name)
         }
 
         if (hasGPS) {
             hasGPS = false
             sender.unregisterGPS(this)
-            LOG.info("GPS detached: {}", name)
         }
     }
 

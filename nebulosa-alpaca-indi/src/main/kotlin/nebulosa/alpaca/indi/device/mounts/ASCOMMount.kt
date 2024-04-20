@@ -12,6 +12,7 @@ import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
+import java.math.BigDecimal
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -54,8 +55,7 @@ data class ASCOMMount(
 
     override val snoopedDevices = emptyList<Device>()
 
-    private val axisRates = HashMap<String, AxisRate>(4)
-    @Volatile private var axisRate: AxisRate? = null
+    private val axisRates = HashMap<String, Pair<AxisRate, BigDecimal>>(4)
     @Volatile private var equatorialSystem = EquatorialCoordinateType.J2000
 
     override fun park() {
@@ -130,7 +130,7 @@ data class ASCOMMount(
     }
 
     override fun slewTo(ra: Angle, dec: Angle) {
-        service.tracking(device.number, true)
+        tracking(true)
 
         if (equatorialSystem != EquatorialCoordinateType.J2000) {
             service.slewToCoordinates(device.number, ra.toHours, dec.toDegrees).doRequest()
@@ -143,7 +143,7 @@ data class ASCOMMount(
     }
 
     override fun slewToJ2000(ra: Angle, dec: Angle) {
-        service.tracking(device.number, true)
+        tracking(true)
 
         if (equatorialSystem == EquatorialCoordinateType.J2000) {
             service.slewToCoordinates(device.number, ra.toHours, dec.toDegrees).doRequest()
@@ -177,22 +177,22 @@ data class ASCOMMount(
 
     override fun trackMode(mode: TrackMode) {
         if (mode != TrackMode.CUSTOM) {
-            service.trackingRate(device.number, DriveRate.entries[mode.ordinal])
+            service.trackingRate(device.number, DriveRate.entries[mode.ordinal]).doRequest()
         }
     }
 
     override fun slewRate(rate: SlewRate) {
-        axisRate = axisRates[rate.name]?.takeIf { it !== axisRate } ?: return
+        slewRate = slewRates.firstOrNull { it.name == rate.name } ?: return
         sender.fireOnEventReceived(MountSlewRateChanged(this))
     }
 
     private fun moveAxis(axisType: AxisType, negative: Boolean, enabled: Boolean) {
-        val rate = axisRate?.maximum ?: return
-
-        service.moveAxis(device.number, axisType, 0.0).doRequest()
+        val rate = slewRate?.name?.let { axisRates[it] }?.second ?: return LOG.warn("axisRate is null")
 
         if (enabled) {
-            service.moveAxis(device.number, axisType, if (negative) -rate else rate).doRequest()
+            service.moveAxis(device.number, axisType, if (negative) -(rate.toDouble()) else rate.toDouble()).doRequest()
+        } else {
+            service.moveAxis(device.number, axisType, 0.0).doRequest()
         }
     }
 
@@ -219,7 +219,7 @@ data class ASCOMMount(
     }
 
     override fun dateTime(dateTime: OffsetDateTime) {
-        service.utcDate(device.number, dateTime.toInstant())
+        service.utcDate(device.number, dateTime.toInstant()).doRequest()
     }
 
     override fun snoop(devices: Iterable<Device?>) {}
@@ -270,7 +270,6 @@ data class ASCOMMount(
         dateTime = OffsetDateTime.now()!!
 
         axisRates.clear()
-        axisRate = null
     }
 
     override fun close() {
@@ -285,12 +284,14 @@ data class ASCOMMount(
     override fun refresh(elapsedTimeInSeconds: Long) {
         super.refresh(elapsedTimeInSeconds)
 
-        processTracking()
-        processSlewing()
-        processParked()
-        processEquatorialCoordinates()
-        processSiteCoordinates()
-        processTrackMode()
+        if (connected) {
+            processTracking()
+            processSlewing()
+            processParked()
+            processEquatorialCoordinates()
+            processSiteCoordinates()
+            processTrackMode()
+        }
     }
 
     private fun processCapabilities() {
@@ -312,7 +313,6 @@ data class ASCOMMount(
             if (it.value) {
                 canPulseGuide = true
                 sender.registerGuideOutput(this)
-                LOG.info("guide output attached: {}", name)
             }
         }
 
@@ -329,23 +329,43 @@ data class ASCOMMount(
             processTrackMode()
         }
 
-        service.axisRates(device.number).doRequest {
-            val rates = ArrayList<SlewRate>(it.value.size)
+        axisRates.clear()
 
-            axisRates.clear()
+        val rates = sortedMapOf<BigDecimal, Pair<SlewRate, AxisRate>>()
 
-            for (i in it.value.indices) {
-                val rate = it.value[i]
-                val name = "RATE_$i"
-                axisRates[name] = rate
-                rates.add(SlewRate(name, "%f.1f deg/s".format(rate.maximum)))
+        fun Array<AxisRate>.populateWithNewRates() {
+            for (rate in this) {
+                var min = rate.minimum
+
+                while (min <= rate.maximum) {
+                    if (min > BigDecimal.ZERO && min !in rates) {
+                        val name = "RATE_${axisRates.size}"
+                        axisRates[name] = rate to min
+                        rates[min] = SlewRate(name, "%.1f °/s".format(min)) to rate
+                    }
+
+                    min += SLEW_RATE_INCREMENT
+                }
             }
+        }
 
-            axisRate = it.value.firstOrNull()
+        service.axisRates(device.number, AxisType.PRIMARY).doRequest {
+            it.value.populateWithNewRates()
+        }
 
-            if (axisRate != null) {
-                sender.fireOnEventReceived(MountSlewRateChanged(this))
-            }
+        service.axisRates(device.number, AxisType.SECONDARY).doRequest {
+            it.value.populateWithNewRates()
+        }
+
+        slewRates = rates.values.map { it.first }
+        slewRate = slewRates.firstOrNull()
+
+        if (slewRates.isNotEmpty()) {
+            sender.fireOnEventReceived(MountSlewRatesChanged(this))
+        }
+
+        if (slewRate != null) {
+            sender.fireOnEventReceived(MountSlewRateChanged(this))
         }
     }
 
@@ -402,7 +422,7 @@ data class ASCOMMount(
 
     private fun processDateTime() {
         service.utcDate(device.number).doRequest {
-            dateTime = it.value.atOffset(ZoneOffset.systemDefault().rules.getOffset(it.value))
+            dateTime = it.value.atOffset(ZoneOffset.UTC)
             sender.fireOnEventReceived(MountTimeChanged(this))
         }
     }
@@ -455,5 +475,6 @@ data class ASCOMMount(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<ASCOMMount>()
+        @JvmStatic private val SLEW_RATE_INCREMENT = BigDecimal("0.1")
     }
 }

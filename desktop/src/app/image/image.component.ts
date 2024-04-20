@@ -458,7 +458,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         electron.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
             if (event.state === 'EXPOSURE_FINISHED' && event.camera.id === this.imageData.camera?.id) {
-                await this.closeImage(event.savePath !== this.imageData.path)
+                await this.closeImage(true)
 
                 ngZone.run(() => {
                     this.imageData.path = event.savePath

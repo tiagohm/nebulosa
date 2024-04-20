@@ -32,6 +32,15 @@ abstract class ASCOMDevice : Device {
 
     @Volatile private var refresher: Refresher? = null
 
+    internal open fun initialize() {
+        refresh(0L)
+
+        if (refresher == null) {
+            refresher = Refresher()
+            refresher!!.start()
+        }
+    }
+
     override fun connect() {
         service.connect(device.number, true).doRequest()
     }
@@ -41,7 +50,7 @@ abstract class ASCOMDevice : Device {
     }
 
     open fun refresh(elapsedTimeInSeconds: Long) {
-        service.isConnected(device.number).doRequest { processConnected(it.value) }
+        processConnected()
     }
 
     open fun reset() {
@@ -74,7 +83,7 @@ abstract class ASCOMDevice : Device {
             val response = execute().body()
 
             return if (response == null) {
-                LOG.warn("response has no body. device={}", name)
+                LOG.warn("response has no body. device={}, url={}", name, request().url)
                 null
             } else if (response.errorNumber != 0) {
                 val message = response.errorMessage
@@ -103,26 +112,20 @@ abstract class ASCOMDevice : Device {
         return doRequest()?.also(action) != null
     }
 
+    private fun processConnected() {
+        service.isConnected(device.number).doRequest { processConnected(it.value) }
+    }
+
     protected fun processConnected(value: Boolean) {
         if (connected != value) {
             connected = value
 
             if (value) {
                 sender.fireOnEventReceived(DeviceConnected(this))
-
                 onConnected()
-
-                if (refresher == null) {
-                    refresher = Refresher()
-                    refresher!!.start()
-                }
             } else {
                 sender.fireOnEventReceived(DeviceDisconnected(this))
-
                 onDisconnected()
-
-                refresher?.interrupt()
-                refresher = null
             }
         }
     }
@@ -140,7 +143,7 @@ abstract class ASCOMDevice : Device {
 
             while (true) {
                 val startTime = System.currentTimeMillis()
-                refresh(stopwatch.elapsedSeconds)
+                if (connected) refresh(stopwatch.elapsedSeconds)
                 val endTime = System.currentTimeMillis()
                 val delayTime = 2000L - (endTime - startTime)
 

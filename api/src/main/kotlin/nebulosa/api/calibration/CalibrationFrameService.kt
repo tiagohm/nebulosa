@@ -5,7 +5,6 @@ import nebulosa.image.Image
 import nebulosa.image.algorithms.transformation.correction.BiasSubtraction
 import nebulosa.image.algorithms.transformation.correction.DarkSubtraction
 import nebulosa.image.algorithms.transformation.correction.FlatCorrection
-import nebulosa.image.format.Header
 import nebulosa.image.format.ImageHdu
 import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.FrameType
@@ -37,10 +36,9 @@ class CalibrationFrameService(
 
             if (darkFrame != null || biasFrame != null || flatFrame != null) {
                 var transformedImage = if (createNew) image.clone() else image
-                var calibrationImage = Image(transformedImage.width, transformedImage.height, Header.Empty, transformedImage.mono)
 
                 if (biasFrame != null) {
-                    calibrationImage = biasFrame.path!!.fits().use(calibrationImage::load)!!
+                    val calibrationImage = biasFrame.path!!.fits().use(Image::open)
                     transformedImage = transformedImage.transform(BiasSubtraction(calibrationImage))
                     LOG.info("bias frame subtraction applied. frame={}", biasFrame)
                 } else {
@@ -51,7 +49,7 @@ class CalibrationFrameService(
                 }
 
                 if (darkFrame != null) {
-                    calibrationImage = darkFrame.path!!.fits().use(calibrationImage::load)!!
+                    val calibrationImage = darkFrame.path!!.fits().use(Image::open)
                     transformedImage = transformedImage.transform(DarkSubtraction(calibrationImage))
                     LOG.info("dark frame subtraction applied. frame={}", darkFrame)
                 } else {
@@ -62,7 +60,7 @@ class CalibrationFrameService(
                 }
 
                 if (flatFrame != null) {
-                    calibrationImage = flatFrame.path!!.fits().use(calibrationImage::load)!!
+                    val calibrationImage = flatFrame.path!!.fits().use(Image::open)
                     transformedImage = transformedImage.transform(FlatCorrection(calibrationImage))
                     LOG.info("flat frame correction applied. frame={}", flatFrame)
                 } else {

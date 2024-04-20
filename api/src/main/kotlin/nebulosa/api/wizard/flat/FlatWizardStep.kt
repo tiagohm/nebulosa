@@ -94,8 +94,8 @@ data class FlatWizardStep(
         if (!stopped && saved != null) {
             val (imageRepresentation, savedPath) = saved!!
 
-            image = if (imageRepresentation != null) image?.load(imageRepresentation) ?: Image.open(imageRepresentation, false)
-            else savedPath.fits().use { image?.load(it) ?: Image.open(it, false) }
+            image = if (imageRepresentation != null) Image.open(imageRepresentation, false)
+            else savedPath.fits().use { Image.open(it, false) }
 
             imageBucket?.put(savedPath, image!!)
 

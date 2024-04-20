@@ -158,7 +158,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     ngOnDestroy() { }
 
     async showCameraDialog() {
-        if (this.camera.name && await CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.camera, this.request.captureRequest)) {
+        if (this.camera.id && await CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.camera, this.request.captureRequest)) {
             this.preference.cameraStartCaptureForFlatWizard(this.camera).set(this.request.captureRequest)
         }
     }

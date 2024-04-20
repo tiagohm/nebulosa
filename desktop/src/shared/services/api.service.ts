@@ -51,42 +51,42 @@ export class ApiService {
         return this.http.get<Camera[]>(`cameras`)
     }
 
-    camera(name: string) {
-        return this.http.get<Camera>(`cameras/${name}`)
+    camera(id: string) {
+        return this.http.get<Camera>(`cameras/${id}`)
     }
 
     cameraConnect(camera: Camera) {
-        return this.http.put<void>(`cameras/${camera.name}/connect`)
+        return this.http.put<void>(`cameras/${camera.id}/connect`)
     }
 
     cameraDisconnect(camera: Camera) {
-        return this.http.put<void>(`cameras/${camera.name}/disconnect`)
+        return this.http.put<void>(`cameras/${camera.id}/disconnect`)
     }
 
     cameraIsCapturing(camera: Camera) {
-        return this.http.get<boolean>(`cameras/${camera.name}/capturing`)
+        return this.http.get<boolean>(`cameras/${camera.id}/capturing`)
     }
 
     // TODO: Rotator
     cameraSnoop(camera: Camera, mount?: Mount, wheel?: FilterWheel, focuser?: Focuser) {
         const query = this.http.query({ mount: mount?.name, wheel: wheel?.name, focuser: focuser?.name })
-        return this.http.put<void>(`cameras/${camera.name}/snoop?${query}`)
+        return this.http.put<void>(`cameras/${camera.id}/snoop?${query}`)
     }
 
     cameraCooler(camera: Camera, enabled: boolean) {
-        return this.http.put<void>(`cameras/${camera.name}/cooler?enabled=${enabled}`)
+        return this.http.put<void>(`cameras/${camera.id}/cooler?enabled=${enabled}`)
     }
 
     cameraSetpointTemperature(camera: Camera, temperature: number) {
-        return this.http.put<void>(`cameras/${camera.name}/temperature/setpoint?temperature=${temperature}`)
+        return this.http.put<void>(`cameras/${camera.id}/temperature/setpoint?temperature=${temperature}`)
     }
 
     cameraStartCapture(camera: Camera, data: CameraStartCapture) {
-        return this.http.put<void>(`cameras/${camera.name}/capture/start`, data)
+        return this.http.put<void>(`cameras/${camera.id}/capture/start`, data)
     }
 
     cameraAbortCapture(camera: Camera) {
-        return this.http.put<void>(`cameras/${camera.name}/capture/abort`)
+        return this.http.put<void>(`cameras/${camera.id}/capture/abort`)
     }
 
     // MOUNT
@@ -95,79 +95,79 @@ export class ApiService {
         return this.http.get<Mount[]>(`mounts`)
     }
 
-    mount(name: string) {
-        return this.http.get<Mount>(`mounts/${name}`)
+    mount(id: string) {
+        return this.http.get<Mount>(`mounts/${id}`)
     }
 
     mountConnect(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/connect`)
+        return this.http.put<void>(`mounts/${mount.id}/connect`)
     }
 
     mountDisconnect(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/disconnect`)
+        return this.http.put<void>(`mounts/${mount.id}/disconnect`)
     }
 
     mountTracking(mount: Mount, enabled: boolean) {
-        return this.http.put<void>(`mounts/${mount.name}/tracking?enabled=${enabled}`)
+        return this.http.put<void>(`mounts/${mount.id}/tracking?enabled=${enabled}`)
     }
 
     mountSync(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
         const query = this.http.query({ rightAscension, declination, j2000 })
-        return this.http.put<void>(`mounts/${mount.name}/sync?${query}`)
+        return this.http.put<void>(`mounts/${mount.id}/sync?${query}`)
     }
 
     mountSlew(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
         const query = this.http.query({ rightAscension, declination, j2000 })
-        return this.http.put<void>(`mounts/${mount.name}/slew?${query}`)
+        return this.http.put<void>(`mounts/${mount.id}/slew?${query}`)
     }
 
     mountGoTo(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
         const query = this.http.query({ rightAscension, declination, j2000 })
-        return this.http.put<void>(`mounts/${mount.name}/goto?${query}`)
+        return this.http.put<void>(`mounts/${mount.id}/goto?${query}`)
     }
 
     mountPark(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/park`)
+        return this.http.put<void>(`mounts/${mount.id}/park`)
     }
 
     mountUnpark(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/unpark`)
+        return this.http.put<void>(`mounts/${mount.id}/unpark`)
     }
 
     mountHome(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/home`)
+        return this.http.put<void>(`mounts/${mount.id}/home`)
     }
 
     mountAbort(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/abort`)
+        return this.http.put<void>(`mounts/${mount.id}/abort`)
     }
 
     mountTrackMode(mount: Mount, mode: TrackMode) {
-        return this.http.put<void>(`mounts/${mount.name}/track-mode?mode=${mode}`)
+        return this.http.put<void>(`mounts/${mount.id}/track-mode?mode=${mode}`)
     }
 
     mountSlewRate(mount: Mount, rate: SlewRate) {
-        return this.http.put<void>(`mounts/${mount.name}/slew-rate?rate=${rate.name}`)
+        return this.http.put<void>(`mounts/${mount.id}/slew-rate?rate=${rate.name}`)
     }
 
     mountMove(mount: Mount, direction: GuideDirection, enabled: boolean) {
-        return this.http.put<void>(`mounts/${mount.name}/move?direction=${direction}&enabled=${enabled}`)
+        return this.http.put<void>(`mounts/${mount.id}/move?direction=${direction}&enabled=${enabled}`)
     }
 
     mountComputeLocation(mount: Mount, j2000: boolean, rightAscension: Angle, declination: Angle,
         equatorial: boolean = true, horizontal: boolean = true, meridianAt: boolean = false,
     ) {
         const query = this.http.query({ rightAscension, declination, j2000, equatorial, horizontal, meridianAt })
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location?${query}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.id}/location?${query}`)
     }
 
     mountCelestialLocation(mount: Mount, type: CelestialLocationType) {
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/${type}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.id}/location/${type}`)
     }
 
     pointMountHere(mount: Mount, path: string, x: number, y: number) {
         const query = this.http.query({ path, x, y })
-        return this.http.put<void>(`mounts/${mount.name}/point-here?${query}`)
+        return this.http.put<void>(`mounts/${mount.id}/point-here?${query}`)
     }
 
     // FOCUSER
@@ -176,36 +176,36 @@ export class ApiService {
         return this.http.get<Focuser[]>(`focusers`)
     }
 
-    focuser(name: string) {
-        return this.http.get<Focuser>(`focusers/${name}`)
+    focuser(id: string) {
+        return this.http.get<Focuser>(`focusers/${id}`)
     }
 
     focuserConnect(focuser: Focuser) {
-        return this.http.put<void>(`focusers/${focuser.name}/connect`)
+        return this.http.put<void>(`focusers/${focuser.id}/connect`)
     }
 
     focuserDisconnect(focuser: Focuser) {
-        return this.http.put<void>(`focusers/${focuser.name}/disconnect`)
+        return this.http.put<void>(`focusers/${focuser.id}/disconnect`)
     }
 
     focuserMoveIn(focuser: Focuser, steps: number) {
-        return this.http.put<void>(`focusers/${focuser.name}/move-in?steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.id}/move-in?steps=${steps}`)
     }
 
     focuserMoveOut(focuser: Focuser, steps: number) {
-        return this.http.put<void>(`focusers/${focuser.name}/move-out?steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.id}/move-out?steps=${steps}`)
     }
 
     focuserMoveTo(focuser: Focuser, steps: number) {
-        return this.http.put<void>(`focusers/${focuser.name}/move-to?steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.id}/move-to?steps=${steps}`)
     }
 
     focuserAbort(focuser: Focuser) {
-        return this.http.put<void>(`focusers/${focuser.name}/abort`)
+        return this.http.put<void>(`focusers/${focuser.id}/abort`)
     }
 
     focuserSync(focuser: Focuser, steps: number) {
-        return this.http.put<void>(`focusers/${focuser.name}/sync?steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.id}/sync?steps=${steps}`)
     }
 
     // FILTER WHEEL
@@ -214,24 +214,24 @@ export class ApiService {
         return this.http.get<FilterWheel[]>(`wheels`)
     }
 
-    wheel(name: string) {
-        return this.http.get<FilterWheel>(`wheels/${name}`)
+    wheel(id: string) {
+        return this.http.get<FilterWheel>(`wheels/${id}`)
     }
 
     wheelConnect(wheel: FilterWheel) {
-        return this.http.put<void>(`wheels/${wheel.name}/connect`)
+        return this.http.put<void>(`wheels/${wheel.id}/connect`)
     }
 
     wheelDisconnect(wheel: FilterWheel) {
-        return this.http.put<void>(`wheels/${wheel.name}/disconnect`)
+        return this.http.put<void>(`wheels/${wheel.id}/disconnect`)
     }
 
     wheelMoveTo(wheel: FilterWheel, position: number) {
-        return this.http.put<void>(`wheels/${wheel.name}/move-to?position=${position}`)
+        return this.http.put<void>(`wheels/${wheel.id}/move-to?position=${position}`)
     }
 
     wheelSync(wheel: FilterWheel, names: string[]) {
-        return this.http.put<void>(`wheels/${wheel.name}/sync?names=${names.join(',')}`)
+        return this.http.put<void>(`wheels/${wheel.id}/sync?names=${names.join(',')}`)
     }
 
     // GUIDE OUTPUT
@@ -240,21 +240,21 @@ export class ApiService {
         return this.http.get<GuideOutput[]>(`guide-outputs`)
     }
 
-    guideOutput(name: string) {
-        return this.http.get<GuideOutput>(`guide-outputs/${name}`)
+    guideOutput(id: string) {
+        return this.http.get<GuideOutput>(`guide-outputs/${id}`)
     }
 
     guideOutputConnect(guideOutput: GuideOutput) {
-        return this.http.put<void>(`guide-outputs/${guideOutput.name}/connect`)
+        return this.http.put<void>(`guide-outputs/${guideOutput.id}/connect`)
     }
 
     guideOutputDisconnect(guideOutput: GuideOutput) {
-        return this.http.put<void>(`guide-outputs/${guideOutput.name}/disconnect`)
+        return this.http.put<void>(`guide-outputs/${guideOutput.id}/disconnect`)
     }
 
     guideOutputPulse(guideOutput: GuideOutput, direction: GuideDirection, duration: number) {
         const query = this.http.query({ direction, duration })
-        return this.http.put<void>(`guide-outputs/${guideOutput.name}/pulse?${query}`)
+        return this.http.put<void>(`guide-outputs/${guideOutput.id}/pulse?${query}`)
     }
 
     // GUIDING
@@ -329,23 +329,23 @@ export class ApiService {
     // INDI
 
     indiProperties(device: Device) {
-        return this.http.get<INDIProperty<any>[]>(`indi/${device.name}/properties`)
+        return this.http.get<INDIProperty<any>[]>(`indi/${device.id}/properties`)
     }
 
     indiSendProperty(device: Device, property: INDISendProperty) {
-        return this.http.put<void>(`indi/${device.name}/send`, property)
+        return this.http.put<void>(`indi/${device.id}/send`, property)
     }
 
     indiStartListening(device: Device) {
-        return this.http.put<void>(`indi/listener/${device.name}/start`)
+        return this.http.put<void>(`indi/listener/${device.id}/start`)
     }
 
     indiStopListening(device: Device) {
-        return this.http.put<void>(`indi/listener/${device.name}/stop`)
+        return this.http.put<void>(`indi/listener/${device.id}/stop`)
     }
 
     indiLog(device: Device) {
-        return this.http.get<string[]>(`indi/${device.name}/log`)
+        return this.http.get<string[]>(`indi/${device.id}/log`)
     }
 
     // SKY ATLAS
@@ -524,7 +524,7 @@ export class ApiService {
     // DARV
 
     darvStart(camera: Camera, guideOutput: GuideOutput, data: DARVStart) {
-        return this.http.put<string>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
+        return this.http.put<string>(`polar-alignment/darv/${camera.id}/${guideOutput.id}/start`, data)
     }
 
     darvStop(id: string) {
@@ -534,7 +534,7 @@ export class ApiService {
     // TPPA
 
     tppaStart(camera: Camera, mount: Mount, data: TPPAStart) {
-        return this.http.put<string>(`polar-alignment/tppa/${camera.name}/${mount.name}/start`, data)
+        return this.http.put<string>(`polar-alignment/tppa/${camera.id}/${mount.id}/start`, data)
     }
 
     tppaStop(id: string) {
@@ -553,21 +553,21 @@ export class ApiService {
 
     sequencerStart(camera: Camera, plan: SequencePlan) {
         const body: SequencePlan = { ...plan, camera: undefined, wheel: undefined, focuser: undefined }
-        return this.http.put<void>(`sequencer/${camera.name}/start`, body)
+        return this.http.put<void>(`sequencer/${camera.id}/start`, body)
     }
 
     sequencerStop(camera: Camera) {
-        return this.http.put<void>(`sequencer/${camera.name}/stop`)
+        return this.http.put<void>(`sequencer/${camera.id}/stop`)
     }
 
     // FLAT WIZARD
 
     flatWizardStart(camera: Camera, request: FlatWizardRequest) {
-        return this.http.put<void>(`flat-wizard/${camera.name}/start`, request)
+        return this.http.put<void>(`flat-wizard/${camera.id}/start`, request)
     }
 
     flatWizardStop(camera: Camera) {
-        return this.http.put<void>(`flat-wizard/${camera.name}/stop`)
+        return this.http.put<void>(`flat-wizard/${camera.id}/stop`)
     }
 
     // SOLVER

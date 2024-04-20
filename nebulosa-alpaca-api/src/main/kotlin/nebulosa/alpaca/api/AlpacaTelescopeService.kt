@@ -211,12 +211,11 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
     @PUT("api/v1/telescope/{id}/utcDate")
     fun utcDate(@Path("id") id: Int, @Field("UTCDate") date: Instant): Call<NoneResponse>
 
-    @FormUrlEncoded
     @PUT("api/v1/telescope/{id}/abortslew")
     fun abortSlew(@Path("id") id: Int): Call<NoneResponse>
 
     @GET("api/v1/telescope/{id}/axisrates")
-    fun axisRates(@Path("id") id: Int): Call<ArrayResponse<AxisRate>>
+    fun axisRates(@Path("id") id: Int, @Query("Axis") axis: AxisType): Call<ArrayResponse<AxisRate>>
 
     @GET("api/v1/telescope/{id}/canmoveaxis")
     fun canMoveAxis(@Path("id") id: Int): Call<BoolResponse>
@@ -224,7 +223,6 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
     @GET("api/v1/telescope/{id}/destinationsideofpier")
     fun destinationSideOfPier(@Path("id") id: Int): Call<PierSideResponse>
 
-    @FormUrlEncoded
     @PUT("api/v1/telescope/{id}/findhome")
     fun findHome(@Path("id") id: Int): Call<NoneResponse>
 
@@ -232,7 +230,6 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
     @PUT("api/v1/telescope/{id}/moveaxis")
     fun moveAxis(@Path("id") id: Int, @Field("Axis") axis: AxisType, @Field("Rate") rate: Double): Call<NoneResponse>
 
-    @FormUrlEncoded
     @PUT("api/v1/telescope/{id}/park")
     fun park(@Path("id") id: Int): Call<NoneResponse>
 
@@ -244,7 +241,6 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
         @Field("Duration") durationInMilliseconds: Long
     ): Call<NoneResponse>
 
-    @FormUrlEncoded
     @PUT("api/v1/telescope/{id}/setpark")
     fun setPark(@Path("id") id: Int): Call<NoneResponse>
 
@@ -272,11 +268,9 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
         @Field("Declination") declination: Double
     ): Call<NoneResponse>
 
-    @FormUrlEncoded
     @PUT("api/v1/telescope/{id}/slewtotarget")
     fun slewToTarget(@Path("id") id: Int): Call<NoneResponse>
 
-    @FormUrlEncoded
     @PUT("api/v1/telescope/{id}/slewtotargetasync")
     fun slewToTargetAsync(@Path("id") id: Int): Call<NoneResponse>
 
@@ -292,11 +286,9 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
         @Field("Declination") declination: Double
     ): Call<NoneResponse>
 
-    @FormUrlEncoded
     @PUT("api/v1/telescope/{id}/synctotarget")
     fun syncToTarget(@Path("id") id: Int): Call<NoneResponse>
 
-    @FormUrlEncoded
     @PUT("api/v1/telescope/{id}/unpark")
     fun unpark(@Path("id") id: Int): Call<NoneResponse>
 }

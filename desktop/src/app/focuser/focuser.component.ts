@@ -88,8 +88,8 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     async focuserChanged(focuser?: Focuser) {
-        if (focuser && focuser.name) {
-            focuser = await this.api.focuser(focuser.name)
+        if (focuser && focuser.id) {
+            focuser = await this.api.focuser(focuser.id)
             Object.assign(this.focuser, focuser)
 
             this.loadPreference()
@@ -109,33 +109,33 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    moveIn(stepSize: number = 1) {
+    async moveIn(stepSize: number = 1) {
         if (!this.moving) {
             this.moving = true
-            this.api.focuserMoveIn(this.focuser, Math.trunc(this.stepsRelative * stepSize))
+            await this.api.focuserMoveIn(this.focuser, Math.trunc(this.stepsRelative * stepSize))
             this.savePreference()
         }
     }
 
-    moveOut(stepSize: number = 1) {
+    async moveOut(stepSize: number = 1) {
         if (!this.moving) {
             this.moving = true
-            this.api.focuserMoveOut(this.focuser, Math.trunc(this.stepsRelative * stepSize))
+            await this.api.focuserMoveOut(this.focuser, Math.trunc(this.stepsRelative * stepSize))
             this.savePreference()
         }
     }
 
-    moveTo() {
+    async moveTo() {
         if (!this.moving && this.stepsAbsolute !== this.position) {
             this.moving = true
-            this.api.focuserMoveTo(this.focuser, this.stepsAbsolute)
+            await this.api.focuserMoveTo(this.focuser, this.stepsAbsolute)
             this.savePreference()
         }
     }
 
-    sync() {
+    async sync() {
         if (!this.moving) {
-            this.api.focuserSync(this.focuser, this.stepsAbsolute)
+            await this.api.focuserSync(this.focuser, this.stepsAbsolute)
             this.savePreference()
         }
     }
@@ -145,7 +145,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     private update() {
-        if (!this.focuser.name) {
+        if (!this.focuser.id) {
             return
         }
 
@@ -164,7 +164,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     private loadPreference() {
-        if (this.focuser.name) {
+        if (this.focuser.id) {
             const preference = this.storage.get<FocuserPreference>(focuserPreferenceKey(this.focuser), {})
             this.stepsRelative = preference.stepsRelative ?? 100
             this.stepsAbsolute = preference.stepsAbsolute ?? this.focuser.position

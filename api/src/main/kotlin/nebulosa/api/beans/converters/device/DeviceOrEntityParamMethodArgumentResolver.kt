@@ -14,14 +14,11 @@ import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import org.springframework.core.MethodParameter
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
-import org.springframework.web.server.ResponseStatusException
 
 @Component
 class DeviceOrEntityParamMethodArgumentResolver(
@@ -51,18 +48,10 @@ class DeviceOrEntityParamMethodArgumentResolver(
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?,
     ): Any? {
-        val requestParam = parameter.annotation<RequestParam>()
+        val requestParam = parameter.annotation<DeviceOrEntityParam>()
         val parameterName = requestParam?.name?.ifBlank { null } ?: parameter.parameterName ?: "id"
         val parameterValue = webRequest.parameter(parameterName) ?: requestParam?.defaultValue?.ifBlank { null }
-
-        val entity = entityByParameterValue(parameter.parameterType, parameterValue)
-
-        if (requestParam != null && requestParam.required && entity == null) {
-            val message = "Cannot found a ${parameter.parameterType.simpleName} entity with name [$parameterValue]"
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, message)
-        }
-
-        return entity
+        return entityByParameterValue(parameter.parameterType, parameterValue)
     }
 
     private fun entityByParameterValue(parameterType: Class<*>, parameterValue: String?): Any? {

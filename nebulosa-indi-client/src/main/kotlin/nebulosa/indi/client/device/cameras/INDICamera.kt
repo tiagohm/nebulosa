@@ -238,8 +238,6 @@ internal open class INDICamera(
                                 canPulseGuide = true
 
                                 sender.registerGuideOutput(this)
-
-                                LOG.info("guide output attached: {}", name)
                             } else {
                                 val prevIsPulseGuiding = pulseGuiding
                                 pulseGuiding = message.isBusy
@@ -258,9 +256,6 @@ internal open class INDICamera(
                 if (!isGuideHead && message.name == "CCD2" && guideHead == null) {
                     guideHead = GuideHeadCamera(this)
                     sender.registerGuideHead(guideHead!!)
-
-                    LOG.info("guide head attached: {}", name)
-
                     return
                 }
             }
@@ -402,21 +397,18 @@ internal open class INDICamera(
 
     override fun close() {
         if (hasThermometer) {
-            sender.unregisterThermometer(this)
             hasThermometer = false
-            LOG.info("thermometer detached: {}", name)
+            sender.unregisterThermometer(this)
         }
 
         if (canPulseGuide) {
-            sender.unregisterGuideOutput(this)
             canPulseGuide = false
-            LOG.info("guide output detached: {}", name)
+            sender.unregisterGuideOutput(this)
         }
 
         if (guideHead != null) {
             guideHead?.also(sender::unregisterGuiderHead)
             guideHead = null
-            LOG.info("guide head detached: {}", name)
         }
     }
 
