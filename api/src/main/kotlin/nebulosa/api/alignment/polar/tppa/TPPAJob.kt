@@ -2,8 +2,6 @@ package nebulosa.api.alignment.polar.tppa
 
 import io.reactivex.rxjava3.subjects.PublishSubject
 import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraCaptureEventHandler
-import nebulosa.api.cameras.CameraCaptureListener
 import nebulosa.api.messages.MessageEvent
 import nebulosa.batch.processing.PublishSubscribe
 import nebulosa.batch.processing.SimpleJob
@@ -33,11 +31,11 @@ data class TPPAJob(
 
     override val subject = PublishSubject.create<MessageEvent>()
 
-    private val cameraCaptureEventHandler = CameraCaptureEventHandler(this)
+    // private val cameraCaptureEventHandler = CameraCaptureEventHandler(this)
     private val tppaStep = TPPAStep(camera, solver, request, mount, longitude, latitude, cameraRequest)
 
     init {
-        tppaStep.registerCameraCaptureListener(cameraCaptureEventHandler)
+        // tppaStep.registerCameraCaptureListener(cameraCaptureEventHandler)
         tppaStep.registerTPPAListener(this)
 
         register(tppaStep)

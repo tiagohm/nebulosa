@@ -1,8 +1,6 @@
 package nebulosa.api.wizard.flat
 
 import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraCaptureListener
-import nebulosa.api.cameras.CameraExposureStep
 import nebulosa.api.image.ImageBucket
 import nebulosa.batch.processing.Step
 import nebulosa.batch.processing.StepExecution

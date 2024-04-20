@@ -5,9 +5,6 @@ import java.io.Closeable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
-
-typealias CancellationListener = Consumer<CancellationSource>
 
 class CancellationToken private constructor(private val completable: CompletableFuture<CancellationSource>?) : Pauser(), Closeable,
     Future<CancellationSource> {
@@ -22,7 +19,7 @@ class CancellationToken private constructor(private val completable: Completable
                 unpause()
 
                 if (source != null) {
-                    listeners.forEach { it.accept(source) }
+                    listeners.forEach { it.cancelledBy(source) }
                 }
 
                 listeners.clear()
@@ -34,7 +31,7 @@ class CancellationToken private constructor(private val completable: Completable
     fun listen(listener: CancellationListener) {
         if (completable != null) {
             if (isDone) {
-                listener.accept(CancellationSource.Listen)
+                listener.cancelledBy(CancellationSource.Listen)
             } else {
                 listeners.add(listener)
             }

@@ -59,7 +59,7 @@ class CountUpDownLatch(initialCount: Int = 0) : Supplier<Boolean>, CancellationL
         return n >= 0 && sync.tryAcquireSharedNanos(n, timeout.toNanos())
     }
 
-    override fun accept(source: CancellationSource) {
+    override fun cancelledBy(source: CancellationSource) {
         if (source !== CancellationSource.None) {
             reset()
         }

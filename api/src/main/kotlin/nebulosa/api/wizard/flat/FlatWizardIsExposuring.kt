@@ -1,6 +1,5 @@
 package nebulosa.api.wizard.flat
 
-import nebulosa.api.cameras.CameraCaptureElapsed
 import java.time.Duration
 
 data class FlatWizardIsExposuring(

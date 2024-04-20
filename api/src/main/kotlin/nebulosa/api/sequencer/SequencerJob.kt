@@ -3,8 +3,6 @@ package nebulosa.api.sequencer
 import io.reactivex.rxjava3.subjects.PublishSubject
 import nebulosa.api.cameras.*
 import nebulosa.api.focusers.FocusOffsetStep
-import nebulosa.api.guiding.DitherAfterExposureStep
-import nebulosa.api.guiding.WaitForSettleStep
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.wheels.WheelStep
 import nebulosa.batch.processing.*
@@ -33,7 +31,7 @@ data class SequencerJob(
     @JvmField val focuser: Focuser? = null,
 ) : SimpleJob(), PublishSubscribe<MessageEvent>, DelayStepListener {
 
-    private val cameraCaptureEventHandler = CameraCaptureEventHandler(this)
+    // private val cameraCaptureEventHandler = CameraCaptureEventHandler(this)
 
     @Volatile var estimatedCaptureTime = plan.initialDelay
         private set
@@ -98,7 +96,7 @@ data class SequencerJob(
                     estimatedCaptureTimeForEntry += request.exposureTime
                 }
 
-                cameraExposureStep.registerCameraCaptureListener(cameraCaptureEventHandler)
+                // cameraExposureStep.registerCameraCaptureListener(cameraCaptureEventHandler)
                 cameraExposureStep.estimatedCaptureTime = estimatedCaptureTimeForEntry
             }
         } else {
@@ -147,7 +145,7 @@ data class SequencerJob(
                 if (!added) break
             }
 
-            cameraExposureSteps.forEach { it.registerCameraCaptureListener(cameraCaptureEventHandler) }
+            // cameraExposureSteps.forEach { it.registerCameraCaptureListener(cameraCaptureEventHandler) }
             estimatedCaptureTimeForEntry.indices.forEach { cameraExposureSteps[it].estimatedCaptureTime = estimatedCaptureTimeForEntry[it] }
         }
     }
@@ -162,28 +160,28 @@ data class SequencerJob(
     }
 
     override fun onNext(event: MessageEvent) {
-        if (event is CameraCaptureElapsed) {
-            val context = event.jobExecution.context
-            val id = context.getInt(SequenceIdStep.ID)
-
-            context["$ELAPSED_TIME.$id"] = event.captureElapsedTime
-            context["$REMAINING_TIME.$id"] = event.captureRemainingTime
-            context["$PROGRESS.$id"] = event.captureProgress
-
-            var elapsedTime = plan.initialDelay
-
-            for (i in 1..32) {
-                elapsedTime += context.getDurationOrNull("$ELAPSED_TIME.$i") ?: break
-            }
-
-            val progress = elapsedTime.toMillis() / estimatedCaptureTime.toMillis().toDouble()
-
-            super.onNext(SequencerElapsed(id, elapsedTime, estimatedCaptureTime - elapsedTime, progress, event))
-        }
-
-        if (event is CameraExposureFinished) {
-            super.onNext(event)
-        }
+//        if (event is CameraCaptureElapsed) {
+//            val context = event.jobExecution.context
+//            val id = context.getInt(SequenceIdStep.ID)
+//
+//            context["$ELAPSED_TIME.$id"] = event.captureElapsedTime
+//            context["$REMAINING_TIME.$id"] = event.captureRemainingTime
+//            context["$PROGRESS.$id"] = event.captureProgress
+//
+//            var elapsedTime = plan.initialDelay
+//
+//            for (i in 1..32) {
+//                elapsedTime += context.getDurationOrNull("$ELAPSED_TIME.$i") ?: break
+//            }
+//
+//            val progress = elapsedTime.toMillis() / estimatedCaptureTime.toMillis().toDouble()
+//
+//            super.onNext(SequencerElapsed(id, elapsedTime, estimatedCaptureTime - elapsedTime, progress, event))
+//        }
+//
+//        if (event is CameraExposureFinished) {
+//            super.onNext(event)
+//        }
     }
 
     override fun onDelayElapsed(step: DelayStep, stepExecution: StepExecution) {

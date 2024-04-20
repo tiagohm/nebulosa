@@ -1,6 +1,5 @@
 package nebulosa.api.wizard.flat
 
-import nebulosa.api.cameras.CameraCaptureElapsed
 import nebulosa.api.messages.MessageEvent
 import java.nio.file.Path
 import java.time.Duration

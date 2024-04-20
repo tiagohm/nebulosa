@@ -1,7 +1,6 @@
 package nebulosa.api.alignment.polar.tppa
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.cameras.CameraExposureFinished
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
 import nebulosa.api.solver.PlateSolverService
@@ -35,9 +34,9 @@ class TPPAExecutor(
     }
 
     override fun accept(event: MessageEvent) {
-        if (event is TPPAEvent || event is CameraExposureFinished) {
-            messageService.sendMessage(event)
-        }
+        // if (event is TPPAEvent || event is CameraExposureFinished) {
+        messageService.sendMessage(event)
+        // }
     }
 
     companion object {

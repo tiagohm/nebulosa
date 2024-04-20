@@ -2,8 +2,6 @@ package nebulosa.api.alignment.polar.tppa
 
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignmentResult
-import nebulosa.api.cameras.CameraCaptureListener
-import nebulosa.api.cameras.CameraExposureStep
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.mounts.MountSlewStep
 import nebulosa.batch.processing.JobExecution

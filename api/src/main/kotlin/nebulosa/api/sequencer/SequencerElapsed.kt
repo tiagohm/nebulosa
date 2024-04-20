@@ -1,6 +1,5 @@
 package nebulosa.api.sequencer
 
-import nebulosa.api.cameras.CameraCaptureElapsed
 import nebulosa.api.messages.MessageEvent
 import java.time.Duration
 

@@ -1,9 +1,6 @@
 package nebulosa.api.wizard.flat
 
 import io.reactivex.rxjava3.subjects.PublishSubject
-import nebulosa.api.cameras.CameraCaptureElapsed
-import nebulosa.api.cameras.CameraCaptureEventHandler
-import nebulosa.api.cameras.CameraExposureFinished
 import nebulosa.api.image.ImageBucket
 import nebulosa.api.messages.MessageEvent
 import nebulosa.batch.processing.PublishSubscribe
@@ -20,13 +17,13 @@ data class FlatWizardJob(
     @JvmField val imageBucket: ImageBucket? = null,
 ) : SimpleJob(), PublishSubscribe<MessageEvent>, FlatWizardExecutionListener {
 
-    private val cameraCaptureEventHandler = CameraCaptureEventHandler(this)
+    // private val cameraCaptureEventHandler = CameraCaptureEventHandler(this)
     private val step = FlatWizardStep(camera, request, imageBucket)
 
     override val subject = PublishSubject.create<MessageEvent>()
 
     init {
-        step.registerCameraCaptureListener(cameraCaptureEventHandler)
+        // step.registerCameraCaptureListener(cameraCaptureEventHandler)
         step.registerFlatWizardExecutionListener(this)
         register(step)
     }
@@ -44,9 +41,9 @@ data class FlatWizardJob(
             super.onNext(FlatWizardIsExposuring(step.exposureTime, event))
 
             // Notify Camera window to retrieve new image.
-            if (event is CameraExposureFinished) {
-                super.onNext(event)
-            }
+//            if (event is CameraExposureFinished) {
+//                super.onNext(event)
+//            }
         }
     }
 
