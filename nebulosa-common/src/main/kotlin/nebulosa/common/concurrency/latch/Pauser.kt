@@ -27,15 +27,15 @@ open class Pauser : Pauseable, Closeable {
         unpause()
     }
 
-    fun waitIfPaused() {
+    fun waitForPause() {
         latch.await()
     }
 
-    fun waitIfPaused(timeout: Long, unit: TimeUnit): Boolean {
+    fun waitForPause(timeout: Long, unit: TimeUnit): Boolean {
         return latch.await(timeout, unit)
     }
 
-    fun waitIfPaused(timeout: Duration): Boolean {
+    fun waitForPause(timeout: Duration): Boolean {
         return latch.await(timeout)
     }
 }

@@ -1,80 +1,92 @@
 package nebulosa.api.alignment.polar.darv
 
+import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraCaptureTask
+import nebulosa.api.cameras.CameraExposureEvent
+import nebulosa.api.cameras.CameraExposureTask
+import nebulosa.api.guiding.GuidePulseEvent
 import nebulosa.api.guiding.GuidePulseRequest
-import nebulosa.api.messages.MessageService
-import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.api.guiding.GuidePulseTask
+import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.delay.DelayEvent
+import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.guide.GuideOutput
-import org.springframework.stereotype.Component
 import java.nio.file.Files
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 
-@Component
-class DARVTask(
-    private val cameraCaptureTask: CameraCaptureTask,
-    private val guidePulseTask: GuidePulseTask,
-    private val delayTask: DelayTask,
-    private val messageService: MessageService,
-) : ListenableTask<Any>() {
+data class DARVTask(
+    @JvmField val camera: Camera,
+    @JvmField val guideOutput: GuideOutput,
+    @JvmField val request: DARVStartRequest,
+) : Task<DARVEvent>(), Consumer<Any> {
 
-    @Volatile private var task: DARVTaskContext? = null
+    @JvmField val cameraRequest = request.capture.copy(
+        exposureTime = request.capture.exposureTime + request.capture.exposureDelay,
+        savePath = Files.createTempDirectory("darv"),
+        exposureAmount = 1, exposureDelay = Duration.ZERO,
+        frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
+    )
 
-    @Synchronized
-    fun align(camera: Camera, guideOutput: GuideOutput, request: DARVStartRequest) {
-        val cameraRequest = request.capture.copy(
-            exposureTime = request.capture.exposureTime + request.capture.exposureDelay,
-            savePath = Files.createTempDirectory("darv"),
-            exposureAmount = 1, exposureDelay = Duration.ZERO,
-            frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
-        )
+    private val cameraExposureTask = CameraExposureTask(camera, cameraRequest)
+    private val delayTask = DelayTask(request.capture.exposureDelay)
+    private val forwardGuidePulseTask: GuidePulseTask
+    private val backwardGuidePulseTask: GuidePulseTask
 
-        val cancellationToken = CancellationToken()
-        val context = DARVTaskContext(camera, guideOutput, request, cameraRequest, cancellationToken)
+    init {
+        val direction = if (request.reversed) request.direction.reversed else request.direction
+        val guidePulseDuration = request.capture.exposureTime.dividedBy(2L)
 
-        captureAndPulse(context)
+        forwardGuidePulseTask = GuidePulseTask(guideOutput, GuidePulseRequest(direction, guidePulseDuration))
+        backwardGuidePulseTask = GuidePulseTask(guideOutput, GuidePulseRequest(direction.reversed, guidePulseDuration))
 
-        task = context
+        cameraExposureTask.subscribe(this)
+        delayTask.subscribe(this)
+        forwardGuidePulseTask.subscribe(this)
+        backwardGuidePulseTask.subscribe(this)
     }
 
-    @Synchronized
-    fun stop() {
-        task?.cameraCaptureTaskSubscription?.dispose()
-        task?.cameraCaptureTaskSubscription = null
-
-        task?.cancellationToken?.cancel()
-        task = null
+    fun handleCameraEvent(event: CameraEvent) {
+        cameraExposureTask.handleCameraEvent(event)
     }
 
-    private fun captureAndPulse(context: DARVTaskContext) {
+    override fun execute(cancellationToken: CancellationToken) {
         val a = CompletableFuture.runAsync {
             // CAPTURE.
-            context.cameraCaptureTaskSubscription = cameraCaptureTask.subscribe(messageService::sendMessage)
-            context.cameraCaptureTaskId = cameraCaptureTask.startCapture(context.cameraRequest, context.camera, null, context.cancellationToken)
+            cameraExposureTask.execute(cancellationToken)
         }
 
         val b = CompletableFuture.runAsync {
             // INITIAL PAUSE.
-            delayTask.delay(context.request.capture.exposureDelay, context.cancellationToken)
-
-            val direction = if (context.request.reversed) context.request.direction.reversed else context.request.direction
-            val guidePulseDuration = context.request.capture.exposureTime.dividedBy(2L)
+            delayTask.execute(cancellationToken)
 
             // FORWARD GUIDE PULSE.
-            val forwardGuidePulseRequest = GuidePulseRequest(direction, guidePulseDuration)
-            guidePulseTask.pulse(context.guideOutput, forwardGuidePulseRequest, context.cancellationToken)
+            forwardGuidePulseTask.execute(cancellationToken)
 
             // BACKWARD GUIDE PULSE.
-            val backwardGuidePulseRequest = GuidePulseRequest(direction.reversed, guidePulseDuration)
-            guidePulseTask.pulse(context.guideOutput, backwardGuidePulseRequest, context.cancellationToken)
+            backwardGuidePulseTask.execute(cancellationToken)
         }
 
-        CompletableFuture.allOf(a, b)
-            .whenComplete { _, _ -> stop() }
+        CompletableFuture.allOf(a, b).join()
+    }
+
+    override fun accept(event: Any) {
+        when (event) {
+            is DelayEvent.Elapsed -> Unit
+            is CameraExposureEvent -> Unit
+            is GuidePulseEvent -> Unit
+        }
+    }
+
+    override fun close() {
+        cameraExposureTask.close()
+        delayTask.close()
+        forwardGuidePulseTask.close()
+        backwardGuidePulseTask.close()
+        super.close()
     }
 }

@@ -3,7 +3,6 @@ package nebulosa.api.cameras
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.messages.MessageService
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
@@ -19,11 +18,11 @@ class CameraCaptureExecutor(
     private val guider: Guider,
 ) : Consumer<CameraCaptureEvent> {
 
-    private val jobs = ConcurrentHashMap<Camera, CameraCaptureJob>(2)
+    private val jobs = ConcurrentHashMap.newKeySet<CameraCaptureJob>(2)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onCameraEvent(event: CameraEvent) {
-        jobs[event.device]?.task?.handleCameraEvent(event)
+        jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
     }
 
     override fun accept(event: CameraCaptureEvent) {
@@ -32,19 +31,20 @@ class CameraCaptureExecutor(
 
     @Synchronized
     fun execute(camera: Camera, request: CameraStartCaptureRequest) {
-        check(camera.connected) { "${camera.name} camera is not connected" }
-        check(!jobs.contains(camera)) { "${camera.name} camera capture in progress" }
+        check(camera.connected) { "${camera.name} Camera is not connected" }
+        check(jobs.any { it.task.camera === camera }) { "${camera.name} Camera Capture in progress" }
 
-        val cancellationToken = CancellationToken()
         val task = CameraCaptureTask(camera, request, guider)
         task.subscribe(this)
 
-        with(CameraCaptureJob(task, cancellationToken)) {
-            jobs[camera] = this
+        with(CameraCaptureJob(task)) {
+            jobs.add(this)
+            whenComplete { _, _ -> jobs.remove(this) }
+            start()
         }
     }
 
     fun stop(camera: Camera) {
-        jobs.remove(camera)?.abort()
+        jobs.find { it.task.camera === camera }?.stop()
     }
 }

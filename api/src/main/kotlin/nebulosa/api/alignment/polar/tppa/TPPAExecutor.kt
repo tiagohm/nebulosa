@@ -1,42 +1,74 @@
 package nebulosa.api.alignment.polar.tppa
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.messages.MessageEvent
+import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.messages.MessageService
 import nebulosa.api.solver.PlateSolverService
-import nebulosa.batch.processing.JobExecutor
-import nebulosa.batch.processing.JobLauncher
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.MountEvent
 import nebulosa.log.info
 import nebulosa.log.loggerFor
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
+import java.util.concurrent.ConcurrentHashMap
 
 @Component
+@Subscriber
 class TPPAExecutor(
-    override val jobLauncher: JobLauncher,
     private val messageService: MessageService,
     private val plateSolverService: PlateSolverService,
-) : JobExecutor(), Consumer<MessageEvent> {
+) : Consumer<TPPAEvent> {
+
+    private val jobs = ConcurrentHashMap.newKeySet<TPPAJob>()
+
+    override fun accept(event: TPPAEvent) {
+        messageService.sendMessage(event)
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onCameraEvent(event: CameraEvent) {
+        jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onMountEvent(event: MountEvent) {
+        jobs.find { it.task.mount === event.device }?.handleMountEvent(event)
+    }
 
     @Synchronized
-    fun execute(camera: Camera, mount: Mount, request: TPPAStartRequest): String {
-        check(findJobExecutionWithAny(camera, mount) == null) { "TPPA job is already running" }
+    fun execute(camera: Camera, mount: Mount, request: TPPAStartRequest) {
+        check(camera.connected) { "${camera.name} Camera is not connected" }
+        check(mount.connected) { "${mount.name} Guide Output is not connected" }
+        check(jobs.any { it.task.camera === camera || it.task.mount === mount }) { "${camera.name}/${mount.name} TPPA Job in progress" }
 
         LOG.info { "starting TPPA. camera=$camera, mount=$mount, request=$request" }
 
         val solver = plateSolverService.solverFor(request.plateSolver)
+        val task = TPPATask(camera, solver, request, mount)
+        task.subscribe(this)
 
-        val tppaJob = TPPAJob(camera, request, solver, mount)
-        tppaJob.subscribe(this)
-        register(jobLauncher.launch(tppaJob))
-        return tppaJob.id
+        with(TPPAJob(task)) {
+            jobs.add(this)
+            whenComplete { _, _ -> jobs.remove(this) }
+            start()
+        }
     }
 
-    override fun accept(event: MessageEvent) {
-        // if (event is TPPAEvent || event is CameraExposureFinished) {
-        messageService.sendMessage(event)
-        // }
+    fun stop(camera: Camera, mount: Mount) {
+        jobs.find { it.task.camera === camera && it.task.mount === mount }
+            ?.also(jobs::remove)
+            ?.stop()
+    }
+
+    fun pause(camera: Camera, mount: Mount) {
+        jobs.find { it.task.camera === camera && it.task.mount === mount }?.pause()
+    }
+
+    fun unpause(camera: Camera, mount: Mount) {
+        jobs.find { it.task.camera === camera && it.task.mount === mount }?.unpause()
     }
 
     companion object {

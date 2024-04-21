@@ -207,10 +207,9 @@ export interface CameraCaptureElapsed extends MessageEvent {
     captureElapsedTime: number
     captureProgress: number
     captureRemainingTime: number
-    exposureProgress: number
-    exposureRemainingTime: number
-    waitRemainingTime: number
-    waitProgress: number
+    stepElapsedTime: number
+    stepProgress: number
+    stepRemainingTime: number
     savePath?: string
     state: CameraCaptureState
     aborted?: boolean
@@ -239,16 +238,16 @@ export const EMPTY_CAMERA_PREFERENCE: CameraPreference = {
     subFrame: false,
 }
 
-export interface CameraExposureInfo {
-    count: number
+export interface CameraStepInfo {
     remainingTime: number
     progress: number
+    elapsedTime: number
 }
 
-export const EMPTY_CAMERA_EXPOSURE_INFO: CameraExposureInfo = {
-    count: 0,
+export const EMPTY_CAMERA_STEP_INFO: CameraStepInfo = {
     remainingTime: 0,
     progress: 0,
+    elapsedTime: 0,
 }
 
 export interface CameraCaptureInfo {
@@ -257,6 +256,7 @@ export interface CameraCaptureInfo {
     remainingTime: number
     elapsedTime: number
     progress: number
+    count: number
 }
 
 export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
@@ -265,14 +265,5 @@ export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
     remainingTime: 0,
     elapsedTime: 0,
     progress: 0,
-}
-
-export interface CameraWaitInfo {
-    remainingTime: number
-    progress: number
-}
-
-export const EMPTY_CAMERA_WAIT_INFO: CameraWaitInfo = {
-    remainingTime: 0,
-    progress: 0,
+    count: 0,
 }

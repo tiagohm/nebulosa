@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core'
-import { CameraCaptureElapsed, CameraCaptureState, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_EXPOSURE_INFO, EMPTY_CAMERA_WAIT_INFO } from '../../types/camera.types'
+import { CameraCaptureElapsed, CameraCaptureState, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_STEP_INFO } from '../../types/camera.types'
 
 @Component({
     selector: 'neb-camera-exposure',
@@ -15,29 +15,26 @@ export class CameraExposureComponent {
     showRemainingTime: boolean = true
 
     @Input()
-    readonly exposure = structuredClone(EMPTY_CAMERA_EXPOSURE_INFO)
+    readonly step = structuredClone(EMPTY_CAMERA_STEP_INFO)
 
     @Input()
     readonly capture = structuredClone(EMPTY_CAMERA_CAPTURE_INFO)
-
-    @Input()
-    readonly wait = structuredClone(EMPTY_CAMERA_WAIT_INFO)
 
     handleCameraCaptureEvent(event: CameraCaptureElapsed, looping: boolean = false) {
         this.capture.elapsedTime = event.captureElapsedTime
         this.capture.remainingTime = event.captureRemainingTime
         this.capture.progress = event.captureProgress
-        this.exposure.remainingTime = event.exposureRemainingTime
-        this.exposure.progress = event.exposureProgress
-        this.exposure.count = event.exposureCount
+        this.capture.count = event.exposureCount
+        this.step.elapsedTime = event.stepElapsedTime
+        this.step.remainingTime = event.stepRemainingTime
+        this.step.progress = event.stepProgress
 
         if (event.state === 'EXPOSURING') {
             this.state = 'EXPOSURING'
         } else if (event.state === 'WAITING') {
-            this.wait.remainingTime = event.waitRemainingTime
-            this.wait.progress = event.waitProgress
-            this.state = event.state
-        } else if (event.state === 'SETTLING') {
+            this.step.elapsedTime = event.stepElapsedTime
+            this.step.remainingTime = event.stepRemainingTime
+            this.step.progress = event.stepProgress
             this.state = event.state
         } else if (event.state === 'CAPTURE_STARTED') {
             this.capture.looping = looping || event.exposureAmount <= 0
@@ -45,7 +42,9 @@ export class CameraExposureComponent {
             this.state = 'EXPOSURING'
         } else if (event.state === 'EXPOSURE_STARTED') {
             this.state = 'EXPOSURING'
-        } else if ((!looping && event.state === 'CAPTURE_FINISHED') || (!this.capture.looping && !this.capture.remainingTime)) {
+        } else if (event.state === 'IDLE' ||
+            (!looping && event.state === 'CAPTURE_FINISHED') ||
+            (!this.capture.looping && !this.capture.remainingTime)) {
             this.state = 'IDLE'
         }
 
@@ -56,12 +55,7 @@ export class CameraExposureComponent {
     reset() {
         this.state = 'IDLE'
 
-        Object.assign(this.exposure, EMPTY_CAMERA_EXPOSURE_INFO)
+        Object.assign(this.step, EMPTY_CAMERA_STEP_INFO)
         Object.assign(this.capture, EMPTY_CAMERA_CAPTURE_INFO)
-        Object.assign(this.wait, EMPTY_CAMERA_WAIT_INFO)
-    }
-
-    toggleRemainingTime() {
-        this.showRemainingTime = !this.showRemainingTime
     }
 }

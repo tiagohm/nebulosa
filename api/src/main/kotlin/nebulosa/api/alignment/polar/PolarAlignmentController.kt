@@ -5,7 +5,10 @@ import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("polar-alignment")
@@ -19,9 +22,9 @@ class PolarAlignmentController(
         @RequestBody body: DARVStartRequest,
     ) = polarAlignmentService.darvStart(camera, guideOutput, body)
 
-    @PutMapping("darv/{id}/stop")
-    fun darvStop(@PathVariable id: String) {
-        polarAlignmentService.darvStop(id)
+    @PutMapping("darv/{camera}/stop")
+    fun darvStop(camera: Camera) {
+        polarAlignmentService.darvStop(camera)
     }
 
     @PutMapping("tppa/{camera}/{mount}/start")
@@ -30,18 +33,18 @@ class PolarAlignmentController(
         @RequestBody body: TPPAStartRequest,
     ) = polarAlignmentService.tppaStart(camera, mount, body)
 
-    @PutMapping("tppa/{id}/stop")
-    fun tppaStop(@PathVariable id: String) {
-        polarAlignmentService.tppaStop(id)
+    @PutMapping("tppa/{camera}/{mount}/stop")
+    fun tppaStop(camera: Camera, mount: Mount) {
+        polarAlignmentService.tppaStop(camera, mount)
     }
 
-    @PutMapping("tppa/{id}/pause")
-    fun tppaPause(@PathVariable id: String) {
-        polarAlignmentService.tppaPause(id)
+    @PutMapping("tppa/{camera}/{mount}/pause")
+    fun tppaPause(camera: Camera, mount: Mount) {
+        polarAlignmentService.tppaPause(camera, mount)
     }
 
-    @PutMapping("tppa/{id}/unpause")
-    fun tppaUnpause(@PathVariable id: String) {
-        polarAlignmentService.tppaUnpause(id)
+    @PutMapping("tppa/{camera}/{mount}/unpause")
+    fun tppaUnpause(camera: Camera, mount: Mount) {
+        polarAlignmentService.tppaUnpause(camera, mount)
     }
 }

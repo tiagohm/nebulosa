@@ -7,13 +7,13 @@ import nebulosa.guiding.Guider
 import nebulosa.log.loggerFor
 
 data class WaitForSettleTask(
-    @JvmField val guider: Guider,
+    @JvmField val guider: Guider?,
 ) : Task<WaitForSettleEvent>() {
 
     private val stopwatch = Stopwatch()
 
     override fun execute(cancellationToken: CancellationToken) {
-        if (guider.isSettling && !cancellationToken.isDone) {
+        if (guider != null && guider.isSettling && !cancellationToken.isDone) {
             LOG.info("waiting for guiding to settle")
 
             onNext(WaitForSettleEvent.Started(this))

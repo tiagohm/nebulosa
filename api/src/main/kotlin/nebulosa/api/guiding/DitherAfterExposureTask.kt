@@ -12,7 +12,7 @@ import nebulosa.guiding.GuiderListener
 import nebulosa.log.loggerFor
 
 data class DitherAfterExposureTask(
-    @JvmField val guider: Guider,
+    @JvmField val guider: Guider?,
     @JvmField val request: DitherAfterExposureRequest,
 ) : Task<DitherAfterExposureEvent>(), GuiderListener, CancellationListener {
 
@@ -20,7 +20,7 @@ data class DitherAfterExposureTask(
     private val stopwatch = Stopwatch()
 
     override fun execute(cancellationToken: CancellationToken) {
-        if (guider.canDither && request.enabled
+        if (guider != null && guider.canDither && request.enabled
             && guider.state == GuideState.GUIDING
             && !cancellationToken.isDone
         ) {

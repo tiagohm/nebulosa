@@ -20,7 +20,7 @@ import java.time.Duration
 data class CameraCaptureTask(
     @JvmField val camera: Camera,
     @JvmField val request: CameraStartCaptureRequest,
-    @JvmField val guider: Guider,
+    @JvmField val guider: Guider? = null,
 ) : Task<CameraCaptureEvent>(), Consumer<Any> {
 
     private val delayTask = DelayTask(request.exposureDelay)
@@ -45,9 +45,12 @@ data class CameraCaptureTask(
 
     init {
         delayTask.subscribe(this)
-        waitForSettleTask.subscribe(this)
         cameraExposureTask.subscribe(this)
-        ditherAfterExposureTask.subscribe(this)
+
+        if (guider != null) {
+            waitForSettleTask.subscribe(this)
+            ditherAfterExposureTask.subscribe(this)
+        }
     }
 
     fun handleCameraEvent(event: CameraEvent) {
@@ -61,18 +64,23 @@ data class CameraCaptureTask(
             (request.isLoop || exposureCount < request.exposureAmount)
         ) {
             if (exposureCount == 0) {
-                // WAIT FOR SETTLE.
-                waitForSettleTask.execute(cancellationToken)
-            } else {
+                if (guider != null) {
+                    // WAIT FOR SETTLE.
+                    waitForSettleTask.execute(cancellationToken)
+                }
+            } else if (guider != null) {
                 // DELAY & WAIT FOR SETTLE.
                 delayAndWaitForSettleSplitTask.execute(cancellationToken)
+            } else {
+                // DELAY.
+                delayTask.execute(cancellationToken)
             }
 
             // CAPTURE.
             cameraExposureTask.execute(cancellationToken)
 
             // DITHER.
-            if (exposureCount > 1 && exposureCount % request.dither.afterExposures == 0) {
+            if (guider != null && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0) {
                 ditherAfterExposureTask.execute(cancellationToken)
             }
         }
@@ -99,6 +107,7 @@ data class CameraCaptureTask(
                     is CameraExposureEvent.Started -> {
                         state = CameraCaptureState.EXPOSURE_STARTED
                         prevCaptureElapsedTime = captureElapsedTime
+                        exposureCount++
                     }
                     is CameraExposureEvent.Elapsed -> {
                         state = CameraCaptureState.EXPOSURING

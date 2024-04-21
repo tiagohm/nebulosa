@@ -5,7 +5,7 @@
 
     <span class="flex flex-row gap-1px">
         <span class="bg-orange-500 state counter flex align-items-center gap-1 justify-content-center text-gray-900">
-            <i class="mdi mdi-counter"></i> {{ exposure.count }} <span *ngIf="!capture.looping">/ {{ capture.amount }}</span>
+            <i class="mdi mdi-counter"></i> {{ capture.count }} <span *ngIf="!capture.looping">/ {{ capture.amount }}</span>
         </span>
         <span class="bg-green-300 state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
             <i class="mdi mdi-percent"></i> {{ capture.progress * 100 | number:'1.1-1' }}
@@ -14,34 +14,22 @@
         <span class="bg-blue-300 state time flex align-items-center gap-1 justify-content-center text-gray-900">
             <i class="mdi mdi-timer-sand-complete"></i> {{ capture.elapsedTime | exposureTime }}
         </span>
-        } @else if(showRemainingTime) {
-        <span class="bg-blue-300 state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
-              (click)="toggleRemainingTime()">
-            <i class="mdi mdi-timer-sand"></i> {{ capture.remainingTime | exposureTime }}
-        </span>
         } @else {
         <span class="bg-blue-300 state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
-              (click)="toggleRemainingTime()">
-            <i class="mdi mdi-timer-sand-complete"></i> {{ capture.elapsedTime | exposureTime }}
+              (click)="showRemainingTime = !showRemainingTime">
+            <i *ngIf="showRemainingTime" class="mdi mdi-timer-sand"></i> {{ capture.remainingTime | exposureTime }}
+            <i *ngIf="!showRemainingTime" class="mdi mdi-timer-sand-complete"></i> {{ capture.elapsedTime | exposureTime }}
         </span>
         }
 
-        @if (state === 'EXPOSURING') {
-        <span class="bg-cyan-300 state time flex align-items-center gap-1 justify-content-center text-gray-900">
-            <i class="mdi mdi-timer-sand"></i> {{ exposure.remainingTime | exposureTime }}
+        @if (state === 'EXPOSURING' || state === 'WAITING') {
+        <span class="bg-cyan-300 state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
+              (click)="showRemainingTime = !showRemainingTime">
+            <i *ngIf="showRemainingTime" class="mdi mdi-timer-sand"></i> {{ step.remainingTime | exposureTime }}
+            <i *ngIf="!showRemainingTime" class="mdi mdi-timer-sand-complete"></i> {{ step.elapsedTime | exposureTime }}
         </span>
         <span class="bg-cyan-300 state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
-            <i class="mdi mdi-percent"></i> {{ exposure.progress * 100 | number:'1.1-1' }}
-        </span>
-        }
-
-        @if (state === 'WAITING') {
-        <span class="bg-purple-300 state time flex align-items-center gap-1 justify-content-center text-gray-900"
-              pTooltip="Remaining time" tooltipPosition="bottom">
-            <i class="mdi mdi-timer-sand"></i> {{ wait.remainingTime | exposureTime }}
-        </span>
-        <span class="bg-purple-300 state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
-            <i class="mdi mdi-percent"></i> {{ wait.progress * 100 | number:'1.1-1' }}
+            <i class="mdi mdi-percent"></i> {{ step.progress * 100 | number:'1.1-1' }}
         </span>
         }
     </span>
