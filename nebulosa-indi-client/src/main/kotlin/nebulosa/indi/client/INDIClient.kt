@@ -10,7 +10,6 @@ import nebulosa.indi.client.device.cameras.SVBonyCamera
 import nebulosa.indi.client.device.cameras.SimCamera
 import nebulosa.indi.client.device.focusers.INDIFocuser
 import nebulosa.indi.client.device.mounts.INDIMount
-import nebulosa.indi.client.device.mounts.IoptronV3Mount
 import nebulosa.indi.client.device.wheels.INDIFilterWheel
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.INDIDeviceProvider
@@ -50,7 +49,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun newMount(message: INDIProtocol, executable: String): Mount {
-        return MOUNTS[executable]?.create(this, message.device) ?: INDIMount(this, message.device)
+        return INDIMount(this, message.device)
     }
 
     override fun newFocuser(message: INDIProtocol): Focuser {
@@ -95,10 +94,6 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
             "indi_sv305_ccd" to SVBonyCamera::class.java, // legacy name.
             "indi_simulator_ccd" to SimCamera::class.java,
             "indi_simulator_guide" to SimCamera::class.java,
-        )
-
-        @JvmStatic private val MOUNTS = mapOf(
-            "indi_ioptronv3_telescope" to IoptronV3Mount::class.java,
         )
 
         @JvmStatic
