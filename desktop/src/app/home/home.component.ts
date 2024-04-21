@@ -214,7 +214,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             })
         })
 
-        this.connections = preference.connections.get()
+        this.connections = preference.connections.get().sort((a, b) => (b.connectedAt ?? 0) - (a.connectedAt ?? 0))
         this.connections.forEach(e => { e.id = undefined; e.connected = false })
         this.connection = this.connections[0]
     }
