@@ -52,7 +52,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     get canExposureAmount() {
-        return this.mode === 'CAPTURE'
+        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER'
     }
 
     get canFrameType() {
