@@ -121,7 +121,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         {
             icon: 'mdi mdi-crosshairs-gps',
             label: 'Locations',
-            items: [
+            menu: [
                 {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'Current location',
@@ -175,7 +175,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                 {
                     icon: 'mdi mdi-crosshairs',
                     label: 'Intersection points',
-                    items: [
+                    menu: [
                         {
                             icon: 'mdi mdi-crosshairs-gps',
                             label: 'Meridian x Equator',

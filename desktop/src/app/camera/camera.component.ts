@@ -2,6 +2,8 @@ import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
+import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { SlideMenuItemCommandEvent } from '../../shared/components/slide-menu/slide-menu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -71,7 +73,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     showDitherDialog = false
 
-    readonly cameraModel: MenuItem[] = [
+    readonly cameraModel: ExtendedMenuItem[] = [
         {
             icon: 'icomoon random-dither',
             label: 'Dither',
@@ -82,28 +84,28 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         {
             icon: 'mdi mdi-connection',
             label: 'Snoop Devices',
-            items: [
+            menu: [
                 {
                     icon: 'mdi mdi-telescope',
                     label: 'Mount',
-                    items: [],
+                    menu: [],
                 },
                 {
                     icon: 'mdi mdi-palette',
                     label: 'Filter Wheel',
-                    items: [],
+                    menu: [],
                 },
                 {
                     icon: 'mdi mdi-image-filter-center-focus',
                     label: 'Focuser',
-                    items: [],
+                    menu: [],
                 },
             ]
         },
         {
             icon: 'mdi mdi-wrench',
             label: 'Calibration',
-            items: [],
+            menu: [],
         },
     ]
 
@@ -285,92 +287,92 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private async loadEquipment() {
-        const makeMountItem = (mount?: Mount) => {
-            return {
-                icon: mount ? 'mdi mdi-connection' : 'mdi mdi-close',
-                label: mount?.name ?? 'None',
-                command: async () => {
-                    this.equipment.mount = mount ? await this.api.mount(mount.id) : undefined
-                    this.preference.equipmentForDevice(this.camera).set(this.equipment)
-                    this.electron.autoResizeWindow()
-                },
-            }
-        }
-
         const mounts = await this.api.mounts()
-
-        this.cameraModel[1].items![0].items!.push(makeMountItem())
-
-        for (const mount of mounts) {
-            this.cameraModel[1].items![0].items!.push(makeMountItem(mount))
-        }
-
         this.equipment.mount = mounts.find(e => e.name === this.equipment.mount?.name)
 
-        const makeWheelItem = (wheel?: FilterWheel) => {
-            return {
-                icon: wheel ? 'mdi mdi-connection' : 'mdi mdi-close',
-                label: wheel?.name ?? 'None',
-                command: async () => {
-                    this.equipment.wheel = wheel ? await this.api.wheel(wheel.id) : undefined
+        const makeMountItem = (mount?: Mount) => {
+            return <ExtendedMenuItem>{
+                icon: mount ? 'mdi mdi-connection' : 'mdi mdi-close',
+                label: mount?.name ?? 'None',
+                checked: this.equipment.mount === mount,
+                command: async (event: SlideMenuItemCommandEvent) => {
+                    this.equipment.mount = mount ? await this.api.mount(mount.id) : undefined
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
-                    this.electron.autoResizeWindow()
+                    event.parent?.menu?.forEach(item => item.checked = item === event.item)
                 },
             }
+        }
+
+        this.cameraModel[1].menu![0].menu!.push(makeMountItem())
+
+        for (const mount of mounts) {
+            this.cameraModel[1].menu![0].menu!.push(makeMountItem(mount))
         }
 
         const wheels = await this.api.wheels()
-
-        this.cameraModel[1].items![1].items!.push(makeWheelItem())
-
-        for (const wheel of wheels) {
-            this.cameraModel[1].items![1].items!.push(makeWheelItem(wheel))
-        }
-
         this.equipment.wheel = wheels.find(e => e.name === this.equipment.wheel?.name)
 
-        const makeFocuserItem = (focuser?: Focuser) => {
-            return {
-                icon: focuser ? 'mdi mdi-connection' : 'mdi mdi-close',
-                label: focuser?.name ?? 'None',
-                command: async () => {
-                    this.equipment.focuser = focuser ? await this.api.focuser(focuser.id) : undefined
+        const makeWheelItem = (wheel?: FilterWheel) => {
+            return <ExtendedMenuItem>{
+                icon: wheel ? 'mdi mdi-connection' : 'mdi mdi-close',
+                label: wheel?.name ?? 'None',
+                checked: this.equipment.wheel === wheel,
+                command: async (event: SlideMenuItemCommandEvent) => {
+                    this.equipment.wheel = wheel ? await this.api.wheel(wheel.id) : undefined
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
-                    this.electron.autoResizeWindow()
+                    event.parent?.menu?.forEach(item => item.checked = item === event.item)
                 },
             }
         }
 
-        const focusers = await this.api.focusers()
+        this.cameraModel[1].menu![1].menu!.push(makeWheelItem())
 
-        this.cameraModel[1].items![2].items!.push(makeFocuserItem())
-
-        for (const focuser of focusers) {
-            this.cameraModel[1].items![2].items!.push(makeFocuserItem(focuser))
+        for (const wheel of wheels) {
+            this.cameraModel[1].menu![1].menu!.push(makeWheelItem(wheel))
         }
 
+        const focusers = await this.api.focusers()
         this.equipment.focuser = focusers.find(e => e.name === this.equipment.focuser?.name)
 
-        this.electron.autoResizeWindow()
+        const makeFocuserItem = (focuser?: Focuser) => {
+            return <ExtendedMenuItem>{
+                icon: focuser ? 'mdi mdi-connection' : 'mdi mdi-close',
+                label: focuser?.name ?? 'None',
+                checked: this.equipment.focuser === focuser,
+                command: async (event: SlideMenuItemCommandEvent) => {
+                    this.equipment.focuser = focuser ? await this.api.focuser(focuser.id) : undefined
+                    this.preference.equipmentForDevice(this.camera).set(this.equipment)
+                    event.parent?.menu?.forEach(item => item.checked = item === event.item)
+                },
+            }
+        }
+
+        this.cameraModel[1].menu![2].menu!.push(makeFocuserItem())
+
+        for (const focuser of focusers) {
+            this.cameraModel[1].menu![2].menu!.push(makeFocuserItem(focuser))
+        }
     }
 
     private async loadCalibrationGroups() {
         const groups = await this.api.calibrationGroups()
 
         const makeItem = (name?: string) => {
-            return {
+            return <ExtendedMenuItem>{
                 label: name ?? 'None',
                 icon: name ? 'mdi mdi-wrench' : 'mdi mdi-close',
-                command: () => {
+                checked: this.request.calibrationGroup === name,
+                command: (event: SlideMenuItemCommandEvent) => {
                     this.request.calibrationGroup = name
+                    event.parent?.menu?.forEach(item => item.checked = item === event.item)
                 },
             }
         }
 
-        this.cameraModel[2].items!.push(makeItem())
+        this.cameraModel[2].menu!.push(makeItem())
 
         for (const group of groups) {
-            this.cameraModel[2].items!.push(makeItem(group))
+            this.cameraModel[2].menu!.push(makeItem(group))
         }
     }
 

@@ -5,6 +5,7 @@ import { PrimeService } from '../../services/prime.service'
 import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
 import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
+import { ExtendedMenuItem } from '../menu-item/menu-item.component'
 
 @Component({
     selector: 'neb-device-list-menu',
@@ -22,13 +23,16 @@ export class DeviceListMenuComponent {
     @Input()
     readonly disableIfDeviceIsNotConnected: boolean = true
 
+    @Input()
+    header?: string
+
     @ViewChild('menu')
     private readonly menu!: DialogMenuComponent
 
     constructor(private prime: PrimeService) { }
 
     show<T extends Device>(devices: T[]) {
-        const model: MenuItem[] = []
+        const model: ExtendedMenuItem[] = []
 
         return new Promise<T | undefined>((resolve) => {
             if (devices.length <= 0) {

@@ -181,16 +181,6 @@ i.mdi {
     display: inline-flex;
 }
 
-.p-dialog-content {
-    .p-slidemenu {
-        width: auto !important;
-    }
-
-    &:has(.p-slidemenu) {
-        padding: 0 !important;
-    }
-}
-
 .p-menuitem-link {
     &.p-menuitem-checked {
         background-color: #C5E1A5;
@@ -245,6 +235,12 @@ p-dropdownitem *,
     min-width: 3rem;
     width: 3rem;
     height: 3rem;
+}
+
+.p-dialog .p-dialog-content:has(neb-slide-menu) {
+    background: #1e1e1e;
+    color: rgba(255, 255, 255, 0.87);
+    padding: 1.25rem 1.25rem 1.25rem 1.25rem;
 }
 
 .pixelated {

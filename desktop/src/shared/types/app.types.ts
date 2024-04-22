@@ -10,7 +10,7 @@ export interface ToggleableMenuItem extends MenuItem {
     toggleable: boolean
     toggled: boolean
 
-    toggle(event: CheckboxChangeEvent): void
+    toggle: (event: CheckboxChangeEvent) => void
 }
 
 export interface NotificationEvent extends MessageEvent {

@@ -48,6 +48,7 @@ import { HistogramComponent } from '../shared/components/histogram/histogram.com
 import { MapComponent } from '../shared/components/map/map.component'
 import { MenuItemComponent } from '../shared/components/menu-item/menu-item.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
+import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
@@ -116,6 +117,7 @@ import { SettingsComponent } from './settings/settings.component'
         MapComponent,
         SequencerComponent,
         SettingsComponent,
+        SlideMenuComponent,
         SkyObjectPipe,
         StopPropagationDirective,
         WinPipe,
