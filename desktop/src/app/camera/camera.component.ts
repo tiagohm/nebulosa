@@ -25,6 +25,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     readonly camera = structuredClone(EMPTY_CAMERA)
     readonly equipment: Equipment = {}
 
+    startTooltip = ''
+
     savePath = ''
     capturesPath = ''
     mode: CameraDialogMode = 'CAPTURE'
@@ -68,8 +70,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     get canSave() {
         return this.mode !== 'CAPTURE'
     }
-
-    wheel?: FilterWheel
 
     showDitherDialog = false
 
@@ -290,6 +290,13 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         const mounts = await this.api.mounts()
         this.equipment.mount = mounts.find(e => e.name === this.equipment.mount?.name)
 
+        const buildStartTooltip = () => {
+            this.startTooltip =
+                `<b>MOUNT</b>: ${this.equipment.mount?.name ?? 'None'}
+            <b>FILTER WHEEL</b>: ${this.equipment.wheel?.name ?? 'None'}
+            <b>FOCUSER</b>: ${this.equipment.focuser?.name ?? 'None'}`
+        }
+
         const makeMountItem = (mount?: Mount) => {
             return <ExtendedMenuItem>{
                 icon: mount ? 'mdi mdi-connection' : 'mdi mdi-close',
@@ -297,6 +304,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 checked: this.equipment.mount === mount,
                 command: async (event: SlideMenuItemCommandEvent) => {
                     this.equipment.mount = mount ? await this.api.mount(mount.id) : undefined
+                    buildStartTooltip()
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
                     event.parent?.menu?.forEach(item => item.checked = item === event.item)
                 },
@@ -319,6 +327,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 checked: this.equipment.wheel === wheel,
                 command: async (event: SlideMenuItemCommandEvent) => {
                     this.equipment.wheel = wheel ? await this.api.wheel(wheel.id) : undefined
+                    buildStartTooltip()
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
                     event.parent?.menu?.forEach(item => item.checked = item === event.item)
                 },
@@ -341,6 +350,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 checked: this.equipment.focuser === focuser,
                 command: async (event: SlideMenuItemCommandEvent) => {
                     this.equipment.focuser = focuser ? await this.api.focuser(focuser.id) : undefined
+                    buildStartTooltip()
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
                     event.parent?.menu?.forEach(item => item.checked = item === event.item)
                 },
@@ -352,6 +362,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         for (const focuser of focusers) {
             this.cameraModel[1].menu![2].menu!.push(makeFocuserItem(focuser))
         }
+
+        buildStartTooltip()
     }
 
     private async loadCalibrationGroups() {
@@ -459,7 +471,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     async startCapture() {
         await this.openCameraImage()
-        await this.api.cameraSnoop(this.camera, this.equipment.mount, this.equipment.wheel, this.equipment.focuser)
+        await this.api.cameraSnoop(this.camera, this.equipment)
         await this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
         this.preference.equipmentForDevice(this.camera).set(this.equipment)
     }

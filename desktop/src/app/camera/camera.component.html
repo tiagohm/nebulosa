@@ -14,7 +14,7 @@
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-image-multiple" (click)="openCameraImage()"
                       pTooltip="View image" tooltipPosition="bottom" size="small" />
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-wrench" (click)="openCameraCalibration()"
-                      pTooltip="Calibration" tooltipPosition="bottom" size="small" />
+                      pTooltip="CALIBRATION: {{ this.request.calibrationGroup ?? 'None' }}" tooltipPosition="bottom" size="small" />
             <p-button *ngIf="canShowMenu" [disabled]="!camera || !camera.connected || running" [text]="true" [rounded]="true"
                       icon="mdi mdi-dots-vertical" (click)="cameraMenu.show()" size="small" />
         </div>
@@ -202,7 +202,7 @@
     <div class="grid mt-0">
         <div class="col-12 flex align-items-center justify-content-center gap-1">
             <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || running" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
-                      severity="success" size="small" />
+                      severity="success" size="small" [pTooltip]="startTooltip" tooltipPosition="top" [escape]="false" tooltipStyleClass="min-w-22rem flex justify-content-center" />
             <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || !running" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
                       severity="danger" size="small" />
             <p-button *ngIf="canSave" [disabled]="!camera.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
