@@ -522,7 +522,7 @@ try {
         return false
     })
 
-    const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED']
+    const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED', 'CALIBRATION.CHANGED']
 
     for (const item of events) {
         ipcMain.handle(item, (_, data) => {

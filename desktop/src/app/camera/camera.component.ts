@@ -217,6 +217,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
+        electron.on('CALIBRATION.CHANGED', () => {
+            ngZone.run(() => this.loadCalibrationGroups())
+        })
+
         this.cameraModel[1].visible = !app.modal
     }
 
@@ -301,9 +305,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             return <ExtendedMenuItem>{
                 icon: mount ? 'mdi mdi-connection' : 'mdi mdi-close',
                 label: mount?.name ?? 'None',
-                checked: this.equipment.mount === mount,
+                checked: this.equipment.mount?.name === mount?.name,
                 command: async (event: SlideMenuItemCommandEvent) => {
-                    this.equipment.mount = mount ? await this.api.mount(mount.id) : undefined
+                    this.equipment.mount = mount
                     buildStartTooltip()
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
                     event.parent?.menu?.forEach(item => item.checked = item === event.item)
@@ -324,9 +328,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             return <ExtendedMenuItem>{
                 icon: wheel ? 'mdi mdi-connection' : 'mdi mdi-close',
                 label: wheel?.name ?? 'None',
-                checked: this.equipment.wheel === wheel,
+                checked: this.equipment.wheel?.name === wheel?.name,
                 command: async (event: SlideMenuItemCommandEvent) => {
-                    this.equipment.wheel = wheel ? await this.api.wheel(wheel.id) : undefined
+                    this.equipment.wheel = wheel
                     buildStartTooltip()
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
                     event.parent?.menu?.forEach(item => item.checked = item === event.item)
@@ -347,9 +351,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             return <ExtendedMenuItem>{
                 icon: focuser ? 'mdi mdi-connection' : 'mdi mdi-close',
                 label: focuser?.name ?? 'None',
-                checked: this.equipment.focuser === focuser,
+                checked: this.equipment.focuser?.name === focuser?.name,
                 command: async (event: SlideMenuItemCommandEvent) => {
-                    this.equipment.focuser = focuser ? await this.api.focuser(focuser.id) : undefined
+                    this.equipment.focuser = focuser
                     buildStartTooltip()
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
                     event.parent?.menu?.forEach(item => item.checked = item === event.item)
@@ -368,6 +372,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     private async loadCalibrationGroups() {
         const groups = await this.api.calibrationGroups()
+        const found = !!groups.find(e => this.request.calibrationGroup === e)
+
+        if (!found) {
+            this.request.calibrationGroup = undefined
+        }
 
         const makeItem = (name?: string) => {
             return <ExtendedMenuItem>{
@@ -381,11 +390,15 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         }
 
-        this.cameraModel[2].menu!.push(makeItem())
+        const menu: ExtendedMenuItem[] = []
+
+        menu.push(makeItem())
 
         for (const group of groups) {
-            this.cameraModel[2].menu!.push(makeItem(group))
+            menu.push(makeItem(group))
         }
+
+        this.cameraModel[2].menu = menu
     }
 
     connect() {

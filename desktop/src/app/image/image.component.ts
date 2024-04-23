@@ -476,6 +476,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             })
         })
 
+        electron.on('CALIBRATION.CHANGED', () => {
+            ngZone.run(() => {
+                this.loadCalibrationGroups()
+            })
+        })
+
         hotkeys('ctrl+a', (event) => { event.preventDefault(); this.toggleStretch() })
         hotkeys('ctrl+i', (event) => { event.preventDefault(); this.invertImage() })
         hotkeys('ctrl+x', (event) => { event.preventDefault(); this.toggleCrosshair() })
@@ -510,13 +516,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private async loadCalibrationGroups() {
         const groups = await this.api.calibrationGroups()
+        const found = !!groups.find(e => this.transformation.calibrationGroup === e)
+
+        if (!found) {
+            this.transformation.calibrationGroup = undefined
+        }
 
         const makeItem = (name?: string) => {
             const label = name ?? 'None'
             const icon = name ? 'mdi mdi-wrench' : 'mdi mdi-close'
 
             return <CheckableMenuItem>{
-                label, icon, checked: false,
+                label, icon, checked: this.transformation.calibrationGroup === name,
                 command: async () => {
                     this.transformation.calibrationGroup = name
                     this.markCalibrationGroupItem(label)
@@ -525,20 +536,24 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         }
 
-        this.calibrationMenuItem.items!.push({
+        const menu: MenuItem[] = []
+
+        menu.push({
             label: 'Open',
             icon: 'mdi mdi-wrench',
             command: () => this.browserWindow.openCalibration()
         })
 
-        this.calibrationMenuItem.items!.push(SEPARATOR_MENU_ITEM)
-        this.calibrationMenuItem.items!.push(makeItem())
+        menu.push(SEPARATOR_MENU_ITEM)
+        menu.push(makeItem())
 
         for (const group of groups) {
-            this.calibrationMenuItem.items!.push(makeItem(group))
+            menu.push(makeItem(group))
         }
 
+        this.calibrationMenuItem.items = menu
         this.menu.model = this.contextMenuItems
+        this.menu.cd.markForCheck()
     }
 
     private async closeImage(force: boolean = false) {

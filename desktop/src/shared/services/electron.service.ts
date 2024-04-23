@@ -55,6 +55,7 @@ type EventMappedType = {
     'FLAT_WIZARD.ELAPSED': FlatWizardElapsed
     'CONNECTION.CLOSED': ConnectionClosed
     'SKY_ATLAS.PROGRESS_CHANGED': SkyAtlasUpdated
+    'CALIBRATION.CHANGED': unknown
 }
 
 @Injectable({ providedIn: 'root' })
@@ -200,5 +201,9 @@ export class ElectronService {
 
     closeWindow<T>(data: CloseWindow<T>) {
         return this.send('WINDOW.CLOSE', data)
+    }
+
+    calibrationChanged() {
+        this.send('CALIBRATION.CHANGED')
     }
 }
