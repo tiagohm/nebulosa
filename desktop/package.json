@@ -77,7 +77,7 @@
     "axios": "1.6.2"
   },
   "engines": {
-    "node": ">= 20.9.0"
+    "node": ">= 22.0.0"
   },
   "browserslist": [
     "chrome 114"
