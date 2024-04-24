@@ -199,6 +199,10 @@ export class ElectronService {
         this.send('WINDOW.MAXIMIZE')
     }
 
+    fullscreenWindow(enabled?: boolean): Promise<boolean> {
+        return this.send('WINDOW.FULLSCREEN', enabled)
+    }
+
     closeWindow<T>(data: CloseWindow<T>) {
         return this.send('WINDOW.CLOSE', data)
     }

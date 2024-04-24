@@ -501,6 +501,14 @@ try {
         return true
     })
 
+    ipcMain.handle('WINDOW.FULLSCREEN', (event, enabled?: boolean) => {
+        const window = findWindowById(event.sender.id)?.window
+        if (!window) return false
+        const flag = enabled ?? !window.isFullScreen()
+        window.setFullScreen(flag)
+        return flag
+    })
+
     ipcMain.handle('WINDOW.CLOSE', (event, data: CloseWindow<any>) => {
         if (data.id) {
             for (const [key, value] of browserWindows) {

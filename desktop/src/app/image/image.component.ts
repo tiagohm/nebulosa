@@ -446,6 +446,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Image'
 
+        app.topMenu.push({
+            icon: 'mdi mdi-fullscreen',
+            command: () => this.enterFullscreen(),
+        })
+
         this.stretchShadow.subscribe(value => {
             this.stretch.shadow = value / 65536
         })
@@ -490,6 +495,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         hotkeys('ctrl+-', (event) => { event.preventDefault(); this.zoomOut() })
         hotkeys('ctrl+=', (event) => { event.preventDefault(); this.zoomIn() })
         hotkeys('ctrl+0', (event) => { event.preventDefault(); this.resetZoom() })
+        hotkeys('f12', (event) => { if (this.app.showTopBar) { event.preventDefault(); this.enterFullscreen() } })
+        hotkeys('escape', (event) => { if (!this.app.showTopBar) { event.preventDefault(); this.exitFullscreen() } })
 
         this.loadPreference()
     }
@@ -835,6 +842,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     resetZoom() {
         if (!this.panZoom) return
         this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, 1.0)
+    }
+
+    async enterFullscreen() {
+        this.app.showTopBar = !await this.electron.fullscreenWindow(true)
+    }
+
+    async exitFullscreen() {
+        this.app.showTopBar = !await this.electron.fullscreenWindow(false)
     }
 
     private async retrieveCoordinateInterpolation() {
