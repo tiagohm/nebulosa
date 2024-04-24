@@ -85,6 +85,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         scnr: this.scnr
     }
 
+    calibrationGroup?: string | true // true == 'None'
+
     showAnnotationDialog = false
     annotateWithStarsAndDSOs = true
     annotateWithMinorPlanets = false
@@ -517,9 +519,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private async loadCalibrationGroups() {
         const groups = await this.api.calibrationGroups()
         const found = !!groups.find(e => this.transformation.calibrationGroup === e)
+        let reloadImage = false
 
         if (!found) {
+            reloadImage = !!this.transformation.calibrationGroup
             this.transformation.calibrationGroup = undefined
+
+            if (this.calibrationGroup) {
+                this.calibrationGroup = true // None
+            }
         }
 
         const makeItem = (name?: string) => {
@@ -530,6 +538,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 label, icon, checked: this.transformation.calibrationGroup === name,
                 command: async () => {
                     this.transformation.calibrationGroup = name
+                    this.calibrationGroup = name ?? true
                     this.markCalibrationGroupItem(label)
                     await this.loadImage()
                 },
@@ -554,6 +563,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.calibrationMenuItem.items = menu
         this.menu.model = this.contextMenuItems
         this.menu.cd.markForCheck()
+
+        if (reloadImage) {
+            this.loadImage()
+        }
     }
 
     private async closeImage(force: boolean = false) {
@@ -615,8 +628,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         this.imageData = data
 
-        this.transformation.calibrationGroup = data.capture?.calibrationGroup
-        this.markCalibrationGroupItem(this.transformation.calibrationGroup ?? 'None')
+        // Not clicked on menu item.
+        if (!this.calibrationGroup && this.transformation.calibrationGroup !== data.capture?.calibrationGroup) {
+            this.transformation.calibrationGroup = data.capture?.calibrationGroup
+            this.markCalibrationGroupItem(this.transformation.calibrationGroup ?? 'None')
+        }
 
         if (data.source === 'FRAMING') {
             this.disableAutoStretch()
@@ -626,7 +642,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
 
         this.clearOverlay()
-
         this.loadImage()
     }
 
