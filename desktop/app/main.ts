@@ -30,8 +30,8 @@ interface WindowPreference {
 const browserWindows = new Map<string, CreatedWindow>()
 const modalWindows = new Map<string, CreatedModalWindow>()
 let apiProcess: ChildProcessWithoutNullStreams | null = null
-let apiPort = 7000
 let webSocket: Client
+let started = false
 
 const parsed = parseArgs({
     args: process.argv.slice(1),
@@ -40,19 +40,25 @@ const parsed = parseArgs({
         'serve': {
             type: 'boolean'
         },
-        'api': {
-            type: 'boolean'
+        'mode': {
+            type: 'string'
         },
-        'ui': {
+        'host': {
+            type: 'string'
+        },
+        'port': {
             type: 'string'
         }
     },
 })
 
 const serve = parsed.values.serve ?? false
-const api = !serve && !!parsed.values.api
-const ui = !api && !!parsed.values.ui
-const apiUri = parsed.values.ui
+const apiMode = !serve && parsed.values.mode === 'api'
+const uiMode = !serve && parsed.values.mode === 'ui'
+
+let apiHost = serve ? 'localhost' : parsed.values.host || 'localhost'
+let apiPort = serve ? 7000 : parseInt(parsed.values.port || '0')
+
 const appIcon = join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
 const store = new Store<WindowPreference>({ name: 'nebulosa' })
 
@@ -67,7 +73,7 @@ function createMainWindow() {
     createWindow({ id: 'home', path: 'home', data: undefined })
 
     webSocket = new Client({
-        brokerURL: `ws://localhost:${apiPort}/ws`,
+        brokerURL: `ws://${apiHost}:${apiPort}/ws`,
         onConnect: () => {
             webSocket.subscribe('NEBULOSA.EVENT', message => {
                 const event = JSON.parse(message.body) as MessageEvent
@@ -174,7 +180,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
             nodeIntegration: true,
             allowRunningInsecureContent: serve,
             contextIsolation: false,
-            additionalArguments: [`--port=${apiPort}`, `--options=${Buffer.from(JSON.stringify(options)).toString('base64')}`],
+            additionalArguments: [`--host=${apiHost}`, `--port=${apiPort}`, `--options=${Buffer.from(JSON.stringify(options)).toString('base64')}`],
             preload: join(__dirname, 'preload.js'),
             devTools: serve,
         },
@@ -287,16 +293,35 @@ function findWindowById(id: number | string) {
     return undefined
 }
 
+function createApiProcess() {
+    const apiJar = join(process.resourcesPath, 'api.jar')
+    const apiProcess = spawn('java', ['-jar', apiJar, `--server.port=${apiPort}`])
+
+    apiProcess.on('close', (code) => {
+        console.warn(`server process exited with code ${code}`)
+        process.exit(code || 0)
+    })
+
+    return apiProcess
+}
+
 function startApp() {
-    if (apiProcess === null) {
-        if (serve) {
+    if (!started) {
+        started = true
+
+        if (apiMode) {
+            apiProcess = createApiProcess()
+        } else if (uiMode) {
+            createSplashScreen()
+
+            console.info(`server is at ${apiHost}@${apiPort}`)
+
+            createMainWindow()
+        } else if (serve) {
             createMainWindow()
         } else {
             createSplashScreen()
-
-            const apiJar = join(process.resourcesPath, 'api.jar')
-
-            apiProcess = spawn('java', ['-jar', apiJar])
+            apiProcess = createApiProcess()
 
             apiProcess.stdout.on('data', (data) => {
                 const text = `${data}`
@@ -308,15 +333,10 @@ function startApp() {
                     if (match) {
                         apiPort = parseInt(match[1])
                         apiProcess!.stdout.removeAllListeners('data')
-                        console.info(`server is started at port: ${apiPort}`)
+                        console.info(`server was started at ${apiHost}@${apiPort}`)
                         createMainWindow()
                     }
                 }
-            })
-
-            apiProcess.on('close', (code) => {
-                console.warn(`server process exited with code ${code}`)
-                process.exit(code || 0)
             })
         }
     }

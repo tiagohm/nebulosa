@@ -10,7 +10,7 @@ export class HttpService {
     constructor(private http: HttpClient) { }
 
     get baseUrl() {
-        return `http://localhost:${window.apiPort}`
+        return `http://${window.apiHost}:${window.apiPort}`
     }
 
     get<T>(path: string) {
