@@ -227,7 +227,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
 
         if (!modal) {
             const [x, y] = window!.getPosition()
-            const [width, height] = window!.getSize()
+            const [width, height] = window!.getContentSize()
 
             database.set(`window.${id}.position`, { x, y })
 
@@ -481,22 +481,31 @@ try {
     ipcMain.handle('WINDOW.MAXIMIZE', (event) => {
         const window = findWindowById(event.sender.id)?.window
 
-        if (window?.isMaximized()) window.unmaximize()
-        else window?.maximize()
+        if (!window) return false
 
-        return window?.isMaximized() ?? false
+        if (window.isMaximized()) {
+            window.unmaximize()
+            return false
+        } else {
+            window.maximize()
+            return true
+        }
     })
 
     ipcMain.handle('WINDOW.RESIZE', (event, data: number) => {
-        const window = findWindowById(event.sender.id)?.window
+        const createdWindow = findWindowById(event.sender.id)
+
+        if (!createdWindow) return false
+
+        const { window, options } = createdWindow
 
         if (!window || (!serve && window.isResizable())) return false
 
-        const size = window.getContentSize()
+        const [width] = window.getContentSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
-        const height = Math.max(window.getMinimumSize()[1] || 0, Math.max(0, Math.min(data, maxHeight)))
-        resizeWindow(window, size[0], height)
-        console.info('window auto resized:', size[0], height)
+        const height = Math.max(options?.minHeight ?? 0, Math.min(data, maxHeight))
+        window.setContentSize(width, height)
+        console.info('window auto resized:', width, height)
 
         return true
     })
@@ -553,13 +562,5 @@ function sendToAllWindows(channel: string, data: any, home: boolean = true) {
 
     if (serve) {
         console.info(data)
-    }
-}
-
-function resizeWindow(window: BrowserWindow, width: number, height: number) {
-    if (process.platform === 'win32') {
-        window.setSize(width, height, false)
-    } else {
-        window.setContentSize(width, height, false)
     }
 }
