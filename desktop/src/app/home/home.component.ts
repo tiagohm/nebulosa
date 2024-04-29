@@ -214,7 +214,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             })
         })
 
-        this.connections = preference.connections.get()
+        this.connections = preference.connections.get().sort((a, b) => (b.connectedAt ?? 0) - (a.connectedAt ?? 0))
         this.connections.forEach(e => { e.id = undefined; e.connected = false })
         this.connection = this.connections[0]
     }
@@ -231,9 +231,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
-        this.disconnect()
-    }
+    ngOnDestroy() { }
 
     addConnection() {
         this.newConnection = [structuredClone(EMPTY_CONNECTION_DETAILS), undefined]
@@ -310,7 +308,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    private openDevice<K extends keyof MappedDevice>(type: K) {
+    private openDevice<K extends keyof MappedDevice>(type: K, header: string) {
         this.deviceModel.length = 0
 
         const devices: Device[] = type === 'CAMERA' ? this.cameras
@@ -332,6 +330,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             })
         }
 
+        this.deviceMenu.header = header
         this.deviceMenu.show()
     }
 
@@ -377,7 +376,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'CAMERA':
             case 'FOCUSER':
             case 'WHEEL':
-                this.openDevice(type)
+                this.openDevice(type, type)
                 break
             case 'GUIDER':
                 this.browserWindow.openGuider({ bringToFront: true })

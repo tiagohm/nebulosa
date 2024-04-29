@@ -1,9 +1,10 @@
 import { Client } from '@stomp/stompjs'
 import { BrowserWindow, Menu, Notification, Point, Size, app, dialog, ipcMain, screen, shell } from 'electron'
+import * as Store from 'electron-store'
 import * as fs from 'fs'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
-import * as path from 'path'
-
+import { join } from 'path'
+import { parseArgs } from 'util'
 import { WebSocket } from 'ws'
 import { MessageEvent } from '../src/shared/types/api.types'
 import { CloseWindow, InternalEventType, JsonFile, NotificationEvent, OpenDirectory, OpenFile, OpenWindow } from '../src/shared/types/app.types'
@@ -21,60 +22,45 @@ interface CreatedModalWindow extends CreatedWindow {
     resolve: (data: any) => void
 }
 
+interface WindowPreference {
+    [key: `window.${string}.position`]: Point
+    [key: `window.${string}.size`]: Size
+}
+
 const browserWindows = new Map<string, CreatedWindow>()
 const modalWindows = new Map<string, CreatedModalWindow>()
-let api: ChildProcessWithoutNullStreams | null = null
-let apiPort = 7000
+let apiProcess: ChildProcessWithoutNullStreams | null = null
 let webSocket: Client
+let started = false
 
-const args = process.argv.slice(1)
-const serve = args.some(e => e === '--serve')
-const appDir = path.join(app.getPath('appData'), 'nebulosa')
-const appIcon = path.join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
-
-if (!fs.existsSync(appDir)) {
-    fs.mkdirSync(appDir)
-}
-
-class SimpleDB {
-
-    private readonly data: Record<string, any>
-
-    constructor(private path: fs.PathLike) {
-        try {
-            if (fs.existsSync(path)) {
-                const text = fs.readFileSync(path).toString('utf-8')
-                this.data = text.length > 0 ? JSON.parse(text) : {}
-            } else {
-                this.data = {}
-            }
-        } catch (e) {
-            this.data = {}
-            console.error(e)
+const parsed = parseArgs({
+    args: process.argv.slice(1),
+    allowPositionals: true,
+    options: {
+        'serve': {
+            type: 'boolean'
+        },
+        'mode': {
+            type: 'string'
+        },
+        'host': {
+            type: 'string'
+        },
+        'port': {
+            type: 'string'
         }
-    }
+    },
+})
 
-    get<T = any>(key: string) {
-        return this.data[key] as T | undefined
-    }
+const serve = parsed.values.serve ?? false
+const apiMode = !serve && parsed.values.mode === 'api'
+const uiMode = !serve && parsed.values.mode === 'ui'
 
-    set(key: string, value: any) {
-        if (value === undefined || value === null) delete this.data[key]
-        else this.data[key] = value
+let apiHost = serve ? 'localhost' : parsed.values.host || 'localhost'
+let apiPort = serve ? 7000 : parseInt(parsed.values.port || '0')
 
-        try {
-            this.save()
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
-    save() {
-        fs.writeFileSync(this.path, JSON.stringify(this.data))
-    }
-}
-
-const database = new SimpleDB(path.join(appDir, 'nebulosa.data.json'))
+const appIcon = join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
+const store = new Store<WindowPreference>({ name: 'nebulosa' })
 
 function isNotificationEvent(event: MessageEvent): event is NotificationEvent {
     return event.eventName === 'NOTIFICATION.SENT'
@@ -87,7 +73,7 @@ function createMainWindow() {
     createWindow({ id: 'home', path: 'home', data: undefined })
 
     webSocket = new Client({
-        brokerURL: `ws://localhost:${apiPort}/ws`,
+        brokerURL: `ws://${apiHost}:${apiPort}/ws`,
         onConnect: () => {
             webSocket.subscribe('NEBULOSA.EVENT', message => {
                 const event = JSON.parse(message.body) as MessageEvent
@@ -162,13 +148,12 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
 
     const id = options.id
     const resizable = options.resizable ?? false
-    const autoResizable = options.autoResizable !== false
     const modal = options.modal ?? false
     const icon = options.icon ?? 'nebulosa'
     const data = encodeURIComponent(JSON.stringify(options.data || {}))
 
-    const savedPosition = !modal ? database.get<Point>(`window.${id}.position`) : undefined
-    const savedSize = !modal && resizable ? database.get<Size>(`window.${id}.size`) : undefined
+    const savedPosition = !modal ? store.get(`window.${id}.position`) : undefined
+    const savedSize = !modal && resizable ? store.get(`window.${id}.size`) : undefined
 
     if (savedPosition) {
         savedPosition.x = Math.max(0, Math.min(savedPosition.x, screenSize.width))
@@ -190,13 +175,13 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         y: savedPosition?.y ?? undefined,
         resizable: serve || resizable,
         autoHideMenuBar: true,
-        icon: path.join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
+        icon: join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
         webPreferences: {
             nodeIntegration: true,
             allowRunningInsecureContent: serve,
             contextIsolation: false,
-            additionalArguments: [`--port=${apiPort}`, `--options=${Buffer.from(JSON.stringify(options)).toString('base64')}`],
-            preload: path.join(__dirname, 'preload.js'),
+            additionalArguments: [`--host=${apiHost}`, `--port=${apiPort}`, `--options=${Buffer.from(JSON.stringify(options)).toString('base64')}`],
+            preload: join(__dirname, 'preload.js'),
             devTools: serve,
         },
     })
@@ -211,7 +196,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
 
         window.loadURL(`http://localhost:4200/${options.path}?data=${data}`)
     } else {
-        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${options.path}?data=${data}`)
+        const url = new URL(join('file:', __dirname, `index.html`) + `#/${options.path}?data=${data}`)
         window.loadURL(url.href)
     }
 
@@ -227,12 +212,12 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
 
         if (!modal) {
             const [x, y] = window!.getPosition()
-            const [width, height] = window!.getSize()
+            const [width, height] = window!.getContentSize()
 
-            database.set(`window.${id}.position`, { x, y })
+            store.set(`window.${id}.position`, { x, y })
 
             if (resizable) {
-                database.set(`window.${id}.size`, { width, height })
+                store.set(`window.${id}.size`, { width, height })
             }
         }
 
@@ -245,7 +230,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
 
             browserWindows.clear()
 
-            api?.kill()
+            apiProcess?.kill()
         } else {
             for (const [key, value] of browserWindows) {
                 if (value.window === window || value.options.id === id) {
@@ -282,7 +267,7 @@ function createSplashScreen() {
             resizable: false,
         })
 
-        const url = new URL(path.join('file:', __dirname, 'assets', 'images', 'splash.png'))
+        const url = new URL(join('file:', __dirname, 'assets', 'images', 'splash.png'))
         window.loadURL(url.href)
 
         window.show()
@@ -308,18 +293,37 @@ function findWindowById(id: number | string) {
     return undefined
 }
 
+function createApiProcess() {
+    const apiJar = join(process.resourcesPath, 'api.jar')
+    const apiProcess = spawn('java', ['-jar', apiJar, `--server.port=${apiPort}`])
+
+    apiProcess.on('close', (code) => {
+        console.warn(`server process exited with code ${code}`)
+        process.exit(code || 0)
+    })
+
+    return apiProcess
+}
+
 function startApp() {
-    if (api === null) {
-        if (serve) {
+    if (!started) {
+        started = true
+
+        if (apiMode) {
+            apiProcess = createApiProcess()
+        } else if (uiMode) {
+            createSplashScreen()
+
+            console.info(`server is at ${apiHost}@${apiPort}`)
+
+            createMainWindow()
+        } else if (serve) {
             createMainWindow()
         } else {
             createSplashScreen()
+            apiProcess = createApiProcess()
 
-            const apiJar = path.join(process.resourcesPath, 'api.jar')
-
-            api = spawn('java', ['-jar', apiJar])
-
-            api.stdout.on('data', (data) => {
+            apiProcess.stdout.on('data', (data) => {
                 const text = `${data}`
 
                 if (text) {
@@ -328,16 +332,11 @@ function startApp() {
 
                     if (match) {
                         apiPort = parseInt(match[1])
-                        api!.stdout.removeAllListeners('data')
-                        console.info(`server is started at port: ${apiPort}`)
+                        apiProcess!.stdout.removeAllListeners('data')
+                        console.info(`server was started at ${apiHost}@${apiPort}`)
                         createMainWindow()
                     }
                 }
-            })
-
-            api.on('close', (code) => {
-                console.warn(`server process exited with code ${code}`)
-                process.exit(code || 0)
             })
         }
     }
@@ -351,7 +350,7 @@ try {
     app.on('ready', () => setTimeout(startApp, 400))
 
     app.on('window-all-closed', () => {
-        api?.kill()
+        apiProcess?.kill()
 
         if (process.platform !== 'darwin') {
             app.quit()
@@ -481,24 +480,41 @@ try {
     ipcMain.handle('WINDOW.MAXIMIZE', (event) => {
         const window = findWindowById(event.sender.id)?.window
 
-        if (window?.isMaximized()) window.unmaximize()
-        else window?.maximize()
+        if (!window) return false
 
-        return window?.isMaximized() ?? false
+        if (window.isMaximized()) {
+            window.unmaximize()
+            return false
+        } else {
+            window.maximize()
+            return true
+        }
     })
 
     ipcMain.handle('WINDOW.RESIZE', (event, data: number) => {
-        const window = findWindowById(event.sender.id)?.window
+        const createdWindow = findWindowById(event.sender.id)
+
+        if (!createdWindow) return false
+
+        const { window, options } = createdWindow
 
         if (!window || (!serve && window.isResizable())) return false
 
-        const size = window.getContentSize()
+        const [width] = window.getContentSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
-        const height = Math.max(window.getMinimumSize()[1] || 0, Math.max(0, Math.min(data, maxHeight)))
-        resizeWindow(window, size[0], height)
-        console.info('window auto resized:', size[0], height)
+        const height = Math.max(options?.minHeight ?? 0, Math.min(data, maxHeight))
+        window.setContentSize(width, height)
+        console.info('window auto resized:', width, height)
 
         return true
+    })
+
+    ipcMain.handle('WINDOW.FULLSCREEN', (event, enabled?: boolean) => {
+        const window = findWindowById(event.sender.id)?.window
+        if (!window) return false
+        const flag = enabled ?? !window.isFullScreen()
+        window.setFullScreen(flag)
+        return flag
     })
 
     ipcMain.handle('WINDOW.CLOSE', (event, data: CloseWindow<any>) => {
@@ -522,7 +538,7 @@ try {
         return false
     })
 
-    const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED']
+    const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED', 'CALIBRATION.CHANGED']
 
     for (const item of events) {
         ipcMain.handle(item, (_, data) => {
@@ -545,13 +561,5 @@ function sendToAllWindows(channel: string, data: any, home: boolean = true) {
 
     if (serve) {
         console.info(data)
-    }
-}
-
-function resizeWindow(window: BrowserWindow, width: number, height: number) {
-    if (process.platform === 'win32') {
-        window.setSize(width, height, false)
-    } else {
-        window.setContentSize(width, height, false)
     }
 }

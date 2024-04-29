@@ -85,6 +85,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         scnr: this.scnr
     }
 
+    calibrationGroup?: string | true // true == 'None'
+
     showAnnotationDialog = false
     annotateWithStarsAndDSOs = true
     annotateWithMinorPlanets = false
@@ -444,6 +446,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Image'
 
+        app.topMenu.push({
+            icon: 'mdi mdi-fullscreen',
+            command: () => this.enterFullscreen(),
+        })
+
         this.stretchShadow.subscribe(value => {
             this.stretch.shadow = value / 65536
         })
@@ -476,12 +483,20 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             })
         })
 
+        electron.on('CALIBRATION.CHANGED', () => {
+            ngZone.run(() => {
+                this.loadCalibrationGroups()
+            })
+        })
+
         hotkeys('ctrl+a', (event) => { event.preventDefault(); this.toggleStretch() })
         hotkeys('ctrl+i', (event) => { event.preventDefault(); this.invertImage() })
         hotkeys('ctrl+x', (event) => { event.preventDefault(); this.toggleCrosshair() })
         hotkeys('ctrl+-', (event) => { event.preventDefault(); this.zoomOut() })
         hotkeys('ctrl+=', (event) => { event.preventDefault(); this.zoomIn() })
         hotkeys('ctrl+0', (event) => { event.preventDefault(); this.resetZoom() })
+        hotkeys('f12', (event) => { if (this.app.showTopBar) { event.preventDefault(); this.enterFullscreen() } })
+        hotkeys('escape', (event) => { if (!this.app.showTopBar) { event.preventDefault(); this.exitFullscreen() } })
 
         this.loadPreference()
     }
@@ -510,35 +525,55 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private async loadCalibrationGroups() {
         const groups = await this.api.calibrationGroups()
+        const found = !!groups.find(e => this.transformation.calibrationGroup === e)
+        let reloadImage = false
+
+        if (!found) {
+            reloadImage = !!this.transformation.calibrationGroup
+            this.transformation.calibrationGroup = undefined
+
+            if (this.calibrationGroup) {
+                this.calibrationGroup = true // None
+            }
+        }
 
         const makeItem = (name?: string) => {
             const label = name ?? 'None'
             const icon = name ? 'mdi mdi-wrench' : 'mdi mdi-close'
 
             return <CheckableMenuItem>{
-                label, icon, checked: false,
+                label, icon, checked: this.transformation.calibrationGroup === name,
                 command: async () => {
                     this.transformation.calibrationGroup = name
+                    this.calibrationGroup = name ?? true
                     this.markCalibrationGroupItem(label)
                     await this.loadImage()
                 },
             }
         }
 
-        this.calibrationMenuItem.items!.push({
+        const menu: MenuItem[] = []
+
+        menu.push({
             label: 'Open',
             icon: 'mdi mdi-wrench',
             command: () => this.browserWindow.openCalibration()
         })
 
-        this.calibrationMenuItem.items!.push(SEPARATOR_MENU_ITEM)
-        this.calibrationMenuItem.items!.push(makeItem())
+        menu.push(SEPARATOR_MENU_ITEM)
+        menu.push(makeItem())
 
         for (const group of groups) {
-            this.calibrationMenuItem.items!.push(makeItem(group))
+            menu.push(makeItem(group))
         }
 
+        this.calibrationMenuItem.items = menu
         this.menu.model = this.contextMenuItems
+        this.menu.cd.markForCheck()
+
+        if (reloadImage) {
+            this.loadImage()
+        }
     }
 
     private async closeImage(force: boolean = false) {
@@ -600,8 +635,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         this.imageData = data
 
-        this.transformation.calibrationGroup = data.capture?.calibrationGroup
-        this.markCalibrationGroupItem(this.transformation.calibrationGroup ?? 'None')
+        // Not clicked on menu item.
+        if (!this.calibrationGroup && this.transformation.calibrationGroup !== data.capture?.calibrationGroup) {
+            this.transformation.calibrationGroup = data.capture?.calibrationGroup
+            this.markCalibrationGroupItem(this.transformation.calibrationGroup ?? 'None')
+        }
 
         if (data.source === 'FRAMING') {
             this.disableAutoStretch()
@@ -611,7 +649,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
 
         this.clearOverlay()
-
         this.loadImage()
     }
 
@@ -805,6 +842,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     resetZoom() {
         if (!this.panZoom) return
         this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, 1.0)
+    }
+
+    async enterFullscreen() {
+        this.app.showTopBar = !await this.electron.fullscreenWindow(true)
+    }
+
+    async exitFullscreen() {
+        this.app.showTopBar = !await this.electron.fullscreenWindow(false)
     }
 
     private async retrieveCoordinateInterpolation() {

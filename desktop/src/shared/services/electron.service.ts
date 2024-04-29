@@ -55,6 +55,7 @@ type EventMappedType = {
     'FLAT_WIZARD.ELAPSED': FlatWizardElapsed
     'CONNECTION.CLOSED': ConnectionClosed
     'SKY_ATLAS.PROGRESS_CHANGED': SkyAtlasUpdated
+    'CALIBRATION.CHANGED': unknown
 }
 
 @Injectable({ providedIn: 'root' })
@@ -198,7 +199,15 @@ export class ElectronService {
         this.send('WINDOW.MAXIMIZE')
     }
 
+    fullscreenWindow(enabled?: boolean): Promise<boolean> {
+        return this.send('WINDOW.FULLSCREEN', enabled)
+    }
+
     closeWindow<T>(data: CloseWindow<T>) {
         return this.send('WINDOW.CLOSE', data)
+    }
+
+    calibrationChanged() {
+        this.send('CALIBRATION.CHANGED')
     }
 }

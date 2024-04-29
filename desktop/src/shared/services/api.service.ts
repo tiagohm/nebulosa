@@ -9,7 +9,7 @@ import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
-import { ConnectionStatus, ConnectionType } from '../types/home.types'
+import { ConnectionStatus, ConnectionType, Equipment } from '../types/home.types'
 import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageSave, ImageSolved, ImageTransformation } from '../types/image.types'
 import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
 import { SequencePlan } from '../types/sequencer.types'
@@ -68,7 +68,8 @@ export class ApiService {
     }
 
     // TODO: Rotator
-    cameraSnoop(camera: Camera, mount?: Mount, wheel?: FilterWheel, focuser?: Focuser) {
+    cameraSnoop(camera: Camera, equipment: Equipment) {
+        const { mount, wheel, focuser } = equipment
         const query = this.http.query({ mount: mount?.name, wheel: wheel?.name, focuser: focuser?.name })
         return this.http.put<void>(`cameras/${camera.id}/snoop?${query}`)
     }

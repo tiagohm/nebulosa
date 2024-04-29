@@ -3,12 +3,12 @@ import { ActivatedRoute } from '@angular/router'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import moment from 'moment'
-import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { OverlayPanel } from 'primeng/overlaypanel'
 import { Subscription, timer } from 'rxjs'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
+import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 import { ApiService } from '../../shared/services/api.service'
@@ -406,7 +406,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
     ]
 
-    readonly ephemerisModel: MenuItem[] = [
+    readonly ephemerisModel: ExtendedMenuItem[] = [
         {
             icon: 'mdi mdi-magnify',
             label: 'Find sky objects around this object',

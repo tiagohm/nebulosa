@@ -7,6 +7,7 @@ interface NodeModule {
 interface Window {
     process: any
     require: any
+    apiHost: string
     apiPort: number
     options: {
         icon?: string

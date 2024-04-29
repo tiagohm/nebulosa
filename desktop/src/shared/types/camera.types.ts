@@ -197,7 +197,7 @@ export function updateCameraStartCaptureFromCamera(request: CameraStartCapture, 
     if (camera.maxBinY > 1) request.binY = Math.max(1, Math.min(request.binY, camera.maxBinY))
     if (camera.gainMax) request.gain = Math.max(camera.gainMin, Math.min(request.gain, camera.gainMax))
     if (camera.offsetMax) request.offset = Math.max(camera.offsetMin, Math.min(request.offset, camera.offsetMax))
-    if (!request.frameFormat || !camera.frameFormats.includes(request.frameFormat)) request.frameFormat = camera.frameFormats[0]
+    if (camera.frameFormats.length && (!request.frameFormat || !camera.frameFormats.includes(request.frameFormat))) request.frameFormat = camera.frameFormats[0]
 }
 
 export interface CameraCaptureElapsed extends MessageEvent {

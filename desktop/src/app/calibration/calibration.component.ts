@@ -129,6 +129,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
             const frames = await this.api.uploadCalibrationFrame(node.data.data, path)
 
             if (frames.length > 0) {
+                this.electron.calibrationChanged()
                 this.load()
             }
         }
@@ -183,6 +184,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
                 if (idx >= 0) {
                     this.frames.splice(idx, 1)
                     console.info('frame deleted', node)
+                    this.electron.calibrationChanged()
                 }
             }
         }
@@ -237,6 +239,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
                 for (const frame of frames) {
                     frame.name = this.newGroupName
                     await this.api.editCalibrationFrame(frame)
+                    this.electron.calibrationChanged()
                 }
 
                 this.showNewGroupDialog = false
@@ -261,6 +264,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
         ) {
             dragNode.data.data.name = dropNode.data.data
             await this.api.editCalibrationFrame(dragNode.data.data)
+            this.electron.calibrationChanged()
             this.load()
         }
     }
