@@ -2,7 +2,7 @@ package nebulosa.astap.star.detection
 
 import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
-import nebulosa.common.process.ProcessExecutor
+import nebulosa.common.exec.commandLine
 import nebulosa.log.loggerFor
 import nebulosa.star.detection.ImageStar
 import nebulosa.star.detection.StarDetector
@@ -13,20 +13,25 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.nameWithoutExtension
 
-class AstapStarDetector(path: Path) : StarDetector<Path> {
-
-    private val executor = ProcessExecutor(path)
+data class AstapStarDetector(private val executablePath: Path) : StarDetector<Path> {
 
     override fun detect(input: Path): List<ImageStar> {
-        val arguments = mutableMapOf<String, Any?>()
+        val cmd = commandLine {
+            executablePath(executablePath)
+            workingDirectory(input.parent)
 
-        arguments["-f"] = input
-        arguments["-z"] = 2
-        arguments["-extract"] = 0
+            putArg("-f", input)
+            putArg("-z", "2")
+            putArg("-extract", "0")
+        }
 
-        val process = executor.execute(arguments, workingDir = input.parent)
+        try {
+            cmd.start()
 
-        LOG.info("astap exited. code={}", process.exitValue())
+            LOG.info("astap exited. code={}", cmd.get())
+        } catch (e: Throwable) {
+            return emptyList()
+        }
 
         val csvFile = Path.of("${input.parent}", input.nameWithoutExtension + ".csv")
 

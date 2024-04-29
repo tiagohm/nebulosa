@@ -1,7 +1,7 @@
 package nebulosa.astap.plate.solving
 
 import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.process.ProcessExecutor
+import nebulosa.common.exec.commandLine
 import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsKeyword
 import nebulosa.image.Image
@@ -25,9 +25,7 @@ import kotlin.math.ceil
 /**
  * @see <a href="https://www.hnsky.org/astap.htm#astap_command_line">README</a>
  */
-class AstapPlateSolver(path: Path) : PlateSolver {
-
-    private val executor = ProcessExecutor(path)
+data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
 
     override fun solve(
         path: Path?, image: Image?,
@@ -37,34 +35,37 @@ class AstapPlateSolver(path: Path) : PlateSolver {
     ): PlateSolution {
         requireNotNull(path) { "path is required" }
 
-        val arguments = mutableMapOf<String, Any?>()
-
         val basePath = Files.createTempDirectory("astap")
         val baseName = UUID.randomUUID().toString()
         val outFile = Paths.get("$basePath", baseName)
 
-        arguments["-o"] = outFile
-        arguments["-z"] = downsampleFactor
-        arguments["-fov"] = 0 // auto
+        val cmd = commandLine {
+            executablePath(executablePath)
+            workingDirectory(path.parent)
 
-        if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
-            arguments["-ra"] = centerRA.toHours
-            arguments["-spd"] = centerDEC.toDegrees + 90.0
-            arguments["-r"] = ceil(radius.toDegrees)
-        } else {
-            arguments["-r"] = "180.0"
+            putArg("-o", outFile)
+            putArg("-z", downsampleFactor)
+            putArg("-fov", "0") // auto
+
+            if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
+                putArg("-ra", centerRA.toHours)
+                putArg("-spd", centerDEC.toDegrees + 90.0)
+                putArg("-r", ceil(radius.toDegrees))
+            } else {
+                putArg("-r", "180.0")
+            }
+
+            putArg("-f", path)
         }
 
-        arguments["-f"] = path
-
-        LOG.info("ASTAP solving. command={}", arguments)
+        LOG.info("ASTAP solving. command={}", cmd.command)
 
         try {
             val timeoutOrDefault = timeout?.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5)
-            val process = executor.execute(arguments, timeoutOrDefault, path.parent, cancellationToken)
+            cancellationToken.listen(cmd)
+            cmd.start(timeoutOrDefault)
 
-            if (process.isAlive) process.destroyForcibly()
-            LOG.info("astap exited. code={}", process.exitValue())
+            LOG.info("astap exited. code={}", cmd.get())
 
             if (cancellationToken.isCancelled) return PlateSolution.NO_SOLUTION
 
@@ -121,6 +122,7 @@ class AstapPlateSolver(path: Path) : PlateSolver {
                 throw PlateSolvingException(message)
             }
         } finally {
+            cancellationToken.unlisten(cmd)
             basePath.deleteRecursively()
         }
     }

@@ -1,7 +1,8 @@
 package nebulosa.astrometrynet.plate.solving
 
 import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.process.ProcessExecutor
+import nebulosa.common.exec.LineReadListener
+import nebulosa.common.exec.commandLine
 import nebulosa.image.Image
 import nebulosa.log.loggerFor
 import nebulosa.math.*
@@ -11,15 +12,13 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import java.util.*
-import kotlin.concurrent.thread
+import java.util.function.Supplier
 import kotlin.io.path.deleteRecursively
 
 /**
  * @see <a href="http://astrometry.net/doc/readme.html">README</a>
  */
-class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver {
-
-    private val executor = ProcessExecutor(path)
+data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : PlateSolver {
 
     override fun solve(
         path: Path?, image: Image?,
@@ -29,105 +28,110 @@ class LocalAstrometryNetPlateSolver(path: Path) : PlateSolver {
     ): PlateSolution {
         requireNotNull(path) { "path is required" }
 
-        val arguments = mutableMapOf<String, Any?>()
-
-        arguments["--out"] = UUID.randomUUID().toString()
-        arguments["--overwrite"] = null
-
         val outFolder = Files.createTempDirectory("localplatesolver")
-        arguments["--dir"] = outFolder
 
-        arguments["--cpulimit"] = timeout?.takeIf { it.toSeconds() > 0 }?.toSeconds() ?: 300
-        arguments["--scale-units"] = "degwidth"
-        arguments["--guess-scale"] = null
-        arguments["--crpix-center"] = null
-        arguments["--downsample"] = downsampleFactor
-        arguments["--no-verify"] = null
-        arguments["--no-plots"] = null
-        // args["--resort"] = null
+        val cmd = commandLine {
+            executablePath(executablePath)
+            workingDirectory(path.parent)
 
-        if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
-            arguments["--ra"] = centerRA.toDegrees
-            arguments["--dec"] = centerDEC.toDegrees
-            arguments["--radius"] = radius.toDegrees
-        }
+            putArg("--out", UUID.randomUUID().toString())
+            putArg("--overwrite")
 
-        arguments["$path"] = null
+            putArg("--dir", outFolder)
 
-        val process = executor.execute(arguments, Duration.ZERO, path.parent, cancellationToken)
+            putArg("--cpulimit", timeout?.takeIf { it.toSeconds() > 0 }?.toSeconds() ?: 300)
+            putArg("--scale-units", "degwidth")
+            putArg("--guess-scale")
+            putArg("--crpix-center")
+            putArg("--downsample", downsampleFactor)
+            putArg("--no-verify")
+            putArg("--no-plots")
+            // putArg("--resort")
 
-        val buffer = process.inputReader()
-
-        var solution = PlateSolution(false, 0.0, 0.0, 0.0, 0.0)
-
-        val parseThread = thread {
-            for (line in buffer.lines()) {
-                solution = solution
-                    .parseFieldCenter(line)
-                    .parseFieldRotation(line)
-                    .parsePixelScale(line)
-                    .parseFieldSize(line)
+            if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
+                putArg("--ra", centerRA.toDegrees)
+                putArg("--dec", centerDEC.toDegrees)
+                putArg("--radius", radius.toDegrees)
             }
 
-            // Populate WCS headers from calibration info.
-            // TODO: calibration = calibration.copy()
-            // TODO: Mark calibration as solved.
-
-            LOG.info("astrometry.net solved. calibration={}", solution)
+            putArg("$path")
         }
+
+        val solution = PlateSolutionLineReader()
 
         try {
-            process.waitFor()
-            LOG.info("astrometry.net exited. code={}", process.exitValue())
-        } catch (e: InterruptedException) {
-            parseThread.interrupt()
-            process.destroyForcibly()
+            cancellationToken.listen(cmd)
+            cmd.registerLineReadListener(solution)
+            cmd.start()
+            LOG.info("astrometry.net exited. code={}", cmd.get())
+            return solution.get()
+        } catch (e: Throwable) {
+            LOG.error("astronomy.net failed.", e)
+            return PlateSolution.NO_SOLUTION
         } finally {
+            cancellationToken.unlisten(cmd)
             outFolder.deleteRecursively()
         }
+    }
 
-        return solution
+    private class PlateSolutionLineReader : LineReadListener, Supplier<PlateSolution> {
+
+        @Volatile private var fieldCenter: DoubleArray? = null
+        @Volatile private var fieldRotation: Angle = 0.0
+        @Volatile private var pixelScale: Angle = 0.0
+        @Volatile private var fieldSize: DoubleArray? = null
+
+        override fun onInputRead(line: String) {
+            fieldCenter(line)?.also { fieldCenter = it }
+                ?: fieldRotation(line)?.also { fieldRotation = it }
+                ?: pixelScale(line)?.also { pixelScale = it }
+                ?: fieldSize(line)?.also { fieldSize = it }
+        }
+
+        override fun get(): PlateSolution {
+            val (rightAscension, declination) = fieldCenter!!
+            val (width, height) = fieldSize!!
+
+            return PlateSolution(true, fieldRotation, pixelScale, rightAscension, declination, width, height)
+        }
+
+        companion object {
+
+            private const val NUMBER_REGEX = "([\\d.+-]+)"
+
+            @JvmStatic private val FIELD_CENTER_REGEX = Regex(".*Field center: \\(RA,Dec\\) = \\($NUMBER_REGEX, $NUMBER_REGEX\\).*")
+            @JvmStatic private val FIELD_SIZE_REGEX = Regex(".*Field size: $NUMBER_REGEX x $NUMBER_REGEX arcminutes.*")
+            @JvmStatic private val FIELD_ROTATION_REGEX = Regex(".*Field rotation angle: up is $NUMBER_REGEX degrees.*")
+            @JvmStatic private val PIXEL_SCALE_REGEX = Regex(".*pixel scale $NUMBER_REGEX arcsec/pix.*")
+
+            @JvmStatic
+            private fun fieldCenter(line: String): DoubleArray? {
+                return FIELD_CENTER_REGEX.matchEntire(line)
+                    ?.let { doubleArrayOf(it.groupValues[1].toDouble().deg, it.groupValues[2].toDouble().deg) }
+            }
+
+            @JvmStatic
+            private fun fieldSize(line: String): DoubleArray? {
+                return FIELD_SIZE_REGEX.matchEntire(line)
+                    ?.let { doubleArrayOf(it.groupValues[1].toDouble().arcmin, it.groupValues[2].toDouble().arcmin) }
+            }
+
+            @JvmStatic
+            private fun fieldRotation(line: String): Angle? {
+                return FIELD_ROTATION_REGEX.matchEntire(line)
+                    ?.let { it.groupValues[1].toDouble().deg }
+            }
+
+            @JvmStatic
+            private fun pixelScale(line: String): Angle? {
+                return PIXEL_SCALE_REGEX.matchEntire(line)
+                    ?.let { it.groupValues[1].toDouble().arcsec }
+            }
+        }
     }
 
     companion object {
 
-        private const val NUMBER_REGEX = "([\\d.+-]+)"
-
         @JvmStatic private val LOG = loggerFor<LocalAstrometryNetPlateSolver>()
-        @JvmStatic private val FIELD_CENTER_REGEX = Regex(".*Field center: \\(RA,Dec\\) = \\($NUMBER_REGEX, $NUMBER_REGEX\\).*")
-        @JvmStatic private val FIELD_SIZE_REGEX = Regex(".*Field size: $NUMBER_REGEX x $NUMBER_REGEX arcminutes.*")
-        @JvmStatic private val FIELD_ROTATION_REGEX = Regex(".*Field rotation angle: up is $NUMBER_REGEX degrees.*")
-        @JvmStatic private val PIXEL_SCALE_REGEX = Regex(".*pixel scale $NUMBER_REGEX arcsec/pix.*")
-
-        @JvmStatic
-        private fun PlateSolution.parseFieldCenter(line: String): PlateSolution {
-            return FIELD_CENTER_REGEX.matchEntire(line)
-                ?.let { copy(rightAscension = it.groupValues[1].toDouble().deg, declination = it.groupValues[2].toDouble().deg) }
-                ?: this
-        }
-
-        @JvmStatic
-        private fun PlateSolution.parseFieldSize(line: String): PlateSolution {
-            return FIELD_SIZE_REGEX.matchEntire(line)
-                ?.let {
-                    val width = it.groupValues[1].toDouble().arcmin
-                    val height = it.groupValues[2].toDouble().arcmin
-                    copy(width = width, height = height)
-                } ?: this
-        }
-
-        @JvmStatic
-        private fun PlateSolution.parseFieldRotation(line: String): PlateSolution {
-            return FIELD_ROTATION_REGEX.matchEntire(line)
-                ?.let { copy(orientation = it.groupValues[1].toDouble().deg) }
-                ?: this
-        }
-
-        @JvmStatic
-        private fun PlateSolution.parsePixelScale(line: String): PlateSolution {
-            return PIXEL_SCALE_REGEX.matchEntire(line)
-                ?.let { copy(scale = it.groupValues[1].toDouble().arcsec) }
-                ?: this
-        }
     }
 }
