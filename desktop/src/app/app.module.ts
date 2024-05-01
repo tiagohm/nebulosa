@@ -5,6 +5,7 @@ import { LOCALE_ID, NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { AccordionModule } from 'primeng/accordion'
 import { ConfirmationService, MessageService } from 'primeng/api'
 import { BadgeModule } from 'primeng/badge'
 import { ButtonModule } from 'primeng/button'
@@ -110,19 +111,20 @@ import { SettingsComponent } from './settings/settings.component'
         INDIComponent,
         INDIPropertyComponent,
         LocationDialog,
+        MapComponent,
         MenuItemComponent,
         MoonComponent,
         MountComponent,
         NoDropdownDirective,
-        MapComponent,
         SequencerComponent,
         SettingsComponent,
-        SlideMenuComponent,
         SkyObjectPipe,
+        SlideMenuComponent,
         StopPropagationDirective,
         WinPipe,
     ],
     imports: [
+        AccordionModule,
         AppRoutingModule,
         BadgeModule,
         BrowserAnimationsModule,
