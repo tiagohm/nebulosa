@@ -1,4 +1,3 @@
-import { MenuItem } from 'primeng/api'
 import { ExtendedMenuItem } from './components/menu-item/menu-item.component'
 
 export const EVERY_MINUTE_CRON_TIME = '0 */1 * * * *'

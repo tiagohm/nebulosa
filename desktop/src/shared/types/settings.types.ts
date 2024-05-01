@@ -1,4 +1,3 @@
-import { KeyValue } from '@angular/common'
 
 export type PlateSolverType = 'ASTROMETRY_NET' | 'ASTROMETRY_NET_ONLINE' | 'ASTAP'
 
@@ -21,5 +20,3 @@ export const EMPTY_PLATE_SOLVER_PREFERENCE: PlateSolverPreference = {
     apiKey: '',
     timeout: 600,
 }
-
-export type DatabaseEntry = KeyValue<string, any>
