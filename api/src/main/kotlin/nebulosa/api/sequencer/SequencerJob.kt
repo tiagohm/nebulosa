@@ -7,10 +7,7 @@ import nebulosa.api.messages.MessageEvent
 import nebulosa.api.wheels.WheelStep
 import nebulosa.batch.processing.*
 import nebulosa.batch.processing.ExecutionContext.Companion.getDuration
-import nebulosa.batch.processing.ExecutionContext.Companion.getDurationOrNull
 import nebulosa.batch.processing.ExecutionContext.Companion.getInt
-import nebulosa.batch.processing.delay.DelayStep
-import nebulosa.batch.processing.delay.DelayStepListener
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
@@ -29,7 +26,7 @@ data class SequencerJob(
     @JvmField val guider: Guider,
     @JvmField val wheel: FilterWheel? = null,
     @JvmField val focuser: Focuser? = null,
-) : SimpleJob(), PublishSubscribe<MessageEvent>, DelayStepListener {
+) : SimpleJob(), PublishSubscribe<MessageEvent> {
 
     // private val cameraCaptureEventHandler = CameraCaptureEventHandler(this)
 

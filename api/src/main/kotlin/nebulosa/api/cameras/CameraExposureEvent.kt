@@ -9,5 +9,5 @@ data class CameraExposureEvent(
     @JvmField val elapsedTime: Duration = Duration.ZERO,
     @JvmField val remainingTime: Duration = Duration.ZERO,
     @JvmField val progress: Double = 0.0,
-    @JvmField val savePath: Path? = null,
+    @JvmField val savedPath: Path? = null,
 )

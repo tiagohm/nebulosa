@@ -10,6 +10,7 @@ import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import okio.sink
 import java.nio.file.Path
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
@@ -24,6 +25,12 @@ data class CameraExposureTask(
     private val latch = CountUpDownLatch()
     private val aborted = AtomicBoolean()
 
+    @Volatile private var state = CameraExposureState.IDLE
+    @Volatile private var elapsedTime = Duration.ZERO
+    @Volatile private var remainingTime = Duration.ZERO
+    @Volatile private var progress = 0.0
+    @Volatile private var savedPath: Path? = null
+
     fun handleCameraEvent(event: CameraEvent) {
         if (event.device === camera) {
             when (event) {
@@ -33,15 +40,16 @@ data class CameraExposureTask(
                 is CameraExposureAborted,
                 is CameraExposureFailed,
                 is CameraDetached -> {
-                    cancelledBy(CancellationSource.Close)
+                    onCancelled(CancellationSource.Close)
                 }
                 is CameraExposureProgressChanged -> {
                     val exposureTime = request.exposureTime
-                    // minOf fix possible bug on SVBony exposure time.
-                    val remainingTime = minOf(event.device.exposureTime, request.exposureTime)
-                    val elapsedTime = exposureTime - remainingTime
-                    val progress = elapsedTime.toNanos().toDouble() / exposureTime.toNanos()
-                    onNext(CameraExposureEvent.Elapsed(this, elapsedTime, remainingTime, progress))
+                    // minOf fix possible bug on SVBony exposure time?
+                    remainingTime = minOf(event.device.exposureTime, request.exposureTime)
+                    elapsedTime = exposureTime - remainingTime
+                    progress = elapsedTime.toNanos().toDouble() / exposureTime.toNanos()
+                    state = CameraExposureState.ELAPSED
+                    sendEvent()
                 }
             }
         }
@@ -53,7 +61,8 @@ data class CameraExposureTask(
 
             latch.countUp()
 
-            onNext(CameraExposureEvent.Started(this))
+            state = CameraExposureState.STARTED
+            sendEvent()
 
             with(camera) {
                 if (request.width > 0 && request.height > 0) {
@@ -71,7 +80,8 @@ data class CameraExposureTask(
             latch.await()
 
             if (aborted.get()) {
-                onNext(CameraExposureEvent.Aborted(this))
+                state = CameraExposureState.ABORTED
+                sendEvent()
             }
 
             LOG.info("camera exposure finished. camera={}, request={}", camera, request)
@@ -80,7 +90,7 @@ data class CameraExposureTask(
         }
     }
 
-    override fun cancelledBy(source: CancellationSource) {
+    override fun onCancelled(source: CancellationSource) {
         aborted.set(true)
         latch.reset()
     }
@@ -91,7 +101,7 @@ data class CameraExposureTask(
     }
 
     override fun close() {
-        cancelledBy(CancellationSource.Close)
+        onCancelled(CancellationSource.Close)
         super.close()
     }
 
@@ -112,13 +122,20 @@ data class CameraExposureTask(
                 return
             }
 
-            onNext(CameraExposureEvent.Finished(this, savedPath))
+            this.savedPath = savedPath
+            state = CameraExposureState.FINISHED
+
+            sendEvent()
         } catch (e: Throwable) {
             LOG.error("failed to save FITS image", e)
             aborted.set(true)
         } finally {
             latch.countDown()
         }
+    }
+
+    private fun sendEvent() {
+        onNext(CameraExposureEvent(this, state, elapsedTime, remainingTime, progress, savedPath))
     }
 
     companion object {
@@ -130,9 +147,11 @@ data class CameraExposureTask(
         internal fun CameraStartCaptureRequest.makeSavePath(
             camera: Camera, autoSave: Boolean = this.autoSave,
         ): Path {
+            require(savePath != null) { "savePath is required" }
+
             return if (autoSave) {
                 val now = LocalDateTime.now()
-                val savePath = autoSubFolderMode.pathFor(savePath!!, now)
+                val savePath = autoSubFolderMode.pathFor(savePath, now)
                 val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), frameType)
                 Path.of("$savePath", fileName)
             } else {

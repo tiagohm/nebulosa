@@ -191,7 +191,7 @@ open class AsyncJobLauncher(private val executor: Executor) : JobLauncher, StepI
         return result
     }
 
-    override fun cancelledBy(source: CancellationSource) {
+    override fun onCancelled(source: CancellationSource) {
         if (source is CancellationSource.Cancel) {
             stop(source.mayInterruptIfRunning)
         }

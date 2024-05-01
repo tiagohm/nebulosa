@@ -83,7 +83,7 @@ data class MountMoveTask(
         latch.reset()
     }
 
-    override fun cancelledBy(source: CancellationSource) {
+    override fun onCancelled(source: CancellationSource) {
         stop()
     }
 

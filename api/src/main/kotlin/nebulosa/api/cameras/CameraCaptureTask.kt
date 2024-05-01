@@ -119,7 +119,7 @@ data class CameraCaptureTask(
                     CameraExposureState.FINISHED -> {
                         state = CameraCaptureState.EXPOSURE_FINISHED
                         captureElapsedTime = prevCaptureElapsedTime + request.exposureTime
-                        savePath = event.savePath
+                        savePath = event.savedPath
                     }
                     CameraExposureState.IDLE,
                     CameraExposureState.ABORTED -> {

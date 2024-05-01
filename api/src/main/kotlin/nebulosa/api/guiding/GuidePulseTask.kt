@@ -36,7 +36,7 @@ data class GuidePulseTask(
         }
     }
 
-    override fun cancelledBy(source: CancellationSource) {
+    override fun onCancelled(source: CancellationSource) {
         guideOutput.pulseGuide(Duration.ZERO, request.direction)
     }
 

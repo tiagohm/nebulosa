@@ -9,11 +9,13 @@ data class DelayTask(
     @JvmField val duration: Duration,
 ) : Task<DelayEvent>() {
 
+    @Volatile private var remainingTime = Duration.ZERO
+    @Volatile private var waitTime = Duration.ZERO
+    @Volatile private var progress = 0.0
+
     override fun execute(cancellationToken: CancellationToken) {
         val durationTime = duration.toMillis()
         var remainingTime = durationTime
-
-        val event = DelayEvent(this)
 
         if (!cancellationToken.isDone && remainingTime > 0L) {
             LOG.info("delaying for {} ms", remainingTime)
@@ -22,8 +24,10 @@ data class DelayTask(
                 val waitTime = minOf(remainingTime, DELAY_INTERVAL)
 
                 if (waitTime > 0L) {
-                    val progress = (durationTime - remainingTime) / durationTime.toDouble()
-                    onNext(event.copy(remainingTime = Duration.ofMillis(remainingTime), waitTime = Duration.ofMillis(waitTime), progress = progress))
+                    progress = (durationTime - remainingTime) / durationTime.toDouble()
+                    this.remainingTime = Duration.ofMillis(remainingTime)
+                    this.waitTime = Duration.ofMillis(waitTime)
+                    sendEvent()
 
                     Thread.sleep(waitTime)
 
@@ -31,8 +35,16 @@ data class DelayTask(
                 }
             }
 
-            onNext(event.copy(progress = 1.0))
+            this.remainingTime = Duration.ZERO
+            this.waitTime = Duration.ZERO
+            progress = 1.0
+
+            sendEvent()
         }
+    }
+
+    private fun sendEvent() {
+        onNext(DelayEvent(this, remainingTime, waitTime, progress))
     }
 
     companion object {

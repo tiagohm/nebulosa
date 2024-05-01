@@ -19,7 +19,7 @@ class CancellationToken private constructor(private val completable: Completable
                 unpause()
 
                 if (source != null) {
-                    listeners.forEach { it.cancelledBy(source) }
+                    listeners.forEach { it.onCancelled(source) }
                 }
 
                 listeners.clear()
@@ -31,7 +31,7 @@ class CancellationToken private constructor(private val completable: Completable
     fun listen(listener: CancellationListener) {
         if (completable != null) {
             if (isDone) {
-                listener.cancelledBy(CancellationSource.Listen)
+                listener.onCancelled(CancellationSource.Listen)
             } else {
                 listeners.add(listener)
             }

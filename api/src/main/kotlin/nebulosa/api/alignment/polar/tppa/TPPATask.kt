@@ -75,7 +75,7 @@ data class TPPATask(
     override fun accept(event: Any) {
         when (event) {
             is CameraExposureEvent -> {
-                savedImage = event.savePath ?: return
+                savedImage = event.savedPath ?: return
             }
         }
     }
