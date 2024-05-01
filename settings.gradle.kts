@@ -31,7 +31,7 @@ dependencyResolutionManagement {
             library("apache-codec", "commons-codec:commons-codec:1.17.0")
             library("apache-collections", "org.apache.commons:commons-collections4:4.4")
             library("apache-numbers-complex", "org.apache.commons:commons-numbers-complex:1.1")
-            library("oshi", "com.github.oshi:oshi-core:6.5.0")
+            library("oshi", "com.github.oshi:oshi-core:6.6.0")
             library("timeshape", "net.iakovlev:timeshape:2022g.17")
             library("jna", "net.java.dev.jna:jna:5.14.0")
             library("kotest-assertions-core", "io.kotest:kotest-assertions-core:5.8.1")
