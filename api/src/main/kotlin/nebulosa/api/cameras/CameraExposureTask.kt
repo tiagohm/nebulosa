@@ -95,7 +95,7 @@ data class CameraExposureTask(
         latch.reset()
     }
 
-    fun reset() {
+    override fun reset() {
         aborted.set(false)
         latch.reset()
     }

@@ -1,5 +1,6 @@
 package nebulosa.alignment.polar.point.three
 
+import nebulosa.common.Resettable
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.constants.DEG2RAD
 import nebulosa.math.Angle
@@ -21,7 +22,7 @@ data class ThreePointPolarAlignment(
     private val solver: PlateSolver,
     private val longitude: Angle,
     private val latitude: Angle,
-) {
+) : Resettable {
 
     private val positions = arrayOfNulls<Position>(3)
 
@@ -57,7 +58,7 @@ data class ThreePointPolarAlignment(
         }
     }
 
-    fun reset() {
+    override fun reset() {
         state = 0
         positions.fill(null)
     }

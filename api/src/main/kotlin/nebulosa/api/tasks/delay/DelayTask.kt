@@ -43,6 +43,12 @@ data class DelayTask(
         }
     }
 
+    override fun reset() {
+        remainingTime = Duration.ZERO
+        waitTime = Duration.ZERO
+        progress = 0.0
+    }
+
     private fun sendEvent() {
         onNext(DelayEvent(this, remainingTime, waitTime, progress))
     }

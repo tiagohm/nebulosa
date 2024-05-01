@@ -5,11 +5,12 @@ import nebulosa.common.concurrency.cancel.CancellationListener
 import nebulosa.common.concurrency.cancel.CancellationSource
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.common.concurrency.latch.CountUpDownLatch
-import nebulosa.common.time.Stopwatch
 import nebulosa.guiding.GuideState
 import nebulosa.guiding.Guider
 import nebulosa.guiding.GuiderListener
 import nebulosa.log.loggerFor
+import java.time.Duration
+import kotlin.system.measureTimeMillis
 
 data class DitherAfterExposureTask(
     @JvmField val guider: Guider?,
@@ -17,7 +18,11 @@ data class DitherAfterExposureTask(
 ) : Task<DitherAfterExposureEvent>(), GuiderListener, CancellationListener {
 
     private val ditherLatch = CountUpDownLatch()
-    private val stopwatch = Stopwatch()
+
+    @Volatile private var state = DitherAfterExposureState.IDLE
+    @Volatile private var dx = 0.0
+    @Volatile private var dy = 0.0
+    @Volatile private var elapsedTime = Duration.ZERO
 
     override fun execute(cancellationToken: CancellationToken) {
         if (guider != null && guider.canDither && request.enabled
@@ -30,27 +35,45 @@ data class DitherAfterExposureTask(
                 cancellationToken.listen(this)
                 guider.registerGuiderListener(this)
                 ditherLatch.countUp()
-                onNext(DitherAfterExposureEvent.Started(this))
-                stopwatch.start()
-                guider.dither(request.amount, request.raOnly)
-                ditherLatch.await()
-                stopwatch.stop()
+
+                state = DitherAfterExposureState.STARTED
+                sendEvent()
+
+                elapsedTime = Duration.ofMillis(measureTimeMillis {
+                    guider.dither(request.amount, request.raOnly)
+                    ditherLatch.await()
+                })
             } finally {
-                onNext(DitherAfterExposureEvent.Finished(this, stopwatch.elapsed))
+                state = DitherAfterExposureState.FINISHED
+                sendEvent()
+
                 guider.unregisterGuiderListener(this)
                 cancellationToken.unlisten(this)
-                stopwatch.reset()
             }
         }
     }
 
     override fun onDithered(dx: Double, dy: Double) {
-        onNext(DitherAfterExposureEvent.Dithered(this, dx, dy))
+        this.dx = dx
+        this.dy = dy
+        state = DitherAfterExposureState.DITHERED
+
         ditherLatch.reset()
     }
 
     override fun onCancelled(source: CancellationSource) {
         ditherLatch.onCancelled(source)
+    }
+
+    override fun reset() {
+        dx = 0.0
+        dy = 0.0
+        elapsedTime = Duration.ZERO
+        state = DitherAfterExposureState.IDLE
+    }
+
+    private fun sendEvent() {
+        onNext(DitherAfterExposureEvent(this, state, dx, dy, elapsedTime))
     }
 
     companion object {

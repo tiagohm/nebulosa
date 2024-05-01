@@ -7,4 +7,4 @@ import nebulosa.api.tasks.delay.DelayTask
 data class DelayAndWaitForSettleTask(
     private val delayTask: DelayTask,
     private val waitForSettleTask: WaitForSettleTask,
-) : SplitTask(arrayOf(delayTask, waitForSettleTask))
+) : SplitTask(listOf(delayTask, waitForSettleTask))

@@ -1,14 +1,15 @@
 package nebulosa.common.concurrency.atomic
 
+import nebulosa.common.Resettable
 import java.util.concurrent.atomic.AtomicLong
 
-class Incrementer(initialValue: Long = 0L) : Number() {
+class Incrementer(initialValue: Long = 0L) : Number(), Resettable {
 
     private val incrementer = AtomicLong(initialValue)
 
     fun increment() = incrementer.incrementAndGet()
 
-    fun reset() = incrementer.set(0)
+    override fun reset() = incrementer.set(0)
 
     fun get() = incrementer.get()
 

@@ -4,6 +4,7 @@ import nebulosa.alpaca.api.AlpacaDeviceService
 import nebulosa.alpaca.api.AlpacaResponse
 import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.indi.client.AlpacaClient
+import nebulosa.common.Resettable
 import nebulosa.common.time.Stopwatch
 import nebulosa.indi.device.*
 import nebulosa.log.loggerFor
@@ -12,7 +13,7 @@ import retrofit2.HttpException
 import java.time.LocalDateTime
 import java.util.*
 
-abstract class ASCOMDevice : Device {
+abstract class ASCOMDevice : Device, Resettable {
 
     protected abstract val device: ConfiguredDevice
     protected abstract val service: AlpacaDeviceService
@@ -53,7 +54,7 @@ abstract class ASCOMDevice : Device {
         processConnected()
     }
 
-    open fun reset() {
+    override fun reset() {
         connected = false
     }
 

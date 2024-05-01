@@ -6,7 +6,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.ForkJoinPool
 
 open class SplitTask(
-    private val tasks: Array<Task<*>>,
+    private val tasks: Collection<Task<*>>,
     private val executor: Executor = EXECUTOR,
 ) : Task<Any>() {
 
@@ -14,11 +14,15 @@ open class SplitTask(
         if (tasks.isEmpty()) {
             return
         } else if (tasks.size == 1) {
-            tasks[0].execute(cancellationToken)
+            tasks.first().execute(cancellationToken)
         } else {
-            val completables = Array(tasks.size) { CompletableFuture.runAsync({ tasks[it].execute(cancellationToken) }, executor) }
-            CompletableFuture.allOf(*completables).join()
+            val completables = tasks.map { CompletableFuture.runAsync({ it.execute(cancellationToken) }, executor) }
+            completables.forEach(CompletableFuture<*>::join)
         }
+    }
+
+    override fun reset() {
+        tasks.forEach { it.reset() }
     }
 
     companion object {
