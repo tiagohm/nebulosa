@@ -3,23 +3,11 @@ package nebulosa.api.cameras
 import java.nio.file.Path
 import java.time.Duration
 
-sealed interface CameraExposureEvent {
-
-    val task: CameraExposureTask
-
-    data class Started(override val task: CameraExposureTask) : CameraExposureEvent
-
-    data class Elapsed(
-        override val task: CameraExposureTask,
-        @JvmField val elapsedTime: Duration,
-        @JvmField val remainingTime: Duration,
-        @JvmField val progress: Double,
-    ) : CameraExposureEvent
-
-    data class Finished(
-        override val task: CameraExposureTask,
-        @JvmField val savePath: Path
-    ) : CameraExposureEvent
-
-    data class Aborted(override val task: CameraExposureTask) : CameraExposureEvent
-}
+data class CameraExposureEvent(
+    @JvmField val task: CameraExposureTask,
+    @JvmField val state: CameraExposureState = CameraExposureState.IDLE,
+    @JvmField val elapsedTime: Duration = Duration.ZERO,
+    @JvmField val remainingTime: Duration = Duration.ZERO,
+    @JvmField val progress: Double = 0.0,
+    @JvmField val savePath: Path? = null,
+)

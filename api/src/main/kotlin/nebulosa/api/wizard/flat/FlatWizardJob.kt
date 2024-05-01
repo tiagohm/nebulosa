@@ -37,14 +37,14 @@ data class FlatWizardJob(
     }
 
     override fun onNext(event: MessageEvent) {
-        if (event is CameraCaptureElapsed) {
-            super.onNext(FlatWizardIsExposuring(step.exposureTime, event))
+        //if (event is CameraCaptureElapsed) {
+        super.onNext(FlatWizardIsExposuring(step.exposureTime, event))
 
-            // Notify Camera window to retrieve new image.
+        // Notify Camera window to retrieve new image.
 //            if (event is CameraExposureFinished) {
 //                super.onNext(event)
 //            }
-        }
+        //}
     }
 
     override fun contains(data: Any): Boolean {

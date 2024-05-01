@@ -13,6 +13,8 @@ data class DelayTask(
         val durationTime = duration.toMillis()
         var remainingTime = durationTime
 
+        val event = DelayEvent(this)
+
         if (!cancellationToken.isDone && remainingTime > 0L) {
             LOG.info("delaying for {} ms", remainingTime)
 
@@ -21,8 +23,7 @@ data class DelayTask(
 
                 if (waitTime > 0L) {
                     val progress = (durationTime - remainingTime) / durationTime.toDouble()
-                    val event = DelayEvent.Elapsed(this, Duration.ofMillis(remainingTime), Duration.ofMillis(waitTime), progress)
-                    onNext(event)
+                    onNext(event.copy(remainingTime = Duration.ofMillis(remainingTime), waitTime = Duration.ofMillis(waitTime), progress = progress))
 
                     Thread.sleep(waitTime)
 
@@ -30,7 +31,7 @@ data class DelayTask(
                 }
             }
 
-            onNext(DelayEvent.Elapsed(this, Duration.ZERO, Duration.ZERO, 1.0))
+            onNext(event.copy(progress = 1.0))
         }
     }
 

@@ -89,7 +89,7 @@ data class CameraCaptureTask(
     @Synchronized
     override fun accept(event: Any) {
         when (event) {
-            is DelayEvent.Elapsed -> {
+            is DelayEvent -> {
                 state = CameraCaptureState.WAITING
                 captureElapsedTime += event.waitTime
                 stepElapsedTime = event.task.duration - event.remainingTime
@@ -103,25 +103,26 @@ data class CameraCaptureTask(
                 }
             }
             is CameraExposureEvent -> {
-                when (event) {
-                    is CameraExposureEvent.Started -> {
+                when (event.state) {
+                    CameraExposureState.STARTED -> {
                         state = CameraCaptureState.EXPOSURE_STARTED
                         prevCaptureElapsedTime = captureElapsedTime
                         exposureCount++
                     }
-                    is CameraExposureEvent.Elapsed -> {
+                    CameraExposureState.ELAPSED -> {
                         state = CameraCaptureState.EXPOSURING
                         captureElapsedTime = prevCaptureElapsedTime + event.elapsedTime
                         stepElapsedTime = event.elapsedTime
                         stepRemainingTime = event.remainingTime
                         stepProgress = event.progress
                     }
-                    is CameraExposureEvent.Finished -> {
+                    CameraExposureState.FINISHED -> {
                         state = CameraCaptureState.EXPOSURE_FINISHED
                         captureElapsedTime = prevCaptureElapsedTime + request.exposureTime
                         savePath = event.savePath
                     }
-                    is CameraExposureEvent.Aborted -> {
+                    CameraExposureState.IDLE,
+                    CameraExposureState.ABORTED -> {
                         state = CameraCaptureState.IDLE
                     }
                 }

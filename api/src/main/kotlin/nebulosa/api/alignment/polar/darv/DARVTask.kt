@@ -76,7 +76,7 @@ data class DARVTask(
 
     override fun accept(event: Any) {
         when (event) {
-            is DelayEvent.Elapsed -> Unit
+            is DelayEvent -> Unit
             is CameraExposureEvent -> Unit
             is GuidePulseEvent -> Unit
         }
