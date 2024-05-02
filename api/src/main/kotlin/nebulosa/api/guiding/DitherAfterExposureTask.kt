@@ -29,7 +29,7 @@ data class DitherAfterExposureTask(
             && guider.state == GuideState.GUIDING
             && !cancellationToken.isDone
         ) {
-            LOG.info("dithering. request={}", request)
+            LOG.info("Dither started. request={}", request)
 
             try {
                 cancellationToken.listen(this)
@@ -49,6 +49,8 @@ data class DitherAfterExposureTask(
 
                 guider.unregisterGuiderListener(this)
                 cancellationToken.unlisten(this)
+
+                LOG.info("Dither finished. request={}", request)
             }
         }
     }
@@ -57,6 +59,8 @@ data class DitherAfterExposureTask(
         this.dx = dx
         this.dy = dy
         state = DitherAfterExposureState.DITHERED
+
+        LOG.info("dithered. dx={}, dy={}", dx, dy)
 
         ditherLatch.reset()
     }

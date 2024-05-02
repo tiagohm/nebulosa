@@ -20,7 +20,7 @@ class DARVExecutor(
     private val messageService: MessageService,
 ) : Consumer<DARVEvent> {
 
-    private val jobs = ConcurrentHashMap.newKeySet<DARVJob>(2)
+    private val jobs = ConcurrentHashMap.newKeySet<DARVJob>(1)
 
     override fun accept(event: DARVEvent) {
         messageService.sendMessage(event)
@@ -35,7 +35,8 @@ class DARVExecutor(
     fun execute(camera: Camera, guideOutput: GuideOutput, request: DARVStartRequest) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(guideOutput.connected) { "${guideOutput.name} Guide Output is not connected" }
-        check(jobs.any { it.task.camera === camera }) { "${camera.name} DARV Job in progress" }
+        check(jobs.any { it.task.camera === camera }) { "${camera.name} DARV Job is already in progress" }
+        check(jobs.any { it.task.guideOutput === guideOutput }) { "${camera.name} DARV Job is already in progress" }
 
         val task = DARVTask(camera, guideOutput, request)
         task.subscribe(this)
@@ -48,8 +49,6 @@ class DARVExecutor(
     }
 
     fun stop(camera: Camera) {
-        jobs.find { it.task.camera === camera }
-            ?.also(jobs::remove)
-            ?.stop()
+        jobs.find { it.task.camera === camera }?.stop()
     }
 }

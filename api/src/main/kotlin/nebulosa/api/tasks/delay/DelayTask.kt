@@ -18,7 +18,7 @@ data class DelayTask(
         var remainingTime = durationTime
 
         if (!cancellationToken.isDone && remainingTime > 0L) {
-            LOG.info("delaying for {} ms", remainingTime)
+            LOG.info("Delay started. duration={}", remainingTime)
 
             while (!cancellationToken.isDone && remainingTime > 0L) {
                 val waitTime = minOf(remainingTime, DELAY_INTERVAL)

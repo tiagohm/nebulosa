@@ -221,7 +221,7 @@ class ImageService(
                     }
                 }
 
-                LOG.info("Found {} minor planets", count)
+                LOG.info("found {} minor planets", count)
             }.whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
         }
@@ -256,7 +256,7 @@ class ImageService(
                     count++
                 }
 
-                LOG.info("Found {} stars/DSOs", count)
+                LOG.info("found {} stars/DSOs", count)
             }.whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
         }

@@ -37,7 +37,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     elapsedTime = 0
     remainingTime = 0
     progress = 0
-    private id = ''
 
     readonly tppaRequest: TPPAStart = {
         capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
@@ -172,7 +171,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('TPPA.ELAPSED', event => {
-            if (event.id === this.id) {
+            if (event.camera === this.camera) {
                 ngZone.run(() => {
                     if (this.status !== 'PAUSING' || event.state === 'PAUSED') {
                         this.status = event.state
@@ -200,7 +199,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('DARV.ELAPSED', event => {
-            if (event.id === this.id) {
+            if (event.camera === this.camera) {
                 ngZone.run(() => {
                     this.status = event.state
                     this.remainingTime = event.remainingTime
@@ -316,30 +315,30 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         this.darvRequest.capture.exposureTime = this.darvRequest.exposureTime * 1000000
         this.darvRequest.capture.exposureDelay = this.darvRequest.initialPause
         await this.openCameraImage()
-        this.id = await this.api.darvStart(this.camera, this.guideOutput, this.darvRequest)
+        await this.api.darvStart(this.camera, this.guideOutput, this.darvRequest)
     }
 
     darvStop() {
-        this.api.darvStop(this.id)
+        this.api.darvStop(this.camera)
     }
 
     async tppaStart() {
         this.alignmentMethod = 'TPPA'
         await this.openCameraImage()
-        this.id = await this.api.tppaStart(this.camera, this.mount, this.tppaRequest)
+        await this.api.tppaStart(this.camera, this.mount, this.tppaRequest)
     }
 
     tppaPause() {
         this.status = 'PAUSING'
-        this.api.tppaPause(this.id)
+        this.api.tppaPause(this.camera)
     }
 
     tppaUnpause() {
-        this.api.tppaUnpause(this.id)
+        this.api.tppaUnpause(this.camera)
     }
 
     tppaStop() {
-        this.api.tppaStop(this.id)
+        this.api.tppaStop(this.camera)
     }
 
     openCameraImage() {

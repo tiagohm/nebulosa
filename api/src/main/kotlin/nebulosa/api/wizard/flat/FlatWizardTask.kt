@@ -48,6 +48,8 @@ data class FlatWizardTask(
 
             exposureTime = (exposureMax + exposureMin).dividedBy(2L)
 
+            LOG.info("Flat Wizard started. camera={}, request={}, exposureTime={}", camera, request, exposureTime)
+
             val cameraRequest = request.captureRequest.copy(
                 exposureTime = exposureTime, frameType = FrameType.LIGHT,
                 autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF,
@@ -74,16 +76,18 @@ data class FlatWizardTask(
             val image = savedPath!!.fits().use { Image.open(it, false) }
 
             val statistics = STATISTICS.compute(image)
-            LOG.info("flat frame captured. duration={}, statistics={}", exposureTime, statistics)
+            LOG.info("flat frame captured. exposureTime={}, statistics={}", exposureTime, statistics)
 
             if (statistics.mean in meanRange) {
                 state = FlatWizardState.CAPTURED
-                LOG.info("Found an optimal exposure time. exposure={}, path={}", exposureTime, savedPath)
+                LOG.info("found an optimal exposure time. exposureTime={}, path={}", exposureTime, savedPath)
                 break
             } else if (statistics.mean < meanRange.start) {
                 exposureMin = exposureTime
+                LOG.info("captured frame is below mean range. exposureTime={}, path={}", exposureTime, savedPath)
             } else {
                 exposureMax = exposureTime
+                LOG.info("captured frame is above mean range. exposureTime={}, path={}", exposureTime, savedPath)
             }
         }
 
@@ -92,6 +96,8 @@ data class FlatWizardTask(
         }
 
         sendEvent()
+
+        LOG.info("Flat Wizard finished. camera={}, request={}, exposureTime={}", camera, request, exposureTime)
     }
 
     private fun sendEvent() {

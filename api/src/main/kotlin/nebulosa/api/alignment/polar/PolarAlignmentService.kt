@@ -27,15 +27,15 @@ class PolarAlignmentService(
         tppaExecutor.execute(camera, mount, tppaStartRequest)
     }
 
-    fun tppaStop(camera: Camera, mount: Mount) {
-        tppaExecutor.stop(camera, mount)
+    fun tppaStop(camera: Camera) {
+        tppaExecutor.stop(camera)
     }
 
-    fun tppaPause(camera: Camera, mount: Mount) {
-        tppaExecutor.pause(camera, mount)
+    fun tppaPause(camera: Camera) {
+        tppaExecutor.pause(camera)
     }
 
-    fun tppaUnpause(camera: Camera, mount: Mount) {
-        tppaExecutor.unpause(camera, mount)
+    fun tppaUnpause(camera: Camera) {
+        tppaExecutor.unpause(camera)
     }
 }

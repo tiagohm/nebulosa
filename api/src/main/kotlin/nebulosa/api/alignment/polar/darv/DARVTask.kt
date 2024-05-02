@@ -15,6 +15,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.log.loggerFor
 import java.nio.file.Files
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -55,6 +56,8 @@ data class DARVTask(
     }
 
     override fun execute(cancellationToken: CancellationToken) {
+        LOG.info("DARV started. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
+
         val a = CompletableFuture.runAsync {
             // CAPTURE.
             cameraExposureTask.execute(cancellationToken)
@@ -72,6 +75,8 @@ data class DARVTask(
         }
 
         CompletableFuture.allOf(a, b).join()
+
+        LOG.info("DARV finished. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
     }
 
     override fun accept(event: Any) {
@@ -88,5 +93,10 @@ data class DARVTask(
         forwardGuidePulseTask.close()
         backwardGuidePulseTask.close()
         super.close()
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<DARVTask>()
     }
 }

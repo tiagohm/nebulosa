@@ -654,7 +654,7 @@ data class WatneyPlateSolver(
             return if (filtered.size >= 8) {
                 filtered
             } else {
-                LOG.info("Not enough matches to perform filtering, with so few matches assuming they're good")
+                LOG.info("not enough matches to perform filtering, with so few matches assuming they're good")
                 matches
             }
         }

@@ -33,18 +33,18 @@ class PolarAlignmentController(
         @RequestBody body: TPPAStartRequest,
     ) = polarAlignmentService.tppaStart(camera, mount, body)
 
-    @PutMapping("tppa/{camera}/{mount}/stop")
-    fun tppaStop(camera: Camera, mount: Mount) {
-        polarAlignmentService.tppaStop(camera, mount)
+    @PutMapping("tppa/{camera}/stop")
+    fun tppaStop(camera: Camera) {
+        polarAlignmentService.tppaStop(camera)
     }
 
-    @PutMapping("tppa/{camera}/{mount}/pause")
-    fun tppaPause(camera: Camera, mount: Mount) {
-        polarAlignmentService.tppaPause(camera, mount)
+    @PutMapping("tppa/{camera}/pause")
+    fun tppaPause(camera: Camera) {
+        polarAlignmentService.tppaPause(camera)
     }
 
-    @PutMapping("tppa/{camera}/{mount}/unpause")
-    fun tppaUnpause(camera: Camera, mount: Mount) {
-        polarAlignmentService.tppaUnpause(camera, mount)
+    @PutMapping("tppa/{camera}/unpause")
+    fun tppaUnpause(camera: Camera) {
+        polarAlignmentService.tppaUnpause(camera)
     }
 }

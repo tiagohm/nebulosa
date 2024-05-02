@@ -14,10 +14,11 @@ import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountEvent
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg
+import nebulosa.math.formatHMS
+import nebulosa.math.formatSignedDMS
 import nebulosa.plate.solving.PlateSolver
 import java.nio.file.Files
 import java.nio.file.Path
@@ -81,9 +82,9 @@ data class TPPATask(
     }
 
     override fun execute(cancellationToken: CancellationToken) {
-        while (!cancellationToken.isDone) {
-            LOG.debug { "executing TPPA. camera=$camera, mount=$mount, request=$request" }
+        LOG.info("TPPA started. camera={}, mount={}, request={}", camera, mount, request)
 
+        while (!cancellationToken.isDone) {
             mount?.tracking(true)
 
             if (cancellationToken.isPaused) {
@@ -124,7 +125,7 @@ data class TPPATask(
                 request.compensateRefraction, cancellationToken
             )
 
-            LOG.info("alignment completed. result=$result")
+            LOG.info("TPPA alignment completed. result=$result")
 
             if (cancellationToken.isDone) return
 
@@ -167,6 +168,11 @@ data class TPPATask(
                         else -> ""
                     }
 
+                    LOG.info(
+                        "TPPA alignment computed. rightAscension={}, declination={}, azimuthError={}, altitudeError={}",
+                        rightAscension.formatHMS(), declination.formatSignedDMS(), azimuthError.formatSignedDMS(), altitudeError.formatSignedDMS(),
+                    )
+
                     sendEvent(TPPAState.COMPUTED)
 
                     continue
@@ -179,6 +185,8 @@ data class TPPATask(
         }
 
         sendEvent(TPPAState.FINISHED)
+
+        LOG.info("TPPA finished. camera={}, mount={}, request={}", camera, mount, request)
     }
 
     private fun sendEvent(state: TPPAState) {

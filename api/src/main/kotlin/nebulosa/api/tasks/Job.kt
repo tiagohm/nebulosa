@@ -10,8 +10,9 @@ abstract class Job : CompletableFuture<Unit>(), Runnable {
 
     abstract val name: String
 
-    @Volatile private var thread: Thread? = null
     private val cancellationToken = CancellationToken()
+
+    @Volatile private var thread: Thread? = null
 
     final override fun run() {
         try {
@@ -20,6 +21,7 @@ abstract class Job : CompletableFuture<Unit>(), Runnable {
             thread = null
             cancellationToken.close()
             complete(Unit)
+            task.close()
         }
     }
 

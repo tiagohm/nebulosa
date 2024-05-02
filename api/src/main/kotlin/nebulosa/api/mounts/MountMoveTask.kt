@@ -49,7 +49,7 @@ data class MountMoveTask(
         ) {
             latch.countUp()
 
-            LOG.info("moving mount. mount={}, ra={}, dec={}", mount, rightAscension.formatHMS(), declination.formatSignedDMS())
+            LOG.info("Mount Move started. mount={}, ra={}, dec={}", mount, rightAscension.formatHMS(), declination.formatSignedDMS())
 
             initialRA = mount.rightAscension
             initialDEC = mount.declination
@@ -70,11 +70,11 @@ data class MountMoveTask(
                 cancellationToken.unlisten(this)
             }
 
-            LOG.info("mount moved. mount={}", mount)
+            LOG.info("Mount Move finished. mount={}, ra={}, dec={}", mount, rightAscension.formatHMS(), declination.formatSignedDMS())
 
             delayTask.execute(cancellationToken)
         } else {
-            LOG.warn("cannot move mount. mount={}", mount)
+            LOG.warn("cannot move mount. mount={}, ra={}, dec={}", mount, rightAscension.formatHMS(), declination.formatSignedDMS())
         }
     }
 

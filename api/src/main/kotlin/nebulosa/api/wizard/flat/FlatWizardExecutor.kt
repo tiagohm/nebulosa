@@ -5,8 +5,6 @@ import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
-import nebulosa.log.info
-import nebulosa.log.loggerFor
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
@@ -18,7 +16,7 @@ class FlatWizardExecutor(
     private val messageService: MessageService,
 ) : Consumer<FlatWizardEvent> {
 
-    private val jobs = ConcurrentHashMap.newKeySet<FlatWizardJob>(2)
+    private val jobs = ConcurrentHashMap.newKeySet<FlatWizardJob>(1)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onCameraEvent(event: CameraEvent) {
@@ -31,9 +29,7 @@ class FlatWizardExecutor(
 
     fun execute(camera: Camera, request: FlatWizardRequest) {
         check(camera.connected) { "camera is not connected" }
-        check(jobs.any { it.task.camera === camera }) { "${camera.name} Camera Flat Wizard is already in progress" }
-
-        LOG.info { "starting flat wizard capture. camera=$camera, request=$request" }
+        check(jobs.any { it.task.camera === camera }) { "${camera.name} Flat Wizard is already in progress" }
 
         val task = FlatWizardTask(camera, request)
         task.subscribe(this)
@@ -47,10 +43,5 @@ class FlatWizardExecutor(
 
     fun stop(camera: Camera) {
         jobs.find { it.task.camera === camera }?.stop()
-    }
-
-    companion object {
-
-        @JvmStatic private val LOG = loggerFor<FlatWizardExecutor>()
     }
 }

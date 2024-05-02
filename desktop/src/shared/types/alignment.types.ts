@@ -1,5 +1,5 @@
 import { Angle } from './atlas.types'
-import { CameraStartCapture } from './camera.types'
+import { Camera, CameraStartCapture } from './camera.types'
 import { GuideDirection } from './guider.types'
 import { PlateSolverPreference, PlateSolverType } from './settings.types'
 
@@ -44,7 +44,7 @@ export interface DARVStart {
 }
 
 export interface DARVElapsed extends MessageEvent {
-    id: string
+    camera: Camera
     remainingTime: number
     progress: number
     state: DARVState
@@ -62,7 +62,7 @@ export interface TPPAStart {
 }
 
 export interface TPPAElapsed extends MessageEvent {
-    id: string
+    camera: Camera
     elapsedTime: number
     stepCount: number
     state: TPPAState

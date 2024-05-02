@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.guiding.DitherAfterExposureEvent
 import nebulosa.api.guiding.DitherAfterExposureTask
-import nebulosa.api.guiding.WaitForSettleEvent
 import nebulosa.api.guiding.WaitForSettleTask
 import nebulosa.api.tasks.Task
 import nebulosa.api.tasks.delay.DelayEvent
@@ -93,6 +92,8 @@ data class CameraCaptureTask(
                 ditherAfterExposureTask.execute(cancellationToken)
             }
         }
+
+        LOG.info("camera capture finished. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
     }
 
     @Synchronized
@@ -104,8 +105,6 @@ data class CameraCaptureTask(
                 stepElapsedTime = event.task.duration - event.remainingTime
                 stepRemainingTime = event.remainingTime
                 stepProgress = event.progress
-            }
-            is WaitForSettleEvent -> {
             }
             is CameraExposureEvent -> {
                 when (event.state) {

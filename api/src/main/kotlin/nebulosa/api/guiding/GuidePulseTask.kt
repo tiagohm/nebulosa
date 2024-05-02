@@ -25,7 +25,7 @@ data class GuidePulseTask(
 
     override fun execute(cancellationToken: CancellationToken) {
         if (guideOutput.pulseGuide(request.duration, request.direction)) {
-            LOG.info("guide pulsing for {} ms at {} direction", request.duration.toMillis(), request.direction)
+            LOG.info("Guide Pulse started. duration={}, direction={}", request.duration.toMillis(), request.direction)
 
             try {
                 cancellationToken.listen(this)
@@ -33,6 +33,8 @@ data class GuidePulseTask(
             } finally {
                 cancellationToken.unlisten(this)
             }
+
+            LOG.info("Guide Pulse finished. duration={}, direction={}", request.duration.toMillis(), request.direction)
         }
     }
 

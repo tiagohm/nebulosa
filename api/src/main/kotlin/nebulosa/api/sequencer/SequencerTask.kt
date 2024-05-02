@@ -15,6 +15,8 @@ import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.mount.Mount
+import nebulosa.log.loggerFor
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -27,6 +29,7 @@ data class SequencerTask(
     @JvmField val camera: Camera,
     @JvmField val plan: SequencePlanRequest,
     @JvmField val guider: Guider? = null,
+    @JvmField val mount: Mount? = null,
     @JvmField val wheel: FilterWheel? = null,
     @JvmField val focuser: Focuser? = null,
 ) : Task<SequencerEvent>(), Consumer<Any> {
@@ -112,12 +115,18 @@ data class SequencerTask(
     }
 
     override fun execute(cancellationToken: CancellationToken) {
+        LOG.info("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, plan={}", camera, mount, wheel, focuser, plan)
+
+        camera.snoop(listOf(mount, wheel, focuser))
+
         for (task in tasks) {
             if (cancellationToken.isDone) break
             currentTask.set(task)
             task.execute(cancellationToken)
             currentTask.set(null)
         }
+
+        LOG.info("Sequencer finished. camera={}, mount={}, wheel={}, focuser={}, plan={}", camera, mount, wheel, focuser, plan)
     }
 
     private fun CameraStartCaptureRequest.wheelMoveTask(): WheelMoveTask? {
@@ -151,5 +160,10 @@ data class SequencerTask(
         override fun execute(cancellationToken: CancellationToken) {
             sequencerId.set(id)
         }
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<SequencerTask>()
     }
 }

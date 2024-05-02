@@ -33,6 +33,8 @@ data class WheelMoveTask(
         if (wheel.connected && position in 1..wheel.count && wheel.position != position) {
             initialPosition = wheel.position
 
+            LOG.info("Filter Wheel Move started. wheel={}, position={}", wheel, position)
+
             try {
                 cancellationToken.listen(latch)
                 latch.countUp()
@@ -40,6 +42,7 @@ data class WheelMoveTask(
                 latch.await()
             } finally {
                 cancellationToken.unlisten(latch)
+                LOG.info("Filter Wheel Move finished. wheel={}, position={}", wheel, position)
             }
         } else {
             LOG.warn("filter wheel not connected or invalid position. position={}, wheel={}", position, wheel)

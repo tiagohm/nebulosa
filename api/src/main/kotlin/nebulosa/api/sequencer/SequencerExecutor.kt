@@ -10,8 +10,6 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserEvent
-import nebulosa.log.info
-import nebulosa.log.loggerFor
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
@@ -50,19 +48,17 @@ class SequencerExecutor(
         wheel: FilterWheel? = null, focuser: Focuser? = null,
     ) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
-        check(jobs.any { it.task.camera === camera }) { "${camera.name} Camera Capture is already in progress" }
+        check(jobs.any { it.task.camera === camera }) { "${camera.name} Sequencer Job is already in progress" }
 
         if (wheel != null) {
             check(wheel.connected) { "${wheel.name} Wheel is not connected" }
-            check(jobs.any { it.task.wheel === wheel }) { "${wheel.name} Wheel Capture is already in progress" }
+            check(jobs.any { it.task.wheel === wheel }) { "${camera.name} Sequencer Job is already in progress" }
         }
 
         if (focuser != null) {
             check(focuser.connected) { "${focuser.name} Focuser is not connected" }
-            check(jobs.any { it.task.focuser === focuser }) { "${focuser.name} Focuser Capture is already in progress" }
+            check(jobs.any { it.task.focuser === focuser }) { "${camera.name} Sequencer Job is already in progress" }
         }
-
-        LOG.info { "starting sequencer. camera=$camera, wheel=$wheel, focuser=$focuser, request=$request" }
 
         val task = SequencerTask(camera, request, guider)
         task.subscribe(this)
@@ -76,10 +72,5 @@ class SequencerExecutor(
 
     fun stop(camera: Camera) {
         jobs.find { it.task.camera === camera }?.stop()
-    }
-
-    companion object {
-
-        @JvmStatic private val LOG = loggerFor<SequencerExecutor>()
     }
 }
