@@ -13,13 +13,12 @@ class SequencerService(
 ) {
 
     @Synchronized
-    fun start(camera: Camera, request: SequencePlanRequest): String {
+    fun start(camera: Camera, request: SequencePlanRequest) {
         val savePath = request.savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
             ?: Path.of("$sequencesPath", (System.currentTimeMillis() / 1000).toString())
 
-        return sequencerExecutor
-            .execute(camera, request.copy(savePath = savePath))
+        sequencerExecutor.execute(camera, request.copy(savePath = savePath))
     }
 
     @Synchronized

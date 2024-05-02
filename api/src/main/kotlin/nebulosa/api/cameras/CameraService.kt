@@ -39,8 +39,7 @@ class CameraService(
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
             ?: Path.of("$capturesPath", camera.name, request.frameType.name)
 
-        cameraCaptureExecutor
-            .execute(camera, request.copy(savePath = savePath))
+        cameraCaptureExecutor.execute(camera, request.copy(savePath = savePath))
     }
 
     @Synchronized
