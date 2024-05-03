@@ -7,7 +7,8 @@ import java.time.Duration
 
 data class CameraCaptureEvent(
     @JvmField val camera: Camera,
-    @JvmField val state: CameraCaptureState,
+    @JvmField val state: CameraCaptureState = CameraCaptureState.IDLE,
+    @JvmField val exposureAmount: Int = 0,
     @JvmField val exposureCount: Int = 0,
     @JvmField val captureRemainingTime: Duration = Duration.ZERO,
     @JvmField val captureElapsedTime: Duration = Duration.ZERO,
@@ -19,5 +20,4 @@ data class CameraCaptureEvent(
 ) : MessageEvent {
 
     override val eventName = "CAMERA.CAPTURE_ELAPSED"
-
 }

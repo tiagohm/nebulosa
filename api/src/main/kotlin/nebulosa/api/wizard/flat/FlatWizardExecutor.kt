@@ -29,7 +29,7 @@ class FlatWizardExecutor(
 
     fun execute(camera: Camera, request: FlatWizardRequest) {
         check(camera.connected) { "camera is not connected" }
-        check(jobs.any { it.task.camera === camera }) { "${camera.name} Flat Wizard is already in progress" }
+        check(jobs.none { it.task.camera === camera }) { "${camera.name} Flat Wizard is already in progress" }
 
         val task = FlatWizardTask(camera, request)
         task.subscribe(this)

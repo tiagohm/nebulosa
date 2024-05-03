@@ -40,8 +40,8 @@ class TPPAExecutor(
     fun execute(camera: Camera, mount: Mount, request: TPPAStartRequest) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(mount.connected) { "${mount.name} Mount is not connected" }
-        check(jobs.any { it.task.camera === camera }) { "${camera.name} TPPA Job is already in progress" }
-        check(jobs.any { it.task.mount === mount }) { "${camera.name} TPPA Job is already in progress" }
+        check(jobs.none { it.task.camera === camera }) { "${camera.name} TPPA Job is already in progress" }
+        check(jobs.none { it.task.mount === mount }) { "${camera.name} TPPA Job is already in progress" }
 
         val solver = plateSolverService.solverFor(request.plateSolver)
         val task = TPPATask(camera, solver, request, mount)

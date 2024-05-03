@@ -35,8 +35,8 @@ class DARVExecutor(
     fun execute(camera: Camera, guideOutput: GuideOutput, request: DARVStartRequest) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(guideOutput.connected) { "${guideOutput.name} Guide Output is not connected" }
-        check(jobs.any { it.task.camera === camera }) { "${camera.name} DARV Job is already in progress" }
-        check(jobs.any { it.task.guideOutput === guideOutput }) { "${camera.name} DARV Job is already in progress" }
+        check(jobs.none { it.task.camera === camera }) { "${camera.name} DARV Job is already in progress" }
+        check(jobs.none { it.task.guideOutput === guideOutput }) { "${camera.name} DARV Job is already in progress" }
 
         val task = DARVTask(camera, guideOutput, request)
         task.subscribe(this)

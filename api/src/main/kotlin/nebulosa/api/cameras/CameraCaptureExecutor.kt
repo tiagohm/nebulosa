@@ -32,7 +32,7 @@ class CameraCaptureExecutor(
     @Synchronized
     fun execute(camera: Camera, request: CameraStartCaptureRequest) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
-        check(jobs.any { it.task.camera === camera }) { "${camera.name} Camera Capture is already in progress" }
+        check(jobs.none { it.task.camera === camera }) { "${camera.name} Camera Capture is already in progress" }
 
         val task = CameraCaptureTask(camera, request, guider)
         task.subscribe(this)

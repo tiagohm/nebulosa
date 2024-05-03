@@ -5,5 +5,4 @@ enum class CameraExposureState {
     STARTED,
     ELAPSED,
     FINISHED,
-    ABORTED,
 }

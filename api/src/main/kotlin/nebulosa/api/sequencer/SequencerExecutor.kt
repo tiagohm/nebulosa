@@ -48,16 +48,16 @@ class SequencerExecutor(
         wheel: FilterWheel? = null, focuser: Focuser? = null,
     ) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
-        check(jobs.any { it.task.camera === camera }) { "${camera.name} Sequencer Job is already in progress" }
+        check(jobs.none { it.task.camera === camera }) { "${camera.name} Sequencer Job is already in progress" }
 
         if (wheel != null) {
             check(wheel.connected) { "${wheel.name} Wheel is not connected" }
-            check(jobs.any { it.task.wheel === wheel }) { "${camera.name} Sequencer Job is already in progress" }
+            check(jobs.none { it.task.wheel === wheel }) { "${camera.name} Sequencer Job is already in progress" }
         }
 
         if (focuser != null) {
             check(focuser.connected) { "${focuser.name} Focuser is not connected" }
-            check(jobs.any { it.task.focuser === focuser }) { "${camera.name} Sequencer Job is already in progress" }
+            check(jobs.none { it.task.focuser === focuser }) { "${camera.name} Sequencer Job is already in progress" }
         }
 
         val task = SequencerTask(camera, request, guider)

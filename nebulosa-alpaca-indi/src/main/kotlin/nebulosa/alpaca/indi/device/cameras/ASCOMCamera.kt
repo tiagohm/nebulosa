@@ -348,7 +348,7 @@ data class ASCOMCamera(
             }
 
             if (prevExposuring != exposuring) sender.fireOnEventReceived(CameraExposuringChanged(this))
-            if (prevExposureState != exposureState) sender.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+            if (prevExposureState != exposureState) sender.fireOnEventReceived(CameraExposureStateChanged(this))
 
             if (exposuring) {
                 service.percentCompleted(device.number).doRequest {

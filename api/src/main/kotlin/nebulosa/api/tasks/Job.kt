@@ -2,7 +2,7 @@ package nebulosa.api.tasks
 
 import nebulosa.common.concurrency.cancel.CancellationToken
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class Job : CompletableFuture<Unit>(), Runnable {
 
@@ -11,13 +11,19 @@ abstract class Job : CompletableFuture<Unit>(), Runnable {
     abstract val name: String
 
     private val cancellationToken = CancellationToken()
+    private val running = AtomicBoolean()
 
     @Volatile private var thread: Thread? = null
 
+    val isRunning
+        get() = running.get()
+
     final override fun run() {
         try {
+            running.set(true)
             task.execute(cancellationToken)
         } finally {
+            running.set(false)
             thread = null
             cancellationToken.close()
             complete(Unit)
@@ -28,25 +34,20 @@ abstract class Job : CompletableFuture<Unit>(), Runnable {
     /**
      * Runs this Job in a new thread.
      */
+    @Synchronized
     fun start() {
-        thread = Thread(this, name)
-        thread!!.isDaemon = false
-        thread!!.start()
+        if (thread == null && !running.get()) {
+            thread = Thread(this, name)
+            thread!!.isDaemon = false
+            thread!!.start()
+        }
     }
 
     /**
-     * Runs this Job using the [executor].
-     */
-    fun start(executor: Executor) {
-        executor.execute(this)
-    }
-
-    /**
-     * Stops immediately this Job.
+     * Stops gracefully this Job.
      */
     fun stop() {
         cancellationToken.cancel()
-        task.close()
     }
 
     /**

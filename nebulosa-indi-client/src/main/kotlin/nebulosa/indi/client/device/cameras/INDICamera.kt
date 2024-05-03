@@ -161,12 +161,12 @@ internal open class INDICamera(
                                 sender.fireOnEventReceived(CameraExposureAborted(this))
                             } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
                                 sender.fireOnEventReceived(CameraExposureFinished(this))
-                            } else if (exposureState == PropertyState.ALERT && prevExposureState != PropertyState.ALERT) {
+                            } else if (exposureState == PropertyState.ALERT) {
                                 sender.fireOnEventReceived(CameraExposureFailed(this))
                             }
 
                             if (prevExposureState != exposureState) {
-                                sender.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+                                sender.fireOnEventReceived(CameraExposureStateChanged(this))
                             }
                         }
                     }
@@ -330,6 +330,11 @@ internal open class INDICamera(
 
     override fun startCapture(exposureTime: Duration) {
         sendNewSwitch("CCD_TRANSFER_FORMAT", "FORMAT_FITS" to true)
+
+        if (exposureState != PropertyState.IDLE) {
+            exposureState = PropertyState.IDLE
+            sender.fireOnEventReceived(CameraExposureStateChanged(this))
+        }
 
         val exposureInSeconds = exposureTime.toNanos() / NANO_TO_SECONDS
 

@@ -20,7 +20,8 @@ data class CameraCaptureTask(
     @JvmField val camera: Camera,
     @JvmField val request: CameraStartCaptureRequest,
     @JvmField val guider: Guider? = null,
-    @JvmField val delayOnFirstExposure: Boolean = false,
+    private val useFirstExposure: Boolean = false,
+    private val exposureAmount: Int = request.exposureAmount,
 ) : Task<CameraCaptureEvent>(), Consumer<Any> {
 
     private val delayTask = DelayTask(request.exposureDelay)
@@ -41,7 +42,7 @@ data class CameraCaptureTask(
     @Volatile private var savePath: Path? = null
 
     @JvmField @JsonIgnore val estimatedCaptureTime: Duration = if (request.isLoop) Duration.ZERO
-    else Duration.ofNanos(request.exposureTime.toNanos() * request.exposureAmount + request.exposureDelay.toNanos() * (request.exposureAmount - if (delayOnFirstExposure) 0 else 1))
+    else Duration.ofNanos(request.exposureTime.toNanos() * request.exposureAmount + request.exposureDelay.toNanos() * (request.exposureAmount - if (useFirstExposure) 0 else 1))
 
     init {
         delayTask.subscribe(this)
@@ -58,21 +59,24 @@ data class CameraCaptureTask(
     }
 
     override fun execute(cancellationToken: CancellationToken) {
-        LOG.info("camera capture started. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
+        LOG.info("Camera Capture started. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
 
         while (!cancellationToken.isDone &&
-            (request.isLoop || exposureCount < request.exposureAmount)
+            (request.isLoop || exposureCount < exposureAmount)
         ) {
             if (exposureCount == 0) {
+                state = CameraCaptureState.CAPTURE_STARTED
+                sendEvent()
+
                 if (guider != null) {
-                    if (delayOnFirstExposure) {
+                    if (useFirstExposure) {
                         // DELAY & WAIT FOR SETTLE.
                         delayAndWaitForSettleSplitTask.execute(cancellationToken)
                     } else {
                         // WAIT FOR SETTLE.
                         waitForSettleTask.execute(cancellationToken)
                     }
-                } else if (delayOnFirstExposure) {
+                } else if (useFirstExposure) {
                     // DELAY.
                     delayTask.execute(cancellationToken)
                 }
@@ -88,12 +92,17 @@ data class CameraCaptureTask(
             cameraExposureTask.execute(cancellationToken)
 
             // DITHER.
-            if (guider != null && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0) {
+            if (!cancellationToken.isDone && guider != null && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0) {
                 ditherAfterExposureTask.execute(cancellationToken)
             }
         }
 
-        LOG.info("camera capture finished. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
+        if (state != CameraCaptureState.CAPTURE_FINISHED) {
+            state = CameraCaptureState.CAPTURE_FINISHED
+            sendEvent()
+        }
+
+        LOG.info("Camera Capture finished. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
     }
 
     @Synchronized
@@ -125,30 +134,32 @@ data class CameraCaptureTask(
                         captureElapsedTime = prevCaptureElapsedTime + request.exposureTime
                         savePath = event.savedPath
                     }
-                    CameraExposureState.IDLE,
-                    CameraExposureState.ABORTED -> {
-                        state = CameraCaptureState.IDLE
+                    CameraExposureState.IDLE -> {
+                        state = CameraCaptureState.CAPTURE_FINISHED
                     }
                 }
             }
-            is DitherAfterExposureEvent -> {
-            }
+            is DitherAfterExposureEvent -> return
             else -> return LOG.warn("unknown event: {}", event)
         }
 
+        sendEvent()
+    }
+
+    private fun sendEvent() {
         if (state != CameraCaptureState.IDLE && !request.isLoop) {
             captureRemainingTime = if (estimatedCaptureTime > captureElapsedTime) estimatedCaptureTime - captureElapsedTime else Duration.ZERO
             captureProgress = (estimatedCaptureTime - captureRemainingTime).toNanos().toDouble() / estimatedCaptureTime.toNanos()
         }
 
-        val cameraCaptureEvent = CameraCaptureEvent(
-            camera, state, exposureCount,
+        val event = CameraCaptureEvent(
+            camera, state, request.exposureAmount, exposureCount,
             captureRemainingTime, captureElapsedTime, captureProgress,
             stepRemainingTime, stepElapsedTime, stepProgress,
             savePath
         )
 
-        onNext(cameraCaptureEvent)
+        onNext(event)
     }
 
     override fun close() {

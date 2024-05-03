@@ -42,14 +42,13 @@ export class CameraExposureComponent {
             this.state = 'EXPOSURING'
         } else if (event.state === 'EXPOSURE_STARTED') {
             this.state = 'EXPOSURING'
-        } else if (event.state === 'IDLE' ||
-            (!looping && event.state === 'CAPTURE_FINISHED') ||
-            (!this.capture.looping && !this.capture.remainingTime)) {
-            this.state = 'IDLE'
+        } else if (event.state === 'IDLE' || event.state === 'CAPTURE_FINISHED') {
+            this.reset()
         }
 
-        return this.state !== undefined && this.state !== 'CAPTURE_FINISHED'
-            && this.state !== 'IDLE' && !event.aborted
+        return this.state !== undefined
+            && this.state !== 'CAPTURE_FINISHED'
+            && this.state !== 'IDLE'
     }
 
     reset() {

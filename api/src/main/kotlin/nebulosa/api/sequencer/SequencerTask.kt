@@ -49,11 +49,8 @@ data class SequencerTask(
 
         initialDelayTask.subscribe(this)
 
-        fun mapRequest(request: CameraStartCaptureRequest, exposureAmount: Int = request.exposureAmount): CameraStartCaptureRequest {
-            return request.copy(
-                savePath = plan.savePath, autoSave = true, autoSubFolderMode = plan.autoSubFolderMode,
-                exposureAmount = exposureAmount
-            )
+        fun mapRequest(request: CameraStartCaptureRequest): CameraStartCaptureRequest {
+            return request.copy(savePath = plan.savePath, autoSave = true, autoSubFolderMode = plan.autoSubFolderMode)
         }
 
         if (plan.captureMode == SequenceCaptureMode.FULLY || usedEntries.size == 1) {
@@ -74,8 +71,8 @@ data class SequencerTask(
             }
         } else {
             val sequenceIdTasks = usedEntries.map { SequencerIdTask(plan.entries.indexOf(it) + 1) }
-            val requests = usedEntries.map { mapRequest(it, 1) }
-            val cameraCaptureTasks = requests.mapIndexed { i, req -> CameraCaptureTask(camera, req, guider, i > 0) }
+            val requests = usedEntries.map { mapRequest(it) }
+            val cameraCaptureTasks = requests.mapIndexed { i, req -> CameraCaptureTask(camera, req, guider, i > 0, 1) }
             val wheelMoveTasks = requests.map { it.wheelMoveTask() }
             val count = IntArray(requests.size) { usedEntries[it].exposureAmount }
 
