@@ -31,6 +31,9 @@ data class CameraExposureTask(
     @Volatile private var progress = 0.0
     @Volatile private var savedPath: Path? = null
 
+    val isAborted
+        get() = aborted.get()
+
     fun handleCameraEvent(event: CameraEvent) {
         if (event.device === camera) {
             when (event) {
@@ -59,6 +62,8 @@ data class CameraExposureTask(
     override fun execute(cancellationToken: CancellationToken) {
         if (camera.connected && !aborted.get()) {
             LOG.info("Camera Exposure started. camera={}, request={}", camera, request)
+
+            cancellationToken.waitForPause()
 
             latch.countUp()
 

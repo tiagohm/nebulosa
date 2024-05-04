@@ -2,7 +2,6 @@ package nebulosa.api.cameras
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.guiding.DitherAfterExposureEvent
 import nebulosa.api.guiding.DitherAfterExposureTask
 import nebulosa.api.guiding.WaitForSettleTask
 import nebulosa.api.tasks.Task
@@ -62,7 +61,7 @@ data class CameraCaptureTask(
         LOG.info("Camera Capture started. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
 
         while (!cancellationToken.isDone &&
-            (request.isLoop || exposureCount < exposureAmount)
+            (exposureAmount <= 0 || exposureCount < exposureAmount)
         ) {
             if (exposureCount == 0) {
                 state = CameraCaptureState.CAPTURE_STARTED
@@ -97,7 +96,7 @@ data class CameraCaptureTask(
             }
         }
 
-        if (state != CameraCaptureState.CAPTURE_FINISHED) {
+        if (state != CameraCaptureState.CAPTURE_FINISHED && (cameraExposureTask.isAborted || exposureCount >= exposureAmount)) {
             state = CameraCaptureState.CAPTURE_FINISHED
             sendEvent()
         }
