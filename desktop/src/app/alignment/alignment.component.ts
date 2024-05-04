@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -34,9 +35,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     running = false
     alignmentMethod?: AlignmentMethod
     status: DARVState | TPPAState = 'IDLE'
-    elapsedTime = 0
-    remainingTime = 0
-    progress = 0
 
     readonly tppaRequest: TPPAStart = {
         capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
@@ -69,6 +67,9 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     readonly darvHemispheres: Hemisphere[] = ['NORTHERN', 'SOUTHERN']
     darvHemisphere: Hemisphere = 'NORTHERN'
     darvDirection?: GuideDirection
+
+    @ViewChild('cameraExposure')
+    private readonly cameraExposure!: CameraExposureComponent
 
     constructor(
         app: AppComponent,
@@ -171,14 +172,13 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('TPPA.ELAPSED', event => {
-            if (event.camera === this.camera) {
+            if (event.camera.id === this.camera?.id) {
                 ngZone.run(() => {
                     if (this.status !== 'PAUSING' || event.state === 'PAUSED') {
                         this.status = event.state
                     }
 
                     this.running = event.state !== 'FINISHED'
-                    this.elapsedTime = event.elapsedTime
 
                     if (event.state === 'COMPUTED') {
                         this.tppaAzimuthError = event.azimuthError
@@ -190,30 +190,20 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                         this.tppaRightAscension = event.rightAscension
                         this.tppaDeclination = event.declination
                     }
-
-                    if (!this.running) {
-                        this.alignmentMethod = undefined
-                    }
                 })
             }
         })
 
         electron.on('DARV.ELAPSED', event => {
-            if (event.camera === this.camera) {
+            if (event.camera.id === this.camera?.id) {
                 ngZone.run(() => {
                     this.status = event.state
-                    this.remainingTime = event.remainingTime
-                    this.progress = event.progress
-                    this.running = event.remainingTime > 0
+                    this.running = this.cameraExposure.handleCameraCaptureEvent(event.capture)
 
                     if (event.state === 'FORWARD' || event.state === 'BACKWARD') {
                         this.darvDirection = event.direction
                     } else {
                         this.darvDirection = undefined
-                    }
-
-                    if (!this.running) {
-                        this.alignmentMethod = undefined
                     }
                 })
             }

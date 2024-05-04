@@ -2,6 +2,7 @@ package nebulosa.api.alignment.polar.darv
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
@@ -18,11 +19,11 @@ import java.util.concurrent.ConcurrentHashMap
 @Subscriber
 class DARVExecutor(
     private val messageService: MessageService,
-) : Consumer<DARVEvent> {
+) : Consumer<MessageEvent> {
 
     private val jobs = ConcurrentHashMap.newKeySet<DARVJob>(1)
 
-    override fun accept(event: DARVEvent) {
+    override fun accept(event: MessageEvent) {
         messageService.sendMessage(event)
     }
 

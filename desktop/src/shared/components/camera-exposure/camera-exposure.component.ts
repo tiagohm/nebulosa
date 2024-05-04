@@ -9,7 +9,7 @@ import { CameraCaptureElapsed, CameraCaptureState, EMPTY_CAMERA_CAPTURE_INFO, EM
 export class CameraExposureComponent {
 
     @Input()
-    state?: CameraCaptureState = 'IDLE'
+    info?: string
 
     @Input()
     showRemainingTime: boolean = true
@@ -19,6 +19,8 @@ export class CameraExposureComponent {
 
     @Input()
     readonly capture = structuredClone(EMPTY_CAMERA_CAPTURE_INFO)
+
+    state?: CameraCaptureState = 'IDLE'
 
     handleCameraCaptureEvent(event: CameraCaptureElapsed, looping: boolean = false) {
         this.capture.elapsedTime = event.captureElapsedTime

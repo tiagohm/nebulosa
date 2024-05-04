@@ -43,7 +43,7 @@ data class GuidePulseTask(
     }
 
     override fun accept(event: DelayEvent) {
-        onNext(GuidePulseEvent.Elapsed(event.remainingTime, event.progress))
+        onNext(GuidePulseEvent(this, event.remainingTime, event.progress))
     }
 
     override fun close() {

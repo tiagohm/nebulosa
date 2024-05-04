@@ -20,4 +20,11 @@ data class CameraCaptureEvent(
 ) : MessageEvent {
 
     override val eventName = "CAMERA.CAPTURE_ELAPSED"
+
+    companion object {
+
+        @JvmStatic
+        fun exposureFinished(camera: Camera, savePath: Path) =
+            CameraCaptureEvent(camera, CameraCaptureState.EXPOSURE_FINISHED, savePath = savePath)
+    }
 }

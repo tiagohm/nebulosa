@@ -1,6 +1,6 @@
 <div class="flex flex-column align-items-start justify-content-center gap-1">
     <span class="text-left flex align-items-center gap-1">
-        <i class="mdi mdi-information text-blue-600"></i> {{ (state ?? 'IDLE') | enum | lowercase }}
+        <i class="mdi mdi-information text-blue-600"></i> {{ (info || state || 'IDLE') | enum | lowercase }}
     </span>
 
     <span class="flex flex-row gap-1px">
@@ -28,7 +28,7 @@
         </span>
         }
 
-        @if (state === 'EXPOSURING' || state === 'WAITING') {
+        @if (capture.amount !== 1 && (state === 'EXPOSURING' || state === 'WAITING')) {
         <span class="bg-cyan-300 state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
               (click)="showRemainingTime = !showRemainingTime">
             <span class="flex align-items-center gap-1" *ngIf="showRemainingTime">

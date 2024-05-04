@@ -139,7 +139,6 @@ data class CameraCaptureTask(
                     }
                 }
             }
-            is DitherAfterExposureEvent -> return
             else -> return LOG.warn("unknown event: {}", event)
         }
 
