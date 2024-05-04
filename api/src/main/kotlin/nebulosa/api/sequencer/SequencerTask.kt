@@ -1,8 +1,11 @@
 package nebulosa.api.sequencer
 
 import io.reactivex.rxjava3.functions.Consumer
+import nebulosa.api.cameras.CameraCaptureEvent
+import nebulosa.api.cameras.CameraCaptureState
 import nebulosa.api.cameras.CameraCaptureTask
 import nebulosa.api.cameras.CameraStartCaptureRequest
+import nebulosa.api.messages.MessageEvent
 import nebulosa.api.tasks.Task
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
@@ -17,6 +20,7 @@ import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount
 import nebulosa.log.loggerFor
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -32,7 +36,7 @@ data class SequencerTask(
     @JvmField val mount: Mount? = null,
     @JvmField val wheel: FilterWheel? = null,
     @JvmField val focuser: Focuser? = null,
-) : Task<SequencerEvent>(), Consumer<Any> {
+) : Task<MessageEvent>(), Consumer<Any> {
 
     private val usedEntries = plan.entries.filter { it.enabled }
 
@@ -44,10 +48,16 @@ data class SequencerTask(
 
     @Volatile private var estimatedCaptureTime = initialDelayTask.duration
 
+    @Volatile private var elapsedTime = Duration.ZERO
+    @Volatile private var prevElapsedTime = Duration.ZERO
+    @Volatile private var remainingTime = Duration.ZERO
+    @Volatile private var progress = 0.0
+
     init {
         require(usedEntries.isNotEmpty()) { "no entries found" }
 
         initialDelayTask.subscribe(this)
+        tasks.add(initialDelayTask)
 
         fun mapRequest(request: CameraStartCaptureRequest): CameraStartCaptureRequest {
             return request.copy(savePath = plan.savePath, autoSave = true, autoSubFolderMode = plan.autoSubFolderMode)
@@ -58,7 +68,7 @@ data class SequencerTask(
                 val request = mapRequest(usedEntries[i])
 
                 // ID.
-                tasks.add(SequencerIdTask(plan.entries.indexOf(usedEntries[i]) + 1))
+                tasks.add(SequencerIdTask(plan.entries.indexOfFirst { it === usedEntries[i] } + 1))
 
                 // FILTER WHEEL.
                 request.wheelMoveTask()?.also(tasks::add)
@@ -70,7 +80,7 @@ data class SequencerTask(
                 tasks.add(cameraCaptureTask)
             }
         } else {
-            val sequenceIdTasks = usedEntries.map { SequencerIdTask(plan.entries.indexOf(it) + 1) }
+            val sequenceIdTasks = usedEntries.map { req -> SequencerIdTask(plan.entries.indexOfFirst { it === req } + 1) }
             val requests = usedEntries.map { mapRequest(it) }
             val cameraCaptureTasks = requests.mapIndexed { i, req -> CameraCaptureTask(camera, req, guider, i > 0, 1) }
             val wheelMoveTasks = requests.map { it.wheelMoveTask() }
@@ -123,6 +133,12 @@ data class SequencerTask(
             currentTask.set(null)
         }
 
+        if (remainingTime.toMillis() > 0L) {
+            remainingTime = Duration.ZERO
+            progress = 1.0
+            sendEvent()
+        }
+
         LOG.info("Sequencer finished. camera={}, mount={}, wheel={}, focuser={}, plan={}", camera, mount, wheel, focuser, plan)
     }
 
@@ -146,15 +162,44 @@ data class SequencerTask(
         when (event) {
             is DelayEvent -> {
                 if (event.task === initialDelayTask) {
-
+                    elapsedTime += event.waitTime
+                    computeRemainingTimeAndProgress()
+                    sendEvent()
                 }
             }
+            is CameraCaptureEvent -> {
+                when (event.state) {
+                    CameraCaptureState.CAPTURE_STARTED -> {
+                        prevElapsedTime = elapsedTime
+                    }
+                    CameraCaptureState.EXPOSURING, CameraCaptureState.WAITING -> {
+                        elapsedTime = prevElapsedTime + event.captureElapsedTime
+                        computeRemainingTimeAndProgress()
+                    }
+                    CameraCaptureState.EXPOSURE_FINISHED -> {
+                        onNext(event)
+                    }
+                    else -> Unit
+                }
+
+                sendEvent(event)
+            }
         }
+    }
+
+    private fun computeRemainingTimeAndProgress() {
+        remainingTime = if (estimatedCaptureTime > elapsedTime) estimatedCaptureTime - elapsedTime else Duration.ZERO
+        progress = (estimatedCaptureTime - remainingTime).toNanos().toDouble() / estimatedCaptureTime.toNanos()
+    }
+
+    private fun sendEvent(capture: CameraCaptureEvent? = null) {
+        onNext(SequencerEvent(sequencerId.get(), elapsedTime, remainingTime, progress, capture))
     }
 
     private inner class SequencerIdTask(private val id: Int) : Task<Unit>() {
 
         override fun execute(cancellationToken: CancellationToken) {
+            LOG.info("Sequence started. id={}", id)
             sequencerId.set(id)
         }
     }

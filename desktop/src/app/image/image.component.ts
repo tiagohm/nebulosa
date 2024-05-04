@@ -1083,7 +1083,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         } else {
             const mount = await this.deviceMenu.show(mounts)
 
-            if (mount && mount.connected) {
+            if (mount && mount !== 'NONE' && mount.connected) {
                 action(mount)
                 return true
             }

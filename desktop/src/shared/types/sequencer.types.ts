@@ -1,5 +1,6 @@
 import { AutoSubFolderMode, Camera, CameraCaptureElapsed, CameraStartCapture, Dither } from './camera.types'
 import { Focuser } from './focuser.types'
+import { Mount } from './mount.types'
 import { FilterWheel } from './wheel.types'
 
 export type SequenceCaptureMode = 'FULLY' | 'INTERLEAVED'
@@ -35,6 +36,7 @@ export interface SequencePlan {
     dither: Dither
     autoFocus: AutoFocusAfterConditions
     camera?: Camera
+    mount?: Mount
     wheel?: FilterWheel
     focuser?: Focuser
 }

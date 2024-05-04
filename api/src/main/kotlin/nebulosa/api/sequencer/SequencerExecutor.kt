@@ -2,6 +2,7 @@ package nebulosa.api.sequencer
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
@@ -10,6 +11,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserEvent
+import nebulosa.indi.device.mount.Mount
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
@@ -20,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
 class SequencerExecutor(
     private val messageService: MessageService,
     private val guider: Guider,
-) : Consumer<SequencerEvent> {
+) : Consumer<MessageEvent> {
 
     private val jobs = ConcurrentHashMap.newKeySet<SequencerJob>(1)
 
@@ -39,28 +41,26 @@ class SequencerExecutor(
         // jobs.find { it.task.focuser === event.device }?.handleFocuserEvent(event)
     }
 
-    override fun accept(event: SequencerEvent) {
+    override fun accept(event: MessageEvent) {
         messageService.sendMessage(event)
     }
 
     fun execute(
         camera: Camera, request: SequencePlanRequest,
-        wheel: FilterWheel? = null, focuser: Focuser? = null,
+        mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null,
     ) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(jobs.none { it.task.camera === camera }) { "${camera.name} Sequencer Job is already in progress" }
 
-        if (wheel != null) {
-            check(wheel.connected) { "${wheel.name} Wheel is not connected" }
+        if (wheel != null && wheel.connected) {
             check(jobs.none { it.task.wheel === wheel }) { "${camera.name} Sequencer Job is already in progress" }
         }
 
-        if (focuser != null) {
-            check(focuser.connected) { "${focuser.name} Focuser is not connected" }
+        if (focuser != null && focuser.connected) {
             check(jobs.none { it.task.focuser === focuser }) { "${camera.name} Sequencer Job is already in progress" }
         }
 
-        val task = SequencerTask(camera, request, guider)
+        val task = SequencerTask(camera, request, guider, mount, wheel, focuser)
         task.subscribe(this)
 
         with(SequencerJob(task)) {
