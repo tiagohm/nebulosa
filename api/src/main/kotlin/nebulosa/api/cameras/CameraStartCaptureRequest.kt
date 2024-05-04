@@ -6,7 +6,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.beans.converters.time.DurationDeserializer
-import nebulosa.api.beans.converters.time.DurationInMicrosecondsSerializer
+import nebulosa.api.beans.converters.time.DurationSerializer
 import nebulosa.api.guiding.DitherAfterExposureRequest
 import nebulosa.indi.device.camera.FrameType
 import org.hibernate.validator.constraints.Range
@@ -20,11 +20,11 @@ import java.time.temporal.ChronoUnit
 data class CameraStartCaptureRequest(
     @JvmField val enabled: Boolean = true,
     // Capture.
-    @field:DurationMin(nanos = 1000L) @field:DurationMax(minutes = 60L) @field:JsonSerialize(using = DurationInMicrosecondsSerializer::class)
+    @field:DurationMin(nanos = 1000L) @field:DurationMax(minutes = 60L) @field:JsonSerialize(using = DurationSerializer::class)
     @JvmField val exposureTime: Duration = Duration.ZERO,
     @field:Range(min = 0L, max = 1000L) @JvmField val exposureAmount: Int = 1, // 0 = looping
-    @field:JsonDeserialize(using = DurationDeserializer::class) @field:DurationUnit(ChronoUnit.SECONDS)
-    @field:DurationMin(nanos = 0L) @field:DurationMax(seconds = 60L) @field:JsonSerialize(using = DurationInMicrosecondsSerializer::class)
+    @field:JsonDeserialize(using = DurationDeserializer::class) @field:JsonSerialize(using = DurationSerializer::class)
+    @field:DurationUnit(ChronoUnit.SECONDS) @field:DurationMin(nanos = 0L) @field:DurationMax(seconds = 60L)
     @JvmField val exposureDelay: Duration = Duration.ZERO,
     @field:PositiveOrZero @JvmField val x: Int = 0,
     @field:PositiveOrZero @JvmField val y: Int = 0,

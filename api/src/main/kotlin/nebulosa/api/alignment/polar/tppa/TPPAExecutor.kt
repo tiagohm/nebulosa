@@ -7,7 +7,6 @@ import nebulosa.api.solver.PlateSolverService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.mount.MountEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
@@ -29,11 +28,6 @@ class TPPAExecutor(
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onCameraEvent(event: CameraEvent) {
         jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
-    }
-
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onMountEvent(event: MountEvent) {
-        jobs.find { it.task.mount === event.device }?.handleMountEvent(event)
     }
 
     @Synchronized

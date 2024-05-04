@@ -40,10 +40,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
         plateSolver: structuredClone(EMPTY_PLATE_SOLVER_PREFERENCE),
         startFromCurrentPosition: true,
-        eastDirection: true,
+        stepDirection: 'EAST',
         compensateRefraction: true,
         stopTrackingWhenDone: true,
-        stepDistance: 10,
+        stepDuration: 5,
     }
 
     readonly plateSolverTypes = Array.from(DEFAULT_SOLVER_TYPES)
@@ -52,8 +52,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     tppaAltitudeError: Angle = `00°00'00"`
     tppaAltitudeErrorDirection = ''
     tppaTotalError: Angle = `00°00'00"`
-    tppaRightAscension: Angle = '00h00m00s'
-    tppaDeclination: Angle = `00°00'00"`
 
     readonly darvRequest: DARVStart = {
         capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
@@ -64,7 +62,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     readonly driftExposureUnit = ExposureTimeUnit.SECOND
-    readonly darvHemispheres: Hemisphere[] = ['NORTHERN', 'SOUTHERN']
     darvHemisphere: Hemisphere = 'NORTHERN'
     darvDirection?: GuideDirection
 
@@ -174,10 +171,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         electron.on('TPPA.ELAPSED', event => {
             if (event.camera.id === this.camera?.id) {
                 ngZone.run(() => {
-                    if (this.status !== 'PAUSING' || event.state === 'PAUSED') {
-                        this.status = event.state
-                    }
-
+                    this.status = event.state
                     this.running = event.state !== 'FINISHED'
 
                     if (event.state === 'COMPUTED') {
@@ -186,9 +180,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                         this.tppaAzimuthErrorDirection = event.azimuthErrorDirection
                         this.tppaAltitudeErrorDirection = event.altitudeErrorDirection
                         this.tppaTotalError = event.totalError
-                    } else if (event.state === 'SOLVED' || event.state === 'SLEWING') {
-                        this.tppaRightAscension = event.rightAscension
-                        this.tppaDeclination = event.declination
+                    } else if (event.state === 'FINISHED') {
+                        this.cameraExposure.reset()
                     }
                 })
             }
@@ -319,7 +312,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     tppaPause() {
-        this.status = 'PAUSING'
         this.api.tppaPause(this.camera)
     }
 
@@ -339,10 +331,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         const preference = this.preference.alignmentPreference.get()
 
         this.tppaRequest.startFromCurrentPosition = preference.tppaStartFromCurrentPosition
-        this.tppaRequest.eastDirection = preference.tppaEastDirection
+        this.tppaRequest.stepDirection = preference.tppaStepDirection
         this.tppaRequest.compensateRefraction = preference.tppaCompensateRefraction
         this.tppaRequest.stopTrackingWhenDone = preference.tppaStopTrackingWhenDone
-        this.tppaRequest.stepDistance = preference.tppaStepDistance
+        this.tppaRequest.stepDuration = preference.tppaStepDuration
         this.tppaRequest.plateSolver.type = preference.tppaPlateSolverType
         this.darvRequest.initialPause = preference.darvInitialPause
         this.darvRequest.exposureTime = preference.darvExposureTime
@@ -365,10 +357,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
         const preference: AlignmentPreference = {
             tppaStartFromCurrentPosition: this.tppaRequest.startFromCurrentPosition,
-            tppaEastDirection: this.tppaRequest.eastDirection,
+            tppaStepDirection: this.tppaRequest.stepDirection,
             tppaCompensateRefraction: this.tppaRequest.compensateRefraction,
             tppaStopTrackingWhenDone: this.tppaRequest.stopTrackingWhenDone,
-            tppaStepDistance: this.tppaRequest.stepDistance,
+            tppaStepDuration: this.tppaRequest.stepDuration,
             tppaPlateSolverType: this.tppaRequest.plateSolver.type,
             darvInitialPause: this.darvRequest.initialPause,
             darvExposureTime: this.darvRequest.exposureTime,

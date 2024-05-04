@@ -4,19 +4,19 @@ import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignmentResult
 import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraExposureEvent
-import nebulosa.api.cameras.CameraExposureTask
-import nebulosa.api.mounts.MountMoveTask
+import nebulosa.api.cameras.CameraCaptureEvent
+import nebulosa.api.cameras.CameraCaptureState
+import nebulosa.api.cameras.CameraCaptureTask
+import nebulosa.api.guiding.GuidePulseRequest
+import nebulosa.api.guiding.GuidePulseTask
 import nebulosa.api.tasks.Task
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.mount.MountEvent
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
-import nebulosa.math.deg
 import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
 import nebulosa.plate.solving.PlateSolver
@@ -31,23 +31,19 @@ data class TPPATask(
     @JvmField val mount: Mount? = null,
     @JvmField val longitude: Angle = mount!!.longitude,
     @JvmField val latitude: Angle = mount!!.latitude,
-) : Task<TPPAEvent>(), Consumer<Any> {
+) : Task<TPPAEvent>(), Consumer<CameraCaptureEvent> {
 
+    @JvmField val guideRequest = GuidePulseRequest(request.stepDirection, request.stepDuration)
     @JvmField val cameraRequest = request.capture.copy(
         savePath = Files.createTempDirectory("tppa"),
-        exposureAmount = 1, exposureDelay = Duration.ZERO,
+        exposureAmount = 0, exposureDelay = Duration.ZERO,
         exposureTime = maxOf(request.capture.exposureTime, MIN_EXPOSURE_TIME),
         frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
     )
 
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
-    private val cameraExposureTask = CameraExposureTask(camera, cameraRequest)
-    private val stepDistances = DoubleArray(2) { if (request.eastDirection) request.stepDistance else -request.stepDistance }
+    private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureAmount = 1)
 
-    @Volatile private var stepCount = 0
-    @Volatile private var elapsedTime: Duration = Duration.ZERO
-    @Volatile private var rightAscension: Angle = 0.0
-    @Volatile private var declination: Angle = 0.0
     @Volatile private var azimuthError: Angle = 0.0
     @Volatile private var altitudeError: Angle = 0.0
     @Volatile private var totalError: Angle = 0.0
@@ -55,29 +51,22 @@ data class TPPATask(
     @Volatile private var altitudeErrorDirection = ""
     @Volatile private var savedImage: Path? = null
     @Volatile private var noSolutionAttempts = 0
-    @Volatile private var mountMoveTask: MountMoveTask? = null
 
     init {
-        cameraExposureTask.subscribe(this)
+        cameraCaptureTask.subscribe(this)
     }
 
     fun handleCameraEvent(event: CameraEvent) {
         if (camera === event.device) {
-            cameraExposureTask.handleCameraEvent(event)
+            cameraCaptureTask.handleCameraEvent(event)
         }
     }
 
-    fun handleMountEvent(event: MountEvent) {
-        if (mount === event.device) {
-            mountMoveTask?.handleMountEvent(event)
-        }
-    }
-
-    override fun accept(event: Any) {
-        when (event) {
-            is CameraExposureEvent -> {
-                savedImage = event.savedPath ?: return
-            }
+    override fun accept(event: CameraCaptureEvent) {
+        if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
+            savedImage = event.savePath!!
+        } else if (event.state != CameraCaptureState.IDLE && event.state != CameraCaptureState.CAPTURE_FINISHED) {
+            sendEvent(TPPAState.SOLVING, event)
         }
     }
 
@@ -85,37 +74,30 @@ data class TPPATask(
         LOG.info("TPPA started. camera={}, mount={}, request={}", camera, mount, request)
 
         while (!cancellationToken.isDone) {
+            cancellationToken.waitForPause()
+
             mount?.tracking(true)
 
-            if (cancellationToken.isPaused) {
-                sendEvent(TPPAState.PAUSED)
-                cancellationToken.waitForPause()
+            // SLEWING.
+            if (mount != null) {
+                if (alignment.state in 1..2) {
+                    GuidePulseTask(mount, guideRequest).use {
+                        sendEvent(TPPAState.SLEWING)
+                        it.execute(cancellationToken)
+                    }
+                }
             }
 
             if (cancellationToken.isDone) return
 
-            // SLEWING.
-            if (mount != null) {
-                if (alignment.state in 1..2 && stepDistances[alignment.state - 1] != 0.0) {
-                    mountMoveTask?.close()
-
-                    MountMoveTask(mount, mount.rightAscension + stepDistances[alignment.state - 1].deg, mount.declination).use {
-                        mountMoveTask = it
-                        rightAscension = it.rightAscension
-                        declination = it.declination
-                        sendEvent(TPPAState.SLEWING)
-                        it.execute(cancellationToken)
-                        stepDistances[alignment.state - 1] = 0.0
-                    }
-                }
-
-                if (cancellationToken.isDone) return
-            }
-
             sendEvent(TPPAState.SOLVING)
 
             // CAPTURE.
-            cameraExposureTask.execute(cancellationToken)
+            cameraCaptureTask.execute(cancellationToken)
+
+            if (cancellationToken.isDone || savedImage == null) {
+                break
+            }
 
             // ALIGNMENT.
             val radius = if (mount == null) 0.0 else ThreePointPolarAlignment.DEFAULT_RADIUS
@@ -125,6 +107,8 @@ data class TPPATask(
                 request.compensateRefraction, cancellationToken
             )
 
+            savedImage = null
+
             LOG.info("TPPA alignment completed. result=$result")
 
             if (cancellationToken.isDone) return
@@ -132,8 +116,6 @@ data class TPPATask(
             when (result) {
                 is ThreePointPolarAlignmentResult.NeedMoreMeasurement -> {
                     noSolutionAttempts = 0
-                    rightAscension = result.rightAscension
-                    declination = result.declination
                     sendEvent(TPPAState.SOLVED)
                     continue
                 }
@@ -141,7 +123,6 @@ data class TPPATask(
                     noSolutionAttempts++
 
                     if (noSolutionAttempts < 10) {
-                        sendEvent(TPPAState.FAILED)
                         continue
                     } else {
                         LOG.error("exhausted all attempts to plate solve")
@@ -151,8 +132,6 @@ data class TPPATask(
                 is ThreePointPolarAlignmentResult.Measured -> {
                     noSolutionAttempts = 0
 
-                    rightAscension = result.rightAscension
-                    declination = result.declination
                     azimuthError = result.azimuth
                     altitudeError = result.altitude
 
@@ -170,7 +149,8 @@ data class TPPATask(
 
                     LOG.info(
                         "TPPA alignment computed. rightAscension={}, declination={}, azimuthError={}, altitudeError={}",
-                        rightAscension.formatHMS(), declination.formatSignedDMS(), azimuthError.formatSignedDMS(), altitudeError.formatSignedDMS(),
+                        result.rightAscension.formatHMS(), result.declination.formatSignedDMS(),
+                        azimuthError.formatSignedDMS(), altitudeError.formatSignedDMS(),
                     )
 
                     sendEvent(TPPAState.COMPUTED)
@@ -189,25 +169,24 @@ data class TPPATask(
         LOG.info("TPPA finished. camera={}, mount={}, request={}", camera, mount, request)
     }
 
-    private fun sendEvent(state: TPPAState) {
+    private fun sendEvent(state: TPPAState, capture: CameraCaptureEvent? = null) {
         val event = TPPAEvent(
-            camera, mount,
-            state, stepCount, elapsedTime, rightAscension, declination,
-            azimuthError, altitudeError, totalError, azimuthErrorDirection, altitudeErrorDirection
+            camera, mount, state,
+            azimuthError, altitudeError, totalError, azimuthErrorDirection, altitudeErrorDirection,
+            capture,
         )
 
         onNext(event)
     }
 
     override fun close() {
-        cameraExposureTask.close()
-        mountMoveTask?.close()
+        cameraCaptureTask.close()
         super.close()
     }
 
     companion object {
 
-        @JvmStatic private val MIN_EXPOSURE_TIME: Duration = Duration.ofSeconds(1L)
+        @JvmStatic private val MIN_EXPOSURE_TIME = Duration.ofSeconds(1L)
         @JvmStatic private val LOG = loggerFor<TPPATask>()
     }
 }

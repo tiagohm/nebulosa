@@ -7,7 +7,7 @@ export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
 
 export type DARVState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'
 
-export type TPPAState = 'IDLE' | 'SLEWING' | 'SOLVING' | 'SOLVED' | 'PAUSING' | 'PAUSED' | 'COMPUTED' | 'FAILED' | 'FINISHED'
+export type TPPAState = 'IDLE' | 'SLEWING' | 'SOLVING' | 'SOLVED' | 'COMPUTED' | 'FINISHED'
 
 export type AlignmentMethod = 'DARV' | 'TPPA'
 
@@ -16,10 +16,10 @@ export interface AlignmentPreference {
     darvExposureTime: number
     darvHemisphere: Hemisphere
     tppaStartFromCurrentPosition: boolean
-    tppaEastDirection: boolean
+    tppaStepDirection: GuideDirection
     tppaCompensateRefraction: boolean
     tppaStopTrackingWhenDone: boolean
-    tppaStepDistance: number
+    tppaStepDuration: number
     tppaPlateSolverType: PlateSolverType
 }
 
@@ -28,10 +28,10 @@ export const EMPTY_ALIGNMENT_PREFERENCE: AlignmentPreference = {
     darvExposureTime: 30,
     darvHemisphere: 'NORTHERN',
     tppaStartFromCurrentPosition: true,
-    tppaEastDirection: true,
+    tppaStepDirection: 'EAST',
     tppaCompensateRefraction: true,
     tppaStopTrackingWhenDone: true,
-    tppaStepDistance: 10,
+    tppaStepDuration: 5,
     tppaPlateSolverType: 'ASTAP',
 }
 
@@ -43,7 +43,7 @@ export interface DARVStart {
     reversed: boolean
 }
 
-export interface DARVElapsed extends MessageEvent {
+export interface DARVEvent extends MessageEvent {
     camera: Camera
     state: DARVState
     direction?: GuideDirection
@@ -54,22 +54,19 @@ export interface TPPAStart {
     capture: CameraStartCapture
     plateSolver: PlateSolverPreference
     startFromCurrentPosition: boolean
-    eastDirection: boolean
     compensateRefraction: boolean
     stopTrackingWhenDone: boolean
-    stepDistance: number
+    stepDirection: GuideDirection
+    stepDuration: number
 }
 
-export interface TPPAElapsed extends MessageEvent {
+export interface TPPAEvent extends MessageEvent {
     camera: Camera
-    elapsedTime: number
-    stepCount: number
     state: TPPAState
-    rightAscension: Angle
-    declination: Angle
     azimuthError: Angle
     altitudeError: Angle
     totalError: Angle
     azimuthErrorDirection: string
     altitudeErrorDirection: string
+    capture?: CameraCaptureEvent
 }

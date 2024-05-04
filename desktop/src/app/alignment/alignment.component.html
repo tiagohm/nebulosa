@@ -35,14 +35,17 @@
                         </div>
                         <div class="col-5 align-items-center">
                             <span class="p-float-label">
-                                <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="tppaRequest.stepDistance"
-                                               [showButtons]="true" [min]="1" [max]="15" (ngModelChange)="savePreference()" />
-                                <label>Step distance (°)</label>
+                                <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="tppaRequest.stepDuration"
+                                               [showButtons]="true" [min]="1" [max]="60" (ngModelChange)="savePreference()" />
+                                <label>Step duration (s)</label>
                             </span>
                         </div>
                         <div class="col-2 flex flex-column align-items-center justify-content-start text-center gap-2">
-                            <span class="text-sm text-gray-100">East</span>
-                            <p-inputSwitch [(ngModel)]="tppaRequest.eastDirection" (ngModelChange)="savePreference()" />
+                            <span class="p-float-label">
+                                <p-dropdown [options]="['EAST', 'WEST']" [(ngModel)]="tppaRequest.stepDirection" styleClass="p-inputtext-sm border-0"
+                                            [autoDisplayFirst]="false" (ngModelChange)="savePreference()" />
+                                <label>Direction</label>
+                            </span>
                         </div>
                         <div class="col-6 flex align-items-center justify-content-center text-center gap-2 text-sm">
                             <p-checkbox [binary]="true" [(ngModel)]="tppaRequest.stopTrackingWhenDone" label="Stop tracking when done"
@@ -73,12 +76,6 @@
                         <div class="col-12 flex align-items-center justify-content-center gap-1">
                             <p-button [disabled]="!camera.connected || !mount.connected || mount.parked || mount.parking || mount.slewing || running"
                                       label="Start" (onClick)="tppaStart()" icon="mdi mdi-play" severity="success" size="small" />
-                            <p-button [disabled]="!camera.connected || !mount.connected || !running || status === 'PAUSING'"
-                                      *ngIf="status !== 'PAUSED'" label="Pause" (onClick)="tppaPause()" icon="mdi mdi-pause" severity="info"
-                                      size="small" />
-                            <p-button [disabled]="!camera.connected || !mount.connected || !running"
-                                      *ngIf="status === 'PAUSED'" label="Unpause" (onClick)="tppaUnpause()" icon="mdi mdi-play" severity="info"
-                                      size="small" />
                             <p-button [disabled]="!camera.connected || !mount.connected || !running" label="Abort" (onClick)="tppaStop()"
                                       icon="mdi mdi-stop" severity="danger" size="small" />
                             <p-button [disabled]="!camera.connected" (onClick)="openCameraImage()" icon="mdi mdi-image" [text]="true"
@@ -104,8 +101,8 @@
                         </div>
                         <div class="col-4">
                             <span class="p-float-label">
-                                <p-dropdown [options]="darvHemispheres" [(ngModel)]="darvHemisphere" styleClass="p-inputtext-sm border-0"
-                                            [autoDisplayFirst]="false" />
+                                <p-dropdown [options]="['NORTHERN', 'SOUTHERN']" [(ngModel)]="darvHemisphere" styleClass="p-inputtext-sm border-0"
+                                            [autoDisplayFirst]="false" (ngModelChange)="savePreference()" />
                                 <label>Hemisphere</label>
                             </span>
                         </div>
