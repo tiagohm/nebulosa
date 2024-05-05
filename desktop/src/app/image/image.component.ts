@@ -5,10 +5,10 @@ import hotkeys from 'hotkeys-js'
 import interact from 'interactjs'
 import createPanZoom, { PanZoom } from 'panzoom'
 import { basename, dirname, extname } from 'path'
-import { MenuItem } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
+import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -85,7 +85,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         scnr: this.scnr
     }
 
-    calibrationGroup?: string | true // true == 'None'
+    calibrationViaCamera = true
 
     showAnnotationDialog = false
     annotateWithStarsAndDSOs = true
@@ -164,7 +164,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         transformation: this.transformation
     }
 
-    private readonly saveAsMenuItem: MenuItem = {
+    private readonly saveAsMenuItem: ExtendedMenuItem = {
         label: 'Save as...',
         icon: 'mdi mdi-content-save',
         command: async () => {
@@ -186,7 +186,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly plateSolveMenuItem: MenuItem = {
+    private readonly plateSolveMenuItem: ExtendedMenuItem = {
         label: 'Plate Solve',
         icon: 'mdi mdi-sigma',
         command: () => {
@@ -194,7 +194,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly stretchMenuItem: MenuItem = {
+    private readonly stretchMenuItem: ExtendedMenuItem = {
         label: 'Stretch',
         icon: 'mdi mdi-chart-histogram',
         command: () => {
@@ -212,7 +212,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly scnrMenuItem: MenuItem = {
+    private readonly scnrMenuItem: ExtendedMenuItem = {
         label: 'SCNR',
         icon: 'mdi mdi-palette',
         disabled: true,
@@ -252,13 +252,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly calibrationMenuItem: MenuItem = {
+    private readonly calibrationMenuItem: ExtendedMenuItem = {
         label: 'Calibration',
         icon: 'mdi mdi-wrench',
         items: [],
     }
 
-    private readonly statisticsMenuItem: MenuItem = {
+    private readonly statisticsMenuItem: ExtendedMenuItem = {
         icon: 'mdi mdi-chart-histogram',
         label: 'Statistics',
         command: () => {
@@ -267,7 +267,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly fitsHeaderMenuItem: MenuItem = {
+    private readonly fitsHeaderMenuItem: ExtendedMenuItem = {
         icon: 'mdi mdi-list-box',
         label: 'FITS Header',
         command: () => {
@@ -275,7 +275,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly pointMountHereMenuItem: MenuItem = {
+    private readonly pointMountHereMenuItem: ExtendedMenuItem = {
         label: 'Point mount here',
         icon: 'mdi mdi-telescope',
         disabled: true,
@@ -286,7 +286,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly frameAtThisCoordinateMenuItem: MenuItem = {
+    private readonly frameAtThisCoordinateMenuItem: ExtendedMenuItem = {
         label: 'Frame at this coordinate',
         icon: 'mdi mdi-image',
         disabled: true,
@@ -381,7 +381,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly fovMenuItem: MenuItem = {
+    private readonly fovMenuItem: ExtendedMenuItem = {
         label: 'Field of View',
         icon: 'mdi mdi-camera-metering-spot',
         command: () => {
@@ -393,7 +393,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly overlayMenuItem: MenuItem = {
+    private readonly overlayMenuItem: ExtendedMenuItem = {
         label: 'Overlay',
         icon: 'mdi mdi-layers',
         items: [
@@ -517,9 +517,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.roiInteractable?.unset()
     }
 
-    private markCalibrationGroupItem(name: string) {
-        for (const item of this.calibrationMenuItem.items!) {
-            (item as CheckableMenuItem).checked = item.label === name
+    private markCalibrationGroupItem(name?: string) {
+        this.calibrationMenuItem.items![1].checked = this.calibrationViaCamera
+
+        for (let i = 3; i < this.calibrationMenuItem.items!.length; i++) {
+            const item = this.calibrationMenuItem.items![i]
+            item.checked = item.label === (name ?? 'None')
+            item.disabled = this.calibrationViaCamera
         }
     }
 
@@ -531,10 +535,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         if (!found) {
             reloadImage = !!this.transformation.calibrationGroup
             this.transformation.calibrationGroup = undefined
-
-            if (this.calibrationGroup) {
-                this.calibrationGroup = true // None
-            }
+            this.calibrationViaCamera = true
         }
 
         const makeItem = (name?: string) => {
@@ -542,22 +543,33 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             const icon = name ? 'mdi mdi-wrench' : 'mdi mdi-close'
 
             return <CheckableMenuItem>{
-                label, icon, checked: this.transformation.calibrationGroup === name,
+                label, icon,
+                checked: this.transformation.calibrationGroup === name,
+                disabled: this.calibrationViaCamera,
                 command: async () => {
                     this.transformation.calibrationGroup = name
-                    this.calibrationGroup = name ?? true
                     this.markCalibrationGroupItem(label)
                     await this.loadImage()
                 },
             }
         }
 
-        const menu: MenuItem[] = []
+        const menu: ExtendedMenuItem[] = []
 
         menu.push({
             label: 'Open',
             icon: 'mdi mdi-wrench',
             command: () => this.browserWindow.openCalibration()
+        })
+
+        menu.push({
+            label: 'Camera',
+            icon: 'mdi mdi-camera-iris',
+            checked: this.calibrationViaCamera,
+            command: () => {
+                this.calibrationViaCamera = !this.calibrationViaCamera
+                this.markCalibrationGroupItem(this.transformation.calibrationGroup)
+            }
         })
 
         menu.push(SEPARATOR_MENU_ITEM)
@@ -636,9 +648,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.imageData = data
 
         // Not clicked on menu item.
-        if (!this.calibrationGroup && this.transformation.calibrationGroup !== data.capture?.calibrationGroup) {
+        if (this.calibrationViaCamera && this.transformation.calibrationGroup !== data.capture?.calibrationGroup) {
             this.transformation.calibrationGroup = data.capture?.calibrationGroup
-            this.markCalibrationGroupItem(this.transformation.calibrationGroup ?? 'None')
+            this.markCalibrationGroupItem(this.transformation.calibrationGroup)
         }
 
         if (data.source === 'FRAMING') {
@@ -697,7 +709,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private async loadImageFromPath(path: string) {
         const image = this.image.nativeElement
 
-        const { info, blob } = await this.api.openImage(path, this.transformation, this.imageData.camera)
+        const transformation = structuredClone(this.transformation)
+        if (this.calibrationViaCamera) transformation.calibrationGroup = this.imageData.capture?.calibrationGroup
+        const { info, blob } = await this.api.openImage(path, transformation, this.imageData.camera)
 
         this.imageInfo = info
         this.scnrMenuItem.disabled = info.mono
@@ -719,6 +733,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
         this.imageURL = window.URL.createObjectURL(blob)
         image.src = this.imageURL
+
+        if (!info.camera?.id) {
+            this.calibrationViaCamera = false
+            this.markCalibrationGroupItem(this.transformation.calibrationGroup)
+        }
 
         this.retrieveCoordinateInterpolation()
     }
@@ -778,7 +797,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private disableCalibration(canEnable: boolean = true) {
         this.transformation.calibrationGroup = undefined
-        this.markCalibrationGroupItem('None')
+        this.markCalibrationGroupItem(undefined)
         this.calibrationMenuItem.disabled = !canEnable
     }
 
