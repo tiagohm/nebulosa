@@ -1,4 +1,4 @@
-package nebulosa.api.beans
+package nebulosa.api.beans.processors
 
 import nebulosa.api.beans.annotations.Subscriber
 import org.greenrobot.eventbus.EventBus

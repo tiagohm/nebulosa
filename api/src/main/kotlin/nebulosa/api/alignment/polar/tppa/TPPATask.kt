@@ -171,8 +171,9 @@ data class TPPATask(
 
     private fun sendEvent(state: TPPAState, capture: CameraCaptureEvent? = null) {
         val event = TPPAEvent(
-            camera, mount, state,
-            azimuthError, altitudeError, totalError, azimuthErrorDirection, altitudeErrorDirection,
+            camera, state,
+            azimuthError, altitudeError, totalError,
+            azimuthErrorDirection, altitudeErrorDirection,
             capture,
         )
 

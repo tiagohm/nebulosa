@@ -1,5 +1,5 @@
 import { Angle } from './atlas.types'
-import { Camera, CameraCaptureElapsed as CameraCaptureEvent, CameraStartCapture } from './camera.types'
+import { Camera, CameraCaptureEvent, CameraStartCapture } from './camera.types'
 import { GuideDirection } from './guider.types'
 import { PlateSolverPreference, PlateSolverType } from './settings.types'
 

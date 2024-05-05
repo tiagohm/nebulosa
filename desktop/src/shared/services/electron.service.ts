@@ -11,14 +11,14 @@ import { DARVEvent, TPPAEvent } from '../types/alignment.types'
 import { ApiEventType, DeviceMessageEvent } from '../types/api.types'
 import { CloseWindow, InternalEventType, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
 import { Location, SkyAtlasUpdated } from '../types/atlas.types'
-import { Camera, CameraCaptureElapsed } from '../types/camera.types'
+import { Camera, CameraCaptureEvent } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
-import { FlatWizardElapsed } from '../types/flat-wizard.types'
+import { FlatWizardEvent } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
 import { ConnectionClosed } from '../types/home.types'
 import { Mount } from '../types/mount.types'
-import { SequencerElapsed } from '../types/sequencer.types'
+import { SequencerEvent } from '../types/sequencer.types'
 import { FilterWheel } from '../types/wheel.types'
 import { ApiService } from './api.service'
 
@@ -29,7 +29,7 @@ type EventMappedType = {
     'CAMERA.UPDATED': DeviceMessageEvent<Camera>
     'CAMERA.ATTACHED': DeviceMessageEvent<Camera>
     'CAMERA.DETACHED': DeviceMessageEvent<Camera>
-    'CAMERA.CAPTURE_ELAPSED': CameraCaptureElapsed
+    'CAMERA.CAPTURE_ELAPSED': CameraCaptureEvent
     'MOUNT.UPDATED': DeviceMessageEvent<Mount>
     'MOUNT.ATTACHED': DeviceMessageEvent<Mount>
     'MOUNT.DETACHED': DeviceMessageEvent<Mount>
@@ -51,8 +51,8 @@ type EventMappedType = {
     'TPPA.ELAPSED': TPPAEvent
     'DATA.CHANGED': any
     'LOCATION.CHANGED': Location
-    'SEQUENCER.ELAPSED': SequencerElapsed
-    'FLAT_WIZARD.ELAPSED': FlatWizardElapsed
+    'SEQUENCER.ELAPSED': SequencerEvent
+    'FLAT_WIZARD.ELAPSED': FlatWizardEvent
     'CONNECTION.CLOSED': ConnectionClosed
     'SKY_ATLAS.PROGRESS_CHANGED': SkyAtlasUpdated
     'CALIBRATION.CHANGED': unknown

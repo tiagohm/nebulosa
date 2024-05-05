@@ -1,4 +1,4 @@
-import { AutoSubFolderMode, Camera, CameraCaptureElapsed, CameraStartCapture, Dither } from './camera.types'
+import { AutoSubFolderMode, Camera, CameraCaptureEvent, CameraStartCapture, Dither } from './camera.types'
 import { Focuser } from './focuser.types'
 import { Mount } from './mount.types'
 import { FilterWheel } from './wheel.types'
@@ -67,10 +67,10 @@ export const EMPTY_SEQUENCE_PLAN: SequencePlan = {
     },
 }
 
-export interface SequencerElapsed extends MessageEvent {
+export interface SequencerEvent extends MessageEvent {
     id: number
     elapsedTime: number
     remainingTime: number
     progress: number
-    capture?: CameraCaptureElapsed
+    capture?: CameraCaptureEvent
 }

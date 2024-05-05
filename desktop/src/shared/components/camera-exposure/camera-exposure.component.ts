@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core'
-import { CameraCaptureElapsed, CameraCaptureState, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_STEP_INFO } from '../../types/camera.types'
+import { CameraCaptureEvent, CameraCaptureState, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_STEP_INFO } from '../../types/camera.types'
 
 @Component({
     selector: 'neb-camera-exposure',
@@ -22,7 +22,7 @@ export class CameraExposureComponent {
 
     state?: CameraCaptureState = 'IDLE'
 
-    handleCameraCaptureEvent(event: CameraCaptureElapsed, looping: boolean = false) {
+    handleCameraCaptureEvent(event: CameraCaptureEvent, looping: boolean = false) {
         this.capture.elapsedTime = event.captureElapsedTime
         this.capture.remainingTime = event.captureRemainingTime
         this.capture.progress = event.captureProgress

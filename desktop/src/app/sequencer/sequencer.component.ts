@@ -9,10 +9,10 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureElapsed, CameraStartCapture } from '../../shared/types/camera.types'
+import { Camera, CameraCaptureEvent, CameraStartCapture } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Mount } from '../../shared/types/mount.types'
-import { EMPTY_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerElapsed } from '../../shared/types/sequencer.types'
+import { EMPTY_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
@@ -89,9 +89,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         },
     ]
 
-    readonly sequenceEvents: CameraCaptureElapsed[] = []
+    readonly sequenceEvents: CameraCaptureEvent[] = []
 
-    event?: SequencerElapsed
+    event?: SequencerEvent
     running = false
 
     @ViewChildren('cameraExposure')

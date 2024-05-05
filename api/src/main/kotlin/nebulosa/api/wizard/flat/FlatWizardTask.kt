@@ -2,7 +2,9 @@ package nebulosa.api.wizard.flat
 
 import nebulosa.api.cameras.AutoSubFolderMode
 import nebulosa.api.cameras.CameraCaptureEvent
-import nebulosa.api.cameras.CameraExposureTask
+import nebulosa.api.cameras.CameraCaptureState
+import nebulosa.api.cameras.CameraCaptureTask
+import nebulosa.api.messages.MessageEvent
 import nebulosa.api.tasks.Task
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.fits.fits
@@ -18,12 +20,12 @@ import java.time.Duration
 data class FlatWizardTask(
     @JvmField val camera: Camera,
     @JvmField val request: FlatWizardRequest,
-) : Task<FlatWizardEvent>() {
+) : Task<MessageEvent>() {
 
     private val meanTarget = request.meanTarget / 65535f
     private val meanRange = (meanTarget * request.meanTolerance / 100f).let { (meanTarget - it)..(meanTarget + it) }
 
-    @Volatile private var cameraExposureTask: CameraExposureTask? = null
+    @Volatile private var cameraCaptureTask: CameraCaptureTask? = null
     @Volatile private var exposureMin = request.exposureMin
     @Volatile private var exposureMax = request.exposureMax
     @Volatile private var exposureTime = Duration.ZERO
@@ -33,7 +35,7 @@ data class FlatWizardTask(
     @Volatile private var savedPath: Path? = null
 
     fun handleCameraEvent(event: CameraEvent) {
-        cameraExposureTask?.handleCameraEvent(event)
+        cameraCaptureTask?.handleCameraEvent(event)
     }
 
     override fun execute(cancellationToken: CancellationToken) {
@@ -55,11 +57,20 @@ data class FlatWizardTask(
                 autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF,
             )
 
-            CameraExposureTask(camera, cameraRequest).use {
-                cameraExposureTask = it
+            state = FlatWizardState.EXPOSURING
+
+            CameraCaptureTask(camera, cameraRequest).use {
+                cameraCaptureTask = it
 
                 it.subscribe { event ->
-                    savedPath = event.savedPath ?: return@subscribe
+                    capture = event
+
+                    if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
+                        savedPath = event.savePath!!
+                        onNext(event)
+                    }
+
+                    sendEvent()
                 }
 
                 it.execute(cancellationToken)
@@ -83,9 +94,11 @@ data class FlatWizardTask(
                 LOG.info("found an optimal exposure time. exposureTime={}, path={}", exposureTime, savedPath)
                 break
             } else if (statistics.mean < meanRange.start) {
+                savedPath = null
                 exposureMin = exposureTime
                 LOG.info("captured frame is below mean range. exposureTime={}, path={}", exposureTime, savedPath)
             } else {
+                savedPath = null
                 exposureMax = exposureTime
                 LOG.info("captured frame is above mean range. exposureTime={}, path={}", exposureTime, savedPath)
             }
@@ -101,7 +114,7 @@ data class FlatWizardTask(
     }
 
     private fun sendEvent() {
-        onNext(FlatWizardEvent(this, state, exposureTime, capture, savedPath))
+        onNext(FlatWizardEvent(state, exposureTime, capture, savedPath))
     }
 
     companion object {

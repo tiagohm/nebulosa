@@ -200,7 +200,7 @@ export function updateCameraStartCaptureFromCamera(request: CameraStartCapture, 
     if (camera.frameFormats.length && (!request.frameFormat || !camera.frameFormats.includes(request.frameFormat))) request.frameFormat = camera.frameFormats[0]
 }
 
-export interface CameraCaptureElapsed extends MessageEvent {
+export interface CameraCaptureEvent extends MessageEvent {
     camera: Camera
     exposureAmount: number
     exposureCount: number
