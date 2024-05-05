@@ -294,7 +294,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             const coordinate = this.mouseCoordinateInterpolation?.interpolateAsText(this.imageMouseX, this.imageMouseY, false, false, false)
 
             if (coordinate) {
-                this.browserWindow.openFraming({ data: { rightAscension: coordinate.alpha, declination: coordinate.delta } })
+                this.browserWindow.openFraming({ data: { rightAscension: coordinate.alpha, declination: coordinate.delta, fov: this.solver.solved!.width / 60, rotation: this.solver.solved!.orientation } })
             }
         },
     }
@@ -643,7 +643,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         if (data.source === 'FRAMING') {
             this.disableAutoStretch()
-            this.resetStretch(false)
+
+            if (this.transformation.stretch.auto) {
+                this.resetStretch(false)
+            }
         } else if (data.source === 'FLAT_WIZARD') {
             this.disableCalibration(false)
         }
