@@ -69,7 +69,7 @@ export class BrowserWindowService {
     async openImage(data: Omit<ImageData, 'camera'> & { id?: string, path: string }) {
         const hash = data.id || uuidv4()
         const id = `image.${hash}`
-        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `0.9w`, resizable: true, data })
+        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `0.9w`, resizable: true, data, autoResizable: false })
         return id
     }
 
