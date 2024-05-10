@@ -20,7 +20,7 @@ data class CameraCaptureTask(
     @JvmField val request: CameraStartCaptureRequest,
     @JvmField val guider: Guider? = null,
     private val useFirstExposure: Boolean = false,
-    private val exposureAmount: Int = request.exposureAmount,
+    private val exposureMaxRepeat: Int = 0,
 ) : Task<CameraCaptureEvent>(), Consumer<Any> {
 
     private val delayTask = DelayTask(request.exposureDelay)
@@ -43,6 +43,8 @@ data class CameraCaptureTask(
     @JvmField @JsonIgnore val estimatedCaptureTime: Duration = if (request.isLoop) Duration.ZERO
     else Duration.ofNanos(request.exposureTime.toNanos() * request.exposureAmount + request.exposureDelay.toNanos() * (request.exposureAmount - if (useFirstExposure) 0 else 1))
 
+    @Volatile private var exposureRepeatCount = 0
+
     init {
         delayTask.subscribe(this)
         cameraExposureTask.subscribe(this)
@@ -61,7 +63,8 @@ data class CameraCaptureTask(
         LOG.info("Camera Capture started. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
 
         while (!cancellationToken.isDone &&
-            (exposureAmount <= 0 || exposureCount < exposureAmount)
+            ((exposureMaxRepeat > 0 && exposureRepeatCount < exposureMaxRepeat)
+                    || (exposureMaxRepeat <= 0 && (request.isLoop || exposureCount < request.exposureAmount)))
         ) {
             if (exposureCount == 0) {
                 state = CameraCaptureState.CAPTURE_STARTED
@@ -96,10 +99,12 @@ data class CameraCaptureTask(
             }
         }
 
-        if (state != CameraCaptureState.CAPTURE_FINISHED && (cameraExposureTask.isAborted || exposureCount >= exposureAmount)) {
+        if (state != CameraCaptureState.CAPTURE_FINISHED && (cameraExposureTask.isAborted || exposureCount >= request.exposureAmount)) {
             state = CameraCaptureState.CAPTURE_FINISHED
             sendEvent()
         }
+
+        exposureRepeatCount = 0
 
         LOG.info("Camera Capture finished. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
     }
@@ -120,6 +125,7 @@ data class CameraCaptureTask(
                         state = CameraCaptureState.EXPOSURE_STARTED
                         prevCaptureElapsedTime = captureElapsedTime
                         exposureCount++
+                        exposureRepeatCount++
                     }
                     CameraExposureState.ELAPSED -> {
                         state = CameraCaptureState.EXPOSURING
@@ -184,6 +190,8 @@ data class CameraCaptureTask(
         delayTask.reset()
         cameraExposureTask.reset()
         ditherAfterExposureTask.reset()
+
+        exposureRepeatCount = 0
     }
 
     companion object {

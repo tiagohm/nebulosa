@@ -1,10 +1,8 @@
 package nebulosa.api.alignment.polar.tppa
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
-import nebulosa.api.beans.converters.time.DurationDeserializer
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.solver.PlateSolverOptions
 import nebulosa.guiding.GuideDirection
@@ -19,7 +17,6 @@ data class TPPAStartRequest(
     @JvmField val startFromCurrentPosition: Boolean = true,
     @JvmField val compensateRefraction: Boolean = false,
     @JvmField val stopTrackingWhenDone: Boolean = true,
-    @field:DurationMin(seconds = 1L) @field:JsonDeserialize(using = DurationDeserializer::class) @field:DurationUnit(ChronoUnit.SECONDS)
-    @JvmField val stepDirection: GuideDirection = GuideDirection.EAST,
-    @JvmField val stepDuration: Duration = Duration.ZERO,
+    @field:DurationMin(seconds = 1L) @JvmField val stepDirection: GuideDirection = GuideDirection.EAST,
+    @field:DurationUnit(ChronoUnit.SECONDS) @field:DurationMin(seconds = 1L) @JvmField val stepDuration: Duration = Duration.ZERO,
 )

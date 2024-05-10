@@ -8,12 +8,13 @@ import java.time.Duration
 import java.time.temporal.ChronoUnit
 
 data class PlateSolverOptions(
-    val type: PlateSolverType = PlateSolverType.ASTROMETRY_NET_ONLINE,
-    val executablePath: Path? = null,
-    val downsampleFactor: Int = 0,
-    val apiUrl: String = "",
-    val apiKey: String = "",
-    @field:DurationMin(seconds = 0) @field:DurationMax(minutes = 5) @field:DurationUnit(ChronoUnit.SECONDS) val timeout: Duration = Duration.ZERO,
+    @JvmField val type: PlateSolverType = PlateSolverType.ASTROMETRY_NET_ONLINE,
+    @JvmField val executablePath: Path? = null,
+    @JvmField val downsampleFactor: Int = 0,
+    @JvmField val apiUrl: String = "",
+    @JvmField val apiKey: String = "",
+    @field:DurationMin(seconds = 0) @field:DurationMax(minutes = 5) @field:DurationUnit(ChronoUnit.SECONDS)
+    @JvmField val timeout: Duration = Duration.ZERO,
 ) {
 
     companion object {

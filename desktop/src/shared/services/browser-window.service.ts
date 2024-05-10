@@ -89,7 +89,7 @@ export class BrowserWindowService {
     }
 
     openAlignment(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 450, height: 344 })
+        Object.assign(options, { icon: 'star', width: 450, height: 352 })
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
 

@@ -9,7 +9,6 @@ import nebulosa.plate.solving.PlateSolver
 import nebulosa.plate.solving.PlateSolvingException
 import nebulosa.time.UTC
 import java.nio.file.Path
-import kotlin.math.min
 
 /**
  * Three Point Polar Alignment almost anywhere in the sky.
@@ -46,12 +45,14 @@ data class ThreePointPolarAlignment(
         } else {
             val time = UTC.now()
 
-            positions[min(state, 2)] = solution.position(time, compensateRefraction)
+            positions[state] = solution.position(time, compensateRefraction)
 
-            if (state++ >= 2) {
+            if (state >= 2) {
                 val polarErrorDetermination = PolarErrorDetermination(positions[0]!!, positions[1]!!, positions[2]!!, longitude, latitude)
                 val (azimuth, altitude) = polarErrorDetermination.compute()
                 return ThreePointPolarAlignmentResult.Measured(solution.rightAscension, solution.declination, azimuth, altitude)
+            } else {
+                state++
             }
 
             return ThreePointPolarAlignmentResult.NeedMoreMeasurement(solution.rightAscension, solution.declination)

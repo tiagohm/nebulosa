@@ -11,7 +11,8 @@ data class AutoFocusAfterConditions(
     @JvmField val enabled: Boolean = false,
     @JvmField val onStart: Boolean = false,
     @JvmField val onFilterChange: Boolean = false,
-    @field:DurationMin(seconds = 0) @field:DurationMax(hours = 8) @field:DurationUnit(ChronoUnit.SECONDS) @JvmField val afterElapsedTime: Duration = Duration.ZERO,
+    @field:DurationMin(seconds = 0) @field:DurationMax(hours = 8) @field:DurationUnit(ChronoUnit.SECONDS)
+    @JvmField val afterElapsedTime: Duration = Duration.ZERO,
     @field:PositiveOrZero @JvmField val afterExposures: Int = 0,
     @field:PositiveOrZero @JvmField val afterTemperatureChange: Double = 0.0,
     @field:PositiveOrZero @JvmField val afterHFDIncrease: Double = 0.0,

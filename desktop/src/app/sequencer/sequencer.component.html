@@ -190,7 +190,7 @@
                                 <p-button [disabled]="running" [text]="true" [rounded]="true" icon="mdi mdi-content-duplicate" severity="info"
                                           size=small pTooltip="Duplicate" tooltipPosition="bottom" size="small"
                                           (onClick)="duplicateEntry(entry, i)" />
-                                <p-checkbox [binary]="true" [(ngModel)]="entry.enabled" (ngModelChange)="savePlan()" />
+                                <p-checkbox [binary]="true" [disabled]="running" [(ngModel)]="entry.enabled" (ngModelChange)="savePlan()" />
                             </div>
                         </div>
                     </ng-template>

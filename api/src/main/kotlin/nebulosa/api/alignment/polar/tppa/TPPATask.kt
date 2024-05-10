@@ -8,7 +8,7 @@ import nebulosa.api.cameras.CameraCaptureEvent
 import nebulosa.api.cameras.CameraCaptureState
 import nebulosa.api.cameras.CameraCaptureTask
 import nebulosa.api.guiding.GuidePulseRequest
-import nebulosa.api.guiding.GuidePulseTask
+import nebulosa.api.mounts.MountMoveTask
 import nebulosa.api.tasks.Task
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.indi.device.camera.Camera
@@ -42,7 +42,8 @@ data class TPPATask(
     )
 
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
-    private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureAmount = 1)
+    private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = 1)
+    private val guidePulseState = BooleanArray(3)
 
     @Volatile private var azimuthError: Angle = 0.0
     @Volatile private var altitudeError: Angle = 0.0
@@ -80,15 +81,18 @@ data class TPPATask(
 
             // SLEWING.
             if (mount != null) {
-                if (alignment.state in 1..2) {
-                    GuidePulseTask(mount, guideRequest).use {
+                if (alignment.state in 1..2 && !guidePulseState[alignment.state]) {
+                    MountMoveTask(mount, guideRequest).use {
                         sendEvent(TPPAState.SLEWING)
                         it.execute(cancellationToken)
+                        guidePulseState[alignment.state] = true
                     }
+
+                    LOG.info("TPPA slewed. rightAscension={}, declination={}", mount.rightAscension.formatHMS(), mount.declination.formatSignedDMS())
                 }
             }
 
-            if (cancellationToken.isDone) return
+            if (cancellationToken.isDone) break
 
             sendEvent(TPPAState.SOLVING)
 
@@ -111,7 +115,7 @@ data class TPPATask(
 
             LOG.info("TPPA alignment completed. result=$result")
 
-            if (cancellationToken.isDone) return
+            if (cancellationToken.isDone) break
 
             when (result) {
                 is ThreePointPolarAlignmentResult.NeedMoreMeasurement -> {
@@ -126,7 +130,7 @@ data class TPPATask(
                         continue
                     } else {
                         LOG.error("exhausted all attempts to plate solve")
-                        return
+                        break
                     }
                 }
                 is ThreePointPolarAlignmentResult.Measured -> {
@@ -178,6 +182,19 @@ data class TPPATask(
         )
 
         onNext(event)
+    }
+
+    override fun reset() {
+        guidePulseState.fill(false)
+        azimuthError = 0.0
+        altitudeError = 0.0
+        totalError = 0.0
+        azimuthErrorDirection = ""
+        altitudeErrorDirection = ""
+        savedImage = null
+        noSolutionAttempts = 0
+
+        super.reset()
     }
 
     override fun close() {
