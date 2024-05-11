@@ -364,7 +364,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         } else {
             const camera = await this.imageMenu.show(this.cameras)
 
-            if (camera) {
+            if (camera && camera !== 'NONE') {
                 this.browserWindow.openCameraImage(camera)
             }
         }

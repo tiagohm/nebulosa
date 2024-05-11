@@ -895,7 +895,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         } else {
             const mount = await this.deviceMenu.show(mounts)
 
-            if (mount && mount.connected) {
+            if (mount && mount !== 'NONE' && mount.connected) {
                 action(mount)
                 return true
             }

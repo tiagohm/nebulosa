@@ -525,36 +525,37 @@ export class ApiService {
     // DARV
 
     darvStart(camera: Camera, guideOutput: GuideOutput, data: DARVStart) {
-        return this.http.put<string>(`polar-alignment/darv/${camera.id}/${guideOutput.id}/start`, data)
+        return this.http.put<void>(`polar-alignment/darv/${camera.id}/${guideOutput.id}/start`, data)
     }
 
-    darvStop(id: string) {
-        return this.http.put<void>(`polar-alignment/darv/${id}/stop`)
+    darvStop(camera: Camera) {
+        return this.http.put<void>(`polar-alignment/darv/${camera.id}/stop`)
     }
 
     // TPPA
 
     tppaStart(camera: Camera, mount: Mount, data: TPPAStart) {
-        return this.http.put<string>(`polar-alignment/tppa/${camera.id}/${mount.id}/start`, data)
+        return this.http.put<void>(`polar-alignment/tppa/${camera.id}/${mount.id}/start`, data)
     }
 
-    tppaStop(id: string) {
-        return this.http.put<void>(`polar-alignment/tppa/${id}/stop`)
+    tppaStop(camera: Camera) {
+        return this.http.put<void>(`polar-alignment/tppa/${camera.id}/stop`)
     }
 
-    tppaPause(id: string) {
-        return this.http.put<void>(`polar-alignment/tppa/${id}/pause`)
+    tppaPause(camera: Camera) {
+        return this.http.put<void>(`polar-alignment/tppa/${camera.id}/pause`)
     }
 
-    tppaUnpause(id: string) {
-        return this.http.put<void>(`polar-alignment/tppa/${id}/unpause`)
+    tppaUnpause(camera: Camera) {
+        return this.http.put<void>(`polar-alignment/tppa/${camera.id}/unpause`)
     }
 
     // SEQUENCER
 
     sequencerStart(camera: Camera, plan: SequencePlan) {
-        const body: SequencePlan = { ...plan, camera: undefined, wheel: undefined, focuser: undefined }
-        return this.http.put<void>(`sequencer/${camera.id}/start`, body)
+        const body: SequencePlan = { ...plan, mount: undefined, camera: undefined, wheel: undefined, focuser: undefined }
+        const query = this.http.query({ mount: plan.mount?.name, focuser: plan.focuser?.name, wheel: plan.wheel?.name })
+        return this.http.put<void>(`sequencer/${camera.id}/start?${query}`, body)
     }
 
     sequencerStop(camera: Camera) {

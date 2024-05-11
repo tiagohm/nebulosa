@@ -22,7 +22,7 @@ internal data class PolarErrorDetermination(
         if (isNorthern && x < 0 || !isNorthern && x > 0) -normalized else normalized
     }
 
-    @JvmField val errorPosition = Position(plane, longitude, latitude)
+    @JvmField val errorPosition = Position(plane)
 
     fun compute(): DoubleArray {
         val altitudeError: Double

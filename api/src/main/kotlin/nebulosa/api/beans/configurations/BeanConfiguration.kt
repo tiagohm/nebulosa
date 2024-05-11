@@ -11,7 +11,6 @@ import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.database.MyObjectBox
 import nebulosa.api.preferences.PreferenceEntity
-import nebulosa.batch.processing.AsyncJobLauncher
 import nebulosa.common.json.PathDeserializer
 import nebulosa.common.json.PathSerializer
 import nebulosa.guiding.Guider
@@ -150,9 +149,6 @@ class BeanConfiguration {
 
     @Bean
     fun phd2Guider(phd2Client: PHD2Client): Guider = PHD2Guider(phd2Client)
-
-    @Bean
-    fun asyncJobLauncher(threadPoolTaskExecutor: ThreadPoolTaskExecutor) = AsyncJobLauncher(threadPoolTaskExecutor)
 
     @Bean
     @Primary

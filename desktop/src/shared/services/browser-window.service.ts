@@ -89,7 +89,7 @@ export class BrowserWindowService {
     }
 
     openAlignment(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 450, height: 344 })
+        Object.assign(options, { icon: 'star', width: 450, height: 352 })
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
 
@@ -99,7 +99,7 @@ export class BrowserWindowService {
     }
 
     openFlatWizard(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 410, height: 331 })
+        Object.assign(options, { icon: 'star', width: 385, height: 370 })
         this.openWindow({ ...options, id: 'flat-wizard', path: 'flat-wizard', data: undefined })
     }
 

@@ -604,6 +604,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 exposureTimeUnit: this.exposureTimeUnit,
                 exposureMode: this.exposureMode,
                 subFrame: this.subFrame,
+                savePath: this.request.savePath || this.savePath,
             }
 
             this.preference.cameraPreference(this.camera).set(preference)

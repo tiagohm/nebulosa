@@ -212,7 +212,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
 
         if (!modal) {
             const [x, y] = window!.getPosition()
-            const [width, height] = window!.getContentSize()
+            const [width, height] = window!.getSize()
 
             store.set(`window.${id}.position`, { x, y })
 
@@ -498,12 +498,12 @@ try {
 
         const { window, options } = createdWindow
 
-        if (!window || (!serve && window.isResizable())) return false
+        if (!window || options.resizable || options.autoResizable === false) return false
 
-        const [width] = window.getContentSize()
+        const [width] = window.getSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
         const height = Math.max(options?.minHeight ?? 0, Math.min(data, maxHeight))
-        window.setContentSize(width, height)
+        window.setSize(width, height)
         console.info('window auto resized:', width, height)
 
         return true
