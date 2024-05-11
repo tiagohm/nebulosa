@@ -5,9 +5,9 @@ import java.time.OffsetDateTime
 
 interface LX200MountHandler {
 
-    val rightAscensionJ2000: Angle
+    val rightAscension: Angle
 
-    val declinationJ2000: Angle
+    val declination: Angle
 
     val latitude: Angle
 
@@ -25,13 +25,13 @@ interface LX200MountHandler {
 
     fun abort()
 
-    fun moveNorth(enable: Boolean)
+    fun moveNorth(enabled: Boolean)
 
-    fun moveSouth(enable: Boolean)
+    fun moveSouth(enabled: Boolean)
 
-    fun moveWest(enable: Boolean)
+    fun moveWest(enabled: Boolean)
 
-    fun moveEast(enable: Boolean)
+    fun moveEast(enabled: Boolean)
 
     fun time(time: OffsetDateTime)
 

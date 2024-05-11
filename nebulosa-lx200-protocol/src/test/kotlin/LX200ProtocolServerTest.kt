@@ -14,19 +14,18 @@ class LX200ProtocolServerTest {
             val server = LX200ProtocolServer(port = 10001)
 
             server.attachMountHandler(this@Companion)
-
             server.run()
 
             Thread.currentThread().join()
         }
 
-        override var rightAscensionJ2000 = "05 15 07".hours
+        override var rightAscension = "05 15 07".hours
 
-        override var declinationJ2000 = "25 26 03".deg
+        override var declination = "25 26 03".deg
 
-        override val latitude = 0.0
+        override var latitude = 0.0
 
-        override val longitude = 0.0
+        override var longitude = 0.0
 
         override var slewing = false
 
@@ -35,27 +34,30 @@ class LX200ProtocolServerTest {
         override var parked = false
 
         override fun goTo(rightAscension: Angle, declination: Angle) {
-            this.rightAscensionJ2000 = rightAscension
-            this.declinationJ2000 = declination
+            this.rightAscension = rightAscension
+            this.declination = declination
         }
 
         override fun syncTo(rightAscension: Angle, declination: Angle) {
-            this.rightAscensionJ2000 = rightAscension
-            this.declinationJ2000 = declination
+            this.rightAscension = rightAscension
+            this.declination = declination
         }
 
-        override fun moveNorth(enable: Boolean) {}
+        override fun moveNorth(enabled: Boolean) = Unit
 
-        override fun moveSouth(enable: Boolean) {}
+        override fun moveSouth(enabled: Boolean) = Unit
 
-        override fun moveWest(enable: Boolean) {}
+        override fun moveWest(enabled: Boolean) = Unit
 
-        override fun moveEast(enable: Boolean) {}
+        override fun moveEast(enabled: Boolean) = Unit
 
-        override fun time(time: OffsetDateTime) {}
+        override fun time(time: OffsetDateTime) = Unit
 
-        override fun coordinates(longitude: Angle, latitude: Angle) {}
+        override fun coordinates(longitude: Angle, latitude: Angle) {
+            this.longitude = longitude
+            this.latitude = latitude
+        }
 
-        override fun abort() {}
+        override fun abort() = Unit
     }
 }

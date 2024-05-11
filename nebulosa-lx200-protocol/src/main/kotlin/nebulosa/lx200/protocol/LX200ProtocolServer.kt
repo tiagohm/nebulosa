@@ -15,32 +15,32 @@ import java.util.concurrent.atomic.AtomicReference
  *
  * @see <a href="http://www.company7.com/library/meade/LX200CommandSet.pdf">Meade Telescope Serial Command Protocol</a>
  */
-class LX200ProtocolServer(
+data class LX200ProtocolServer(
     override val host: String = "0.0.0.0",
     override val port: Int = 10001,
-) : NettyServer() {
+) : NettyServer(), LX200MountHandler {
 
     private val mountHandler = AtomicReference<LX200MountHandler>()
 
-    val rightAscension
-        get() = mountHandler.get()?.rightAscensionJ2000 ?: 0.0
+    override val rightAscension
+        get() = mountHandler.get()?.rightAscension ?: 0.0
 
-    val declination
-        get() = mountHandler.get()?.declinationJ2000 ?: 0.0
+    override val declination
+        get() = mountHandler.get()?.declination ?: 0.0
 
-    val latitude
+    override val latitude
         get() = mountHandler.get()?.latitude ?: 0.0
 
-    val longitude
+    override val longitude
         get() = mountHandler.get()?.longitude ?: 0.0
 
-    val slewing
+    override val slewing
         get() = mountHandler.get()?.slewing ?: false
 
-    val tracking
+    override val tracking
         get() = mountHandler.get()?.tracking ?: false
 
-    val parked
+    override val parked
         get() = mountHandler.get()?.parked ?: false
 
     override val channelInitialzer = object : ChannelInitializer<SocketChannel>() {
@@ -54,6 +54,7 @@ class LX200ProtocolServer(
     }
 
     fun attachMountHandler(handler: LX200MountHandler) {
+        require(handler !== this) { "cannot attach this server" }
         mountHandler.set(handler)
     }
 
@@ -62,55 +63,55 @@ class LX200ProtocolServer(
     }
 
     @Synchronized
-    internal fun goTo(rightAscension: Angle, declination: Angle) {
+    override fun goTo(rightAscension: Angle, declination: Angle) {
         LOG.info("going to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees)
         mountHandler.get()?.goTo(rightAscension, declination)
     }
 
     @Synchronized
-    internal fun syncTo(rightAscension: Angle, declination: Angle) {
+    override fun syncTo(rightAscension: Angle, declination: Angle) {
         LOG.info("syncing to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees)
         mountHandler.get()?.syncTo(rightAscension, declination)
     }
 
     @Synchronized
-    internal fun moveNorth(enable: Boolean) {
-        LOG.info("moving to north. enable={}", enable)
-        mountHandler.get()?.moveNorth(enable)
+    override fun moveNorth(enabled: Boolean) {
+        LOG.info("moving to north. enabled={}", enabled)
+        mountHandler.get()?.moveNorth(enabled)
     }
 
     @Synchronized
-    internal fun moveSouth(enable: Boolean) {
-        LOG.info("moving to south. enable={}", enable)
-        mountHandler.get()?.moveSouth(enable)
+    override fun moveSouth(enabled: Boolean) {
+        LOG.info("moving to south. enabled={}", enabled)
+        mountHandler.get()?.moveSouth(enabled)
     }
 
     @Synchronized
-    internal fun moveWest(enable: Boolean) {
-        LOG.info("moving to west. enable={}", enable)
-        mountHandler.get()?.moveWest(enable)
+    override fun moveWest(enabled: Boolean) {
+        LOG.info("moving to west. enabled={}", enabled)
+        mountHandler.get()?.moveWest(enabled)
     }
 
     @Synchronized
-    internal fun moveEast(enable: Boolean) {
-        LOG.info("moving to east. enable={}", enable)
-        mountHandler.get()?.moveEast(enable)
+    override fun moveEast(enabled: Boolean) {
+        LOG.info("moving to east. enabled={}", enabled)
+        mountHandler.get()?.moveEast(enabled)
     }
 
     @Synchronized
-    internal fun time(time: OffsetDateTime) {
+    override fun time(time: OffsetDateTime) {
         LOG.info("sending time. time={}", time)
         mountHandler.get()?.time(time)
     }
 
     @Synchronized
-    internal fun coordinates(longitude: Angle, latitude: Angle) {
+    override fun coordinates(longitude: Angle, latitude: Angle) {
         LOG.info("sending coordinates. longitude={}, latitude={}", longitude.toDegrees, latitude.toDegrees)
         mountHandler.get()?.coordinates(longitude, latitude)
     }
 
     @Synchronized
-    internal fun abort() {
+    override fun abort() {
         LOG.info("aborting")
         mountHandler.get()?.abort()
     }

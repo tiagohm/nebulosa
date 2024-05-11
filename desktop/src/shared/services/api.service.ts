@@ -10,8 +10,8 @@ import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
 import { ConnectionStatus, ConnectionType, Equipment } from '../types/home.types'
-import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageSave, ImageSolved, ImageTransformation } from '../types/image.types'
-import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
+import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
+import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlType, SlewRate, TrackMode } from '../types/mount.types'
 import { SequencePlan } from '../types/sequencer.types'
 import { PlateSolverPreference } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
@@ -169,6 +169,20 @@ export class ApiService {
     pointMountHere(mount: Mount, path: string, x: number, y: number) {
         const query = this.http.query({ path, x, y })
         return this.http.put<void>(`mounts/${mount.id}/point-here?${query}`)
+    }
+
+    mountRemoteControlStart(mount: Mount, type: MountRemoteControlType, host: string, port: number) {
+        const query = this.http.query({ type, host, port })
+        return this.http.put<void>(`mounts/${mount.id}/remote-control/start?${query}`)
+    }
+
+    mountRemoteControlList(mount: Mount) {
+        return this.http.get<MountRemoteControl[]>(`mounts/${mount.id}/remote-control`)
+    }
+
+    mountRemoteControlStop(mount: Mount, type: MountRemoteControlType) {
+        const query = this.http.query({ type })
+        return this.http.put<void>(`mounts/${mount.id}/remote-control/stop?${query}`)
     }
 
     // FOCUSER
@@ -456,7 +470,7 @@ export class ApiService {
         return this.http.get<ImageAnnotation[]>(`image/annotations?${query}`)
     }
 
-    saveImageAs(path: string, save: ImageSave, camera?: Camera) {
+    saveImageAs(path: string, save: ImageSaveDialog, camera?: Camera) {
         const query = this.http.query({ path, camera: camera?.name })
         return this.http.put<void>(`image/save-as?${query}`, save)
     }
