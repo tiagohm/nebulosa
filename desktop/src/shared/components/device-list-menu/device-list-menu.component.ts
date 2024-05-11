@@ -5,6 +5,7 @@ import { PrimeService } from '../../services/prime.service'
 import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
 import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
+import { ExtendedMenuItem } from '../menu-item/menu-item.component'
 
 @Component({
     selector: 'neb-device-list-menu',
@@ -22,15 +23,21 @@ export class DeviceListMenuComponent {
     @Input()
     readonly disableIfDeviceIsNotConnected: boolean = true
 
+    @Input()
+    header?: string
+
+    @Input()
+    readonly hasNone: boolean = false
+
     @ViewChild('menu')
     private readonly menu!: DialogMenuComponent
 
     constructor(private prime: PrimeService) { }
 
-    show<T extends Device>(devices: T[]) {
-        const model: MenuItem[] = []
+    show<T extends Device>(devices: T[], selected?: NoInfer<T>) {
+        const model: ExtendedMenuItem[] = []
 
-        return new Promise<T | undefined>((resolve) => {
+        return new Promise<T | 'NONE' | undefined>((resolve) => {
             if (devices.length <= 0) {
                 resolve(undefined)
                 this.prime.message('Please connect your equipment first!', 'warn')
@@ -49,10 +56,21 @@ export class DeviceListMenuComponent {
                 model.push(SEPARATOR_MENU_ITEM)
             }
 
+            if (this.hasNone) {
+                model.push({
+                    icon: 'mdi mdi-close',
+                    label: 'None',
+                    command: () => {
+                        resolve('NONE')
+                    },
+                })
+            }
+
             for (const device of devices.sort(deviceComparator)) {
                 model.push({
                     icon: 'mdi mdi-connection',
                     label: device.name,
+                    checked: selected === device,
                     disabled: this.disableIfDeviceIsNotConnected && !device.connected,
                     command: () => {
                         resolve(device)

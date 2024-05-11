@@ -1,5 +1,5 @@
 import { Angle } from './atlas.types'
-import { CameraStartCapture } from './camera.types'
+import { Camera, CameraCaptureEvent, CameraStartCapture } from './camera.types'
 import { GuideDirection } from './guider.types'
 import { PlateSolverPreference, PlateSolverType } from './settings.types'
 
@@ -7,7 +7,7 @@ export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
 
 export type DARVState = 'IDLE' | 'INITIAL_PAUSE' | 'FORWARD' | 'BACKWARD'
 
-export type TPPAState = 'IDLE' | 'SLEWING' | 'SOLVING' | 'SOLVED' | 'PAUSING' | 'PAUSED' | 'COMPUTED' | 'FAILED' | 'FINISHED'
+export type TPPAState = 'IDLE' | 'SLEWING' | 'SLEWED' | 'SOLVING' | 'SOLVED' | 'COMPUTED' | 'FINISHED' | 'FAILED'
 
 export type AlignmentMethod = 'DARV' | 'TPPA'
 
@@ -16,10 +16,10 @@ export interface AlignmentPreference {
     darvExposureTime: number
     darvHemisphere: Hemisphere
     tppaStartFromCurrentPosition: boolean
-    tppaEastDirection: boolean
+    tppaStepDirection: GuideDirection
     tppaCompensateRefraction: boolean
     tppaStopTrackingWhenDone: boolean
-    tppaStepDistance: number
+    tppaStepDuration: number
     tppaPlateSolverType: PlateSolverType
 }
 
@@ -28,10 +28,10 @@ export const EMPTY_ALIGNMENT_PREFERENCE: AlignmentPreference = {
     darvExposureTime: 30,
     darvHemisphere: 'NORTHERN',
     tppaStartFromCurrentPosition: true,
-    tppaEastDirection: true,
+    tppaStepDirection: 'EAST',
     tppaCompensateRefraction: true,
     tppaStopTrackingWhenDone: true,
-    tppaStepDistance: 10,
+    tppaStepDuration: 5,
     tppaPlateSolverType: 'ASTAP',
 }
 
@@ -43,28 +43,25 @@ export interface DARVStart {
     reversed: boolean
 }
 
-export interface DARVElapsed extends MessageEvent {
-    id: string
-    remainingTime: number
-    progress: number
+export interface DARVEvent extends MessageEvent {
+    camera: Camera
     state: DARVState
     direction?: GuideDirection
+    capture: CameraCaptureEvent
 }
 
 export interface TPPAStart {
     capture: CameraStartCapture
     plateSolver: PlateSolverPreference
     startFromCurrentPosition: boolean
-    eastDirection: boolean
     compensateRefraction: boolean
     stopTrackingWhenDone: boolean
-    stepDistance: number
+    stepDirection: GuideDirection
+    stepDuration: number
 }
 
-export interface TPPAElapsed extends MessageEvent {
-    id: string
-    elapsedTime: number
-    stepCount: number
+export interface TPPAEvent extends MessageEvent {
+    camera: Camera
     state: TPPAState
     rightAscension: Angle
     declination: Angle
@@ -73,4 +70,5 @@ export interface TPPAElapsed extends MessageEvent {
     totalError: Angle
     azimuthErrorDirection: string
     altitudeErrorDirection: string
+    capture?: CameraCaptureEvent
 }

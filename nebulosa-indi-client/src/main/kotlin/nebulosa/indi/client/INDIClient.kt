@@ -10,7 +10,6 @@ import nebulosa.indi.client.device.cameras.SVBonyCamera
 import nebulosa.indi.client.device.cameras.SimCamera
 import nebulosa.indi.client.device.focusers.INDIFocuser
 import nebulosa.indi.client.device.mounts.INDIMount
-import nebulosa.indi.client.device.mounts.IoptronV3Mount
 import nebulosa.indi.client.device.wheels.INDIFilterWheel
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.INDIDeviceProvider
@@ -18,9 +17,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
-import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.protocol.GetProperties
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIConnection
@@ -52,7 +49,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun newMount(message: INDIProtocol, executable: String): Mount {
-        return MOUNTS[executable]?.create(this, message.device) ?: INDIMount(this, message.device)
+        return INDIMount(this, message.device)
     }
 
     override fun newFocuser(message: INDIProtocol): Focuser {
@@ -81,65 +78,8 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
         fireOnConnectionClosed()
     }
 
-    override fun cameras(): List<Camera> {
-        return cameras.values.toList()
-    }
-
-    override fun camera(name: String): Camera? {
-        return cameras[name] ?: cameras.values.find { it.id == name }
-    }
-
-    override fun mounts(): List<Mount> {
-        return mounts.values.toList()
-    }
-
-    override fun mount(name: String): Mount? {
-        return mounts[name] ?: mounts.values.find { it.id == name }
-    }
-
-    override fun focusers(): List<Focuser> {
-        return focusers.values.toList()
-    }
-
-    override fun focuser(name: String): Focuser? {
-        return focusers[name] ?: focusers.values.find { it.id == name }
-    }
-
-    override fun wheels(): List<FilterWheel> {
-        return wheels.values.toList()
-    }
-
-    override fun wheel(name: String): FilterWheel? {
-        return wheels[name] ?: wheels.values.find { it.id == name }
-    }
-
-    override fun gps(): List<GPS> {
-        return gps.values.toList()
-    }
-
-    override fun gps(name: String): GPS? {
-        return gps[name] ?: gps.values.find { it.id == name }
-    }
-
-    override fun guideOutputs(): List<GuideOutput> {
-        return guideOutputs.values.toList()
-    }
-
-    override fun guideOutput(name: String): GuideOutput? {
-        return guideOutputs[name] ?: guideOutputs.values.find { it.id == name }
-    }
-
-    override fun thermometers(): List<Thermometer> {
-        return thermometers.values.toList()
-    }
-
-    override fun thermometer(name: String): Thermometer? {
-        return thermometers[name] ?: thermometers.values.find { it.id == name }
-    }
-
     override fun close() {
         super.close()
-
         connection.close()
     }
 
@@ -156,12 +96,8 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
             "indi_simulator_guide" to SimCamera::class.java,
         )
 
-        @JvmStatic private val MOUNTS = mapOf(
-            "indi_ioptronv3_telescope" to IoptronV3Mount::class.java,
-        )
-
         @JvmStatic
-        fun <T : Device> Class<out T>.create(handler: INDIClient, name: String): T {
+        private fun <T : Device> Class<out T>.create(handler: INDIClient, name: String): T {
             return getConstructor(INDIClient::class.java, String::class.java)
                 .newInstance(handler, name)
         }

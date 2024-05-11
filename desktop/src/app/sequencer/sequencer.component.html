@@ -135,9 +135,10 @@
     </div>
     <div class="grid">
         <div class="col-12 align-items-center justify-content-center pt-4 gap-2">
-            <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera" />
-            <neb-device-list-button title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel" />
-            <neb-device-list-button title="FOCUSER" icon="mdi mdi-image-filter-center-focus" [devices]="focusers" [(device)]="focuser" />
+            <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera" [hasNone]="true" />
+            <neb-device-list-button title="MOUNT" icon="mdi mdi-telescope" [devices]="mounts" [(device)]="mount" [hasNone]="true" />
+            <neb-device-list-button title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel" [hasNone]="true" />
+            <neb-device-list-button title="FOCUSER" icon="mdi mdi-image-filter-center-focus" [devices]="focusers" [(device)]="focuser" [hasNone]="true" />
         </div>
     </div>
     <div class="grid mt-0">
@@ -189,7 +190,7 @@
                                 <p-button [disabled]="running" [text]="true" [rounded]="true" icon="mdi mdi-content-duplicate" severity="info"
                                           size=small pTooltip="Duplicate" tooltipPosition="bottom" size="small"
                                           (onClick)="duplicateEntry(entry, i)" />
-                                <p-checkbox [binary]="true" [(ngModel)]="entry.enabled" (ngModelChange)="savePlan()" />
+                                <p-checkbox [binary]="true" [disabled]="running" [(ngModel)]="entry.enabled" (ngModelChange)="savePlan()" />
                             </div>
                         </div>
                     </ng-template>
@@ -292,4 +293,4 @@
     </ng-template>
 </p-dialog>
 
-<neb-dialog-menu #entryMenu [model]="entryMenuModel" />
+<neb-dialog-menu #entryMenu [model]="entryMenuModel" header="Options" />

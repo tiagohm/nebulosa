@@ -20,7 +20,7 @@ export interface FITSHeaderItem {
 }
 
 export interface ImageInfo {
-    camera: Camera
+    camera?: Camera
     path: string
     width: number
     height: number

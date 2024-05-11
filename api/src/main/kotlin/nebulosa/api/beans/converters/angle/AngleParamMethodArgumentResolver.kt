@@ -23,7 +23,7 @@ class AngleParamMethodArgumentResolver : HandlerMethodArgumentResolver {
         mavContainer: ModelAndViewContainer?,
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?,
-    ): Any? {
+    ): Angle {
         val param = parameter.annotation<AngleParam>()!!
         val parameterName = param.name.ifBlank { null } ?: parameter.parameterName!!
         val parameterValue = webRequest.parameter(parameterName) ?: param.defaultValue

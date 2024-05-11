@@ -2,7 +2,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     kotlin("jvm")
-    id("org.springframework.boot") version "3.2.4"
+    id("org.springframework.boot") version "3.2.5"
     id("io.spring.dependency-management") version "1.1.4"
     kotlin("plugin.spring")
     kotlin("kapt")
@@ -14,7 +14,6 @@ dependencies {
     implementation(project(":nebulosa-astap"))
     implementation(project(":nebulosa-astrometrynet"))
     implementation(project(":nebulosa-alpaca-indi"))
-    implementation(project(":nebulosa-batch-processing"))
     implementation(project(":nebulosa-common"))
     implementation(project(":nebulosa-guiding-phd2"))
     implementation(project(":nebulosa-hips2fits"))
@@ -30,6 +29,7 @@ dependencies {
     implementation(project(":nebulosa-watney"))
     implementation(project(":nebulosa-wcs"))
     implementation(project(":nebulosa-xisf"))
+    implementation(libs.rx)
     implementation(libs.apache.codec)
     implementation(libs.csv)
     implementation(libs.eventbus)
@@ -46,7 +46,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    kapt("org.springframework:spring-context-indexer:6.1.5")
+    kapt("org.springframework:spring-context-indexer:6.1.6")
     testImplementation(project(":nebulosa-astrobin-api"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))

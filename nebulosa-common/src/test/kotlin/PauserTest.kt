@@ -14,7 +14,7 @@ class PauserTest : StringSpec() {
             pauser.pause()
             pauser.isPaused.shouldBeTrue()
             thread { Thread.sleep(1000); pauser.unpause() }
-            pauser.waitIfPaused()
+            pauser.waitForPause()
             pauser.isPaused.shouldBeFalse()
         }
         "pause and not wait for unpause" {
@@ -23,7 +23,7 @@ class PauserTest : StringSpec() {
             pauser.pause()
             pauser.isPaused.shouldBeTrue()
             thread { Thread.sleep(1000); pauser.unpause() }
-            pauser.waitIfPaused(500, TimeUnit.MILLISECONDS).shouldBeFalse()
+            pauser.waitForPause(500, TimeUnit.MILLISECONDS).shouldBeFalse()
             pauser.isPaused.shouldBeTrue()
         }
     }

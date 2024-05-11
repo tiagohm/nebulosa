@@ -72,7 +72,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
         this.route.queryParams.subscribe(e => {
             const device = JSON.parse(decodeURIComponent(e.data))
 
-            if ("name" in device && device.name) {
+            if ("id" in device && device.id) {
                 this.device = device
             }
         })

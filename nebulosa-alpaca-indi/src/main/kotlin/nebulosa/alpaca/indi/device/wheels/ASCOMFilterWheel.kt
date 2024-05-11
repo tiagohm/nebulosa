@@ -5,9 +5,7 @@ import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.indi.device.Device
-import nebulosa.indi.device.filterwheel.FilterWheel
-import nebulosa.indi.device.filterwheel.FilterWheelNamesChanged
-import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
+import nebulosa.indi.device.filterwheel.*
 import nebulosa.indi.protocol.INDIProtocol
 
 @Suppress("RedundantModalityModifier")
@@ -22,6 +20,8 @@ data class ASCOMFilterWheel(
     @Volatile final override var moving = false
     @Volatile final override var names = emptyList<String>()
 
+    @Volatile private var targetPosition = 0
+
     override val snoopedDevices = emptyList<Device>()
 
     override fun onConnected() {
@@ -32,8 +32,13 @@ data class ASCOMFilterWheel(
     override fun onDisconnected() {}
 
     override fun moveTo(position: Int) {
-        if (position != this.position) {
-            service.position(device.number, position).doRequest()
+        if (position in 1..count && position != this.position) {
+            targetPosition = position - 1
+
+            if (service.position(device.number, targetPosition).doRequest() != null) {
+                moving = true
+                sender.fireOnEventReceived(FilterWheelMovingChanged(this))
+            }
         }
     }
 
@@ -42,36 +47,43 @@ data class ASCOMFilterWheel(
 
         if (connected) {
             processPosition()
-            processMoving()
         }
     }
 
     override fun names(names: Iterable<String>) {
         this.names = names.toList()
+        sender.fireOnEventReceived(FilterWheelNamesChanged(this))
     }
 
     override fun snoop(devices: Iterable<Device?>) {}
 
     override fun handleMessage(message: INDIProtocol) {}
 
-    private fun processMoving() {}
-
     private fun processPosition() {
         service.position(device.number).doRequest {
-            if (it.value != position) {
-                val prevPosition = position
-                position = it.value
+            val value = it.value + 1
 
-                sender.fireOnEventReceived(FilterWheelPositionChanged(this, prevPosition))
+            if (value >= 1 && value != position) {
+                position = value
+                sender.fireOnEventReceived(FilterWheelPositionChanged(this))
+
+                if (moving && it.value == targetPosition) {
+                    moving = false
+                    sender.fireOnEventReceived(FilterWheelMovingChanged(this))
+                }
             }
         }
     }
 
     private fun processNames() {
         service.names(device.number).doRequest {
+            if (it.value.size != names.size) {
+                count = it.value.size
+                sender.fireOnEventReceived(FilterWheelCountChanged(this))
+            }
+
             if (it.value != names) {
                 names = it.value
-
                 sender.fireOnEventReceived(FilterWheelNamesChanged(this))
             }
         }

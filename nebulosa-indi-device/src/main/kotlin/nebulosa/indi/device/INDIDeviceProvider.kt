@@ -11,35 +11,40 @@ import java.io.Closeable
 
 interface INDIDeviceProvider : MessageSender, Closeable {
 
-    fun registerDeviceEventHandler(handler: DeviceEventHandler)
+    fun registerDeviceEventHandler(handler: DeviceEventHandler): Boolean
 
-    fun unregisterDeviceEventHandler(handler: DeviceEventHandler)
+    fun unregisterDeviceEventHandler(handler: DeviceEventHandler): Boolean
+
+    fun device(id: String): Device? {
+        return camera(id) ?: mount(id) ?: focuser(id) ?: wheel(id)
+        ?: gps(id) ?: guideOutput(id) ?: thermometer(id)
+    }
 
     fun cameras(): List<Camera>
 
-    fun camera(name: String): Camera?
+    fun camera(id: String): Camera?
 
     fun mounts(): List<Mount>
 
-    fun mount(name: String): Mount?
+    fun mount(id: String): Mount?
 
     fun focusers(): List<Focuser>
 
-    fun focuser(name: String): Focuser?
+    fun focuser(id: String): Focuser?
 
     fun wheels(): List<FilterWheel>
 
-    fun wheel(name: String): FilterWheel?
+    fun wheel(id: String): FilterWheel?
 
     fun gps(): List<GPS>
 
-    fun gps(name: String): GPS?
+    fun gps(id: String): GPS?
 
     fun guideOutputs(): List<GuideOutput>
 
-    fun guideOutput(name: String): GuideOutput?
+    fun guideOutput(id: String): GuideOutput?
 
     fun thermometers(): List<Thermometer>
 
-    fun thermometer(name: String): Thermometer?
+    fun thermometer(id: String): Thermometer?
 }

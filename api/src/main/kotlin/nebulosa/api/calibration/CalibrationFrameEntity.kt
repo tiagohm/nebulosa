@@ -12,7 +12,7 @@ data class CalibrationFrameEntity(
     @Id override var id: Long = 0L,
     @Index @Convert(converter = FrameTypePropertyConverter::class, dbType = Int::class) var type: FrameType = FrameType.LIGHT,
     @Index var name: String = "",
-    @Index var filter: String? = null,
+    var filter: String? = null,
     var exposureTime: Long = 0L,
     var temperature: Double = 0.0,
     var width: Int = 0,
@@ -20,6 +20,6 @@ data class CalibrationFrameEntity(
     var binX: Int = 0,
     var binY: Int = 0,
     var gain: Double = 0.0,
-    @Unique @Convert(converter = PathPropertyConverter::class, dbType = String::class) var path: Path? = null,
+    @Convert(converter = PathPropertyConverter::class, dbType = String::class) var path: Path? = null,
     var enabled: Boolean = true,
 ) : BoxEntity

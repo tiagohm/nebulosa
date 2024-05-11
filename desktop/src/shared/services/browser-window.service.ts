@@ -30,7 +30,7 @@ export class BrowserWindowService {
     }
 
     openCamera(options: OpenWindowOptionsWithData<Camera>) {
-        Object.assign(options, { icon: 'camera', width: 400, height: 479 })
+        Object.assign(options, { icon: 'camera', width: 400, height: 467 })
         return this.openWindow({ ...options, id: `camera.${options.data.name}`, path: 'camera' })
     }
 
@@ -69,7 +69,7 @@ export class BrowserWindowService {
     async openImage(data: Omit<ImageData, 'camera'> & { id?: string, path: string }) {
         const hash = data.id || uuidv4()
         const id = `image.${hash}`
-        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `0.9w`, resizable: true, data })
+        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `0.9w`, resizable: true, data, autoResizable: false })
         return id
     }
 
@@ -89,7 +89,7 @@ export class BrowserWindowService {
     }
 
     openAlignment(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 450, height: 344 })
+        Object.assign(options, { icon: 'star', width: 450, height: 352 })
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
 
@@ -99,13 +99,13 @@ export class BrowserWindowService {
     }
 
     openFlatWizard(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 410, height: 331 })
+        Object.assign(options, { icon: 'star', width: 385, height: 370 })
         this.openWindow({ ...options, id: 'flat-wizard', path: 'flat-wizard', data: undefined })
     }
 
     openSettings(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'settings', width: 580, height: 451 })
-        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined, resizable: true })
+        Object.assign(options, { icon: 'settings', width: 435, height: 460 })
+        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined, resizable: true, minHeight: 460, autoResizable: false })
     }
 
     openCalculator(options: OpenWindowOptions = {}) {

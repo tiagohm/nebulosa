@@ -3,12 +3,12 @@ import { ActivatedRoute } from '@angular/router'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import moment from 'moment'
-import { MenuItem } from 'primeng/api'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
 import { OverlayPanel } from 'primeng/overlaypanel'
 import { Subscription, timer } from 'rxjs'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
+import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 import { ApiService } from '../../shared/services/api.service'
@@ -406,7 +406,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
     ]
 
-    readonly ephemerisModel: MenuItem[] = [
+    readonly ephemerisModel: ExtendedMenuItem[] = [
         {
             icon: 'mdi mdi-magnify',
             label: 'Find sky objects around this object',
@@ -519,7 +519,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
             if (this.tab === SkyAtlasTab.SKY_OBJECT) {
                 this.skyObjectFilter.rightAscension = data.filter?.rightAscension || this.skyObjectFilter.rightAscension
                 this.skyObjectFilter.declination = data.filter?.declination || this.skyObjectFilter.declination
-                if (data.filter?.radius) this.skyObjectFilter.radius = data.filter?.radius || this.skyObjectFilter.radius
+                this.skyObjectFilter.radius = data.filter?.radius || this.skyObjectFilter.radius || 4.0
                 this.skyObjectFilter.constellation = data.filter?.constellation || this.skyObjectFilter.constellation
                 this.skyObjectFilter.magnitude = data.filter?.magnitude || this.skyObjectFilter.magnitude
                 this.skyObjectFilter.type = data.filter?.type || this.skyObjectFilter.type
@@ -895,7 +895,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         } else {
             const mount = await this.deviceMenu.show(mounts)
 
-            if (mount && mount.connected) {
+            if (mount && mount !== 'NONE' && mount.connected) {
                 action(mount)
                 return true
             }

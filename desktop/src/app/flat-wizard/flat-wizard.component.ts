@@ -26,6 +26,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     wheel = structuredClone(EMPTY_WHEEL)
 
     running = false
+    savedPath?: string
 
     @ViewChild('cameraExposure')
     private readonly cameraExposure!: CameraExposureComponent
@@ -54,7 +55,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     constructor(
         app: AppComponent,
         private api: ApiService,
-        electron: ElectronService,
+        private electron: ElectronService,
         private browserWindow: BrowserWindowService,
         private prime: PrimeService,
         private preference: PreferenceService,
@@ -63,27 +64,22 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
         app.title = 'Flat Wizard'
 
         electron.on('FLAT_WIZARD.ELAPSED', event => {
-            if (event.state === 'EXPOSURING' && event.capture && event.capture.camera?.id === this.camera?.id) {
-                ngZone.run(() => {
-                    this.running = this.cameraExposure.handleCameraCaptureEvent(event.capture!, true)
-                })
-            } else if (event.state === 'CAPTURED') {
-                ngZone.run(() => {
+            ngZone.run(() => {
+                if (event.state === 'EXPOSURING' && event.capture && event.capture.camera?.id === this.camera?.id) {
+                    this.running = true
+                    this.cameraExposure.handleCameraCaptureEvent(event.capture!, true)
+                } else if (event.state === 'CAPTURED') {
                     this.running = false
-                    this.prime.message(`Flat frame saved at ${event.savedPath}`)
-                })
-            } else if (event.state === 'FAILED') {
-                ngZone.run(() => {
+                    this.savedPath = event.savedPath
+                    this.electron.autoResizeWindow()
+                    this.prime.message(`Flat frame captured`)
+                } else if (event.state === 'FAILED') {
                     this.running = false
+                    this.savedPath = undefined
+                    this.electron.autoResizeWindow()
                     this.prime.message(`Failed to find an optimal exposure time from given parameters`, 'error')
-                })
-            }
-
-            if (!this.running) {
-                ngZone.run(() => {
-                    this.cameraExposure.reset()
-                })
-            }
+                }
+            })
         })
 
         electron.on('CAMERA.UPDATED', event => {
@@ -158,13 +154,16 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     ngOnDestroy() { }
 
     async showCameraDialog() {
-        if (this.camera.name && await CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.camera, this.request.captureRequest)) {
+        if (this.camera.id && await CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.camera, this.request.captureRequest)) {
             this.preference.cameraStartCaptureForFlatWizard(this.camera).set(this.request.captureRequest)
         }
     }
 
     cameraChanged() {
-        this.updateEntryFromCamera(this.camera)
+        if (this.camera.id) {
+            this.request.captureRequest = this.preference.cameraStartCaptureForFlatWizard(this.camera).get(this.request.captureRequest)
+            this.updateEntryFromCamera(this.camera)
+        }
     }
 
     wheelConnect() {
@@ -176,43 +175,51 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     }
 
     private updateEntryFromCamera(camera?: Camera) {
-        if (camera) {
-            const request = this.preference.cameraStartCaptureForFlatWizard(camera).get(this.request.captureRequest)
-
-            if (camera.connected) {
-                updateCameraStartCaptureFromCamera(request, camera)
-            }
-
-            this.request.captureRequest = request
+        if (camera && camera.connected) {
+            updateCameraStartCaptureFromCamera(this.request.captureRequest, camera)
         }
     }
 
     wheelChanged() {
         if (this.wheel) {
             let filters: FilterSlot[] = []
+            let filtersChanged = true
 
             if (this.wheel.count <= 0) {
                 this.filters = []
-                this.selectedFilters = []
                 return
             } else if (this.wheel.count !== this.filters.length) {
                 filters = new Array(this.wheel.count)
             } else {
                 filters = this.filters
+                filtersChanged = false
             }
 
-            const preference = this.preference.wheelPreference(this.wheel).get()
+            if (filtersChanged) {
+                const preference = this.preference.wheelPreference(this.wheel).get()
 
-            for (let position = 1; position <= filters.length; position++) {
-                const name = preference.names?.[position - 1] ?? `Filter #${position}`
-                const filter = { position, name, dark: false, offset: 0 }
-                filters[position - 1] = filter
+                for (let position = 1; position <= filters.length; position++) {
+                    const name = preference.names?.[position - 1] ?? `Filter #${position}`
+                    const offset = preference.offsets?.[position - 1] ?? 0
+                    const dark = position === preference.shutterPosition
+                    const filter = { position, name, dark, offset }
+                    filters[position - 1] = filter
+                }
+
+                this.filters = filters
+                this.selectedFilters = this.selectedFiltersMap.get(this.wheel.name) ?? []
+                this.selectedFiltersMap.set(this.wheel.name, this.selectedFilters)
             }
+        }
+    }
 
-            this.filters = filters
+    async chooseSavePath() {
+        const defaultPath = this.request.captureRequest.savePath
+        const path = await this.electron.openDirectory({ defaultPath })
 
-            this.selectedFilters = this.selectedFiltersMap.get(this.wheel.name) ?? []
-            this.selectedFiltersMap.set(this.wheel.name, this.selectedFilters)
+        if (path) {
+            this.request.captureRequest.savePath = path
+            this.savePreference()
         }
     }
 
@@ -225,5 +232,11 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
 
     stop() {
         this.api.flatWizardStop(this.camera)
+    }
+
+    savePreference() {
+        if (this.camera.id) {
+            this.preference.cameraStartCaptureForFlatWizard(this.camera).set(this.request.captureRequest)
+        }
     }
 }

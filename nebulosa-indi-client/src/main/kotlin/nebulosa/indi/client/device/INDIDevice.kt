@@ -5,7 +5,7 @@ import nebulosa.indi.client.device.cameras.INDICamera
 import nebulosa.indi.device.*
 import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.Vector
-import nebulosa.log.loggerFor
+import okio.ByteString.Companion.encodeUtf8
 import java.util.*
 
 internal abstract class INDIDevice : Device {
@@ -15,7 +15,7 @@ internal abstract class INDIDevice : Device {
     override val properties = linkedMapOf<String, PropertyVector<*, *>>()
     override val messages = LinkedList<String>()
 
-    override val id = UUID.randomUUID().toString()
+    override val id by lazy { name.encodeUtf8().md5().hex() }
 
     @Volatile override var connected = false
         protected set
@@ -211,10 +211,5 @@ internal abstract class INDIDevice : Device {
         var result = sender.hashCode()
         result = 31 * result + name.hashCode()
         return result
-    }
-
-    companion object {
-
-        @JvmStatic private val LOG = loggerFor<INDIDevice>()
     }
 }

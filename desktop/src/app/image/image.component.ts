@@ -5,10 +5,10 @@ import hotkeys from 'hotkeys-js'
 import interact from 'interactjs'
 import createPanZoom, { PanZoom } from 'panzoom'
 import { basename, dirname, extname } from 'path'
-import { MenuItem } from 'primeng/api'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
+import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -84,6 +84,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         invert: false,
         scnr: this.scnr
     }
+
+    calibrationViaCamera = true
 
     showAnnotationDialog = false
     annotateWithStarsAndDSOs = true
@@ -162,7 +164,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         transformation: this.transformation
     }
 
-    private readonly saveAsMenuItem: MenuItem = {
+    private readonly saveAsMenuItem: ExtendedMenuItem = {
         label: 'Save as...',
         icon: 'mdi mdi-content-save',
         command: async () => {
@@ -184,7 +186,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly plateSolveMenuItem: MenuItem = {
+    private readonly plateSolveMenuItem: ExtendedMenuItem = {
         label: 'Plate Solve',
         icon: 'mdi mdi-sigma',
         command: () => {
@@ -192,7 +194,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly stretchMenuItem: MenuItem = {
+    private readonly stretchMenuItem: ExtendedMenuItem = {
         label: 'Stretch',
         icon: 'mdi mdi-chart-histogram',
         command: () => {
@@ -210,7 +212,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly scnrMenuItem: MenuItem = {
+    private readonly scnrMenuItem: ExtendedMenuItem = {
         label: 'SCNR',
         icon: 'mdi mdi-palette',
         disabled: true,
@@ -250,13 +252,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly calibrationMenuItem: MenuItem = {
+    private readonly calibrationMenuItem: ExtendedMenuItem = {
         label: 'Calibration',
         icon: 'mdi mdi-wrench',
         items: [],
     }
 
-    private readonly statisticsMenuItem: MenuItem = {
+    private readonly statisticsMenuItem: ExtendedMenuItem = {
         icon: 'mdi mdi-chart-histogram',
         label: 'Statistics',
         command: () => {
@@ -265,7 +267,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly fitsHeaderMenuItem: MenuItem = {
+    private readonly fitsHeaderMenuItem: ExtendedMenuItem = {
         icon: 'mdi mdi-list-box',
         label: 'FITS Header',
         command: () => {
@@ -273,7 +275,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly pointMountHereMenuItem: MenuItem = {
+    private readonly pointMountHereMenuItem: ExtendedMenuItem = {
         label: 'Point mount here',
         icon: 'mdi mdi-telescope',
         disabled: true,
@@ -284,7 +286,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly frameAtThisCoordinateMenuItem: MenuItem = {
+    private readonly frameAtThisCoordinateMenuItem: ExtendedMenuItem = {
         label: 'Frame at this coordinate',
         icon: 'mdi mdi-image',
         disabled: true,
@@ -292,7 +294,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             const coordinate = this.mouseCoordinateInterpolation?.interpolateAsText(this.imageMouseX, this.imageMouseY, false, false, false)
 
             if (coordinate) {
-                this.browserWindow.openFraming({ data: { rightAscension: coordinate.alpha, declination: coordinate.delta } })
+                this.browserWindow.openFraming({ data: { rightAscension: coordinate.alpha, declination: coordinate.delta, fov: this.solver.solved!.width / 60, rotation: this.solver.solved!.orientation } })
             }
         },
     }
@@ -379,7 +381,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly fovMenuItem: MenuItem = {
+    private readonly fovMenuItem: ExtendedMenuItem = {
         label: 'Field of View',
         icon: 'mdi mdi-camera-metering-spot',
         command: () => {
@@ -391,7 +393,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly overlayMenuItem: MenuItem = {
+    private readonly overlayMenuItem: ExtendedMenuItem = {
         label: 'Overlay',
         icon: 'mdi mdi-layers',
         items: [
@@ -444,6 +446,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Image'
 
+        app.topMenu.push({
+            icon: 'mdi mdi-fullscreen',
+            command: () => this.enterFullscreen(),
+        })
+
         this.stretchShadow.subscribe(value => {
             this.stretch.shadow = value / 65536
         })
@@ -458,7 +465,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         electron.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
             if (event.state === 'EXPOSURE_FINISHED' && event.camera.id === this.imageData.camera?.id) {
-                await this.closeImage(event.savePath !== this.imageData.path)
+                await this.closeImage(true)
 
                 ngZone.run(() => {
                     this.imageData.path = event.savePath
@@ -476,12 +483,20 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             })
         })
 
+        electron.on('CALIBRATION.CHANGED', () => {
+            ngZone.run(() => {
+                this.loadCalibrationGroups()
+            })
+        })
+
         hotkeys('ctrl+a', (event) => { event.preventDefault(); this.toggleStretch() })
         hotkeys('ctrl+i', (event) => { event.preventDefault(); this.invertImage() })
         hotkeys('ctrl+x', (event) => { event.preventDefault(); this.toggleCrosshair() })
         hotkeys('ctrl+-', (event) => { event.preventDefault(); this.zoomOut() })
         hotkeys('ctrl+=', (event) => { event.preventDefault(); this.zoomIn() })
         hotkeys('ctrl+0', (event) => { event.preventDefault(); this.resetZoom() })
+        hotkeys('f12', (event) => { if (this.app.showTopBar) { event.preventDefault(); this.enterFullscreen() } })
+        hotkeys('escape', (event) => { if (!this.app.showTopBar) { event.preventDefault(); this.exitFullscreen() } })
 
         this.loadPreference()
     }
@@ -502,21 +517,35 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.roiInteractable?.unset()
     }
 
-    private markCalibrationGroupItem(name: string) {
-        for (const item of this.calibrationMenuItem.items!) {
-            (item as CheckableMenuItem).checked = item.label === name
+    private markCalibrationGroupItem(name?: string) {
+        this.calibrationMenuItem.items![1].checked = this.calibrationViaCamera
+
+        for (let i = 3; i < this.calibrationMenuItem.items!.length; i++) {
+            const item = this.calibrationMenuItem.items![i]
+            item.checked = item.label === (name ?? 'None')
+            item.disabled = this.calibrationViaCamera
         }
     }
 
     private async loadCalibrationGroups() {
         const groups = await this.api.calibrationGroups()
+        const found = !!groups.find(e => this.transformation.calibrationGroup === e)
+        let reloadImage = false
+
+        if (!found) {
+            reloadImage = !!this.transformation.calibrationGroup
+            this.transformation.calibrationGroup = undefined
+            this.calibrationViaCamera = true
+        }
 
         const makeItem = (name?: string) => {
             const label = name ?? 'None'
             const icon = name ? 'mdi mdi-wrench' : 'mdi mdi-close'
 
             return <CheckableMenuItem>{
-                label, icon, checked: false,
+                label, icon,
+                checked: this.transformation.calibrationGroup === name,
+                disabled: this.calibrationViaCamera,
                 command: async () => {
                     this.transformation.calibrationGroup = name
                     this.markCalibrationGroupItem(label)
@@ -525,20 +554,38 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         }
 
-        this.calibrationMenuItem.items!.push({
+        const menu: ExtendedMenuItem[] = []
+
+        menu.push({
             label: 'Open',
             icon: 'mdi mdi-wrench',
             command: () => this.browserWindow.openCalibration()
         })
 
-        this.calibrationMenuItem.items!.push(SEPARATOR_MENU_ITEM)
-        this.calibrationMenuItem.items!.push(makeItem())
+        menu.push({
+            label: 'Camera',
+            icon: 'mdi mdi-camera-iris',
+            checked: this.calibrationViaCamera,
+            command: () => {
+                this.calibrationViaCamera = !this.calibrationViaCamera
+                this.markCalibrationGroupItem(this.transformation.calibrationGroup)
+            }
+        })
+
+        menu.push(SEPARATOR_MENU_ITEM)
+        menu.push(makeItem())
 
         for (const group of groups) {
-            this.calibrationMenuItem.items!.push(makeItem(group))
+            menu.push(makeItem(group))
         }
 
+        this.calibrationMenuItem.items = menu
         this.menu.model = this.contextMenuItems
+        this.menu.cd.markForCheck()
+
+        if (reloadImage) {
+            this.loadImage()
+        }
     }
 
     private async closeImage(force: boolean = false) {
@@ -600,18 +647,23 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         this.imageData = data
 
-        this.transformation.calibrationGroup = data.capture?.calibrationGroup
-        this.markCalibrationGroupItem(this.transformation.calibrationGroup ?? 'None')
+        // Not clicked on menu item.
+        if (this.calibrationViaCamera && this.transformation.calibrationGroup !== data.capture?.calibrationGroup) {
+            this.transformation.calibrationGroup = data.capture?.calibrationGroup
+            this.markCalibrationGroupItem(this.transformation.calibrationGroup)
+        }
 
         if (data.source === 'FRAMING') {
             this.disableAutoStretch()
-            this.resetStretch(false)
+
+            if (this.transformation.stretch.auto) {
+                this.resetStretch(false)
+            }
         } else if (data.source === 'FLAT_WIZARD') {
             this.disableCalibration(false)
         }
 
         this.clearOverlay()
-
         this.loadImage()
     }
 
@@ -657,7 +709,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private async loadImageFromPath(path: string) {
         const image = this.image.nativeElement
 
-        const { info, blob } = await this.api.openImage(path, this.transformation, this.imageData.camera)
+        const transformation = structuredClone(this.transformation)
+        if (this.calibrationViaCamera) transformation.calibrationGroup = this.imageData.capture?.calibrationGroup
+        const { info, blob } = await this.api.openImage(path, transformation, this.imageData.camera)
 
         this.imageInfo = info
         this.scnrMenuItem.disabled = info.mono
@@ -679,6 +733,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
         this.imageURL = window.URL.createObjectURL(blob)
         image.src = this.imageURL
+
+        if (!info.camera?.id) {
+            this.calibrationViaCamera = false
+            this.markCalibrationGroupItem(this.transformation.calibrationGroup)
+        }
 
         this.retrieveCoordinateInterpolation()
     }
@@ -738,7 +797,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private disableCalibration(canEnable: boolean = true) {
         this.transformation.calibrationGroup = undefined
-        this.markCalibrationGroupItem('None')
+        this.markCalibrationGroupItem(undefined)
         this.calibrationMenuItem.disabled = !canEnable
     }
 
@@ -805,6 +864,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     resetZoom() {
         if (!this.panZoom) return
         this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, 1.0)
+    }
+
+    async enterFullscreen() {
+        this.app.showTopBar = !await this.electron.fullscreenWindow(true)
+    }
+
+    async exitFullscreen() {
+        this.app.showTopBar = !await this.electron.fullscreenWindow(false)
     }
 
     private async retrieveCoordinateInterpolation() {
@@ -1038,7 +1105,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         } else {
             const mount = await this.deviceMenu.show(mounts)
 
-            if (mount && mount.connected) {
+            if (mount && mount !== 'NONE' && mount.connected) {
                 action(mount)
                 return true
             }

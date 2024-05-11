@@ -121,7 +121,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         {
             icon: 'mdi mdi-crosshairs-gps',
             label: 'Locations',
-            items: [
+            menu: [
                 {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'Current location',
@@ -175,7 +175,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                 {
                     icon: 'mdi mdi-crosshairs',
                     label: 'Intersection points',
-                    items: [
+                    menu: [
                         {
                             icon: 'mdi mdi-crosshairs-gps',
                             label: 'Meridian x Equator',
@@ -264,8 +264,8 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     async mountChanged(mount?: Mount) {
-        if (mount && mount.name) {
-            mount = await this.api.mount(mount.name)
+        if (mount && mount.id) {
+            mount = await this.api.mount(mount.id)
             Object.assign(this.mount, mount)
 
             this.loadPreference()
@@ -391,7 +391,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     private update() {
-        if (this.mount.name) {
+        if (this.mount.id) {
             this.slewing = this.mount.slewing
             this.parking = this.mount.parking
             this.parked = this.mount.parked
@@ -445,7 +445,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadPreference() {
-        if (this.mount.name) {
+        if (this.mount.id) {
             const preference = this.storage.get<MountPreference>(mountPreferenceKey(this.mount), {})
             this.targetCoordinateType = preference.targetCoordinateType ?? 'JNOW'
             this.targetRightAscension = preference.targetRightAscension ?? '00h00m00s'

@@ -5,13 +5,19 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.solver.PlateSolverOptions
+import nebulosa.guiding.GuideDirection
+import org.hibernate.validator.constraints.time.DurationMin
+import org.springframework.boot.convert.DurationUnit
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 
 data class TPPAStartRequest(
-    @JsonIgnoreProperties("camera", "focuser", "wheel") val capture: CameraStartCaptureRequest = CameraStartCaptureRequest.EMPTY,
-    @field:NotNull @Valid val plateSolver: PlateSolverOptions = PlateSolverOptions.EMPTY,
-    val startFromCurrentPosition: Boolean = true,
-    val eastDirection: Boolean = true,
-    val compensateRefraction: Boolean = false,
-    val stopTrackingWhenDone: Boolean = true,
-    val stepDistance: Double = 10.0, // degrees
+    @JsonIgnoreProperties("camera", "focuser", "wheel") @JvmField val capture: CameraStartCaptureRequest = CameraStartCaptureRequest.EMPTY,
+    @field:NotNull @Valid @JvmField val plateSolver: PlateSolverOptions = PlateSolverOptions.EMPTY,
+    @JvmField val startFromCurrentPosition: Boolean = true,
+    @JvmField val compensateRefraction: Boolean = false,
+    @JvmField val stopTrackingWhenDone: Boolean = true,
+    @field:DurationMin(seconds = 1L) @JvmField val stepDirection: GuideDirection = GuideDirection.EAST,
+    @field:DurationUnit(ChronoUnit.SECONDS) @field:DurationMin(seconds = 1L) @JvmField val stepDuration: Duration = Duration.ZERO,
+    @JvmField val stepSpeed: String? = null,
 )

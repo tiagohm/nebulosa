@@ -3,6 +3,7 @@ package nebulosa.retrofit
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import retrofit2.CallAdapter
@@ -14,10 +15,10 @@ import java.util.concurrent.TimeUnit
 abstract class RetrofitService(
     url: String,
     httpClient: OkHttpClient? = null,
-    objectMapper: ObjectMapper? = null,
+    mapper: ObjectMapper? = null,
 ) {
 
-    protected val mapper by lazy { objectMapper ?: DEFAULT_MAPPER.copy()!! }
+    protected val mapper by lazy { mapper ?: DEFAULT_MAPPER.copy()!! }
 
     protected open val converterFactory = emptyList<Converter.Factory>()
 
@@ -32,9 +33,10 @@ abstract class RetrofitService(
         builder.baseUrl(url.trim().let { if (it.endsWith("/")) it else "$it/" })
         builder.addConverterFactory(RawAsStringConverterFactory)
         builder.addConverterFactory(RawAsByteArrayConverterFactory)
+        builder.addConverterFactory(EnumToStringConverterFactory(this.mapper))
         converterFactory.forEach { builder.addConverterFactory(it) }
-        handleObjectMapper(mapper)
-        builder.addConverterFactory(JacksonConverterFactory.create(mapper))
+        handleObjectMapper(this.mapper)
+        builder.addConverterFactory(JacksonConverterFactory.create(this.mapper))
         callAdaptorFactory?.also(builder::addCallAdapterFactory)
 
         with((httpClient ?: HTTP_CLIENT).newBuilder()) {
@@ -58,6 +60,7 @@ abstract class RetrofitService(
             .build()
 
         @JvmStatic private val DEFAULT_MAPPER = ObjectMapper()
+            .registerModules(JavaTimeModule())
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)!!
     }

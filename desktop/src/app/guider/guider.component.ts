@@ -366,8 +366,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     async guideOutputChanged() {
-        if (this.guideOutput) {
-            const guideOutput = await this.api.guideOutput(this.guideOutput.name)
+        if (this.guideOutput?.id) {
+            const guideOutput = await this.api.guideOutput(this.guideOutput.id)
             Object.assign(this.guideOutput, guideOutput)
 
             this.update()

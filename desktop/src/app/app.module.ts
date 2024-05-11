@@ -5,6 +5,7 @@ import { LOCALE_ID, NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { AccordionModule } from 'primeng/accordion'
 import { ConfirmationService, MessageService } from 'primeng/api'
 import { BadgeModule } from 'primeng/badge'
 import { ButtonModule } from 'primeng/button'
@@ -48,6 +49,7 @@ import { HistogramComponent } from '../shared/components/histogram/histogram.com
 import { MapComponent } from '../shared/components/map/map.component'
 import { MenuItemComponent } from '../shared/components/menu-item/menu-item.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
+import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
@@ -109,18 +111,20 @@ import { SettingsComponent } from './settings/settings.component'
         INDIComponent,
         INDIPropertyComponent,
         LocationDialog,
+        MapComponent,
         MenuItemComponent,
         MoonComponent,
         MountComponent,
         NoDropdownDirective,
-        MapComponent,
         SequencerComponent,
         SettingsComponent,
         SkyObjectPipe,
+        SlideMenuComponent,
         StopPropagationDirective,
         WinPipe,
     ],
     imports: [
+        AccordionModule,
         AppRoutingModule,
         BadgeModule,
         BrowserAnimationsModule,

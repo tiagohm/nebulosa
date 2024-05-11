@@ -102,9 +102,17 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         return this.hasCamera
     }
 
-    get hasINDI() {
+    get hasDevices() {
         return this.hasCamera || this.hasMount || this.hasFocuser
             || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
+    }
+
+    get hasINDI() {
+        return this.connection?.type === 'INDI' && this.hasDevices
+    }
+
+    get hasAlpaca() {
+        return this.connection?.type === 'ALPACA' && this.hasDevices
     }
 
     readonly deviceModel: MenuItem[] = []
@@ -206,7 +214,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             })
         })
 
-        this.connections = preference.connections.get()
+        this.connections = preference.connections.get().sort((a, b) => (b.connectedAt ?? 0) - (a.connectedAt ?? 0))
         this.connections.forEach(e => { e.id = undefined; e.connected = false })
         this.connection = this.connections[0]
     }
@@ -223,9 +231,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
-        this.disconnect()
-    }
+    ngOnDestroy() { }
 
     addConnection() {
         this.newConnection = [structuredClone(EMPTY_CONNECTION_DETAILS), undefined]
@@ -263,6 +269,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             // New.
             else {
                 this.connections.push(this.newConnection[0])
+
+                if (!this.connection) {
+                    this.connection = this.newConnection[0]
+                }
             }
         }
 
@@ -298,7 +308,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    private openDevice<K extends keyof MappedDevice>(type: K) {
+    private openDevice<K extends keyof MappedDevice>(type: K, header: string) {
         this.deviceModel.length = 0
 
         const devices: Device[] = type === 'CAMERA' ? this.cameras
@@ -320,6 +330,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             })
         }
 
+        this.deviceMenu.header = header
         this.deviceMenu.show()
     }
 
@@ -353,7 +364,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         } else {
             const camera = await this.imageMenu.show(this.cameras)
 
-            if (camera) {
+            if (camera && camera !== 'NONE') {
                 this.browserWindow.openCameraImage(camera)
             }
         }
@@ -365,7 +376,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'CAMERA':
             case 'FOCUSER':
             case 'WHEEL':
-                this.openDevice(type)
+                this.openDevice(type, type)
                 break
             case 'GUIDER':
                 this.browserWindow.openGuider({ bringToFront: true })
@@ -434,6 +445,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                     if (!connection.connected &&
                         (status.host === connection.host || status.ip === connection.host) &&
                         status.port === connection.port) {
+                        connection.id = status.id
+                        connection.type = status.type
                         connection.connected = true
                         this.connection = connection
                         break

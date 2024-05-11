@@ -4,8 +4,6 @@ import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.focuser.*
-import nebulosa.indi.device.thermometer.ThermometerAttached
-import nebulosa.indi.device.thermometer.ThermometerDetached
 import nebulosa.indi.protocol.*
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indifocuser.cpp
@@ -124,14 +122,17 @@ internal open class INDIFocuser(
 
                     }
                     "FOCUS_TEMPERATURE" -> {
-                        if (message is DefNumberVector) {
+                        if (!hasThermometer && message is DefNumberVector) {
                             hasThermometer = true
-                            sender.fireOnEventReceived(ThermometerAttached(this))
+                            sender.registerThermometer(this)
                         }
 
-                        temperature = message["TEMPERATURE"]!!.value
+                        val value = message["TEMPERATURE"]!!.value
 
-                        sender.fireOnEventReceived(FocuserTemperatureChanged(this))
+                        if (temperature != value) {
+                            temperature = value
+                            sender.fireOnEventReceived(FocuserTemperatureChanged(this))
+                        }
                     }
                 }
             }
@@ -182,7 +183,7 @@ internal open class INDIFocuser(
     override fun close() {
         if (hasThermometer) {
             hasThermometer = false
-            sender.fireOnEventReceived(ThermometerDetached(this))
+            sender.unregisterThermometer(this)
         }
     }
 

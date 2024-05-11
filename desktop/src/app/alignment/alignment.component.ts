@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -34,29 +35,26 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     running = false
     alignmentMethod?: AlignmentMethod
     status: DARVState | TPPAState = 'IDLE'
-    elapsedTime = 0
-    remainingTime = 0
-    progress = 0
-    private id = ''
 
     readonly tppaRequest: TPPAStart = {
         capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
         plateSolver: structuredClone(EMPTY_PLATE_SOLVER_PREFERENCE),
         startFromCurrentPosition: true,
-        eastDirection: true,
+        stepDirection: 'EAST',
         compensateRefraction: true,
         stopTrackingWhenDone: true,
-        stepDistance: 10,
+        stepDuration: 5,
     }
 
     readonly plateSolverTypes = Array.from(DEFAULT_SOLVER_TYPES)
+    tppaFailed = false
+    tppaRightAscension: Angle = `00h00m00s`
+    tppaDeclination: Angle = `00°00'00"`
     tppaAzimuthError: Angle = `00°00'00"`
     tppaAzimuthErrorDirection = ''
     tppaAltitudeError: Angle = `00°00'00"`
     tppaAltitudeErrorDirection = ''
     tppaTotalError: Angle = `00°00'00"`
-    tppaRightAscension: Angle = '00h00m00s'
-    tppaDeclination: Angle = `00°00'00"`
 
     readonly darvRequest: DARVStart = {
         capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
@@ -67,9 +65,13 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     readonly driftExposureUnit = ExposureTimeUnit.SECOND
-    readonly darvHemispheres: Hemisphere[] = ['NORTHERN', 'SOUTHERN']
     darvHemisphere: Hemisphere = 'NORTHERN'
     darvDirection?: GuideDirection
+
+    @ViewChild('cameraExposure')
+    private readonly cameraExposure!: CameraExposureComponent
+
+    private autoResizeTimeout?: any
 
     constructor(
         app: AppComponent,
@@ -172,49 +174,48 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         })
 
         electron.on('TPPA.ELAPSED', event => {
-            if (event.id === this.id) {
+            if (event.camera.id === this.camera?.id) {
                 ngZone.run(() => {
-                    if (this.status !== 'PAUSING' || event.state === 'PAUSED') {
-                        this.status = event.state
-                    }
-
+                    this.status = event.state
                     this.running = event.state !== 'FINISHED'
-                    this.elapsedTime = event.elapsedTime
 
                     if (event.state === 'COMPUTED') {
+                        this.tppaFailed = false
+                        this.tppaRightAscension = event.rightAscension
+                        this.tppaDeclination = event.declination
                         this.tppaAzimuthError = event.azimuthError
                         this.tppaAltitudeError = event.altitudeError
                         this.tppaAzimuthErrorDirection = event.azimuthErrorDirection
                         this.tppaAltitudeErrorDirection = event.altitudeErrorDirection
                         this.tppaTotalError = event.totalError
-                    } else if (event.state === 'SOLVED' || event.state === 'SLEWING') {
+                        clearTimeout(this.autoResizeTimeout)
+                        this.autoResizeTimeout = electron.autoResizeWindow()
+                    } else if (event.state === 'FINISHED') {
+                        this.cameraExposure.reset()
+                        electron.autoResizeWindow()
+                    } else if (event.state === 'SOLVING' && event.capture && event.capture.state !== 'CAPTURE_FINISHED') {
+                        this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
+                    } else if (event.state === 'SOLVED' || event.state === 'SLEWED') {
+                        this.tppaFailed = false
                         this.tppaRightAscension = event.rightAscension
                         this.tppaDeclination = event.declination
-                    }
-
-                    if (!this.running) {
-                        this.alignmentMethod = undefined
+                    } else if (event.state === 'FAILED') {
+                        this.tppaFailed = true
                     }
                 })
             }
         })
 
         electron.on('DARV.ELAPSED', event => {
-            if (event.id === this.id) {
+            if (event.camera.id === this.camera?.id) {
                 ngZone.run(() => {
                     this.status = event.state
-                    this.remainingTime = event.remainingTime
-                    this.progress = event.progress
-                    this.running = event.remainingTime > 0
+                    this.running = this.cameraExposure.handleCameraCaptureEvent(event.capture)
 
                     if (event.state === 'FORWARD' || event.state === 'BACKWARD') {
                         this.darvDirection = event.direction
                     } else {
                         this.darvDirection = undefined
-                    }
-
-                    if (!this.running) {
-                        this.alignmentMethod = undefined
                     }
                 })
             }
@@ -236,29 +237,29 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     async cameraChanged() {
-        if (this.camera.name) {
-            const camera = await this.api.camera(this.camera.name)
+        if (this.camera.id) {
+            const camera = await this.api.camera(this.camera.id)
             Object.assign(this.camera, camera)
             this.loadPreference()
         }
     }
 
     async mountChanged() {
-        if (this.mount.name) {
-            const mount = await this.api.mount(this.mount.name)
+        if (this.mount.id) {
+            const mount = await this.api.mount(this.mount.id)
             Object.assign(this.mount, mount)
         }
     }
 
     async guideOutputChanged() {
-        if (this.guideOutput.name) {
-            const guideOutput = await this.api.guideOutput(this.guideOutput.name)
+        if (this.guideOutput.id) {
+            const guideOutput = await this.api.guideOutput(this.guideOutput.id)
             Object.assign(this.guideOutput, guideOutput)
         }
     }
 
     mountConnect() {
-        if (this.mount.name) {
+        if (this.mount.id) {
             if (this.mount.connected) {
                 this.api.mountDisconnect(this.mount)
             } else {
@@ -268,7 +269,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     guideOutputConnect() {
-        if (this.guideOutput.name) {
+        if (this.guideOutput.id) {
             if (this.guideOutput.connected) {
                 this.api.guideOutputDisconnect(this.guideOutput)
             } else {
@@ -278,7 +279,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     async showCameraDialog() {
-        if (this.camera.name) {
+        if (this.camera.id) {
             if (this.tab === 0) {
                 if (await CameraComponent.showAsDialog(this.browserWindow, 'TPPA', this.camera, this.tppaRequest.capture)) {
                     this.savePreference()
@@ -316,30 +317,29 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         this.darvRequest.capture.exposureTime = this.darvRequest.exposureTime * 1000000
         this.darvRequest.capture.exposureDelay = this.darvRequest.initialPause
         await this.openCameraImage()
-        this.id = await this.api.darvStart(this.camera, this.guideOutput, this.darvRequest)
+        await this.api.darvStart(this.camera, this.guideOutput, this.darvRequest)
     }
 
     darvStop() {
-        this.api.darvStop(this.id)
+        this.api.darvStop(this.camera)
     }
 
     async tppaStart() {
         this.alignmentMethod = 'TPPA'
         await this.openCameraImage()
-        this.id = await this.api.tppaStart(this.camera, this.mount, this.tppaRequest)
+        await this.api.tppaStart(this.camera, this.mount, this.tppaRequest)
     }
 
     tppaPause() {
-        this.status = 'PAUSING'
-        this.api.tppaPause(this.id)
+        this.api.tppaPause(this.camera)
     }
 
     tppaUnpause() {
-        this.api.tppaUnpause(this.id)
+        this.api.tppaUnpause(this.camera)
     }
 
     tppaStop() {
-        this.api.tppaStop(this.id)
+        this.api.tppaStop(this.camera)
     }
 
     openCameraImage() {
@@ -350,16 +350,16 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         const preference = this.preference.alignmentPreference.get()
 
         this.tppaRequest.startFromCurrentPosition = preference.tppaStartFromCurrentPosition
-        this.tppaRequest.eastDirection = preference.tppaEastDirection
+        this.tppaRequest.stepDirection = preference.tppaStepDirection
         this.tppaRequest.compensateRefraction = preference.tppaCompensateRefraction
         this.tppaRequest.stopTrackingWhenDone = preference.tppaStopTrackingWhenDone
-        this.tppaRequest.stepDistance = preference.tppaStepDistance
+        this.tppaRequest.stepDuration = preference.tppaStepDuration
         this.tppaRequest.plateSolver.type = preference.tppaPlateSolverType
         this.darvRequest.initialPause = preference.darvInitialPause
         this.darvRequest.exposureTime = preference.darvExposureTime
         this.darvHemisphere = preference.darvHemisphere
 
-        if (this.camera.name) {
+        if (this.camera.id) {
             Object.assign(this.tppaRequest.capture, this.preference.cameraStartCaptureForTPPA(this.camera).get(this.tppaRequest.capture))
             Object.assign(this.darvRequest.capture, this.preference.cameraStartCaptureForDARV(this.camera).get(this.darvRequest.capture))
         }
@@ -376,10 +376,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
         const preference: AlignmentPreference = {
             tppaStartFromCurrentPosition: this.tppaRequest.startFromCurrentPosition,
-            tppaEastDirection: this.tppaRequest.eastDirection,
+            tppaStepDirection: this.tppaRequest.stepDirection,
             tppaCompensateRefraction: this.tppaRequest.compensateRefraction,
             tppaStopTrackingWhenDone: this.tppaRequest.stopTrackingWhenDone,
-            tppaStepDistance: this.tppaRequest.stepDistance,
+            tppaStepDuration: this.tppaRequest.stepDuration,
             tppaPlateSolverType: this.tppaRequest.plateSolver.type,
             darvInitialPause: this.darvRequest.initialPause,
             darvExposureTime: this.darvRequest.exposureTime,
