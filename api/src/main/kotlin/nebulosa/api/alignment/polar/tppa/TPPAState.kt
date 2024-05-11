@@ -7,4 +7,5 @@ enum class TPPAState {
     SOLVED,
     COMPUTED,
     FINISHED,
+    FAILED,
 }

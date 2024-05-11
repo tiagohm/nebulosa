@@ -53,7 +53,7 @@ data class FlatWizardTask(
             LOG.info("Flat Wizard started. camera={}, request={}, exposureTime={}", camera, request, exposureTime)
 
             val cameraRequest = request.captureRequest.copy(
-                exposureTime = exposureTime, frameType = FrameType.LIGHT,
+                exposureTime = exposureTime, frameType = FrameType.FLAT,
                 autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF,
             )
 

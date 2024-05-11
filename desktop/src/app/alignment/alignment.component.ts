@@ -68,6 +68,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     @ViewChild('cameraExposure')
     private readonly cameraExposure!: CameraExposureComponent
 
+    private autoResizeTimeout?: any
+
     constructor(
         app: AppComponent,
         private api: ApiService,
@@ -180,8 +182,13 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                         this.tppaAzimuthErrorDirection = event.azimuthErrorDirection
                         this.tppaAltitudeErrorDirection = event.altitudeErrorDirection
                         this.tppaTotalError = event.totalError
+                        clearTimeout(this.autoResizeTimeout)
+                        this.autoResizeTimeout = electron.autoResizeWindow()
                     } else if (event.state === 'FINISHED') {
                         this.cameraExposure.reset()
+                        electron.autoResizeWindow()
+                    } else if (event.state === 'SOLVING' && event.capture && event.capture.state !== 'CAPTURE_FINISHED') {
+                        this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
                     }
                 })
             }

@@ -35,6 +35,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 import kotlin.math.min
 
@@ -736,6 +737,8 @@ data class ASCOMCamera(
     private inner class ImageReadyWaiter : Thread("$name ASCOM Image Ready Waiter") {
 
         private val latch = CountUpDownLatch(1)
+        private val aborted = AtomicBoolean()
+
         @Volatile @JvmField var exposureTime: Duration = Duration.ZERO
 
         init {
@@ -744,10 +747,12 @@ data class ASCOMCamera(
 
         fun captureStarted(exposureTime: Duration) {
             this.exposureTime = exposureTime
+            aborted.set(false)
             latch.reset()
         }
 
         fun captureAborted() {
+            aborted.set(true)
             latch.countUp()
         }
 
@@ -761,7 +766,7 @@ data class ASCOMCamera(
                     processCameraState()
 
                     service.isImageReady(device.number).doRequest {
-                        if (it.value) {
+                        if (it.value && !aborted.get()) {
                             latch.countUp()
 
                             try {
@@ -772,7 +777,9 @@ data class ASCOMCamera(
                         }
                     }
 
-                    if (!latch.get()) {
+                    if (aborted.get()) {
+                        break
+                    } else if (!latch.get()) {
                         val endTime = System.currentTimeMillis()
                         val delayTime = 1000L - (endTime - startTime)
 
@@ -781,6 +788,14 @@ data class ASCOMCamera(
                         }
                     }
                 }
+
+                if (aborted.get()) {
+                    sender.fireOnEventReceived(CameraExposureAborted(this@ASCOMCamera))
+                } else {
+                    sender.fireOnEventReceived(CameraExposureFinished(this@ASCOMCamera))
+                }
+
+                processCameraState(CameraState.IDLE)
             }
         }
     }

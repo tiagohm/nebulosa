@@ -27,6 +27,7 @@ export class CameraExposureComponent {
         this.capture.remainingTime = event.captureRemainingTime
         this.capture.progress = event.captureProgress
         this.capture.count = event.exposureCount
+        if (looping) this.capture.looping = looping
         this.step.elapsedTime = event.stepElapsedTime
         this.step.remainingTime = event.stepRemainingTime
         this.step.progress = event.stepProgress

@@ -8,9 +8,11 @@ import nebulosa.api.cameras.CameraCaptureEvent
 import nebulosa.api.cameras.CameraCaptureState
 import nebulosa.api.cameras.CameraCaptureTask
 import nebulosa.api.guiding.GuidePulseRequest
+import nebulosa.api.messages.MessageEvent
 import nebulosa.api.mounts.MountMoveTask
 import nebulosa.api.tasks.Task
 import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.common.time.Stopwatch
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
@@ -31,7 +33,7 @@ data class TPPATask(
     @JvmField val mount: Mount? = null,
     @JvmField val longitude: Angle = mount!!.longitude,
     @JvmField val latitude: Angle = mount!!.latitude,
-) : Task<TPPAEvent>(), Consumer<CameraCaptureEvent> {
+) : Task<MessageEvent>(), Consumer<CameraCaptureEvent> {
 
     @JvmField val guideRequest = GuidePulseRequest(request.stepDirection, request.stepDuration)
     @JvmField val cameraRequest = request.capture.copy(
@@ -43,7 +45,8 @@ data class TPPATask(
 
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
     private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = 1)
-    private val guidePulseState = BooleanArray(3)
+    private val mountMoveState = BooleanArray(3)
+    private val elapsedTime = Stopwatch()
 
     @Volatile private var azimuthError: Angle = 0.0
     @Volatile private var altitudeError: Angle = 0.0
@@ -66,13 +69,19 @@ data class TPPATask(
     override fun accept(event: CameraCaptureEvent) {
         if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
             savedImage = event.savePath!!
-        } else if (event.state != CameraCaptureState.IDLE && event.state != CameraCaptureState.CAPTURE_FINISHED) {
-            sendEvent(TPPAState.SOLVING, event)
         }
+
+        sendEvent(TPPAState.SOLVING, event)
     }
 
     override fun execute(cancellationToken: CancellationToken) {
-        LOG.info("TPPA started. camera={}, mount={}, request={}", camera, mount, request)
+        LOG.info(
+            "TPPA started. longitude={}, latitude={}, rightAscension={}, declination={}, camera={}, mount={}, request={}",
+            longitude.formatSignedDMS(), latitude.formatSignedDMS(), mount?.rightAscension?.formatHMS(), mount?.declination?.formatSignedDMS(),
+            camera, mount, request
+        )
+
+        elapsedTime.start()
 
         while (!cancellationToken.isDone) {
             cancellationToken.waitForPause()
@@ -81,11 +90,11 @@ data class TPPATask(
 
             // SLEWING.
             if (mount != null) {
-                if (alignment.state in 1..2 && !guidePulseState[alignment.state]) {
+                if (alignment.state in 1..2 && !mountMoveState[alignment.state]) {
                     MountMoveTask(mount, guideRequest).use {
                         sendEvent(TPPAState.SLEWING)
                         it.execute(cancellationToken)
-                        guidePulseState[alignment.state] = true
+                        mountMoveState[alignment.state] = true
                     }
 
                     LOG.info("TPPA slewed. rightAscension={}, declination={}", mount.rightAscension.formatHMS(), mount.declination.formatSignedDMS())
@@ -106,10 +115,16 @@ data class TPPATask(
             // ALIGNMENT.
             val radius = if (mount == null) 0.0 else ThreePointPolarAlignment.DEFAULT_RADIUS
 
-            val result = alignment.align(
-                savedImage!!, mount?.rightAscension ?: 0.0, mount?.declination ?: 0.0, radius,
-                request.compensateRefraction, cancellationToken
-            )
+            val result = try {
+                alignment.align(
+                    savedImage!!, mount?.rightAscension ?: 0.0, mount?.declination ?: 0.0, radius,
+                    request.compensateRefraction, cancellationToken
+                )
+            } catch (e: Throwable) {
+                sendEvent(TPPAState.FAILED)
+                LOG.error("failed to align", e)
+                break
+            }
 
             savedImage = null
 
@@ -125,6 +140,8 @@ data class TPPATask(
                 }
                 is ThreePointPolarAlignmentResult.NoPlateSolution -> {
                     noSolutionAttempts++
+
+                    sendEvent(TPPAState.FAILED)
 
                     if (noSolutionAttempts < 10) {
                         continue
@@ -170,7 +187,14 @@ data class TPPATask(
 
         sendEvent(TPPAState.FINISHED)
 
+        elapsedTime.stop()
+
         LOG.info("TPPA finished. camera={}, mount={}, request={}", camera, mount, request)
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun processCameraCaptureEvent(event: CameraCaptureEvent?): CameraCaptureEvent? {
+        return event?.copy(captureElapsedTime = elapsedTime.elapsed)
     }
 
     private fun sendEvent(state: TPPAState, capture: CameraCaptureEvent? = null) {
@@ -178,14 +202,18 @@ data class TPPATask(
             camera, state,
             azimuthError, altitudeError, totalError,
             azimuthErrorDirection, altitudeErrorDirection,
-            capture,
+            processCameraCaptureEvent(capture),
         )
 
         onNext(event)
+
+        if (capture?.state == CameraCaptureState.EXPOSURE_FINISHED) {
+            onNext(capture)
+        }
     }
 
     override fun reset() {
-        guidePulseState.fill(false)
+        mountMoveState.fill(false)
         azimuthError = 0.0
         altitudeError = 0.0
         totalError = 0.0

@@ -2,6 +2,7 @@ package nebulosa.api.alignment.polar.tppa
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
 import nebulosa.api.solver.PlateSolverService
 import nebulosa.indi.device.camera.Camera
@@ -17,11 +18,11 @@ import java.util.concurrent.ConcurrentHashMap
 class TPPAExecutor(
     private val messageService: MessageService,
     private val plateSolverService: PlateSolverService,
-) : Consumer<TPPAEvent> {
+) : Consumer<MessageEvent> {
 
     private val jobs = ConcurrentHashMap.newKeySet<TPPAJob>(1)
 
-    override fun accept(event: TPPAEvent) {
+    override fun accept(event: MessageEvent) {
         messageService.sendMessage(event)
     }
 
