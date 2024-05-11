@@ -1,7 +1,6 @@
 package nebulosa.api.mounts
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.tasks.Task
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
@@ -14,7 +13,7 @@ import nebulosa.log.loggerFor
 
 data class MountMoveTask(
     @JvmField val mount: Mount,
-    @JvmField val request: GuidePulseRequest,
+    @JvmField val request: MountMoveRequest,
 ) : Task<MountMoveEvent>(), CancellationListener, Consumer<DelayEvent> {
 
     private val delayTask = DelayTask(request.duration)
@@ -25,9 +24,13 @@ data class MountMoveTask(
 
     override fun execute(cancellationToken: CancellationToken) {
         if (!cancellationToken.isDone && request.duration.toMillis() > 0) {
+            mount.slewRates.takeIf { !request.speed.isNullOrBlank() }
+                ?.find { it.name == request.speed || it.label == request.speed }
+                ?.also { mount.slewRate(it) }
+
             mount.move(request.direction, true)
 
-            LOG.info("Mount Move started. mount={}, duration={}, direction={}", mount, request.duration.toMillis(), request.direction)
+            LOG.info("Mount Move started. mount={}, request={}", mount, request)
 
             try {
                 cancellationToken.listen(this)
@@ -37,7 +40,7 @@ data class MountMoveTask(
                 cancellationToken.unlisten(this)
             }
 
-            LOG.info("Mount Move finished. mount={}, duration={}, direction={}", mount, request.duration.toMillis(), request.direction)
+            LOG.info("Mount Move finished. mount={}, request={}", mount, request)
         }
     }
 

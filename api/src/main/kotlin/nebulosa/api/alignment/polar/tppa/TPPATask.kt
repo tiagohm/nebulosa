@@ -7,8 +7,8 @@ import nebulosa.api.cameras.AutoSubFolderMode
 import nebulosa.api.cameras.CameraCaptureEvent
 import nebulosa.api.cameras.CameraCaptureState
 import nebulosa.api.cameras.CameraCaptureTask
-import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.messages.MessageEvent
+import nebulosa.api.mounts.MountMoveRequest
 import nebulosa.api.mounts.MountMoveTask
 import nebulosa.api.tasks.Task
 import nebulosa.common.concurrency.cancel.CancellationToken
@@ -25,6 +25,8 @@ import nebulosa.plate.solving.PlateSolver
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.hypot
 
 data class TPPATask(
     @JvmField val camera: Camera,
@@ -35,7 +37,7 @@ data class TPPATask(
     @JvmField val latitude: Angle = mount!!.latitude,
 ) : Task<MessageEvent>(), Consumer<CameraCaptureEvent> {
 
-    @JvmField val guideRequest = GuidePulseRequest(request.stepDirection, request.stepDuration)
+    @JvmField val mountMoveRequest = MountMoveRequest(request.stepDirection, request.stepDuration, request.stepSpeed)
     @JvmField val cameraRequest = request.capture.copy(
         savePath = Files.createTempDirectory("tppa"),
         exposureAmount = 0, exposureDelay = Duration.ZERO,
@@ -47,7 +49,10 @@ data class TPPATask(
     private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = 1)
     private val mountMoveState = BooleanArray(3)
     private val elapsedTime = Stopwatch()
+    private val finished = AtomicBoolean()
 
+    @Volatile private var rightAscension: Angle = 0.0
+    @Volatile private var declination: Angle = 0.0
     @Volatile private var azimuthError: Angle = 0.0
     @Volatile private var altitudeError: Angle = 0.0
     @Volatile private var totalError: Angle = 0.0
@@ -71,7 +76,9 @@ data class TPPATask(
             savedImage = event.savePath!!
         }
 
-        sendEvent(TPPAState.SOLVING, event)
+        if (!finished.get()) {
+            sendEvent(TPPAState.SOLVING, event)
+        }
     }
 
     override fun execute(cancellationToken: CancellationToken) {
@@ -81,7 +88,11 @@ data class TPPATask(
             camera, mount, request
         )
 
+        finished.set(false)
         elapsedTime.start()
+
+        rightAscension = mount?.rightAscension ?: 0.0
+        declination = mount?.declination ?: 0.0
 
         while (!cancellationToken.isDone) {
             cancellationToken.waitForPause()
@@ -91,11 +102,15 @@ data class TPPATask(
             // SLEWING.
             if (mount != null) {
                 if (alignment.state in 1..2 && !mountMoveState[alignment.state]) {
-                    MountMoveTask(mount, guideRequest).use {
+                    MountMoveTask(mount, mountMoveRequest).use {
                         sendEvent(TPPAState.SLEWING)
                         it.execute(cancellationToken)
                         mountMoveState[alignment.state] = true
                     }
+
+                    rightAscension = mount.rightAscension
+                    declination = mount.declination
+                    sendEvent(TPPAState.SLEWED)
 
                     LOG.info("TPPA slewed. rightAscension={}, declination={}", mount.rightAscension.formatHMS(), mount.declination.formatSignedDMS())
                 }
@@ -135,6 +150,8 @@ data class TPPATask(
             when (result) {
                 is ThreePointPolarAlignmentResult.NeedMoreMeasurement -> {
                     noSolutionAttempts = 0
+                    rightAscension = result.rightAscension
+                    declination = result.declination
                     sendEvent(TPPAState.SOLVED)
                     continue
                 }
@@ -153,8 +170,11 @@ data class TPPATask(
                 is ThreePointPolarAlignmentResult.Measured -> {
                     noSolutionAttempts = 0
 
+                    rightAscension = result.rightAscension
+                    declination = result.declination
                     azimuthError = result.azimuth
                     altitudeError = result.altitude
+                    totalError = hypot(azimuthError, altitudeError)
 
                     azimuthErrorDirection = when {
                         azimuthError > 0 -> if (latitude > 0) "🠔 Move LEFT/WEST" else "🠔 Move LEFT/EAST"
@@ -181,13 +201,14 @@ data class TPPATask(
             }
         }
 
+        finished.set(true)
+        elapsedTime.stop()
+
         if (request.stopTrackingWhenDone) {
             mount?.tracking(false)
         }
 
         sendEvent(TPPAState.FINISHED)
-
-        elapsedTime.stop()
 
         LOG.info("TPPA finished. camera={}, mount={}, request={}", camera, mount, request)
     }
@@ -199,7 +220,7 @@ data class TPPATask(
 
     private fun sendEvent(state: TPPAState, capture: CameraCaptureEvent? = null) {
         val event = TPPAEvent(
-            camera, state,
+            camera, state, rightAscension, declination,
             azimuthError, altitudeError, totalError,
             azimuthErrorDirection, altitudeErrorDirection,
             processCameraCaptureEvent(capture),

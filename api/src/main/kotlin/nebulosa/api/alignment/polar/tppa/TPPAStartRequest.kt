@@ -19,4 +19,5 @@ data class TPPAStartRequest(
     @JvmField val stopTrackingWhenDone: Boolean = true,
     @field:DurationMin(seconds = 1L) @JvmField val stepDirection: GuideDirection = GuideDirection.EAST,
     @field:DurationUnit(ChronoUnit.SECONDS) @field:DurationMin(seconds = 1L) @JvmField val stepDuration: Duration = Duration.ZERO,
+    @JvmField val stepSpeed: String? = null,
 )

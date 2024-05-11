@@ -47,6 +47,9 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     readonly plateSolverTypes = Array.from(DEFAULT_SOLVER_TYPES)
+    tppaFailed = false
+    tppaRightAscension: Angle = `00h00m00s`
+    tppaDeclination: Angle = `00°00'00"`
     tppaAzimuthError: Angle = `00°00'00"`
     tppaAzimuthErrorDirection = ''
     tppaAltitudeError: Angle = `00°00'00"`
@@ -177,6 +180,9 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     this.running = event.state !== 'FINISHED'
 
                     if (event.state === 'COMPUTED') {
+                        this.tppaFailed = false
+                        this.tppaRightAscension = event.rightAscension
+                        this.tppaDeclination = event.declination
                         this.tppaAzimuthError = event.azimuthError
                         this.tppaAltitudeError = event.altitudeError
                         this.tppaAzimuthErrorDirection = event.azimuthErrorDirection
@@ -189,6 +195,12 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                         electron.autoResizeWindow()
                     } else if (event.state === 'SOLVING' && event.capture && event.capture.state !== 'CAPTURE_FINISHED') {
                         this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
+                    } else if (event.state === 'SOLVED' || event.state === 'SLEWED') {
+                        this.tppaFailed = false
+                        this.tppaRightAscension = event.rightAscension
+                        this.tppaDeclination = event.declination
+                    } else if (event.state === 'FAILED') {
+                        this.tppaFailed = true
                     }
                 })
             }
