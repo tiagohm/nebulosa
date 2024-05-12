@@ -11,6 +11,8 @@ import nebulosa.api.messages.MessageEvent
 import nebulosa.api.mounts.MountMoveRequest
 import nebulosa.api.mounts.MountMoveTask
 import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.delay.DelayEvent
+import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.common.time.Stopwatch
 import nebulosa.indi.device.camera.Camera
@@ -35,9 +37,10 @@ data class TPPATask(
     @JvmField val mount: Mount? = null,
     @JvmField val longitude: Angle = mount!!.longitude,
     @JvmField val latitude: Angle = mount!!.latitude,
-) : Task<MessageEvent>(), Consumer<CameraCaptureEvent> {
+) : Task<MessageEvent>(), Consumer<Any> {
 
     @JvmField val mountMoveRequest = MountMoveRequest(request.stepDirection, request.stepDuration, request.stepSpeed)
+
     @JvmField val cameraRequest = request.capture.copy(
         savePath = Files.createTempDirectory("tppa"),
         exposureAmount = 0, exposureDelay = Duration.ZERO,
@@ -47,6 +50,7 @@ data class TPPATask(
 
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
     private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = 1)
+    private val settleDelayTask = DelayTask(Duration.ofSeconds(5))
     private val mountMoveState = BooleanArray(3)
     private val elapsedTime = Stopwatch()
     private val finished = AtomicBoolean()
@@ -60,9 +64,11 @@ data class TPPATask(
     @Volatile private var altitudeErrorDirection = ""
     @Volatile private var savedImage: Path? = null
     @Volatile private var noSolutionAttempts = 0
+    @Volatile private var captureEvent: CameraCaptureEvent? = null
 
     init {
         cameraCaptureTask.subscribe(this)
+        settleDelayTask.subscribe(this)
     }
 
     fun handleCameraEvent(event: CameraEvent) {
@@ -71,13 +77,22 @@ data class TPPATask(
         }
     }
 
-    override fun accept(event: CameraCaptureEvent) {
-        if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
-            savedImage = event.savePath!!
-        }
+    override fun accept(event: Any) {
+        when (event) {
+            is CameraCaptureEvent -> {
+                captureEvent = event
 
-        if (!finished.get()) {
-            sendEvent(TPPAState.SOLVING, event)
+                if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
+                    savedImage = event.savePath!!
+                }
+
+                if (!finished.get()) {
+                    sendEvent(TPPAState.SOLVING, event)
+                }
+            }
+            is DelayEvent -> {
+                sendEvent(TPPAState.SETTLING)
+            }
         }
     }
 
@@ -113,6 +128,8 @@ data class TPPATask(
                     sendEvent(TPPAState.SLEWED)
 
                     LOG.info("TPPA slewed. rightAscension={}, declination={}", mount.rightAscension.formatHMS(), mount.declination.formatSignedDMS())
+
+                    settleDelayTask.execute(cancellationToken)
                 }
             }
 
@@ -218,7 +235,7 @@ data class TPPATask(
         return event?.copy(captureElapsedTime = elapsedTime.elapsed)
     }
 
-    private fun sendEvent(state: TPPAState, capture: CameraCaptureEvent? = null) {
+    private fun sendEvent(state: TPPAState, capture: CameraCaptureEvent? = captureEvent) {
         val event = TPPAEvent(
             camera, state, rightAscension, declination,
             azimuthError, altitudeError, totalError,
@@ -242,6 +259,12 @@ data class TPPATask(
         altitudeErrorDirection = ""
         savedImage = null
         noSolutionAttempts = 0
+
+        finished.set(false)
+        elapsedTime.reset()
+
+        cameraCaptureTask.reset()
+        settleDelayTask.reset()
 
         super.reset()
     }

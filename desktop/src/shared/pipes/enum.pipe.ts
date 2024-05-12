@@ -328,6 +328,7 @@ export class EnumPipe implements PipeTransform {
         'BACKWARD': 'Backward',
         'IDLE': 'Idle',
         'SLEWING': 'Slewing',
+        'SLEWED': 'Slewed',
         'SOLVING': 'Solving',
         'SOLVED': 'Solved',
         'COMPUTED': 'Computed',
