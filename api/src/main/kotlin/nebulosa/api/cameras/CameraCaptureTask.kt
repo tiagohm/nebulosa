@@ -62,7 +62,10 @@ data class CameraCaptureTask(
     override fun execute(cancellationToken: CancellationToken) {
         LOG.info("Camera Capture started. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
 
+        cameraExposureTask.reset()
+
         while (!cancellationToken.isDone &&
+            !cameraExposureTask.isAborted &&
             ((exposureMaxRepeat > 0 && exposureRepeatCount < exposureMaxRepeat)
                     || (exposureMaxRepeat <= 0 && (request.isLoop || exposureCount < request.exposureAmount)))
         ) {
@@ -94,7 +97,9 @@ data class CameraCaptureTask(
             cameraExposureTask.execute(cancellationToken)
 
             // DITHER.
-            if (!cancellationToken.isDone && guider != null && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0) {
+            if (!cancellationToken.isDone && !cameraExposureTask.isAborted && guider != null
+                && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0
+            ) {
                 ditherAfterExposureTask.execute(cancellationToken)
             }
         }
