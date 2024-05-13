@@ -184,7 +184,7 @@ export interface FOVTelescope extends FOVEquipment {
     focalLength: number
 }
 
-export interface ImageSCNR {
+export interface ImageSCNRDialog {
     showDialog: boolean
     channel?: ImageChannel
     amount: number
@@ -196,12 +196,12 @@ export interface ImageDetectStars {
     stars: DetectedStar[]
 }
 
-export interface ImageFITSHeaders {
+export interface ImageFITSHeadersDialog {
     showDialog: boolean
     headers: FITSHeaderItem[]
 }
 
-export interface ImageStretch {
+export interface ImageStretchDialog {
     showDialog: boolean
     auto: boolean
     shadow: number
@@ -209,7 +209,7 @@ export interface ImageStretch {
     midtone: number
 }
 
-export interface ImageSolver {
+export interface ImageSolverDialog {
     showDialog: boolean
     solving: boolean
     blind: boolean
@@ -221,7 +221,7 @@ export interface ImageSolver {
     type: PlateSolverType
 }
 
-export interface ImageFOV extends FOV {
+export interface ImageFOVDialog extends FOV {
     showDialog: boolean
     fovs: FOV[]
     edited?: FOV
@@ -240,7 +240,7 @@ export interface ImageROI {
     height: number
 }
 
-export interface ImageSave {
+export interface ImageSaveDialog {
     showDialog: boolean
     format: ImageFormat
     bitpix: Bitpix
@@ -253,9 +253,9 @@ export interface ImageTransformation {
     force: boolean
     calibrationGroup?: string
     debayer: boolean
-    stretch: Omit<ImageStretch, 'showDialog'>
+    stretch: Omit<ImageStretchDialog, 'showDialog'>
     mirrorHorizontal: boolean
     mirrorVertical: boolean
     invert: boolean
-    scnr: Pick<ImageSCNR, 'channel' | 'amount' | 'method'>
+    scnr: Pick<ImageSCNRDialog, 'channel' | 'amount' | 'method'>
 }

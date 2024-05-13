@@ -64,26 +64,19 @@ import java.util.concurrent.atomic.AtomicReference
  * @see <a href="https://free-astro.org/images/b/b7/Stellarium_telescope_protocol.txt">Protocol</a>
  * @see <a href="https://github.com/Stellarium/stellarium/blob/master/plugins/TelescopeControl/src/TelescopeClient.cpp">Stellarium Implementation</a>
  */
-class StellariumProtocolServer(
+data class StellariumProtocolServer(
     override val host: String = "0.0.0.0",
     override val port: Int = 10001,
-    val j2000: Boolean = false,
-) : NettyServer(), CurrentPositionHandler {
+) : NettyServer(), CurrentPositionHandler, StellariumMountHandler {
 
     private val stellariumMountHandler = AtomicReference<StellariumMountHandler>()
     private val currentPositionHandlers = LinkedHashSet<CurrentPositionHandler>()
 
-    val rightAscension: Angle?
-        get() = stellariumMountHandler.get()?.rightAscension
+    override val rightAscension
+        get() = stellariumMountHandler.get()?.rightAscension ?: 0.0
 
-    val declination: Angle?
-        get() = stellariumMountHandler.get()?.declination
-
-    val rightAscensionJ2000: Angle?
-        get() = stellariumMountHandler.get()?.rightAscensionJ2000
-
-    val declinationJ2000: Angle?
-        get() = stellariumMountHandler.get()?.declinationJ2000
+    override val declination
+        get() = stellariumMountHandler.get()?.declination ?: 0.0
 
     override val channelInitialzer = object : ChannelInitializer<SocketChannel>() {
 
@@ -110,6 +103,7 @@ class StellariumProtocolServer(
     }
 
     fun attachMountHandler(handler: StellariumMountHandler) {
+        require(handler !== this) { "cannot attach this server" }
         stellariumMountHandler.set(handler)
     }
 
@@ -118,8 +112,8 @@ class StellariumProtocolServer(
     }
 
     @Synchronized
-    internal fun goTo(rightAscension: Angle, declination: Angle) {
-        stellariumMountHandler.get()?.goTo(rightAscension, declination, j2000)
+    override fun goTo(rightAscension: Angle, declination: Angle) {
+        stellariumMountHandler.get()?.goTo(rightAscension, declination)
     }
 
     override fun close() {

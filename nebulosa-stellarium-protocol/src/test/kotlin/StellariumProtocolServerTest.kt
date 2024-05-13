@@ -11,8 +11,6 @@ class StellariumProtocolServerTest {
 
         override var rightAscension = "05 15 07".hours
         override var declination = "25 26 03".deg
-        override var rightAscensionJ2000 = "05 15 07".hours
-        override var declinationJ2000 = "25 26 03".deg
 
         @JvmStatic
         fun main(args: Array<String>) {
@@ -32,14 +30,9 @@ class StellariumProtocolServerTest {
             Thread.currentThread().join()
         }
 
-        override fun goTo(rightAscension: Angle, declination: Angle, j2000: Boolean) {
-            if (j2000) {
-                rightAscensionJ2000 = rightAscension
-                declinationJ2000 = declination
-            } else {
-                this.rightAscension = rightAscension
-                this.declination = declination
-            }
+        override fun goTo(rightAscension: Angle, declination: Angle) {
+            this.rightAscension = rightAscension
+            this.declination = declination
         }
     }
 }
