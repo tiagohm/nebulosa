@@ -266,6 +266,8 @@ data class TPPATask(
         cameraCaptureTask.reset()
         settleDelayTask.reset()
 
+        alignment.reset()
+
         super.reset()
     }
 

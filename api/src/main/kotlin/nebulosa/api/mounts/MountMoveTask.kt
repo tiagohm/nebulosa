@@ -25,7 +25,7 @@ data class MountMoveTask(
     override fun execute(cancellationToken: CancellationToken) {
         if (!cancellationToken.isDone && request.duration.toMillis() > 0) {
             mount.slewRates.takeIf { !request.speed.isNullOrBlank() }
-                ?.find { it.name == request.speed || it.label == request.speed }
+                ?.find { it.name == request.speed }
                 ?.also { mount.slewRate(it) }
 
             mount.move(request.direction, true)
