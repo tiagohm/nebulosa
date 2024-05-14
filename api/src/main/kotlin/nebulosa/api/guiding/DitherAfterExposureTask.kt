@@ -1,6 +1,6 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.AbstractTask
 import nebulosa.common.concurrency.cancel.CancellationListener
 import nebulosa.common.concurrency.cancel.CancellationSource
 import nebulosa.common.concurrency.cancel.CancellationToken
@@ -15,7 +15,7 @@ import kotlin.system.measureTimeMillis
 data class DitherAfterExposureTask(
     @JvmField val guider: Guider?,
     @JvmField val request: DitherAfterExposureRequest,
-) : Task<DitherAfterExposureEvent>(), GuiderListener, CancellationListener {
+) : AbstractTask<DitherAfterExposureEvent>(), GuiderListener, CancellationListener {
 
     private val ditherLatch = CountUpDownLatch()
 

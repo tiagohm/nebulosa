@@ -58,6 +58,7 @@ export interface TPPAStart {
     stopTrackingWhenDone: boolean
     stepDirection: GuideDirection
     stepDuration: number
+    stepSpeed?: string
 }
 
 export interface TPPAEvent extends MessageEvent {

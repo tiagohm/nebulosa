@@ -41,6 +41,8 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.nio.file.Path
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 
@@ -135,13 +137,16 @@ class BeanConfiguration {
     }
 
     @Bean
-    fun eventBus(threadPoolTaskExecutor: ThreadPoolTaskExecutor) = EventBus.builder()
+    fun eventBusExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()
+
+    @Bean
+    fun eventBus(eventBusExecutorService: ExecutorService) = EventBus.builder()
         .sendNoSubscriberEvent(false)
         .sendSubscriberExceptionEvent(false)
         .throwSubscriberException(false)
         .logNoSubscriberMessages(false)
         .logSubscriberExceptions(false)
-        .executorService(threadPoolTaskExecutor.threadPoolExecutor)
+        .executorService(eventBusExecutorService)
         .installDefaultEventBus()!!
 
     @Bean

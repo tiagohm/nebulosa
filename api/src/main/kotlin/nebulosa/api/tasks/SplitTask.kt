@@ -6,9 +6,9 @@ import java.util.concurrent.Executor
 import java.util.concurrent.ForkJoinPool
 
 open class SplitTask(
-    private val tasks: Collection<Task<*>>,
+    private val tasks: Collection<Task>,
     private val executor: Executor = EXECUTOR,
-) : Task<Any>() {
+) : Task {
 
     override fun execute(cancellationToken: CancellationToken) {
         if (tasks.isEmpty()) {

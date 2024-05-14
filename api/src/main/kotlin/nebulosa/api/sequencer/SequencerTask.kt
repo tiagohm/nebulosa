@@ -6,6 +6,7 @@ import nebulosa.api.cameras.CameraCaptureState
 import nebulosa.api.cameras.CameraCaptureTask
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.messages.MessageEvent
+import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.Task
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
@@ -36,15 +37,15 @@ data class SequencerTask(
     @JvmField val mount: Mount? = null,
     @JvmField val wheel: FilterWheel? = null,
     @JvmField val focuser: Focuser? = null,
-) : Task<MessageEvent>(), Consumer<Any> {
+) : AbstractTask<MessageEvent>(), Consumer<Any> {
 
     private val usedEntries = plan.entries.filter { it.enabled }
 
     private val initialDelayTask = DelayTask(plan.initialDelay)
 
     private val sequencerId = AtomicInteger()
-    private val tasks = LinkedList<Task<*>>()
-    private val currentTask = AtomicReference<Task<*>>()
+    private val tasks = LinkedList<Task>()
+    private val currentTask = AtomicReference<Task>()
 
     @Volatile private var estimatedCaptureTime = initialDelayTask.duration
 
@@ -196,7 +197,7 @@ data class SequencerTask(
         onNext(SequencerEvent(sequencerId.get(), elapsedTime, remainingTime, progress, capture))
     }
 
-    private inner class SequencerIdTask(private val id: Int) : Task<Unit>() {
+    private inner class SequencerIdTask(private val id: Int) : Task {
 
         override fun execute(cancellationToken: CancellationToken) {
             LOG.info("Sequence started. id={}", id)

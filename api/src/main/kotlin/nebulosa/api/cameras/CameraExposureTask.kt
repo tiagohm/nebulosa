@@ -1,6 +1,6 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.AbstractTask
 import nebulosa.common.concurrency.cancel.CancellationListener
 import nebulosa.common.concurrency.cancel.CancellationSource
 import nebulosa.common.concurrency.cancel.CancellationToken
@@ -20,7 +20,7 @@ import kotlin.io.path.outputStream
 data class CameraExposureTask(
     @JvmField val camera: Camera,
     @JvmField val request: CameraStartCaptureRequest,
-) : Task<CameraExposureEvent>(), CancellationListener {
+) : AbstractTask<CameraExposureEvent>(), CancellationListener {
 
     private val latch = CountUpDownLatch()
     private val aborted = AtomicBoolean()

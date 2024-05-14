@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.guiding.DitherAfterExposureTask
 import nebulosa.api.guiding.WaitForSettleTask
-import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.common.concurrency.cancel.CancellationToken
@@ -21,7 +21,7 @@ data class CameraCaptureTask(
     @JvmField val guider: Guider? = null,
     private val useFirstExposure: Boolean = false,
     private val exposureMaxRepeat: Int = 0,
-) : Task<CameraCaptureEvent>(), Consumer<Any> {
+) : AbstractTask<CameraCaptureEvent>(), Consumer<Any> {
 
     private val delayTask = DelayTask(request.exposureDelay)
     private val waitForSettleTask = WaitForSettleTask(guider)
@@ -50,7 +50,7 @@ data class CameraCaptureTask(
         cameraExposureTask.subscribe(this)
 
         if (guider != null) {
-            waitForSettleTask.subscribe(this)
+            // waitForSettleTask.subscribe(this)
             ditherAfterExposureTask.subscribe(this)
         }
     }

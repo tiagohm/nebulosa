@@ -47,18 +47,26 @@
                                 <label>Step duration (s)</label>
                             </span>
                         </div>
-                        <div class="col-3 flex flex-column align-items-center justify-content-start text-center gap-2">
+                        <div class="col-3 flex flex-column align-items-center justify-content-start">
                             <span class="p-float-label">
                                 <p-dropdown [options]="['EAST', 'WEST']" [(ngModel)]="tppaRequest.stepDirection" styleClass="p-inputtext-sm border-0"
                                             [autoDisplayFirst]="false" (ngModelChange)="savePreference()" />
                                 <label>Direction</label>
                             </span>
                         </div>
-                        <div class="col-6 flex align-items-center justify-content-center text-center gap-2 text-sm">
+                        <div class="col-4 align-items-center">
+                            <span class="p-float-label">
+                                <p-dropdown [disabled]="!mount.connected" [options]="mount.slewRates" [(ngModel)]="tppaRequest.stepSpeed"
+                                            styleClass="p-inputtext-sm border-0" optionLabel="label" optionValue="name"
+                                            [autoDisplayFirst]="false" (ngModelChange)="savePreference()" />
+                                <label>Step speed</label>
+                            </span>
+                        </div>
+                        <div class="col-4 flex align-items-center justify-content-center text-center gap-2 text-sm">
                             <p-checkbox [binary]="true" [(ngModel)]="tppaRequest.stopTrackingWhenDone" label="Stop tracking when done"
                                         (ngModelChange)="savePreference()" />
                         </div>
-                        <div class="col-6 flex align-items-center justify-content-center text-center gap-2 text-sm">
+                        <div class="col-4 flex align-items-center justify-content-center text-center gap-2 text-sm">
                             <p-checkbox [binary]="true" [(ngModel)]="tppaRequest.compensateRefraction" label="Compensate refraction"
                                         (ngModelChange)="savePreference()" />
                         </div>
@@ -122,6 +130,17 @@
                                       icon="mdi mdi-stop" severity="danger" size="small" />
                             <p-button [disabled]="!camera.connected" (onClick)="openCameraImage()" icon="mdi mdi-image" [text]="true"
                                       styleClass="ml-4" pTooltip="View image" tooltipPosition="bottom" size="small" />
+                        </div>
+                    </div>
+                    <div class="grid mt-1">
+                        <div class="col-12 flex-column justify-content-center text-sm overflow-y-auto max-h-7rem p-0">
+                            <span>1. Locate a star in the Meridian and close to declination 0.</span>
+                            <span>2. Start DARV and wait for routine to complete.</span>
+                            <span>3. If you see V shaped track, adjust the Azimuth and repeat the step 2 till you get a line.</span>
+                            <span>4. Locate a star in the Eastern or Western horizon and close to declination 0.</span>
+                            <span>5. Start DARV and wait for routine to complete.</span>
+                            <span>6. If you see V shaped track, adjust the Altitude and repeat the step 5 till you get a line.</span>
+                            <span>7. Increase the drift time and repeat the step 1 to get a more accurate alignment.</span>
                         </div>
                     </div>
                 </p-tabPanel>

@@ -9,6 +9,8 @@ import nebulosa.api.guiding.GuidePulseEvent
 import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.guiding.GuidePulseTask
 import nebulosa.api.messages.MessageEvent
+import nebulosa.api.tasks.AbstractTask
+import nebulosa.api.tasks.SplitTask
 import nebulosa.api.tasks.Task
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
@@ -21,13 +23,14 @@ import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.log.loggerFor
 import java.nio.file.Files
 import java.time.Duration
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 data class DARVTask(
     @JvmField val camera: Camera,
     @JvmField val guideOutput: GuideOutput,
     @JvmField val request: DARVStartRequest,
-) : Task<MessageEvent>(), Consumer<Any> {
+    private val executor: Executor,
+) : AbstractTask<MessageEvent>(), Consumer<Any> {
 
     @JvmField val cameraRequest = request.capture.copy(
         exposureTime = request.capture.exposureTime + request.capture.exposureDelay,
@@ -64,23 +67,8 @@ data class DARVTask(
     override fun execute(cancellationToken: CancellationToken) {
         LOG.info("DARV started. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
 
-        val a = CompletableFuture.runAsync {
-            // CAPTURE.
-            cameraCaptureTask.execute(cancellationToken)
-        }
-
-        val b = CompletableFuture.runAsync {
-            // INITIAL PAUSE.
-            delayTask.execute(cancellationToken)
-
-            // FORWARD GUIDE PULSE.
-            forwardGuidePulseTask.execute(cancellationToken)
-
-            // BACKWARD GUIDE PULSE.
-            backwardGuidePulseTask.execute(cancellationToken)
-        }
-
-        CompletableFuture.allOf(a, b).join()
+        val task = SplitTask(listOf(CameraCaptureSubTask(), GuidePulseSubTask()), executor)
+        task.execute(cancellationToken)
 
         state = DARVState.IDLE
         sendEvent()
@@ -128,6 +116,22 @@ data class DARVTask(
         forwardGuidePulseTask.close()
         backwardGuidePulseTask.close()
         super.close()
+    }
+
+    private inner class CameraCaptureSubTask : Task {
+
+        override fun execute(cancellationToken: CancellationToken) {
+            cameraCaptureTask.execute(cancellationToken)
+        }
+    }
+
+    private inner class GuidePulseSubTask : Task {
+
+        override fun execute(cancellationToken: CancellationToken) {
+            delayTask.execute(cancellationToken)
+            forwardGuidePulseTask.execute(cancellationToken)
+            backwardGuidePulseTask.execute(cancellationToken)
+        }
     }
 
     companion object {

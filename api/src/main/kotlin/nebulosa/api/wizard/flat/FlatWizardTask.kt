@@ -5,7 +5,7 @@ import nebulosa.api.cameras.CameraCaptureEvent
 import nebulosa.api.cameras.CameraCaptureState
 import nebulosa.api.cameras.CameraCaptureTask
 import nebulosa.api.messages.MessageEvent
-import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.AbstractTask
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.fits.fits
 import nebulosa.image.Image
@@ -20,7 +20,7 @@ import java.time.Duration
 data class FlatWizardTask(
     @JvmField val camera: Camera,
     @JvmField val request: FlatWizardRequest,
-) : Task<MessageEvent>() {
+) : AbstractTask<MessageEvent>() {
 
     private val meanTarget = request.meanTarget / 65535f
     private val meanRange = (meanTarget * request.meanTolerance / 100f).let { (meanTarget - it)..(meanTarget + it) }

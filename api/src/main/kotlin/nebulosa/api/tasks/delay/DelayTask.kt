@@ -1,13 +1,13 @@
 package nebulosa.api.tasks.delay
 
-import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.AbstractTask
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.log.loggerFor
 import java.time.Duration
 
 data class DelayTask(
     @JvmField val duration: Duration,
-) : Task<DelayEvent>() {
+) : AbstractTask<DelayEvent>() {
 
     @Volatile private var remainingTime = Duration.ZERO
     @Volatile private var waitTime = Duration.ZERO

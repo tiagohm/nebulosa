@@ -1,7 +1,7 @@
 package nebulosa.api.mounts
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.common.concurrency.cancel.CancellationListener
@@ -14,7 +14,7 @@ import nebulosa.log.loggerFor
 data class MountMoveTask(
     @JvmField val mount: Mount,
     @JvmField val request: MountMoveRequest,
-) : Task<MountMoveEvent>(), CancellationListener, Consumer<DelayEvent> {
+) : AbstractTask<MountMoveEvent>(), CancellationListener, Consumer<DelayEvent> {
 
     private val delayTask = DelayTask(request.duration)
 

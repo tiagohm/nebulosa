@@ -248,6 +248,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         if (this.mount.id) {
             const mount = await this.api.mount(this.mount.id)
             Object.assign(this.mount, mount)
+            this.tppaRequest.stepSpeed = mount.slewRate?.name
         }
     }
 
