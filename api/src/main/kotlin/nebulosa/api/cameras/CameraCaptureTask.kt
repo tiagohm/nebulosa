@@ -104,7 +104,7 @@ data class CameraCaptureTask(
             }
         }
 
-        if (state != CameraCaptureState.CAPTURE_FINISHED && (cameraExposureTask.isAborted || exposureCount >= request.exposureAmount)) {
+        if (state != CameraCaptureState.CAPTURE_FINISHED) {
             state = CameraCaptureState.CAPTURE_FINISHED
             sendEvent()
         }
