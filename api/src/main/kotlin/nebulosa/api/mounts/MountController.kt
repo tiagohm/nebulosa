@@ -157,6 +157,7 @@ class MountController(
             CelestialLocationType.GALACTIC_CENTER -> mountService.computeGalacticCenterLocation(mount)
             CelestialLocationType.MERIDIAN_EQUATOR -> mountService.computeMeridianEquatorLocation(mount)
             CelestialLocationType.MERIDIAN_ECLIPTIC -> mountService.computeMeridianEclipticLocation(mount)
+            CelestialLocationType.EQUATOR_ECLIPTIC -> mountService.computeEquatorEclipticLocation(mount)
         }
     }
 

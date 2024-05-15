@@ -158,9 +158,15 @@ class MountService(private val imageBucket: ImageBucket) {
     }
 
     fun computeMeridianEclipticLocation(mount: Mount): ComputedLocation {
-        val ra = computeLST(mount)
-        val equatorial = Ecliptic.rotationAt(CurrentTime) * CartesianCoordinate.of(ra, 0.0, 1.0)
-        return computeLocation(mount, ra, SphericalCoordinate.of(equatorial).latitude, j2000 = false, meridianAt = false)
+        val equatorial = Ecliptic.rotationAt(CurrentTime) * CartesianCoordinate.of(computeLST(mount), 0.0, 1.0)
+        val (rightAscension, declination) = SphericalCoordinate.of(equatorial)
+        return computeLocation(mount, rightAscension, declination, j2000 = false, meridianAt = false)
+    }
+
+    fun computeEquatorEclipticLocation(mount: Mount): ComputedLocation {
+        val a = computeLocation(mount, PI, 0.0, j2000 = false, meridianAt = false)
+        val b = computeLocation(mount, 0.0, 0.0, j2000 = false, meridianAt = false)
+        return if (a.altitude >= b.altitude) a else b
     }
 
     fun computeLocation(

@@ -7,4 +7,5 @@ enum class CelestialLocationType {
     GALACTIC_CENTER,
     MERIDIAN_EQUATOR,
     MERIDIAN_ECLIPTIC,
+    EQUATOR_ECLIPTIC,
 }

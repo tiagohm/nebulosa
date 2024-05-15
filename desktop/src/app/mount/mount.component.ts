@@ -193,6 +193,14 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                                 this.updateTargetCoordinate(coordinates)
                             },
                         },
+                        {
+                            icon: 'mdi mdi-crosshairs-gps',
+                            label: 'Equator x Ecliptic',
+                            command: async () => {
+                                const coordinates = await this.api.mountCelestialLocation(this.mount, 'EQUATOR_ECLIPTIC')
+                                this.updateTargetCoordinate(coordinates)
+                            },
+                        },
                     ]
                 },
             ],
