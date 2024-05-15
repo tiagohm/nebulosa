@@ -14,12 +14,12 @@ class FlatWizardService(
 
     @Synchronized
     fun startCapture(camera: Camera, request: FlatWizardRequest) {
-        val savePath = request.captureRequest.savePath
+        val savePath = request.capture.savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
             ?: Path.of("$capturesPath", camera.name, "FLAT")
 
-        val captureRequest = request.captureRequest.copy(savePath = savePath)
-        flatWizardExecutor.execute(camera, request.copy(captureRequest = captureRequest))
+        val captureRequest = request.capture.copy(savePath = savePath)
+        flatWizardExecutor.execute(camera, request.copy(capture = captureRequest))
     }
 
     @Synchronized

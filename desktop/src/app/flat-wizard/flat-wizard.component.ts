@@ -37,7 +37,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     private readonly selectedFiltersMap = new Map<string, FilterSlot[]>()
 
     readonly request: FlatWizardRequest = {
-        captureRequest: structuredClone(EMPTY_CAMERA_START_CAPTURE),
+        capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
         exposureMin: 1,
         exposureMax: 2000,
         meanTarget: 32768,
@@ -154,14 +154,15 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     ngOnDestroy() { }
 
     async showCameraDialog() {
-        if (this.camera.id && await CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.camera, this.request.captureRequest)) {
-            this.preference.cameraStartCaptureForFlatWizard(this.camera).set(this.request.captureRequest)
+        if (this.camera.id && await CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.camera, this.request.capture)) {
+            this.preference.cameraStartCaptureForFlatWizard(this.camera).set(this.request.capture)
         }
     }
 
     cameraChanged() {
         if (this.camera.id) {
-            this.request.captureRequest = this.preference.cameraStartCaptureForFlatWizard(this.camera).get(this.request.captureRequest)
+            const cameraPreference = this.preference.cameraPreference(this.camera).get()
+            this.request.capture = this.preference.cameraStartCaptureForFlatWizard(this.camera).get(cameraPreference)
             this.updateEntryFromCamera(this.camera)
         }
     }
@@ -176,7 +177,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
 
     private updateEntryFromCamera(camera?: Camera) {
         if (camera && camera.connected) {
-            updateCameraStartCaptureFromCamera(this.request.captureRequest, camera)
+            updateCameraStartCaptureFromCamera(this.request.capture, camera)
         }
     }
 
@@ -214,11 +215,11 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     }
 
     async chooseSavePath() {
-        const defaultPath = this.request.captureRequest.savePath
+        const defaultPath = this.request.capture.savePath
         const path = await this.electron.openDirectory({ defaultPath })
 
         if (path) {
-            this.request.captureRequest.savePath = path
+            this.request.capture.savePath = path
             this.savePreference()
         }
     }
@@ -236,7 +237,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
 
     savePreference() {
         if (this.camera.id) {
-            this.preference.cameraStartCaptureForFlatWizard(this.camera).set(this.request.captureRequest)
+            this.preference.cameraStartCaptureForFlatWizard(this.camera).set(this.request.capture)
         }
     }
 }

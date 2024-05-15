@@ -6,7 +6,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { AlignmentMethod, AlignmentPreference, DARVStart, DARVState, Hemisphere, TPPAStart, TPPAState } from '../../shared/types/alignment.types'
 import { Angle } from '../../shared/types/atlas.types'
-import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit } from '../../shared/types/camera.types'
+import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { EMPTY_GUIDE_OUTPUT, GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { EMPTY_MOUNT, Mount } from '../../shared/types/mount.types'
 import { DEFAULT_SOLVER_TYPES, EMPTY_PLATE_SOLVER_PREFERENCE } from '../../shared/types/settings.types'
@@ -361,8 +361,14 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         this.darvHemisphere = preference.darvHemisphere
 
         if (this.camera.id) {
-            Object.assign(this.tppaRequest.capture, this.preference.cameraStartCaptureForTPPA(this.camera).get(this.tppaRequest.capture))
-            Object.assign(this.darvRequest.capture, this.preference.cameraStartCaptureForDARV(this.camera).get(this.darvRequest.capture))
+            const cameraPreference = this.preference.cameraPreference(this.camera).get()
+            Object.assign(this.tppaRequest.capture, this.preference.cameraStartCaptureForTPPA(this.camera).get(cameraPreference))
+            Object.assign(this.darvRequest.capture, this.preference.cameraStartCaptureForDARV(this.camera).get(cameraPreference))
+
+            if (this.camera.connected) {
+                updateCameraStartCaptureFromCamera(this.tppaRequest.capture, this.camera)
+                updateCameraStartCaptureFromCamera(this.darvRequest.capture, this.camera)
+            }
         }
 
         this.plateSolverChanged()

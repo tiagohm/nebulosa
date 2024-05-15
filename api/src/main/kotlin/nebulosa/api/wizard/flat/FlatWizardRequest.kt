@@ -10,11 +10,11 @@ import java.time.Duration
 import java.time.temporal.ChronoUnit
 
 data class FlatWizardRequest(
-    @JsonIgnoreProperties("camera", "focuser", "dither") val captureRequest: CameraStartCaptureRequest,
-    @field:DurationMin(millis = 1) @field:DurationMax(minutes = 1) @field:DurationUnit(ChronoUnit.MILLIS) val exposureMin: Duration = MIN_EXPOSURE,
-    @field:DurationMin(millis = 1) @field:DurationMax(minutes = 1) @field:DurationUnit(ChronoUnit.MILLIS) val exposureMax: Duration = MAX_EXPOSURE,
-    @field:Range(min = 0, max = 65535) val meanTarget: Int = 32768, // 50% = 32768 (16-bit)
-    @field:Range(min = 0, max = 100) val meanTolerance: Int = 10, // 10%
+    @JsonIgnoreProperties("camera", "focuser", "dither") @JvmField val capture: CameraStartCaptureRequest,
+    @field:DurationMin(millis = 1) @field:DurationMax(minutes = 1) @field:DurationUnit(ChronoUnit.MILLIS) @JvmField val exposureMin: Duration = MIN_EXPOSURE,
+    @field:DurationMin(millis = 1) @field:DurationMax(minutes = 1) @field:DurationUnit(ChronoUnit.MILLIS) @JvmField val exposureMax: Duration = MAX_EXPOSURE,
+    @field:Range(min = 0, max = 65535) @JvmField val meanTarget: Int = 32768, // 50% = 32768 (16-bit)
+    @field:Range(min = 0, max = 100) @JvmField val meanTolerance: Int = 10, // 10%
 ) {
 
     companion object {

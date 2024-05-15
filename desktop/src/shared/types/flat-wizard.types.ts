@@ -1,7 +1,7 @@
 import { CameraCaptureEvent, CameraStartCapture } from './camera.types'
 
 export interface FlatWizardRequest {
-    captureRequest: CameraStartCapture
+    capture: CameraStartCapture
     exposureMin: number
     exposureMax: number
     meanTarget: number
