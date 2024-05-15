@@ -62,6 +62,8 @@ let apiPort = serve ? 7000 : parseInt(parsed.values.port || '0')
 const appIcon = join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
 const store = new Store<WindowPreference>({ name: 'nebulosa' })
 
+process.on('beforeExit', () => apiProcess?.kill())
+
 function isNotificationEvent(event: MessageEvent): event is NotificationEvent {
     return event.eventName === 'NOTIFICATION.SENT'
 }
