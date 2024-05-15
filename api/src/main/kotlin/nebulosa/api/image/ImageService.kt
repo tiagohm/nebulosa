@@ -7,6 +7,7 @@ import nebulosa.api.atlas.SimbadEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
+import nebulosa.api.image.ImageAnnotation.StarDSO
 import nebulosa.fits.*
 import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Histogram
@@ -250,8 +251,8 @@ class ImageService(
                     }
 
                     val (x, y) = wcs.skyToPix(astrometric.longitude.normalized, astrometric.latitude)
-                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
-                    else ImageAnnotation(x, y, dso = entry)
+                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = StarDSO(entry))
+                    else ImageAnnotation(x, y, dso = StarDSO(entry))
                     annotations.add(annotation)
                     count++
                 }

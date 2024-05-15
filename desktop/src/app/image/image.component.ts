@@ -291,10 +291,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-image',
         disabled: true,
         command: () => {
-            const coordinate = this.mouseCoordinateInterpolation?.interpolateAsText(this.imageMouseX, this.imageMouseY, false, false, false)
+            const coordinate = this.mouseCoordinateInterpolation?.interpolate(this.imageMouseX, this.imageMouseY, false, false)
 
             if (coordinate) {
-                this.browserWindow.openFraming({ data: { rightAscension: coordinate.alpha, declination: coordinate.delta, fov: this.solver.solved!.width / 60, rotation: this.solver.solved!.orientation } })
+                this.frame(coordinate)
             }
         },
     }
