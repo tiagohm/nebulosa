@@ -67,6 +67,8 @@ data class DARVTask(
     override fun execute(cancellationToken: CancellationToken) {
         LOG.info("DARV started. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
 
+        camera.snoop(listOf(guideOutput))
+
         val task = SplitTask(listOf(CameraCaptureSubTask(), GuidePulseSubTask()), executor)
         task.execute(cancellationToken)
 

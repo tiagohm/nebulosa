@@ -50,7 +50,7 @@ data class TPPATask(
 
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
     private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = 1)
-    private val settleDelayTask = DelayTask(Duration.ofSeconds(5))
+    private val settleDelayTask = DelayTask(SETTLE_TIME)
     private val mountMoveState = BooleanArray(3)
     private val elapsedTime = Stopwatch()
     private val finished = AtomicBoolean()
@@ -108,6 +108,8 @@ data class TPPATask(
 
         rightAscension = mount?.rightAscension ?: 0.0
         declination = mount?.declination ?: 0.0
+
+        camera.snoop(listOf(mount))
 
         while (!cancellationToken.isDone) {
             cancellationToken.waitForPause()
@@ -279,6 +281,7 @@ data class TPPATask(
     companion object {
 
         @JvmStatic private val MIN_EXPOSURE_TIME = Duration.ofSeconds(1L)
+        @JvmStatic private val SETTLE_TIME = Duration.ofSeconds(5)
         @JvmStatic private val LOG = loggerFor<TPPATask>()
     }
 }
