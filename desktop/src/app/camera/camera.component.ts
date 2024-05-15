@@ -48,7 +48,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     get canExposureTime() {
-        return this.mode !== 'FLAT_WIZARD' && this.mode !== 'DARV'
+        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER' || this.mode === 'TPPA'
     }
 
     get canExposureTimeUnit() {
@@ -60,7 +60,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     get canFrameType() {
-        return this.mode !== 'FLAT_WIZARD' && this.mode !== 'DARV'
+        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER'
     }
 
     get canStartOrAbort() {
