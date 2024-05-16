@@ -83,7 +83,7 @@ data class MountSlewTask(
         latch.reset()
     }
 
-    override fun onCancelled(source: CancellationSource) {
+    override fun onCancel(source: CancellationSource) {
         stop()
     }
 

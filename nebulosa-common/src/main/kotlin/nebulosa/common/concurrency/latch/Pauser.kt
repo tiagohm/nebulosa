@@ -22,6 +22,10 @@ open class Pauser : Pauseable, Closeable {
         listeners.remove(listener)
     }
 
+    fun clearPauseListeners() {
+        listeners.clear()
+    }
+
     final override fun pause() {
         if (latch.get()) {
             latch.countUp(1)
@@ -38,6 +42,7 @@ open class Pauser : Pauseable, Closeable {
 
     override fun close() {
         unpause()
+        clearPauseListeners()
     }
 
     fun waitForPause() {

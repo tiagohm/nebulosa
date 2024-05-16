@@ -2,5 +2,5 @@ package nebulosa.common.concurrency.cancel
 
 fun interface CancellationListener {
 
-    fun onCancelled(source: CancellationSource)
+    fun onCancel(source: CancellationSource)
 }

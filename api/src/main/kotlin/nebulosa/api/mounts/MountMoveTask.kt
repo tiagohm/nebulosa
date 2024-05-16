@@ -44,7 +44,7 @@ data class MountMoveTask(
         }
     }
 
-    override fun onCancelled(source: CancellationSource) {
+    override fun onCancel(source: CancellationSource) {
         mount.move(request.direction, false)
     }
 

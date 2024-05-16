@@ -65,8 +65,8 @@ data class DitherAfterExposureTask(
         ditherLatch.reset()
     }
 
-    override fun onCancelled(source: CancellationSource) {
-        ditherLatch.onCancelled(source)
+    override fun onCancel(source: CancellationSource) {
+        ditherLatch.onCancel(source)
     }
 
     override fun reset() {

@@ -98,7 +98,7 @@ data class CameraExposureTask(
         }
     }
 
-    override fun onCancelled(source: CancellationSource) {
+    override fun onCancel(source: CancellationSource) {
         camera.abortCapture()
     }
 
@@ -108,7 +108,7 @@ data class CameraExposureTask(
     }
 
     override fun close() {
-        onCancelled(CancellationSource.Close)
+        onCancel(CancellationSource.Close)
         super.close()
     }
 
