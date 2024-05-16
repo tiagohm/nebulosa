@@ -8,6 +8,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 class CameraCaptureExecutor(
     private val messageService: MessageService,
     private val guider: Guider,
+    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
 ) : Consumer<CameraCaptureEvent> {
 
     private val jobs = ConcurrentHashMap.newKeySet<CameraCaptureJob>(2)
@@ -34,7 +36,7 @@ class CameraCaptureExecutor(
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(jobs.none { it.task.camera === camera }) { "${camera.name} Camera Capture is already in progress" }
 
-        val task = CameraCaptureTask(camera, request, guider)
+        val task = CameraCaptureTask(camera, request, guider, executor = threadPoolTaskExecutor)
         task.subscribe(this)
 
         with(CameraCaptureJob(task)) {

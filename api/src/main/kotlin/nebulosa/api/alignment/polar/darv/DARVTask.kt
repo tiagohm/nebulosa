@@ -69,7 +69,7 @@ data class DARVTask(
 
         camera.snoop(listOf(guideOutput))
 
-        val task = SplitTask(listOf(CameraCaptureSubTask(), GuidePulseSubTask()), executor)
+        val task = SplitTask(listOf(cameraCaptureTask, Task.of(delayTask, forwardGuidePulseTask, backwardGuidePulseTask)), executor)
         task.execute(cancellationToken)
 
         state = DARVState.IDLE
@@ -104,7 +104,7 @@ data class DARVTask(
 
     override fun reset() {
         state = DARVState.IDLE
-        direction = GuideDirection.NORTH
+        direction = null
 
         cameraCaptureTask.reset()
         delayTask.reset()
@@ -118,22 +118,6 @@ data class DARVTask(
         forwardGuidePulseTask.close()
         backwardGuidePulseTask.close()
         super.close()
-    }
-
-    private inner class CameraCaptureSubTask : Task {
-
-        override fun execute(cancellationToken: CancellationToken) {
-            cameraCaptureTask.execute(cancellationToken)
-        }
-    }
-
-    private inner class GuidePulseSubTask : Task {
-
-        override fun execute(cancellationToken: CancellationToken) {
-            delayTask.execute(cancellationToken)
-            forwardGuidePulseTask.execute(cancellationToken)
-            backwardGuidePulseTask.execute(cancellationToken)
-        }
     }
 
     companion object {

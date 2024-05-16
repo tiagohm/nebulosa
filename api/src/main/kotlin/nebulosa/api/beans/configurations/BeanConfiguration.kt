@@ -11,6 +11,7 @@ import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.database.MyObjectBox
 import nebulosa.api.preferences.PreferenceEntity
+import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.json.PathDeserializer
 import nebulosa.common.json.PathSerializer
 import nebulosa.guiding.Guider
@@ -94,7 +95,7 @@ class BeanConfiguration {
     fun cache(cachePath: Path) = Cache(cachePath.toFile(), MAX_CACHE_SIZE)
 
     @Bean
-    fun httpLogger() = HttpLoggingInterceptor.Logger { OKHTTP_LOGGER.info(it) }
+    fun httpLogger() = HttpLoggingInterceptor.Logger { OKHTTP_LOG.info(it) }
 
     @Bean
     fun httpClient(connectionPool: ConnectionPool, cache: Cache, httpLogger: HttpLoggingInterceptor.Logger) = OkHttpClient.Builder()
@@ -129,15 +130,18 @@ class BeanConfiguration {
     fun hips2FitsService(httpClient: OkHttpClient) = Hips2FitsService(httpClient = httpClient)
 
     @Bean
+    @Primary
     fun threadPoolTaskExecutor(): ThreadPoolTaskExecutor {
         val taskExecutor = ThreadPoolTaskExecutor()
         taskExecutor.corePoolSize = 32
+        taskExecutor.keepAliveSeconds = 30
+        taskExecutor.isDaemon = true
         taskExecutor.initialize()
         return taskExecutor
     }
 
     @Bean
-    fun eventBusExecutorService(): ExecutorService = Executors.newSingleThreadExecutor()
+    fun eventBusExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)
 
     @Bean
     fun eventBus(eventBusExecutorService: ExecutorService) = EventBus.builder()
@@ -217,8 +221,9 @@ class BeanConfiguration {
 
     companion object {
 
-        const val MAX_CACHE_SIZE = 1024L * 1024L * 32L // 32MB
+        private const val MAX_CACHE_SIZE = 1024L * 1024L * 32L // 32MB
 
-        @JvmStatic private val OKHTTP_LOGGER = loggerFor<OkHttpClient>()
+        @JvmStatic private val LOG = loggerFor<BeanConfiguration>()
+        @JvmStatic private val OKHTTP_LOG = loggerFor<OkHttpClient>()
     }
 }

@@ -11,4 +11,17 @@ interface Task : Resettable, Closeable {
     override fun reset() = Unit
 
     override fun close() = Unit
+
+    companion object {
+
+        @JvmStatic
+        fun of(vararg tasks: Task) = object : Task {
+
+            override fun execute(cancellationToken: CancellationToken) = tasks.forEach { it.execute(cancellationToken) }
+
+            override fun reset() = tasks.forEach { it.reset() }
+
+            override fun close() = tasks.forEach { it.close() }
+        }
+    }
 }

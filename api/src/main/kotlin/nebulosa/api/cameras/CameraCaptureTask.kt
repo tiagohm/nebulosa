@@ -5,6 +5,7 @@ import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.guiding.DitherAfterExposureTask
 import nebulosa.api.guiding.WaitForSettleTask
 import nebulosa.api.tasks.AbstractTask
+import nebulosa.api.tasks.SplitTask
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.common.concurrency.cancel.CancellationToken
@@ -14,6 +15,7 @@ import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.log.loggerFor
 import java.nio.file.Path
 import java.time.Duration
+import java.util.concurrent.Executor
 
 data class CameraCaptureTask(
     @JvmField val camera: Camera,
@@ -21,11 +23,12 @@ data class CameraCaptureTask(
     @JvmField val guider: Guider? = null,
     private val useFirstExposure: Boolean = false,
     private val exposureMaxRepeat: Int = 0,
+    private val executor: Executor? = null,
 ) : AbstractTask<CameraCaptureEvent>(), Consumer<Any> {
 
     private val delayTask = DelayTask(request.exposureDelay)
     private val waitForSettleTask = WaitForSettleTask(guider)
-    private val delayAndWaitForSettleSplitTask = DelayAndWaitForSettleTask(delayTask, waitForSettleTask)
+    private val delayAndWaitForSettleSplitTask = SplitTask(listOf(delayTask, waitForSettleTask), executor)
     private val cameraExposureTask = CameraExposureTask(camera, request)
     private val ditherAfterExposureTask = DitherAfterExposureTask(guider, request.dither)
 
