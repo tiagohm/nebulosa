@@ -6,8 +6,8 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
-class CancellationToken private constructor(private val completable: CompletableFuture<CancellationSource>?) : Pauser(), Closeable,
-    Future<CancellationSource> {
+class CancellationToken private constructor(private val completable: CompletableFuture<CancellationSource>?) :
+    Pauser(), Closeable, Future<CancellationSource> {
 
     constructor() : this(CompletableFuture<CancellationSource>())
 

@@ -8,6 +8,8 @@ enum class TPPAState {
     SOLVING,
     SOLVED,
     COMPUTED,
+    PAUSING,
+    PAUSED,
     FINISHED,
     FAILED,
 }

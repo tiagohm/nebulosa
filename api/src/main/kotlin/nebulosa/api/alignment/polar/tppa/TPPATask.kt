@@ -14,6 +14,7 @@ import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.common.concurrency.latch.PauseListener
 import nebulosa.common.time.Stopwatch
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
@@ -37,7 +38,7 @@ data class TPPATask(
     @JvmField val mount: Mount? = null,
     @JvmField val longitude: Angle = mount!!.longitude,
     @JvmField val latitude: Angle = mount!!.latitude,
-) : AbstractTask<MessageEvent>(), Consumer<Any> {
+) : AbstractTask<MessageEvent>(), Consumer<Any>, PauseListener {
 
     @JvmField val mountMoveRequest = MountMoveRequest(request.stepDirection, request.stepDuration, request.stepSpeed)
 
@@ -53,6 +54,7 @@ data class TPPATask(
     private val settleDelayTask = DelayTask(SETTLE_TIME)
     private val mountMoveState = BooleanArray(3)
     private val elapsedTime = Stopwatch()
+    private val pausing = AtomicBoolean()
     private val finished = AtomicBoolean()
 
     @Volatile private var rightAscension: Angle = 0.0
@@ -111,8 +113,16 @@ data class TPPATask(
 
         camera.snoop(listOf(mount))
 
+        cancellationToken.listenToPause(this)
+
         while (!cancellationToken.isDone) {
-            cancellationToken.waitForPause()
+            if (cancellationToken.isPaused) {
+                pausing.set(false)
+                sendEvent(TPPAState.PAUSED)
+                cancellationToken.waitForPause()
+            }
+
+            if (cancellationToken.isDone) break
 
             mount?.tracking(true)
 
@@ -220,6 +230,9 @@ data class TPPATask(
             }
         }
 
+        pausing.set(false)
+        cancellationToken.unlistenToPause(this)
+
         finished.set(true)
         elapsedTime.stop()
 
@@ -239,7 +252,7 @@ data class TPPATask(
 
     private fun sendEvent(state: TPPAState, capture: CameraCaptureEvent? = captureEvent) {
         val event = TPPAEvent(
-            camera, state, rightAscension, declination,
+            camera, if (pausing.get()) TPPAState.PAUSING else state, rightAscension, declination,
             azimuthError, altitudeError, totalError,
             azimuthErrorDirection, altitudeErrorDirection,
             processCameraCaptureEvent(capture),
@@ -262,6 +275,7 @@ data class TPPATask(
         savedImage = null
         noSolutionAttempts = 0
 
+        pausing.set(false)
         finished.set(false)
         elapsedTime.reset()
 
@@ -271,6 +285,14 @@ data class TPPATask(
         alignment.reset()
 
         super.reset()
+    }
+
+    override fun onPause(paused: Boolean) {
+        pausing.set(paused)
+
+        if (paused) {
+            sendEvent(TPPAState.PAUSING)
+        }
     }
 
     override fun close() {

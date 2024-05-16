@@ -8,7 +8,7 @@ class INDIProtocolReader(
     priority: Int = NORM_PRIORITY,
 ) : Thread("INDI Protocol Reader"), Closeable {
 
-    private val listeners = HashSet<CloseConnectionListener>(1)
+    private val listeners = LinkedHashSet<CloseConnectionListener>(1)
 
     @Volatile private var running = false
 
