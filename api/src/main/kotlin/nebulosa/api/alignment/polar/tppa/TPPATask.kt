@@ -147,7 +147,7 @@ data class TPPATask(
             }
 
             // ALIGNMENT.
-            val radius = if (mount == null) 0.0 else ThreePointPolarAlignment.DEFAULT_RADIUS
+            val radius = if (mount == null) 0.0 else ATTEMPT_RADIUS * (noSolutionAttempts + 1)
 
             val result = try {
                 alignment.align(
@@ -179,7 +179,7 @@ data class TPPATask(
 
                     sendEvent(TPPAState.FAILED)
 
-                    if (noSolutionAttempts < 10) {
+                    if (noSolutionAttempts < MAX_ATTEMPTS) {
                         continue
                     } else {
                         LOG.error("exhausted all attempts to plate solve")
@@ -283,5 +283,8 @@ data class TPPATask(
         @JvmStatic private val MIN_EXPOSURE_TIME = Duration.ofSeconds(1L)
         @JvmStatic private val SETTLE_TIME = Duration.ofSeconds(5)
         @JvmStatic private val LOG = loggerFor<TPPATask>()
+
+        const val MAX_ATTEMPTS = 15
+        const val ATTEMPT_RADIUS: Angle = ThreePointPolarAlignment.DEFAULT_RADIUS
     }
 }

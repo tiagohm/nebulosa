@@ -92,6 +92,6 @@ data class ThreePointPolarAlignment(
 
     companion object {
 
-        const val DEFAULT_RADIUS: Angle = 4 * DEG2RAD
+        const val DEFAULT_RADIUS: Angle = 12 * DEG2RAD
     }
 }
