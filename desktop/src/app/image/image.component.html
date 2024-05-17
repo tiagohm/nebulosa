@@ -107,7 +107,7 @@
             </div>
             <div class="col-6" *ngIf="annotationInfo.magnitude">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" value="{{ annotationInfo.magnitude < 99.0 ? annotationInfo.magnitude.toFixed(2) : '-' }}"
+                    <input pInputText readonly type="text" value="{{ annotationInfo.magnitude < 30.0 ? annotationInfo.magnitude.toFixed(2) : '-' }}"
                            class="border-0 p-inputtext-sm" />
                     <label>Magnitude</label>
                 </span>

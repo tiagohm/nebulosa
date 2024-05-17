@@ -60,4 +60,8 @@ class TPPAExecutor(
     fun unpause(camera: Camera) {
         jobs.find { it.task.camera === camera }?.unpause()
     }
+
+    fun status(camera: Camera): TPPAEvent? {
+        return jobs.find { it.task.camera === camera }?.task?.get() as? TPPAEvent
+    }
 }

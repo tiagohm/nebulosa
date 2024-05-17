@@ -23,10 +23,24 @@ data class ThreePointPolarAlignment(
     private val latitude: Angle,
 ) : Resettable {
 
-    private val positions = arrayOfNulls<Position>(3)
+    private val positions = arrayOfNulls<Position>(2)
 
     @Volatile var state = 0
         private set
+
+    @Volatile var initialAzimuthError: Angle = 0.0
+        private set
+
+    @Volatile var initialAltitudeError: Angle = 0.0
+        private set
+
+    @Volatile var currentAzimuthError: Angle = 0.0
+        private set
+
+    @Volatile var currentAltitudeError: Angle = 0.0
+        private set
+
+    private lateinit var polarErrorDetermination: PolarErrorDetermination
 
     fun align(
         path: Path,
@@ -40,18 +54,26 @@ data class ThreePointPolarAlignment(
             return ThreePointPolarAlignmentResult.NoPlateSolution(e)
         }
 
-        if (!solution.solved || cancellationToken.isCancelled) {
+        if (!solution.solved || cancellationToken.isDone) {
             return ThreePointPolarAlignmentResult.NoPlateSolution(null)
         } else {
             val time = UTC.now()
 
-            positions[state] = solution.position(time, compensateRefraction)
-
-            if (state >= 2) {
-                val polarErrorDetermination = PolarErrorDetermination(positions[0]!!, positions[1]!!, positions[2]!!, longitude, latitude)
+            if (state > 2) {
+                val (azimuth, altitude) = polarErrorDetermination
+                    .update(time, initialAzimuthError, initialAltitudeError, solution, compensateRefraction)
+                currentAzimuthError = azimuth
+                currentAltitudeError = altitude
+                return ThreePointPolarAlignmentResult.Measured(solution.rightAscension, solution.declination, azimuth, altitude)
+            } else if (state == 2) {
+                val position = solution.position(time, compensateRefraction)
+                polarErrorDetermination = PolarErrorDetermination(solution, positions[0]!!, positions[1]!!, position, longitude, latitude)
                 val (azimuth, altitude) = polarErrorDetermination.compute()
+                initialAzimuthError = azimuth
+                initialAltitudeError = altitude
                 return ThreePointPolarAlignmentResult.Measured(solution.rightAscension, solution.declination, azimuth, altitude)
             } else {
+                positions[state] = solution.position(time, compensateRefraction)
                 state++
             }
 
@@ -70,6 +92,6 @@ data class ThreePointPolarAlignment(
 
     companion object {
 
-        const val DEFAULT_RADIUS: Angle = 4 * DEG2RAD
+        const val DEFAULT_RADIUS: Angle = 12 * DEG2RAD
     }
 }

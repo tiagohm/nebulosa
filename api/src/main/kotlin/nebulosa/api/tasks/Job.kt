@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class Job : CompletableFuture<Unit>(), Runnable {
 
-    abstract val task: Task<*>
+    abstract val task: Task
 
     abstract val name: String
 
@@ -38,7 +38,7 @@ abstract class Job : CompletableFuture<Unit>(), Runnable {
     fun start() {
         if (thread == null && !running.get()) {
             thread = Thread(this, name)
-            thread!!.isDaemon = false
+            thread!!.isDaemon = true
             thread!!.start()
         }
     }

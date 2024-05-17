@@ -143,7 +143,7 @@ open class FitsHeader : AbstractHeader {
                     return true
                 }
 
-                LOG.warn("[${key.key}] with unexpected value type. Expected $type, got ${key.valueType}")
+                LOG.warn("[${key.key}] with unexpected value type. Expected ${key.valueType}, got $type")
 
                 return false
             }

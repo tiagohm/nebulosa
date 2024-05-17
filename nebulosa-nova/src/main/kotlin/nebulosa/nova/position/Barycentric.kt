@@ -3,7 +3,7 @@ package nebulosa.nova.position
 import nebulosa.constants.TAU
 import nebulosa.math.Angle
 import nebulosa.math.Vector3D
-import nebulosa.math.pmod
+import nebulosa.math.normalized
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Observable
 import nebulosa.nova.frame.Ecliptic
@@ -62,7 +62,7 @@ class Barycentric internal constructor(
     fun elongation(target: Body, center: Body): Double {
         val mLon = observe(target).latLon(Ecliptic).theta
         val sLon = observe(center).latLon(Ecliptic).phi
-        val angle = (mLon - sLon) pmod TAU
+        val angle = (mLon - sLon).normalized
         return angle / TAU
     }
 }

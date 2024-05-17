@@ -14,6 +14,7 @@ import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.indi.device.mount.Mount
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
@@ -22,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap
 class SequencerExecutor(
     private val messageService: MessageService,
     private val guider: Guider,
+    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
 ) : Consumer<MessageEvent> {
 
     private val jobs = ConcurrentHashMap.newKeySet<SequencerJob>(1)
@@ -60,7 +62,7 @@ class SequencerExecutor(
             check(jobs.none { it.task.focuser === focuser }) { "${camera.name} Sequencer Job is already in progress" }
         }
 
-        val task = SequencerTask(camera, request, guider, mount, wheel, focuser)
+        val task = SequencerTask(camera, request, guider, mount, wheel, focuser, threadPoolTaskExecutor)
         task.subscribe(this)
 
         with(SequencerJob(task)) {
@@ -72,5 +74,9 @@ class SequencerExecutor(
 
     fun stop(camera: Camera) {
         jobs.find { it.task.camera === camera }?.stop()
+    }
+
+    fun status(camera: Camera): SequencerEvent? {
+        return jobs.find { it.task.camera === camera }?.task?.get() as? SequencerEvent
     }
 }

@@ -5,6 +5,7 @@ import nebulosa.erfa.PositionAndVelocity
 import nebulosa.io.bufferedResource
 import nebulosa.math.Matrix3D
 import nebulosa.math.Vector3D
+import nebulosa.math.normalized
 import nebulosa.math.pmod
 import nebulosa.time.InstantOfTime
 import kotlin.math.atan2
@@ -395,7 +396,7 @@ object ELPMPP02 : Body {
                     val ifi = IntArray(13) { line.substring((45 + it * 3)..(47 + it * 3)).trim().toInt() }
 
                     cper[idx] = sqrt(c * c + s * s)
-                    fper[idx][0] = atan2(c, s) pmod TAU
+                    fper[idx][0] = atan2(c, s).normalized
 
                     for (k in 0..4) {
                         fper[idx][k] += ifi[0] * del[0][k]

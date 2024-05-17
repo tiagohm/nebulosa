@@ -1,7 +1,7 @@
 package nebulosa.api.guiding
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.common.concurrency.cancel.CancellationListener
@@ -15,7 +15,7 @@ import java.time.Duration
 data class GuidePulseTask(
     @JvmField val guideOutput: GuideOutput,
     @JvmField val request: GuidePulseRequest,
-) : Task<GuidePulseEvent>(), CancellationListener, Consumer<DelayEvent> {
+) : AbstractTask<GuidePulseEvent>(), CancellationListener, Consumer<DelayEvent> {
 
     private val delayTask = DelayTask(request.duration)
 
@@ -24,7 +24,7 @@ data class GuidePulseTask(
     }
 
     override fun execute(cancellationToken: CancellationToken) {
-        if (guideOutput.pulseGuide(request.duration, request.direction)) {
+        if (!cancellationToken.isDone && guideOutput.pulseGuide(request.duration, request.direction)) {
             LOG.info("Guide Pulse started. guideOutput={}, duration={}, direction={}", guideOutput, request.duration.toMillis(), request.direction)
 
             try {
@@ -38,7 +38,7 @@ data class GuidePulseTask(
         }
     }
 
-    override fun onCancelled(source: CancellationSource) {
+    override fun onCancel(source: CancellationSource) {
         guideOutput.pulseGuide(Duration.ZERO, request.direction)
     }
 

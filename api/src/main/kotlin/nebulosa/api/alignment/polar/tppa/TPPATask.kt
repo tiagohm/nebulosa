@@ -10,8 +10,11 @@ import nebulosa.api.cameras.CameraCaptureTask
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.mounts.MountMoveRequest
 import nebulosa.api.mounts.MountMoveTask
-import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.AbstractTask
+import nebulosa.api.tasks.delay.DelayEvent
+import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.common.concurrency.latch.PauseListener
 import nebulosa.common.time.Stopwatch
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
@@ -35,9 +38,10 @@ data class TPPATask(
     @JvmField val mount: Mount? = null,
     @JvmField val longitude: Angle = mount!!.longitude,
     @JvmField val latitude: Angle = mount!!.latitude,
-) : Task<MessageEvent>(), Consumer<CameraCaptureEvent> {
+) : AbstractTask<MessageEvent>(), Consumer<Any>, PauseListener {
 
     @JvmField val mountMoveRequest = MountMoveRequest(request.stepDirection, request.stepDuration, request.stepSpeed)
+
     @JvmField val cameraRequest = request.capture.copy(
         savePath = Files.createTempDirectory("tppa"),
         exposureAmount = 0, exposureDelay = Duration.ZERO,
@@ -47,8 +51,10 @@ data class TPPATask(
 
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
     private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = 1)
+    private val settleDelayTask = DelayTask(SETTLE_TIME)
     private val mountMoveState = BooleanArray(3)
     private val elapsedTime = Stopwatch()
+    private val pausing = AtomicBoolean()
     private val finished = AtomicBoolean()
 
     @Volatile private var rightAscension: Angle = 0.0
@@ -60,9 +66,11 @@ data class TPPATask(
     @Volatile private var altitudeErrorDirection = ""
     @Volatile private var savedImage: Path? = null
     @Volatile private var noSolutionAttempts = 0
+    @Volatile private var captureEvent: CameraCaptureEvent? = null
 
     init {
         cameraCaptureTask.subscribe(this)
+        settleDelayTask.subscribe(this)
     }
 
     fun handleCameraEvent(event: CameraEvent) {
@@ -71,13 +79,24 @@ data class TPPATask(
         }
     }
 
-    override fun accept(event: CameraCaptureEvent) {
-        if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
-            savedImage = event.savePath!!
-        }
+    override fun canUseAsLastEvent(event: MessageEvent) = event is TPPAEvent
 
-        if (!finished.get()) {
-            sendEvent(TPPAState.SOLVING, event)
+    override fun accept(event: Any) {
+        when (event) {
+            is CameraCaptureEvent -> {
+                captureEvent = event
+
+                if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
+                    savedImage = event.savePath!!
+                }
+
+                if (!finished.get()) {
+                    sendEvent(TPPAState.SOLVING, event)
+                }
+            }
+            is DelayEvent -> {
+                sendEvent(TPPAState.SETTLING)
+            }
         }
     }
 
@@ -94,8 +113,18 @@ data class TPPATask(
         rightAscension = mount?.rightAscension ?: 0.0
         declination = mount?.declination ?: 0.0
 
+        camera.snoop(listOf(mount))
+
+        cancellationToken.listenToPause(this)
+
         while (!cancellationToken.isDone) {
-            cancellationToken.waitForPause()
+            if (cancellationToken.isPaused) {
+                pausing.set(false)
+                sendEvent(TPPAState.PAUSED)
+                cancellationToken.waitForPause()
+            }
+
+            if (cancellationToken.isDone) break
 
             mount?.tracking(true)
 
@@ -113,6 +142,8 @@ data class TPPATask(
                     sendEvent(TPPAState.SLEWED)
 
                     LOG.info("TPPA slewed. rightAscension={}, declination={}", mount.rightAscension.formatHMS(), mount.declination.formatSignedDMS())
+
+                    settleDelayTask.execute(cancellationToken)
                 }
             }
 
@@ -128,7 +159,7 @@ data class TPPATask(
             }
 
             // ALIGNMENT.
-            val radius = if (mount == null) 0.0 else ThreePointPolarAlignment.DEFAULT_RADIUS
+            val radius = if (mount == null) 0.0 else ATTEMPT_RADIUS * (noSolutionAttempts + 1)
 
             val result = try {
                 alignment.align(
@@ -160,7 +191,7 @@ data class TPPATask(
 
                     sendEvent(TPPAState.FAILED)
 
-                    if (noSolutionAttempts < 10) {
+                    if (noSolutionAttempts < MAX_ATTEMPTS) {
                         continue
                     } else {
                         LOG.error("exhausted all attempts to plate solve")
@@ -201,6 +232,9 @@ data class TPPATask(
             }
         }
 
+        pausing.set(false)
+        cancellationToken.unlistenToPause(this)
+
         finished.set(true)
         elapsedTime.stop()
 
@@ -218,9 +252,9 @@ data class TPPATask(
         return event?.copy(captureElapsedTime = elapsedTime.elapsed)
     }
 
-    private fun sendEvent(state: TPPAState, capture: CameraCaptureEvent? = null) {
+    private fun sendEvent(state: TPPAState, capture: CameraCaptureEvent? = captureEvent) {
         val event = TPPAEvent(
-            camera, state, rightAscension, declination,
+            camera, if (pausing.get()) TPPAState.PAUSING else state, rightAscension, declination,
             azimuthError, altitudeError, totalError,
             azimuthErrorDirection, altitudeErrorDirection,
             processCameraCaptureEvent(capture),
@@ -243,7 +277,24 @@ data class TPPATask(
         savedImage = null
         noSolutionAttempts = 0
 
+        pausing.set(false)
+        finished.set(false)
+        elapsedTime.reset()
+
+        cameraCaptureTask.reset()
+        settleDelayTask.reset()
+
+        alignment.reset()
+
         super.reset()
+    }
+
+    override fun onPause(paused: Boolean) {
+        pausing.set(paused)
+
+        if (paused) {
+            sendEvent(TPPAState.PAUSING)
+        }
     }
 
     override fun close() {
@@ -254,6 +305,10 @@ data class TPPATask(
     companion object {
 
         @JvmStatic private val MIN_EXPOSURE_TIME = Duration.ofSeconds(1L)
+        @JvmStatic private val SETTLE_TIME = Duration.ofSeconds(5)
         @JvmStatic private val LOG = loggerFor<TPPATask>()
+
+        const val MAX_ATTEMPTS = 15
+        const val ATTEMPT_RADIUS: Angle = ThreePointPolarAlignment.DEFAULT_RADIUS
     }
 }

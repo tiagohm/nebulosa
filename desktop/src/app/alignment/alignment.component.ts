@@ -6,7 +6,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { AlignmentMethod, AlignmentPreference, DARVStart, DARVState, Hemisphere, TPPAStart, TPPAState } from '../../shared/types/alignment.types'
 import { Angle } from '../../shared/types/atlas.types'
-import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit } from '../../shared/types/camera.types'
+import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { EMPTY_GUIDE_OUTPUT, GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { EMPTY_MOUNT, Mount } from '../../shared/types/mount.types'
 import { DEFAULT_SOLVER_TYPES, EMPTY_PLATE_SOLVER_PREFERENCE } from '../../shared/types/settings.types'
@@ -33,6 +33,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     tab = 0
 
     running = false
+    pausingOrPaused = false
     alignmentMethod?: AlignmentMethod
     status: DARVState | TPPAState = 'IDLE'
 
@@ -178,6 +179,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                 ngZone.run(() => {
                     this.status = event.state
                     this.running = event.state !== 'FINISHED'
+                    this.pausingOrPaused = event.state === 'PAUSING' || event.state === 'PAUSED'
 
                     if (event.state === 'COMPUTED') {
                         this.tppaFailed = false
@@ -193,14 +195,16 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     } else if (event.state === 'FINISHED') {
                         this.cameraExposure.reset()
                         electron.autoResizeWindow()
-                    } else if (event.state === 'SOLVING' && event.capture && event.capture.state !== 'CAPTURE_FINISHED') {
-                        this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
                     } else if (event.state === 'SOLVED' || event.state === 'SLEWED') {
                         this.tppaFailed = false
                         this.tppaRightAscension = event.rightAscension
                         this.tppaDeclination = event.declination
                     } else if (event.state === 'FAILED') {
                         this.tppaFailed = true
+                    }
+
+                    if (event.capture && event.capture.state !== 'CAPTURE_FINISHED') {
+                        this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
                     }
                 })
             }
@@ -248,6 +252,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         if (this.mount.id) {
             const mount = await this.api.mount(this.mount.id)
             Object.assign(this.mount, mount)
+            this.tppaRequest.stepSpeed = mount.slewRate?.name
         }
     }
 
@@ -331,15 +336,15 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     tppaPause() {
-        this.api.tppaPause(this.camera)
+        return this.api.tppaPause(this.camera)
     }
 
     tppaUnpause() {
-        this.api.tppaUnpause(this.camera)
+        return this.api.tppaUnpause(this.camera)
     }
 
     tppaStop() {
-        this.api.tppaStop(this.camera)
+        return this.api.tppaStop(this.camera)
     }
 
     openCameraImage() {
@@ -360,8 +365,14 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         this.darvHemisphere = preference.darvHemisphere
 
         if (this.camera.id) {
-            Object.assign(this.tppaRequest.capture, this.preference.cameraStartCaptureForTPPA(this.camera).get(this.tppaRequest.capture))
-            Object.assign(this.darvRequest.capture, this.preference.cameraStartCaptureForDARV(this.camera).get(this.darvRequest.capture))
+            const cameraPreference = this.preference.cameraPreference(this.camera).get()
+            Object.assign(this.tppaRequest.capture, this.preference.cameraStartCaptureForTPPA(this.camera).get(cameraPreference))
+            Object.assign(this.darvRequest.capture, this.preference.cameraStartCaptureForDARV(this.camera).get(cameraPreference))
+
+            if (this.camera.connected) {
+                updateCameraStartCaptureFromCamera(this.tppaRequest.capture, this.camera)
+                updateCameraStartCaptureFromCamera(this.darvRequest.capture, this.camera)
+            }
         }
 
         this.plateSolverChanged()

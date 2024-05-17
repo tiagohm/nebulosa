@@ -9,12 +9,14 @@ import nebulosa.erfa.SphericalCoordinate
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.*
 import nebulosa.log.loggerFor
+import nebulosa.lx200.protocol.LX200ProtocolServer
 import nebulosa.math.*
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.frame.Ecliptic
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
+import nebulosa.stellarium.protocol.StellariumProtocolServer
 import nebulosa.time.CurrentTime
 import nebulosa.wcs.WCS
 import org.greenrobot.eventbus.Subscribe
@@ -29,6 +31,7 @@ import java.time.OffsetDateTime
 class MountService(private val imageBucket: ImageBucket) {
 
     private val site = HashMap<Mount, GeographicPosition>(2)
+    private val remoteControls = ArrayList<MountRemoteControl>(2)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onMountGeographicCoordinateChanged(event: MountGeographicCoordinateChanged) {
@@ -155,9 +158,15 @@ class MountService(private val imageBucket: ImageBucket) {
     }
 
     fun computeMeridianEclipticLocation(mount: Mount): ComputedLocation {
-        val ra = computeLST(mount)
-        val equatorial = Ecliptic.rotationAt(CurrentTime) * CartesianCoordinate.of(ra, 0.0, 1.0)
-        return computeLocation(mount, ra, SphericalCoordinate.of(equatorial).latitude, j2000 = false, meridianAt = false)
+        val equatorial = Ecliptic.rotationAt(CurrentTime) * CartesianCoordinate.of(computeLST(mount), 0.0, 1.0)
+        val (rightAscension, declination) = SphericalCoordinate.of(equatorial)
+        return computeLocation(mount, rightAscension, declination, j2000 = false, meridianAt = false)
+    }
+
+    fun computeEquatorEclipticLocation(mount: Mount): ComputedLocation {
+        val a = computeLocation(mount, PI, 0.0, j2000 = false, meridianAt = false)
+        val b = computeLocation(mount, 0.0, 0.0, j2000 = false, meridianAt = false)
+        return if (a.altitude >= b.altitude) a else b
     }
 
     fun computeLocation(
@@ -227,6 +236,26 @@ class MountService(private val imageBucket: ImageBucket) {
             )
             goTo(mount, rightAscension + raOffset, declination + decOffset, true)
         }
+    }
+
+    fun remoteControlStart(mount: Mount, type: MountRemoteControlType, host: String, port: Int) {
+        check(remoteControls.none { it.mount === mount && it.type == type }) { "$type ${mount.name} Remote Control is already running" }
+
+        val server = if (type == MountRemoteControlType.STELLARIUM) StellariumProtocolServer(host, port)
+        else LX200ProtocolServer(host, port)
+
+        server.run()
+
+        remoteControls.add(MountRemoteControl(type, server, mount))
+    }
+
+    fun remoteControlStop(mount: Mount, type: MountRemoteControlType) {
+        val remoteControl = remoteControls.find { it.mount === mount && it.type == type } ?: return
+        remoteControl.use(remoteControls::remove)
+    }
+
+    fun remoteControlList(mount: Mount): List<MountRemoteControl> {
+        return remoteControls.filter { it.mount === mount }
     }
 
     companion object {

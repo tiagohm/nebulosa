@@ -2,6 +2,7 @@ package nebulosa.api.mounts
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.beans.converters.time.DateAndTimeParam
 import nebulosa.api.connection.ConnectionService
@@ -156,6 +157,7 @@ class MountController(
             CelestialLocationType.GALACTIC_CENTER -> mountService.computeGalacticCenterLocation(mount)
             CelestialLocationType.MERIDIAN_EQUATOR -> mountService.computeMeridianEquatorLocation(mount)
             CelestialLocationType.MERIDIAN_ECLIPTIC -> mountService.computeMeridianEclipticLocation(mount)
+            CelestialLocationType.EQUATOR_ECLIPTIC -> mountService.computeEquatorEclipticLocation(mount)
         }
     }
 
@@ -182,5 +184,25 @@ class MountController(
         @RequestParam @Valid @PositiveOrZero y: Double,
     ) {
         mountService.pointMountHere(mount, path, x, y)
+    }
+
+    @PutMapping("{mount}/remote-control/start")
+    fun remoteControlStart(
+        mount: Mount,
+        @RequestParam type: MountRemoteControlType,
+        @RequestParam(required = false, defaultValue = "0.0.0.0") host: String,
+        @RequestParam(required = false, defaultValue = "10001") @Valid @Positive port: Int,
+    ) {
+        mountService.remoteControlStart(mount, type, host, port)
+    }
+
+    @PutMapping("{mount}/remote-control/stop")
+    fun remoteControlStart(mount: Mount, @RequestParam type: MountRemoteControlType) {
+        mountService.remoteControlStop(mount, type)
+    }
+
+    @GetMapping("{mount}/remote-control")
+    fun remoteControlList(mount: Mount): List<MountRemoteControl> {
+        return mountService.remoteControlList(mount)
     }
 }

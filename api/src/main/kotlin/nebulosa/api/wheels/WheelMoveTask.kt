@@ -12,7 +12,7 @@ import nebulosa.log.loggerFor
 data class WheelMoveTask(
     @JvmField val wheel: FilterWheel,
     @JvmField val position: Int,
-) : Task<Unit>() {
+) : Task {
 
     private val latch = CountUpDownLatch()
 

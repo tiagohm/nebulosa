@@ -20,10 +20,9 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
 import nebulosa.log.loggerFor
-import nebulosa.math.formatHMS
-import nebulosa.math.formatSignedDMS
+import nebulosa.math.AngleFormatter
+import nebulosa.math.format
 import nebulosa.math.normalized
-import nebulosa.math.toDegrees
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
@@ -201,6 +200,8 @@ data class ASCOMCamera(
     }
 
     override fun snoop(devices: Iterable<Device?>) {
+        snoopedDevices.clear()
+
         for (device in devices) {
             device?.also(snoopedDevices::add)
         }
@@ -665,16 +666,16 @@ data class ASCOMCamera(
 
             mount?.also {
                 header.add(FitsKeyword.TELESCOP, it.name)
-                header.add(FitsKeyword.SITELAT, it.latitude.toDegrees)
-                header.add(FitsKeyword.SITELONG, it.longitude.toDegrees)
+                header.add(FitsKeyword.SITELONG, it.longitude.format(DEC_FORMAT))
+                header.add(FitsKeyword.SITELAT, it.latitude.format(DEC_FORMAT))
                 val center = Geoid.IERS2010.lonLat(it.longitude, it.latitude, it.elevation)
                 val icrf = ICRF.equatorial(it.rightAscension, it.declination, epoch = CurrentTime, center = center)
                 val raDec = icrf.equatorial()
-                header.add(FitsKeyword.OBJCTRA, raDec.longitude.normalized.formatHMS())
-                header.add(FitsKeyword.OBJCTDEC, raDec.latitude.formatSignedDMS())
-                header.add(FitsKeyword.RA, raDec.longitude.normalized.toDegrees)
-                header.add(FitsKeyword.DEC, raDec.latitude.toDegrees)
-                header.add(FitsKeyword.PIERSIDE, it.pierSide.name)
+                header.add(FitsKeyword.OBJCTRA, raDec.longitude.normalized.format(RA_FORMAT))
+                header.add(FitsKeyword.OBJCTDEC, raDec.latitude.format(DEC_FORMAT))
+                header.add(FitsKeyword.RA, raDec.longitude.normalized.format(RA_FORMAT))
+                header.add(FitsKeyword.DEC, raDec.latitude.format(DEC_FORMAT))
+                // header.add(FitsKeyword.PIERSIDE, it.pierSide.name)
                 header.add(FitsKeyword.EQUINOX, 2000)
             }
 
@@ -804,5 +805,7 @@ data class ASCOMCamera(
 
         @JvmStatic private val LOG = loggerFor<ASCOMCamera>()
         @JvmStatic private val DATE_OBS_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+        @JvmStatic private val RA_FORMAT = AngleFormatter.HMS.newBuilder().secondsDecimalPlaces(3).separators(" ").build()
+        @JvmStatic private val DEC_FORMAT = AngleFormatter.SIGNED_DMS.newBuilder().secondsDecimalPlaces(3).separators(" ").build()
     }
 }

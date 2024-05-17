@@ -1,7 +1,9 @@
 package nebulosa.api.alignment.polar
 
+import nebulosa.api.alignment.polar.darv.DARVEvent
 import nebulosa.api.alignment.polar.darv.DARVExecutor
 import nebulosa.api.alignment.polar.darv.DARVStartRequest
+import nebulosa.api.alignment.polar.tppa.TPPAEvent
 import nebulosa.api.alignment.polar.tppa.TPPAExecutor
 import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
 import nebulosa.indi.device.camera.Camera
@@ -23,6 +25,10 @@ class PolarAlignmentService(
         darvExecutor.stop(camera)
     }
 
+    fun darvStatus(camera: Camera): DARVEvent? {
+        return darvExecutor.status(camera)
+    }
+
     fun tppaStart(camera: Camera, mount: Mount, tppaStartRequest: TPPAStartRequest) {
         tppaExecutor.execute(camera, mount, tppaStartRequest)
     }
@@ -37,5 +43,9 @@ class PolarAlignmentService(
 
     fun tppaUnpause(camera: Camera) {
         tppaExecutor.unpause(camera)
+    }
+
+    fun tppaStatus(camera: Camera): TPPAEvent? {
+        return tppaExecutor.status(camera)
     }
 }

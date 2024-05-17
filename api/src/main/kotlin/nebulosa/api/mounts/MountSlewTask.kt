@@ -20,7 +20,7 @@ data class MountSlewTask(
     @JvmField val mount: Mount,
     @JvmField val rightAscension: Angle, @JvmField val declination: Angle,
     @JvmField val j2000: Boolean = false, @JvmField val goTo: Boolean = true,
-) : Task<Unit>(), CancellationListener {
+) : Task, CancellationListener {
 
     private val delayTask = DelayTask(SETTLE_DURATION)
     private val latch = CountUpDownLatch()
@@ -83,7 +83,7 @@ data class MountSlewTask(
         latch.reset()
     }
 
-    override fun onCancelled(source: CancellationSource) {
+    override fun onCancel(source: CancellationSource) {
         stop()
     }
 

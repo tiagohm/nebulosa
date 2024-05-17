@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.guiding.DitherAfterExposureTask
 import nebulosa.api.guiding.WaitForSettleTask
-import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.AbstractTask
+import nebulosa.api.tasks.SplitTask
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.common.concurrency.cancel.CancellationToken
@@ -14,6 +15,7 @@ import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.log.loggerFor
 import java.nio.file.Path
 import java.time.Duration
+import java.util.concurrent.Executor
 
 data class CameraCaptureTask(
     @JvmField val camera: Camera,
@@ -21,11 +23,12 @@ data class CameraCaptureTask(
     @JvmField val guider: Guider? = null,
     private val useFirstExposure: Boolean = false,
     private val exposureMaxRepeat: Int = 0,
-) : Task<CameraCaptureEvent>(), Consumer<Any> {
+    private val executor: Executor? = null,
+) : AbstractTask<CameraCaptureEvent>(), Consumer<Any> {
 
     private val delayTask = DelayTask(request.exposureDelay)
     private val waitForSettleTask = WaitForSettleTask(guider)
-    private val delayAndWaitForSettleSplitTask = DelayAndWaitForSettleTask(delayTask, waitForSettleTask)
+    private val delayAndWaitForSettleSplitTask = SplitTask(listOf(delayTask, waitForSettleTask), executor)
     private val cameraExposureTask = CameraExposureTask(camera, request)
     private val ditherAfterExposureTask = DitherAfterExposureTask(guider, request.dither)
 
@@ -50,7 +53,7 @@ data class CameraCaptureTask(
         cameraExposureTask.subscribe(this)
 
         if (guider != null) {
-            waitForSettleTask.subscribe(this)
+            // waitForSettleTask.subscribe(this)
             ditherAfterExposureTask.subscribe(this)
         }
     }
@@ -62,7 +65,10 @@ data class CameraCaptureTask(
     override fun execute(cancellationToken: CancellationToken) {
         LOG.info("Camera Capture started. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
 
+        cameraExposureTask.reset()
+
         while (!cancellationToken.isDone &&
+            !cameraExposureTask.isAborted &&
             ((exposureMaxRepeat > 0 && exposureRepeatCount < exposureMaxRepeat)
                     || (exposureMaxRepeat <= 0 && (request.isLoop || exposureCount < request.exposureAmount)))
         ) {
@@ -94,12 +100,14 @@ data class CameraCaptureTask(
             cameraExposureTask.execute(cancellationToken)
 
             // DITHER.
-            if (!cancellationToken.isDone && guider != null && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0) {
+            if (!cancellationToken.isDone && !cameraExposureTask.isAborted && guider != null
+                && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0
+            ) {
                 ditherAfterExposureTask.execute(cancellationToken)
             }
         }
 
-        if (state != CameraCaptureState.CAPTURE_FINISHED && (cameraExposureTask.isAborted || exposureCount >= request.exposureAmount)) {
+        if (state != CameraCaptureState.CAPTURE_FINISHED) {
             state = CameraCaptureState.CAPTURE_FINISHED
             sendEvent()
         }

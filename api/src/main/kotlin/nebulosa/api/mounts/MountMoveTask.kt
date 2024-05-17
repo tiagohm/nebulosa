@@ -1,7 +1,7 @@
 package nebulosa.api.mounts
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.tasks.Task
+import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.common.concurrency.cancel.CancellationListener
@@ -14,7 +14,7 @@ import nebulosa.log.loggerFor
 data class MountMoveTask(
     @JvmField val mount: Mount,
     @JvmField val request: MountMoveRequest,
-) : Task<MountMoveEvent>(), CancellationListener, Consumer<DelayEvent> {
+) : AbstractTask<MountMoveEvent>(), CancellationListener, Consumer<DelayEvent> {
 
     private val delayTask = DelayTask(request.duration)
 
@@ -25,7 +25,7 @@ data class MountMoveTask(
     override fun execute(cancellationToken: CancellationToken) {
         if (!cancellationToken.isDone && request.duration.toMillis() > 0) {
             mount.slewRates.takeIf { !request.speed.isNullOrBlank() }
-                ?.find { it.name == request.speed || it.label == request.speed }
+                ?.find { it.name == request.speed }
                 ?.also { mount.slewRate(it) }
 
             mount.move(request.direction, true)
@@ -44,7 +44,7 @@ data class MountMoveTask(
         }
     }
 
-    override fun onCancelled(source: CancellationSource) {
+    override fun onCancel(source: CancellationSource) {
         mount.move(request.direction, false)
     }
 

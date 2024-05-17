@@ -5,10 +5,10 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.ForkJoinPool
 
-open class SplitTask(
-    private val tasks: Collection<Task<*>>,
-    private val executor: Executor = EXECUTOR,
-) : Task<Any>() {
+data class SplitTask(
+    private val tasks: Collection<Task>,
+    private val executor: Executor? = null,
+) : Task {
 
     override fun execute(cancellationToken: CancellationToken) {
         if (tasks.isEmpty()) {
@@ -16,7 +16,7 @@ open class SplitTask(
         } else if (tasks.size == 1) {
             tasks.first().execute(cancellationToken)
         } else {
-            val completables = tasks.map { CompletableFuture.runAsync({ it.execute(cancellationToken) }, executor) }
+            val completables = tasks.map { CompletableFuture.runAsync({ it.execute(cancellationToken) }, executor ?: EXECUTOR) }
             completables.forEach(CompletableFuture<*>::join)
         }
     }
@@ -27,6 +27,6 @@ open class SplitTask(
 
     companion object {
 
-        @JvmStatic val EXECUTOR: Executor = ForkJoinPool.commonPool()
+        @JvmStatic private val EXECUTOR = ForkJoinPool.commonPool()
     }
 }

@@ -4,6 +4,7 @@ import { MenuItem } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { SlideMenuItemCommandEvent } from '../../shared/components/slide-menu/slide-menu.component'
+import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -48,7 +49,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     get canExposureTime() {
-        return this.mode !== 'FLAT_WIZARD' && this.mode !== 'DARV'
+        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER' || this.mode === 'TPPA'
     }
 
     get canExposureTimeUnit() {
@@ -60,7 +61,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     get canFrameType() {
-        return this.mode !== 'FLAT_WIZARD' && this.mode !== 'DARV'
+        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER'
     }
 
     get canStartOrAbort() {
@@ -72,6 +73,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     showDitherDialog = false
+
+    calibrationModel: ExtendedMenuItem[] = []
 
     readonly cameraModel: ExtendedMenuItem[] = [
         {
@@ -101,11 +104,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                     menu: [],
                 },
             ]
-        },
-        {
-            icon: 'mdi mdi-wrench',
-            label: 'Calibration',
-            menu: [],
         },
     ]
 
@@ -385,20 +383,29 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 checked: this.request.calibrationGroup === name,
                 command: (event: SlideMenuItemCommandEvent) => {
                     this.request.calibrationGroup = name
-                    event.parent?.menu?.forEach(item => item.checked = item === event.item)
+                    this.loadCalibrationGroups()
                 },
             }
         }
 
         const menu: ExtendedMenuItem[] = []
 
+        menu.push({
+            icon: 'mdi mdi-wrench',
+            label: 'Open Calibration',
+            command: () => {
+                return this.browserWindow.openCalibration({ bringToFront: true })
+            },
+        })
+
+        menu.push(SEPARATOR_MENU_ITEM)
         menu.push(makeItem())
 
         for (const group of groups) {
             menu.push(makeItem(group))
         }
 
-        this.cameraModel[2].menu = menu
+        this.calibrationModel = menu
     }
 
     connect() {
@@ -458,10 +465,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     openCameraImage() {
         return this.browserWindow.openCameraImage(this.camera, 'CAMERA', this.request)
-    }
-
-    openCameraCalibration() {
-        return this.browserWindow.openCalibration({ bringToFront: true })
     }
 
     private makeCameraStartCapture(): CameraStartCapture {

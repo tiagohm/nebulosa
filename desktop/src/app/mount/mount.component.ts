@@ -7,8 +7,9 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { PrimeService } from '../../shared/services/prime.service'
 import { Angle, ComputedLocation, Constellation, EMPTY_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
-import { EMPTY_MOUNT, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode } from '../../shared/types/mount.types'
+import { EMPTY_MOUNT, Mount, MountRemoteControlDialog, MountRemoteControlType, PierSide, SlewRate, TargetCoordinateType, TrackMode } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 import { SkyAtlasTab } from '../atlas/atlas.component'
 
@@ -192,6 +193,14 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                                 this.updateTargetCoordinate(coordinates)
                             },
                         },
+                        {
+                            icon: 'mdi mdi-crosshairs-gps',
+                            label: 'Equator x Ecliptic',
+                            command: async () => {
+                                const coordinates = await this.api.mountCelestialLocation(this.mount, 'EQUATOR_ECLIPTIC')
+                                this.updateTargetCoordinate(coordinates)
+                            },
+                        },
                     ]
                 },
             ],
@@ -200,6 +209,14 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     targetCoordinateOption = this.targetCoordinateModel[0]
 
+    readonly remoteControl: MountRemoteControlDialog = {
+        showDialog: false,
+        type: 'LX200',
+        host: '0.0.0.0',
+        port: 10001,
+        data: [],
+    }
+
     constructor(
         private app: AppComponent,
         private api: ApiService,
@@ -207,6 +224,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         private electron: ElectronService,
         private storage: LocalStorageService,
         private route: ActivatedRoute,
+        private prime: PrimeService,
         ngZone: NgZone,
     ) {
         app.title = 'Mount'
@@ -283,6 +301,25 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         } else {
             this.api.mountConnect(this.mount)
         }
+    }
+
+    async showRemoteControlDialog() {
+        this.remoteControl.data = await this.api.mountRemoteControlList(this.mount)
+        this.remoteControl.showDialog = true
+    }
+
+    async startRemoteControl() {
+        try {
+            await this.api.mountRemoteControlStart(this.mount, this.remoteControl.type, this.remoteControl.host, this.remoteControl.port)
+            this.remoteControl.data = await this.api.mountRemoteControlList(this.mount)
+        } catch {
+            this.prime.message('Failed to start remote control', 'error')
+        }
+    }
+
+    async stopRemoteControl(type: MountRemoteControlType) {
+        await this.api.mountRemoteControlStop(this.mount, type)
+        this.remoteControl.data = await this.api.mountRemoteControlList(this.mount)
     }
 
     async goTo() {

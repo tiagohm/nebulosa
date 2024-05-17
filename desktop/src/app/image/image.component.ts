@@ -17,7 +17,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
-import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeaders, ImageFOV, ImageInfo, ImagePreference, ImageROI, ImageSCNR, ImageSave, ImageSolved, ImageSolver, ImageStatisticsBitOption, ImageStretch, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImagePreference, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
@@ -56,13 +56,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         { name: 'Blue', value: 'BLUE' },
     ]
     readonly scnrMethods = Array.from(SCNR_PROTECTION_METHODS)
-    readonly scnr: ImageSCNR = {
+    readonly scnr: ImageSCNRDialog = {
         showDialog: false,
         amount: 0.5,
         method: 'AVERAGE_NEUTRAL',
     }
 
-    readonly stretch: ImageStretch = {
+    readonly stretch: ImageStretchDialog = {
         showDialog: false,
         auto: true,
         shadow: 0,
@@ -92,7 +92,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     annotateWithMinorPlanets = false
     annotateWithMinorPlanetsMagLimit = 12.0
 
-    readonly solver: ImageSolver = {
+    readonly solver: ImageSolverDialog = {
         showDialog: false,
         solving: false,
         blind: true,
@@ -116,7 +116,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         stars: []
     }
 
-    readonly fitsHeaders: ImageFITSHeaders = {
+    readonly fitsHeaders: ImageFITSHeadersDialog = {
         showDialog: false,
         headers: []
     }
@@ -126,7 +126,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     readonly statisticsBitOptions: ImageStatisticsBitOption[] = IMAGE_STATISTICS_BIT_OPTIONS
     statisticsBitLength = this.statisticsBitOptions[0]
 
-    readonly fov: ImageFOV = {
+    readonly fov: ImageFOVDialog = {
         ...structuredClone(DEFAULT_FOV),
         showDialog: false,
         fovs: [],
@@ -155,7 +155,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         height: 0
     }
 
-    readonly saveAs: ImageSave = {
+    readonly saveAs: ImageSaveDialog = {
         showDialog: false,
         format: 'FITS',
         bitpix: 'BYTE',
@@ -291,10 +291,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-image',
         disabled: true,
         command: () => {
-            const coordinate = this.mouseCoordinateInterpolation?.interpolateAsText(this.imageMouseX, this.imageMouseY, false, false, false)
+            const coordinate = this.mouseCoordinateInterpolation?.interpolate(this.imageMouseX, this.imageMouseY, false, false)
 
             if (coordinate) {
-                this.browserWindow.openFraming({ data: { rightAscension: coordinate.alpha, declination: coordinate.delta, fov: this.solver.solved!.width / 60, rotation: this.solver.solved!.orientation } })
+                this.frame(coordinate)
             }
         },
     }

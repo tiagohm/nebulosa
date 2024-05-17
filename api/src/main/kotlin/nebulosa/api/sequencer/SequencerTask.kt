@@ -6,6 +6,7 @@ import nebulosa.api.cameras.CameraCaptureState
 import nebulosa.api.cameras.CameraCaptureTask
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.messages.MessageEvent
+import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.Task
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
@@ -22,6 +23,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.log.loggerFor
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
@@ -36,15 +38,16 @@ data class SequencerTask(
     @JvmField val mount: Mount? = null,
     @JvmField val wheel: FilterWheel? = null,
     @JvmField val focuser: Focuser? = null,
-) : Task<MessageEvent>(), Consumer<Any> {
+    private val executor: Executor? = null,
+) : AbstractTask<MessageEvent>(), Consumer<Any> {
 
     private val usedEntries = plan.entries.filter { it.enabled }
 
     private val initialDelayTask = DelayTask(plan.initialDelay)
 
     private val sequencerId = AtomicInteger()
-    private val tasks = LinkedList<Task<*>>()
-    private val currentTask = AtomicReference<Task<*>>()
+    private val tasks = LinkedList<Task>()
+    private val currentTask = AtomicReference<Task>()
 
     @Volatile private var estimatedCaptureTime = initialDelayTask.duration
 
@@ -74,7 +77,7 @@ data class SequencerTask(
                 request.wheelMoveTask()?.also(tasks::add)
 
                 // CAPTURE.
-                val cameraCaptureTask = CameraCaptureTask(camera, request, guider)
+                val cameraCaptureTask = CameraCaptureTask(camera, request, guider, executor = executor)
                 cameraCaptureTask.subscribe(this)
                 estimatedCaptureTime += cameraCaptureTask.estimatedCaptureTime
                 tasks.add(cameraCaptureTask)
@@ -82,7 +85,7 @@ data class SequencerTask(
         } else {
             val sequenceIdTasks = usedEntries.map { req -> SequencerIdTask(plan.entries.indexOfFirst { it === req } + 1) }
             val requests = usedEntries.map { mapRequest(it) }
-            val cameraCaptureTasks = requests.mapIndexed { i, req -> CameraCaptureTask(camera, req, guider, i > 0, 1) }
+            val cameraCaptureTasks = requests.mapIndexed { i, req -> CameraCaptureTask(camera, req, guider, i > 0, 1, executor) }
             val wheelMoveTasks = requests.map { it.wheelMoveTask() }
             val count = IntArray(requests.size) { usedEntries[it].exposureAmount }
 
@@ -154,9 +157,7 @@ data class SequencerTask(
         return null
     }
 
-    override fun close() {
-        tasks.forEach { it.close() }
-    }
+    override fun canUseAsLastEvent(event: MessageEvent) = event is SequencerEvent
 
     override fun accept(event: Any) {
         when (event) {
@@ -187,16 +188,22 @@ data class SequencerTask(
         }
     }
 
-    private fun computeRemainingTimeAndProgress() {
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun computeRemainingTimeAndProgress() {
         remainingTime = if (estimatedCaptureTime > elapsedTime) estimatedCaptureTime - elapsedTime else Duration.ZERO
         progress = (estimatedCaptureTime - remainingTime).toNanos().toDouble() / estimatedCaptureTime.toNanos()
     }
 
-    private fun sendEvent(capture: CameraCaptureEvent? = null) {
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendEvent(capture: CameraCaptureEvent? = null) {
         onNext(SequencerEvent(sequencerId.get(), elapsedTime, remainingTime, progress, capture))
     }
 
-    private inner class SequencerIdTask(private val id: Int) : Task<Unit>() {
+    override fun close() {
+        tasks.forEach { it.close() }
+    }
+
+    private inner class SequencerIdTask(private val id: Int) : Task {
 
         override fun execute(cancellationToken: CancellationToken) {
             LOG.info("Sequence started. id={}", id)

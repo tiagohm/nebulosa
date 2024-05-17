@@ -27,6 +27,13 @@ class APITest : StringSpec() {
         "Camera Capture Start" { putJson("cameras/$CAMERA_NAME/capture/start", CAMERA_START_CAPTURE_REQUEST) }
         "Camera Capture Stop" { put("cameras/$CAMERA_NAME/capture/abort") }
         "Camera Disconnect" { put("cameras/$CAMERA_NAME/disconnect") }
+        "Mounts" { get("mounts") }
+        "Mount Connect" { put("mounts/$MOUNT_NAME/connect") }
+        "Mount" { get("mounts/$MOUNT_NAME") }
+        "Mount Telescope Control Start" { put("mounts/$MOUNT_NAME/remote-control/start?type=LX200&host=0.0.0.0&port=10001") }
+        "Mount Telescope Control List" { get("mounts/$MOUNT_NAME/remote-control") }
+        "Mount Telescope Control Stop" { put("mounts/$MOUNT_NAME/remote-control/stop?type=LX200") }
+        "Mount Disconnect" { put("mounts/$MOUNT_NAME/disconnect") }
         "Disconnect" { delete("connection") }
     }
 
@@ -34,6 +41,7 @@ class APITest : StringSpec() {
 
         private const val BASE_URL = "http://localhost:7000"
         private const val CAMERA_NAME = "CCD Simulator"
+        private const val MOUNT_NAME = "Telescope Simulator"
 
         @JvmStatic private val EXPOSURE_TIME = Duration.ofSeconds(5)
         @JvmStatic private val CAPTURES_PATH = Path.of("/home/tiagohm/Git/nebulosa/data/captures")

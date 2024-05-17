@@ -7,7 +7,7 @@ import nebulosa.log.loggerFor
 
 data class WaitForSettleTask(
     @JvmField val guider: Guider?,
-) : Task<Unit>() {
+) : Task {
 
     override fun execute(cancellationToken: CancellationToken) {
         if (guider != null && guider.isSettling && !cancellationToken.isDone) {

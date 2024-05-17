@@ -9,6 +9,7 @@ import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.guide.GuideOutput
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
@@ -19,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Subscriber
 class DARVExecutor(
     private val messageService: MessageService,
+    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
 ) : Consumer<MessageEvent> {
 
     private val jobs = ConcurrentHashMap.newKeySet<DARVJob>(1)
@@ -39,7 +41,7 @@ class DARVExecutor(
         check(jobs.none { it.task.camera === camera }) { "${camera.name} DARV Job is already in progress" }
         check(jobs.none { it.task.guideOutput === guideOutput }) { "${camera.name} DARV Job is already in progress" }
 
-        val task = DARVTask(camera, guideOutput, request)
+        val task = DARVTask(camera, guideOutput, request, threadPoolTaskExecutor)
         task.subscribe(this)
 
         with(DARVJob(task)) {
@@ -51,5 +53,9 @@ class DARVExecutor(
 
     fun stop(camera: Camera) {
         jobs.find { it.task.camera === camera }?.stop()
+    }
+
+    fun status(camera: Camera): DARVEvent? {
+        return jobs.find { it.task.camera === camera }?.task?.get() as? DARVEvent
     }
 }

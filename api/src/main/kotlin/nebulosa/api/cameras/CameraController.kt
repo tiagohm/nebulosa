@@ -64,4 +64,9 @@ class CameraController(
     fun abortCapture(camera: Camera) {
         cameraService.abortCapture(camera)
     }
+
+    @GetMapping("{camera}/capture/status")
+    fun statusCapture(camera: Camera): CameraCaptureEvent? {
+        return cameraService.statusCapture(camera)
+    }
 }
