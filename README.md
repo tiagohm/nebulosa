@@ -15,7 +15,27 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ### Steps
 
-* `./gradlew api:bootJar`
-* `cd desktop`
-* `npm i`
-* `npm run electron:build`
+1. `./gradlew api:bootJar`
+2. `cd desktop`
+3. `npm i`
+
+**On Linux:**
+
+4. `npm run electron:build:deb` to build `.deb` package.
+5. `npm run electron:build:app` to build `AppImage`.
+6. `npm run electron:build:rpm` to build `RPM` package.
+
+Before build a `RPM` package, run `sudo apt install rpm`.
+
+**On Windows:**
+
+4. `npm run electron:build` to build the `.exe`.
+
+**On Linux ARM (Raspberry PI)**
+
+run these commands before:
+
+* `sudo apt install ruby ruby-dev`
+* `sudo gem install fpm`
+
+4. `USE_SYSTEM_FPM=true npm run electron:build:deb` to build `.deb` package.
