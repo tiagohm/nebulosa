@@ -157,9 +157,7 @@ data class SequencerTask(
         return null
     }
 
-    override fun close() {
-        tasks.forEach { it.close() }
-    }
+    override fun canUseAsLastEvent(event: MessageEvent) = event is SequencerEvent
 
     override fun accept(event: Any) {
         when (event) {
@@ -190,13 +188,19 @@ data class SequencerTask(
         }
     }
 
-    private fun computeRemainingTimeAndProgress() {
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun computeRemainingTimeAndProgress() {
         remainingTime = if (estimatedCaptureTime > elapsedTime) estimatedCaptureTime - elapsedTime else Duration.ZERO
         progress = (estimatedCaptureTime - remainingTime).toNanos().toDouble() / estimatedCaptureTime.toNanos()
     }
 
-    private fun sendEvent(capture: CameraCaptureEvent? = null) {
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendEvent(capture: CameraCaptureEvent? = null) {
         onNext(SequencerEvent(sequencerId.get(), elapsedTime, remainingTime, progress, capture))
+    }
+
+    override fun close() {
+        tasks.forEach { it.close() }
     }
 
     private inner class SequencerIdTask(private val id: Int) : Task {

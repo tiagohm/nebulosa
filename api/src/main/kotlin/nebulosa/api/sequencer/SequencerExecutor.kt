@@ -75,4 +75,8 @@ class SequencerExecutor(
     fun stop(camera: Camera) {
         jobs.find { it.task.camera === camera }?.stop()
     }
+
+    fun status(camera: Camera): SequencerEvent? {
+        return jobs.find { it.task.camera === camera }?.task?.get() as? SequencerEvent
+    }
 }

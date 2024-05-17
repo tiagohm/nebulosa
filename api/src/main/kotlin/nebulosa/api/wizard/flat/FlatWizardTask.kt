@@ -38,6 +38,8 @@ data class FlatWizardTask(
         cameraCaptureTask?.handleCameraEvent(event)
     }
 
+    override fun canUseAsLastEvent(event: MessageEvent) = event is FlatWizardEvent
+
     override fun execute(cancellationToken: CancellationToken) {
         while (!cancellationToken.isDone) {
             val delta = exposureMax.toMillis() - exposureMin.toMillis()
@@ -113,7 +115,8 @@ data class FlatWizardTask(
         LOG.info("Flat Wizard finished. camera={}, request={}, exposureTime={}", camera, request, exposureTime)
     }
 
-    private fun sendEvent() {
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendEvent() {
         onNext(FlatWizardEvent(state, exposureTime, capture, savedPath))
     }
 

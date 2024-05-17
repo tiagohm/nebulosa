@@ -1,14 +1,13 @@
 package nebulosa.api.alignment.polar
 
+import nebulosa.api.alignment.polar.darv.DARVEvent
 import nebulosa.api.alignment.polar.darv.DARVStartRequest
+import nebulosa.api.alignment.polar.tppa.TPPAEvent
 import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("polar-alignment")
@@ -25,6 +24,11 @@ class PolarAlignmentController(
     @PutMapping("darv/{camera}/stop")
     fun darvStop(camera: Camera) {
         polarAlignmentService.darvStop(camera)
+    }
+
+    @GetMapping("darv/{camera}/status")
+    fun darvStatus(camera: Camera): DARVEvent? {
+        return polarAlignmentService.darvStatus(camera)
     }
 
     @PutMapping("tppa/{camera}/{mount}/start")
@@ -46,5 +50,10 @@ class PolarAlignmentController(
     @PutMapping("tppa/{camera}/unpause")
     fun tppaUnpause(camera: Camera) {
         polarAlignmentService.tppaUnpause(camera)
+    }
+
+    @GetMapping("tppa/{camera}/status")
+    fun tppaStatus(camera: Camera): TPPAEvent? {
+        return polarAlignmentService.tppaStatus(camera)
     }
 }

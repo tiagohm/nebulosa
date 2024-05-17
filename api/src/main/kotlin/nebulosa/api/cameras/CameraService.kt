@@ -46,4 +46,8 @@ class CameraService(
     fun abortCapture(camera: Camera) {
         cameraCaptureExecutor.stop(camera)
     }
+
+    fun statusCapture(camera: Camera): CameraCaptureEvent? {
+        return cameraCaptureExecutor.status(camera)
+    }
 }

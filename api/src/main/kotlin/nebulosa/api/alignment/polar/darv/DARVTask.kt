@@ -78,6 +78,8 @@ data class DARVTask(
         LOG.info("DARV finished. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
     }
 
+    override fun canUseAsLastEvent(event: MessageEvent) = event is DARVEvent
+
     override fun accept(event: Any) {
         when (event) {
             is DelayEvent -> {
@@ -98,7 +100,8 @@ data class DARVTask(
         }
     }
 
-    private fun sendEvent(capture: CameraCaptureEvent? = null) {
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendEvent(capture: CameraCaptureEvent? = null) {
         onNext(DARVEvent(camera, state, direction, capture))
     }
 

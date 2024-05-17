@@ -79,6 +79,8 @@ data class TPPATask(
         }
     }
 
+    override fun canUseAsLastEvent(event: MessageEvent) = event is TPPAEvent
+
     override fun accept(event: Any) {
         when (event) {
             is CameraCaptureEvent -> {

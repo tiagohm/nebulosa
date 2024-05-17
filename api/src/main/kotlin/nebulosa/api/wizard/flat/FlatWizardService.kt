@@ -13,7 +13,7 @@ class FlatWizardService(
 ) {
 
     @Synchronized
-    fun startCapture(camera: Camera, request: FlatWizardRequest) {
+    fun start(camera: Camera, request: FlatWizardRequest) {
         val savePath = request.capture.savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
             ?: Path.of("$capturesPath", camera.name, "FLAT")
@@ -23,7 +23,11 @@ class FlatWizardService(
     }
 
     @Synchronized
-    fun stopCapture(camera: Camera) {
+    fun stop(camera: Camera) {
         flatWizardExecutor.stop(camera)
+    }
+
+    fun status(camera: Camera): FlatWizardEvent? {
+        return flatWizardExecutor.status(camera)
     }
 }

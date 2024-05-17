@@ -45,4 +45,8 @@ class FlatWizardExecutor(
     fun stop(camera: Camera) {
         jobs.find { it.task.camera === camera }?.stop()
     }
+
+    fun status(camera: Camera): FlatWizardEvent? {
+        return jobs.find { it.task.camera === camera }?.task?.get() as? FlatWizardEvent
+    }
 }

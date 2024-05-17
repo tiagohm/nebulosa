@@ -49,4 +49,8 @@ class CameraCaptureExecutor(
     fun stop(camera: Camera) {
         jobs.find { it.task.camera === camera }?.stop()
     }
+
+    fun status(camera: Camera): CameraCaptureEvent? {
+        return jobs.find { it.task.camera === camera }?.task?.get()
+    }
 }

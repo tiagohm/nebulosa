@@ -31,4 +31,8 @@ class SequencerService(
     fun stop(camera: Camera) {
         sequencerExecutor.stop(camera)
     }
+
+    fun status(camera: Camera): SequencerEvent? {
+        return sequencerExecutor.status(camera)
+    }
 }
