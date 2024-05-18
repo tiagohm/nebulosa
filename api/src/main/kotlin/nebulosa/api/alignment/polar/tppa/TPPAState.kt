@@ -5,6 +5,7 @@ enum class TPPAState {
     SLEWING,
     SLEWED,
     SETTLING,
+    EXPOSURING,
     SOLVING,
     SOLVED,
     COMPUTED,

@@ -130,12 +130,14 @@ data class TPPATask(
 
             // SLEWING.
             if (mount != null) {
-                if (alignment.state in 1..2 && !mountMoveState[alignment.state]) {
+                if (alignment.state.ordinal in 1..2 && !mountMoveState[alignment.state.ordinal]) {
                     MountMoveTask(mount, mountMoveRequest).use {
                         sendEvent(TPPAState.SLEWING)
                         it.execute(cancellationToken)
-                        mountMoveState[alignment.state] = true
+                        mountMoveState[alignment.state.ordinal] = true
                     }
+
+                    if (cancellationToken.isDone) break
 
                     rightAscension = mount.rightAscension
                     declination = mount.declination
@@ -149,7 +151,7 @@ data class TPPATask(
 
             if (cancellationToken.isDone) break
 
-            sendEvent(TPPAState.SOLVING)
+            sendEvent(TPPAState.EXPOSURING)
 
             // CAPTURE.
             cameraCaptureTask.execute(cancellationToken)
@@ -157,6 +159,8 @@ data class TPPATask(
             if (cancellationToken.isDone || savedImage == null) {
                 break
             }
+
+            sendEvent(TPPAState.SOLVING)
 
             // ALIGNMENT.
             val radius = if (mount == null) 0.0 else ATTEMPT_RADIUS * (noSolutionAttempts + 1)
@@ -228,6 +232,9 @@ data class TPPATask(
                     sendEvent(TPPAState.COMPUTED)
 
                     continue
+                }
+                is ThreePointPolarAlignmentResult.Cancelled -> {
+                    break
                 }
             }
         }
