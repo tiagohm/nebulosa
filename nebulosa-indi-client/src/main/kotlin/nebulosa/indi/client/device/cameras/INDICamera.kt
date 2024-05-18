@@ -171,8 +171,12 @@ internal open class INDICamera(
                         }
                     }
                     "CCD_COOLER_POWER" -> {
-                        coolerPower = message.first().value
-                        sender.fireOnEventReceived(CameraCoolerPowerChanged(this))
+                        message.first().value.also {
+                            if (it != coolerPower) {
+                                coolerPower = it
+                                sender.fireOnEventReceived(CameraCoolerPowerChanged(this))
+                            }
+                        }
                     }
                     "CCD_TEMPERATURE" -> {
                         if (message is DefNumberVector) {
