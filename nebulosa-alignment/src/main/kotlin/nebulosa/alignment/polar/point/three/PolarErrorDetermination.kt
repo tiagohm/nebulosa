@@ -74,9 +74,8 @@ internal data class PolarErrorDetermination(
         val centerX = referenceFrame.width / 2.0
         val centerY = referenceFrame.height / 2.0
 
-        val currentCenter = doubleArrayOf(referenceFrame.rightAscension, referenceFrame.declination)
-        val originPixel = currentCenter
-            .stenographicProjection(initialReferenceFrame.rightAscension, initialReferenceFrame.declination, referenceFrame)
+        val originPixel = doubleArrayOf(initialReferenceFrame.rightAscension, initialReferenceFrame.declination)
+            .stenographicProjection(referenceFrame.rightAscension, referenceFrame.declination, referenceFrame)
         val pointShift = doubleArrayOf(centerX - originPixel[0], centerY - originPixel[1])
 
         originPixel[0] += pointShift[0] * 2.0
@@ -84,7 +83,7 @@ internal data class PolarErrorDetermination(
 
         val destinationAltAz = destinationCoordinates(-initialAzimuthError, -initialAltitudeError, time, compensateRefraction)
         val destinationPixel = doubleArrayOf(destinationAltAz[0], destinationAltAz[1])
-            .stenographicProjection(initialReferenceFrame.rightAscension, initialReferenceFrame.declination, referenceFrame)
+            .stenographicProjection(referenceFrame.rightAscension, referenceFrame.declination, referenceFrame)
 
         destinationPixel[0] += pointShift[0] * 2.0
         destinationPixel[1] += pointShift[1] * 2.0
@@ -92,7 +91,7 @@ internal data class PolarErrorDetermination(
         // Azimuth.
         val originalAzimuthAltAz = destinationCoordinates(-initialAzimuthError, 0.0, time, compensateRefraction)
         val originalAzimuthPixel = doubleArrayOf(originalAzimuthAltAz[0], originalAzimuthAltAz[1])
-            .stenographicProjection(initialReferenceFrame.rightAscension, initialReferenceFrame.declination, referenceFrame)
+            .stenographicProjection(referenceFrame.rightAscension, referenceFrame.declination, referenceFrame)
 
         originalAzimuthPixel[0] += pointShift[0] * 2.0
         originalAzimuthPixel[1] += pointShift[1] * 2.0
