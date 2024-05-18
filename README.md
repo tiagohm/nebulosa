@@ -19,7 +19,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 2. `cd desktop`
 3. `npm i`
 
-**On Linux:**
+#### On Linux
 
 4. `npm run electron:build:deb` to build `.deb` package.
 5. `npm run electron:build:app` to build `AppImage`.
@@ -27,11 +27,11 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 Before build a `RPM` package, run `sudo apt install rpm`.
 
-**On Windows:**
+#### On Windows
 
 4. `npm run electron:build` to build the `.exe`.
 
-**On Linux ARM (Raspberry PI)**
+#### On Linux ARM (Raspberry PI)
 
 run these commands before:
 
@@ -39,3 +39,5 @@ run these commands before:
 * `sudo gem install fpm`
 
 4. `USE_SYSTEM_FPM=true npm run electron:build:deb` to build `.deb` package.
+
+> Look at `release` subdirectory for the generated build.
