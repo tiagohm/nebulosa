@@ -66,6 +66,7 @@ data class ThreePointPolarAlignment(
                 currentAltitudeError = altitude
                 return ThreePointPolarAlignmentResult.Measured(solution.rightAscension, solution.declination, azimuth, altitude)
             } else if (state == 2) {
+                state++
                 val position = solution.position(time, compensateRefraction)
                 polarErrorDetermination = PolarErrorDetermination(solution, positions[0]!!, positions[1]!!, position, longitude, latitude)
                 val (azimuth, altitude) = polarErrorDetermination.compute()

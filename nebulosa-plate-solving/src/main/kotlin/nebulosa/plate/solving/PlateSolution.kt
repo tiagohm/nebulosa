@@ -13,15 +13,17 @@ import kotlin.math.cos
 import kotlin.math.hypot
 
 data class PlateSolution(
-    val solved: Boolean = false,
-    val orientation: Angle = 0.0, // CROTA2
-    val scale: Angle = 0.0, // CDELT2
-    val rightAscension: Angle = 0.0, // CRVAL1
-    val declination: Angle = 0.0, // CRVAL2
-    val width: Angle = 0.0,
-    val height: Angle = 0.0,
-    val parity: Parity = Parity.NORMAL,
-    val radius: Angle = hypot(width, height).rad / 2.0,
+    @JvmField val solved: Boolean = false,
+    @JvmField val orientation: Angle = 0.0, // CROTA2
+    @JvmField val scale: Angle = 0.0, // CDELT2
+    @JvmField val rightAscension: Angle = 0.0, // CRVAL1
+    @JvmField val declination: Angle = 0.0, // CRVAL2
+    @JvmField val width: Angle = 0.0,
+    @JvmField val height: Angle = 0.0,
+    @JvmField val parity: Parity = Parity.NORMAL,
+    @JvmField val radius: Angle = hypot(width, height).rad / 2.0,
+    @JvmField val widthInPixels: Double = width / scale,
+    @JvmField val heightInPixels: Double = height / scale,
     private val header: Collection<HeaderCard> = emptyList(),
 ) : FitsHeader.ReadOnly(header) {
 
@@ -51,7 +53,10 @@ data class PlateSolution(
                 crval1.formatHMS(), crval2.formatSignedDMS(),
             )
 
-            return PlateSolution(true, crota2, cdelt2, crval1, crval2, abs(cdelt1 * width), abs(cdelt2 * height), header = header)
+            return PlateSolution(
+                true, crota2, cdelt2, crval1, crval2, abs(cdelt1 * width), abs(cdelt2 * height),
+                widthInPixels = width.toDouble(), heightInPixels = height.toDouble(), header = header
+            )
         }
     }
 }

@@ -71,27 +71,25 @@ internal data class PolarErrorDetermination(
     ): DoubleArray {
         currentReferenceFrame = referenceFrame
 
-        val centerX = referenceFrame.width / 2.0
-        val centerY = referenceFrame.height / 2.0
+        val centerX = referenceFrame.widthInPixels / 2.0
+        val centerY = referenceFrame.heightInPixels / 2.0
 
-        val originPixel = doubleArrayOf(initialReferenceFrame.rightAscension, initialReferenceFrame.declination)
-            .stenographicProjection(referenceFrame.rightAscension, referenceFrame.declination, referenceFrame)
+        val originPixel =
+            doubleArrayOf(initialReferenceFrame.rightAscension, initialReferenceFrame.declination).stenographicProjection(referenceFrame)
         val pointShift = doubleArrayOf(centerX - originPixel[0], centerY - originPixel[1])
 
         originPixel[0] += pointShift[0] * 2.0
         originPixel[1] += pointShift[1] * 2.0
 
         val destinationAltAz = destinationCoordinates(-initialAzimuthError, -initialAltitudeError, time, compensateRefraction)
-        val destinationPixel = doubleArrayOf(destinationAltAz[0], destinationAltAz[1])
-            .stenographicProjection(referenceFrame.rightAscension, referenceFrame.declination, referenceFrame)
+        val destinationPixel = doubleArrayOf(destinationAltAz[0], destinationAltAz[1]).stenographicProjection(referenceFrame)
 
         destinationPixel[0] += pointShift[0] * 2.0
         destinationPixel[1] += pointShift[1] * 2.0
 
         // Azimuth.
         val originalAzimuthAltAz = destinationCoordinates(-initialAzimuthError, 0.0, time, compensateRefraction)
-        val originalAzimuthPixel = doubleArrayOf(originalAzimuthAltAz[0], originalAzimuthAltAz[1])
-            .stenographicProjection(referenceFrame.rightAscension, referenceFrame.declination, referenceFrame)
+        val originalAzimuthPixel = doubleArrayOf(originalAzimuthAltAz[0], originalAzimuthAltAz[1]).stenographicProjection(referenceFrame)
 
         originalAzimuthPixel[0] += pointShift[0] * 2.0
         originalAzimuthPixel[1] += pointShift[1] * 2.0
@@ -105,8 +103,7 @@ internal data class PolarErrorDetermination(
 
         // Altitude.
         val originalAltitudeAltAz = destinationCoordinates(0.0, -initialAltitudeError, time, compensateRefraction)
-        val originalAltitudePixel = doubleArrayOf(originalAltitudeAltAz[0], originalAltitudeAltAz[1])
-            .stenographicProjection(initialReferenceFrame.rightAscension, initialReferenceFrame.declination, referenceFrame)
+        val originalAltitudePixel = doubleArrayOf(originalAltitudeAltAz[0], originalAltitudeAltAz[1]).stenographicProjection(referenceFrame)
 
         originalAltitudePixel[0] += pointShift[0] * 2.0
         originalAltitudePixel[1] += pointShift[1] * 2.0
@@ -161,12 +158,17 @@ internal data class PolarErrorDetermination(
          * to a given point using steonographic projection.
          */
         @JvmStatic
-        fun DoubleArray.stenographicProjection(centerRA: Angle, centerDEC: Angle, solution: PlateSolution): DoubleArray {
-            return stenographicProjection(centerRA, centerDEC, solution.width / 2.0, solution.height / 2.0, solution.scale, solution.orientation)
-        }
+        internal fun DoubleArray.stenographicProjection(
+            solution: PlateSolution,
+            centerRA: Angle = solution.rightAscension,
+            centerDEC: Angle = solution.declination
+        ) = stenographicProjection(
+            centerRA, centerDEC,
+            solution.widthInPixels / 2.0, solution.heightInPixels / 2.0, solution.scale, solution.orientation
+        )
 
         @JvmStatic
-        fun DoubleArray.stenographicProjection(
+        internal fun DoubleArray.stenographicProjection(
             centerRA: Angle, centerDEC: Angle,
             centerX: Double, centerY: Double, scale: Angle, orientation: Angle
         ): DoubleArray {
