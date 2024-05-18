@@ -152,7 +152,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     readonly satelliteSearchGroup = new Map<SatelliteGroupType, boolean>()
 
     name? = 'Sun'
-    tags: { title: string, severity: string }[] = []
+    tags: { title: string, severity: 'success' | 'info' | 'warning' | 'danger' }[] = []
 
     @ViewChild('imageOfSun')
     private readonly imageOfSun!: ElementRef<HTMLImageElement>
