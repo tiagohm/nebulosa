@@ -43,7 +43,7 @@
     "@angular/router": "17.3.6",
     "@fontsource/roboto": "5.0.13",
     "@mdi/font": "7.4.47",
-    "chart.js": "4.4.2",
+    "chart.js": "4.4.3",
     "chartjs-plugin-zoom": "2.0.1",
     "hotkeys-js": "3.13.7",
     "interactjs": "1.10.27",
