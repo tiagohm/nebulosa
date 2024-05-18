@@ -6,4 +6,8 @@ data class Camera(
     override val name: String = "",
     val cooled: Boolean = false,
     val sensor: Long = 0L,
-) : Equipment
+) : Equipment {
+
+    override val isValid
+        get() = sensor > 0L
+}

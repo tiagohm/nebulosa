@@ -193,9 +193,6 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
     }
 
     if (serve) {
-        const debug = require('electron-debug')
-        debug({ showDevTools: false })
-
         window.loadURL(`http://localhost:4200/${options.path}?data=${data}`)
     } else {
         const url = new URL(join('file:', __dirname, `index.html`) + `#/${options.path}?data=${data}`)
@@ -505,7 +502,13 @@ try {
         const [width] = window.getSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
         const height = Math.max(options?.minHeight ?? 0, Math.min(data, maxHeight))
+
+        // https://github.com/electron/electron/issues/16711#issuecomment-1311824063
+        const resizable = window.isResizable()
+        window.setResizable(true)
         window.setSize(width, height)
+        window.setResizable(resizable)
+
         console.info('window auto resized:', width, height)
 
         return true

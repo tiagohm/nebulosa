@@ -8,4 +8,8 @@ data class Telescope(
     val aperture: Double = 0.0,
     val minFocalLength: Double = 0.0,
     val maxFocalLength: Double = 0.0,
-) : Equipment
+) : Equipment {
+
+    override val isValid
+        get() = aperture > 0.0 && (minFocalLength > 0.0 || maxFocalLength > 0.0)
+}

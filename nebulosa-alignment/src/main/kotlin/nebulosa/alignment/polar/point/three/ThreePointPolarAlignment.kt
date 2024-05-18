@@ -1,5 +1,6 @@
 package nebulosa.alignment.polar.point.three
 
+import nebulosa.alignment.polar.point.three.ThreePointPolarAlignmentResult.*
 import nebulosa.common.Resettable
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.constants.DEG2RAD
@@ -23,9 +24,14 @@ data class ThreePointPolarAlignment(
     private val latitude: Angle,
 ) : Resettable {
 
-    private val positions = arrayOfNulls<Position>(2)
+    enum class State {
+        FIRST_POSITION,
+        SECOND_POSITION,
+        THIRD_POSITION,
+        CONTINUOUS_SOLVE,
+    }
 
-    @Volatile var state = 0
+    @Volatile var state = State.FIRST_POSITION
         private set
 
     @Volatile var initialAzimuthError: Angle = 0.0
@@ -40,6 +46,8 @@ data class ThreePointPolarAlignment(
     @Volatile var currentAltitudeError: Angle = 0.0
         private set
 
+    private lateinit var firstPosition: Position
+    private lateinit var secondPosition: Position
     private lateinit var polarErrorDetermination: PolarErrorDetermination
 
     fun align(
@@ -48,43 +56,56 @@ data class ThreePointPolarAlignment(
         compensateRefraction: Boolean = false,
         cancellationToken: CancellationToken = CancellationToken.NONE,
     ): ThreePointPolarAlignmentResult {
+        if (cancellationToken.isDone) {
+            return Cancelled
+        }
+
         val solution = try {
             solver.solve(path, null, rightAscension, declination, radius, cancellationToken = cancellationToken)
         } catch (e: PlateSolvingException) {
-            return ThreePointPolarAlignmentResult.NoPlateSolution(e)
+            return NoPlateSolution(e)
         }
 
-        if (!solution.solved || cancellationToken.isDone) {
-            return ThreePointPolarAlignmentResult.NoPlateSolution(null)
+        if (cancellationToken.isDone) {
+            return Cancelled
+        } else if (!solution.solved) {
+            return NoPlateSolution(null)
         } else {
             val time = UTC.now()
 
-            if (state > 2) {
-                val (azimuth, altitude) = polarErrorDetermination
-                    .update(time, initialAzimuthError, initialAltitudeError, solution, compensateRefraction)
-                currentAzimuthError = azimuth
-                currentAltitudeError = altitude
-                return ThreePointPolarAlignmentResult.Measured(solution.rightAscension, solution.declination, azimuth, altitude)
-            } else if (state == 2) {
-                state++
-                val position = solution.position(time, compensateRefraction)
-                polarErrorDetermination = PolarErrorDetermination(solution, positions[0]!!, positions[1]!!, position, longitude, latitude)
-                val (azimuth, altitude) = polarErrorDetermination.compute()
-                initialAzimuthError = azimuth
-                initialAltitudeError = altitude
-                return ThreePointPolarAlignmentResult.Measured(solution.rightAscension, solution.declination, azimuth, altitude)
-            } else {
-                positions[state] = solution.position(time, compensateRefraction)
-                state++
+            when (state) {
+                State.CONTINUOUS_SOLVE -> {
+                    val (azimuth, altitude) = polarErrorDetermination
+                        .update(time, initialAzimuthError, initialAltitudeError, solution, compensateRefraction)
+                    currentAzimuthError = azimuth
+                    currentAltitudeError = altitude
+                    return Measured(solution.rightAscension, solution.declination, azimuth, altitude)
+                }
+                State.THIRD_POSITION -> {
+                    val position = solution.position(time, compensateRefraction)
+                    polarErrorDetermination = PolarErrorDetermination(solution, firstPosition, secondPosition, position, longitude, latitude)
+                    val (azimuth, altitude) = polarErrorDetermination.compute()
+                    state = State.CONTINUOUS_SOLVE
+                    initialAzimuthError = azimuth
+                    initialAltitudeError = altitude
+                    return Measured(solution.rightAscension, solution.declination, azimuth, altitude)
+                }
+                State.SECOND_POSITION -> {
+                    secondPosition = solution.position(time, compensateRefraction)
+                    state = State.THIRD_POSITION
+                }
+                State.FIRST_POSITION -> {
+                    firstPosition = solution.position(time, compensateRefraction)
+                    state = State.SECOND_POSITION
+                }
             }
 
-            return ThreePointPolarAlignmentResult.NeedMoreMeasurement(solution.rightAscension, solution.declination)
+            return NeedMoreMeasurement(solution.rightAscension, solution.declination)
         }
     }
 
     override fun reset() {
-        state = 0
-        positions.fill(null)
+        state = State.FIRST_POSITION
     }
 
     private fun PlateSolution.position(time: UTC, compensateRefraction: Boolean): Position {

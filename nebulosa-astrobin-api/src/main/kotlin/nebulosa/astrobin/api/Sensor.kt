@@ -14,4 +14,8 @@ data class Sensor(
     val adc: Int = 0,
     val color: SensorColor = SensorColor.MONO,
     val cameras: LongArray = LongArray(0),
-) : Equipment
+) : Equipment {
+
+    override val isValid
+        get() = pixelWidth > 0.0 && pixelHeight > 0.0 && pixelSize > 0.0
+}

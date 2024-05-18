@@ -39,7 +39,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     readonly connectionTypes = Array.from(CONNECTION_TYPES)
     showConnectionDialog = false
-    readonly connections: ConnectionDetails[] = []
+    connections: ConnectionDetails[] = []
     connection?: ConnectionDetails
     newConnection?: [ConnectionDetails, ConnectionDetails | undefined]
     skyAtlasProgress?: number = undefined
@@ -251,7 +251,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             this.connections.splice(index, 1)
 
             if (connection === this.connection) {
-                this.connection = undefined
+                this.connection = this.connections[0]
             }
 
             this.preference.connections.set(this.connections)
@@ -268,11 +268,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             }
             // New.
             else {
-                this.connections.push(this.newConnection[0])
-
-                if (!this.connection) {
-                    this.connection = this.newConnection[0]
-                }
+                const newConnection = structuredClone(this.newConnection[0])
+                this.connections = [...this.connections, newConnection]
+                this.connection = newConnection
             }
         }
 

@@ -6,10 +6,10 @@
         }
     }
 
-    p-button ::ng-deep {
+    .buttons p-button ::ng-deep {
         display: contents;
 
-        &.open {
+        >button {
             min-height: 56px;
             max-height: 56px;
             display: flex;
