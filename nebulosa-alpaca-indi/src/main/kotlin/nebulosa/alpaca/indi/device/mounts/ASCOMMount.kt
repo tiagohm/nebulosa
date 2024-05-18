@@ -3,6 +3,7 @@ package nebulosa.alpaca.indi.device.mounts
 import nebulosa.alpaca.api.*
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
+import nebulosa.constants.DEG2RAD
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
@@ -16,6 +17,7 @@ import java.math.BigDecimal
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlin.math.abs
 
 @Suppress("RedundantModalityModifier")
 data class ASCOMMount(
@@ -462,7 +464,7 @@ data class ASCOMMount(
                     }
                 }
 
-                if (ra != rightAscension || dec != declination) {
+                if (abs(ra - rightAscension) >= EPSILON || abs(dec - declination) >= EPSILON) {
                     rightAscension = ra
                     declination = dec
 
@@ -473,6 +475,8 @@ data class ASCOMMount(
     }
 
     companion object {
+
+        private const val EPSILON = 1 / 36000.0 * DEG2RAD
 
         @JvmStatic private val LOG = loggerFor<ASCOMMount>()
         @JvmStatic private val SLEW_RATE_INCREMENT = BigDecimal("0.1")
