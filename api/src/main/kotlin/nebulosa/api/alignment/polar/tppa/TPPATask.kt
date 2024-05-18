@@ -91,7 +91,7 @@ data class TPPATask(
                 }
 
                 if (!finished.get()) {
-                    sendEvent(TPPAState.SOLVING, event)
+                    sendEvent(TPPAState.EXPOSURING, event)
                 }
             }
             is DelayEvent -> {
