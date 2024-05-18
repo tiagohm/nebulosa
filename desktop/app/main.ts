@@ -502,7 +502,13 @@ try {
         const [width] = window.getSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
         const height = Math.max(options?.minHeight ?? 0, Math.min(data, maxHeight))
+
+        // https://github.com/electron/electron/issues/16711#issuecomment-1311824063
+        const resizable = window.isResizable()
+        window.setResizable(true)
         window.setSize(width, height)
+        window.setResizable(resizable)
+
         console.info('window auto resized:', width, height)
 
         return true
