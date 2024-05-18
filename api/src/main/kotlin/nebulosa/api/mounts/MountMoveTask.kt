@@ -36,7 +36,7 @@ data class MountMoveTask(
                 cancellationToken.listen(this)
                 delayTask.execute(cancellationToken)
             } finally {
-                mount.move(request.direction, false)
+                stop()
                 cancellationToken.unlisten(this)
             }
 
@@ -45,6 +45,10 @@ data class MountMoveTask(
     }
 
     override fun onCancel(source: CancellationSource) {
+        stop()
+    }
+
+    fun stop() {
         mount.move(request.direction, false)
     }
 

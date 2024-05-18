@@ -308,7 +308,7 @@ data class TPPATask(
         @JvmStatic private val SETTLE_TIME = Duration.ofSeconds(5)
         @JvmStatic private val LOG = loggerFor<TPPATask>()
 
-        const val MAX_ATTEMPTS = 15
-        const val ATTEMPT_RADIUS: Angle = ThreePointPolarAlignment.DEFAULT_RADIUS
+        const val MAX_ATTEMPTS = 30
+        const val ATTEMPT_RADIUS = ThreePointPolarAlignment.DEFAULT_RADIUS / 2.0
     }
 }

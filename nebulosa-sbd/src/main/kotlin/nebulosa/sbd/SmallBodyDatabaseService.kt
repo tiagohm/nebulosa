@@ -15,7 +15,7 @@ class SmallBodyDatabaseService(
 
     private val service by lazy { retrofit.create<SmallBodyDatabase>() }
 
-    override fun handleOkHttpClientBuilder(builder: OkHttpClient.Builder) {
+    override fun withOkHttpClientBuilder(builder: OkHttpClient.Builder) {
         builder.addInterceptor {
             val response = it.proceed(it.request())
 

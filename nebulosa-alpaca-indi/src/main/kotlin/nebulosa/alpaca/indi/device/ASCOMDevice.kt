@@ -12,6 +12,8 @@ import retrofit2.Call
 import retrofit2.HttpException
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.system.measureTimeMillis
 
 abstract class ASCOMDevice : Device, Resettable {
 
@@ -31,14 +33,16 @@ abstract class ASCOMDevice : Device, Resettable {
     override val properties = emptyMap<String, PropertyVector<*, *>>()
     override val messages = LinkedList<String>()
 
-    @Volatile private var refresher: Refresher? = null
+    private val refresher = AtomicReference<Refresher>()
 
     internal open fun initialize() {
         refresh(0L)
 
-        if (refresher == null) {
-            refresher = Refresher()
-            refresher!!.start()
+        if (refresher.get() == null) {
+            with(Refresher()) {
+                refresher.set(this)
+                start()
+            }
         }
     }
 
@@ -59,8 +63,7 @@ abstract class ASCOMDevice : Device, Resettable {
     }
 
     override fun close() {
-        refresher?.interrupt()
-        refresher = null
+        refresher.getAndSet(null)?.interrupt()
     }
 
     protected abstract fun onConnected()
@@ -143,10 +146,11 @@ abstract class ASCOMDevice : Device, Resettable {
             stopwatch.start()
 
             while (true) {
-                val startTime = System.currentTimeMillis()
-                if (connected) refresh(stopwatch.elapsedSeconds)
-                val endTime = System.currentTimeMillis()
-                val delayTime = 2000L - (endTime - startTime)
+                val elapsedTime = measureTimeMillis {
+                    refresh(stopwatch.elapsedSeconds)
+                }
+
+                val delayTime = 2000L - elapsedTime
 
                 if (delayTime > 1L) {
                     sleep(delayTime)
