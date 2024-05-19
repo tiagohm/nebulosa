@@ -464,6 +464,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             command: () => this.zoomIn(),
         })
 
+        app.topMenu.push({
+            icon: 'mdi mdi-numeric-0',
+            label: 'Reset Zoom',
+            command: () => this.resetZoom(false),
+        })
+
+        app.topMenu.push({
+            icon: 'mdi mdi-fit-to-screen',
+            label: 'Fit to Screen',
+            command: () => this.resetZoom(true),
+        })
+
         this.stretchShadow.subscribe(value => {
             this.stretch.shadow = value / 65536
         })
@@ -874,9 +886,23 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, scale * 0.9)
     }
 
-    resetZoom() {
-        if (!this.panZoom) return
-        this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, 1.0)
+    center() {
+        const { width, height } = this.image.nativeElement.getBoundingClientRect()
+        this.panZoom?.moveTo(window.innerWidth / 2 - width / 2, (window.innerHeight - 42) / 2 - height / 2)
+    }
+
+    resetZoom(fitToScreen: boolean = false, center: boolean = true) {
+        if (fitToScreen) {
+            const { width, height } = this.image.nativeElement
+            const factor = Math.min(window.innerWidth, window.innerHeight - 42) / Math.min(width, height)
+            this.panZoom?.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, factor)
+        } else {
+            this.panZoom?.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, 1.0)
+        }
+
+        if (center) {
+            this.center()
+        }
     }
 
     async enterFullscreen() {
