@@ -13,6 +13,7 @@ import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.log.error
 import nebulosa.log.loggerFor
@@ -122,6 +123,10 @@ class ConnectionService(
         return providers[id]?.wheels() ?: emptyList()
     }
 
+    fun rotators(id: String): Collection<Rotator> {
+        return providers[id]?.rotators() ?: emptyList()
+    }
+
     fun gpss(id: String): Collection<GPS> {
         return providers[id]?.gps() ?: emptyList()
     }
@@ -148,6 +153,10 @@ class ConnectionService(
 
     fun wheels(): List<FilterWheel> {
         return providers.values.flatMap { it.wheels() }
+    }
+
+    fun rotators(): List<Rotator> {
+        return providers.values.flatMap { it.rotators() }
     }
 
     fun gpss(): List<GPS> {
@@ -178,6 +187,10 @@ class ConnectionService(
         return providers[id]?.wheel(name)
     }
 
+    fun rotator(id: String, name: String): Rotator? {
+        return providers[id]?.rotator(name)
+    }
+
     fun gps(id: String, name: String): GPS? {
         return providers[id]?.gps(name)
     }
@@ -206,6 +219,10 @@ class ConnectionService(
         return providers.firstNotNullOfOrNull { it.value.wheel(name) }
     }
 
+    fun rotator(name: String): Rotator? {
+        return providers.firstNotNullOfOrNull { it.value.rotator(name) }
+    }
+
     fun gps(name: String): GPS? {
         return providers.firstNotNullOfOrNull { it.value.gps(name) }
     }
@@ -223,6 +240,7 @@ class ConnectionService(
             ?: mount(name)
             ?: focuser(name)
             ?: wheel(name)
+            ?: rotator(name)
             ?: guideOutput(name)
             ?: gps(name)
             ?: thermometer(name)

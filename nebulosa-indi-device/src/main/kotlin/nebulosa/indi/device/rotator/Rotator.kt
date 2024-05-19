@@ -16,6 +16,8 @@ interface Rotator : Device {
 
     val backslash: Int
 
+    val angle: Double
+
     val minAngle: Double
 
     val maxAngle: Double
@@ -26,12 +28,13 @@ interface Rotator : Device {
 
     fun homeRotator()
 
-    fun reverseRotator()
+    fun reverseRotator(enable: Boolean)
 
     fun abortRotator()
 
     companion object {
 
+        // grep -rl --include \*.h "public INDI::Rotator" .
         @JvmStatic val DRIVERS = setOf(
             "indi_deepskydad_fr1",
             "indi_esattoarco_focus",

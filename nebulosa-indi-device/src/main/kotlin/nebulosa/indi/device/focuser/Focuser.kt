@@ -39,7 +39,7 @@ interface Focuser : Device, Thermometer {
 
     companion object {
 
-        // grep -irl --include \*.h "public INDI::Focuser" .
+        // grep -rl --include \*.h "public INDI::Focuser" .
         @JvmStatic val DRIVERS = setOf(
             "indi_aaf2_focus",
             "indi_activefocuser_focus",

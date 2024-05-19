@@ -188,6 +188,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                         is Mount -> unregisterMount(device)
                         is FilterWheel -> unregisterFilterWheel(device)
                         is Focuser -> unregisterFocuser(device)
+                        is Rotator -> unregisterRotator(device)
                         is GPS -> unregisterGPS(device)
                     }
 
