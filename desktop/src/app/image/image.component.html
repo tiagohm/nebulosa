@@ -50,18 +50,20 @@
     </ng-template>
 </p-contextMenu>
 
-<p-dialog header="Annotation" [draggable]="false" [(visible)]="showAnnotationDialog" [modal]="true"
+<p-dialog header="Annotation" [draggable]="false" [(visible)]="annotation.showDialog" [modal]="true"
           [style]="{width: 'min-content', minWidth: '338px'}">
     <div class="grid">
-        <div class="col-12 flex flex-column">
-            <p-checkbox [(ngModel)]="annotateWithStarsAndDSOs" class="py-1" [binary]="true" label="Annotate with stars & DSOs" />
-
+        <div class="col-12 flex flex-column gap-3">
             <div class="flex flex-row align-items-center gap-2">
-                <p-checkbox [(ngModel)]="annotateWithMinorPlanets" class="py-1" [binary]="true" label="Annotate with minor planets" />
-
+                <p-checkbox [(ngModel)]="annotation.useStarsAndDSOs" class="py-1" [binary]="true" label="Annotate with stars & DSOs" />
+                <p-checkbox [disabled]="!annotation.useStarsAndDSOs" [(ngModel)]="annotation.useSimbad" class="py-1" [binary]="true"
+                            label="Online" pTooltip="Use SIMBAD online service" tooltipPosition="bottom" />
+            </div>
+            <div class="flex flex-row align-items-center gap-2">
+                <p-checkbox [(ngModel)]="annotation.useMinorPlanets" class="py-1" [binary]="true" label="Annotate with minor planets" />
                 <span class="p-float-label">
-                    <p-inputNumber [disabled]="!annotateWithMinorPlanets" [min]="-10" [max]="30" class="max-w-10rem w-full" [showButtons]="true"
-                                   inputStyleClass="border-0 w-full" [step]="0.1" [(ngModel)]="annotateWithMinorPlanetsMagLimit"
+                    <p-inputNumber [disabled]="!annotation.useMinorPlanets" [min]="-10" [max]="30" class="max-w-10rem w-full" [showButtons]="true"
+                                   inputStyleClass="border-0 w-full" [step]="0.1" [(ngModel)]="annotation.minorPlanetsMagLimit"
                                    [minFractionDigits]="1" locale="en" />
                     <label>Mag. Limit</label>
                 </span>

@@ -17,7 +17,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
-import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
@@ -87,10 +87,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     calibrationViaCamera = true
 
-    showAnnotationDialog = false
-    annotateWithStarsAndDSOs = true
-    annotateWithMinorPlanets = false
-    annotateWithMinorPlanetsMagLimit = 12.0
+    readonly annotation: ImageAnnotationDialog = {
+        showDialog: false,
+        useStarsAndDSOs: true,
+        useMinorPlanets: false,
+        minorPlanetsMagLimit: 18.0,
+        useSimbad: false
+    }
 
     readonly solver: ImageSolverDialog = {
         showDialog: false,
@@ -315,7 +318,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         toggleable: true,
         toggled: false,
         command: () => {
-            this.showAnnotationDialog = true
+            this.annotation.showDialog = true
         },
         toggle: (event) => {
             event.originalEvent?.stopImmediatePropagation()
@@ -799,12 +802,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     async annotateImage() {
         try {
             this.annotating = true
-            this.annotations = await this.api.annotationsOfImage(this.imageData.path!,
-                this.annotateWithStarsAndDSOs, this.annotateWithMinorPlanets, this.annotateWithMinorPlanetsMagLimit)
+            this.annotations = await this.api.annotationsOfImage(this.imageData.path!, this.annotation.useStarsAndDSOs,
+                this.annotation.useMinorPlanets, this.annotation.minorPlanetsMagLimit, this.annotation.useSimbad)
             this.annotationIsVisible = true
             this.annotationMenuItem.toggleable = this.annotations.length > 0
             this.annotationMenuItem.toggled = this.annotationMenuItem.toggleable
-            this.showAnnotationDialog = false
+            this.annotation.showDialog = false
         } finally {
             this.annotating = false
         }

@@ -464,9 +464,9 @@ export class ApiService {
     annotationsOfImage(
         path: string,
         starsAndDSOs: boolean = true, minorPlanets: boolean = false,
-        minorPlanetMagLimit: number = 12.0,
+        minorPlanetMagLimit: number = 12.0, useSimbad: boolean = false,
     ) {
-        const query = this.http.query({ path, starsAndDSOs, minorPlanets, minorPlanetMagLimit, hasLocation: true })
+        const query = this.http.query({ path, starsAndDSOs, minorPlanets, minorPlanetMagLimit, useSimbad, hasLocation: true })
         return this.http.get<ImageAnnotation[]>(`image/annotations?${query}`)
     }
 
