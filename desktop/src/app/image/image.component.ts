@@ -448,7 +448,20 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         app.topMenu.push({
             icon: 'mdi mdi-fullscreen',
+            label: 'Fullscreen',
             command: () => this.enterFullscreen(),
+        })
+
+        app.topMenu.push({
+            icon: 'mdi mdi-minus',
+            label: 'Zoom Out',
+            command: () => this.zoomOut(),
+        })
+
+        app.topMenu.push({
+            icon: 'mdi mdi-plus',
+            label: 'Zoom In',
+            command: () => this.zoomIn(),
         })
 
         this.stretchShadow.subscribe(value => {
