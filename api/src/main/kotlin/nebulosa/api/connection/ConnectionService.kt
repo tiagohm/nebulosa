@@ -106,31 +106,31 @@ class ConnectionService(
         disconnectAll()
     }
 
-    fun cameras(id: String): List<Camera> {
+    fun cameras(id: String): Collection<Camera> {
         return providers[id]?.cameras() ?: emptyList()
     }
 
-    fun mounts(id: String): List<Mount> {
+    fun mounts(id: String): Collection<Mount> {
         return providers[id]?.mounts() ?: emptyList()
     }
 
-    fun focusers(id: String): List<Focuser> {
+    fun focusers(id: String): Collection<Focuser> {
         return providers[id]?.focusers() ?: emptyList()
     }
 
-    fun wheels(id: String): List<FilterWheel> {
+    fun wheels(id: String): Collection<FilterWheel> {
         return providers[id]?.wheels() ?: emptyList()
     }
 
-    fun gpss(id: String): List<GPS> {
+    fun gpss(id: String): Collection<GPS> {
         return providers[id]?.gps() ?: emptyList()
     }
 
-    fun guideOutputs(id: String): List<GuideOutput> {
+    fun guideOutputs(id: String): Collection<GuideOutput> {
         return providers[id]?.guideOutputs() ?: emptyList()
     }
 
-    fun thermometers(id: String): List<Thermometer> {
+    fun thermometers(id: String): Collection<Thermometer> {
         return providers[id]?.thermometers() ?: emptyList()
     }
 

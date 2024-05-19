@@ -9,6 +9,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.DefTextVector
 import nebulosa.indi.protocol.DelProperty
 import nebulosa.indi.protocol.INDIProtocol
@@ -38,6 +39,8 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
 
     protected abstract fun newFilterWheel(message: INDIProtocol): FilterWheel
 
+    protected abstract fun newRotator(message: INDIProtocol): Rotator
+
     protected abstract fun newGPS(message: INDIProtocol): GPS
 
     open fun start() {
@@ -64,6 +67,20 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
         }
     }
 
+    private fun takeMessageFromReorderingQueue(device: Device) {
+        if (messageReorderingQueue.isNotEmpty()) {
+            repeat(messageReorderingQueue.size) {
+                val queuedMessage = messageReorderingQueue.take()
+
+                if (queuedMessage.device == device.name) {
+                    handleMessage(queuedMessage)
+                } else {
+                    messageReorderingQueue.offer(queuedMessage)
+                }
+            }
+        }
+    }
+
     @Synchronized
     override fun handleMessage(message: INDIProtocol) {
         if (message.device in notRegisteredDevices) return
@@ -75,26 +92,13 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
 
                     var registered = false
 
-                    fun takeMessageFromReorderingQueue(device: Device) {
-                        if (messageReorderingQueue.isNotEmpty()) {
-                            repeat(messageReorderingQueue.size) {
-                                val queuedMessage = messageReorderingQueue.take()
-
-                                if (queuedMessage.device == device.name) {
-                                    handleMessage(queuedMessage)
-                                } else {
-                                    messageReorderingQueue.offer(message)
-                                }
-                            }
-                        }
-                    }
-
                     if (executable in Camera.DRIVERS) {
                         registered = true
 
                         with(newCamera(message, executable)) {
-                            registerCamera(this)
-                            takeMessageFromReorderingQueue(this)
+                            if (registerCamera(this)) {
+                                takeMessageFromReorderingQueue(this)
+                            }
                         }
                     }
 
@@ -102,8 +106,9 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                         registered = true
 
                         with(newMount(message, executable)) {
-                            registerMount(this)
-                            takeMessageFromReorderingQueue(this)
+                            if (registerMount(this)) {
+                                takeMessageFromReorderingQueue(this)
+                            }
                         }
                     }
 
@@ -111,8 +116,9 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                         registered = true
 
                         with(newFilterWheel(message)) {
-                            registerFilterWheel(this)
-                            takeMessageFromReorderingQueue(this)
+                            if (registerFilterWheel(this)) {
+                                takeMessageFromReorderingQueue(this)
+                            }
                         }
                     }
 
@@ -120,8 +126,19 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                         registered = true
 
                         with(newFocuser(message)) {
-                            registerFocuser(this)
-                            takeMessageFromReorderingQueue(this)
+                            if (registerFocuser(this)) {
+                                takeMessageFromReorderingQueue(this)
+                            }
+                        }
+                    }
+
+                    if (executable in Rotator.DRIVERS) {
+                        registered = true
+
+                        with(newRotator(message)) {
+                            if (registerRotator(this)) {
+                                takeMessageFromReorderingQueue(this)
+                            }
                         }
                     }
 
@@ -129,8 +146,9 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                         registered = true
 
                         with(newGPS(message)) {
-                            registerGPS(this)
-                            takeMessageFromReorderingQueue(this)
+                            if (registerGPS(this)) {
+                                takeMessageFromReorderingQueue(this)
+                            }
                         }
                     }
 
