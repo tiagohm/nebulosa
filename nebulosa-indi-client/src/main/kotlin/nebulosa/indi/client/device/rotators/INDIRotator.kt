@@ -61,12 +61,7 @@ internal open class INDIRotator(
                         canReverse = true
                         sender.fireOnEventReceived(RotatorCanReverseChanged(this))
 
-                        val reversed = message.firstOnSwitch().name == "INDI_ENABLED"
-
-                        if (reversed != this.reversed) {
-                            this.reversed = reversed
-                            sender.fireOnEventReceived(RotatorReversedChanged(this))
-                        }
+                        handleReversed(message)
                     }
                 }
             }
@@ -90,12 +85,7 @@ internal open class INDIRotator(
             is SetSwitchVector -> {
                 when (message.name) {
                     "ROTATOR_REVERSE" -> {
-                        val reversed = message.firstOnSwitch().name == "INDI_ENABLED"
-
-                        if (reversed != this.reversed) {
-                            this.reversed = reversed
-                            sender.fireOnEventReceived(RotatorReversedChanged(this))
-                        }
+                        handleReversed(message)
                     }
                 }
             }
@@ -103,6 +93,15 @@ internal open class INDIRotator(
         }
 
         super.handleMessage(message)
+    }
+
+    private fun handleReversed(message: SwitchVector<*>) {
+        val reversed = message.firstOnSwitch().name == "INDI_ENABLED"
+
+        if (reversed != this.reversed) {
+            this.reversed = reversed
+            sender.fireOnEventReceived(RotatorReversedChanged(this))
+        }
     }
 
     override fun moveRotator(angle: Double) {

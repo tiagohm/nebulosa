@@ -34,14 +34,12 @@ internal open class INDIFocuser(
                     "FOCUS_ABORT_MOTION" -> {
                         if (message is DefSwitchVector) {
                             canAbort = true
-
                             sender.fireOnEventReceived(FocuserCanAbortChanged(this))
                         }
                     }
                     "FOCUS_REVERSE_MOTION" -> {
                         if (message is DefSwitchVector) {
                             canReverse = true
-
                             sender.fireOnEventReceived(FocuserCanReverseChanged(this))
                         }
 
