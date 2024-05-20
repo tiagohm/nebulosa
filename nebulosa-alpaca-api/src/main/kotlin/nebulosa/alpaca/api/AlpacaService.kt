@@ -24,4 +24,6 @@ class AlpacaService(
     val filterWheel by lazy { retrofit.create<AlpacaFilterWheelService>() }
 
     val focuser by lazy { retrofit.create<AlpacaFocuserService>() }
+
+    val rotator by lazy { retrofit.create<AlpacaRotatorService>() }
 }

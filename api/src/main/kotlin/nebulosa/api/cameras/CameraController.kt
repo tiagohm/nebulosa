@@ -6,6 +6,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
 
@@ -39,8 +40,8 @@ class CameraController(
     @PutMapping("{camera}/snoop")
     fun snoop(
         camera: Camera,
-        mount: Mount?, wheel: FilterWheel?, focuser: Focuser?,
-    ) = cameraService.snoop(camera, mount, wheel, focuser)
+        mount: Mount?, wheel: FilterWheel?, focuser: Focuser?, rotator: Rotator?
+    ) = cameraService.snoop(camera, mount, wheel, focuser, rotator)
 
     @PutMapping("{camera}/cooler")
     fun cooler(

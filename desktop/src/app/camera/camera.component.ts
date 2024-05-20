@@ -10,9 +10,11 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Equipment } from '../../shared/types/home.types'
 import { Mount } from '../../shared/types/mount.types'
+import { Rotator } from '../../shared/types/rotator.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
@@ -101,6 +103,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 {
                     icon: 'mdi mdi-image-filter-center-focus',
                     label: 'Focuser',
+                    menu: [],
+                },
+                {
+                    icon: 'mdi mdi-rotate-right',
+                    label: 'Rotator',
                     menu: [],
                 },
             ]
@@ -215,6 +222,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
+        electron.on('ROTATOR.UPDATED', event => {
+            if (event.device.id === this.equipment.rotator?.id) {
+                ngZone.run(() => {
+                    Object.assign(this.equipment.rotator!, event.device)
+                })
+            }
+        })
+
         electron.on('CALIBRATION.CHANGED', () => {
             ngZone.run(() => this.loadCalibrationGroups())
         })
@@ -289,28 +304,35 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private async loadEquipment() {
-        const mounts = await this.api.mounts()
-        this.equipment.mount = mounts.find(e => e.name === this.equipment.mount?.name)
-
         const buildStartTooltip = () => {
             this.startTooltip =
                 `<b>MOUNT</b>: ${this.equipment.mount?.name ?? 'None'}
             <b>FILTER WHEEL</b>: ${this.equipment.wheel?.name ?? 'None'}
-            <b>FOCUSER</b>: ${this.equipment.focuser?.name ?? 'None'}`
+            <b>FOCUSER</b>: ${this.equipment.focuser?.name ?? 'None'}
+            <b>ROTATOR</b>: ${this.equipment.rotator?.name ?? 'None'}`
         }
 
-        const makeMountItem = (mount?: Mount) => {
+        const makeItem = (checked: boolean, command: () => void, device?: Device) => {
             return <ExtendedMenuItem>{
-                icon: mount ? 'mdi mdi-connection' : 'mdi mdi-close',
-                label: mount?.name ?? 'None',
-                checked: this.equipment.mount?.name === mount?.name,
+                icon: device ? 'mdi mdi-connection' : 'mdi mdi-close',
+                label: device?.name ?? 'None',
+                checked,
                 command: async (event: SlideMenuItemCommandEvent) => {
-                    this.equipment.mount = mount
+                    command()
                     buildStartTooltip()
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
                     event.parent?.menu?.forEach(item => item.checked = item === event.item)
                 },
             }
+        }
+
+        // MOUNT
+
+        const mounts = await this.api.mounts()
+        this.equipment.mount = mounts.find(e => e.name === this.equipment.mount?.name)
+
+        const makeMountItem = (mount?: Mount) => {
+            return makeItem(this.equipment.mount?.name === mount?.name, () => this.equipment.mount = mount, mount)
         }
 
         this.cameraModel[1].menu![0].menu!.push(makeMountItem())
@@ -319,21 +341,13 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.cameraModel[1].menu![0].menu!.push(makeMountItem(mount))
         }
 
+        // FILTER WHEEL
+
         const wheels = await this.api.wheels()
         this.equipment.wheel = wheels.find(e => e.name === this.equipment.wheel?.name)
 
         const makeWheelItem = (wheel?: FilterWheel) => {
-            return <ExtendedMenuItem>{
-                icon: wheel ? 'mdi mdi-connection' : 'mdi mdi-close',
-                label: wheel?.name ?? 'None',
-                checked: this.equipment.wheel?.name === wheel?.name,
-                command: async (event: SlideMenuItemCommandEvent) => {
-                    this.equipment.wheel = wheel
-                    buildStartTooltip()
-                    this.preference.equipmentForDevice(this.camera).set(this.equipment)
-                    event.parent?.menu?.forEach(item => item.checked = item === event.item)
-                },
-            }
+            return makeItem(this.equipment.wheel?.name === wheel?.name, () => this.equipment.wheel = wheel, wheel)
         }
 
         this.cameraModel[1].menu![1].menu!.push(makeWheelItem())
@@ -342,27 +356,34 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             this.cameraModel[1].menu![1].menu!.push(makeWheelItem(wheel))
         }
 
+        // FOCUSER
+
         const focusers = await this.api.focusers()
         this.equipment.focuser = focusers.find(e => e.name === this.equipment.focuser?.name)
 
         const makeFocuserItem = (focuser?: Focuser) => {
-            return <ExtendedMenuItem>{
-                icon: focuser ? 'mdi mdi-connection' : 'mdi mdi-close',
-                label: focuser?.name ?? 'None',
-                checked: this.equipment.focuser?.name === focuser?.name,
-                command: async (event: SlideMenuItemCommandEvent) => {
-                    this.equipment.focuser = focuser
-                    buildStartTooltip()
-                    this.preference.equipmentForDevice(this.camera).set(this.equipment)
-                    event.parent?.menu?.forEach(item => item.checked = item === event.item)
-                },
-            }
+            return makeItem(this.equipment.focuser?.name === focuser?.name, () => this.equipment.focuser = focuser, focuser)
         }
 
         this.cameraModel[1].menu![2].menu!.push(makeFocuserItem())
 
         for (const focuser of focusers) {
             this.cameraModel[1].menu![2].menu!.push(makeFocuserItem(focuser))
+        }
+
+        // ROTATOR
+
+        const rotators = await this.api.rotators()
+        this.equipment.rotator = rotators.find(e => e.name === this.equipment.rotator?.name)
+
+        const makeRotatorItem = (rotator?: Rotator) => {
+            return makeItem(this.equipment.rotator?.name === rotator?.name, () => this.equipment.rotator = rotator, rotator)
+        }
+
+        this.cameraModel[1].menu![3].menu!.push(makeRotatorItem())
+
+        for (const rotator of rotators) {
+            this.cameraModel[1].menu![3].menu!.push(makeRotatorItem(rotator))
         }
 
         buildStartTooltip()

@@ -109,7 +109,7 @@ export class RotatorComponent implements AfterViewInit, OnDestroy {
     }
 
     private update() {
-        if (!this.rotator.id) {
+        if (this.rotator.id) {
             this.moving = this.rotator.moving
             this.reversed = this.rotator.reversed
         }

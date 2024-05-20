@@ -198,35 +198,12 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     }
 
     override fun close() {
-        cameras().forEach {
-            it.close()
-            unregisterCamera(it)
-        }
-
-        mounts().forEach {
-            it.close()
-            unregisterMount(it)
-        }
-
-        wheels().forEach {
-            it.close()
-            unregisterFilterWheel(it)
-        }
-
-        focusers().forEach {
-            it.close()
-            unregisterFocuser(it)
-        }
-
-        rotators().forEach {
-            it.close()
-            unregisterRotator(it)
-        }
-
-        gps().forEach {
-            it.close()
-            unregisterGPS(it)
-        }
+        cameras().onEach(Device::close).onEach(::unregisterCamera)
+        mounts().onEach(Device::close).onEach(::unregisterMount)
+        wheels().onEach(Device::close).onEach(::unregisterFilterWheel)
+        focusers().onEach(Device::close).onEach(::unregisterFocuser)
+        rotators().onEach(Device::close).onEach(::unregisterRotator)
+        gps().onEach(Device::close).onEach(::unregisterGPS)
 
         cameras.clear()
         mounts.clear()
