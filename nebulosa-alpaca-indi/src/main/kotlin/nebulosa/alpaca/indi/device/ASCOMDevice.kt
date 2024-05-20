@@ -84,23 +84,28 @@ abstract class ASCOMDevice : Device, Resettable {
 
     protected fun <T : AlpacaResponse<*>> Call<T>.doRequest(): T? {
         try {
-            val response = execute().body()
+            val request = request()
+            val response = execute()
+            val body = response.body()
 
-            return if (response == null) {
-                LOG.warn("response has no body. device={}, url={}", name, request().url)
+            return if (body == null) {
+                LOG.warn("response has no body. device={}, request={} {}, response={}", name, request.method, request.url, response.code())
                 null
-            } else if (response.errorNumber != 0) {
-                val message = response.errorMessage
+            } else if (body.errorNumber != 0) {
+                val message = body.errorMessage
 
                 if (message.isNotEmpty()) {
                     addMessageAndFireEvent("[%s]: %s".format(LocalDateTime.now(), message))
                 }
 
-                // LOG.warn("unsuccessful response. device={}, code={}, message={}", name, response.errorNumber, response.errorMessage)
+                LOG.warn(
+                    "unsuccessful response. device={}, request={} {}, errorNumber={}, message={}",
+                    name, request.method, request.url, body.errorNumber, body.errorMessage
+                )
 
                 null
             } else {
-                response
+                body
             }
         } catch (e: HttpException) {
             LOG.error("unexpected response. device=$name", e)
