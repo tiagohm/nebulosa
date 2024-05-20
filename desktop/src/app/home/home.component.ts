@@ -13,6 +13,7 @@ import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { CONNECTION_TYPES, ConnectionDetails, EMPTY_CONNECTION_DETAILS, HomeWindowType } from '../../shared/types/home.types'
 import { Mount } from '../../shared/types/mount.types'
+import { Rotator } from '../../shared/types/rotator.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
@@ -22,6 +23,7 @@ type MappedDevice = {
     'MOUNT': Mount
     'FOCUSER': Focuser
     'WHEEL': FilterWheel
+    'ROTATOR': Rotator
 }
 
 @Component({
@@ -48,8 +50,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     mounts: Mount[] = []
     focusers: Focuser[] = []
     wheels: FilterWheel[] = []
+    rotators: Rotator[] = []
     domes: Camera[] = []
-    rotators: Camera[] = []
     switches: Camera[] = []
 
     currentPage = 0
@@ -196,6 +198,16 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             },
         )
 
+        this.startListening('ROTATOR',
+            (device) => {
+                return this.rotators.push(device)
+            },
+            (device) => {
+                this.rotators.splice(this.rotators.findIndex(e => e.id === device.id), 1)
+                return this.rotators.length
+            },
+        )
+
         electron.on('CONNECTION.CLOSED', event => {
             if (this.connection?.id === event.id) {
                 ngZone.run(() => {
@@ -227,6 +239,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             this.mounts = await this.api.mounts()
             this.focusers = await this.api.focusers()
             this.wheels = await this.api.wheels()
+            this.rotators = await this.api.rotators()
         }
     }
 
@@ -313,7 +326,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             : type === 'MOUNT' ? this.mounts
                 : type === 'FOCUSER' ? this.focusers
                     : type === 'WHEEL' ? this.wheels
-                        : []
+                        : type === 'ROTATOR' ? this.rotators
+                            : []
 
         if (devices.length === 0) return
         if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
@@ -346,6 +360,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'WHEEL':
                 this.browserWindow.openWheel({ bringToFront: true, data: device as FilterWheel })
                 break
+            case 'ROTATOR':
+                this.browserWindow.openRotator({ bringToFront: true, data: device as Rotator })
+                break
         }
     }
 
@@ -374,6 +391,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'CAMERA':
             case 'FOCUSER':
             case 'WHEEL':
+            case 'ROTATOR':
                 this.openDevice(type, type)
                 break
             case 'GUIDER':

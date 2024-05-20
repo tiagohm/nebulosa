@@ -8,6 +8,7 @@ import { Device } from '../types/device.types'
 import { Focuser } from '../types/focuser.types'
 import { ImageData, ImageSource } from '../types/image.types'
 import { Mount } from '../types/mount.types'
+import { Rotator } from '../types/rotator.types'
 import { FilterWheel, WheelDialogInput } from '../types/wheel.types'
 import { ElectronService } from './electron.service'
 
@@ -45,8 +46,13 @@ export class BrowserWindowService {
     }
 
     openWheel(options: OpenWindowOptionsWithData<FilterWheel>) {
-        Object.assign(options, { icon: 'filter-wheel', width: 285, height: 195 })
+        Object.assign(options, { icon: 'filter-wheel', width: 280, height: 195 })
         this.openWindow({ ...options, id: `wheel.${options.data.name}`, path: 'wheel' })
+    }
+
+    openRotator(options: OpenWindowOptionsWithData<Rotator>) {
+        Object.assign(options, { icon: 'rotate', width: 280, height: 210 })
+        this.openWindow({ ...options, id: `rotator.${options.data.name}`, path: 'rotator' })
     }
 
     openWheelDialog(options: OpenWindowOptionsWithData<WheelDialogInput>) {

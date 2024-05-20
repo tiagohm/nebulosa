@@ -17,41 +17,41 @@
             </div>
             <div class="flex align-items-center gap-1" *ngIf="focuser.hasThermometer">
                 <i class="mdi mdi-thermometer text-red-600"></i>
-                <span style="display: contents">{{ temperature | number: '1.2-2' }}°C</span>
+                <span style="display: contents">{{ focuser.temperature | number: '1.2-2' }}°C</span>
             </div>
         </div>
     </div>
     <div class="grid mt-1">
         <div class="col-8">
             <span class="p-float-label">
-                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="position" locale="en" />
-                <label>Position (max: {{ maxPosition }})</label>
+                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [ngModel]="focuser.position" locale="en" />
+                <label>Position (max: {{ focuser.maxPosition }})</label>
             </span>
         </div>
         <div class="col-3 text-center justify-content-between gap-2">
-            <p-button [disabled]="!focuser.connected || !canRelativeMove || !moving" icon="mdi mdi-stop" [text]="true" severity="danger" size="small"
-                      pTooltip="Abort" tooltipPosition="bottom" (onClick)="abort()" />
-            <p-button [disabled]="!focuser.connected || !canSync || moving" (onClick)="sync()" icon="mdi mdi-sync"
+            <p-button [disabled]="!focuser.connected || !focuser.canAbort || !moving" icon="mdi mdi-stop" [text]="true" severity="danger"
+                      size="small" pTooltip="Abort" tooltipPosition="bottom" (onClick)="abort()" />
+            <p-button [disabled]="!focuser.connected || !focuser.canSync || moving" (onClick)="sync()" icon="mdi mdi-sync"
                       [text]="true" severity="info" size="small" pTooltip="Sync" tooltipPosition="bottom" />
         </div>
         <div class="col-12 flex align-items-center gap-1">
-            <p-button [disabled]="!focuser.connected || !canRelativeMove || moving || !stepsRelative" (onClick)="moveIn()"
+            <p-button [disabled]="!focuser.connected || !focuser.canRelativeMove || moving || !stepsRelative" (onClick)="moveIn()"
                       icon="mdi mdi-arrow-left-bold" [text]="true" size="small" pTooltip="Move In" tooltipPosition="bottom" />
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!focuser.connected || !canRelativeMove" [min]="0" [max]="maxPosition" [showButtons]="true"
+                <p-inputNumber [disabled]="!focuser.connected || !focuser.canRelativeMove" [min]="0" [max]="focuser.maxPosition" [showButtons]="true"
                                styleClass="p-inputtext-sm border-0" [(ngModel)]="stepsRelative" [allowEmpty]="false" locale="en" />
                 <label>Relative</label>
             </span>
-            <p-button [disabled]="!focuser.connected || !canRelativeMove || moving || !stepsRelative" (onClick)="moveOut()"
+            <p-button [disabled]="!focuser.connected || !focuser.canRelativeMove || moving || !stepsRelative" (onClick)="moveOut()"
                       icon="mdi mdi-arrow-right-bold" [text]="true" size="small" pTooltip="Move Out" tooltipPosition="bottom" />
         </div>
         <div class="col-12 flex align-items-center gap-1">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!focuser.connected || !canAbsoluteMove" [min]="0" [max]="maxPosition" [showButtons]="true"
+                <p-inputNumber [disabled]="!focuser.connected || !focuser.canAbsoluteMove" [min]="0" [max]="focuser.maxPosition" [showButtons]="true"
                                styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="stepsAbsolute" [allowEmpty]="false" locale="en" />
                 <label>Absolute</label>
             </span>
-            <p-button [disabled]="!focuser.connected || !canAbsoluteMove || moving || stepsAbsolute === position" (onClick)="moveTo()"
+            <p-button [disabled]="!focuser.connected || !focuser.canAbsoluteMove || moving || stepsAbsolute === focuser.position" (onClick)="moveTo()"
                       icon="mdi mdi-check" [text]="true" severity="success" size="small" pTooltip="Move To" tooltipPosition="bottom" />
         </div>
     </div>

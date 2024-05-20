@@ -10,6 +10,7 @@ import nebulosa.indi.client.device.cameras.SVBonyCamera
 import nebulosa.indi.client.device.cameras.SimCamera
 import nebulosa.indi.client.device.focusers.INDIFocuser
 import nebulosa.indi.client.device.mounts.INDIMount
+import nebulosa.indi.client.device.rotators.INDIRotator
 import nebulosa.indi.client.device.wheels.INDIFilterWheel
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.INDIDeviceProvider
@@ -18,6 +19,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.GetProperties
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIConnection
@@ -58,6 +60,10 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
 
     override fun newFilterWheel(message: INDIProtocol): FilterWheel {
         return INDIFilterWheel(this, message.device)
+    }
+
+    override fun newRotator(message: INDIProtocol): Rotator {
+        return INDIRotator(this, message.device)
     }
 
     override fun newGPS(message: INDIProtocol): GPS {

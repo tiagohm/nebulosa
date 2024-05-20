@@ -3,8 +3,8 @@ import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
-import { EMPTY_FOCUSER, Focuser, FocuserPreference, focuserPreferenceKey } from '../../shared/types/focuser.types'
+import { PreferenceService } from '../../shared/services/preference.service'
+import { EMPTY_FOCUSER, Focuser } from '../../shared/types/focuser.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -17,26 +17,14 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     readonly focuser = structuredClone(EMPTY_FOCUSER)
 
     moving = false
-    position = 0
-    hasThermometer = false
-    temperature = 0
-    canAbsoluteMove = false
-    canRelativeMove = false
-    canAbort = false
-    canReverse = false
-    reversed = false
-    canSync = false
-    hasBacklash = false
-    maxPosition = 0
-
     stepsRelative = 0
     stepsAbsolute = 0
 
     constructor(
         private app: AppComponent,
         private api: ApiService,
-        private electron: ElectronService,
-        private storage: LocalStorageService,
+        electron: ElectronService,
+        private preference: PreferenceService,
         private route: ActivatedRoute,
         ngZone: NgZone,
     ) {
@@ -69,10 +57,10 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         hotkeys('shift+right', (event) => { event.preventDefault(); this.moveOut(0.5) })
         hotkeys('space', (event) => { event.preventDefault(); this.abort() })
         hotkeys('ctrl+enter', (event) => { event.preventDefault(); this.moveTo() })
-        hotkeys('up', (event) => { event.preventDefault(); this.stepsRelative = Math.min(this.maxPosition, this.stepsRelative + 1) })
+        hotkeys('up', (event) => { event.preventDefault(); this.stepsRelative = Math.min(this.focuser.maxPosition, this.stepsRelative + 1) })
         hotkeys('down', (event) => { event.preventDefault(); this.stepsRelative = Math.max(0, this.stepsRelative - 1) })
         hotkeys('-', (event) => { event.preventDefault(); this.stepsAbsolute = Math.max(0, this.stepsAbsolute - 1) })
-        hotkeys('=', (event) => { event.preventDefault(); this.stepsAbsolute = Math.min(this.maxPosition, this.stepsAbsolute + 1) })
+        hotkeys('=', (event) => { event.preventDefault(); this.stepsAbsolute = Math.min(this.focuser.maxPosition, this.stepsAbsolute + 1) })
     }
 
     async ngAfterViewInit() {
@@ -126,7 +114,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     async moveTo() {
-        if (!this.moving && this.stepsAbsolute !== this.position) {
+        if (!this.moving && this.stepsAbsolute !== this.focuser.position) {
             this.moving = true
             await this.api.focuserMoveTo(this.focuser, this.stepsAbsolute)
             this.savePreference()
@@ -145,27 +133,14 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
     }
 
     private update() {
-        if (!this.focuser.id) {
-            return
+        if (this.focuser.id) {
+            this.moving = this.focuser.moving
         }
-
-        this.moving = this.focuser.moving
-        this.position = this.focuser.position
-        this.hasThermometer = this.focuser.hasThermometer
-        this.temperature = this.focuser.temperature
-        this.canAbsoluteMove = this.focuser.canAbsoluteMove
-        this.canRelativeMove = this.focuser.canRelativeMove
-        this.canAbort = this.focuser.canAbort
-        this.canReverse = this.focuser.canReverse
-        this.reversed = this.focuser.reversed
-        this.canSync = this.focuser.canSync
-        this.hasBacklash = this.focuser.hasBacklash
-        this.maxPosition = this.focuser.maxPosition
     }
 
     private loadPreference() {
         if (this.focuser.id) {
-            const preference = this.storage.get<FocuserPreference>(focuserPreferenceKey(this.focuser), {})
+            const preference = this.preference.focuserPreference(this.focuser).get()
             this.stepsRelative = preference.stepsRelative ?? 100
             this.stepsAbsolute = preference.stepsAbsolute ?? this.focuser.position
         }
@@ -173,12 +148,10 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
 
     private savePreference() {
         if (this.focuser.connected) {
-            const preference: FocuserPreference = {
-                stepsRelative: this.stepsRelative,
-                stepsAbsolute: this.stepsAbsolute,
-            }
-
-            this.storage.set(focuserPreferenceKey(this.focuser), preference)
+            const preference = this.preference.focuserPreference(this.focuser).get()
+            preference.stepsAbsolute = this.stepsAbsolute
+            preference.stepsRelative = this.stepsRelative
+            this.preference.focuserPreference(this.focuser).set(preference)
         }
     }
 }
