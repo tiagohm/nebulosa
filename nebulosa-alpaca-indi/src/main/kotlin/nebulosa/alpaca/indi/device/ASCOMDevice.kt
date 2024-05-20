@@ -7,6 +7,7 @@ import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.common.Resettable
 import nebulosa.common.time.Stopwatch
 import nebulosa.indi.device.*
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import retrofit2.Call
 import retrofit2.HttpException
@@ -89,7 +90,7 @@ abstract class ASCOMDevice : Device, Resettable {
             val body = response.body()
 
             return if (body == null) {
-                LOG.warn("response has no body. device={}, request={} {}, response={}", name, request.method, request.url, response.code())
+                LOG.debug { "response has no body. device=%s, request=%s %s, response=%s".format(name, request.method, request.url, response) }
                 null
             } else if (body.errorNumber != 0) {
                 val message = body.errorMessage
@@ -98,10 +99,11 @@ abstract class ASCOMDevice : Device, Resettable {
                     addMessageAndFireEvent("[%s]: %s".format(LocalDateTime.now(), message))
                 }
 
-                LOG.warn(
-                    "unsuccessful response. device={}, request={} {}, errorNumber={}, message={}",
-                    name, request.method, request.url, body.errorNumber, body.errorMessage
-                )
+                LOG.debug {
+                    "unsuccessful response. device=%s, request=%s %s, errorNumber=%s, message=%s".format(
+                        name, request.method, request.url, body.errorNumber, body.errorMessage
+                    )
+                }
 
                 null
             } else {

@@ -70,8 +70,8 @@ export class ApiService {
 
     // TODO: Rotator
     cameraSnoop(camera: Camera, equipment: Equipment) {
-        const { mount, wheel, focuser } = equipment
-        const query = this.http.query({ mount: mount?.name, wheel: wheel?.name, focuser: focuser?.name })
+        const { mount, wheel, focuser, rotator } = equipment
+        const query = this.http.query({ mount: mount?.name, wheel: wheel?.name, focuser: focuser?.name, rotator: rotator?.name })
         return this.http.put<void>(`cameras/${camera.id}/snoop?${query}`)
     }
 
