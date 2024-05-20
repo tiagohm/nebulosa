@@ -259,3 +259,11 @@ export interface ImageTransformation {
     invert: boolean
     scnr: Pick<ImageSCNRDialog, 'channel' | 'amount' | 'method'>
 }
+
+export interface ImageAnnotationDialog {
+    showDialog: boolean
+    useStarsAndDSOs: boolean
+    useMinorPlanets: boolean
+    minorPlanetsMagLimit: number
+    useSimbad: boolean
+}

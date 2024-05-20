@@ -13,6 +13,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.support.WebDataBinderFactory
@@ -35,6 +36,7 @@ class DeviceOrEntityParamMethodArgumentResolver(
         Mount::class.java to { connectionService.mount(it) },
         Focuser::class.java to { connectionService.focuser(it) },
         FilterWheel::class.java to { connectionService.wheel(it) },
+        Rotator::class.java to { connectionService.rotator(it) },
         GuideOutput::class.java to { connectionService.guideOutput(it) },
     )
 

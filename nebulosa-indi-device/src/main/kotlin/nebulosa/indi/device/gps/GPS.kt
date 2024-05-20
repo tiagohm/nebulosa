@@ -38,6 +38,8 @@ interface GPS : Device {
         }
 
         @JvmStatic val DRIVERS = setOf(
+            "indi_gpsd",
+            "indi_gpsnmea",
             "indi_simulator_gps",
         )
     }

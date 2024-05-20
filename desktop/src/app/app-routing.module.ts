@@ -16,6 +16,7 @@ import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { MountComponent } from './mount/mount.component'
+import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
 import { SettingsComponent } from './settings/settings.component'
 
@@ -44,6 +45,10 @@ const routes: Routes = [
     {
         path: 'mount',
         component: MountComponent,
+    },
+    {
+        path: 'rotator',
+        component: RotatorComponent,
     },
     {
         path: 'guider',

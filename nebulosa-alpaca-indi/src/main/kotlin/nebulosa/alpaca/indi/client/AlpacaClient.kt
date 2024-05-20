@@ -5,6 +5,7 @@ import nebulosa.alpaca.api.DeviceType
 import nebulosa.alpaca.indi.device.cameras.ASCOMCamera
 import nebulosa.alpaca.indi.device.focusers.ASCOMFocuser
 import nebulosa.alpaca.indi.device.mounts.ASCOMMount
+import nebulosa.alpaca.indi.device.rotators.ASCOMRotator
 import nebulosa.alpaca.indi.device.wheels.ASCOMFilterWheel
 import nebulosa.indi.device.AbstractINDIDeviceProvider
 import nebulosa.indi.protocol.INDIProtocol
@@ -21,7 +22,7 @@ data class AlpacaClient(
 
     override val id = UUID.randomUUID().toString()
 
-    override fun sendMessageToServer(message: INDIProtocol) {}
+    override fun sendMessageToServer(message: INDIProtocol) = Unit
 
     fun discovery() {
         val response = service.management.configuredDevices().execute()
@@ -59,7 +60,13 @@ data class AlpacaClient(
                             }
                         }
                     }
-                    DeviceType.ROTATOR -> Unit
+                    DeviceType.ROTATOR -> {
+                        with(ASCOMRotator(device, service.rotator, this)) {
+                            if (registerRotator(this)) {
+                                initialize()
+                            }
+                        }
+                    }
                     DeviceType.DOME -> Unit
                     DeviceType.SWITCH -> Unit
                     DeviceType.COVER_CALIBRATOR -> Unit

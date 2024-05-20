@@ -504,12 +504,11 @@ try {
         const height = Math.max(options?.minHeight ?? 0, Math.min(data, maxHeight))
 
         // https://github.com/electron/electron/issues/16711#issuecomment-1311824063
-        const resizable = window.isResizable()
         window.setResizable(true)
         window.setSize(width, height)
-        window.setResizable(resizable)
+        window.setResizable(serve)
 
-        console.info('window auto resized:', width, height)
+        console.info('window auto resized:', options.id, width, height)
 
         return true
     })

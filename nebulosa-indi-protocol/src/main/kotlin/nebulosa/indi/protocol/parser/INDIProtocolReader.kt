@@ -60,6 +60,7 @@ class INDIProtocolReader(
         if (!running) return
 
         running = false
+        listeners.clear()
 
         interrupt()
     }

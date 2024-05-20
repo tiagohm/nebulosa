@@ -22,6 +22,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](filter-wheel.png)
 
+## Rotator
+
+![](rotator.png)
+
 ## Guider
 
 ![](guider.png)

@@ -7,6 +7,7 @@ import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.common.Resettable
 import nebulosa.common.time.Stopwatch
 import nebulosa.indi.device.*
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import retrofit2.Call
 import retrofit2.HttpException
@@ -84,23 +85,29 @@ abstract class ASCOMDevice : Device, Resettable {
 
     protected fun <T : AlpacaResponse<*>> Call<T>.doRequest(): T? {
         try {
-            val response = execute().body()
+            val request = request()
+            val response = execute()
+            val body = response.body()
 
-            return if (response == null) {
-                LOG.warn("response has no body. device={}, url={}", name, request().url)
+            return if (body == null) {
+                LOG.debug { "response has no body. device=%s, request=%s %s, response=%s".format(name, request.method, request.url, response) }
                 null
-            } else if (response.errorNumber != 0) {
-                val message = response.errorMessage
+            } else if (body.errorNumber != 0) {
+                val message = body.errorMessage
 
                 if (message.isNotEmpty()) {
                     addMessageAndFireEvent("[%s]: %s".format(LocalDateTime.now(), message))
                 }
 
-                // LOG.warn("unsuccessful response. device={}, code={}, message={}", name, response.errorNumber, response.errorMessage)
+                LOG.debug {
+                    "unsuccessful response. device=%s, request=%s %s, errorNumber=%s, message=%s".format(
+                        name, request.method, request.url, body.errorNumber, body.errorMessage
+                    )
+                }
 
                 null
             } else {
-                response
+                body
             }
         } catch (e: HttpException) {
             LOG.error("unexpected response. device=$name", e)

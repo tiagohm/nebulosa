@@ -15,12 +15,13 @@ import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.algorithms.transformation.*
 import nebulosa.image.format.ImageModifier
 import nebulosa.indi.device.camera.Camera
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
 import nebulosa.sbd.SmallBodyDatabaseService
+import nebulosa.simbad.SimbadSearch
+import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObjectType
 import nebulosa.star.detection.ImageStar
@@ -50,6 +51,7 @@ class ImageService(
     private val calibrationFrameService: CalibrationFrameService,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val simbadEntityRepository: SimbadEntityRepository,
+    private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val connectionService: ConnectionService,
@@ -168,7 +170,7 @@ class ImageService(
     fun annotations(
         path: Path,
         starsAndDSOs: Boolean, minorPlanets: Boolean,
-        minorPlanetMagLimit: Double = 12.0,
+        minorPlanetMagLimit: Double = 12.0, useSimbad: Boolean = false,
         location: Location? = null,
     ): List<ImageAnnotation> {
         val (image, calibration) = imageBucket[path] ?: return emptyList()
@@ -229,26 +231,25 @@ class ImageService(
 
         if (starsAndDSOs) {
             threadPoolTaskExecutor.submitCompletable {
-                val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
+                LOG.info("finding star/DSO annotations. dateTime={}, useSimbad={}, calibration={}", dateTime, useSimbad, calibration)
 
-                LOG.info("finding star/DSO annotations. dateTime={}, calibration={}", dateTime, calibration)
+                val rightAscension = calibration.rightAscension
+                val declination = calibration.declination
+                val radius = calibration.radius
 
-                val catalog = simbadEntityRepository.find(null, null, calibration.rightAscension, calibration.declination, calibration.radius)
+                val catalog = if (useSimbad) {
+                    simbadService.search(SimbadSearch.Builder().region(rightAscension, declination, radius).build())
+                } else {
+                    simbadEntityRepository.find(null, null, rightAscension, declination, radius)
+                }
 
                 var count = 0
+                val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
 
                 for (entry in catalog) {
                     if (entry.type == SkyObjectType.EXTRA_SOLAR_PLANET) continue
 
                     val astrometric = barycentric.observe(entry).equatorial()
-
-                    LOG.debug {
-                        "%s: %s %s -> %s %s".format(
-                            entry.name,
-                            entry.rightAscensionJ2000.formatHMS(), entry.declinationJ2000.formatSignedDMS(),
-                            astrometric.longitude.normalized.formatHMS(), astrometric.latitude.formatSignedDMS(),
-                        )
-                    }
 
                     val (x, y) = wcs.skyToPix(astrometric.longitude.normalized, astrometric.latitude)
                     val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = StarDSO(entry))

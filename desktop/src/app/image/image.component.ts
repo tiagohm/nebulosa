@@ -17,7 +17,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
-import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
@@ -87,10 +87,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     calibrationViaCamera = true
 
-    showAnnotationDialog = false
-    annotateWithStarsAndDSOs = true
-    annotateWithMinorPlanets = false
-    annotateWithMinorPlanetsMagLimit = 12.0
+    readonly annotation: ImageAnnotationDialog = {
+        showDialog: false,
+        useStarsAndDSOs: true,
+        useMinorPlanets: false,
+        minorPlanetsMagLimit: 18.0,
+        useSimbad: false
+    }
 
     readonly solver: ImageSolverDialog = {
         showDialog: false,
@@ -315,7 +318,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         toggleable: true,
         toggled: false,
         command: () => {
-            this.showAnnotationDialog = true
+            this.annotation.showDialog = true
         },
         toggle: (event) => {
             event.originalEvent?.stopImmediatePropagation()
@@ -448,7 +451,32 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         app.topMenu.push({
             icon: 'mdi mdi-fullscreen',
+            label: 'Fullscreen',
             command: () => this.enterFullscreen(),
+        })
+
+        app.topMenu.push({
+            icon: 'mdi mdi-minus',
+            label: 'Zoom Out',
+            command: () => this.zoomOut(),
+        })
+
+        app.topMenu.push({
+            icon: 'mdi mdi-plus',
+            label: 'Zoom In',
+            command: () => this.zoomIn(),
+        })
+
+        app.topMenu.push({
+            icon: 'mdi mdi-numeric-0',
+            label: 'Reset Zoom',
+            command: () => this.resetZoom(false),
+        })
+
+        app.topMenu.push({
+            icon: 'mdi mdi-fit-to-screen',
+            label: 'Fit to Screen',
+            command: () => this.resetZoom(true),
         })
 
         this.stretchShadow.subscribe(value => {
@@ -774,12 +802,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     async annotateImage() {
         try {
             this.annotating = true
-            this.annotations = await this.api.annotationsOfImage(this.imageData.path!,
-                this.annotateWithStarsAndDSOs, this.annotateWithMinorPlanets, this.annotateWithMinorPlanetsMagLimit)
+            this.annotations = await this.api.annotationsOfImage(this.imageData.path!, this.annotation.useStarsAndDSOs,
+                this.annotation.useMinorPlanets, this.annotation.minorPlanetsMagLimit, this.annotation.useSimbad)
             this.annotationIsVisible = true
             this.annotationMenuItem.toggleable = this.annotations.length > 0
             this.annotationMenuItem.toggled = this.annotationMenuItem.toggleable
-            this.showAnnotationDialog = false
+            this.annotation.showDialog = false
         } finally {
             this.annotating = false
         }
@@ -861,9 +889,23 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, scale * 0.9)
     }
 
-    resetZoom() {
-        if (!this.panZoom) return
-        this.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, 1.0)
+    center() {
+        const { width, height } = this.image.nativeElement.getBoundingClientRect()
+        this.panZoom?.moveTo(window.innerWidth / 2 - width / 2, (window.innerHeight - 42) / 2 - height / 2)
+    }
+
+    resetZoom(fitToScreen: boolean = false, center: boolean = true) {
+        if (fitToScreen) {
+            const { width, height } = this.image.nativeElement
+            const factor = Math.min(window.innerWidth, window.innerHeight - 42) / Math.min(width, height)
+            this.panZoom?.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, factor)
+        } else {
+            this.panZoom?.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, 1.0)
+        }
+
+        if (center) {
+            this.center()
+        }
     }
 
     async enterFullscreen() {

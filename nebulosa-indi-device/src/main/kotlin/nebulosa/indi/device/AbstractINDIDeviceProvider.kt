@@ -19,6 +19,9 @@ import nebulosa.indi.device.guide.GuideOutputDetached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
+import nebulosa.indi.device.rotator.Rotator
+import nebulosa.indi.device.rotator.RotatorAttached
+import nebulosa.indi.device.rotator.RotatorDetached
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.device.thermometer.ThermometerAttached
 import nebulosa.indi.device.thermometer.ThermometerDetached
@@ -32,6 +35,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     private val mounts = HashMap<String, Mount>(2)
     private val wheels = HashMap<String, FilterWheel>(2)
     private val focusers = HashMap<String, Focuser>(2)
+    private val rotators = HashMap<String, Rotator>(2)
     private val gps = HashMap<String, GPS>(2)
     private val guideOutputs = HashMap<String, GuideOutput>(2)
     private val thermometers = HashMap<String, Thermometer>(2)
@@ -44,31 +48,35 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
 
     fun fireOnConnectionClosed() = handlers.forEach { it.onConnectionClosed() }
 
-    override fun cameras() = cameras.values.toList()
+    override fun cameras() = cameras.values
 
     override fun camera(id: String) = cameras[id] ?: cameras.values.find { it.name == id }
 
-    override fun mounts() = mounts.values.toList()
+    override fun mounts() = mounts.values
 
     override fun mount(id: String) = mounts[id] ?: mounts.values.find { it.name == id }
 
-    override fun focusers() = focusers.values.toList()
+    override fun focusers() = focusers.values
 
     override fun focuser(id: String) = focusers[id] ?: focusers.values.find { it.name == id }
 
-    override fun wheels() = wheels.values.toList()
+    override fun wheels() = wheels.values
 
     override fun wheel(id: String) = wheels[id] ?: wheels.values.find { it.name == id }
 
-    override fun gps() = gps.values.toList()
+    override fun rotators() = rotators.values
+
+    override fun rotator(id: String) = rotators[id] ?: rotators.values.find { it.name == id }
+
+    override fun gps() = gps.values
 
     override fun gps(id: String) = gps[id] ?: gps.values.find { it.name == id }
 
-    override fun guideOutputs() = guideOutputs.values.toList()
+    override fun guideOutputs() = guideOutputs.values
 
     override fun guideOutput(id: String) = guideOutputs[id] ?: guideOutputs.values.find { it.name == id }
 
-    override fun thermometers() = thermometers.values.toList()
+    override fun thermometers() = thermometers.values
 
     override fun thermometer(id: String) = thermometers[id] ?: thermometers.values.find { it.name == id }
 
@@ -109,6 +117,19 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     fun unregisterFocuser(device: Focuser) {
         fireOnEventReceived(FocuserDetached(focusers.remove(device.id) ?: return))
         LOG.info("focuser detached: {} ({})", device.name, device.id)
+    }
+
+    fun registerRotator(device: Rotator): Boolean {
+        if (device.id in rotators) return false
+        rotators[device.id] = device
+        fireOnEventReceived(RotatorAttached(device))
+        LOG.info("rotator attached: {} ({})", device.name, device.id)
+        return true
+    }
+
+    fun unregisterRotator(device: Rotator) {
+        fireOnEventReceived(RotatorDetached(rotators.remove(device.id) ?: return))
+        LOG.info("rotator detached: {} ({})", device.name, device.id)
     }
 
     fun registerFilterWheel(device: FilterWheel): Boolean {
@@ -177,35 +198,18 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     }
 
     override fun close() {
-        cameras().forEach {
-            it.close()
-            unregisterCamera(it)
-        }
-
-        mounts().forEach {
-            it.close()
-            unregisterMount(it)
-        }
-
-        wheels().forEach {
-            it.close()
-            unregisterFilterWheel(it)
-        }
-
-        focusers().forEach {
-            it.close()
-            unregisterFocuser(it)
-        }
-
-        gps().forEach {
-            it.close()
-            unregisterGPS(it)
-        }
+        cameras().onEach(Device::close).onEach(::unregisterCamera)
+        mounts().onEach(Device::close).onEach(::unregisterMount)
+        wheels().onEach(Device::close).onEach(::unregisterFilterWheel)
+        focusers().onEach(Device::close).onEach(::unregisterFocuser)
+        rotators().onEach(Device::close).onEach(::unregisterRotator)
+        gps().onEach(Device::close).onEach(::unregisterGPS)
 
         cameras.clear()
         mounts.clear()
         wheels.clear()
         focusers.clear()
+        rotators.clear()
         gps.clear()
         guideOutputs.clear()
         thermometers.clear()
