@@ -14,6 +14,10 @@ class RotatorService {
         rotator.disconnect()
     }
 
+    fun reverse(rotator: Rotator, enabled: Boolean) {
+        rotator.reverseRotator(enabled)
+    }
+
     fun move(rotator: Rotator, angle: Double) {
         rotator.moveRotator(angle)
     }

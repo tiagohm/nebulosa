@@ -4,6 +4,8 @@ import nebulosa.indi.device.Device
 
 interface Rotator : Device {
 
+    val moving: Boolean
+
     val canAbort: Boolean
 
     val canHome: Boolean
@@ -11,6 +13,8 @@ interface Rotator : Device {
     val canSync: Boolean
 
     val canReverse: Boolean
+
+    val reversed: Boolean
 
     val hasBacklashCompensation: Boolean
 

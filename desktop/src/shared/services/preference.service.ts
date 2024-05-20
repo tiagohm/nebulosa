@@ -8,6 +8,7 @@ import { Device } from '../types/device.types'
 import { Focuser, FocuserPreference } from '../types/focuser.types'
 import { ConnectionDetails, Equipment, HomePreference } from '../types/home.types'
 import { EMPTY_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
+import { Rotator, RotatorPreference } from '../types/rotator.types'
 import { EMPTY_PLATE_SOLVER_PREFERENCE, PlateSolverPreference, PlateSolverType } from '../types/settings.types'
 import { FilterWheel, WheelPreference } from '../types/wheel.types'
 import { LocalStorageService } from './local-storage.service'
@@ -76,6 +77,10 @@ export class PreferenceService {
 
     focuserPreference(focuser: Focuser) {
         return new PreferenceData<FocuserPreference>(this.storage, `focuser.${focuser.name}`, {})
+    }
+
+    rotatorPreference(rotator: Rotator) {
+        return new PreferenceData<RotatorPreference>(this.storage, `rotator.${rotator.name}`, {})
     }
 
     readonly connections = new PreferenceData<ConnectionDetails[]>(this.storage, 'home.connections', () => [])

@@ -33,8 +33,16 @@ class RotatorController(
         rotatorService.disconnect(rotator)
     }
 
+    @PutMapping("{rotator}/reverse")
+    fun reverse(
+        rotator: Rotator,
+        @RequestParam enabled: Boolean,
+    ) {
+        rotatorService.reverse(rotator, enabled)
+    }
+
     @PutMapping("{rotator}/move")
-    fun moveIn(
+    fun move(
         rotator: Rotator,
         @RequestParam @Valid @Range(min = 0, max = 360) angle: Double,
     ) {
@@ -44,6 +52,11 @@ class RotatorController(
     @PutMapping("{rotator}/abort")
     fun abort(rotator: Rotator) {
         rotatorService.abort(rotator)
+    }
+
+    @PutMapping("{rotator}/home")
+    fun home(rotator: Rotator) {
+        rotatorService.home(rotator)
     }
 
     @PutMapping("{rotator}/sync")

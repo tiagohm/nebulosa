@@ -79,6 +79,7 @@ import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
 import { MountComponent } from './mount/mount.component'
+import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
 import { SettingsComponent } from './settings/settings.component'
 
@@ -116,6 +117,7 @@ import { SettingsComponent } from './settings/settings.component'
         MoonComponent,
         MountComponent,
         NoDropdownDirective,
+        RotatorComponent,
         SequencerComponent,
         SettingsComponent,
         SkyObjectPipe,

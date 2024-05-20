@@ -18,6 +18,7 @@ import { Focuser } from '../types/focuser.types'
 import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
 import { ConnectionClosed } from '../types/home.types'
 import { Mount } from '../types/mount.types'
+import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
 import { FilterWheel } from '../types/wheel.types'
 import { ApiService } from './api.service'
@@ -36,6 +37,9 @@ type EventMappedType = {
     'FOCUSER.UPDATED': DeviceMessageEvent<Focuser>
     'FOCUSER.ATTACHED': DeviceMessageEvent<Focuser>
     'FOCUSER.DETACHED': DeviceMessageEvent<Focuser>
+    'ROTATOR.UPDATED': DeviceMessageEvent<Rotator>
+    'ROTATOR.ATTACHED': DeviceMessageEvent<Rotator>
+    'ROTATOR.DETACHED': DeviceMessageEvent<Rotator>
     'WHEEL.UPDATED': DeviceMessageEvent<FilterWheel>
     'WHEEL.ATTACHED': DeviceMessageEvent<FilterWheel>
     'WHEEL.DETACHED': DeviceMessageEvent<FilterWheel>

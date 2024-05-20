@@ -75,7 +75,8 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasRotator" styleClass="min-w-full w-full px-1 py-2 flex-column">
+            <p-button [text]="true" [disabled]="!connected || !hasRotator" (onClick)="open('ROTATOR')"
+                      styleClass="min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/rotate.png" />
                 <div class="mt-1 text-sm">Rotator</div>
             </p-button>

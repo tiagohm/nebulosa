@@ -2,11 +2,9 @@ package nebulosa.indi.client.device.rotators
 
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice
+import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.rotator.*
-import nebulosa.indi.protocol.DefNumberVector
-import nebulosa.indi.protocol.DefSwitchVector
-import nebulosa.indi.protocol.INDIProtocol
-import nebulosa.indi.protocol.SetNumberVector
+import nebulosa.indi.protocol.*
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indirotatorinterface.cpp
 
@@ -15,10 +13,12 @@ internal open class INDIRotator(
     override val name: String,
 ) : INDIDevice(), Rotator {
 
+    @Volatile final override var moving = false
     @Volatile final override var canAbort = false
     @Volatile final override var canHome = false
     @Volatile final override var canSync = false
     @Volatile final override var canReverse = false
+    @Volatile final override var reversed = false
     @Volatile final override var hasBacklashCompensation = false
     @Volatile final override var backslash = 0
     @Volatile final override var angle = 0.0
@@ -29,39 +29,73 @@ internal open class INDIRotator(
         when (message) {
             is DefNumberVector -> {
                 when (message.name) {
-                    "ROTATOR_LIMITS_VALUE" -> {
+                    "ABS_ROTATOR_ANGLE" -> {
+                        val angle = message["ANGLE"] ?: return
+                        minAngle = angle.min
+                        maxAngle = angle.max
 
+                        sender.fireOnEventReceived(RotatorMinMaxAngleChanged(this))
+
+                        if (angle.value != 0.0) {
+                            this.angle = angle.value
+                            sender.fireOnEventReceived(RotatorAngleChanged(this))
+                        }
+                    }
+                    "SYNC_ROTATOR_ANGLE" -> {
+                        canSync = true
+                        sender.fireOnEventReceived(RotatorCanSyncChanged(this))
                     }
                 }
             }
             is DefSwitchVector -> {
                 when (message.name) {
-                    "ABORT" -> {
-                        if ("ABS_ROTATOR_ANGLE" in message) {
-                            canAbort = true
-                            sender.fireOnEventReceived(RotatorCanAbortChanged(this))
-                        }
-
-                        if ("SYNC_ROTATOR_ANGLE" in message) {
-                            canSync = true
-                            sender.fireOnEventReceived(RotatorCanSyncChanged(this))
-                        }
+                    "ROTATOR_ABORT_MOTION" -> {
+                        canAbort = true
+                        sender.fireOnEventReceived(RotatorCanAbortChanged(this))
                     }
-                    "HOME" -> {
+                    "ROTATOR_HOME" -> {
                         canHome = true
                         sender.fireOnEventReceived(RotatorCanHomeChanged(this))
                     }
                     "ROTATOR_REVERSE" -> {
                         canReverse = true
                         sender.fireOnEventReceived(RotatorCanReverseChanged(this))
+
+                        val reversed = message.firstOnSwitch().name == "INDI_ENABLED"
+
+                        if (reversed != this.reversed) {
+                            this.reversed = reversed
+                            sender.fireOnEventReceived(RotatorReversedChanged(this))
+                        }
                     }
                 }
             }
             is SetNumberVector -> {
                 when (message.name) {
-                    "ANGLE" -> {
-                        angle = (message["ABS_ROTATOR_ANGLE"] ?: return).value
-                        sender.fireOnEventReceived(RotatorAngleChanged(this))
+                    "ABS_ROTATOR_ANGLE" -> {
+                        val angle = message["ANGLE"] ?: return
+
+                        if (moving != message.isBusy) {
+                            this.moving = message.isBusy
+                            sender.fireOnEventReceived(RotatorMovingChanged(this))
+                        }
+
+                        if (angle.value != this.angle) {
+                            this.angle = angle.value
+                            sender.fireOnEventReceived(RotatorAngleChanged(this))
+                        }
+                    }
+                }
+            }
+            is SetSwitchVector -> {
+                when (message.name) {
+                    "ROTATOR_REVERSE" -> {
+                        val reversed = message.firstOnSwitch().name == "INDI_ENABLED"
+
+                        if (reversed != this.reversed) {
+                            this.reversed = reversed
+                            sender.fireOnEventReceived(RotatorReversedChanged(this))
+                        }
                     }
                 }
             }
@@ -72,18 +106,18 @@ internal open class INDIRotator(
     }
 
     override fun moveRotator(angle: Double) {
-        sendNewNumber("ANGLE", "ABS_ROTATOR_ANGLE" to angle)
+        sendNewNumber("ABS_ROTATOR_ANGLE", "ANGLE" to angle)
     }
 
     override fun syncRotator(angle: Double) {
         if (canSync) {
-            sendNewNumber("ANGLE", "SYNC_ROTATOR_ANGLE" to angle)
+            sendNewNumber("SYNC_ROTATOR_ANGLE", "ANGLE" to angle)
         }
     }
 
     override fun homeRotator() {
         if (canHome) {
-            sendNewSwitch("HOME", "ROTATOR_HOME" to true)
+            sendNewSwitch("ROTATOR_HOME", "HOME" to true)
         }
     }
 
@@ -95,7 +129,7 @@ internal open class INDIRotator(
 
     override fun abortRotator() {
         if (canAbort) {
-            sendNewSwitch("ABORT", "ROTATOR_ABORT_MOTION" to true)
+            sendNewSwitch("ROTATOR_ABORT_MOTION", "ABORT" to true)
         }
     }
 

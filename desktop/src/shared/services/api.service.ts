@@ -12,6 +12,7 @@ import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } fr
 import { ConnectionStatus, ConnectionType, Equipment } from '../types/home.types'
 import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlType, SlewRate, TrackMode } from '../types/mount.types'
+import { Rotator } from '../types/rotator.types'
 import { SequencePlan } from '../types/sequencer.types'
 import { PlateSolverPreference } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
@@ -247,6 +248,44 @@ export class ApiService {
 
     wheelSync(wheel: FilterWheel, names: string[]) {
         return this.http.put<void>(`wheels/${wheel.id}/sync?names=${names.join(',')}`)
+    }
+
+    // ROTATOR
+
+    rotators() {
+        return this.http.get<Rotator[]>(`rotators`)
+    }
+
+    rotator(id: string) {
+        return this.http.get<Rotator>(`rotators/${id}`)
+    }
+
+    rotatorConnect(rotator: Rotator) {
+        return this.http.put<void>(`rotators/${rotator.id}/connect`)
+    }
+
+    rotatorDisconnect(rotator: Rotator) {
+        return this.http.put<void>(`rotators/${rotator.id}/disconnect`)
+    }
+
+    focuserReverse(rotator: Rotator, enabled: boolean) {
+        return this.http.put<void>(`rotators/${rotator.id}/reverse?enabled=${enabled}`)
+    }
+
+    rotatorMove(rotator: Rotator, angle: number) {
+        return this.http.put<void>(`rotators/${rotator.id}/move?angle=${angle}`)
+    }
+
+    rotatorAbort(rotator: Rotator) {
+        return this.http.put<void>(`rotators/${rotator.id}/abort`)
+    }
+
+    rotatorHome(rotator: Rotator) {
+        return this.http.put<void>(`rotators/${rotator.id}/home`)
+    }
+
+    rotatorSync(rotator: Rotator, angle: number) {
+        return this.http.put<void>(`rotators/${rotator.id}/sync?angle=${angle}`)
     }
 
     // GUIDE OUTPUT
