@@ -218,6 +218,11 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
             unregisterFocuser(it)
         }
 
+        rotators().forEach {
+            it.close()
+            unregisterRotator(it)
+        }
+
         gps().forEach {
             it.close()
             unregisterGPS(it)
@@ -227,6 +232,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         mounts.clear()
         wheels.clear()
         focusers.clear()
+        rotators.clear()
         gps.clear()
         guideOutputs.clear()
         thermometers.clear()
