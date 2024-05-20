@@ -5,7 +5,7 @@ import { EMPTY_LOCATION, Location } from '../types/atlas.types'
 import { CalibrationPreference } from '../types/calibration.types'
 import { Camera, CameraPreference, CameraStartCapture, EMPTY_CAMERA_PREFERENCE } from '../types/camera.types'
 import { Device } from '../types/device.types'
-import { Focuser } from '../types/focuser.types'
+import { Focuser, FocuserPreference } from '../types/focuser.types'
 import { ConnectionDetails, Equipment, HomePreference } from '../types/home.types'
 import { EMPTY_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
 import { EMPTY_PLATE_SOLVER_PREFERENCE, PlateSolverPreference, PlateSolverType } from '../types/settings.types'
@@ -72,6 +72,10 @@ export class PreferenceService {
 
     focusOffset(wheel: FilterWheel, focuser: Focuser, position: number) {
         return new PreferenceData<number>(this.storage, `focusOffset.${wheel.name}.${position}.${focuser.name}`, () => 0)
+    }
+
+    focuserPreference(focuser: Focuser) {
+        return new PreferenceData<FocuserPreference>(this.storage, `focuser.${focuser.name}`, {})
     }
 
     readonly connections = new PreferenceData<ConnectionDetails[]>(this.storage, 'home.connections', () => [])
