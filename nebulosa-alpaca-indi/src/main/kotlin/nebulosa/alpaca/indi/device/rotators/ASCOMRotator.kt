@@ -34,7 +34,7 @@ data class ASCOMRotator(
         processPosition()
     }
 
-    override fun onDisconnected() {}
+    override fun onDisconnected() = Unit
 
     override fun refresh(elapsedTimeInSeconds: Long) {
         super.refresh(elapsedTimeInSeconds)
@@ -46,7 +46,7 @@ data class ASCOMRotator(
         }
     }
 
-    override fun snoop(devices: Iterable<Device?>) {}
+    override fun snoop(devices: Iterable<Device?>) = Unit
 
     override fun moveRotator(angle: Double) {
         service.moveTo(device.number, angle).doRequest()

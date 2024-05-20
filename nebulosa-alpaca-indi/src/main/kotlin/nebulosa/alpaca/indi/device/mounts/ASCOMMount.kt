@@ -224,9 +224,9 @@ data class ASCOMMount(
         service.utcDate(device.number, dateTime.toInstant()).doRequest()
     }
 
-    override fun snoop(devices: Iterable<Device?>) {}
+    override fun snoop(devices: Iterable<Device?>) = Unit
 
-    override fun handleMessage(message: INDIProtocol) {}
+    override fun handleMessage(message: INDIProtocol) = Unit
 
     override fun onConnected() {
         processCapabilities()
@@ -237,7 +237,7 @@ data class ASCOMMount(
         equatorialSystem = service.equatorialSystem(device.number).doRequest()?.value ?: equatorialSystem
     }
 
-    override fun onDisconnected() {}
+    override fun onDisconnected() = Unit
 
     override fun reset() {
         super.reset()

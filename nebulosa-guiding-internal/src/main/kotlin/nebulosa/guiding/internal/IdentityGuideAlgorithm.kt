@@ -6,5 +6,5 @@ class IdentityGuideAlgorithm(override val axis: GuideAxis) : GuideAlgorithm {
 
     override fun compute(input: Double) = input
 
-    override fun reset() {}
+    override fun reset() = Unit
 }
