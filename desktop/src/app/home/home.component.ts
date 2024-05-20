@@ -444,14 +444,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 }
             } catch {
                 this.connection.connected = false
-
-                this.cameras = []
-                this.mounts = []
-                this.focusers = []
-                this.wheels = []
-                this.domes = []
-                this.rotators = []
-                this.switches = []
             }
         } else {
             const statuses = await this.api.connectionStatuses()
@@ -473,6 +465,16 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                     break
                 }
             }
+        }
+
+        if (!this.connection?.connected) {
+            this.cameras = []
+            this.mounts = []
+            this.focusers = []
+            this.wheels = []
+            this.domes = []
+            this.rotators = []
+            this.switches = []
         }
     }
 
