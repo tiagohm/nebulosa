@@ -1,7 +1,7 @@
 <div class="grid p-2 relative">
-    <p-accordion class="w-full">
-        <p-accordionTab header="Location" tabStyleClass="mb-0">
-            <div class="flex gap-3 my-3">
+    <p-tabView class="w-full">
+        <p-tabPanel header="Location" leftIcon="mdi mdi-map-marker">
+            <div class="flex gap-3 p-3">
                 <span class="p-float-label min-w-16rem">
                     <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()"
                                 optionLabel="name" dataKey="id" styleClass="p-inputtext-sm border-0" emptyMessage="No location found"
@@ -15,13 +15,26 @@
                               size="small" severity="danger" />
                 </div>
             </div>
-        </p-accordionTab>
-        <p-accordionTab header="Plate Solver" tabStyleClass="mb-0">
-            <div class="flex flex-wrap gap-3 my-3">
+        </p-tabPanel>
+        <p-tabPanel header="Plate Solver" leftIcon="mdi mdi-sigma">
+            <div class="flex flex-wrap gap-3 p-3">
                 <span class="p-float-label min-w-16rem">
                     <p-dropdown [options]="solverTypes" [(ngModel)]="solverType" styleClass="p-inputtext-sm border-0"
                                 (ngModelChange)="solvers.get(solverType)!.type = $event; save()" [autoDisplayFirst]="false" />
                     <label>Type</label>
+                </span>
+                <span class="p-float-label max-w-12rem">
+                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full"
+                                   [ngModel]="solvers.get(solverType)!.downsampleFactor"
+                                   (ngModelChange)="solvers.get(solverType)!.downsampleFactor = $event; save()" [showButtons]="true"
+                                   [min]="0" [max]="4" />
+                    <label>Downsample factor</label>
+                </span>
+                <span class="p-float-label max-w-9rem">
+                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.timeout"
+                                   (ngModelChange)="solvers.get(solverType)!.timeout = $event; save()" [showButtons]="true"
+                                   [min]="0" [max]="300" />
+                    <label>Timeout (s)</label>
                 </span>
                 <span class="flex gap-1 align-items-center" *ngIf="solverType === 'ASTAP'">
                     <span class="w-full p-float-label min-w-16rem">
@@ -30,13 +43,6 @@
                         <label>Executable path</label>
                     </span>
                     <p-button icon="mdi mdi-folder-open" size="small" (onClick)="chooseExecutablePath()" />
-                </span>
-                <span class="p-float-label max-w-12rem">
-                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full"
-                                   [ngModel]="solvers.get(solverType)!.downsampleFactor"
-                                   (ngModelChange)="solvers.get(solverType)!.downsampleFactor = $event; save()" [showButtons]="true"
-                                   [min]="0" [max]="4" />
-                    <label>Downsample factor</label>
                 </span>
                 <span class="p-float-label min-w-16rem" *ngIf="solverType === 'ASTROMETRY_NET_ONLINE'">
                     <input pInputText class="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.apiUrl"
@@ -48,13 +54,7 @@
                            (ngModelChange)="solvers.get(solverType)!.apiKey = $event; save()" />
                     <label>API Key</label>
                 </span>
-                <span class="p-float-label max-w-8rem">
-                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.timeout"
-                                   (ngModelChange)="solvers.get(solverType)!.timeout = $event; save()" [showButtons]="true"
-                                   [min]="0" [max]="300" />
-                    <label>Timeout (s)</label>
-                </span>
             </div>
-        </p-accordionTab>
-    </p-accordion>
+        </p-tabPanel>
+    </p-tabView>
 </div>

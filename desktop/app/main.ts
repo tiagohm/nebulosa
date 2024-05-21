@@ -131,7 +131,8 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         }
     }
 
-    const width = options.width ? Math.trunc(computeWidth(options.width)) : 320
+    const minWidth = options.minWidth ?? 0
+    const width = Math.max(minWidth, options.width ? Math.trunc(computeWidth(options.width)) : 320)
 
     function computeHeight(value: number | string) {
         if (typeof value === 'number') {
@@ -172,7 +173,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         frame: false, modal, parent,
         width: savedSize?.width || width,
         height: savedSize?.height || height,
-        minHeight,
+        minWidth, minHeight,
         x: savedPosition?.x ?? undefined,
         y: savedPosition?.y ?? undefined,
         resizable: serve || resizable,
