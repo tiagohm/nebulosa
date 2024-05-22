@@ -1,4 +1,6 @@
 import io.kotest.engine.spec.tempfile
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.floats.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
@@ -12,10 +14,15 @@ import nebulosa.io.seekableSink
 import nebulosa.io.seekableSource
 import nebulosa.test.AbstractFitsAndXisfTest
 import nebulosa.xisf.XisfFormat
+import nebulosa.xisf.isXisf
 
 class XisfFormatTest : AbstractFitsAndXisfTest() {
 
     init {
+        "should be xisf format" {
+            NGC3344_COLOR_8_FITS.isXisf().shouldBeFalse()
+            M82_COLOR_16_XISF.isXisf().shouldBeTrue()
+        }
         "mono:planar:8" {
             val source = closeAfterEach(M82_MONO_8_XISF.seekableSource())
             val hdus = XisfFormat.read(source)

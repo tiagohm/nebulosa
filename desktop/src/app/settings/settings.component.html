@@ -1,112 +1,60 @@
 <div class="grid p-2 relative">
-    <div class="col-4 md:col-3 lg:col-2">
-        <p-listbox [options]="menu" [(ngModel)]="selectedMenu" [listStyle]="{ height: 'calc(100vh - 58px)', maxHeight: '100vh' }"
-                   styleClass="border-0" [style]="{ width: '100%' }">
-            <ng-template let-item pTemplate="item">
-                <div class="flex align-items-center gap-2">
-                    <i [class]="item.icon"></i>
-                    <span>{{ item.label }}</span>
-                </div>
-            </ng-template>
-        </p-listbox>
-    </div>
-    <div class="col-8 md:col-9 lg:col-10">
-        <div *ngIf="selectedMenu === menu[0]" class="grid p-2">
-            <div class="col-8 md:col-6 lg:col-4">
-                <span class="p-float-label">
+    <p-tabView class="w-full">
+        <p-tabPanel header="Location" leftIcon="mdi mdi-map-marker">
+            <div class="flex gap-3 p-3">
+                <span class="p-float-label min-w-16rem">
                     <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()"
                                 optionLabel="name" dataKey="id" styleClass="p-inputtext-sm border-0" emptyMessage="No location found"
                                 [autoDisplayFirst]="false" />
                     <label>Location</label>
                 </span>
-            </div>
-            <div class="col-4 gap-1">
-                <p-button (onClick)="addLocation()" icon="mdi mdi-plus" size="small" severity="success" />
-                <p-button (onClick)="editLocation()" icon="mdi mdi-pencil" size="small" severity="info" />
-                <p-button [disabled]="locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
-                          size="small" severity="danger" />
-            </div>
-        </div>
-        <div *ngIf="selectedMenu === menu[1]" class="grid p-2">
-            <div class="col-12 md:col-8 lg:col-6">
-                <div class="grid">
-                    <div class="col-8">
-                        <span class="p-float-label">
-                            <p-dropdown [options]="solverTypes" [(ngModel)]="solverType" styleClass="p-inputtext-sm border-0"
-                                        (ngModelChange)="solvers.get(solverType)!.type = $event; save()" [autoDisplayFirst]="false" />
-                            <label>Type</label>
-                        </span>
-                    </div>
-                    <div class="col-12" *ngIf="solverType === 'ASTAP'">
-                        <span class="w-full flex gap-1 align-items-center">
-                            <span class="w-full p-float-label">
-                                <input pInputText class="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.executablePath"
-                                       (ngModelChange)="solvers.get(solverType)!.executablePath = $event; save()" />
-                                <label>Executable path</label>
-                            </span>
-                            <p-button icon="mdi mdi-folder-open" size="small" (onClick)="chooseExecutablePath()" />
-                        </span>
-                    </div>
-                    <div class="col-12">
-                        <div class="grid">
-                            <div class="col-6">
-                                <span class="p-float-label">
-                                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full"
-                                                   [ngModel]="solvers.get(solverType)!.downsampleFactor"
-                                                   (ngModelChange)="solvers.get(solverType)!.downsampleFactor = $event; save()" [showButtons]="true"
-                                                   [min]="0" [max]="4" />
-                                    <label>Downsample factor</label>
-                                </span>
-                            </div>
-                            <div class="col-12" *ngIf="solverType === 'ASTROMETRY_NET_ONLINE'">
-                                <span class="p-float-label">
-                                    <input pInputText class="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.apiUrl"
-                                           (ngModelChange)="solvers.get(solverType)!.apiUrl = $event; save()" />
-                                    <label>API URL</label>
-                                </span>
-                            </div>
-                            <div class="col-6" *ngIf="solverType === 'ASTROMETRY_NET_ONLINE'">
-                                <span class="p-float-label">
-                                    <input pInputText class="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.apiKey"
-                                           (ngModelChange)="solvers.get(solverType)!.apiKey = $event; save()" />
-                                    <label>API Key</label>
-                                </span>
-                            </div>
-                            <div class="col-6">
-                                <span class="p-float-label">
-                                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.timeout"
-                                                   (ngModelChange)="solvers.get(solverType)!.timeout = $event; save()" [showButtons]="true"
-                                                   [min]="0" [max]="300" />
-                                    <label>Timeout (s)</label>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="flex gap-1">
+                    <p-button (onClick)="addLocation()" icon="mdi mdi-plus" size="small" severity="success" />
+                    <p-button (onClick)="editLocation()" icon="mdi mdi-pencil" size="small" severity="info" />
+                    <p-button [disabled]="locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
+                              size="small" severity="danger" />
                 </div>
             </div>
-        </div>
-        <div *ngIf="selectedMenu === menu[2]" class="grid p-2 relative">
-            <div class="col-12">
-                <p-listbox [options]="database" [(ngModel)]="databaseEntry" dataKey="key" optionLabel="key"
-                           [listStyle]="{ height: 'calc(100vh - 200px)', maxHeight: '100vh' }" [multiple]="false" [metaKeySelection]="false"
-                           styleClass="border-0" [style]="{ width: '100%' }">
-                    <ng-template let-item pTemplate="item">
-                        <div class="flex flex-column align-items-start gap-1">
-                            <span class="text-sm font-bold">{{ item.key }}</span>
-                            <span class="text-sm overflow-auto white-space-nowrap">{{ item.value }}</span>
-                        </div>
-                    </ng-template>
-                </p-listbox>
-            </div>
-            <div class="col-12 flex-column gap-2" *ngIf="databaseEntry">
-                <div class="flex justify-content-between align-items-center">
-                    <span class="text-xl font-bold">{{ databaseEntry.key }}</span>
-                    <p-button [text]="true" icon="mdi mdi-delete" label="Delete" severity="danger" (onClick)="deleteDatabaseEntry()" />
-                </div>
-                <span class="overflow-auto p-1" style="word-wrap: break-word; height: 84px;">
-                    {{ databaseEntry.value }}
+        </p-tabPanel>
+        <p-tabPanel header="Plate Solver" leftIcon="mdi mdi-sigma">
+            <div class="flex flex-wrap gap-3 p-3">
+                <span class="p-float-label min-w-16rem">
+                    <p-dropdown [options]="solverTypes" [(ngModel)]="solverType" styleClass="p-inputtext-sm border-0"
+                                (ngModelChange)="solvers.get(solverType)!.type = $event; save()" [autoDisplayFirst]="false" />
+                    <label>Type</label>
+                </span>
+                <span class="p-float-label max-w-12rem">
+                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full"
+                                   [ngModel]="solvers.get(solverType)!.downsampleFactor"
+                                   (ngModelChange)="solvers.get(solverType)!.downsampleFactor = $event; save()" [showButtons]="true"
+                                   [min]="0" [max]="4" />
+                    <label>Downsample factor</label>
+                </span>
+                <span class="p-float-label max-w-9rem">
+                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.timeout"
+                                   (ngModelChange)="solvers.get(solverType)!.timeout = $event; save()" [showButtons]="true"
+                                   [min]="0" [max]="300" />
+                    <label>Timeout (s)</label>
+                </span>
+                <span class="flex gap-1 align-items-center" *ngIf="solverType === 'ASTAP'">
+                    <span class="w-full p-float-label min-w-16rem">
+                        <input pInputText class="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.executablePath"
+                               (ngModelChange)="solvers.get(solverType)!.executablePath = $event; save()" />
+                        <label>Executable path</label>
+                    </span>
+                    <p-button icon="mdi mdi-folder-open" size="small" (onClick)="chooseExecutablePath()" />
+                </span>
+                <span class="p-float-label min-w-16rem" *ngIf="solverType === 'ASTROMETRY_NET_ONLINE'">
+                    <input pInputText class="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.apiUrl"
+                           (ngModelChange)="solvers.get(solverType)!.apiUrl = $event; save()" />
+                    <label>API URL</label>
+                </span>
+                <span class="p-float-label" *ngIf="solverType === 'ASTROMETRY_NET_ONLINE'">
+                    <input pInputText class="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.apiKey"
+                           (ngModelChange)="solvers.get(solverType)!.apiKey = $event; save()" />
+                    <label>API Key</label>
                 </span>
             </div>
-        </div>
-    </div>
+        </p-tabPanel>
+    </p-tabView>
 </div>

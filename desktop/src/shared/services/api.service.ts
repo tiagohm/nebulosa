@@ -9,11 +9,12 @@ import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
-import { ConnectionStatus, ConnectionType } from '../types/home.types'
-import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageChannel, ImageInfo, ImageSolved, SCNRProtectionMethod } from '../types/image.types'
-import { CelestialLocationType, Mount, SlewRate, TrackMode } from '../types/mount.types'
+import { ConnectionStatus, ConnectionType, Equipment } from '../types/home.types'
+import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
+import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlType, SlewRate, TrackMode } from '../types/mount.types'
+import { Rotator } from '../types/rotator.types'
 import { SequencePlan } from '../types/sequencer.types'
-import { PlateSolverOptions } from '../types/settings.types'
+import { PlateSolverPreference } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
 import { HttpService } from './http.service'
 
@@ -51,42 +52,43 @@ export class ApiService {
         return this.http.get<Camera[]>(`cameras`)
     }
 
-    camera(name: string) {
-        return this.http.get<Camera>(`cameras/${name}`)
+    camera(id: string) {
+        return this.http.get<Camera>(`cameras/${id}`)
     }
 
     cameraConnect(camera: Camera) {
-        return this.http.put<void>(`cameras/${camera.name}/connect`)
+        return this.http.put<void>(`cameras/${camera.id}/connect`)
     }
 
     cameraDisconnect(camera: Camera) {
-        return this.http.put<void>(`cameras/${camera.name}/disconnect`)
+        return this.http.put<void>(`cameras/${camera.id}/disconnect`)
     }
 
     cameraIsCapturing(camera: Camera) {
-        return this.http.get<boolean>(`cameras/${camera.name}/capturing`)
+        return this.http.get<boolean>(`cameras/${camera.id}/capturing`)
     }
 
     // TODO: Rotator
-    cameraSnoop(camera: Camera, mount?: Mount, wheel?: FilterWheel, focuser?: Focuser) {
-        const query = this.http.query({ mount: mount?.name, wheel: wheel?.name, focuser: focuser?.name })
-        return this.http.put<void>(`cameras/${camera.name}/snoop?${query}`)
+    cameraSnoop(camera: Camera, equipment: Equipment) {
+        const { mount, wheel, focuser, rotator } = equipment
+        const query = this.http.query({ mount: mount?.name, wheel: wheel?.name, focuser: focuser?.name, rotator: rotator?.name })
+        return this.http.put<void>(`cameras/${camera.id}/snoop?${query}`)
     }
 
     cameraCooler(camera: Camera, enabled: boolean) {
-        return this.http.put<void>(`cameras/${camera.name}/cooler?enabled=${enabled}`)
+        return this.http.put<void>(`cameras/${camera.id}/cooler?enabled=${enabled}`)
     }
 
     cameraSetpointTemperature(camera: Camera, temperature: number) {
-        return this.http.put<void>(`cameras/${camera.name}/temperature/setpoint?temperature=${temperature}`)
+        return this.http.put<void>(`cameras/${camera.id}/temperature/setpoint?temperature=${temperature}`)
     }
 
     cameraStartCapture(camera: Camera, data: CameraStartCapture) {
-        return this.http.put<void>(`cameras/${camera.name}/capture/start`, data)
+        return this.http.put<void>(`cameras/${camera.id}/capture/start`, data)
     }
 
     cameraAbortCapture(camera: Camera) {
-        return this.http.put<void>(`cameras/${camera.name}/capture/abort`)
+        return this.http.put<void>(`cameras/${camera.id}/capture/abort`)
     }
 
     // MOUNT
@@ -95,79 +97,93 @@ export class ApiService {
         return this.http.get<Mount[]>(`mounts`)
     }
 
-    mount(name: string) {
-        return this.http.get<Mount>(`mounts/${name}`)
+    mount(id: string) {
+        return this.http.get<Mount>(`mounts/${id}`)
     }
 
     mountConnect(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/connect`)
+        return this.http.put<void>(`mounts/${mount.id}/connect`)
     }
 
     mountDisconnect(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/disconnect`)
+        return this.http.put<void>(`mounts/${mount.id}/disconnect`)
     }
 
     mountTracking(mount: Mount, enabled: boolean) {
-        return this.http.put<void>(`mounts/${mount.name}/tracking?enabled=${enabled}`)
+        return this.http.put<void>(`mounts/${mount.id}/tracking?enabled=${enabled}`)
     }
 
     mountSync(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
         const query = this.http.query({ rightAscension, declination, j2000 })
-        return this.http.put<void>(`mounts/${mount.name}/sync?${query}`)
+        return this.http.put<void>(`mounts/${mount.id}/sync?${query}`)
     }
 
     mountSlew(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
         const query = this.http.query({ rightAscension, declination, j2000 })
-        return this.http.put<void>(`mounts/${mount.name}/slew?${query}`)
+        return this.http.put<void>(`mounts/${mount.id}/slew?${query}`)
     }
 
     mountGoTo(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
         const query = this.http.query({ rightAscension, declination, j2000 })
-        return this.http.put<void>(`mounts/${mount.name}/goto?${query}`)
+        return this.http.put<void>(`mounts/${mount.id}/goto?${query}`)
     }
 
     mountPark(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/park`)
+        return this.http.put<void>(`mounts/${mount.id}/park`)
     }
 
     mountUnpark(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/unpark`)
+        return this.http.put<void>(`mounts/${mount.id}/unpark`)
     }
 
     mountHome(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/home`)
+        return this.http.put<void>(`mounts/${mount.id}/home`)
     }
 
     mountAbort(mount: Mount) {
-        return this.http.put<void>(`mounts/${mount.name}/abort`)
+        return this.http.put<void>(`mounts/${mount.id}/abort`)
     }
 
     mountTrackMode(mount: Mount, mode: TrackMode) {
-        return this.http.put<void>(`mounts/${mount.name}/track-mode?mode=${mode}`)
+        return this.http.put<void>(`mounts/${mount.id}/track-mode?mode=${mode}`)
     }
 
     mountSlewRate(mount: Mount, rate: SlewRate) {
-        return this.http.put<void>(`mounts/${mount.name}/slew-rate?rate=${rate.name}`)
+        return this.http.put<void>(`mounts/${mount.id}/slew-rate?rate=${rate.name}`)
     }
 
     mountMove(mount: Mount, direction: GuideDirection, enabled: boolean) {
-        return this.http.put<void>(`mounts/${mount.name}/move?direction=${direction}&enabled=${enabled}`)
+        return this.http.put<void>(`mounts/${mount.id}/move?direction=${direction}&enabled=${enabled}`)
     }
 
     mountComputeLocation(mount: Mount, j2000: boolean, rightAscension: Angle, declination: Angle,
         equatorial: boolean = true, horizontal: boolean = true, meridianAt: boolean = false,
     ) {
         const query = this.http.query({ rightAscension, declination, j2000, equatorial, horizontal, meridianAt })
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location?${query}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.id}/location?${query}`)
     }
 
     mountCelestialLocation(mount: Mount, type: CelestialLocationType) {
-        return this.http.get<ComputedLocation>(`mounts/${mount.name}/location/${type}`)
+        return this.http.get<ComputedLocation>(`mounts/${mount.id}/location/${type}`)
     }
 
     pointMountHere(mount: Mount, path: string, x: number, y: number) {
         const query = this.http.query({ path, x, y })
-        return this.http.put<void>(`mounts/${mount.name}/point-here?${query}`)
+        return this.http.put<void>(`mounts/${mount.id}/point-here?${query}`)
+    }
+
+    mountRemoteControlStart(mount: Mount, type: MountRemoteControlType, host: string, port: number) {
+        const query = this.http.query({ type, host, port })
+        return this.http.put<void>(`mounts/${mount.id}/remote-control/start?${query}`)
+    }
+
+    mountRemoteControlList(mount: Mount) {
+        return this.http.get<MountRemoteControl[]>(`mounts/${mount.id}/remote-control`)
+    }
+
+    mountRemoteControlStop(mount: Mount, type: MountRemoteControlType) {
+        const query = this.http.query({ type })
+        return this.http.put<void>(`mounts/${mount.id}/remote-control/stop?${query}`)
     }
 
     // FOCUSER
@@ -176,36 +192,36 @@ export class ApiService {
         return this.http.get<Focuser[]>(`focusers`)
     }
 
-    focuser(name: string) {
-        return this.http.get<Focuser>(`focusers/${name}`)
+    focuser(id: string) {
+        return this.http.get<Focuser>(`focusers/${id}`)
     }
 
     focuserConnect(focuser: Focuser) {
-        return this.http.put<void>(`focusers/${focuser.name}/connect`)
+        return this.http.put<void>(`focusers/${focuser.id}/connect`)
     }
 
     focuserDisconnect(focuser: Focuser) {
-        return this.http.put<void>(`focusers/${focuser.name}/disconnect`)
+        return this.http.put<void>(`focusers/${focuser.id}/disconnect`)
     }
 
     focuserMoveIn(focuser: Focuser, steps: number) {
-        return this.http.put<void>(`focusers/${focuser.name}/move-in?steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.id}/move-in?steps=${steps}`)
     }
 
     focuserMoveOut(focuser: Focuser, steps: number) {
-        return this.http.put<void>(`focusers/${focuser.name}/move-out?steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.id}/move-out?steps=${steps}`)
     }
 
     focuserMoveTo(focuser: Focuser, steps: number) {
-        return this.http.put<void>(`focusers/${focuser.name}/move-to?steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.id}/move-to?steps=${steps}`)
     }
 
     focuserAbort(focuser: Focuser) {
-        return this.http.put<void>(`focusers/${focuser.name}/abort`)
+        return this.http.put<void>(`focusers/${focuser.id}/abort`)
     }
 
     focuserSync(focuser: Focuser, steps: number) {
-        return this.http.put<void>(`focusers/${focuser.name}/sync?steps=${steps}`)
+        return this.http.put<void>(`focusers/${focuser.id}/sync?steps=${steps}`)
     }
 
     // FILTER WHEEL
@@ -214,24 +230,62 @@ export class ApiService {
         return this.http.get<FilterWheel[]>(`wheels`)
     }
 
-    wheel(name: string) {
-        return this.http.get<FilterWheel>(`wheels/${name}`)
+    wheel(id: string) {
+        return this.http.get<FilterWheel>(`wheels/${id}`)
     }
 
     wheelConnect(wheel: FilterWheel) {
-        return this.http.put<void>(`wheels/${wheel.name}/connect`)
+        return this.http.put<void>(`wheels/${wheel.id}/connect`)
     }
 
     wheelDisconnect(wheel: FilterWheel) {
-        return this.http.put<void>(`wheels/${wheel.name}/disconnect`)
+        return this.http.put<void>(`wheels/${wheel.id}/disconnect`)
     }
 
     wheelMoveTo(wheel: FilterWheel, position: number) {
-        return this.http.put<void>(`wheels/${wheel.name}/move-to?position=${position}`)
+        return this.http.put<void>(`wheels/${wheel.id}/move-to?position=${position}`)
     }
 
     wheelSync(wheel: FilterWheel, names: string[]) {
-        return this.http.put<void>(`wheels/${wheel.name}/sync?names=${names.join(',')}`)
+        return this.http.put<void>(`wheels/${wheel.id}/sync?names=${names.join(',')}`)
+    }
+
+    // ROTATOR
+
+    rotators() {
+        return this.http.get<Rotator[]>(`rotators`)
+    }
+
+    rotator(id: string) {
+        return this.http.get<Rotator>(`rotators/${id}`)
+    }
+
+    rotatorConnect(rotator: Rotator) {
+        return this.http.put<void>(`rotators/${rotator.id}/connect`)
+    }
+
+    rotatorDisconnect(rotator: Rotator) {
+        return this.http.put<void>(`rotators/${rotator.id}/disconnect`)
+    }
+
+    focuserReverse(rotator: Rotator, enabled: boolean) {
+        return this.http.put<void>(`rotators/${rotator.id}/reverse?enabled=${enabled}`)
+    }
+
+    rotatorMove(rotator: Rotator, angle: number) {
+        return this.http.put<void>(`rotators/${rotator.id}/move?angle=${angle}`)
+    }
+
+    rotatorAbort(rotator: Rotator) {
+        return this.http.put<void>(`rotators/${rotator.id}/abort`)
+    }
+
+    rotatorHome(rotator: Rotator) {
+        return this.http.put<void>(`rotators/${rotator.id}/home`)
+    }
+
+    rotatorSync(rotator: Rotator, angle: number) {
+        return this.http.put<void>(`rotators/${rotator.id}/sync?angle=${angle}`)
     }
 
     // GUIDE OUTPUT
@@ -240,21 +294,21 @@ export class ApiService {
         return this.http.get<GuideOutput[]>(`guide-outputs`)
     }
 
-    guideOutput(name: string) {
-        return this.http.get<GuideOutput>(`guide-outputs/${name}`)
+    guideOutput(id: string) {
+        return this.http.get<GuideOutput>(`guide-outputs/${id}`)
     }
 
     guideOutputConnect(guideOutput: GuideOutput) {
-        return this.http.put<void>(`guide-outputs/${guideOutput.name}/connect`)
+        return this.http.put<void>(`guide-outputs/${guideOutput.id}/connect`)
     }
 
     guideOutputDisconnect(guideOutput: GuideOutput) {
-        return this.http.put<void>(`guide-outputs/${guideOutput.name}/disconnect`)
+        return this.http.put<void>(`guide-outputs/${guideOutput.id}/disconnect`)
     }
 
     guideOutputPulse(guideOutput: GuideOutput, direction: GuideDirection, duration: number) {
         const query = this.http.query({ direction, duration })
-        return this.http.put<void>(`guide-outputs/${guideOutput.name}/pulse?${query}`)
+        return this.http.put<void>(`guide-outputs/${guideOutput.id}/pulse?${query}`)
     }
 
     // GUIDING
@@ -314,29 +368,10 @@ export class ApiService {
 
     // IMAGE
 
-    async openImage(
-        path: string,
-        camera?: Camera,
-        calibrate: boolean = false,
-        debayer: boolean = false,
-        force: boolean = false,
-        autoStretch: boolean = true,
-        shadow: number = 0,
-        highlight: number = 1,
-        midtone: number = 0.5,
-        mirrorHorizontal: boolean = false,
-        mirrorVertical: boolean = false,
-        invert: boolean = false,
-        scnrEnabled: boolean = false,
-        scnrChannel: ImageChannel = 'GREEN',
-        scnrAmount: number = 0.5,
-        scnrProtectionMode: SCNRProtectionMethod = 'AVERAGE_NEUTRAL',
-    ) {
-        const query = this.http.query({ path, camera: camera?.name, calibrate, force, debayer, autoStretch, shadow, highlight, midtone, mirrorHorizontal, mirrorVertical, invert, scnrEnabled, scnrChannel, scnrAmount, scnrProtectionMode })
-        const response = await this.http.getBlob(`image?${query}`)
-
+    async openImage(path: string, transformation: ImageTransformation, camera?: Camera) {
+        const query = this.http.query({ path, camera: camera?.name })
+        const response = await this.http.postBlob(`image?${query}`, transformation)
         const info = JSON.parse(response.headers.get('X-Image-Info')!) as ImageInfo
-
         return { info, blob: response.body! }
     }
 
@@ -348,23 +383,23 @@ export class ApiService {
     // INDI
 
     indiProperties(device: Device) {
-        return this.http.get<INDIProperty<any>[]>(`indi/${device.name}/properties`)
+        return this.http.get<INDIProperty<any>[]>(`indi/${device.id}/properties`)
     }
 
     indiSendProperty(device: Device, property: INDISendProperty) {
-        return this.http.put<void>(`indi/${device.name}/send`, property)
+        return this.http.put<void>(`indi/${device.id}/send`, property)
     }
 
     indiStartListening(device: Device) {
-        return this.http.put<void>(`indi/listener/${device.name}/start`)
+        return this.http.put<void>(`indi/listener/${device.id}/start`)
     }
 
     indiStopListening(device: Device) {
-        return this.http.put<void>(`indi/listener/${device.name}/stop`)
+        return this.http.put<void>(`indi/listener/${device.id}/stop`)
     }
 
     indiLog(device: Device) {
-        return this.http.get<string[]>(`indi/${device.name}/log`)
+        return this.http.get<string[]>(`indi/${device.id}/log`)
     }
 
     // SKY ATLAS
@@ -468,15 +503,15 @@ export class ApiService {
     annotationsOfImage(
         path: string,
         starsAndDSOs: boolean = true, minorPlanets: boolean = false,
-        minorPlanetMagLimit: number = 12.0,
+        minorPlanetMagLimit: number = 12.0, useSimbad: boolean = false,
     ) {
-        const query = this.http.query({ path, starsAndDSOs, minorPlanets, minorPlanetMagLimit, hasLocation: true })
+        const query = this.http.query({ path, starsAndDSOs, minorPlanets, minorPlanetMagLimit, useSimbad, hasLocation: true })
         return this.http.get<ImageAnnotation[]>(`image/annotations?${query}`)
     }
 
-    saveImageAs(inputPath: string, outputPath: string) {
-        const query = this.http.query({ inputPath, outputPath })
-        return this.http.put<void>(`image/save-as?${query}`)
+    saveImageAs(path: string, save: ImageSaveDialog, camera?: Camera) {
+        const query = this.http.query({ path, camera: camera?.name })
+        return this.http.put<void>(`image/save-as?${query}`, save)
     }
 
     coordinateInterpolation(path: string) {
@@ -504,17 +539,21 @@ export class ApiService {
 
     // CALIBRATION
 
-    calibrationFrames(camera: Camera) {
-        return this.http.get<CalibrationFrameGroup[]>(`calibration-frames/${camera.name}`)
+    calibrationGroups() {
+        return this.http.get<string[]>('calibration-frames')
     }
 
-    uploadCalibrationFrame(camera: Camera, path: string) {
+    calibrationFrames(name: string) {
+        return this.http.get<CalibrationFrameGroup[]>(`calibration-frames/${name}`)
+    }
+
+    uploadCalibrationFrame(name: string, path: string) {
         const query = this.http.query({ path })
-        return this.http.put<CalibrationFrame[]>(`calibration-frames/${camera.name}?${query}`)
+        return this.http.put<CalibrationFrame[]>(`calibration-frames/${name}?${query}`)
     }
 
     editCalibrationFrame(frame: CalibrationFrame) {
-        const query = this.http.query({ path: frame.path, enabled: frame.enabled })
+        const query = this.http.query({ name: frame.name, enabled: frame.enabled })
         return this.http.patch<CalibrationFrame>(`calibration-frames/${frame.id}?${query}`)
     }
 
@@ -539,59 +578,60 @@ export class ApiService {
     // DARV
 
     darvStart(camera: Camera, guideOutput: GuideOutput, data: DARVStart) {
-        return this.http.put<string>(`polar-alignment/darv/${camera.name}/${guideOutput.name}/start`, data)
+        return this.http.put<void>(`polar-alignment/darv/${camera.id}/${guideOutput.id}/start`, data)
     }
 
-    darvStop(id: string) {
-        return this.http.put<void>(`polar-alignment/darv/${id}/stop`)
+    darvStop(camera: Camera) {
+        return this.http.put<void>(`polar-alignment/darv/${camera.id}/stop`)
     }
 
     // TPPA
 
     tppaStart(camera: Camera, mount: Mount, data: TPPAStart) {
-        return this.http.put<string>(`polar-alignment/tppa/${camera.name}/${mount.name}/start`, data)
+        return this.http.put<void>(`polar-alignment/tppa/${camera.id}/${mount.id}/start`, data)
     }
 
-    tppaStop(id: string) {
-        return this.http.put<void>(`polar-alignment/tppa/${id}/stop`)
+    tppaStop(camera: Camera) {
+        return this.http.put<void>(`polar-alignment/tppa/${camera.id}/stop`)
     }
 
-    tppaPause(id: string) {
-        return this.http.put<void>(`polar-alignment/tppa/${id}/pause`)
+    tppaPause(camera: Camera) {
+        return this.http.put<void>(`polar-alignment/tppa/${camera.id}/pause`)
     }
 
-    tppaUnpause(id: string) {
-        return this.http.put<void>(`polar-alignment/tppa/${id}/unpause`)
+    tppaUnpause(camera: Camera) {
+        return this.http.put<void>(`polar-alignment/tppa/${camera.id}/unpause`)
     }
 
     // SEQUENCER
 
     sequencerStart(camera: Camera, plan: SequencePlan) {
-        const body: SequencePlan = { ...plan, camera: undefined, wheel: undefined, focuser: undefined }
-        return this.http.put<void>(`sequencer/${camera.name}/start`, body)
+        const body: SequencePlan = { ...plan, mount: undefined, camera: undefined, wheel: undefined, focuser: undefined }
+        const query = this.http.query({ mount: plan.mount?.name, focuser: plan.focuser?.name, wheel: plan.wheel?.name })
+        return this.http.put<void>(`sequencer/${camera.id}/start?${query}`, body)
     }
 
     sequencerStop(camera: Camera) {
-        return this.http.put<void>(`sequencer/${camera.name}/stop`)
+        return this.http.put<void>(`sequencer/${camera.id}/stop`)
     }
 
     // FLAT WIZARD
 
     flatWizardStart(camera: Camera, request: FlatWizardRequest) {
-        return this.http.put<void>(`flat-wizard/${camera.name}/start`, request)
+        return this.http.put<void>(`flat-wizard/${camera.id}/start`, request)
     }
 
     flatWizardStop(camera: Camera) {
-        return this.http.put<void>(`flat-wizard/${camera.name}/stop`)
+        return this.http.put<void>(`flat-wizard/${camera.id}/stop`)
     }
 
     // SOLVER
 
     solveImage(
-        options: PlateSolverOptions, path: string, blind: boolean,
+        solver: PlateSolverPreference, path: string, blind: boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ) {
-        const query = this.http.query({ ...options, path, blind, centerRA, centerDEC, radius })
+        const query = this.http.query({ ...solver, path, blind, centerRA, centerDEC, radius })
         return this.http.put<ImageSolved>(`plate-solver?${query}`)
     }
 

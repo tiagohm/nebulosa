@@ -4,6 +4,7 @@ import nebulosa.math.*
 import nebulosa.plate.solving.PlateSolution
 
 data class ImageSolved(
+    val solved: Boolean = false,
     val orientation: Double = 0.0,
     val scale: Double = 0.0,
     val rightAscensionJ2000: String = "",
@@ -14,6 +15,7 @@ data class ImageSolved(
 ) {
 
     constructor(solution: PlateSolution) : this(
+        solution.solved,
         solution.orientation.toDegrees,
         solution.scale.toArcsec,
         solution.rightAscension.formatHMS(),

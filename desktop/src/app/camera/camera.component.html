@@ -13,8 +13,8 @@
         <div class="col-4 flex justify-content-end align-items-center gap-2">
             <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-image-multiple" (click)="openCameraImage()"
                       pTooltip="View image" tooltipPosition="bottom" size="small" />
-            <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-wrench" (click)="openCameraCalibration()"
-                      pTooltip="Calibration" tooltipPosition="bottom" size="small" />
+            <p-button [disabled]="!camera" [text]="true" [rounded]="true" icon="mdi mdi-wrench" (click)="calibrationMenu.show()"
+                      pTooltip="CALIBRATION: {{ this.request.calibrationGroup ?? 'None' }}" tooltipPosition="bottom" size="small" />
             <p-button *ngIf="canShowMenu" [disabled]="!camera || !camera.connected || running" [text]="true" [rounded]="true"
                       icon="mdi mdi-dots-vertical" (click)="cameraMenu.show()" size="small" />
         </div>
@@ -46,12 +46,12 @@
     </div>
     <div class="grid py-1 flex align-items-center">
         <div class="col-3 flex flex-column justify-content-center text-center gap-2">
-            <span class="text-sm text-gray-100">Cooler ({{ camera.coolerPower | number: '1.1-1' }}%)</span>
+            <span class="text-xs text-gray-100">Cooler ({{ camera.coolerPower | number: '1.1-1' }}%)</span>
             <p-inputSwitch [disabled]="!camera.connected || !camera.hasCooler || running" (onChange)="toggleCooler()"
                            [(ngModel)]="camera!.cooler" />
         </div>
         <div class="col-3 flex flex-column justify-content-center text-center gap-2">
-            <span class="text-sm text-gray-100">Dew heater</span>
+            <span class="text-xs text-gray-100">Dew heater</span>
             <p-inputSwitch [disabled]="!camera.connected || !hasDewHeater || running" [(ngModel)]="camera!.dewHeater" />
         </div>
         <div class="col-6 flex flex-column">
@@ -92,7 +92,7 @@
     </div>
     <div class="grid py-1 flex align-items-center">
         <div class="col-6 flex-column">
-            <span class="text-sm text-gray-100">Exposure Mode</span>
+            <span class="text-xs text-gray-100">Exposure Mode</span>
             <p-selectButton [disabled]="!canExposureMode || !camera.connected || running" [options]="exposureModeOptions" [(ngModel)]="exposureMode"
                             styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" />
         </div>
@@ -149,7 +149,7 @@
     </div>
     <div class="grid py-1 flex align-items-center">
         <div class="col-3 flex flex-column justify-content-center text-center gap-2">
-            <span class="text-sm text-gray-100">Subframe</span>
+            <span class="text-xs text-gray-100">Subframe</span>
             <p-inputSwitch [disabled]="!camera.connected || running" [(ngModel)]="subFrame" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-3 flex pt-3 flex-row align-items-center justify-content-center">
@@ -200,27 +200,10 @@
         </div>
     </div>
     <div class="grid mt-0">
-        <div class="col-12 flex flex-row align-items-center justify-content-center gap-2 py-0 text-300">
-            @if (equipment.mount?.id || equipment.wheel?.id || equipment.focuser?.id) {
-            <span *ngIf="equipment.mount?.id" class="text-xs flex gap-1px align-items-end"><i class="mdi mdi-sm mdi-telescope"></i>
-                {{ equipment.mount?.name }}
-            </span>
-            <span *ngIf="equipment.wheel?.id" class="text-xs flex gap-1px align-items-end"><i class="mdi mdi-sm mdi-palette"></i>
-                {{ equipment.wheel?.name }}
-            </span>
-            <span *ngIf="equipment.focuser?.id" class="text-xs flex gap-1px align-items-end"><i
-                   class="mdi mdi-sm mdi-image-filter-center-focus"></i>
-                {{ equipment.focuser?.name }}
-            </span>
-            } @else {
-            <span class="text-xs flex gap-1px align-items-end">
-                <i class="mdi mdi-sm mdi-connection"></i> No devices to snoop
-            </span>
-            }
-        </div>
         <div class="col-12 flex align-items-center justify-content-center gap-1">
             <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || running" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
-                      severity="success" size="small" />
+                      severity="success" size="small" [pTooltip]="startTooltip" tooltipPosition="top" [escape]="false"
+                      tooltipStyleClass="min-w-22rem flex justify-content-center" />
             <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || !running" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
                       severity="danger" size="small" />
             <p-button *ngIf="canSave" [disabled]="!camera.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
@@ -229,13 +212,19 @@
     </div>
 </div>
 
-<neb-dialog-menu #cameraMenu [model]="cameraModel" />
+<neb-dialog-menu #calibrationMenu [model]="calibrationModel" header="Calibration" />
+<neb-dialog-menu #cameraMenu [model]="cameraModel" header="Camera" />
 
 <p-dialog header="Dither" [draggable]="true" [(visible)]="showDitherDialog" [modal]="true" [style]="{width: '80vw', maxWidth: '260px'}">
     <div class="grid mt-2">
-        <div class="col-6 flex flex-column justify-content-center text-center gap-2">
-            <span class="text-sm text-gray-100">Enabled</span>
+        <div class="col-3 flex flex-column justify-content-center text-center gap-2">
+            <span class="text-xs text-gray-100">Enabled</span>
             <p-inputSwitch [disabled]="!camera.connected || running" [(ngModel)]="request.dither!.enabled" (ngModelChange)="savePreference()" />
+        </div>
+        <div class="col-3 flex flex-column justify-content-center text-center gap-2">
+            <span class="text-xs text-gray-100">RA only</span>
+            <p-inputSwitch [disabled]="!camera.connected || running || !request.dither!.enabled" [(ngModel)]="request.dither!.raOnly"
+                           (ngModelChange)="savePreference()" />
         </div>
         <div class="col-6">
             <span class="p-float-label">
@@ -245,12 +234,7 @@
                 <label>Dither (px)</label>
             </span>
         </div>
-        <div class="col-6 flex flex-column justify-content-center text-center gap-2">
-            <span class="text-sm text-gray-100">Dither in RA only</span>
-            <p-checkbox [binary]="true" [disabled]="!camera.connected || running || !request.dither!.enabled"
-                        [(ngModel)]="request.dither!.raOnly" (ngModelChange)="savePreference()" />
-        </div>
-        <div class="col-6">
+        <div class="col-6 col-offset-3">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running || !request.dither!.enabled" [showButtons]="true"
                                styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"

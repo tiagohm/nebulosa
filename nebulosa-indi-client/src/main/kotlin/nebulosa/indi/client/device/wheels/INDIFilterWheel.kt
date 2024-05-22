@@ -38,7 +38,7 @@ internal open class INDIFilterWheel(
                         position = slot.value.toInt()
 
                         if (prevPosition != position) {
-                            sender.fireOnEventReceived(FilterWheelPositionChanged(this, prevPosition))
+                            sender.fireOnEventReceived(FilterWheelPositionChanged(this))
                         }
 
                         val prevIsMoving = moving

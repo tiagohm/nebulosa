@@ -6,40 +6,48 @@ import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.device.thermometer.Thermometer
 import java.io.Closeable
 
 interface INDIDeviceProvider : MessageSender, Closeable {
 
-    fun registerDeviceEventHandler(handler: DeviceEventHandler)
+    fun registerDeviceEventHandler(handler: DeviceEventHandler): Boolean
 
-    fun unregisterDeviceEventHandler(handler: DeviceEventHandler)
+    fun unregisterDeviceEventHandler(handler: DeviceEventHandler): Boolean
 
-    fun cameras(): List<Camera>
+    fun device(id: String) = camera(id) ?: mount(id) ?: focuser(id) ?: wheel(id)
+    ?: rotator(id) ?: gps(id) ?: guideOutput(id) ?: thermometer(id)
 
-    fun camera(name: String): Camera?
+    fun cameras(): Collection<Camera>
 
-    fun mounts(): List<Mount>
+    fun camera(id: String): Camera?
 
-    fun mount(name: String): Mount?
+    fun mounts(): Collection<Mount>
 
-    fun focusers(): List<Focuser>
+    fun mount(id: String): Mount?
 
-    fun focuser(name: String): Focuser?
+    fun focusers(): Collection<Focuser>
 
-    fun wheels(): List<FilterWheel>
+    fun focuser(id: String): Focuser?
 
-    fun wheel(name: String): FilterWheel?
+    fun wheels(): Collection<FilterWheel>
 
-    fun gps(): List<GPS>
+    fun wheel(id: String): FilterWheel?
 
-    fun gps(name: String): GPS?
+    fun rotators(): Collection<Rotator>
 
-    fun guideOutputs(): List<GuideOutput>
+    fun rotator(id: String): Rotator?
 
-    fun guideOutput(name: String): GuideOutput?
+    fun gps(): Collection<GPS>
 
-    fun thermometers(): List<Thermometer>
+    fun gps(id: String): GPS?
 
-    fun thermometer(name: String): Thermometer?
+    fun guideOutputs(): Collection<GuideOutput>
+
+    fun guideOutput(id: String): GuideOutput?
+
+    fun thermometers(): Collection<Thermometer>
+
+    fun thermometer(id: String): Thermometer?
 }

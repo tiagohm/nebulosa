@@ -1,6 +1,9 @@
 package nebulosa.api.sequencer
 
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.mount.Mount
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -13,17 +16,23 @@ class SequencerService(
 ) {
 
     @Synchronized
-    fun start(camera: Camera, request: SequencePlanRequest): String {
+    fun start(
+        camera: Camera, request: SequencePlanRequest,
+        mount: Mount?, wheel: FilterWheel?, focuser: Focuser?,
+    ) {
         val savePath = request.savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
             ?: Path.of("$sequencesPath", (System.currentTimeMillis() / 1000).toString())
 
-        return sequencerExecutor
-            .execute(camera, request.copy(savePath = savePath))
+        sequencerExecutor.execute(camera, request.copy(savePath = savePath), mount, wheel, focuser)
     }
 
     @Synchronized
     fun stop(camera: Camera) {
         sequencerExecutor.stop(camera)
+    }
+
+    fun status(camera: Camera): SequencerEvent? {
+        return sequencerExecutor.status(camera)
     }
 }

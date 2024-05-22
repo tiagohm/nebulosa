@@ -2,10 +2,13 @@
 
 package nebulosa.fits
 
+import nebulosa.fits.FitsFormat.readSignature
 import nebulosa.image.format.ReadableHeader
 import nebulosa.io.SeekableSource
 import nebulosa.math.Angle
 import nebulosa.math.deg
+import okio.buffer
+import okio.source
 import java.io.File
 import java.nio.file.Path
 import java.time.Duration
@@ -87,8 +90,10 @@ inline val ReadableHeader.instrument
 
 inline fun SeekableSource.fits() = Fits().also { it.read(this) }
 
-inline fun String.fits() = FitsPath(this).also(FitsPath::read)
-
 inline fun Path.fits() = FitsPath(this).also(FitsPath::read)
 
 inline fun File.fits() = FitsPath(this).also(FitsPath::read)
+
+inline fun File.isFits() = source().buffer().use { it.readSignature() == FitsFormat.SIGNATURE }
+
+inline fun Path.isFits() = source().buffer().use { it.readSignature() == FitsFormat.SIGNATURE }

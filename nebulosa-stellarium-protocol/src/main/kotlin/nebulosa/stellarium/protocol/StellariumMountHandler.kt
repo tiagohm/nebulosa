@@ -8,9 +8,5 @@ interface StellariumMountHandler {
 
     val declination: Angle
 
-    val rightAscensionJ2000: Angle
-
-    val declinationJ2000: Angle
-
-    fun goTo(rightAscension: Angle, declination: Angle, j2000: Boolean = false)
+    fun goTo(rightAscension: Angle, declination: Angle)
 }

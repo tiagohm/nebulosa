@@ -1,11 +1,16 @@
 package nebulosa.api.alignment.polar.tppa
 
 enum class TPPAState {
+    IDLE,
     SLEWING,
+    SLEWED,
+    SETTLING,
+    EXPOSURING,
     SOLVING,
     SOLVED,
-    PAUSED,
     COMPUTED,
-    FAILED,
+    PAUSING,
+    PAUSED,
     FINISHED,
+    FAILED,
 }

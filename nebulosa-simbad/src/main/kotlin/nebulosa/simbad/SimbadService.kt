@@ -94,7 +94,7 @@ class SimbadService(
             val constellation = SkyObject.constellationFor(rightAscensionJ2000, declinationJ2000)
 
             val entity = SimbadEntry(
-                id, name.joinToString("") { "[$it]" }, magnitude,
+                id, name.joinToString("|"), magnitude,
                 rightAscensionJ2000, declinationJ2000,
                 type, spType, majorAxis, minorAxis, orientation,
                 pmRA, pmDEC, parallax.mas, radialVelocity, redshift,

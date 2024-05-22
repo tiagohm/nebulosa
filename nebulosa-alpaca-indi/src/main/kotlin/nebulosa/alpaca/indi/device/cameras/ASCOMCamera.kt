@@ -1,9 +1,6 @@
 package nebulosa.alpaca.indi.device.cameras
 
-import nebulosa.alpaca.api.AlpacaCameraService
-import nebulosa.alpaca.api.CameraState
-import nebulosa.alpaca.api.ConfiguredDevice
-import nebulosa.alpaca.api.PulseGuideDirection
+import nebulosa.alpaca.api.*
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.common.concurrency.latch.CountUpDownLatch
@@ -22,22 +19,22 @@ import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
-import nebulosa.io.readDoubleLe
-import nebulosa.io.readFloatLe
 import nebulosa.log.loggerFor
-import nebulosa.math.formatHMS
-import nebulosa.math.formatSignedDMS
+import nebulosa.math.AngleFormatter
+import nebulosa.math.format
 import nebulosa.math.normalized
-import nebulosa.math.toDegrees
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
 import okio.buffer
 import okio.source
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.time.Duration
-import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 import kotlin.math.min
 
@@ -103,13 +100,14 @@ data class ASCOMCamera(
     @Volatile private var cameraState = CameraState.IDLE
     @Volatile private var frameType = FrameType.LIGHT
     @Volatile private var fitsKeywords: Array<out HeaderCard> = emptyArray()
+    @Volatile private var canDebayer = false
 
     private val imageReadyWaiter = ImageReadyWaiter()
 
     override val snoopedDevices = ArrayList<Device>(4)
 
-    init {
-        refresh(0L)
+    override fun initialize() {
+        super.initialize()
         imageReadyWaiter.start()
     }
 
@@ -158,10 +156,12 @@ data class ASCOMCamera(
     }
 
     override fun startCapture(exposureTime: Duration) {
-        this.exposureTime = exposureTime
+        if (!exposuring) {
+            this.exposureTime = exposureTime
 
-        service.startExposure(device.number, exposureTime.toNanos() / NANO_TO_SECONDS, frameType == FrameType.DARK).doRequest {
-            imageReadyWaiter.captureStarted()
+            service.startExposure(device.number, exposureTime.toNanos() / NANO_TO_SECONDS, frameType == FrameType.LIGHT).doRequest {
+                imageReadyWaiter.captureStarted(exposureTime)
+            }
         }
     }
 
@@ -200,6 +200,8 @@ data class ASCOMCamera(
     }
 
     override fun snoop(devices: Iterable<Device?>) {
+        snoopedDevices.clear()
+
         for (device in devices) {
             device?.also(snoopedDevices::add)
         }
@@ -278,6 +280,16 @@ data class ASCOMCamera(
     }
 
     override fun close() {
+        if (hasThermometer) {
+            hasThermometer = false
+            sender.unregisterThermometer(this)
+        }
+
+        if (canPulseGuide) {
+            canPulseGuide = false
+            sender.unregisterGuideOutput(this)
+        }
+
         super.close()
         reset()
         imageReadyWaiter.interrupt()
@@ -288,12 +300,18 @@ data class ASCOMCamera(
         super.refresh(elapsedTimeInSeconds)
 
         if (connected) {
-            service.cameraState(device.number).doRequest { processCameraState(it.value) }
-
+            processCameraState()
             processBin()
             processGain()
             processOffset()
             processCooler()
+            processTemperature(false)
+        }
+    }
+
+    private fun processCameraState() {
+        if (!service.cameraState(device.number).doRequest { processCameraState(it.value) }) {
+            sender.fireOnEventReceived(CameraExposureFailed(this))
         }
     }
 
@@ -306,55 +324,45 @@ data class ASCOMCamera(
 
             when (value) {
                 CameraState.IDLE -> {
-                    if (exposuring) {
-                        exposuring = false
-                        exposureState = PropertyState.IDLE
-                    }
+                    exposuring = false
+                    exposureState = PropertyState.IDLE
                 }
                 CameraState.WAITING -> {
-                    if (exposuring) {
-                        exposuring = false
-                        exposureState = PropertyState.BUSY
-                    }
+                    exposuring = false
+                    exposureState = PropertyState.BUSY
                 }
                 CameraState.EXPOSURING -> {
-                    if (!exposuring) {
-                        exposuring = true
-                        exposureState = PropertyState.BUSY
-                    }
+                    exposuring = true
+                    exposureState = PropertyState.BUSY
                 }
                 CameraState.READING -> {
-                    if (exposuring) {
-                        exposuring = false
-                        exposureState = PropertyState.OK
-                    }
+                    exposuring = false
+                    exposureState = PropertyState.OK
                 }
                 CameraState.DOWNLOAD -> {
-                    if (exposuring) {
-                        exposuring = false
-                        exposureState = PropertyState.OK
-                    }
+                    exposuring = false
+                    exposureState = PropertyState.OK
                 }
                 CameraState.ERROR -> {
-                    if (exposuring) {
-                        exposuring = false
-                        exposureState = PropertyState.ALERT
-                    }
+                    exposuring = false
+                    exposureState = PropertyState.ALERT
                 }
             }
 
             if (prevExposuring != exposuring) sender.fireOnEventReceived(CameraExposuringChanged(this))
-            if (prevExposureState != exposureState) sender.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+            if (prevExposureState != exposureState) sender.fireOnEventReceived(CameraExposureStateChanged(this))
 
             if (exposuring) {
                 service.percentCompleted(device.number).doRequest {
+                    val exposureTimeInNanoseconds = imageReadyWaiter.exposureTime.toNanos()
+                    val progressedExposureTime = (exposureTimeInNanoseconds * it.value) / 100
+                    exposureTime = Duration.ofNanos(exposureTimeInNanoseconds - progressedExposureTime)
 
+                    sender.fireOnEventReceived(CameraExposureProgressChanged(this))
                 }
             }
 
-            if (exposureState == PropertyState.IDLE && (prevExposureState == PropertyState.BUSY || exposuring)) {
-                sender.fireOnEventReceived(CameraExposureAborted(this))
-            } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
+            if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
                 sender.fireOnEventReceived(CameraExposureFinished(this))
             } else if (exposureState == PropertyState.ALERT && prevExposureState != PropertyState.ALERT) {
                 sender.fireOnEventReceived(CameraExposureFailed(this))
@@ -410,11 +418,13 @@ data class ASCOMCamera(
     }
 
     private fun processOffset() {
-        service.offset(device.number).doRequest {
-            if (it.value != offset) {
-                offset = it.value
+        if (offsetMax > 0) {
+            service.offset(device.number).doRequest {
+                if (it.value != offset) {
+                    offset = it.value
 
-                sender.fireOnEventReceived(CameraOffsetChanged(this))
+                    sender.fireOnEventReceived(CameraOffsetChanged(this))
+                }
             }
         }
     }
@@ -551,7 +561,6 @@ data class ASCOMCamera(
             if (it.value) {
                 canPulseGuide = true
                 sender.registerGuideOutput(this)
-                LOG.info("guide output attached: {}", name)
             }
         }
 
@@ -564,9 +573,33 @@ data class ASCOMCamera(
                 sender.fireOnEventReceived(CameraCanSetTemperatureChanged(this))
             }
         }
+
+        service.sensorType(device.number).doRequest {
+            if (it.value == SensorType.RGGB) {
+                canDebayer = true
+            }
+        }
+
+        processTemperature(true)
     }
 
-    private fun readImage() {
+    private fun processTemperature(init: Boolean) {
+        if (hasThermometer || init) {
+            service.ccdTemperature(device.number).doRequest {
+                if (!hasThermometer) {
+                    hasThermometer = true
+                    sender.registerThermometer(this)
+                }
+
+                if (it.value != temperature) {
+                    temperature = it.value
+                    sender.fireOnEventReceived(CameraTemperatureChanged(this))
+                }
+            }
+        }
+    }
+
+    private fun readImage(exposureTime: Duration) {
         service.imageArray(device.number).execute().body()?.use { body ->
             val stream = body.byteStream()
             val metadata = ImageMetadata.from(stream.readNBytes(44))
@@ -574,45 +607,47 @@ data class ASCOMCamera(
             if (metadata.errorNumber != 0) {
                 LOG.error("failed to read image. device={}, error={}", name, metadata.errorNumber)
                 return
+            } else {
+                LOG.info("image read. metadata={}", metadata)
             }
 
             val width = metadata.dimension1
             val height = metadata.dimension2
             val numberOfChannels = max(1, metadata.dimension3)
-            val source = stream.source().buffer()
             val data = FloatImageData(width, height, numberOfChannels)
-            val channels = arrayOf(data.red, data.green, data.blue)
 
-            for (x in 0 until width) {
-                for (y in 0 until height) {
-                    val idx = y * width + x
+            stream.source().buffer().use { source ->
+                val channels = arrayOf(data.red, data.green, data.blue)
 
-                    for (p in 0 until numberOfChannels) {
-                        channels[p][idx] = when (metadata.imageElementType.bitpix) {
-                            Bitpix.BYTE -> (source.readByte().toInt() and 0xFF) / 255f
-                            Bitpix.SHORT -> (source.readShortLe().toInt() + 32768) / 65535f
-                            Bitpix.INTEGER -> ((source.readIntLe().toLong() + 2147483648L) / 4294967295.0).toFloat()
-                            Bitpix.FLOAT -> source.readFloatLe()
-                            Bitpix.DOUBLE -> source.readDoubleLe().toFloat()
-                            Bitpix.LONG -> return
+                for (x in 0 until width) {
+                    for (y in 0 until height) {
+                        val idx = y * width + x
+
+                        for (p in 0 until numberOfChannels) {
+                            channels[p][idx] = when (metadata.transmissionElementType.bitpix) {
+                                Bitpix.BYTE -> (source.readByte().toLong() and 0xFF) / 255f
+                                Bitpix.SHORT -> (source.readShortLe().toLong() and 0xFFFF) / 65535f
+                                Bitpix.INTEGER -> ((source.readIntLe().toLong() and 0xFFFFFFFF) / 4294967295.0).toFloat()
+                                else -> return LOG.warn("invalid transmission element type: ${metadata.transmissionElementType}")
+                            }
                         }
                     }
                 }
             }
 
-            source.close()
-
             val header = FitsHeader()
             header.add(FitsKeyword.SIMPLE, true)
-            header.add(FitsKeyword.BITPIX, -32)
+            header.add(Bitpix.FLOAT)
             header.add(FitsKeyword.NAXIS, if (numberOfChannels == 3) 3 else 2)
             header.add(FitsKeyword.NAXIS1, width)
             header.add(FitsKeyword.NAXIS2, height)
             if (numberOfChannels == 3) header.add(FitsKeyword.NAXIS3, numberOfChannels)
             header.add(FitsKeyword.EXTEND, true)
             header.add(FitsKeyword.INSTRUME, name)
-            header.add(FitsKeyword.EXPTIME, 0.0) // TODO
-            header.add(FitsKeyword.CCD_TEMP, temperature)
+            val exposureTimeInSeconds = exposureTime.toNanos() / NANO_TO_SECONDS
+            header.add(FitsKeyword.EXPTIME, exposureTimeInSeconds)
+            header.add(FitsKeyword.EXPOSURE, exposureTimeInSeconds)
+            if (hasThermometer) header.add(FitsKeyword.CCD_TEMP, temperature)
             header.add(FitsKeyword.PIXSIZEn.n(1), pixelSizeX)
             header.add(FitsKeyword.PIXSIZEn.n(2), pixelSizeY)
             header.add(FitsKeyword.XBINNING, binX)
@@ -621,26 +656,27 @@ data class ASCOMCamera(
             header.add(FitsKeyword.YPIXSZ, pixelSizeY * binY)
             header.add("FRAME", frameType.description, "Frame Type")
             header.add(FitsKeyword.IMAGETYP, "${frameType.description} Frame")
+            header.add(FitsKeyword.DATE_OBS, LocalDateTime.now(ZoneOffset.UTC).format(DATE_OBS_FORMAT))
+            header.add(FitsKeyword.COMMENT, "Generated by Nebulosa via ASCOM")
+            header.add(FitsKeyword.GAIN, gain)
+            header.add("OFFSET", offset, "Offset")
+            if (canDebayer) header.add(cfaType)
 
             val mount = snoopedDevices.firstOrNull { it is Mount } as? Mount
 
             mount?.also {
                 header.add(FitsKeyword.TELESCOP, it.name)
-                header.add(FitsKeyword.SITELAT, it.latitude.toDegrees)
-                header.add(FitsKeyword.SITELONG, it.longitude.toDegrees)
+                header.add(FitsKeyword.SITELONG, it.longitude.format(DEC_FORMAT))
+                header.add(FitsKeyword.SITELAT, it.latitude.format(DEC_FORMAT))
                 val center = Geoid.IERS2010.lonLat(it.longitude, it.latitude, it.elevation)
                 val icrf = ICRF.equatorial(it.rightAscension, it.declination, epoch = CurrentTime, center = center)
                 val raDec = icrf.equatorial()
-                header.add(FitsKeyword.OBJCTRA, raDec.longitude.normalized.formatHMS())
-                header.add(FitsKeyword.OBJCTDEC, raDec.longitude.formatSignedDMS())
-                header.add(FitsKeyword.RA, raDec.longitude.normalized.toDegrees)
-                header.add(FitsKeyword.DEC, raDec.longitude.toDegrees)
-                header.add(FitsKeyword.PIERSIDE, it.pierSide.name)
+                header.add(FitsKeyword.OBJCTRA, raDec.longitude.normalized.format(RA_FORMAT))
+                header.add(FitsKeyword.OBJCTDEC, raDec.latitude.format(DEC_FORMAT))
+                header.add(FitsKeyword.RA, raDec.longitude.normalized.format(RA_FORMAT))
+                header.add(FitsKeyword.DEC, raDec.latitude.format(DEC_FORMAT))
+                // header.add(FitsKeyword.PIERSIDE, it.pierSide.name)
                 header.add(FitsKeyword.EQUINOX, 2000)
-                header.add(FitsKeyword.DATE_OBS, LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                header.add(FitsKeyword.COMMENT, "Generated by Nebulosa via ASCOM")
-                header.add(FitsKeyword.GAIN, gain)
-                header.add("OFFSET", offset, "Offset")
             }
 
             fitsKeywords.forEach(header::add)
@@ -678,7 +714,7 @@ data class ASCOMCamera(
         @JvmField val serverTransactionID: Int, // Bytes 12..15 - Device's transaction ID
         @JvmField val dataStart: Int, // Bytes 16..19 - Offset of the start of the data bytes
         @JvmField val imageElementType: ImageArrayElementType, // Bytes 20..23 - Element type of the source image array
-        @JvmField val transmissionElementType: Int, // Bytes 24..27 - Element type as sent over the network
+        @JvmField val transmissionElementType: ImageArrayElementType, // Bytes 24..27 - Element type as sent over the network
         @JvmField val rank: Int, // Bytes 28..31 - Image array rank (2 or 3)
         @JvmField val dimension1: Int, // Bytes 32..35 - Length of image array first dimension
         @JvmField val dimension2: Int, // Bytes 36..39 - Length of image array second dimension
@@ -690,28 +726,34 @@ data class ASCOMCamera(
             @JvmStatic
             fun from(data: ByteBuffer) = ImageMetadata(
                 data.getInt(), data.getInt(), data.getInt(), data.getInt(), data.getInt(),
-                ImageArrayElementType.entries[data.getInt()], data.getInt(), data.getInt(),
-                data.getInt(), data.getInt(), data.getInt()
+                ImageArrayElementType.entries[data.getInt()], ImageArrayElementType.entries[data.getInt()],
+                data.getInt(), data.getInt(), data.getInt(), data.getInt()
             )
 
             @JvmStatic
-            fun from(data: ByteArray) = from(ByteBuffer.wrap(data, 0, 44))
+            fun from(data: ByteArray) = from(ByteBuffer.wrap(data, 0, 44).order(ByteOrder.LITTLE_ENDIAN))
         }
     }
 
     private inner class ImageReadyWaiter : Thread("$name ASCOM Image Ready Waiter") {
 
         private val latch = CountUpDownLatch(1)
+        private val aborted = AtomicBoolean()
+
+        @Volatile @JvmField var exposureTime: Duration = Duration.ZERO
 
         init {
             isDaemon = true
         }
 
-        fun captureStarted() {
+        fun captureStarted(exposureTime: Duration) {
+            this.exposureTime = exposureTime
+            aborted.set(false)
             latch.reset()
         }
 
         fun captureAborted() {
+            aborted.set(true)
             latch.countUp()
         }
 
@@ -722,14 +764,23 @@ data class ASCOMCamera(
                 while (latch.get()) {
                     val startTime = System.currentTimeMillis()
 
+                    processCameraState()
+
                     service.isImageReady(device.number).doRequest {
-                        if (it.value) {
+                        if (it.value && !aborted.get()) {
                             latch.countUp()
-                            readImage()
+
+                            try {
+                                readImage(exposureTime)
+                            } catch (e: Throwable) {
+                                LOG.error("failed to read image", e)
+                            }
                         }
                     }
 
-                    if (!latch.get()) {
+                    if (aborted.get()) {
+                        break
+                    } else if (!latch.get()) {
                         val endTime = System.currentTimeMillis()
                         val delayTime = 1000L - (endTime - startTime)
 
@@ -738,6 +789,14 @@ data class ASCOMCamera(
                         }
                     }
                 }
+
+                if (aborted.get()) {
+                    sender.fireOnEventReceived(CameraExposureAborted(this@ASCOMCamera))
+                } else {
+                    sender.fireOnEventReceived(CameraExposureFinished(this@ASCOMCamera))
+                }
+
+                processCameraState(CameraState.IDLE)
             }
         }
     }
@@ -745,5 +804,8 @@ data class ASCOMCamera(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<ASCOMCamera>()
+        @JvmStatic private val DATE_OBS_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+        @JvmStatic private val RA_FORMAT = AngleFormatter.HMS.newBuilder().secondsDecimalPlaces(3).separators(" ").build()
+        @JvmStatic private val DEC_FORMAT = AngleFormatter.SIGNED_DMS.newBuilder().secondsDecimalPlaces(3).separators(" ").build()
     }
 }

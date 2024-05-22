@@ -1,12 +1,12 @@
 package nebulosa.api.cameras
 
 import jakarta.validation.Valid
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import org.hibernate.validator.constraints.Range
 import org.springframework.web.bind.annotation.*
 
@@ -23,54 +23,51 @@ class CameraController(
     }
 
     @GetMapping("{camera}")
-    fun camera(@DeviceOrEntityParam camera: Camera): Camera {
+    fun camera(camera: Camera): Camera {
         return camera
     }
 
     @PutMapping("{camera}/connect")
-    fun connect(@DeviceOrEntityParam camera: Camera) {
+    fun connect(camera: Camera) {
         cameraService.connect(camera)
     }
 
     @PutMapping("{camera}/disconnect")
-    fun disconnect(@DeviceOrEntityParam camera: Camera) {
+    fun disconnect(camera: Camera) {
         cameraService.disconnect(camera)
     }
 
     @PutMapping("{camera}/snoop")
     fun snoop(
-        @DeviceOrEntityParam camera: Camera,
-        @DeviceOrEntityParam(required = false) mount: Mount?,
-        @DeviceOrEntityParam(required = false) wheel: FilterWheel?,
-        @DeviceOrEntityParam(required = false) focuser: Focuser?,
-    ) {
-        cameraService.snoop(camera, mount, wheel, focuser)
-    }
+        camera: Camera,
+        mount: Mount?, wheel: FilterWheel?, focuser: Focuser?, rotator: Rotator?
+    ) = cameraService.snoop(camera, mount, wheel, focuser, rotator)
 
     @PutMapping("{camera}/cooler")
     fun cooler(
-        @DeviceOrEntityParam camera: Camera,
+        camera: Camera,
         @RequestParam enabled: Boolean,
-    ) {
-        cameraService.cooler(camera, enabled)
-    }
+    ) = cameraService.cooler(camera, enabled)
 
     @PutMapping("{camera}/temperature/setpoint")
     fun setpointTemperature(
-        @DeviceOrEntityParam camera: Camera,
+        camera: Camera,
         @RequestParam @Valid @Range(min = -50, max = 50) temperature: Double,
-    ) {
-        cameraService.setpointTemperature(camera, temperature)
-    }
+    ) = cameraService.setpointTemperature(camera, temperature)
 
     @PutMapping("{camera}/capture/start")
     fun startCapture(
-        @DeviceOrEntityParam camera: Camera,
+        camera: Camera,
         @RequestBody body: CameraStartCaptureRequest,
     ) = cameraService.startCapture(camera, body)
 
     @PutMapping("{camera}/capture/abort")
-    fun abortCapture(@DeviceOrEntityParam camera: Camera) {
+    fun abortCapture(camera: Camera) {
         cameraService.abortCapture(camera)
+    }
+
+    @GetMapping("{camera}/capture/status")
+    fun statusCapture(camera: Camera): CameraCaptureEvent? {
+        return cameraService.statusCapture(camera)
     }
 }

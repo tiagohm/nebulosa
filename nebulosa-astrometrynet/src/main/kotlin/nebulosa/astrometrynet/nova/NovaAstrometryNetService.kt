@@ -26,20 +26,20 @@ class NovaAstrometryNetService(
 
     fun login(apiKey: String): Call<Session> {
         return FormBody.Builder()
-            .add("request-json", mapper.writeValueAsString(mapOf("apikey" to apiKey)))
+            .add("request-json", jsonMapper.writeValueAsString(mapOf("apikey" to apiKey)))
             .build()
             .let(service::login)
     }
 
     fun uploadFromUrl(upload: Upload): Call<Submission> {
         return FormBody.Builder()
-            .add("request-json", mapper.writeValueAsString(upload))
+            .add("request-json", jsonMapper.writeValueAsString(upload))
             .build()
             .let(service::uploadFromUrl)
     }
 
     fun uploadFromFile(path: Path, upload: Upload): Call<Submission> {
-        val requestJsonBody = mapper.writeValueAsBytes(upload).toRequestBody(TEXT_PLAIN_MEDIA_TYPE)
+        val requestJsonBody = jsonMapper.writeValueAsBytes(upload).toRequestBody(TEXT_PLAIN_MEDIA_TYPE)
 
         val fileName = "%s.%s".format(UUID.randomUUID(), path.extension)
         val fileBody = path.toFile().asRequestBody(OCTET_STREAM_MEDIA_TYPE)
@@ -54,7 +54,7 @@ class NovaAstrometryNetService(
     }
 
     fun uploadFromImage(image: Image, upload: Upload): Call<Submission> {
-        val requestJsonBody = mapper.writeValueAsBytes(upload).toRequestBody(TEXT_PLAIN_MEDIA_TYPE)
+        val requestJsonBody = jsonMapper.writeValueAsBytes(upload).toRequestBody(TEXT_PLAIN_MEDIA_TYPE)
 
         val fileName = "%s.fits".format(UUID.randomUUID())
         val fileBody = object : RequestBody() {

@@ -34,7 +34,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         }
 
     override val isSettling
-        get() = settling.get()
+        get() = !settling.get()
 
     init {
         client.registerListener(this)

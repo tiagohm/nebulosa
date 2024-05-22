@@ -1,9 +1,9 @@
-import { Angle } from '../types/atlas.types'
+import { Angle, EquatorialCoordinateJ2000 } from '../types/atlas.types'
 import { degreesToRadians, formatAngle } from './angle'
 import { BicubicSplineInterpolation } from './bicubic-interpolation'
-import { TimeRepresentation, longitudeDegreesConstrained, obliquity, rectangularEquatorialToEcliptic, rectangularEquatorialToGalactic, rectangularToSphericalDegreesConstrained, sphericalToRectangular } from './ephemeris'
+import { SphericalRepresentation, TimeRepresentation, longitudeDegreesConstrained, obliquity, rectangularEquatorialToEcliptic, rectangularEquatorialToGalactic, rectangularToSphericalDegreesConstrained, sphericalToRectangular } from './ephemeris'
 
-export interface InterpolatedCoordinate<T extends Angle> {
+export interface InterpolatedCoordinate<T extends Angle> extends EquatorialCoordinateJ2000 {
     alpha: T
     delta: T
     l?: T
@@ -60,10 +60,12 @@ export class CoordinateInterpolator {
         const coordinate: InterpolatedCoordinate<number> = {
             alpha: alpha,
             delta: delta,
+            rightAscensionJ2000: formatAngle(alpha / 15, 24, false, this.precision),
+            declinationJ2000: formatAngle(delta, 0, true, this.precision),
         }
 
         if (withGalactic || withEcliptic) {
-            const s = {
+            const s: SphericalRepresentation = {
                 lon: degreesToRadians(alpha),
                 lat: degreesToRadians(delta),
             }
@@ -90,8 +92,10 @@ export class CoordinateInterpolator {
         const q = this.interpolate(x, y, withGalactic, withEcliptic)
 
         const coordinate: InterpolatedCoordinate<string> = {
-            alpha: formatAngle(q.alpha / 15, 24, false, this.precision + 1, units),
-            delta: formatAngle(q.delta, 0, true, this.precision, units)
+            alpha: q.rightAscensionJ2000 as string,
+            delta: q.declinationJ2000 as string,
+            rightAscensionJ2000: q.rightAscensionJ2000,
+            declinationJ2000: q.declinationJ2000
         }
 
         if (q.l !== undefined && q.b !== undefined) {

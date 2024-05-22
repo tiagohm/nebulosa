@@ -12,8 +12,7 @@ internal class StellariumProtocolHandler(private val server: StellariumProtocolS
     override fun handlerAdded(ctx: ChannelHandlerContext) {
         client = ctx
         server.registerCurrentPositionHandler(this)
-        if (server.j2000) sendCurrentPosition(server.rightAscensionJ2000!!, server.declinationJ2000!!)
-        else sendCurrentPosition(server.rightAscension!!, server.declination!!)
+        sendCurrentPosition(server.rightAscension, server.declination)
         LOG.info("client connected. address={}", ctx.channel().remoteAddress())
     }
 
@@ -29,8 +28,9 @@ internal class StellariumProtocolHandler(private val server: StellariumProtocolS
     }
 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
-        val message = msg as StellariumProtocolMessage.Goto
-        server.goTo(message.rightAscension, message.declination)
+        when (msg) {
+            is StellariumProtocolMessage.Goto -> server.goTo(msg.rightAscension, msg.declination)
+        }
     }
 
     @Suppress("OVERRIDE_DEPRECATION")

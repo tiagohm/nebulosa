@@ -1,5 +1,6 @@
 package nebulosa.common.time
 
+import nebulosa.common.Resettable
 import java.time.Duration
 
 /**
@@ -15,7 +16,7 @@ import java.time.Duration
  *
  * The stopwatch is started by calling [start].
  */
-class Stopwatch {
+class Stopwatch : Resettable {
 
     @Volatile private var start = 0L
     @Volatile private var stop = 0L
@@ -100,7 +101,7 @@ class Stopwatch {
      * This method does not stop or start the [Stopwatch].
      */
     @Synchronized
-    fun reset() {
+    override fun reset() {
         start = if (isStopped) stop else System.nanoTime()
     }
 }

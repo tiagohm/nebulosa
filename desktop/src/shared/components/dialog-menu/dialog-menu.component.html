@@ -1,4 +1,5 @@
 <p-dialog [showHeader]="false" [resizable]="false" [(visible)]="visible" [modal]="true" [closeOnEscape]="true"
-          [dismissableMask]="true" [closable]="true" [draggable]="false" (onShow)="onShow()" (onHide)="hide()" [style]="{width: 'auto'}">
-    <p-slideMenu *ngIf="visible" #menu [model]="model" [viewportHeight]="viewportHeight" appendTo="body" />
+          [dismissableMask]="true" [closable]="true" [draggable]="false" (onHide)="hide()" [style]="{width: 'auto'}">
+    <span *ngIf="header" class="text-sm font-bold uppercase">{{ header }}</span>
+    <neb-slide-menu *ngIf="visible" [model]="model" appendTo="body" (onNext)="next($event)" (onBack)="back()" />
 </p-dialog>

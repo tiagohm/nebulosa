@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core'
-import { MenuItem } from 'primeng/api'
-import { SlideMenu } from 'primeng/slidemenu'
+import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { ExtendedMenuItem } from '../menu-item/menu-item.component'
+import { SlideMenuItemCommandEvent } from '../slide-menu/slide-menu.component'
 
 @Component({
     selector: 'neb-dialog-menu',
@@ -16,14 +16,15 @@ export class DialogMenuComponent {
     readonly visibleChange = new EventEmitter<boolean>()
 
     @Input()
-    model: MenuItem[] = []
+    model: ExtendedMenuItem[] = []
 
-    @ViewChild('menu')
-    private readonly menu!: SlideMenu
+    @Input()
+    header?: string
 
-    viewportHeight = 35
+    @Input()
+    updateHeaderWithMenuLabel: boolean = true
 
-    private readonly items: any[][] = []
+    private navigationHeader: (string | undefined)[] = []
 
     show() {
         this.visible = true
@@ -32,37 +33,29 @@ export class DialogMenuComponent {
 
     hide() {
         this.visible = false
+        this.navigationHeader.length = 0
         this.visibleChange.emit(false)
     }
 
-    private computeViewportHeightFromProcessedItem() {
-        const size = this.items[this.items.length - 1].length
-
-        if (size) {
-            this.viewportHeight = 35 * (size + 1)
-        } else {
+    next(event: SlideMenuItemCommandEvent) {
+        if (!event.item?.menu?.length) {
             this.hide()
+        } else {
+            this.navigationHeader.push(this.header)
+
+            if (this.updateHeaderWithMenuLabel) {
+                this.header = event.item?.label
+            }
         }
     }
 
-    protected onShow() {
-        const onItemClick = this.menu.onItemClick
+    back() {
+        if (this.navigationHeader.length) {
+            const header = this.navigationHeader.splice(this.navigationHeader.length - 1, 1)[0]
 
-        this.items.length = 0
-        this.items.push(this.menu.processedItems)
-
-        this.menu.onItemClick = (e) => {
-            this.items.push(e.processedItem.items)
-            this.computeViewportHeightFromProcessedItem()
-            onItemClick.call(this.menu, e)
-        }
-
-        const goBack = this.menu.goBack
-
-        this.menu.goBack = (e) => {
-            this.items.splice(this.items.length - 1, 1)
-            this.computeViewportHeightFromProcessedItem()
-            goBack.call(this.menu, e)
+            if (this.updateHeaderWithMenuLabel) {
+                this.header = header
+            }
         }
     }
 }

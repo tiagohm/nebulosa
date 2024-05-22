@@ -1,15 +1,18 @@
 package nebulosa.xisf
 
+import nebulosa.fits.Bitpix
 import nebulosa.fits.ValueType
 import nebulosa.fits.bitpix
 import nebulosa.fits.frame
 import nebulosa.image.format.Hdu
 import nebulosa.image.format.ImageFormat
 import nebulosa.image.format.ImageHdu
+import nebulosa.image.format.ImageModifier
 import nebulosa.io.*
 import nebulosa.xisf.XisfMonolithicFileHeader.*
 import nebulosa.xml.escapeXml
 import okio.Buffer
+import okio.BufferedSource
 import okio.Sink
 import okio.Timeout
 import java.io.ByteArrayInputStream
@@ -24,10 +27,12 @@ import kotlin.math.min
  */
 data object XisfFormat : ImageFormat {
 
+    const val SIGNATURE = "XISF0100"
+
     override fun read(source: SeekableSource): List<ImageHdu> {
         return Buffer().use { buffer ->
-            source.read(buffer, 8) // XISF0100
-            check(buffer.readString(Charsets.US_ASCII) == "XISF0100") { "invalid magic bytes" }
+            source.read(buffer, 8)
+            check(buffer.readSignature() == SIGNATURE) { "invalid signature" }
 
             // Header length (4) + reserved (4)
             source.read(buffer, 8)
@@ -53,9 +58,11 @@ data object XisfFormat : ImageFormat {
         }
     }
 
-    override fun write(sink: Sink, hdus: Iterable<Hdu<*>>) {
+    override fun write(sink: Sink, hdus: Iterable<Hdu<*>>, modifier: ImageModifier) {
+        val bitpix = modifier.bitpix()
+
         Buffer().use { buffer ->
-            val headerSize = writeHeader(buffer, hdus)
+            val headerSize = writeHeader(buffer, hdus, bitpix)
             val byteCount = buffer.readAll(sink)
 
             val remainingBytes = headerSize - byteCount
@@ -65,8 +72,7 @@ data object XisfFormat : ImageFormat {
 
             for (hdu in hdus) {
                 if (hdu is ImageHdu) {
-                    val bitpix = hdu.header.bitpix
-                    val sampleFormat = SampleFormat.from(bitpix)
+                    val sampleFormat = SampleFormat.from(bitpix ?: hdu.header.bitpix)
 
                     if (hdu.isMono) {
                         hdu.data.red.writeTo(buffer, sink, sampleFormat)
@@ -80,7 +86,7 @@ data object XisfFormat : ImageFormat {
         }
     }
 
-    private fun writeHeader(buffer: Buffer, hdus: Iterable<Hdu<*>>, initialHeaderSize: Int = 4096): Int {
+    private fun writeHeader(buffer: Buffer, hdus: Iterable<Hdu<*>>, bitpix: Bitpix? = null, initialHeaderSize: Int = 4096): Int {
         buffer.clear()
 
         buffer.writeString(MAGIC_HEADER, Charsets.US_ASCII)
@@ -94,10 +100,9 @@ data object XisfFormat : ImageFormat {
                 val header = hdu.header
                 val colorSpace = if (hdu.isMono) ColorSpace.GRAY else ColorSpace.RGB
                 val imageType = ImageType.parse(header.frame ?: "Light") ?: ImageType.LIGHT
-                val bitpix = hdu.header.bitpix
-                val sampleFormat = SampleFormat.from(bitpix)
+                val sampleFormat = SampleFormat.from(bitpix ?: hdu.header.bitpix)
                 val imageSize = hdu.width * hdu.height * hdu.numberOfChannels * sampleFormat.byteLength
-                val extra = if (bitpix.code < 0) " bounds=\"0:1\"" else ""
+                val extra = if (sampleFormat.bitpix.code < 0) " bounds=\"0:1\"" else ""
 
                 IMAGE_START_TAG
                     .format(
@@ -125,7 +130,8 @@ data object XisfFormat : ImageFormat {
                 }
 
                 for (keyword in header) {
-                    val value = if (keyword.isStringType) "'${keyword.value.escapeXml()}'" else keyword.value
+                    val value = if (keyword.key == sampleFormat.bitpix.key) sampleFormat.bitpix.value
+                    else if (keyword.isStringType) "'${keyword.value.escapeXml()}'" else keyword.value
                     buffer.writeUtf8(FITS_KEYWORD_TAG.format(keyword.key, value, keyword.comment.escapeXml()))
                 }
             }
@@ -138,7 +144,7 @@ data object XisfFormat : ImageFormat {
         val remainingBytes = initialHeaderSize - size
 
         if (remainingBytes < 0) {
-            return writeHeader(buffer, hdus, initialHeaderSize * 2)
+            return writeHeader(buffer, hdus, bitpix, initialHeaderSize * 2)
         }
 
         val headerSize = size - 16
@@ -153,6 +159,9 @@ data object XisfFormat : ImageFormat {
 
         return initialHeaderSize
     }
+
+    @JvmStatic
+    fun BufferedSource.readSignature() = readString(8L, Charsets.US_ASCII)
 
     @JvmStatic
     internal fun Buffer.readPixel(format: SampleFormat, byteOrder: ByteOrder): Float {

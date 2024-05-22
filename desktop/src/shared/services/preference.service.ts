@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core'
 import { SkyAtlasPreference } from '../../app/atlas/atlas.component'
 import { AlignmentPreference, EMPTY_ALIGNMENT_PREFERENCE } from '../types/alignment.types'
 import { EMPTY_LOCATION, Location } from '../types/atlas.types'
+import { CalibrationPreference } from '../types/calibration.types'
 import { Camera, CameraPreference, CameraStartCapture, EMPTY_CAMERA_PREFERENCE } from '../types/camera.types'
 import { Device } from '../types/device.types'
-import { Focuser } from '../types/focuser.types'
-import { ConnectionDetails, Equipment } from '../types/home.types'
+import { Focuser, FocuserPreference } from '../types/focuser.types'
+import { ConnectionDetails, Equipment, HomePreference } from '../types/home.types'
 import { EMPTY_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
-import { EMPTY_PLATE_SOLVER_OPTIONS, PlateSolverOptions, PlateSolverType } from '../types/settings.types'
+import { Rotator, RotatorPreference } from '../types/rotator.types'
+import { EMPTY_PLATE_SOLVER_PREFERENCE, PlateSolverPreference, PlateSolverType } from '../types/settings.types'
 import { FilterWheel, WheelPreference } from '../types/wheel.types'
 import { LocalStorageService } from './local-storage.service'
 
@@ -61,8 +63,8 @@ export class PreferenceService {
         return new PreferenceData<CameraStartCapture>(this.storage, `camera.${camera.name}.tppa`, () => this.cameraPreference(camera).get())
     }
 
-    plateSolverOptions(type: PlateSolverType) {
-        return new PreferenceData<PlateSolverOptions>(this.storage, `settings.plateSolver.${type}`, () => <PlateSolverOptions>{ ...EMPTY_PLATE_SOLVER_OPTIONS, type })
+    plateSolverPreference(type: PlateSolverType) {
+        return new PreferenceData<PlateSolverPreference>(this.storage, `plateSolver.${type}`, () => <PlateSolverPreference>{ ...EMPTY_PLATE_SOLVER_PREFERENCE, type })
     }
 
     equipmentForDevice(device: Device) {
@@ -73,12 +75,21 @@ export class PreferenceService {
         return new PreferenceData<number>(this.storage, `focusOffset.${wheel.name}.${position}.${focuser.name}`, () => 0)
     }
 
+    focuserPreference(focuser: Focuser) {
+        return new PreferenceData<FocuserPreference>(this.storage, `focuser.${focuser.name}`, {})
+    }
+
+    rotatorPreference(rotator: Rotator) {
+        return new PreferenceData<RotatorPreference>(this.storage, `rotator.${rotator.name}`, {})
+    }
+
+    readonly connections = new PreferenceData<ConnectionDetails[]>(this.storage, 'home.connections', () => [])
     readonly locations = new PreferenceData<Location[]>(this.storage, 'locations', () => [structuredClone(EMPTY_LOCATION)])
     readonly selectedLocation = new PreferenceData<Location>(this.storage, 'locations.selected', () => structuredClone(EMPTY_LOCATION))
+    readonly homePreference = new PreferenceData<HomePreference>(this.storage, 'home', () => <HomePreference>{})
     readonly imagePreference = new PreferenceData<ImagePreference>(this.storage, 'image', () => structuredClone(EMPTY_IMAGE_PREFERENCE))
     readonly skyAtlasPreference = new PreferenceData<SkyAtlasPreference>(this.storage, 'atlas', () => <SkyAtlasPreference>{})
     readonly alignmentPreference = new PreferenceData<AlignmentPreference>(this.storage, 'alignment', () => structuredClone(EMPTY_ALIGNMENT_PREFERENCE))
-    readonly connections = new PreferenceData<ConnectionDetails[]>(this.storage, 'home.connections', () => [])
-    readonly homeImageDirectory = new PreferenceData<string>(this.storage, 'home.image.directory', '')
     readonly imageFOVs = new PreferenceData<FOV[]>(this.storage, 'image.fovs', () => [])
+    readonly calibrationPreference = new PreferenceData<CalibrationPreference>(this.storage, 'calibration', () => <CalibrationPreference>{})
 }

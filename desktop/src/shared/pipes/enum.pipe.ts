@@ -6,7 +6,7 @@ import { GuideState } from '../types/guider.types'
 import { SCNRProtectionMethod } from '../types/image.types'
 
 export type EnumPipeKey = SCNRProtectionMethod | Constellation | SkyObjectType | SatelliteGroupType |
-    DARVState | TPPAState | GuideState | CameraCaptureState | 'ALL'
+    DARVState | TPPAState | GuideState | CameraCaptureState | 'ALL' | string
 
 @Pipe({ name: 'enum' })
 export class EnumPipe implements PipeTransform {
@@ -328,6 +328,7 @@ export class EnumPipe implements PipeTransform {
         'BACKWARD': 'Backward',
         'IDLE': 'Idle',
         'SLEWING': 'Slewing',
+        'SLEWED': 'Slewed',
         'SOLVING': 'Solving',
         'SOLVED': 'Solved',
         'COMPUTED': 'Computed',

@@ -1,9 +1,10 @@
 import { Client } from '@stomp/stompjs'
 import { BrowserWindow, Menu, Notification, Point, Size, app, dialog, ipcMain, screen, shell } from 'electron'
+import * as Store from 'electron-store'
 import * as fs from 'fs'
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
-import * as path from 'path'
-
+import { join } from 'path'
+import { parseArgs } from 'util'
 import { WebSocket } from 'ws'
 import { MessageEvent } from '../src/shared/types/api.types'
 import { CloseWindow, InternalEventType, JsonFile, NotificationEvent, OpenDirectory, OpenFile, OpenWindow } from '../src/shared/types/app.types'
@@ -12,73 +13,69 @@ Object.assign(global, { WebSocket })
 
 app.commandLine.appendSwitch('disable-http-cache')
 
-const browserWindows = new Map<string, BrowserWindow>()
-const modalWindows = new Map<string, { window: BrowserWindow, resolve: (data: any) => void }>()
-let api: ChildProcessWithoutNullStreams | null = null
-let apiPort = 7000
+interface CreatedWindow {
+    options: OpenWindow<any>
+    window: BrowserWindow
+}
+
+interface CreatedModalWindow extends CreatedWindow {
+    resolve: (data: any) => void
+}
+
+interface WindowPreference {
+    [key: `window.${string}.position`]: Point
+    [key: `window.${string}.size`]: Size
+}
+
+const browserWindows = new Map<string, CreatedWindow>()
+const modalWindows = new Map<string, CreatedModalWindow>()
+let apiProcess: ChildProcessWithoutNullStreams | null = null
 let webSocket: Client
+let started = false
 
-const args = process.argv.slice(1)
-const serve = args.some(e => e === '--serve')
-const appDir = path.join(app.getPath('appData'), 'nebulosa')
-const appIcon = path.join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
-
-if (!fs.existsSync(appDir)) {
-    fs.mkdirSync(appDir)
-}
-
-class SimpleDB {
-
-    private readonly data: Record<string, any>
-
-    constructor(private path: fs.PathLike) {
-        try {
-            if (fs.existsSync(path)) {
-                const text = fs.readFileSync(path).toString('utf-8')
-                this.data = text.length > 0 ? JSON.parse(text) : {}
-            } else {
-                this.data = {}
-            }
-        } catch (e) {
-            this.data = {}
-            console.error(e)
+const parsed = parseArgs({
+    args: process.argv.slice(1),
+    allowPositionals: true,
+    options: {
+        'serve': {
+            type: 'boolean'
+        },
+        'mode': {
+            type: 'string'
+        },
+        'host': {
+            type: 'string'
+        },
+        'port': {
+            type: 'string'
         }
-    }
+    },
+})
 
-    get<T = any>(key: string) {
-        return this.data[key] as T | undefined
-    }
+const serve = parsed.values.serve ?? false
+const apiMode = !serve && parsed.values.mode === 'api'
+const uiMode = !serve && parsed.values.mode === 'ui'
 
-    set(key: string, value: any) {
-        if (value === undefined || value === null) delete this.data[key]
-        else this.data[key] = value
+let apiHost = serve ? 'localhost' : parsed.values.host || 'localhost'
+let apiPort = serve ? 7000 : parseInt(parsed.values.port || '0')
 
-        try {
-            this.save()
-        } catch (e) {
-            console.error(e)
-        }
-    }
+const appIcon = join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
+const store = new Store<WindowPreference>({ name: 'nebulosa' })
 
-    save() {
-        fs.writeFileSync(this.path, JSON.stringify(this.data))
-    }
-}
-
-const database = new SimpleDB(path.join(appDir, 'nebulosa.data.json'))
+process.on('beforeExit', () => apiProcess?.kill())
 
 function isNotificationEvent(event: MessageEvent): event is NotificationEvent {
     return event.eventName === 'NOTIFICATION.SENT'
 }
 
 function createMainWindow() {
-    browserWindows.get('splash')?.close()
+    browserWindows.get('splash')?.window?.close()
     browserWindows.delete('splash')
 
     createWindow({ id: 'home', path: 'home', data: undefined })
 
     webSocket = new Client({
-        brokerURL: `ws://localhost:${apiPort}/ws`,
+        brokerURL: `ws://${apiHost}:${apiPort}/ws`,
         onConnect: () => {
             webSocket.subscribe('NEBULOSA.EVENT', message => {
                 const event = JSON.parse(message.body) as MessageEvent
@@ -109,7 +106,9 @@ function createMainWindow() {
 }
 
 function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
-    let window = browserWindows.get(options.id)
+    const createdWindow = browserWindows.get(options.id)
+
+    let window = createdWindow?.window
 
     if (window && !options.modal) {
         if (options.data) {
@@ -132,7 +131,8 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         }
     }
 
-    const width = options.width ? Math.trunc(computeWidth(options.width)) : 320
+    const minWidth = options.minWidth ?? 0
+    const width = Math.max(minWidth, options.width ? Math.trunc(computeWidth(options.width)) : 320)
 
     function computeHeight(value: number | string) {
         if (typeof value === 'number') {
@@ -146,21 +146,21 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         }
     }
 
-    const height = options.height ? Math.trunc(computeHeight(options.height)) : 416
+    const minHeight = options.minHeight ?? 0
+    const height = Math.max(minHeight, options.height ? Math.trunc(computeHeight(options.height)) : 416)
 
     const id = options.id
     const resizable = options.resizable ?? false
-    const autoResizable = options.autoResizable !== false
     const modal = options.modal ?? false
     const icon = options.icon ?? 'nebulosa'
     const data = encodeURIComponent(JSON.stringify(options.data || {}))
 
-    const savedPos = !modal ? database.get<Point>(`window.${id}.position`) : undefined
-    const savedSize = !modal && resizable ? database.get<Size>(`window.${id}.size`) : undefined
+    const savedPosition = !modal ? store.get(`window.${id}.position`) : undefined
+    const savedSize = !modal && resizable ? store.get(`window.${id}.size`) : undefined
 
-    if (savedPos) {
-        savedPos.x = Math.max(0, Math.min(savedPos.x, screenSize.width))
-        savedPos.y = Math.max(0, Math.min(savedPos.y, screenSize.height))
+    if (savedPosition) {
+        savedPosition.x = Math.max(0, Math.min(savedPosition.x, screenSize.width))
+        savedPosition.y = Math.max(0, Math.min(savedPosition.y, screenSize.height))
     }
 
     if (savedSize) {
@@ -173,32 +173,30 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         frame: false, modal, parent,
         width: savedSize?.width || width,
         height: savedSize?.height || height,
-        x: savedPos?.x ?? undefined,
-        y: savedPos?.y ?? undefined,
+        minWidth, minHeight,
+        x: savedPosition?.x ?? undefined,
+        y: savedPosition?.y ?? undefined,
         resizable: serve || resizable,
         autoHideMenuBar: true,
-        icon: path.join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
+        icon: join(__dirname, serve ? `../src/assets/icons/${icon}.png` : `assets/icons/${icon}.png`),
         webPreferences: {
             nodeIntegration: true,
             allowRunningInsecureContent: serve,
             contextIsolation: false,
-            additionalArguments: [`--port=${apiPort}`, `--options=${Buffer.from(JSON.stringify(options)).toString('base64')}`],
-            preload: path.join(__dirname, 'preload.js'),
+            additionalArguments: [`--host=${apiHost}`, `--port=${apiPort}`, `--options=${Buffer.from(JSON.stringify(options)).toString('base64')}`],
+            preload: join(__dirname, 'preload.js'),
             devTools: serve,
         },
     })
 
-    if (!savedPos) {
+    if (!savedPosition) {
         window.center()
     }
 
     if (serve) {
-        const debug = require('electron-debug')
-        debug({ showDevTools: false })
-
         window.loadURL(`http://localhost:4200/${options.path}?data=${data}`)
     } else {
-        const url = new URL(path.join('file:', __dirname, `index.html`) + `#/${options.path}?data=${data}`)
+        const url = new URL(join('file:', __dirname, `index.html`) + `#/${options.path}?data=${data}`)
         window.loadURL(url.href)
     }
 
@@ -208,39 +206,41 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
     })
 
     window.on('close', () => {
+        console.info('window closed:', id, window.id)
+
         const homeWindow = browserWindows.get('home')
 
         if (!modal) {
             const [x, y] = window!.getPosition()
             const [width, height] = window!.getSize()
 
-            database.set(`window.${id}.position`, { x, y })
+            store.set(`window.${id}.position`, { x, y })
 
             if (resizable) {
-                database.set(`window.${id}.size`, { width, height })
+                store.set(`window.${id}.size`, { width, height })
             }
         }
 
-        if (window === homeWindow) {
+        if (window === homeWindow?.window || id === homeWindow?.options?.id) {
             browserWindows.delete('home')
 
             for (const [_, value] of browserWindows) {
-                value.close()
+                value.window.close()
             }
 
             browserWindows.clear()
 
-            api?.kill()
+            apiProcess?.kill()
         } else {
             for (const [key, value] of browserWindows) {
-                if (value === window) {
+                if (value.window === window || value.options.id === id) {
                     browserWindows.delete(key)
                     break
                 }
             }
 
             for (const [key, value] of modalWindows) {
-                if (value.window === window) {
+                if (value.window === window || value.options.id === id) {
                     modalWindows.delete(key)
                     break
                 }
@@ -248,31 +248,32 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         }
     })
 
-    browserWindows.set(id, window)
+    browserWindows.set(id, { window, options })
+
+    console.info('window created:', id, window.id)
 
     return window
 }
 
 function createSplashScreen() {
-    let splashWindow = browserWindows.get('splash')
-
-    if (!serve && !splashWindow) {
-        splashWindow = new BrowserWindow({
+    if (!serve && !browserWindows.has('splash')) {
+        const window = new BrowserWindow({
             width: 512,
             height: 512,
             transparent: true,
             frame: false,
             alwaysOnTop: true,
             show: false,
+            resizable: false,
         })
 
-        const url = new URL(path.join('file:', __dirname, 'assets', 'images', 'splash.png'))
-        splashWindow.loadURL(url.href)
+        const url = new URL(join('file:', __dirname, 'assets', 'images', 'splash.png'))
+        window.loadURL(url.href)
 
-        splashWindow.show()
-        splashWindow.center()
+        window.show()
+        window.center()
 
-        browserWindows.set('splash', splashWindow)
+        browserWindows.set('splash', { window, options: { id: 'splash', path: '', data: undefined } })
     }
 }
 
@@ -286,24 +287,43 @@ function showNotification(event: NotificationEvent) {
     }
 }
 
-function findWindowById(id: number) {
-    for (const [key, window] of browserWindows) if (window.id === id) return { window, key }
-    for (const [key, window] of modalWindows) if (window.window.id === id) return { window: window.window, key }
+function findWindowById(id: number | string) {
+    for (const [_, window] of browserWindows) if (window.window.id === id || window.options.id === id) return window
+    for (const [_, window] of modalWindows) if (window.window.id === id || window.options.id === id) return window
     return undefined
 }
 
+function createApiProcess() {
+    const apiJar = join(process.resourcesPath, 'api.jar')
+    const apiProcess = spawn('java', ['-jar', apiJar, `--server.port=${apiPort}`])
+
+    apiProcess.on('close', (code) => {
+        console.warn(`server process exited with code ${code}`)
+        process.exit(code || 0)
+    })
+
+    return apiProcess
+}
+
 function startApp() {
-    if (api === null) {
-        if (serve) {
+    if (!started) {
+        started = true
+
+        if (apiMode) {
+            apiProcess = createApiProcess()
+        } else if (uiMode) {
+            createSplashScreen()
+
+            console.info(`server is at ${apiHost}@${apiPort}`)
+
+            createMainWindow()
+        } else if (serve) {
             createMainWindow()
         } else {
             createSplashScreen()
+            apiProcess = createApiProcess()
 
-            const apiJar = path.join(process.resourcesPath, 'api.jar')
-
-            api = spawn('java', ['-jar', apiJar])
-
-            api.stdout.on('data', (data) => {
+            apiProcess.stdout.on('data', (data) => {
                 const text = `${data}`
 
                 if (text) {
@@ -312,16 +332,11 @@ function startApp() {
 
                     if (match) {
                         apiPort = parseInt(match[1])
-                        api!.stdout.removeAllListeners('data')
-                        console.info(`server is started at port: ${apiPort}`)
+                        apiProcess!.stdout.removeAllListeners('data')
+                        console.info(`server was started at ${apiHost}@${apiPort}`)
                         createMainWindow()
                     }
                 }
-            })
-
-            api.on('close', (code) => {
-                console.warn(`server process exited with code ${code}`)
-                process.exit(code || 0)
             })
         }
     }
@@ -335,7 +350,7 @@ try {
     app.on('ready', () => setTimeout(startApp, 400))
 
     app.on('window-all-closed', () => {
-        api?.kill()
+        apiProcess?.kill()
 
         if (process.platform !== 'darwin') {
             app.quit()
@@ -350,14 +365,14 @@ try {
         }
     })
 
-    ipcMain.handle('WINDOW.OPEN', async (event, data: OpenWindow<any>) => {
-        if (data.modal) {
+    ipcMain.handle('WINDOW.OPEN', async (event, options: OpenWindow<any>) => {
+        if (options.modal) {
             const parent = findWindowById(event.sender.id)
-            const window = createWindow(data, parent?.window)
+            const window = createWindow(options, parent?.window)
 
             const promise = new Promise<any>((resolve) => {
-                modalWindows.set(data.id, {
-                    window, resolve: (value) => {
+                modalWindows.set(options.id, {
+                    window, options, resolve: (value) => {
                         window.close()
                         resolve(value)
                     }
@@ -367,13 +382,13 @@ try {
             return promise
         }
 
-        const isNew = !browserWindows.has(data.id)
+        const isNew = !browserWindows.has(options.id)
 
-        const window = createWindow(data)
+        const window = createWindow(options)
 
-        if (data.bringToFront) {
+        if (options.bringToFront) {
             window.show()
-        } else if (data.requestFocus) {
+        } else if (options.requestFocus) {
             window.focus()
         }
 
@@ -390,7 +405,6 @@ try {
 
     ipcMain.handle('FILE.OPEN', async (event, data?: OpenFile) => {
         const ownerWindow = findWindowById(event.sender.id)
-
         const value = await dialog.showOpenDialog(ownerWindow!.window, {
             filters: data?.filters,
             properties: ['openFile'],
@@ -466,31 +480,53 @@ try {
     ipcMain.handle('WINDOW.MAXIMIZE', (event) => {
         const window = findWindowById(event.sender.id)?.window
 
-        if (window?.isMaximized()) window.unmaximize()
-        else window?.maximize()
+        if (!window) return false
 
-        return window?.isMaximized() ?? false
+        if (window.isMaximized()) {
+            window.unmaximize()
+            return false
+        } else {
+            window.maximize()
+            return true
+        }
     })
 
     ipcMain.handle('WINDOW.RESIZE', (event, data: number) => {
-        const window = findWindowById(event.sender.id)?.window
+        const createdWindow = findWindowById(event.sender.id)
 
-        if (!window || (!serve && window.isResizable())) return false
+        if (!createdWindow) return false
 
-        const size = window.getContentSize()
+        const { window, options } = createdWindow
+
+        if (!window || options.resizable || options.autoResizable === false) return false
+
+        const [width] = window.getSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
-        const height = Math.max(0, Math.min(data, maxHeight))
-        window.setContentSize(size[0], height)
-        console.info('window auto resized:', size[0], height)
+        const height = Math.max(options?.minHeight ?? 0, Math.min(data, maxHeight))
+
+        // https://github.com/electron/electron/issues/16711#issuecomment-1311824063
+        window.setResizable(true)
+        window.setSize(width, height)
+        window.setResizable(serve)
+
+        console.info('window auto resized:', options.id, width, height)
 
         return true
+    })
+
+    ipcMain.handle('WINDOW.FULLSCREEN', (event, enabled?: boolean) => {
+        const window = findWindowById(event.sender.id)?.window
+        if (!window) return false
+        const flag = enabled ?? !window.isFullScreen()
+        window.setFullScreen(flag)
+        return flag
     })
 
     ipcMain.handle('WINDOW.CLOSE', (event, data: CloseWindow<any>) => {
         if (data.id) {
             for (const [key, value] of browserWindows) {
-                if (key === data.id) {
-                    value.close()
+                if (key === data.id || value.options.id === data.id) {
+                    value.window.close()
                     return true
                 }
             }
@@ -498,7 +534,7 @@ try {
             const window = findWindowById(event.sender.id)
 
             if (window) {
-                modalWindows.get(window.key)?.resolve(data.data)
+                modalWindows.get(window.options.id)?.resolve(data.data)
                 window.window.close()
                 return true
             }
@@ -507,7 +543,7 @@ try {
         return false
     })
 
-    const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED']
+    const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED', 'CALIBRATION.CHANGED']
 
     for (const item of events) {
         ipcMain.handle(item, (_, data) => {
@@ -523,8 +559,8 @@ function sendToAllWindows(channel: string, data: any, home: boolean = true) {
     const homeWindow = browserWindows.get('home')
 
     for (const [_, window] of browserWindows) {
-        if (window !== homeWindow || home) {
-            window.webContents.send(channel, data)
+        if (window.window !== homeWindow?.window || home) {
+            window.window.webContents.send(channel, data)
         }
     }
 

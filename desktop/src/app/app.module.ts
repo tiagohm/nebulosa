@@ -5,6 +5,7 @@ import { LOCALE_ID, NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { AccordionModule } from 'primeng/accordion'
 import { ConfirmationService, MessageService } from 'primeng/api'
 import { BadgeModule } from 'primeng/badge'
 import { ButtonModule } from 'primeng/button'
@@ -39,6 +40,7 @@ import { TagModule } from 'primeng/tag'
 import { TieredMenuModule } from 'primeng/tieredmenu'
 import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
+import { TreeModule } from 'primeng/tree'
 import { CameraExposureComponent } from '../shared/components/camera-exposure/camera-exposure.component'
 import { DeviceListButtonComponent } from '../shared/components/device-list-button/device-list-button.component'
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
@@ -47,6 +49,7 @@ import { HistogramComponent } from '../shared/components/histogram/histogram.com
 import { MapComponent } from '../shared/components/map/map.component'
 import { MenuItemComponent } from '../shared/components/menu-item/menu-item.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
+import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
@@ -76,6 +79,7 @@ import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
 import { MountComponent } from './mount/mount.component'
+import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
 import { SettingsComponent } from './settings/settings.component'
 
@@ -108,18 +112,21 @@ import { SettingsComponent } from './settings/settings.component'
         INDIComponent,
         INDIPropertyComponent,
         LocationDialog,
+        MapComponent,
         MenuItemComponent,
         MoonComponent,
         MountComponent,
         NoDropdownDirective,
-        MapComponent,
+        RotatorComponent,
         SequencerComponent,
         SettingsComponent,
         SkyObjectPipe,
+        SlideMenuComponent,
         StopPropagationDirective,
         WinPipe,
     ],
     imports: [
+        AccordionModule,
         AppRoutingModule,
         BadgeModule,
         BrowserAnimationsModule,
@@ -160,6 +167,7 @@ import { SettingsComponent } from './settings/settings.component'
         TieredMenuModule,
         ToastModule,
         TooltipModule,
+        TreeModule,
     ],
     providers: [
         AnglePipe,

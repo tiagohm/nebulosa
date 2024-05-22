@@ -1,47 +1,45 @@
 <div class="flex flex-column align-items-start justify-content-center gap-1">
     <span class="text-left flex align-items-center gap-1">
-        <i class="mdi mdi-information text-blue-600"></i> {{ (state ?? 'IDLE') | enum | lowercase }}
+        <i class="mdi mdi-information text-blue-600"></i> {{ (info || state || 'IDLE') | enum | lowercase }}
     </span>
 
     <span class="flex flex-row gap-1px">
         <span class="bg-orange-500 state counter flex align-items-center gap-1 justify-content-center text-gray-900">
-            <i class="mdi mdi-counter"></i> {{ exposure.count }} <span *ngIf="!capture.looping">/ {{ capture.amount }}</span>
+            <i class="mdi mdi-counter"></i> {{ capture.count }} <span *ngIf="!capture.looping">/ {{ capture.amount }}</span>
         </span>
+        @if (!capture.looping) {
         <span class="bg-green-300 state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
             <i class="mdi mdi-percent"></i> {{ capture.progress * 100 | number:'1.1-1' }}
         </span>
+        }
         @if (capture.looping) {
         <span class="bg-blue-300 state time flex align-items-center gap-1 justify-content-center text-gray-900">
             <i class="mdi mdi-timer-sand-complete"></i> {{ capture.elapsedTime | exposureTime }}
         </span>
-        } @else if(showRemainingTime) {
-        <span class="bg-blue-300 state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
-              (click)="toggleRemainingTime()">
-            <i class="mdi mdi-timer-sand"></i> {{ capture.remainingTime | exposureTime }}
-        </span>
         } @else {
         <span class="bg-blue-300 state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
-              (click)="toggleRemainingTime()">
-            <i class="mdi mdi-timer-sand-complete"></i> {{ capture.elapsedTime | exposureTime }}
+              (click)="showRemainingTime = !showRemainingTime">
+            <span class="flex align-items-center gap-1" *ngIf="showRemainingTime">
+                <i class="mdi mdi-timer-sand"></i> {{ capture.remainingTime | exposureTime }}
+            </span>
+            <span class="flex align-items-center gap-1" *ngIf="!showRemainingTime">
+                <i class="mdi mdi-timer-sand-complete"></i> {{ capture.elapsedTime | exposureTime }}
+            </span>
         </span>
         }
 
-        @if (state === 'EXPOSURING') {
-        <span class="bg-cyan-300 state time flex align-items-center gap-1 justify-content-center text-gray-900">
-            <i class="mdi mdi-timer-sand"></i> {{ exposure.remainingTime | exposureTime }}
+        @if (capture.amount !== 1 && (state === 'EXPOSURING' || state === 'WAITING')) {
+        <span class="bg-cyan-300 state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
+              (click)="showRemainingTime = !showRemainingTime">
+            <span class="flex align-items-center gap-1" *ngIf="showRemainingTime">
+                <i class="mdi mdi-timer-sand"></i> {{ step.remainingTime | exposureTime }}
+            </span>
+            <span class="flex align-items-center gap-1" *ngIf="!showRemainingTime">
+                <i class="mdi mdi-timer-sand-complete"></i> {{ step.elapsedTime | exposureTime }}
+            </span>
         </span>
         <span class="bg-cyan-300 state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
-            <i class="mdi mdi-percent"></i> {{ exposure.progress * 100 | number:'1.1-1' }}
-        </span>
-        }
-
-        @if (state === 'WAITING') {
-        <span class="bg-purple-300 state time flex align-items-center gap-1 justify-content-center text-gray-900"
-              pTooltip="Remaining time" tooltipPosition="bottom">
-            <i class="mdi mdi-timer-sand"></i> {{ wait.remainingTime | exposureTime }}
-        </span>
-        <span class="bg-purple-300 state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
-            <i class="mdi mdi-percent"></i> {{ wait.progress * 100 | number:'1.1-1' }}
+            <i class="mdi mdi-percent"></i> {{ step.progress * 100 | number:'1.1-1' }}
         </span>
         }
     </span>

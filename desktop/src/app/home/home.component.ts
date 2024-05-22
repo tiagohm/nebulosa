@@ -1,5 +1,5 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import path from 'path'
+import { dirname } from 'path'
 import { MenuItem } from 'primeng/api'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
@@ -13,6 +13,7 @@ import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { CONNECTION_TYPES, ConnectionDetails, EMPTY_CONNECTION_DETAILS, HomeWindowType } from '../../shared/types/home.types'
 import { Mount } from '../../shared/types/mount.types'
+import { Rotator } from '../../shared/types/rotator.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
@@ -22,6 +23,7 @@ type MappedDevice = {
     'MOUNT': Mount
     'FOCUSER': Focuser
     'WHEEL': FilterWheel
+    'ROTATOR': Rotator
 }
 
 @Component({
@@ -39,7 +41,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
     readonly connectionTypes = Array.from(CONNECTION_TYPES)
     showConnectionDialog = false
-    readonly connections: ConnectionDetails[] = []
+    connections: ConnectionDetails[] = []
     connection?: ConnectionDetails
     newConnection?: [ConnectionDetails, ConnectionDetails | undefined]
     skyAtlasProgress?: number = undefined
@@ -48,9 +50,11 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
     mounts: Mount[] = []
     focusers: Focuser[] = []
     wheels: FilterWheel[] = []
+    rotators: Rotator[] = []
     domes: Camera[] = []
-    rotators: Camera[] = []
     switches: Camera[] = []
+
+    currentPage = 0
 
     get connected() {
         return !!this.connection && this.connection.connected
@@ -100,9 +104,17 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         return this.hasCamera
     }
 
-    get hasINDI() {
+    get hasDevices() {
         return this.hasCamera || this.hasMount || this.hasFocuser
             || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
+    }
+
+    get hasINDI() {
+        return this.connection?.type === 'INDI' && this.hasDevices
+    }
+
+    get hasAlpaca() {
+        return this.connection?.type === 'ALPACA' && this.hasDevices
     }
 
     readonly deviceModel: MenuItem[] = []
@@ -186,6 +198,16 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             },
         )
 
+        this.startListening('ROTATOR',
+            (device) => {
+                return this.rotators.push(device)
+            },
+            (device) => {
+                this.rotators.splice(this.rotators.findIndex(e => e.id === device.id), 1)
+                return this.rotators.length
+            },
+        )
+
         electron.on('CONNECTION.CLOSED', event => {
             if (this.connection?.id === event.id) {
                 ngZone.run(() => {
@@ -204,7 +226,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             })
         })
 
-        this.connections = preference.connections.get()
+        this.connections = preference.connections.get().sort((a, b) => (b.connectedAt ?? 0) - (a.connectedAt ?? 0))
         this.connections.forEach(e => { e.id = undefined; e.connected = false })
         this.connection = this.connections[0]
     }
@@ -217,13 +239,12 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             this.mounts = await this.api.mounts()
             this.focusers = await this.api.focusers()
             this.wheels = await this.api.wheels()
+            this.rotators = await this.api.rotators()
         }
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
-        this.disconnect()
-    }
+    ngOnDestroy() { }
 
     addConnection() {
         this.newConnection = [structuredClone(EMPTY_CONNECTION_DETAILS), undefined]
@@ -243,7 +264,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             this.connections.splice(index, 1)
 
             if (connection === this.connection) {
-                this.connection = undefined
+                this.connection = this.connections[0]
             }
 
             this.preference.connections.set(this.connections)
@@ -260,7 +281,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             }
             // New.
             else {
-                this.connections.push(this.newConnection[0])
+                const newConnection = structuredClone(this.newConnection[0])
+                this.connections = [...this.connections, newConnection]
+                this.connection = newConnection
             }
         }
 
@@ -296,14 +319,15 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    private openDevice<K extends keyof MappedDevice>(type: K) {
+    private openDevice<K extends keyof MappedDevice>(type: K, header: string) {
         this.deviceModel.length = 0
 
         const devices: Device[] = type === 'CAMERA' ? this.cameras
             : type === 'MOUNT' ? this.mounts
                 : type === 'FOCUSER' ? this.focusers
                     : type === 'WHEEL' ? this.wheels
-                        : []
+                        : type === 'ROTATOR' ? this.rotators
+                            : []
 
         if (devices.length === 0) return
         if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
@@ -318,6 +342,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             })
         }
 
+        this.deviceMenu.header = header
         this.deviceMenu.show()
     }
 
@@ -335,22 +360,26 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'WHEEL':
                 this.browserWindow.openWheel({ bringToFront: true, data: device as FilterWheel })
                 break
+            case 'ROTATOR':
+                this.browserWindow.openRotator({ bringToFront: true, data: device as Rotator })
+                break
         }
     }
 
     private async openImage(force: boolean = false) {
         if (force || this.cameras.length === 0) {
-            const defaultPath = this.preference.homeImageDirectory.get()
-            const filePath = await this.electron.openFits({ defaultPath })
+            const preference = this.preference.homePreference.get()
+            const path = await this.electron.openImage({ defaultPath: preference.imagePath })
 
-            if (filePath) {
-                this.preference.homeImageDirectory.set(path.dirname(filePath))
-                this.browserWindow.openImage({ path: filePath, source: 'PATH' })
+            if (path) {
+                preference.imagePath = dirname(path)
+                this.preference.homePreference.set(preference)
+                this.browserWindow.openImage({ path, source: 'PATH' })
             }
         } else {
             const camera = await this.imageMenu.show(this.cameras)
 
-            if (camera) {
+            if (camera && camera !== 'NONE') {
                 this.browserWindow.openCameraImage(camera)
             }
         }
@@ -362,7 +391,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'CAMERA':
             case 'FOCUSER':
             case 'WHEEL':
-                this.openDevice(type)
+            case 'ROTATOR':
+                this.openDevice(type, type)
                 break
             case 'GUIDER':
                 this.browserWindow.openGuider({ bringToFront: true })
@@ -414,14 +444,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 }
             } catch {
                 this.connection.connected = false
-
-                this.cameras = []
-                this.mounts = []
-                this.focusers = []
-                this.wheels = []
-                this.domes = []
-                this.rotators = []
-                this.switches = []
             }
         } else {
             const statuses = await this.api.connectionStatuses()
@@ -431,6 +453,8 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                     if (!connection.connected &&
                         (status.host === connection.host || status.ip === connection.host) &&
                         status.port === connection.port) {
+                        connection.id = status.id
+                        connection.type = status.type
                         connection.connected = true
                         this.connection = connection
                         break
@@ -440,6 +464,63 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 if (this.connection?.connected) {
                     break
                 }
+            }
+        }
+
+        if (!this.connection?.connected) {
+            this.cameras = []
+            this.mounts = []
+            this.focusers = []
+            this.wheels = []
+            this.domes = []
+            this.rotators = []
+            this.switches = []
+        }
+    }
+
+    private scrollPageOf(element: Element) {
+        return parseInt(element.getAttribute('scroll-page') || '0')
+    }
+
+    scrolled(event: Event) {
+        function isVisible(element: Element) {
+            const bound = element.getBoundingClientRect()
+
+            return bound.top >= 0 &&
+                bound.left >= 0 &&
+                bound.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                bound.right <= (window.innerWidth || document.documentElement.clientWidth)
+        }
+
+        let page = 0
+        const scrollChidren = document.getElementsByClassName('scroll-child')
+
+        for (let i = 0; i < scrollChidren.length; i++) {
+            const child = scrollChidren[i]
+
+            if (isVisible(child)) {
+                page = Math.max(page, this.scrollPageOf(child))
+            }
+        }
+
+        this.currentPage = page
+    }
+
+    scrollTo(event: Event, page: number) {
+        this.currentPage = page
+        this.scrollToPage(page)
+        event.stopImmediatePropagation()
+    }
+
+    scrollToPage(page: number) {
+        const scrollChidren = document.getElementsByClassName('scroll-child')
+
+        for (let i = 0; i < scrollChidren.length; i++) {
+            const child = scrollChidren[i]
+
+            if (this.scrollPageOf(child) === page) {
+                child.scrollIntoView({ behavior: 'smooth' })
+                break
             }
         }
     }

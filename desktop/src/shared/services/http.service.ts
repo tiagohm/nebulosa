@@ -10,7 +10,7 @@ export class HttpService {
     constructor(private http: HttpClient) { }
 
     get baseUrl() {
-        return `http://localhost:${window.apiPort}`
+        return `http://${window.apiHost}:${window.apiPort}`
     }
 
     get<T>(path: string) {
@@ -30,6 +30,10 @@ export class HttpService {
         return firstValueFrom(this.http.post<T>(`${this.baseUrl}/${path}?${query}`, null))
     }
 
+    postBlob(path: string, body?: any) {
+        return firstValueFrom(this.http.post(`${this.baseUrl}/${path}`, body, { observe: 'response', responseType: 'blob' }))
+    }
+
     patch<T>(path: string, body?: any) {
         return firstValueFrom(this.http.patch<T>(`${this.baseUrl}/${path}`, body))
     }
@@ -41,6 +45,10 @@ export class HttpService {
     putBodyAsQueryParams<T>(path: string, body: Record<string, any>) {
         const query = this.query(body)
         return firstValueFrom(this.http.put<T>(`${this.baseUrl}/${path}?${query}`, null))
+    }
+
+    putBlob(path: string, body?: any) {
+        return firstValueFrom(this.http.put(`${this.baseUrl}/${path}`, body, { observe: 'response', responseType: 'blob' }))
     }
 
     delete<T>(path: string) {

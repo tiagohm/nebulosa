@@ -1,44 +1,82 @@
 package nebulosa.api.sequencer
 
+import io.reactivex.rxjava3.functions.Consumer
+import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
-import nebulosa.batch.processing.JobExecutor
-import nebulosa.batch.processing.JobLauncher
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import nebulosa.indi.device.focuser.Focuser
-import nebulosa.log.info
-import nebulosa.log.loggerFor
+import nebulosa.indi.device.focuser.FocuserEvent
+import nebulosa.indi.device.mount.Mount
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
+import java.util.concurrent.ConcurrentHashMap
 
 @Component
+@Subscriber
 class SequencerExecutor(
     private val messageService: MessageService,
     private val guider: Guider,
-    override val jobLauncher: JobLauncher,
-) : JobExecutor() {
+    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
+) : Consumer<MessageEvent> {
+
+    private val jobs = ConcurrentHashMap.newKeySet<SequencerJob>(1)
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onCameraEvent(event: CameraEvent) {
+        jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onFilterWheelEvent(event: FilterWheelEvent) {
+        jobs.find { it.task.wheel === event.device }?.handleFilterWheelEvent(event)
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onFocuserEvent(event: FocuserEvent) {
+        // jobs.find { it.task.focuser === event.device }?.handleFocuserEvent(event)
+    }
+
+    override fun accept(event: MessageEvent) {
+        messageService.sendMessage(event)
+    }
 
     fun execute(
         camera: Camera, request: SequencePlanRequest,
-        wheel: FilterWheel? = null, focuser: Focuser? = null,
-    ): String {
-        check(findJobExecutionWithAny(camera) == null) { "job is already running" }
+        mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null,
+    ) {
+        check(camera.connected) { "${camera.name} Camera is not connected" }
+        check(jobs.none { it.task.camera === camera }) { "${camera.name} Sequencer Job is already in progress" }
 
-        LOG.info { "starting sequencer. camera=$camera, wheel=$wheel, focuser=$focuser, request=$request" }
+        if (wheel != null && wheel.connected) {
+            check(jobs.none { it.task.wheel === wheel }) { "${camera.name} Sequencer Job is already in progress" }
+        }
 
-        val sequencerJob = SequencerJob(camera, request, guider, wheel, focuser)
-        sequencerJob.subscribe(messageService::sendMessage)
-        sequencerJob.initialize()
-        register(jobLauncher.launch(sequencerJob))
-        return sequencerJob.id
+        if (focuser != null && focuser.connected) {
+            check(jobs.none { it.task.focuser === focuser }) { "${camera.name} Sequencer Job is already in progress" }
+        }
+
+        val task = SequencerTask(camera, request, guider, mount, wheel, focuser, threadPoolTaskExecutor)
+        task.subscribe(this)
+
+        with(SequencerJob(task)) {
+            jobs.add(this)
+            whenComplete { _, _ -> jobs.remove(this) }
+            start()
+        }
     }
 
     fun stop(camera: Camera) {
-        findJobExecutionWithAny(camera)?.also { jobLauncher.stop(it) }
+        jobs.find { it.task.camera === camera }?.stop()
     }
 
-    companion object {
-
-        @JvmStatic private val LOG = loggerFor<SequencerExecutor>()
+    fun status(camera: Camera): SequencerEvent? {
+        return jobs.find { it.task.camera === camera }?.task?.get() as? SequencerEvent
     }
 }

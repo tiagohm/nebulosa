@@ -1,7 +1,9 @@
 package nebulosa.api.alignment.polar
 
+import nebulosa.api.alignment.polar.darv.DARVEvent
 import nebulosa.api.alignment.polar.darv.DARVExecutor
 import nebulosa.api.alignment.polar.darv.DARVStartRequest
+import nebulosa.api.alignment.polar.tppa.TPPAEvent
 import nebulosa.api.alignment.polar.tppa.TPPAExecutor
 import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
 import nebulosa.indi.device.camera.Camera
@@ -15,31 +17,35 @@ class PolarAlignmentService(
     private val tppaExecutor: TPPAExecutor,
 ) {
 
-    fun darvStart(camera: Camera, guideOutput: GuideOutput, darvStartRequest: DARVStartRequest): String {
-        check(camera.connected) { "camera not connected" }
-        check(guideOutput.connected) { "guide output not connected" }
-        return darvExecutor.execute(camera, guideOutput, darvStartRequest)
+    fun darvStart(camera: Camera, guideOutput: GuideOutput, darvStartRequest: DARVStartRequest) {
+        darvExecutor.execute(camera, guideOutput, darvStartRequest)
     }
 
-    fun darvStop(id: String) {
-        darvExecutor.stop(id)
+    fun darvStop(camera: Camera) {
+        darvExecutor.stop(camera)
     }
 
-    fun tppaStart(camera: Camera, mount: Mount, tppaStartRequest: TPPAStartRequest): String {
-        check(camera.connected) { "camera not connected" }
-        check(mount.connected) { "mount not connected" }
-        return tppaExecutor.execute(camera, mount, tppaStartRequest)
+    fun darvStatus(camera: Camera): DARVEvent? {
+        return darvExecutor.status(camera)
     }
 
-    fun tppaStop(id: String) {
-        tppaExecutor.stop(id)
+    fun tppaStart(camera: Camera, mount: Mount, tppaStartRequest: TPPAStartRequest) {
+        tppaExecutor.execute(camera, mount, tppaStartRequest)
     }
 
-    fun tppaPause(id: String) {
-        tppaExecutor.pause(id)
+    fun tppaStop(camera: Camera) {
+        tppaExecutor.stop(camera)
     }
 
-    fun tppaUnpause(id: String) {
-        tppaExecutor.unpause(id)
+    fun tppaPause(camera: Camera) {
+        tppaExecutor.pause(camera)
+    }
+
+    fun tppaUnpause(camera: Camera) {
+        tppaExecutor.unpause(camera)
+    }
+
+    fun tppaStatus(camera: Camera): TPPAEvent? {
+        return tppaExecutor.status(camera)
     }
 }

@@ -1,39 +1,52 @@
 package nebulosa.api.wizard.flat
 
-import nebulosa.api.image.ImageBucket
+import io.reactivex.rxjava3.functions.Consumer
+import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
-import nebulosa.batch.processing.JobExecutor
-import nebulosa.batch.processing.JobLauncher
 import nebulosa.indi.device.camera.Camera
-import nebulosa.log.info
-import nebulosa.log.loggerFor
+import nebulosa.indi.device.camera.CameraEvent
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
+import java.util.concurrent.ConcurrentHashMap
 
 @Component
+@Subscriber
 class FlatWizardExecutor(
     private val messageService: MessageService,
-    override val jobLauncher: JobLauncher,
-    private val imageBucket: ImageBucket,
-) : JobExecutor() {
+) : Consumer<MessageEvent> {
 
-    fun execute(camera: Camera, request: FlatWizardRequest): String {
+    private val jobs = ConcurrentHashMap.newKeySet<FlatWizardJob>(1)
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    fun onCameraEvent(event: CameraEvent) {
+        jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
+    }
+
+    override fun accept(event: MessageEvent) {
+        messageService.sendMessage(event)
+    }
+
+    fun execute(camera: Camera, request: FlatWizardRequest) {
         check(camera.connected) { "camera is not connected" }
-        check(findJobExecutionWithAny(camera) == null) { "job is already running for camera: [${camera.name}]" }
+        check(jobs.none { it.task.camera === camera }) { "${camera.name} Flat Wizard is already in progress" }
 
-        LOG.info { "starting flat wizard capture. camera=$camera, request=$request" }
+        val task = FlatWizardTask(camera, request)
+        task.subscribe(this)
 
-        val flatWizardJob = FlatWizardJob(camera, request, imageBucket = imageBucket)
-        flatWizardJob.subscribe(messageService::sendMessage)
-        register(jobLauncher.launch(flatWizardJob))
-        return flatWizardJob.id
+        with(FlatWizardJob(task)) {
+            jobs.add(this)
+            whenComplete { _, _ -> jobs.remove(this) }
+            start()
+        }
     }
 
     fun stop(camera: Camera) {
-        findJobExecutionWithAny(camera)?.also { jobLauncher.stop(it) }
+        jobs.find { it.task.camera === camera }?.stop()
     }
 
-    companion object {
-
-        @JvmStatic private val LOG = loggerFor<FlatWizardExecutor>()
+    fun status(camera: Camera): FlatWizardEvent? {
+        return jobs.find { it.task.camera === camera }?.task?.get() as? FlatWizardEvent
     }
 }

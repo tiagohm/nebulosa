@@ -1,4 +1,4 @@
-import { EquatorialCoordinate } from './atlas.types'
+import { Angle, EquatorialCoordinate } from './atlas.types'
 import { GPS } from './gps.types'
 import { GuideOutput } from './guider.types'
 
@@ -8,7 +8,9 @@ export type TargetCoordinateType = 'J2000' | 'JNOW'
 
 export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
 
-export type CelestialLocationType = 'ZENITH' | 'NORTH_POLE' | 'SOUTH_POLE' | 'GALACTIC_CENTER' | 'MERIDIAN_EQUATOR' | 'MERIDIAN_ECLIPTIC'
+export type CelestialLocationType = 'ZENITH' | 'NORTH_POLE' | 'SOUTH_POLE' | 'GALACTIC_CENTER' | 'MERIDIAN_EQUATOR' | 'MERIDIAN_ECLIPTIC' | 'EQUATOR_ECLIPTIC'
+
+export type MountRemoteControlType = 'LX200' | 'STELLARIUM'
 
 export interface SlewRate {
     name: string
@@ -67,4 +69,27 @@ export const EMPTY_MOUNT: Mount = {
     canPark: false,
     parking: false,
     parked: false
+}
+
+export interface MountRemoteControl {
+    type: MountRemoteControlType
+    mount: Mount
+    running: boolean
+    rightAscension: Angle
+    declination: Angle
+    latitude: Angle
+    longitude: Angle
+    slewing: boolean
+    tracking: boolean
+    parked: boolean
+    host: string
+    port: number
+}
+
+export interface MountRemoteControlDialog {
+    showDialog: boolean
+    type: MountRemoteControlType
+    host: string
+    port: number
+    data: MountRemoteControl[]
 }

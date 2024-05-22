@@ -148,8 +148,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     async wheelChanged(wheel?: FilterWheel) {
-        if (wheel && wheel.name) {
-            wheel = await this.api.wheel(wheel.name)
+        if (wheel && wheel.id) {
+            wheel = await this.api.wheel(wheel.id)
             Object.assign(this.wheel, wheel)
 
             this.loadPreference()
@@ -191,7 +191,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 if (offset < 0) this.api.focuserMoveIn(this.focuser, -offset)
                 else this.api.focuserMoveOut(this.focuser, offset)
             }
-        } catch {
+        } catch (e) {
+            console.error(e)
             this.moving = false
         }
     }
@@ -230,7 +231,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     private update() {
-        if (!this.wheel.name) {
+        if (!this.wheel.id) {
             return
         }
 
@@ -241,7 +242,10 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             this.position = this.request.filterPosition || 1
         }
 
+        if (this.moving) return
+
         let filters: FilterSlot[] = []
+        let filtersChanged = true
 
         if (this.wheel.count <= 0) {
             this.filters = []
@@ -250,20 +254,23 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
             filters = new Array(this.wheel.count)
         } else {
             filters = this.filters
+            filtersChanged = false
         }
 
-        const preference = this.preference.wheelPreference(this.wheel).get()
+        if (filtersChanged) {
+            const preference = this.preference.wheelPreference(this.wheel).get()
 
-        for (let position = 1; position <= filters.length; position++) {
-            const name = preference.names?.[position - 1] ?? `Filter #${position}`
-            const offset = preference.offsets?.[position - 1] ?? 0
-            const dark = position === preference.shutterPosition
-            const filter = { position, name, dark, offset }
-            filters[position - 1] = filter
+            for (let position = 1; position <= filters.length; position++) {
+                const name = preference.names?.[position - 1] ?? `Filter #${position}`
+                const offset = preference.offsets?.[position - 1] ?? 0
+                const dark = position === preference.shutterPosition
+                const filter = { position, name, dark, offset }
+                filters[position - 1] = filter
+            }
+
+            this.filters = filters
+            this.filter = filters[(this.filter?.position ?? this.position) - 1] ?? filters[0]
         }
-
-        this.filters = filters
-        this.filter = filters[this.position - 1] ?? filters[0]
 
         this.updateFocusOffset()
     }

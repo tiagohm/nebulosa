@@ -22,6 +22,7 @@ export class AppComponent implements AfterViewInit {
     subTitle? = ''
     backgroundColor = '#212121'
     topMenu: ExtendedMenuItem[] = []
+    showTopBar = true
 
     get title() {
         return this.windowTitle.getTitle()

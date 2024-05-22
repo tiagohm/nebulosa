@@ -124,6 +124,10 @@ internal open class INDIMount(
                         sender.fireOnEventReceived(MountCanSyncChanged(this))
                         sender.fireOnEventReceived(MountCanGoToChanged(this))
                     }
+                    "TELESCOPE_HOME" -> {
+                        canHome = true
+                        sender.fireOnEventReceived(MountCanHomeChanged(this))
+                    }
                 }
             }
             is NumberVector<*> -> {
@@ -157,8 +161,6 @@ internal open class INDIMount(
                             canPulseGuide = true
 
                             sender.registerGuideOutput(this)
-
-                            LOG.info("guide output attached: {}", name)
                         }
 
                         if (canPulseGuide) {
@@ -234,14 +236,22 @@ internal open class INDIMount(
     }
 
     override fun park() {
-        sendNewSwitch("TELESCOPE_PARK", "PARK" to true)
+        if (canPark) {
+            sendNewSwitch("TELESCOPE_PARK", "PARK" to true)
+        }
     }
 
     override fun unpark() {
-        sendNewSwitch("TELESCOPE_PARK", "UNPARK" to true)
+        if (canPark) {
+            sendNewSwitch("TELESCOPE_PARK", "UNPARK" to true)
+        }
     }
 
-    override fun home() = Unit
+    override fun home() {
+        if (canHome) {
+            sendNewSwitch("TELESCOPE_HOME", "GO" to true)
+        }
+    }
 
     override fun abortMotion() {
         if (canAbort) {
@@ -319,13 +329,11 @@ internal open class INDIMount(
         if (canPulseGuide) {
             canPulseGuide = false
             sender.unregisterGuideOutput(this)
-            LOG.info("guide output detached: {}", name)
         }
 
         if (hasGPS) {
             hasGPS = false
             sender.unregisterGPS(this)
-            LOG.info("GPS detached: {}", name)
         }
     }
 

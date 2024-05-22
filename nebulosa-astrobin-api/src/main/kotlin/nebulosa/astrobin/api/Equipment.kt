@@ -7,4 +7,6 @@ sealed interface Equipment {
     val brandName: String
 
     val name: String
+
+    val isValid: Boolean
 }

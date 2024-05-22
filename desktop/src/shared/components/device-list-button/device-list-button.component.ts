@@ -22,6 +22,9 @@ export class DeviceListButtonComponent {
     readonly devices!: Device[]
 
     @Input()
+    readonly hasNone: boolean = false
+
+    @Input()
     device?: Device
 
     @Output()
@@ -31,11 +34,11 @@ export class DeviceListButtonComponent {
     private readonly deviceMenu!: DeviceListMenuComponent
 
     async show() {
-        const device = await this.deviceMenu.show(this.devices)
+        const device = await this.deviceMenu.show(this.devices, this.device)
 
         if (device) {
-            this.device = device
-            this.deviceChange.emit(device)
+            this.device = device === 'NONE' ? undefined : device
+            this.deviceChange.emit(this.device)
         }
     }
 

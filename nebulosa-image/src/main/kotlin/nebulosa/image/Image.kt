@@ -11,8 +11,6 @@ import nebulosa.image.format.*
 import okio.Sink
 import java.awt.color.ColorSpace
 import java.awt.image.*
-import kotlin.math.max
-import kotlin.math.min
 
 @Suppress("NOTHING_TO_INLINE")
 class Image internal constructor(
@@ -178,8 +176,8 @@ class Image internal constructor(
         }
     }
 
-    fun writeTo(sink: Sink, format: ImageFormat) {
-        format.write(sink, listOf(hdu))
+    fun writeTo(sink: Sink, format: ImageFormat, modifier: ImageModifier = ImageModifier) {
+        format.write(sink, listOf(hdu), modifier)
     }
 
     /**
@@ -213,28 +211,6 @@ class Image internal constructor(
         }
 
         return image
-    }
-
-    fun canLoad(hdu: ImageHdu): Boolean {
-        return hdu.width == width && hdu.height == height && hdu.isMono == mono
-    }
-
-    fun canLoad(image: ImageRepresentation): Boolean {
-        return canLoad(image.filterIsInstance<ImageHdu>().first())
-    }
-
-    fun load(image: ImageRepresentation): Image? {
-        return load(image.filterIsInstance<ImageHdu>().first())
-    }
-
-    fun load(image: Image): Image? {
-        return load(image.hdu)
-    }
-
-    fun load(hdu: ImageHdu): Image? {
-        if (!canLoad(hdu)) return null
-        load(this, hdu, false)
-        return this
     }
 
     public override fun clone() = if (mono) mono() else color()
@@ -288,59 +264,6 @@ class Image internal constructor(
         private inline fun Image.debayer(bayer: CfaPattern? = CfaPattern.from(header)) {
             if (bayer != null) {
                 Debayer(bayer).transform(this)
-            }
-        }
-
-        @JvmStatic
-        private fun load(image: Image, hdu: ImageHdu, debayer: Boolean) {
-            hdu.data.readChannelTo(ImageChannel.RED, image.red)
-
-            if (!image.mono) {
-                if (debayer) {
-                    image.debayer()
-                } else {
-                    hdu.data.readChannelTo(ImageChannel.GREEN, image.green)
-                    hdu.data.readChannelTo(ImageChannel.BLUE, image.blue)
-                }
-            }
-        }
-
-        @JvmStatic
-        private fun load(image: Image, debayer: Boolean) {
-            fun rescaling() {
-                for (p in 0 until image.numberOfChannels) {
-                    val minMax = floatArrayOf(Float.MAX_VALUE, Float.MIN_VALUE)
-                    val plane = image.data[p]
-
-                    for (i in plane.indices) {
-                        val k = plane[i]
-                        minMax[0] = min(minMax[0], k)
-                        minMax[1] = max(minMax[1], k)
-                    }
-
-                    if (minMax[0] < 0f || minMax[1] > 1f) {
-                        val k = minMax[1] - minMax[0]
-
-                        for (i in plane.indices) {
-                            plane[i] = (plane[i] - minMax[0]) / k
-                        }
-                    }
-                }
-            }
-
-            // TODO: DATA[i] = BZERO + BSCALE * DATA[i]
-
-            // Mono.
-            if (image.mono) {
-                rescaling()
-            } else {
-                val bayer = CfaPattern.from(image.header)
-
-                if (debayer && bayer != null) {
-                    Debayer(bayer).transform(image)
-                }
-
-                rescaling()
             }
         }
 

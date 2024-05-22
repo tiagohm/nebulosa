@@ -161,18 +161,22 @@ internal open class INDICamera(
                                 sender.fireOnEventReceived(CameraExposureAborted(this))
                             } else if (exposureState == PropertyState.OK && prevExposureState == PropertyState.BUSY) {
                                 sender.fireOnEventReceived(CameraExposureFinished(this))
-                            } else if (exposureState == PropertyState.ALERT && prevExposureState != PropertyState.ALERT) {
+                            } else if (exposureState == PropertyState.ALERT) {
                                 sender.fireOnEventReceived(CameraExposureFailed(this))
                             }
 
                             if (prevExposureState != exposureState) {
-                                sender.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+                                sender.fireOnEventReceived(CameraExposureStateChanged(this))
                             }
                         }
                     }
                     "CCD_COOLER_POWER" -> {
-                        coolerPower = message.first().value
-                        sender.fireOnEventReceived(CameraCoolerPowerChanged(this))
+                        message.first().value.also {
+                            if (it != coolerPower) {
+                                coolerPower = it
+                                sender.fireOnEventReceived(CameraCoolerPowerChanged(this))
+                            }
+                        }
                     }
                     "CCD_TEMPERATURE" -> {
                         if (message is DefNumberVector) {
@@ -238,8 +242,6 @@ internal open class INDICamera(
                                 canPulseGuide = true
 
                                 sender.registerGuideOutput(this)
-
-                                LOG.info("guide output attached: {}", name)
                             } else {
                                 val prevIsPulseGuiding = pulseGuiding
                                 pulseGuiding = message.isBusy
@@ -258,9 +260,6 @@ internal open class INDICamera(
                 if (!isGuideHead && message.name == "CCD2" && guideHead == null) {
                     guideHead = GuideHeadCamera(this)
                     sender.registerGuideHead(guideHead!!)
-
-                    LOG.info("guide head attached: {}", name)
-
                     return
                 }
             }
@@ -336,6 +335,11 @@ internal open class INDICamera(
     override fun startCapture(exposureTime: Duration) {
         sendNewSwitch("CCD_TRANSFER_FORMAT", "FORMAT_FITS" to true)
 
+        if (exposureState != PropertyState.IDLE) {
+            exposureState = PropertyState.IDLE
+            sender.fireOnEventReceived(CameraExposureStateChanged(this))
+        }
+
         val exposureInSeconds = exposureTime.toNanos() / NANO_TO_SECONDS
 
         if (this is GuideHead) {
@@ -402,21 +406,18 @@ internal open class INDICamera(
 
     override fun close() {
         if (hasThermometer) {
-            sender.unregisterThermometer(this)
             hasThermometer = false
-            LOG.info("thermometer detached: {}", name)
+            sender.unregisterThermometer(this)
         }
 
         if (canPulseGuide) {
-            sender.unregisterGuideOutput(this)
             canPulseGuide = false
-            LOG.info("guide output detached: {}", name)
+            sender.unregisterGuideOutput(this)
         }
 
         if (guideHead != null) {
             guideHead?.also(sender::unregisterGuiderHead)
             guideHead = null
-            LOG.info("guide head detached: {}", name)
         }
     }
 

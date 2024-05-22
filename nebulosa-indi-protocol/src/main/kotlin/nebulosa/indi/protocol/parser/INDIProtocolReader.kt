@@ -6,13 +6,14 @@ import java.io.Closeable
 class INDIProtocolReader(
     private val parser: INDIProtocolParser,
     priority: Int = NORM_PRIORITY,
-) : Thread(), Closeable {
+) : Thread("INDI Protocol Reader"), Closeable {
 
-    private val listeners = HashSet<CloseConnectionListener>(1)
+    private val listeners = LinkedHashSet<CloseConnectionListener>(1)
 
     @Volatile private var running = false
 
     init {
+        isDaemon = true
         setPriority(priority)
     }
 
@@ -59,6 +60,7 @@ class INDIProtocolReader(
         if (!running) return
 
         running = false
+        listeners.clear()
 
         interrupt()
     }

@@ -1,8 +1,9 @@
 package nebulosa.api.alignment.polar
 
+import nebulosa.api.alignment.polar.darv.DARVEvent
 import nebulosa.api.alignment.polar.darv.DARVStartRequest
+import nebulosa.api.alignment.polar.tppa.TPPAEvent
 import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
-import nebulosa.api.beans.converters.device.DeviceOrEntityParam
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
@@ -16,33 +17,43 @@ class PolarAlignmentController(
 
     @PutMapping("darv/{camera}/{guideOutput}/start")
     fun darvStart(
-        @DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam guideOutput: GuideOutput,
+        camera: Camera, guideOutput: GuideOutput,
         @RequestBody body: DARVStartRequest,
     ) = polarAlignmentService.darvStart(camera, guideOutput, body)
 
-    @PutMapping("darv/{id}/stop")
-    fun darvStop(@PathVariable id: String) {
-        polarAlignmentService.darvStop(id)
+    @PutMapping("darv/{camera}/stop")
+    fun darvStop(camera: Camera) {
+        polarAlignmentService.darvStop(camera)
+    }
+
+    @GetMapping("darv/{camera}/status")
+    fun darvStatus(camera: Camera): DARVEvent? {
+        return polarAlignmentService.darvStatus(camera)
     }
 
     @PutMapping("tppa/{camera}/{mount}/start")
     fun tppaStart(
-        @DeviceOrEntityParam camera: Camera, @DeviceOrEntityParam mount: Mount,
+        camera: Camera, mount: Mount,
         @RequestBody body: TPPAStartRequest,
     ) = polarAlignmentService.tppaStart(camera, mount, body)
 
-    @PutMapping("tppa/{id}/stop")
-    fun tppaStop(@PathVariable id: String) {
-        polarAlignmentService.tppaStop(id)
+    @PutMapping("tppa/{camera}/stop")
+    fun tppaStop(camera: Camera) {
+        polarAlignmentService.tppaStop(camera)
     }
 
-    @PutMapping("tppa/{id}/pause")
-    fun tppaPause(@PathVariable id: String) {
-        polarAlignmentService.tppaPause(id)
+    @PutMapping("tppa/{camera}/pause")
+    fun tppaPause(camera: Camera) {
+        polarAlignmentService.tppaPause(camera)
     }
 
-    @PutMapping("tppa/{id}/unpause")
-    fun tppaUnpause(@PathVariable id: String) {
-        polarAlignmentService.tppaUnpause(id)
+    @PutMapping("tppa/{camera}/unpause")
+    fun tppaUnpause(camera: Camera) {
+        polarAlignmentService.tppaUnpause(camera)
+    }
+
+    @GetMapping("tppa/{camera}/status")
+    fun tppaStatus(camera: Camera): TPPAEvent? {
+        return polarAlignmentService.tppaStatus(camera)
     }
 }

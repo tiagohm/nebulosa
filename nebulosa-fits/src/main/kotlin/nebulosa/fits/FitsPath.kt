@@ -1,19 +1,19 @@
 package nebulosa.fits
 
-import nebulosa.io.seekableSink
-import nebulosa.io.seekableSource
+import nebulosa.io.sink
+import nebulosa.io.source
 import java.io.Closeable
 import java.io.File
+import java.io.RandomAccessFile
 import java.nio.file.Path
 
 data class FitsPath(val path: Path) : Fits(), Closeable {
 
-    private val source = path.seekableSource()
-    private val sink = path.seekableSink()
+    private val file = RandomAccessFile(path.toFile(), "rw")
+    private val source = file.source()
+    private val sink = file.sink()
 
     constructor(file: File) : this(file.toPath())
-
-    constructor(path: String) : this(Path.of(path))
 
     fun read() {
         read(source)
@@ -26,5 +26,6 @@ data class FitsPath(val path: Path) : Fits(), Closeable {
     override fun close() {
         source.close()
         sink.close()
+        file.close()
     }
 }

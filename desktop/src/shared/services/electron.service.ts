@@ -7,18 +7,19 @@ import { Injectable } from '@angular/core'
 import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
-import { DARVElapsed, TPPAElapsed } from '../types/alignment.types'
+import { DARVEvent, TPPAEvent } from '../types/alignment.types'
 import { ApiEventType, DeviceMessageEvent } from '../types/api.types'
 import { CloseWindow, InternalEventType, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
 import { Location, SkyAtlasUpdated } from '../types/atlas.types'
-import { Camera, CameraCaptureElapsed } from '../types/camera.types'
+import { Camera, CameraCaptureEvent } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
-import { FlatWizardElapsed } from '../types/flat-wizard.types'
+import { FlatWizardEvent } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
 import { ConnectionClosed } from '../types/home.types'
 import { Mount } from '../types/mount.types'
-import { SequencerElapsed } from '../types/sequencer.types'
+import { Rotator } from '../types/rotator.types'
+import { SequencerEvent } from '../types/sequencer.types'
 import { FilterWheel } from '../types/wheel.types'
 import { ApiService } from './api.service'
 
@@ -29,13 +30,16 @@ type EventMappedType = {
     'CAMERA.UPDATED': DeviceMessageEvent<Camera>
     'CAMERA.ATTACHED': DeviceMessageEvent<Camera>
     'CAMERA.DETACHED': DeviceMessageEvent<Camera>
-    'CAMERA.CAPTURE_ELAPSED': CameraCaptureElapsed
+    'CAMERA.CAPTURE_ELAPSED': CameraCaptureEvent
     'MOUNT.UPDATED': DeviceMessageEvent<Mount>
     'MOUNT.ATTACHED': DeviceMessageEvent<Mount>
     'MOUNT.DETACHED': DeviceMessageEvent<Mount>
     'FOCUSER.UPDATED': DeviceMessageEvent<Focuser>
     'FOCUSER.ATTACHED': DeviceMessageEvent<Focuser>
     'FOCUSER.DETACHED': DeviceMessageEvent<Focuser>
+    'ROTATOR.UPDATED': DeviceMessageEvent<Rotator>
+    'ROTATOR.ATTACHED': DeviceMessageEvent<Rotator>
+    'ROTATOR.DETACHED': DeviceMessageEvent<Rotator>
     'WHEEL.UPDATED': DeviceMessageEvent<FilterWheel>
     'WHEEL.ATTACHED': DeviceMessageEvent<FilterWheel>
     'WHEEL.DETACHED': DeviceMessageEvent<FilterWheel>
@@ -47,14 +51,15 @@ type EventMappedType = {
     'GUIDER.UPDATED': GuiderMessageEvent<Guider>
     'GUIDER.STEPPED': GuiderMessageEvent<GuiderHistoryStep>
     'GUIDER.MESSAGE_RECEIVED': GuiderMessageEvent<string>
-    'DARV.ELAPSED': DARVElapsed
-    'TPPA.ELAPSED': TPPAElapsed
+    'DARV.ELAPSED': DARVEvent
+    'TPPA.ELAPSED': TPPAEvent
     'DATA.CHANGED': any
     'LOCATION.CHANGED': Location
-    'SEQUENCER.ELAPSED': SequencerElapsed
-    'FLAT_WIZARD.ELAPSED': FlatWizardElapsed
+    'SEQUENCER.ELAPSED': SequencerEvent
+    'FLAT_WIZARD.ELAPSED': FlatWizardEvent
     'CONNECTION.CLOSED': ConnectionClosed
     'SKY_ATLAS.PROGRESS_CHANGED': SkyAtlasUpdated
+    'CALIBRATION.CHANGED': unknown
 }
 
 @Injectable({ providedIn: 'root' })
@@ -110,7 +115,7 @@ export class ElectronService {
         return this.send('FILE.SAVE', data)
     }
 
-    openFits(data?: OpenFile): Promise<string | undefined> {
+    openImage(data?: OpenFile): Promise<string | undefined> {
         return this.openFile({
             ...data, filters: [
                 { name: 'All', extensions: ['fits', 'fit', 'xisf'] },
@@ -120,14 +125,14 @@ export class ElectronService {
         })
     }
 
-    saveFits(data?: OpenFile) {
+    saveImage(data?: OpenFile) {
         return this.saveFile({
             ...data,
             filters: [
-                { name: 'All', extensions: ['fits', 'fit', 'xisf', 'png', 'jpe?g'] },
+                { name: 'All', extensions: ['fits', 'fit', 'xisf', 'png', 'jpg', 'jpeg'] },
                 { name: 'FITS', extensions: ['fits', 'fit'] },
                 { name: 'XISF', extensions: ['xisf'] },
-                { name: 'Image', extensions: ['png', 'jpe?g'] },
+                { name: 'Image', extensions: ['png', 'jpg', 'jpeg'] },
             ]
         })
     }
@@ -198,7 +203,15 @@ export class ElectronService {
         this.send('WINDOW.MAXIMIZE')
     }
 
+    fullscreenWindow(enabled?: boolean): Promise<boolean> {
+        return this.send('WINDOW.FULLSCREEN', enabled)
+    }
+
     closeWindow<T>(data: CloseWindow<T>) {
         return this.send('WINDOW.CLOSE', data)
+    }
+
+    calibrationChanged() {
+        this.send('CALIBRATION.CHANGED')
     }
 }

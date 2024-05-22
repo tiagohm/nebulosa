@@ -1,25 +1,37 @@
 <div class="container px-4 py-3">
     <div class="grid">
         <div class="col-12 align-items-center justify-content-center gap-2">
-            <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera" />
+            <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera"
+                                    (deviceChange)="cameraChanged()" />
             <p-button [disabled]="!camera.name || running" icon="mdi mdi-cog" size="small" (onClick)="showCameraDialog()" />
-            <neb-device-list-button title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel" />
+            <neb-device-list-button title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel"
+                                    (deviceChange)="wheelChanged()" />
 
             <p-button *ngIf="wheel?.connected" [disabled]="!wheel.name || running" (onClick)="wheelConnect()" icon="mdi mdi-close"
                       size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!wheel?.connected" [disabled]="!wheel.name || running" (onClick)="wheelConnect()" icon="mdi mdi-connection"
                       size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
         </div>
-        <div class="col-12 pt-0 pb-1 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-xs">
+        <div class="col-12 pt-0 pb-1 text-sm text-gray-400 flex-column flex align-items-center my-1 gap-1 text-center text-xs">
             <neb-camera-exposure #cameraExposure />
+            <span *ngIf="savedPath" class="font-sm flex align-items-center gap-1 max-w-full text-overflow-scroll"><i class="mdi mdi-folder"></i>{{
+                savedPath }}</span>
         </div>
     </div>
     <div class="grid mt-2">
+        <div class="col-12">
+            <span class="p-float-label">
+                <input type="text" pInputText [disabled]="!camera.connected || running" class="p-inputtext-sm border-0 w-full"
+                       [(ngModel)]="request.capture.savePath" (ngModelChange)="savePreference()" />
+                <label>Path</label>
+            </span>
+            <p-button [disabled]="!camera.connected || running" icon="mdi mdi-folder-open" size="small" (onClick)="chooseSavePath()" />
+        </div>
         <div class="col-6">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.exposureMin" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="1" [max]="60000" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Min Exposure (ms)</label>
             </span>
         </div>
@@ -27,7 +39,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.exposureMax" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="request.exposureMin" [max]="60000" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Max Exposure (ms)</label>
             </span>
         </div>
@@ -35,7 +47,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.meanTarget" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="0" [max]="65535" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Mean Target ({{ meanTargetMin }} - {{ meanTargetMax }})</label>
             </span>
         </div>
@@ -43,14 +55,14 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.meanTolerance" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="0" [max]="100" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
                 <label>Mean Tolerance (%)</label>
             </span>
         </div>
         <div class="col-12">
             <span class="p-float-label">
                 <p-multiSelect [disabled]="!wheel.connected || filters.length <= 0" [options]="filters" [(ngModel)]="selectedFilters"
-                               optionLabel="name"
+                               optionLabel="name" (ngModelChange)="savePreference()"
                                styleClass="border-0" [style]="{minHeight: '45px'}" display="chip" [showClear]="true" [showToggleAll]="true"
                                [maxSelectedLabels]="wheel.count" scrollHeight="105px" />
                 <label>Filters</label>

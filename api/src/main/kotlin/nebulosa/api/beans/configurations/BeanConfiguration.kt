@@ -11,7 +11,7 @@ import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.database.MyObjectBox
 import nebulosa.api.preferences.PreferenceEntity
-import nebulosa.batch.processing.AsyncJobLauncher
+import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.json.PathDeserializer
 import nebulosa.common.json.PathSerializer
 import nebulosa.guiding.Guider
@@ -42,6 +42,8 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.nio.file.Path
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 
@@ -93,7 +95,7 @@ class BeanConfiguration {
     fun cache(cachePath: Path) = Cache(cachePath.toFile(), MAX_CACHE_SIZE)
 
     @Bean
-    fun httpLogger() = HttpLoggingInterceptor.Logger { OKHTTP_LOGGER.info(it) }
+    fun httpLogger() = HttpLoggingInterceptor.Logger { OKHTTP_LOG.info(it) }
 
     @Bean
     fun httpClient(connectionPool: ConnectionPool, cache: Cache, httpLogger: HttpLoggingInterceptor.Logger) = OkHttpClient.Builder()
@@ -128,21 +130,27 @@ class BeanConfiguration {
     fun hips2FitsService(httpClient: OkHttpClient) = Hips2FitsService(httpClient = httpClient)
 
     @Bean
+    @Primary
     fun threadPoolTaskExecutor(): ThreadPoolTaskExecutor {
         val taskExecutor = ThreadPoolTaskExecutor()
         taskExecutor.corePoolSize = 32
+        taskExecutor.keepAliveSeconds = 30
+        taskExecutor.isDaemon = true
         taskExecutor.initialize()
         return taskExecutor
     }
 
     @Bean
-    fun eventBus(threadPoolTaskExecutor: ThreadPoolTaskExecutor) = EventBus.builder()
+    fun eventBusExecutorService(): ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory)
+
+    @Bean
+    fun eventBus(eventBusExecutorService: ExecutorService) = EventBus.builder()
         .sendNoSubscriberEvent(false)
         .sendSubscriberExceptionEvent(false)
         .throwSubscriberException(false)
         .logNoSubscriberMessages(false)
         .logSubscriberExceptions(false)
-        .executorService(threadPoolTaskExecutor.threadPoolExecutor)
+        .executorService(eventBusExecutorService)
         .installDefaultEventBus()!!
 
     @Bean
@@ -150,9 +158,6 @@ class BeanConfiguration {
 
     @Bean
     fun phd2Guider(phd2Client: PHD2Client): Guider = PHD2Guider(phd2Client)
-
-    @Bean
-    fun asyncJobLauncher(threadPoolTaskExecutor: ThreadPoolTaskExecutor) = AsyncJobLauncher(threadPoolTaskExecutor)
 
     @Bean
     @Primary
@@ -216,8 +221,9 @@ class BeanConfiguration {
 
     companion object {
 
-        const val MAX_CACHE_SIZE = 1024L * 1024L * 32L // 32MB
+        private const val MAX_CACHE_SIZE = 1024L * 1024L * 32L // 32MB
 
-        @JvmStatic private val OKHTTP_LOGGER = loggerFor<OkHttpClient>()
+        @JvmStatic private val LOG = loggerFor<BeanConfiguration>()
+        @JvmStatic private val OKHTTP_LOG = loggerFor<OkHttpClient>()
     }
 }
