@@ -16,13 +16,16 @@ interface Point2D {
     val length
         get() = hypot(x, y)
 
-    fun distance(other: Point2D): Double {
-        return hypot(x - other.x, y - other.y)
-    }
+    val angle
+        get() = atan2(y, x)
 
-    fun angle(other: Point2D): Angle {
-        return atan2(other.y - y, other.x - x)
-    }
+    fun dX(point: Point2D) = x - point.x
+
+    fun dY(point: Point2D) = y - point.y
+
+    fun distance(other: Point2D) = hypot(x - other.x, y - other.y)
+
+    fun angle(other: Point2D): Angle = atan2(other.y - y, other.x - x)
 
     data class XY(override val x: Double, override val y: Double) : Point2D
 
