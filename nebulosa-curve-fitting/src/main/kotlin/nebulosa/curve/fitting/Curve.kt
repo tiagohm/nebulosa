@@ -1,7 +1,6 @@
 package nebulosa.curve.fitting
 
 import org.apache.commons.math3.analysis.UnivariateFunction
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction
 
 fun interface Curve : UnivariateFunction {
 
@@ -9,7 +8,8 @@ fun interface Curve : UnivariateFunction {
 
     companion object {
 
-        internal fun DoubleArray.curvePoints(): Collection<CurvePoint> {
+        @JvmStatic
+        fun DoubleArray.curvePoints(): Collection<CurvePoint> {
             val points = ArrayList<CurvePoint>(size / 2)
 
             for (i in indices step 2) {
@@ -18,8 +18,5 @@ fun interface Curve : UnivariateFunction {
 
             return points
         }
-
-        @Suppress("NOTHING_TO_INLINE")
-        internal inline fun DoubleArray.polynomial() = PolynomialFunction(this)
     }
 }

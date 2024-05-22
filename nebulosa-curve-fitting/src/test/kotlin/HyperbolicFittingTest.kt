@@ -14,8 +14,8 @@ class HyperbolicFittingTest : StringSpec(), CurveFitting<HyperbolicFitting.Curve
                 6.0, 3.0, 7.0, 6.0, 8.0, 11.0, 9.0, 18.0,
             )
 
-            curve.minimumX shouldBe (5.0 plusOrMinus 1e-12)
-            curve.minimumY shouldBe (1.2 plusOrMinus 1e-12)
+            curve.minimum.x shouldBe (5.0 plusOrMinus 1e-12)
+            curve.minimum.y shouldBe (1.2 plusOrMinus 1e-12)
         }
         "bad data:prevent infinit loop" {
             shouldThrow<IllegalArgumentException> { calculate(1000.0, 18.0, 1100.0, 0.0, 1200.0, 0.0) }

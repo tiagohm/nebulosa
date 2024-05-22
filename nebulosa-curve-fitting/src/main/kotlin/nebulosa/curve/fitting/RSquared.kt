@@ -6,6 +6,7 @@ import kotlin.math.pow
 
 object RSquared {
 
+    @JvmStatic
     fun calculate(points: Collection<CurvePoint>, function: UnivariateFunction): Double {
         val descriptiveStatistics = DescriptiveStatistics(points.size)
         val predictedValues = DoubleArray(points.size)

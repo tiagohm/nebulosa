@@ -13,19 +13,16 @@ data class TrendLine(val points: Collection<CurvePoint>) : LinearCurve {
         points.forEach { regression.addData(it.x, it.y) }
     }
 
-    override val slope = regression.slope.zeroIfNaN()
+    override val slope = regression.slope.let { if (it.isNaN()) 0.0 else it }
 
-    override val intercept = regression.intercept.zeroIfNaN()
+    override val intercept = regression.intercept.let { if (it.isNaN()) 0.0 else it }
 
-    override val rSquared = regression.rSquare.zeroIfNaN()
+    override val rSquared = regression.rSquare.let { if (it.isNaN()) 0.0 else it }
 
-    override fun value(x: Double) = regression.predict(x)
+    override fun value(x: Double) = if (points.isEmpty()) 0.0 else regression.predict(x)
 
     companion object {
 
         @JvmStatic val ZERO = TrendLine()
-
-        @Suppress("NOTHING_TO_INLINE")
-        private inline fun Double.zeroIfNaN() = if (isNaN()) 0.0 else this
     }
 }

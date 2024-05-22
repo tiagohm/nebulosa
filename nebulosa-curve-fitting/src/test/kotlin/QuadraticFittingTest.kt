@@ -17,8 +17,8 @@ class QuadraticFittingTest : StringSpec(), CurveFitting<QuadraticFitting.Curve> 
             )
 
             curve(5.0) shouldBeExactly 2.0
-            curve.minimumX shouldBe (5.0 plusOrMinus 1e-12)
-            curve.minimumY shouldBe (2.0 plusOrMinus 1e-12)
+            curve.minimum.x shouldBe (5.0 plusOrMinus 1e-12)
+            curve.minimum.y shouldBe (2.0 plusOrMinus 1e-12)
             curve.rSquared shouldBe (1.0 plusOrMinus 1e-12)
         }
     }

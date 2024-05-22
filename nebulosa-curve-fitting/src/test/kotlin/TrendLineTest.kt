@@ -6,7 +6,7 @@ class TrendLineTest : StringSpec() {
 
     init {
         "no points" {
-            val line = TrendLine()
+            val line = TrendLine.ZERO
 
             line.slope shouldBeExactly 0.0
             line.intercept shouldBeExactly 0.0
