@@ -17,6 +17,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
+import { Camera } from '../../shared/types/camera.types'
 import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
@@ -154,8 +155,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     readonly imageROI: ImageROI = {
         x: 0,
         y: 0,
-        width: 0,
-        height: 0
+        width: 128,
+        height: 128
     }
 
     readonly saveAs: ImageSaveDialog = {
@@ -283,7 +284,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         icon: 'mdi mdi-telescope',
         disabled: true,
         command: () => {
-            this.executeMount((mount) => {
+            this.executeMount(mount => {
                 this.api.pointMountHere(mount, this.imageData.path!, this.imageMouseX, this.imageMouseY)
             })
         },
@@ -670,6 +671,17 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         })
     }
 
+    roiForCamera() {
+        this.executeCamera(camera => {
+            const x = camera.x + this.imageROI.x
+            const y = camera.y + this.imageROI.y
+            const width = camera.binX * this.imageROI.width
+            const height = camera.binY * this.imageROI.height
+
+            this.electron.send('ROI.SELECTED', { camera, x, y, width, height })
+        }, false)
+    }
+
     private loadImageFromData(data: ImageData) {
         console.info('loading image from data: %s', data)
 
@@ -961,19 +973,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     mountSync(coordinate: EquatorialCoordinateJ2000) {
-        this.executeMount((mount) => {
+        this.executeMount(mount => {
             this.api.mountSync(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
         })
     }
 
     async mountGoTo(coordinate: EquatorialCoordinateJ2000) {
-        this.executeMount((mount) => {
+        this.executeMount(mount => {
             this.api.mountGoTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
         })
     }
 
     async mountSlew(coordinate: EquatorialCoordinateJ2000) {
-        this.executeMount((mount) => {
+        this.executeMount(mount => {
             this.api.mountSlew(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
         })
     }
@@ -1132,8 +1144,31 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.preference.imagePreference.set(preference)
     }
 
-    private async executeMount(action: (mount: Mount) => void) {
-        if (await this.prime.confirm('Are you sure that you want to proceed?')) {
+    private async executeCamera(action: (camera: Camera) => void, showConfirmation: boolean = true) {
+        if (showConfirmation && await this.prime.confirm('Are you sure that you want to proceed?')) {
+            return
+        }
+
+        const cameras = await this.api.cameras()
+
+        if (cameras.length === 1) {
+            action(cameras[0])
+            return true
+        } else {
+            this.deviceMenu.header = 'Cameras'
+            const camera = await this.deviceMenu.show(cameras)
+
+            if (camera && camera !== 'NONE' && camera.connected) {
+                action(camera)
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private async executeMount(action: (mount: Mount) => void, showConfirmation: boolean = true) {
+        if (showConfirmation && await this.prime.confirm('Are you sure that you want to proceed?')) {
             return
         }
 
@@ -1143,6 +1178,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             action(mounts[0])
             return true
         } else {
+            this.deviceMenu.header = 'Mounts'
             const mount = await this.deviceMenu.show(mounts)
 
             if (mount && mount !== 'NONE' && mount.connected) {

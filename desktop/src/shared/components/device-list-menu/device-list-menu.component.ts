@@ -68,7 +68,7 @@ export class DeviceListMenuComponent {
 
             for (const device of devices.sort(deviceComparator)) {
                 model.push({
-                    icon: 'mdi mdi-connection',
+                    icon: 'mdi mdi-circle-medium ' + (device.connected ? 'text-green-500' : 'text-red-500'),
                     label: device.name,
                     checked: selected === device,
                     disabled: this.disableIfDeviceIsNotConnected && !device.connected,

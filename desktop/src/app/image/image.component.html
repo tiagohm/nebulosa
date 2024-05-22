@@ -40,8 +40,13 @@
     </svg>
 
     <div #roi [class.hidden]="!roiInteractable" class="roi absolute left-0 top-0" data-x="0" data-y="0" (contextmenu)="imageClicked($event, true)">
-        <span class="absolute">X: {{ imageROI.x }} Y: {{ imageROI.y }} W: {{ imageROI.width }} H: {{ imageROI.height }}</span>
     </div>
+</div>
+
+<div *ngIf="roiInteractable" class="roi-coordinates fixed flex flex-row align-items-center gap-2">
+    <span>X: {{ imageROI.x }} Y: {{ imageROI.y }} W: {{ imageROI.width }} H: {{ imageROI.height }}</span>
+    <p-button [text]="true" (onClick)="roiForCamera()" icon="mdi mdi-check" size="small" severity="success" pTooltip="Apply to Mount"
+              tooltipPosition="bottom" />
 </div>
 
 <p-contextMenu #menu [model]="contextMenuItems">

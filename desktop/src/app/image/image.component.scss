@@ -12,22 +12,21 @@
 .roi {
     width: 128px;
     height: 128px;
-    border: 1px solid #FFFC;
+    border: 1px dashed rgba(255, 255, 0, 0.9);
     background-color: transparent;
     box-sizing: border-box;
+}
 
-    >span {
-        background: #0008;
-        padding: 4px;
-        border-radius: 4px;
-        font-size: 8px !important;
-        min-width: 71px;
-        max-width: 144px;
-        bottom: -22px;
-        left: 50%;
-        white-space: nowrap;
-        transform: translate(-50%, 0%);
-    }
+.roi-coordinates {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 12px !important;
+    min-width: 71px;
+    top: 46px;
+    left: 50%;
+    white-space: nowrap;
+    transform: translate(-50%, 0%);
 }
 
 .coordinates {

@@ -267,3 +267,11 @@ export interface ImageAnnotationDialog {
     minorPlanetsMagLimit: number
     useSimbad: boolean
 }
+
+export interface ROISelected {
+    camera: Camera
+    x: number
+    y: number
+    width: number
+    height: number
+}

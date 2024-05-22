@@ -234,6 +234,17 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             ngZone.run(() => this.loadCalibrationGroups())
         })
 
+        electron.on('ROI.SELECTED', event => {
+            if (event.camera.id === this.camera.id) {
+                ngZone.run(() => {
+                    this.request.x = event.x
+                    this.request.y = event.y
+                    this.request.width = event.width
+                    this.request.height = event.height
+                })
+            }
+        })
+
         this.cameraModel[1].visible = !app.modal
     }
 
