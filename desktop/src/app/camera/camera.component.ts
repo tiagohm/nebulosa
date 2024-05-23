@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
-import { SlideMenuItemCommandEvent } from '../../shared/components/slide-menu/slide-menu.component'
+import { SlideMenuItem, SlideMenuItemCommandEvent } from '../../shared/components/slide-menu/slide-menu.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -420,7 +420,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         }
 
-        const menu: ExtendedMenuItem[] = []
+        const menu: SlideMenuItem[] = []
 
         menu.push({
             icon: 'mdi mdi-wrench',

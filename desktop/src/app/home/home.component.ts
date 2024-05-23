@@ -1,8 +1,8 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { dirname } from 'path'
-import { MenuItem } from 'primeng/api'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
+import { SlideMenuItem } from '../../shared/components/slide-menu/slide-menu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -117,9 +117,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         return this.connection?.type === 'ALPACA' && this.hasDevices
     }
 
-    readonly deviceModel: MenuItem[] = []
+    readonly deviceModel: SlideMenuItem[] = []
 
-    readonly imageModel: MenuItem[] = [
+    readonly imageModel: SlideMenuItem[] = [
         {
             icon: 'mdi mdi-image-plus',
             label: 'Open new image',

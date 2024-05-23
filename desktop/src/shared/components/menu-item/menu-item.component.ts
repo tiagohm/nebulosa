@@ -1,9 +1,15 @@
 import { Component, Input } from '@angular/core'
-import { MenuItem } from 'primeng/api'
+import { MenuItem, MenuItemCommandEvent } from 'primeng/api'
 import { CheckableMenuItem, ToggleableMenuItem } from '../../types/app.types'
+
+export interface ExtendedMenuItemCommandEvent extends MenuItemCommandEvent {
+    item?: ExtendedMenuItem
+}
 
 export interface ExtendedMenuItem extends MenuItem, Partial<CheckableMenuItem>, Partial<ToggleableMenuItem> {
     menu?: ExtendedMenuItem[]
+    toolbarMenu?: ExtendedMenuItem[]
+    command?: (event: ExtendedMenuItemCommandEvent) => void
 }
 
 @Component({

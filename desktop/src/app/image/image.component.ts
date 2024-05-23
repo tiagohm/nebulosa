@@ -9,6 +9,7 @@ import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
 import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { SlideMenuItem } from '../../shared/components/slide-menu/slide-menu.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -583,7 +584,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         }
 
-        const menu: ExtendedMenuItem[] = []
+        const menu: SlideMenuItem[] = []
 
         menu.push({
             label: 'Open',

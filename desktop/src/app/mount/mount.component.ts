@@ -2,6 +2,7 @@ import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@a
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
+import { SlideMenuItem } from '../../shared/components/slide-menu/slide-menu.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -86,7 +87,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         },
     ]
 
-    readonly targetCoordinateModel: MenuItem[] = [
+    readonly targetCoordinateModel: SlideMenuItem[] = [
         {
             icon: 'mdi mdi-telescope',
             label: 'Go To',
