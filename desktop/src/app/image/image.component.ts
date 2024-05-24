@@ -1156,7 +1156,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             action(cameras[0])
             return true
         } else {
-            this.deviceMenu.header = 'Cameras'
+            this.deviceMenu.header = 'CAMERA'
             const camera = await this.deviceMenu.show(cameras)
 
             if (camera && camera !== 'NONE' && camera.connected) {
@@ -1179,7 +1179,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             action(mounts[0])
             return true
         } else {
-            this.deviceMenu.header = 'Mounts'
+            this.deviceMenu.header = 'MOUNT'
             const mount = await this.deviceMenu.show(mounts)
 
             if (mount && mount !== 'NONE' && mount.connected) {
