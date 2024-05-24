@@ -390,12 +390,12 @@ export class ApiService {
         return this.http.put<void>(`indi/${device.id}/send`, property)
     }
 
-    indiStartListening(device: Device) {
-        return this.http.put<void>(`indi/listener/${device.id}/start`)
+    indiListen(device: Device) {
+        return this.http.put<void>(`indi/${device.id}/listen`)
     }
 
-    indiStopListening(device: Device) {
-        return this.http.put<void>(`indi/listener/${device.id}/stop`)
+    indiUnlisten(device: Device) {
+        return this.http.put<void>(`indi/${device.id}/unlisten`)
     }
 
     indiLog(device: Device) {

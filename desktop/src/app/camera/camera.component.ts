@@ -248,7 +248,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         this.cameraModel[1].visible = !app.modal
     }
 
-    async ngAfterContentInit() {
+    ngAfterContentInit() {
         this.route.queryParams.subscribe(e => {
             const decodedData = JSON.parse(decodeURIComponent(e.data))
 
@@ -267,9 +267,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
+    async ngOnDestroy() {
         if (this.mode === 'CAPTURE') {
-            this.abortCapture()
+            await this.abortCapture()
         }
     }
 
@@ -413,7 +413,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 label: name ?? 'None',
                 icon: name ? 'mdi mdi-wrench' : 'mdi mdi-close',
                 checked: this.request.calibrationGroup === name,
-                command: (event: SlideMenuItemCommandEvent) => {
+                command: () => {
                     this.request.calibrationGroup = name
                     this.loadCalibrationGroups()
                 },
@@ -525,7 +525,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     abortCapture() {
-        this.api.cameraAbortCapture(this.camera)
+        return this.api.cameraAbortCapture(this.camera)
     }
 
     static exposureUnitFactor(unit: ExposureTimeUnit) {

@@ -35,14 +35,14 @@ class INDIController(
     }
 
     @Synchronized
-    @PutMapping("listener/{device}/start")
-    fun startListening(device: Device) {
+    @PutMapping("{device}/listen")
+    fun listen(device: Device) {
         indiService.registerDeviceToSendMessage(device)
     }
 
     @Synchronized
-    @PutMapping("listener/{device}/stop")
-    fun stopListening(device: Device) {
+    @PutMapping("{device}/unlisten")
+    fun unlisten(device: Device) {
         indiService.unregisterDeviceToSendMessage(device)
     }
 }

@@ -19,7 +19,7 @@ class INDIService(
     }
 
     fun messages(): List<String> {
-        return indiEventHandler
+        return indiEventHandler.messages()
     }
 
     fun properties(device: Device): Collection<PropertyVector<*, *>> {
