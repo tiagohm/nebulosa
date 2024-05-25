@@ -4,7 +4,7 @@
     </div>
     @if (item.toolbarMenu?.length) {
     <div class="flex justify-content-center align-items-center gap-1">
-        @for (m of item.toolbarMenu; track $index; let i = $index) {
+        @for (m of item.toolbarMenu; track i; let i = $index) {
         <p-button *ngIf="m.visible" [text]="true" [rounded]="true" [icon]="m.icon" [pTooltip]="m.label"
                   [tooltipPosition]="m.tooltipPosition ?? 'bottom'" [disabled]="m.disabled"
                   (onClick)="m.command?.({originalEvent: $event, item: m, index: i}); $event.stopImmediatePropagation()" />
