@@ -20,7 +20,8 @@
     <div class="grid mt-1">
         <div class="col-6">
             <span class="p-float-label">
-                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="rotator.angle" locale="en" />
+                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="rotator.angle" locale="en"
+                               scrollableNumber />
                 <label>Angle (°)</label>
             </span>
         </div>
@@ -38,7 +39,8 @@
         <div class="col-12 flex align-items-center gap-1">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!rotator.connected" [step]="0.1" [min]="rotator.minAngle" [max]="rotator.maxAngle" [showButtons]="true"
-                               styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="angle" [allowEmpty]="false" locale="en" />
+                               styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="angle" [allowEmpty]="false" locale="en"
+                               scrollableNumber />
                 <label>Move</label>
             </span>
             <p-button [disabled]="!rotator.connected || !rotator.canSync || moving" (onClick)="sync()" icon="mdi mdi-sync"

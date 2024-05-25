@@ -43,7 +43,7 @@
                         <div class="col-4 align-items-center">
                             <span class="p-float-label">
                                 <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="tppaRequest.stepDuration"
-                                               [showButtons]="true" [min]="1" [max]="60" (ngModelChange)="savePreference()" />
+                                               [showButtons]="true" [min]="1" [max]="60" (ngModelChange)="savePreference()" scrollableNumber />
                                 <label>Step duration (s)</label>
                             </span>
                         </div>
@@ -110,14 +110,14 @@
                         <div class="col-4">
                             <span class="p-float-label">
                                 <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvRequest.initialPause"
-                                               [showButtons]="true" [min]="1" [max]="60" (ngModelChange)="initialPauseChanged()" />
+                                               [showButtons]="true" [min]="1" [max]="60" (ngModelChange)="initialPauseChanged()" scrollableNumber />
                                 <label>Initial pause (s)</label>
                             </span>
                         </div>
                         <div class="col-4">
                             <span class="p-float-label">
                                 <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvRequest.exposureTime"
-                                               [showButtons]="true" [min]="1" [max]="600" (ngModelChange)="driftForChanged()" />
+                                               [showButtons]="true" [min]="1" [max]="600" (ngModelChange)="driftForChanged()" scrollableNumber />
                                 <label>Drift for (s)</label>
                             </span>
                         </div>

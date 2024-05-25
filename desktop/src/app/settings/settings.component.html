@@ -27,13 +27,13 @@
                     <p-inputNumber styleClass="p-inputtext-sm border-0 w-full"
                                    [ngModel]="solvers.get(solverType)!.downsampleFactor"
                                    (ngModelChange)="solvers.get(solverType)!.downsampleFactor = $event; save()" [showButtons]="true"
-                                   [min]="0" [max]="4" />
+                                   [min]="0" [max]="4" scrollableNumber />
                     <label>Downsample factor</label>
                 </span>
                 <span class="p-float-label max-w-9rem">
                     <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [ngModel]="solvers.get(solverType)!.timeout"
                                    (ngModelChange)="solvers.get(solverType)!.timeout = $event; save()" [showButtons]="true"
-                                   [min]="0" [max]="300" />
+                                   [min]="0" [max]="300" scrollableNumber />
                     <label>Timeout (s)</label>
                 </span>
                 <span class="flex gap-1 align-items-center" *ngIf="solverType === 'ASTAP'">

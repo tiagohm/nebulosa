@@ -69,7 +69,7 @@
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!annotation.useMinorPlanets" [min]="-10" [max]="30" class="max-w-10rem w-full" [showButtons]="true"
                                    inputStyleClass="border-0 w-full" [step]="0.1" [(ngModel)]="annotation.minorPlanetsMagLimit"
-                                   [minFractionDigits]="1" locale="en" />
+                                   [minFractionDigits]="1" locale="en" scrollableNumber />
                     <label>Mag. Limit</label>
                 </span>
             </div>
@@ -182,7 +182,7 @@
         <div class="col-4 flex flex-row align-items-center gap-2">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="solver.blind" [min]="1" [max]="180" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true"
-                               [(ngModel)]="solver.radius" />
+                               [(ngModel)]="solver.radius" scrollableNumber />
                 <label>Radius (°)</label>
             </span>
         </div>
@@ -252,12 +252,12 @@
             <div class="flex flex-row gap-2 align-items-center justify-content-between">
                 <span class="p-float-label">
                     <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchShadow" locale="en" />
+                                   [(ngModel)]="stretchShadow" locale="en" scrollableNumber />
                     <label>Shadow</label>
                 </span>
                 <span class="p-float-label">
                     <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchHighlight" locale="en" />
+                                   [(ngModel)]="stretchHighlight" locale="en" scrollableNumber />
                     <label>Highlight</label>
                 </span>
             </div>
@@ -269,7 +269,7 @@
             <div class="text-center w-full">
                 <span class="p-float-label">
                     <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchMidtone" locale="en" />
+                                   [(ngModel)]="stretchMidtone" locale="en" scrollableNumber />
                     <label>Midtone</label>
                 </span>
             </div>
@@ -313,7 +313,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!scnr.channel || !scnr.method.endsWith('MASK')" [min]="0" [max]="1" [step]="0.1"
                                [showButtons]="true" class="w-full" inputStyleClass="border-0 w-full" [minFractionDigits]="1"
-                               [(ngModel)]="scnr.amount" locale="en" [allowEmpty]="false" />
+                               [(ngModel)]="scnr.amount" locale="en" [allowEmpty]="false" scrollableNumber />
                 <label>Amount</label>
             </span>
         </div>
@@ -425,13 +425,13 @@
             <p-button [text]="true" icon="mdi mdi-telescope" (onClick)="showFOVTelescopes()" pTooltip="Choose telescope"
                       tooltipPosition="bottom" />
             <span class="p-float-label">
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.focalLength" />
+                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.focalLength" scrollableNumber />
                 <label>Focal Length (mm)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.aperture" />
+                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.aperture" scrollableNumber />
                 <label>Aperture (mm)</label>
             </span>
         </div>
@@ -447,47 +447,49 @@
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="9999" [(ngModel)]="fov.cameraSize.width" />
+                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="9999" [(ngModel)]="fov.cameraSize.width"
+                               scrollableNumber />
                 <label>Width</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="9999" [(ngModel)]="fov.cameraSize.height" />
+                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="9999" [(ngModel)]="fov.cameraSize.height"
+                               scrollableNumber />
                 <label>Height</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0" [max]="99.99" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.pixelSize.width" locale="en" />
+                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.pixelSize.width" locale="en" scrollableNumber />
                 <label>Width</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0" [max]="99.99" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.pixelSize.height" locale="en" />
+                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.pixelSize.height" locale="en" scrollableNumber />
                 <label>Height</label>
             </span>
         </div>
         <div class="col-5">
             <span class="p-float-label">
                 <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0.01" [max]="5" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.barlowReducer" locale="en" />
+                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.barlowReducer" locale="en" scrollableNumber />
                 <label>Barlow/Reducer</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="5" [(ngModel)]="fov.bin" />
+                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="5" [(ngModel)]="fov.bin" scrollableNumber />
                 <label>Bin</label>
             </span>
         </div>
         <!-- <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0" [max]="360" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.rotation" locale="en" />
+                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.rotation" locale="en" scrollableNumber />
                 <label>Rotation (°)</label>
             </span>
         </div> -->

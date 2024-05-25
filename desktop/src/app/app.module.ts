@@ -51,6 +51,7 @@ import { MenuItemComponent } from '../shared/components/menu-item/menu-item.comp
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
+import { ScrollableNumberDirective } from '../shared/directives/input-number-scrollable'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
 import { LocationInterceptor } from '../shared/interceptors/location.interceptor'
@@ -109,6 +110,7 @@ import { SettingsComponent } from './settings/settings.component'
         HistogramComponent,
         HomeComponent,
         ImageComponent,
+        ScrollableNumberDirective,
         INDIComponent,
         INDIPropertyComponent,
         LocationDialog,

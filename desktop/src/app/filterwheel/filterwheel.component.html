@@ -69,7 +69,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!wheel.connected || moving || !focuser" [(ngModel)]="focusOffset" [min]="focusOffsetMin"
                                [max]="focusOffsetMax" [showButtons]="true" locale="en" styleClass="border-0 w-full p-inputtext-sm"
-                               (ngModelChange)="focusOffsetChanged()" />
+                               (ngModelChange)="focusOffsetChanged()" scrollableNumber />
                 <label>Focus offset</label>
             </span>
         </div>

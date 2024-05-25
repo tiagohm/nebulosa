@@ -92,12 +92,14 @@
                             <div class="flex w-full align-items-center px-4 gap-2">
                                 <span class="p-float-label">
                                     <p-inputNumber [min]="1" [max]="30" class="w-full" [step]="1" [showButtons]="true"
-                                                   inputStyleClass="p-inputtext-sm border-0 w-full" [(ngModel)]="closeApproachDays" />
+                                                   inputStyleClass="p-inputtext-sm border-0 w-full" [(ngModel)]="closeApproachDays"
+                                                   scrollableNumber />
                                     <label>Days</label>
                                 </span>
                                 <span class="p-float-label">
                                     <p-inputNumber [min]="1" [max]="100" class="w-full" [step]="0.1" [showButtons]="true"
-                                                   inputStyleClass="p-inputtext-sm border-0 w-full" locale="en" [(ngModel)]="closeApproachDistance" />
+                                                   inputStyleClass="p-inputtext-sm border-0 w-full" locale="en" [(ngModel)]="closeApproachDistance"
+                                                   scrollableNumber />
                                     <label>Distance (LD)</label>
                                 </span>
                                 <p-button [disabled]="refreshing" (onClick)="closeApproachesForMinorPlanets()"
@@ -350,7 +352,7 @@
         <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber [min]="0" [max]="90" class="w-full" [step]="0.1" [maxFractionDigits]="1" [showButtons]="true"
-                               inputStyleClass="p-inputtext-sm border-0 w-full" locale="en" [(ngModel)]="skyObjectFilter.radius" />
+                               inputStyleClass="p-inputtext-sm border-0 w-full" locale="en" [(ngModel)]="skyObjectFilter.radius" scrollableNumber />
                 <label>Radius (°)</label>
             </span>
         </div>
@@ -428,12 +430,11 @@
                 <div class="flex flex-column align-items-center">
                     <div class="flex align-items-center justify-content-center gap-2">
                         <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0"
-                                       [max]="23"
-                                       class="w-fit" [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)"
-                                       styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
+                                       [max]="23" class="w-fit" [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)"
+                                       styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" scrollableNumber />
                         <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeMinute" [showButtons]="true" [min]="0"
                                        [max]="59" class="w-fit" [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)"
-                                       styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" />
+                                       styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" scrollableNumber />
                     </div>
                 </div>
             </div>
