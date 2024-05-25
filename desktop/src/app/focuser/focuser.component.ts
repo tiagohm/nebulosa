@@ -47,20 +47,18 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        hotkeys('left', (event) => { event.preventDefault(); this.moveIn() })
-        hotkeys('alt+left', (event) => { event.preventDefault(); this.moveIn(10) })
-        hotkeys('ctrl+left', (event) => { event.preventDefault(); this.moveIn(2) })
-        hotkeys('shift+left', (event) => { event.preventDefault(); this.moveIn(0.5) })
-        hotkeys('right', (event) => { event.preventDefault(); this.moveOut() })
-        hotkeys('alt+right', (event) => { event.preventDefault(); this.moveOut(10) })
-        hotkeys('ctrl+right', (event) => { event.preventDefault(); this.moveOut(2) })
-        hotkeys('shift+right', (event) => { event.preventDefault(); this.moveOut(0.5) })
-        hotkeys('space', (event) => { event.preventDefault(); this.abort() })
-        hotkeys('ctrl+enter', (event) => { event.preventDefault(); this.moveTo() })
-        hotkeys('up', (event) => { event.preventDefault(); this.stepsRelative = Math.min(this.focuser.maxPosition, this.stepsRelative + 1) })
-        hotkeys('down', (event) => { event.preventDefault(); this.stepsRelative = Math.max(0, this.stepsRelative - 1) })
-        hotkeys('-', (event) => { event.preventDefault(); this.stepsAbsolute = Math.max(0, this.stepsAbsolute - 1) })
-        hotkeys('=', (event) => { event.preventDefault(); this.stepsAbsolute = Math.min(this.focuser.maxPosition, this.stepsAbsolute + 1) })
+        hotkeys('left', event => { event.preventDefault(); this.moveIn() })
+        hotkeys('ctrl+left', event => { event.preventDefault(); this.moveIn(2) })
+        hotkeys('alt+left', event => { event.preventDefault(); this.moveIn(0.5) })
+        hotkeys('right', event => { event.preventDefault(); this.moveOut() })
+        hotkeys('ctrl+right', event => { event.preventDefault(); this.moveOut(2) })
+        hotkeys('alt+right', event => { event.preventDefault(); this.moveOut(0.5) })
+        hotkeys('space', event => { event.preventDefault(); this.abort() })
+        hotkeys('enter', event => { event.preventDefault(); this.moveTo() })
+        hotkeys('up', event => { event.preventDefault(); this.stepsRelative = Math.min(this.focuser.maxPosition, this.stepsRelative + 1) })
+        hotkeys('down', event => { event.preventDefault(); this.stepsRelative = Math.max(0, this.stepsRelative - 1) })
+        hotkeys('ctrl+up', event => { event.preventDefault(); this.stepsAbsolute = Math.max(0, this.stepsAbsolute - 1) })
+        hotkeys('ctrl+down', event => { event.preventDefault(); this.stepsAbsolute = Math.min(this.focuser.maxPosition, this.stepsAbsolute + 1) })
     }
 
     async ngAfterViewInit() {

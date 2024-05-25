@@ -132,8 +132,8 @@
             </span>
         </div>
         <div class="col-4">
-            <p-splitButton noDropdown [disabled]="!mount.connected || slewing || parking || parked" [label]="targetCoordinateOption.label"
-                           [icon]="targetCoordinateOption.icon" styleClass="w-full" (onClick)="targetCoordinateOptionClicked()"
+            <p-splitButton noDropdown [disabled]="!mount.connected || slewing || parking || parked" [label]="targetCoordinateCommand.label"
+                           [icon]="targetCoordinateCommand.icon" styleClass="w-full" (onClick)="targetCoordinateCommandClicked()"
                            (onDropdownClick)="targetMenu.show()" />
         </div>
     </div>

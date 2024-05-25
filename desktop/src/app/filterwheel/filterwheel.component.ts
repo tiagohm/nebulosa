@@ -1,5 +1,6 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import hotkeys from 'hotkeys-js'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
@@ -118,6 +119,19 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 this.savePreference()
                 this.electron.send('WHEEL.RENAMED', { wheel: this.wheel, filter })
             })
+
+        hotkeys('enter', event => { event.preventDefault(); this.moveToSelectedFilter() })
+        hotkeys('up', event => { event.preventDefault(); this.moveUp() })
+        hotkeys('down', event => { event.preventDefault(); this.moveDown() })
+        hotkeys('1', event => { event.preventDefault(); this.moveToPosition(1) })
+        hotkeys('2', event => { event.preventDefault(); this.moveToPosition(2) })
+        hotkeys('3', event => { event.preventDefault(); this.moveToPosition(3) })
+        hotkeys('4', event => { event.preventDefault(); this.moveToPosition(4) })
+        hotkeys('5', event => { event.preventDefault(); this.moveToPosition(5) })
+        hotkeys('6', event => { event.preventDefault(); this.moveToPosition(6) })
+        hotkeys('7', event => { event.preventDefault(); this.moveToPosition(7) })
+        hotkeys('8', event => { event.preventDefault(); this.moveToPosition(8) })
+        hotkeys('9', event => { event.preventDefault(); this.moveToPosition(9) })
     }
 
     async ngAfterContentInit() {
@@ -194,6 +208,49 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         } catch (e) {
             console.error(e)
             this.moving = false
+        }
+    }
+
+    moveToSelectedFilter() {
+        if (this.filter) {
+            this.moveTo(this.filter)
+        }
+    }
+
+    moveUp() {
+        this.moveToPosition(this.wheel.position - 1)
+    }
+
+    moveDown() {
+        this.moveToPosition(this.wheel.position + 1)
+    }
+
+    moveToIndex(index: number) {
+        if (!this.moving) {
+            if (index >= 0 && index < this.filters.length) {
+                this.moveTo(this.filters[index])
+            } else if (index < 0) {
+                this.moveToIndex(this.filters.length + index)
+            } else {
+                this.moveToIndex(index % this.filters.length)
+            }
+        }
+    }
+
+    moveToPosition(position: number) {
+        if (!this.moving) {
+            if (position >= 1 && position <= this.wheel.count) {
+                for (const filter of this.filters) {
+                    if (filter.position === position) {
+                        this.moveTo(filter)
+                        break
+                    }
+                }
+            } else if (position < 1) {
+                this.moveToPosition(this.wheel.count + position)
+            } else {
+                this.moveToPosition(position % this.wheel.count)
+            }
         }
     }
 

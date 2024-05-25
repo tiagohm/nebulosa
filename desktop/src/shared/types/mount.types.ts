@@ -12,6 +12,8 @@ export type CelestialLocationType = 'ZENITH' | 'NORTH_POLE' | 'SOUTH_POLE' | 'GA
 
 export type MountRemoteControlType = 'LX200' | 'STELLARIUM'
 
+export type MoveDirectionType = 'N' | 'S' | 'W' | 'E' | 'NW' | 'NE' | 'SW' | 'SE'
+
 export interface SlewRate {
     name: string
     label: string

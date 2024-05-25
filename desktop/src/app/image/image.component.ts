@@ -519,14 +519,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        hotkeys('ctrl+a', (event) => { event.preventDefault(); this.toggleStretch() })
-        hotkeys('ctrl+i', (event) => { event.preventDefault(); this.invertImage() })
-        hotkeys('ctrl+x', (event) => { event.preventDefault(); this.toggleCrosshair() })
-        hotkeys('ctrl+-', (event) => { event.preventDefault(); this.zoomOut() })
-        hotkeys('ctrl+=', (event) => { event.preventDefault(); this.zoomIn() })
-        hotkeys('ctrl+0', (event) => { event.preventDefault(); this.resetZoom() })
-        hotkeys('f12', (event) => { if (this.app.showTopBar) { event.preventDefault(); this.enterFullscreen() } })
-        hotkeys('escape', (event) => { if (!this.app.showTopBar) { event.preventDefault(); this.exitFullscreen() } })
+        hotkeys('ctrl+a', event => { event.preventDefault(); this.toggleStretch() })
+        hotkeys('ctrl+i', event => { event.preventDefault(); this.invertImage() })
+        hotkeys('ctrl+x', event => { event.preventDefault(); this.toggleCrosshair() })
+        hotkeys('ctrl+-', event => { event.preventDefault(); this.zoomOut() })
+        hotkeys('ctrl+=', event => { event.preventDefault(); this.zoomIn() })
+        hotkeys('ctrl+0', event => { event.preventDefault(); this.resetZoom() })
+        hotkeys('ctrl+alt+0', event => { event.preventDefault(); this.resetZoom(true) })
+        hotkeys('f12', event => { if (this.app.showTopBar) { event.preventDefault(); this.enterFullscreen() } })
+        hotkeys('escape', event => { if (!this.app.showTopBar) { event.preventDefault(); this.exitFullscreen() } })
 
         this.loadPreference()
     }
