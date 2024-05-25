@@ -132,8 +132,8 @@
             </span>
         </div>
         <div class="col-4">
-            <p-splitButton noDropdown [disabled]="!mount.connected || slewing || parking || parked" [label]="targetCoordinateOption.label"
-                           [icon]="targetCoordinateOption.icon" styleClass="w-full" (onClick)="targetCoordinateOptionClicked()"
+            <p-splitButton noDropdown [disabled]="!mount.connected || slewing || parking || parked" [label]="targetCoordinateCommand.label"
+                           [icon]="targetCoordinateCommand.icon" styleClass="w-full" (onClick)="targetCoordinateCommandClicked()"
                            (onDropdownClick)="targetMenu.show()" />
         </div>
     </div>
@@ -240,7 +240,7 @@
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="remoteControl.port"
-                               [showButtons]="true" [min]="1024" [max]="65535" placeholder="10001" />
+                               [showButtons]="true" [min]="1024" [max]="65535" placeholder="10001" scrollableNumber />
                 <label>Port</label>
             </span>
         </div>

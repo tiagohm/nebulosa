@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
-import { SlideMenuItemCommandEvent } from '../../shared/components/slide-menu/slide-menu.component'
+import { SlideMenuItem, SlideMenuItemCommandEvent } from '../../shared/components/slide-menu/slide-menu.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -234,10 +234,21 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             ngZone.run(() => this.loadCalibrationGroups())
         })
 
+        electron.on('ROI.SELECTED', event => {
+            if (event.camera.id === this.camera.id) {
+                ngZone.run(() => {
+                    this.request.x = event.x
+                    this.request.y = event.y
+                    this.request.width = event.width
+                    this.request.height = event.height
+                })
+            }
+        })
+
         this.cameraModel[1].visible = !app.modal
     }
 
-    async ngAfterContentInit() {
+    ngAfterContentInit() {
         this.route.queryParams.subscribe(e => {
             const decodedData = JSON.parse(decodeURIComponent(e.data))
 
@@ -256,9 +267,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
+    async ngOnDestroy() {
         if (this.mode === 'CAPTURE') {
-            this.abortCapture()
+            await this.abortCapture()
         }
     }
 
@@ -402,14 +413,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 label: name ?? 'None',
                 icon: name ? 'mdi mdi-wrench' : 'mdi mdi-close',
                 checked: this.request.calibrationGroup === name,
-                command: (event: SlideMenuItemCommandEvent) => {
+                command: () => {
                     this.request.calibrationGroup = name
                     this.loadCalibrationGroups()
                 },
             }
         }
 
-        const menu: ExtendedMenuItem[] = []
+        const menu: SlideMenuItem[] = []
 
         menu.push({
             icon: 'mdi mdi-wrench',
@@ -514,7 +525,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     abortCapture() {
-        this.api.cameraAbortCapture(this.camera)
+        return this.api.cameraAbortCapture(this.camera)
     }
 
     static exposureUnitFactor(unit: ExposureTimeUnit) {

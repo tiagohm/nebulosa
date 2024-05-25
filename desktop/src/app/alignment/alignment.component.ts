@@ -235,16 +235,18 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
-        this.darvStop()
-        this.tppaStop()
+    async ngOnDestroy() {
+        try {
+            await this.darvStop()
+        } finally {
+            await this.tppaStop()
+        }
     }
 
     async cameraChanged() {
         if (this.camera.id) {
             const camera = await this.api.camera(this.camera.id)
             Object.assign(this.camera, camera)
-            this.loadPreference()
         }
     }
 
@@ -326,7 +328,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     darvStop() {
-        this.api.darvStop(this.camera)
+        return this.api.darvStop(this.camera)
     }
 
     async tppaStart() {

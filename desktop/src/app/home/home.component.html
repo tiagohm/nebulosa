@@ -183,7 +183,7 @@
         <div class="col-4">
             <span class="p-float-label" style="min-width: 80px;">
                 <p-inputNumber [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" placeholder="7624"
-                               [(ngModel)]="newConnection[0].port" [format]="false" />
+                               [(ngModel)]="newConnection[0].port" [min]="80" [max]="65535" [format]="false" scrollableNumber />
                 <label>Port</label>
             </span>
         </div>

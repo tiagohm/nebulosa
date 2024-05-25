@@ -31,7 +31,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.exposureMin" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="1" [max]="60000" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Min Exposure (ms)</label>
             </span>
         </div>
@@ -39,7 +39,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.exposureMax" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="request.exposureMin" [max]="60000" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Max Exposure (ms)</label>
             </span>
         </div>
@@ -47,7 +47,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.meanTarget" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="0" [max]="65535" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Mean Target ({{ meanTargetMin }} - {{ meanTargetMax }})</label>
             </span>
         </div>
@@ -55,7 +55,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.meanTolerance" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="0" [max]="100" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Mean Tolerance (%)</label>
             </span>
         </div>

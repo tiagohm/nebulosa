@@ -12,7 +12,7 @@
             <span class="p-float-label">
                 <p-inputNumber [(ngModel)]="item.value" (ngModelChange)="calculateFormula()"
                                [minFractionDigits]="item.minFractionDigits ?? 0" [maxFractionDigits]="item.maxFractionDigits ?? 4"
-                               [showButtons]="true" styleClass="border-0 p-inputtext-sm" locale="en" />
+                               [showButtons]="true" styleClass="border-0 p-inputtext-sm" locale="en" scrollableNumber />
                 <label>{{ item.label }}</label>
             </span>
         </div>

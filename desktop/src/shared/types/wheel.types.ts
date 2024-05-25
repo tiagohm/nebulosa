@@ -38,3 +38,8 @@ export interface FilterSlot {
     name: string
     dark: boolean
 }
+
+export interface WheelRenamed {
+    wheel: FilterWheel
+    filter: FilterSlot
+}

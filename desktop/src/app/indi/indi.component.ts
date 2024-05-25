@@ -94,19 +94,19 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
     @HostListener('window:unload')
     ngOnDestroy() {
         if (this.device) {
-            this.api.indiStopListening(this.device)
+            this.api.indiUnlisten(this.device)
         }
     }
 
     async deviceChanged(device: Device) {
         if (this.device) {
-            await this.api.indiStopListening(this.device)
+            await this.api.indiUnlisten(this.device)
         }
 
         this.device = device
 
         this.updateProperties()
-        await this.api.indiStartListening(device)
+        await this.api.indiListen(device)
         this.messages = await this.api.indiLog(device)
     }
 

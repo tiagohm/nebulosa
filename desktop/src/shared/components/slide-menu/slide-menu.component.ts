@@ -1,15 +1,17 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core'
-import { MenuItemCommandEvent } from 'primeng/api'
-import { ExtendedMenuItem } from '../menu-item/menu-item.component'
+import { ExtendedMenuItem, ExtendedMenuItemCommandEvent } from '../menu-item/menu-item.component'
 
-export type SlideMenuItem = ExtendedMenuItem
-export type SlideMenu = SlideMenuItem[]
+export interface SlideMenuItem extends ExtendedMenuItem {
+    command?: (event: SlideMenuItemCommandEvent) => void
+}
 
-export interface SlideMenuItemCommandEvent extends MenuItemCommandEvent {
+export interface SlideMenuItemCommandEvent extends ExtendedMenuItemCommandEvent {
     item?: SlideMenuItem
     parent?: SlideMenuItem
-    level: number
+    level?: number
 }
+
+export type SlideMenu = SlideMenuItem[]
 
 @Component({
     selector: 'neb-slide-menu',
