@@ -24,7 +24,7 @@ data class CameraCaptureTask(
     private val useFirstExposure: Boolean = false,
     private val exposureMaxRepeat: Int = 0,
     private val executor: Executor? = null,
-) : AbstractTask<CameraCaptureEvent>(), Consumer<Any> {
+) : AbstractTask<CameraCaptureEvent>(), Consumer<Any>, CameraEventAware {
 
     private val delayTask = DelayTask(request.exposureDelay)
     private val waitForSettleTask = WaitForSettleTask(guider)
@@ -58,7 +58,7 @@ data class CameraCaptureTask(
         }
     }
 
-    fun handleCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         cameraExposureTask.handleCameraEvent(event)
     }
 

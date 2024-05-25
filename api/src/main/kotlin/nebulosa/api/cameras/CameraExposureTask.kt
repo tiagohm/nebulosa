@@ -20,7 +20,7 @@ import kotlin.io.path.outputStream
 data class CameraExposureTask(
     @JvmField val camera: Camera,
     @JvmField val request: CameraStartCaptureRequest,
-) : AbstractTask<CameraExposureEvent>(), CancellationListener {
+) : AbstractTask<CameraExposureEvent>(), CancellationListener, CameraEventAware {
 
     private val latch = CountUpDownLatch()
     private val aborted = AtomicBoolean()
@@ -34,7 +34,7 @@ data class CameraExposureTask(
     val isAborted
         get() = aborted.get()
 
-    fun handleCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         if (event.device === camera) {
             when (event) {
                 is CameraFrameCaptured -> {
@@ -125,7 +125,7 @@ data class CameraExposureTask(
             } else if (event.image != null) {
                 savedPath.sink().use(event.image!!::write)
             } else {
-                LOG.warn("invalid event. camera={}", event.device)
+                LOG.warn("invalid event. event={}", event)
                 return
             }
 

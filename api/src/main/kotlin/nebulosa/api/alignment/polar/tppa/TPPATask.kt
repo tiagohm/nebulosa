@@ -3,10 +3,7 @@ package nebulosa.api.alignment.polar.tppa
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignmentResult
-import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraCaptureEvent
-import nebulosa.api.cameras.CameraCaptureState
-import nebulosa.api.cameras.CameraCaptureTask
+import nebulosa.api.cameras.*
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.mounts.MountMoveRequest
 import nebulosa.api.mounts.MountMoveTask
@@ -38,7 +35,7 @@ data class TPPATask(
     @JvmField val mount: Mount? = null,
     @JvmField val longitude: Angle = mount!!.longitude,
     @JvmField val latitude: Angle = mount!!.latitude,
-) : AbstractTask<MessageEvent>(), Consumer<Any>, PauseListener {
+) : AbstractTask<MessageEvent>(), Consumer<Any>, PauseListener, CameraEventAware {
 
     @JvmField val mountMoveRequest = MountMoveRequest(request.stepDirection, request.stepDuration, request.stepSpeed)
 
@@ -73,7 +70,7 @@ data class TPPATask(
         settleDelayTask.subscribe(this)
     }
 
-    fun handleCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         if (camera === event.device) {
             cameraCaptureTask.handleCameraEvent(event)
         }

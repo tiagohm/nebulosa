@@ -1,9 +1,6 @@
 package nebulosa.api.wizard.flat
 
-import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraCaptureEvent
-import nebulosa.api.cameras.CameraCaptureState
-import nebulosa.api.cameras.CameraCaptureTask
+import nebulosa.api.cameras.*
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.common.concurrency.cancel.CancellationToken
@@ -20,7 +17,7 @@ import java.time.Duration
 data class FlatWizardTask(
     @JvmField val camera: Camera,
     @JvmField val request: FlatWizardRequest,
-) : AbstractTask<MessageEvent>() {
+) : AbstractTask<MessageEvent>(), CameraEventAware {
 
     private val meanTarget = request.meanTarget / 65535f
     private val meanRange = (meanTarget * request.meanTolerance / 100f).let { (meanTarget - it)..(meanTarget + it) }
@@ -34,7 +31,7 @@ data class FlatWizardTask(
     @Volatile private var capture: CameraCaptureEvent? = null
     @Volatile private var savedPath: Path? = null
 
-    fun handleCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         cameraCaptureTask?.handleCameraEvent(event)
     }
 
