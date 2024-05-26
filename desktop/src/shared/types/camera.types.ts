@@ -3,7 +3,7 @@ import { Thermometer } from './auxiliary.types'
 import { CompanionDevice, Device, PropertyState } from './device.types'
 import { GuideOutput } from './guider.types'
 
-export type CameraDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD' | 'TPPA' | 'DARV'
+export type CameraDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD' | 'TPPA' | 'DARV' | 'AUTO_FOCUS'
 
 export type FrameType = 'LIGHT' | 'DARK' | 'FLAT' | 'BIAS'
 

@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core'
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
 import { PrimeService } from '../../services/prime.service'
 import { Device } from '../../types/device.types'
@@ -27,6 +27,12 @@ export class DeviceListMenuComponent {
 
     @Input()
     readonly hasNone: boolean = false
+
+    @Output()
+    readonly deviceConnect = new EventEmitter<Device>()
+
+    @Output()
+    readonly deviceDisconnect = new EventEmitter<Device>()
 
     @ViewChild('menu')
     private readonly menu!: DialogMenuComponent
@@ -71,6 +77,16 @@ export class DeviceListMenuComponent {
                     label: device.name,
                     checked: selected === device,
                     disabled: this.disableIfDeviceIsNotConnected && !device.connected,
+                    toolbarMenu: [
+                        {
+                            icon: 'mdi ' + (device.connected ? 'mdi-close text-red-500' : 'mdi-connection text-blue-500'),
+                            label: device.connected ? 'Disconnect' : 'Connect',
+                            command: event => {
+                                if (device.connected) this.deviceDisconnect.emit(device)
+                                else this.deviceConnect.emit(device)
+                            }
+                        }
+                    ],
                     command: () => {
                         resolve(device)
                     },

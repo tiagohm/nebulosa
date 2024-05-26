@@ -51,7 +51,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     get canExposureTime() {
-        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER' || this.mode === 'TPPA'
+        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER' || this.mode === 'TPPA' || this.mode === 'AUTO_FOCUS'
     }
 
     get canExposureTimeUnit() {
@@ -59,7 +59,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     get canExposureAmount() {
-        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER'
+        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER' || this.mode === 'AUTO_FOCUS'
     }
 
     get canFrameType() {
@@ -284,7 +284,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadDefaultsForMode(mode: CameraDialogMode) {
-        if (mode === 'SEQUENCER') {
+        if (mode === 'SEQUENCER' || mode === 'AUTO_FOCUS') {
             this.exposureMode = 'FIXED'
         } else if (this.mode === 'FLAT_WIZARD') {
             this.exposureMode = 'SINGLE'

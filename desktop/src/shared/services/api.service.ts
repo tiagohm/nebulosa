@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core'
 import moment from 'moment'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { Angle, BodyPosition, CloseApproach, ComputedLocation, Constellation, DeepSkyObject, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
+import { AutoFocusRequest } from '../types/autofocus.type'
 import { CalibrationFrame, CalibrationFrameGroup } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
 import { Device, INDIProperty, INDISendProperty } from '../types/device.types'
@@ -633,6 +634,16 @@ export class ApiService {
     ) {
         const query = this.http.query({ ...solver, path, blind, centerRA, centerDEC, radius })
         return this.http.put<ImageSolved>(`plate-solver?${query}`)
+    }
+
+    // AUTO FOCUS
+
+    autoFocusStart(camera: Camera, focuser: Focuser, request: AutoFocusRequest) {
+        return this.http.put<void>(`auto-focus/${camera.name}/${focuser.name}/start`, request)
+    }
+
+    autoFocusStop(camera: Camera) {
+        return this.http.put<void>(`auto-focus/${camera.name}/stop`)
     }
 
     // PREFERENCE

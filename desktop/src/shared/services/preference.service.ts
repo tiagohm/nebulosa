@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core'
 import { SkyAtlasPreference } from '../../app/atlas/atlas.component'
 import { AlignmentPreference, EMPTY_ALIGNMENT_PREFERENCE } from '../types/alignment.types'
 import { EMPTY_LOCATION, Location } from '../types/atlas.types'
+import { AutoFocusPreference, EMPTY_AUTO_FOCUS_PREFERENCE } from '../types/autofocus.type'
 import { CalibrationPreference } from '../types/calibration.types'
 import { Camera, CameraPreference, CameraStartCapture, EMPTY_CAMERA_PREFERENCE } from '../types/camera.types'
 import { Device } from '../types/device.types'
@@ -63,6 +64,10 @@ export class PreferenceService {
         return new PreferenceData<CameraStartCapture>(this.storage, `camera.${camera.name}.tppa`, () => this.cameraPreference(camera).get())
     }
 
+    cameraStartCaptureForAutoFocus(camera: Camera) {
+        return new PreferenceData<CameraStartCapture>(this.storage, `camera.${camera.name}.autoFocus`, () => this.cameraPreference(camera).get())
+    }
+
     plateSolverPreference(type: PlateSolverType) {
         return new PreferenceData<PlateSolverPreference>(this.storage, `plateSolver.${type}`, () => <PlateSolverPreference>{ ...EMPTY_PLATE_SOLVER_PREFERENCE, type })
     }
@@ -92,4 +97,5 @@ export class PreferenceService {
     readonly alignmentPreference = new PreferenceData<AlignmentPreference>(this.storage, 'alignment', () => structuredClone(EMPTY_ALIGNMENT_PREFERENCE))
     readonly imageFOVs = new PreferenceData<FOV[]>(this.storage, 'image.fovs', () => [])
     readonly calibrationPreference = new PreferenceData<CalibrationPreference>(this.storage, 'calibration', () => <CalibrationPreference>{})
+    readonly autoFocusPreference = new PreferenceData<AutoFocusPreference>(this.storage, 'autoFocus', () => structuredClone(EMPTY_AUTO_FOCUS_PREFERENCE))
 }

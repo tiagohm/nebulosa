@@ -7,7 +7,7 @@ import { DeviceListMenuComponent } from '../device-list-menu/device-list-menu.co
     templateUrl: './device-list-button.component.html',
     styleUrls: ['./device-list-button.component.scss'],
 })
-export class DeviceListButtonComponent {
+export class DeviceListButtonComponent<T extends Device = Device> {
 
     @Input({ required: true })
     readonly title!: string
@@ -19,16 +19,22 @@ export class DeviceListButtonComponent {
     readonly icon!: string
 
     @Input({ required: true })
-    readonly devices!: Device[]
+    readonly devices!: T[]
 
     @Input()
     readonly hasNone: boolean = false
 
     @Input()
-    device?: Device
+    device?: T
 
     @Output()
-    readonly deviceChange = new EventEmitter<Device>()
+    readonly deviceChange = new EventEmitter<T>()
+
+    @Output()
+    readonly deviceConnect = new EventEmitter<T>()
+
+    @Output()
+    readonly deviceDisconnect = new EventEmitter<T>()
 
     @ViewChild('deviceMenu')
     private readonly deviceMenu!: DeviceListMenuComponent

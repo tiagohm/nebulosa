@@ -104,6 +104,11 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'sequencer', path: 'sequencer', data: undefined })
     }
 
+    openAutoFocus(options: OpenWindowOptions = {}) {
+        Object.assign(options, { icon: 'auto-focus', width: 385, height: 370 })
+        this.openWindow({ ...options, id: 'auto-focus', path: 'auto-focus', data: undefined })
+    }
+
     openFlatWizard(options: OpenWindowOptions = {}) {
         Object.assign(options, { icon: 'star', width: 385, height: 370 })
         this.openWindow({ ...options, id: 'flat-wizard', path: 'flat-wizard', data: undefined })

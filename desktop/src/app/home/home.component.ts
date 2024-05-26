@@ -100,6 +100,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         return this.hasCamera
     }
 
+    get hasAutoFocus() {
+        return this.hasCamera && this.hasFocuser
+    }
+
     get hasFlatWizard() {
         return this.hasCamera
     }
@@ -408,6 +412,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 break
             case 'SEQUENCER':
                 this.browserWindow.openSequencer({ bringToFront: true })
+                break
+            case 'AUTO_FOCUS':
+                this.browserWindow.openAutoFocus({ bringToFront: true })
                 break
             case 'FLAT_WIZARD':
                 this.browserWindow.openFlatWizard({ bringToFront: true })
