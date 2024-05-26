@@ -15,7 +15,7 @@ class CancellationTokenTest : StringSpec() {
             token.cancel(false)
             token.get() shouldBe source
             source shouldBe CancellationSource.Cancel(false)
-            token.isDone.shouldBeTrue()
+            token.isCancelled.shouldBeTrue()
         }
         "cancel may interrupt if running" {
             var source: CancellationSource? = null
@@ -24,7 +24,7 @@ class CancellationTokenTest : StringSpec() {
             token.cancel()
             token.get() shouldBe source
             source shouldBe CancellationSource.Cancel(true)
-            token.isDone.shouldBeTrue()
+            token.isCancelled.shouldBeTrue()
         }
         "close" {
             var source: CancellationSource? = null
@@ -33,7 +33,7 @@ class CancellationTokenTest : StringSpec() {
             token.close()
             token.get() shouldBe source
             source shouldBe CancellationSource.Close
-            token.isDone.shouldBeTrue()
+            token.isCancelled.shouldBeTrue()
         }
         "listen" {
             var source: CancellationSource? = null
@@ -42,12 +42,12 @@ class CancellationTokenTest : StringSpec() {
             token.listen { source = it }
             token.get() shouldBe CancellationSource.Cancel(true)
             source shouldBe CancellationSource.Listen
-            token.isDone.shouldBeTrue()
+            token.isCancelled.shouldBeTrue()
         }
         "none" {
             var source: CancellationSource? = null
             val token = CancellationToken.NONE
-            token.isDone.shouldBeTrue()
+            token.isCancelled.shouldBeTrue()
             token.listen { source = it }
             token.cancel()
             token.get() shouldBe CancellationSource.None

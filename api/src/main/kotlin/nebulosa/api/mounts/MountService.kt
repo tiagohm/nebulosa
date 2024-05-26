@@ -220,7 +220,7 @@ class MountService(private val imageBucket: ImageBucket) {
     }
 
     fun pointMountHere(mount: Mount, path: Path, x: Double, y: Double) {
-        val calibration = imageBucket[path]?.second ?: return
+        val calibration = imageBucket[path]?.solution ?: return
 
         if (calibration.isNotEmpty() && calibration.solved) {
             val wcs = WCS(calibration)

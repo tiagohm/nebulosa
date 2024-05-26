@@ -67,7 +67,7 @@ data class CameraCaptureTask(
 
         cameraExposureTask.reset()
 
-        while (!cancellationToken.isDone &&
+        while (!cancellationToken.isCancelled &&
             !cameraExposureTask.isAborted &&
             ((exposureMaxRepeat > 0 && exposureRepeatCount < exposureMaxRepeat)
                     || (exposureMaxRepeat <= 0 && (request.isLoop || exposureCount < request.exposureAmount)))
@@ -100,7 +100,7 @@ data class CameraCaptureTask(
             cameraExposureTask.execute(cancellationToken)
 
             // DITHER.
-            if (!cancellationToken.isDone && !cameraExposureTask.isAborted && guider != null
+            if (!cancellationToken.isCancelled && !cameraExposureTask.isAborted && guider != null
                 && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0
             ) {
                 ditherAfterExposureTask.execute(cancellationToken)

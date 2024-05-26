@@ -28,13 +28,15 @@ data class FocuserMoveAbsoluteTask(
     }
 
     override fun execute(cancellationToken: CancellationToken) {
-        if (!cancellationToken.isDone && focuser.connected
+        if (!cancellationToken.isCancelled && focuser.connected
             && !focuser.moving && position != focuser.position
         ) {
             try {
                 cancellationToken.listen(this)
 
-                LOG.info("Focuser move started. focuser={}, position={}", focuser, position)
+                LOG.info("Focuser move started. position={}, focuser={}", position, focuser)
+
+                latch.countUp()
 
                 if (focuser.canAbsoluteMove) focuser.moveFocusTo(position)
                 else if (focuser.position - position < 0) focuser.moveFocusIn(abs(focuser.position - position))
@@ -45,7 +47,7 @@ data class FocuserMoveAbsoluteTask(
                 cancellationToken.unlisten(this)
             }
 
-            LOG.info("Focuser move finished. focuser={}, position={}", focuser, position)
+            LOG.info("Focuser move finished. position={}, focuser={}", position, focuser)
         }
     }
 

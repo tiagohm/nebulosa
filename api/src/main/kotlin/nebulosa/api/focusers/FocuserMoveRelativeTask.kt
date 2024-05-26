@@ -30,24 +30,26 @@ data class FocuserMoveRelativeTask(
     }
 
     override fun execute(cancellationToken: CancellationToken) {
-        if (!cancellationToken.isDone && focuser.connected && !focuser.moving && offset != 0) {
+        if (!cancellationToken.isCancelled && focuser.connected && !focuser.moving && offset != 0) {
             try {
                 cancellationToken.listen(this)
 
                 initialPosition = focuser.position
 
-                LOG.info("Focuser move started. focuser={}, offset={}", focuser, offset)
+                LOG.info("Focuser move started. offset={}, focuser={}", offset, focuser)
+
+                latch.countUp()
 
                 if (!focuser.canRelativeMove) focuser.moveFocusTo(focuser.position + offset)
                 else if (offset > 0) focuser.moveFocusOut(offset)
-                else focuser.moveFocusIn(offset)
+                else focuser.moveFocusIn(abs(offset))
 
                 latch.await()
             } finally {
                 cancellationToken.unlisten(this)
             }
 
-            LOG.info("Focuser move finished. focuser={}, offset={}", focuser, offset)
+            LOG.info("Focuser move finished. offset={}, focuser={}", offset, focuser)
         }
     }
 

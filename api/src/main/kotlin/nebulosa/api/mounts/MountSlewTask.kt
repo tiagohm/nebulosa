@@ -42,7 +42,7 @@ data class MountSlewTask(
     }
 
     override fun execute(cancellationToken: CancellationToken) {
-        if (!cancellationToken.isDone &&
+        if (!cancellationToken.isCancelled &&
             mount.connected && !mount.parked && !mount.parking && !mount.slewing &&
             rightAscension.isFinite() && declination.isFinite() &&
             (mount.rightAscension != rightAscension || mount.declination != declination)

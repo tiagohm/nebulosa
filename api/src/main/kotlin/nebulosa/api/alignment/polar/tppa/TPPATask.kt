@@ -114,14 +114,14 @@ data class TPPATask(
 
         cancellationToken.listenToPause(this)
 
-        while (!cancellationToken.isDone) {
+        while (!cancellationToken.isCancelled) {
             if (cancellationToken.isPaused) {
                 pausing.set(false)
                 sendEvent(TPPAState.PAUSED)
                 cancellationToken.waitForPause()
             }
 
-            if (cancellationToken.isDone) break
+            if (cancellationToken.isCancelled) break
 
             mount?.tracking(true)
 
@@ -134,7 +134,7 @@ data class TPPATask(
                         mountMoveState[alignment.state.ordinal] = true
                     }
 
-                    if (cancellationToken.isDone) break
+                    if (cancellationToken.isCancelled) break
 
                     rightAscension = mount.rightAscension
                     declination = mount.declination
@@ -146,14 +146,14 @@ data class TPPATask(
                 }
             }
 
-            if (cancellationToken.isDone) break
+            if (cancellationToken.isCancelled) break
 
             sendEvent(TPPAState.EXPOSURING)
 
             // CAPTURE.
             cameraCaptureTask.execute(cancellationToken)
 
-            if (cancellationToken.isDone || savedImage == null) {
+            if (cancellationToken.isCancelled || savedImage == null) {
                 break
             }
 
@@ -177,7 +177,7 @@ data class TPPATask(
 
             LOG.info("TPPA alignment completed. result=$result")
 
-            if (cancellationToken.isDone) break
+            if (cancellationToken.isCancelled) break
 
             when (result) {
                 is ThreePointPolarAlignmentResult.NeedMoreMeasurement -> {

@@ -128,7 +128,7 @@ data class SequencerTask(
         camera.snoop(listOf(mount, wheel, focuser))
 
         for (task in tasks) {
-            if (cancellationToken.isDone) break
+            if (cancellationToken.isCancelled) break
             currentTask.set(task)
             task.execute(cancellationToken)
             currentTask.set(null)

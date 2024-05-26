@@ -38,7 +38,7 @@ data class FlatWizardTask(
     override fun canUseAsLastEvent(event: MessageEvent) = event is FlatWizardEvent
 
     override fun execute(cancellationToken: CancellationToken) {
-        while (!cancellationToken.isDone) {
+        while (!cancellationToken.isCancelled) {
             val delta = exposureMax.toMillis() - exposureMin.toMillis()
 
             if (delta < 10) {
@@ -75,7 +75,7 @@ data class FlatWizardTask(
                 it.execute(cancellationToken)
             }
 
-            if (cancellationToken.isDone) {
+            if (cancellationToken.isCancelled) {
                 state = FlatWizardState.IDLE
                 break
             } else if (savedPath == null) {
@@ -103,7 +103,7 @@ data class FlatWizardTask(
             }
         }
 
-        if (state != FlatWizardState.FAILED && cancellationToken.isDone) {
+        if (state != FlatWizardState.FAILED && cancellationToken.isCancelled) {
             state = FlatWizardState.IDLE
         }
 

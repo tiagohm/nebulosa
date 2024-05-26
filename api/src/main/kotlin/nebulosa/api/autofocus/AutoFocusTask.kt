@@ -4,6 +4,7 @@ import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.cameras.*
 import nebulosa.api.focusers.FocuserEventAware
 import nebulosa.api.focusers.FocuserMoveAbsoluteTask
+import nebulosa.api.focusers.FocuserMoveRelativeTask
 import nebulosa.api.focusers.FocuserMoveTask
 import nebulosa.api.image.ImageBucket
 import nebulosa.api.messages.MessageEvent
@@ -40,7 +41,13 @@ data class AutoFocusTask(
     data class MeasuredStars(
         @JvmField val averageHFD: Double = 0.0,
         @JvmField var hfdStandardDeviation: Double = 0.0,
-    )
+    ) {
+
+        companion object {
+
+            @JvmStatic val ZERO = MeasuredStars()
+        }
+    }
 
     @JvmField val cameraRequest = request.capture.copy(
         exposureAmount = 0, exposureDelay = Duration.ZERO,
@@ -54,7 +61,7 @@ data class AutoFocusTask(
     private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = request.capture.exposureAmount)
 
     @Volatile private var focuserMoveTask: FocuserMoveTask? = null
-    @Volatile private var trendLineCurve: Lazy<TrendLineFitting.Curve>? = null
+    @Volatile private var trendLineCurve: TrendLineFitting.Curve? = null
     @Volatile private var parabolicCurve: Lazy<QuadraticFitting.Curve>? = null
     @Volatile private var hyperbolicCurve: Lazy<HyperbolicFitting.Curve>? = null
 
@@ -77,69 +84,71 @@ data class AutoFocusTask(
 
         // Get initial position information, as average of multiple exposures, if configured this way.
         val initialHFD = if (request.rSquaredThreshold <= 0.0) takeExposure(cancellationToken).averageHFD else Double.NaN
-
         val reverse = request.backlashCompensationMode == BacklashCompensationMode.OVERSHOOT && request.backlashIn > 0 && request.backlashOut == 0
 
+        LOG.info("Auto Focus started. initialHFD={}, reverse={}, camera={}, focuser={}", initialHFD, reverse, camera, focuser)
+
+        var exited = false
         var numberOfAttempts = 0
-        var reattempt: Boolean
         val maximumFocusPoints = request.capture.exposureAmount * request.initialOffsetSteps * 10
 
-        do {
-            reattempt = false
+        while (!exited && !cancellationToken.isCancelled) {
             numberOfAttempts++
 
             val offsetSteps = request.initialOffsetSteps
             val numberOfSteps = offsetSteps + 1
 
+            LOG.info("attempt #{}. offsetSteps={}, numberOfSteps={}", numberOfAttempts, offsetSteps, numberOfSteps)
+
             obtainFocusPoints(numberOfSteps, offsetSteps, reverse, cancellationToken)
 
-            var leftCount = trendLineCurve!!.value.left.points.size
-            var rightCount = trendLineCurve!!.value.right.points.size
+            var leftCount = trendLineCurve!!.left.points.size
+            var rightCount = trendLineCurve!!.right.points.size
 
-            // When datapoints are not sufficient analyze and take more.
+            // When data points are not sufficient analyze and take more.
             do {
                 if (leftCount == 0 && rightCount == 0) {
-                    // TODO: ERROR NotEnoughtSpreadedPoints
-                    // Reattempting in this situation is very likely meaningless - just move back to initial focus position and call it a day.
-                    moveFocuser(initialFocusPosition, cancellationToken)
-                    return
+                    LOG.warn("Not enought spreaded points")
+                    exited = true
+                    break
                 }
+
+                LOG.info("data points are not sufficient. attempt={}, numberOfSteps={}", numberOfAttempts, numberOfSteps)
 
                 // Let's keep moving in, one step at a time, until we have enough left trend points.
                 // Then we can think about moving out to fill in the right trend points.
-                if (trendLineCurve!!.value.left.points.size < offsetSteps
-                    && focusPoints.count { it.x < trendLineCurve!!.value.minimum.x && it.y == 0.0 } < offsetSteps
+                if (trendLineCurve!!.left.points.size < offsetSteps
+                    && focusPoints.count { it.x < trendLineCurve!!.minimum.x && it.y == 0.0 } < offsetSteps
                 ) {
                     LOG.info("more data points needed to the left of the minimum")
 
                     // Move to the leftmost point - this should never be necessary since we're already there, but just in case
                     if (focuser.position != focusPoints.first().x.roundToInt()) {
-                        moveFocuser(focusPoints.first().x.roundToInt(), cancellationToken)
+                        moveFocuser(focusPoints.first().x.roundToInt(), cancellationToken, false)
                     }
 
                     // More points needed to the left.
                     obtainFocusPoints(1, -1, false, cancellationToken)
-                } else if (trendLineCurve!!.value.right.points.size < offsetSteps
-                    && focusPoints.count { it.x > trendLineCurve!!.value.minimum.x && it.y == 0.0 } < offsetSteps
+                } else if (trendLineCurve!!.right.points.size < offsetSteps
+                    && focusPoints.count { it.x > trendLineCurve!!.minimum.x && it.y == 0.0 } < offsetSteps
                 ) {
                     // Now we can go to the right, if necessary.
                     LOG.info("more data points needed to the right of the minimum")
 
                     // More points needed to the right. Let's get to the rightmost point, and keep going right one point at a time.
                     if (focuser.position != focusPoints.last().x.roundToInt()) {
-                        moveFocuser(focusPoints.last().x.roundToInt(), cancellationToken)
+                        moveFocuser(focusPoints.last().x.roundToInt(), cancellationToken, false)
                     }
 
                     // More points needed to the right.
                     obtainFocusPoints(1, 1, false, cancellationToken)
                 }
 
-                leftCount = trendLineCurve!!.value.left.points.size
-                rightCount = trendLineCurve!!.value.right.points.size
+                leftCount = trendLineCurve!!.left.points.size
+                rightCount = trendLineCurve!!.right.points.size
 
                 if (maximumFocusPoints < focusPoints.size) {
                     // Break out when the maximum limit of focus points is reached
-                    // TODO: ERROR
                     LOG.error("failed to complete. Maximum number of focus points exceeded ($maximumFocusPoints).")
                     break
                 }
@@ -149,26 +158,35 @@ data class AutoFocusTask(
                     LOG.error("failed to complete. position reached 0")
                     break
                 }
-            } while (rightCount + focusPoints.count { it.x > trendLineCurve!!.value.minimum.x && it.y == 0.0 } < offsetSteps || leftCount + focusPoints.count { it.x < trendLineCurve!!.value.minimum.x && it.y == 0.0 } < offsetSteps)
+            } while (!cancellationToken.isCancelled && (rightCount + focusPoints.count { it.x > trendLineCurve!!.minimum.x && it.y == 0.0 } < offsetSteps || leftCount + focusPoints.count { it.x < trendLineCurve!!.minimum.x && it.y == 0.0 } < offsetSteps))
+
+            if (exited) break
 
             val finalFocusPoint = determineFinalFocusPoint()
             val goodAutoFocus = validateCalculatedFocusPosition(finalFocusPoint, initialHFD, cancellationToken)
 
             if (!goodAutoFocus) {
                 if (numberOfAttempts < request.totalNumberOfAttempts) {
-                    moveFocuser(initialFocusPosition, cancellationToken)
+                    moveFocuser(initialFocusPosition, cancellationToken, false)
                     LOG.warn("potentially bad auto-focus. reattempting")
                     reset()
-                    reattempt = true
+                    continue
                 } else {
                     LOG.warn("potentially bad auto-focus. Restoring original focus position")
-                    reattempt = false
-                    moveFocuser(initialFocusPosition, cancellationToken)
+                    moveFocuser(initialFocusPosition, cancellationToken, false)
+                    break
                 }
             }
-        } while (reattempt)
+        }
+
+        if (exited || cancellationToken.isCancelled) {
+            LOG.warn("did not complete successfully, so restoring the focuser position to $initialFocusPosition")
+            moveFocuser(initialFocusPosition, CancellationToken.NONE, false)
+        }
 
         reset()
+
+        LOG.info("Auto Focus finished. camera={}, focuser={}", camera, focuser)
     }
 
     private fun determineFinalFocusPoint(): CurvePoint {
@@ -201,8 +219,11 @@ data class AutoFocusTask(
         if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
             val image = imageBucket.open(event.savePath!!)
             val detectedStars = starDetection.detect(image)
+            LOG.info("detected ${detectedStars.size} stars")
             val measure = detectedStars.measureDetectedStars()
+            LOG.info("HFD measurement. mean={}, stdDev={}", measure.averageHFD, measure.hfdStandardDeviation)
             measurements.add(measure)
+            onNext(event)
         }
     }
 
@@ -216,23 +237,21 @@ data class AutoFocusTask(
         val stepSize = request.stepSize
         val direction = if (reverse) -1 else 1
 
+        LOG.info("retrieving focus points. numberOfSteps={}, offset={}, reverse={}", numberOfSteps, offset, reverse)
+
         var focusPosition = 0
 
         if (offset != 0) {
-            focuserMoveTask = FocuserMoveAbsoluteTask(focuser, direction * offset * stepSize)
-            focuserMoveTask!!.execute(cancellationToken)
-            focusPosition = focuser.position
+            focusPosition = moveFocuser(direction * offset * stepSize, cancellationToken, true)
         }
 
         var remainingSteps = numberOfSteps
 
-        while (!cancellationToken.isDone && remainingSteps > 0) {
+        while (!cancellationToken.isCancelled && remainingSteps > 0) {
             val currentFocusPosition = focusPosition
 
             if (remainingSteps > 1) {
-                focuserMoveTask = FocuserMoveAbsoluteTask(focuser, direction * -stepSize)
-                focuserMoveTask!!.execute(cancellationToken)
-                focusPosition = focuser.position
+                focusPosition = moveFocuser(direction * -stepSize, cancellationToken, true)
             }
 
             val measurement = takeExposure(cancellationToken)
@@ -246,18 +265,21 @@ data class AutoFocusTask(
             }
 
             val weight = max(0.001, measurement.hfdStandardDeviation)
-            focusPoints.add(CurvePoint(currentFocusPosition.toDouble(), measurement.averageHFD, weight))
+            val point = CurvePoint(currentFocusPosition.toDouble(), measurement.averageHFD, weight)
+            focusPoints.add(point)
             focusPoints.sortBy { it.x }
 
-            computeCurveFittings()
-
             remainingSteps--
+
+            LOG.info("focus point added. remainingSteps={}, x={}, y={}, weight={}", remainingSteps, point.x, point.y, point.weight)
+
+            computeCurveFittings()
         }
     }
 
     private fun computeCurveFittings() {
         with(focusPoints.toList()) {
-            trendLineCurve = lazy { TrendLineFitting.calculate(this) }
+            trendLineCurve = TrendLineFitting.calculate(this)
 
             if (size >= 3) {
                 if (request.fittingMode == AutoFocusFittingMode.PARABOLIC || request.fittingMode == AutoFocusFittingMode.TREND_PARABOLIC) {
@@ -273,14 +295,12 @@ data class AutoFocusTask(
     private fun validateCalculatedFocusPosition(focusPoint: CurvePoint, initialHFD: Double, cancellationToken: CancellationToken): Boolean {
         val threshold = request.rSquaredThreshold
 
-        fun isTrendLineBad() = trendLineCurve?.value?.let { it.left.rSquared < threshold || it.right.rSquared < threshold } ?: false
-
+        fun isTrendLineBad() = trendLineCurve?.let { it.left.rSquared < threshold || it.right.rSquared < threshold } ?: false
         fun isParabolicBad() = parabolicCurve?.value?.let { it.rSquared < threshold } ?: false
-
         fun isHyperbolicBad() = hyperbolicCurve?.value?.let { it.rSquared < threshold } ?: false
 
         if (threshold > 0.0) {
-            val bad = when (request.fittingMode) {
+            val isBad = when (request.fittingMode) {
                 AutoFocusFittingMode.TRENDLINES -> isTrendLineBad()
                 AutoFocusFittingMode.PARABOLIC -> isParabolicBad()
                 AutoFocusFittingMode.TREND_PARABOLIC -> isParabolicBad() || isTrendLineBad()
@@ -288,7 +308,7 @@ data class AutoFocusTask(
                 AutoFocusFittingMode.TREND_HYPERBOLIC -> isHyperbolicBad() || isTrendLineBad()
             }
 
-            if (bad) {
+            if (isBad) {
                 LOG.error("coefficient of determination is below threshold")
                 return false
             }
@@ -302,7 +322,7 @@ data class AutoFocusTask(
             return false
         }
 
-        moveFocuser(focusPoint.x.roundToInt(), cancellationToken)
+        moveFocuser(focusPoint.x.roundToInt(), cancellationToken, false)
         val hfd = takeExposure(cancellationToken).averageHFD
 
         if (threshold <= 0) {
@@ -315,9 +335,11 @@ data class AutoFocusTask(
         return true
     }
 
-    private fun moveFocuser(position: Int, cancellationToken: CancellationToken) {
-        focuserMoveTask = FocuserMoveAbsoluteTask(focuser, position)
+    private fun moveFocuser(position: Int, cancellationToken: CancellationToken, relative: Boolean): Int {
+        focuserMoveTask = if (relative) FocuserMoveRelativeTask(focuser, position)
+        else FocuserMoveAbsoluteTask(focuser, position)
         focuserMoveTask!!.execute(cancellationToken)
+        return focuser.position
     }
 
     override fun reset() {
@@ -341,6 +363,8 @@ data class AutoFocusTask(
 
         @JvmStatic
         private fun List<ImageStar>.measureDetectedStars(): MeasuredStars {
+            if (isEmpty()) return MeasuredStars.ZERO
+
             val mean = sumOf { it.hfd } / size
 
             var stdDev = 0.0
