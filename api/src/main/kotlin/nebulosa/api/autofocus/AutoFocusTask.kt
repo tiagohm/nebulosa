@@ -40,7 +40,7 @@ data class AutoFocusTask(
 
     data class MeasuredStars(
         @JvmField val averageHFD: Double = 0.0,
-        @JvmField var hfdStandardDeviation: Double = 0.0,
+        @JvmField val hfdStandardDeviation: Double = 0.0,
     ) {
 
         companion object {
@@ -58,12 +58,14 @@ data class AutoFocusTask(
 
     private val focusPoints = ArrayList<CurvePoint>()
     private val measurements = ArrayList<MeasuredStars>(request.capture.exposureAmount)
-    private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = request.capture.exposureAmount)
+    private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = max(1, request.capture.exposureAmount))
 
     @Volatile private var focuserMoveTask: FocuserMoveTask? = null
     @Volatile private var trendLineCurve: TrendLineFitting.Curve? = null
     @Volatile private var parabolicCurve: Lazy<QuadraticFitting.Curve>? = null
     @Volatile private var hyperbolicCurve: Lazy<HyperbolicFitting.Curve>? = null
+
+    @Volatile private var focusPoint = CurvePoint.ZERO
 
     init {
         cameraCaptureTask.subscribe(this)
@@ -80,6 +82,8 @@ data class AutoFocusTask(
     override fun canUseAsLastEvent(event: MessageEvent) = event is AutoFocusEvent
 
     override fun execute(cancellationToken: CancellationToken) {
+        reset()
+
         val initialFocusPosition = focuser.position
 
         // Get initial position information, as average of multiple exposures, if configured this way.
@@ -91,6 +95,8 @@ data class AutoFocusTask(
         var exited = false
         var numberOfAttempts = 0
         val maximumFocusPoints = request.capture.exposureAmount * request.initialOffsetSteps * 10
+
+        camera.snoop(listOf(focuser))
 
         while (!exited && !cancellationToken.isCancelled) {
             numberOfAttempts++
@@ -153,9 +159,9 @@ data class AutoFocusTask(
                     break
                 }
 
-                if (focuser.position == 0) {
-                    // Break out when the focuser hits the zero position. It can't continue from there.
-                    LOG.error("failed to complete. position reached 0")
+                if (focuser.position <= 0 || focuser.position >= focuser.maxPosition) {
+                    // Break out when the focuser hits the min/max position. It can't continue from there.
+                    LOG.error("failed to complete. position reached ${focuser.position}")
                     break
                 }
             } while (!cancellationToken.isCancelled && (rightCount + focusPoints.count { it.x > trendLineCurve!!.minimum.x && it.y == 0.0 } < offsetSteps || leftCount + focusPoints.count { it.x < trendLineCurve!!.minimum.x && it.y == 0.0 } < offsetSteps))
@@ -173,18 +179,22 @@ data class AutoFocusTask(
                     continue
                 } else {
                     LOG.warn("potentially bad auto-focus. Restoring original focus position")
-                    moveFocuser(initialFocusPosition, cancellationToken, false)
-                    break
                 }
+            } else {
+                LOG.info("Auto Focus completed. x={}, y={}", finalFocusPoint.x, finalFocusPoint.y)
             }
+
+            exited = true
         }
 
-        if (exited || cancellationToken.isCancelled) {
-            LOG.warn("did not complete successfully, so restoring the focuser position to $initialFocusPosition")
+        if (exited) {
+            sendEvent(AutoFocusState.FAILED)
+            LOG.warn("Auto Focus did not complete successfully, so restoring the focuser position to $initialFocusPosition")
             moveFocuser(initialFocusPosition, CancellationToken.NONE, false)
         }
 
         reset()
+        sendEvent(AutoFocusState.FINISHED)
 
         LOG.info("Auto Focus finished. camera={}, focuser={}", camera, focuser)
     }
@@ -212,11 +222,12 @@ data class AutoFocusTask(
             sumVariances += hfdStandardDeviation * hfdStandardDeviation
         }
 
-        return MeasuredStars(sumHFD / request.capture.exposureAmount, sqrt(sumVariances / request.capture.exposureAmount))
+        return MeasuredStars(sumHFD / measurements.size, sqrt(sumVariances / measurements.size))
     }
 
     override fun accept(event: CameraCaptureEvent) {
         if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
+            sendEvent(AutoFocusState.COMPUTING, capture = event)
             val image = imageBucket.open(event.savePath!!)
             val detectedStars = starDetection.detect(image)
             LOG.info("detected ${detectedStars.size} stars")
@@ -224,13 +235,20 @@ data class AutoFocusTask(
             LOG.info("HFD measurement. mean={}, stdDev={}", measure.averageHFD, measure.hfdStandardDeviation)
             measurements.add(measure)
             onNext(event)
+        } else {
+            sendEvent(AutoFocusState.EXPOSURING, capture = event)
         }
     }
 
     private fun takeExposure(cancellationToken: CancellationToken): MeasuredStars {
-        measurements.clear()
-        cameraCaptureTask.execute(cancellationToken)
-        return evaluateAllMeasurements()
+        return if (!cancellationToken.isCancelled) {
+            measurements.clear()
+            sendEvent(AutoFocusState.EXPOSURING)
+            cameraCaptureTask.execute(cancellationToken)
+            evaluateAllMeasurements()
+        } else {
+            MeasuredStars.ZERO
+        }
     }
 
     private fun obtainFocusPoints(numberOfSteps: Int, offset: Int, reverse: Boolean, cancellationToken: CancellationToken) {
@@ -258,22 +276,22 @@ data class AutoFocusTask(
 
             // If star measurement is 0, we didn't detect any stars or shapes,
             // and want this point to be ignored by the fitting as much as possible.
-            // Setting a very high Stdev will do the trick.
             if (measurement.averageHFD == 0.0) {
-                LOG.warn("No stars detected in step. Setting a high standard deviation to ignore the point.")
-                measurement.hfdStandardDeviation = 1000.0
+                LOG.warn("No stars detected in step")
+                sendEvent(AutoFocusState.FAILED)
+            } else {
+                focusPoint = CurvePoint(currentFocusPosition.toDouble(), measurement.averageHFD)
+                focusPoints.add(focusPoint)
+                focusPoints.sortBy { it.x }
+
+                LOG.info("focus point added. remainingSteps={}, point={}", remainingSteps, focusPoint)
+
+                computeCurveFittings()
+
+                sendEvent(AutoFocusState.FOCUS_POINT_ADDED)
             }
 
-            val weight = max(0.001, measurement.hfdStandardDeviation)
-            val point = CurvePoint(currentFocusPosition.toDouble(), measurement.averageHFD, weight)
-            focusPoints.add(point)
-            focusPoints.sortBy { it.x }
-
             remainingSteps--
-
-            LOG.info("focus point added. remainingSteps={}, x={}, y={}, weight={}", remainingSteps, point.x, point.y, point.weight)
-
-            computeCurveFittings()
         }
     }
 
@@ -295,9 +313,9 @@ data class AutoFocusTask(
     private fun validateCalculatedFocusPosition(focusPoint: CurvePoint, initialHFD: Double, cancellationToken: CancellationToken): Boolean {
         val threshold = request.rSquaredThreshold
 
-        fun isTrendLineBad() = trendLineCurve?.let { it.left.rSquared < threshold || it.right.rSquared < threshold } ?: false
-        fun isParabolicBad() = parabolicCurve?.value?.let { it.rSquared < threshold } ?: false
-        fun isHyperbolicBad() = hyperbolicCurve?.value?.let { it.rSquared < threshold } ?: false
+        fun isTrendLineBad() = trendLineCurve?.let { it.left.rSquared < threshold || it.right.rSquared < threshold } ?: true
+        fun isParabolicBad() = parabolicCurve?.value?.let { it.rSquared < threshold } ?: true
+        fun isHyperbolicBad() = hyperbolicCurve?.value?.let { it.rSquared < threshold } ?: true
 
         if (threshold > 0.0) {
             val isBad = when (request.fittingMode) {
@@ -338,8 +356,14 @@ data class AutoFocusTask(
     private fun moveFocuser(position: Int, cancellationToken: CancellationToken, relative: Boolean): Int {
         focuserMoveTask = if (relative) FocuserMoveRelativeTask(focuser, position)
         else FocuserMoveAbsoluteTask(focuser, position)
+        sendEvent(AutoFocusState.MOVING)
         focuserMoveTask!!.execute(cancellationToken)
         return focuser.position
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun sendEvent(state: AutoFocusState, capture: CameraCaptureEvent? = null) {
+        onNext(AutoFocusEvent(state, focusPoint, capture))
     }
 
     override fun reset() {

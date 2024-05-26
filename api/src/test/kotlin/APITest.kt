@@ -18,7 +18,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import java.nio.file.Path
 import java.time.Duration
-import java.time.temporal.ChronoUnit
 
 @EnabledIf(NonGitHubOnlyCondition::class)
 class APITest : StringSpec() {
@@ -59,12 +58,15 @@ class APITest : StringSpec() {
 
         "Auto Focus Start" {
             connect()
-            delay(2000)
+            delay(1000)
             cameraConnect()
             focuserConnect()
             delay(1000)
+            focuserMoveTo(position = 36000)
+            delay(2000)
             autoFocusStart()
         }
+        "Auto Focus Stop" { autoFocusStop() }
     }
 
     private fun connect(host: String = "0.0.0.0", port: Int = 7624) {
@@ -143,8 +145,16 @@ class APITest : StringSpec() {
         get("focusers/$focuser")
     }
 
+    private fun focuserMoveTo(focuser: String = FOCUSER_NAME, position: Int) {
+        put("focusers/$focuser/move-to?steps=$position")
+    }
+
     private fun autoFocusStart(camera: String = CAMERA_NAME, focuser: String = FOCUSER_NAME) {
         putJson("auto-focus/$camera/$focuser/start", AUTO_FOCUS_REQUEST)
+    }
+
+    private fun autoFocusStop(camera: String = CAMERA_NAME) {
+        put("auto-focus/$camera/stop")
     }
 
     companion object {
@@ -159,10 +169,10 @@ class APITest : StringSpec() {
 
         @JvmStatic private val CAMERA_START_CAPTURE_REQUEST = CameraStartCaptureRequest(
             exposureTime = EXPOSURE_TIME, width = 1280, height = 1024, frameFormat = "INDI_MONO",
-            savePath = CAPTURES_PATH, exposureAmount = 2
+            savePath = CAPTURES_PATH, exposureAmount = 1
         )
 
-        @JvmStatic private val AUTO_FOCUS_REQUEST = AutoFocusRequest(capture = CAMERA_START_CAPTURE_REQUEST)
+        @JvmStatic private val AUTO_FOCUS_REQUEST = AutoFocusRequest(capture = CAMERA_START_CAPTURE_REQUEST, stepSize = 11000)
 
         @JvmStatic private val CLIENT = OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
