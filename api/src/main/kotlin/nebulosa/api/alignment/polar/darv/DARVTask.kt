@@ -31,7 +31,7 @@ data class DARVTask(
 
     @JvmField val cameraRequest = request.capture.copy(
         exposureTime = request.capture.exposureTime + request.capture.exposureDelay,
-        savePath = Files.createTempDirectory("darv"),
+        savePath = CAPTURE_SAVE_PATH,
         exposureAmount = 1, exposureDelay = Duration.ZERO,
         frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
     )
@@ -123,5 +123,6 @@ data class DARVTask(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<DARVTask>()
+        @JvmStatic private val CAPTURE_SAVE_PATH = Files.createTempDirectory("darv-")
     }
 }

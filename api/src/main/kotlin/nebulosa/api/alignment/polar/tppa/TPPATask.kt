@@ -40,7 +40,7 @@ data class TPPATask(
     @JvmField val mountMoveRequest = MountMoveRequest(request.stepDirection, request.stepDuration, request.stepSpeed)
 
     @JvmField val cameraRequest = request.capture.copy(
-        savePath = Files.createTempDirectory("tppa"),
+        savePath = CAPTURE_SAVE_PATH,
         exposureAmount = 0, exposureDelay = Duration.ZERO,
         exposureTime = maxOf(request.capture.exposureTime, MIN_EXPOSURE_TIME),
         frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
@@ -310,6 +310,7 @@ data class TPPATask(
 
         @JvmStatic private val MIN_EXPOSURE_TIME = Duration.ofSeconds(1L)
         @JvmStatic private val SETTLE_TIME = Duration.ofSeconds(5)
+        @JvmStatic private val CAPTURE_SAVE_PATH = Files.createTempDirectory("tppa-")
         @JvmStatic private val LOG = loggerFor<TPPATask>()
 
         const val MAX_ATTEMPTS = 30

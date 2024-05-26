@@ -51,7 +51,7 @@ data class AutoFocusTask(
 
     @JvmField val cameraRequest = request.capture.copy(
         exposureAmount = 0, exposureDelay = Duration.ZERO,
-        savePath = Files.createTempDirectory("af"),
+        savePath = CAPTURE_SAVE_PATH,
         exposureTime = maxOf(request.capture.exposureTime, MIN_EXPOSURE_TIME),
         frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
     )
@@ -383,6 +383,7 @@ data class AutoFocusTask(
     companion object {
 
         @JvmStatic private val MIN_EXPOSURE_TIME = Duration.ofSeconds(1L)
+        @JvmStatic private val CAPTURE_SAVE_PATH = Files.createTempDirectory("af-")
         @JvmStatic private val LOG = loggerFor<AutoFocusTask>()
 
         @JvmStatic
