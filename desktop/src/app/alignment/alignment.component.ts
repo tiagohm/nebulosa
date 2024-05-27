@@ -109,7 +109,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.cameras.splice(index, 1)
-                    this.cameras.sort(deviceComparator)
                 }
             })
         })
@@ -139,7 +138,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.mounts.splice(index, 1)
-                    this.mounts.sort(deviceComparator)
                 }
             })
         })
@@ -169,7 +167,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.guideOutputs.splice(index, 1)
-                    this.guideOutputs.sort(deviceComparator)
                 }
             })
         })
@@ -262,26 +259,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         if (this.guideOutput.id) {
             const guideOutput = await this.api.guideOutput(this.guideOutput.id)
             Object.assign(this.guideOutput, guideOutput)
-        }
-    }
-
-    mountConnect() {
-        if (this.mount.id) {
-            if (this.mount.connected) {
-                this.api.mountDisconnect(this.mount)
-            } else {
-                this.api.mountConnect(this.mount)
-            }
-        }
-    }
-
-    guideOutputConnect() {
-        if (this.guideOutput.id) {
-            if (this.guideOutput.connected) {
-                this.api.guideOutputDisconnect(this.guideOutput)
-            } else {
-                this.api.guideOutputConnect(this.guideOutput)
-            }
         }
     }
 

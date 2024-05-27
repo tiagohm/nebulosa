@@ -1,11 +1,11 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core'
-import { ExtendedMenuItem, ExtendedMenuItemCommandEvent } from '../menu-item/menu-item.component'
+import { MenuItem, MenuItemCommandEvent } from '../menu-item/menu-item.component'
 
-export interface SlideMenuItem extends ExtendedMenuItem {
+export interface SlideMenuItem extends MenuItem {
     command?: (event: SlideMenuItemCommandEvent) => void
 }
 
-export interface SlideMenuItemCommandEvent extends ExtendedMenuItemCommandEvent {
+export interface SlideMenuItemCommandEvent extends MenuItemCommandEvent {
     item?: SlideMenuItem
     parent?: SlideMenuItem
     level?: number
@@ -51,9 +51,9 @@ export class SlideMenuComponent implements OnInit {
         for (const item of menu) {
             const command = item.command
 
-            if (item.menu?.length) {
+            if (item.subMenu?.length) {
                 item.command = (event: SlideMenuItemCommandEvent) => {
-                    this.menu = item.menu!
+                    this.menu = item.subMenu!
                     this.navigation.push(menu)
                     event.parent = parent
                     event.level = level
@@ -61,7 +61,7 @@ export class SlideMenuComponent implements OnInit {
                     this.onNext.emit(event)
                 }
 
-                this.processMenu(item.menu, level + 1, item)
+                this.processMenu(item.subMenu, level + 1, item)
             } else {
                 item.command = (event: SlideMenuItemCommandEvent) => {
                     event.parent = parent

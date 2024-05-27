@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core'
-import { ExtendedMenuItem } from '../menu-item/menu-item.component'
+import { MenuItem } from '../menu-item/menu-item.component'
 import { SlideMenuItemCommandEvent } from '../slide-menu/slide-menu.component'
 
 @Component({
@@ -16,7 +16,7 @@ export class DialogMenuComponent {
     readonly visibleChange = new EventEmitter<boolean>()
 
     @Input()
-    model: ExtendedMenuItem[] = []
+    model: MenuItem[] = []
 
     @Input()
     header?: string
@@ -38,7 +38,7 @@ export class DialogMenuComponent {
     }
 
     next(event: SlideMenuItemCommandEvent) {
-        if (!event.item?.menu?.length) {
+        if (!event.item?.subMenu?.length) {
             this.hide()
         } else {
             this.navigationHeader.push(this.header)

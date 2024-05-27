@@ -1,15 +1,27 @@
 import { Component, Input } from '@angular/core'
-import { MenuItem, MenuItemCommandEvent } from 'primeng/api'
-import { CheckableMenuItem, ToggleableMenuItem } from '../../types/app.types'
+import { MenuItem as PrimeMenuItem, MenuItemCommandEvent as PrimeMenuItemCommandEvent } from 'primeng/api'
+import { CheckboxChangeEvent } from 'primeng/checkbox'
+import { Severity } from '../../types/app.types'
 
-export interface ExtendedMenuItemCommandEvent extends MenuItemCommandEvent {
-    item?: ExtendedMenuItem
+export interface MenuItemCommandEvent extends PrimeMenuItemCommandEvent {
+    item?: MenuItem
 }
 
-export interface ExtendedMenuItem extends MenuItem, Partial<CheckableMenuItem>, Partial<ToggleableMenuItem> {
-    menu?: ExtendedMenuItem[]
-    toolbarMenu?: ExtendedMenuItem[]
-    command?: (event: ExtendedMenuItemCommandEvent) => void
+export interface MenuItem extends PrimeMenuItem {
+    badgeSeverity?: Severity
+
+    checked?: boolean
+
+    toggleable?: boolean
+    toggled?: boolean
+
+    subMenu?: MenuItem[]
+
+    toolbarMenu?: MenuItem[]
+    toolbarButtonSeverity?: Severity
+
+    command?: (event: MenuItemCommandEvent) => void
+    toggle?: (event: CheckboxChangeEvent) => void
 }
 
 @Component({
@@ -20,5 +32,5 @@ export interface ExtendedMenuItem extends MenuItem, Partial<CheckableMenuItem>, 
 export class MenuItemComponent {
 
     @Input({ required: true })
-    readonly item!: ExtendedMenuItem
+    readonly item!: MenuItem
 }

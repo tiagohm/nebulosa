@@ -108,7 +108,6 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.cameras.splice(index, 1)
-                    this.cameras.sort(deviceComparator)
                 }
             })
         })
@@ -139,7 +138,6 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.wheels.splice(index, 1)
-                    this.wheels.sort(deviceComparator)
                 }
             })
         })
@@ -164,14 +162,6 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
             const cameraPreference = this.preference.cameraPreference(this.camera).get()
             this.request.capture = this.preference.cameraStartCaptureForFlatWizard(this.camera).get(cameraPreference)
             this.updateEntryFromCamera(this.camera)
-        }
-    }
-
-    wheelConnect() {
-        if (this.wheel.connected) {
-            this.api.wheelDisconnect(this.wheel)
-        } else {
-            this.api.wheelConnect(this.wheel)
         }
     }
 

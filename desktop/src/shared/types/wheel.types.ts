@@ -43,3 +43,7 @@ export interface WheelRenamed {
     wheel: FilterWheel
     filter: FilterSlot
 }
+
+export function isFilterWheel(device?: Device): device is FilterWheel {
+    return !!device && 'count' in device
+}

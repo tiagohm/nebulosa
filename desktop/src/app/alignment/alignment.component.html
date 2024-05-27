@@ -1,22 +1,14 @@
 <div class="container px-4 py-3">
     <div class="grid">
         <div class="col-12 align-items-center justify-content-center gap-2">
-            <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera"
-                                    (deviceChange)="cameraChanged()" />
+            <neb-device-chooser title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera"
+                                (deviceChange)="cameraChanged()" />
             <p-button [disabled]="!camera.name || running" icon="mdi mdi-cog" (onClick)="showCameraDialog()" size="small" />
             @if (tab === 0) {
-            <neb-device-list-button title="MOUNT" icon="mdi mdi-telescope" [devices]="mounts" [(device)]="mount" (deviceChange)="mountChanged()" />
-            <p-button *ngIf="mount.connected" [disabled]="!mount.name || running" (onClick)="mountConnect()" icon="mdi mdi-close"
-                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
-            <p-button *ngIf="!mount.connected" [disabled]="!mount.name || running" (onClick)="mountConnect()" icon="mdi mdi-connection"
-                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
+            <neb-device-chooser title="MOUNT" icon="mdi mdi-telescope" [devices]="mounts" [(device)]="mount" (deviceChange)="mountChanged()" />
             } @else {
-            <neb-device-list-button title="GUIDE OUTPUT" icon="mdi mdi-target" [devices]="guideOutputs" [(device)]="guideOutput"
-                                    (deviceChange)="guideOutputChanged()" />
-            <p-button *ngIf="guideOutput.connected" [disabled]="!guideOutput.name || running" (onClick)="guideOutputConnect()"
-                      icon="mdi mdi-close" size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
-            <p-button *ngIf="!guideOutput.connected" [disabled]="!guideOutput.name || running" (onClick)="guideOutputConnect()"
-                      icon="mdi mdi-connection" size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
+            <neb-device-chooser title="GUIDE OUTPUT" icon="mdi mdi-target" [devices]="guideOutputs" [(device)]="guideOutput"
+                                (deviceChange)="guideOutputChanged()" />
             }
         </div>
         <div class="col-12 relative pt-0 text-sm text-gray-400 flex align-items-center mt-1 gap-1 text-sm" style="min-height: 25px;">

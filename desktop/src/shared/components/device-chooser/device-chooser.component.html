@@ -13,4 +13,4 @@
 </p-button>
 
 <neb-device-list-menu #deviceMenu [hasNone]="hasNone" [disableIfDeviceIsNotConnected]="false" [header]="title"
-                      (deviceConnect)="deviceConnect.emit($event)" (deviceDisconnect)="deviceDisconnect.emit($event)" />
+                      (deviceConnect)="deviceConnected($event)" (deviceDisconnect)="deviceDisconnected($event)" />

@@ -1,6 +1,6 @@
 import { MessageEvent } from './api.types'
 import { Thermometer } from './auxiliary.types'
-import { CompanionDevice, Device, PropertyState } from './device.types'
+import { CompanionDevice, Device, PropertyState, isCompanionDevice } from './device.types'
 import { GuideOutput } from './guider.types'
 
 export type CameraDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD' | 'TPPA' | 'DARV' | 'AUTO_FOCUS'
@@ -265,4 +265,12 @@ export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
     elapsedTime: 0,
     progress: 0,
     count: 0,
+}
+
+export function isCamera(device?: Device): device is Camera {
+    return !!device && 'exposuring' in device
+}
+
+export function isGuideHead(device?: Device): device is GuideHead {
+    return isCamera(device) && isCompanionDevice(device) && !!device.main
 }

@@ -8,7 +8,7 @@ import { basename, dirname, extname } from 'path'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
-import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { SlideMenuItem } from '../../shared/components/slide-menu/slide-menu.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
@@ -16,7 +16,6 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
 import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
@@ -169,7 +168,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         transformation: this.transformation
     }
 
-    private readonly saveAsMenuItem: ExtendedMenuItem = {
+    private readonly saveAsMenuItem: MenuItem = {
         label: 'Save as...',
         icon: 'mdi mdi-content-save',
         command: async () => {
@@ -191,7 +190,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly plateSolveMenuItem: ExtendedMenuItem = {
+    private readonly plateSolveMenuItem: MenuItem = {
         label: 'Plate Solve',
         icon: 'mdi mdi-sigma',
         command: () => {
@@ -199,7 +198,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly stretchMenuItem: ExtendedMenuItem = {
+    private readonly stretchMenuItem: MenuItem = {
         label: 'Stretch',
         icon: 'mdi mdi-chart-histogram',
         command: () => {
@@ -207,7 +206,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly autoStretchMenuItem: CheckableMenuItem = {
+    private readonly autoStretchMenuItem: MenuItem = {
         id: 'auto-stretch-menuitem',
         label: 'Auto stretch',
         icon: 'mdi mdi-auto-fix',
@@ -217,7 +216,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly scnrMenuItem: ExtendedMenuItem = {
+    private readonly scnrMenuItem: MenuItem = {
         label: 'SCNR',
         icon: 'mdi mdi-palette',
         disabled: true,
@@ -226,7 +225,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly horizontalMirrorMenuItem: CheckableMenuItem = {
+    private readonly horizontalMirrorMenuItem: MenuItem = {
         label: 'Horizontal mirror',
         icon: 'mdi mdi-flip-horizontal',
         checked: false,
@@ -237,7 +236,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly verticalMirrorMenuItem: CheckableMenuItem = {
+    private readonly verticalMirrorMenuItem: MenuItem = {
         label: 'Vertical mirror',
         icon: 'mdi mdi-flip-vertical',
         checked: false,
@@ -248,7 +247,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly invertMenuItem: CheckableMenuItem = {
+    private readonly invertMenuItem: MenuItem = {
         label: 'Invert',
         icon: 'mdi mdi-invert-colors',
         checked: false,
@@ -257,13 +256,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly calibrationMenuItem: ExtendedMenuItem = {
+    private readonly calibrationMenuItem: MenuItem = {
         label: 'Calibration',
         icon: 'mdi mdi-wrench',
         items: [],
     }
 
-    private readonly statisticsMenuItem: ExtendedMenuItem = {
+    private readonly statisticsMenuItem: MenuItem = {
         icon: 'mdi mdi-chart-histogram',
         label: 'Statistics',
         command: () => {
@@ -272,7 +271,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly fitsHeaderMenuItem: ExtendedMenuItem = {
+    private readonly fitsHeaderMenuItem: MenuItem = {
         icon: 'mdi mdi-list-box',
         label: 'FITS Header',
         command: () => {
@@ -280,7 +279,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly pointMountHereMenuItem: ExtendedMenuItem = {
+    private readonly pointMountHereMenuItem: MenuItem = {
         label: 'Point mount here',
         icon: 'mdi mdi-telescope',
         disabled: true,
@@ -291,7 +290,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly frameAtThisCoordinateMenuItem: ExtendedMenuItem = {
+    private readonly frameAtThisCoordinateMenuItem: MenuItem = {
         label: 'Frame at this coordinate',
         icon: 'mdi mdi-image',
         disabled: true,
@@ -304,7 +303,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly crosshairMenuItem: CheckableMenuItem = {
+    private readonly crosshairMenuItem: MenuItem = {
         label: 'Crosshair',
         icon: 'mdi mdi-bullseye',
         checked: false,
@@ -313,7 +312,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly annotationMenuItem: ToggleableMenuItem = {
+    private readonly annotationMenuItem: MenuItem = {
         label: 'Annotate',
         icon: 'mdi mdi-marker',
         disabled: true,
@@ -328,7 +327,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly detectStarsMenuItem: ToggleableMenuItem = {
+    private readonly detectStarsMenuItem: MenuItem = {
         label: 'Detect stars',
         icon: 'mdi mdi-creation',
         disabled: false,
@@ -346,7 +345,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly roiMenuItem: CheckableMenuItem = {
+    private readonly roiMenuItem: MenuItem = {
         label: 'ROI',
         icon: 'mdi mdi-select',
         checked: false,
@@ -386,7 +385,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly fovMenuItem: ExtendedMenuItem = {
+    private readonly fovMenuItem: MenuItem = {
         label: 'Field of View',
         icon: 'mdi mdi-camera-metering-spot',
         command: () => {
@@ -398,7 +397,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly overlayMenuItem: ExtendedMenuItem = {
+    private readonly overlayMenuItem: MenuItem = {
         label: 'Overlay',
         icon: 'mdi mdi-layers',
         items: [
@@ -573,7 +572,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             const label = name ?? 'None'
             const icon = name ? 'mdi mdi-wrench' : 'mdi mdi-close'
 
-            return <CheckableMenuItem>{
+            return <MenuItem>{
                 label, icon,
                 checked: this.transformation.calibrationGroup === name,
                 disabled: this.calibrationViaCamera,

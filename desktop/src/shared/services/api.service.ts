@@ -69,7 +69,6 @@ export class ApiService {
         return this.http.get<boolean>(`cameras/${camera.id}/capturing`)
     }
 
-    // TODO: Rotator
     cameraSnoop(camera: Camera, equipment: Equipment) {
         const { mount, wheel, focuser, rotator } = equipment
         const query = this.http.query({ mount: mount?.name, wheel: wheel?.name, focuser: focuser?.name, rotator: rotator?.name })
@@ -382,6 +381,18 @@ export class ApiService {
     }
 
     // INDI
+
+    indiDevice<T extends Device = Device>(device: T) {
+        return this.http.get<T>(`indi/${device.id}`)
+    }
+
+    indiDeviceConnect(device: Device) {
+        return this.http.put<void>(`indi/${device.id}/connect`)
+    }
+
+    indiDeviceDisconnect(device: Device) {
+        return this.http.put<void>(`indi/${device.id}/disconnect`)
+    }
 
     indiProperties(device: Device) {
         return this.http.get<INDIProperty<any>[]>(`indi/${device.id}/properties`)

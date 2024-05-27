@@ -39,6 +39,64 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Auto Focus'
 
+        electron.on('CAMERA.UPDATED', event => {
+            if (event.device.id === this.camera.id) {
+                ngZone.run(() => {
+                    Object.assign(this.camera, event.device)
+                })
+            }
+        })
+
+        electron.on('CAMERA.ATTACHED', event => {
+            ngZone.run(() => {
+                this.cameras.push(event.device)
+                this.cameras.sort(deviceComparator)
+            })
+        })
+
+        electron.on('CAMERA.DETACHED', event => {
+            ngZone.run(() => {
+                const index = this.cameras.findIndex(e => e.id === event.device.id)
+
+                if (index >= 0) {
+                    if (this.cameras[index] === this.camera) {
+                        Object.assign(this.camera, this.cameras[0] ?? EMPTY_CAMERA)
+                    }
+
+                    this.cameras.splice(index, 1)
+                }
+            })
+        })
+
+        electron.on('FOCUSER.UPDATED', event => {
+            if (event.device.id === this.focuser.id) {
+                ngZone.run(() => {
+                    Object.assign(this.focuser, event.device)
+                })
+            }
+        })
+
+        electron.on('FOCUSER.ATTACHED', event => {
+            ngZone.run(() => {
+                this.focusers.push(event.device)
+                this.focusers.sort(deviceComparator)
+            })
+        })
+
+        electron.on('FOCUSER.DETACHED', event => {
+            ngZone.run(() => {
+                const index = this.focusers.findIndex(e => e.id === event.device.id)
+
+                if (index >= 0) {
+                    if (this.focusers[index] === this.focuser) {
+                        Object.assign(this.focuser, this.focusers[0] ?? EMPTY_FOCUSER)
+                    }
+
+                    this.focusers.splice(index, 1)
+                }
+            })
+        })
+
         this.loadPreference()
     }
 
@@ -59,34 +117,10 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    cameraConnect(camera?: Camera) {
-        camera ??= this.camera
-
-        if (camera.id) {
-            if (camera.connected) {
-                this.api.cameraDisconnect(camera)
-            } else {
-                this.api.cameraConnect(camera)
-            }
-        }
-    }
-
     async focuserChanged() {
         if (this.focuser.id) {
             const focuser = await this.api.focuser(this.focuser.id)
             Object.assign(this.focuser, focuser)
-        }
-    }
-
-    focuserConnect(focuser?: Focuser) {
-        focuser ??= this.focuser
-
-        if (focuser.id) {
-            if (focuser.connected) {
-                this.api.focuserDisconnect(focuser)
-            } else {
-                this.api.focuserConnect(focuser)
-            }
         }
     }
 

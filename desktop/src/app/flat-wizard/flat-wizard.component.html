@@ -1,16 +1,11 @@
 <div class="container px-4 py-3">
     <div class="grid">
         <div class="col-12 align-items-center justify-content-center gap-2">
-            <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera"
-                                    (deviceChange)="cameraChanged()" />
+            <neb-device-chooser title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera"
+                                (deviceChange)="cameraChanged()" />
             <p-button [disabled]="!camera.name || running" icon="mdi mdi-cog" size="small" (onClick)="showCameraDialog()" />
-            <neb-device-list-button title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel"
-                                    (deviceChange)="wheelChanged()" />
-
-            <p-button *ngIf="wheel?.connected" [disabled]="!wheel.name || running" (onClick)="wheelConnect()" icon="mdi mdi-close"
-                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
-            <p-button *ngIf="!wheel?.connected" [disabled]="!wheel.name || running" (onClick)="wheelConnect()" icon="mdi mdi-connection"
-                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
+            <neb-device-chooser title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel"
+                                (deviceChange)="wheelChanged()" />
         </div>
         <div class="col-12 pt-0 pb-1 text-sm text-gray-400 flex-column flex align-items-center my-1 gap-1 text-center text-xs">
             <neb-camera-exposure #cameraExposure />

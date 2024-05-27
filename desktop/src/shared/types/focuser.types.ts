@@ -37,3 +37,7 @@ export interface FocuserPreference {
     stepsRelative?: number
     stepsAbsolute?: number
 }
+
+export function isFocuser(device?: Device): device is Focuser {
+    return !!device && 'maxPosition' in device
+}

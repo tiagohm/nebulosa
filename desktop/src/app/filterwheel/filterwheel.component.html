@@ -63,8 +63,8 @@
                         (onChange)="shutterToggled(filter, $event)" label="Shutter" />
         </div>
         <div class="col-12 flex align-items-center justify-content-between gap-1">
-            <neb-device-list-button title="FOCUSER" icon="mdi mdi-image-filter-center-focus" [devices]="focusers" [(device)]="focuser"
-                                    (deviceChange)="focuserChanged()" style="max-width: 60%" />
+            <neb-device-chooser title="FOCUSER" icon="mdi mdi-image-filter-center-focus" [devices]="focusers" [(device)]="focuser"
+                                (deviceChange)="focuserChanged()" style="max-width: 60%" />
 
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!wheel.connected || moving || !focuser" [(ngModel)]="focusOffset" [min]="focusOffsetMin"

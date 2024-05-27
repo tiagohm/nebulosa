@@ -1,10 +1,9 @@
 <div class="grid p-4">
     <div class="col-12 align-items-center justify-content-center gap-2">
-        <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera"
-                                (deviceChange)="cameraChanged()" (deviceConnect)="cameraConnect($event)" (deviceDisconnect)="cameraConnect($event)" />
+        <neb-device-chooser title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera"
+                            (deviceChange)="cameraChanged()" />
         <p-button [disabled]="!camera.name || running" icon="mdi mdi-cog" (onClick)="showCameraDialog()" size="small" />
-        <neb-device-list-button title="FOCUSER" icon="mdi mdi-target" [devices]="focusers" [(device)]="focuser"
-                                (deviceChange)="focuserChanged()" (deviceConnect)="focuserConnect($event)"
-                                (deviceDisconnect)="focuserConnect($event)" />
+        <neb-device-chooser title="FOCUSER" icon="mdi mdi-target" [devices]="focusers" [(device)]="focuser"
+                            (deviceChange)="focuserChanged()" />
     </div>
 </div>

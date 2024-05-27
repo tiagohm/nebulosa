@@ -374,14 +374,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    connectGuideOutput() {
-        if (this.guideOutputConnected) {
-            this.api.guideOutputDisconnect(this.guideOutput!)
-        } else {
-            this.api.guideOutputConnect(this.guideOutput!)
-        }
-    }
-
     guidePulseStart(...directions: GuideDirection[]) {
         for (const direction of directions) {
             switch (direction) {
