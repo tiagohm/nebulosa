@@ -1,63 +1,18 @@
 package nebulosa.api.focusers
 
-import nebulosa.common.concurrency.cancel.CancellationListener
-import nebulosa.common.concurrency.cancel.CancellationSource
-import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.indi.device.focuser.Focuser
-import nebulosa.indi.device.focuser.FocuserEvent
-import nebulosa.indi.device.focuser.FocuserMoveFailed
-import nebulosa.indi.device.focuser.FocuserPositionChanged
-import nebulosa.log.loggerFor
 import kotlin.math.abs
 
 data class FocuserMoveAbsoluteTask(
     override val focuser: Focuser,
-    @JvmField val position: Int,
-) : FocuserMoveTask, CancellationListener {
+    @JvmField @Volatile var position: Int,
+) : AbstractFocuserMoveTask() {
 
-    private val latch = CountUpDownLatch()
+    override fun canMove() = position != focuser.position && position > 0 && position < focuser.maxPosition
 
-    override fun handleFocuserEvent(event: FocuserEvent) {
-        if (event.device === focuser) {
-            when (event) {
-                is FocuserPositionChanged -> if (focuser.position == position) latch.reset()
-                is FocuserMoveFailed -> latch.reset()
-            }
-        }
-    }
-
-    override fun execute(cancellationToken: CancellationToken) {
-        if (!cancellationToken.isCancelled && focuser.connected
-            && !focuser.moving && position != focuser.position
-        ) {
-            try {
-                cancellationToken.listen(this)
-
-                LOG.info("Focuser move started. position={}, focuser={}", position, focuser)
-
-                latch.countUp()
-
-                if (focuser.canAbsoluteMove) focuser.moveFocusTo(position)
-                else if (focuser.position - position < 0) focuser.moveFocusIn(abs(focuser.position - position))
-                else focuser.moveFocusOut(abs(focuser.position - position))
-
-                latch.await()
-            } finally {
-                cancellationToken.unlisten(this)
-            }
-
-            LOG.info("Focuser move finished. position={}, focuser={}", position, focuser)
-        }
-    }
-
-    override fun onCancel(source: CancellationSource) {
-        focuser.abortFocus()
-        latch.reset()
-    }
-
-    companion object {
-
-        @JvmStatic private val LOG = loggerFor<FocuserMoveAbsoluteTask>()
+    override fun move() {
+        if (focuser.canAbsoluteMove) focuser.moveFocusTo(position)
+        else if (position < focuser.position) focuser.moveFocusIn(abs(position - focuser.position))
+        else focuser.moveFocusOut(abs(position - focuser.position))
     }
 }

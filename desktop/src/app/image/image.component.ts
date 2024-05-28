@@ -20,7 +20,6 @@ import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, St
 import { Camera } from '../../shared/types/camera.types'
 import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
-import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
 
@@ -104,7 +103,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         centerDEC: '',
         radius: 4,
         solved: structuredClone(EMPTY_IMAGE_SOLVED),
-        types: Array.from(DEFAULT_SOLVER_TYPES),
+        types: ['ASTAP', 'ASTROMETRY_NET_ONLINE'],
         type: 'ASTAP'
     }
 

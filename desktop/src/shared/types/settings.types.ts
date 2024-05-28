@@ -1,8 +1,6 @@
 
 export type PlateSolverType = 'ASTROMETRY_NET' | 'ASTROMETRY_NET_ONLINE' | 'ASTAP'
 
-export const DEFAULT_SOLVER_TYPES: PlateSolverType[] = ['ASTROMETRY_NET_ONLINE', 'ASTAP']
-
 export interface PlateSolverPreference {
     type: PlateSolverType
     executablePath: string

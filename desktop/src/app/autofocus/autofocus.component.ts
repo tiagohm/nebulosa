@@ -26,7 +26,17 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
     running = false
 
     readonly request: AutoFocusRequest = {
-        capture: structuredClone(EMPTY_CAMERA_START_CAPTURE)
+        capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
+        fittingMode: 'HYPERBOLIC',
+        rSquaredThreshold: 0.7,
+        backlashCompensation: {
+            mode: 'OVERSHOOT',
+            backlashIn: 0,
+            backlashOut: 0
+        },
+        initialOffsetSteps: 4,
+        stepSize: 100,
+        totalNumberOfAttempts: 4
     }
 
     constructor(
@@ -157,6 +167,16 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
         this.preference.cameraStartCaptureForAutoFocus(this.camera).set(this.request.capture)
 
         const preference: AutoFocusPreference = {
+            fittingMode: 'TRENDLINES',
+            rSquaredThreshold: 0,
+            backlashCompensation: {
+                mode: 'OVERSHOOT',
+                backlashIn: 0,
+                backlashOut: 0
+            },
+            initialOffsetSteps: 0,
+            stepSize: 0,
+            totalNumberOfAttempts: 0
         }
 
         this.preference.autoFocusPreference.set(preference)

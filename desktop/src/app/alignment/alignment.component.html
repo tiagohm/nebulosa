@@ -27,8 +27,8 @@
                     <div class="grid mt-3">
                         <div class="col-5 gap-2 align-items-center">
                             <span class="p-float-label">
-                                <p-dropdown [options]="plateSolverTypes" [(ngModel)]="tppaRequest.plateSolver.type" [autoDisplayFirst]="false"
-                                            styleClass="p-inputtext-sm border-0" (ngModelChange)="plateSolverChanged()" />
+                                <p-dropdown [options]="['ASTROMETRY_NET_ONLINE', 'ASTAP']" [(ngModel)]="tppaRequest.plateSolver.type"
+                                            [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0" (ngModelChange)="plateSolverChanged()" />
                                 <label>Plate Solver</label>
                             </span>
                         </div>

@@ -9,7 +9,7 @@ import { Angle } from '../../shared/types/atlas.types'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { EMPTY_GUIDE_OUTPUT, GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { EMPTY_MOUNT, Mount } from '../../shared/types/mount.types'
-import { DEFAULT_SOLVER_TYPES, EMPTY_PLATE_SOLVER_PREFERENCE } from '../../shared/types/settings.types'
+import { EMPTY_PLATE_SOLVER_PREFERENCE } from '../../shared/types/settings.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
@@ -47,7 +47,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         stepDuration: 5,
     }
 
-    readonly plateSolverTypes = Array.from(DEFAULT_SOLVER_TYPES)
     tppaFailed = false
     tppaRightAscension: Angle = `00h00m00s`
     tppaDeclination: Angle = `00°00'00"`

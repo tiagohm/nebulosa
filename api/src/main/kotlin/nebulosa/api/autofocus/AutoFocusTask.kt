@@ -2,10 +2,9 @@ package nebulosa.api.autofocus
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.cameras.*
+import nebulosa.api.focusers.BacklashCompensationFocuserMoveTask
+import nebulosa.api.focusers.BacklashCompensationMode
 import nebulosa.api.focusers.FocuserEventAware
-import nebulosa.api.focusers.FocuserMoveAbsoluteTask
-import nebulosa.api.focusers.FocuserMoveRelativeTask
-import nebulosa.api.focusers.FocuserMoveTask
 import nebulosa.api.image.ImageBucket
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.tasks.AbstractTask
@@ -56,11 +55,12 @@ data class AutoFocusTask(
         frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
     )
 
+
     private val focusPoints = ArrayList<CurvePoint>()
     private val measurements = ArrayList<MeasuredStars>(request.capture.exposureAmount)
     private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = max(1, request.capture.exposureAmount))
+    private val focuserMoveTask = BacklashCompensationFocuserMoveTask(focuser, 0, request.backlashCompensation)
 
-    @Volatile private var focuserMoveTask: FocuserMoveTask? = null
     @Volatile private var trendLineCurve: TrendLineFitting.Curve? = null
     @Volatile private var parabolicCurve: Lazy<QuadraticFitting.Curve>? = null
     @Volatile private var hyperbolicCurve: Lazy<HyperbolicFitting.Curve>? = null
@@ -76,7 +76,7 @@ data class AutoFocusTask(
     }
 
     override fun handleFocuserEvent(event: FocuserEvent) {
-        focuserMoveTask?.handleFocuserEvent(event)
+        focuserMoveTask.handleFocuserEvent(event)
     }
 
     override fun canUseAsLastEvent(event: MessageEvent) = event is AutoFocusEvent
@@ -88,7 +88,8 @@ data class AutoFocusTask(
 
         // Get initial position information, as average of multiple exposures, if configured this way.
         val initialHFD = if (request.rSquaredThreshold <= 0.0) takeExposure(cancellationToken).averageHFD else Double.NaN
-        val reverse = request.backlashCompensationMode == BacklashCompensationMode.OVERSHOOT && request.backlashIn > 0 && request.backlashOut == 0
+        val reverse = request.backlashCompensation.mode == BacklashCompensationMode.OVERSHOOT && request.backlashCompensation.backlashIn > 0 &&
+                request.backlashCompensation.backlashOut == 0
 
         LOG.info("Auto Focus started. initialHFD={}, reverse={}, camera={}, focuser={}", initialHFD, reverse, camera, focuser)
 
@@ -354,10 +355,9 @@ data class AutoFocusTask(
     }
 
     private fun moveFocuser(position: Int, cancellationToken: CancellationToken, relative: Boolean): Int {
-        focuserMoveTask = if (relative) FocuserMoveRelativeTask(focuser, position)
-        else FocuserMoveAbsoluteTask(focuser, position)
         sendEvent(AutoFocusState.MOVING)
-        focuserMoveTask!!.execute(cancellationToken)
+        focuserMoveTask.position = if (relative) focuser.position + position else position
+        focuserMoveTask.execute(cancellationToken)
         return focuser.position
     }
 

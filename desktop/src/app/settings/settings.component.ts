@@ -6,7 +6,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
-import { DEFAULT_SOLVER_TYPES, PlateSolverPreference, PlateSolverType } from '../../shared/types/settings.types'
+import { PlateSolverPreference, PlateSolverType } from '../../shared/types/settings.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -19,7 +19,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     readonly locations: Location[]
     location: Location
 
-    readonly solverTypes = Array.from(DEFAULT_SOLVER_TYPES)
+    readonly solverTypes: PlateSolverType[] = ['ASTAP', 'ASTROMETRY_NET_ONLINE']
     solverType = this.solverTypes[0]
     readonly solvers = new Map<PlateSolverType, PlateSolverPreference>()
 

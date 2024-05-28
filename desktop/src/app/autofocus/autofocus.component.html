@@ -6,4 +6,44 @@
         <neb-device-chooser title="FOCUSER" icon="mdi mdi-target" [devices]="focusers" [(device)]="focuser"
                             (deviceChange)="focuserChanged()" />
     </div>
+    <div class="col-12 mt-3">
+        <div class="grid">
+            <div class="col-4 align-items-center">
+                <span class="p-float-label">
+                    <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="request.stepSize"
+                                   [showButtons]="true" [min]="1" [max]="focuser.maxPosition" (ngModelChange)="savePreference()" scrollableNumber />
+                    <label>Step Size</label>
+                </span>
+            </div>
+            <div class="col-4 align-items-center">
+                <span class="p-float-label">
+                    <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="request.initialOffsetSteps"
+                                   [showButtons]="true" [min]="1" [max]="1000" (ngModelChange)="savePreference()" scrollableNumber />
+                    <label>Initial Offset Step</label>
+                </span>
+            </div>
+            <div class="col-4 align-items-center">
+                <span class="p-float-label">
+                    <p-dropdown [options]="['TRENDLINES', 'PARABOLIC', 'TREND_PARABOLIC', 'HYPERBOLIC', 'TREND_HYPERBOLIC']"
+                                [(ngModel)]="request.fittingMode" [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0"
+                                (ngModelChange)="savePreference()" />
+                    <label>Curve Fitting</label>
+                </span>
+            </div>
+            <div class="col-4 align-items-center">
+                <span class="p-float-label">
+                    <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="request.totalNumberOfAttempts"
+                                   [showButtons]="true" [min]="1" [max]="10" (ngModelChange)="savePreference()" scrollableNumber />
+                    <label>Attempts</label>
+                </span>
+            </div>
+            <div class="col-4 align-items-center">
+                <span class="p-float-label">
+                    <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="request.capture.exposureAmount"
+                                   [showButtons]="true" [min]="1" [max]="10" (ngModelChange)="savePreference()" scrollableNumber />
+                    <label>Exposures per Point</label>
+                </span>
+            </div>
+        </div>
+    </div>
 </div>

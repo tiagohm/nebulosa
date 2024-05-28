@@ -1,4 +1,4 @@
-package nebulosa.api.autofocus
+package nebulosa.api.focusers
 
 enum class BacklashCompensationMode {
     ABSOLUTE,
