@@ -326,7 +326,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     openCameraImage() {
-        return this.browserWindow.openCameraImage(this.camera)
+        return this.browserWindow.openCameraImage(this.camera, 'ALIGNMENT')
     }
 
     private loadPreference() {

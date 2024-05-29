@@ -2,7 +2,7 @@ import { CameraStartCapture } from './camera.types'
 
 export type AutoFocusFittingMode = 'TRENDLINES' | 'PARABOLIC' | 'TREND_PARABOLIC' | 'HYPERBOLIC' | 'TREND_HYPERBOLIC'
 
-export type BacklashCompensationMode = 'ABSOLUTE' | 'OVERSHOOT'
+export type BacklashCompensationMode = 'NONE' | 'ABSOLUTE' | 'OVERSHOOT'
 
 export interface BacklashCompensation {
     mode: BacklashCompensationMode
@@ -27,9 +27,9 @@ export const EMPTY_AUTO_FOCUS_PREFERENCE: AutoFocusPreference = {
     rSquaredThreshold: 0.7,
     initialOffsetSteps: 4,
     stepSize: 100,
-    totalNumberOfAttempts: 4,
+    totalNumberOfAttempts: 1,
     backlashCompensation: {
-        mode: 'OVERSHOOT',
+        mode: 'NONE',
         backlashIn: 0,
         backlashOut: 0
     }

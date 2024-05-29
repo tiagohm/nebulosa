@@ -30,13 +30,13 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
         fittingMode: 'HYPERBOLIC',
         rSquaredThreshold: 0.7,
         backlashCompensation: {
-            mode: 'OVERSHOOT',
+            mode: 'NONE',
             backlashIn: 0,
             backlashOut: 0
         },
         initialOffsetSteps: 4,
         stepSize: 100,
-        totalNumberOfAttempts: 4
+        totalNumberOfAttempts: 1
     }
 
     constructor(
@@ -142,8 +142,13 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
         }
     }
 
+    start() {
+        this.browserWindow.openCameraImage(this.camera, 'AUTO_FOCUS')
+        return this.api.autoFocusStart(this.camera, this.focuser, this.request)
+    }
+
     stop() {
-        return this.api.tppaStop(this.camera)
+        return this.api.autoFocusStop(this.camera)
     }
 
     openCameraImage() {
@@ -152,6 +157,15 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
 
     private loadPreference() {
         const preference = this.preference.autoFocusPreference.get()
+
+        this.request.fittingMode = preference.fittingMode ?? 'HYPERBOLIC'
+        this.request.initialOffsetSteps = preference.initialOffsetSteps ?? 4
+        // this.request.rSquaredThreshold
+        this.request.stepSize = preference.stepSize ?? 100
+        this.request.totalNumberOfAttempts = preference.totalNumberOfAttempts ?? 1
+        this.request.backlashCompensation.mode = preference.backlashCompensation.mode ?? 'NONE'
+        this.request.backlashCompensation.backlashIn = preference.backlashCompensation.backlashIn ?? 0
+        this.request.backlashCompensation.backlashOut = preference.backlashCompensation.backlashOut ?? 0
 
         if (this.camera.id) {
             const cameraPreference = this.preference.cameraPreference(this.camera).get()
@@ -167,16 +181,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
         this.preference.cameraStartCaptureForAutoFocus(this.camera).set(this.request.capture)
 
         const preference: AutoFocusPreference = {
-            fittingMode: 'TRENDLINES',
-            rSquaredThreshold: 0,
-            backlashCompensation: {
-                mode: 'OVERSHOOT',
-                backlashIn: 0,
-                backlashOut: 0
-            },
-            initialOffsetSteps: 0,
-            stepSize: 0,
-            totalNumberOfAttempts: 0
+            ...this.request
         }
 
         this.preference.autoFocusPreference.set(preference)
