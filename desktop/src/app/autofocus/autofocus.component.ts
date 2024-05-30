@@ -3,10 +3,9 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { AutoFocusPreference, AutoFocusRequest } from '../../shared/types/autofocus.type'
+import { AutoFocusPreference, AutoFocusRequest, EMPTY_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { EMPTY_FOCUSER, Focuser } from '../../shared/types/focuser.types'
-import { EMPTY_STAR_DETECTION_OPTIONS } from '../../shared/types/settings.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
@@ -27,18 +26,8 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
     running = false
 
     readonly request: AutoFocusRequest = {
+        ...structuredClone(EMPTY_AUTO_FOCUS_PREFERENCE),
         capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
-        fittingMode: 'HYPERBOLIC',
-        rSquaredThreshold: 0.7,
-        backlashCompensation: {
-            mode: 'NONE',
-            backlashIn: 0,
-            backlashOut: 0
-        },
-        initialOffsetSteps: 4,
-        stepSize: 100,
-        totalNumberOfAttempts: 1,
-        starDetector: structuredClone(EMPTY_STAR_DETECTION_OPTIONS),
     }
 
     constructor(

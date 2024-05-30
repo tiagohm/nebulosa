@@ -26,7 +26,6 @@ import java.nio.file.Path
 import java.time.Duration
 import kotlin.math.max
 import kotlin.math.roundToInt
-import kotlin.math.sqrt
 
 data class AutoFocusTask(
     @JvmField val camera: Camera,
@@ -35,17 +34,6 @@ data class AutoFocusTask(
     @JvmField val starDetection: StarDetector<Path>,
 ) : AbstractTask<MessageEvent>(), Consumer<CameraCaptureEvent>, CameraEventAware, FocuserEventAware {
 
-    data class MeasuredStars(
-        @JvmField val averageHFD: Double = 0.0,
-        @JvmField val hfdStandardDeviation: Double = 0.0,
-    ) {
-
-        companion object {
-
-            @JvmStatic val ZERO = MeasuredStars()
-        }
-    }
-
     @JvmField val cameraRequest = request.capture.copy(
         exposureAmount = 0, exposureDelay = Duration.ZERO,
         savePath = CAPTURE_SAVE_PATH,
@@ -53,9 +41,8 @@ data class AutoFocusTask(
         frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
     )
 
-
     private val focusPoints = ArrayList<CurvePoint>()
-    private val measurements = ArrayList<MeasuredStars>(request.capture.exposureAmount)
+    private val measurements = DoubleArray(request.capture.exposureAmount)
     private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = max(1, request.capture.exposureAmount))
     private val focuserMoveTask = BacklashCompensationFocuserMoveTask(focuser, 0, request.backlashCompensation)
 
@@ -63,6 +50,7 @@ data class AutoFocusTask(
     @Volatile private var parabolicCurve: Lazy<QuadraticFitting.Curve>? = null
     @Volatile private var hyperbolicCurve: Lazy<HyperbolicFitting.Curve>? = null
 
+    @Volatile private var measurementPos = 0
     @Volatile private var focusPoint = CurvePoint.ZERO
 
     init {
@@ -85,11 +73,10 @@ data class AutoFocusTask(
         val initialFocusPosition = focuser.position
 
         // Get initial position information, as average of multiple exposures, if configured this way.
-        val initialHFD = if (request.rSquaredThreshold <= 0.0) takeExposure(cancellationToken).averageHFD else Double.NaN
-        val reverse = request.backlashCompensation.mode == BacklashCompensationMode.OVERSHOOT && request.backlashCompensation.backlashIn > 0 &&
-                request.backlashCompensation.backlashOut == 0
+        val initialHFD = if (request.rSquaredThreshold <= 0.0) takeExposure(cancellationToken) else 0.0
+        val reverse = request.backlashCompensation.mode == BacklashCompensationMode.OVERSHOOT && request.backlashCompensation.backlashIn > 0
 
-        LOG.info("Auto Focus started. initialHFD={}, reverse={}, camera={}, focuser={}", initialHFD, reverse, camera, focuser)
+        LOG.info("Auto Focus started. initialHFD={}, reverse={}, request={}, camera={}, focuser={}", initialHFD, reverse, request, camera, focuser)
 
         var exited = false
         var numberOfAttempts = 0
@@ -107,8 +94,10 @@ data class AutoFocusTask(
 
             obtainFocusPoints(numberOfSteps, offsetSteps, reverse, cancellationToken)
 
-            var leftCount = trendLineCurve!!.left.points.size
-            var rightCount = trendLineCurve!!.right.points.size
+            var leftCount = trendLineCurve?.left?.points?.size ?: 0
+            var rightCount = trendLineCurve?.right?.points?.size ?: 0
+
+            LOG.info("trend line computed. left=$leftCount, right=$rightCount")
 
             // When data points are not sufficient analyze and take more.
             do {
@@ -152,6 +141,8 @@ data class AutoFocusTask(
                 leftCount = trendLineCurve!!.left.points.size
                 rightCount = trendLineCurve!!.right.points.size
 
+                LOG.info("trend line computed. left=$leftCount, right=$rightCount")
+
                 if (maximumFocusPoints < focusPoints.size) {
                     // Break out when the maximum limit of focus points is reached
                     LOG.error("failed to complete. Maximum number of focus points exceeded ($maximumFocusPoints).")
@@ -173,27 +164,32 @@ data class AutoFocusTask(
             if (!goodAutoFocus) {
                 if (numberOfAttempts < request.totalNumberOfAttempts) {
                     moveFocuser(initialFocusPosition, cancellationToken, false)
-                    LOG.warn("potentially bad auto-focus. reattempting")
+                    LOG.warn("potentially bad auto-focus. Reattempting")
                     reset()
                     continue
                 } else {
                     LOG.warn("potentially bad auto-focus. Restoring original focus position")
+                    exited = true
                 }
             } else {
                 LOG.info("Auto Focus completed. x={}, y={}", finalFocusPoint.x, finalFocusPoint.y)
+                moveFocuser(finalFocusPoint.x.roundToInt(), cancellationToken, false)
+                break
             }
-
-            exited = true
         }
 
-        if (exited) {
-            sendEvent(AutoFocusState.FAILED)
+        if (exited || cancellationToken.isCancelled) {
             LOG.warn("Auto Focus did not complete successfully, so restoring the focuser position to $initialFocusPosition")
-            moveFocuser(initialFocusPosition, CancellationToken.NONE, false)
+            sendEvent(if (exited) AutoFocusState.FAILED else AutoFocusState.FINISHED)
+
+            if (exited) {
+                moveFocuser(initialFocusPosition, CancellationToken.NONE, false)
+            }
+        } else {
+            sendEvent(AutoFocusState.FINISHED)
         }
 
         reset()
-        sendEvent(AutoFocusState.FINISHED)
 
         LOG.info("Auto Focus finished. camera={}, focuser={}", camera, focuser)
     }
@@ -212,16 +208,8 @@ data class AutoFocusTask(
         }
     }
 
-    private fun evaluateAllMeasurements(): MeasuredStars {
-        var sumHFD = 0.0
-        var sumVariances = 0.0
-
-        for ((averageHFD, hfdStandardDeviation) in measurements) {
-            sumHFD += averageHFD
-            sumVariances += hfdStandardDeviation * hfdStandardDeviation
-        }
-
-        return MeasuredStars(sumHFD / measurements.size, sqrt(sumVariances / measurements.size))
+    private fun evaluateAllMeasurements(): Double {
+        return if (measurements.isEmpty()) 0.0 else measurements.average()
     }
 
     override fun accept(event: CameraCaptureEvent) {
@@ -230,22 +218,22 @@ data class AutoFocusTask(
             val detectedStars = starDetection.detect(event.savePath!!)
             LOG.info("detected ${detectedStars.size} stars")
             val measure = detectedStars.measureDetectedStars()
-            LOG.info("HFD measurement. mean={}, stdDev={}", measure.averageHFD, measure.hfdStandardDeviation)
-            measurements.add(measure)
+            LOG.info("HFD measurement. mean={}", measure)
+            measurements[measurementPos++] = measure
             onNext(event)
         } else {
             sendEvent(AutoFocusState.EXPOSURING, capture = event)
         }
     }
 
-    private fun takeExposure(cancellationToken: CancellationToken): MeasuredStars {
+    private fun takeExposure(cancellationToken: CancellationToken): Double {
         return if (!cancellationToken.isCancelled) {
-            measurements.clear()
+            measurementPos = 0
             sendEvent(AutoFocusState.EXPOSURING)
             cameraCaptureTask.execute(cancellationToken)
             evaluateAllMeasurements()
         } else {
-            MeasuredStars.ZERO
+            0.0
         }
     }
 
@@ -266,19 +254,20 @@ data class AutoFocusTask(
         while (!cancellationToken.isCancelled && remainingSteps > 0) {
             val currentFocusPosition = focusPosition
 
-            if (remainingSteps > 1) {
+            val measurement = takeExposure(cancellationToken)
+
+            LOG.info("HFD measured after exposures. mean={}", measurement)
+
+            if (remainingSteps-- > 1) {
                 focusPosition = moveFocuser(direction * -stepSize, cancellationToken, true)
             }
 
-            val measurement = takeExposure(cancellationToken)
-
             // If star measurement is 0, we didn't detect any stars or shapes,
             // and want this point to be ignored by the fitting as much as possible.
-            if (measurement.averageHFD == 0.0) {
+            if (measurement == 0.0) {
                 LOG.warn("No stars detected in step")
-                sendEvent(AutoFocusState.FAILED)
             } else {
-                focusPoint = CurvePoint(currentFocusPosition.toDouble(), measurement.averageHFD)
+                focusPoint = CurvePoint(currentFocusPosition.toDouble(), measurement)
                 focusPoints.add(focusPoint)
                 focusPoints.sortBy { it.x }
 
@@ -288,8 +277,6 @@ data class AutoFocusTask(
 
                 sendEvent(AutoFocusState.FOCUS_POINT_ADDED)
             }
-
-            remainingSteps--
         }
     }
 
@@ -300,8 +287,7 @@ data class AutoFocusTask(
             if (size >= 3) {
                 if (request.fittingMode == AutoFocusFittingMode.PARABOLIC || request.fittingMode == AutoFocusFittingMode.TREND_PARABOLIC) {
                     parabolicCurve = lazy { QuadraticFitting.calculate(this) }
-                }
-                if (request.fittingMode == AutoFocusFittingMode.HYPERBOLIC || request.fittingMode == AutoFocusFittingMode.TREND_HYPERBOLIC) {
+                } else if (request.fittingMode == AutoFocusFittingMode.HYPERBOLIC || request.fittingMode == AutoFocusFittingMode.TREND_HYPERBOLIC) {
                     hyperbolicCurve = lazy { HyperbolicFitting.calculate(this) }
                 }
             }
@@ -311,11 +297,13 @@ data class AutoFocusTask(
     private fun validateCalculatedFocusPosition(focusPoint: CurvePoint, initialHFD: Double, cancellationToken: CancellationToken): Boolean {
         val threshold = request.rSquaredThreshold
 
-        fun isTrendLineBad() = trendLineCurve?.let { it.left.rSquared < threshold || it.right.rSquared < threshold } ?: true
-        fun isParabolicBad() = parabolicCurve?.value?.let { it.rSquared < threshold } ?: true
-        fun isHyperbolicBad() = hyperbolicCurve?.value?.let { it.rSquared < threshold } ?: true
+        LOG.info("validating calculated focus position. threshold={}", threshold)
 
         if (threshold > 0.0) {
+            fun isTrendLineBad() = trendLineCurve?.let { it.left.rSquared < threshold || it.right.rSquared < threshold } ?: true
+            fun isParabolicBad() = parabolicCurve?.value?.let { it.rSquared < threshold } ?: true
+            fun isHyperbolicBad() = hyperbolicCurve?.value?.let { it.rSquared < threshold } ?: true
+
             val isBad = when (request.fittingMode) {
                 AutoFocusFittingMode.TRENDLINES -> isTrendLineBad()
                 AutoFocusFittingMode.PARABOLIC -> isParabolicBad()
@@ -339,7 +327,7 @@ data class AutoFocusTask(
         }
 
         moveFocuser(focusPoint.x.roundToInt(), cancellationToken, false)
-        val hfd = takeExposure(cancellationToken).averageHFD
+        val hfd = takeExposure(cancellationToken)
 
         if (threshold <= 0) {
             if (initialHFD != 0.0 && hfd > initialHFD * 1.15) {
@@ -384,25 +372,17 @@ data class AutoFocusTask(
         @JvmStatic private val LOG = loggerFor<AutoFocusTask>()
 
         @JvmStatic
-        private fun List<ImageStar>.measureDetectedStars(): MeasuredStars {
-            if (isEmpty()) return MeasuredStars.ZERO
+        private fun DoubleArray.median(): Double {
+            return if (size % 2 == 0) (this[size / 2] + this[size / 2 - 1]) / 2.0
+            else this[size / 2]
+        }
 
-            val mean = sumOf { it.hfd } / size
-
-            var stdDev = 0.0
-
-            if (size > 1) {
-                for (star in this) {
-                    stdDev += (star.hfd - mean).let { it * it }
-                }
-
-                stdDev /= size - 1
-                stdDev = sqrt(stdDev)
-            } else {
-                stdDev = Double.NaN
-            }
-
-            return MeasuredStars(mean, stdDev)
+        @JvmStatic
+        private fun List<ImageStar>.measureDetectedStars(): Double {
+            return if (isEmpty()) 0.0
+            else if (size == 1) this[0].hfd
+            else if (size == 2) (this[0].hfd + this[1].hfd) / 2.0
+            else DoubleArray(size) { this[it].hfd }.also { it.sort() }.median()
         }
     }
 }

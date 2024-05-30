@@ -41,43 +41,49 @@ data class BacklashCompensationFocuserMoveTask(
         if (!cancellationToken.isCancelled && focuser.connected && !focuser.moving) {
             val startPosition = focuser.position
 
-            if (compensation.mode == BacklashCompensationMode.ABSOLUTE) {
-                val adjustedTargetPosition = position + offset
+            val newPosition = when (compensation.mode) {
+                BacklashCompensationMode.ABSOLUTE -> {
+                    val adjustedTargetPosition = position + offset
 
-                val finalizedTargetPosition = if (adjustedTargetPosition < 0) {
-                    offset = 0
-                    0
-                } else if (adjustedTargetPosition > focuser.maxPosition) {
-                    offset = 0
-                    focuser.maxPosition
-                } else {
-                    val backlashCompensation = calculateAbsoluteBacklashCompensation(startPosition, adjustedTargetPosition)
-                    offset += backlashCompensation
-                    adjustedTargetPosition + backlashCompensation
-                }
-
-                moveFocuser(finalizedTargetPosition, cancellationToken)
-            } else {
-                val backlashCompensation = calculateOvershootBacklashCompensation(startPosition, position)
-
-                if (backlashCompensation != 0) {
-                    val overshoot = position + backlashCompensation
-
-                    if (overshoot < 0) {
-                        LOG.info("overshooting position is below minimum 0, skipping overshoot")
-                    } else if (overshoot > focuser.maxPosition) {
-                        LOG.info("overshooting position is above maximum ${focuser.maxPosition}, skipping overshoot")
+                    if (adjustedTargetPosition < 0) {
+                        offset = 0
+                        0
+                    } else if (adjustedTargetPosition > focuser.maxPosition) {
+                        offset = 0
+                        focuser.maxPosition
                     } else {
-                        LOG.info("overshooting from $startPosition to overshoot position $overshoot using a compensation of $backlashCompensation")
-
-                        moveFocuser(overshoot, cancellationToken)
-
-                        LOG.info("moving back to position $position")
+                        val backlashCompensation = calculateAbsoluteBacklashCompensation(startPosition, adjustedTargetPosition)
+                        offset += backlashCompensation
+                        adjustedTargetPosition + backlashCompensation
                     }
                 }
+                BacklashCompensationMode.OVERSHOOT -> {
+                    val backlashCompensation = calculateOvershootBacklashCompensation(startPosition, position)
 
-                moveFocuser(position, cancellationToken)
+                    if (backlashCompensation != 0) {
+                        val overshoot = position + backlashCompensation
+
+                        if (overshoot < 0) {
+                            LOG.warn("overshooting position is below minimum 0, skipping overshoot")
+                        } else if (overshoot > focuser.maxPosition) {
+                            LOG.warn("overshooting position is above maximum ${focuser.maxPosition}, skipping overshoot")
+                        } else {
+                            LOG.info("overshooting from $startPosition to overshoot position $overshoot using a compensation of $backlashCompensation")
+                            moveFocuser(overshoot, cancellationToken)
+                            LOG.info("moving back to position $position")
+                        }
+                    }
+
+                    position
+                }
+                else -> {
+                    position
+                }
             }
+
+            LOG.info("moving to position {} using {} backlash compensation", newPosition, compensation.mode)
+
+            moveFocuser(newPosition, cancellationToken)
         }
     }
 

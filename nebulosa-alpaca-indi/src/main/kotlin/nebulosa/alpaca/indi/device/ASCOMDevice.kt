@@ -157,9 +157,9 @@ abstract class ASCOMDevice : Device, Resettable {
                     refresh(stopwatch.elapsedSeconds)
                 }
 
-                val delayTime = 2000L - elapsedTime
+                val delayTime = 1500L - elapsedTime
 
-                if (delayTime > 1L) {
+                if (delayTime >= 10L) {
                     sleep(delayTime)
                 }
             }

@@ -26,7 +26,7 @@ export interface AutoFocusPreference extends Omit<AutoFocusRequest, 'capture'> {
 
 export const EMPTY_AUTO_FOCUS_PREFERENCE: AutoFocusPreference = {
     fittingMode: 'HYPERBOLIC',
-    rSquaredThreshold: 0.7,
+    rSquaredThreshold: 0.5,
     initialOffsetSteps: 4,
     stepSize: 100,
     totalNumberOfAttempts: 1,

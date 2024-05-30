@@ -19,7 +19,7 @@ class CurvePoint(x: Double, y: Double) : WeightedObservedPoint(1.0, x, y) {
         return result
     }
 
-    override fun toString() = "CurvePoint(x=$x, y=$y, weight=$weight)"
+    override fun toString() = "CurvePoint(x=$x, y=$y)"
 
     companion object {
 

@@ -8,6 +8,8 @@ import kotlinx.coroutines.delay
 import nebulosa.api.autofocus.AutoFocusRequest
 import nebulosa.api.beans.converters.time.DurationSerializer
 import nebulosa.api.cameras.CameraStartCaptureRequest
+import nebulosa.api.connection.ConnectionType
+import nebulosa.api.stardetection.StarDetectionOptions
 import nebulosa.common.json.PathSerializer
 import nebulosa.test.NonGitHubOnlyCondition
 import okhttp3.MediaType.Companion.toMediaType
@@ -69,8 +71,8 @@ class APITest : StringSpec() {
         "Auto Focus Stop" { autoFocusStop() }
     }
 
-    private fun connect(host: String = "0.0.0.0", port: Int = 7624) {
-        put("connection?host=$host&port=$port")
+    private fun connect(host: String = "0.0.0.0", port: Int = 7624, type: ConnectionType = ConnectionType.INDI) {
+        put("connection?host=$host&port=$port&type=$type")
     }
 
     private fun disconnect() {
@@ -167,12 +169,17 @@ class APITest : StringSpec() {
         @JvmStatic private val EXPOSURE_TIME = Duration.ofSeconds(5)
         @JvmStatic private val CAPTURES_PATH = Path.of("/home/tiagohm/Git/nebulosa/data/captures")
 
+        @JvmStatic private val STAR_DETECTION_OPTIONS = StarDetectionOptions(executablePath = Path.of("astap"))
+
         @JvmStatic private val CAMERA_START_CAPTURE_REQUEST = CameraStartCaptureRequest(
             exposureTime = EXPOSURE_TIME, width = 1280, height = 1024, frameFormat = "INDI_MONO",
             savePath = CAPTURES_PATH, exposureAmount = 1
         )
 
-        @JvmStatic private val AUTO_FOCUS_REQUEST = AutoFocusRequest(capture = CAMERA_START_CAPTURE_REQUEST, stepSize = 11000)
+        @JvmStatic private val AUTO_FOCUS_REQUEST = AutoFocusRequest(
+            capture = CAMERA_START_CAPTURE_REQUEST, stepSize = 500,
+            starDetector = STAR_DETECTION_OPTIONS
+        )
 
         @JvmStatic private val CLIENT = OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))

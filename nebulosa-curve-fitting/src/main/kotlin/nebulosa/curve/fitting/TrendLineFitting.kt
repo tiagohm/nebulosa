@@ -20,8 +20,11 @@ data object TrendLineFitting : CurveFitting<TrendLineFitting.Curve> {
     override fun calculate(points: Collection<CurvePoint>): Curve {
         val minimum = points.minBy { it.y }
 
-        val left = TrendLine(points.filter { it.x < minimum.x && it.y > minimum.y + 0.1 })
-        val right = TrendLine(points.filter { it.x > minimum.x && it.y > minimum.y + 0.1 })
+        val minX = minimum.x
+        val minY = minimum.y + 0.1
+
+        val left = TrendLine(points.filter { it.x < minX && it.y > minY })
+        val right = TrendLine(points.filter { it.x > minX && it.y > minY })
 
         return Curve(left, right, minimum)
     }
