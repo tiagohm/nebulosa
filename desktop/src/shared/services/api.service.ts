@@ -15,7 +15,7 @@ import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAn
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlType, SlewRate, TrackMode } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencePlan } from '../types/sequencer.types'
-import { PlateSolverPreference } from '../types/settings.types'
+import { PlateSolverOptions, StarDetectionOptions } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
 import { HttpService } from './http.service'
 
@@ -531,9 +531,9 @@ export class ApiService {
         return this.http.get<CoordinateInterpolation | null>(`image/coordinate-interpolation?${query}`)
     }
 
-    detectStars(path: string) {
+    detectStars(path: string, starDetector: StarDetectionOptions) {
         const query = this.http.query({ path })
-        return this.http.put<DetectedStar[]>(`image/detect-stars?${query}`)
+        return this.http.put<DetectedStar[]>(`star-detection?${query}`, starDetector)
     }
 
     imageHistogram(path: string, bitLength: number = 16) {
@@ -640,11 +640,11 @@ export class ApiService {
     // SOLVER
 
     solveImage(
-        solver: PlateSolverPreference, path: string, blind: boolean,
+        solver: PlateSolverOptions, path: string, blind: boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ) {
-        const query = this.http.query({ ...solver, path, blind, centerRA, centerDEC, radius })
-        return this.http.put<ImageSolved>(`plate-solver?${query}`)
+        const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
+        return this.http.put<ImageSolved>(`plate-solver?${query}`, solver)
     }
 
     // AUTO FOCUS

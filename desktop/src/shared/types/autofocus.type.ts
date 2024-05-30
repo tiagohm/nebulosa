@@ -1,4 +1,5 @@
 import { CameraStartCapture } from './camera.types'
+import { EMPTY_STAR_DETECTION_OPTIONS, StarDetectionOptions } from './settings.types'
 
 export type AutoFocusFittingMode = 'TRENDLINES' | 'PARABOLIC' | 'TREND_PARABOLIC' | 'HYPERBOLIC' | 'TREND_HYPERBOLIC'
 
@@ -18,6 +19,7 @@ export interface AutoFocusRequest {
     initialOffsetSteps: number
     stepSize: number
     totalNumberOfAttempts: number
+    starDetector: StarDetectionOptions
 }
 
 export interface AutoFocusPreference extends Omit<AutoFocusRequest, 'capture'> { }
@@ -32,5 +34,6 @@ export const EMPTY_AUTO_FOCUS_PREFERENCE: AutoFocusPreference = {
         mode: 'NONE',
         backlashIn: 0,
         backlashOut: 0
-    }
+    },
+    starDetector: EMPTY_STAR_DETECTION_OPTIONS,
 }

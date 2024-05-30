@@ -15,14 +15,22 @@
                     <label>Step Size</label>
                 </span>
             </div>
-            <div class="col-4 align-items-center">
+            <div class="col-5 align-items-center">
                 <span class="p-float-label">
-                    <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="request.initialOffsetSteps"
-                                   [showButtons]="true" [min]="1" [max]="1000" (ngModelChange)="savePreference()" scrollableNumber />
-                    <label>Initial Offset Step</label>
+                    <p-inputNumber [disabled]="!focuser.connected" styleClass="p-inputtext-sm border-0 max-w-full"
+                                   [(ngModel)]="request.initialOffsetSteps" [showButtons]="true" [min]="1" [max]="1000"
+                                   (ngModelChange)="savePreference()" scrollableNumber />
+                    <label>Initial Offset Steps ({{ request.initialOffsetSteps * request.stepSize }})</label>
                 </span>
             </div>
-            <div class="col-4 align-items-center">
+            <div class="col-3 align-items-center">
+                <span class="p-float-label">
+                    <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="request.totalNumberOfAttempts"
+                                   [showButtons]="true" [min]="1" [max]="10" (ngModelChange)="savePreference()" scrollableNumber />
+                    <label>Attempts</label>
+                </span>
+            </div>
+            <div class="col-7 align-items-center">
                 <span class="p-float-label">
                     <p-dropdown [options]="['TRENDLINES', 'PARABOLIC', 'TREND_PARABOLIC', 'HYPERBOLIC', 'TREND_HYPERBOLIC']"
                                 [(ngModel)]="request.fittingMode" [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0"
@@ -30,36 +38,41 @@
                     <label>Curve Fitting</label>
                 </span>
             </div>
-            <div class="col-4 align-items-center">
+            <div class="col-5 align-items-center">
                 <span class="p-float-label">
-                    <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="request.totalNumberOfAttempts"
-                                   [showButtons]="true" [min]="1" [max]="10" (ngModelChange)="savePreference()" scrollableNumber />
-                    <label>Attempts</label>
+                    <p-dropdown [options]="['ASTAP']" [(ngModel)]="request.starDetector.type" [autoDisplayFirst]="false"
+                                styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" />
+                    <label>Star Detector</label>
                 </span>
             </div>
-            <div class="col-4 align-items-center">
-                <span class="p-float-label">
-                    <p-dropdown [options]="['NONE', 'ABSOLUTE', 'OVERSHOOT']"
-                                [(ngModel)]="request.backlashCompensation.mode" [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0"
-                                (ngModelChange)="savePreference()" />
-                    <label>Backlash Compensation</label>
-                </span>
-            </div>
-            <div class="col-4 align-items-center">
-                <span class="p-float-label">
-                    <p-inputNumber [disabled]="request.backlashCompensation.mode === 'NONE'" styleClass="p-inputtext-sm border-0 max-w-full"
-                                   [(ngModel)]="request.backlashCompensation.backlashIn" [showButtons]="true" [min]="1" [max]="1000"
-                                   (ngModelChange)="savePreference()" scrollableNumber />
-                    <label>In</label>
-                </span>
-            </div>
-            <div class="col-4 align-items-center">
-                <span class="p-float-label">
-                    <p-inputNumber [disabled]="request.backlashCompensation.mode === 'NONE'" styleClass="p-inputtext-sm border-0 max-w-full"
-                                   [(ngModel)]="request.backlashCompensation.backlashOut" [showButtons]="true" [min]="1" [max]="1000"
-                                   (ngModelChange)="savePreference()" scrollableNumber />
-                    <label>Out</label>
-                </span>
+            <div class="col-10">
+                <div class="grid">
+                    <div class="col-6 align-items-center">
+                        <span class="p-float-label">
+                            <p-dropdown [options]="['NONE', 'ABSOLUTE', 'OVERSHOOT']"
+                                        [(ngModel)]="request.backlashCompensation.mode" [autoDisplayFirst]="false"
+                                        styleClass="p-inputtext-sm border-0"
+                                        (ngModelChange)="savePreference()" />
+                            <label>Backlash Compensation</label>
+                        </span>
+                    </div>
+                    <div class="col-3 align-items-center">
+                        <span class="p-float-label">
+                            <p-inputNumber [disabled]="request.backlashCompensation.mode === 'NONE'" styleClass="p-inputtext-sm border-0 max-w-full"
+                                           [(ngModel)]="request.backlashCompensation.backlashIn" [showButtons]="true" [min]="1" [max]="1000"
+                                           (ngModelChange)="savePreference()" scrollableNumber />
+                            <label>In</label>
+                        </span>
+                    </div>
+                    <div class="col-3 align-items-center">
+                        <span class="p-float-label">
+                            <p-inputNumber [disabled]="request.backlashCompensation.mode === 'NONE'" styleClass="p-inputtext-sm border-0 max-w-full"
+                                           [(ngModel)]="request.backlashCompensation.backlashOut" [showButtons]="true" [min]="1" [max]="1000"
+                                           (ngModelChange)="savePreference()" scrollableNumber />
+                            <label>Out</label>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

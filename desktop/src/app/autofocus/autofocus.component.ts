@@ -6,6 +6,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { AutoFocusPreference, AutoFocusRequest } from '../../shared/types/autofocus.type'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { EMPTY_FOCUSER, Focuser } from '../../shared/types/focuser.types'
+import { EMPTY_STAR_DETECTION_OPTIONS } from '../../shared/types/settings.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
@@ -36,7 +37,8 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
         },
         initialOffsetSteps: 4,
         stepSize: 100,
-        totalNumberOfAttempts: 1
+        totalNumberOfAttempts: 1,
+        starDetector: structuredClone(EMPTY_STAR_DETECTION_OPTIONS),
     }
 
     constructor(
@@ -142,8 +144,9 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    start() {
-        this.browserWindow.openCameraImage(this.camera, 'AUTO_FOCUS')
+    async start() {
+        await this.openCameraImage()
+        this.request.starDetector = this.preference.starDetectionOptions('ASTAP').get()
         return this.api.autoFocusStart(this.camera, this.focuser, this.request)
     }
 
@@ -152,7 +155,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
     }
 
     openCameraImage() {
-        return this.browserWindow.openCameraImage(this.camera)
+        return this.browserWindow.openCameraImage(this.camera, 'ALIGNMENT')
     }
 
     private loadPreference() {

@@ -24,8 +24,6 @@ import nebulosa.simbad.SimbadSearch
 import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObjectType
-import nebulosa.star.detection.ImageStar
-import nebulosa.star.detection.StarDetector
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import nebulosa.wcs.WCS
@@ -55,7 +53,6 @@ class ImageService(
     private val imageBucket: ImageBucket,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val connectionService: ConnectionService,
-    private val starDetector: StarDetector<Image>,
 ) {
 
     private enum class ImageOperation {
@@ -331,11 +328,6 @@ class ImageService(
         }
 
         return CoordinateInterpolation(ma, md, 0, 0, width, height, delta, image.header.observationDate)
-    }
-
-    fun detectStars(path: Path): List<ImageStar> {
-        val (image) = imageBucket[path] ?: return emptyList()
-        return starDetector.detect(image)
     }
 
     fun histogram(path: Path, bitLength: Int = 16): IntArray {

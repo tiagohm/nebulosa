@@ -333,7 +333,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         toggleable: false,
         toggled: false,
         command: async () => {
-            this.detectedStars.stars = await this.api.detectStars(this.imageData.path!)
+            const options = this.preference.starDetectionOptions('ASTAP').get()
+            this.detectedStars.stars = await this.api.detectStars(this.imageData.path!, options)
             this.detectedStars.visible = this.detectedStars.stars.length > 0
             this.detectStarsMenuItem.toggleable = this.detectedStars.visible
             this.detectStarsMenuItem.toggled = this.detectedStars.visible
@@ -947,7 +948,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solver.solving = true
 
         try {
-            const solver = this.preference.plateSolverPreference(this.solver.type).get()
+            const solver = this.preference.plateSolverOptions(this.solver.type).get()
             const solved = await this.api.solveImage(solver, this.imageData.path!, this.solver.blind,
                 this.solver.centerRA, this.solver.centerDEC, this.solver.radius)
 
@@ -957,7 +958,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.updateImageSolved(this.imageInfo?.solved)
         } finally {
             this.solver.solving = false
-            this.retrieveCoordinateInterpolation()
+
+            if (this.solver.solved.solved) {
+                this.retrieveCoordinateInterpolation()
+            }
         }
     }
 

@@ -5,7 +5,6 @@ import nebulosa.api.cameras.*
 import nebulosa.api.focusers.BacklashCompensationFocuserMoveTask
 import nebulosa.api.focusers.BacklashCompensationMode
 import nebulosa.api.focusers.FocuserEventAware
-import nebulosa.api.image.ImageBucket
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.common.concurrency.cancel.CancellationToken
@@ -14,7 +13,6 @@ import nebulosa.curve.fitting.CurvePoint.Companion.midPoint
 import nebulosa.curve.fitting.HyperbolicFitting
 import nebulosa.curve.fitting.QuadraticFitting
 import nebulosa.curve.fitting.TrendLineFitting
-import nebulosa.image.Image
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
@@ -24,6 +22,7 @@ import nebulosa.log.loggerFor
 import nebulosa.star.detection.ImageStar
 import nebulosa.star.detection.StarDetector
 import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -33,8 +32,7 @@ data class AutoFocusTask(
     @JvmField val camera: Camera,
     @JvmField val focuser: Focuser,
     @JvmField val request: AutoFocusRequest,
-    @JvmField val starDetection: StarDetector<Image>,
-    @JvmField val imageBucket: ImageBucket,
+    @JvmField val starDetection: StarDetector<Path>,
 ) : AbstractTask<MessageEvent>(), Consumer<CameraCaptureEvent>, CameraEventAware, FocuserEventAware {
 
     data class MeasuredStars(
@@ -97,7 +95,7 @@ data class AutoFocusTask(
         var numberOfAttempts = 0
         val maximumFocusPoints = request.capture.exposureAmount * request.initialOffsetSteps * 10
 
-        camera.snoop(listOf(focuser))
+        // camera.snoop(listOf(focuser))
 
         while (!exited && !cancellationToken.isCancelled) {
             numberOfAttempts++
@@ -229,8 +227,7 @@ data class AutoFocusTask(
     override fun accept(event: CameraCaptureEvent) {
         if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
             sendEvent(AutoFocusState.COMPUTING, capture = event)
-            val image = imageBucket.open(event.savePath!!)
-            val detectedStars = starDetection.detect(image)
+            val detectedStars = starDetection.detect(event.savePath!!)
             LOG.info("detected ${detectedStars.size} stars")
             val measure = detectedStars.measureDetectedStars()
             LOG.info("HFD measurement. mean={}, stdDev={}", measure.averageHFD, measure.hfdStandardDeviation)
