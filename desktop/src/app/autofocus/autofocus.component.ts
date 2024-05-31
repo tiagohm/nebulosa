@@ -1,9 +1,10 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { AutoFocusPreference, AutoFocusRequest, EMPTY_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
+import { AutoFocusPreference, AutoFocusRequest, AutoFocusState, EMPTY_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { EMPTY_FOCUSER, Focuser } from '../../shared/types/focuser.types'
 import { deviceComparator } from '../../shared/utils/comparators'
@@ -24,11 +25,17 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
     focuser = structuredClone(EMPTY_FOCUSER)
 
     running = false
+    status: AutoFocusState = 'IDLE'
+    starCount = 0
+    starHFD = 0
 
     readonly request: AutoFocusRequest = {
         ...structuredClone(EMPTY_AUTO_FOCUS_PREFERENCE),
         capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
     }
+
+    @ViewChild('cameraExposure')
+    private readonly cameraExposure!: CameraExposureComponent
 
     constructor(
         app: AppComponent,
@@ -98,6 +105,24 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
             })
         })
 
+        electron.on('AUTO_FOCUS.ELAPSED', event => {
+            ngZone.run(() => {
+                this.status = event.state
+                this.running = event.state !== 'FAILED' && event.state !== 'FINISHED'
+
+                if (event.capture) {
+                    this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
+                }
+
+                if (event.state === 'FOCUS_POINT_ADDED') {
+                    const chart = event.chart!
+                } else if (event.state === 'ANALYSED') {
+                    this.starCount = event.starCount
+                    this.starHFD = event.starHFD
+                }
+            })
+        })
+
         this.loadPreference()
     }
 
@@ -115,6 +140,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
         if (this.camera.id) {
             const camera = await this.api.camera(this.camera.id)
             Object.assign(this.camera, camera)
+            this.loadPreference()
         }
     }
 

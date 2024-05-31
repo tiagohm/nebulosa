@@ -6,6 +6,29 @@
         <neb-device-chooser title="FOCUSER" icon="mdi mdi-target" [devices]="focusers" [(device)]="focuser"
                             (deviceChange)="focuserChanged()" />
     </div>
+    <div class="col-12 relative pt-0 text-sm text-gray-400 flex align-items-center mt-1 gap-1 text-sm" style="min-height: 25px;">
+        <neb-camera-exposure #cameraExposure [info]="status" />
+    </div>
+    <div class="col-12 mt-0">
+        <div class="col-3 align-items-center">
+            <span class="p-float-label">
+                <input pInputText [readonly]="true" class="p-inputtext-sm border-0 max-w-full" [value]="focuser.position" />
+                <label>Position</label>
+            </span>
+        </div>
+        <div class="col-3 align-items-center">
+            <span class="p-float-label">
+                <input pInputText [readonly]="true" class="p-inputtext-sm border-0 max-w-full" [value]="starCount" />
+                <label>Star Count</label>
+            </span>
+        </div>
+        <div class="col-3 align-items-center">
+            <span class="p-float-label">
+                <input pInputText [readonly]="true" class="p-inputtext-sm border-0 max-w-full" [value]="starHFD" />
+                <label>HFD</label>
+            </span>
+        </div>
+    </div>
     <div class="col-12 mt-3">
         <div class="grid">
             <div class="col-4 align-items-center">
@@ -51,8 +74,7 @@
                         <span class="p-float-label">
                             <p-dropdown [options]="['NONE', 'ABSOLUTE', 'OVERSHOOT']"
                                         [(ngModel)]="request.backlashCompensation.mode" [autoDisplayFirst]="false"
-                                        styleClass="p-inputtext-sm border-0"
-                                        (ngModelChange)="savePreference()" />
+                                        styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" />
                             <label>Backlash Compensation</label>
                         </span>
                     </div>

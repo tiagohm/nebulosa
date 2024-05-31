@@ -1,5 +1,8 @@
-import { CameraStartCapture } from './camera.types'
+import { Point } from 'electron'
+import { CameraCaptureEvent, CameraStartCapture } from './camera.types'
 import { EMPTY_STAR_DETECTION_OPTIONS, StarDetectionOptions } from './settings.types'
+
+export type AutoFocusState = 'IDLE' | 'MOVING' | 'EXPOSURING' | 'EXPOSURED' | 'ANALYSING' | 'ANALYSED' | 'FOCUS_POINT_ADDED' | 'FAILED' | 'FINISHED'
 
 export type AutoFocusFittingMode = 'TRENDLINES' | 'PARABOLIC' | 'TREND_PARABOLIC' | 'HYPERBOLIC' | 'TREND_HYPERBOLIC'
 
@@ -36,4 +39,54 @@ export const EMPTY_AUTO_FOCUS_PREFERENCE: AutoFocusPreference = {
         backlashOut: 0
     },
     starDetector: EMPTY_STAR_DETECTION_OPTIONS,
+}
+
+export interface Curve {
+    minimum: Point
+    rSquared: number
+}
+
+export interface Plottable {
+    points: Point[]
+}
+
+export interface HyperbolicCurve extends Curve, Plottable {
+    a: number
+    b: number
+    p: number
+}
+
+export interface ParabolicCurve extends Curve, Plottable {
+}
+
+export interface Line extends Plottable {
+    slope: number
+    intercept: number
+    rSquared: number
+}
+
+export interface TrendLineCurve extends Curve {
+    left: Line
+    right: Line
+    intersection: Point
+}
+
+export interface Chart {
+    trendLine?: TrendLineCurve
+    parabolic?: ParabolicCurve
+    hyperbolic?: HyperbolicCurve
+}
+
+export interface AutoFocusEvent {
+    state: AutoFocusState
+    focusPoint?: Point
+    determinedFocusPoint?: Point
+    starCount: number
+    starHFD: number
+    minX: number
+    maxX: number
+    minY: number
+    maxY: number
+    chart?: Chart
+    capture?: CameraCaptureEvent
 }

@@ -7,11 +7,11 @@ import kotlin.math.*
 data object HyperbolicFitting : CurveFitting<HyperbolicFitting.Curve> {
 
     data class Curve(
-        private val a: Double,
-        private val b: Double,
-        private val p: Double,
+        @JvmField val a: Double,
+        @JvmField val b: Double,
+        @JvmField val p: Double,
         override val minimum: CurvePoint,
-        private val points: Collection<CurvePoint>,
+        @JvmField val points: Collection<CurvePoint>,
     ) : FittedCurve {
 
         override val rSquared by lazy { RSquared.calculate(points, this) }

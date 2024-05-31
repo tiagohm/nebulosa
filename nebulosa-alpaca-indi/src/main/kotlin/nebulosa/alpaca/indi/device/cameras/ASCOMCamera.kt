@@ -15,6 +15,8 @@ import nebulosa.image.format.HeaderCard
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.camera.Camera.Companion.NANO_TO_SECONDS
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.protocol.INDIProtocol
@@ -679,10 +681,21 @@ data class ASCOMCamera(
                 header.add(FitsKeyword.EQUINOX, 2000)
             }
 
+            val focuser = snoopedDevices.firstOrNull { it is Focuser } as? Focuser
+
+            focuser?.also {
+                header.add(FitsKeyword.FOCUSPOS, it.position)
+            }
+
+            val wheel = snoopedDevices.firstOrNull { it is FilterWheel } as? FilterWheel
+
+            wheel?.also {
+                header.add(FitsKeyword.FILTER, it.names.getOrNull(it.position) ?: "Filter #${it.position}")
+            }
+
             fitsKeywords.forEach(header::add)
 
             val hdu = BasicImageHdu(width, height, numberOfChannels, header, data)
-
             val image = Fits()
             image.add(hdu)
 

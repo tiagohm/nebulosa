@@ -47,11 +47,14 @@ data class AutoFocusTask(
     private val focuserMoveTask = BacklashCompensationFocuserMoveTask(focuser, 0, request.backlashCompensation)
 
     @Volatile private var trendLineCurve: TrendLineFitting.Curve? = null
-    @Volatile private var parabolicCurve: Lazy<QuadraticFitting.Curve>? = null
-    @Volatile private var hyperbolicCurve: Lazy<HyperbolicFitting.Curve>? = null
+    @Volatile private var parabolicCurve: QuadraticFitting.Curve? = null
+    @Volatile private var hyperbolicCurve: HyperbolicFitting.Curve? = null
 
     @Volatile private var measurementPos = 0
-    @Volatile private var focusPoint = CurvePoint.ZERO
+    @Volatile private var focusPoint: CurvePoint? = null
+    @Volatile private var starCount = 0
+    @Volatile private var starHFD = 0.0
+    @Volatile private var determinedFocusPoint: CurvePoint? = null
 
     init {
         cameraCaptureTask.subscribe(this)
@@ -93,6 +96,8 @@ data class AutoFocusTask(
             LOG.info("attempt #{}. offsetSteps={}, numberOfSteps={}", numberOfAttempts, offsetSteps, numberOfSteps)
 
             obtainFocusPoints(numberOfSteps, offsetSteps, reverse, cancellationToken)
+
+            if (cancellationToken.isCancelled) break
 
             var leftCount = trendLineCurve?.left?.points?.size ?: 0
             var rightCount = trendLineCurve?.right?.points?.size ?: 0
@@ -138,6 +143,8 @@ data class AutoFocusTask(
                     obtainFocusPoints(1, 1, false, cancellationToken)
                 }
 
+                if (cancellationToken.isCancelled) break
+
                 leftCount = trendLineCurve!!.left.points.size
                 rightCount = trendLineCurve!!.right.points.size
 
@@ -156,13 +163,15 @@ data class AutoFocusTask(
                 }
             } while (!cancellationToken.isCancelled && (rightCount + focusPoints.count { it.x > trendLineCurve!!.minimum.x && it.y == 0.0 } < offsetSteps || leftCount + focusPoints.count { it.x < trendLineCurve!!.minimum.x && it.y == 0.0 } < offsetSteps))
 
-            if (exited) break
+            if (exited || cancellationToken.isCancelled) break
 
             val finalFocusPoint = determineFinalFocusPoint()
             val goodAutoFocus = validateCalculatedFocusPosition(finalFocusPoint, initialHFD, cancellationToken)
 
             if (!goodAutoFocus) {
-                if (numberOfAttempts < request.totalNumberOfAttempts) {
+                if (cancellationToken.isCancelled) {
+                    break
+                } else if (numberOfAttempts < request.totalNumberOfAttempts) {
                     moveFocuser(initialFocusPosition, cancellationToken, false)
                     LOG.warn("potentially bad auto-focus. Reattempting")
                     reset()
@@ -172,8 +181,8 @@ data class AutoFocusTask(
                     exited = true
                 }
             } else {
+                determinedFocusPoint = finalFocusPoint
                 LOG.info("Auto Focus completed. x={}, y={}", finalFocusPoint.x, finalFocusPoint.y)
-                moveFocuser(finalFocusPoint.x.roundToInt(), cancellationToken, false)
                 break
             }
         }
@@ -195,16 +204,12 @@ data class AutoFocusTask(
     }
 
     private fun determineFinalFocusPoint(): CurvePoint {
-        val trendLine by lazy { TrendLineFitting.calculate(focusPoints) }
-        val hyperbolic by lazy { HyperbolicFitting.calculate(focusPoints) }
-        val parabolic by lazy { QuadraticFitting.calculate(focusPoints) }
-
         return when (request.fittingMode) {
-            AutoFocusFittingMode.TRENDLINES -> trendLine.intersection
-            AutoFocusFittingMode.PARABOLIC -> parabolic.minimum
-            AutoFocusFittingMode.TREND_PARABOLIC -> trendLine.intersection midPoint parabolic.minimum
-            AutoFocusFittingMode.HYPERBOLIC -> hyperbolic.minimum
-            AutoFocusFittingMode.TREND_HYPERBOLIC -> trendLine.intersection midPoint hyperbolic.minimum
+            AutoFocusFittingMode.TRENDLINES -> trendLineCurve!!.intersection
+            AutoFocusFittingMode.PARABOLIC -> parabolicCurve!!.minimum
+            AutoFocusFittingMode.TREND_PARABOLIC -> trendLineCurve!!.intersection midPoint parabolicCurve!!.minimum
+            AutoFocusFittingMode.HYPERBOLIC -> hyperbolicCurve!!.minimum
+            AutoFocusFittingMode.TREND_HYPERBOLIC -> trendLineCurve!!.intersection midPoint trendLineCurve!!.minimum
         }
     }
 
@@ -214,15 +219,18 @@ data class AutoFocusTask(
 
     override fun accept(event: CameraCaptureEvent) {
         if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
-            sendEvent(AutoFocusState.COMPUTING, capture = event)
+            sendEvent(AutoFocusState.EXPOSURED, event)
+            sendEvent(AutoFocusState.ANALYSING)
             val detectedStars = starDetection.detect(event.savePath!!)
-            LOG.info("detected ${detectedStars.size} stars")
-            val measure = detectedStars.measureDetectedStars()
-            LOG.info("HFD measurement. mean={}", measure)
-            measurements[measurementPos++] = measure
+            starCount = detectedStars.size
+            LOG.info("detected $starCount stars")
+            starHFD = detectedStars.measureDetectedStars()
+            LOG.info("HFD measurement. mean={}", starHFD)
+            measurements[measurementPos++] = starHFD
+            sendEvent(AutoFocusState.ANALYSED)
             onNext(event)
         } else {
-            sendEvent(AutoFocusState.EXPOSURING, capture = event)
+            sendEvent(AutoFocusState.EXPOSURING, event)
         }
     }
 
@@ -256,11 +264,15 @@ data class AutoFocusTask(
 
             val measurement = takeExposure(cancellationToken)
 
+            if (cancellationToken.isCancelled) break
+
             LOG.info("HFD measured after exposures. mean={}", measurement)
 
             if (remainingSteps-- > 1) {
                 focusPosition = moveFocuser(direction * -stepSize, cancellationToken, true)
             }
+
+            if (cancellationToken.isCancelled) break
 
             // If star measurement is 0, we didn't detect any stars or shapes,
             // and want this point to be ignored by the fitting as much as possible.
@@ -268,7 +280,7 @@ data class AutoFocusTask(
                 LOG.warn("No stars detected in step")
             } else {
                 focusPoint = CurvePoint(currentFocusPosition.toDouble(), measurement)
-                focusPoints.add(focusPoint)
+                focusPoints.add(focusPoint!!)
                 focusPoints.sortBy { it.x }
 
                 LOG.info("focus point added. remainingSteps={}, point={}", remainingSteps, focusPoint)
@@ -281,16 +293,18 @@ data class AutoFocusTask(
     }
 
     private fun computeCurveFittings() {
-        with(focusPoints.toList()) {
+        with(focusPoints) {
             trendLineCurve = TrendLineFitting.calculate(this)
 
             if (size >= 3) {
                 if (request.fittingMode == AutoFocusFittingMode.PARABOLIC || request.fittingMode == AutoFocusFittingMode.TREND_PARABOLIC) {
-                    parabolicCurve = lazy { QuadraticFitting.calculate(this) }
+                    parabolicCurve = QuadraticFitting.calculate(this)
                 } else if (request.fittingMode == AutoFocusFittingMode.HYPERBOLIC || request.fittingMode == AutoFocusFittingMode.TREND_HYPERBOLIC) {
-                    hyperbolicCurve = lazy { HyperbolicFitting.calculate(this) }
+                    hyperbolicCurve = HyperbolicFitting.calculate(this)
                 }
             }
+
+            sendEvent(AutoFocusState.CURVE_FITTED)
         }
     }
 
@@ -301,8 +315,8 @@ data class AutoFocusTask(
 
         if (threshold > 0.0) {
             fun isTrendLineBad() = trendLineCurve?.let { it.left.rSquared < threshold || it.right.rSquared < threshold } ?: true
-            fun isParabolicBad() = parabolicCurve?.value?.let { it.rSquared < threshold } ?: true
-            fun isHyperbolicBad() = hyperbolicCurve?.value?.let { it.rSquared < threshold } ?: true
+            fun isParabolicBad() = parabolicCurve?.let { it.rSquared < threshold } ?: true
+            fun isHyperbolicBad() = hyperbolicCurve?.let { it.rSquared < threshold } ?: true
 
             val isBad = when (request.fittingMode) {
                 AutoFocusFittingMode.TRENDLINES -> isTrendLineBad()
@@ -318,13 +332,15 @@ data class AutoFocusTask(
             }
         }
 
-        val min = focusPoints.minOf { it.x }
-        val max = focusPoints.maxOf { it.x }
+        val min = focusPoints.first().x
+        val max = focusPoints.last().x
 
-        if (focusPoint.x < min || focusPoint.y > max) {
+        if (focusPoint.x < min || focusPoint.x > max) {
             LOG.error("determined focus point position is outside of the overall measurement points of the curve")
             return false
         }
+
+        if (cancellationToken.isCancelled) return false
 
         moveFocuser(focusPoint.x.roundToInt(), cancellationToken, false)
         val hfd = takeExposure(cancellationToken)
@@ -346,9 +362,16 @@ data class AutoFocusTask(
         return focuser.position
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendEvent(state: AutoFocusState, capture: CameraCaptureEvent? = null) {
-        onNext(AutoFocusEvent(state, focusPoint, capture))
+    private fun sendEvent(state: AutoFocusState, capture: CameraCaptureEvent? = null) {
+        val chart = when (state) {
+            AutoFocusState.FOCUS_POINT_ADDED -> AutoFocusEvent.makeChart(focusPoints, trendLineCurve, parabolicCurve, hyperbolicCurve)
+            else -> null
+        }
+
+        val (minX, minY) = if (focusPoints.isEmpty()) CurvePoint.ZERO else focusPoints[0]
+        val (maxX, maxY) = if (focusPoints.isEmpty()) CurvePoint.ZERO else focusPoints[focusPoints.lastIndex]
+
+        onNext(AutoFocusEvent(state, focusPoint, determinedFocusPoint, starCount, starHFD, minX, minY, maxX, maxY, chart, capture))
     }
 
     override fun reset() {

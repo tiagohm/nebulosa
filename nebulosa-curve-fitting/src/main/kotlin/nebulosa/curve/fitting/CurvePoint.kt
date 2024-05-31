@@ -4,6 +4,10 @@ import org.apache.commons.math3.fitting.WeightedObservedPoint
 
 class CurvePoint(x: Double, y: Double) : WeightedObservedPoint(1.0, x, y) {
 
+    operator fun component1() = x
+
+    operator fun component2() = y
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is CurvePoint) return false

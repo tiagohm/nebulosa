@@ -123,7 +123,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
                         return ''
                     },
                     label: (context) => {
-                        console.log(context)
                         const barType = context.dataset.type === 'bar'
                         const raType = context.datasetIndex === 0 || context.datasetIndex === 2
                         const scale = barType ? this.phdDurationScale : 1.0

@@ -22,6 +22,7 @@ import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
 import { FilterWheel, WheelRenamed } from '../types/wheel.types'
+import { AutoFocusEvent } from '../types/autofocus.type'
 
 type EventMappedType = {
     'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
@@ -74,6 +75,7 @@ type EventMappedType = {
     'WINDOW.CLOSE': CloseWindow
     'WHEEL.RENAMED': WheelRenamed
     'ROI.SELECTED': ROISelected
+    'AUTO_FOCUS.ELAPSED': AutoFocusEvent
 }
 
 @Injectable({ providedIn: 'root' })
