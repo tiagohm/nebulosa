@@ -3,6 +3,7 @@ import { CameraExposureComponent } from '../../shared/components/camera-exposure
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
@@ -17,7 +18,7 @@ import { CameraComponent } from '../camera/camera.component'
     templateUrl: './flat-wizard.component.html',
     styleUrls: ['./flat-wizard.component.scss'],
 })
-export class FlatWizardComponent implements AfterViewInit, OnDestroy {
+export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 
     cameras: Camera[] = []
     camera = structuredClone(EMPTY_CAMERA)
@@ -59,6 +60,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
         private browserWindow: BrowserWindowService,
         private prime: PrimeService,
         private preference: PreferenceService,
+        private pinger: Pinger,
         ngZone: NgZone,
     ) {
         app.title = 'Flat Wizard'
@@ -141,6 +143,8 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
                 }
             })
         })
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
@@ -149,7 +153,15 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() { }
+    ngOnDestroy() {
+        this.pinger.unregister(this)
+        this.stop()
+    }
+
+    ping() {
+        if (this.camera.id) this.api.cameraListen(this.camera)
+        if (this.wheel.id) this.api.wheelListen(this.wheel)
+    }
 
     async showCameraDialog() {
         if (this.camera.id && await CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.camera, this.request.capture)) {
@@ -159,6 +171,8 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
 
     cameraChanged() {
         if (this.camera.id) {
+            this.ping()
+
             const cameraPreference = this.preference.cameraPreference(this.camera).get()
             this.request.capture = this.preference.cameraStartCaptureForFlatWizard(this.camera).get(cameraPreference)
             this.updateEntryFromCamera(this.camera)
@@ -172,7 +186,9 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy {
     }
 
     wheelChanged() {
-        if (this.wheel) {
+        if (this.wheel.id) {
+            this.ping()
+
             let filters: FilterSlot[] = []
             let filtersChanged = true
 

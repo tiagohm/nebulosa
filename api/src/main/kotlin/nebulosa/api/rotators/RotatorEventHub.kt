@@ -1,7 +1,7 @@
 package nebulosa.api.rotators
 
-import io.reactivex.rxjava3.subjects.PublishSubject
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.devices.DeviceEventHub
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.rotator.Rotator
@@ -11,27 +11,17 @@ import nebulosa.indi.device.rotator.RotatorEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
-import java.io.Closeable
-import java.util.concurrent.TimeUnit
 
 @Component
 @Subscriber
-class RotatorEventHandler(
+class RotatorEventHub(
     private val messageService: MessageService,
-) : Closeable {
-
-    private val throttler = PublishSubject.create<RotatorEvent>()
-
-    init {
-        throttler
-            .throttleLast(1000, TimeUnit.MILLISECONDS)
-            .subscribe { sendUpdate(it.device!!) }
-    }
+) : DeviceEventHub<Rotator, RotatorEvent>(), RotatorEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onRotatorEvent(event: RotatorEvent) {
+    override fun handleRotatorEvent(event: RotatorEvent) {
         when (event) {
-            is PropertyChangedEvent -> throttler.onNext(event)
+            is PropertyChangedEvent -> onNext(event)
             is RotatorAttached -> sendMessage(ROTATOR_ATTACHED, event.device)
             is RotatorDetached -> sendMessage(ROTATOR_DETACHED, event.device)
         }
@@ -42,12 +32,8 @@ class RotatorEventHandler(
         messageService.sendMessage(RotatorMessageEvent(eventName, device))
     }
 
-    fun sendUpdate(device: Rotator) {
+    override fun sendUpdate(device: Rotator) {
         sendMessage(ROTATOR_UPDATED, device)
-    }
-
-    override fun close() {
-        throttler.onComplete()
     }
 
     companion object {

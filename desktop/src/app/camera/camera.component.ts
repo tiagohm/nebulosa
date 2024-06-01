@@ -7,6 +7,7 @@ import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Device } from '../../shared/types/device.types'
@@ -22,7 +23,7 @@ import { AppComponent } from '../app.component'
     templateUrl: './camera.component.html',
     styleUrls: ['./camera.component.scss'],
 })
-export class CameraComponent implements AfterContentInit, OnDestroy {
+export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 
     readonly camera = structuredClone(EMPTY_CAMERA)
     readonly equipment: Equipment = {}
@@ -168,6 +169,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         private electron: ElectronService,
         private preference: PreferenceService,
         private route: ActivatedRoute,
+        private pinger: Pinger,
         ngZone: NgZone,
     ) {
         if (app) app.title = 'Camera'
@@ -245,6 +247,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         })
 
         this.cameraModel[1].visible = !app.modal
+
+        pinger.register(this, 30000)
     }
 
     ngAfterContentInit() {
@@ -267,9 +271,15 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     async ngOnDestroy() {
+        this.pinger.unregister(this)
+
         if (this.mode === 'CAPTURE') {
             await this.abortCapture()
         }
+    }
+
+    ping() {
+        this.api.cameraListen(this.camera)
     }
 
     private async loadCameraStartCaptureForDialogMode(data?: CameraDialogInput) {

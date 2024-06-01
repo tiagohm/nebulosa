@@ -43,4 +43,9 @@ class GuideOutputController(
     ) {
         guideOutputService.pulse(guideOutput, direction, duration)
     }
+
+    @PutMapping("{guideOutput}/listen")
+    fun listen(guideOutput: GuideOutput) {
+        guideOutputService.listen(guideOutput)
+    }
 }

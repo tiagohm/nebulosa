@@ -4,7 +4,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import org.springframework.stereotype.Service
 
 @Service
-class WheelService {
+class WheelService(private val wheelEventHub: WheelEventHub) {
 
     fun connect(wheel: FilterWheel) {
         wheel.connect()
@@ -20,5 +20,9 @@ class WheelService {
 
     fun sync(wheel: FilterWheel, names: List<String>) {
         wheel.names(names)
+    }
+
+    fun listen(wheel: FilterWheel) {
+        wheelEventHub.listen(wheel)
     }
 }

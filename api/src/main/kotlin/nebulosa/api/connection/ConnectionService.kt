@@ -26,7 +26,7 @@ import java.io.Closeable
 @Service
 class ConnectionService(
     private val eventBus: EventBus,
-    private val connectionEventHandler: ConnectionEventHandler,
+    private val connectionEventHub: ConnectionEventHub,
     private val alpacaHttpClient: OkHttpClient,
     private val messageService: MessageService,
 ) : Closeable {
@@ -61,7 +61,7 @@ class ConnectionService(
                 ConnectionType.INDI -> {
                     val client = INDIClient(host, port)
                     client.registerDeviceEventHandler(DeviceEventHandler.EventReceived(eventBus::post))
-                    client.registerDeviceEventHandler(connectionEventHandler)
+                    client.registerDeviceEventHandler(connectionEventHub)
                     client.registerDeviceEventHandler(DeviceEventHandler.ConnectionClosed { sendConnectionClosedEvent(client) })
                     client.start()
                     client
@@ -69,7 +69,7 @@ class ConnectionService(
                 else -> {
                     val client = AlpacaClient(host, port, alpacaHttpClient)
                     client.registerDeviceEventHandler(DeviceEventHandler.EventReceived(eventBus::post))
-                    client.registerDeviceEventHandler(connectionEventHandler)
+                    client.registerDeviceEventHandler(connectionEventHub)
                     client.registerDeviceEventHandler(DeviceEventHandler.ConnectionClosed { sendConnectionClosedEvent(client) })
                     client.discovery()
                     client

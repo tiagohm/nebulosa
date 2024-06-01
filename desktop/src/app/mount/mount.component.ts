@@ -9,6 +9,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { Angle, ComputedLocation, Constellation, EMPTY_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
 import { EMPTY_MOUNT, Mount, MountRemoteControlDialog, MountRemoteControlType, MoveDirectionType, PierSide, SlewRate, TargetCoordinateType, TrackMode } from '../../shared/types/mount.types'
@@ -30,7 +31,7 @@ export interface MountPreference {
     templateUrl: './mount.component.html',
     styleUrls: ['./mount.component.scss'],
 })
-export class MountComponent implements AfterContentInit, OnDestroy {
+export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
 
     readonly mount = structuredClone(EMPTY_MOUNT)
 
@@ -223,10 +224,11 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
-        private electron: ElectronService,
+        electron: ElectronService,
         private storage: LocalStorageService,
         private route: ActivatedRoute,
         private prime: PrimeService,
+        private pinger: Pinger,
         ngZone: NgZone,
     ) {
         app.title = 'Mount'
@@ -277,6 +279,8 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         hotkeys('e', { keyup: true }, event => { event.preventDefault(); this.moveTo('NE', event.type === 'keydown') })
         hotkeys('z', { keyup: true }, event => { event.preventDefault(); this.moveTo('SW', event.type === 'keydown') })
         hotkeys('c', { keyup: true }, event => { event.preventDefault(); this.moveTo('SE', event.type === 'keydown') })
+
+        this.pinger.register(this, 30000)
     }
 
     async ngAfterContentInit() {
@@ -288,10 +292,16 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.abort()
+        this.pinger.unregister(this)
 
         this.computeCoordinateSubscriptions
             .forEach(e => e.unsubscribe())
+
+        this.abort()
+    }
+
+    ping() {
+        this.api.mountListen(this.mount)
     }
 
     async mountChanged(mount?: Mount) {

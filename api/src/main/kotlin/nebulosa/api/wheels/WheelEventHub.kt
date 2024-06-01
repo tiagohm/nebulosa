@@ -1,7 +1,7 @@
 package nebulosa.api.wheels
 
-import io.reactivex.rxjava3.subjects.PublishSubject
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.devices.DeviceEventHub
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.filterwheel.FilterWheel
@@ -11,27 +11,17 @@ import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
-import java.io.Closeable
-import java.util.concurrent.TimeUnit
 
 @Component
 @Subscriber
-class WheelEventHandler(
+class WheelEventHub(
     private val messageService: MessageService,
-) : Closeable {
-
-    private val throttler = PublishSubject.create<FilterWheelEvent>()
-
-    init {
-        throttler
-            .throttleLast(1000, TimeUnit.MILLISECONDS)
-            .subscribe { sendUpdate(it.device!!) }
-    }
+) : DeviceEventHub<FilterWheel, FilterWheelEvent>(), WheelEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onFilterWheelEvent(event: FilterWheelEvent) {
+    override fun handleFilterWheelEvent(event: FilterWheelEvent) {
         when (event) {
-            is PropertyChangedEvent -> throttler.onNext(event)
+            is PropertyChangedEvent -> onNext(event)
             is FilterWheelAttached -> sendMessage(WHEEL_ATTACHED, event.device)
             is FilterWheelDetached -> sendMessage(WHEEL_DETACHED, event.device)
         }
@@ -42,12 +32,8 @@ class WheelEventHandler(
         messageService.sendMessage(WheelMessageEvent(eventName, device))
     }
 
-    fun sendUpdate(device: FilterWheel) {
+    override fun sendUpdate(device: FilterWheel) {
         sendMessage(WHEEL_UPDATED, device)
-    }
-
-    override fun close() {
-        throttler.onComplete()
     }
 
     companion object {

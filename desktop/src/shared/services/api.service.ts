@@ -71,7 +71,7 @@ export class ApiService {
 
     cameraSnoop(camera: Camera, equipment: Equipment) {
         const { mount, wheel, focuser, rotator } = equipment
-        const query = this.http.query({ mount: mount?.name, wheel: wheel?.name, focuser: focuser?.name, rotator: rotator?.name })
+        const query = this.http.query({ mount: mount?.id, wheel: wheel?.id, focuser: focuser?.id, rotator: rotator?.id })
         return this.http.put<void>(`cameras/${camera.id}/snoop?${query}`)
     }
 
@@ -89,6 +89,10 @@ export class ApiService {
 
     cameraAbortCapture(camera: Camera) {
         return this.http.put<void>(`cameras/${camera.id}/capture/abort`)
+    }
+
+    cameraListen(camera: Camera) {
+        return this.http.put<void>(`cameras/${camera.id}/listen`)
     }
 
     // MOUNT
@@ -186,6 +190,10 @@ export class ApiService {
         return this.http.put<void>(`mounts/${mount.id}/remote-control/stop?${query}`)
     }
 
+    mountListen(mount: Mount) {
+        return this.http.put<void>(`mounts/${mount.id}/listen`)
+    }
+
     // FOCUSER
 
     focusers() {
@@ -224,6 +232,10 @@ export class ApiService {
         return this.http.put<void>(`focusers/${focuser.id}/sync?steps=${steps}`)
     }
 
+    focuserListen(focuser: Focuser) {
+        return this.http.put<void>(`focusers/${focuser.id}/listen`)
+    }
+
     // FILTER WHEEL
 
     wheels() {
@@ -250,6 +262,10 @@ export class ApiService {
         return this.http.put<void>(`wheels/${wheel.id}/sync?names=${names.join(',')}`)
     }
 
+    wheelListen(wheel: FilterWheel) {
+        return this.http.put<void>(`wheels/${wheel.id}/listen`)
+    }
+
     // ROTATOR
 
     rotators() {
@@ -268,7 +284,7 @@ export class ApiService {
         return this.http.put<void>(`rotators/${rotator.id}/disconnect`)
     }
 
-    focuserReverse(rotator: Rotator, enabled: boolean) {
+    rotatorReverse(rotator: Rotator, enabled: boolean) {
         return this.http.put<void>(`rotators/${rotator.id}/reverse?enabled=${enabled}`)
     }
 
@@ -286,6 +302,10 @@ export class ApiService {
 
     rotatorSync(rotator: Rotator, angle: number) {
         return this.http.put<void>(`rotators/${rotator.id}/sync?angle=${angle}`)
+    }
+
+    rotatorListen(rotator: Rotator) {
+        return this.http.put<void>(`rotators/${rotator.id}/listen`)
     }
 
     // GUIDE OUTPUT
@@ -309,6 +329,10 @@ export class ApiService {
     guideOutputPulse(guideOutput: GuideOutput, direction: GuideDirection, duration: number) {
         const query = this.http.query({ direction, duration })
         return this.http.put<void>(`guide-outputs/${guideOutput.id}/pulse?${query}`)
+    }
+
+    guideOutputListen(guideOutput: GuideOutput) {
+        return this.http.put<void>(`guide-outputs/${guideOutput.id}/listen`)
     }
 
     // GUIDING
@@ -369,7 +393,7 @@ export class ApiService {
     // IMAGE
 
     async openImage(path: string, transformation: ImageTransformation, camera?: Camera) {
-        const query = this.http.query({ path, camera: camera?.name })
+        const query = this.http.query({ path, camera: camera?.id })
         const response = await this.http.postBlob(`image?${query}`, transformation)
         const info = JSON.parse(response.headers.get('X-Image-Info')!) as ImageInfo
         return { info, blob: response.body! }
@@ -522,7 +546,7 @@ export class ApiService {
     }
 
     saveImageAs(path: string, save: ImageSaveDialog, camera?: Camera) {
-        const query = this.http.query({ path, camera: camera?.name })
+        const query = this.http.query({ path, camera: camera?.id })
         return this.http.put<void>(`image/save-as?${query}`, save)
     }
 
@@ -619,7 +643,7 @@ export class ApiService {
 
     sequencerStart(camera: Camera, plan: SequencePlan) {
         const body: SequencePlan = { ...plan, mount: undefined, camera: undefined, wheel: undefined, focuser: undefined }
-        const query = this.http.query({ mount: plan.mount?.name, focuser: plan.focuser?.name, wheel: plan.wheel?.name })
+        const query = this.http.query({ mount: plan.mount?.id, focuser: plan.focuser?.id, wheel: plan.wheel?.id })
         return this.http.put<void>(`sequencer/${camera.id}/start?${query}`, body)
     }
 
@@ -650,11 +674,11 @@ export class ApiService {
     // AUTO FOCUS
 
     autoFocusStart(camera: Camera, focuser: Focuser, request: AutoFocusRequest) {
-        return this.http.put<void>(`auto-focus/${camera.name}/${focuser.name}/start`, request)
+        return this.http.put<void>(`auto-focus/${camera.id}/${focuser.id}/start`, request)
     }
 
     autoFocusStop(camera: Camera) {
-        return this.http.put<void>(`auto-focus/${camera.name}/stop`)
+        return this.http.put<void>(`auto-focus/${camera.id}/stop`)
     }
 
     // PREFERENCE

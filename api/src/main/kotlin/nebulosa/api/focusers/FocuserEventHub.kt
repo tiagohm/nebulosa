@@ -1,7 +1,7 @@
 package nebulosa.api.focusers
 
-import io.reactivex.rxjava3.subjects.PublishSubject
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.devices.DeviceEventHub
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.focuser.Focuser
@@ -11,27 +11,17 @@ import nebulosa.indi.device.focuser.FocuserEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
-import java.io.Closeable
-import java.util.concurrent.TimeUnit
 
 @Component
 @Subscriber
-class FocuserEventHandler(
+class FocuserEventHub(
     private val messageService: MessageService,
-) : Closeable {
-
-    private val throttler = PublishSubject.create<FocuserEvent>()
-
-    init {
-        throttler
-            .throttleLast(1000, TimeUnit.MILLISECONDS)
-            .subscribe { sendUpdate(it.device!!) }
-    }
+) : DeviceEventHub<Focuser, FocuserEvent>(), FocuserEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onFocuserEvent(event: FocuserEvent) {
+    override fun handleFocuserEvent(event: FocuserEvent) {
         when (event) {
-            is PropertyChangedEvent -> throttler.onNext(event)
+            is PropertyChangedEvent -> onNext(event)
             is FocuserAttached -> sendMessage(FOCUSER_ATTACHED, event.device)
             is FocuserDetached -> sendMessage(FOCUSER_DETACHED, event.device)
         }
@@ -42,12 +32,8 @@ class FocuserEventHandler(
         messageService.sendMessage(FocuserMessageEvent(eventName, device))
     }
 
-    fun sendUpdate(device: Focuser) {
+    override fun sendUpdate(device: Focuser) {
         sendMessage(FOCUSER_UPDATED, device)
-    }
-
-    override fun close() {
-        throttler.onComplete()
     }
 
     companion object {

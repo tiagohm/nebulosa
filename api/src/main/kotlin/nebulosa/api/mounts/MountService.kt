@@ -25,18 +25,22 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 @Subscriber
-class MountService(private val imageBucket: ImageBucket) {
+class MountService(
+    private val imageBucket: ImageBucket,
+    private val mountEventHub: MountEventHub,
+) {
 
-    private val site = HashMap<Mount, GeographicPosition>(2)
+    private val sites = ConcurrentHashMap<Mount, GeographicPosition>(2)
     private val remoteControls = ArrayList<MountRemoteControl>(2)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onMountGeographicCoordinateChanged(event: MountGeographicCoordinateChanged) {
         val site = Geoid.IERS2010.lonLat(event.device.longitude, event.device.latitude, event.device.elevation)
-        this.site[event.device] = site
+        sites[event.device] = site
     }
 
     fun connect(mount: Mount) {
@@ -130,7 +134,7 @@ class MountService(private val imageBucket: ImageBucket) {
     }
 
     fun computeLST(mount: Mount): Angle {
-        return site[mount]!!.lstAt(CurrentTime)
+        return sites[mount]!!.lstAt(CurrentTime)
     }
 
     fun computeZenithLocation(mount: Mount): ComputedLocation {
@@ -176,7 +180,7 @@ class MountService(private val imageBucket: ImageBucket) {
     ): ComputedLocation {
         val computedLocation = ComputedLocation()
 
-        val center = site[mount]!!
+        val center = sites[mount]!!
         val epoch = if (j2000) null else CurrentTime
 
         val icrf = ICRF.equatorial(rightAscension, declination, epoch = epoch, center = center)
@@ -256,6 +260,10 @@ class MountService(private val imageBucket: ImageBucket) {
 
     fun remoteControlList(mount: Mount): List<MountRemoteControl> {
         return remoteControls.filter { it.mount === mount }
+    }
+
+    fun listen(mount: Mount) {
+        mountEventHub.listen(mount)
     }
 
     companion object {

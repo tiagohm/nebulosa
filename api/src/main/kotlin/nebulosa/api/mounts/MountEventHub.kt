@@ -1,7 +1,7 @@
 package nebulosa.api.mounts
 
-import io.reactivex.rxjava3.subjects.PublishSubject
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.devices.DeviceEventHub
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.mount.Mount
@@ -11,27 +11,17 @@ import nebulosa.indi.device.mount.MountEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
-import java.io.Closeable
-import java.util.concurrent.TimeUnit
 
 @Component
 @Subscriber
-class MountEventHandler(
+class MountEventHub(
     private val messageService: MessageService,
-) : Closeable {
-
-    private val throttler = PublishSubject.create<MountEvent>()
-
-    init {
-        throttler
-            .throttleLast(1000, TimeUnit.MILLISECONDS)
-            .subscribe { sendUpdate(it.device!!) }
-    }
+) : DeviceEventHub<Mount, MountEvent>(), MountEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onMountEvent(event: MountEvent) {
+    override fun handleMountEvent(event: MountEvent) {
         when (event) {
-            is PropertyChangedEvent -> throttler.onNext(event)
+            is PropertyChangedEvent -> onNext(event)
             is MountAttached -> sendMessage(MOUNT_ATTACHED, event.device)
             is MountDetached -> sendMessage(MOUNT_DETACHED, event.device)
         }
@@ -42,12 +32,8 @@ class MountEventHandler(
         messageService.sendMessage(MountMessageEvent(eventName, device))
     }
 
-    fun sendUpdate(device: Mount) {
+    override fun sendUpdate(device: Mount) {
         sendMessage(MOUNT_UPDATED, device)
-    }
-
-    override fun close() {
-        throttler.onComplete()
     }
 
     companion object {

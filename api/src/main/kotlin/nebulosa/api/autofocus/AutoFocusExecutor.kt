@@ -2,6 +2,8 @@ package nebulosa.api.autofocus
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.cameras.CameraEventAware
+import nebulosa.api.focusers.FocuserEventAware
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.camera.Camera
@@ -17,17 +19,17 @@ import java.util.concurrent.ConcurrentHashMap
 @Subscriber
 class AutoFocusExecutor(
     private val messageService: MessageService,
-) : Consumer<MessageEvent> {
+) : Consumer<MessageEvent>, CameraEventAware, FocuserEventAware {
 
     private val jobs = ConcurrentHashMap.newKeySet<AutoFocusJob>(2)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onFocuserEvent(event: FocuserEvent) {
+    override fun handleFocuserEvent(event: FocuserEvent) {
         jobs.find { it.task.focuser === event.device }?.handleFocuserEvent(event)
     }
 

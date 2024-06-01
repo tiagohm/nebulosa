@@ -4,7 +4,7 @@ import nebulosa.indi.device.focuser.Focuser
 import org.springframework.stereotype.Service
 
 @Service
-class FocuserService {
+class FocuserService(private val focuserEventHub: FocuserEventHub) {
 
     fun connect(focuser: Focuser) {
         focuser.connect()
@@ -32,5 +32,9 @@ class FocuserService {
 
     fun sync(focuser: Focuser, steps: Int) {
         focuser.syncFocusTo(steps)
+    }
+
+    fun listen(focuser: Focuser) {
+        focuserEventHub.listen(focuser)
     }
 }

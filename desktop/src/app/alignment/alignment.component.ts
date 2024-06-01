@@ -3,6 +3,7 @@ import { CameraExposureComponent } from '../../shared/components/camera-exposure
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { AlignmentMethod, AlignmentPreference, DARVStart, DARVState, Hemisphere, TPPAStart, TPPAState } from '../../shared/types/alignment.types'
 import { Angle } from '../../shared/types/atlas.types'
@@ -19,7 +20,7 @@ import { CameraComponent } from '../camera/camera.component'
     templateUrl: './alignment.component.html',
     styleUrls: ['./alignment.component.scss'],
 })
-export class AlignmentComponent implements AfterViewInit, OnDestroy {
+export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 
     cameras: Camera[] = []
     camera = structuredClone(EMPTY_CAMERA)
@@ -78,6 +79,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private preference: PreferenceService,
+        private pinger: Pinger,
         electron: ElectronService,
         ngZone: NgZone,
     ) {
@@ -222,6 +224,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         })
 
         this.loadPreference()
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
@@ -232,15 +236,22 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
     @HostListener('window:unload')
     async ngOnDestroy() {
-        try {
-            await this.darvStop()
-        } finally {
-            await this.tppaStop()
-        }
+        this.pinger.unregister(this)
+
+        this.darvStop()
+        this.tppaStop()
+    }
+
+    ping() {
+        if (this.camera.id) this.api.cameraListen(this.camera)
+        if (this.mount.id) this.api.mountListen(this.mount)
+        if (this.guideOutput.id) this.api.guideOutputListen(this.guideOutput)
     }
 
     async cameraChanged() {
         if (this.camera.id) {
+            this.ping()
+
             const camera = await this.api.camera(this.camera.id)
             Object.assign(this.camera, camera)
         }
@@ -248,6 +259,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
     async mountChanged() {
         if (this.mount.id) {
+            this.ping()
+
             const mount = await this.api.mount(this.mount.id)
             Object.assign(this.mount, mount)
             this.tppaRequest.stepSpeed = mount.slewRate?.name
@@ -256,6 +269,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
     async guideOutputChanged() {
         if (this.guideOutput.id) {
+            this.ping()
+
             const guideOutput = await this.api.guideOutput(this.guideOutput.id)
             Object.assign(this.guideOutput, guideOutput)
         }

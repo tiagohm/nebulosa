@@ -6,6 +6,7 @@ import { CameraExposureComponent } from '../../shared/components/camera-exposure
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { AutoFocusPreference, AutoFocusRequest, AutoFocusState, CurveChart, EMPTY_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
@@ -19,7 +20,7 @@ import { CameraComponent } from '../camera/camera.component'
     templateUrl: './autofocus.component.html',
     styleUrls: ['./autofocus.component.scss'],
 })
-export class AutoFocusComponent implements AfterViewInit, OnDestroy {
+export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 
     cameras: Camera[] = []
     camera = structuredClone(EMPTY_CAMERA)
@@ -214,6 +215,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private preference: PreferenceService,
+        private pinger: Pinger,
         electron: ElectronService,
         ngZone: NgZone,
     ) {
@@ -300,6 +302,8 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
         })
 
         this.loadPreference()
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
@@ -309,11 +313,19 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
 
     @HostListener('window:unload')
     async ngOnDestroy() {
-        await this.stop()
+        this.pinger.unregister(this)
+        this.stop()
+    }
+
+    ping() {
+        if (this.camera.id) this.api.cameraListen(this.camera)
+        if (this.focuser.id) this.api.focuserListen(this.focuser)
     }
 
     async cameraChanged() {
         if (this.camera.id) {
+            this.ping()
+
             const camera = await this.api.camera(this.camera.id)
             Object.assign(this.camera, camera)
             this.loadPreference()
@@ -322,6 +334,8 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy {
 
     async focuserChanged() {
         if (this.focuser.id) {
+            this.ping()
+
             const focuser = await this.api.focuser(this.focuser.id)
             Object.assign(this.focuser, focuser)
         }

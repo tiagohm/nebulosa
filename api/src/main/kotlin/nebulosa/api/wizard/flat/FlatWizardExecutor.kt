@@ -2,6 +2,7 @@ package nebulosa.api.wizard.flat
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
 import nebulosa.indi.device.camera.Camera
@@ -15,12 +16,12 @@ import java.util.concurrent.ConcurrentHashMap
 @Subscriber
 class FlatWizardExecutor(
     private val messageService: MessageService,
-) : Consumer<MessageEvent> {
+) : Consumer<MessageEvent>, CameraEventAware {
 
     private val jobs = ConcurrentHashMap.newKeySet<FlatWizardJob>(1)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
     }
 

@@ -67,7 +67,12 @@ class CameraController(
     }
 
     @GetMapping("{camera}/capture/status")
-    fun statusCapture(camera: Camera): CameraCaptureEvent? {
-        return cameraService.statusCapture(camera)
+    fun captureStatus(camera: Camera): CameraCaptureEvent? {
+        return cameraService.captureStatus(camera)
+    }
+
+    @PutMapping("{camera}/listen")
+    fun listen(camera: Camera) {
+        cameraService.listen(camera)
     }
 }

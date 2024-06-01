@@ -6,6 +6,7 @@ import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
@@ -17,7 +18,7 @@ import { AppComponent } from '../app.component'
     templateUrl: './filterwheel.component.html',
     styleUrls: ['./filterwheel.component.scss'],
 })
-export class FilterWheelComponent implements AfterContentInit, OnDestroy {
+export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingable {
 
     readonly wheel = structuredClone(EMPTY_WHEEL)
     readonly request = structuredClone(EMPTY_CAMERA_START_CAPTURE)
@@ -64,6 +65,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         private electron: ElectronService,
         private preference: PreferenceService,
         private route: ActivatedRoute,
+        private pinger: Pinger,
         ngZone: NgZone,
     ) {
         if (app) app.title = 'Filter Wheel'
@@ -132,6 +134,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         hotkeys('7', event => { event.preventDefault(); this.moveToPosition(7) })
         hotkeys('8', event => { event.preventDefault(); this.moveToPosition(8) })
         hotkeys('9', event => { event.preventDefault(); this.moveToPosition(9) })
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterContentInit() {
@@ -158,12 +162,21 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
+        this.pinger.unregister(this)
         this.subscription?.unsubscribe()
+    }
+
+    ping() {
+        this.api.wheelListen(this.wheel)
+        if (this.focuser) this.api.focuserListen(this.focuser)
     }
 
     async wheelChanged(wheel?: FilterWheel) {
         if (wheel && wheel.id) {
             wheel = await this.api.wheel(wheel.id)
+
+            this.ping()
+
             Object.assign(this.wheel, wheel)
 
             this.loadPreference()
@@ -266,9 +279,13 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     focuserChanged() {
-        this.focusOffsetMax = this.focuser?.maxPosition ?? 0
-        this.focusOffsetMin = -this.focusOffsetMax
-        this.updateFocusOffset()
+        if (this.focuser) {
+            this.ping()
+
+            this.focusOffsetMax = this.focuser.maxPosition
+            this.focusOffsetMin = -this.focusOffsetMax
+            this.updateFocusOffset()
+        }
     }
 
     focusOffsetForFilter(filter: FilterSlot) {

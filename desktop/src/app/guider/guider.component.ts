@@ -4,6 +4,7 @@ import { ChartData, ChartOptions } from 'chart.js'
 import { UIChart } from 'primeng/chart'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { GuideDirection, GuideOutput, GuideState, GuideStep, Guider, GuiderHistoryStep, GuiderPlotMode, GuiderYAxisUnit } from '../../shared/types/guider.types'
 
 export interface GuiderPreference {
@@ -17,7 +18,7 @@ export interface GuiderPreference {
     templateUrl: './guider.component.html',
     styleUrls: ['./guider.component.scss'],
 })
-export class GuiderComponent implements AfterViewInit, OnDestroy {
+export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 
     guideOutputs: GuideOutput[] = []
     guideOutput?: GuideOutput
@@ -216,6 +217,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     constructor(
         title: Title,
         private api: ApiService,
+        private pinger: Pinger,
         electron: ElectronService,
         ngZone: NgZone,
     ) {
@@ -283,6 +285,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
                 this.message = event.data
             })
         })
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
@@ -303,7 +307,13 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() { }
+    ngOnDestroy() {
+        this.pinger.unregister(this)
+    }
+
+    ping() {
+        if (this.guideOutput) this.api.guideOutputListen(this.guideOutput)
+    }
 
     private processGuiderStatus(event: Guider) {
         this.connected = event.connected
@@ -368,6 +378,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
     async guideOutputChanged() {
         if (this.guideOutput?.id) {
+            this.ping()
+
             const guideOutput = await this.api.guideOutput(this.guideOutput.id)
             Object.assign(this.guideOutput, guideOutput)
 

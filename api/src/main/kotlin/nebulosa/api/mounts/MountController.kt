@@ -205,4 +205,9 @@ class MountController(
     fun remoteControlList(mount: Mount): List<MountRemoteControl> {
         return mountService.remoteControlList(mount)
     }
+
+    @PutMapping("{mount}/listen")
+    fun listen(mount: Mount) {
+        mountService.listen(mount)
+    }
 }

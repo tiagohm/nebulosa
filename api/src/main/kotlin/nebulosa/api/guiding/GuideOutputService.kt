@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 
 @Service
-class GuideOutputService {
+class GuideOutputService(private val guideOutputEventHub: GuideOutputEventHub) {
 
     fun connect(guideOutput: GuideOutput) {
         guideOutput.connect()
@@ -25,5 +25,9 @@ class GuideOutputService {
                 GuideDirection.EAST -> guideOutput.guideEast(duration)
             }
         }
+    }
+
+    fun listen(guideOutput: GuideOutput) {
+        guideOutputEventHub.listen(guideOutput)
     }
 }

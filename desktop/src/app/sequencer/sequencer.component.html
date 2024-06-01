@@ -136,11 +136,14 @@
     </div>
     <div class="grid">
         <div class="col-12 align-items-center justify-content-center pt-4 gap-2">
-            <neb-device-chooser title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera" [hasNone]="true" />
-            <neb-device-chooser title="MOUNT" icon="mdi mdi-telescope" [devices]="mounts" [(device)]="mount" [hasNone]="true" />
-            <neb-device-chooser title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel" [hasNone]="true" />
+            <neb-device-chooser title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera" [hasNone]="true"
+                                (deviceChange)="cameraChanged()" />
+            <neb-device-chooser title="MOUNT" icon="mdi mdi-telescope" [devices]="mounts" [(device)]="mount" [hasNone]="true"
+                                (deviceChange)="mountChanged()" />
+            <neb-device-chooser title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel" [hasNone]="true"
+                                (deviceChange)="wheelChanged()" />
             <neb-device-chooser title="FOCUSER" icon="mdi mdi-image-filter-center-focus" [devices]="focusers" [(device)]="focuser"
-                                [hasNone]="true" />
+                                [hasNone]="true" (deviceChange)="focuserChanged()" />
         </div>
     </div>
     <div class="grid mt-0">
