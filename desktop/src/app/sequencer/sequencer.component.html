@@ -29,7 +29,7 @@
                            [positionTop]="8"></i>
 
                         <span class="p-float-label">
-                            <input type="text" pInputText [disabled]="running" class="p-inputtext-sm border-0 w-full" [(ngModel)]="plan.savePath"
+                            <input pInputText [disabled]="running" class="p-inputtext-sm border-0 w-full" [(ngModel)]="plan.savePath"
                                    (ngModelChange)="savePlan()" />
                             <label>Path</label>
                         </span>

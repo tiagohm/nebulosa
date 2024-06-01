@@ -2,7 +2,7 @@
     <div class="grid flex align-items-center">
         <div class="col-12 align-items-center gap-2">
             <span class="p-float-label">
-                <input type="text" pInputText [readonly]="true" [value]="rotator.name" class="p-inputtext-sm border-0 w-full" />
+                <input pInputText readonly [value]="rotator.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Rotator</label>
             </span>
             <p-button *ngIf="rotator.connected" [disabled]="!rotator || moving" (onClick)="connect()" icon="mdi mdi-close"
@@ -20,7 +20,7 @@
     <div class="grid mt-1">
         <div class="col-6">
             <span class="p-float-label">
-                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="rotator.angle" locale="en"
+                <p-inputNumber readonly styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="rotator.angle" locale="en"
                                scrollableNumber />
                 <label>Angle (°)</label>
             </span>

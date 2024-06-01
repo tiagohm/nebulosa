@@ -5,7 +5,7 @@
                 <div class="grid mt-1 flex justify-content-center align-items-center">
                     <div class="col-6 px-0">
                         <span class="p-float-label">
-                            <input [disabled]="connected" type="text" pInputText class="border-0 p-inputtext-sm w-full" placeholder="localhost"
+                            <input pInputText [disabled]="connected" class="border-0 p-inputtext-sm w-full" placeholder="localhost"
                                    [(ngModel)]="host" />
                             <label>Host</label>
                         </span>
@@ -35,40 +35,40 @@
                         <div class="grid mt-1">
                             <div class="col-3">
                                 <span class="p-float-label">
-                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                                    <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                                            value="{{ rmsRA.toFixed(2) + ' (' + (rmsRA * pixelScale).toFixed(2) + '\" )' }}" />
                                     <label>RMS RA</label>
                                 </span>
                             </div>
                             <div class="col-3">
                                 <span class="p-float-label">
-                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                                    <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                                            value="{{ rmsDEC.toFixed(2) + ' (' + (rmsDEC * pixelScale).toFixed(2) + '\" )' }}" />
                                     <label>RMS DEC</label>
                                 </span>
                             </div>
                             <div class="col-3">
                                 <span class="p-float-label">
-                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                                    <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                                            value="{{ rmsTotal.toFixed(2) + ' (' + (rmsTotal * pixelScale).toFixed(2) + '\" )' }}" />
                                     <label>RMS Total</label>
                                 </span>
                             </div>
                             <div class="col-3">
                                 <span class="p-float-label">
-                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="guideStep?.starMass ?? 0" />
+                                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="guideStep?.starMass ?? 0" />
                                     <label>Star mass</label>
                                 </span>
                             </div>
                             <div class="col-2">
                                 <span class="p-float-label">
-                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="guideStep?.hfd ?? 0" />
+                                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="guideStep?.hfd ?? 0" />
                                     <label>HFD</label>
                                 </span>
                             </div>
                             <div class="col-2">
                                 <span class="p-float-label">
-                                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="guideStep?.snr ?? 0" />
+                                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="guideStep?.snr ?? 0" />
                                     <label>SNR</label>
                                 </span>
                             </div>

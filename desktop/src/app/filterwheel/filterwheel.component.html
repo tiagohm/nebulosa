@@ -2,7 +2,7 @@
     <div class="grid flex align-items-center">
         <div class="col-12 align-items-center gap-2">
             <span class="p-float-label">
-                <input type="text" pInputText [readonly]="true" [value]="wheel.name" class="p-inputtext-sm border-0 w-full" />
+                <input pInputText readonly [value]="wheel.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Filter Wheel</label>
             </span>
             <p-button *ngIf="wheel.connected" [disabled]="!wheel || moving" (onClick)="connect()" icon="mdi mdi-close"

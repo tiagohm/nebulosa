@@ -6,6 +6,7 @@ export interface CalculatorOperand {
     value?: number
     minFractionDigits?: number
     maxFractionDigits?: number
+    min?: number
 }
 
 export interface CalculatorFormula {

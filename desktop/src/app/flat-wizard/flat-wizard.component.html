@@ -16,7 +16,7 @@
     <div class="grid mt-2">
         <div class="col-12">
             <span class="p-float-label">
-                <input type="text" pInputText [disabled]="!camera.connected || running" class="p-inputtext-sm border-0 w-full"
+                <input pInputText [disabled]="!camera.connected || running" class="p-inputtext-sm border-0 w-full"
                        [(ngModel)]="request.capture.savePath" (ngModelChange)="savePreference()" />
                 <label>Path</label>
             </span>

@@ -12,19 +12,19 @@
     <div class="col-12 mt-0">
         <div class="col-3 align-items-center">
             <span class="p-float-label">
-                <input pInputText [readonly]="true" class="p-inputtext-sm border-0 max-w-full" [value]="focuser.position" />
+                <input pInputText readonly class="p-inputtext-sm border-0 max-w-full" [value]="focuser.position" />
                 <label>Position</label>
             </span>
         </div>
         <div class="col-3 align-items-center">
             <span class="p-float-label">
-                <input pInputText [readonly]="true" class="p-inputtext-sm border-0 max-w-full" [value]="starCount" />
+                <input pInputText readonly class="p-inputtext-sm border-0 max-w-full" [value]="starCount" />
                 <label>Star Count</label>
             </span>
         </div>
         <div class="col-3 align-items-center">
             <span class="p-float-label">
-                <input pInputText [readonly]="true" class="p-inputtext-sm border-0 max-w-full" [value]="starHFD" />
+                <input pInputText readonly class="p-inputtext-sm border-0 max-w-full" [value]="starHFD.toFixed(2)">
                 <label>HFD</label>
             </span>
         </div>

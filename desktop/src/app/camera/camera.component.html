@@ -2,7 +2,7 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-8 align-items-center gap-2">
             <span class="p-float-label">
-                <input type="text" pInputText [readonly]="true" [value]="camera.name" class="p-inputtext-sm border-0 w-full" />
+                <input pInputText readonly [value]="camera.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Camera</label>
             </span>
             <p-button *ngIf="!camera || camera.connected" [disabled]="!camera || running" (onClick)="connect()" icon="mdi mdi-close"
