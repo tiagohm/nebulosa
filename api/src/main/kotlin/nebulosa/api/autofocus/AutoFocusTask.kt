@@ -166,9 +166,8 @@ data class AutoFocusTask(
             if (exited || cancellationToken.isCancelled) break
 
             val finalFocusPoint = determineFinalFocusPoint()
-            val goodAutoFocus = validateCalculatedFocusPosition(finalFocusPoint, initialHFD, cancellationToken)
 
-            if (!goodAutoFocus) {
+            if (finalFocusPoint == null || !validateCalculatedFocusPosition(finalFocusPoint, initialHFD, cancellationToken)) {
                 if (cancellationToken.isCancelled) {
                     break
                 } else if (numberOfAttempts < request.totalNumberOfAttempts) {
@@ -203,13 +202,13 @@ data class AutoFocusTask(
         LOG.info("Auto Focus finished. camera={}, focuser={}", camera, focuser)
     }
 
-    private fun determineFinalFocusPoint(): CurvePoint {
+    private fun determineFinalFocusPoint(): CurvePoint? {
         return when (request.fittingMode) {
             AutoFocusFittingMode.TRENDLINES -> trendLineCurve!!.intersection
-            AutoFocusFittingMode.PARABOLIC -> parabolicCurve!!.minimum
-            AutoFocusFittingMode.TREND_PARABOLIC -> trendLineCurve!!.intersection midPoint parabolicCurve!!.minimum
-            AutoFocusFittingMode.HYPERBOLIC -> hyperbolicCurve!!.minimum
-            AutoFocusFittingMode.TREND_HYPERBOLIC -> trendLineCurve!!.intersection midPoint trendLineCurve!!.minimum
+            AutoFocusFittingMode.PARABOLIC -> parabolicCurve?.minimum
+            AutoFocusFittingMode.TREND_PARABOLIC -> parabolicCurve?.minimum?.midPoint(trendLineCurve!!.intersection)
+            AutoFocusFittingMode.HYPERBOLIC -> hyperbolicCurve?.minimum
+            AutoFocusFittingMode.TREND_HYPERBOLIC -> hyperbolicCurve?.minimum?.midPoint(trendLineCurve!!.intersection)
         }
     }
 
@@ -286,8 +285,6 @@ data class AutoFocusTask(
                 LOG.info("focus point added. remainingSteps={}, point={}", remainingSteps, focusPoint)
 
                 computeCurveFittings()
-
-                sendEvent(AutoFocusState.FOCUS_POINT_ADDED)
             }
         }
     }
@@ -364,14 +361,17 @@ data class AutoFocusTask(
 
     private fun sendEvent(state: AutoFocusState, capture: CameraCaptureEvent? = null) {
         val chart = when (state) {
-            AutoFocusState.FOCUS_POINT_ADDED -> AutoFocusEvent.makeChart(focusPoints, trendLineCurve, parabolicCurve, hyperbolicCurve)
+            AutoFocusState.FINISHED,
+            AutoFocusState.CURVE_FITTED -> {
+                val predictedFocusPoint = determinedFocusPoint ?: determineFinalFocusPoint()
+                val (minX, minY) = if (focusPoints.isEmpty()) CurvePoint.ZERO else focusPoints[0]
+                val (maxX, maxY) = if (focusPoints.isEmpty()) CurvePoint.ZERO else focusPoints[focusPoints.lastIndex]
+                AutoFocusEvent.Chart(predictedFocusPoint, minX, minY, maxX, maxY, trendLineCurve, parabolicCurve, hyperbolicCurve)
+            }
             else -> null
         }
 
-        val (minX, minY) = if (focusPoints.isEmpty()) CurvePoint.ZERO else focusPoints[0]
-        val (maxX, maxY) = if (focusPoints.isEmpty()) CurvePoint.ZERO else focusPoints[focusPoints.lastIndex]
-
-        onNext(AutoFocusEvent(state, focusPoint, determinedFocusPoint, starCount, starHFD, minX, minY, maxX, maxY, chart, capture))
+        onNext(AutoFocusEvent(state, focusPoint, determinedFocusPoint, starCount, starHFD, chart, capture))
     }
 
     override fun reset() {

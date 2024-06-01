@@ -59,12 +59,12 @@ class APITest : StringSpec() {
         // AUTO FOCUS.
 
         "Auto Focus Start" {
-            connect()
+            connect("192.168.31.153", 11111, ConnectionType.ALPACA)
             delay(1000)
             cameraConnect()
             focuserConnect()
             delay(1000)
-            focuserMoveTo(position = 36000)
+            // focuserMoveTo(position = 8100)
             delay(2000)
             autoFocusStart()
         }
@@ -162,9 +162,9 @@ class APITest : StringSpec() {
     companion object {
 
         private const val BASE_URL = "http://localhost:7000"
-        private const val CAMERA_NAME = "CCD Simulator"
+        private const val CAMERA_NAME = "Sky Simulator"
         private const val MOUNT_NAME = "Telescope Simulator"
-        private const val FOCUSER_NAME = "Focuser Simulator"
+        private const val FOCUSER_NAME = "ZWO Focuser (1)"
 
         @JvmStatic private val EXPOSURE_TIME = Duration.ofSeconds(5)
         @JvmStatic private val CAPTURES_PATH = Path.of("/home/tiagohm/Git/nebulosa/data/captures")

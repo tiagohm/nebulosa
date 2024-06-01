@@ -2,7 +2,7 @@
     <div class="col-12">
         <p-tabView>
             <p-tabPanel header="PHD2" leftIcon="mdi mdi-target">
-                <div class="grid mt-1 flex justify-content-center align-items-center">
+                <div class="grid mt-3 flex justify-content-center align-items-center">
                     <div class="col-6 px-0">
                         <span class="p-float-label">
                             <input pInputText [disabled]="connected" class="border-0 p-inputtext-sm w-full" placeholder="localhost"
@@ -10,7 +10,7 @@
                             <label>Host</label>
                         </span>
                     </div>
-                    <div class="col-4 pr-0">
+                    <div class="col-3 pr-0">
                         <span class="p-float-label">
                             <p-inputNumber [disabled]="connected" [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full"
                                            placeholder="7624" [(ngModel)]="port" [format]="false" scrollableNumber />
@@ -31,8 +31,8 @@
                     </div>
                 </div>
                 <p-tabView class="relative">
-                    <p-tabPanel leftIcon="mdi mdi-chart-bell-curve">
-                        <div class="grid mt-1">
+                    <p-tabPanel header="Chart" leftIcon="mdi mdi-chart-bell-curve">
+                        <div class="grid mt-3">
                             <div class="col-3">
                                 <span class="p-float-label">
                                     <input pInputText readonly class="p-inputtext-sm border-0 w-full"
@@ -89,16 +89,15 @@
                         </div>
                         <div class="grid relative">
                             <div class="col-12">
-                                <p-chart #chart width="100%" height="140px" [data]="chartData" [responsive]="true"
-                                         [options]="chartOptions" />
+                                <p-chart #chart width="100%" height="140px" [data]="chartData" [responsive]="true" [options]="chartOptions" />
                             </div>
                             <span class="absolute right-0 text-blue-500" style="top: 16px;">North</span>
                             <span class="absolute right-0 text-red-500" style="bottom: 26px;">East</span>
                         </div>
                     </p-tabPanel>
-                    <p-tabPanel leftIcon="mdi mdi-cog">
-                        <div class="grid mt-1">
-                            <div class="col-5">
+                    <p-tabPanel header="Settings" leftIcon="mdi mdi-cog">
+                        <div class="grid mt-3">
+                            <div class="col-4">
                                 <span class="p-float-label">
                                     <p-inputNumber [disabled]="!connected || guiding" [showButtons]="true"
                                                    styleClass="border-0 p-inputtext-sm w-full" locale="en" [min]="1" [max]="25"
@@ -107,15 +106,15 @@
                                     <label>Settle tolerance (px)</label>
                                 </span>
                             </div>
-                            <div class="col-6">
+                            <div class="col-4">
                                 <span class="p-float-label">
                                     <p-inputNumber [disabled]="!connected || guiding" [showButtons]="true"
                                                    styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"
                                                    [(ngModel)]="settleTime" (ngModelChange)="settleChanged()" [step]="1" scrollableNumber />
-                                    <label>Minimum settle time (s)</label>
+                                    <label>Min settle time (s)</label>
                                 </span>
                             </div>
-                            <div class="col-6">
+                            <div class="col-4">
                                 <span class="p-float-label">
                                     <p-inputNumber [disabled]="!connected || guiding" [showButtons]="true"
                                                    styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"

@@ -61,7 +61,7 @@ export class BrowserWindowService {
     }
 
     openGuider(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'guider', width: 425, height: 438 })
+        Object.assign(options, { icon: 'guider', width: 440, height: 455 })
         this.openWindow({ ...options, id: 'guider', path: 'guider', data: undefined })
     }
 
@@ -105,7 +105,7 @@ export class BrowserWindowService {
     }
 
     openAutoFocus(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'auto-focus', width: 410, height: 370 })
+        Object.assign(options, { icon: 'auto-focus', width: 425, height: 420 })
         this.openWindow({ ...options, id: 'auto-focus', path: 'auto-focus', data: undefined })
     }
 

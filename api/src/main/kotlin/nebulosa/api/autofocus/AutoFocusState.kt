@@ -7,7 +7,6 @@ enum class AutoFocusState {
     EXPOSURED,
     ANALYSING,
     ANALYSED,
-    FOCUS_POINT_ADDED,
     CURVE_FITTED,
     FAILED,
     FINISHED,

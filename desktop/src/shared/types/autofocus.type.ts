@@ -2,7 +2,7 @@ import { Point } from 'electron'
 import { CameraCaptureEvent, CameraStartCapture } from './camera.types'
 import { EMPTY_STAR_DETECTION_OPTIONS, StarDetectionOptions } from './settings.types'
 
-export type AutoFocusState = 'IDLE' | 'MOVING' | 'EXPOSURING' | 'EXPOSURED' | 'ANALYSING' | 'ANALYSED' | 'FOCUS_POINT_ADDED' | 'FAILED' | 'FINISHED'
+export type AutoFocusState = 'IDLE' | 'MOVING' | 'EXPOSURING' | 'EXPOSURED' | 'ANALYSING' | 'ANALYSED' | 'CURVE_FITTED' | 'FAILED' | 'FINISHED'
 
 export type AutoFocusFittingMode = 'TRENDLINES' | 'PARABOLIC' | 'TREND_PARABOLIC' | 'HYPERBOLIC' | 'TREND_HYPERBOLIC'
 
@@ -71,7 +71,12 @@ export interface TrendLineCurve extends Curve {
     intersection: Point
 }
 
-export interface Chart {
+export interface CurveChart {
+    predictedFocusPoint?: Point
+    minX: number
+    maxX: number
+    minY: number
+    maxY: number
     trendLine?: TrendLineCurve
     parabolic?: ParabolicCurve
     hyperbolic?: HyperbolicCurve
@@ -83,10 +88,6 @@ export interface AutoFocusEvent {
     determinedFocusPoint?: Point
     starCount: number
     starHFD: number
-    minX: number
-    maxX: number
-    minY: number
-    maxY: number
-    chart?: Chart
+    chart?: CurveChart
     capture?: CameraCaptureEvent
 }

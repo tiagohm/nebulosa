@@ -351,7 +351,7 @@ export class EnumPipe implements PipeTransform {
         'EXPOSURED': 'Exposured',
         'ANALYSING': 'Analysing',
         'ANALYSED': 'Analysed',
-        'FOCUS_POINT_ADDED': 'Focus point added',
+        'CURVE_FITTED': 'Curve fitted',
     }
 
     transform(value: EnumPipeKey) {
