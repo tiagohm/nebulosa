@@ -677,12 +677,12 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
 
         @JvmStatic
         private fun mountCoords(camera: Point, x: Angle, y: Angle): Point {
-            val hyp = camera.distance
+            val length = camera.length
             val cameraTheta = camera.angle
             val yAngleError = ((x - y) + PIOVERTWO).normalized - PI
             val xAngle = cameraTheta - x
             val yAngle = cameraTheta - (x + yAngleError)
-            return Point(hyp * xAngle.cos, hyp * yAngle.sin)
+            return Point(length * xAngle.cos, length * yAngle.sin)
         }
     }
 }

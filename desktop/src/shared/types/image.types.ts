@@ -8,7 +8,7 @@ export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
 export const SCNR_PROTECTION_METHODS = ['MAXIMUM_MASK', 'ADDITIVE_MASK', 'AVERAGE_NEUTRAL', 'MAXIMUM_NEUTRAL', 'MINIMUM_NEUTRAL'] as const
 export type SCNRProtectionMethod = (typeof SCNR_PROTECTION_METHODS)[number]
 
-export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD'
+export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD' | 'SEQUENCER' | 'ALIGNMENT' | 'AUTO_FOCUS'
 
 export type ImageFormat = 'FITS' | 'XISF' | 'PNG' | 'JPG'
 

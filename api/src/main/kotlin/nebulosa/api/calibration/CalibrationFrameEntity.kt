@@ -1,6 +1,9 @@
 package nebulosa.api.calibration
 
-import io.objectbox.annotation.*
+import io.objectbox.annotation.Convert
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.annotation.Index
 import nebulosa.api.beans.converters.database.FrameTypePropertyConverter
 import nebulosa.api.beans.converters.database.PathPropertyConverter
 import nebulosa.api.database.BoxEntity

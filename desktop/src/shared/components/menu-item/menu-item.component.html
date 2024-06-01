@@ -5,18 +5,17 @@
     @if (item.toolbarMenu?.length) {
     <div class="flex justify-content-center align-items-center gap-1">
         @for (m of item.toolbarMenu; track i; let i = $index) {
-        <p-button *ngIf="m.visible" [text]="true" [rounded]="true" [icon]="m.icon" [pTooltip]="m.label"
-                  [tooltipPosition]="m.tooltipPosition ?? 'bottom'" [disabled]="m.disabled"
+        <p-button *ngIf="m.visible !== false" [text]="true" [rounded]="true" [icon]="m.icon" [pTooltip]="m.label"
+                  [tooltipPosition]="m.tooltipPosition ?? 'bottom'" [disabled]="m.disabled" styleClass="p-button-sm"
+                  [severity]="m.toolbarButtonSeverity"
                   (onClick)="m.command?.({originalEvent: $event, item: m, index: i}); $event.stopImmediatePropagation()" />
         }
     </div>
     }
-    @if (item.checked) {
-    <i class="mdi mdi-check text-green-500"></i>
-    } @else if(item.toggleable) {
+    @if(item.toggleable) {
     <p-checkbox [binary]="true" [(ngModel)]="item.toggled" (onChange)="item.toggle?.($event)" />
     }
-    @if (item.items?.length || item.menu?.length) {
+    @if (item.items?.length || item.subMenu?.length) {
     <i class="mdi mdi-menu-right mdi"></i>
     }
 </a>

@@ -12,13 +12,13 @@ import nebulosa.log.loggerFor
 data class WheelMoveTask(
     @JvmField val wheel: FilterWheel,
     @JvmField val position: Int,
-) : Task {
+) : Task, WheelEventAware {
 
     private val latch = CountUpDownLatch()
 
     @Volatile private var initialPosition = wheel.position
 
-    fun handleFilterWheelEvent(event: FilterWheelEvent) {
+    override fun handleFilterWheelEvent(event: FilterWheelEvent) {
         if (event is FilterWheelPositionChanged) {
             if (initialPosition != wheel.position && wheel.position == position) {
                 latch.reset()

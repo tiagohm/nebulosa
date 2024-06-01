@@ -42,7 +42,7 @@ import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { TreeModule } from 'primeng/tree'
 import { CameraExposureComponent } from '../shared/components/camera-exposure/camera-exposure.component'
-import { DeviceListButtonComponent } from '../shared/components/device-list-button/device-list-button.component'
+import { DeviceChooserComponent } from '../shared/components/device-chooser/device-chooser.component'
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
@@ -66,6 +66,7 @@ import { AlignmentComponent } from './alignment/alignment.component'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { AtlasComponent } from './atlas/atlas.component'
+import { AutoFocusComponent } from './autofocus/autofocus.component'
 import { CalculatorComponent } from './calculator/calculator.component'
 import { FormulaComponent } from './calculator/formula/formula.component'
 import { CalibrationComponent } from './calibration/calibration.component'
@@ -91,11 +92,12 @@ import { SettingsComponent } from './settings/settings.component'
         AnglePipe,
         AppComponent,
         AtlasComponent,
+        AutoFocusComponent,
         CalculatorComponent,
         CalibrationComponent,
         CameraComponent,
         CameraExposureComponent,
-        DeviceListButtonComponent,
+        DeviceChooserComponent,
         DeviceListMenuComponent,
         DialogMenuComponent,
         EnumPipe,

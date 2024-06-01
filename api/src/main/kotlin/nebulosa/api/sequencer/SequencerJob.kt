@@ -1,18 +1,20 @@
 package nebulosa.api.sequencer
 
+import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.tasks.Job
+import nebulosa.api.wheels.WheelEventAware
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.filterwheel.FilterWheelEvent
 
-data class SequencerJob(override val task: SequencerTask) : Job() {
+data class SequencerJob(override val task: SequencerTask) : Job(), CameraEventAware, WheelEventAware {
 
     override val name = "${task.camera.name} Sequencer Job"
 
-    fun handleCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         task.handleCameraEvent(event)
     }
 
-    fun handleFilterWheelEvent(event: FilterWheelEvent) {
+    override fun handleFilterWheelEvent(event: FilterWheelEvent) {
         task.handleFilterWheelEvent(event)
     }
 }

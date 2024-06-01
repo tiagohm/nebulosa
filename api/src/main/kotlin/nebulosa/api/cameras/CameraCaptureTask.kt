@@ -24,7 +24,7 @@ data class CameraCaptureTask(
     private val useFirstExposure: Boolean = false,
     private val exposureMaxRepeat: Int = 0,
     private val executor: Executor? = null,
-) : AbstractTask<CameraCaptureEvent>(), Consumer<Any> {
+) : AbstractTask<CameraCaptureEvent>(), Consumer<Any>, CameraEventAware {
 
     private val delayTask = DelayTask(request.exposureDelay)
     private val waitForSettleTask = WaitForSettleTask(guider)
@@ -58,7 +58,7 @@ data class CameraCaptureTask(
         }
     }
 
-    fun handleCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         cameraExposureTask.handleCameraEvent(event)
     }
 
@@ -67,7 +67,7 @@ data class CameraCaptureTask(
 
         cameraExposureTask.reset()
 
-        while (!cancellationToken.isDone &&
+        while (!cancellationToken.isCancelled &&
             !cameraExposureTask.isAborted &&
             ((exposureMaxRepeat > 0 && exposureRepeatCount < exposureMaxRepeat)
                     || (exposureMaxRepeat <= 0 && (request.isLoop || exposureCount < request.exposureAmount)))
@@ -100,7 +100,7 @@ data class CameraCaptureTask(
             cameraExposureTask.execute(cancellationToken)
 
             // DITHER.
-            if (!cancellationToken.isDone && !cameraExposureTask.isAborted && guider != null
+            if (!cancellationToken.isCancelled && !cameraExposureTask.isAborted && guider != null
                 && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0
             ) {
                 ditherAfterExposureTask.execute(cancellationToken)

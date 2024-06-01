@@ -9,7 +9,7 @@ import { Angle } from '../../shared/types/atlas.types'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { EMPTY_GUIDE_OUTPUT, GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { EMPTY_MOUNT, Mount } from '../../shared/types/mount.types'
-import { DEFAULT_SOLVER_TYPES, EMPTY_PLATE_SOLVER_PREFERENCE } from '../../shared/types/settings.types'
+import { EMPTY_PLATE_SOLVER_OPTIONS } from '../../shared/types/settings.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
@@ -39,7 +39,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
     readonly tppaRequest: TPPAStart = {
         capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
-        plateSolver: structuredClone(EMPTY_PLATE_SOLVER_PREFERENCE),
+        plateSolver: structuredClone(EMPTY_PLATE_SOLVER_OPTIONS),
         startFromCurrentPosition: true,
         stepDirection: 'EAST',
         compensateRefraction: true,
@@ -47,7 +47,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         stepDuration: 5,
     }
 
-    readonly plateSolverTypes = Array.from(DEFAULT_SOLVER_TYPES)
     tppaFailed = false
     tppaRightAscension: Angle = `00h00m00s`
     tppaDeclination: Angle = `00°00'00"`
@@ -109,7 +108,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.cameras.splice(index, 1)
-                    this.cameras.sort(deviceComparator)
                 }
             })
         })
@@ -139,7 +137,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.mounts.splice(index, 1)
-                    this.mounts.sort(deviceComparator)
                 }
             })
         })
@@ -169,7 +166,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.guideOutputs.splice(index, 1)
-                    this.guideOutputs.sort(deviceComparator)
                 }
             })
         })
@@ -265,26 +261,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    mountConnect() {
-        if (this.mount.id) {
-            if (this.mount.connected) {
-                this.api.mountDisconnect(this.mount)
-            } else {
-                this.api.mountConnect(this.mount)
-            }
-        }
-    }
-
-    guideOutputConnect() {
-        if (this.guideOutput.id) {
-            if (this.guideOutput.connected) {
-                this.api.guideOutputDisconnect(this.guideOutput)
-            } else {
-                this.api.guideOutputConnect(this.guideOutput)
-            }
-        }
-    }
-
     async showCameraDialog() {
         if (this.camera.id) {
             if (this.tab === 0) {
@@ -303,7 +279,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     plateSolverChanged() {
-        this.tppaRequest.plateSolver = this.preference.plateSolverPreference(this.tppaRequest.plateSolver.type).get()
+        this.tppaRequest.plateSolver = this.preference.plateSolverOptions(this.tppaRequest.plateSolver.type).get()
         this.savePreference()
     }
 
@@ -350,7 +326,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     openCameraImage() {
-        return this.browserWindow.openCameraImage(this.camera)
+        return this.browserWindow.openCameraImage(this.camera, 'ALIGNMENT')
     }
 
     private loadPreference() {

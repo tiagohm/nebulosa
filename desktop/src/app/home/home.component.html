@@ -128,6 +128,13 @@
             </p-button>
         </div>
         <div class="col-4 p-1">
+            <p-button [text]="true" (onClick)="open('AUTO_FOCUS')" [disabled]="!connected || !hasAutoFocus"
+                      styleClass="min-w-full w-full px-1 py-2 flex-column">
+                <img src="assets/icons/auto-focus.png" />
+                <div class="mt-1 text-sm">Auto Focus</div>
+            </p-button>
+        </div>
+        <div class="col-4 p-1">
             <p-button [text]="true" (onClick)="open('FLAT_WIZARD')" [disabled]="!connected || !hasFlatWizard"
                       styleClass="min-w-full w-full px-1 py-2 flex-column">
                 <img src="assets/icons/flat-wizard.png" />
@@ -197,5 +204,6 @@
     </ng-template>
 </p-dialog>
 
-<neb-dialog-menu #deviceMenu [model]="deviceModel" />
+<neb-device-list-menu #deviceMenu [disableIfDeviceIsNotConnected]="false" (deviceConnect)="deviceConnected($event)"
+                      (deviceDisconnect)="deviceDisconnected($event)" />
 <neb-device-list-menu #imageMenu [model]="imageModel" [disableIfDeviceIsNotConnected]="false" header="Image" />

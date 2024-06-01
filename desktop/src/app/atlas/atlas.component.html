@@ -59,7 +59,7 @@
                         <div class="flex mt-3 flex-column align-items-center justify-content-center">
                             <div class="flex w-full align-items-center px-4 gap-2">
                                 <span class="p-float-label flex-1">
-                                    <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="minorPlanetSearchText"
+                                    <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="minorPlanetSearchText"
                                            pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
                                            tooltipPosition="bottom" />
                                     <label>Search</label>
@@ -140,7 +140,7 @@
                 <div class="flex mt-2 align-items-center justify-content-center">
                     <div class="flex w-full align-items-center px-4 gap-2">
                         <span class="p-float-label flex-1">
-                            <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="skyObjectSearchText" />
+                            <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="skyObjectSearchText" />
                             <label>Search</label>
                         </span>
                         <div class="flex flex-row gap-1">
@@ -182,7 +182,7 @@
                 <div class="flex mt-2 flex-column align-items-center justify-content-center">
                     <div class="flex w-full align-items-center px-4 gap-2">
                         <span class="p-float-label flex-1">
-                            <input type="text" pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="satelliteSearchText" />
+                            <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="satelliteSearchText" />
                             <label>Search</label>
                         </span>
                         <div class="flex flex-row gap-1">
@@ -228,74 +228,74 @@
                     <div class="grid">
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.rightAscensionJ2000" />
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.rightAscensionJ2000" />
                                 <label>RA (J2000)</label>
                             </span>
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.declinationJ2000" />
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.declinationJ2000" />
                                 <label>DEC (J2000)</label>
                             </span>
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.rightAscension" />
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.rightAscension" />
                                 <label>RA</label>
                             </span>
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.declination" />
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.declination" />
                                 <label>DEC</label>
                             </span>
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.azimuth" />
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.azimuth" />
                                 <label>Azimuth</label>
                             </span>
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.altitude" />
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.altitude" />
                                 <label>Altitude</label>
                             </span>
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                                        [value]="bodyPosition.magnitude < 30 ? bodyPosition.magnitude.toFixed(2) : '-'" />
                                 <label>Magnitude</label>
                             </span>
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.constellation" />
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.constellation" />
                                 <label>Constellation</label>
                             </span>
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.distance.toFixed(3)" />
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.distance.toFixed(3)" />
                                 <label>Distance ({{ bodyPosition.distanceUnit }})</label>
                             </span>
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.illuminated" />
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.illuminated" />
                                 <label>Illuminated (%)</label>
                             </span>
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.elongation" />
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.elongation" />
                                 <label>Elongation (°)</label>
                             </span>
                         </div>
                         <div class="col-3">
                             <span class="p-float-label">
-                                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.pierSide" />
+                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.pierSide" />
                                 <label>Pier Side</label>
                             </span>
                         </div>

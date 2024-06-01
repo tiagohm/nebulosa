@@ -3,10 +3,7 @@ package nebulosa.api.alignment.polar.tppa
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignmentResult
-import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraCaptureEvent
-import nebulosa.api.cameras.CameraCaptureState
-import nebulosa.api.cameras.CameraCaptureTask
+import nebulosa.api.cameras.*
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.mounts.MountMoveRequest
 import nebulosa.api.mounts.MountMoveTask
@@ -38,12 +35,12 @@ data class TPPATask(
     @JvmField val mount: Mount? = null,
     @JvmField val longitude: Angle = mount!!.longitude,
     @JvmField val latitude: Angle = mount!!.latitude,
-) : AbstractTask<MessageEvent>(), Consumer<Any>, PauseListener {
+) : AbstractTask<MessageEvent>(), Consumer<Any>, PauseListener, CameraEventAware {
 
     @JvmField val mountMoveRequest = MountMoveRequest(request.stepDirection, request.stepDuration, request.stepSpeed)
 
     @JvmField val cameraRequest = request.capture.copy(
-        savePath = Files.createTempDirectory("tppa"),
+        savePath = CAPTURE_SAVE_PATH,
         exposureAmount = 0, exposureDelay = Duration.ZERO,
         exposureTime = maxOf(request.capture.exposureTime, MIN_EXPOSURE_TIME),
         frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
@@ -73,7 +70,7 @@ data class TPPATask(
         settleDelayTask.subscribe(this)
     }
 
-    fun handleCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         if (camera === event.device) {
             cameraCaptureTask.handleCameraEvent(event)
         }
@@ -117,14 +114,14 @@ data class TPPATask(
 
         cancellationToken.listenToPause(this)
 
-        while (!cancellationToken.isDone) {
+        while (!cancellationToken.isCancelled) {
             if (cancellationToken.isPaused) {
                 pausing.set(false)
                 sendEvent(TPPAState.PAUSED)
                 cancellationToken.waitForPause()
             }
 
-            if (cancellationToken.isDone) break
+            if (cancellationToken.isCancelled) break
 
             mount?.tracking(true)
 
@@ -137,7 +134,7 @@ data class TPPATask(
                         mountMoveState[alignment.state.ordinal] = true
                     }
 
-                    if (cancellationToken.isDone) break
+                    if (cancellationToken.isCancelled) break
 
                     rightAscension = mount.rightAscension
                     declination = mount.declination
@@ -149,14 +146,14 @@ data class TPPATask(
                 }
             }
 
-            if (cancellationToken.isDone) break
+            if (cancellationToken.isCancelled) break
 
             sendEvent(TPPAState.EXPOSURING)
 
             // CAPTURE.
             cameraCaptureTask.execute(cancellationToken)
 
-            if (cancellationToken.isDone || savedImage == null) {
+            if (cancellationToken.isCancelled || savedImage == null) {
                 break
             }
 
@@ -180,7 +177,7 @@ data class TPPATask(
 
             LOG.info("TPPA alignment completed. result=$result")
 
-            if (cancellationToken.isDone) break
+            if (cancellationToken.isCancelled) break
 
             when (result) {
                 is ThreePointPolarAlignmentResult.NeedMoreMeasurement -> {
@@ -313,6 +310,7 @@ data class TPPATask(
 
         @JvmStatic private val MIN_EXPOSURE_TIME = Duration.ofSeconds(1L)
         @JvmStatic private val SETTLE_TIME = Duration.ofSeconds(5)
+        @JvmStatic private val CAPTURE_SAVE_PATH = Files.createTempDirectory("tppa-")
         @JvmStatic private val LOG = loggerFor<TPPATask>()
 
         const val MAX_ATTEMPTS = 30

@@ -1,9 +1,6 @@
-
 export type PlateSolverType = 'ASTROMETRY_NET' | 'ASTROMETRY_NET_ONLINE' | 'ASTAP'
 
-export const DEFAULT_SOLVER_TYPES: PlateSolverType[] = ['ASTROMETRY_NET_ONLINE', 'ASTAP']
-
-export interface PlateSolverPreference {
+export interface PlateSolverOptions {
     type: PlateSolverType
     executablePath: string
     downsampleFactor: number
@@ -12,11 +9,25 @@ export interface PlateSolverPreference {
     timeout: number
 }
 
-export const EMPTY_PLATE_SOLVER_PREFERENCE: PlateSolverPreference = {
+export const EMPTY_PLATE_SOLVER_OPTIONS: PlateSolverOptions = {
     type: 'ASTAP',
     executablePath: '',
     downsampleFactor: 0,
     apiUrl: 'https://nova.astrometry.net/',
     apiKey: '',
+    timeout: 600,
+}
+
+export type StarDetectorType = 'ASTAP'
+
+export interface StarDetectionOptions {
+    type: StarDetectorType
+    executablePath: string
+    timeout: number
+}
+
+export const EMPTY_STAR_DETECTION_OPTIONS: StarDetectionOptions = {
+    type: 'ASTAP',
+    executablePath: '',
     timeout: 600,
 }

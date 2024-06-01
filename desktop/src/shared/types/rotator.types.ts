@@ -33,3 +33,7 @@ export const EMPTY_ROTATOR: Rotator = {
 export interface RotatorPreference {
     angle?: number
 }
+
+export function isRotator(device?: Device): device is Rotator {
+    return !!device && 'angle' in device
+}

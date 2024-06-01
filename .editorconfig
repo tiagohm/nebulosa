@@ -29,3 +29,6 @@ ij_kotlin_continuation_indent_size = 8
 [*.py]
 ij_python_wrap_long_lines = false
 ij_python_method_parameters_wrap = off
+
+[{*.yml, *.yaml}]
+ij_yaml_indent_size = 2

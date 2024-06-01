@@ -61,7 +61,7 @@ export class BrowserWindowService {
     }
 
     openGuider(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'guider', width: 425, height: 438 })
+        Object.assign(options, { icon: 'guider', width: 440, height: 455 })
         this.openWindow({ ...options, id: 'guider', path: 'guider', data: undefined })
     }
 
@@ -102,6 +102,11 @@ export class BrowserWindowService {
     openSequencer(options: OpenWindowOptions = {}) {
         Object.assign(options, { icon: 'workflow', width: 630, height: 570, resizable: true })
         this.openWindow({ ...options, id: 'sequencer', path: 'sequencer', data: undefined })
+    }
+
+    openAutoFocus(options: OpenWindowOptions = {}) {
+        Object.assign(options, { icon: 'auto-focus', width: 425, height: 420 })
+        this.openWindow({ ...options, id: 'auto-focus', path: 'auto-focus', data: undefined })
     }
 
     openFlatWizard(options: OpenWindowOptions = {}) {

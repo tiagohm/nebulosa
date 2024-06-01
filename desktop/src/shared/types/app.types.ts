@@ -1,17 +1,6 @@
-import { MenuItem } from 'primeng/api'
-import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { MessageEvent } from './api.types'
 
-export interface CheckableMenuItem extends MenuItem {
-    checked: boolean
-}
-
-export interface ToggleableMenuItem extends MenuItem {
-    toggleable: boolean
-    toggled: boolean
-
-    toggle: (event: CheckboxChangeEvent) => void
-}
+export type Severity = 'success' | 'info' | 'warning' | 'danger'
 
 export interface NotificationEvent extends MessageEvent {
     type: string

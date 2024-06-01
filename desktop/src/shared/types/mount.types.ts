@@ -1,4 +1,5 @@
 import { Angle, EquatorialCoordinate } from './atlas.types'
+import { Device } from './device.types'
 import { GPS } from './gps.types'
 import { GuideOutput } from './guider.types'
 
@@ -94,4 +95,8 @@ export interface MountRemoteControlDialog {
     host: string
     port: number
     data: MountRemoteControl[]
+}
+
+export function isMount(device?: Device): device is Mount {
+    return !!device && 'tracking' in device
 }

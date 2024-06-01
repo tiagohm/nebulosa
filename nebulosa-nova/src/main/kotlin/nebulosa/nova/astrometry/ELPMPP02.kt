@@ -6,7 +6,6 @@ import nebulosa.io.bufferedResource
 import nebulosa.math.Matrix3D
 import nebulosa.math.Vector3D
 import nebulosa.math.normalized
-import nebulosa.math.pmod
 import nebulosa.time.InstantOfTime
 import kotlin.math.atan2
 import kotlin.math.cos

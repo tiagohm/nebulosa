@@ -470,7 +470,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         this.savePlan()
 
-        await this.browserWindow.openCameraImage(this.camera!)
+        await this.browserWindow.openCameraImage(this.camera!, 'SEQUENCER')
 
         this.api.sequencerStart(this.camera!, this.plan)
     }

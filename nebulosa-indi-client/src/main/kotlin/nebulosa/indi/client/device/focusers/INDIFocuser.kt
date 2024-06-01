@@ -185,12 +185,10 @@ internal open class INDIFocuser(
         }
     }
 
-    override fun toString(): String {
-        return "Focuser(name=$name, moving=$moving, position=$position," +
-                " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
-                " canAbort=$canAbort, canReverse=$canReverse, reversed=$reversed," +
-                " canSync=$canSync, hasBacklash=$hasBacklash," +
-                " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
-                " temperature=$temperature)"
-    }
+    override fun toString() = "Focuser(name=$name, moving=$moving, position=$position," +
+            " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
+            " canAbort=$canAbort, canReverse=$canReverse, reversed=$reversed," +
+            " canSync=$canSync, hasBacklash=$hasBacklash," +
+            " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
+            " temperature=$temperature)"
 }

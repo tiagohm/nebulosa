@@ -21,7 +21,7 @@ class AstapStarDetector(path: Path) : StarDetector<Path> {
         val arguments = mutableMapOf<String, Any?>()
 
         arguments["-f"] = input
-        arguments["-z"] = 2
+        arguments["-z"] = 0
         arguments["-extract"] = 0
 
         val process = executor.execute(arguments, workingDir = input.parent)

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core'
 import moment from 'moment'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { Angle, BodyPosition, CloseApproach, ComputedLocation, Constellation, DeepSkyObject, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
+import { AutoFocusRequest } from '../types/autofocus.type'
 import { CalibrationFrame, CalibrationFrameGroup } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
 import { Device, INDIProperty, INDISendProperty } from '../types/device.types'
@@ -14,7 +15,7 @@ import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAn
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlType, SlewRate, TrackMode } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencePlan } from '../types/sequencer.types'
-import { PlateSolverPreference } from '../types/settings.types'
+import { PlateSolverOptions, StarDetectionOptions } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
 import { HttpService } from './http.service'
 
@@ -68,7 +69,6 @@ export class ApiService {
         return this.http.get<boolean>(`cameras/${camera.id}/capturing`)
     }
 
-    // TODO: Rotator
     cameraSnoop(camera: Camera, equipment: Equipment) {
         const { mount, wheel, focuser, rotator } = equipment
         const query = this.http.query({ mount: mount?.name, wheel: wheel?.name, focuser: focuser?.name, rotator: rotator?.name })
@@ -382,6 +382,18 @@ export class ApiService {
 
     // INDI
 
+    indiDevice<T extends Device = Device>(device: T) {
+        return this.http.get<T>(`indi/${device.id}`)
+    }
+
+    indiDeviceConnect(device: Device) {
+        return this.http.put<void>(`indi/${device.id}/connect`)
+    }
+
+    indiDeviceDisconnect(device: Device) {
+        return this.http.put<void>(`indi/${device.id}/disconnect`)
+    }
+
     indiProperties(device: Device) {
         return this.http.get<INDIProperty<any>[]>(`indi/${device.id}/properties`)
     }
@@ -519,9 +531,9 @@ export class ApiService {
         return this.http.get<CoordinateInterpolation | null>(`image/coordinate-interpolation?${query}`)
     }
 
-    detectStars(path: string) {
+    detectStars(path: string, starDetector: StarDetectionOptions) {
         const query = this.http.query({ path })
-        return this.http.put<DetectedStar[]>(`image/detect-stars?${query}`)
+        return this.http.put<DetectedStar[]>(`star-detection?${query}`, starDetector)
     }
 
     imageHistogram(path: string, bitLength: number = 16) {
@@ -628,11 +640,21 @@ export class ApiService {
     // SOLVER
 
     solveImage(
-        solver: PlateSolverPreference, path: string, blind: boolean,
+        solver: PlateSolverOptions, path: string, blind: boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ) {
-        const query = this.http.query({ ...solver, path, blind, centerRA, centerDEC, radius })
-        return this.http.put<ImageSolved>(`plate-solver?${query}`)
+        const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
+        return this.http.put<ImageSolved>(`plate-solver?${query}`, solver)
+    }
+
+    // AUTO FOCUS
+
+    autoFocusStart(camera: Camera, focuser: Focuser, request: AutoFocusRequest) {
+        return this.http.put<void>(`auto-focus/${camera.name}/${focuser.name}/start`, request)
+    }
+
+    autoFocusStop(camera: Camera) {
+        return this.http.put<void>(`auto-focus/${camera.name}/stop`)
     }
 
     // PREFERENCE

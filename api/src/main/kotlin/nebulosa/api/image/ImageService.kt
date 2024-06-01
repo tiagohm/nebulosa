@@ -24,8 +24,6 @@ import nebulosa.simbad.SimbadSearch
 import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObjectType
-import nebulosa.star.detection.ImageStar
-import nebulosa.star.detection.StarDetector
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import nebulosa.wcs.WCS
@@ -55,7 +53,6 @@ class ImageService(
     private val imageBucket: ImageBucket,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val connectionService: ConnectionService,
-    private val starDetector: StarDetector<Image>,
 ) {
 
     private enum class ImageOperation {
@@ -94,7 +91,7 @@ class ImageService(
             stretchParams!!.shadow, stretchParams.highlight, stretchParams.midtone,
             transformedImage.header.rightAscension.takeIf { it.isFinite() },
             transformedImage.header.declination.takeIf { it.isFinite() },
-            imageBucket[path]?.second?.let(::ImageSolved),
+            imageBucket[path]?.solution?.let(::ImageSolved),
             transformedImage.header.mapNotNull { if (it.isCommentStyle) null else ImageHeaderItem(it.key, it.value) },
             transformedImage.header.bitpix, instrument, statistics,
         )
@@ -271,7 +268,7 @@ class ImageService(
     }
 
     fun saveImageAs(inputPath: Path, save: SaveImage, camera: Camera?) {
-        val (image) = imageBucket[inputPath]?.first?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
+        val (image) = imageBucket[inputPath]?.image?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found")
 
         require(save.path != null)
@@ -292,8 +289,7 @@ class ImageService(
         width: Int, height: Int, fov: Angle,
         rotation: Angle = 0.0, id: String = "CDS/P/DSS2/COLOR",
     ): Path {
-        val (image, calibration, path) = framingService
-            .frame(rightAscension, declination, width, height, fov, rotation, id)!!
+        val (image, calibration, path) = framingService.frame(rightAscension, declination, width, height, fov, rotation, id)!!
         imageBucket.put(path, image, calibration)
         return path
     }
@@ -332,11 +328,6 @@ class ImageService(
         }
 
         return CoordinateInterpolation(ma, md, 0, 0, width, height, delta, image.header.observationDate)
-    }
-
-    fun detectStars(path: Path): List<ImageStar> {
-        val (image) = imageBucket[path] ?: return emptyList()
-        return starDetector.detect(image)
     }
 
     fun histogram(path: Path, bitLength: Int = 16): IntArray {

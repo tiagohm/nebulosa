@@ -2,7 +2,7 @@
     <div class="grid flex align-items-center">
         <div class="col-8 align-items-center gap-2">
             <span class="p-float-label">
-                <input type="text" pInputText [readonly]="true" [value]="mount.name" class="p-inputtext-sm border-0 w-full" />
+                <input pInputText readonly [value]="mount.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Mount</label>
             </span>
             <p-button *ngIf="mount.connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-close"
@@ -24,61 +24,61 @@
     <div class="grid pt-2">
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="rightAscensionJ2000" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="rightAscensionJ2000" />
                 <label>RA (J2000)</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="declinationJ2000" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="declinationJ2000" />
                 <label>DEC (J2000)</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="rightAscension" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="rightAscension" />
                 <label>RA</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="declination" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="declination" />
                 <label>DEC</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="azimuth" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="azimuth" />
                 <label>Azimuth</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="altitude" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="altitude" />
                 <label>Altitude</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="lst" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="lst" />
                 <label>LST</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="constellation ?? '-'" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="constellation ?? '-'" />
                 <label>Constellation</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" value="{{meridianAt}} (-{{ timeLeftToMeridianFlip }})" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" value="{{meridianAt}} (-{{ timeLeftToMeridianFlip }})" />
                 <label>Meridian at</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="pierSide" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="pierSide" />
                 <label>Pier</label>
             </span>
         </div>

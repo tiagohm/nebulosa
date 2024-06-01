@@ -4,10 +4,10 @@ import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
-import nebulosa.api.solver.PlateSolverService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.mount.Mount
+import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Subscriber
 class TPPAExecutor(
     private val messageService: MessageService,
-    private val plateSolverService: PlateSolverService,
+    private val httpClient: OkHttpClient,
 ) : Consumer<MessageEvent> {
 
     private val jobs = ConcurrentHashMap.newKeySet<TPPAJob>(1)
@@ -38,7 +38,7 @@ class TPPAExecutor(
         check(jobs.none { it.task.camera === camera }) { "${camera.name} TPPA Job is already in progress" }
         check(jobs.none { it.task.mount === mount }) { "${camera.name} TPPA Job is already in progress" }
 
-        val solver = plateSolverService.solverFor(request.plateSolver)
+        val solver = request.plateSolver.get(httpClient)
         val task = TPPATask(camera, solver, request, mount)
         task.subscribe(this)
 

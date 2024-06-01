@@ -94,46 +94,46 @@
         <ng-container *ngIf="annotationInfo">
             <div class="col-12">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" [value]="annotationInfo | skyObject:'name'" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly [value]="annotationInfo | skyObject:'name'" class="border-0 p-inputtext-sm" />
                     <label>Name</label>
                 </span>
             </div>
             <div class="col-6">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" [value]="annotationInfo.rightAscensionJ2000 | angle:true:24"
+                    <input pInputText readonly [value]="annotationInfo.rightAscensionJ2000 | angle:true:24"
                            class="border-0 p-inputtext-sm" />
                     <label>RA (J2000)</label>
                 </span>
             </div>
             <div class="col-6">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" [value]="annotationInfo.declinationJ2000 | angle:true:360"
+                    <input pInputText readonly [value]="annotationInfo.declinationJ2000 | angle:true:360"
                            class="border-0 p-inputtext-sm" />
                     <label>DEC (J2000)</label>
                 </span>
             </div>
             <div class="col-6" *ngIf="annotationInfo.magnitude">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" value="{{ annotationInfo.magnitude < 30.0 ? annotationInfo.magnitude.toFixed(2) : '-' }}"
+                    <input pInputText readonly value="{{ annotationInfo.magnitude < 30.0 ? annotationInfo.magnitude.toFixed(2) : '-' }}"
                            class="border-0 p-inputtext-sm" />
                     <label>Magnitude</label>
                 </span>
             </div>
             <div class="col-6" *ngIf="annotationInfo.constellation">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" [value]="annotationInfo.constellation" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly [value]="annotationInfo.constellation" class="border-0 p-inputtext-sm" />
                     <label>Constellation</label>
                 </span>
             </div>
             <div class="col-6" *ngIf="annotationInfo.type">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" value="{{ annotationInfo.type | enum }}" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly value="{{ annotationInfo.type | enum }}" class="border-0 p-inputtext-sm" />
                     <label>Type</label>
                 </span>
             </div>
             <div class="col-6" *ngIf="annotationInfo.distance">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" value="{{ annotationInfo.distance <= 0 ? '-' : annotationInfo.distance }}"
+                    <input pInputText readonly value="{{ annotationInfo.distance <= 0 ? '-' : annotationInfo.distance }}"
                            class="border-0 p-inputtext-sm" />
                     <label>Distance (ly)</label>
                 </span>
@@ -191,38 +191,38 @@
         <div class="grid pt-2">
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.rightAscensionJ2000" />
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.rightAscensionJ2000" />
                     <label>RA (J2000)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.declinationJ2000" />
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.declinationJ2000" />
                     <label>DEC (J2000)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.orientation.toFixed(4)" />
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.orientation.toFixed(4)" />
                     <label>Orientation (°)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.scale.toFixed(4)" />
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.scale.toFixed(4)" />
                     <label>Scale (arcsec/px)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                            [value]="(solver.solved.width.toFixed(2)) + ' x ' + (solver.solved.height.toFixed(2))" />
                     <label>Field size (arcmin)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.radius.toFixed(4)" />
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.radius.toFixed(4)" />
                     <label>Radius (°)</label>
                 </span>
             </div>
@@ -348,55 +348,55 @@
     <div class="grid p-2" *ngIf="imageInfo">
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="imageInfo.statistics.count" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="imageInfo.statistics.count" />
                 <label>Count (px)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.mean * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Mean</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.median * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Median</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.variance * statisticsBitLength.rangeMax * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Variance</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.avgDev * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Avg Dev</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.stdDev * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Std Dev</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.minimum * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Minimum</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.maximum * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Maximum</label>
             </span>
@@ -581,7 +581,7 @@
     <div class="grid mt-2">
         <div class="col-12">
             <span class="p-float-label">
-                <input pInputText readonly type="text" [value]="saveAs.path" class="border-0 p-inputtext-sm" />
+                <input pInputText readonly [value]="saveAs.path" class="border-0 p-inputtext-sm" />
                 <label>Path</label>
             </span>
         </div>

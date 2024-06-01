@@ -11,6 +11,21 @@ class INDIController(
     private val indiService: INDIService,
 ) {
 
+    @GetMapping("{device}")
+    fun device(device: Device): Device {
+        return device
+    }
+
+    @PutMapping("{device}/connect")
+    fun connect(device: Device) {
+        indiService.connect(device)
+    }
+
+    @PutMapping("{device}/disconnect")
+    fun disconnect(device: Device) {
+        indiService.disconnect(device)
+    }
+
     @GetMapping("{device}/properties")
     fun properties(device: Device): Collection<PropertyVector<*, *>> {
         return indiService.properties(device)

@@ -69,7 +69,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     readonly chartData: ChartData = {
-        labels: Array.from({ length: 100 }, (_, i) => `${i}`),
+        labels: Array.from({ length: 100 }),
         datasets: [
             // RA.
             {
@@ -123,7 +123,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
                         return ''
                     },
                     label: (context) => {
-                        console.log(context)
                         const barType = context.dataset.type === 'bar'
                         const raType = context.datasetIndex === 0 || context.datasetIndex === 2
                         const scale = barType ? this.phdDurationScale : 1.0
@@ -165,12 +164,12 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         },
         scales: {
             y: {
-                stacked: true,
+                stacked: false,
                 beginAtZero: false,
                 min: -16,
                 max: 16,
                 ticks: {
-                    autoSkip: false,
+                    autoSkip: true,
                     count: 7,
                     callback: (value) => {
                         return (value as number).toFixed(1).padStart(5, ' ')
@@ -188,7 +187,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
                 }
             },
             x: {
-                stacked: true,
+                stacked: false,
                 min: 0,
                 max: 100,
                 border: {
@@ -196,11 +195,13 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
                     dash: [2, 4],
                 },
                 ticks: {
-                    stepSize: 5.0,
+                    autoSkip: true,
+                    count: 11,
                     maxRotation: 0,
                     minRotation: 0,
                     callback: (value) => {
-                        return (value as number).toFixed(0)
+                        const a = value as number
+                        return (a - Math.trunc(a) > 0) ? undefined : a.toFixed(0)
                     }
                 },
                 grid: {
@@ -371,14 +372,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
             Object.assign(this.guideOutput, guideOutput)
 
             this.update()
-        }
-    }
-
-    connectGuideOutput() {
-        if (this.guideOutputConnected) {
-            this.api.guideOutputDisconnect(this.guideOutput!)
-        } else {
-            this.api.guideOutputConnect(this.guideOutput!)
         }
     }
 

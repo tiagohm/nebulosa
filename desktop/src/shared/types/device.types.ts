@@ -8,6 +8,8 @@ export type INDIPropertyType = 'NUMBER' | 'SWITCH' | 'TEXT'
 
 export type SwitchRule = 'ONE_OF_MANY' | 'AT_MOST_ONE' | 'ANY_OF_MANY'
 
+export type DeviceType = 'CAMERA' | 'MOUNT' | 'WHEEL' | 'FOCUSER' | 'ROTATOR' | 'GPS' | 'DOME' | 'SWITCH'
+
 export interface Device {
     readonly sender: string
     readonly id: string
@@ -56,4 +58,8 @@ export interface INDISendPropertyItem {
 export interface INDIDeviceMessage {
     device?: Device
     message: string
+}
+
+export function isCompanionDevice<T extends Device>(device?: T | CompanionDevice<T>): device is CompanionDevice<T> {
+    return !!device && 'main' in device
 }

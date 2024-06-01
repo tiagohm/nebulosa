@@ -1,10 +1,17 @@
-import { Component, Input, ViewChild } from '@angular/core'
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
 import { PrimeService } from '../../services/prime.service'
+import { isGuideHead } from '../../types/camera.types'
 import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
 import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
+import { MenuItem } from '../menu-item/menu-item.component'
 import { SlideMenuItem } from '../slide-menu/slide-menu.component'
+
+export interface DeviceConnectionCommandEvent {
+    device: Device
+    item: MenuItem
+}
 
 @Component({
     selector: 'neb-device-list-menu',
@@ -27,6 +34,12 @@ export class DeviceListMenuComponent {
 
     @Input()
     readonly hasNone: boolean = false
+
+    @Output()
+    readonly deviceConnect = new EventEmitter<DeviceConnectionCommandEvent>()
+
+    @Output()
+    readonly deviceDisconnect = new EventEmitter<DeviceConnectionCommandEvent>()
 
     @ViewChild('menu')
     private readonly menu!: DialogMenuComponent
@@ -67,10 +80,21 @@ export class DeviceListMenuComponent {
 
             for (const device of devices.sort(deviceComparator)) {
                 model.push({
-                    icon: 'mdi mdi-circle-medium ' + (device.connected ? 'text-green-500' : 'text-red-500'),
                     label: device.name,
                     checked: selected === device,
                     disabled: this.disableIfDeviceIsNotConnected && !device.connected,
+                    toolbarMenu: [
+                        {
+                            icon: 'mdi ' + (device.connected ? 'mdi-close' : 'mdi-connection'),
+                            toolbarButtonSeverity: device.connected ? 'danger' : 'info',
+                            label: device.connected ? 'Disconnect' : 'Connect',
+                            visible: !isGuideHead(device),
+                            command: event => {
+                                if (device.connected) this.deviceDisconnect.emit({ device, item: event.item! })
+                                else this.deviceConnect.emit({ device, item: event.item! })
+                            }
+                        }
+                    ],
                     command: () => {
                         resolve(device)
                     },

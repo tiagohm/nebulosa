@@ -565,6 +565,6 @@ function sendToAllWindows(channel: string, data: any, home: boolean = true) {
     }
 
     if (serve) {
-        console.info(data)
+        console.info(JSON.stringify(data))
     }
 }
