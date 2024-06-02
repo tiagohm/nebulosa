@@ -285,11 +285,11 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
                 this.message = event.data
             })
         })
-
-        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
+        this.pinger.register(this, 30000)
+
         const settle = await this.api.getGuidingSettle()
 
         this.settleAmount = settle.amount ?? 1.5

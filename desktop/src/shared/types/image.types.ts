@@ -128,6 +128,7 @@ export const EMPTY_IMAGE_PREFERENCE: ImagePreference = {
 export interface ImageData {
     camera?: Camera
     path?: string
+    liveStackedPath?: string
     source?: ImageSource
     title?: string
     capture?: CameraStartCapture

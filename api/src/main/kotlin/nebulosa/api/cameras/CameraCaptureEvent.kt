@@ -1,12 +1,14 @@
 package nebulosa.api.cameras
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import nebulosa.api.messages.MessageEvent
 import nebulosa.indi.device.camera.Camera
 import java.nio.file.Path
 import java.time.Duration
 
 data class CameraCaptureEvent(
-    @JvmField val camera: Camera,
+    @JvmField @field:JsonIgnore val task: CameraCaptureTask,
+    @JvmField val camera: Camera = task.camera,
     @JvmField val state: CameraCaptureState = CameraCaptureState.IDLE,
     @JvmField val exposureAmount: Int = 0,
     @JvmField val exposureCount: Int = 0,
@@ -16,15 +18,9 @@ data class CameraCaptureEvent(
     @JvmField val stepRemainingTime: Duration = Duration.ZERO,
     @JvmField val stepElapsedTime: Duration = Duration.ZERO,
     @JvmField val stepProgress: Double = 0.0,
-    @JvmField val savePath: Path? = null,
+    @JvmField val savedPath: Path? = null,
+    @JvmField val liveStackedSavedPath: Path? = null,
 ) : MessageEvent {
 
     override val eventName = "CAMERA.CAPTURE_ELAPSED"
-
-    companion object {
-
-        @JvmStatic
-        fun exposureFinished(camera: Camera, savePath: Path) =
-            CameraCaptureEvent(camera, CameraCaptureState.EXPOSURE_FINISHED, savePath = savePath)
-    }
 }

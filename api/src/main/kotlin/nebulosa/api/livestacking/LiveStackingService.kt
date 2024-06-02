@@ -11,7 +11,7 @@ class LiveStackingService {
 
     private val liveStackers = ConcurrentHashMap<Camera, LiveStacker>(2)
 
-    fun start(camera: Camera, options: LiveStackingOptions) {
+    fun start(camera: Camera, options: LiveStackingRequest) {
         stop(camera)
 
         val liveStacker = options.get()
@@ -24,6 +24,6 @@ class LiveStackingService {
     }
 
     fun stop(camera: Camera) {
-        liveStackers.remove(camera)?.close()
+        liveStackers.remove(camera)?.stop()
     }
 }

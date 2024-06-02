@@ -11,7 +11,7 @@ import java.nio.file.Path
 class LiveStackingController(private val liveStackingService: LiveStackingService) {
 
     @PutMapping("{camera}/start")
-    fun start(camera: Camera, @RequestBody body: LiveStackingOptions) {
+    fun start(camera: Camera, @RequestBody body: LiveStackingRequest) {
         liveStackingService.start(camera, body)
     }
 

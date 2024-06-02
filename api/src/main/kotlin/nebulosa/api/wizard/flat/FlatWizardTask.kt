@@ -65,7 +65,7 @@ data class FlatWizardTask(
                     capture = event
 
                     if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
-                        savedPath = event.savePath!!
+                        savedPath = event.savedPath!!
                         onNext(event)
                     }
 

@@ -9,7 +9,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.function.Supplier
 
-data class LiveStackingOptions(
+data class LiveStackingRequest(
+    @JvmField val enabled: Boolean = false,
     @JvmField val type: LiveStackerType = LiveStackerType.SIRIL,
     @JvmField @field:NotNull val executablePath: Path? = null,
     @JvmField val dark: Path? = null,
@@ -24,5 +25,10 @@ data class LiveStackingOptions(
         return when (type) {
             LiveStackerType.SIRIL -> SirilLiveStacker(executablePath!!, workingDirectory, dark, flat, rotate, use32Bits)
         }
+    }
+
+    companion object {
+
+        @JvmStatic val EMPTY = LiveStackingRequest()
     }
 }

@@ -28,6 +28,9 @@ data class CommandLine internal constructor(
     val command: List<String>
         get() = builder.command()
 
+    val pid
+        get() = process?.pid() ?: -1L
+
     val writer = PrintStream(object : OutputStream() {
 
         override fun write(b: Int) {

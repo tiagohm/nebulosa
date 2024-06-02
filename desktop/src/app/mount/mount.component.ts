@@ -279,14 +279,13 @@ export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
         hotkeys('e', { keyup: true }, event => { event.preventDefault(); this.moveTo('NE', event.type === 'keydown') })
         hotkeys('z', { keyup: true }, event => { event.preventDefault(); this.moveTo('SW', event.type === 'keydown') })
         hotkeys('c', { keyup: true }, event => { event.preventDefault(); this.moveTo('SE', event.type === 'keydown') })
-
-        this.pinger.register(this, 30000)
     }
 
     async ngAfterContentInit() {
-        this.route.queryParams.subscribe(e => {
+        this.route.queryParams.subscribe(async e => {
             const mount = JSON.parse(decodeURIComponent(e.data)) as Mount
-            this.mountChanged(mount)
+            await this.mountChanged(mount)
+            this.pinger.register(this, 30000)
         })
     }
 

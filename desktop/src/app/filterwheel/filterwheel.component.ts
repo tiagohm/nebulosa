@@ -134,22 +134,22 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
         hotkeys('7', event => { event.preventDefault(); this.moveToPosition(7) })
         hotkeys('8', event => { event.preventDefault(); this.moveToPosition(8) })
         hotkeys('9', event => { event.preventDefault(); this.moveToPosition(9) })
-
-        pinger.register(this, 30000)
     }
 
     async ngAfterContentInit() {
-        this.route.queryParams.subscribe(e => {
+        this.route.queryParams.subscribe(async e => {
             const decodedData = JSON.parse(decodeURIComponent(e.data))
 
             if (this.app.modal) {
                 const request = decodedData as WheelDialogInput
                 Object.assign(this.request, request.request)
                 this.mode = request.mode
-                this.wheelChanged(request.wheel)
+                await this.wheelChanged(request.wheel)
             } else {
-                this.wheelChanged(decodedData)
+                await this.wheelChanged(decodedData)
             }
+
+            this.pinger.register(this, 30000)
         })
 
         this.focusers = await this.api.focusers()

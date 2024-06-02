@@ -237,11 +237,11 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
         for (const p of SEQUENCE_ENTRY_PROPERTIES) {
             this.availableEntryPropertiesToApply.set(p, true)
         }
-
-        pinger.register(this, 30000)
     }
 
     async ngAfterContentInit() {
+        this.pinger.register(this, 30000)
+
         this.cameras = (await this.api.cameras()).sort(deviceComparator)
         this.mounts = (await this.api.mounts()).sort(deviceComparator)
         this.wheels = (await this.api.wheels()).sort(deviceComparator)
@@ -290,6 +290,19 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
             frameFormat: camera?.frameFormats[0],
             autoSave: true,
             autoSubFolderMode: 'OFF',
+            dither: {
+                enabled: false,
+                amount: 0,
+                raOnly: false,
+                afterExposures: 0
+            },
+            liveStacking: {
+                enabled: false,
+                type: 'SIRIL',
+                executablePath: '',
+                rotate: 0,
+                use32Bits: false
+            },
         })
 
         this.savePlan()

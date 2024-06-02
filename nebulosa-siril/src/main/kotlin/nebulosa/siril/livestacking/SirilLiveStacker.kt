@@ -11,6 +11,7 @@ import nebulosa.math.Angle
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.isSymbolicLink
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 
@@ -23,36 +24,38 @@ data class SirilLiveStacker(
     private val use32Bits: Boolean = false,
 ) : LiveStacker, LineReadListener {
 
-    @Volatile private var process: CommandLine? = null
+    @Volatile private var commandLine: CommandLine? = null
 
     private val waitForStacking = CountUpDownLatch()
     private val failed = AtomicBoolean()
 
     override val isRunning
-        get() = process != null && !process!!.isDone
+        get() = commandLine != null && !commandLine!!.isDone
 
     override val isStacking
         get() = !waitForStacking.get()
 
     @Synchronized
     override fun start() {
-        if (process == null) {
-            process = commandLine {
+        if (commandLine == null) {
+            commandLine = commandLine {
                 executablePath(executablePath)
                 putArg("-s", "-")
                 registerLineReadListener(this@SirilLiveStacker)
             }
 
-            process!!.whenComplete { _, e ->
-                println("completed. $e")
-                process = null
+            commandLine!!.whenComplete { exitCode, e ->
+                LOG.info("live stacking finished. exitCode={}", exitCode, e)
+                commandLine = null
             }
 
-            process!!.start()
+            commandLine!!.start()
 
-            process!!.writer.println(REQUIRES_COMMAND)
-            process!!.writer.println("$CD_COMMAND $workingDirectory")
-            process!!.writer.println(buildString(256) {
+            LOG.info("live stacking started. pid={}", commandLine!!.pid)
+
+            commandLine!!.writer.println(REQUIRES_COMMAND)
+            commandLine!!.writer.println("$CD_COMMAND $workingDirectory")
+            commandLine!!.writer.println(buildString(256) {
                 append(START_LS_COMMAND)
                 if (dark != null) append(" \"-dark=$dark\"")
                 if (flat != null) append(" \"-flat=$flat\"")
@@ -65,25 +68,32 @@ data class SirilLiveStacker(
     @Synchronized
     override fun add(path: Path): Path? {
         failed.set(false)
-        waitForStacking.countUp()
-        process?.writer?.println("$LS_COMMAND $path")
-        waitForStacking.await()
 
-        return if (failed.get()) null else Path.of("$workingDirectory", "live_stack_00001.fit")
+        try {
+            waitForStacking.countUp()
+            commandLine?.writer?.println("$LS_COMMAND \"$path\"")
+            waitForStacking.await()
+        } catch (e: Throwable) {
+            LOG.error("failed to add path", e)
+            return null
+        }
+
+        return if (failed.get()) null
+        else Path.of("$workingDirectory", "live_stack_00001.fit")
     }
 
     @Synchronized
     override fun stop() {
         waitForStacking.reset()
 
-        process?.writer?.println(STOP_LS_COMMAND)
-        process?.stop()
-        process = null
+        commandLine?.writer?.println(STOP_LS_COMMAND)
+        commandLine?.stop()
+        commandLine = null
     }
 
     override fun close() {
         stop()
-        workingDirectory.clearStackingFiles()
+        workingDirectory.deleteStackingFiles()
     }
 
     override fun onInputRead(line: String) {
@@ -127,13 +137,15 @@ data class SirilLiveStacker(
         @JvmStatic private val LIVE_STACK_SEQ_REGEX = Regex("live_stack_\\d*.seq")
 
         @JvmStatic
-        private fun Path.clearStackingFiles() {
-            for (file in listDirectoryEntries("*")) {
-                val name = file.name
+        fun Path.deleteStackingFiles() {
+            for (file in listDirectoryEntries("*.fit")) {
+                if (file.isSymbolicLink() && LIVE_STACK_FIT_REGEX.matches(file.name)) {
+                    file.deleteIfExists()
+                }
+            }
 
-                if (LIVE_STACK_FIT_REGEX.matches(name) ||
-                    LIVE_STACK_SEQ_REGEX.matches(name)
-                ) {
+            for (file in listDirectoryEntries("*.seq")) {
+                if (LIVE_STACK_SEQ_REGEX.matches(file.name)) {
                     file.deleteIfExists()
                 }
             }
