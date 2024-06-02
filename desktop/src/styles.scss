@@ -237,10 +237,16 @@ p-dropdownitem *,
     height: 3rem;
 }
 
-.p-dialog .p-dialog-content:has(neb-slide-menu) {
-    background: #1e1e1e;
-    color: rgba(255, 255, 255, 0.87);
-    padding: 1.25rem 1.25rem 1.25rem 1.25rem;
+.p-dialog {
+    .p-dialog-content {
+        padding-bottom: 0px;
+
+        &:has(neb-slide-menu) {
+            background: #1e1e1e;
+            color: rgba(255, 255, 255, 0.87);
+            padding: 1.25rem 1.25rem 1.25rem 1.25rem;
+        }
+    }
 }
 
 .pixelated {

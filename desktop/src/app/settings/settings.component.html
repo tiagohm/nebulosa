@@ -9,10 +9,10 @@
                     <label>Location</label>
                 </span>
                 <div class="flex gap-1">
-                    <p-button (onClick)="addLocation()" icon="mdi mdi-plus" size="small" severity="success" />
-                    <p-button (onClick)="editLocation()" icon="mdi mdi-pencil" size="small" severity="info" />
+                    <p-button (onClick)="addLocation()" icon="mdi mdi-plus" size="small" severity="success" [text]="true" />
+                    <p-button (onClick)="editLocation()" icon="mdi mdi-pencil" size="small" severity="info" [text]="true" />
                     <p-button [disabled]="locations.length <= 1" (onClick)="deleteLocation()" icon="mdi mdi-delete"
-                              size="small" severity="danger" />
+                              size="small" severity="danger" [text]="true" />
                 </div>
             </div>
         </p-tabPanel>
@@ -62,6 +62,13 @@
                     <p-dropdown [options]="['ASTAP']" [(ngModel)]="starDetectorType" styleClass="p-inputtext-sm border-0"
                                 (ngModelChange)="starDetectors.get(starDetectorType)!.type = $event; save()" [autoDisplayFirst]="false" />
                     <label>Type</label>
+                </span>
+                <span class="p-float-label max-w-9rem">
+                    <p-inputNumber [min]="0" [max]="500" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
+                                   [ngModel]="starDetectors.get(starDetectorType)!.minSNR"
+                                   (ngModelChange)="starDetectors.get(starDetectorType)!.minSNR = $event; save()" locale="en" [allowEmpty]="false"
+                                   scrollableNumber />
+                    <label>Min SNR</label>
                 </span>
                 <span class="p-float-label max-w-9rem">
                     <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [ngModel]="starDetectors.get(starDetectorType)!.timeout"

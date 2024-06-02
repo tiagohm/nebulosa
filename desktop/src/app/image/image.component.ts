@@ -18,7 +18,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
-import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS, StarDetectionDialog } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
@@ -44,6 +44,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     @ViewChild('histogram')
     private readonly histogram!: HistogramComponent
+
+    @ViewChild('detectedStarCanvas')
+    private readonly detectedStarCanvas!: ElementRef<HTMLCanvasElement>
 
     imageInfo?: ImageInfo
     private imageURL!: string
@@ -95,6 +98,27 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         useSimbad: false
     }
 
+    readonly starDetection: StarDetectionDialog = {
+        showDialog: false,
+        type: 'ASTAP',
+        minSNR: 0,
+        visible: false,
+        stars: [],
+        computed: {
+            hfd: 0,
+            snr: 0,
+            maxFlux: 0,
+            minFlux: 0,
+        },
+        selected: {
+            x: 0,
+            y: 0,
+            snr: 0,
+            hfd: 0,
+            flux: 0
+        },
+    }
+
     readonly solver: ImageSolverDialog = {
         showDialog: false,
         solving: false,
@@ -113,11 +137,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     showAnnotationInfoDialog = false
     annotationInfo?: AstronomicalObject & Partial<Star & DeepSkyObject>
     annotationIsVisible = false
-
-    readonly detectedStars: ImageDetectStars = {
-        visible: false,
-        stars: []
-    }
 
     readonly fitsHeaders: ImageFITSHeadersDialog = {
         showDialog: false,
@@ -332,16 +351,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         disabled: false,
         toggleable: false,
         toggled: false,
-        command: async () => {
-            const options = this.preference.starDetectionOptions('ASTAP').get()
-            this.detectedStars.stars = await this.api.detectStars(this.imageData.path!, options)
-            this.detectedStars.visible = this.detectedStars.stars.length > 0
-            this.detectStarsMenuItem.toggleable = this.detectedStars.visible
-            this.detectStarsMenuItem.toggled = this.detectedStars.visible
+        command: () => {
+            this.starDetection.showDialog = true
         },
         toggle: (event) => {
+            this.starDetection.visible = event.checked
             event.originalEvent?.stopImmediatePropagation()
-            this.detectedStars.visible = event.checked
         },
     }
 
@@ -713,8 +728,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.annotationIsVisible = false
         this.annotationMenuItem.toggleable = false
 
-        this.detectedStars.stars = []
-        this.detectedStars.visible = false
+        this.starDetection.stars = []
+        this.starDetection.visible = false
         this.detectStarsMenuItem.toggleable = false
 
         Object.assign(this.solver.solved, EMPTY_IMAGE_SOLVED)
@@ -729,6 +744,44 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     statisticsBitLengthChanged() {
         this.computeHistogram()
+    }
+
+    async detectStars() {
+        const options = this.preference.starDetectionOptions(this.starDetection.type).get()
+        options.minSNR = this.starDetection.minSNR
+        this.starDetection.stars = await this.api.detectStars(this.imageData.path!, options)
+
+        let hfd = 0
+        let snr = 0
+        let maxFlux = 0
+        let minFlux = 10000000
+
+        for (const star of this.starDetection.stars) {
+            hfd += star.hfd
+            snr += star.snr
+            minFlux = Math.min(minFlux, star.flux)
+            maxFlux = Math.max(maxFlux, star.flux)
+        }
+
+        const starCount = this.starDetection.stars.length
+        this.starDetection.computed.hfd = starCount > 0 ? hfd / starCount : 0
+        this.starDetection.computed.snr = starCount > 0 ? snr / starCount : 0
+        this.starDetection.computed.maxFlux = maxFlux
+        this.starDetection.computed.minFlux = minFlux
+
+        this.savePreference()
+
+        this.starDetection.visible = this.starDetection.stars.length > 0
+        this.detectStarsMenuItem.toggleable = this.starDetection.visible
+        this.detectStarsMenuItem.toggled = this.starDetection.visible
+    }
+
+    selectDetectedStar(star: DetectedStar) {
+        Object.assign(this.starDetection.selected, star)
+
+        const canvas = this.detectedStarCanvas.nativeElement
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage(this.image.nativeElement, star.x - 8, star.y - 8, 16, 16, 0, 0, canvas.width, canvas.height)
     }
 
     private async loadImage() {
@@ -1112,8 +1165,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 svg,
             }
 
-            console.info(fov.computed)
-
             return true
         } else {
             return false
@@ -1137,6 +1188,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         const preference = this.preference.imagePreference.get()
         this.solver.radius = preference.solverRadius ?? this.solver.radius
         this.solver.type = preference.solverType ?? this.solver.types[0]
+        this.starDetection.type = preference.starDetectionType ?? this.starDetection.type
+        this.starDetection.minSNR = this.preference.starDetectionOptions(this.starDetection.type).get().minSNR ?? this.starDetection.type
+
         this.fov.fovs = this.preference.imageFOVs.get()
         this.fov.fovs.forEach(e => { e.enabled = false; e.computed = undefined })
     }
@@ -1145,6 +1199,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         const preference = this.preference.imagePreference.get()
         preference.solverRadius = this.solver.radius
         preference.solverType = this.solver.type
+        preference.starDetectionType = this.starDetection.type
         this.preference.imagePreference.set(preference)
     }
 

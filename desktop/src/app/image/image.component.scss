@@ -7,6 +7,14 @@
         fill: transparent;
         stroke-width: 0.25rem;
     }
+
+    canvas.detected-star {
+        width: 128px;
+        height: 128px;
+        background: #111;
+        image-rendering: pixelated;
+        border-radius: 4px;
+    }
 }
 
 .roi {

@@ -24,10 +24,12 @@ export interface StarDetectionOptions {
     type: StarDetectorType
     executablePath: string
     timeout: number
+    minSNR: number
 }
 
 export const EMPTY_STAR_DETECTION_OPTIONS: StarDetectionOptions = {
     type: 'ASTAP',
     executablePath: '',
     timeout: 600,
+    minSNR: 0,
 }

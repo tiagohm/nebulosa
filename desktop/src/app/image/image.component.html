@@ -20,10 +20,11 @@
         </g>
     </svg>
 
-    <svg *ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && detectedStars.visible"
+    <svg *ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetection.visible"
          class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
-        <g *ngFor="let s of detectedStars.stars" class="pointer-events-auto cursor-pointer">
-            <circle [attr.cx]="s.x" [attr.cy]="s.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"></circle>
+        <g *ngFor="let s of starDetection.stars" class="pointer-events-auto cursor-pointer">
+            <circle [attr.cx]="s.x" [attr.cy]="s.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"
+                    (click)="selectDetectedStar(s)"> </circle>
             <text [attr.x]="s.x" [attr.y]="s.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">
                 {{ s.hfd.toFixed(1) }}
             </text>
@@ -68,7 +69,7 @@
                 <p-checkbox [(ngModel)]="annotation.useMinorPlanets" class="py-1" [binary]="true" label="Annotate with minor planets" />
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!annotation.useMinorPlanets" [min]="-10" [max]="30" class="max-w-10rem w-full" [showButtons]="true"
-                                   inputStyleClass="border-0 w-full" [step]="0.1" [(ngModel)]="annotation.minorPlanetsMagLimit"
+                                   styleClass="p-inputtext-sm border-0 w-full" [step]="0.1" [(ngModel)]="annotation.minorPlanetsMagLimit"
                                    [minFractionDigits]="1" locale="en" scrollableNumber />
                     <label>Mag. Limit</label>
                 </span>
@@ -251,12 +252,12 @@
         <div class="col-8 flex flex-column">
             <div class="flex flex-row gap-2 align-items-center justify-content-between">
                 <span class="p-float-label">
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
                                    [(ngModel)]="stretchShadow" locale="en" scrollableNumber />
                     <label>Shadow</label>
                 </span>
                 <span class="p-float-label">
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
                                    [(ngModel)]="stretchHighlight" locale="en" scrollableNumber />
                     <label>Highlight</label>
                 </span>
@@ -268,7 +269,7 @@
         <div class="col-4 flex flex-column">
             <div class="text-center w-full">
                 <span class="p-float-label">
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
                                    [(ngModel)]="stretchMidtone" locale="en" scrollableNumber />
                     <label>Midtone</label>
                 </span>
@@ -294,7 +295,7 @@
         <div class="col-7 flex align-items-center">
             <span class="p-float-label w-full max-w-full">
                 <p-dropdown [disabled]="!scnr.channel" appendTo="body" [(ngModel)]="scnr.method"
-                            [options]="scnrMethods" styleClass="border-0" [autoDisplayFirst]="false">
+                            [options]="scnrMethods" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -312,7 +313,7 @@
         <div class="col-5 flex align-items-center">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!scnr.channel || !scnr.method.endsWith('MASK')" [min]="0" [max]="1" [step]="0.1"
-                               [showButtons]="true" class="w-full" inputStyleClass="border-0 w-full" [minFractionDigits]="1"
+                               [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full" [minFractionDigits]="1"
                                [(ngModel)]="scnr.amount" locale="en" [allowEmpty]="false" scrollableNumber />
                 <label>Amount</label>
             </span>
@@ -413,6 +414,92 @@
             <neb-histogram #histogram class="w-full" style="max-height: 94px" />
         </div>
     </div>
+</p-dialog>
+
+<p-dialog header="Star Detection" [draggable]="true" [(visible)]="starDetection.showDialog" [modal]="false" [style]="{width: '360px'}"
+          class="pointer-events-none">
+    <div class="grid mt-2">
+        <div class="col-7 flex align-items-center">
+            <span class="p-float-label w-full max-w-full">
+                <p-dropdown appendTo="body" [(ngModel)]="starDetection.type" [options]="['ASTAP']"
+                            styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
+                <label>Detector</label>
+            </span>
+        </div>
+        <div class="col-5 align-items-center">
+            <span class="p-float-label">
+                <p-inputNumber [min]="0" [max]="500" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
+                               [(ngModel)]="starDetection.minSNR" locale="en" [allowEmpty]="false" scrollableNumber />
+                <label>Min SNR</label>
+            </span>
+        </div>
+        <div class="col-12 mt-1">
+            <span class="font-bold text-sm">COMPUTED</span>
+        </div>
+        <div class="col-4 align-items-center">
+            <span class="p-float-label">
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.stars.length" />
+                <label>Star Count</label>
+            </span>
+        </div>
+        <div class="col-2 align-items-center">
+            <span class="p-float-label">
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.computed.hfd.toFixed(2)" />
+                <label>HFD</label>
+            </span>
+        </div>
+        <div class="col-2 align-items-center">
+            <span class="p-float-label">
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.computed.snr.toFixed(1)" />
+                <label>SNR</label>
+            </span>
+        </div>
+        <div class="col-4 align-items-center">
+            <span class="p-float-label">
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
+                       value="{{ starDetection.computed.minFlux }} | {{ starDetection.computed.maxFlux }}" />
+                <label>Flux (min | max)</label>
+            </span>
+        </div>
+        <div class="col-12 mt-1">
+            <span class="font-bold text-sm">SELECTED</span>
+        </div>
+        <div class="col-5">
+            <canvas #detectedStarCanvas class="detected-star"></canvas>
+        </div>
+        <div class="col-7">
+            <div class="grid">
+                <div class="col-6 align-items-center">
+                    <span class="p-float-label">
+                        <input pInputText readonly class="p-inputtext-sm border-0 w-full"
+                               value="{{ starDetection.selected.x.toFixed(0) }} | {{ starDetection.selected.y.toFixed(0) }}" />
+                        <label>Coordinates</label>
+                    </span>
+                </div>
+                <div class="col-6 align-items-center">
+                    <span class="p-float-label">
+                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.flux" />
+                        <label>Flux</label>
+                    </span>
+                </div>
+                <div class="col-6 align-items-center">
+                    <span class="p-float-label">
+                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.hfd.toFixed(2)" />
+                        <label>HFD</label>
+                    </span>
+                </div>
+                <div class="col-6 align-items-center">
+                    <span class="p-float-label">
+                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.snr" />
+                        <label>SNR</label>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button icon="mdi mdi-check" label="Detect" (onClick)="detectStars()" [text]="true" size="small" />
+    </ng-template>
 </p-dialog>
 
 <p-dialog header="Field of View" [draggable]="true" [(visible)]="fov.showDialog" [modal]="false"

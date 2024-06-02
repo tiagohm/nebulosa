@@ -10,10 +10,11 @@ data class StarDetectionOptions(
     @JvmField val type: StarDetectorType = StarDetectorType.ASTAP,
     @JvmField val executablePath: Path? = null,
     @JvmField val timeout: Duration = Duration.ZERO,
+    @JvmField val minSNR: Double = 0.0,
 ) : Supplier<StarDetector<Path>> {
 
     override fun get() = when (type) {
-        StarDetectorType.ASTAP -> AstapStarDetector(executablePath!!)
+        StarDetectorType.ASTAP -> AstapStarDetector(executablePath!!, minSNR)
     }
 
     companion object {
