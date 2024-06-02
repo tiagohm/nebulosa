@@ -50,6 +50,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](flat-wizard.png)
 
+## Auto Focus
+
+![](auto-focus.png)
+
 ## Sequencer
 
 ![](sequencer.png)

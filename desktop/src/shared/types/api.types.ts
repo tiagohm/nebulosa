@@ -29,6 +29,8 @@ export const API_EVENT_TYPES = [
     'GUIDER.CONNECTED', 'GUIDER.DISCONNECTED', 'GUIDER.UPDATED', 'GUIDER.STEPPED', 'GUIDER.MESSAGE_RECEIVED',
     // Polar Alignment.
     'DARV_ALIGNMENT.ELAPSED',
+    // Auto Focus.
+    'AUTO_FOCUS.ELAPSED',
 ] as const
 
 export type ApiEventType = (typeof API_EVENT_TYPES)[number]

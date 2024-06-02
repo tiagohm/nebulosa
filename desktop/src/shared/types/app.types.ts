@@ -1,17 +1,6 @@
-import { MenuItem } from 'primeng/api'
-import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { MessageEvent } from './api.types'
 
-export interface CheckableMenuItem extends MenuItem {
-    checked: boolean
-}
-
-export interface ToggleableMenuItem extends MenuItem {
-    toggleable: boolean
-    toggled: boolean
-
-    toggle: (event: CheckboxChangeEvent) => void
-}
+export type Severity = 'success' | 'info' | 'warning' | 'danger'
 
 export interface NotificationEvent extends MessageEvent {
     type: string
@@ -24,7 +13,7 @@ export const INTERNAL_EVENT_TYPES = [
     'DIRECTORY.OPEN', 'FILE.OPEN', 'FILE.SAVE', 'WINDOW.OPEN', 'WINDOW.CLOSE',
     'WINDOW.PIN', 'WINDOW.UNPIN', 'WINDOW.MINIMIZE', 'WINDOW.MAXIMIZE', 'WINDOW.RESIZE',
     'WHEEL.RENAMED', 'LOCATION.CHANGED', 'JSON.WRITE', 'JSON.READ',
-    'CALIBRATION.CHANGED', 'WINDOW.FULLSCREEN'
+    'CALIBRATION.CHANGED', 'WINDOW.FULLSCREEN', 'ROI.SELECTED'
 ] as const
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
@@ -36,6 +25,7 @@ export interface OpenWindowOptions {
     height?: number | string
     bringToFront?: boolean
     requestFocus?: boolean
+    minWidth?: number
     minHeight?: number
 }
 
@@ -50,7 +40,7 @@ export interface OpenWindow<T> extends OpenWindowOptionsWithData<T> {
     autoResizable?: boolean
 }
 
-export interface CloseWindow<T = undefined> {
+export interface CloseWindow<T = any> {
     id?: string
     data?: T
 }

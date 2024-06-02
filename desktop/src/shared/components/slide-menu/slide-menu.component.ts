@@ -1,15 +1,17 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core'
-import { MenuItemCommandEvent } from 'primeng/api'
-import { ExtendedMenuItem } from '../menu-item/menu-item.component'
+import { MenuItem, MenuItemCommandEvent } from '../menu-item/menu-item.component'
 
-export type SlideMenuItem = ExtendedMenuItem
-export type SlideMenu = SlideMenuItem[]
+export interface SlideMenuItem extends MenuItem {
+    command?: (event: SlideMenuItemCommandEvent) => void
+}
 
 export interface SlideMenuItemCommandEvent extends MenuItemCommandEvent {
     item?: SlideMenuItem
     parent?: SlideMenuItem
-    level: number
+    level?: number
 }
+
+export type SlideMenu = SlideMenuItem[]
 
 @Component({
     selector: 'neb-slide-menu',
@@ -49,9 +51,9 @@ export class SlideMenuComponent implements OnInit {
         for (const item of menu) {
             const command = item.command
 
-            if (item.menu?.length) {
+            if (item.subMenu?.length) {
                 item.command = (event: SlideMenuItemCommandEvent) => {
-                    this.menu = item.menu!
+                    this.menu = item.subMenu!
                     this.navigation.push(menu)
                     event.parent = parent
                     event.level = level
@@ -59,7 +61,7 @@ export class SlideMenuComponent implements OnInit {
                     this.onNext.emit(event)
                 }
 
-                this.processMenu(item.menu, level + 1, item)
+                this.processMenu(item.subMenu, level + 1, item)
             } else {
                 item.command = (event: SlideMenuItemCommandEvent) => {
                     event.parent = parent

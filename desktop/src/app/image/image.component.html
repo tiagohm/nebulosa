@@ -20,10 +20,11 @@
         </g>
     </svg>
 
-    <svg *ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && detectedStars.visible"
+    <svg *ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetection.visible"
          class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
-        <g *ngFor="let s of detectedStars.stars" class="pointer-events-auto cursor-pointer">
-            <circle [attr.cx]="s.x" [attr.cy]="s.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"></circle>
+        <g *ngFor="let s of starDetection.stars" class="pointer-events-auto cursor-pointer">
+            <circle [attr.cx]="s.x" [attr.cy]="s.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"
+                    (click)="selectDetectedStar(s)"> </circle>
             <text [attr.x]="s.x" [attr.y]="s.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">
                 {{ s.hfd.toFixed(1) }}
             </text>
@@ -40,8 +41,13 @@
     </svg>
 
     <div #roi [class.hidden]="!roiInteractable" class="roi absolute left-0 top-0" data-x="0" data-y="0" (contextmenu)="imageClicked($event, true)">
-        <span class="absolute">X: {{ imageROI.x }} Y: {{ imageROI.y }} W: {{ imageROI.width }} H: {{ imageROI.height }}</span>
     </div>
+</div>
+
+<div *ngIf="roiInteractable" class="roi-coordinates fixed flex flex-row align-items-center gap-2">
+    <span>X: {{ imageROI.x }} Y: {{ imageROI.y }} W: {{ imageROI.width }} H: {{ imageROI.height }}</span>
+    <p-button [text]="true" (onClick)="roiForCamera()" icon="mdi mdi-check" size="small" severity="success" pTooltip="Apply to Mount"
+              tooltipPosition="bottom" />
 </div>
 
 <p-contextMenu #menu [model]="contextMenuItems">
@@ -63,8 +69,8 @@
                 <p-checkbox [(ngModel)]="annotation.useMinorPlanets" class="py-1" [binary]="true" label="Annotate with minor planets" />
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!annotation.useMinorPlanets" [min]="-10" [max]="30" class="max-w-10rem w-full" [showButtons]="true"
-                                   inputStyleClass="border-0 w-full" [step]="0.1" [(ngModel)]="annotation.minorPlanetsMagLimit"
-                                   [minFractionDigits]="1" locale="en" />
+                                   styleClass="p-inputtext-sm border-0 w-full" [step]="0.1" [(ngModel)]="annotation.minorPlanetsMagLimit"
+                                   [minFractionDigits]="1" locale="en" scrollableNumber />
                     <label>Mag. Limit</label>
                 </span>
             </div>
@@ -89,46 +95,46 @@
         <ng-container *ngIf="annotationInfo">
             <div class="col-12">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" [value]="annotationInfo | skyObject:'name'" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly [value]="annotationInfo | skyObject:'name'" class="border-0 p-inputtext-sm" />
                     <label>Name</label>
                 </span>
             </div>
             <div class="col-6">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" [value]="annotationInfo.rightAscensionJ2000 | angle:true:24"
+                    <input pInputText readonly [value]="annotationInfo.rightAscensionJ2000 | angle:true:24"
                            class="border-0 p-inputtext-sm" />
                     <label>RA (J2000)</label>
                 </span>
             </div>
             <div class="col-6">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" [value]="annotationInfo.declinationJ2000 | angle:true:360"
+                    <input pInputText readonly [value]="annotationInfo.declinationJ2000 | angle:true:360"
                            class="border-0 p-inputtext-sm" />
                     <label>DEC (J2000)</label>
                 </span>
             </div>
             <div class="col-6" *ngIf="annotationInfo.magnitude">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" value="{{ annotationInfo.magnitude < 30.0 ? annotationInfo.magnitude.toFixed(2) : '-' }}"
+                    <input pInputText readonly value="{{ annotationInfo.magnitude < 30.0 ? annotationInfo.magnitude.toFixed(2) : '-' }}"
                            class="border-0 p-inputtext-sm" />
                     <label>Magnitude</label>
                 </span>
             </div>
             <div class="col-6" *ngIf="annotationInfo.constellation">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" [value]="annotationInfo.constellation" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly [value]="annotationInfo.constellation" class="border-0 p-inputtext-sm" />
                     <label>Constellation</label>
                 </span>
             </div>
             <div class="col-6" *ngIf="annotationInfo.type">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" value="{{ annotationInfo.type | enum }}" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly value="{{ annotationInfo.type | enum }}" class="border-0 p-inputtext-sm" />
                     <label>Type</label>
                 </span>
             </div>
             <div class="col-6" *ngIf="annotationInfo.distance">
                 <span class="p-float-label">
-                    <input pInputText readonly type="text" value="{{ annotationInfo.distance <= 0 ? '-' : annotationInfo.distance }}"
+                    <input pInputText readonly value="{{ annotationInfo.distance <= 0 ? '-' : annotationInfo.distance }}"
                            class="border-0 p-inputtext-sm" />
                     <label>Distance (ly)</label>
                 </span>
@@ -177,7 +183,7 @@
         <div class="col-4 flex flex-row align-items-center gap-2">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="solver.blind" [min]="1" [max]="180" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true"
-                               [(ngModel)]="solver.radius" />
+                               [(ngModel)]="solver.radius" scrollableNumber />
                 <label>Radius (°)</label>
             </span>
         </div>
@@ -186,38 +192,38 @@
         <div class="grid pt-2">
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.rightAscensionJ2000" />
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.rightAscensionJ2000" />
                     <label>RA (J2000)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.declinationJ2000" />
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.declinationJ2000" />
                     <label>DEC (J2000)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.orientation.toFixed(4)" />
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.orientation.toFixed(4)" />
                     <label>Orientation (°)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.scale.toFixed(4)" />
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.scale.toFixed(4)" />
                     <label>Scale (arcsec/px)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                            [value]="(solver.solved.width.toFixed(2)) + ' x ' + (solver.solved.height.toFixed(2))" />
                     <label>Field size (arcmin)</label>
                 </span>
             </div>
             <div class="col-4">
                 <span class="p-float-label">
-                    <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="solver.solved.radius.toFixed(4)" />
+                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.radius.toFixed(4)" />
                     <label>Radius (°)</label>
                 </span>
             </div>
@@ -246,13 +252,13 @@
         <div class="col-8 flex flex-column">
             <div class="flex flex-row gap-2 align-items-center justify-content-between">
                 <span class="p-float-label">
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchShadow" locale="en" />
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
+                                   [(ngModel)]="stretchShadow" locale="en" scrollableNumber />
                     <label>Shadow</label>
                 </span>
                 <span class="p-float-label">
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchHighlight" locale="en" />
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
+                                   [(ngModel)]="stretchHighlight" locale="en" scrollableNumber />
                     <label>Highlight</label>
                 </span>
             </div>
@@ -263,8 +269,8 @@
         <div class="col-4 flex flex-column">
             <div class="text-center w-full">
                 <span class="p-float-label">
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" inputStyleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchMidtone" locale="en" />
+                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
+                                   [(ngModel)]="stretchMidtone" locale="en" scrollableNumber />
                     <label>Midtone</label>
                 </span>
             </div>
@@ -289,7 +295,7 @@
         <div class="col-7 flex align-items-center">
             <span class="p-float-label w-full max-w-full">
                 <p-dropdown [disabled]="!scnr.channel" appendTo="body" [(ngModel)]="scnr.method"
-                            [options]="scnrMethods" styleClass="border-0" [autoDisplayFirst]="false">
+                            [options]="scnrMethods" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -307,8 +313,8 @@
         <div class="col-5 flex align-items-center">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!scnr.channel || !scnr.method.endsWith('MASK')" [min]="0" [max]="1" [step]="0.1"
-                               [showButtons]="true" class="w-full" inputStyleClass="border-0 w-full" [minFractionDigits]="1"
-                               [(ngModel)]="scnr.amount" locale="en" [allowEmpty]="false" />
+                               [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full" [minFractionDigits]="1"
+                               [(ngModel)]="scnr.amount" locale="en" [allowEmpty]="false" scrollableNumber />
                 <label>Amount</label>
             </span>
         </div>
@@ -343,55 +349,55 @@
     <div class="grid p-2" *ngIf="imageInfo">
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="imageInfo.statistics.count" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="imageInfo.statistics.count" />
                 <label>Count (px)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.mean * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Mean</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.median * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Median</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.variance * statisticsBitLength.rangeMax * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Variance</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.avgDev * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Avg Dev</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.stdDev * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Std Dev</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.minimum * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Minimum</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full"
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                        [value]="(imageInfo.statistics.maximum * statisticsBitLength.rangeMax).toFixed(8)" />
                 <label>Maximum</label>
             </span>
@@ -410,6 +416,92 @@
     </div>
 </p-dialog>
 
+<p-dialog header="Star Detection" [draggable]="true" [(visible)]="starDetection.showDialog" [modal]="false" [style]="{width: '360px'}"
+          class="pointer-events-none">
+    <div class="grid mt-2">
+        <div class="col-7 flex align-items-center">
+            <span class="p-float-label w-full max-w-full">
+                <p-dropdown appendTo="body" [(ngModel)]="starDetection.type" [options]="['ASTAP']"
+                            styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
+                <label>Detector</label>
+            </span>
+        </div>
+        <div class="col-5 align-items-center">
+            <span class="p-float-label">
+                <p-inputNumber [min]="0" [max]="500" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
+                               [(ngModel)]="starDetection.minSNR" locale="en" [allowEmpty]="false" scrollableNumber />
+                <label>Min SNR</label>
+            </span>
+        </div>
+        <div class="col-12 mt-1">
+            <span class="font-bold text-sm">COMPUTED</span>
+        </div>
+        <div class="col-4 align-items-center">
+            <span class="p-float-label">
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.stars.length" />
+                <label>Star Count</label>
+            </span>
+        </div>
+        <div class="col-2 align-items-center">
+            <span class="p-float-label">
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.computed.hfd.toFixed(2)" />
+                <label>HFD</label>
+            </span>
+        </div>
+        <div class="col-2 align-items-center">
+            <span class="p-float-label">
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.computed.snr.toFixed(1)" />
+                <label>SNR</label>
+            </span>
+        </div>
+        <div class="col-4 align-items-center">
+            <span class="p-float-label">
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
+                       value="{{ starDetection.computed.minFlux }} | {{ starDetection.computed.maxFlux }}" />
+                <label>Flux (min | max)</label>
+            </span>
+        </div>
+        <div class="col-12 mt-1">
+            <span class="font-bold text-sm">SELECTED</span>
+        </div>
+        <div class="col-5">
+            <canvas #detectedStarCanvas class="detected-star"></canvas>
+        </div>
+        <div class="col-7">
+            <div class="grid">
+                <div class="col-6 align-items-center">
+                    <span class="p-float-label">
+                        <input pInputText readonly class="p-inputtext-sm border-0 w-full"
+                               value="{{ starDetection.selected.x.toFixed(0) }} | {{ starDetection.selected.y.toFixed(0) }}" />
+                        <label>Coordinates</label>
+                    </span>
+                </div>
+                <div class="col-6 align-items-center">
+                    <span class="p-float-label">
+                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.flux" />
+                        <label>Flux</label>
+                    </span>
+                </div>
+                <div class="col-6 align-items-center">
+                    <span class="p-float-label">
+                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.hfd.toFixed(2)" />
+                        <label>HFD</label>
+                    </span>
+                </div>
+                <div class="col-6 align-items-center">
+                    <span class="p-float-label">
+                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.snr" />
+                        <label>SNR</label>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button icon="mdi mdi-check" label="Detect" (onClick)="detectStars()" [text]="true" size="small" />
+    </ng-template>
+</p-dialog>
+
 <p-dialog header="Field of View" [draggable]="true" [(visible)]="fov.showDialog" [modal]="false"
           [style]="{width: '390px'}" class="pointer-events-none">
     <div class="grid p-2">
@@ -420,13 +512,13 @@
             <p-button [text]="true" icon="mdi mdi-telescope" (onClick)="showFOVTelescopes()" pTooltip="Choose telescope"
                       tooltipPosition="bottom" />
             <span class="p-float-label">
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.focalLength" />
+                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.focalLength" scrollableNumber />
                 <label>Focal Length (mm)</label>
             </span>
         </div>
         <div class="col-4">
             <span class="p-float-label">
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.aperture" />
+                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.aperture" scrollableNumber />
                 <label>Aperture (mm)</label>
             </span>
         </div>
@@ -442,47 +534,49 @@
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="9999" [(ngModel)]="fov.cameraSize.width" />
+                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="9999" [(ngModel)]="fov.cameraSize.width"
+                               scrollableNumber />
                 <label>Width</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="9999" [(ngModel)]="fov.cameraSize.height" />
+                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="9999" [(ngModel)]="fov.cameraSize.height"
+                               scrollableNumber />
                 <label>Height</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0" [max]="99.99" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.pixelSize.width" locale="en" />
+                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.pixelSize.width" locale="en" scrollableNumber />
                 <label>Width</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
                 <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0" [max]="99.99" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.pixelSize.height" locale="en" />
+                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.pixelSize.height" locale="en" scrollableNumber />
                 <label>Height</label>
             </span>
         </div>
         <div class="col-5">
             <span class="p-float-label">
                 <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0.01" [max]="5" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.barlowReducer" locale="en" />
+                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.barlowReducer" locale="en" scrollableNumber />
                 <label>Barlow/Reducer</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="5" [(ngModel)]="fov.bin" />
+                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="5" [(ngModel)]="fov.bin" scrollableNumber />
                 <label>Bin</label>
             </span>
         </div>
         <!-- <div class="col-4">
             <span class="p-float-label">
                 <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0" [max]="360" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.rotation" locale="en" />
+                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.rotation" locale="en" scrollableNumber />
                 <label>Rotation (°)</label>
             </span>
         </div> -->
@@ -574,7 +668,7 @@
     <div class="grid mt-2">
         <div class="col-12">
             <span class="p-float-label">
-                <input pInputText readonly type="text" [value]="saveAs.path" class="border-0 p-inputtext-sm" />
+                <input pInputText readonly [value]="saveAs.path" class="border-0 p-inputtext-sm" />
                 <label>Path</label>
             </span>
         </div>

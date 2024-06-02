@@ -2,7 +2,7 @@
     <div class="grid flex align-items-center">
         <div class="col-12 align-items-center gap-2">
             <span class="p-float-label">
-                <input type="text" pInputText [readonly]="true" [value]="focuser.name" class="p-inputtext-sm border-0 w-full" />
+                <input pInputText readonly [value]="focuser.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Focuser</label>
             </span>
             <p-button *ngIf="focuser.connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-close"
@@ -24,7 +24,8 @@
     <div class="grid mt-1">
         <div class="col-8">
             <span class="p-float-label">
-                <p-inputNumber [readonly]="true" styleClass="p-inputtext-sm border-0 max-w-full" [ngModel]="focuser.position" locale="en" />
+                <p-inputNumber readonly styleClass="p-inputtext-sm border-0 max-w-full" [ngModel]="focuser.position" locale="en"
+                               scrollableNumber />
                 <label>Position (max: {{ focuser.maxPosition }})</label>
             </span>
         </div>
@@ -39,7 +40,7 @@
                       icon="mdi mdi-arrow-left-bold" [text]="true" size="small" pTooltip="Move In" tooltipPosition="bottom" />
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!focuser.connected || !focuser.canRelativeMove" [min]="0" [max]="focuser.maxPosition" [showButtons]="true"
-                               styleClass="p-inputtext-sm border-0" [(ngModel)]="stepsRelative" [allowEmpty]="false" locale="en" />
+                               styleClass="p-inputtext-sm border-0" [(ngModel)]="stepsRelative" [allowEmpty]="false" locale="en" scrollableNumber />
                 <label>Relative</label>
             </span>
             <p-button [disabled]="!focuser.connected || !focuser.canRelativeMove || moving || !stepsRelative" (onClick)="moveOut()"
@@ -48,7 +49,8 @@
         <div class="col-12 flex align-items-center gap-1">
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!focuser.connected || !focuser.canAbsoluteMove" [min]="0" [max]="focuser.maxPosition" [showButtons]="true"
-                               styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="stepsAbsolute" [allowEmpty]="false" locale="en" />
+                               styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="stepsAbsolute" [allowEmpty]="false" locale="en"
+                               scrollableNumber />
                 <label>Absolute</label>
             </span>
             <p-button [disabled]="!focuser.connected || !focuser.canAbsoluteMove || moving || stepsAbsolute === focuser.position" (onClick)="moveTo()"

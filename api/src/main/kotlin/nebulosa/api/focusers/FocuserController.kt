@@ -69,4 +69,9 @@ class FocuserController(
     ) {
         focuserService.sync(focuser, steps)
     }
+
+    @PutMapping("{focuser}/listen")
+    fun listen(focuser: Focuser) {
+        focuserService.listen(focuser)
+    }
 }

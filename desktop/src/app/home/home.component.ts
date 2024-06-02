@@ -1,8 +1,8 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { dirname } from 'path'
-import { MenuItem } from 'primeng/api'
-import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
+import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
+import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
+import { SlideMenuItem } from '../../shared/components/slide-menu/slide-menu.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -15,7 +15,6 @@ import { CONNECTION_TYPES, ConnectionDetails, EMPTY_CONNECTION_DETAILS, HomeWind
 import { Mount } from '../../shared/types/mount.types'
 import { Rotator } from '../../shared/types/rotator.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
-import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 
 type MappedDevice = {
@@ -34,7 +33,7 @@ type MappedDevice = {
 export class HomeComponent implements AfterContentInit, OnDestroy {
 
     @ViewChild('deviceMenu')
-    private readonly deviceMenu!: DialogMenuComponent
+    private readonly deviceMenu!: DeviceListMenuComponent
 
     @ViewChild('imageMenu')
     private readonly imageMenu!: DeviceListMenuComponent
@@ -100,6 +99,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         return this.hasCamera
     }
 
+    get hasAutoFocus() {
+        return this.hasCamera && this.hasFocuser
+    }
+
     get hasFlatWizard() {
         return this.hasCamera
     }
@@ -117,9 +120,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         return this.connection?.type === 'ALPACA' && this.hasDevices
     }
 
-    readonly deviceModel: MenuItem[] = []
+    readonly deviceModel: SlideMenuItem[] = []
 
-    readonly imageModel: MenuItem[] = [
+    readonly imageModel: SlideMenuItem[] = [
         {
             icon: 'mdi mdi-image-plus',
             label: 'Open new image',
@@ -133,6 +136,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         type: K,
         onAdd: (device: MappedDevice[K]) => number,
         onRemove: (device: MappedDevice[K]) => number,
+        onUpdate: (device: MappedDevice[K]) => void,
     ) {
         this.electron.on(`${type}.ATTACHED`, event => {
             this.ngZone.run(() => {
@@ -143,6 +147,12 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         this.electron.on(`${type}.DETACHED`, event => {
             this.ngZone.run(() => {
                 onRemove(event.device as never)
+            })
+        })
+
+        this.electron.on(`${type}.UPDATED`, event => {
+            this.ngZone.run(() => {
+                onUpdate(event.device as never)
             })
         })
     }
@@ -159,53 +169,78 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         app.title = 'Nebulosa'
 
         this.startListening('CAMERA',
-            (device) => {
+            device => {
                 return this.cameras.push(device)
             },
-            (device) => {
+            device => {
                 this.cameras.splice(this.cameras.findIndex(e => e.id === device.id), 1)
                 return this.cameras.length
             },
+            device => {
+                const found = this.cameras.find(e => e.id === device.id)
+                if (!found) return
+                Object.assign(found, device)
+            }
         )
 
         this.startListening('MOUNT',
-            (device) => {
+            device => {
                 return this.mounts.push(device)
             },
-            (device) => {
+            device => {
                 this.mounts.splice(this.mounts.findIndex(e => e.id === device.id), 1)
                 return this.mounts.length
             },
+            device => {
+                const found = this.mounts.find(e => e.id === device.id)
+                if (!found) return
+                Object.assign(found, device)
+            }
         )
 
         this.startListening('FOCUSER',
-            (device) => {
+            device => {
                 return this.focusers.push(device)
             },
-            (device) => {
+            device => {
                 this.focusers.splice(this.focusers.findIndex(e => e.id === device.id), 1)
                 return this.focusers.length
             },
+            device => {
+                const found = this.focusers.find(e => e.id === device.id)
+                if (!found) return
+                Object.assign(found, device)
+            }
         )
 
         this.startListening('WHEEL',
-            (device) => {
+            device => {
                 return this.wheels.push(device)
             },
-            (device) => {
+            device => {
                 this.wheels.splice(this.wheels.findIndex(e => e.id === device.id), 1)
                 return this.wheels.length
             },
+            device => {
+                const found = this.wheels.find(e => e.id === device.id)
+                if (!found) return
+                Object.assign(found, device)
+            }
         )
 
         this.startListening('ROTATOR',
-            (device) => {
+            device => {
                 return this.rotators.push(device)
             },
-            (device) => {
+            device => {
                 this.rotators.splice(this.rotators.findIndex(e => e.id === device.id), 1)
                 return this.rotators.length
             },
+            device => {
+                const found = this.rotators.find(e => e.id === device.id)
+                if (!found) return
+                Object.assign(found, device)
+            }
         )
 
         electron.on('CONNECTION.CLOSED', event => {
@@ -319,7 +354,23 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    private openDevice<K extends keyof MappedDevice>(type: K, header: string) {
+    protected findDeviceById(id: string) {
+        return this.cameras.find(e => e.id === id) ||
+            this.mounts.find(e => e.id === id) ||
+            this.wheels.find(e => e.id === id) ||
+            this.focusers.find(e => e.id === id) ||
+            this.rotators.find(e => e.id === id)
+    }
+
+    protected async deviceConnected(event: DeviceConnectionCommandEvent) {
+        DeviceChooserComponent.handleConnectDevice(this.api, event.device, event.item)
+    }
+
+    protected async deviceDisconnected(event: DeviceConnectionCommandEvent) {
+        DeviceChooserComponent.handleDisconnectDevice(this.api, event.device, event.item)
+    }
+
+    private async openDevice<K extends keyof MappedDevice>(type: K) {
         this.deviceModel.length = 0
 
         const devices: Device[] = type === 'CAMERA' ? this.cameras
@@ -330,20 +381,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                             : []
 
         if (devices.length === 0) return
-        if (devices.length === 1) return this.openDeviceWindow(type, devices[0] as any)
 
-        for (const device of [...devices].sort(deviceComparator)) {
-            this.deviceModel.push({
-                icon: 'mdi mdi-connection',
-                label: device.name,
-                command: () => {
-                    this.openDeviceWindow(type, device as any)
-                }
-            })
+        this.deviceMenu.header = type
+        const device = await this.deviceMenu.show(devices)
+
+        if (device && device !== 'NONE') {
+            this.openDeviceWindow(type, device as any)
         }
-
-        this.deviceMenu.header = header
-        this.deviceMenu.show()
     }
 
     private openDeviceWindow<K extends keyof MappedDevice>(type: K, device: MappedDevice[K]) {
@@ -392,7 +436,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
             case 'FOCUSER':
             case 'WHEEL':
             case 'ROTATOR':
-                this.openDevice(type, type)
+                this.openDevice(type)
                 break
             case 'GUIDER':
                 this.browserWindow.openGuider({ bringToFront: true })
@@ -408,6 +452,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
                 break
             case 'SEQUENCER':
                 this.browserWindow.openSequencer({ bringToFront: true })
+                break
+            case 'AUTO_FOCUS':
+                this.browserWindow.openAutoFocus({ bringToFront: true })
                 break
             case 'FLAT_WIZARD':
                 this.browserWindow.openFlatWizard({ bringToFront: true })

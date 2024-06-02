@@ -1,10 +1,7 @@
 package nebulosa.api.alignment.polar.darv
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraCaptureEvent
-import nebulosa.api.cameras.CameraCaptureState
-import nebulosa.api.cameras.CameraCaptureTask
+import nebulosa.api.cameras.*
 import nebulosa.api.guiding.GuidePulseEvent
 import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.guiding.GuidePulseTask
@@ -30,11 +27,11 @@ data class DARVTask(
     @JvmField val guideOutput: GuideOutput,
     @JvmField val request: DARVStartRequest,
     private val executor: Executor,
-) : AbstractTask<MessageEvent>(), Consumer<Any> {
+) : AbstractTask<MessageEvent>(), Consumer<Any>, CameraEventAware {
 
     @JvmField val cameraRequest = request.capture.copy(
         exposureTime = request.capture.exposureTime + request.capture.exposureDelay,
-        savePath = Files.createTempDirectory("darv"),
+        savePath = CAPTURE_SAVE_PATH,
         exposureAmount = 1, exposureDelay = Duration.ZERO,
         frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
     )
@@ -60,7 +57,7 @@ data class DARVTask(
         backwardGuidePulseTask.subscribe(this)
     }
 
-    fun handleCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         cameraCaptureTask.handleCameraEvent(event)
     }
 
@@ -126,5 +123,6 @@ data class DARVTask(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<DARVTask>()
+        @JvmStatic private val CAPTURE_SAVE_PATH = Files.createTempDirectory("darv-")
     }
 }

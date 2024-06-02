@@ -56,7 +56,7 @@ data class ThreePointPolarAlignment(
         compensateRefraction: Boolean = false,
         cancellationToken: CancellationToken = CancellationToken.NONE,
     ): ThreePointPolarAlignmentResult {
-        if (cancellationToken.isDone) {
+        if (cancellationToken.isCancelled) {
             return Cancelled
         }
 
@@ -66,7 +66,7 @@ data class ThreePointPolarAlignment(
             return NoPlateSolution(e)
         }
 
-        if (cancellationToken.isDone) {
+        if (cancellationToken.isCancelled) {
             return Cancelled
         } else if (!solution.solved) {
             return NoPlateSolution(null)

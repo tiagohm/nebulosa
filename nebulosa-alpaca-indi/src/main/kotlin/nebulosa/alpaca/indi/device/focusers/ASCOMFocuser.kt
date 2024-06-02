@@ -29,26 +29,28 @@ data class ASCOMFocuser(
     @Volatile final override var hasThermometer = false
     @Volatile final override var temperature = 0.0
 
+    @Volatile private var internalMoving = false
+
     override val snoopedDevices = emptyList<Device>()
 
     override fun moveFocusIn(steps: Int) {
-        if (canAbsoluteMove) {
-            service.move(device.number, position + steps).doRequest()
+        internalMoving = if (canAbsoluteMove) {
+            service.move(device.number, position + steps).doRequest { }
         } else {
-            service.move(device.number, steps).doRequest()
+            service.move(device.number, steps).doRequest { }
         }
     }
 
     override fun moveFocusOut(steps: Int) {
-        if (canAbsoluteMove) {
-            service.move(device.number, position - steps).doRequest()
+        internalMoving = if (canAbsoluteMove) {
+            service.move(device.number, position - steps).doRequest { }
         } else {
-            service.move(device.number, -steps).doRequest()
+            service.move(device.number, -steps).doRequest { }
         }
     }
 
     override fun moveFocusTo(steps: Int) {
-        service.move(device.number, steps).doRequest()
+        internalMoving = service.move(device.number, steps).doRequest { }
     }
 
     override fun abortFocus() {
@@ -74,6 +76,7 @@ data class ASCOMFocuser(
         super.reset()
 
         moving = false
+        internalMoving = false
         position = 0
         canAbsoluteMove = false
         canRelativeMove = false
@@ -124,9 +127,10 @@ data class ASCOMFocuser(
 
     private fun processMoving() {
         service.isMoving(device.number).doRequest {
-            if (it.value != moving) {
-                moving = it.value
+            val value = it.value || internalMoving
 
+            if (value != moving) {
+                moving = value
                 sender.fireOnEventReceived(FocuserMovingChanged(this))
             }
         }
@@ -136,8 +140,11 @@ data class ASCOMFocuser(
         service.position(device.number).doRequest {
             if (it.value != position) {
                 position = it.value
-
                 sender.fireOnEventReceived(FocuserPositionChanged(this))
+            } else if (internalMoving && moving) {
+                moving = false
+                internalMoving = false
+                sender.fireOnEventReceived(FocuserMovingChanged(this))
             }
         }
     }
@@ -157,4 +164,11 @@ data class ASCOMFocuser(
             }
         }
     }
+
+    override fun toString() = "Focuser(name=$name, moving=$moving, position=$position," +
+            " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
+            " canAbort=$canAbort, canReverse=$canReverse, reversed=$reversed," +
+            " canSync=$canSync, hasBacklash=$hasBacklash," +
+            " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
+            " temperature=$temperature)"
 }

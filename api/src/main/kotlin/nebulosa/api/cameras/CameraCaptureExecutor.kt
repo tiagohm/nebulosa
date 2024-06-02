@@ -18,12 +18,12 @@ class CameraCaptureExecutor(
     private val messageService: MessageService,
     private val guider: Guider,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
-) : Consumer<CameraCaptureEvent> {
+) : Consumer<CameraCaptureEvent>, CameraEventAware {
 
     private val jobs = ConcurrentHashMap.newKeySet<CameraCaptureJob>(2)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
     }
 

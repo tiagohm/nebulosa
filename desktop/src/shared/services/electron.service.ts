@@ -8,8 +8,8 @@ import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
 import { DARVEvent, TPPAEvent } from '../types/alignment.types'
-import { ApiEventType, DeviceMessageEvent } from '../types/api.types'
-import { CloseWindow, InternalEventType, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
+import { DeviceMessageEvent } from '../types/api.types'
+import { CloseWindow, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
 import { Location, SkyAtlasUpdated } from '../types/atlas.types'
 import { Camera, CameraCaptureEvent } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
@@ -17,11 +17,12 @@ import { FlatWizardEvent } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
 import { ConnectionClosed } from '../types/home.types'
+import { ROISelected } from '../types/image.types'
 import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
-import { FilterWheel } from '../types/wheel.types'
-import { ApiService } from './api.service'
+import { FilterWheel, WheelRenamed } from '../types/wheel.types'
+import { AutoFocusEvent } from '../types/autofocus.type'
 
 type EventMappedType = {
     'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
@@ -60,6 +61,21 @@ type EventMappedType = {
     'CONNECTION.CLOSED': ConnectionClosed
     'SKY_ATLAS.PROGRESS_CHANGED': SkyAtlasUpdated
     'CALIBRATION.CHANGED': unknown
+    'FILE.OPEN': OpenFile
+    'FILE.SAVE': OpenFile
+    'DIRECTORY.OPEN': OpenDirectory
+    'JSON.WRITE': JsonFile
+    'JSON.READ': string
+    'WINDOW.RESIZE': number
+    'WINDOW.PIN': unknown
+    'WINDOW.UNPIN': unknown
+    'WINDOW.MINIMIZE': unknown
+    'WINDOW.MAXIMIZE': unknown
+    'WINDOW.FULLSCREEN': boolean
+    'WINDOW.CLOSE': CloseWindow
+    'WHEEL.RENAMED': WheelRenamed
+    'ROI.SELECTED': ROISelected
+    'AUTO_FOCUS.ELAPSED': AutoFocusEvent
 }
 
 @Injectable({ providedIn: 'root' })
@@ -70,7 +86,7 @@ export class ElectronService {
     childProcess!: typeof childProcess
     fs!: typeof fs
 
-    constructor(private api: ApiService) {
+    constructor() {
         if (this.isElectron) {
             this.ipcRenderer = (window as any).require('electron').ipcRenderer
             this.webFrame = (window as any).require('electron').webFrame
@@ -98,8 +114,8 @@ export class ElectronService {
         return !!(window && window.process && window.process.type)
     }
 
-    send(channel: ApiEventType | InternalEventType, ...data: any[]) {
-        return this.ipcRenderer.invoke(channel, ...data)
+    send<K extends keyof EventMappedType>(channel: K, data?: EventMappedType[K]) {
+        return this.ipcRenderer.invoke(channel, data)
     }
 
     on<K extends keyof EventMappedType>(channel: K, listener: (arg: EventMappedType[K]) => void) {

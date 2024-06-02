@@ -42,7 +42,7 @@ import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { TreeModule } from 'primeng/tree'
 import { CameraExposureComponent } from '../shared/components/camera-exposure/camera-exposure.component'
-import { DeviceListButtonComponent } from '../shared/components/device-list-button/device-list-button.component'
+import { DeviceChooserComponent } from '../shared/components/device-chooser/device-chooser.component'
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
@@ -51,6 +51,7 @@ import { MenuItemComponent } from '../shared/components/menu-item/menu-item.comp
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
+import { ScrollableNumberDirective } from '../shared/directives/input-number-scrollable'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
 import { LocationInterceptor } from '../shared/interceptors/location.interceptor'
@@ -65,6 +66,7 @@ import { AlignmentComponent } from './alignment/alignment.component'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { AtlasComponent } from './atlas/atlas.component'
+import { AutoFocusComponent } from './autofocus/autofocus.component'
 import { CalculatorComponent } from './calculator/calculator.component'
 import { FormulaComponent } from './calculator/formula/formula.component'
 import { CalibrationComponent } from './calibration/calibration.component'
@@ -90,11 +92,12 @@ import { SettingsComponent } from './settings/settings.component'
         AnglePipe,
         AppComponent,
         AtlasComponent,
+        AutoFocusComponent,
         CalculatorComponent,
         CalibrationComponent,
         CameraComponent,
         CameraExposureComponent,
-        DeviceListButtonComponent,
+        DeviceChooserComponent,
         DeviceListMenuComponent,
         DialogMenuComponent,
         EnumPipe,
@@ -109,6 +112,7 @@ import { SettingsComponent } from './settings/settings.component'
         HistogramComponent,
         HomeComponent,
         ImageComponent,
+        ScrollableNumberDirective,
         INDIComponent,
         INDIPropertyComponent,
         LocationDialog,

@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { EMPTY_FOCUSER, Focuser } from '../../shared/types/focuser.types'
 import { AppComponent } from '../app.component'
@@ -12,7 +13,7 @@ import { AppComponent } from '../app.component'
     templateUrl: './focuser.component.html',
     styleUrls: ['./focuser.component.scss'],
 })
-export class FocuserComponent implements AfterViewInit, OnDestroy {
+export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 
     readonly focuser = structuredClone(EMPTY_FOCUSER)
 
@@ -26,6 +27,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
         electron: ElectronService,
         private preference: PreferenceService,
         private route: ActivatedRoute,
+        private pinger: Pinger,
         ngZone: NgZone,
     ) {
         app.title = 'Focuser'
@@ -47,20 +49,20 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
             }
         })
 
-        hotkeys('left', (event) => { event.preventDefault(); this.moveIn() })
-        hotkeys('alt+left', (event) => { event.preventDefault(); this.moveIn(10) })
-        hotkeys('ctrl+left', (event) => { event.preventDefault(); this.moveIn(2) })
-        hotkeys('shift+left', (event) => { event.preventDefault(); this.moveIn(0.5) })
-        hotkeys('right', (event) => { event.preventDefault(); this.moveOut() })
-        hotkeys('alt+right', (event) => { event.preventDefault(); this.moveOut(10) })
-        hotkeys('ctrl+right', (event) => { event.preventDefault(); this.moveOut(2) })
-        hotkeys('shift+right', (event) => { event.preventDefault(); this.moveOut(0.5) })
-        hotkeys('space', (event) => { event.preventDefault(); this.abort() })
-        hotkeys('ctrl+enter', (event) => { event.preventDefault(); this.moveTo() })
-        hotkeys('up', (event) => { event.preventDefault(); this.stepsRelative = Math.min(this.focuser.maxPosition, this.stepsRelative + 1) })
-        hotkeys('down', (event) => { event.preventDefault(); this.stepsRelative = Math.max(0, this.stepsRelative - 1) })
-        hotkeys('-', (event) => { event.preventDefault(); this.stepsAbsolute = Math.max(0, this.stepsAbsolute - 1) })
-        hotkeys('=', (event) => { event.preventDefault(); this.stepsAbsolute = Math.min(this.focuser.maxPosition, this.stepsAbsolute + 1) })
+        hotkeys('left', event => { event.preventDefault(); this.moveIn() })
+        hotkeys('ctrl+left', event => { event.preventDefault(); this.moveIn(2) })
+        hotkeys('alt+left', event => { event.preventDefault(); this.moveIn(0.5) })
+        hotkeys('right', event => { event.preventDefault(); this.moveOut() })
+        hotkeys('ctrl+right', event => { event.preventDefault(); this.moveOut(2) })
+        hotkeys('alt+right', event => { event.preventDefault(); this.moveOut(0.5) })
+        hotkeys('space', event => { event.preventDefault(); this.abort() })
+        hotkeys('enter', event => { event.preventDefault(); this.moveTo() })
+        hotkeys('up', event => { event.preventDefault(); this.stepsRelative = Math.min(this.focuser.maxPosition, this.stepsRelative + 1) })
+        hotkeys('down', event => { event.preventDefault(); this.stepsRelative = Math.max(0, this.stepsRelative - 1) })
+        hotkeys('ctrl+up', event => { event.preventDefault(); this.stepsAbsolute = Math.max(0, this.stepsAbsolute - 1) })
+        hotkeys('ctrl+down', event => { event.preventDefault(); this.stepsAbsolute = Math.min(this.focuser.maxPosition, this.stepsAbsolute + 1) })
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
@@ -72,7 +74,12 @@ export class FocuserComponent implements AfterViewInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
+        this.pinger.unregister(this)
         this.abort()
+    }
+
+    ping() {
+        this.api.focuserListen(this.focuser)
     }
 
     async focuserChanged(focuser?: Focuser) {

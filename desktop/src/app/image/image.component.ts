@@ -8,18 +8,18 @@ import { basename, dirname, extname } from 'path'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
-import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { SlideMenuItem } from '../../shared/components/slide-menu/slide-menu.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { CheckableMenuItem, ToggleableMenuItem } from '../../shared/types/app.types'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
-import { DEFAULT_FOV, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageDetectStars, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS } from '../../shared/types/image.types'
+import { Camera } from '../../shared/types/camera.types'
+import { DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS, StarDetectionDialog } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
-import { DEFAULT_SOLVER_TYPES } from '../../shared/types/settings.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
 
@@ -44,6 +44,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     @ViewChild('histogram')
     private readonly histogram!: HistogramComponent
+
+    @ViewChild('detectedStarCanvas')
+    private readonly detectedStarCanvas!: ElementRef<HTMLCanvasElement>
 
     imageInfo?: ImageInfo
     private imageURL!: string
@@ -95,6 +98,27 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         useSimbad: false
     }
 
+    readonly starDetection: StarDetectionDialog = {
+        showDialog: false,
+        type: 'ASTAP',
+        minSNR: 0,
+        visible: false,
+        stars: [],
+        computed: {
+            hfd: 0,
+            snr: 0,
+            maxFlux: 0,
+            minFlux: 0,
+        },
+        selected: {
+            x: 0,
+            y: 0,
+            snr: 0,
+            hfd: 0,
+            flux: 0
+        },
+    }
+
     readonly solver: ImageSolverDialog = {
         showDialog: false,
         solving: false,
@@ -103,7 +127,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         centerDEC: '',
         radius: 4,
         solved: structuredClone(EMPTY_IMAGE_SOLVED),
-        types: Array.from(DEFAULT_SOLVER_TYPES),
+        types: ['ASTAP', 'ASTROMETRY_NET_ONLINE'],
         type: 'ASTAP'
     }
 
@@ -113,11 +137,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     showAnnotationInfoDialog = false
     annotationInfo?: AstronomicalObject & Partial<Star & DeepSkyObject>
     annotationIsVisible = false
-
-    readonly detectedStars: ImageDetectStars = {
-        visible: false,
-        stars: []
-    }
 
     readonly fitsHeaders: ImageFITSHeadersDialog = {
         showDialog: false,
@@ -154,8 +173,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     readonly imageROI: ImageROI = {
         x: 0,
         y: 0,
-        width: 0,
-        height: 0
+        width: 128,
+        height: 128
     }
 
     readonly saveAs: ImageSaveDialog = {
@@ -167,7 +186,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         transformation: this.transformation
     }
 
-    private readonly saveAsMenuItem: ExtendedMenuItem = {
+    private readonly saveAsMenuItem: MenuItem = {
         label: 'Save as...',
         icon: 'mdi mdi-content-save',
         command: async () => {
@@ -189,7 +208,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly plateSolveMenuItem: ExtendedMenuItem = {
+    private readonly plateSolveMenuItem: MenuItem = {
         label: 'Plate Solve',
         icon: 'mdi mdi-sigma',
         command: () => {
@@ -197,7 +216,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly stretchMenuItem: ExtendedMenuItem = {
+    private readonly stretchMenuItem: MenuItem = {
         label: 'Stretch',
         icon: 'mdi mdi-chart-histogram',
         command: () => {
@@ -205,7 +224,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly autoStretchMenuItem: CheckableMenuItem = {
+    private readonly autoStretchMenuItem: MenuItem = {
         id: 'auto-stretch-menuitem',
         label: 'Auto stretch',
         icon: 'mdi mdi-auto-fix',
@@ -215,7 +234,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly scnrMenuItem: ExtendedMenuItem = {
+    private readonly scnrMenuItem: MenuItem = {
         label: 'SCNR',
         icon: 'mdi mdi-palette',
         disabled: true,
@@ -224,7 +243,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly horizontalMirrorMenuItem: CheckableMenuItem = {
+    private readonly horizontalMirrorMenuItem: MenuItem = {
         label: 'Horizontal mirror',
         icon: 'mdi mdi-flip-horizontal',
         checked: false,
@@ -235,7 +254,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly verticalMirrorMenuItem: CheckableMenuItem = {
+    private readonly verticalMirrorMenuItem: MenuItem = {
         label: 'Vertical mirror',
         icon: 'mdi mdi-flip-vertical',
         checked: false,
@@ -246,7 +265,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly invertMenuItem: CheckableMenuItem = {
+    private readonly invertMenuItem: MenuItem = {
         label: 'Invert',
         icon: 'mdi mdi-invert-colors',
         checked: false,
@@ -255,13 +274,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly calibrationMenuItem: ExtendedMenuItem = {
+    private readonly calibrationMenuItem: MenuItem = {
         label: 'Calibration',
         icon: 'mdi mdi-wrench',
         items: [],
     }
 
-    private readonly statisticsMenuItem: ExtendedMenuItem = {
+    private readonly statisticsMenuItem: MenuItem = {
         icon: 'mdi mdi-chart-histogram',
         label: 'Statistics',
         command: () => {
@@ -270,7 +289,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly fitsHeaderMenuItem: ExtendedMenuItem = {
+    private readonly fitsHeaderMenuItem: MenuItem = {
         icon: 'mdi mdi-list-box',
         label: 'FITS Header',
         command: () => {
@@ -278,18 +297,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly pointMountHereMenuItem: ExtendedMenuItem = {
+    private readonly pointMountHereMenuItem: MenuItem = {
         label: 'Point mount here',
         icon: 'mdi mdi-telescope',
         disabled: true,
         command: () => {
-            this.executeMount((mount) => {
+            this.executeMount(mount => {
                 this.api.pointMountHere(mount, this.imageData.path!, this.imageMouseX, this.imageMouseY)
             })
         },
     }
 
-    private readonly frameAtThisCoordinateMenuItem: ExtendedMenuItem = {
+    private readonly frameAtThisCoordinateMenuItem: MenuItem = {
         label: 'Frame at this coordinate',
         icon: 'mdi mdi-image',
         disabled: true,
@@ -302,7 +321,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly crosshairMenuItem: CheckableMenuItem = {
+    private readonly crosshairMenuItem: MenuItem = {
         label: 'Crosshair',
         icon: 'mdi mdi-bullseye',
         checked: false,
@@ -311,7 +330,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly annotationMenuItem: ToggleableMenuItem = {
+    private readonly annotationMenuItem: MenuItem = {
         label: 'Annotate',
         icon: 'mdi mdi-marker',
         disabled: true,
@@ -326,25 +345,22 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly detectStarsMenuItem: ToggleableMenuItem = {
+    private readonly detectStarsMenuItem: MenuItem = {
         label: 'Detect stars',
         icon: 'mdi mdi-creation',
         disabled: false,
         toggleable: false,
         toggled: false,
-        command: async () => {
-            this.detectedStars.stars = await this.api.detectStars(this.imageData.path!)
-            this.detectedStars.visible = this.detectedStars.stars.length > 0
-            this.detectStarsMenuItem.toggleable = this.detectedStars.visible
-            this.detectStarsMenuItem.toggled = this.detectedStars.visible
+        command: () => {
+            this.starDetection.showDialog = true
         },
         toggle: (event) => {
+            this.starDetection.visible = event.checked
             event.originalEvent?.stopImmediatePropagation()
-            this.detectedStars.visible = event.checked
         },
     }
 
-    private readonly roiMenuItem: CheckableMenuItem = {
+    private readonly roiMenuItem: MenuItem = {
         label: 'ROI',
         icon: 'mdi mdi-select',
         checked: false,
@@ -384,7 +400,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly fovMenuItem: ExtendedMenuItem = {
+    private readonly fovMenuItem: MenuItem = {
         label: 'Field of View',
         icon: 'mdi mdi-camera-metering-spot',
         command: () => {
@@ -396,7 +412,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
     }
 
-    private readonly overlayMenuItem: ExtendedMenuItem = {
+    private readonly overlayMenuItem: MenuItem = {
         label: 'Overlay',
         icon: 'mdi mdi-layers',
         items: [
@@ -517,14 +533,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             })
         })
 
-        hotkeys('ctrl+a', (event) => { event.preventDefault(); this.toggleStretch() })
-        hotkeys('ctrl+i', (event) => { event.preventDefault(); this.invertImage() })
-        hotkeys('ctrl+x', (event) => { event.preventDefault(); this.toggleCrosshair() })
-        hotkeys('ctrl+-', (event) => { event.preventDefault(); this.zoomOut() })
-        hotkeys('ctrl+=', (event) => { event.preventDefault(); this.zoomIn() })
-        hotkeys('ctrl+0', (event) => { event.preventDefault(); this.resetZoom() })
-        hotkeys('f12', (event) => { if (this.app.showTopBar) { event.preventDefault(); this.enterFullscreen() } })
-        hotkeys('escape', (event) => { if (!this.app.showTopBar) { event.preventDefault(); this.exitFullscreen() } })
+        hotkeys('ctrl+a', event => { event.preventDefault(); this.toggleStretch() })
+        hotkeys('ctrl+i', event => { event.preventDefault(); this.invertImage() })
+        hotkeys('ctrl+x', event => { event.preventDefault(); this.toggleCrosshair() })
+        hotkeys('ctrl+-', event => { event.preventDefault(); this.zoomOut() })
+        hotkeys('ctrl+=', event => { event.preventDefault(); this.zoomIn() })
+        hotkeys('ctrl+0', event => { event.preventDefault(); this.resetZoom() })
+        hotkeys('ctrl+alt+0', event => { event.preventDefault(); this.resetZoom(true) })
+        hotkeys('f12', event => { if (this.app.showTopBar) { event.preventDefault(); this.enterFullscreen() } })
+        hotkeys('escape', event => { if (!this.app.showTopBar) { event.preventDefault(); this.exitFullscreen() } })
 
         this.loadPreference()
     }
@@ -570,7 +587,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             const label = name ?? 'None'
             const icon = name ? 'mdi mdi-wrench' : 'mdi mdi-close'
 
-            return <CheckableMenuItem>{
+            return <MenuItem>{
                 label, icon,
                 checked: this.transformation.calibrationGroup === name,
                 disabled: this.calibrationViaCamera,
@@ -582,7 +599,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         }
 
-        const menu: ExtendedMenuItem[] = []
+        const menu: SlideMenuItem[] = []
 
         menu.push({
             label: 'Open',
@@ -670,6 +687,17 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         })
     }
 
+    roiForCamera() {
+        this.executeCamera(camera => {
+            const x = camera.x + this.imageROI.x
+            const y = camera.y + this.imageROI.y
+            const width = camera.binX * this.imageROI.width
+            const height = camera.binY * this.imageROI.height
+
+            this.electron.send('ROI.SELECTED', { camera, x, y, width, height })
+        }, false)
+    }
+
     private loadImageFromData(data: ImageData) {
         console.info('loading image from data: %s', data)
 
@@ -700,8 +728,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.annotationIsVisible = false
         this.annotationMenuItem.toggleable = false
 
-        this.detectedStars.stars = []
-        this.detectedStars.visible = false
+        this.starDetection.stars = []
+        this.starDetection.visible = false
         this.detectStarsMenuItem.toggleable = false
 
         Object.assign(this.solver.solved, EMPTY_IMAGE_SOLVED)
@@ -716,6 +744,44 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     statisticsBitLengthChanged() {
         this.computeHistogram()
+    }
+
+    async detectStars() {
+        const options = this.preference.starDetectionOptions(this.starDetection.type).get()
+        options.minSNR = this.starDetection.minSNR
+        this.starDetection.stars = await this.api.detectStars(this.imageData.path!, options)
+
+        let hfd = 0
+        let snr = 0
+        let maxFlux = 0
+        let minFlux = 10000000
+
+        for (const star of this.starDetection.stars) {
+            hfd += star.hfd
+            snr += star.snr
+            minFlux = Math.min(minFlux, star.flux)
+            maxFlux = Math.max(maxFlux, star.flux)
+        }
+
+        const starCount = this.starDetection.stars.length
+        this.starDetection.computed.hfd = starCount > 0 ? hfd / starCount : 0
+        this.starDetection.computed.snr = starCount > 0 ? snr / starCount : 0
+        this.starDetection.computed.maxFlux = maxFlux
+        this.starDetection.computed.minFlux = minFlux
+
+        this.savePreference()
+
+        this.starDetection.visible = this.starDetection.stars.length > 0
+        this.detectStarsMenuItem.toggleable = this.starDetection.visible
+        this.detectStarsMenuItem.toggled = this.starDetection.visible
+    }
+
+    selectDetectedStar(star: DetectedStar) {
+        Object.assign(this.starDetection.selected, star)
+
+        const canvas = this.detectedStarCanvas.nativeElement
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage(this.image.nativeElement, star.x - 8, star.y - 8, 16, 16, 0, 0, canvas.width, canvas.height)
     }
 
     private async loadImage() {
@@ -935,7 +1001,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solver.solving = true
 
         try {
-            const solver = this.preference.plateSolverPreference(this.solver.type).get()
+            const solver = this.preference.plateSolverOptions(this.solver.type).get()
             const solved = await this.api.solveImage(solver, this.imageData.path!, this.solver.blind,
                 this.solver.centerRA, this.solver.centerDEC, this.solver.radius)
 
@@ -945,7 +1011,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.updateImageSolved(this.imageInfo?.solved)
         } finally {
             this.solver.solving = false
-            this.retrieveCoordinateInterpolation()
+
+            if (this.solver.solved.solved) {
+                this.retrieveCoordinateInterpolation()
+            }
         }
     }
 
@@ -961,19 +1030,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     mountSync(coordinate: EquatorialCoordinateJ2000) {
-        this.executeMount((mount) => {
+        this.executeMount(mount => {
             this.api.mountSync(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
         })
     }
 
     async mountGoTo(coordinate: EquatorialCoordinateJ2000) {
-        this.executeMount((mount) => {
+        this.executeMount(mount => {
             this.api.mountGoTo(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
         })
     }
 
     async mountSlew(coordinate: EquatorialCoordinateJ2000) {
-        this.executeMount((mount) => {
+        this.executeMount(mount => {
             this.api.mountSlew(mount, coordinate.rightAscensionJ2000, coordinate.declinationJ2000, true)
         })
     }
@@ -1096,8 +1165,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 svg,
             }
 
-            console.info(fov.computed)
-
             return true
         } else {
             return false
@@ -1121,6 +1188,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         const preference = this.preference.imagePreference.get()
         this.solver.radius = preference.solverRadius ?? this.solver.radius
         this.solver.type = preference.solverType ?? this.solver.types[0]
+        this.starDetection.type = preference.starDetectionType ?? this.starDetection.type
+        this.starDetection.minSNR = this.preference.starDetectionOptions(this.starDetection.type).get().minSNR ?? this.starDetection.type
+
         this.fov.fovs = this.preference.imageFOVs.get()
         this.fov.fovs.forEach(e => { e.enabled = false; e.computed = undefined })
     }
@@ -1129,11 +1199,35 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         const preference = this.preference.imagePreference.get()
         preference.solverRadius = this.solver.radius
         preference.solverType = this.solver.type
+        preference.starDetectionType = this.starDetection.type
         this.preference.imagePreference.set(preference)
     }
 
-    private async executeMount(action: (mount: Mount) => void) {
-        if (await this.prime.confirm('Are you sure that you want to proceed?')) {
+    private async executeCamera(action: (camera: Camera) => void, showConfirmation: boolean = true) {
+        if (showConfirmation && await this.prime.confirm('Are you sure that you want to proceed?')) {
+            return
+        }
+
+        const cameras = await this.api.cameras()
+
+        if (cameras.length === 1) {
+            action(cameras[0])
+            return true
+        } else {
+            this.deviceMenu.header = 'CAMERA'
+            const camera = await this.deviceMenu.show(cameras)
+
+            if (camera && camera !== 'NONE' && camera.connected) {
+                action(camera)
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private async executeMount(action: (mount: Mount) => void, showConfirmation: boolean = true) {
+        if (showConfirmation && await this.prime.confirm('Are you sure that you want to proceed?')) {
             return
         }
 
@@ -1143,6 +1237,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             action(mounts[0])
             return true
         } else {
+            this.deviceMenu.header = 'MOUNT'
             const mount = await this.deviceMenu.show(mounts)
 
             if (mount && mount !== 'NONE' && mount.connected) {

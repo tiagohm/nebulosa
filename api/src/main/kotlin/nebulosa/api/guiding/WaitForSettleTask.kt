@@ -10,7 +10,7 @@ data class WaitForSettleTask(
 ) : Task {
 
     override fun execute(cancellationToken: CancellationToken) {
-        if (guider != null && guider.isSettling && !cancellationToken.isDone) {
+        if (guider != null && guider.isSettling && !cancellationToken.isCancelled) {
             LOG.info("Wait For Settle started")
             guider.waitForSettle(cancellationToken)
             LOG.info("Wait For Settle finished")

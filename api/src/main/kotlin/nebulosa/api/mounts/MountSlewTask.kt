@@ -20,7 +20,7 @@ data class MountSlewTask(
     @JvmField val mount: Mount,
     @JvmField val rightAscension: Angle, @JvmField val declination: Angle,
     @JvmField val j2000: Boolean = false, @JvmField val goTo: Boolean = true,
-) : Task, CancellationListener {
+) : Task, CancellationListener, MountEventAware {
 
     private val delayTask = DelayTask(SETTLE_DURATION)
     private val latch = CountUpDownLatch()
@@ -28,7 +28,7 @@ data class MountSlewTask(
     @Volatile private var initialRA = mount.rightAscension
     @Volatile private var initialDEC = mount.declination
 
-    fun handleMountEvent(event: MountEvent) {
+    override fun handleMountEvent(event: MountEvent) {
         if (event.device === mount) {
             if (event is MountSlewingChanged) {
                 if (!mount.slewing && (mount.rightAscension != initialRA || mount.declination != initialDEC)) {
@@ -42,7 +42,7 @@ data class MountSlewTask(
     }
 
     override fun execute(cancellationToken: CancellationToken) {
-        if (!cancellationToken.isDone &&
+        if (!cancellationToken.isCancelled &&
             mount.connected && !mount.parked && !mount.parking && !mount.slewing &&
             rightAscension.isFinite() && declination.isFinite() &&
             (mount.rightAscension != rightAscension || mount.declination != declination)

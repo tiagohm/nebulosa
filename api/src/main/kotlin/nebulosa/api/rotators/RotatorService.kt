@@ -4,7 +4,7 @@ import nebulosa.indi.device.rotator.Rotator
 import org.springframework.stereotype.Service
 
 @Service
-class RotatorService {
+class RotatorService(private val rotatorEventHub: RotatorEventHub) {
 
     fun connect(rotator: Rotator) {
         rotator.connect()
@@ -32,5 +32,9 @@ class RotatorService {
 
     fun home(rotator: Rotator) {
         rotator.homeRotator()
+    }
+
+    fun listen(rotator: Rotator) {
+        rotatorEventHub.listen(rotator)
     }
 }

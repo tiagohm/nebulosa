@@ -474,6 +474,15 @@ data class ASCOMMount(
         }
     }
 
+    override fun toString() = "Mount(name=$name, connected=$connected, slewing=$slewing, tracking=$tracking," +
+            " parking=$parking, parked=$parked, canAbort=$canAbort," +
+            " canSync=$canSync, canPark=$canPark, slewRates=$slewRates," +
+            " slewRate=$slewRate, mountType=$mountType, trackModes=$trackModes," +
+            " trackMode=$trackMode, pierSide=$pierSide, guideRateWE=$guideRateWE," +
+            " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
+            " declination=$declination, canPulseGuide=$canPulseGuide," +
+            " pulseGuiding=$pulseGuiding)"
+
     companion object {
 
         private const val EPSILON = 1 / 36000.0 * DEG2RAD

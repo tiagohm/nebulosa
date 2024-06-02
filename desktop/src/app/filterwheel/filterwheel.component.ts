@@ -1,10 +1,12 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import hotkeys from 'hotkeys-js'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
@@ -16,7 +18,7 @@ import { AppComponent } from '../app.component'
     templateUrl: './filterwheel.component.html',
     styleUrls: ['./filterwheel.component.scss'],
 })
-export class FilterWheelComponent implements AfterContentInit, OnDestroy {
+export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingable {
 
     readonly wheel = structuredClone(EMPTY_WHEEL)
     readonly request = structuredClone(EMPTY_CAMERA_START_CAPTURE)
@@ -63,6 +65,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         private electron: ElectronService,
         private preference: PreferenceService,
         private route: ActivatedRoute,
+        private pinger: Pinger,
         ngZone: NgZone,
     ) {
         if (app) app.title = 'Filter Wheel'
@@ -118,6 +121,21 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
                 this.savePreference()
                 this.electron.send('WHEEL.RENAMED', { wheel: this.wheel, filter })
             })
+
+        hotkeys('enter', event => { event.preventDefault(); this.moveToSelectedFilter() })
+        hotkeys('up', event => { event.preventDefault(); this.moveUp() })
+        hotkeys('down', event => { event.preventDefault(); this.moveDown() })
+        hotkeys('1', event => { event.preventDefault(); this.moveToPosition(1) })
+        hotkeys('2', event => { event.preventDefault(); this.moveToPosition(2) })
+        hotkeys('3', event => { event.preventDefault(); this.moveToPosition(3) })
+        hotkeys('4', event => { event.preventDefault(); this.moveToPosition(4) })
+        hotkeys('5', event => { event.preventDefault(); this.moveToPosition(5) })
+        hotkeys('6', event => { event.preventDefault(); this.moveToPosition(6) })
+        hotkeys('7', event => { event.preventDefault(); this.moveToPosition(7) })
+        hotkeys('8', event => { event.preventDefault(); this.moveToPosition(8) })
+        hotkeys('9', event => { event.preventDefault(); this.moveToPosition(9) })
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterContentInit() {
@@ -144,12 +162,21 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
+        this.pinger.unregister(this)
         this.subscription?.unsubscribe()
+    }
+
+    ping() {
+        this.api.wheelListen(this.wheel)
+        if (this.focuser) this.api.focuserListen(this.focuser)
     }
 
     async wheelChanged(wheel?: FilterWheel) {
         if (wheel && wheel.id) {
             wheel = await this.api.wheel(wheel.id)
+
+            this.ping()
+
             Object.assign(this.wheel, wheel)
 
             this.loadPreference()
@@ -197,6 +224,49 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    moveToSelectedFilter() {
+        if (this.filter) {
+            this.moveTo(this.filter)
+        }
+    }
+
+    moveUp() {
+        this.moveToPosition(this.wheel.position - 1)
+    }
+
+    moveDown() {
+        this.moveToPosition(this.wheel.position + 1)
+    }
+
+    moveToIndex(index: number) {
+        if (!this.moving) {
+            if (index >= 0 && index < this.filters.length) {
+                this.moveTo(this.filters[index])
+            } else if (index < 0) {
+                this.moveToIndex(this.filters.length + index)
+            } else {
+                this.moveToIndex(index % this.filters.length)
+            }
+        }
+    }
+
+    moveToPosition(position: number) {
+        if (!this.moving) {
+            if (position >= 1 && position <= this.wheel.count) {
+                for (const filter of this.filters) {
+                    if (filter.position === position) {
+                        this.moveTo(filter)
+                        break
+                    }
+                }
+            } else if (position < 1) {
+                this.moveToPosition(this.wheel.count + position)
+            } else {
+                this.moveToPosition(position % this.wheel.count)
+            }
+        }
+    }
+
     shutterToggled(filter: FilterSlot, event: CheckboxChangeEvent) {
         this.filters.forEach(e => e.dark = event.checked && e === filter)
         this.filterChangedPublisher.next(structuredClone(filter))
@@ -209,9 +279,13 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy {
     }
 
     focuserChanged() {
-        this.focusOffsetMax = this.focuser?.maxPosition ?? 0
-        this.focusOffsetMin = -this.focusOffsetMax
-        this.updateFocusOffset()
+        if (this.focuser) {
+            this.ping()
+
+            this.focusOffsetMax = this.focuser.maxPosition
+            this.focusOffsetMin = -this.focusOffsetMax
+            this.updateFocusOffset()
+        }
     }
 
     focusOffsetForFilter(filter: FilterSlot) {

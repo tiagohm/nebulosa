@@ -85,8 +85,5 @@ internal open class INDIFilterWheel(
 
     override fun close() = Unit
 
-    override fun toString(): String {
-        return "FilterWheel(name=$name, slotCount=$count, position=$position," +
-                " moving=$moving)"
-    }
+    override fun toString() = "FilterWheel(name=$name, slotCount=$count, position=$position, moving=$moving)"
 }

@@ -1,14 +1,14 @@
 import { Point, Size } from 'electron'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
 import { Camera, CameraStartCapture } from './camera.types'
-import { PlateSolverType } from './settings.types'
+import { PlateSolverType, StarDetectorType } from './settings.types'
 
 export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
 
 export const SCNR_PROTECTION_METHODS = ['MAXIMUM_MASK', 'ADDITIVE_MASK', 'AVERAGE_NEUTRAL', 'MAXIMUM_NEUTRAL', 'MINIMUM_NEUTRAL'] as const
 export type SCNRProtectionMethod = (typeof SCNR_PROTECTION_METHODS)[number]
 
-export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD'
+export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD' | 'SEQUENCER' | 'ALIGNMENT' | 'AUTO_FOCUS'
 
 export type ImageFormat = 'FITS' | 'XISF' | 'PNG' | 'JPG'
 
@@ -116,11 +116,13 @@ export interface ImagePreference {
     solverRadius?: number
     solverType?: PlateSolverType
     savePath?: string
+    starDetectionType?: StarDetectorType
 }
 
 export const EMPTY_IMAGE_PREFERENCE: ImagePreference = {
     solverRadius: 4,
-    solverType: 'ASTROMETRY_NET_ONLINE'
+    solverType: 'ASTAP',
+    starDetectionType: 'ASTAP'
 }
 
 export interface ImageData {
@@ -189,11 +191,6 @@ export interface ImageSCNRDialog {
     channel?: ImageChannel
     amount: number
     method: SCNRProtectionMethod
-}
-
-export interface ImageDetectStars {
-    visible: boolean
-    stars: DetectedStar[]
 }
 
 export interface ImageFITSHeadersDialog {
@@ -266,4 +263,22 @@ export interface ImageAnnotationDialog {
     useMinorPlanets: boolean
     minorPlanetsMagLimit: number
     useSimbad: boolean
+}
+
+export interface ROISelected {
+    camera: Camera
+    x: number
+    y: number
+    width: number
+    height: number
+}
+
+export interface StarDetectionDialog {
+    showDialog: boolean
+    type: StarDetectorType
+    minSNR: number
+    visible: boolean
+    stars: DetectedStar[]
+    computed: Omit<DetectedStar, 'x' | 'y' | 'flux'> & { minFlux: number, maxFlux: number }
+    selected: DetectedStar
 }

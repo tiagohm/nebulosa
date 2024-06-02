@@ -1,15 +1,13 @@
 package nebulosa.api.sequencer
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.cameras.CameraCaptureEvent
-import nebulosa.api.cameras.CameraCaptureState
-import nebulosa.api.cameras.CameraCaptureTask
-import nebulosa.api.cameras.CameraStartCaptureRequest
+import nebulosa.api.cameras.*
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.Task
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
+import nebulosa.api.wheels.WheelEventAware
 import nebulosa.api.wheels.WheelMoveTask
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.guiding.Guider
@@ -39,7 +37,7 @@ data class SequencerTask(
     @JvmField val wheel: FilterWheel? = null,
     @JvmField val focuser: Focuser? = null,
     private val executor: Executor? = null,
-) : AbstractTask<MessageEvent>(), Consumer<Any> {
+) : AbstractTask<MessageEvent>(), Consumer<Any>, CameraEventAware, WheelEventAware {
 
     private val usedEntries = plan.entries.filter { it.enabled }
 
@@ -108,7 +106,7 @@ data class SequencerTask(
         }
     }
 
-    fun handleCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         val task = currentTask.get()
 
         if (task is CameraCaptureTask) {
@@ -116,7 +114,7 @@ data class SequencerTask(
         }
     }
 
-    fun handleFilterWheelEvent(event: FilterWheelEvent) {
+    override fun handleFilterWheelEvent(event: FilterWheelEvent) {
         val task = currentTask.get()
 
         if (task is WheelMoveTask) {
@@ -130,7 +128,7 @@ data class SequencerTask(
         camera.snoop(listOf(mount, wheel, focuser))
 
         for (task in tasks) {
-            if (cancellationToken.isDone) break
+            if (cancellationToken.isCancelled) break
             currentTask.set(task)
             task.execute(cancellationToken)
             currentTask.set(null)

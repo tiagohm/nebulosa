@@ -3,13 +3,14 @@ import { CameraExposureComponent } from '../../shared/components/camera-exposure
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { AlignmentMethod, AlignmentPreference, DARVStart, DARVState, Hemisphere, TPPAStart, TPPAState } from '../../shared/types/alignment.types'
 import { Angle } from '../../shared/types/atlas.types'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { EMPTY_GUIDE_OUTPUT, GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { EMPTY_MOUNT, Mount } from '../../shared/types/mount.types'
-import { DEFAULT_SOLVER_TYPES, EMPTY_PLATE_SOLVER_PREFERENCE } from '../../shared/types/settings.types'
+import { EMPTY_PLATE_SOLVER_OPTIONS } from '../../shared/types/settings.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
@@ -19,7 +20,7 @@ import { CameraComponent } from '../camera/camera.component'
     templateUrl: './alignment.component.html',
     styleUrls: ['./alignment.component.scss'],
 })
-export class AlignmentComponent implements AfterViewInit, OnDestroy {
+export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 
     cameras: Camera[] = []
     camera = structuredClone(EMPTY_CAMERA)
@@ -39,7 +40,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
     readonly tppaRequest: TPPAStart = {
         capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
-        plateSolver: structuredClone(EMPTY_PLATE_SOLVER_PREFERENCE),
+        plateSolver: structuredClone(EMPTY_PLATE_SOLVER_OPTIONS),
         startFromCurrentPosition: true,
         stepDirection: 'EAST',
         compensateRefraction: true,
@@ -47,7 +48,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         stepDuration: 5,
     }
 
-    readonly plateSolverTypes = Array.from(DEFAULT_SOLVER_TYPES)
     tppaFailed = false
     tppaRightAscension: Angle = `00h00m00s`
     tppaDeclination: Angle = `00°00'00"`
@@ -79,6 +79,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         private api: ApiService,
         private browserWindow: BrowserWindowService,
         private preference: PreferenceService,
+        private pinger: Pinger,
         electron: ElectronService,
         ngZone: NgZone,
     ) {
@@ -109,7 +110,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.cameras.splice(index, 1)
-                    this.cameras.sort(deviceComparator)
                 }
             })
         })
@@ -139,7 +139,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.mounts.splice(index, 1)
-                    this.mounts.sort(deviceComparator)
                 }
             })
         })
@@ -169,7 +168,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
                     }
 
                     this.guideOutputs.splice(index, 1)
-                    this.guideOutputs.sort(deviceComparator)
                 }
             })
         })
@@ -226,6 +224,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
         })
 
         this.loadPreference()
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
@@ -235,21 +235,32 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
+    async ngOnDestroy() {
+        this.pinger.unregister(this)
+
         this.darvStop()
         this.tppaStop()
     }
 
+    ping() {
+        if (this.camera.id) this.api.cameraListen(this.camera)
+        if (this.mount.id) this.api.mountListen(this.mount)
+        if (this.guideOutput.id) this.api.guideOutputListen(this.guideOutput)
+    }
+
     async cameraChanged() {
         if (this.camera.id) {
+            this.ping()
+
             const camera = await this.api.camera(this.camera.id)
             Object.assign(this.camera, camera)
-            this.loadPreference()
         }
     }
 
     async mountChanged() {
         if (this.mount.id) {
+            this.ping()
+
             const mount = await this.api.mount(this.mount.id)
             Object.assign(this.mount, mount)
             this.tppaRequest.stepSpeed = mount.slewRate?.name
@@ -258,28 +269,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
 
     async guideOutputChanged() {
         if (this.guideOutput.id) {
+            this.ping()
+
             const guideOutput = await this.api.guideOutput(this.guideOutput.id)
             Object.assign(this.guideOutput, guideOutput)
-        }
-    }
-
-    mountConnect() {
-        if (this.mount.id) {
-            if (this.mount.connected) {
-                this.api.mountDisconnect(this.mount)
-            } else {
-                this.api.mountConnect(this.mount)
-            }
-        }
-    }
-
-    guideOutputConnect() {
-        if (this.guideOutput.id) {
-            if (this.guideOutput.connected) {
-                this.api.guideOutputDisconnect(this.guideOutput)
-            } else {
-                this.api.guideOutputConnect(this.guideOutput)
-            }
         }
     }
 
@@ -301,7 +294,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     plateSolverChanged() {
-        this.tppaRequest.plateSolver = this.preference.plateSolverPreference(this.tppaRequest.plateSolver.type).get()
+        this.tppaRequest.plateSolver = this.preference.plateSolverOptions(this.tppaRequest.plateSolver.type).get()
         this.savePreference()
     }
 
@@ -326,7 +319,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     darvStop() {
-        this.api.darvStop(this.camera)
+        return this.api.darvStop(this.camera)
     }
 
     async tppaStart() {
@@ -348,7 +341,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy {
     }
 
     openCameraImage() {
-        return this.browserWindow.openCameraImage(this.camera)
+        return this.browserWindow.openCameraImage(this.camera, 'ALIGNMENT')
     }
 
     private loadPreference() {

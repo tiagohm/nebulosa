@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core'
 import moment from 'moment'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { Angle, BodyPosition, CloseApproach, ComputedLocation, Constellation, DeepSkyObject, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
+import { AutoFocusRequest } from '../types/autofocus.type'
 import { CalibrationFrame, CalibrationFrameGroup } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
 import { Device, INDIProperty, INDISendProperty } from '../types/device.types'
@@ -14,7 +15,7 @@ import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAn
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlType, SlewRate, TrackMode } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencePlan } from '../types/sequencer.types'
-import { PlateSolverPreference } from '../types/settings.types'
+import { PlateSolverOptions, StarDetectionOptions } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
 import { HttpService } from './http.service'
 
@@ -68,10 +69,9 @@ export class ApiService {
         return this.http.get<boolean>(`cameras/${camera.id}/capturing`)
     }
 
-    // TODO: Rotator
     cameraSnoop(camera: Camera, equipment: Equipment) {
         const { mount, wheel, focuser, rotator } = equipment
-        const query = this.http.query({ mount: mount?.name, wheel: wheel?.name, focuser: focuser?.name, rotator: rotator?.name })
+        const query = this.http.query({ mount: mount?.id, wheel: wheel?.id, focuser: focuser?.id, rotator: rotator?.id })
         return this.http.put<void>(`cameras/${camera.id}/snoop?${query}`)
     }
 
@@ -89,6 +89,10 @@ export class ApiService {
 
     cameraAbortCapture(camera: Camera) {
         return this.http.put<void>(`cameras/${camera.id}/capture/abort`)
+    }
+
+    cameraListen(camera: Camera) {
+        return this.http.put<void>(`cameras/${camera.id}/listen`)
     }
 
     // MOUNT
@@ -186,6 +190,10 @@ export class ApiService {
         return this.http.put<void>(`mounts/${mount.id}/remote-control/stop?${query}`)
     }
 
+    mountListen(mount: Mount) {
+        return this.http.put<void>(`mounts/${mount.id}/listen`)
+    }
+
     // FOCUSER
 
     focusers() {
@@ -224,6 +232,10 @@ export class ApiService {
         return this.http.put<void>(`focusers/${focuser.id}/sync?steps=${steps}`)
     }
 
+    focuserListen(focuser: Focuser) {
+        return this.http.put<void>(`focusers/${focuser.id}/listen`)
+    }
+
     // FILTER WHEEL
 
     wheels() {
@@ -250,6 +262,10 @@ export class ApiService {
         return this.http.put<void>(`wheels/${wheel.id}/sync?names=${names.join(',')}`)
     }
 
+    wheelListen(wheel: FilterWheel) {
+        return this.http.put<void>(`wheels/${wheel.id}/listen`)
+    }
+
     // ROTATOR
 
     rotators() {
@@ -268,7 +284,7 @@ export class ApiService {
         return this.http.put<void>(`rotators/${rotator.id}/disconnect`)
     }
 
-    focuserReverse(rotator: Rotator, enabled: boolean) {
+    rotatorReverse(rotator: Rotator, enabled: boolean) {
         return this.http.put<void>(`rotators/${rotator.id}/reverse?enabled=${enabled}`)
     }
 
@@ -286,6 +302,10 @@ export class ApiService {
 
     rotatorSync(rotator: Rotator, angle: number) {
         return this.http.put<void>(`rotators/${rotator.id}/sync?angle=${angle}`)
+    }
+
+    rotatorListen(rotator: Rotator) {
+        return this.http.put<void>(`rotators/${rotator.id}/listen`)
     }
 
     // GUIDE OUTPUT
@@ -309,6 +329,10 @@ export class ApiService {
     guideOutputPulse(guideOutput: GuideOutput, direction: GuideDirection, duration: number) {
         const query = this.http.query({ direction, duration })
         return this.http.put<void>(`guide-outputs/${guideOutput.id}/pulse?${query}`)
+    }
+
+    guideOutputListen(guideOutput: GuideOutput) {
+        return this.http.put<void>(`guide-outputs/${guideOutput.id}/listen`)
     }
 
     // GUIDING
@@ -369,7 +393,7 @@ export class ApiService {
     // IMAGE
 
     async openImage(path: string, transformation: ImageTransformation, camera?: Camera) {
-        const query = this.http.query({ path, camera: camera?.name })
+        const query = this.http.query({ path, camera: camera?.id })
         const response = await this.http.postBlob(`image?${query}`, transformation)
         const info = JSON.parse(response.headers.get('X-Image-Info')!) as ImageInfo
         return { info, blob: response.body! }
@@ -382,6 +406,18 @@ export class ApiService {
 
     // INDI
 
+    indiDevice<T extends Device = Device>(device: T) {
+        return this.http.get<T>(`indi/${device.id}`)
+    }
+
+    indiDeviceConnect(device: Device) {
+        return this.http.put<void>(`indi/${device.id}/connect`)
+    }
+
+    indiDeviceDisconnect(device: Device) {
+        return this.http.put<void>(`indi/${device.id}/disconnect`)
+    }
+
     indiProperties(device: Device) {
         return this.http.get<INDIProperty<any>[]>(`indi/${device.id}/properties`)
     }
@@ -390,12 +426,12 @@ export class ApiService {
         return this.http.put<void>(`indi/${device.id}/send`, property)
     }
 
-    indiStartListening(device: Device) {
-        return this.http.put<void>(`indi/listener/${device.id}/start`)
+    indiListen(device: Device) {
+        return this.http.put<void>(`indi/${device.id}/listen`)
     }
 
-    indiStopListening(device: Device) {
-        return this.http.put<void>(`indi/listener/${device.id}/stop`)
+    indiUnlisten(device: Device) {
+        return this.http.put<void>(`indi/${device.id}/unlisten`)
     }
 
     indiLog(device: Device) {
@@ -510,7 +546,7 @@ export class ApiService {
     }
 
     saveImageAs(path: string, save: ImageSaveDialog, camera?: Camera) {
-        const query = this.http.query({ path, camera: camera?.name })
+        const query = this.http.query({ path, camera: camera?.id })
         return this.http.put<void>(`image/save-as?${query}`, save)
     }
 
@@ -519,9 +555,9 @@ export class ApiService {
         return this.http.get<CoordinateInterpolation | null>(`image/coordinate-interpolation?${query}`)
     }
 
-    detectStars(path: string) {
+    detectStars(path: string, starDetector: StarDetectionOptions) {
         const query = this.http.query({ path })
-        return this.http.put<DetectedStar[]>(`image/detect-stars?${query}`)
+        return this.http.put<DetectedStar[]>(`star-detection?${query}`, starDetector)
     }
 
     imageHistogram(path: string, bitLength: number = 16) {
@@ -607,7 +643,7 @@ export class ApiService {
 
     sequencerStart(camera: Camera, plan: SequencePlan) {
         const body: SequencePlan = { ...plan, mount: undefined, camera: undefined, wheel: undefined, focuser: undefined }
-        const query = this.http.query({ mount: plan.mount?.name, focuser: plan.focuser?.name, wheel: plan.wheel?.name })
+        const query = this.http.query({ mount: plan.mount?.id, focuser: plan.focuser?.id, wheel: plan.wheel?.id })
         return this.http.put<void>(`sequencer/${camera.id}/start?${query}`, body)
     }
 
@@ -628,11 +664,21 @@ export class ApiService {
     // SOLVER
 
     solveImage(
-        solver: PlateSolverPreference, path: string, blind: boolean,
+        solver: PlateSolverOptions, path: string, blind: boolean,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ) {
-        const query = this.http.query({ ...solver, path, blind, centerRA, centerDEC, radius })
-        return this.http.put<ImageSolved>(`plate-solver?${query}`)
+        const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
+        return this.http.put<ImageSolved>(`plate-solver?${query}`, solver)
+    }
+
+    // AUTO FOCUS
+
+    autoFocusStart(camera: Camera, focuser: Focuser, request: AutoFocusRequest) {
+        return this.http.put<void>(`auto-focus/${camera.id}/${focuser.id}/start`, request)
+    }
+
+    autoFocusStop(camera: Camera) {
+        return this.http.put<void>(`auto-focus/${camera.id}/stop`)
     }
 
     // PREFERENCE

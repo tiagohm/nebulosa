@@ -5,7 +5,6 @@ import jakarta.validation.Valid
 import nebulosa.api.atlas.Location
 import nebulosa.api.beans.converters.location.LocationParam
 import nebulosa.indi.device.camera.Camera
-import nebulosa.star.detection.ImageStar
 import org.hibernate.validator.constraints.Range
 import org.springframework.http.HttpHeaders
 import org.springframework.web.bind.annotation.*
@@ -52,11 +51,6 @@ class ImageController(
     @GetMapping("coordinate-interpolation")
     fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {
         return imageService.coordinateInterpolation(path)
-    }
-
-    @PutMapping("detect-stars")
-    fun detectStars(@RequestParam path: Path): List<ImageStar> {
-        return imageService.detectStars(path)
     }
 
     @GetMapping("histogram")

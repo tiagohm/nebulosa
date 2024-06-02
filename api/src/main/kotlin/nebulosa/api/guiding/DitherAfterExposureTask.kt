@@ -27,7 +27,7 @@ data class DitherAfterExposureTask(
     override fun execute(cancellationToken: CancellationToken) {
         if (guider != null && guider.canDither && request.enabled
             && guider.state == GuideState.GUIDING
-            && !cancellationToken.isDone
+            && !cancellationToken.isCancelled
         ) {
             LOG.info("Dither started. request={}", request)
 

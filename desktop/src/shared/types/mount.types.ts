@@ -1,4 +1,5 @@
 import { Angle, EquatorialCoordinate } from './atlas.types'
+import { Device } from './device.types'
 import { GPS } from './gps.types'
 import { GuideOutput } from './guider.types'
 
@@ -11,6 +12,8 @@ export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
 export type CelestialLocationType = 'ZENITH' | 'NORTH_POLE' | 'SOUTH_POLE' | 'GALACTIC_CENTER' | 'MERIDIAN_EQUATOR' | 'MERIDIAN_ECLIPTIC' | 'EQUATOR_ECLIPTIC'
 
 export type MountRemoteControlType = 'LX200' | 'STELLARIUM'
+
+export type MoveDirectionType = 'N' | 'S' | 'W' | 'E' | 'NW' | 'NE' | 'SW' | 'SE'
 
 export interface SlewRate {
     name: string
@@ -92,4 +95,8 @@ export interface MountRemoteControlDialog {
     host: string
     port: number
     data: MountRemoteControl[]
+}
+
+export function isMount(device?: Device): device is Mount {
+    return !!device && 'tracking' in device
 }

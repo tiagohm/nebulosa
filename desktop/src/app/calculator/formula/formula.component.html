@@ -12,7 +12,7 @@
             <span class="p-float-label">
                 <p-inputNumber [(ngModel)]="item.value" (ngModelChange)="calculateFormula()"
                                [minFractionDigits]="item.minFractionDigits ?? 0" [maxFractionDigits]="item.maxFractionDigits ?? 4"
-                               [showButtons]="true" styleClass="border-0 p-inputtext-sm" locale="en" />
+                               [min]="item.min ?? 0" [showButtons]="true" styleClass="border-0 p-inputtext-sm" locale="en" scrollableNumber />
                 <label>{{ item.label }}</label>
             </span>
         </div>
@@ -26,9 +26,8 @@
 <div class="flex flex-row justify-content-center align-items-center gap-2">
     <span class="text-2xl text-bold">{{ formula.result.prefix }}</span>
     <span class="p-float-label">
-        <p-inputNumber [readonly]="true" [ngModel]="formula.result.value"
-                       [minFractionDigits]="formula.result.minFractionDigits ?? 0" [maxFractionDigits]="formula.result.maxFractionDigits ?? 4"
-                       styleClass="border-0 p-inputtext-sm" locale="en" />
+        <p-inputNumber readonly [ngModel]="formula.result.value" [minFractionDigits]="formula.result.minFractionDigits ?? 0"
+                       [maxFractionDigits]="formula.result.maxFractionDigits ?? 4" styleClass="border-0 p-inputtext-sm" locale="en" />
         <label>{{ formula.result.label }}</label>
     </span>
     <span class="text-xl text-bold">{{ formula.result.suffix }}</span>

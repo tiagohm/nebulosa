@@ -13,7 +13,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.nameWithoutExtension
 
-class AstapStarDetector(path: Path) : StarDetector<Path> {
+class AstapStarDetector(path: Path, private val minSNR: Double = 0.0) : StarDetector<Path> {
 
     private val executor = ProcessExecutor(path)
 
@@ -21,8 +21,8 @@ class AstapStarDetector(path: Path) : StarDetector<Path> {
         val arguments = mutableMapOf<String, Any?>()
 
         arguments["-f"] = input
-        arguments["-z"] = 2
-        arguments["-extract"] = 0
+        arguments["-z"] = 0
+        arguments["-extract"] = minSNR
 
         val process = executor.execute(arguments, workingDir = input.parent)
 

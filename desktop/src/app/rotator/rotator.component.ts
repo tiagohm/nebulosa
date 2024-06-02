@@ -2,6 +2,7 @@ import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angu
 import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { EMPTY_ROTATOR, Rotator } from '../../shared/types/rotator.types'
 import { AppComponent } from '../app.component'
@@ -11,7 +12,7 @@ import { AppComponent } from '../app.component'
     templateUrl: './rotator.component.html',
     styleUrls: ['./rotator.component.scss'],
 })
-export class RotatorComponent implements AfterViewInit, OnDestroy {
+export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 
     readonly rotator = structuredClone(EMPTY_ROTATOR)
 
@@ -25,6 +26,7 @@ export class RotatorComponent implements AfterViewInit, OnDestroy {
         electron: ElectronService,
         private preference: PreferenceService,
         private route: ActivatedRoute,
+        private pinger: Pinger,
         ngZone: NgZone,
     ) {
         app.title = 'Rotator'
@@ -45,6 +47,8 @@ export class RotatorComponent implements AfterViewInit, OnDestroy {
                 })
             }
         })
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
@@ -56,7 +60,12 @@ export class RotatorComponent implements AfterViewInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
+        this.pinger.unregister(this)
         this.abort()
+    }
+
+    ping() {
+        this.api.rotatorListen(this.rotator)
     }
 
     async rotatorChanged(rotator?: Rotator) {
@@ -82,7 +91,7 @@ export class RotatorComponent implements AfterViewInit, OnDestroy {
     }
 
     reverse(enabled: boolean) {
-        this.api.focuserReverse(this.rotator, enabled)
+        this.api.rotatorReverse(this.rotator, enabled)
     }
 
     async move() {

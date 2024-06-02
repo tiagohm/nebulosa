@@ -6,7 +6,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
-import { DEFAULT_SOLVER_TYPES, PlateSolverPreference, PlateSolverType } from '../../shared/types/settings.types'
+import { PlateSolverOptions, PlateSolverType, StarDetectionOptions, StarDetectorType } from '../../shared/types/settings.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -19,9 +19,11 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     readonly locations: Location[]
     location: Location
 
-    readonly solverTypes = Array.from(DEFAULT_SOLVER_TYPES)
-    solverType = this.solverTypes[0]
-    readonly solvers = new Map<PlateSolverType, PlateSolverPreference>()
+    solverType: PlateSolverType = 'ASTAP'
+    readonly solvers = new Map<PlateSolverType, PlateSolverOptions>()
+
+    starDetectorType: StarDetectorType = 'ASTAP'
+    readonly starDetectors = new Map<StarDetectorType, StarDetectionOptions>()
 
     constructor(
         app: AppComponent,
@@ -35,9 +37,10 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         this.locations = preference.locations.get()
         this.location = preference.selectedLocation.get(this.locations[0])
 
-        for (const type of this.solverTypes) {
-            this.solvers.set(type, preference.plateSolverPreference(type).get())
-        }
+        this.solvers.set('ASTAP', preference.plateSolverOptions('ASTAP').get())
+        this.solvers.set('ASTROMETRY_NET_ONLINE', preference.plateSolverOptions('ASTROMETRY_NET_ONLINE').get())
+
+        this.starDetectors.set('ASTAP', preference.starDetectionOptions('ASTAP').get())
     }
 
     async ngAfterViewInit() { }
@@ -99,19 +102,31 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         this.electron.send('LOCATION.CHANGED', this.location)
     }
 
-    async chooseExecutablePath() {
+    async chooseExecutablePathForPlateSolver() {
         const options = this.solvers.get(this.solverType)!
+        this.chooseExecutablePath(options)
+    }
+
+    async chooseExecutablePathForStarDetection() {
+        const options = this.solvers.get(this.starDetectorType)!
+        this.chooseExecutablePath(options)
+    }
+
+    private async chooseExecutablePath(options: { executablePath: string }) {
         const executablePath = await this.electron.openFile({ defaultPath: path.dirname(options.executablePath) })
 
         if (executablePath) {
             options.executablePath = executablePath
             this.save()
         }
+
+        return executablePath
     }
 
     save() {
-        for (const type of this.solverTypes) {
-            this.preference.plateSolverPreference(type).set(this.solvers.get(type)!)
-        }
+        this.preference.plateSolverOptions('ASTAP').set(this.solvers.get('ASTAP')!)
+        this.preference.plateSolverOptions('ASTROMETRY_NET_ONLINE').set(this.solvers.get('ASTROMETRY_NET_ONLINE')!)
+
+        this.preference.starDetectionOptions('ASTAP').set(this.starDetectors.get('ASTAP')!)
     }
 }

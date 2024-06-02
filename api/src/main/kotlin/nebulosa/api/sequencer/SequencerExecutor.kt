@@ -2,8 +2,11 @@ package nebulosa.api.sequencer
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.cameras.CameraEventAware
+import nebulosa.api.focusers.FocuserEventAware
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
+import nebulosa.api.wheels.WheelEventAware
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
@@ -24,22 +27,22 @@ class SequencerExecutor(
     private val messageService: MessageService,
     private val guider: Guider,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
-) : Consumer<MessageEvent> {
+) : Consumer<MessageEvent>, CameraEventAware, WheelEventAware, FocuserEventAware {
 
     private val jobs = ConcurrentHashMap.newKeySet<SequencerJob>(1)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraEvent) {
         jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onFilterWheelEvent(event: FilterWheelEvent) {
+    override fun handleFilterWheelEvent(event: FilterWheelEvent) {
         jobs.find { it.task.wheel === event.device }?.handleFilterWheelEvent(event)
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    fun onFocuserEvent(event: FocuserEvent) {
+    override fun handleFocuserEvent(event: FocuserEvent) {
         // jobs.find { it.task.focuser === event.device }?.handleFocuserEvent(event)
     }
 

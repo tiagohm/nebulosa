@@ -11,6 +11,7 @@ import kotlin.io.path.isDirectory
 class CameraService(
     private val capturesPath: Path,
     private val cameraCaptureExecutor: CameraCaptureExecutor,
+    private val cameraEventHub: CameraEventHub,
 ) {
 
     fun connect(camera: Camera) {
@@ -47,7 +48,11 @@ class CameraService(
         cameraCaptureExecutor.stop(camera)
     }
 
-    fun statusCapture(camera: Camera): CameraCaptureEvent? {
+    fun captureStatus(camera: Camera): CameraCaptureEvent? {
         return cameraCaptureExecutor.status(camera)
+    }
+
+    fun listen(camera: Camera) {
+        cameraEventHub.listen(camera)
     }
 }

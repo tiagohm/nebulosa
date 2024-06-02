@@ -2,7 +2,7 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-8 align-items-center gap-2">
             <span class="p-float-label">
-                <input type="text" pInputText [readonly]="true" [value]="camera.name" class="p-inputtext-sm border-0 w-full" />
+                <input pInputText readonly [value]="camera.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Camera</label>
             </span>
             <p-button *ngIf="!camera || camera.connected" [disabled]="!camera || running" (onClick)="connect()" icon="mdi mdi-close"
@@ -59,7 +59,8 @@
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!camera.connected || !camera.canSetTemperature || running" [(ngModel)]="setpointTemperature"
                                    mode="decimal" [showButtons]="true" (ngModelChange)="savePreference()" [step]="0.1" suffix="℃" [min]="-50"
-                                   [max]="50" locale="en" styleClass="p-inputtext-sm border-0" [allowEmpty]="false" [minFractionDigits]="1" />
+                                   [max]="50" locale="en" styleClass="p-inputtext-sm border-0" [allowEmpty]="false" [minFractionDigits]="1"
+                                   scrollableNumber />
                     <label>Temperature ({{ camera.temperature | number: '1.1-1' }}°C)</label>
                 </span>
                 <p-button [disabled]="!camera.connected || !camera.canSetTemperature || running" (onClick)="applySetpointTemperature()"
@@ -73,7 +74,7 @@
                 <span class="p-float-label">
                     <p-inputNumber [disabled]="!canExposureTime || !camera.connected || running" [(ngModel)]="request.exposureTime" mode="decimal"
                                    [showButtons]="true" [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" locale="en"
-                                   styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                                   styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                     <label>Exposure Time</label>
                 </span>
                 <p-menu #exposureTimeMenu [model]="exposureTimeUnitModel" [popup]="true" appendTo="body" />
@@ -100,7 +101,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || exposureMode === 'SINGLE' || running" [(ngModel)]="request.exposureDelay"
                                mode="decimal" [showButtons]="true" [step]="1" [min]="0" [max]="60" locale="en" styleClass="p-inputtext-sm border-0"
-                               [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Delay (s)</label>
             </span>
         </div>
@@ -108,7 +109,8 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!canExposureAmount || !camera.connected || exposureMode !== 'FIXED' || running"
                                [(ngModel)]="request.exposureAmount" mode="decimal" [showButtons]="true" [step]="1.0" [min]="1" [max]="1000"
-                               locale="en" styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               locale="en" styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()"
+                               scrollableNumber />
                 <label>Count</label>
             </span>
         </div>
@@ -118,7 +120,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.x" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="camera.minX" [max]="camera.maxX" locale="en" styleClass="p-inputtext-sm border-0"
-                               [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>X</label>
             </span>
         </div>
@@ -126,7 +128,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.y" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="camera.minY" [max]="camera.maxY" locale="en" styleClass="p-inputtext-sm border-0"
-                               [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Y</label>
             </span>
         </div>
@@ -134,7 +136,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.width" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="camera.minWidth" [max]="camera.maxWidth" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Width</label>
             </span>
         </div>
@@ -142,7 +144,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.height" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="camera.minHeight" [max]="camera.maxHeight" locale="en"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Height</label>
             </span>
         </div>
@@ -160,7 +162,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.binX" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="1" [max]="4" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
-                               (ngModelChange)="savePreference()" />
+                               (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Bin X</label>
             </span>
         </div>
@@ -168,7 +170,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.binY" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="1" [max]="4" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
-                               (ngModelChange)="savePreference()" />
+                               (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Bin Y</label>
             </span>
         </div>
@@ -186,7 +188,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.gain" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="camera.gainMin" [max]="camera.gainMax" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
-                               (ngModelChange)="savePreference()" />
+                               (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Gain</label>
             </span>
         </div>
@@ -194,7 +196,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running || !camera.offsetMax" [(ngModel)]="request.offset" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="camera.offsetMin" [max]="camera.offsetMax"
-                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" />
+                               styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Offset</label>
             </span>
         </div>
@@ -230,7 +232,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running || !request.dither!.enabled" [showButtons]="true"
                                styleClass="border-0 p-inputtext-sm w-full" [min]="0.1" [max]="60" [(ngModel)]="request.dither!.amount" [step]="0.1"
-                               locale="en" [minFractionDigits]="1" (ngModelChange)="savePreference()" />
+                               locale="en" [minFractionDigits]="1" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Dither (px)</label>
             </span>
         </div>
@@ -238,7 +240,7 @@
             <span class="p-float-label">
                 <p-inputNumber [disabled]="!camera.connected || running || !request.dither!.enabled" [showButtons]="true"
                                styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
-                               [(ngModel)]="request.dither!.afterExposures" [step]="1" (ngModelChange)="savePreference()" />
+                               [(ngModel)]="request.dither!.afterExposures" [step]="1" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>After exposures</label>
             </span>
         </div>

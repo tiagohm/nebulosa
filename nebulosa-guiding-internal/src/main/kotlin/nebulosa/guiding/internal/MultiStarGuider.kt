@@ -264,7 +264,7 @@ class MultiStarGuider : InternalGuider {
         return if (lockPosition(newLockPosition)) {
             // Update average distance right away so GetCurrentDistance
             // reflects the increased distance from the dither.
-            val dist = cameraDelta.distance
+            val dist = cameraDelta.length
             val distRA = abs(mountDelta.x)
             avgDistance += dist
             avgDistanceLong += dist
@@ -276,7 +276,7 @@ class MultiStarGuider : InternalGuider {
                 ditherRecenterDir[0] = if (mountDelta.x < 0.0) 1.0 else -1.0
                 ditherRecenterDir[1] = if (mountDelta.y < 0.0) 1.0 else -1.0
                 // Make each step a bit less than the full search region distance to avoid losing the star.
-                val f = (searchRegion * 0.7) / ditherRecenterRemaining.distance
+                val f = (searchRegion * 0.7) / ditherRecenterRemaining.length
                 ditherRecenterStep.set(f * ditherRecenterRemaining.x, f * ditherRecenterRemaining.y)
             }
 
@@ -1107,21 +1107,21 @@ class MultiStarGuider : InternalGuider {
 
     private fun transformMountCoordinatesToCameraCoordinates(mount: Point, camera: Point): Boolean {
         if (!mount.valid) return false
-        val distance = mount.distance
+        val length = mount.length
         var mountTheta = mount.angle
         if (abs(guideCalibrator.yAngleError) > PIOVERTWO) mountTheta = -mountTheta
         val xAngle = mountTheta + guideCalibrator.xAngle
-        camera.set(xAngle.cos * distance, xAngle.sin * distance)
+        camera.set(xAngle.cos * length, xAngle.sin * length)
         return true
     }
 
     private fun transformCameraCoordinatesToMountCoordinates(camera: Point, mount: Point): Boolean {
         if (!camera.valid) return false
-        val distance = camera.distance
+        val length = camera.length
         val cameraTheta = camera.angle
         val xAngle = cameraTheta - guideCalibrator.xAngle
         val yAngle = cameraTheta - (guideCalibrator.xAngle + guideCalibrator.yAngleError)
-        mount.set(xAngle.cos * distance, yAngle.sin * distance)
+        mount.set(xAngle.cos * length, yAngle.sin * length)
         return true
     }
 

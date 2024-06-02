@@ -1,11 +1,17 @@
-import { Component, Input, ViewChild } from '@angular/core'
-import { MenuItem } from 'primeng/api'
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
 import { PrimeService } from '../../services/prime.service'
+import { isGuideHead } from '../../types/camera.types'
 import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
 import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
-import { ExtendedMenuItem } from '../menu-item/menu-item.component'
+import { MenuItem } from '../menu-item/menu-item.component'
+import { SlideMenuItem } from '../slide-menu/slide-menu.component'
+
+export interface DeviceConnectionCommandEvent {
+    device: Device
+    item: MenuItem
+}
 
 @Component({
     selector: 'neb-device-list-menu',
@@ -15,7 +21,7 @@ import { ExtendedMenuItem } from '../menu-item/menu-item.component'
 export class DeviceListMenuComponent {
 
     @Input()
-    readonly model: MenuItem[] = []
+    readonly model: SlideMenuItem[] = []
 
     @Input()
     readonly modelAtFirst: boolean = true
@@ -29,22 +35,28 @@ export class DeviceListMenuComponent {
     @Input()
     readonly hasNone: boolean = false
 
+    @Output()
+    readonly deviceConnect = new EventEmitter<DeviceConnectionCommandEvent>()
+
+    @Output()
+    readonly deviceDisconnect = new EventEmitter<DeviceConnectionCommandEvent>()
+
     @ViewChild('menu')
     private readonly menu!: DialogMenuComponent
 
     constructor(private prime: PrimeService) { }
 
     show<T extends Device>(devices: T[], selected?: NoInfer<T>) {
-        const model: ExtendedMenuItem[] = []
+        const model: SlideMenuItem[] = []
 
-        return new Promise<T | 'NONE' | undefined>((resolve) => {
+        return new Promise<T | 'NONE' | undefined>(resolve => {
             if (devices.length <= 0) {
                 resolve(undefined)
                 this.prime.message('Please connect your equipment first!', 'warn')
                 return
             }
 
-            const subscription = this.menu.visibleChange.subscribe((visible) => {
+            const subscription = this.menu.visibleChange.subscribe(visible => {
                 if (!visible) {
                     subscription.unsubscribe()
                     resolve(undefined)
@@ -68,10 +80,21 @@ export class DeviceListMenuComponent {
 
             for (const device of devices.sort(deviceComparator)) {
                 model.push({
-                    icon: 'mdi mdi-connection',
                     label: device.name,
                     checked: selected === device,
                     disabled: this.disableIfDeviceIsNotConnected && !device.connected,
+                    toolbarMenu: [
+                        {
+                            icon: 'mdi ' + (device.connected ? 'mdi-close' : 'mdi-connection'),
+                            toolbarButtonSeverity: device.connected ? 'danger' : 'info',
+                            label: device.connected ? 'Disconnect' : 'Connect',
+                            visible: !isGuideHead(device),
+                            command: event => {
+                                if (device.connected) this.deviceDisconnect.emit({ device, item: event.item! })
+                                else this.deviceConnect.emit({ device, item: event.item! })
+                            }
+                        }
+                    ],
                     command: () => {
                         resolve(device)
                     },

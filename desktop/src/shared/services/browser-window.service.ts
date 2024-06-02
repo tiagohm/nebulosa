@@ -61,7 +61,7 @@ export class BrowserWindowService {
     }
 
     openGuider(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'guider', width: 425, height: 438 })
+        Object.assign(options, { icon: 'guider', width: 440, height: 455 })
         this.openWindow({ ...options, id: 'guider', path: 'guider', data: undefined })
     }
 
@@ -104,14 +104,19 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'sequencer', path: 'sequencer', data: undefined })
     }
 
+    openAutoFocus(options: OpenWindowOptions = {}) {
+        Object.assign(options, { icon: 'auto-focus', width: 425, height: 420 })
+        this.openWindow({ ...options, id: 'auto-focus', path: 'auto-focus', data: undefined })
+    }
+
     openFlatWizard(options: OpenWindowOptions = {}) {
         Object.assign(options, { icon: 'star', width: 385, height: 370 })
         this.openWindow({ ...options, id: 'flat-wizard', path: 'flat-wizard', data: undefined })
     }
 
     openSettings(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'settings', width: 435, height: 460 })
-        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined, resizable: true, minHeight: 460, autoResizable: false })
+        Object.assign(options, { icon: 'settings', width: 490, height: 460 })
+        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined, resizable: true, minWidth: 490, minHeight: 460, autoResizable: false })
     }
 
     openCalculator(options: OpenWindowOptions = {}) {
@@ -125,6 +130,6 @@ export class BrowserWindowService {
     }
 
     openAbout() {
-        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 430, height: 246, bringToFront: true, data: undefined })
+        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 430, height: 307, bringToFront: true, data: undefined })
     }
 }

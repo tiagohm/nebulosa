@@ -1,22 +1,14 @@
 <div class="container px-4 py-3">
     <div class="grid">
         <div class="col-12 align-items-center justify-content-center gap-2">
-            <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera"
-                                    (deviceChange)="cameraChanged()" />
+            <neb-device-chooser title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera"
+                                (deviceChange)="cameraChanged()" />
             <p-button [disabled]="!camera.name || running" icon="mdi mdi-cog" (onClick)="showCameraDialog()" size="small" />
             @if (tab === 0) {
-            <neb-device-list-button title="MOUNT" icon="mdi mdi-telescope" [devices]="mounts" [(device)]="mount" (deviceChange)="mountChanged()" />
-            <p-button *ngIf="mount.connected" [disabled]="!mount.name || running" (onClick)="mountConnect()" icon="mdi mdi-close"
-                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
-            <p-button *ngIf="!mount.connected" [disabled]="!mount.name || running" (onClick)="mountConnect()" icon="mdi mdi-connection"
-                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
+            <neb-device-chooser title="MOUNT" icon="mdi mdi-telescope" [devices]="mounts" [(device)]="mount" (deviceChange)="mountChanged()" />
             } @else {
-            <neb-device-list-button title="GUIDE OUTPUT" icon="mdi mdi-target" [devices]="guideOutputs" [(device)]="guideOutput"
-                                    (deviceChange)="guideOutputChanged()" />
-            <p-button *ngIf="guideOutput.connected" [disabled]="!guideOutput.name || running" (onClick)="guideOutputConnect()"
-                      icon="mdi mdi-close" size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
-            <p-button *ngIf="!guideOutput.connected" [disabled]="!guideOutput.name || running" (onClick)="guideOutputConnect()"
-                      icon="mdi mdi-connection" size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
+            <neb-device-chooser title="GUIDE OUTPUT" icon="mdi mdi-target" [devices]="guideOutputs" [(device)]="guideOutput"
+                                (deviceChange)="guideOutputChanged()" />
             }
         </div>
         <div class="col-12 relative pt-0 text-sm text-gray-400 flex align-items-center mt-1 gap-1 text-sm" style="min-height: 25px;">
@@ -35,15 +27,15 @@
                     <div class="grid mt-3">
                         <div class="col-5 gap-2 align-items-center">
                             <span class="p-float-label">
-                                <p-dropdown [options]="plateSolverTypes" [(ngModel)]="tppaRequest.plateSolver.type" [autoDisplayFirst]="false"
-                                            styleClass="p-inputtext-sm border-0" (ngModelChange)="plateSolverChanged()" />
+                                <p-dropdown [options]="['ASTROMETRY_NET_ONLINE', 'ASTAP']" [(ngModel)]="tppaRequest.plateSolver.type"
+                                            [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0" (ngModelChange)="plateSolverChanged()" />
                                 <label>Plate Solver</label>
                             </span>
                         </div>
                         <div class="col-4 align-items-center">
                             <span class="p-float-label">
                                 <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="tppaRequest.stepDuration"
-                                               [showButtons]="true" [min]="1" [max]="60" (ngModelChange)="savePreference()" />
+                                               [showButtons]="true" [min]="1" [max]="60" (ngModelChange)="savePreference()" scrollableNumber />
                                 <label>Step duration (s)</label>
                             </span>
                         </div>
@@ -110,14 +102,14 @@
                         <div class="col-4">
                             <span class="p-float-label">
                                 <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvRequest.initialPause"
-                                               [showButtons]="true" [min]="1" [max]="60" (ngModelChange)="initialPauseChanged()" />
+                                               [showButtons]="true" [min]="1" [max]="60" (ngModelChange)="initialPauseChanged()" scrollableNumber />
                                 <label>Initial pause (s)</label>
                             </span>
                         </div>
                         <div class="col-4">
                             <span class="p-float-label">
                                 <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvRequest.exposureTime"
-                                               [showButtons]="true" [min]="1" [max]="600" (ngModelChange)="driftForChanged()" />
+                                               [showButtons]="true" [min]="1" [max]="600" (ngModelChange)="driftForChanged()" scrollableNumber />
                                 <label>Drift for (s)</label>
                             </span>
                         </div>
@@ -141,13 +133,13 @@
                     </div>
                     <div class="grid mt-1">
                         <div class="col-12 flex-column justify-content-center text-sm overflow-y-auto max-h-7rem p-0">
-                            <span>1. Locate a star in the Meridian and close to declination 0.</span>
+                            <span>1. Locate a star near the south meridian and close to declination 0.</span>
                             <span>2. Start DARV and wait for routine to complete.</span>
                             <span>3. If you see V shaped track, adjust the Azimuth and repeat the step 2 till you get a line.</span>
-                            <span>4. Locate a star in the Eastern or Western horizon and close to declination 0.</span>
+                            <span>4. Locate a star in the eastern or western horizon and close to declination 0.</span>
                             <span>5. Start DARV and wait for routine to complete.</span>
                             <span>6. If you see V shaped track, adjust the Altitude and repeat the step 5 till you get a line.</span>
-                            <span>7. Increase the drift time and repeat the step 1 to get a more accurate alignment.</span>
+                            <span>7. Increase the drift time and repeat the step 1 to refine the alignment.</span>
                         </div>
                     </div>
                 </p-tabPanel>

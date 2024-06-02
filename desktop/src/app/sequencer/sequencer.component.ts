@@ -7,6 +7,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { JsonFile } from '../../shared/types/app.types'
 import { Camera, CameraCaptureEvent, CameraStartCapture } from '../../shared/types/camera.types'
@@ -27,7 +28,7 @@ export const SEQUENCER_PLAN_KEY = 'sequencer.plan'
     templateUrl: './sequencer.component.html',
     styleUrls: ['./sequencer.component.scss'],
 })
-export class SequencerComponent implements AfterContentInit, OnDestroy {
+export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable {
 
     cameras: Camera[] = []
     mounts: Mount[] = []
@@ -124,6 +125,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         private electron: ElectronService,
         private storage: LocalStorageService,
         private prime: PrimeService,
+        private pinger: Pinger,
         ngZone: NgZone,
     ) {
         app.title = 'Sequencer'
@@ -235,6 +237,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         for (const p of SEQUENCE_ENTRY_PROPERTIES) {
             this.availableEntryPropertiesToApply.set(p, true)
         }
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterContentInit() {
@@ -248,12 +252,21 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         // this.route.queryParams.subscribe(e => { })
     }
 
+    @HostListener('window:unload')
+    ngOnDestroy() {
+        this.pinger.unregister(this)
+    }
+
+    ping() {
+        if (this.camera) this.api.cameraListen(this.camera)
+        if (this.mount) this.api.mountListen(this.mount)
+        if (this.focuser) this.api.focuserListen(this.focuser)
+        if (this.wheel) this.api.wheelListen(this.wheel)
+    }
+
     private enableOrDisableTopbarMenu(enable: boolean) {
         this.app.topMenu.forEach(e => e.disabled = !enable)
     }
-
-    @HostListener('window:unload')
-    ngOnDestroy() { }
 
     add() {
         const camera = this.camera ?? this.cameras[0]
@@ -372,6 +385,22 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    cameraChanged() {
+        this.ping()
+    }
+
+    mountChanged() {
+        this.ping()
+    }
+
+    focuserChanged() {
+        this.ping()
+    }
+
+    wheelChanged() {
+        this.ping()
+    }
+
     savePlan() {
         this.plan.camera = this.camera
         this.plan.mount = this.mount
@@ -470,7 +499,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         this.savePlan()
 
-        await this.browserWindow.openCameraImage(this.camera!)
+        await this.browserWindow.openCameraImage(this.camera!, 'SEQUENCER')
 
         this.api.sequencerStart(this.camera!, this.plan)
     }

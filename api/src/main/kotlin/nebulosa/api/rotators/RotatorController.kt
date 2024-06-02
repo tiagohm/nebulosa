@@ -66,4 +66,9 @@ class RotatorController(
     ) {
         rotatorService.sync(rotator, angle)
     }
+
+    @PutMapping("{rotator}/listen")
+    fun listen(rotator: Rotator) {
+        rotatorService.listen(rotator)
+    }
 }

@@ -22,6 +22,7 @@ export class CalculatorComponent {
                     {
                         label: 'Aperture',
                         suffix: 'mm',
+                        min: 1,
                     },
                     {
                         label: 'Focal Ratio',
@@ -49,10 +50,12 @@ export class CalculatorComponent {
                     {
                         label: 'Focal Length',
                         suffix: 'mm',
+                        min: 1,
                     },
                     {
                         label: 'Aperture',
                         suffix: 'mm',
+                        min: 1,
                     },
                 ],
                 result: {
@@ -76,6 +79,7 @@ export class CalculatorComponent {
                     {
                         label: 'Aperture',
                         suffix: 'mm',
+                        min: 1,
                     },
                 ],
                 result: {
@@ -99,6 +103,7 @@ export class CalculatorComponent {
                     {
                         label: 'Aperture',
                         suffix: 'mm',
+                        min: 1,
                     },
                 ],
                 result: {
@@ -122,6 +127,7 @@ export class CalculatorComponent {
                     {
                         label: 'Aperture',
                         suffix: 'mm',
+                        min: 1,
                     },
                 ],
                 result: {
@@ -144,10 +150,12 @@ export class CalculatorComponent {
                     {
                         label: 'Larger Aperture',
                         suffix: 'mm',
+                        min: 1,
                     },
                     {
                         label: 'Smaller Aperture',
                         suffix: 'mm',
+                        min: 1,
                     },
                 ],
                 result: {
@@ -171,10 +179,12 @@ export class CalculatorComponent {
                     {
                         label: 'Pixel Size',
                         suffix: 'µm',
+                        min: 1,
                     },
                     {
                         label: 'Focal Length',
                         suffix: 'mm',
+                        min: 1,
                     },
                 ],
                 result: {
