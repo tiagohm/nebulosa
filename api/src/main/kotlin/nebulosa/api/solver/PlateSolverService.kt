@@ -14,7 +14,7 @@ class PlateSolverService(
 ) {
 
     fun solveImage(
-        options: PlateSolverOptions, path: Path,
+        options: PlateSolverRequest, path: Path,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
     ): ImageSolved {
         val calibration = solve(options, path, centerRA, centerDEC, radius)
@@ -24,7 +24,7 @@ class PlateSolverService(
 
     @Synchronized
     fun solve(
-        options: PlateSolverOptions, path: Path,
+        options: PlateSolverRequest, path: Path,
         centerRA: Angle = 0.0, centerDEC: Angle = 0.0, radius: Angle = 0.0,
     ) = options.get(httpClient)
         .solve(path, null, centerRA, centerDEC, radius, 1, options.timeout.takeIf { it.toSeconds() > 0 })

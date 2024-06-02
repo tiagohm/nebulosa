@@ -775,7 +775,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     async detectStars() {
-        const options = this.preference.starDetectionOptions(this.starDetection.type).get()
+        const options = this.preference.starDetectionRequest(this.starDetection.type).get()
         options.minSNR = this.starDetection.minSNR
         this.starDetection.stars = await this.api.detectStars(this.imagePath!, options)
 
@@ -1033,7 +1033,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solver.solving = true
 
         try {
-            const solver = this.preference.plateSolverOptions(this.solver.type).get()
+            const solver = this.preference.plateSolverRequest(this.solver.type).get()
             const solved = await this.api.solveImage(solver, this.imagePath!, this.solver.blind,
                 this.solver.centerRA, this.solver.centerDEC, this.solver.radius)
 
@@ -1221,7 +1221,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solver.radius = preference.solverRadius ?? this.solver.radius
         this.solver.type = preference.solverType ?? this.solver.types[0]
         this.starDetection.type = preference.starDetectionType ?? this.starDetection.type
-        this.starDetection.minSNR = this.preference.starDetectionOptions(this.starDetection.type).get().minSNR ?? this.starDetection.type
+        this.starDetection.minSNR = this.preference.starDetectionRequest(this.starDetection.type).get().minSNR ?? this.starDetection.type
 
         this.fov.fovs = this.preference.imageFOVs.get()
         this.fov.fovs.forEach(e => { e.enabled = false; e.computed = undefined })

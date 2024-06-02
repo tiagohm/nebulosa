@@ -4,5 +4,6 @@
                [placeholder]="placeholder ?? ''" [ngModel]="path" (ngModelChange)="pathChange.emit($event)" />
         <label>{{ label ?? 'Path' }}</label>
     </span>
-    <p-button [disabled]="disabled || readonly" icon="mdi mdi-folder-open" size="small" (onClick)="choosePath()" />
+    <p-button [disabled]="disabled || readonly" icon="mdi mdi-folder-open" size="small" [text]="true" (onClick)="choosePath()"
+              pTooltip="{{ directory ? 'Choose directory' : 'Choose file' }}" tooltipPosition="left" positionTop="1" positionLeft="-1" />
 </div>

@@ -295,3 +295,11 @@ export interface LiveStackingRequest {
     rotate: number,
     use32Bits: boolean,
 }
+
+export const EMPTY_LIVE_STACKING_REQUEST: LiveStackingRequest = {
+    enabled: false,
+    type: 'SIRIL',
+    executablePath: '',
+    rotate: 0,
+    use32Bits: false
+}

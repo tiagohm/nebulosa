@@ -15,7 +15,7 @@ class PlateSolverController(
     @PutMapping
     fun solveImage(
         @RequestParam path: Path,
-        @RequestBody @Valid solver: PlateSolverOptions,
+        @RequestBody @Valid solver: PlateSolverRequest,
         @RequestParam(required = false, defaultValue = "true") blind: Boolean,
         @AngleParam(required = false, isHours = true, defaultValue = "0.0") centerRA: Angle,
         @AngleParam(required = false, defaultValue = "0.0") centerDEC: Angle,

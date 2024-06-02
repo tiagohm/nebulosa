@@ -13,6 +13,6 @@ class StarDetectionController(private val starDetectionService: StarDetectionSer
     @PutMapping
     fun detectStars(
         @RequestParam path: Path,
-        @RequestBody @Valid body: StarDetectionOptions
+        @RequestBody @Valid body: StarDetectionRequest
     ) = starDetectionService.detectStars(path, body)
 }

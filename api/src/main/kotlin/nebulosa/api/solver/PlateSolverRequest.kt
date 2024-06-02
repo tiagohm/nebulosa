@@ -12,7 +12,7 @@ import java.nio.file.Path
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
-data class PlateSolverOptions(
+data class PlateSolverRequest(
     @JvmField val type: PlateSolverType = PlateSolverType.ASTROMETRY_NET_ONLINE,
     @JvmField val executablePath: Path? = null,
     @JvmField val downsampleFactor: Int = 0,
@@ -36,7 +36,7 @@ data class PlateSolverOptions(
 
     companion object {
 
-        @JvmStatic val EMPTY = PlateSolverOptions()
+        @JvmStatic val EMPTY = PlateSolverRequest()
         @JvmStatic private val NOVA_ASTROMETRY_NET_CACHE = HashMap<String, NovaAstrometryNetService>()
     }
 }

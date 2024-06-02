@@ -1,13 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core'
-import { ElectronService } from '../../services/electron.service'
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core'
 import { dirname } from 'path'
+import { ElectronService } from '../../services/electron.service'
 
 @Component({
     selector: 'neb-path-chooser',
     templateUrl: './path-chooser.component.html',
     styleUrls: ['./path-chooser.component.scss'],
 })
-export class PathChooserComponent {
+export class PathChooserComponent implements OnChanges {
 
     @Input({ required: true })
     readonly key!: string
@@ -34,6 +34,12 @@ export class PathChooserComponent {
     readonly pathChange = new EventEmitter<string>()
 
     constructor(private electron: ElectronService) { }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes.path) {
+            this.path = changes.path.currentValue
+        }
+    }
 
     async choosePath() {
         const storageKey = `pathChooser.${this.key}.defaultPath`

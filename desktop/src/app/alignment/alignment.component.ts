@@ -294,7 +294,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
     }
 
     plateSolverChanged() {
-        this.tppaRequest.plateSolver = this.preference.plateSolverOptions(this.tppaRequest.plateSolver.type).get()
+        this.tppaRequest.plateSolver = this.preference.plateSolverRequest(this.tppaRequest.plateSolver.type).get()
         this.savePreference()
     }
 

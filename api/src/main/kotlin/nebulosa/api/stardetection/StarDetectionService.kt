@@ -7,7 +7,7 @@ import java.nio.file.Path
 @Service
 class StarDetectionService {
 
-    fun detectStars(path: Path, options: StarDetectionOptions): List<ImageStar> {
+    fun detectStars(path: Path, options: StarDetectionRequest): List<ImageStar> {
         val starDetector = options.get()
         return starDetector.detect(path)
     }

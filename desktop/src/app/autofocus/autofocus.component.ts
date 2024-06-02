@@ -355,7 +355,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
         this.clearChart()
         this.stepSizeForScale = this.request.stepSize
 
-        this.request.starDetector = this.preference.starDetectionOptions('ASTAP').get()
+        this.request.starDetector = this.preference.starDetectionRequest('ASTAP').get()
         return this.api.autoFocusStart(this.camera, this.focuser, this.request)
     }
 

@@ -532,6 +532,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
         const exposureAmount = this.exposureMode === 'LOOP' ? 0 : (this.exposureMode === 'FIXED' ? this.request.exposureAmount : 1)
         const savePath = this.mode !== 'CAPTURE' ? this.request.savePath : this.savePath
 
+        this.request.liveStacking.executablePath = this.preference.liveStackingRequest(this.request.liveStacking.type).get().executablePath
+
         return {
             ...this.request,
             x, y, width, height,

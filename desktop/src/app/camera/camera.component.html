@@ -275,11 +275,6 @@
             </span>
         </div>
         <div class="col-12 align-items-center">
-            <neb-path-chooser [disabled]="!request.liveStacking.enabled" [directory]="false" label="Executable Path"
-                              key="LS_EXECUTABLE_PATH" [(path)]="request.liveStacking.executablePath" class="w-full"
-                              (pathChange)="savePreference()" />
-        </div>
-        <div class="col-12 align-items-center">
             <neb-path-chooser [disabled]="!request.liveStacking.enabled" [directory]="false" label="Dark File"
                               key="LS_DARK" [(path)]="request.liveStacking.dark" class="w-full" (pathChange)="savePreference()" />
         </div>
