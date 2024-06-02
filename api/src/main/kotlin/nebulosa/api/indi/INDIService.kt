@@ -18,8 +18,16 @@ class INDIService(
         indiEventHandler.unregisterDevice(device)
     }
 
+    fun connect(device: Device) {
+        device.connect()
+    }
+
+    fun disconnect(device: Device) {
+        device.disconnect()
+    }
+
     fun messages(): List<String> {
-        return indiEventHandler
+        return indiEventHandler.messages()
     }
 
     fun properties(device: Device): Collection<PropertyVector<*, *>> {

@@ -5,7 +5,7 @@ import nebulosa.erfa.eraAtco13
 import nebulosa.math.Angle
 import nebulosa.math.ONE_ATM
 import nebulosa.math.Vector3D
-import nebulosa.time.CurrentTime
+import nebulosa.math.normalized
 import nebulosa.time.IERS
 import nebulosa.time.InstantOfTime
 import kotlin.math.cos
@@ -21,7 +21,7 @@ internal data class Position(
         operator fun invoke(
             rightAscension: Angle, declination: Angle,
             longitude: Angle, latitude: Angle,
-            time: InstantOfTime = CurrentTime,
+            time: InstantOfTime,
             compensateRefraction: Boolean = false,
         ): Position {
             // SOFA.CelestialToTopocentric.
@@ -33,23 +33,18 @@ internal data class Position(
             // @formatter:on
             val topocentric = Topocentric(b[0], PIOVERTWO - b[1], longitude, latitude)
             // val vector = CartesianCoordinate.of(-b[0], b[1], 1.0)
-            val theta = -b[0]
+            val theta = -topocentric.azimuth
             val phi = b[1]
-            val x = cos(theta) * sin(phi)
-            val y = sin(theta) * sin(phi)
+            val sp = sin(phi)
+            val x = cos(theta) * sp
+            val y = sin(theta) * sp
             val z = cos(phi)
             return Position(topocentric, Vector3D(x, y, z))
         }
 
-        operator fun invoke(
-            vector: Vector3D, longitude: Angle, latitude: Angle,
-        ): Position {
-            val topocentric = if (vector.x == 0.0 && vector.y == 0.0) {
-                Topocentric(0.0, PIOVERTWO, longitude, latitude)
-            } else {
-                Topocentric(-vector.longitude, PIOVERTWO - vector.latitude, longitude, latitude)
-            }
-
+        operator fun invoke(vector: Vector3D, longitude: Angle, latitude: Angle): Position {
+            val topocentric = if (vector.x == 0.0 && vector.y == 0.0) Topocentric(0.0, PIOVERTWO, longitude, latitude)
+            else Topocentric((-vector.longitude).normalized, PIOVERTWO - vector.latitude, longitude, latitude)
             return Position(topocentric, vector)
         }
     }

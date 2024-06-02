@@ -1,13 +1,9 @@
 import { AfterViewInit, Component } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
-import { MenuItem } from 'primeng/api'
 import { APP_CONFIG } from '../environments/environment'
+import { MenuItem } from '../shared/components/menu-item/menu-item.component'
 import { ElectronService } from '../shared/services/electron.service'
-
-export interface ExtendedMenuItem extends MenuItem {
-    badgeSeverity?: 'success' | 'info' | 'warning' | 'danger'
-}
 
 @Component({
     selector: 'app-root',
@@ -21,7 +17,7 @@ export class AppComponent implements AfterViewInit {
     readonly modal = window.options.modal ?? false
     subTitle? = ''
     backgroundColor = '#212121'
-    topMenu: ExtendedMenuItem[] = []
+    topMenu: MenuItem[] = []
     showTopBar = true
 
     get title() {

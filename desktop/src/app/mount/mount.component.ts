@@ -1,14 +1,18 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import hotkeys from 'hotkeys-js'
 import { MenuItem } from 'primeng/api'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
+import { SlideMenuItem } from '../../shared/components/slide-menu/slide-menu.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
+import { PrimeService } from '../../shared/services/prime.service'
 import { Angle, ComputedLocation, Constellation, EMPTY_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
-import { EMPTY_MOUNT, Mount, PierSide, SlewRate, TargetCoordinateType, TrackMode } from '../../shared/types/mount.types'
+import { EMPTY_MOUNT, Mount, MountRemoteControlDialog, MountRemoteControlType, MoveDirectionType, PierSide, SlewRate, TargetCoordinateType, TrackMode } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 import { SkyAtlasTab } from '../atlas/atlas.component'
 
@@ -27,7 +31,7 @@ export interface MountPreference {
     templateUrl: './mount.component.html',
     styleUrls: ['./mount.component.scss'],
 })
-export class MountComponent implements AfterContentInit, OnDestroy {
+export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
 
     readonly mount = structuredClone(EMPTY_MOUNT)
 
@@ -41,7 +45,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
     tracking = false
     canPark = false
     canHome = false
-    slewingDirection?: string
+    slewingDirection?: MoveDirectionType
 
     rightAscensionJ2000: Angle = '00h00m00s'
     declinationJ2000: Angle = `00°00'00"`
@@ -85,12 +89,12 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         },
     ]
 
-    readonly targetCoordinateModel: MenuItem[] = [
+    readonly targetCoordinateModel: SlideMenuItem[] = [
         {
             icon: 'mdi mdi-telescope',
             label: 'Go To',
             command: () => {
-                this.targetCoordinateOption = this.targetCoordinateModel[0]
+                this.targetCoordinateCommand = this.targetCoordinateModel[0]
                 this.goTo()
             },
         },
@@ -98,7 +102,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             icon: 'mdi mdi-telescope',
             label: 'Slew',
             command: () => {
-                this.targetCoordinateOption = this.targetCoordinateModel[1]
+                this.targetCoordinateCommand = this.targetCoordinateModel[1]
                 this.slewTo()
             },
         },
@@ -106,7 +110,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
             icon: 'mdi mdi-sync',
             label: 'Sync',
             command: () => {
-                this.targetCoordinateOption = this.targetCoordinateModel[2]
+                this.targetCoordinateCommand = this.targetCoordinateModel[2]
                 this.sync()
             },
         },
@@ -121,7 +125,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         {
             icon: 'mdi mdi-crosshairs-gps',
             label: 'Locations',
-            menu: [
+            subMenu: [
                 {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'Current location',
@@ -175,7 +179,7 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                 {
                     icon: 'mdi mdi-crosshairs',
                     label: 'Intersection points',
-                    menu: [
+                    subMenu: [
                         {
                             icon: 'mdi mdi-crosshairs-gps',
                             label: 'Meridian x Equator',
@@ -192,21 +196,39 @@ export class MountComponent implements AfterContentInit, OnDestroy {
                                 this.updateTargetCoordinate(coordinates)
                             },
                         },
+                        {
+                            icon: 'mdi mdi-crosshairs-gps',
+                            label: 'Equator x Ecliptic',
+                            command: async () => {
+                                const coordinates = await this.api.mountCelestialLocation(this.mount, 'EQUATOR_ECLIPTIC')
+                                this.updateTargetCoordinate(coordinates)
+                            },
+                        },
                     ]
                 },
             ],
         },
     ]
 
-    targetCoordinateOption = this.targetCoordinateModel[0]
+    targetCoordinateCommand = this.targetCoordinateModel[0]
+
+    readonly remoteControl: MountRemoteControlDialog = {
+        showDialog: false,
+        type: 'LX200',
+        host: '0.0.0.0',
+        port: 10001,
+        data: [],
+    }
 
     constructor(
         private app: AppComponent,
         private api: ApiService,
         private browserWindow: BrowserWindowService,
-        private electron: ElectronService,
+        electron: ElectronService,
         private storage: LocalStorageService,
         private route: ActivatedRoute,
+        private prime: PrimeService,
+        private pinger: Pinger,
         ngZone: NgZone,
     ) {
         app.title = 'Mount'
@@ -246,6 +268,19 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         this.computeCoordinateSubscriptions[2] = this.computeTargetCoordinatePublisher
             .pipe(throttleTime(1000))
             .subscribe(() => this.computeTargetCoordinates())
+
+        hotkeys('space', event => { event.preventDefault(); this.abort() })
+        hotkeys('enter', event => { event.preventDefault(); this.targetCoordinateCommandClicked() })
+        hotkeys('w,up', { keyup: true }, event => { event.preventDefault(); this.moveTo('N', event.type === 'keydown') })
+        hotkeys('s,down', { keyup: true }, event => { event.preventDefault(); this.moveTo('S', event.type === 'keydown') })
+        hotkeys('a,left', { keyup: true }, event => { event.preventDefault(); this.moveTo('W', event.type === 'keydown') })
+        hotkeys('d,right', { keyup: true }, event => { event.preventDefault(); this.moveTo('E', event.type === 'keydown') })
+        hotkeys('q', { keyup: true }, event => { event.preventDefault(); this.moveTo('NW', event.type === 'keydown') })
+        hotkeys('e', { keyup: true }, event => { event.preventDefault(); this.moveTo('NE', event.type === 'keydown') })
+        hotkeys('z', { keyup: true }, event => { event.preventDefault(); this.moveTo('SW', event.type === 'keydown') })
+        hotkeys('c', { keyup: true }, event => { event.preventDefault(); this.moveTo('SE', event.type === 'keydown') })
+
+        this.pinger.register(this, 30000)
     }
 
     async ngAfterContentInit() {
@@ -257,10 +292,16 @@ export class MountComponent implements AfterContentInit, OnDestroy {
 
     @HostListener('window:unload')
     ngOnDestroy() {
-        this.abort()
+        this.pinger.unregister(this)
 
         this.computeCoordinateSubscriptions
             .forEach(e => e.unsubscribe())
+
+        this.abort()
+    }
+
+    ping() {
+        this.api.mountListen(this.mount)
     }
 
     async mountChanged(mount?: Mount) {
@@ -285,6 +326,25 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    async showRemoteControlDialog() {
+        this.remoteControl.data = await this.api.mountRemoteControlList(this.mount)
+        this.remoteControl.showDialog = true
+    }
+
+    async startRemoteControl() {
+        try {
+            await this.api.mountRemoteControlStart(this.mount, this.remoteControl.type, this.remoteControl.host, this.remoteControl.port)
+            this.remoteControl.data = await this.api.mountRemoteControlList(this.mount)
+        } catch {
+            this.prime.message('Failed to start remote control', 'error')
+        }
+    }
+
+    async stopRemoteControl(type: MountRemoteControlType) {
+        await this.api.mountRemoteControlStop(this.mount, type)
+        this.remoteControl.data = await this.api.mountRemoteControlList(this.mount)
+    }
+
     async goTo() {
         await this.api.mountGoTo(this.mount, this.targetRightAscension, this.targetDeclination, this.targetCoordinateType === 'J2000')
         this.savePreference()
@@ -300,18 +360,18 @@ export class MountComponent implements AfterContentInit, OnDestroy {
         this.savePreference()
     }
 
-    targetCoordinateOptionClicked() {
-        if (this.targetCoordinateOption === this.targetCoordinateModel[0]) {
+    targetCoordinateCommandClicked() {
+        if (this.targetCoordinateCommand === this.targetCoordinateModel[0]) {
             this.goTo()
-        } else if (this.targetCoordinateOption === this.targetCoordinateModel[1]) {
+        } else if (this.targetCoordinateCommand === this.targetCoordinateModel[1]) {
             this.slewTo()
-        } else if (this.targetCoordinateOption === this.targetCoordinateModel[2]) {
+        } else if (this.targetCoordinateCommand === this.targetCoordinateModel[2]) {
             this.sync()
         }
     }
 
-    moveTo(direction: string, pressed: boolean, event: MouseEvent) {
-        if (event.button === 0) {
+    moveTo(direction: MoveDirectionType, pressed: boolean, event?: MouseEvent) {
+        if (!event || event.button === 0) {
             this.slewingDirection = pressed ? direction : undefined
 
             if (this.moveToDirection[0] !== pressed) {

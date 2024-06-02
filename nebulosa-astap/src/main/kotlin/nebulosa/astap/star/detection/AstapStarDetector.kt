@@ -13,7 +13,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.nameWithoutExtension
 
-data class AstapStarDetector(private val executablePath: Path) : StarDetector<Path> {
+class AstapStarDetector(private val path: Path, private val minSNR: Double = 0.0) : StarDetector<Path> {
 
     override fun detect(input: Path): List<ImageStar> {
         val cmd = commandLine {
@@ -21,9 +21,8 @@ data class AstapStarDetector(private val executablePath: Path) : StarDetector<Pa
             workingDirectory(input.parent)
 
             putArg("-f", input)
-            putArg("-z", "2")
-            putArg("-extract", "0")
-        }
+            putArg("-z", "0")
+            putArg("-extract", "$minSNR")
 
         try {
             cmd.start()

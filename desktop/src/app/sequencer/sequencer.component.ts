@@ -7,11 +7,13 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { LocalStorageService } from '../../shared/services/local-storage.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureElapsed, CameraStartCapture, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import { Camera, CameraCaptureEvent, CameraStartCapture } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { EMPTY_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerElapsed } from '../../shared/types/sequencer.types'
+import { Mount } from '../../shared/types/mount.types'
+import { EMPTY_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
@@ -26,13 +28,15 @@ export const SEQUENCER_PLAN_KEY = 'sequencer.plan'
     templateUrl: './sequencer.component.html',
     styleUrls: ['./sequencer.component.scss'],
 })
-export class SequencerComponent implements AfterContentInit, OnDestroy {
+export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable {
 
     cameras: Camera[] = []
+    mounts: Mount[] = []
     wheels: FilterWheel[] = []
     focusers: Focuser[] = []
 
     camera?: Camera
+    mount?: Mount
     wheel?: FilterWheel
     focuser?: Focuser
 
@@ -86,9 +90,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         },
     ]
 
-    readonly sequenceEvents: CameraCaptureElapsed[] = []
+    readonly sequenceEvents: CameraCaptureEvent[] = []
 
-    event?: SequencerElapsed
+    event?: SequencerEvent
     running = false
 
     @ViewChildren('cameraExposure')
@@ -121,6 +125,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         private electron: ElectronService,
         private storage: LocalStorageService,
         private prime: PrimeService,
+        private pinger: Pinger,
         ngZone: NgZone,
     ) {
         app.title = 'Sequencer'
@@ -181,6 +186,16 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
             })
         })
 
+        electron.on('MOUNT.UPDATED', event => {
+            ngZone.run(() => {
+                const mount = this.mounts.find(e => e.id === event.device.id)
+
+                if (mount) {
+                    Object.assign(mount, event.device)
+                }
+            })
+        })
+
         electron.on('WHEEL.UPDATED', event => {
             ngZone.run(() => {
                 const wheel = this.wheels.find(e => e.id === event.device.id)
@@ -211,12 +226,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
                 this.running = event.remainingTime > 0
 
                 const captureEvent = event.capture
-                const index = event.id - 1
 
                 if (captureEvent) {
+                    const index = event.id - 1
                     this.cameraExposures.get(index)?.handleCameraCaptureEvent(captureEvent)
-                } else if (!this.running && index >= 0) {
-                    // this.state[index] = undefined
                 }
             })
         })
@@ -224,10 +237,13 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         for (const p of SEQUENCE_ENTRY_PROPERTIES) {
             this.availableEntryPropertiesToApply.set(p, true)
         }
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterContentInit() {
         this.cameras = (await this.api.cameras()).sort(deviceComparator)
+        this.mounts = (await this.api.mounts()).sort(deviceComparator)
         this.wheels = (await this.api.wheels()).sort(deviceComparator)
         this.focusers = (await this.api.focusers()).sort(deviceComparator)
 
@@ -236,12 +252,21 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         // this.route.queryParams.subscribe(e => { })
     }
 
+    @HostListener('window:unload')
+    ngOnDestroy() {
+        this.pinger.unregister(this)
+    }
+
+    ping() {
+        if (this.camera) this.api.cameraListen(this.camera)
+        if (this.mount) this.api.mountListen(this.mount)
+        if (this.focuser) this.api.focuserListen(this.focuser)
+        if (this.wheel) this.api.wheelListen(this.wheel)
+    }
+
     private enableOrDisableTopbarMenu(enable: boolean) {
         this.app.topMenu.forEach(e => e.disabled = !enable)
     }
-
-    @HostListener('window:unload')
-    ngOnDestroy() { }
 
     add() {
         const camera = this.camera ?? this.cameras[0]
@@ -310,21 +335,13 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         }
     }
 
-    updateEntryFromCamera(entry: CameraStartCapture, camera?: Camera) {
-        if (camera) {
-            if (camera.connected) {
-                updateCameraStartCaptureFromCamera(entry, camera)
-                this.savePlan()
-            }
-        }
-    }
-
     private loadPlan(plan?: SequencePlan) {
         plan ??= this.storage.get(SEQUENCER_PLAN_KEY, this.plan)
 
         Object.assign(this.plan, structuredClone(plan))
 
         this.camera = this.cameras.find(e => e.name === this.plan.camera?.name) ?? this.cameras[0]
+        this.mount = this.mounts.find(e => e.name === this.plan.mount?.name) ?? this.mounts[0]
         this.focuser = this.focusers.find(e => e.name === this.plan.focuser?.name) ?? this.focusers[0]
         this.wheel = this.wheels.find(e => e.name === this.plan.wheel?.name) ?? this.wheels[0]
 
@@ -368,8 +385,25 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    cameraChanged() {
+        this.ping()
+    }
+
+    mountChanged() {
+        this.ping()
+    }
+
+    focuserChanged() {
+        this.ping()
+    }
+
+    wheelChanged() {
+        this.ping()
+    }
+
     savePlan() {
         this.plan.camera = this.camera
+        this.plan.mount = this.mount
         this.plan.wheel = this.wheel
         this.plan.focuser = this.focuser
         this.storage.set(SEQUENCER_PLAN_KEY, this.plan)
@@ -465,7 +499,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy {
 
         this.savePlan()
 
-        await this.browserWindow.openCameraImage(this.camera!)
+        await this.browserWindow.openCameraImage(this.camera!, 'SEQUENCER')
 
         this.api.sequencerStart(this.camera!, this.plan)
     }

@@ -15,15 +15,16 @@ import nebulosa.image.format.HeaderCard
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.camera.Camera.Companion.NANO_TO_SECONDS
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
 import nebulosa.log.loggerFor
-import nebulosa.math.formatHMS
-import nebulosa.math.formatSignedDMS
+import nebulosa.math.AngleFormatter
+import nebulosa.math.format
 import nebulosa.math.normalized
-import nebulosa.math.toDegrees
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
@@ -35,6 +36,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 import kotlin.math.min
 
@@ -200,6 +202,8 @@ data class ASCOMCamera(
     }
 
     override fun snoop(devices: Iterable<Device?>) {
+        snoopedDevices.clear()
+
         for (device in devices) {
             device?.also(snoopedDevices::add)
         }
@@ -348,7 +352,7 @@ data class ASCOMCamera(
             }
 
             if (prevExposuring != exposuring) sender.fireOnEventReceived(CameraExposuringChanged(this))
-            if (prevExposureState != exposureState) sender.fireOnEventReceived(CameraExposureStateChanged(this, prevExposureState))
+            if (prevExposureState != exposureState) sender.fireOnEventReceived(CameraExposureStateChanged(this))
 
             if (exposuring) {
                 service.percentCompleted(device.number).doRequest {
@@ -664,23 +668,34 @@ data class ASCOMCamera(
 
             mount?.also {
                 header.add(FitsKeyword.TELESCOP, it.name)
-                header.add(FitsKeyword.SITELAT, it.latitude.toDegrees)
-                header.add(FitsKeyword.SITELONG, it.longitude.toDegrees)
+                header.add(FitsKeyword.SITELONG, it.longitude.format(DEC_FORMAT))
+                header.add(FitsKeyword.SITELAT, it.latitude.format(DEC_FORMAT))
                 val center = Geoid.IERS2010.lonLat(it.longitude, it.latitude, it.elevation)
                 val icrf = ICRF.equatorial(it.rightAscension, it.declination, epoch = CurrentTime, center = center)
                 val raDec = icrf.equatorial()
-                header.add(FitsKeyword.OBJCTRA, raDec.longitude.normalized.formatHMS())
-                header.add(FitsKeyword.OBJCTDEC, raDec.latitude.formatSignedDMS())
-                header.add(FitsKeyword.RA, raDec.longitude.normalized.toDegrees)
-                header.add(FitsKeyword.DEC, raDec.latitude.toDegrees)
-                header.add(FitsKeyword.PIERSIDE, it.pierSide.name)
+                header.add(FitsKeyword.OBJCTRA, raDec.longitude.normalized.format(RA_FORMAT))
+                header.add(FitsKeyword.OBJCTDEC, raDec.latitude.format(DEC_FORMAT))
+                header.add(FitsKeyword.RA, raDec.longitude.normalized.format(RA_FORMAT))
+                header.add(FitsKeyword.DEC, raDec.latitude.format(DEC_FORMAT))
+                // header.add(FitsKeyword.PIERSIDE, it.pierSide.name)
                 header.add(FitsKeyword.EQUINOX, 2000)
+            }
+
+            val focuser = snoopedDevices.firstOrNull { it is Focuser } as? Focuser
+
+            focuser?.also {
+                header.add(FitsKeyword.FOCUSPOS, it.position)
+            }
+
+            val wheel = snoopedDevices.firstOrNull { it is FilterWheel } as? FilterWheel
+
+            wheel?.also {
+                header.add(FitsKeyword.FILTER, it.names.getOrNull(it.position) ?: "Filter #${it.position}")
             }
 
             fitsKeywords.forEach(header::add)
 
             val hdu = BasicImageHdu(width, height, numberOfChannels, header, data)
-
             val image = Fits()
             image.add(hdu)
 
@@ -736,6 +751,8 @@ data class ASCOMCamera(
     private inner class ImageReadyWaiter : Thread("$name ASCOM Image Ready Waiter") {
 
         private val latch = CountUpDownLatch(1)
+        private val aborted = AtomicBoolean()
+
         @Volatile @JvmField var exposureTime: Duration = Duration.ZERO
 
         init {
@@ -744,10 +761,12 @@ data class ASCOMCamera(
 
         fun captureStarted(exposureTime: Duration) {
             this.exposureTime = exposureTime
+            aborted.set(false)
             latch.reset()
         }
 
         fun captureAborted() {
+            aborted.set(true)
             latch.countUp()
         }
 
@@ -761,7 +780,7 @@ data class ASCOMCamera(
                     processCameraState()
 
                     service.isImageReady(device.number).doRequest {
-                        if (it.value) {
+                        if (it.value && !aborted.get()) {
                             latch.countUp()
 
                             try {
@@ -772,7 +791,9 @@ data class ASCOMCamera(
                         }
                     }
 
-                    if (!latch.get()) {
+                    if (aborted.get()) {
+                        break
+                    } else if (!latch.get()) {
                         val endTime = System.currentTimeMillis()
                         val delayTime = 1000L - (endTime - startTime)
 
@@ -781,6 +802,14 @@ data class ASCOMCamera(
                         }
                     }
                 }
+
+                if (aborted.get()) {
+                    sender.fireOnEventReceived(CameraExposureAborted(this@ASCOMCamera))
+                } else {
+                    sender.fireOnEventReceived(CameraExposureFinished(this@ASCOMCamera))
+                }
+
+                processCameraState(CameraState.IDLE)
             }
         }
     }
@@ -789,5 +818,7 @@ data class ASCOMCamera(
 
         @JvmStatic private val LOG = loggerFor<ASCOMCamera>()
         @JvmStatic private val DATE_OBS_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+        @JvmStatic private val RA_FORMAT = AngleFormatter.HMS.newBuilder().secondsDecimalPlaces(3).separators(" ").build()
+        @JvmStatic private val DEC_FORMAT = AngleFormatter.SIGNED_DMS.newBuilder().secondsDecimalPlaces(3).separators(" ").build()
     }
 }

@@ -4,20 +4,20 @@ import nebulosa.image.algorithms.transformation.ProtectionMethod
 import nebulosa.image.format.ImageChannel
 
 data class ImageTransformation(
-    val force: Boolean = false,
-    val calibrationGroup: String? = null,
-    val debayer: Boolean = true,
-    val stretch: Stretch = Stretch.EMPTY,
-    val mirrorHorizontal: Boolean = false,
-    val mirrorVertical: Boolean = false,
-    val invert: Boolean = false,
-    val scnr: SCNR = SCNR.EMPTY,
+    @JvmField val force: Boolean = false,
+    @JvmField val calibrationGroup: String? = null,
+    @JvmField val debayer: Boolean = true,
+    @JvmField val stretch: Stretch = Stretch.EMPTY,
+    @JvmField val mirrorHorizontal: Boolean = false,
+    @JvmField val mirrorVertical: Boolean = false,
+    @JvmField val invert: Boolean = false,
+    @JvmField val scnr: SCNR = SCNR.EMPTY,
 ) {
 
     data class SCNR(
-        val channel: ImageChannel? = ImageChannel.GREEN,
-        val amount: Float = 0.5f,
-        val method: ProtectionMethod = ProtectionMethod.AVERAGE_NEUTRAL,
+        @JvmField val channel: ImageChannel? = ImageChannel.GREEN,
+        @JvmField val amount: Float = 0.5f,
+        @JvmField val method: ProtectionMethod = ProtectionMethod.AVERAGE_NEUTRAL,
     ) {
 
         companion object {
@@ -27,10 +27,10 @@ data class ImageTransformation(
     }
 
     data class Stretch(
-        val auto: Boolean = false,
-        val shadow: Float = 0f,
-        val highlight: Float = 0.5f,
-        val midtone: Float = 1f,
+        @JvmField val auto: Boolean = false,
+        @JvmField val shadow: Float = 0f,
+        @JvmField val highlight: Float = 0.5f,
+        @JvmField val midtone: Float = 1f,
     ) {
 
         companion object {

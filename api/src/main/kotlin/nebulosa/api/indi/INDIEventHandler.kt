@@ -12,43 +12,45 @@ import java.util.*
 @Subscriber
 class INDIEventHandler(
     private val messageService: MessageService,
-) : LinkedList<String>() {
+) {
 
-    private val canSendEvents = HashSet<String>()
+    private val canSendEvents = HashSet<Device>(8)
+    private val messages = LinkedList<String>()
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onDeviceEvent(event: DeviceEvent<*>) {
         when (event) {
             is DevicePropertyChanged -> sendINDIPropertyChanged(event)
             is DevicePropertyDeleted -> sendINDIPropertyDeleted(event)
-            is DeviceMessageReceived -> if (event.device == null) addFirst(event.message)
-            else sendINDIMessageReceived(event)
+            is DeviceMessageReceived -> event.device?.also { sendINDIMessageReceived(event) } ?: messages.addFirst(event.message)
             is DeviceDetached<*> -> unregisterDevice(event.device)
         }
     }
 
     fun registerDevice(device: Device) {
-        canSendEvents.add(device.id)
+        canSendEvents.add(device)
     }
 
     fun unregisterDevice(device: Device) {
-        canSendEvents.remove(device.id)
+        canSendEvents.remove(device)
     }
 
-    fun sendINDIPropertyChanged(event: DevicePropertyEvent) {
-        if (event.device.id in canSendEvents) {
+    fun messages(): List<String> = messages
+
+    private fun sendINDIPropertyChanged(event: DevicePropertyEvent) {
+        if (event.device in canSendEvents) {
             messageService.sendMessage(INDIMessageEvent(DEVICE_PROPERTY_CHANGED, event))
         }
     }
 
-    fun sendINDIPropertyDeleted(event: DevicePropertyEvent) {
-        if (event.device.id in canSendEvents) {
+    private fun sendINDIPropertyDeleted(event: DevicePropertyEvent) {
+        if (event.device in canSendEvents) {
             messageService.sendMessage(INDIMessageEvent(DEVICE_PROPERTY_DELETED, event))
         }
     }
 
-    fun sendINDIMessageReceived(event: DeviceMessageReceived) {
-        if (event.device != null && event.device!!.id in canSendEvents) {
+    private fun sendINDIMessageReceived(event: DeviceMessageReceived) {
+        if (event.device != null && event.device in canSendEvents) {
             messageService.sendMessage(INDIMessageEvent(DEVICE_MESSAGE_RECEIVED, event))
         }
     }

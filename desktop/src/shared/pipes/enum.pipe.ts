@@ -1,12 +1,14 @@
 import { Pipe, PipeTransform } from '@angular/core'
 import { DARVState, TPPAState } from '../types/alignment.types'
 import { Constellation, SatelliteGroupType, SkyObjectType } from '../types/atlas.types'
+import { AutoFocusState } from '../types/autofocus.type'
 import { CameraCaptureState } from '../types/camera.types'
+import { FlatWizardState } from '../types/flat-wizard.types'
 import { GuideState } from '../types/guider.types'
 import { SCNRProtectionMethod } from '../types/image.types'
 
 export type EnumPipeKey = SCNRProtectionMethod | Constellation | SkyObjectType | SatelliteGroupType |
-    DARVState | TPPAState | GuideState | CameraCaptureState | 'ALL'
+    DARVState | TPPAState | GuideState | CameraCaptureState | FlatWizardState | AutoFocusState | 'ALL' | string
 
 @Pipe({ name: 'enum' })
 export class EnumPipe implements PipeTransform {
@@ -328,6 +330,7 @@ export class EnumPipe implements PipeTransform {
         'BACKWARD': 'Backward',
         'IDLE': 'Idle',
         'SLEWING': 'Slewing',
+        'SLEWED': 'Slewed',
         'SOLVING': 'Solving',
         'SOLVED': 'Solved',
         'COMPUTED': 'Computed',
@@ -341,7 +344,14 @@ export class EnumPipe implements PipeTransform {
         'CAPTURE_STARTED': undefined,
         'EXPOSURE_STARTED': undefined,
         'EXPOSURE_FINISHED': undefined,
-        'CAPTURE_FINISHED': undefined
+        'CAPTURE_FINISHED': undefined,
+        // Auto Focus.
+        'CAPTURED': 'Captured',
+        'MOVING': 'Moving',
+        'EXPOSURED': 'Exposured',
+        'ANALYSING': 'Analysing',
+        'ANALYSED': 'Analysed',
+        'CURVE_FITTED': 'Curve fitted',
     }
 
     transform(value: EnumPipeKey) {

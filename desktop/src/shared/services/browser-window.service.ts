@@ -8,6 +8,7 @@ import { Device } from '../types/device.types'
 import { Focuser } from '../types/focuser.types'
 import { ImageData, ImageSource } from '../types/image.types'
 import { Mount } from '../types/mount.types'
+import { Rotator } from '../types/rotator.types'
 import { FilterWheel, WheelDialogInput } from '../types/wheel.types'
 import { ElectronService } from './electron.service'
 
@@ -45,8 +46,13 @@ export class BrowserWindowService {
     }
 
     openWheel(options: OpenWindowOptionsWithData<FilterWheel>) {
-        Object.assign(options, { icon: 'filter-wheel', width: 285, height: 195 })
+        Object.assign(options, { icon: 'filter-wheel', width: 280, height: 195 })
         this.openWindow({ ...options, id: `wheel.${options.data.name}`, path: 'wheel' })
+    }
+
+    openRotator(options: OpenWindowOptionsWithData<Rotator>) {
+        Object.assign(options, { icon: 'rotate', width: 280, height: 210 })
+        this.openWindow({ ...options, id: `rotator.${options.data.name}`, path: 'rotator' })
     }
 
     openWheelDialog(options: OpenWindowOptionsWithData<WheelDialogInput>) {
@@ -55,7 +61,7 @@ export class BrowserWindowService {
     }
 
     openGuider(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'guider', width: 425, height: 438 })
+        Object.assign(options, { icon: 'guider', width: 440, height: 455 })
         this.openWindow({ ...options, id: 'guider', path: 'guider', data: undefined })
     }
 
@@ -69,7 +75,7 @@ export class BrowserWindowService {
     async openImage(data: Omit<ImageData, 'camera'> & { id?: string, path: string }) {
         const hash = data.id || uuidv4()
         const id = `image.${hash}`
-        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `0.9w`, resizable: true, data })
+        await this.openWindow<ImageData>({ id, path: 'image', icon: 'image', width: '50%', height: `0.9w`, resizable: true, data, autoResizable: false })
         return id
     }
 
@@ -89,7 +95,7 @@ export class BrowserWindowService {
     }
 
     openAlignment(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 450, height: 344 })
+        Object.assign(options, { icon: 'star', width: 415, height: 365 })
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
 
@@ -98,14 +104,19 @@ export class BrowserWindowService {
         this.openWindow({ ...options, id: 'sequencer', path: 'sequencer', data: undefined })
     }
 
+    openAutoFocus(options: OpenWindowOptions = {}) {
+        Object.assign(options, { icon: 'auto-focus', width: 425, height: 420 })
+        this.openWindow({ ...options, id: 'auto-focus', path: 'auto-focus', data: undefined })
+    }
+
     openFlatWizard(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 410, height: 331 })
+        Object.assign(options, { icon: 'star', width: 385, height: 370 })
         this.openWindow({ ...options, id: 'flat-wizard', path: 'flat-wizard', data: undefined })
     }
 
     openSettings(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'settings', width: 580, height: 451 })
-        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined, resizable: true })
+        Object.assign(options, { icon: 'settings', width: 490, height: 460 })
+        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined, resizable: true, minWidth: 490, minHeight: 460, autoResizable: false })
     }
 
     openCalculator(options: OpenWindowOptions = {}) {
@@ -119,6 +130,6 @@ export class BrowserWindowService {
     }
 
     openAbout() {
-        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 430, height: 246, bringToFront: true, data: undefined })
+        this.openWindow({ id: 'about', path: 'about', icon: 'about', width: 430, height: 307, bringToFront: true, data: undefined })
     }
 }

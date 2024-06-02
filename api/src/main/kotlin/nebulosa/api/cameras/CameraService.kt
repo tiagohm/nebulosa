@@ -11,6 +11,7 @@ import kotlin.io.path.isDirectory
 class CameraService(
     private val capturesPath: Path,
     private val cameraCaptureExecutor: CameraCaptureExecutor,
+    private val cameraEventHub: CameraEventHub,
 ) {
 
     fun connect(camera: Camera) {
@@ -34,17 +35,24 @@ class CameraService(
     }
 
     @Synchronized
-    fun startCapture(camera: Camera, request: CameraStartCaptureRequest): String {
+    fun startCapture(camera: Camera, request: CameraStartCaptureRequest) {
         val savePath = request.savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
             ?: Path.of("$capturesPath", camera.name, request.frameType.name)
 
-        return cameraCaptureExecutor
-            .execute(camera, request.copy(savePath = savePath))
+        cameraCaptureExecutor.execute(camera, request.copy(savePath = savePath))
     }
 
     @Synchronized
     fun abortCapture(camera: Camera) {
         cameraCaptureExecutor.stop(camera)
+    }
+
+    fun captureStatus(camera: Camera): CameraCaptureEvent? {
+        return cameraCaptureExecutor.status(camera)
+    }
+
+    fun listen(camera: Camera) {
+        cameraEventHub.listen(camera)
     }
 }

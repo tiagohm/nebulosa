@@ -214,8 +214,8 @@ open class ICRF protected constructor(
     val horizontalRotation by lazy {
         require(target is GeographicPosition || target is PlanetograhicPosition) {
             "to compute an altazimuth position, you must observe from " +
-                "a specific Earth location or from a position on another body loaded from a set " +
-                "of planetary constants"
+                    "a specific Earth location or from a position on another body loaded from a set " +
+                    "of planetary constants"
         }
 
         (target as Frame).rotationAt(time)
@@ -255,8 +255,8 @@ open class ICRF protected constructor(
                 ?: (position.center as? Frame)?.rotationAt(position.time)
                 ?: throw IllegalArgumentException(
                     "to compute an altazimuth position, you must observe from " +
-                        "a specific Earth location or from a position on another body loaded from a set " +
-                        "of planetary constants"
+                            "a specific Earth location or from a position on another body loaded from a set " +
+                            "of planetary constants"
                 )
 
             val coordinate = SphericalCoordinate.of(r * position.position)

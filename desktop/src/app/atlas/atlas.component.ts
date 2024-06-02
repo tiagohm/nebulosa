@@ -8,7 +8,7 @@ import { ListboxChangeEvent } from 'primeng/listbox'
 import { OverlayPanel } from 'primeng/overlaypanel'
 import { Subscription, timer } from 'rxjs'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 import { ApiService } from '../../shared/services/api.service'
@@ -152,7 +152,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
     readonly satelliteSearchGroup = new Map<SatelliteGroupType, boolean>()
 
     name? = 'Sun'
-    tags: { title: string, severity: string }[] = []
+    tags: { title: string, severity: 'success' | 'info' | 'warning' | 'danger' }[] = []
 
     @ViewChild('imageOfSun')
     private readonly imageOfSun!: ElementRef<HTMLImageElement>
@@ -406,7 +406,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL'
     ]
 
-    readonly ephemerisModel: ExtendedMenuItem[] = [
+    readonly ephemerisModel: MenuItem[] = [
         {
             icon: 'mdi mdi-magnify',
             label: 'Find sky objects around this object',
@@ -895,7 +895,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
         } else {
             const mount = await this.deviceMenu.show(mounts)
 
-            if (mount && mount.connected) {
+            if (mount && mount !== 'NONE' && mount.connected) {
                 action(mount)
                 return true
             }

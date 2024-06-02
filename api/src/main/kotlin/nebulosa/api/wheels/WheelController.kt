@@ -49,4 +49,9 @@ class WheelController(
     ) {
         wheelService.sync(wheel, names.split(","))
     }
+
+    @PutMapping("{wheel}/listen")
+    fun listen(wheel: FilterWheel) {
+        wheelService.listen(wheel)
+    }
 }

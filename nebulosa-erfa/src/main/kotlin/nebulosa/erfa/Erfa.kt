@@ -1,4 +1,4 @@
-@file:Suppress("PrivatePropertyName", "NOTHING_TO_INLINE", "FloatingPointLiteralPrecision")
+@file:Suppress("PrivatePropertyName", "NOTHING_TO_INLINE", "FloatingPointLiteralPrecision", "UnnecessaryVariable")
 
 package nebulosa.erfa
 
@@ -87,9 +87,9 @@ fun eraAb(pnat: Vector3D, v: Vector3D, s: Distance, bm1: Double): Vector3D {
  * HA is returned in the range +/-pi. Declination is returned in the range +/-pi/2.
  *
  * The latitude phi is pi/2 minus the angle between the Earth's
- * rotation axis and the adopted zenith.  In many applications it
+ * rotation axis and the adopted zenith. In many applications it
  * will be sufficient to use the published geodetic latitude of the
- * site.  In very precise (sub-arcsecond) applications, phi can be
+ * site. In very precise (sub-arcsecond) applications, phi can be
  * corrected for polar motion.
  *
  * The azimuth az must be with respect to the rotational north pole,
@@ -819,8 +819,8 @@ fun eraNut00a(tt1: Double, tt2: Double): DoubleArray {
 
     for (i in xpl.indices.reversed()) {
         val arg = (xpl[i].nl * al + xpl[i].nf * af + xpl[i].nd * ad + xpl[i].nom * aom + xpl[i].nme * alme +
-            xpl[i].nve * alve + xpl[i].nea * alea + xpl[i].nma * alma + xpl[i].nju * alju +
-            xpl[i].nsa * alsa + xpl[i].nur * alur + xpl[i].nne * alne + xpl[i].npa * apa).mod(TAU)
+                xpl[i].nve * alve + xpl[i].nea * alea + xpl[i].nma * alma + xpl[i].nju * alju +
+                xpl[i].nsa * alsa + xpl[i].nur * alur + xpl[i].nne * alne + xpl[i].npa * apa).mod(TAU)
 
         val sarg = sin(arg)
         val carg = cos(arg)
@@ -1311,7 +1311,7 @@ fun eraEpv00(tdb1: Double, tdb2: Double): Pair<PositionAndVelocity, PositionAndV
     val vbz = AM32 * vb[1] + AM33 * vb[2]
 
     return PositionAndVelocity(Vector3D(phx, phy, phz), Vector3D(vhx, vhy, vhz)) to
-        PositionAndVelocity(Vector3D(pbx, pby, pbz), Vector3D(vbx, vby, vbz))
+            PositionAndVelocity(Vector3D(pbx, pby, pbz), Vector3D(vbx, vby, vbz))
 }
 
 /**
@@ -1399,10 +1399,10 @@ private val E1 = arrayOf(
  *    EE = dpsi * cos(eps)
  *
  * where dpsi is the nutation in longitude and eps is the obliquity
- * of date.  However, if the rotation of the Earth were constant in
+ * of date. However, if the rotation of the Earth were constant in
  * an inertial frame the classical formulation would lead to
  * apparent irregularities in the UT1 timescale traceable to side-
- * effects of precession-nutation.  In order to eliminate these
+ * effects of precession-nutation. In order to eliminate these
  * effects from UT1, "complementary terms" were introduced in 1994
  * (IAU, 1994) and took effect from 1997 (Capitaine and Gontier,
  * 1993):
@@ -1411,7 +1411,7 @@ private val E1 = arrayOf(
  *
  * By convention, the complementary terms are included as part of
  * the equation of the equinoxes rather than as part of the mean
- * Sidereal Time.  This slightly compromises the "geometrical"
+ * Sidereal Time. This slightly compromises the "geometrical"
  * interpretation of mean sidereal time but is otherwise
  * inconsequential.
  *
@@ -1497,7 +1497,7 @@ fun eraEra00(ut11: Double, ut12: Double): Angle {
  *
  *     Greenwich apparent ST = GMST + equation of the equinoxes
  *
- *  The result is compatible with the IAU 2000 resolutions.  For
+ *  The result is compatible with the IAU 2000 resolutions. For
  *  further details, see IERS Conventions 2003 and Capitaine et al.
  *  (2002).
  *
@@ -1560,7 +1560,7 @@ fun eraGmst06(ut11: Double, ut12: Double, tt1: Double, tt2: Double): Angle {
 
     // Greenwich Mean Sidereal Time, IAU 2006.
     return (eraEra00(ut11, ut12) +
-        (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
+            (0.014506 + (4612.156534 + (1.3915817 + (-0.00000044 + (-0.000029956 + (-0.0000000368) * t) * t) * t) * t) * t).arcsec).normalized
 }
 
 /**
@@ -2015,7 +2015,7 @@ const val DEBIAS: Angle = -0.0068192 * ASEC2RAD
 const val DRA0: Angle = -0.0146 * ASEC2RAD
 
 /**
- *  Frame bias components of IAU 2000 precession-nutation models;  part
+ *  Frame bias components of IAU 2000 precession-nutation models; part
  *  of the Mathews-Herring-Buffett (MHB2000) nutation series, with
  *  additions.
  *
@@ -2273,7 +2273,7 @@ fun eraTpxev(v: StarDirectionCosines, v0: TangentPointDirectionCosines): Tangent
 
 /**
  * This function forms three Euler angles which implement general
- * precession from epoch J2000.0, using the IAU 2006 model.  Frame
+ * precession from epoch J2000.0, using the IAU 2006 model. Frame
  * bias (the offset between ICRS and mean J2000.0) is included.
  */
 fun eraPb06(tt1: Double, tt2: Double): EulerAngles {
@@ -3430,7 +3430,7 @@ fun eraAtco13(
     pmRA: Angle, pmDEC: Angle, parallax: Angle, rv: Velocity,
     utc1: Double, utc2: Double, dut1: Double,
     elong: Angle, phi: Angle, hm: Double, xp: Angle, yp: Angle,
-    phpa: Double, tc: Temperature, rh: Double, wl: Double,
+    phpa: Pressure, tc: Temperature, rh: Double, wl: Double,
 ): Pair<DoubleArray, Angle> {
     // Star-independent astrometry parameters.
     val (astrom, eo) = eraApco13(utc1, utc2, dut1, elong, phi, hm, xp, yp, phpa, tc, rh, wl)
@@ -3675,4 +3675,146 @@ private fun eraStarpv(pv: PositionAndVelocity): PositionAndVelocity {
     val v = ur + ut
 
     return PositionAndVelocity(pv.position, v)
+}
+
+private const val SELMIN = 0.05
+
+/**
+ * Quick observed place to CIRS, given the star-independent astrometry parameters.
+ *
+ * Use of this method is appropriate when efficiency is important and
+ * where many star positions are all to be transformed for one date.
+ * The star-independent astrometry parameters can be obtained by
+ * calling [eraApio13] or [eraApco13].
+ *
+ * @return CIRS right ascension (CIO-based, radians) and CIRS declination (radians).
+ */
+fun eraAtoiq(type: Char, obs1: Angle, obs2: Angle, astrom: AstrometryParameters): DoubleArray {
+    val c = type.uppercaseChar()
+    val sphi = astrom.sphi
+    val cphi = astrom.cphi
+
+    var c1 = obs1
+    val c2 = obs2
+
+    val xaeo: Double
+    val yaeo: Double
+    val zaeo: Double
+
+    if (c == 'A') {
+        val ce = sin(c2)
+        xaeo = -cos(c1) * ce
+        yaeo = sin(c1) * ce
+        zaeo = cos(c2)
+    } else {
+        // If RA,Dec, convert to HA,Dec.
+        if (c == 'R') c1 = astrom.eral - c1
+
+        // To Cartesian -HA,Dec.
+        val v = eraS2c(-c1, c2)
+        val xmhdo = v[0]
+        val ymhdo = v[1]
+        val zmhdo = v[2]
+
+        // To Cartesian Az,El (S=0,E=90).
+        xaeo = sphi * xmhdo - cphi * zmhdo
+        yaeo = ymhdo
+        zaeo = cphi * xmhdo + sphi * zmhdo
+    }
+
+    // Azimuth (S=0,E=90).
+    val az = if (xaeo != 0.0 || yaeo != 0.0) atan2(yaeo, xaeo) else 0.0
+
+    // Sine of observed ZD, and observed ZD.
+    val sz = sqrt(xaeo * xaeo + yaeo * yaeo)
+    val zdo = atan2(sz, zaeo)
+
+    // Fast algorithm using two constant model.
+    val refa = astrom.refa
+    val refb = astrom.refb
+    val tz = sz / (if (zaeo > SELMIN) zaeo else SELMIN)
+    val dref = (refa + refb * tz * tz) * tz
+    val zdt = zdo + dref
+
+    // To Cartesian Az,ZD.
+    val ce = sin(zdt)
+    val xaet = cos(az) * ce
+    val yaet = sin(az) * ce
+    val zaet = cos(zdt)
+
+    // Cartesian Az,ZD to Cartesian -HA,Dec.
+    val xmhda = sphi * xaet + cphi * zaet
+    val ymhda = yaet
+    val zmhda = -cphi * xaet + sphi * zaet
+
+    // Diurnal aberration.
+    val f = (1.0 + astrom.diurab * ymhda)
+    val xhd = f * xmhda
+    val yhd = f * (ymhda - astrom.diurab)
+    val zhd = f * zmhda
+
+    // Polar motion.
+    val sx = sin(astrom.xpl)
+    val cx = cos(astrom.xpl)
+    val sy = sin(astrom.ypl)
+    val cy = cos(astrom.ypl)
+    val v0 = cx * xhd + sx * sy * yhd - sx * cy * zhd
+    val v1 = cy * yhd + sy * zhd
+    val v2 = sx * xhd - cx * sy * yhd + cx * cy * zhd
+
+    // To spherical -HA,Dec.
+    val (hma, di) = eraC2s(v0, v1, v2)
+
+    // Right ascension.
+    return doubleArrayOf((astrom.eral + hma).normalized, di)
+}
+
+/**
+ * Observed place at a groundbased site to to ICRS astrometric RA,Dec.
+ * The caller supplies UTC, site coordinates, ambient air conditions
+ * and observing wavelength.
+ *
+ * "Observed" Az,ZD means the position that would be seen by a
+ * perfect geodetically aligned theodolite. (Zenith distance is
+ * used rather than altitude in order to reflect the fact that no
+ * allowance is made for depression of the horizon.)
+ *
+ * Only the first character of the type argument is significant.
+ * "R" or "r" indicates that [obs1] and [obs2] are the observed right
+ * ascension (CIO-based) and declination; "H" or "h" indicates
+ * that they are hour angle (west +ve) and declination; anything
+ * else ("A" or "a" is recommended) indicates that [obs1] and [obs2] are
+ * azimuth (north zero, east 90 deg) and zenith distance.
+ *
+ * @param type   Type of coordinates - "R", "H" or "A" (Notes 1,2)
+ * @param obs1   Observed Az, HA or RA (radians; Az is N=0,E=90)
+ * @param obs2   Observed ZD or Dec (radians)
+ * @param utc1   UTC as a 2-part...
+ * @param utc2   ...Julian Date
+ * @param dut1   UT1-UTC (seconds)
+ * @param elong  Longitude (radians, east +ve)
+ * @param phi    Latitude (geodetic, radians)
+ * @param hm     Height above ellipsoid (m, geodetic)
+ * @param xp     Polar motion coordinates (radians)
+ * @param yp     Polar motion coordinates (radians)
+ * @param phpa   Pressure at the observer (hPa = mBar)
+ * @param tc     Ambient temperature at the observer (deg C)
+ * @param rh     Relative humidity at the observer (range 0-1)
+ * @param wl     Wavelength (micrometers)
+ *
+ * @return ICRS astrometric RA,Dec (radians)
+ */
+fun eraAtoc13(
+    type: Char, obs1: Angle, obs2: Angle,
+    utc1: Double, utc2: Double, dut1: Double,
+    elong: Angle, phi: Angle, hm: Double,
+    xp: Angle, yp: Angle,
+    phpa: Pressure, tc: Temperature, rh: Double, wl: Double
+): DoubleArray {
+    // Star-independent astrometry parameters.
+    val (astrom, eo) = eraApco13(utc1, utc2, dut1, elong, phi, hm, xp, yp, phpa, tc, rh, wl)
+    // Transform observed to CIRS.
+    val (ri, di) = eraAtoiq(type, obs1, obs2, astrom)
+    // Transform CIRS to ICRS.
+    return eraAticq(ri, di, astrom)
 }

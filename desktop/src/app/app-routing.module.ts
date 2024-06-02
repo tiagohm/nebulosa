@@ -4,6 +4,7 @@ import { APP_CONFIG } from '../environments/environment'
 import { AboutComponent } from './about/about.component'
 import { AlignmentComponent } from './alignment/alignment.component'
 import { AtlasComponent } from './atlas/atlas.component'
+import { AutoFocusComponent } from './autofocus/autofocus.component'
 import { CalculatorComponent } from './calculator/calculator.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
@@ -16,6 +17,7 @@ import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { MountComponent } from './mount/mount.component'
+import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
 import { SettingsComponent } from './settings/settings.component'
 
@@ -44,6 +46,10 @@ const routes: Routes = [
     {
         path: 'mount',
         component: MountComponent,
+    },
+    {
+        path: 'rotator',
+        component: RotatorComponent,
     },
     {
         path: 'guider',
@@ -80,6 +86,10 @@ const routes: Routes = [
     {
         path: 'calibration',
         component: CalibrationComponent,
+    },
+    {
+        path: 'auto-focus',
+        component: AutoFocusComponent,
     },
     {
         path: 'calculator',

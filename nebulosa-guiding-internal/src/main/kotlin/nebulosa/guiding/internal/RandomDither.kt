@@ -10,7 +10,7 @@ class RandomDither(private val random: Random = Random.Default) : Dither {
         return doubleArrayOf(ra, dec)
     }
 
-    override fun reset() {}
+    override fun reset() = Unit
 
     companion object {
 

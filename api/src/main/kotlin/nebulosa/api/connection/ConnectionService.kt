@@ -13,6 +13,7 @@ import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.log.error
 import nebulosa.log.loggerFor
@@ -25,7 +26,7 @@ import java.io.Closeable
 @Service
 class ConnectionService(
     private val eventBus: EventBus,
-    private val connectionEventHandler: ConnectionEventHandler,
+    private val connectionEventHub: ConnectionEventHub,
     private val alpacaHttpClient: OkHttpClient,
     private val messageService: MessageService,
 ) : Closeable {
@@ -60,7 +61,7 @@ class ConnectionService(
                 ConnectionType.INDI -> {
                     val client = INDIClient(host, port)
                     client.registerDeviceEventHandler(DeviceEventHandler.EventReceived(eventBus::post))
-                    client.registerDeviceEventHandler(connectionEventHandler)
+                    client.registerDeviceEventHandler(connectionEventHub)
                     client.registerDeviceEventHandler(DeviceEventHandler.ConnectionClosed { sendConnectionClosedEvent(client) })
                     client.start()
                     client
@@ -68,7 +69,7 @@ class ConnectionService(
                 else -> {
                     val client = AlpacaClient(host, port, alpacaHttpClient)
                     client.registerDeviceEventHandler(DeviceEventHandler.EventReceived(eventBus::post))
-                    client.registerDeviceEventHandler(connectionEventHandler)
+                    client.registerDeviceEventHandler(connectionEventHub)
                     client.registerDeviceEventHandler(DeviceEventHandler.ConnectionClosed { sendConnectionClosedEvent(client) })
                     client.discovery()
                     client
@@ -106,31 +107,35 @@ class ConnectionService(
         disconnectAll()
     }
 
-    fun cameras(id: String): List<Camera> {
+    fun cameras(id: String): Collection<Camera> {
         return providers[id]?.cameras() ?: emptyList()
     }
 
-    fun mounts(id: String): List<Mount> {
+    fun mounts(id: String): Collection<Mount> {
         return providers[id]?.mounts() ?: emptyList()
     }
 
-    fun focusers(id: String): List<Focuser> {
+    fun focusers(id: String): Collection<Focuser> {
         return providers[id]?.focusers() ?: emptyList()
     }
 
-    fun wheels(id: String): List<FilterWheel> {
+    fun wheels(id: String): Collection<FilterWheel> {
         return providers[id]?.wheels() ?: emptyList()
     }
 
-    fun gpss(id: String): List<GPS> {
+    fun rotators(id: String): Collection<Rotator> {
+        return providers[id]?.rotators() ?: emptyList()
+    }
+
+    fun gpss(id: String): Collection<GPS> {
         return providers[id]?.gps() ?: emptyList()
     }
 
-    fun guideOutputs(id: String): List<GuideOutput> {
+    fun guideOutputs(id: String): Collection<GuideOutput> {
         return providers[id]?.guideOutputs() ?: emptyList()
     }
 
-    fun thermometers(id: String): List<Thermometer> {
+    fun thermometers(id: String): Collection<Thermometer> {
         return providers[id]?.thermometers() ?: emptyList()
     }
 
@@ -148,6 +153,10 @@ class ConnectionService(
 
     fun wheels(): List<FilterWheel> {
         return providers.values.flatMap { it.wheels() }
+    }
+
+    fun rotators(): List<Rotator> {
+        return providers.values.flatMap { it.rotators() }
     }
 
     fun gpss(): List<GPS> {
@@ -178,6 +187,10 @@ class ConnectionService(
         return providers[id]?.wheel(name)
     }
 
+    fun rotator(id: String, name: String): Rotator? {
+        return providers[id]?.rotator(name)
+    }
+
     fun gps(id: String, name: String): GPS? {
         return providers[id]?.gps(name)
     }
@@ -206,6 +219,10 @@ class ConnectionService(
         return providers.firstNotNullOfOrNull { it.value.wheel(name) }
     }
 
+    fun rotator(name: String): Rotator? {
+        return providers.firstNotNullOfOrNull { it.value.rotator(name) }
+    }
+
     fun gps(name: String): GPS? {
         return providers.firstNotNullOfOrNull { it.value.gps(name) }
     }
@@ -223,6 +240,7 @@ class ConnectionService(
             ?: mount(name)
             ?: focuser(name)
             ?: wheel(name)
+            ?: rotator(name)
             ?: guideOutput(name)
             ?: gps(name)
             ?: thermometer(name)

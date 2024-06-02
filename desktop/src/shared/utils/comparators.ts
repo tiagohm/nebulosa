@@ -5,6 +5,7 @@ export type Comparator<T = any> = (a: T, b: T) => number
 export const textComparator: Comparator<string> = (a: string, b: string) => a.localeCompare(b)
 export const numberComparator: Comparator<number> = (a: number, b: number) => a - b
 export const deviceComparator: Comparator<Device> = (a: Device, b: Device) => textComparator(a.name, b.name)
+export const numericTextComparator: Comparator<string> = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
 
 export function negateComparator<T>(comparator: Comparator<T>): Comparator<T> {
     return (a, b) => -comparator(a, b)

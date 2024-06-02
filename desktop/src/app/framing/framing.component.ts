@@ -96,11 +96,12 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
     }
 
     private frameFromData(data: FramingData) {
+        console.info(data)
         this.rightAscension = data.rightAscension ?? this.rightAscension
         this.declination = data.declination ?? this.declination
-        this.width = data.width ?? this.width
-        this.height = data.height ?? this.height
-        this.fov = data.fov ?? this.fov
+        this.width = data.width || this.width
+        this.height = data.height || this.height
+        this.fov = data.fov || this.fov
         if (data.rotation === 0 || data.rotation) this.rotation = data.rotation
 
         if (data.rightAscension && data.declination) {

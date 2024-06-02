@@ -3,6 +3,7 @@ package nebulosa.alpaca.indi.device.mounts
 import nebulosa.alpaca.api.*
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
+import nebulosa.constants.DEG2RAD
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
@@ -16,6 +17,7 @@ import java.math.BigDecimal
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlin.math.abs
 
 @Suppress("RedundantModalityModifier")
 data class ASCOMMount(
@@ -222,9 +224,9 @@ data class ASCOMMount(
         service.utcDate(device.number, dateTime.toInstant()).doRequest()
     }
 
-    override fun snoop(devices: Iterable<Device?>) {}
+    override fun snoop(devices: Iterable<Device?>) = Unit
 
-    override fun handleMessage(message: INDIProtocol) {}
+    override fun handleMessage(message: INDIProtocol) = Unit
 
     override fun onConnected() {
         processCapabilities()
@@ -235,7 +237,7 @@ data class ASCOMMount(
         equatorialSystem = service.equatorialSystem(device.number).doRequest()?.value ?: equatorialSystem
     }
 
-    override fun onDisconnected() {}
+    override fun onDisconnected() = Unit
 
     override fun reset() {
         super.reset()
@@ -462,7 +464,7 @@ data class ASCOMMount(
                     }
                 }
 
-                if (ra != rightAscension || dec != declination) {
+                if (abs(ra - rightAscension) >= EPSILON || abs(dec - declination) >= EPSILON) {
                     rightAscension = ra
                     declination = dec
 
@@ -472,7 +474,18 @@ data class ASCOMMount(
         }
     }
 
+    override fun toString() = "Mount(name=$name, connected=$connected, slewing=$slewing, tracking=$tracking," +
+            " parking=$parking, parked=$parked, canAbort=$canAbort," +
+            " canSync=$canSync, canPark=$canPark, slewRates=$slewRates," +
+            " slewRate=$slewRate, mountType=$mountType, trackModes=$trackModes," +
+            " trackMode=$trackMode, pierSide=$pierSide, guideRateWE=$guideRateWE," +
+            " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
+            " declination=$declination, canPulseGuide=$canPulseGuide," +
+            " pulseGuiding=$pulseGuiding)"
+
     companion object {
+
+        private const val EPSILON = 1 / 36000.0 * DEG2RAD
 
         @JvmStatic private val LOG = loggerFor<ASCOMMount>()
         @JvmStatic private val SLEW_RATE_INCREMENT = BigDecimal("0.1")

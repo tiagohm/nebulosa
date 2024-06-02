@@ -286,7 +286,7 @@ data class WatneyPlateSolver(
         @JvmStatic
         private fun isValidSolution(solution: ComputedPlateSolution?): Boolean {
             return solution != null && solution.centerRA.isFinite() && solution.centerDEC.isFinite()
-                && solution.orientation.isFinite() && solution.plateConstants.isValid
+                    && solution.orientation.isFinite() && solution.plateConstants.isValid
         }
 
         @JvmStatic
@@ -654,7 +654,7 @@ data class WatneyPlateSolver(
             return if (filtered.size >= 8) {
                 filtered
             } else {
-                LOG.info("Not enough matches to perform filtering, with so few matches assuming they're good")
+                LOG.info("not enough matches to perform filtering, with so few matches assuming they're good")
                 matches
             }
         }

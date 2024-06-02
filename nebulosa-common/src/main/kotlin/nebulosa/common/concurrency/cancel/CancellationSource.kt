@@ -9,4 +9,6 @@ interface CancellationSource {
     data class Cancel(val mayInterruptIfRunning: Boolean) : CancellationSource
 
     data object Close : CancellationSource
+
+    data class Exceptionally(val exception: Throwable) : CancellationSource
 }

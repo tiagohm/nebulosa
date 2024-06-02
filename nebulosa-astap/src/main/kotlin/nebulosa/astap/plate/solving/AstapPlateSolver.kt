@@ -91,8 +91,10 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
                 val cd22 = ini.getProperty("CD2_2").toDouble()
 
                 val dimensions = ini.getProperty("DIMENSIONS").split("x")
-                val width = cdelt1 * dimensions[0].trim().toDouble()
-                val height = cdelt2 * dimensions[1].trim().toDouble()
+                val widthInPixels = dimensions[0].trim().toDouble()
+                val heightInPixels = dimensions[1].trim().toDouble()
+                val width = cdelt1 * widthInPixels
+                val height = cdelt2 * heightInPixels
 
                 val header = FitsHeader()
                 header.add(FitsKeyword.CTYPE1, ctype1)
@@ -110,7 +112,10 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
                 header.add(FitsKeyword.CD2_1, cd21)
                 header.add(FitsKeyword.CD2_2, cd22)
 
-                val solution = PlateSolution(true, crota2.deg, cdelt2.deg, crval1.deg, crval2.deg, width.deg, height.deg, header = header)
+                val solution = PlateSolution(
+                    true, crota2.deg, cdelt2.deg, crval1.deg, crval2.deg, width.deg, height.deg,
+                    widthInPixels = widthInPixels, heightInPixels = heightInPixels, header = header
+                )
 
                 LOG.info("astap solved. calibration={}", solution)
 

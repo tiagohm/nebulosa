@@ -7,7 +7,7 @@
                         <span class="p-float-label">
                             <p-inputNumber [disabled]="running" [(ngModel)]="plan.initialDelay"
                                            mode="decimal" [showButtons]="true" [step]="1" [min]="0" [max]="60" locale="en"
-                                           styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePlan()" />
+                                           styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>Initial Delay (s)</label>
                         </span>
                     </div>
@@ -29,7 +29,7 @@
                            [positionTop]="8"></i>
 
                         <span class="p-float-label">
-                            <input type="text" pInputText [disabled]="running" class="p-inputtext-sm border-0 w-full" [(ngModel)]="plan.savePath"
+                            <input pInputText [disabled]="running" class="p-inputtext-sm border-0 w-full" [(ngModel)]="plan.savePath"
                                    (ngModelChange)="savePlan()" />
                             <label>Path</label>
                         </span>
@@ -54,7 +54,7 @@
                         <span class="p-float-label">
                             <p-inputNumber [disabled]="running || !plan.dither.enabled" [showButtons]="true"
                                            styleClass="border-0 p-inputtext-sm w-full" [min]="0.1" [max]="60" [(ngModel)]="plan.dither.amount"
-                                           [step]="0.1" locale="en" [minFractionDigits]="1" (ngModelChange)="savePlan()" />
+                                           [step]="0.1" locale="en" [minFractionDigits]="1" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>Dither (px)</label>
                         </span>
                     </div>
@@ -62,7 +62,7 @@
                         <span class="p-float-label">
                             <p-inputNumber [disabled]="running || !plan.dither.enabled" [showButtons]="true"
                                            styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
-                                           [(ngModel)]="plan.dither.afterExposures" [step]="1" (ngModelChange)="savePlan()" />
+                                           [(ngModel)]="plan.dither.afterExposures" [step]="1" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>After exposures</label>
                         </span>
                     </div>
@@ -95,7 +95,7 @@
                         <span class="p-float-label">
                             <p-inputNumber [disabled]="running || !plan.autoFocus.afterElapsedTimeEnabled || !plan.autoFocus.enabled"
                                            [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="86400"
-                                           [(ngModel)]="plan.autoFocus.afterElapsedTime" [step]="1" (ngModelChange)="savePlan()" />
+                                           [(ngModel)]="plan.autoFocus.afterElapsedTime" [step]="1" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>After elapsed time (s)</label>
                         </span>
                     </div>
@@ -105,7 +105,7 @@
                         <span class="p-float-label">
                             <p-inputNumber [disabled]="running || !plan.autoFocus.afterExposuresEnabled || !plan.autoFocus.enabled"
                                            [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
-                                           [(ngModel)]="plan.autoFocus.afterExposures" [step]="1" (ngModelChange)="savePlan()" />
+                                           [(ngModel)]="plan.autoFocus.afterExposures" [step]="1" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>After exposures</label>
                         </span>
                     </div>
@@ -115,7 +115,8 @@
                         <span class="p-float-label">
                             <p-inputNumber [disabled]="running || !plan.autoFocus.afterTemperatureChangeEnabled || !plan.autoFocus.enabled"
                                            [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="10"
-                                           [(ngModel)]="plan.autoFocus.afterTemperatureChange" [step]="1" (ngModelChange)="savePlan()" />
+                                           [(ngModel)]="plan.autoFocus.afterTemperatureChange" [step]="1" (ngModelChange)="savePlan()"
+                                           scrollableNumber />
                             <label>After temperature change (°C)</label>
                         </span>
                     </div>
@@ -125,7 +126,7 @@
                         <span class="p-float-label">
                             <p-inputNumber [disabled]="running || !plan.autoFocus.afterHFDIncreaseEnabled || !plan.autoFocus.enabled"
                                            [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
-                                           [(ngModel)]="plan.autoFocus.afterHFDIncrease" [step]="1" (ngModelChange)="savePlan()" />
+                                           [(ngModel)]="plan.autoFocus.afterHFDIncrease" [step]="1" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>After HFD increase (%)</label>
                         </span>
                     </div>
@@ -135,9 +136,14 @@
     </div>
     <div class="grid">
         <div class="col-12 align-items-center justify-content-center pt-4 gap-2">
-            <neb-device-list-button title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera" />
-            <neb-device-list-button title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel" />
-            <neb-device-list-button title="FOCUSER" icon="mdi mdi-image-filter-center-focus" [devices]="focusers" [(device)]="focuser" />
+            <neb-device-chooser title="CAMERA" icon="mdi mdi-camera-iris" [devices]="cameras" [(device)]="camera" [hasNone]="true"
+                                (deviceChange)="cameraChanged()" />
+            <neb-device-chooser title="MOUNT" icon="mdi mdi-telescope" [devices]="mounts" [(device)]="mount" [hasNone]="true"
+                                (deviceChange)="mountChanged()" />
+            <neb-device-chooser title="FILTER WHEEL" icon="mdi mdi-palette" [devices]="wheels" [(device)]="wheel" [hasNone]="true"
+                                (deviceChange)="wheelChanged()" />
+            <neb-device-chooser title="FOCUSER" icon="mdi mdi-image-filter-center-focus" [devices]="focusers" [(device)]="focuser"
+                                [hasNone]="true" (deviceChange)="focuserChanged()" />
         </div>
     </div>
     <div class="grid mt-0">
@@ -189,7 +195,7 @@
                                 <p-button [disabled]="running" [text]="true" [rounded]="true" icon="mdi mdi-content-duplicate" severity="info"
                                           size=small pTooltip="Duplicate" tooltipPosition="bottom" size="small"
                                           (onClick)="duplicateEntry(entry, i)" />
-                                <p-checkbox [binary]="true" [(ngModel)]="entry.enabled" (ngModelChange)="savePlan()" />
+                                <p-checkbox [binary]="true" [disabled]="running" [(ngModel)]="entry.enabled" (ngModelChange)="savePlan()" />
                             </div>
                         </div>
                     </ng-template>

@@ -2,16 +2,19 @@ import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
-import { ExtendedMenuItem } from '../../shared/components/menu-item/menu-item.component'
-import { SlideMenuItemCommandEvent } from '../../shared/components/slide-menu/slide-menu.component'
+import { SlideMenuItem, SlideMenuItemCommandEvent } from '../../shared/components/slide-menu/slide-menu.component'
+import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Equipment } from '../../shared/types/home.types'
 import { Mount } from '../../shared/types/mount.types'
+import { Rotator } from '../../shared/types/rotator.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
@@ -20,7 +23,7 @@ import { AppComponent } from '../app.component'
     templateUrl: './camera.component.html',
     styleUrls: ['./camera.component.scss'],
 })
-export class CameraComponent implements AfterContentInit, OnDestroy {
+export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 
     readonly camera = structuredClone(EMPTY_CAMERA)
     readonly equipment: Equipment = {}
@@ -48,7 +51,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     get canExposureTime() {
-        return this.mode !== 'FLAT_WIZARD' && this.mode !== 'DARV'
+        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER' || this.mode === 'TPPA' || this.mode === 'AUTO_FOCUS'
     }
 
     get canExposureTimeUnit() {
@@ -56,11 +59,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     get canExposureAmount() {
-        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER'
+        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER' || this.mode === 'AUTO_FOCUS'
     }
 
     get canFrameType() {
-        return this.mode !== 'FLAT_WIZARD' && this.mode !== 'DARV'
+        return this.mode === 'CAPTURE' || this.mode === 'SEQUENCER'
     }
 
     get canStartOrAbort() {
@@ -73,7 +76,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
 
     showDitherDialog = false
 
-    readonly cameraModel: ExtendedMenuItem[] = [
+    calibrationModel: MenuItem[] = []
+
+    readonly cameraModel: MenuItem[] = [
         {
             icon: 'icomoon random-dither',
             label: 'Dither',
@@ -84,28 +89,28 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         {
             icon: 'mdi mdi-connection',
             label: 'Snoop Devices',
-            menu: [
+            subMenu: [
                 {
                     icon: 'mdi mdi-telescope',
                     label: 'Mount',
-                    menu: [],
+                    subMenu: [],
                 },
                 {
                     icon: 'mdi mdi-palette',
                     label: 'Filter Wheel',
-                    menu: [],
+                    subMenu: [],
                 },
                 {
                     icon: 'mdi mdi-image-filter-center-focus',
                     label: 'Focuser',
-                    menu: [],
+                    subMenu: [],
+                },
+                {
+                    icon: 'mdi mdi-rotate-right',
+                    label: 'Rotator',
+                    subMenu: [],
                 },
             ]
-        },
-        {
-            icon: 'mdi mdi-wrench',
-            label: 'Calibration',
-            menu: [],
         },
     ]
 
@@ -164,6 +169,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         private electron: ElectronService,
         private preference: PreferenceService,
         private route: ActivatedRoute,
+        private pinger: Pinger,
         ngZone: NgZone,
     ) {
         if (app) app.title = 'Camera'
@@ -217,14 +223,35 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
             }
         })
 
+        electron.on('ROTATOR.UPDATED', event => {
+            if (event.device.id === this.equipment.rotator?.id) {
+                ngZone.run(() => {
+                    Object.assign(this.equipment.rotator!, event.device)
+                })
+            }
+        })
+
         electron.on('CALIBRATION.CHANGED', () => {
             ngZone.run(() => this.loadCalibrationGroups())
         })
 
+        electron.on('ROI.SELECTED', event => {
+            if (event.camera.id === this.camera.id) {
+                ngZone.run(() => {
+                    this.request.x = event.x
+                    this.request.y = event.y
+                    this.request.width = event.width
+                    this.request.height = event.height
+                })
+            }
+        })
+
         this.cameraModel[1].visible = !app.modal
+
+        pinger.register(this, 30000)
     }
 
-    async ngAfterContentInit() {
+    ngAfterContentInit() {
         this.route.queryParams.subscribe(e => {
             const decodedData = JSON.parse(decodeURIComponent(e.data))
 
@@ -243,10 +270,16 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() {
+    async ngOnDestroy() {
+        this.pinger.unregister(this)
+
         if (this.mode === 'CAPTURE') {
-            this.abortCapture()
+            await this.abortCapture()
         }
+    }
+
+    ping() {
+        this.api.cameraListen(this.camera)
     }
 
     private async loadCameraStartCaptureForDialogMode(data?: CameraDialogInput) {
@@ -260,7 +293,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private loadDefaultsForMode(mode: CameraDialogMode) {
-        if (mode === 'SEQUENCER') {
+        if (mode === 'SEQUENCER' || mode === 'AUTO_FOCUS') {
             this.exposureMode = 'FIXED'
         } else if (this.mode === 'FLAT_WIZARD') {
             this.exposureMode = 'SINGLE'
@@ -291,80 +324,86 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     private async loadEquipment() {
-        const mounts = await this.api.mounts()
-        this.equipment.mount = mounts.find(e => e.name === this.equipment.mount?.name)
-
         const buildStartTooltip = () => {
             this.startTooltip =
                 `<b>MOUNT</b>: ${this.equipment.mount?.name ?? 'None'}
             <b>FILTER WHEEL</b>: ${this.equipment.wheel?.name ?? 'None'}
-            <b>FOCUSER</b>: ${this.equipment.focuser?.name ?? 'None'}`
+            <b>FOCUSER</b>: ${this.equipment.focuser?.name ?? 'None'}
+            <b>ROTATOR</b>: ${this.equipment.rotator?.name ?? 'None'}`
         }
 
-        const makeMountItem = (mount?: Mount) => {
-            return <ExtendedMenuItem>{
-                icon: mount ? 'mdi mdi-connection' : 'mdi mdi-close',
-                label: mount?.name ?? 'None',
-                checked: this.equipment.mount?.name === mount?.name,
+        const makeItem = (checked: boolean, command: () => void, device?: Device) => {
+            return <MenuItem>{
+                icon: device ? 'mdi mdi-connection' : 'mdi mdi-close',
+                label: device?.name ?? 'None',
+                checked,
                 command: async (event: SlideMenuItemCommandEvent) => {
-                    this.equipment.mount = mount
+                    command()
                     buildStartTooltip()
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
-                    event.parent?.menu?.forEach(item => item.checked = item === event.item)
+                    event.parent?.subMenu?.forEach(item => item.checked = item === event.item)
                 },
             }
         }
 
-        this.cameraModel[1].menu![0].menu!.push(makeMountItem())
+        // MOUNT
+
+        const mounts = await this.api.mounts()
+        this.equipment.mount = mounts.find(e => e.name === this.equipment.mount?.name)
+
+        const makeMountItem = (mount?: Mount) => {
+            return makeItem(this.equipment.mount?.name === mount?.name, () => this.equipment.mount = mount, mount)
+        }
+
+        this.cameraModel[1].subMenu![0].subMenu!.push(makeMountItem())
 
         for (const mount of mounts) {
-            this.cameraModel[1].menu![0].menu!.push(makeMountItem(mount))
+            this.cameraModel[1].subMenu![0].subMenu!.push(makeMountItem(mount))
         }
+
+        // FILTER WHEEL
 
         const wheels = await this.api.wheels()
         this.equipment.wheel = wheels.find(e => e.name === this.equipment.wheel?.name)
 
         const makeWheelItem = (wheel?: FilterWheel) => {
-            return <ExtendedMenuItem>{
-                icon: wheel ? 'mdi mdi-connection' : 'mdi mdi-close',
-                label: wheel?.name ?? 'None',
-                checked: this.equipment.wheel?.name === wheel?.name,
-                command: async (event: SlideMenuItemCommandEvent) => {
-                    this.equipment.wheel = wheel
-                    buildStartTooltip()
-                    this.preference.equipmentForDevice(this.camera).set(this.equipment)
-                    event.parent?.menu?.forEach(item => item.checked = item === event.item)
-                },
-            }
+            return makeItem(this.equipment.wheel?.name === wheel?.name, () => this.equipment.wheel = wheel, wheel)
         }
 
-        this.cameraModel[1].menu![1].menu!.push(makeWheelItem())
+        this.cameraModel[1].subMenu![1].subMenu!.push(makeWheelItem())
 
         for (const wheel of wheels) {
-            this.cameraModel[1].menu![1].menu!.push(makeWheelItem(wheel))
+            this.cameraModel[1].subMenu![1].subMenu!.push(makeWheelItem(wheel))
         }
+
+        // FOCUSER
 
         const focusers = await this.api.focusers()
         this.equipment.focuser = focusers.find(e => e.name === this.equipment.focuser?.name)
 
         const makeFocuserItem = (focuser?: Focuser) => {
-            return <ExtendedMenuItem>{
-                icon: focuser ? 'mdi mdi-connection' : 'mdi mdi-close',
-                label: focuser?.name ?? 'None',
-                checked: this.equipment.focuser?.name === focuser?.name,
-                command: async (event: SlideMenuItemCommandEvent) => {
-                    this.equipment.focuser = focuser
-                    buildStartTooltip()
-                    this.preference.equipmentForDevice(this.camera).set(this.equipment)
-                    event.parent?.menu?.forEach(item => item.checked = item === event.item)
-                },
-            }
+            return makeItem(this.equipment.focuser?.name === focuser?.name, () => this.equipment.focuser = focuser, focuser)
         }
 
-        this.cameraModel[1].menu![2].menu!.push(makeFocuserItem())
+        this.cameraModel[1].subMenu![2].subMenu!.push(makeFocuserItem())
 
         for (const focuser of focusers) {
-            this.cameraModel[1].menu![2].menu!.push(makeFocuserItem(focuser))
+            this.cameraModel[1].subMenu![2].subMenu!.push(makeFocuserItem(focuser))
+        }
+
+        // ROTATOR
+
+        const rotators = await this.api.rotators()
+        this.equipment.rotator = rotators.find(e => e.name === this.equipment.rotator?.name)
+
+        const makeRotatorItem = (rotator?: Rotator) => {
+            return makeItem(this.equipment.rotator?.name === rotator?.name, () => this.equipment.rotator = rotator, rotator)
+        }
+
+        this.cameraModel[1].subMenu![3].subMenu!.push(makeRotatorItem())
+
+        for (const rotator of rotators) {
+            this.cameraModel[1].subMenu![3].subMenu!.push(makeRotatorItem(rotator))
         }
 
         buildStartTooltip()
@@ -379,26 +418,35 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         }
 
         const makeItem = (name?: string) => {
-            return <ExtendedMenuItem>{
+            return <MenuItem>{
                 label: name ?? 'None',
                 icon: name ? 'mdi mdi-wrench' : 'mdi mdi-close',
                 checked: this.request.calibrationGroup === name,
-                command: (event: SlideMenuItemCommandEvent) => {
+                command: () => {
                     this.request.calibrationGroup = name
-                    event.parent?.menu?.forEach(item => item.checked = item === event.item)
+                    this.loadCalibrationGroups()
                 },
             }
         }
 
-        const menu: ExtendedMenuItem[] = []
+        const menu: SlideMenuItem[] = []
 
+        menu.push({
+            icon: 'mdi mdi-wrench',
+            label: 'Open Calibration',
+            command: () => {
+                return this.browserWindow.openCalibration({ bringToFront: true })
+            },
+        })
+
+        menu.push(SEPARATOR_MENU_ITEM)
         menu.push(makeItem())
 
         for (const group of groups) {
             menu.push(makeItem(group))
         }
 
-        this.cameraModel[2].menu = menu
+        this.calibrationModel = menu
     }
 
     connect() {
@@ -460,10 +508,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
         return this.browserWindow.openCameraImage(this.camera, 'CAMERA', this.request)
     }
 
-    openCameraCalibration() {
-        return this.browserWindow.openCalibration({ bringToFront: true })
-    }
-
     private makeCameraStartCapture(): CameraStartCapture {
         const x = this.subFrame ? this.request.x : this.camera.minX
         const y = this.subFrame ? this.request.y : this.camera.minY
@@ -490,7 +534,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
     }
 
     abortCapture() {
-        this.api.cameraAbortCapture(this.camera)
+        return this.api.cameraAbortCapture(this.camera)
     }
 
     static exposureUnitFactor(unit: ExposureTimeUnit) {
@@ -604,6 +648,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy {
                 exposureTimeUnit: this.exposureTimeUnit,
                 exposureMode: this.exposureMode,
                 subFrame: this.subFrame,
+                savePath: this.request.savePath || this.savePath,
             }
 
             this.preference.cameraPreference(this.camera).set(preference)

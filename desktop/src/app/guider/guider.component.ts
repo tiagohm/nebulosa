@@ -4,6 +4,7 @@ import { ChartData, ChartOptions } from 'chart.js'
 import { UIChart } from 'primeng/chart'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
+import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { GuideDirection, GuideOutput, GuideState, GuideStep, Guider, GuiderHistoryStep, GuiderPlotMode, GuiderYAxisUnit } from '../../shared/types/guider.types'
 
 export interface GuiderPreference {
@@ -17,7 +18,7 @@ export interface GuiderPreference {
     templateUrl: './guider.component.html',
     styleUrls: ['./guider.component.scss'],
 })
-export class GuiderComponent implements AfterViewInit, OnDestroy {
+export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 
     guideOutputs: GuideOutput[] = []
     guideOutput?: GuideOutput
@@ -69,7 +70,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     readonly chartData: ChartData = {
-        labels: Array.from({ length: 100 }, (_, i) => `${i}`),
+        labels: Array.from({ length: 100 }),
         datasets: [
             // RA.
             {
@@ -123,7 +124,6 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
                         return ''
                     },
                     label: (context) => {
-                        console.log(context)
                         const barType = context.dataset.type === 'bar'
                         const raType = context.datasetIndex === 0 || context.datasetIndex === 2
                         const scale = barType ? this.phdDurationScale : 1.0
@@ -165,12 +165,12 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
         },
         scales: {
             y: {
-                stacked: true,
+                stacked: false,
                 beginAtZero: false,
                 min: -16,
                 max: 16,
                 ticks: {
-                    autoSkip: false,
+                    autoSkip: true,
                     count: 7,
                     callback: (value) => {
                         return (value as number).toFixed(1).padStart(5, ' ')
@@ -188,7 +188,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
                 }
             },
             x: {
-                stacked: true,
+                stacked: false,
                 min: 0,
                 max: 100,
                 border: {
@@ -196,11 +196,13 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
                     dash: [2, 4],
                 },
                 ticks: {
-                    stepSize: 5.0,
+                    autoSkip: true,
+                    count: 11,
                     maxRotation: 0,
                     minRotation: 0,
                     callback: (value) => {
-                        return (value as number).toFixed(0)
+                        const a = value as number
+                        return (a - Math.trunc(a) > 0) ? undefined : a.toFixed(0)
                     }
                 },
                 grid: {
@@ -215,6 +217,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     constructor(
         title: Title,
         private api: ApiService,
+        private pinger: Pinger,
         electron: ElectronService,
         ngZone: NgZone,
     ) {
@@ -282,6 +285,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
                 this.message = event.data
             })
         })
+
+        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
@@ -302,7 +307,13 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
     }
 
     @HostListener('window:unload')
-    ngOnDestroy() { }
+    ngOnDestroy() {
+        this.pinger.unregister(this)
+    }
+
+    ping() {
+        if (this.guideOutput) this.api.guideOutputListen(this.guideOutput)
+    }
 
     private processGuiderStatus(event: Guider) {
         this.connected = event.connected
@@ -367,18 +378,12 @@ export class GuiderComponent implements AfterViewInit, OnDestroy {
 
     async guideOutputChanged() {
         if (this.guideOutput?.id) {
+            this.ping()
+
             const guideOutput = await this.api.guideOutput(this.guideOutput.id)
             Object.assign(this.guideOutput, guideOutput)
 
             this.update()
-        }
-    }
-
-    connectGuideOutput() {
-        if (this.guideOutputConnected) {
-            this.api.guideOutputDisconnect(this.guideOutput!)
-        } else {
-            this.api.guideOutputConnect(this.guideOutput!)
         }
     }
 

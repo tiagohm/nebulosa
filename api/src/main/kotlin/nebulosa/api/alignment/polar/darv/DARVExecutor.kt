@@ -1,37 +1,62 @@
 package nebulosa.api.alignment.polar.darv
 
+import io.reactivex.rxjava3.functions.Consumer
+import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.cameras.CameraEventAware
+import nebulosa.api.messages.MessageEvent
 import nebulosa.api.messages.MessageService
-import nebulosa.batch.processing.JobExecutor
-import nebulosa.batch.processing.JobLauncher
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.guide.GuideOutput
-import nebulosa.log.info
-import nebulosa.log.loggerFor
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @see <a href="https://www.cloudynights.com/articles/cat/articles/darv-drift-alignment-by-robert-vice-r2760">Reference</a>
  */
 @Component
+@Subscriber
 class DARVExecutor(
-    override val jobLauncher: JobLauncher,
     private val messageService: MessageService,
-) : JobExecutor() {
+    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
+) : Consumer<MessageEvent>, CameraEventAware {
 
-    @Synchronized
-    fun execute(camera: Camera, guideOutput: GuideOutput, request: DARVStartRequest): String {
-        check(findJobExecutionWithAny(camera, guideOutput) == null) { "DARV job is already running" }
+    private val jobs = ConcurrentHashMap.newKeySet<DARVJob>(1)
 
-        LOG.info { "starting DARV. camera=$camera, guideOutput=$guideOutput, request=$request" }
-
-        val darvJob = DARVJob(camera, guideOutput, request)
-        darvJob.subscribe(messageService::sendMessage)
-        register(jobLauncher.launch(darvJob))
-        return darvJob.id
+    override fun accept(event: MessageEvent) {
+        messageService.sendMessage(event)
     }
 
-    companion object {
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    override fun handleCameraEvent(event: CameraEvent) {
+        jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
+    }
 
-        @JvmStatic private val LOG = loggerFor<DARVExecutor>()
+    @Synchronized
+    fun execute(camera: Camera, guideOutput: GuideOutput, request: DARVStartRequest) {
+        check(camera.connected) { "${camera.name} Camera is not connected" }
+        check(guideOutput.connected) { "${guideOutput.name} Guide Output is not connected" }
+        check(jobs.none { it.task.camera === camera }) { "${camera.name} DARV Job is already in progress" }
+        check(jobs.none { it.task.guideOutput === guideOutput }) { "${camera.name} DARV Job is already in progress" }
+
+        val task = DARVTask(camera, guideOutput, request, threadPoolTaskExecutor)
+        task.subscribe(this)
+
+        with(DARVJob(task)) {
+            jobs.add(this)
+            whenComplete { _, _ -> jobs.remove(this) }
+            start()
+        }
+    }
+
+    fun stop(camera: Camera) {
+        jobs.find { it.task.camera === camera }?.stop()
+    }
+
+    fun status(camera: Camera): DARVEvent? {
+        return jobs.find { it.task.camera === camera }?.task?.get() as? DARVEvent
     }
 }

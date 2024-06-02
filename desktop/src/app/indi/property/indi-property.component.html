@@ -25,14 +25,13 @@
                 <div *ngFor="let item of property.items" class="grid my-0 flex align-items-center">
                     <div class="col-6" *ngIf="property.perm !== 'WO'">
                         <span class="p-float-label">
-                            <input readonly type="text" pInputText
-                                   class="p-inputtext border-0 min-w-full max-w-0" [value]="item.value" />
+                            <input pInputText readonly class="p-inputtext border-0 min-w-full max-w-0" [value]="item.value" />
                             <label>{{ item.label }}</label>
                         </span>
                     </div>
                     <div class="col-6" *ngIf="property.perm !== 'RO'">
                         <span class="p-float-label">
-                            <input type="text" pInputText class="p-inputtext border-0 min-w-full max-w-0" [(ngModel)]="item.valueToSend" />
+                            <input pInputText class="p-inputtext border-0 min-w-full max-w-0" [(ngModel)]="item.valueToSend" />
                             <label>{{ item.label }}</label>
                         </span>
                     </div>
@@ -48,15 +47,13 @@
                 <div *ngFor="let item of property.items" class="grid my-0 flex align-items-center">
                     <div class="col-6" *ngIf="property.perm !== 'WO'">
                         <span class="p-float-label">
-                            <input readonly type="text" pInputText class="p-inputtext border-0 min-w-full max-w-0"
-                                   [value]="item.value" />
+                            <input pInputText readonly class="p-inputtext border-0 min-w-full max-w-0" [value]="item.value" />
                             <label>{{ item.label }}</label>
                         </span>
                     </div>
                     <div class="col-6" *ngIf="property.perm !== 'RO'">
                         <span class="p-float-label">
-                            <input type="text" pInputText class="p-inputtext border-0 min-w-full max-w-0"
-                                   [(ngModel)]="item.valueToSend" />
+                            <input pInputText class="p-inputtext border-0 min-w-full max-w-0" [(ngModel)]="item.valueToSend" />
                             <label>{{ item.label }}</label>
                         </span>
                     </div>

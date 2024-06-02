@@ -39,7 +39,7 @@ abstract class SkyCatalog<T : SkyObject>(estimatedSize: Int = 0) : Collection<T>
         return res
     }
 
-    protected fun notifyLoadFinished() {}
+    protected fun notifyLoadFinished() = Unit
 
     override val size
         get() = data.size

@@ -62,6 +62,8 @@ let apiPort = serve ? 7000 : parseInt(parsed.values.port || '0')
 const appIcon = join(__dirname, serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
 const store = new Store<WindowPreference>({ name: 'nebulosa' })
 
+process.on('beforeExit', () => apiProcess?.kill())
+
 function isNotificationEvent(event: MessageEvent): event is NotificationEvent {
     return event.eventName === 'NOTIFICATION.SENT'
 }
@@ -129,7 +131,8 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         }
     }
 
-    const width = options.width ? Math.trunc(computeWidth(options.width)) : 320
+    const minWidth = options.minWidth ?? 0
+    const width = Math.max(minWidth, options.width ? Math.trunc(computeWidth(options.width)) : 320)
 
     function computeHeight(value: number | string) {
         if (typeof value === 'number') {
@@ -170,7 +173,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
         frame: false, modal, parent,
         width: savedSize?.width || width,
         height: savedSize?.height || height,
-        minHeight,
+        minWidth, minHeight,
         x: savedPosition?.x ?? undefined,
         y: savedPosition?.y ?? undefined,
         resizable: serve || resizable,
@@ -191,9 +194,6 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
     }
 
     if (serve) {
-        const debug = require('electron-debug')
-        debug({ showDevTools: false })
-
         window.loadURL(`http://localhost:4200/${options.path}?data=${data}`)
     } else {
         const url = new URL(join('file:', __dirname, `index.html`) + `#/${options.path}?data=${data}`)
@@ -212,7 +212,7 @@ function createWindow(options: OpenWindow<any>, parent?: BrowserWindow) {
 
         if (!modal) {
             const [x, y] = window!.getPosition()
-            const [width, height] = window!.getContentSize()
+            const [width, height] = window!.getSize()
 
             store.set(`window.${id}.position`, { x, y })
 
@@ -498,13 +498,18 @@ try {
 
         const { window, options } = createdWindow
 
-        if (!window || (!serve && window.isResizable())) return false
+        if (!window || options.resizable || options.autoResizable === false) return false
 
-        const [width] = window.getContentSize()
+        const [width] = window.getSize()
         const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
         const height = Math.max(options?.minHeight ?? 0, Math.min(data, maxHeight))
-        window.setContentSize(width, height)
-        console.info('window auto resized:', width, height)
+
+        // https://github.com/electron/electron/issues/16711#issuecomment-1311824063
+        window.setResizable(true)
+        window.setSize(width, height)
+        window.setResizable(serve)
+
+        console.info('window auto resized:', options.id, width, height)
 
         return true
     })
@@ -538,7 +543,7 @@ try {
         return false
     })
 
-    const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED', 'CALIBRATION.CHANGED']
+    const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED', 'CALIBRATION.CHANGED', 'ROI.SELECTED']
 
     for (const item of events) {
         ipcMain.handle(item, (_, data) => {
@@ -560,6 +565,6 @@ function sendToAllWindows(channel: string, data: any, home: boolean = true) {
     }
 
     if (serve) {
-        console.info(data)
+        console.info(JSON.stringify(data))
     }
 }

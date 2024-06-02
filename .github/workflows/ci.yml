@@ -26,9 +26,6 @@ jobs:
           distribution: 'zulu'
           cache: gradle
 
-      - name: Install wcstools
-        run: sudo apt install -y wcstools
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 

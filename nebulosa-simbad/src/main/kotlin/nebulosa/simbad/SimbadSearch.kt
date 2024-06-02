@@ -8,20 +8,20 @@ import nebulosa.skycatalog.SkyObjectType
 
 @Suppress("ArrayInDataClass")
 data class SimbadSearch(
-    internal val id: Long = NO_ID,
-    internal val text: String? = null,
-    internal val rightAscension: Angle = 0.0,
-    internal val declination: Angle = 0.0,
-    internal val radius: Angle = 0.0,
-    internal val types: List<SkyObjectType>? = null,
-    internal val magnitudeMin: Double = SkyObject.MAGNITUDE_MIN,
-    internal val magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
-    internal val constellation: Constellation? = null,
-    internal val ids: LongArray = LongArray(0),
-    internal val lastID: Long = NO_ID,
-    internal val limit: Int = SimbadService.DEFAULT_LIMIT,
-    internal val sortType: SortType = SortType.OID,
-    internal val sortDirection: SortDirection = SortDirection.ASCENDING,
+    @JvmField internal val id: Long = NO_ID,
+    @JvmField internal val text: String? = null,
+    @JvmField internal val rightAscension: Angle = 0.0,
+    @JvmField internal val declination: Angle = 0.0,
+    @JvmField internal val radius: Angle = 0.0,
+    @JvmField internal val types: List<SkyObjectType>? = null,
+    @JvmField internal val magnitudeMin: Double = SkyObject.MAGNITUDE_MIN,
+    @JvmField internal val magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
+    @JvmField internal val constellation: Constellation? = null,
+    @JvmField internal val ids: LongArray = LongArray(0),
+    @JvmField internal val lastID: Long = NO_ID,
+    @JvmField internal val limit: Int = SimbadService.DEFAULT_LIMIT,
+    @JvmField internal val sortType: SortType = SortType.OID,
+    @JvmField internal val sortDirection: SortDirection = SortDirection.ASCENDING,
 ) {
 
     enum class SortType {

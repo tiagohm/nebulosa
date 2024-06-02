@@ -11,17 +11,23 @@ import kotlin.io.path.extension
 @Component
 class ImageBucket {
 
-    private val bucket = HashMap<Path, Pair<Image, PlateSolution?>>(256)
+    data class OpenedImage(
+        @JvmField val image: Image,
+        @JvmField var solution: PlateSolution? = null,
+        @JvmField val debayer: Boolean = true,
+    )
+
+    private val bucket = HashMap<Path, OpenedImage>(256)
 
     @Synchronized
-    fun put(path: Path, image: Image, solution: PlateSolution? = null) {
-        bucket[path] = image to (solution ?: PlateSolution.from(image.header))
+    fun put(path: Path, image: Image, solution: PlateSolution? = null, debayer: Boolean = true) {
+        bucket[path] = OpenedImage(image, solution ?: PlateSolution.from(image.header), debayer)
     }
 
     @Synchronized
     fun put(path: Path, solution: PlateSolution): Boolean {
         val item = bucket[path] ?: return false
-        bucket[path] = item.first to solution
+        item.solution = solution
         return true
     }
 
@@ -29,7 +35,9 @@ class ImageBucket {
     fun open(path: Path, debayer: Boolean = true, solution: PlateSolution? = null, force: Boolean = false): Image {
         val openedImage = this[path]
 
-        if (openedImage != null && !force) return openedImage.first
+        if (openedImage != null && !force && debayer == openedImage.debayer) {
+            return openedImage.image
+        }
 
         val representation = when (path.extension.lowercase()) {
             "fit", "fits" -> path.fits()
@@ -38,7 +46,7 @@ class ImageBucket {
         }
 
         val image = representation.use { Image.open(it, debayer) }
-        put(path, image, solution)
+        put(path, image, solution, debayer)
         return image
     }
 
@@ -47,7 +55,7 @@ class ImageBucket {
         bucket.remove(path)
     }
 
-    operator fun get(path: Path): Pair<Image, PlateSolution?>? {
+    operator fun get(path: Path): OpenedImage? {
         return bucket[path]
     }
 
@@ -56,10 +64,10 @@ class ImageBucket {
     }
 
     operator fun contains(image: Image): Boolean {
-        return bucket.any { it.value.first === image }
+        return bucket.any { it.value.image === image }
     }
 
     operator fun contains(solution: PlateSolution): Boolean {
-        return bucket.any { it.value.second === solution }
+        return bucket.any { it.value.solution === solution }
     }
 }

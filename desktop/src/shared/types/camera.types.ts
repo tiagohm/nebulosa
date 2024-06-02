@@ -1,9 +1,9 @@
 import { MessageEvent } from './api.types'
 import { Thermometer } from './auxiliary.types'
-import { CompanionDevice, Device, PropertyState } from './device.types'
+import { CompanionDevice, Device, PropertyState, isCompanionDevice } from './device.types'
 import { GuideOutput } from './guider.types'
 
-export type CameraDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD' | 'TPPA' | 'DARV'
+export type CameraDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD' | 'TPPA' | 'DARV' | 'AUTO_FOCUS'
 
 export type FrameType = 'LIGHT' | 'DARK' | 'FLAT' | 'BIAS'
 
@@ -200,20 +200,18 @@ export function updateCameraStartCaptureFromCamera(request: CameraStartCapture, 
     if (camera.frameFormats.length && (!request.frameFormat || !camera.frameFormats.includes(request.frameFormat))) request.frameFormat = camera.frameFormats[0]
 }
 
-export interface CameraCaptureElapsed extends MessageEvent {
+export interface CameraCaptureEvent extends MessageEvent {
     camera: Camera
     exposureAmount: number
     exposureCount: number
     captureElapsedTime: number
     captureProgress: number
     captureRemainingTime: number
-    exposureProgress: number
-    exposureRemainingTime: number
-    waitRemainingTime: number
-    waitProgress: number
+    stepElapsedTime: number
+    stepProgress: number
+    stepRemainingTime: number
     savePath?: string
     state: CameraCaptureState
-    aborted?: boolean
 }
 
 export type CameraCaptureState = 'IDLE' | 'CAPTURE_STARTED' | 'EXPOSURE_STARTED' | 'EXPOSURING' | 'WAITING' | 'SETTLING' | 'EXPOSURE_FINISHED' | 'CAPTURE_FINISHED'
@@ -239,16 +237,16 @@ export const EMPTY_CAMERA_PREFERENCE: CameraPreference = {
     subFrame: false,
 }
 
-export interface CameraExposureInfo {
-    count: number
+export interface CameraStepInfo {
     remainingTime: number
     progress: number
+    elapsedTime: number
 }
 
-export const EMPTY_CAMERA_EXPOSURE_INFO: CameraExposureInfo = {
-    count: 0,
+export const EMPTY_CAMERA_STEP_INFO: CameraStepInfo = {
     remainingTime: 0,
     progress: 0,
+    elapsedTime: 0,
 }
 
 export interface CameraCaptureInfo {
@@ -257,6 +255,7 @@ export interface CameraCaptureInfo {
     remainingTime: number
     elapsedTime: number
     progress: number
+    count: number
 }
 
 export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
@@ -265,14 +264,13 @@ export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
     remainingTime: 0,
     elapsedTime: 0,
     progress: 0,
+    count: 0,
 }
 
-export interface CameraWaitInfo {
-    remainingTime: number
-    progress: number
+export function isCamera(device?: Device): device is Camera {
+    return !!device && 'exposuring' in device
 }
 
-export const EMPTY_CAMERA_WAIT_INFO: CameraWaitInfo = {
-    remainingTime: 0,
-    progress: 0,
+export function isGuideHead(device?: Device): device is GuideHead {
+    return isCamera(device) && isCompanionDevice(device) && !!device.main
 }

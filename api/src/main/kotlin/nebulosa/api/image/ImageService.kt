@@ -7,6 +7,7 @@ import nebulosa.api.atlas.SimbadEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
+import nebulosa.api.image.ImageAnnotation.StarDSO
 import nebulosa.fits.*
 import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Histogram
@@ -14,16 +15,15 @@ import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.algorithms.transformation.*
 import nebulosa.image.format.ImageModifier
 import nebulosa.indi.device.camera.Camera
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
 import nebulosa.sbd.SmallBodyDatabaseService
+import nebulosa.simbad.SimbadSearch
+import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObjectType
-import nebulosa.star.detection.ImageStar
-import nebulosa.star.detection.StarDetector
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import nebulosa.wcs.WCS
@@ -49,10 +49,10 @@ class ImageService(
     private val calibrationFrameService: CalibrationFrameService,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val simbadEntityRepository: SimbadEntityRepository,
+    private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val connectionService: ConnectionService,
-    private val starDetector: StarDetector<Image>,
 ) {
 
     private enum class ImageOperation {
@@ -91,7 +91,7 @@ class ImageService(
             stretchParams!!.shadow, stretchParams.highlight, stretchParams.midtone,
             transformedImage.header.rightAscension.takeIf { it.isFinite() },
             transformedImage.header.declination.takeIf { it.isFinite() },
-            imageBucket[path]?.second?.let(::ImageSolved),
+            imageBucket[path]?.solution?.let(::ImageSolved),
             transformedImage.header.mapNotNull { if (it.isCommentStyle) null else ImageHeaderItem(it.key, it.value) },
             transformedImage.header.bitpix, instrument, statistics,
         )
@@ -167,7 +167,7 @@ class ImageService(
     fun annotations(
         path: Path,
         starsAndDSOs: Boolean, minorPlanets: Boolean,
-        minorPlanetMagLimit: Double = 12.0,
+        minorPlanetMagLimit: Double = 12.0, useSimbad: Boolean = false,
         location: Location? = null,
     ): List<ImageAnnotation> {
         val (image, calibration) = imageBucket[path] ?: return emptyList()
@@ -221,42 +221,41 @@ class ImageService(
                     }
                 }
 
-                LOG.info("Found {} minor planets", count)
+                LOG.info("found {} minor planets", count)
             }.whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
         }
 
         if (starsAndDSOs) {
             threadPoolTaskExecutor.submitCompletable {
-                val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
+                LOG.info("finding star/DSO annotations. dateTime={}, useSimbad={}, calibration={}", dateTime, useSimbad, calibration)
 
-                LOG.info("finding star/DSO annotations. dateTime={}, calibration={}", dateTime, calibration)
+                val rightAscension = calibration.rightAscension
+                val declination = calibration.declination
+                val radius = calibration.radius
 
-                val catalog = simbadEntityRepository.find(null, null, calibration.rightAscension, calibration.declination, calibration.radius)
+                val catalog = if (useSimbad) {
+                    simbadService.search(SimbadSearch.Builder().region(rightAscension, declination, radius).build())
+                } else {
+                    simbadEntityRepository.find(null, null, rightAscension, declination, radius)
+                }
 
                 var count = 0
+                val barycentric = VSOP87E.EARTH.at<Barycentric>(UTC(TimeYMDHMS(dateTime)))
 
                 for (entry in catalog) {
                     if (entry.type == SkyObjectType.EXTRA_SOLAR_PLANET) continue
 
                     val astrometric = barycentric.observe(entry).equatorial()
 
-                    LOG.debug {
-                        "%s: %s %s -> %s %s".format(
-                            entry.name,
-                            entry.rightAscensionJ2000.formatHMS(), entry.declinationJ2000.formatSignedDMS(),
-                            astrometric.longitude.normalized.formatHMS(), astrometric.latitude.formatSignedDMS(),
-                        )
-                    }
-
                     val (x, y) = wcs.skyToPix(astrometric.longitude.normalized, astrometric.latitude)
-                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = entry)
-                    else ImageAnnotation(x, y, dso = entry)
+                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = StarDSO(entry))
+                    else ImageAnnotation(x, y, dso = StarDSO(entry))
                     annotations.add(annotation)
                     count++
                 }
 
-                LOG.info("Found {} stars/DSOs", count)
+                LOG.info("found {} stars/DSOs", count)
             }.whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
         }
@@ -269,7 +268,7 @@ class ImageService(
     }
 
     fun saveImageAs(inputPath: Path, save: SaveImage, camera: Camera?) {
-        val (image) = imageBucket[inputPath]?.first?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
+        val (image) = imageBucket[inputPath]?.image?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found")
 
         require(save.path != null)
@@ -290,8 +289,7 @@ class ImageService(
         width: Int, height: Int, fov: Angle,
         rotation: Angle = 0.0, id: String = "CDS/P/DSS2/COLOR",
     ): Path {
-        val (image, calibration, path) = framingService
-            .frame(rightAscension, declination, width, height, fov, rotation, id)!!
+        val (image, calibration, path) = framingService.frame(rightAscension, declination, width, height, fov, rotation, id)!!
         imageBucket.put(path, image, calibration)
         return path
     }
@@ -330,11 +328,6 @@ class ImageService(
         }
 
         return CoordinateInterpolation(ma, md, 0, 0, width, height, delta, image.header.observationDate)
-    }
-
-    fun detectStars(path: Path): List<ImageStar> {
-        val (image) = imageBucket[path] ?: return emptyList()
-        return starDetector.detect(image)
     }
 
     fun histogram(path: Path, bitLength: Int = 16): IntArray {

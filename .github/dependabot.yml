@@ -10,7 +10,7 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 16
+    open-pull-requests-limit: 64
     target-branch: "dev"
     commit-message:
       prefix: "[api]"
@@ -21,21 +21,21 @@ updates:
       netty:
         patterns:
           - "io.netty*"
-      retrofit:
+      squareup:
         patterns:
-          - "com.squareup.retrofit2*"
-      okhttp:
-        patterns:
-          - "com.squareup.okhttp3*"
+          - "com.squareup*"
       rx:
         patterns:
-          - "io.reactivex.rxjava3*"
-      jackson:
+          - "io.reactivex*"
+      fasterxml:
         patterns:
-          - "com.fasterxml.jackson*"
+          - "com.fasterxml*"
       kotlin:
         patterns:
           - "org.jetbrains.kotlin*"
+      apache:
+        patterns:
+          - "org.apache*"
 
   - package-ecosystem: "npm"
     directory: "/desktop"

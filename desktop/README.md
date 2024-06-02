@@ -22,6 +22,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](filter-wheel.png)
 
+## Rotator
+
+![](rotator.png)
+
 ## Guider
 
 ![](guider.png)
@@ -45,6 +49,10 @@ The complete integrated solution for all of your astronomical imaging needs.
 ## Flat Wizard
 
 ![](flat-wizard.png)
+
+## Auto Focus
+
+![](auto-focus.png)
 
 ## Sequencer
 

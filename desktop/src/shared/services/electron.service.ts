@@ -7,20 +7,22 @@ import { Injectable } from '@angular/core'
 import * as childProcess from 'child_process'
 import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
-import { DARVElapsed, TPPAElapsed } from '../types/alignment.types'
-import { ApiEventType, DeviceMessageEvent } from '../types/api.types'
-import { CloseWindow, InternalEventType, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
+import { DARVEvent, TPPAEvent } from '../types/alignment.types'
+import { DeviceMessageEvent } from '../types/api.types'
+import { CloseWindow, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
 import { Location, SkyAtlasUpdated } from '../types/atlas.types'
-import { Camera, CameraCaptureElapsed } from '../types/camera.types'
+import { Camera, CameraCaptureEvent } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
-import { FlatWizardElapsed } from '../types/flat-wizard.types'
+import { FlatWizardEvent } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
 import { ConnectionClosed } from '../types/home.types'
+import { ROISelected } from '../types/image.types'
 import { Mount } from '../types/mount.types'
-import { SequencerElapsed } from '../types/sequencer.types'
-import { FilterWheel } from '../types/wheel.types'
-import { ApiService } from './api.service'
+import { Rotator } from '../types/rotator.types'
+import { SequencerEvent } from '../types/sequencer.types'
+import { FilterWheel, WheelRenamed } from '../types/wheel.types'
+import { AutoFocusEvent } from '../types/autofocus.type'
 
 type EventMappedType = {
     'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
@@ -29,13 +31,16 @@ type EventMappedType = {
     'CAMERA.UPDATED': DeviceMessageEvent<Camera>
     'CAMERA.ATTACHED': DeviceMessageEvent<Camera>
     'CAMERA.DETACHED': DeviceMessageEvent<Camera>
-    'CAMERA.CAPTURE_ELAPSED': CameraCaptureElapsed
+    'CAMERA.CAPTURE_ELAPSED': CameraCaptureEvent
     'MOUNT.UPDATED': DeviceMessageEvent<Mount>
     'MOUNT.ATTACHED': DeviceMessageEvent<Mount>
     'MOUNT.DETACHED': DeviceMessageEvent<Mount>
     'FOCUSER.UPDATED': DeviceMessageEvent<Focuser>
     'FOCUSER.ATTACHED': DeviceMessageEvent<Focuser>
     'FOCUSER.DETACHED': DeviceMessageEvent<Focuser>
+    'ROTATOR.UPDATED': DeviceMessageEvent<Rotator>
+    'ROTATOR.ATTACHED': DeviceMessageEvent<Rotator>
+    'ROTATOR.DETACHED': DeviceMessageEvent<Rotator>
     'WHEEL.UPDATED': DeviceMessageEvent<FilterWheel>
     'WHEEL.ATTACHED': DeviceMessageEvent<FilterWheel>
     'WHEEL.DETACHED': DeviceMessageEvent<FilterWheel>
@@ -47,15 +52,30 @@ type EventMappedType = {
     'GUIDER.UPDATED': GuiderMessageEvent<Guider>
     'GUIDER.STEPPED': GuiderMessageEvent<GuiderHistoryStep>
     'GUIDER.MESSAGE_RECEIVED': GuiderMessageEvent<string>
-    'DARV.ELAPSED': DARVElapsed
-    'TPPA.ELAPSED': TPPAElapsed
+    'DARV.ELAPSED': DARVEvent
+    'TPPA.ELAPSED': TPPAEvent
     'DATA.CHANGED': any
     'LOCATION.CHANGED': Location
-    'SEQUENCER.ELAPSED': SequencerElapsed
-    'FLAT_WIZARD.ELAPSED': FlatWizardElapsed
+    'SEQUENCER.ELAPSED': SequencerEvent
+    'FLAT_WIZARD.ELAPSED': FlatWizardEvent
     'CONNECTION.CLOSED': ConnectionClosed
     'SKY_ATLAS.PROGRESS_CHANGED': SkyAtlasUpdated
     'CALIBRATION.CHANGED': unknown
+    'FILE.OPEN': OpenFile
+    'FILE.SAVE': OpenFile
+    'DIRECTORY.OPEN': OpenDirectory
+    'JSON.WRITE': JsonFile
+    'JSON.READ': string
+    'WINDOW.RESIZE': number
+    'WINDOW.PIN': unknown
+    'WINDOW.UNPIN': unknown
+    'WINDOW.MINIMIZE': unknown
+    'WINDOW.MAXIMIZE': unknown
+    'WINDOW.FULLSCREEN': boolean
+    'WINDOW.CLOSE': CloseWindow
+    'WHEEL.RENAMED': WheelRenamed
+    'ROI.SELECTED': ROISelected
+    'AUTO_FOCUS.ELAPSED': AutoFocusEvent
 }
 
 @Injectable({ providedIn: 'root' })
@@ -66,7 +86,7 @@ export class ElectronService {
     childProcess!: typeof childProcess
     fs!: typeof fs
 
-    constructor(private api: ApiService) {
+    constructor() {
         if (this.isElectron) {
             this.ipcRenderer = (window as any).require('electron').ipcRenderer
             this.webFrame = (window as any).require('electron').webFrame
@@ -94,8 +114,8 @@ export class ElectronService {
         return !!(window && window.process && window.process.type)
     }
 
-    send(channel: ApiEventType | InternalEventType, ...data: any[]) {
-        return this.ipcRenderer.invoke(channel, ...data)
+    send<K extends keyof EventMappedType>(channel: K, data?: EventMappedType[K]) {
+        return this.ipcRenderer.invoke(channel, data)
     }
 
     on<K extends keyof EventMappedType>(channel: K, listener: (arg: EventMappedType[K]) => void) {

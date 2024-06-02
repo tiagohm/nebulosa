@@ -29,7 +29,7 @@ data class ASCOMFilterWheel(
         processNames()
     }
 
-    override fun onDisconnected() {}
+    override fun onDisconnected() = Unit
 
     override fun moveTo(position: Int) {
         if (position in 1..count && position != this.position) {
@@ -55,9 +55,9 @@ data class ASCOMFilterWheel(
         sender.fireOnEventReceived(FilterWheelNamesChanged(this))
     }
 
-    override fun snoop(devices: Iterable<Device?>) {}
+    override fun snoop(devices: Iterable<Device?>) = Unit
 
-    override fun handleMessage(message: INDIProtocol) {}
+    override fun handleMessage(message: INDIProtocol) = Unit
 
     private fun processPosition() {
         service.position(device.number).doRequest {
@@ -88,4 +88,6 @@ data class ASCOMFilterWheel(
             }
         }
     }
+
+    override fun toString() = "FilterWheel(name=$name, slotCount=$count, position=$position, moving=$moving)"
 }

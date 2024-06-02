@@ -34,14 +34,12 @@ internal open class INDIFocuser(
                     "FOCUS_ABORT_MOTION" -> {
                         if (message is DefSwitchVector) {
                             canAbort = true
-
                             sender.fireOnEventReceived(FocuserCanAbortChanged(this))
                         }
                     }
                     "FOCUS_REVERSE_MOTION" -> {
                         if (message is DefSwitchVector) {
                             canReverse = true
-
                             sender.fireOnEventReceived(FocuserCanReverseChanged(this))
                         }
 
@@ -187,12 +185,10 @@ internal open class INDIFocuser(
         }
     }
 
-    override fun toString(): String {
-        return "Focuser(name=$name, moving=$moving, position=$position," +
-                " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
-                " canAbort=$canAbort, canReverse=$canReverse, reversed=$reversed," +
-                " canSync=$canSync, hasBacklash=$hasBacklash," +
-                " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
-                " temperature=$temperature)"
-    }
+    override fun toString() = "Focuser(name=$name, moving=$moving, position=$position," +
+            " canAbsoluteMove=$canAbsoluteMove, canRelativeMove=$canRelativeMove," +
+            " canAbort=$canAbort, canReverse=$canReverse, reversed=$reversed," +
+            " canSync=$canSync, hasBacklash=$hasBacklash," +
+            " maxPosition=$maxPosition, hasThermometer=$hasThermometer," +
+            " temperature=$temperature)"
 }

@@ -2,13 +2,17 @@
     <div class="grid flex align-items-center">
         <div class="col-8 align-items-center gap-2">
             <span class="p-float-label">
-                <input type="text" pInputText [readonly]="true" [value]="mount.name" class="p-inputtext-sm border-0 w-full" />
+                <input pInputText readonly [value]="mount.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Mount</label>
             </span>
             <p-button *ngIf="mount.connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-close"
                       size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!mount.connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-connection"
                       size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
+        </div>
+        <div class="col-4 flex justify-content-start align-items-center gap-2">
+            <p-button [disabled]="!mount.connected" (onClick)="showRemoteControlDialog()" icon="mdi mdi-remote-tv"
+                      size="small" pTooltip="Remote Control" tooltipPosition="bottom" [text]="true" />
         </div>
         <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
             <i class="mdi mdi-information text-blue-600"></i>
@@ -20,61 +24,61 @@
     <div class="grid pt-2">
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="rightAscensionJ2000" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="rightAscensionJ2000" />
                 <label>RA (J2000)</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="declinationJ2000" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="declinationJ2000" />
                 <label>DEC (J2000)</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="rightAscension" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="rightAscension" />
                 <label>RA</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="declination" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="declination" />
                 <label>DEC</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="azimuth" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="azimuth" />
                 <label>Azimuth</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="altitude" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="altitude" />
                 <label>Altitude</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="lst" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="lst" />
                 <label>LST</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="constellation ?? '-'" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="constellation ?? '-'" />
                 <label>Constellation</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" value="{{meridianAt}} (-{{ timeLeftToMeridianFlip }})" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" value="{{meridianAt}} (-{{ timeLeftToMeridianFlip }})" />
                 <label>Meridian at</label>
             </span>
         </div>
         <div class="col-3">
             <span class="p-float-label">
-                <input readonly pInputText class="p-inputtext-sm border-0 w-full" [value]="pierSide" />
+                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="pierSide" />
                 <label>Pier</label>
             </span>
         </div>
@@ -128,8 +132,8 @@
             </span>
         </div>
         <div class="col-4">
-            <p-splitButton noDropdown [disabled]="!mount.connected || slewing || parking || parked" [label]="targetCoordinateOption.label"
-                           [icon]="targetCoordinateOption.icon" styleClass="w-full" (onClick)="targetCoordinateOptionClicked()"
+            <p-splitButton noDropdown [disabled]="!mount.connected || slewing || parking || parked" [label]="targetCoordinateCommand.label"
+                           [icon]="targetCoordinateCommand.icon" styleClass="w-full" (onClick)="targetCoordinateCommandClicked()"
                            (onDropdownClick)="targetMenu.show()" />
         </div>
     </div>
@@ -217,6 +221,55 @@
         </div>
     </div>
 </div>
+
+<p-dialog header="Remote Control" [modal]="true" [draggable]="false" [(visible)]="remoteControl.showDialog" [style]="{maxWidth: '90vw'}">
+    <div class="grid p-2">
+        <div class="col-4">
+            <span class="p-float-label">
+                <p-dropdown [options]="['LX200', 'STELLARIUM']" [(ngModel)]="remoteControl.type" [autoDisplayFirst]="false"
+                            styleClass="p-inputtext-sm border-0" />
+                <label>Type</label>
+            </span>
+        </div>
+        <div class="col-5">
+            <span class="p-float-label">
+                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="remoteControl.host" placeholder="0.0.0.0" />
+                <label>Host</label>
+            </span>
+        </div>
+        <div class="col-3">
+            <span class="p-float-label">
+                <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="remoteControl.port"
+                               [showButtons]="true" [min]="1024" [max]="65535" placeholder="10001" scrollableNumber />
+                <label>Port</label>
+            </span>
+        </div>
+        <div class="col-12 flex justify-content-center align-items-center">
+            <p-button [disabled]="!remoteControl.host || !remoteControl.port" label="Connect" icon="mdi mdi-connection"
+                      (onClick)="startRemoteControl()" />
+        </div>
+        <div class="col-12 mt-2">
+            <p-listbox [options]="remoteControl.data" [style]="{ width: '100%' }"
+                       [listStyle]="{'max-height': '100px'}" styleClass="border-0" emptyMessage="No remote control">
+                <ng-template let-item pTemplate="item">
+                    <div class="flex flex-row w-full align-items-center justify-content-between">
+                        <div class="flex flex-column justify-content-center">
+                            <span class="font-bold white-space-nowrap">{{ item.type }}</span>
+                            <span class="text-sm">{{ item.host }}:{{ item.port }}</span>
+                        </div>
+                        <div class="flex align-items-center justify-content-center">
+                            <p-button [disabled]="!item.running" [text]="true" [rounded]="true" icon="mdi mdi-stop" severity="danger"
+                                      pTooltip="Stop" tooltipPosition="bottom" (onClick)="stopRemoteControl(item.type)" />
+                        </div>
+                    </div>
+                </ng-template>
+            </p-listbox>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+    </ng-template>
+</p-dialog>
+
 
 <neb-dialog-menu #targetMenu [model]="targetCoordinateModel" header="Target Coordinates" />
 <neb-dialog-menu #ephemerisMenu [model]="ephemerisModel" header="Current Coordinates" />

@@ -1,14 +1,14 @@
 import { Point, Size } from 'electron'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
 import { Camera, CameraStartCapture } from './camera.types'
-import { PlateSolverType } from './settings.types'
+import { PlateSolverType, StarDetectorType } from './settings.types'
 
 export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
 
 export const SCNR_PROTECTION_METHODS = ['MAXIMUM_MASK', 'ADDITIVE_MASK', 'AVERAGE_NEUTRAL', 'MAXIMUM_NEUTRAL', 'MINIMUM_NEUTRAL'] as const
 export type SCNRProtectionMethod = (typeof SCNR_PROTECTION_METHODS)[number]
 
-export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD'
+export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD' | 'SEQUENCER' | 'ALIGNMENT' | 'AUTO_FOCUS'
 
 export type ImageFormat = 'FITS' | 'XISF' | 'PNG' | 'JPG'
 
@@ -20,7 +20,7 @@ export interface FITSHeaderItem {
 }
 
 export interface ImageInfo {
-    camera: Camera
+    camera?: Camera
     path: string
     width: number
     height: number
@@ -116,11 +116,13 @@ export interface ImagePreference {
     solverRadius?: number
     solverType?: PlateSolverType
     savePath?: string
+    starDetectionType?: StarDetectorType
 }
 
 export const EMPTY_IMAGE_PREFERENCE: ImagePreference = {
     solverRadius: 4,
-    solverType: 'ASTROMETRY_NET_ONLINE'
+    solverType: 'ASTAP',
+    starDetectionType: 'ASTAP'
 }
 
 export interface ImageData {
@@ -184,24 +186,19 @@ export interface FOVTelescope extends FOVEquipment {
     focalLength: number
 }
 
-export interface ImageSCNR {
+export interface ImageSCNRDialog {
     showDialog: boolean
     channel?: ImageChannel
     amount: number
     method: SCNRProtectionMethod
 }
 
-export interface ImageDetectStars {
-    visible: boolean
-    stars: DetectedStar[]
-}
-
-export interface ImageFITSHeaders {
+export interface ImageFITSHeadersDialog {
     showDialog: boolean
     headers: FITSHeaderItem[]
 }
 
-export interface ImageStretch {
+export interface ImageStretchDialog {
     showDialog: boolean
     auto: boolean
     shadow: number
@@ -209,7 +206,7 @@ export interface ImageStretch {
     midtone: number
 }
 
-export interface ImageSolver {
+export interface ImageSolverDialog {
     showDialog: boolean
     solving: boolean
     blind: boolean
@@ -221,7 +218,7 @@ export interface ImageSolver {
     type: PlateSolverType
 }
 
-export interface ImageFOV extends FOV {
+export interface ImageFOVDialog extends FOV {
     showDialog: boolean
     fovs: FOV[]
     edited?: FOV
@@ -240,7 +237,7 @@ export interface ImageROI {
     height: number
 }
 
-export interface ImageSave {
+export interface ImageSaveDialog {
     showDialog: boolean
     format: ImageFormat
     bitpix: Bitpix
@@ -253,9 +250,35 @@ export interface ImageTransformation {
     force: boolean
     calibrationGroup?: string
     debayer: boolean
-    stretch: Omit<ImageStretch, 'showDialog'>
+    stretch: Omit<ImageStretchDialog, 'showDialog'>
     mirrorHorizontal: boolean
     mirrorVertical: boolean
     invert: boolean
-    scnr: Pick<ImageSCNR, 'channel' | 'amount' | 'method'>
+    scnr: Pick<ImageSCNRDialog, 'channel' | 'amount' | 'method'>
+}
+
+export interface ImageAnnotationDialog {
+    showDialog: boolean
+    useStarsAndDSOs: boolean
+    useMinorPlanets: boolean
+    minorPlanetsMagLimit: number
+    useSimbad: boolean
+}
+
+export interface ROISelected {
+    camera: Camera
+    x: number
+    y: number
+    width: number
+    height: number
+}
+
+export interface StarDetectionDialog {
+    showDialog: boolean
+    type: StarDetectorType
+    minSNR: number
+    visible: boolean
+    stars: DetectedStar[]
+    computed: Omit<DetectedStar, 'x' | 'y' | 'flux'> & { minFlux: number, maxFlux: number }
+    selected: DetectedStar
 }

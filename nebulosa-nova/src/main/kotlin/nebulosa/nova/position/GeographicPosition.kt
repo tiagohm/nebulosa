@@ -106,7 +106,7 @@ class GeographicPosition(
     }
 
     override fun toString() = "GeographicPosition(longitude=${longitude.toDegrees}, " +
-        "latitude=${latitude.toDegrees}, elevation=${elevation.toMeters}, model=$model)"
+            "latitude=${latitude.toDegrees}, elevation=${elevation.toMeters}, model=$model)"
 
     companion object {
 
