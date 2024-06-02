@@ -1,6 +1,6 @@
 import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
-import nebulosa.api.livestacking.SirilLiveStacker
+import nebulosa.siril.livestacking.SirilLiveStacker
 import nebulosa.test.NonGitHubOnlyCondition
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
@@ -10,16 +10,16 @@ class SirilLiveStackerTest : StringSpec() {
 
     init {
         "live stacking" {
-            val executable = Path.of("siril-cli")
-            val workingDir = Path.of("/home/tiagohm/Git/nebulosa/data")
-            val siril = SirilLiveStacker(executable, workingDir)
+            val executablePath = Path.of("siril-cli")
+            val workingDirectory = Path.of("/home/tiagohm/Git/nebulosa/data/siril")
+
+            val siril = SirilLiveStacker(executablePath, workingDirectory)
             siril.start()
 
-            val fitsDir = Path.of("/home/tiagohm/Imagens/Astrophotos/Light/NGC2070/2024-04-20")
+            val fitsDir = Path.of("/home/tiagohm/Imagens/Astrophotos/Light/C2023_A3/2024-05-29")
 
-            for (fits in fitsDir.listDirectoryEntries()) {
+            for (fits in fitsDir.listDirectoryEntries().drop(140).sorted()) {
                 siril.add(fits)
-                Thread.sleep(1000)
             }
 
             siril.stop()

@@ -25,8 +25,7 @@ class CommandLineTest : StringSpec() {
             }
 
             measureTimeMillis {
-                cmd.start()
-                cmd.get() shouldBeExactly 0
+                cmd.start().get() shouldBeExactly 0
             } shouldBeGreaterThanOrEqual 2000
         }
         "sleep with timeout" {
@@ -36,8 +35,7 @@ class CommandLineTest : StringSpec() {
             }
 
             measureTimeMillis {
-                cmd.start(Duration.ofSeconds(2))
-                cmd.get() shouldNotBeExactly 0
+                cmd.start(Duration.ofSeconds(2)).get() shouldNotBeExactly 0
             } shouldBeGreaterThanOrEqual 2000
         }
         "kill sleep" {
@@ -49,12 +47,11 @@ class CommandLineTest : StringSpec() {
             thread { Thread.sleep(2000); cmd.stop() }
 
             measureTimeMillis {
-                cmd.start()
-                cmd.get() shouldNotBeExactly 0
+                cmd.start().get() shouldNotBeExactly 0
             } shouldBeGreaterThanOrEqual 2000 shouldBeLessThan 10000
         }
         "ls" {
-            val lineReadListener = object : LineReadListener, ArrayList<String>() {
+            val lineReadListener = object : LineReadListener.OnInput, ArrayList<String>() {
 
                 override fun onInputRead(line: String) {
                     add(line)
@@ -67,8 +64,7 @@ class CommandLineTest : StringSpec() {
                 registerLineReadListener(lineReadListener)
             }
 
-            cmd.start()
-            cmd.get() shouldBeExactly 0
+            cmd.start().get() shouldBeExactly 0
             lineReadListener.shouldNotBeEmpty()
             lineReadListener.shouldContain("nebulosa-image")
         }

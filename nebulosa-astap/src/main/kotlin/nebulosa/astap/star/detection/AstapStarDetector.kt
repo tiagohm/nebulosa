@@ -13,7 +13,10 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.nameWithoutExtension
 
-class AstapStarDetector(private val path: Path, private val minSNR: Double = 0.0) : StarDetector<Path> {
+data class AstapStarDetector(
+    private val executablePath: Path,
+    private val minSNR: Double = 0.0,
+) : StarDetector<Path> {
 
     override fun detect(input: Path): List<ImageStar> {
         val cmd = commandLine {
@@ -23,6 +26,7 @@ class AstapStarDetector(private val path: Path, private val minSNR: Double = 0.0
             putArg("-f", input)
             putArg("-z", "0")
             putArg("-extract", "$minSNR")
+        }
 
         try {
             cmd.start()
@@ -32,28 +36,26 @@ class AstapStarDetector(private val path: Path, private val minSNR: Double = 0.0
             return emptyList()
         }
 
-        val csvFile = Path.of("${input.parent}", input.nameWithoutExtension + ".csv")
+        val csvPath = Path.of("${input.parent}", "${input.nameWithoutExtension}.csv")
 
-        if (!csvFile.exists()) return emptyList()
+        if (!csvPath.exists()) return emptyList()
 
-        val detectedStars = ArrayList<ImageStar>(512)
+        val detectedStars = ArrayList<ImageStar>(1024)
 
         try {
-            csvFile.inputStream().use {
+            csvPath.inputStream().use {
                 for (record in CSV_READER.ofNamedCsvRecord(InputStreamReader(it, Charsets.UTF_8))) {
-                    detectedStars.add(
-                        Star(
-                            record.getField("x").toDouble(),
-                            record.getField("y").toDouble(),
-                            record.getField("hfd").toDouble(),
-                            record.getField("snr").toDouble(),
-                            record.getField("flux").toDouble(),
-                        )
+                    val star = Star(
+                        record.getField("x").toDouble(), record.getField("y").toDouble(),
+                        record.getField("hfd").toDouble(), record.getField("snr").toDouble(),
+                        record.getField("flux").toDouble(),
                     )
+
+                    detectedStars.add(star)
                 }
             }
         } finally {
-            csvFile.deleteIfExists()
+            csvPath.deleteIfExists()
         }
 
         return detectedStars

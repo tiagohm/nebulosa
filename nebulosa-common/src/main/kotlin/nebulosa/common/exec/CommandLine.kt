@@ -11,6 +11,10 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 
+inline fun commandLine(action: CommandLine.Builder.() -> Unit): CommandLine {
+    return CommandLine.Builder().also(action).get()
+}
+
 data class CommandLine internal constructor(
     private val builder: ProcessBuilder,
     private val listeners: HashSet<LineReadListener>,
@@ -56,7 +60,7 @@ data class CommandLine internal constructor(
     }
 
     @Synchronized
-    fun start(timeout: Duration = Duration.ZERO) {
+    fun start(timeout: Duration = Duration.ZERO): CommandLine {
         if (process == null) {
             process = builder.start()
 
@@ -71,6 +75,8 @@ data class CommandLine internal constructor(
             waiter = ProcessWaiter(process!!, timeout.toMillis())
             waiter!!.start()
         }
+
+        return this
     }
 
     @Synchronized
@@ -88,7 +94,11 @@ data class CommandLine internal constructor(
         errorReader = null
     }
 
-    override fun accept(source: CancellationSource) {
+    fun get(timeout: Duration): Int {
+        return get(timeout.toNanos(), TimeUnit.NANOSECONDS)
+    }
+
+    override fun onCancel(source: CancellationSource) {
         stop()
     }
 

@@ -74,7 +74,7 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
         }
     }
 
-    private class PlateSolutionLineReader : LineReadListener, Supplier<PlateSolution> {
+    private class PlateSolutionLineReader : LineReadListener.OnInput, Supplier<PlateSolution> {
 
         @Volatile private var fieldCenter: DoubleArray? = null
         @Volatile private var fieldRotation: Angle = 0.0
