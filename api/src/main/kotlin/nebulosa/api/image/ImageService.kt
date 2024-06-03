@@ -82,8 +82,8 @@ class ImageService(
         path: Path, camera: Camera?, transformation: ImageTransformation,
         output: HttpServletResponse,
     ) {
-        val image = imageBucket.open(path, transformation.debayer, force = transformation.force)
-        val (transformedImage, statistics, stretchParams, instrument) = image.transform(true, transformation, ImageOperation.OPEN, camera)
+        val (image, calibration) = imageBucket.open(path, transformation.debayer, force = transformation.force)
+        val (transformedImage, statistics, stretchParams, instrument) = image!!.transform(true, transformation, ImageOperation.OPEN, camera)
 
         val info = ImageInfo(
             path,
@@ -91,7 +91,7 @@ class ImageService(
             stretchParams!!.shadow, stretchParams.highlight, stretchParams.midtone,
             transformedImage.header.rightAscension.takeIf { it.isFinite() },
             transformedImage.header.declination.takeIf { it.isFinite() },
-            imageBucket[path]?.solution?.let(::ImageSolved),
+            calibration?.let(::ImageSolved),
             transformedImage.header.mapNotNull { if (it.isCommentStyle) null else ImageHeaderItem(it.key, it.value) },
             transformedImage.header.bitpix, instrument, statistics,
         )
@@ -170,9 +170,9 @@ class ImageService(
         minorPlanetMagLimit: Double = 12.0, useSimbad: Boolean = false,
         location: Location? = null,
     ): List<ImageAnnotation> {
-        val (image, calibration) = imageBucket[path] ?: return emptyList()
+        val (image, calibration) = imageBucket.open(path)
 
-        if (calibration.isNullOrEmpty() || !calibration.solved) {
+        if (image == null || calibration.isNullOrEmpty() || !calibration.solved) {
             return emptyList()
         }
 
@@ -267,8 +267,8 @@ class ImageService(
         return annotations
     }
 
-    fun saveImageAs(inputPath: Path, save: SaveImage, camera: Camera?) {
-        val (image) = imageBucket[inputPath]?.image?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
+    fun saveImageAs(path: Path, save: SaveImage, camera: Camera?) {
+        val (image) = imageBucket.open(path).image?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found")
 
         require(save.path != null)
@@ -295,9 +295,9 @@ class ImageService(
     }
 
     fun coordinateInterpolation(path: Path): CoordinateInterpolation? {
-        val (image, calibration) = imageBucket[path] ?: return null
+        val (image, calibration) = imageBucket.open(path)
 
-        if (calibration.isNullOrEmpty() || !calibration.solved) {
+        if (image == null || calibration.isNullOrEmpty() || !calibration.solved) {
             return null
         }
 
@@ -331,8 +331,7 @@ class ImageService(
     }
 
     fun histogram(path: Path, bitLength: Int = 16): IntArray {
-        val (image) = imageBucket[path] ?: return IntArray(0)
-        return image.compute(Histogram(bitLength = bitLength))
+        return imageBucket.open(path).image?.compute(Histogram(bitLength = bitLength)) ?: IntArray(0)
     }
 
     companion object {

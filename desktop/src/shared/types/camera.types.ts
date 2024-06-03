@@ -229,7 +229,7 @@ export interface CameraCaptureEvent extends MessageEvent {
     stepProgress: number
     stepRemainingTime: number
     savedPath?: string
-    liveStackedSavedPath?: string
+    liveStackedPath?: string
     state: CameraCaptureState
     capture?: CameraStartCapture
 }

@@ -224,11 +224,10 @@ class MountService(
     }
 
     fun pointMountHere(mount: Mount, path: Path, x: Double, y: Double) {
-        val calibration = imageBucket[path]?.solution ?: return
+        val calibration = imageBucket.open(path).solution ?: return
 
         if (calibration.isNotEmpty() && calibration.solved) {
-            val wcs = WCS(calibration)
-            val (rightAscension, declination) = wcs.use { it.pixToSky(x, y) } // J2000
+            val (rightAscension, declination) = WCS(calibration).use { it.pixToSky(x, y) } // J2000
 
             val icrf = ICRF.equatorial(calibration.rightAscension, calibration.declination)
             val (calibratedRA, calibratedDEC) = icrf.equatorialAtDate()

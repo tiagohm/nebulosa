@@ -46,7 +46,7 @@ data class CameraCaptureTask(
     @Volatile private var stepElapsedTime = Duration.ZERO
     @Volatile private var stepProgress = 0.0
     @Volatile private var savedPath: Path? = null
-    @Volatile private var liveStackedSavedPath: Path? = null
+    @Volatile private var liveStackedPath: Path? = null
 
     @JvmField @JsonIgnore val estimatedCaptureTime: Duration = if (request.isLoop) Duration.ZERO
     else Duration.ofNanos(request.exposureTime.toNanos() * request.exposureAmount + request.exposureDelay.toNanos() * (request.exposureAmount - if (useFirstExposure) 0 else 1))
@@ -82,7 +82,7 @@ data class CameraCaptureTask(
             val gain = request.gain.toDouble()
 
             val wheel = camera.snoopedDevices.firstOrNull { it is FilterWheel } as? FilterWheel
-            val filter = wheel?.let { it.names[it.position] }
+            val filter = wheel?.let { it.names.getOrNull(it.position - 1) }
 
             val newDark = dark ?: calibrationFrameProvider
                 .findBestDarkFrames(calibrationGroup, temperature, width, height, binX, binY, exposureTime, gain)
@@ -196,7 +196,7 @@ data class CameraCaptureTask(
                     CameraExposureState.FINISHED -> {
                         captureElapsedTime = prevCaptureElapsedTime + request.exposureTime
                         savedPath = event.savedPath
-                        liveStackedSavedPath = addFrameToLiveStacker(savedPath)
+                        liveStackedPath = addFrameToLiveStacker(savedPath)
                         CameraCaptureState.EXPOSURE_FINISHED
                     }
                     CameraExposureState.IDLE -> {
@@ -220,7 +220,7 @@ data class CameraCaptureTask(
             this, camera, state, request.exposureAmount, exposureCount,
             captureRemainingTime, captureElapsedTime, captureProgress,
             stepRemainingTime, stepElapsedTime, stepProgress,
-            savedPath, liveStackedSavedPath,
+            savedPath, liveStackedPath,
             if (state == CameraCaptureState.EXPOSURE_FINISHED) request else null
         )
 
@@ -250,7 +250,7 @@ data class CameraCaptureTask(
         stepElapsedTime = Duration.ZERO
         stepProgress = 0.0
         savedPath = null
-        liveStackedSavedPath = null
+        liveStackedPath = null
 
         delayTask.reset()
         cameraExposureTask.reset()

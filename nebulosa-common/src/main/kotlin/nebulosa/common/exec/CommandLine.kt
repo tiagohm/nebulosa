@@ -108,10 +108,10 @@ data class CommandLine internal constructor(
     private inner class ProcessWaiter(
         private val process: Process,
         private val timeout: Long,
-    ) : Thread() {
+    ) : Thread("Command Line Process Waiter") {
 
         init {
-            isDaemon = false
+            isDaemon = true
         }
 
         override fun run() {
@@ -139,13 +139,13 @@ data class CommandLine internal constructor(
     private inner class StreamLineReader(
         stream: InputStream,
         private val isError: Boolean,
-    ) : Thread() {
+    ) : Thread("Command Line Stream Line Reader") {
 
         private val reader = stream.bufferedReader()
         private val completable = CompletableFuture<Unit>()
 
         init {
-            isDaemon = false
+            isDaemon = true
         }
 
         override fun run() {

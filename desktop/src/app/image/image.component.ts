@@ -528,19 +528,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             if (event.state === 'EXPOSURE_FINISHED' && event.camera.id === this.imageData.camera?.id) {
                 ngZone.run(() => {
                     if (this.showLiveStackedImage === undefined) {
-                        if (event.liveStackedSavedPath) {
+                        if (event.liveStackedPath) {
                             this.showLiveStackedImage = true
                             this.app.topMenu[0].toggled = true
                             this.app.topMenu[0].visible = true
                         }
-                    } else if (!event.liveStackedSavedPath) {
+                    } else if (!event.liveStackedPath) {
                         this.showLiveStackedImage = undefined
                         this.app.topMenu[0].toggled = false
                         this.app.topMenu[0].visible = false
                     }
 
                     this.imageData.path = event.savedPath
-                    this.imageData.liveStackedPath = event.liveStackedSavedPath
+                    this.imageData.liveStackedPath = event.liveStackedPath
                     this.imageData.capture = event.capture
 
                     this.clearOverlay()

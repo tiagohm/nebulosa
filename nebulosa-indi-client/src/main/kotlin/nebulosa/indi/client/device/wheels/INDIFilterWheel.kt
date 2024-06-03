@@ -16,7 +16,7 @@ internal open class INDIFilterWheel(
     @Volatile final override var position = 0
     @Volatile final override var moving = false
 
-    final override val names = ArrayList<String>(12)
+    final override val names = ArrayList<String>(8)
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

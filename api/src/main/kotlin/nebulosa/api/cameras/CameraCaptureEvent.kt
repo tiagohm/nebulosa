@@ -19,7 +19,7 @@ data class CameraCaptureEvent(
     @JvmField val stepElapsedTime: Duration = Duration.ZERO,
     @JvmField val stepProgress: Double = 0.0,
     @JvmField val savedPath: Path? = null,
-    @JvmField val liveStackedSavedPath: Path? = null,
+    @JvmField val liveStackedPath: Path? = null,
     @JvmField val capture: CameraStartCaptureRequest? = null,
 ) : MessageEvent {
 
