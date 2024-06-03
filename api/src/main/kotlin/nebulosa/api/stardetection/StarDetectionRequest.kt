@@ -6,7 +6,7 @@ import java.nio.file.Path
 import java.time.Duration
 import java.util.function.Supplier
 
-data class StarDetectionOptions(
+data class StarDetectionRequest(
     @JvmField val type: StarDetectorType = StarDetectorType.ASTAP,
     @JvmField val executablePath: Path? = null,
     @JvmField val timeout: Duration = Duration.ZERO,
@@ -19,6 +19,6 @@ data class StarDetectionOptions(
 
     companion object {
 
-        @JvmStatic val EMPTY = StarDetectionOptions()
+        @JvmStatic val EMPTY = StarDetectionRequest()
     }
 }

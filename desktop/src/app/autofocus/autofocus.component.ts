@@ -302,11 +302,11 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
         })
 
         this.loadPreference()
-
-        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
+        this.pinger.register(this, 30000)
+
         this.cameras = (await this.api.cameras()).sort(deviceComparator)
         this.focusers = (await this.api.focusers()).sort(deviceComparator)
     }
@@ -355,7 +355,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
         this.clearChart()
         this.stepSizeForScale = this.request.stepSize
 
-        this.request.starDetector = this.preference.starDetectionOptions('ASTAP').get()
+        this.request.starDetector = this.preference.starDetectionRequest('ASTAP').get()
         return this.api.autoFocusStart(this.camera, this.focuser, this.request)
     }
 

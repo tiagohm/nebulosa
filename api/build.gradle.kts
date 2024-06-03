@@ -26,6 +26,7 @@ dependencies {
     implementation(project(":nebulosa-nova"))
     implementation(project(":nebulosa-sbd"))
     implementation(project(":nebulosa-simbad"))
+    implementation(project(":nebulosa-siril"))
     implementation(project(":nebulosa-stellarium-protocol"))
     implementation(project(":nebulosa-wcs"))
     implementation(project(":nebulosa-xisf"))

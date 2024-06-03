@@ -143,11 +143,11 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
                 }
             })
         })
-
-        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
+        this.pinger.register(this, 30000)
+
         this.cameras = (await this.api.cameras()).sort(deviceComparator)
         this.wheels = (await this.api.wheels()).sort(deviceComparator)
     }

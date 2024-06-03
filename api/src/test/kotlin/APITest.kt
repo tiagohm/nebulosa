@@ -9,7 +9,7 @@ import nebulosa.api.autofocus.AutoFocusRequest
 import nebulosa.api.beans.converters.time.DurationSerializer
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.connection.ConnectionType
-import nebulosa.api.stardetection.StarDetectionOptions
+import nebulosa.api.stardetection.StarDetectionRequest
 import nebulosa.common.json.PathSerializer
 import nebulosa.test.NonGitHubOnlyCondition
 import okhttp3.MediaType.Companion.toMediaType
@@ -169,7 +169,7 @@ class APITest : StringSpec() {
         @JvmStatic private val EXPOSURE_TIME = Duration.ofSeconds(5)
         @JvmStatic private val CAPTURES_PATH = Path.of("/home/tiagohm/Git/nebulosa/data/captures")
 
-        @JvmStatic private val STAR_DETECTION_OPTIONS = StarDetectionOptions(executablePath = Path.of("astap"))
+        @JvmStatic private val STAR_DETECTION_OPTIONS = StarDetectionRequest(executablePath = Path.of("astap"))
 
         @JvmStatic private val CAMERA_START_CAPTURE_REQUEST = CameraStartCaptureRequest(
             exposureTime = EXPOSURE_TIME, width = 1280, height = 1024, frameFormat = "INDI_MONO",

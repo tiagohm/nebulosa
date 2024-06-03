@@ -2,6 +2,7 @@ package nebulosa.api.cameras
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.messages.MessageService
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
@@ -18,6 +19,7 @@ class CameraCaptureExecutor(
     private val messageService: MessageService,
     private val guider: Guider,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
+    private val calibrationFrameService: CalibrationFrameService,
 ) : Consumer<CameraCaptureEvent>, CameraEventAware {
 
     private val jobs = ConcurrentHashMap.newKeySet<CameraCaptureJob>(2)
@@ -36,7 +38,7 @@ class CameraCaptureExecutor(
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(jobs.none { it.task.camera === camera }) { "${camera.name} Camera Capture is already in progress" }
 
-        val task = CameraCaptureTask(camera, request, guider, executor = threadPoolTaskExecutor)
+        val task = CameraCaptureTask(camera, request, guider, executor = threadPoolTaskExecutor, calibrationFrameProvider = calibrationFrameService)
         task.subscribe(this)
 
         with(CameraCaptureJob(task)) {

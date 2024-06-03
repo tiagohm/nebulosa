@@ -26,7 +26,7 @@ import kotlin.math.roundToInt
 @Service
 class CalibrationFrameService(
     private val calibrationFrameRepository: CalibrationFrameRepository,
-) {
+) : CalibrationFrameProvider {
 
     fun calibrate(name: String, image: Image, createNew: Boolean = false): Image {
         return synchronized(image) {
@@ -146,13 +146,13 @@ class CalibrationFrameService(
         calibrationFrameRepository.delete(frame)
     }
 
-    // exposureTime, temperature, width, height, binX, binY, gain.
-    fun findBestDarkFrames(name: String, image: Image): List<CalibrationFrameEntity> {
-        val header = image.header
-        val temperature = header.temperature
-
+    override fun findBestDarkFrames(
+        name: String, temperature: Double, width: Int, height: Int,
+        binX: Int, binY: Int, exposureTimeInMicroseconds: Long,
+        gain: Double,
+    ): List<CalibrationFrameEntity> {
         val frames = calibrationFrameRepository
-            .darkFrames(name, image.width, image.height, header.binX, header.exposureTimeInMicroseconds, header.gain)
+            .darkFrames(name, width, height, binX, exposureTimeInMicroseconds, gain)
 
         if (frames.isEmpty()) return emptyList()
 
@@ -164,20 +164,46 @@ class CalibrationFrameService(
         return groupedFrames.firstEntry().value
     }
 
-    // filter, width, height, binX, binY.
-    fun findBestFlatFrames(name: String, image: Image): List<CalibrationFrameEntity> {
-        val filter = image.header.filter
+    fun findBestDarkFrames(name: String, image: Image): List<CalibrationFrameEntity> {
+        val header = image.header
+        val temperature = header.temperature
+        val binX = header.binX
+        val exposureTime = header.exposureTimeInMicroseconds
 
-        // TODO: Generate master from matched frames.
-        return calibrationFrameRepository
-            .flatFrames(name, filter, image.width, image.height, image.header.binX)
+        return findBestDarkFrames(name, temperature, image.width, image.height, binX, binX, exposureTime, header.gain)
     }
 
-    // width, height, binX, binY, gain.
-    fun findBestBiasFrames(name: String, image: Image): List<CalibrationFrameEntity> {
+    override fun findBestFlatFrames(
+        name: String, width: Int, height: Int,
+        binX: Int, binY: Int, filter: String?
+    ): List<CalibrationFrameEntity> {
         // TODO: Generate master from matched frames.
         return calibrationFrameRepository
-            .biasFrames(name, image.width, image.height, image.header.binX, image.header.gain)
+            .flatFrames(name, filter, width, height, binX)
+    }
+
+    fun findBestFlatFrames(name: String, image: Image): List<CalibrationFrameEntity> {
+        val header = image.header
+        val filter = header.filter
+        val binX = header.binX
+
+        return findBestFlatFrames(name, image.width, image.height, binX, binX, filter)
+    }
+
+    override fun findBestBiasFrames(
+        name: String, width: Int, height: Int,
+        binX: Int, binY: Int, gain: Double,
+    ): List<CalibrationFrameEntity> {
+        // TODO: Generate master from matched frames.
+        return calibrationFrameRepository
+            .biasFrames(name, width, height, binX, gain)
+    }
+
+    fun findBestBiasFrames(name: String, image: Image): List<CalibrationFrameEntity> {
+        val header = image.header
+        val binX = header.binX
+
+        return findBestBiasFrames(name, image.width, image.height, binX, binX, image.header.gain)
     }
 
     companion object {

@@ -1,3 +1,3 @@
 package nebulosa.api.beans.converters.angle
 
-class DeclinationDeserializer : AngleDeserializer(true)
+class DeclinationDeserializer : AngleDeserializer(false)

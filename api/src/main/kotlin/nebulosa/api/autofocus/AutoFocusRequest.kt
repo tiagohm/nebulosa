@@ -2,7 +2,7 @@ package nebulosa.api.autofocus
 
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.focusers.BacklashCompensation
-import nebulosa.api.stardetection.StarDetectionOptions
+import nebulosa.api.stardetection.StarDetectionRequest
 
 data class AutoFocusRequest(
     @JvmField val fittingMode: AutoFocusFittingMode = AutoFocusFittingMode.HYPERBOLIC,
@@ -12,5 +12,5 @@ data class AutoFocusRequest(
     @JvmField val initialOffsetSteps: Int = 4,
     @JvmField val stepSize: Int = 50,
     @JvmField val totalNumberOfAttempts: Int = 1,
-    @JvmField val starDetector: StarDetectionOptions = StarDetectionOptions.EMPTY,
+    @JvmField val starDetector: StarDetectionRequest = StarDetectionRequest.EMPTY,
 )

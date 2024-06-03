@@ -61,14 +61,13 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
         hotkeys('down', event => { event.preventDefault(); this.stepsRelative = Math.max(0, this.stepsRelative - 1) })
         hotkeys('ctrl+up', event => { event.preventDefault(); this.stepsAbsolute = Math.max(0, this.stepsAbsolute - 1) })
         hotkeys('ctrl+down', event => { event.preventDefault(); this.stepsAbsolute = Math.min(this.focuser.maxPosition, this.stepsAbsolute + 1) })
-
-        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
-        this.route.queryParams.subscribe(e => {
+        this.route.queryParams.subscribe(async e => {
             const focuser = JSON.parse(decodeURIComponent(e.data)) as Focuser
-            this.focuserChanged(focuser)
+            await this.focuserChanged(focuser)
+            this.pinger.register(this, 30000)
         })
     }
 

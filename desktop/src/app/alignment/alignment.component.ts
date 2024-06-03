@@ -224,11 +224,11 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
         })
 
         this.loadPreference()
-
-        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
+        this.pinger.register(this, 30000)
+
         this.cameras = (await this.api.cameras()).sort(deviceComparator)
         this.mounts = (await this.api.mounts()).sort(deviceComparator)
         this.guideOutputs = (await this.api.guideOutputs()).sort(deviceComparator)
@@ -294,7 +294,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
     }
 
     plateSolverChanged() {
-        this.tppaRequest.plateSolver = this.preference.plateSolverOptions(this.tppaRequest.plateSolver.type).get()
+        this.tppaRequest.plateSolver = this.preference.plateSolverRequest(this.tppaRequest.plateSolver.type).get()
         this.savePreference()
     }
 

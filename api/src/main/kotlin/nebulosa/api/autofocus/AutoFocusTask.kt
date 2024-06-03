@@ -220,7 +220,7 @@ data class AutoFocusTask(
         if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
             sendEvent(AutoFocusState.EXPOSURED, event)
             sendEvent(AutoFocusState.ANALYSING)
-            val detectedStars = starDetection.detect(event.savePath!!)
+            val detectedStars = starDetection.detect(event.savedPath!!)
             starCount = detectedStars.size
             LOG.info("detected $starCount stars")
             starHFD = detectedStars.measureDetectedStars()

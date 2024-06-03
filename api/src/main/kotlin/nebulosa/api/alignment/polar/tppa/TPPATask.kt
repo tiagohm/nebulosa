@@ -84,7 +84,7 @@ data class TPPATask(
                 captureEvent = event
 
                 if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
-                    savedImage = event.savePath!!
+                    savedImage = event.savedPath!!
                 }
 
                 if (!finished.get()) {
