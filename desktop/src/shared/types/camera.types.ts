@@ -231,6 +231,7 @@ export interface CameraCaptureEvent extends MessageEvent {
     savedPath?: string
     liveStackedSavedPath?: string
     state: CameraCaptureState
+    capture?: CameraStartCapture
 }
 
 export type CameraCaptureState = 'IDLE' | 'CAPTURE_STARTED' | 'EXPOSURE_STARTED' | 'EXPOSURING' | 'WAITING' | 'SETTLING' | 'EXPOSURE_FINISHED' | 'CAPTURE_FINISHED'

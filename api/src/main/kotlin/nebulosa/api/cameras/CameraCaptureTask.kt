@@ -2,8 +2,10 @@ package nebulosa.api.cameras
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.reactivex.rxjava3.functions.Consumer
+import nebulosa.api.calibration.CalibrationFrameProvider
 import nebulosa.api.guiding.DitherAfterExposureTask
 import nebulosa.api.guiding.WaitForSettleTask
+import nebulosa.api.livestacking.LiveStackingRequest
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.SplitTask
 import nebulosa.api.tasks.delay.DelayEvent
@@ -12,6 +14,7 @@ import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
+import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.livestacking.LiveStacker
 import nebulosa.log.loggerFor
 import java.nio.file.Path
@@ -25,6 +28,7 @@ data class CameraCaptureTask(
     private val useFirstExposure: Boolean = false,
     private val exposureMaxRepeat: Int = 0,
     private val executor: Executor? = null,
+    private val calibrationFrameProvider: CalibrationFrameProvider? = null,
 ) : AbstractTask<CameraCaptureEvent>(), Consumer<Any>, CameraEventAware {
 
     private val delayTask = DelayTask(request.exposureDelay)
@@ -64,17 +68,50 @@ data class CameraCaptureTask(
         cameraExposureTask.handleCameraEvent(event)
     }
 
+    private fun LiveStackingRequest.processCalibrationGroup(): LiveStackingRequest {
+        return if (calibrationFrameProvider != null && enabled &&
+            !request.calibrationGroup.isNullOrBlank() && (dark == null || flat == null)
+        ) {
+            val calibrationGroup = request.calibrationGroup
+            val temperature = camera.temperature
+            val binX = request.binX
+            val binY = request.binY
+            val width = request.width / binX
+            val height = request.height / binY
+            val exposureTime = request.exposureTime.toNanos() / 1000
+            val gain = request.gain.toDouble()
+
+            val wheel = camera.snoopedDevices.firstOrNull { it is FilterWheel } as? FilterWheel
+            val filter = wheel?.let { it.names[it.position] }
+
+            val newDark = dark ?: calibrationFrameProvider
+                .findBestDarkFrames(calibrationGroup, temperature, width, height, binX, binY, exposureTime, gain)
+                .firstOrNull()
+                ?.path
+
+            val newFlat = flat ?: calibrationFrameProvider
+                .findBestFlatFrames(calibrationGroup, width, height, binX, binY, filter)
+                .firstOrNull()
+                ?.path
+
+            LOG.info("live stacking will use dark frame at {} and flat frame at {}", newDark, newFlat)
+
+            copy(dark = newDark, flat = newFlat)
+        } else {
+            this
+        }
+    }
+
     override fun execute(cancellationToken: CancellationToken) {
         LOG.info("Camera Capture started. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
 
         cameraExposureTask.reset()
 
-        liveStacker?.close()
-        liveStacker = null
-
-        if (request.liveStacking.enabled && (request.isLoop || request.exposureAmount > 1 || exposureMaxRepeat > 1)) {
+        if (liveStacker == null && request.liveStacking.enabled &&
+            (request.isLoop || request.exposureAmount > 1 || exposureMaxRepeat > 1)
+        ) {
             try {
-                liveStacker = request.liveStacking.get()
+                liveStacker = request.liveStacking.processCalibrationGroup().get()
                 liveStacker!!.start()
             } catch (e: Throwable) {
                 LOG.error("failed to start live stacking. request={}", request.liveStacking, e)
@@ -183,7 +220,8 @@ data class CameraCaptureTask(
             this, camera, state, request.exposureAmount, exposureCount,
             captureRemainingTime, captureElapsedTime, captureProgress,
             stepRemainingTime, stepElapsedTime, stepProgress,
-            savedPath, liveStackedSavedPath
+            savedPath, liveStackedSavedPath,
+            if (state == CameraCaptureState.EXPOSURE_FINISHED) request else null
         )
 
         onNext(event)

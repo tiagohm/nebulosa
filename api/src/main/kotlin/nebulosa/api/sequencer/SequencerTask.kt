@@ -1,6 +1,7 @@
 package nebulosa.api.sequencer
 
 import io.reactivex.rxjava3.functions.Consumer
+import nebulosa.api.calibration.CalibrationFrameProvider
 import nebulosa.api.cameras.*
 import nebulosa.api.messages.MessageEvent
 import nebulosa.api.tasks.AbstractTask
@@ -37,6 +38,7 @@ data class SequencerTask(
     @JvmField val wheel: FilterWheel? = null,
     @JvmField val focuser: Focuser? = null,
     private val executor: Executor? = null,
+    private val calibrationFrameProvider: CalibrationFrameProvider? = null,
 ) : AbstractTask<MessageEvent>(), Consumer<Any>, CameraEventAware, WheelEventAware {
 
     private val usedEntries = plan.entries.filter { it.enabled }
@@ -75,7 +77,10 @@ data class SequencerTask(
                 request.wheelMoveTask()?.also(tasks::add)
 
                 // CAPTURE.
-                val cameraCaptureTask = CameraCaptureTask(camera, request, guider, executor = executor)
+                val cameraCaptureTask = CameraCaptureTask(
+                    camera, request, guider, executor = executor,
+                    calibrationFrameProvider = calibrationFrameProvider
+                )
                 cameraCaptureTask.subscribe(this)
                 estimatedCaptureTime += cameraCaptureTask.estimatedCaptureTime
                 tasks.add(cameraCaptureTask)
@@ -83,7 +88,8 @@ data class SequencerTask(
         } else {
             val sequenceIdTasks = usedEntries.map { req -> SequencerIdTask(plan.entries.indexOfFirst { it === req } + 1) }
             val requests = usedEntries.map { mapRequest(it) }
-            val cameraCaptureTasks = requests.mapIndexed { i, req -> CameraCaptureTask(camera, req, guider, i > 0, 1, executor) }
+            val cameraCaptureTasks = requests
+                .mapIndexed { i, req -> CameraCaptureTask(camera, req, guider, i > 0, 1, executor, calibrationFrameProvider) }
             val wheelMoveTasks = requests.map { it.wheelMoveTask() }
             val count = IntArray(requests.size) { usedEntries[it].exposureAmount }
 

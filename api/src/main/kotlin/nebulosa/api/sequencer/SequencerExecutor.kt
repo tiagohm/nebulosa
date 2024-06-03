@@ -2,6 +2,7 @@ package nebulosa.api.sequencer
 
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.focusers.FocuserEventAware
 import nebulosa.api.messages.MessageEvent
@@ -27,6 +28,7 @@ class SequencerExecutor(
     private val messageService: MessageService,
     private val guider: Guider,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
+    private val calibrationFrameService: CalibrationFrameService,
 ) : Consumer<MessageEvent>, CameraEventAware, WheelEventAware, FocuserEventAware {
 
     private val jobs = ConcurrentHashMap.newKeySet<SequencerJob>(1)
@@ -65,7 +67,7 @@ class SequencerExecutor(
             check(jobs.none { it.task.focuser === focuser }) { "${camera.name} Sequencer Job is already in progress" }
         }
 
-        val task = SequencerTask(camera, request, guider, mount, wheel, focuser, threadPoolTaskExecutor)
+        val task = SequencerTask(camera, request, guider, mount, wheel, focuser, threadPoolTaskExecutor, calibrationFrameService)
         task.subscribe(this)
 
         with(SequencerJob(task)) {

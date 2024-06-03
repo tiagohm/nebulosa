@@ -20,6 +20,7 @@ data class CameraCaptureEvent(
     @JvmField val stepProgress: Double = 0.0,
     @JvmField val savedPath: Path? = null,
     @JvmField val liveStackedSavedPath: Path? = null,
+    @JvmField val capture: CameraStartCaptureRequest? = null,
 ) : MessageEvent {
 
     override val eventName = "CAMERA.CAPTURE_ELAPSED"

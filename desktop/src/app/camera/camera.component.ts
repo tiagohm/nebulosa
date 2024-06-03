@@ -276,10 +276,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             this.pinger.register(this, 30000)
 
             if (!this.app.modal) {
-                this.loadEquipment()
+                await this.loadEquipment()
             }
 
-            this.loadCalibrationGroups()
+            await this.loadCalibrationGroups()
         })
     }
 

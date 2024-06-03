@@ -541,6 +541,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
                     this.imageData.path = event.savedPath
                     this.imageData.liveStackedPath = event.liveStackedSavedPath
+                    this.imageData.capture = event.capture
 
                     this.clearOverlay()
                     this.loadImage(true)

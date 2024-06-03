@@ -36,7 +36,7 @@ data class CameraStartCaptureRequest(
     @JvmField val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.OFF,
     @field:Valid @JvmField val dither: DitherAfterExposureRequest = DitherAfterExposureRequest.DISABLED,
     @JvmField val calibrationGroup: String? = null,
-    @JvmField val liveStacking: LiveStackingRequest =LiveStackingRequest.EMPTY,
+    @JvmField val liveStacking: LiveStackingRequest = LiveStackingRequest.EMPTY,
     // Filter Wheel.
     @JvmField val filterPosition: Int = 0,
     @JvmField val shutterPosition: Int = 0,
