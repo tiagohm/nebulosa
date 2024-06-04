@@ -6,7 +6,6 @@ import nebulosa.pixinsight.script.PixInsightScript
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.pixinsight.script.PixInsightStartup
 import java.nio.file.Path
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 data class PixInsightLiveStacker(
@@ -32,7 +31,7 @@ data class PixInsightLiveStacker(
 
         if (!isPixInsightRunning) {
             try {
-                check(PixInsightStartup(PixInsightScript.DEFAULT_SLOT).runSync(runner, 30, TimeUnit.SECONDS))
+                check(PixInsightStartup(PixInsightScript.DEFAULT_SLOT).runSync(runner))
             } catch (e: Throwable) {
                 throw IllegalStateException("Unable to start PixInsight")
             }

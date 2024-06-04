@@ -837,7 +837,7 @@ function detectStars() {
     for(let i = 0; i < sl.length; i++) {
         const s = sl[i]
         computeHfr(image, s)
-        stars.push({ x: s.pos.x, y: s.pos.y, flux: s.flux, size: s.size, nmax: s.nmax, bkg: s.bkg, x0: s.rect.x0, y0: s.rect.y0, x1: s.rect.x1, y1: s.rect.y1, snr: s.snr, peak: s.peak, hfd: 2 * s.hfr })
+        stars.push({ x: s.pos.x, y: s.pos.y, flux: s.flux * 65536, size: s.size, nmax: s.nmax, bkg: s.bkg, x0: s.rect.x0, y0: s.rect.y0, x1: s.rect.x1, y1: s.rect.y1, snr: s.snr, peak: s.peak, hfd: 2 * s.hfr })
     }
 
     window[0].forceClose()

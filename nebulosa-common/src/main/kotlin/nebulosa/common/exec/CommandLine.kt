@@ -68,7 +68,12 @@ data class CommandLine internal constructor(
     @Synchronized
     fun start(timeout: Duration = Duration.ZERO): CommandLine {
         if (process == null) {
-            process = builder.start()
+            process = try {
+                builder.start()
+            } catch (e: Throwable) {
+                completeExceptionally(e)
+                return this
+            }
 
             if (listeners.isNotEmpty()) {
                 inputReader = StreamLineReader(process!!.inputStream, false)

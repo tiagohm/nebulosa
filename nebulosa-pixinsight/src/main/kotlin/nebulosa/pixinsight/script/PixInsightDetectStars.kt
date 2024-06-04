@@ -5,6 +5,7 @@ import nebulosa.io.transferAndClose
 import nebulosa.star.detection.ImageStar
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Duration
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 import kotlin.io.path.readText
@@ -14,6 +15,7 @@ data class PixInsightDetectStars(
     private val targetPath: Path,
     private val minSNR: Double = 0.0,
     private val invert: Boolean = false,
+    private val timeout: Duration = Duration.ZERO,
 ) : AbstractPixInsightScript<PixInsightDetectStars.Result>() {
 
     @Suppress("ArrayInDataClass")
@@ -51,15 +53,23 @@ data class PixInsightDetectStars(
     override val arguments = listOf("-x=${parameterize(slot, scriptPath, targetPath, outputPath, minSNR, invert)}")
 
     override fun processOnComplete(exitCode: Int): Result {
+        val timeoutInMillis = timeout.toMillis()
+
         if (exitCode == 0) {
-            repeat(5) {
+            val startTime = System.currentTimeMillis()
+
+            repeat(600) {
                 val text = outputPath.readText()
 
                 if (text.startsWith(START_FILE) && text.endsWith(END_FILE)) {
                     return OBJECT_MAPPER.readValue(text.substring(1, text.length - 1), Result::class.java)
                 }
 
-                Thread.sleep(1000)
+                if (timeoutInMillis == 0L || System.currentTimeMillis() - startTime < timeoutInMillis) {
+                    Thread.sleep(500)
+                } else {
+                    return@repeat
+                }
             }
         }
 

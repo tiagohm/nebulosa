@@ -31,7 +31,7 @@
         <div class="grid">
             <div class="col-12">
                 <span class="p-float-label">
-                    <p-dropdown [options]="['ASTAP', 'ASTROMETRY_NET_ONLINE']" [(ngModel)]="plateSolverType" styleClass="p-inputtext-sm border-0"
+                    <p-dropdown [options]="'PLATE_SOLVER' | dropdownOptions" [(ngModel)]="plateSolverType" styleClass="p-inputtext-sm border-0"
                                 (ngModelChange)="plateSolvers.get(plateSolverType)!.type = $event; save()" [autoDisplayFirst]="false" />
                     <label>Solver</label>
                 </span>
@@ -78,7 +78,7 @@
         <div class="grid">
             <div class="col-12">
                 <span class="p-float-label">
-                    <p-dropdown [options]="['ASTAP']" [(ngModel)]="starDetectorType" styleClass="p-inputtext-sm border-0"
+                    <p-dropdown [options]="'STAR_DETECTOR' | dropdownOptions" [(ngModel)]="starDetectorType" styleClass="p-inputtext-sm border-0"
                                 (ngModelChange)="starDetectors.get(starDetectorType)!.type = $event; save()" [autoDisplayFirst]="false" />
                     <label>Detector</label>
                 </span>
@@ -100,7 +100,7 @@
                     <label>Timeout (s)</label>
                 </span>
             </div>
-            <div class="col-12" *ngIf="starDetectorType === 'ASTAP'">
+            <div class="col-12">
                 <neb-path-chooser key="STAR_DETECTION_EXECUTABLE_PATH" [directory]="false" label="Executable path"
                                   [path]="starDetectors.get(starDetectorType)!.executablePath" class="w-full"
                                   (pathChange)="starDetectors.get(starDetectorType)!.executablePath = $event; save()" />
@@ -111,7 +111,7 @@
         <div class="grid">
             <div class="col-12">
                 <span class="p-float-label">
-                    <p-dropdown [options]="['SIRIL']" [(ngModel)]="liveStackerType" styleClass="p-inputtext-sm border-0"
+                    <p-dropdown [options]="'LIVE_STACKER' | dropdownOptions" [(ngModel)]="liveStackerType" styleClass="p-inputtext-sm border-0"
                                 (ngModelChange)="liveStackers.get(liveStackerType)!.type = $event; save()" [autoDisplayFirst]="false" />
                     <label>Stacker</label>
                 </span>

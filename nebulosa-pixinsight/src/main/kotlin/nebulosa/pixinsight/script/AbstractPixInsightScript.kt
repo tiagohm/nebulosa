@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.common.exec.CommandLine
 import nebulosa.common.exec.LineReadListener
 import nebulosa.common.json.PathDeserializer
+import nebulosa.log.loggerFor
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
@@ -20,9 +21,11 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListen
 
     final override fun run(runner: PixInsightScriptRunner) = runner.run(this)
 
-    final override fun handleCommandLine(commandLine: CommandLine) {
+    final override fun startCommandLine(commandLine: CommandLine) {
         commandLine.whenComplete { exitCode, exception ->
             try {
+                LOG.info("PixInsight script finished. done={}, exitCode={}", isDone, exitCode, exception)
+
                 if (isDone) return@whenComplete
                 else if (exception != null) completeExceptionally(exception)
                 else complete(processOnComplete(exitCode))
@@ -40,6 +43,8 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListen
 
         internal const val START_FILE = "@"
         internal const val END_FILE = "#"
+
+        @JvmStatic private val LOG = loggerFor<AbstractPixInsightScript<*>>()
 
         @JvmStatic private val KOTLIN_MODULE = kotlinModule()
             .addDeserializer(Path::class.java, PathDeserializer)

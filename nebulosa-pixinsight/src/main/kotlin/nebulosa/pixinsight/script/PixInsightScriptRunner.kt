@@ -15,7 +15,7 @@ data class PixInsightScriptRunner(private val executablePath: Path) {
 
         LOG.info("running PixInsight script: {}", commandLine.command)
 
-        script.handleCommandLine(commandLine)
+        script.startCommandLine(commandLine)
     }
 
     companion object {

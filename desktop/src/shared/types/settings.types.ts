@@ -18,7 +18,7 @@ export const EMPTY_PLATE_SOLVER_OPTIONS: PlateSolverOptions = {
     timeout: 600,
 }
 
-export type StarDetectorType = 'ASTAP'
+export type StarDetectorType = 'ASTAP' | 'PIXINSIGHT'
 
 export interface StarDetectionOptions {
     type: StarDetectorType

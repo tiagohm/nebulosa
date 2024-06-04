@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":nebulosa-log"))
     implementation(project(":nebulosa-lx200-protocol"))
     implementation(project(":nebulosa-nova"))
+    implementation(project(":nebulosa-pixinsight"))
     implementation(project(":nebulosa-sbd"))
     implementation(project(":nebulosa-simbad"))
     implementation(project(":nebulosa-siril"))

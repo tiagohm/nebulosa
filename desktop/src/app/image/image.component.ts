@@ -18,7 +18,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
-import { DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, SCNR_PROTECTION_METHODS, StarDetectionDialog } from '../../shared/types/image.types'
+import { DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, StarDetectionDialog } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
@@ -59,7 +59,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         { name: 'Green', value: 'GREEN' },
         { name: 'Blue', value: 'BLUE' },
     ]
-    readonly scnrMethods = Array.from(SCNR_PROTECTION_METHODS)
     readonly scnr: ImageSCNRDialog = {
         showDialog: false,
         amount: 0.5,
@@ -99,6 +98,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         useSimbad: false
     }
 
+    detecting = false
     readonly starDetection: StarDetectionDialog = {
         showDialog: false,
         type: 'ASTAP',
@@ -128,7 +128,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         centerDEC: '',
         radius: 4,
         solved: structuredClone(EMPTY_IMAGE_SOLVED),
-        types: ['ASTAP', 'ASTROMETRY_NET_ONLINE'],
         type: 'ASTAP'
     }
 
@@ -776,9 +775,16 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     async detectStars() {
+        this.detecting = true
+
         const options = this.preference.starDetectionRequest(this.starDetection.type).get()
         options.minSNR = this.starDetection.minSNR
-        this.starDetection.stars = await this.api.detectStars(this.imagePath!, options)
+
+        try {
+            this.starDetection.stars = await this.api.detectStars(this.imagePath!, options)
+        } finally {
+            this.detecting = false
+        }
 
         let hfd = 0
         let snr = 0
@@ -1220,9 +1226,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private loadPreference() {
         const preference = this.preference.imagePreference.get()
         this.solver.radius = preference.solverRadius ?? this.solver.radius
-        this.solver.type = preference.solverType ?? this.solver.types[0]
+        this.solver.type = preference.solverType ?? 'ASTAP'
         this.starDetection.type = preference.starDetectionType ?? this.starDetection.type
-        this.starDetection.minSNR = this.preference.starDetectionRequest(this.starDetection.type).get().minSNR ?? this.starDetection.type
+        this.starDetection.minSNR = preference.starDetectionMinSNR ?? this.preference.starDetectionRequest(this.starDetection.type).get().minSNR ?? this.starDetection.minSNR
 
         this.fov.fovs = this.preference.imageFOVs.get()
         this.fov.fovs.forEach(e => { e.enabled = false; e.computed = undefined })
@@ -1233,6 +1239,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         preference.solverRadius = this.solver.radius
         preference.solverType = this.solver.type
         preference.starDetectionType = this.starDetection.type
+        preference.starDetectionMinSNR = this.starDetection.minSNR
         this.preference.imagePreference.set(preference)
     }
 
