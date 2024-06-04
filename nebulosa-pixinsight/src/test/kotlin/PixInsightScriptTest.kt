@@ -23,7 +23,12 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
         }
         "calibrate" {
             PixInsightCalibrate(PixInsightScript.DEFAULT_SLOT, PI_01_LIGHT, PI_DARK, PI_FLAT, PI_BIAS)
-                .use { it.runSync(runner).shouldNotBeNull().shouldExist() }
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().shouldExist() }
+        }
+        "align" {
+            PixInsightAlign(PixInsightScript.DEFAULT_SLOT, PI_01_LIGHT, PI_02_LIGHT)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().shouldExist() }
+
         }
     }
 }

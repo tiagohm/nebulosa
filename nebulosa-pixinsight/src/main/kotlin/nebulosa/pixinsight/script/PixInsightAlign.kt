@@ -9,18 +9,33 @@ import kotlin.io.path.deleteRecursively
 import kotlin.io.path.outputStream
 import kotlin.io.path.readText
 
-data class PixInsightCalibrate(
+data class PixInsightAlign(
     private val slot: Int,
+    private val referencePath: Path,
     private val targetPath: Path,
-    private val dark: Path? = null,
-    private val flat: Path? = null,
-    private val bias: Path? = null,
-    private val compress: Boolean = false,
-    private val use32Bit: Boolean = false,
-) : AbstractPixInsightScript<PixInsightCalibrate.Result>() {
+) : AbstractPixInsightScript<PixInsightAlign.Result>() {
 
     data class Result(
         @JvmField val outputImage: Path? = null,
+        @JvmField val outputMaskImage: Path? = null,
+        @JvmField val totalPairMatches: Int = 0,
+        @JvmField val inliers: Int = 0,
+        @JvmField val overlapping: Int = 0,
+        @JvmField val regularity: Double = 0.0,
+        @JvmField val quality: Double = 0.0,
+        @JvmField val rmsError: Double = 0.0,
+        @JvmField val rmsErrorDev: Double = 0.0,
+        @JvmField val peakErrorX: Double = 0.0,
+        @JvmField val peakErrorY: Double = 0.0,
+        @JvmField val h11: Double = 0.0,
+        @JvmField val h12: Double = 0.0,
+        @JvmField val h13: Double = 0.0,
+        @JvmField val h21: Double = 0.0,
+        @JvmField val h22: Double = 0.0,
+        @JvmField val h23: Double = 0.0,
+        @JvmField val h31: Double = 0.0,
+        @JvmField val h32: Double = 0.0,
+        @JvmField val h33: Double = 0.0,
     ) {
 
         companion object {
@@ -29,16 +44,15 @@ data class PixInsightCalibrate(
         }
     }
 
-    private val outputDirectory = Files.createTempDirectory("pi-calibrate-")
+    private val outputDirectory = Files.createTempDirectory("pi-align-")
     private val scriptPath = Files.createTempFile("pi-", ".js")
     private val outputPath = Files.createTempFile("pi-", ".txt")
 
     init {
-        resource("pixinsight/Calibrate.js")!!.transferAndClose(scriptPath.outputStream())
+        resource("pixinsight/Align.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments =
-        listOf("-x=\"${if (slot > 0) "$slot:" else ""}$scriptPath,$targetPath,$outputDirectory,$outputPath,$dark,$flat,$bias,$compress,$use32Bit\"")
+    override val arguments = listOf("-x=\"${if (slot > 0) "$slot:" else ""}$scriptPath,$referencePath,$targetPath,$outputDirectory,$outputPath\"")
 
     override fun processOnComplete(exitCode: Int): Result {
         if (exitCode == 0) {
@@ -66,6 +80,5 @@ data class PixInsightCalibrate(
 
         private const val START_FILE = "@"
         private const val END_FILE = "#"
-
     }
 }

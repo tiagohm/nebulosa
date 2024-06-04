@@ -9,6 +9,7 @@ dependencies {
     api(project(":nebulosa-plate-solving"))
     api(project(":nebulosa-star-detection"))
     api(project(":nebulosa-livestacking"))
+    api(libs.bundles.jackson)
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }

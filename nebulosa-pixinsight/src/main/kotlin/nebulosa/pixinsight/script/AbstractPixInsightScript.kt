@@ -1,7 +1,11 @@
 package nebulosa.pixinsight.script
 
+import com.fasterxml.jackson.module.kotlin.jsonMapper
+import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.common.exec.CommandLine
 import nebulosa.common.exec.LineReadListener
+import nebulosa.common.json.PathDeserializer
+import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
 abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListener, CompletableFuture<T>() {
@@ -30,5 +34,15 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListen
         commandLine.registerLineReadListener(this)
         beforeRun()
         commandLine.start()
+    }
+
+    companion object {
+
+        @JvmStatic private val KOTLIN_MODULE = kotlinModule()
+            .addDeserializer(Path::class.java, PathDeserializer)
+
+        @JvmStatic internal val OBJECT_MAPPER = jsonMapper {
+            addModule(KOTLIN_MODULE)
+        }
     }
 }

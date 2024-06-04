@@ -89,7 +89,11 @@ function calibrate() {
 
     console.writeln("calibration finished")
 
-    File.writeTextFile(statusPath, "@" + P.outputData[0][0] + "#")
+    const json = {
+         outputImage: P.outputData[0][0] || null,
+    }
+
+    File.writeTextFile(statusPath, "@" + JSON.stringify(json) + "#")
 }
 
 calibrate()
