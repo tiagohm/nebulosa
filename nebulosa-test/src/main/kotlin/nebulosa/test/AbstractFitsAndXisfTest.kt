@@ -123,6 +123,12 @@ abstract class AbstractFitsAndXisfTest : StringSpec() {
     protected val PI_DARK by lazy { download("PI.DARK.fits", GITHUB_FITS_URL) }
     protected val PI_FLAT by lazy { download("PI.FLAT.fits", GITHUB_FITS_URL) }
 
+    protected val PI_FOCUS_0 by lazy { download("PI.FOCUS.0.fits", GITHUB_FITS_URL) }
+    protected val PI_FOCUS_10000 by lazy { download("PI.FOCUS.10000.fits", GITHUB_FITS_URL) }
+    protected val PI_FOCUS_20000 by lazy { download("PI.FOCUS.20000.fits", GITHUB_FITS_URL) }
+    protected val PI_FOCUS_30000 by lazy { download("PI.FOCUS.30000.fits", GITHUB_FITS_URL) }
+    protected val PI_FOCUS_100000 by lazy { download("PI.FOCUS.100000.fits", GITHUB_FITS_URL) }
+
     private val afterEach = AfterEach()
 
     init {

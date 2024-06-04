@@ -17,7 +17,7 @@ data class PixInsightStartup(private val slot: Int) : AbstractPixInsightScript<B
         resource("pixinsight/Startup.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments = listOf("-r=\"$scriptPath,$outputPath\"", if (slot > 0) "-n=$slot" else "-n")
+    override val arguments = listOf("-r=${parameterize(0, scriptPath, outputPath)}", if (slot > 0) "-n=$slot" else "-n")
 
     override fun beforeRun() {
         var count = 0

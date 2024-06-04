@@ -2,26 +2,22 @@ package nebulosa.pixinsight.script
 
 import nebulosa.io.resource
 import nebulosa.io.transferAndClose
+import nebulosa.star.detection.ImageStar
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
-import kotlin.io.path.deleteRecursively
 import kotlin.io.path.outputStream
 import kotlin.io.path.readText
 
-data class PixInsightCalibrate(
+data class PixInsightDetectStars(
     private val slot: Int,
     private val targetPath: Path,
-    private val dark: Path? = null,
-    private val flat: Path? = null,
-    private val bias: Path? = null,
-    private val compress: Boolean = false,
-    private val use32Bit: Boolean = false,
-) : AbstractPixInsightScript<PixInsightCalibrate.Result>() {
+    private val minSNR: Double = 0.0,
+    private val invert: Boolean = false,
+) : AbstractPixInsightScript<PixInsightDetectStars.Result>() {
 
-    data class Result(
-        @JvmField val outputImage: Path? = null,
-    ) {
+    @Suppress("ArrayInDataClass")
+    data class Result(@JvmField val stars: Array<Star> = emptyArray()) {
 
         companion object {
 
@@ -29,16 +25,30 @@ data class PixInsightCalibrate(
         }
     }
 
-    private val outputDirectory = Files.createTempDirectory("pi-calibrate-")
+    data class Star(
+        override val x: Double = 0.0,
+        override val y: Double = 0.0,
+        override val flux: Double = 0.0,
+        @JvmField val size: Double = 0.0,
+        @JvmField val bkg: Double = 0.0,
+        @JvmField val x0: Int = 0,
+        @JvmField val y0: Int = 0,
+        @JvmField val x1: Int = 0,
+        @JvmField val y1: Int = 0,
+        @JvmField val nmax: Int = 0,
+        override val snr: Double = 0.0,
+        @JvmField val peak: Double = 0.0,
+        override val hfd: Double = 0.0,
+    ) : ImageStar
+
     private val scriptPath = Files.createTempFile("pi-", ".js")
     private val outputPath = Files.createTempFile("pi-", ".txt")
 
     init {
-        resource("pixinsight/Calibrate.js")!!.transferAndClose(scriptPath.outputStream())
+        resource("pixinsight/DetectStars.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments =
-        listOf("-x=${parameterize(slot, scriptPath, targetPath, outputDirectory, outputPath, dark, flat, bias, compress, use32Bit)}")
+    override val arguments = listOf("-x=${parameterize(slot, scriptPath, targetPath, outputPath, minSNR, invert)}")
 
     override fun processOnComplete(exitCode: Int): Result {
         if (exitCode == 0) {
@@ -59,6 +69,5 @@ data class PixInsightCalibrate(
     override fun close() {
         scriptPath.deleteIfExists()
         outputPath.deleteIfExists()
-        outputDirectory.deleteRecursively()
     }
 }

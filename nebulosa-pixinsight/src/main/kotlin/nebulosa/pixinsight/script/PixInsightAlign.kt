@@ -52,7 +52,7 @@ data class PixInsightAlign(
         resource("pixinsight/Align.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments = listOf("-x=\"${if (slot > 0) "$slot:" else ""}$scriptPath,$referencePath,$targetPath,$outputDirectory,$outputPath\"")
+    override val arguments = listOf("-x=${parameterize(slot, scriptPath, referencePath, targetPath, outputDirectory, outputPath)}")
 
     override fun processOnComplete(exitCode: Int): Result {
         if (exitCode == 0) {
@@ -74,11 +74,5 @@ data class PixInsightAlign(
         scriptPath.deleteIfExists()
         outputPath.deleteIfExists()
         outputDirectory.deleteRecursively()
-    }
-
-    companion object {
-
-        private const val START_FILE = "@"
-        private const val END_FILE = "#"
     }
 }

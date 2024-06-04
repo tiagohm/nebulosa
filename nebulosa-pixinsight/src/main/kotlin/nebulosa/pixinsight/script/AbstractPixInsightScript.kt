@@ -38,11 +38,34 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListen
 
     companion object {
 
+        internal const val START_FILE = "@"
+        internal const val END_FILE = "#"
+
         @JvmStatic private val KOTLIN_MODULE = kotlinModule()
             .addDeserializer(Path::class.java, PathDeserializer)
 
         @JvmStatic internal val OBJECT_MAPPER = jsonMapper {
             addModule(KOTLIN_MODULE)
+        }
+
+        @JvmStatic
+        internal fun parameterize(slot: Int, scriptPath: Path, vararg parameters: Any?): String {
+            return buildString {
+                if (slot > 0) append("$slot:")
+
+                append("\"$scriptPath,")
+
+                parameters.forEachIndexed { i, parameter ->
+                    if (i > 0) append(',')
+
+                    if (parameter is Path) append("'$parameter'")
+                    else if (parameter is CharSequence) append("'$parameter'")
+                    else if (parameter != null) append("$parameter")
+                    else append('0')
+                }
+
+                append('"')
+            }
         }
     }
 }

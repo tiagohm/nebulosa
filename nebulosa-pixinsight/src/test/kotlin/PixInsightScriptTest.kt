@@ -1,7 +1,9 @@
 import io.kotest.core.annotation.EnabledIf
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.paths.shouldExist
+import io.kotest.matchers.shouldBe
 import nebulosa.pixinsight.script.*
 import nebulosa.test.AbstractFitsAndXisfTest
 import nebulosa.test.NonGitHubOnlyCondition
@@ -22,13 +24,28 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
                 .use { it.runSync(runner).shouldBeTrue() }
         }
         "calibrate" {
-            PixInsightCalibrate(PixInsightScript.DEFAULT_SLOT, PI_01_LIGHT, PI_DARK, PI_FLAT, PI_BIAS)
+            PixInsightCalibrate(PixInsightScript.UNSPECIFIED_SLOT, PI_01_LIGHT, PI_DARK, PI_FLAT, PI_BIAS)
                 .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().shouldExist() }
         }
         "align" {
-            PixInsightAlign(PixInsightScript.DEFAULT_SLOT, PI_01_LIGHT, PI_02_LIGHT)
+            PixInsightAlign(PixInsightScript.UNSPECIFIED_SLOT, PI_01_LIGHT, PI_02_LIGHT)
                 .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().shouldExist() }
+        }
+        "detect stars" {
+            PixInsightDetectStars(PixInsightScript.UNSPECIFIED_SLOT, PI_FOCUS_0)
+                .use { it.runSync(runner).also(::println).stars }
+                .map { it.hfd }
+                .average() shouldBe (9.03 plusOrMinus 1e-2)
 
+            PixInsightDetectStars(PixInsightScript.UNSPECIFIED_SLOT, PI_FOCUS_30000)
+                .use { it.runSync(runner).also(::println).stars }
+                .map { it.hfd }
+                .average() shouldBe (1.85 plusOrMinus 1e-2)
+
+            PixInsightDetectStars(PixInsightScript.UNSPECIFIED_SLOT, PI_FOCUS_100000)
+                .use { it.runSync(runner).also(::println).stars }
+                .map { it.hfd }
+                .average() shouldBe (20.88 plusOrMinus 1e-2)
         }
     }
 }

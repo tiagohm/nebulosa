@@ -40,11 +40,11 @@ function calibrate() {
        [false, 0, 0, 0, 0, 0, 0, 0, 0],
        [false, 0, 0, 0, 0, 0, 0, 0, 0]
     ]
-    P.masterBiasEnabled = !!masterBias
+    P.masterBiasEnabled = masterBias !== "0"
     P.masterBiasPath = masterBias
-    P.masterDarkEnabled = !!masterDark
+    P.masterDarkEnabled = masterDark !== "0"
     P.masterDarkPath = masterDark
-    P.masterFlatEnabled = !!masterFlat
+    P.masterFlatEnabled = masterFlat !== "0"
     P.masterFlatPath = masterFlat
     P.calibrateBias = false
     P.calibrateDark = false
