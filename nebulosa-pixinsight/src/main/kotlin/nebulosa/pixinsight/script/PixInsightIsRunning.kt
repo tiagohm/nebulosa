@@ -1,15 +1,11 @@
-package nebulosa.pixinsight
+package nebulosa.pixinsight.script
 
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
-import java.util.concurrent.atomic.AtomicBoolean
 
-data class PixInsightIsRunning(private val slot: Int = 0) : PixInsightScript<Boolean> {
+data class PixInsightIsRunning(private val slot: Int) : AbstractPixInsightScript<Boolean>() {
 
     override val arguments = listOf(if (slot > 0) "-y=$slot" else "-y")
-
-    private val completed = AtomicBoolean()
-    private val running = AtomicBoolean()
 
     private val slotIsNotRunning = "The requested application instance #$slot is not running"
     private val slotCrashed = "The requested application instance #$slot has crashed"
@@ -24,20 +20,20 @@ data class PixInsightIsRunning(private val slot: Int = 0) : PixInsightScript<Boo
     }
 
     private fun processLine(line: String) {
-        if (completed.get()) return
+        if (isDone) return
 
         if (slot > 0) {
             if (line.contains(slotIsNotRunning, true) || line.contains(slotCrashed, true)) {
-                completeWith(false)
+                complete(false)
             } else if (line.contains(yieldedExecutionInstance, true)) {
-                completeWith(true)
+                complete(true)
             } else {
                 return
             }
         } else if (line.contains(YIELDED_EXECUTION_INSTANCE, true)) {
-            completeWith(true)
+            complete(true)
         } else if (line.contains(NO_RUNNING_PROCESS, true)) {
-            completeWith(false)
+            complete(false)
         } else {
             return
         }
@@ -45,14 +41,9 @@ data class PixInsightIsRunning(private val slot: Int = 0) : PixInsightScript<Boo
         LOG.debug { line }
     }
 
-    private fun completeWith(running: Boolean) {
-        this.running.set(running)
-        completed.set(true)
-    }
+    override fun processOnComplete(exitCode: Int) = false
 
-    override fun processOnComplete(pid: Long, exitCode: Int): Boolean {
-        return exitCode == 0 && completed.get() && running.get()
-    }
+    override fun close() = Unit
 
     companion object {
 
