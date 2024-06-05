@@ -10,6 +10,7 @@ dependencies {
     api(project(":nebulosa-star-detection"))
     api(project(":nebulosa-livestacking"))
     api(libs.bundles.jackson)
+    api(libs.apache.codec)
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }

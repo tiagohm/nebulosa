@@ -1,8 +1,20 @@
+function decodeParams(hex) {
+    let decoded = ''
+
+    for (let i = 0; i < hex.length; i += 2) {
+        decoded += String.fromCharCode(parseInt(hex.substr(i, 2), 16))
+    }
+
+    return JSON.parse(decoded)
+}
+
 function alignment() {
-    const referencePath = jsArguments[0]
-    const targetPath = jsArguments[1]
-    const outputDirectory = jsArguments[2]
-    const statusPath = jsArguments[3]
+    const input = decodeParams(jsArguments[0])
+
+    const referencePath = input.referencePath
+    const targetPath = input.targetPath
+    const outputDirectory = input.outputDirectory
+    const statusPath = input.statusPath
 
     console.writeln("referencePath=" + referencePath)
     console.writeln("targetPath=" + targetPath)

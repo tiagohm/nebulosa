@@ -13,9 +13,16 @@ data class PixInsightAlign(
     private val slot: Int,
     private val referencePath: Path,
     private val targetPath: Path,
-) : AbstractPixInsightScript<PixInsightAlign.Result>() {
+) : AbstractPixInsightScript<PixInsightAlign.Output>() {
 
-    data class Result(
+    private data class Input(
+        @JvmField val referencePath: Path,
+        @JvmField val targetPath: Path,
+        @JvmField val outputDirectory: Path,
+        @JvmField val statusPath: Path,
+    )
+
+    data class Output(
         @JvmField val outputImage: Path? = null,
         @JvmField val outputMaskImage: Path? = null,
         @JvmField val totalPairMatches: Int = 0,
@@ -40,39 +47,39 @@ data class PixInsightAlign(
 
         companion object {
 
-            @JvmStatic val FAILED = Result()
+            @JvmStatic val FAILED = Output()
         }
     }
 
     private val outputDirectory = Files.createTempDirectory("pi-align-")
     private val scriptPath = Files.createTempFile("pi-", ".js")
-    private val outputPath = Files.createTempFile("pi-", ".txt")
+    private val statusPath = Files.createTempFile("pi-", ".txt")
 
     init {
         resource("pixinsight/Align.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments = listOf("-x=${parameterize(slot, scriptPath, referencePath, targetPath, outputDirectory, outputPath)}")
+    override val arguments = listOf("-x=${execute(slot, scriptPath, Input(referencePath, targetPath, outputDirectory, statusPath))}")
 
-    override fun processOnComplete(exitCode: Int): Result {
+    override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {
             repeat(5) {
-                val text = outputPath.readText()
+                val text = statusPath.readText()
 
                 if (text.startsWith(START_FILE) && text.endsWith(END_FILE)) {
-                    return OBJECT_MAPPER.readValue(text.substring(1, text.length - 1), Result::class.java)
+                    return OBJECT_MAPPER.readValue(text.substring(1, text.length - 1), Output::class.java)
                 }
 
                 Thread.sleep(1000)
             }
         }
 
-        return Result.FAILED
+        return Output.FAILED
     }
 
     override fun close() {
         scriptPath.deleteIfExists()
-        outputPath.deleteIfExists()
+        statusPath.deleteIfExists()
         outputDirectory.deleteRecursively()
     }
 }

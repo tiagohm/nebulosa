@@ -5,33 +5,30 @@ import nebulosa.io.transferAndClose
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
-import kotlin.io.path.deleteRecursively
 import kotlin.io.path.outputStream
 import kotlin.io.path.readText
 
-data class PixInsightCalibrate(
+data class PixInsightPixelMath(
     private val slot: Int,
-    private val targetPath: Path,
-    private val dark: Path? = null,
-    private val flat: Path? = null,
-    private val bias: Path? = null,
-    private val compress: Boolean = false,
-    private val use32Bit: Boolean = false,
-) : AbstractPixInsightScript<PixInsightCalibrate.Output>() {
+    private val inputPaths: List<Path>,
+    private val outputPath: Path,
+    private val expressionRK: String? = null,
+    private val expressionG: String? = null,
+    private val expressionB: String? = null,
+) : AbstractPixInsightScript<PixInsightPixelMath.Output>() {
 
     private data class Input(
-        @JvmField val targetPath: Path,
         @JvmField val outputDirectory: Path,
         @JvmField val statusPath: Path,
-        @JvmField val masterDark: Path? = null,
-        @JvmField val masterFlat: Path? = null,
-        @JvmField val masterBias: Path? = null,
-        @JvmField val compress: Boolean = false,
-        @JvmField val use32Bit: Boolean = false,
+        @JvmField val inputPaths: List<Path>,
+        @JvmField val outputPath: Path,
+        @JvmField val expressionRK: String? = null,
+        @JvmField val expressionG: String? = null,
+        @JvmField val expressionB: String? = null,
     )
 
     data class Output(
-        @JvmField val outputImage: Path? = null,
+        @JvmField val stackedImage: Path? = null,
     ) {
 
         companion object {
@@ -40,18 +37,18 @@ data class PixInsightCalibrate(
         }
     }
 
-    private val outputDirectory = Files.createTempDirectory("pi-calibrate-")
+    private val outputDirectory = Files.createTempDirectory("pi-pixelmath-")
     private val scriptPath = Files.createTempFile("pi-", ".js")
     private val statusPath = Files.createTempFile("pi-", ".txt")
 
     init {
-        resource("pixinsight/Calibrate.js")!!.transferAndClose(scriptPath.outputStream())
+        resource("pixinsight/PixelMath.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
     override val arguments =
-        listOf("-x=${execute(slot, scriptPath, Input(targetPath, outputDirectory, statusPath, dark, flat, bias, compress, use32Bit))}")
+        listOf("-x=${execute(slot, scriptPath, Input(outputDirectory, statusPath, inputPaths, outputPath, expressionRK, expressionG, expressionB))}")
 
-    override fun processOnComplete(exitCode: Int): Output {
+    override fun processOnComplete(exitCode: Int): Output? {
         if (exitCode == 0) {
             repeat(5) {
                 val text = statusPath.readText()
@@ -70,6 +67,5 @@ data class PixInsightCalibrate(
     override fun close() {
         scriptPath.deleteIfExists()
         statusPath.deleteIfExists()
-        outputDirectory.deleteRecursively()
     }
 }

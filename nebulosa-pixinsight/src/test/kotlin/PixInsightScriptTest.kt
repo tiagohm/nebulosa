@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldBe
 import nebulosa.pixinsight.script.*
 import nebulosa.test.AbstractFitsAndXisfTest
 import nebulosa.test.NonGitHubOnlyCondition
+import java.nio.file.Files
 import java.nio.file.Path
 
 @EnabledIf(NonGitHubOnlyCondition::class)
@@ -46,6 +47,11 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
                 .use { it.runSync(runner).also(::println).stars }
                 .map { it.hfd }
                 .average() shouldBe (20.88 plusOrMinus 1e-2)
+        }
+        "pixel math" {
+            val outputPath = Files.createTempFile("pi-stacked-", ".fits")
+            PixInsightPixelMath(PixInsightScript.UNSPECIFIED_SLOT, listOf(PI_01_LIGHT, PI_02_LIGHT), outputPath, "{{0}} + {{1}}")
+                .use { it.runSync(runner).also(::println).stackedImage.shouldNotBeNull().shouldExist() }
         }
     }
 }

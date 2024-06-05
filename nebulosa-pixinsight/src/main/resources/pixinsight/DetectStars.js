@@ -795,11 +795,23 @@ function computeHfr(image, s) {
     s.hfr = b > 0.0 ? a / b : 0.0
 }
 
+function decodeParams(hex) {
+    let decoded = ''
+
+    for (let i = 0; i < hex.length; i += 2) {
+        decoded += String.fromCharCode(parseInt(hex.substr(i, 2), 16))
+    }
+
+    return JSON.parse(decoded)
+}
+
 function detectStars() {
-    const targetPath = jsArguments[0]
-    const statusPath = jsArguments[1]
-    const minSNR = parseFloat(jsArguments[2])
-    const invert = jsArguments[3].toLowerCase() === 'true'
+    const input = decodeParams(jsArguments[0])
+
+    const targetPath = input.targetPath
+    const statusPath = input.statusPath
+    const minSNR = input.minSNR
+    const invert = input.invert
 
     console.writeln("targetPath=" + targetPath)
     console.writeln("statusPath=" + statusPath)

@@ -209,7 +209,7 @@ export interface ImageStretchDialog {
 
 export interface ImageSolverDialog {
     showDialog: boolean
-    solving: boolean
+    running: boolean
     blind: boolean
     centerRA: Angle
     centerDEC: Angle
@@ -259,10 +259,13 @@ export interface ImageTransformation {
 
 export interface ImageAnnotationDialog {
     showDialog: boolean
+    running: boolean
+    visible: boolean
     useStarsAndDSOs: boolean
     useMinorPlanets: boolean
     minorPlanetsMagLimit: number
     useSimbad: boolean
+    data: ImageAnnotation[]
 }
 
 export interface ROISelected {
@@ -275,10 +278,16 @@ export interface ROISelected {
 
 export interface StarDetectionDialog {
     showDialog: boolean
+    running: boolean
     type: StarDetectorType
     minSNR: number
     visible: boolean
     stars: DetectedStar[]
     computed: Omit<DetectedStar, 'x' | 'y' | 'flux'> & { minFlux: number, maxFlux: number }
     selected: DetectedStar
+}
+
+export interface AnnotationInfoDialog {
+    showDialog: boolean
+    info?: AstronomicalObject & Partial<Star & DeepSkyObject>
 }

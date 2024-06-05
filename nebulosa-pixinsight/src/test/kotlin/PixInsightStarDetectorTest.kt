@@ -1,9 +1,12 @@
+import io.kotest.core.annotation.EnabledIf
 import io.kotest.matchers.collections.shouldHaveSize
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.pixinsight.star.detection.PixInsightStarDetector
 import nebulosa.test.AbstractFitsAndXisfTest
+import nebulosa.test.NonGitHubOnlyCondition
 import java.nio.file.Path
 
+@EnabledIf(NonGitHubOnlyCondition::class)
 class PixInsightStarDetectorTest : AbstractFitsAndXisfTest() {
 
     init {

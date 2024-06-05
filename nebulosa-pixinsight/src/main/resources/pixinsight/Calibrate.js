@@ -1,12 +1,24 @@
+function decodeParams(hex) {
+    let decoded = ''
+
+    for (let i = 0; i < hex.length; i += 2) {
+        decoded += String.fromCharCode(parseInt(hex.substr(i, 2), 16))
+    }
+
+    return JSON.parse(decoded)
+}
+
 function calibrate() {
-    const targetPath = jsArguments[0]
-    const outputDirectory = jsArguments[1]
-    const statusPath = jsArguments[2]
-    const masterDark = jsArguments[3]
-    const masterFlat = jsArguments[4]
-    const masterBias = jsArguments[5]
-    const compress = jsArguments[6].toLowerCase() === 'true'
-    const use32Bit = jsArguments[7].toLowerCase() === 'true'
+    const input = decodeParams(jsArguments[0])
+
+    const targetPath = input.targetPath
+    const outputDirectory = input.outputDirectory
+    const statusPath = input.statusPath
+    const masterDark = input.masterDark
+    const masterFlat = input.masterFlat
+    const masterBias = input.masterBias
+    const compress = input.compress
+    const use32Bit = input.use32Bit
 
     console.writeln("targetPath=" + targetPath)
     console.writeln("outputDirectory=" + outputDirectory)
@@ -40,12 +52,12 @@ function calibrate() {
        [false, 0, 0, 0, 0, 0, 0, 0, 0],
        [false, 0, 0, 0, 0, 0, 0, 0, 0]
     ]
-    P.masterBiasEnabled = masterBias !== "0"
-    P.masterBiasPath = masterBias
-    P.masterDarkEnabled = masterDark !== "0"
-    P.masterDarkPath = masterDark
-    P.masterFlatEnabled = masterFlat !== "0"
-    P.masterFlatPath = masterFlat
+    P.masterBiasEnabled = !!masterBias
+    P.masterBiasPath = masterBias || ""
+    P.masterDarkEnabled = !!masterDark
+    P.masterDarkPath = masterDark || ""
+    P.masterFlatEnabled = !!masterFlat
+    P.masterFlatPath = masterFlat || ""
     P.calibrateBias = false
     P.calibrateDark = false
     P.calibrateFlat = false

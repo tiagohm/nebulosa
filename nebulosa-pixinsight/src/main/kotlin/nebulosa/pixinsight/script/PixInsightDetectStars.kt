@@ -16,14 +16,22 @@ data class PixInsightDetectStars(
     private val minSNR: Double = 0.0,
     private val invert: Boolean = false,
     private val timeout: Duration = Duration.ZERO,
-) : AbstractPixInsightScript<PixInsightDetectStars.Result>() {
+) : AbstractPixInsightScript<PixInsightDetectStars.Output>() {
 
-    @Suppress("ArrayInDataClass")
-    data class Result(@JvmField val stars: Array<Star> = emptyArray()) {
+    private data class Input(
+        @JvmField val targetPath: Path,
+        @JvmField val statusPath: Path,
+        @JvmField val minSNR: Double = 0.0,
+        @JvmField val invert: Boolean = false,
+    )
+
+    data class Output(
+        @JvmField val stars: List<Star> = emptyList(),
+    ) {
 
         companion object {
 
-            @JvmStatic val FAILED = Result()
+            @JvmStatic val FAILED = Output()
         }
     }
 
@@ -44,25 +52,25 @@ data class PixInsightDetectStars(
     ) : ImageStar
 
     private val scriptPath = Files.createTempFile("pi-", ".js")
-    private val outputPath = Files.createTempFile("pi-", ".txt")
+    private val statusPath = Files.createTempFile("pi-", ".txt")
 
     init {
         resource("pixinsight/DetectStars.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments = listOf("-x=${parameterize(slot, scriptPath, targetPath, outputPath, minSNR, invert)}")
+    override val arguments = listOf("-x=${execute(slot, scriptPath, Input(targetPath, statusPath, minSNR, invert))}")
 
-    override fun processOnComplete(exitCode: Int): Result {
+    override fun processOnComplete(exitCode: Int): Output {
         val timeoutInMillis = timeout.toMillis()
 
         if (exitCode == 0) {
             val startTime = System.currentTimeMillis()
 
             repeat(600) {
-                val text = outputPath.readText()
+                val text = statusPath.readText()
 
                 if (text.startsWith(START_FILE) && text.endsWith(END_FILE)) {
-                    return OBJECT_MAPPER.readValue(text.substring(1, text.length - 1), Result::class.java)
+                    return OBJECT_MAPPER.readValue(text.substring(1, text.length - 1), Output::class.java)
                 }
 
                 if (timeoutInMillis == 0L || System.currentTimeMillis() - startTime < timeoutInMillis) {
@@ -73,11 +81,11 @@ data class PixInsightDetectStars(
             }
         }
 
-        return Result.FAILED
+        return Output.FAILED
     }
 
     override fun close() {
         scriptPath.deleteIfExists()
-        outputPath.deleteIfExists()
+        statusPath.deleteIfExists()
     }
 }

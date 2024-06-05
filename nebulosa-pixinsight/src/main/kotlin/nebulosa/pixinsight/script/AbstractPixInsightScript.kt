@@ -5,7 +5,9 @@ import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.common.exec.CommandLine
 import nebulosa.common.exec.LineReadListener
 import nebulosa.common.json.PathDeserializer
+import nebulosa.common.json.PathSerializer
 import nebulosa.log.loggerFor
+import org.apache.commons.codec.binary.Hex
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
@@ -48,27 +50,18 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListen
 
         @JvmStatic private val KOTLIN_MODULE = kotlinModule()
             .addDeserializer(Path::class.java, PathDeserializer)
+            .addSerializer(PathSerializer)
 
         @JvmStatic internal val OBJECT_MAPPER = jsonMapper {
             addModule(KOTLIN_MODULE)
         }
 
         @JvmStatic
-        internal fun parameterize(slot: Int, scriptPath: Path, vararg parameters: Any?): String {
+        internal fun execute(slot: Int, scriptPath: Path, data: Any): String {
             return buildString {
                 if (slot > 0) append("$slot:")
-
                 append("\"$scriptPath,")
-
-                parameters.forEachIndexed { i, parameter ->
-                    if (i > 0) append(',')
-
-                    if (parameter is Path) append("'$parameter'")
-                    else if (parameter is CharSequence) append("'$parameter'")
-                    else if (parameter != null) append("$parameter")
-                    else append('0')
-                }
-
+                append(Hex.encodeHexString(OBJECT_MAPPER.writeValueAsBytes(data)))
                 append('"')
             }
         }

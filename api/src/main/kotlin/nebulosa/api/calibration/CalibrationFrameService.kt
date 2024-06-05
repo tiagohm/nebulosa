@@ -31,26 +31,37 @@ class CalibrationFrameService(
     fun calibrate(name: String, image: Image, createNew: Boolean = false): Image {
         return synchronized(image) {
             val darkFrame = findBestDarkFrames(name, image).firstOrNull()
-            val biasFrame = findBestBiasFrames(name, image).firstOrNull()
+            val biasFrame = if (darkFrame == null) findBestBiasFrames(name, image).firstOrNull() else null
             val flatFrame = findBestFlatFrames(name, image).firstOrNull()
 
-            if (darkFrame != null || biasFrame != null || flatFrame != null) {
+            val darkImage = darkFrame?.path?.fits()?.use(Image::open)
+            val biasImage = biasFrame?.path?.fits()?.use(Image::open)
+            var flatImage = flatFrame?.path?.fits()?.use(Image::open)
+
+            if (darkImage != null || biasImage != null || flatImage != null) {
                 var transformedImage = if (createNew) image.clone() else image
 
-                if (biasFrame != null) {
-                    val calibrationImage = biasFrame.path!!.fits().use(Image::open)
-                    transformedImage = transformedImage.transform(BiasSubtraction(calibrationImage))
+                //  If not using dark frames.
+                if (biasImage != null) {
+                    // Subtract Master Bias from Flat Frames.
+                    if (flatImage != null) {
+                        flatImage = flatImage.transform(BiasSubtraction(biasImage))
+                        LOG.info("bias frame subtraction applied to flat frame. frame={}", biasFrame)
+                    }
+
+                    // Subtract the Master Bias frame.
+                    transformedImage = transformedImage.transform(BiasSubtraction(biasImage))
                     LOG.info("bias frame subtraction applied. frame={}", biasFrame)
-                } else {
+                } else if (darkFrame == null) {
                     LOG.info(
                         "no bias frames found. width={}, height={}, bin={}, gain={}",
                         image.width, image.height, image.header.binX, image.header.gain
                     )
                 }
 
-                if (darkFrame != null) {
-                    val calibrationImage = darkFrame.path!!.fits().use(Image::open)
-                    transformedImage = transformedImage.transform(DarkSubtraction(calibrationImage))
+                // Subtract Master Dark frame.
+                if (darkImage != null) {
+                    transformedImage = transformedImage.transform(DarkSubtraction(darkImage))
                     LOG.info("dark frame subtraction applied. frame={}", darkFrame)
                 } else {
                     LOG.info(
@@ -59,9 +70,9 @@ class CalibrationFrameService(
                     )
                 }
 
-                if (flatFrame != null) {
-                    val calibrationImage = flatFrame.path!!.fits().use(Image::open)
-                    transformedImage = transformedImage.transform(FlatCorrection(calibrationImage))
+                // Divide the Dark-subtracted Light frame by the Master Flat frame to correct for variations in the optical path.
+                if (flatImage != null) {
+                    transformedImage = transformedImage.transform(FlatCorrection(flatImage))
                     LOG.info("flat frame correction applied. frame={}", flatFrame)
                 } else {
                     LOG.info(
@@ -177,7 +188,7 @@ class CalibrationFrameService(
         name: String, width: Int, height: Int,
         binX: Int, binY: Int, filter: String?
     ): List<CalibrationFrameEntity> {
-        // TODO: Generate master from matched frames.
+        // TODO: Generate master from matched frames. (Subtract the master bias frame from each flat frame)
         return calibrationFrameRepository
             .flatFrames(name, filter, width, height, binX)
     }

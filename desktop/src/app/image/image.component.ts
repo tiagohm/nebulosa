@@ -16,9 +16,9 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from '../../shared/types/atlas.types'
+import { Angle, EquatorialCoordinateJ2000 } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
-import { DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, StarDetectionDialog } from '../../shared/types/image.types'
+import { AnnotationInfoDialog, DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, StarDetectionDialog } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
@@ -92,15 +92,22 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     readonly annotation: ImageAnnotationDialog = {
         showDialog: false,
+        running: false,
+        visible: false,
         useStarsAndDSOs: true,
         useMinorPlanets: false,
         minorPlanetsMagLimit: 18.0,
-        useSimbad: false
+        useSimbad: false,
+        data: []
     }
 
-    detecting = false
+    readonly annotationInfo: AnnotationInfoDialog = {
+        showDialog: false
+    }
+
     readonly starDetection: StarDetectionDialog = {
         showDialog: false,
+        running: false,
         type: 'ASTAP',
         minSNR: 0,
         visible: false,
@@ -122,7 +129,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     readonly solver: ImageSolverDialog = {
         showDialog: false,
-        solving: false,
+        running: false,
         blind: true,
         centerRA: '',
         centerDEC: '',
@@ -132,11 +139,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     crossHair = false
-    annotations: ImageAnnotation[] = []
-    annotating = false
-    showAnnotationInfoDialog = false
-    annotationInfo?: AstronomicalObject & Partial<Star & DeepSkyObject>
-    annotationIsVisible = false
 
     readonly fitsHeaders: ImageFITSHeadersDialog = {
         showDialog: false,
@@ -341,7 +343,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         },
         toggle: (event) => {
             event.originalEvent?.stopImmediatePropagation()
-            this.annotationIsVisible = event.checked
+            this.annotation.visible = event.checked
         },
     }
 
@@ -752,8 +754,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private clearOverlay() {
-        this.annotations = []
-        this.annotationIsVisible = false
+        this.annotation.data = []
+        this.annotation.visible = false
         this.annotationMenuItem.toggleable = false
 
         this.starDetection.stars = []
@@ -775,15 +777,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     async detectStars() {
-        this.detecting = true
-
         const options = this.preference.starDetectionRequest(this.starDetection.type).get()
         options.minSNR = this.starDetection.minSNR
 
         try {
+            this.starDetection.running = true
             this.starDetection.stars = await this.api.detectStars(this.imagePath!, options)
         } finally {
-            this.detecting = false
+            this.starDetection.running = false
         }
 
         let hfd = 0
@@ -906,21 +907,21 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     async annotateImage() {
         try {
-            this.annotating = true
-            this.annotations = await this.api.annotationsOfImage(this.imagePath!, this.annotation.useStarsAndDSOs,
+            this.annotation.running = true
+            this.annotation.data = await this.api.annotationsOfImage(this.imagePath!, this.annotation.useStarsAndDSOs,
                 this.annotation.useMinorPlanets, this.annotation.minorPlanetsMagLimit, this.annotation.useSimbad)
-            this.annotationIsVisible = true
-            this.annotationMenuItem.toggleable = this.annotations.length > 0
-            this.annotationMenuItem.toggled = this.annotationMenuItem.toggleable
+            this.annotation.visible = this.annotation.data.length > 0
+            this.annotationMenuItem.toggleable = this.annotation.visible
+            this.annotationMenuItem.toggled = this.annotation.visible
             this.annotation.showDialog = false
         } finally {
-            this.annotating = false
+            this.annotation.running = false
         }
     }
 
     showAnnotationInfo(annotation: ImageAnnotation) {
-        this.annotationInfo = annotation.star ?? annotation.dso ?? annotation.minorPlanet
-        this.showAnnotationInfoDialog = true
+        this.annotationInfo.info = annotation.star ?? annotation.dso ?? annotation.minorPlanet
+        this.annotationInfo.showDialog = true
     }
 
     private disableAutoStretch() {
@@ -1037,7 +1038,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     async solveImage() {
-        this.solver.solving = true
+        this.solver.running = true
 
         try {
             const solver = this.preference.plateSolverRequest(this.solver.type).get()
@@ -1049,7 +1050,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         } catch {
             this.updateImageSolved(this.imageInfo?.solved)
         } finally {
-            this.solver.solving = false
+            this.solver.running = false
 
             if (this.solver.solved.solved) {
                 this.retrieveCoordinateInterpolation()
