@@ -11,7 +11,6 @@ function decodeParams(hex) {
 function pixelMath() {
     const input = decodeParams(jsArguments[0])
 
-    const outputDirectory = input.outputDirectory
     const statusPath = input.statusPath
     const inputPaths = input.inputPaths
     const outputPath = input.outputPath
@@ -19,15 +18,14 @@ function pixelMath() {
     let expressionG = input.expressionG
     let expressionB = input.expressionB
 
-    console.writeln("outputDirectory=" + outputDirectory)
     console.writeln("statusPath=" + statusPath)
     console.writeln("inputPaths=" + inputPaths)
     console.writeln("outputPath=" + outputPath)
 
     const windows = []
 
-    for(let i = 0; i < input.inputPaths.length; i++) {
-        windows.push(ImageWindow.open(input.inputPaths[i])[0])
+    for(let i = 0; i < inputPaths.length; i++) {
+        windows.push(ImageWindow.open(inputPaths[i])[0])
     }
 
     for(let i = 0; i < windows.length; i++) {

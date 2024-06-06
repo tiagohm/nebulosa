@@ -1,4 +1,6 @@
 import io.kotest.core.annotation.EnabledIf
+import io.kotest.engine.spec.tempdir
+import io.kotest.engine.spec.tempfile
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -15,6 +17,7 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
 
     init {
         val runner = PixInsightScriptRunner(Path.of("PixInsight"))
+        val workingDirectory = tempdir("pi-").toPath()
 
         "startup" {
             PixInsightStartup(PixInsightScript.DEFAULT_SLOT)
@@ -25,11 +28,11 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
                 .use { it.runSync(runner).shouldBeTrue() }
         }
         "calibrate" {
-            PixInsightCalibrate(PixInsightScript.UNSPECIFIED_SLOT, PI_01_LIGHT, PI_DARK, PI_FLAT, PI_BIAS)
+            PixInsightCalibrate(PixInsightScript.UNSPECIFIED_SLOT, workingDirectory, PI_01_LIGHT, PI_DARK, PI_FLAT, PI_BIAS)
                 .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().shouldExist() }
         }
         "align" {
-            PixInsightAlign(PixInsightScript.UNSPECIFIED_SLOT, PI_01_LIGHT, PI_02_LIGHT)
+            PixInsightAlign(PixInsightScript.UNSPECIFIED_SLOT, workingDirectory, PI_01_LIGHT, PI_02_LIGHT)
                 .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().shouldExist() }
         }
         "detect stars" {
@@ -52,6 +55,11 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
             val outputPath = Files.createTempFile("pi-stacked-", ".fits")
             PixInsightPixelMath(PixInsightScript.UNSPECIFIED_SLOT, listOf(PI_01_LIGHT, PI_02_LIGHT), outputPath, "{{0}} + {{1}}")
                 .use { it.runSync(runner).also(::println).stackedImage.shouldNotBeNull().shouldExist() }
+        }
+        "abe" {
+            val outputPath = tempfile("pi-", ".fits").toPath()
+            PixInsightAutomaticBackgroundExtractor(PixInsightScript.UNSPECIFIED_SLOT, PI_01_LIGHT, outputPath)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull() }
         }
     }
 }

@@ -18,7 +18,6 @@ data class PixInsightPixelMath(
 ) : AbstractPixInsightScript<PixInsightPixelMath.Output>() {
 
     private data class Input(
-        @JvmField val outputDirectory: Path,
         @JvmField val statusPath: Path,
         @JvmField val inputPaths: List<Path>,
         @JvmField val outputPath: Path,
@@ -37,7 +36,6 @@ data class PixInsightPixelMath(
         }
     }
 
-    private val outputDirectory = Files.createTempDirectory("pi-pixelmath-")
     private val scriptPath = Files.createTempFile("pi-", ".js")
     private val statusPath = Files.createTempFile("pi-", ".txt")
 
@@ -46,7 +44,7 @@ data class PixInsightPixelMath(
     }
 
     override val arguments =
-        listOf("-x=${execute(slot, scriptPath, Input(outputDirectory, statusPath, inputPaths, outputPath, expressionRK, expressionG, expressionB))}")
+        listOf("-x=${execute(slot, scriptPath, Input(statusPath, inputPaths, outputPath, expressionRK, expressionG, expressionB))}")
 
     override fun processOnComplete(exitCode: Int): Output? {
         if (exitCode == 0) {

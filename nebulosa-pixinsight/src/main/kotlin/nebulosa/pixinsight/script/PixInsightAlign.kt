@@ -5,12 +5,12 @@ import nebulosa.io.transferAndClose
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
-import kotlin.io.path.deleteRecursively
 import kotlin.io.path.outputStream
 import kotlin.io.path.readText
 
 data class PixInsightAlign(
     private val slot: Int,
+    private val workingDirectory: Path,
     private val referencePath: Path,
     private val targetPath: Path,
 ) : AbstractPixInsightScript<PixInsightAlign.Output>() {
@@ -51,7 +51,6 @@ data class PixInsightAlign(
         }
     }
 
-    private val outputDirectory = Files.createTempDirectory("pi-align-")
     private val scriptPath = Files.createTempFile("pi-", ".js")
     private val statusPath = Files.createTempFile("pi-", ".txt")
 
@@ -59,7 +58,7 @@ data class PixInsightAlign(
         resource("pixinsight/Align.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments = listOf("-x=${execute(slot, scriptPath, Input(referencePath, targetPath, outputDirectory, statusPath))}")
+    override val arguments = listOf("-x=${execute(slot, scriptPath, Input(referencePath, targetPath, workingDirectory, statusPath))}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {
@@ -80,6 +79,5 @@ data class PixInsightAlign(
     override fun close() {
         scriptPath.deleteIfExists()
         statusPath.deleteIfExists()
-        outputDirectory.deleteRecursively()
     }
 }

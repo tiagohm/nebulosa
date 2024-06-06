@@ -14,9 +14,9 @@ function calibrate() {
     const targetPath = input.targetPath
     const outputDirectory = input.outputDirectory
     const statusPath = input.statusPath
-    const masterDark = input.masterDark
-    const masterFlat = input.masterFlat
-    const masterBias = input.masterBias
+    const masterDark = input.masterDark || ""
+    const masterFlat = input.masterFlat || ""
+    const masterBias = input.masterBias || ""
     const compress = input.compress
     const use32Bit = input.use32Bit
 
@@ -53,11 +53,11 @@ function calibrate() {
        [false, 0, 0, 0, 0, 0, 0, 0, 0]
     ]
     P.masterBiasEnabled = !!masterBias
-    P.masterBiasPath = masterBias || ""
+    P.masterBiasPath = masterBias
     P.masterDarkEnabled = !!masterDark
-    P.masterDarkPath = masterDark || ""
+    P.masterDarkPath = masterDark
     P.masterFlatEnabled = !!masterFlat
-    P.masterFlatPath = masterFlat || ""
+    P.masterFlatPath = masterFlat
     P.calibrateBias = false
     P.calibrateDark = false
     P.calibrateFlat = false

@@ -62,7 +62,7 @@ data class PixInsightLiveStacker(
 
             // Calibrate.
             val calibratedPath = if (dark == null && flat == null && bias == null) null else {
-                PixInsightCalibrate(slot, targetPath, dark, flat, if (dark == null) bias else null).use { s ->
+                PixInsightCalibrate(slot, workingDirectory, targetPath, dark, flat, if (dark == null) bias else null).use { s ->
                     val outputPath = s.runSync(runner).outputImage ?: return@use null
                     LOG.info("live stacking calibrated. count={}, image={}", stackCount, outputPath)
                     outputPath.moveTo(calibratedPath, true)
@@ -77,7 +77,7 @@ data class PixInsightLiveStacker(
 
             if (stackCount > 0) {
                 // Align.
-                val alignedPath = PixInsightAlign(slot, referencePath, targetPath).use { s ->
+                val alignedPath = PixInsightAlign(slot, workingDirectory, referencePath, targetPath).use { s ->
                     val outputPath = s.runSync(runner).outputImage ?: return@use null
                     LOG.info("live stacking aligned. count={}, image={}", stackCount, alignedPath)
                     outputPath.moveTo(alignedPath, true)
