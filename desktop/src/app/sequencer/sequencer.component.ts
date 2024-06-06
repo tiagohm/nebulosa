@@ -301,7 +301,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
                 type: 'SIRIL',
                 executablePath: '',
                 rotate: 0,
-                use32Bits: false
+                use32Bits: false,
+                slot: 1,
             },
         })
 

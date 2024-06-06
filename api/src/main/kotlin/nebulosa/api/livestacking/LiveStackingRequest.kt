@@ -5,7 +5,6 @@ import nebulosa.api.beans.converters.angle.DegreesDeserializer
 import nebulosa.livestacking.LiveStacker
 import nebulosa.pixinsight.livestacking.PixInsightLiveStacker
 import nebulosa.pixinsight.script.PixInsightIsRunning
-import nebulosa.pixinsight.script.PixInsightScript
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.pixinsight.script.PixInsightStartup
 import nebulosa.siril.livestacking.SirilLiveStacker
@@ -23,7 +22,7 @@ data class LiveStackingRequest(
     @JvmField val bias: Path? = null,
     @JvmField @field:JsonDeserialize(using = DegreesDeserializer::class) val rotate: Double = 0.0,
     @JvmField val use32Bits: Boolean = false,
-    @JvmField val slot: Int = PixInsightScript.DEFAULT_SLOT,
+    @JvmField val slot: Int = 1,
 ) : Supplier<LiveStacker> {
 
     override fun get(): LiveStacker {

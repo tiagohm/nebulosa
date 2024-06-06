@@ -83,7 +83,12 @@
                     <label>Detector</label>
                 </span>
             </div>
-            <div class="col-6">
+            <div class="col-12">
+                <neb-path-chooser key="STAR_DETECTION_EXECUTABLE_PATH" [directory]="false" label="Executable path"
+                                  [path]="starDetectors.get(starDetectorType)!.executablePath" class="w-full"
+                                  (pathChange)="starDetectors.get(starDetectorType)!.executablePath = $event; save()" />
+            </div>
+            <div class="col-4">
                 <span class="p-float-label">
                     <p-inputNumber [min]="0" [max]="500" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
                                    [ngModel]="starDetectors.get(starDetectorType)!.minSNR"
@@ -92,7 +97,7 @@
                     <label>Min SNR</label>
                 </span>
             </div>
-            <div class="col-6">
+            <div class="col-4">
                 <span class="p-float-label">
                     <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [ngModel]="starDetectors.get(starDetectorType)!.timeout"
                                    (ngModelChange)="starDetectors.get(starDetectorType)!.timeout = $event; save()" [showButtons]="true"
@@ -100,10 +105,14 @@
                     <label>Timeout (s)</label>
                 </span>
             </div>
-            <div class="col-12">
-                <neb-path-chooser key="STAR_DETECTION_EXECUTABLE_PATH" [directory]="false" label="Executable path"
-                                  [path]="starDetectors.get(starDetectorType)!.executablePath" class="w-full"
-                                  (pathChange)="starDetectors.get(starDetectorType)!.executablePath = $event; save()" />
+            <div class="col-4" *ngIf="starDetectorType === 'PIXINSIGHT'">
+                <span class="p-float-label">
+                    <p-inputNumber [min]="1" [max]="256" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
+                                   [ngModel]="starDetectors.get(starDetectorType)!.slot"
+                                   (ngModelChange)="starDetectors.get(starDetectorType)!.slot = $event; save()" [allowEmpty]="false"
+                                   scrollableNumber />
+                    <label>Slot</label>
+                </span>
             </div>
         </div>
     </div>
@@ -120,6 +129,15 @@
                 <neb-path-chooser key="LIVE_STACKING_EXECUTABLE_PATH" [directory]="false" class="w-full"
                                   [path]="liveStackers.get(liveStackerType)!.executablePath" label="Executable path"
                                   (pathChange)="liveStackers.get(liveStackerType)!.executablePath = $event; save()" />
+            </div>
+            <div class="col-4" *ngIf="liveStackerType === 'PIXINSIGHT'">
+                <span class="p-float-label">
+                    <p-inputNumber [min]="1" [max]="256" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
+                                   [ngModel]="liveStackers.get(liveStackerType)!.slot"
+                                   (ngModelChange)="liveStackers.get(liveStackerType)!.slot = $event; save()" [allowEmpty]="false"
+                                   scrollableNumber />
+                    <label>Slot</label>
+                </span>
             </div>
         </div>
     </div>

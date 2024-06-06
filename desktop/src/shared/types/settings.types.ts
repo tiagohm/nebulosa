@@ -25,6 +25,7 @@ export interface StarDetectionOptions {
     executablePath: string
     timeout: number
     minSNR: number
+    slot: number
 }
 
 export const EMPTY_STAR_DETECTION_OPTIONS: StarDetectionOptions = {
@@ -32,4 +33,5 @@ export const EMPTY_STAR_DETECTION_OPTIONS: StarDetectionOptions = {
     executablePath: '',
     timeout: 600,
     minSNR: 0,
+    slot: 1,
 }

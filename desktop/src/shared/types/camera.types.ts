@@ -199,6 +199,7 @@ export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {
         executablePath: "",
         rotate: 0,
         use32Bits: false,
+        slot: 1,
     }
 }
 
@@ -288,14 +289,15 @@ export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
 }
 
 export interface LiveStackingRequest {
-    enabled: boolean,
-    type: LiveStackerType,
-    executablePath: string,
-    dark?: string,
-    flat?: string,
-    bias?: string,
-    rotate: number,
-    use32Bits: boolean,
+    enabled: boolean
+    type: LiveStackerType
+    executablePath: string
+    dark?: string
+    flat?: string
+    bias?: string
+    rotate: number
+    use32Bits: boolean
+    slot: number
 }
 
 export const EMPTY_LIVE_STACKING_REQUEST: LiveStackingRequest = {
@@ -303,5 +305,6 @@ export const EMPTY_LIVE_STACKING_REQUEST: LiveStackingRequest = {
     type: 'SIRIL',
     executablePath: '',
     rotate: 0,
-    use32Bits: false
+    use32Bits: false,
+    slot: 1,
 }
