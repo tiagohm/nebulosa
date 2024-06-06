@@ -597,7 +597,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         for (let i = 3; i < this.calibrationMenuItem.items!.length; i++) {
             const item = this.calibrationMenuItem.items![i]
             item.checked = item.label === (name ?? 'None')
-            item.disabled = this.calibrationViaCamera
         }
     }
 
@@ -621,9 +620,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                 checked: this.transformation.calibrationGroup === name,
                 disabled: this.calibrationViaCamera,
                 command: async () => {
-                    this.transformation.calibrationGroup = name
-                    this.markCalibrationGroupItem(label)
-                    await this.loadImage()
+                    if (!this.calibrationViaCamera) {
+                        this.transformation.calibrationGroup = name
+                        this.markCalibrationGroupItem(label)
+                        await this.loadImage()
+                    }
                 },
             }
         }
@@ -639,9 +640,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         menu.push({
             label: 'Camera',
             icon: 'mdi mdi-camera-iris',
-            checked: this.calibrationViaCamera,
-            command: () => {
-                this.calibrationViaCamera = !this.calibrationViaCamera
+            toggleable: true,
+            toggled: this.calibrationViaCamera,
+            toggle: (e) => {
+                this.calibrationViaCamera = !!e.checked
                 this.markCalibrationGroupItem(this.transformation.calibrationGroup)
             }
         })
