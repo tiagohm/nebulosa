@@ -226,7 +226,7 @@
     <div class="grid p-2">
         <div class="col-4">
             <span class="p-float-label">
-                <p-dropdown [options]="['LX200', 'STELLARIUM']" [(ngModel)]="remoteControl.type" [autoDisplayFirst]="false"
+                <p-dropdown [options]="'MOUNT_REMOTE_CONTROL_TYPE' | dropdownOptions" [(ngModel)]="remoteControl.type" [autoDisplayFirst]="false"
                             styleClass="p-inputtext-sm border-0" />
                 <label>Type</label>
             </span>
@@ -243,6 +243,12 @@
                                [showButtons]="true" [min]="1024" [max]="65535" placeholder="10001" scrollableNumber />
                 <label>Port</label>
             </span>
+        </div>
+        <div class="col-12 flex align-items-center text-sm">
+            <span *ngIf="remoteControl.type === 'LX200'">Used with the <a target="_blank"
+                   href="https://stellarium-labs.com/stellarium-mobile-plus/">mobile app</a></span>
+            <span *ngIf="remoteControl.type === 'STELLARIUM'">Used with the <a target="_blank"
+                   href="https://stellarium.org/">desktop app</a></span>
         </div>
         <div class="col-12 flex justify-content-center align-items-center">
             <p-button [disabled]="!remoteControl.host || !remoteControl.port" label="Connect" icon="mdi mdi-connection"

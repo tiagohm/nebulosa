@@ -3,14 +3,15 @@ import { AutoFocusFittingMode, BacklashCompensationMode } from '../types/autofoc
 import { LiveStackerType } from '../types/camera.types'
 import { Bitpix, ImageChannel, ImageFormat, SCNRProtectionMethod } from '../types/image.types'
 import { PlateSolverType, StarDetectorType } from '../types/settings.types'
+import { MountRemoteControlType } from '../types/mount.types'
 
 export type DropdownOptionType = 'STAR_DETECTOR' | 'PLATE_SOLVER' | 'LIVE_STACKER'
     | 'AUTO_FOCUS_FITTING_MODE' | 'AUTO_FOCUS_BACKLASH_COMPENSATION_MODE' | 'SCNR_PROTECTION_METHOD'
-    | 'IMAGE_FORMAT' | 'IMAGE_BITPIX' | 'IMAGE_CHANNEL'
+    | 'IMAGE_FORMAT' | 'IMAGE_BITPIX' | 'IMAGE_CHANNEL' | 'MOUNT_REMOTE_CONTROL_TYPE'
 
 export type DropdownOptionReturnType = StarDetectorType[] | PlateSolverType[] | LiveStackerType[]
     | AutoFocusFittingMode[] | BacklashCompensationMode[] | SCNRProtectionMethod[]
-    | ImageFormat[] | Bitpix[] | ImageChannel[]
+    | ImageFormat[] | Bitpix[] | ImageChannel[] | MountRemoteControlType[]
 
 @Pipe({ name: 'dropdownOptions' })
 export class DropdownOptionsPipe implements PipeTransform {
@@ -26,6 +27,7 @@ export class DropdownOptionsPipe implements PipeTransform {
             case 'IMAGE_FORMAT': return ['FITS', 'XISF', 'PNG', 'JPG']
             case 'IMAGE_BITPIX': return ['BYTE', 'SHORT', 'INTEGER', 'FLOAT', 'DOUBLE']
             case 'IMAGE_CHANNEL': return ['RED', 'GREEN', 'BLUE', 'GRAY']
+            case 'MOUNT_REMOTE_CONTROL_TYPE': return ['LX200', 'STELLARIUM']
         }
     }
 }
