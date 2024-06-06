@@ -478,6 +478,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             toggle: (event) => {
                 if (event.originalEvent) {
                     this.showLiveStackedImage = !!event.checked
+
+                    if (this.showLiveStackedImage) {
+                        this.disableCalibration(true)
+                    }
+
                     this.loadImage(true)
                 }
             },
@@ -533,6 +538,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                             this.showLiveStackedImage = true
                             this.app.topMenu[0].toggled = true
                             this.app.topMenu[0].visible = true
+                            this.disableCalibration(true)
                         }
                     } else if (!event.liveStackedPath) {
                         this.showLiveStackedImage = undefined
