@@ -780,14 +780,19 @@ function computeHfr(image, s) {
     let a = 0
     let b = 0
 
+    const r = Math.min(s.rect.y1 - s.rect.y0, s.rect.x1 - s.rect.x0) / 2
+
     for(let y = s.rect.y0; y <= s.rect.y1; y++) {
         for(let x = s.rect.x0; x <= s.rect.x1; x++) {
             if(x >= 0 && x < image.width && y >= 0 && y < image.height) {
-                const p = image.sample(x, y)
-                const v = p - s.bkg
                 const d = Math.sqrt((x - s.pos.x) * (x - s.pos.x) + (y - s.pos.y) * (y - s.pos.y))
-                a += v * d
-                b += v
+
+                if(d <= r) {
+                    const p = image.sample(x, y)
+                    const v = p - s.bkg
+                    a += v * d
+                    b += v
+                }
             }
         }
     }

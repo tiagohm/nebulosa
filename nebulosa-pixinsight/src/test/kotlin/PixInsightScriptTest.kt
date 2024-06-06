@@ -39,7 +39,7 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
             PixInsightDetectStars(PixInsightScript.UNSPECIFIED_SLOT, PI_FOCUS_0)
                 .use { it.runSync(runner).also(::println).stars }
                 .map { it.hfd }
-                .average() shouldBe (9.03 plusOrMinus 1e-2)
+                .average() shouldBe (8.43 plusOrMinus 1e-2)
 
             PixInsightDetectStars(PixInsightScript.UNSPECIFIED_SLOT, PI_FOCUS_30000)
                 .use { it.runSync(runner).also(::println).stars }
@@ -49,7 +49,7 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
             PixInsightDetectStars(PixInsightScript.UNSPECIFIED_SLOT, PI_FOCUS_100000)
                 .use { it.runSync(runner).also(::println).stars }
                 .map { it.hfd }
-                .average() shouldBe (20.88 plusOrMinus 1e-2)
+                .average() shouldBe (18.35 plusOrMinus 1e-2)
         }
         "pixel math" {
             val outputPath = Files.createTempFile("pi-stacked-", ".fits")
