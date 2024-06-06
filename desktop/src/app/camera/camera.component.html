@@ -255,7 +255,7 @@
         </div>
         <div class="col-8 align-items-center">
             <span class="p-float-label">
-                <p-dropdown [disabled]="!request.liveStacking.enabled" [options]="['SIRIL']"
+                <p-dropdown [disabled]="!request.liveStacking.enabled" [options]="'LIVE_STACKER' | dropdownOptions"
                             [(ngModel)]="request.liveStacking.type" styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()"
                             [autoDisplayFirst]="false" />
                 <label>Live Stacker</label>
@@ -263,7 +263,7 @@
         </div>
         <div class="col-6 flex flex-column align-items-center justify-content-center text-center gap-2">
             <span class="text-xs text-gray-100">32-bits (slower)</span>
-            <p-inputSwitch [disabled]="!request.liveStacking.enabled || request.liveStacking.type !== 'SIRIL'"
+            <p-inputSwitch [disabled]="!request.liveStacking.enabled"
                            [(ngModel)]="request.liveStacking.use32Bits" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-6 align-items-center">
@@ -281,6 +281,10 @@
         <div class="col-12 align-items-center">
             <neb-path-chooser [disabled]="!request.liveStacking.enabled" [directory]="false" label="Flat File"
                               key="LS_FLAT" [(path)]="request.liveStacking.flat" class="w-full" (pathChange)="savePreference()" />
+        </div>
+        <div class="col-12 align-items-center">
+            <neb-path-chooser [disabled]="!request.liveStacking.enabled || request.liveStacking.type !== 'PIXINSIGHT'" [directory]="false"
+                              label="Bias File" key="LS_BIAS" [(path)]="request.liveStacking.bias" class="w-full" (pathChange)="savePreference()" />
         </div>
     </div>
 </p-dialog>

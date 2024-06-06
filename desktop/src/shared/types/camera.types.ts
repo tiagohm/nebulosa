@@ -13,7 +13,7 @@ export type AutoSubFolderMode = 'OFF' | 'NOON' | 'MIDNIGHT'
 
 export type ExposureMode = 'SINGLE' | 'FIXED' | 'LOOP'
 
-export type LiveStackerType = 'SIRIL'
+export type LiveStackerType = 'SIRIL' | 'PIXINSIGHT'
 
 export enum ExposureTimeUnit {
     MINUTE = 'm',
@@ -293,6 +293,7 @@ export interface LiveStackingRequest {
     executablePath: string,
     dark?: string,
     flat?: string,
+    bias?: string,
     rotate: number,
     use32Bits: boolean,
 }

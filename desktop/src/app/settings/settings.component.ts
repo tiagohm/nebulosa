@@ -65,6 +65,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         this.starDetectors.set('PIXINSIGHT', preference.starDetectionRequest('PIXINSIGHT').get())
 
         this.liveStackers.set('SIRIL', preference.liveStackingRequest('SIRIL').get())
+        this.liveStackers.set('PIXINSIGHT', preference.liveStackingRequest('PIXINSIGHT').get())
     }
 
     async ngAfterViewInit() { }
@@ -134,5 +135,6 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         this.preference.starDetectionRequest('PIXINSIGHT').set(this.starDetectors.get('PIXINSIGHT'))
 
         this.preference.liveStackingRequest('SIRIL').set(this.liveStackers.get('SIRIL'))
+        this.preference.liveStackingRequest('PIXINSIGHT').set(this.liveStackers.get('PIXINSIGHT'))
     }
 }

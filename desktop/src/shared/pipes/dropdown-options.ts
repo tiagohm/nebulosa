@@ -21,7 +21,7 @@ export class DropdownOptionsPipe implements PipeTransform {
             case 'PLATE_SOLVER': return ['ASTAP', 'ASTROMETRY_NET_ONLINE']
             case 'AUTO_FOCUS_FITTING_MODE': return ['TRENDLINES', 'PARABOLIC', 'TREND_PARABOLIC', 'HYPERBOLIC', 'TREND_HYPERBOLIC']
             case 'AUTO_FOCUS_BACKLASH_COMPENSATION_MODE': return ['NONE', 'ABSOLUTE', 'OVERSHOOT']
-            case 'LIVE_STACKER': return ['SIRIL']
+            case 'LIVE_STACKER': return ['SIRIL', 'PIXINSIGHT']
             case 'SCNR_PROTECTION_METHOD': return ['MAXIMUM_MASK', 'ADDITIVE_MASK', 'AVERAGE_NEUTRAL', 'MAXIMUM_NEUTRAL', 'MINIMUM_NEUTRAL']
             case 'IMAGE_FORMAT': return ['FITS', 'XISF', 'PNG', 'JPG']
             case 'IMAGE_BITPIX': return ['BYTE', 'SHORT', 'INTEGER', 'FLOAT', 'DOUBLE']

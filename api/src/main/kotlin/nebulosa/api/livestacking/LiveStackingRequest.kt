@@ -3,6 +3,11 @@ package nebulosa.api.livestacking
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import nebulosa.api.beans.converters.angle.DegreesDeserializer
 import nebulosa.livestacking.LiveStacker
+import nebulosa.pixinsight.livestacking.PixInsightLiveStacker
+import nebulosa.pixinsight.script.PixInsightIsRunning
+import nebulosa.pixinsight.script.PixInsightScript
+import nebulosa.pixinsight.script.PixInsightScriptRunner
+import nebulosa.pixinsight.script.PixInsightStartup
 import nebulosa.siril.livestacking.SirilLiveStacker
 import org.jetbrains.annotations.NotNull
 import java.nio.file.Files
@@ -15,8 +20,10 @@ data class LiveStackingRequest(
     @JvmField @field:NotNull val executablePath: Path? = null,
     @JvmField val dark: Path? = null,
     @JvmField val flat: Path? = null,
+    @JvmField val bias: Path? = null,
     @JvmField @field:JsonDeserialize(using = DegreesDeserializer::class) val rotate: Double = 0.0,
     @JvmField val use32Bits: Boolean = false,
+    @JvmField val slot: Int = PixInsightScript.DEFAULT_SLOT,
 ) : Supplier<LiveStacker> {
 
     override fun get(): LiveStacker {
@@ -24,6 +31,17 @@ data class LiveStackingRequest(
 
         return when (type) {
             LiveStackerType.SIRIL -> SirilLiveStacker(executablePath!!, workingDirectory, dark, flat, rotate, use32Bits)
+            LiveStackerType.PIXINSIGHT -> {
+                val runner = PixInsightScriptRunner(executablePath!!)
+
+                if (!PixInsightIsRunning(slot).use { it.runSync(runner) }) {
+                    if (!PixInsightStartup(slot).use { it.runSync(runner) }) {
+                        throw IllegalStateException("unable to start PixInsight")
+                    }
+                }
+
+                PixInsightLiveStacker(runner, workingDirectory, dark, flat, bias, use32Bits, slot)
+            }
         }
     }
 

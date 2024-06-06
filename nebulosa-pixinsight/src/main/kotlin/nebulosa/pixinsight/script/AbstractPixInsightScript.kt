@@ -21,12 +21,16 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListen
 
     protected abstract fun processOnComplete(exitCode: Int): T?
 
+    protected open fun waitOnComplete() = Unit
+
     final override fun run(runner: PixInsightScriptRunner) = runner.run(this)
 
     final override fun startCommandLine(commandLine: CommandLine) {
         commandLine.whenComplete { exitCode, exception ->
             try {
                 LOG.info("PixInsight script finished. done={}, exitCode={}", isDone, exitCode, exception)
+
+                waitOnComplete()
 
                 if (isDone) return@whenComplete
                 else if (exception != null) completeExceptionally(exception)
@@ -57,11 +61,21 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListen
         }
 
         @JvmStatic
-        internal fun execute(slot: Int, scriptPath: Path, data: Any): String {
+        internal fun execute(slot: Int, scriptPath: Path, data: Any?): String {
             return buildString {
                 if (slot > 0) append("$slot:")
-                append("\"$scriptPath,")
-                append(Hex.encodeHexString(OBJECT_MAPPER.writeValueAsBytes(data)))
+                append("\"$scriptPath")
+
+                if (data != null) {
+                    append(',')
+
+                    when (data) {
+                        is Path, is CharSequence -> append("'$data'")
+                        is Number -> append("$data")
+                        else -> append(Hex.encodeHexString(OBJECT_MAPPER.writeValueAsBytes(data)))
+                    }
+                }
+
                 append('"')
             }
         }

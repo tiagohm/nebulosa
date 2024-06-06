@@ -1,11 +1,13 @@
 package nebulosa.pixinsight.livestacking
 
 import nebulosa.livestacking.LiveStacker
+import nebulosa.log.loggerFor
 import nebulosa.pixinsight.script.*
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.path.copyTo
+import kotlin.io.path.deleteIfExists
 import kotlin.io.path.moveTo
-import kotlin.io.path.name
 
 data class PixInsightLiveStacker(
     private val runner: PixInsightScriptRunner,
@@ -27,8 +29,11 @@ data class PixInsightLiveStacker(
         get() = stacking.get()
 
     @Volatile private var stackCount = 0
-    @Volatile private var referencePath: Path? = null
-    @Volatile private var stackedPath: Path? = null
+
+    private val referencePath = Path.of("$workingDirectory", "reference.fits")
+    private val calibratedPath = Path.of("$workingDirectory", "calibrated.fits")
+    private val alignedPath = Path.of("$workingDirectory", "aligned.fits")
+    private val stackedPath = Path.of("$workingDirectory", "stacked.fits")
 
     @Synchronized
     override fun start() {
@@ -41,9 +46,10 @@ data class PixInsightLiveStacker(
                 } catch (e: Throwable) {
                     throw IllegalStateException("unable to start PixInsight")
                 }
-
-                running.set(true)
             }
+
+            stackCount = 0
+            running.set(true)
         }
     }
 
@@ -51,15 +57,15 @@ data class PixInsightLiveStacker(
     override fun add(path: Path): Path? {
         var targetPath = path
 
-        if (running.get()) {
+        return if (running.get()) {
             stacking.set(true)
 
             // Calibrate.
             val calibratedPath = if (dark == null && flat == null && bias == null) null else {
-                PixInsightCalibrate(slot, targetPath, dark, flat, if (dark == null) bias else null).use {
-                    val outputPath = it.runSync(runner).outputImage ?: return@use null
-                    val destinationPath = Path.of("$workingDirectory", outputPath.name)
-                    outputPath.moveTo(destinationPath, true)
+                PixInsightCalibrate(slot, targetPath, dark, flat, if (dark == null) bias else null).use { s ->
+                    val outputPath = s.runSync(runner).outputImage ?: return@use null
+                    LOG.info("live stacking calibrated. count={}, image={}", stackCount, outputPath)
+                    outputPath.moveTo(calibratedPath, true)
                 }
             }
 
@@ -71,10 +77,10 @@ data class PixInsightLiveStacker(
 
             if (stackCount > 0) {
                 // Align.
-                val alignedPath = PixInsightAlign(slot, referencePath!!, targetPath).use {
-                    val outputPath = it.runSync(runner).outputImage ?: return@use null
-                    val destinationPath = Path.of("$workingDirectory", outputPath.name)
-                    outputPath.moveTo(destinationPath, true)
+                val alignedPath = PixInsightAlign(slot, referencePath, targetPath).use { s ->
+                    val outputPath = s.runSync(runner).outputImage ?: return@use null
+                    LOG.info("live stacking aligned. count={}, image={}", stackCount, alignedPath)
+                    outputPath.moveTo(alignedPath, true)
                 }
 
                 if (alignedPath != null) {
@@ -82,26 +88,42 @@ data class PixInsightLiveStacker(
                 }
 
                 // Stack.
+                val expressionRK = "({{0}} * $stackCount + {{1}}) / ${stackCount + 1}"
+                PixInsightPixelMath(slot, listOf(stackedPath, targetPath), stackedPath, expressionRK).use { s ->
+                    s.runSync(runner).stackedImage?.also {
+                        LOG.info("live stacking finished. count={}, image={}", stackCount, it)
+                        stackCount++
+                    }
+                }
             } else {
-                referencePath = targetPath
+                targetPath.copyTo(referencePath, true)
+                targetPath.copyTo(stackedPath, true)
+                stackCount = 1
             }
 
-            stackedPath = targetPath
-            stackCount++
-
             stacking.set(false)
-        }
 
-        return stackedPath
+            stackedPath
+        } else {
+            path
+        }
     }
 
     @Synchronized
     override fun stop() {
         running.set(false)
         stackCount = 0
-        referencePath = null
-        stackedPath = null
     }
 
-    override fun close() = Unit
+    override fun close() {
+        referencePath.deleteIfExists()
+        calibratedPath.deleteIfExists()
+        alignedPath.deleteIfExists()
+        // stackedPath.deleteIfExists()
+    }
+
+    companion object {
+
+        @JvmStatic val LOG = loggerFor<PixInsightLiveStacker>()
+    }
 }

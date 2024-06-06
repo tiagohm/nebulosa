@@ -79,7 +79,7 @@ function alignment() {
     P.outputDirectory = outputDirectory
     P.outputExtension = ".fits"
     P.outputPrefix = ""
-    P.outputPostfix = "_sa"
+    P.outputPostfix = "_a"
     P.maskPostfix = "_m"
     P.distortionMapPostfix = "_dm"
     P.outputSampleFormat = StarAlignment.prototype.SameAsTarget

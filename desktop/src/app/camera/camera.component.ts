@@ -543,10 +543,15 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
     }
 
     async startCapture() {
-        await this.openCameraImage()
-        await this.api.cameraSnoop(this.camera, this.equipment)
-        await this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
-        this.preference.equipmentForDevice(this.camera).set(this.equipment)
+        try {
+            this.running = true
+            await this.openCameraImage()
+            await this.api.cameraSnoop(this.camera, this.equipment)
+            await this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
+            this.preference.equipmentForDevice(this.camera).set(this.equipment)
+        } catch {
+            this.running = false
+        }
     }
 
     abortCapture() {
