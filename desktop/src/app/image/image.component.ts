@@ -543,6 +543,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                     this.imageData.path = event.savedPath
                     this.imageData.liveStackedPath = event.liveStackedPath
                     this.imageData.capture = event.capture
+                    this.imageData.exposureCount = event.exposureCount
 
                     this.clearOverlay()
                     this.loadImage(true)
@@ -831,6 +832,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             await this.loadImageFromPath(path)
         }
 
+        let extraInfo = ''
+
+        if (this.imageData.exposureCount) {
+            extraInfo += ` · ${this.imageData.exposureCount}`
+        }
+
         if (this.imageData.title) {
             this.app.subTitle = this.imageData.title
         } else if (this.imageData.camera) {
@@ -840,6 +847,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         } else {
             this.app.subTitle = ''
         }
+
+        this.app.subTitle += extraInfo
     }
 
     private async loadImageFromPath(path: string) {

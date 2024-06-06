@@ -132,6 +132,7 @@ export interface ImageData {
     source?: ImageSource
     title?: string
     capture?: CameraStartCapture
+    exposureCount?: number
 }
 
 export interface FOV {
