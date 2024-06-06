@@ -11,6 +11,7 @@ import nebulosa.api.tasks.SplitTask
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.common.concurrency.latch.PauseListener
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
@@ -20,6 +21,7 @@ import nebulosa.log.loggerFor
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicBoolean
 
 data class CameraCaptureTask(
     @JvmField val camera: Camera,
@@ -29,7 +31,7 @@ data class CameraCaptureTask(
     private val exposureMaxRepeat: Int = 0,
     private val executor: Executor? = null,
     private val calibrationFrameProvider: CalibrationFrameProvider? = null,
-) : AbstractTask<CameraCaptureEvent>(), Consumer<Any>, CameraEventAware {
+) : AbstractTask<CameraCaptureEvent>(), Consumer<Any>, PauseListener, CameraEventAware {
 
     private val delayTask = DelayTask(request.exposureDelay)
     private val waitForSettleTask = WaitForSettleTask(guider)
@@ -54,6 +56,8 @@ data class CameraCaptureTask(
     @Volatile private var exposureRepeatCount = 0
     @Volatile private var liveStacker: LiveStacker? = null
 
+    private val pausing = AtomicBoolean()
+
     init {
         delayTask.subscribe(this)
         cameraExposureTask.subscribe(this)
@@ -66,6 +70,14 @@ data class CameraCaptureTask(
 
     override fun handleCameraEvent(event: CameraEvent) {
         cameraExposureTask.handleCameraEvent(event)
+    }
+
+    override fun onPause(paused: Boolean) {
+        pausing.set(paused)
+
+        if (paused) {
+            sendEvent(CameraCaptureState.PAUSING)
+        }
     }
 
     private fun LiveStackingRequest.processCalibrationGroup(): LiveStackingRequest {
@@ -107,6 +119,9 @@ data class CameraCaptureTask(
 
         cameraExposureTask.reset()
 
+        pausing.set(false)
+        cancellationToken.listenToPause(this)
+
         if (liveStacker == null && request.liveStacking.enabled &&
             (request.isLoop || request.exposureAmount > 1 || exposureMaxRepeat > 1)
         ) {
@@ -126,6 +141,12 @@ data class CameraCaptureTask(
             ((exposureMaxRepeat > 0 && exposureRepeatCount < exposureMaxRepeat)
                     || (exposureMaxRepeat <= 0 && (request.isLoop || exposureCount < request.exposureAmount)))
         ) {
+            if (cancellationToken.isPaused) {
+                pausing.set(false)
+                sendEvent(CameraCaptureState.PAUSED)
+                cancellationToken.waitForPause()
+            }
+
             if (exposureCount == 0) {
                 sendEvent(CameraCaptureState.CAPTURE_STARTED)
 
@@ -159,6 +180,9 @@ data class CameraCaptureTask(
                 ditherAfterExposureTask.execute(cancellationToken)
             }
         }
+
+        pausing.set(false)
+        cancellationToken.unlistenToPause(this)
 
         sendEvent(CameraCaptureState.CAPTURE_FINISHED)
 
@@ -216,12 +240,14 @@ data class CameraCaptureTask(
             captureProgress = (estimatedCaptureTime - captureRemainingTime).toNanos().toDouble() / estimatedCaptureTime.toNanos()
         }
 
+        val isExposureFinished = state == CameraCaptureState.EXPOSURE_FINISHED
+
         val event = CameraCaptureEvent(
-            this, camera, state, request.exposureAmount, exposureCount,
+            this, camera, if (pausing.get() && !isExposureFinished) CameraCaptureState.PAUSING else state, request.exposureAmount, exposureCount,
             captureRemainingTime, captureElapsedTime, captureProgress,
             stepRemainingTime, stepElapsedTime, stepProgress,
             savedPath, liveStackedPath,
-            if (state == CameraCaptureState.EXPOSURE_FINISHED) request else null
+            if (isExposureFinished) request else null
         )
 
         onNext(event)
@@ -256,6 +282,7 @@ data class CameraCaptureTask(
         cameraExposureTask.reset()
         ditherAfterExposureTask.reset()
 
+        pausing.set(false)
         exposureRepeatCount = 0
     }
 

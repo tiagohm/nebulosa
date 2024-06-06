@@ -234,7 +234,7 @@ export interface CameraCaptureEvent extends MessageEvent {
     capture?: CameraStartCapture
 }
 
-export type CameraCaptureState = 'IDLE' | 'CAPTURE_STARTED' | 'EXPOSURE_STARTED' | 'EXPOSURING' | 'WAITING' | 'SETTLING' | 'EXPOSURE_FINISHED' | 'CAPTURE_FINISHED'
+export type CameraCaptureState = 'IDLE' | 'CAPTURE_STARTED' | 'EXPOSURE_STARTED' | 'EXPOSURING' | 'WAITING' | 'SETTLING' | 'PAUSING' | 'PAUSED' | 'EXPOSURE_FINISHED' | 'CAPTURE_FINISHED'
 
 export interface CameraDialogInput {
     mode: CameraDialogMode

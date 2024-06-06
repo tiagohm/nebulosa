@@ -176,6 +176,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
     @ViewChild('cameraExposure')
     private readonly cameraExposure!: CameraExposureComponent
 
+    get status() {
+        return this.cameraExposure?.state ?? 'IDLE'
+    }
+
+    get pausingOrPaused() {
+        return this.status === 'PAUSING' || this.status === 'PAUSED'
+    }
+
     constructor(
         private app: AppComponent,
         private api: ApiService,
@@ -552,6 +560,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
         } catch {
             this.running = false
         }
+    }
+
+    pauseCapture() {
+        return this.api.cameraPauseCapture(this.camera)
+    }
+
+    unpauseCapture() {
+        return this.api.cameraUnpauseCapture(this.camera)
     }
 
     abortCapture() {

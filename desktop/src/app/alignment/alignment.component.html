@@ -88,8 +88,8 @@
                             <p-button [disabled]="!camera.connected || !mount.connected || mount.parked || mount.parking || mount.slewing || running"
                                       label="Start" (onClick)="tppaStart()" icon="mdi mdi-play" severity="success" size="small" />
                             }
-                            <p-button *ngIf="running && !pausingOrPaused" [disabled]="!camera.connected || !mount.connected || !running" label="Pause"
-                                      (onClick)="tppaPause()" icon="mdi mdi-pause" severity="info" size="small" />
+                            <p-button *ngIf="running && !pausingOrPaused" label="Pause" (onClick)="tppaPause()" icon="mdi mdi-pause" severity="info"
+                                      size="small" />
                             <p-button [disabled]="!camera.connected || !mount.connected || !running" label="Abort" (onClick)="tppaStop()"
                                       icon="mdi mdi-stop" severity="danger" size="small" />
                             <p-button [disabled]="!camera.connected" (onClick)="openCameraImage()" icon="mdi mdi-image" [text]="true"
