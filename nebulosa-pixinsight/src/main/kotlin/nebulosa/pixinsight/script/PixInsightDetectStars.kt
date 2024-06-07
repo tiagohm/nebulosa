@@ -26,6 +26,8 @@ data class PixInsightDetectStars(
     )
 
     data class Output(
+        @JvmField val success: Boolean = false,
+        @JvmField val errorMessage: String? = null,
         @JvmField val stars: List<Star> = emptyList(),
     ) {
 

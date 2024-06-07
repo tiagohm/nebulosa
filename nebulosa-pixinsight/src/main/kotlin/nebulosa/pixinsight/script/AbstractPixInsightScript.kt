@@ -34,7 +34,7 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListen
 
                 if (isDone) return@whenComplete
                 else if (exception != null) completeExceptionally(exception)
-                else complete(processOnComplete(exitCode))
+                else complete(processOnComplete(exitCode).also { LOG.info("script processed. output={}", it) })
             } finally {
                 commandLine.unregisterLineReadListener(this)
             }
@@ -72,7 +72,7 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListen
                     when (data) {
                         is Path, is CharSequence -> append("'$data'")
                         is Number -> append("$data")
-                        else -> append(Hex.encodeHexString(OBJECT_MAPPER.writeValueAsBytes(data)))
+                        else -> append(Hex.encodeHexString(OBJECT_MAPPER.writeValueAsString(data).toByteArray(Charsets.UTF_16BE)))
                     }
                 }
 
