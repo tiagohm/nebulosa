@@ -127,11 +127,11 @@
                     <div class="mt-1 absolute" style="top: -12px; right: 10px">
                         <div class="flex align-items-center justify-content-center gap-1">
                             <!-- <p-button [disabled]="!connected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
-                                      icon="mdi mdi-play" severity="success" size="small" /> -->
+                                      icon="mdi mdi-play" severity="success" size="small" [text]="true" /> -->
                             <p-button [disabled]="!connected" label="Clear" (onClick)="guidingClearHistory()" icon="mdi mdi-broom"
-                                      severity="info" size="small" />
+                                      severity="info" size="small" [text]="true" />
                             <p-button [disabled]="!connected || !guiding" label="Stop" (onClick)="guidingStop()" icon="mdi mdi-stop"
-                                      severity="danger" size="small" />
+                                      severity="danger" size="small" [text]="true" />
                         </div>
                     </div>
                 </p-tabView>

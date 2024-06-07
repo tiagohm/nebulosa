@@ -70,7 +70,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
     }
 
     readonly chartData: ChartData = {
-        labels: Array.from({ length: 100 }),
+        labels: Array.from({ length: 100 }, (_, i) => `${i}`),
         datasets: [
             // RA.
             {
@@ -188,7 +188,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
                 }
             },
             x: {
-                stacked: false,
+                type: 'linear',
+                stacked: true,
                 min: 0,
                 max: 100,
                 border: {
