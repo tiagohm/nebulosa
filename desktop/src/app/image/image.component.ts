@@ -599,8 +599,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private markCalibrationGroupItem(name?: string) {
-        this.calibrationMenuItem.items![1].checked = this.calibrationViaCamera
-
         for (let i = 3; i < this.calibrationMenuItem.items!.length; i++) {
             const item = this.calibrationMenuItem.items![i]
             item.checked = item.label === (name ?? 'None')
@@ -625,8 +623,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             return <MenuItem>{
                 label, icon,
                 checked: this.transformation.calibrationGroup === name,
-                disabled: this.calibrationViaCamera,
-                command: async () => {
+                command: async (e) => {
                     if (!this.calibrationViaCamera) {
                         this.transformation.calibrationGroup = name
                         this.markCalibrationGroupItem(label)
@@ -650,6 +647,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             toggleable: true,
             toggled: this.calibrationViaCamera,
             toggle: (e) => {
+                e.originalEvent?.stopImmediatePropagation()
                 this.calibrationViaCamera = !!e.checked
                 this.markCalibrationGroupItem(this.transformation.calibrationGroup)
             }
