@@ -83,15 +83,15 @@
                         <div class="col-12 flex align-items-center justify-content-center gap-1">
                             @if (pausingOrPaused) {
                             <p-button [disabled]="status === 'PAUSING'" label="Unpause" (onClick)="tppaUnpause()" icon="mdi mdi-play"
-                                      severity="success" size="small" />
+                                      severity="success" size="small" [text]="true" />
                             } @else if(!running) {
                             <p-button [disabled]="!camera.connected || !mount.connected || mount.parked || mount.parking || mount.slewing || running"
-                                      label="Start" (onClick)="tppaStart()" icon="mdi mdi-play" severity="success" size="small" />
+                                      label="Start" (onClick)="tppaStart()" icon="mdi mdi-play" severity="success" size="small" [text]="true" />
                             }
                             <p-button *ngIf="running && !pausingOrPaused" label="Pause" (onClick)="tppaPause()" icon="mdi mdi-pause" severity="info"
-                                      size="small" />
+                                      size="small" [text]="true" />
                             <p-button [disabled]="!camera.connected || !mount.connected || !running" label="Abort" (onClick)="tppaStop()"
-                                      icon="mdi mdi-stop" severity="danger" size="small" />
+                                      icon="mdi mdi-stop" severity="danger" size="small" [text]="true" />
                             <p-button [disabled]="!camera.connected" (onClick)="openCameraImage()" icon="mdi mdi-image" [text]="true"
                                       styleClass="ml-4" pTooltip="View image" tooltipPosition="bottom" size="small" />
                         </div>
@@ -124,15 +124,15 @@
                     <div class="grid mt-2">
                         <div class="col-12 flex align-items-center justify-content-center gap-1">
                             <p-button [disabled]="!camera.connected || !guideOutput.connected || running" label="Start" (onClick)="darvStart()"
-                                      icon="mdi mdi-play" severity="success" size="small" />
+                                      icon="mdi mdi-play" severity="success" size="small" [text]="true" />
                             <p-button [disabled]="!camera.connected || !guideOutput.connected || !running" label="Abort" (onClick)="darvStop()"
-                                      icon="mdi mdi-stop" severity="danger" size="small" />
+                                      icon="mdi mdi-stop" severity="danger" size="small" [text]="true" />
                             <p-button [disabled]="!camera.connected" (onClick)="openCameraImage()" icon="mdi mdi-image" [text]="true"
-                                      styleClass="ml-4" pTooltip="View image" tooltipPosition="bottom" size="small" />
+                                      styleClass="ml-4" pTooltip="View image" tooltipPosition="bottom" size="small" [text]="true" />
                         </div>
                     </div>
                     <div class="grid mt-1">
-                        <div class="col-12 flex-column justify-content-center text-sm overflow-y-auto max-h-7rem p-0">
+                        <div class="col-12 flex-column justify-content-center text-sm overflow-y-auto max-h-8rem p-0">
                             <span>1. Locate a star near the south meridian and close to declination 0.</span>
                             <span>2. Start DARV and wait for routine to complete.</span>
                             <span>3. If you see V shaped track, adjust the Azimuth and repeat the step 2 till you get a line.</span>

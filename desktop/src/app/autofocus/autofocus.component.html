@@ -120,9 +120,9 @@
     </div>
     <div class="col-12 flex align-items-center justify-content-center gap-1">
         <p-button [disabled]="!camera.connected || !focuser.connected || running" label="Start" (onClick)="start()"
-                  icon="mdi mdi-play" severity="success" size="small" />
+                  icon="mdi mdi-play" severity="success" size="small" [text]="true" />
         <p-button [disabled]="!camera.connected || !focuser.connected || !running" label="Abort" (onClick)="stop()"
-                  icon="mdi mdi-stop" severity="danger" size="small" />
+                  icon="mdi mdi-stop" severity="danger" size="small" [text]="true" />
         <p-button [disabled]="!camera.connected" (onClick)="openCameraImage()" icon="mdi mdi-image" [text]="true"
                   styleClass="ml-4" pTooltip="View image" tooltipPosition="bottom" size="small" />
     </div>

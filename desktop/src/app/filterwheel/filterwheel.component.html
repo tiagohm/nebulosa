@@ -47,7 +47,7 @@
         </div>
         <div class="col-3 flex align-items-center justify-content-center">
             <p-button [disabled]="!canMoveTo || !wheel.connected || moving || filter?.position === position" label="Move" icon="mdi mdi-check"
-                      (onClick)="moveToSelectedFilter()" size="small" />
+                      (onClick)="moveToSelectedFilter()" size="small" [text]="true" />
         </div>
     </div>
     <div class="grid mt-2" *ngIf="filter && canEdit">

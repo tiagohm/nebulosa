@@ -156,7 +156,7 @@
         </div>
         <div class="col-3 flex pt-3 flex-row align-items-center justify-content-center">
             <p-button [disabled]="!camera.connected || running" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
-                      severity="info" size="small" pTooltip="Full size" tooltipPosition="bottom" />
+                      severity="info" size="small" pTooltip="Full size" tooltipPosition="bottom" [text]="true" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
@@ -205,18 +205,18 @@
         <div class="col-12 flex align-items-center justify-content-center gap-1">
             @if (pausingOrPaused) {
             <p-button *ngIf="canStartOrAbort" [disabled]="status === 'PAUSING'" label="Unpause" (onClick)="unpauseCapture()" icon="mdi mdi-play"
-                      severity="success" size="small" />
+                      severity="success" size="small" [text]="true" />
             } @else if(!running) {
             <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || running" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
                       severity="success" size="small" [pTooltip]="startTooltip" tooltipPosition="top" [escape]="false"
-                      tooltipStyleClass="min-w-22rem flex justify-content-center" />
+                      tooltipStyleClass="min-w-22rem flex justify-content-center" [text]="true" />
             }
             <p-button *ngIf="canStartOrAbort && running && !pausingOrPaused" label="Pause" (onClick)="pauseCapture()" icon="mdi mdi-pause"
-                      severity="info" size="small" />
+                      severity="info" size="small" [text]="true" />
             <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || !running" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
-                      severity="danger" size="small" />
+                      severity="danger" size="small" [text]="true" />
             <p-button *ngIf="canSave" [disabled]="!camera.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
-                      severity="info" size="small" />
+                      severity="info" size="small" [text]="true" />
         </div>
     </div>
 </div>
