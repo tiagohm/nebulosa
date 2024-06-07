@@ -1,6 +1,7 @@
 import { AutoSubFolderMode, Camera, CameraCaptureEvent, CameraStartCapture, Dither } from './camera.types'
 import { Focuser } from './focuser.types'
 import { Mount } from './mount.types'
+import { Rotator } from './rotator.types'
 import { FilterWheel } from './wheel.types'
 
 export type SequenceCaptureMode = 'FULLY' | 'INTERLEAVED'
@@ -39,6 +40,7 @@ export interface SequencePlan {
     mount?: Mount
     wheel?: FilterWheel
     focuser?: Focuser
+    rotator?: Rotator
 }
 
 export const EMPTY_SEQUENCE_PLAN: SequencePlan = {

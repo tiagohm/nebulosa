@@ -16,6 +16,7 @@ import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
@@ -54,7 +55,7 @@ class SequencerExecutor(
 
     fun execute(
         camera: Camera, request: SequencePlanRequest,
-        mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null,
+        mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null, rotator: Rotator? = null,
     ) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(jobs.none { it.task.camera === camera }) { "${camera.name} Sequencer Job is already in progress" }
@@ -67,7 +68,11 @@ class SequencerExecutor(
             check(jobs.none { it.task.focuser === focuser }) { "${camera.name} Sequencer Job is already in progress" }
         }
 
-        val task = SequencerTask(camera, request, guider, mount, wheel, focuser, threadPoolTaskExecutor, calibrationFrameService)
+        if (rotator != null && rotator.connected) {
+            check(jobs.none { it.task.rotator === rotator }) { "${camera.name} Sequencer Job is already in progress" }
+        }
+
+        val task = SequencerTask(camera, request, guider, mount, wheel, focuser, rotator, threadPoolTaskExecutor, calibrationFrameService)
         task.subscribe(this)
 
         with(SequencerJob(task)) {

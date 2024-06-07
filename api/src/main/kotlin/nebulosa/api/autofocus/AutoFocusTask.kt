@@ -85,7 +85,7 @@ data class AutoFocusTask(
         var numberOfAttempts = 0
         val maximumFocusPoints = request.capture.exposureAmount * request.initialOffsetSteps * 10
 
-        // camera.snoop(listOf(focuser))
+        camera.snoop(camera.snoopedDevices.filter { it !is Focuser } + focuser)
 
         while (!exited && !cancellationToken.isCancelled) {
             numberOfAttempts++

@@ -31,6 +31,8 @@ data class PixInsightDetectStars(
         @JvmField val stars: List<Star> = emptyList(),
     ) {
 
+        override fun toString() = "Output(success=$success, errorMessage=$errorMessage, stars=${stars.size})"
+
         companion object {
 
             @JvmStatic val FAILED = Output()
