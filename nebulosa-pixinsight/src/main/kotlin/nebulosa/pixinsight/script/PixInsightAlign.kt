@@ -64,7 +64,7 @@ data class PixInsightAlign(
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {
-            repeat(5) {
+            repeat(30) {
                 val text = statusPath.readText()
 
                 if (text.startsWith(START_FILE) && text.endsWith(END_FILE)) {

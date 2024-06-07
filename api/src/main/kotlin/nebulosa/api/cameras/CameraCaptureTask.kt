@@ -263,6 +263,7 @@ data class CameraCaptureTask(
         delayAndWaitForSettleSplitTask.close()
         cameraExposureTask.close()
         ditherAfterExposureTask.close()
+        liveStacker?.close()
         super.close()
     }
 

@@ -28,7 +28,7 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListen
     final override fun startCommandLine(commandLine: CommandLine) {
         commandLine.whenComplete { exitCode, exception ->
             try {
-                LOG.info("PixInsight script finished. done={}, exitCode={}", isDone, exitCode, exception)
+                LOG.info("{} script finished. done={}, exitCode={}", this::class.simpleName, isDone, exitCode, exception)
 
                 waitOnComplete()
 

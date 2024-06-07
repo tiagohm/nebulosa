@@ -61,15 +61,16 @@ data class PixInsightLiveStacker(
             stacking.set(true)
 
             // Calibrate.
-            val calibratedPath = if (dark == null && flat == null && bias == null) null else {
+            val calibrated = if (dark == null && flat == null && bias == null) false else {
                 PixInsightCalibrate(slot, workingDirectory, targetPath, dark, flat, if (dark == null) bias else null).use { s ->
-                    val outputPath = s.runSync(runner).outputImage ?: return@use null
-                    LOG.info("live stacking calibrated. count={}, image={}", stackCount, outputPath)
+                    val outputPath = s.runSync(runner).outputImage ?: return@use false
+                    LOG.info("live stacking calibrated. count={}, output={}", stackCount, outputPath)
                     outputPath.moveTo(calibratedPath, true)
+                    true
                 }
             }
 
-            if (calibratedPath != null) {
+            if (calibrated) {
                 targetPath = calibratedPath
             }
 
@@ -77,27 +78,28 @@ data class PixInsightLiveStacker(
 
             if (stackCount > 0) {
                 // Align.
-                val alignedPath = PixInsightAlign(slot, workingDirectory, referencePath, targetPath).use { s ->
-                    val outputPath = s.runSync(runner).outputImage ?: return@use null
-                    LOG.info("live stacking aligned. count={}, image={}", stackCount, alignedPath)
+                val aligned = PixInsightAlign(slot, workingDirectory, referencePath, targetPath).use { s ->
+                    val outputPath = s.runSync(runner).outputImage ?: return@use false
+                    LOG.info("live stacking aligned. count={}, output={}", stackCount, outputPath)
                     outputPath.moveTo(alignedPath, true)
+                    true
                 }
 
-                if (alignedPath != null) {
+                if (aligned) {
                     targetPath = alignedPath
-                }
 
-                // Stack.
-                val expressionRK = "({{0}} * $stackCount + {{1}}) / ${stackCount + 1}"
-                PixInsightPixelMath(slot, listOf(stackedPath, targetPath), stackedPath, expressionRK).use { s ->
-                    s.runSync(runner).stackedImage?.also {
-                        LOG.info("live stacking finished. count={}, image={}", stackCount, it)
-                        stackCount++
+                    // Stack.
+                    val expressionRK = "({{0}} * $stackCount + {{1}}) / ${stackCount + 1}"
+                    PixInsightPixelMath(slot, listOf(stackedPath, targetPath), stackedPath, expressionRK).use { s ->
+                        s.runSync(runner).stackedImage?.also {
+                            LOG.info("live stacking finished. count={}, output={}", stackCount++, it)
+                        }
                     }
                 }
             } else {
                 targetPath.copyTo(referencePath, true)
                 targetPath.copyTo(stackedPath, true)
+                LOG.info("live stacking started. target={}, reference={}, stacked={}", targetPath, referencePath, stackedPath)
                 stackCount = 1
             }
 
