@@ -1,6 +1,13 @@
 package nebulosa.api.repositories
 
 import io.objectbox.Box
+import io.objectbox.Property
+import io.objectbox.kotlin.and
+import io.objectbox.kotlin.equal
+import io.objectbox.kotlin.or
+import io.objectbox.query.PropertyQueryCondition
+import io.objectbox.query.QueryBuilder.StringOrder
+import io.objectbox.query.QueryCondition
 import nebulosa.api.database.BoxEntity
 
 abstract class BoxRepository<T : BoxEntity> : Collection<T> {
@@ -57,5 +64,54 @@ abstract class BoxRepository<T : BoxEntity> : Collection<T> {
 
     override fun contains(element: T): Boolean {
         return element.id in box
+    }
+
+    companion object {
+
+        inline val <T> Property<T>.isTrue
+            get() = this equal true
+
+        inline val <T> Property<T>.isFalse
+            get() = this equal false
+
+        @Suppress("NOTHING_TO_INLINE")
+        inline infix fun <T> Property<T>.equalInsensitive(value: String): PropertyQueryCondition<T> {
+            return equal(value, StringOrder.CASE_INSENSITIVE)
+        }
+
+        @Suppress("NOTHING_TO_INLINE")
+        inline infix fun <T> Property<T>.containsInsensitive(value: String): PropertyQueryCondition<T> {
+            return contains(value, StringOrder.CASE_INSENSITIVE)
+        }
+
+        @JvmStatic
+        fun <T> and(condition: QueryCondition<T>, vararg conditions: QueryCondition<T>?): QueryCondition<T> {
+            return conditions.fold(condition) { a, b -> if (b == null) a else a and b }
+        }
+
+        @JvmStatic
+        fun <T> and(vararg conditions: QueryCondition<T>?): QueryCondition<T>? {
+            return if (conditions.isEmpty()) null else conditions.reduce { a, b -> if (b == null) a else a?.and(b) ?: b }
+        }
+
+        @JvmStatic
+        fun <T> and(conditions: Collection<QueryCondition<T>?>): QueryCondition<T>? {
+            return if (conditions.isEmpty()) null else conditions.reduce { a, b -> if (b == null) a else a?.and(b) ?: b }
+        }
+
+        @JvmStatic
+        fun <T> or(condition: QueryCondition<T>, vararg conditions: QueryCondition<T>?): QueryCondition<T> {
+            return conditions.fold(condition) { a, b -> if (b == null) a else a or b }
+        }
+
+        @JvmStatic
+        fun <T> or(vararg conditions: QueryCondition<T>?): QueryCondition<T>? {
+            return if (conditions.isEmpty()) null else conditions.reduce { a, b -> if (b == null) a else a?.or(b) ?: b }
+        }
+
+        @JvmStatic
+        fun <T> or(conditions: Collection<QueryCondition<T>?>): QueryCondition<T>? {
+            return if (conditions.isEmpty()) null else conditions.reduce { a, b -> if (b == null) a else a?.or(b) ?: b }
+        }
     }
 }

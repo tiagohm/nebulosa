@@ -9,7 +9,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0")
         classpath("org.jetbrains.kotlin:kotlin-allopen:2.0.0")
         classpath("com.adarshr:gradle-test-logger-plugin:4.0.0")
-        classpath("io.objectbox:objectbox-gradle-plugin:4.0.0")
+        classpath("io.objectbox:objectbox-gradle-plugin:4.0.1")
     }
 
     repositories {
