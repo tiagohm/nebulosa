@@ -62,8 +62,10 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         this.plateSolvers.set('ASTROMETRY_NET_ONLINE', preference.plateSolverRequest('ASTROMETRY_NET_ONLINE').get())
 
         this.starDetectors.set('ASTAP', preference.starDetectionRequest('ASTAP').get())
+        this.starDetectors.set('PIXINSIGHT', preference.starDetectionRequest('PIXINSIGHT').get())
 
         this.liveStackers.set('SIRIL', preference.liveStackingRequest('SIRIL').get())
+        this.liveStackers.set('PIXINSIGHT', preference.liveStackingRequest('PIXINSIGHT').get())
     }
 
     async ngAfterViewInit() { }
@@ -130,7 +132,9 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         this.preference.plateSolverRequest('ASTROMETRY_NET_ONLINE').set(this.plateSolvers.get('ASTROMETRY_NET_ONLINE'))
 
         this.preference.starDetectionRequest('ASTAP').set(this.starDetectors.get('ASTAP'))
+        this.preference.starDetectionRequest('PIXINSIGHT').set(this.starDetectors.get('PIXINSIGHT'))
 
         this.preference.liveStackingRequest('SIRIL').set(this.liveStackers.get('SIRIL'))
+        this.preference.liveStackingRequest('PIXINSIGHT').set(this.liveStackers.get('PIXINSIGHT'))
     }
 }

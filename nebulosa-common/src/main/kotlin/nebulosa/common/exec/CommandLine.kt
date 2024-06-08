@@ -31,6 +31,9 @@ data class CommandLine internal constructor(
     val pid
         get() = process?.pid() ?: -1L
 
+    val exitCode
+        get() = process?.takeIf { !it.isAlive }?.exitValue() ?: -1
+
     val writer = PrintStream(object : OutputStream() {
 
         override fun write(b: Int) {
@@ -65,7 +68,12 @@ data class CommandLine internal constructor(
     @Synchronized
     fun start(timeout: Duration = Duration.ZERO): CommandLine {
         if (process == null) {
-            process = builder.start()
+            process = try {
+                builder.start()
+            } catch (e: Throwable) {
+                completeExceptionally(e)
+                return this
+            }
 
             if (listeners.isNotEmpty()) {
                 inputReader = StreamLineReader(process!!.inputStream, false)
@@ -84,9 +92,6 @@ data class CommandLine internal constructor(
 
     @Synchronized
     fun stop() {
-        process?.destroyForcibly()
-        process = null
-
         waiter?.interrupt()
         waiter = null
 
@@ -95,6 +100,10 @@ data class CommandLine internal constructor(
 
         errorReader?.interrupt()
         errorReader = null
+
+        process?.destroyForcibly()
+        process?.waitFor()
+        process = null
     }
 
     fun get(timeout: Duration): Int {
@@ -139,7 +148,7 @@ data class CommandLine internal constructor(
     private inner class StreamLineReader(
         stream: InputStream,
         private val isError: Boolean,
-    ) : Thread("Command Line Stream Line Reader") {
+    ) : Thread("Command Line ${if (isError) "Error" else "Input"} Stream Line Reader") {
 
         private val reader = stream.bufferedReader()
         private val completable = CompletableFuture<Unit>()

@@ -58,7 +58,7 @@
                     </div>
                     <div class="col-5 align-items-center">
                         <span class="p-float-label">
-                            <p-dropdown [options]="['TRENDLINES', 'PARABOLIC', 'TREND_PARABOLIC', 'HYPERBOLIC', 'TREND_HYPERBOLIC']"
+                            <p-dropdown [options]="'AUTO_FOCUS_FITTING_MODE' | dropdownOptions"
                                         [(ngModel)]="request.fittingMode" [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0"
                                         (ngModelChange)="savePreference()" />
                             <label>Curve Fitting</label>
@@ -66,8 +66,8 @@
                     </div>
                     <div class="col-4 align-items-center">
                         <span class="p-float-label">
-                            <p-dropdown [options]="['ASTAP']" [(ngModel)]="request.starDetector.type" [autoDisplayFirst]="false"
-                                        styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" />
+                            <p-dropdown [options]="'STAR_DETECTOR' | dropdownOptions" [(ngModel)]="request.starDetector.type"
+                                        [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" />
                             <label>Star Detector</label>
                         </span>
                     </div>
@@ -83,7 +83,7 @@
                         <div class="grid">
                             <div class="col-6 align-items-center">
                                 <span class="p-float-label">
-                                    <p-dropdown [options]="['NONE', 'ABSOLUTE', 'OVERSHOOT']"
+                                    <p-dropdown [options]="'AUTO_FOCUS_BACKLASH_COMPENSATION_MODE' | dropdownOptions"
                                                 [(ngModel)]="request.backlashCompensation.mode" [autoDisplayFirst]="false"
                                                 styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" />
                                     <label>Backlash Compensation</label>
@@ -120,9 +120,9 @@
     </div>
     <div class="col-12 flex align-items-center justify-content-center gap-1">
         <p-button [disabled]="!camera.connected || !focuser.connected || running" label="Start" (onClick)="start()"
-                  icon="mdi mdi-play" severity="success" size="small" />
+                  icon="mdi mdi-play" severity="success" size="small" [text]="true" />
         <p-button [disabled]="!camera.connected || !focuser.connected || !running" label="Abort" (onClick)="stop()"
-                  icon="mdi mdi-stop" severity="danger" size="small" />
+                  icon="mdi mdi-stop" severity="danger" size="small" [text]="true" />
         <p-button [disabled]="!camera.connected" (onClick)="openCameraImage()" icon="mdi mdi-image" [text]="true"
                   styleClass="ml-4" pTooltip="View image" tooltipPosition="bottom" size="small" />
     </div>

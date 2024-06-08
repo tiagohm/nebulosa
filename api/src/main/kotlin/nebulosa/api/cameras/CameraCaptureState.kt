@@ -8,6 +8,8 @@ enum class CameraCaptureState {
     WAITING,
     SETTLING,
     DITHERING,
+    PAUSING,
+    PAUSED,
     EXPOSURE_FINISHED,
     CAPTURE_FINISHED,
 }

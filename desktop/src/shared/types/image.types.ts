@@ -5,8 +5,7 @@ import { PlateSolverType, StarDetectorType } from './settings.types'
 
 export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
 
-export const SCNR_PROTECTION_METHODS = ['MAXIMUM_MASK', 'ADDITIVE_MASK', 'AVERAGE_NEUTRAL', 'MAXIMUM_NEUTRAL', 'MINIMUM_NEUTRAL'] as const
-export type SCNRProtectionMethod = (typeof SCNR_PROTECTION_METHODS)[number]
+export type SCNRProtectionMethod = 'MAXIMUM_MASK' | 'ADDITIVE_MASK' | 'AVERAGE_NEUTRAL' | 'MAXIMUM_NEUTRAL' | 'MINIMUM_NEUTRAL'
 
 export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD' | 'SEQUENCER' | 'ALIGNMENT' | 'AUTO_FOCUS'
 
@@ -117,6 +116,7 @@ export interface ImagePreference {
     solverType?: PlateSolverType
     savePath?: string
     starDetectionType?: StarDetectorType
+    starDetectionMinSNR?: number
 }
 
 export const EMPTY_IMAGE_PREFERENCE: ImagePreference = {
@@ -132,6 +132,7 @@ export interface ImageData {
     source?: ImageSource
     title?: string
     capture?: CameraStartCapture
+    exposureCount?: number
 }
 
 export interface FOV {
@@ -209,13 +210,12 @@ export interface ImageStretchDialog {
 
 export interface ImageSolverDialog {
     showDialog: boolean
-    solving: boolean
+    running: boolean
     blind: boolean
     centerRA: Angle
     centerDEC: Angle
     radius: number
     readonly solved: ImageSolved
-    readonly types: PlateSolverType[]
     type: PlateSolverType
 }
 
@@ -260,10 +260,13 @@ export interface ImageTransformation {
 
 export interface ImageAnnotationDialog {
     showDialog: boolean
+    running: boolean
+    visible: boolean
     useStarsAndDSOs: boolean
     useMinorPlanets: boolean
     minorPlanetsMagLimit: number
     useSimbad: boolean
+    data: ImageAnnotation[]
 }
 
 export interface ROISelected {
@@ -276,10 +279,16 @@ export interface ROISelected {
 
 export interface StarDetectionDialog {
     showDialog: boolean
+    running: boolean
     type: StarDetectorType
     minSNR: number
     visible: boolean
     stars: DetectedStar[]
     computed: Omit<DetectedStar, 'x' | 'y' | 'flux'> & { minFlux: number, maxFlux: number }
     selected: DetectedStar
+}
+
+export interface AnnotationInfoDialog {
+    showDialog: boolean
+    info?: AstronomicalObject & Partial<Star & DeepSkyObject>
 }

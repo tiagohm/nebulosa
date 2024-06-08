@@ -18,13 +18,14 @@ export const EMPTY_PLATE_SOLVER_OPTIONS: PlateSolverOptions = {
     timeout: 600,
 }
 
-export type StarDetectorType = 'ASTAP'
+export type StarDetectorType = 'ASTAP' | 'PIXINSIGHT'
 
 export interface StarDetectionOptions {
     type: StarDetectorType
     executablePath: string
     timeout: number
     minSNR: number
+    slot: number
 }
 
 export const EMPTY_STAR_DETECTION_OPTIONS: StarDetectionOptions = {
@@ -32,4 +33,5 @@ export const EMPTY_STAR_DETECTION_OPTIONS: StarDetectionOptions = {
     executablePath: '',
     timeout: 600,
     minSNR: 0,
+    slot: 1,
 }

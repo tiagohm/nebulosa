@@ -19,6 +19,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import nebulosa.log.loggerFor
 import java.time.Duration
 import java.util.*
@@ -37,6 +38,7 @@ data class SequencerTask(
     @JvmField val mount: Mount? = null,
     @JvmField val wheel: FilterWheel? = null,
     @JvmField val focuser: Focuser? = null,
+    @JvmField val rotator: Rotator? = null,
     private val executor: Executor? = null,
     private val calibrationFrameProvider: CalibrationFrameProvider? = null,
 ) : AbstractTask<MessageEvent>(), Consumer<Any>, CameraEventAware, WheelEventAware {
@@ -131,7 +133,7 @@ data class SequencerTask(
     override fun execute(cancellationToken: CancellationToken) {
         LOG.info("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, plan={}", camera, mount, wheel, focuser, plan)
 
-        camera.snoop(listOf(mount, wheel, focuser))
+        camera.snoop(listOf(mount, wheel, focuser, rotator))
 
         for (task in tasks) {
             if (cancellationToken.isCancelled) break

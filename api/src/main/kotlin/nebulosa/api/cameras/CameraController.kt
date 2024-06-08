@@ -61,6 +61,16 @@ class CameraController(
         @RequestBody body: CameraStartCaptureRequest,
     ) = cameraService.startCapture(camera, body)
 
+    @PutMapping("{camera}/capture/pause")
+    fun pauseCapture(camera: Camera) {
+        cameraService.pauseCapture(camera)
+    }
+
+    @PutMapping("{camera}/capture/unpause")
+    fun unpauseCapture(camera: Camera) {
+        cameraService.unpauseCapture(camera)
+    }
+
     @PutMapping("{camera}/capture/abort")
     fun abortCapture(camera: Camera) {
         cameraService.abortCapture(camera)

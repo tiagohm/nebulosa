@@ -95,7 +95,7 @@ export class BrowserWindowService {
     }
 
     openAlignment(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'star', width: 415, height: 365 })
+        Object.assign(options, { icon: 'star', width: 425, height: 365 })
         this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
     }
 
@@ -115,8 +115,8 @@ export class BrowserWindowService {
     }
 
     openSettings(options: OpenWindowOptions = {}) {
-        Object.assign(options, { icon: 'settings', width: 340, height: 440 })
-        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined })
+        Object.assign(options, { icon: 'settings', width: 400, height: 450 })
+        this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined, autoResizable: false })
     }
 
     openCalculator(options: OpenWindowOptions = {}) {

@@ -110,7 +110,7 @@ data class TPPATask(
         rightAscension = mount?.rightAscension ?: 0.0
         declination = mount?.declination ?: 0.0
 
-        camera.snoop(listOf(mount))
+        camera.snoop(camera.snoopedDevices.filter { it !is Mount } + mount)
 
         cancellationToken.listenToPause(this)
 

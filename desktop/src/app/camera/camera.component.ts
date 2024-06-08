@@ -176,6 +176,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
     @ViewChild('cameraExposure')
     private readonly cameraExposure!: CameraExposureComponent
 
+    get status() {
+        return this.cameraExposure?.state ?? 'IDLE'
+    }
+
+    get pausingOrPaused() {
+        return this.status === 'PAUSING' || this.status === 'PAUSED'
+    }
+
     constructor(
         private app: AppComponent,
         private api: ApiService,
@@ -532,7 +540,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
         const exposureAmount = this.exposureMode === 'LOOP' ? 0 : (this.exposureMode === 'FIXED' ? this.request.exposureAmount : 1)
         const savePath = this.mode !== 'CAPTURE' ? this.request.savePath : this.savePath
 
-        this.request.liveStacking.executablePath = this.preference.liveStackingRequest(this.request.liveStacking.type).get().executablePath
+        const liveStackingRequest = this.preference.liveStackingRequest(this.request.liveStacking.type).get()
+        this.request.liveStacking.executablePath = liveStackingRequest.executablePath
+        this.request.liveStacking.slot = liveStackingRequest.slot || 1
 
         return {
             ...this.request,
@@ -543,10 +553,23 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
     }
 
     async startCapture() {
-        await this.openCameraImage()
-        await this.api.cameraSnoop(this.camera, this.equipment)
-        await this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
-        this.preference.equipmentForDevice(this.camera).set(this.equipment)
+        try {
+            this.running = true
+            await this.openCameraImage()
+            await this.api.cameraSnoop(this.camera, this.equipment)
+            await this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
+            this.preference.equipmentForDevice(this.camera).set(this.equipment)
+        } catch {
+            this.running = false
+        }
+    }
+
+    pauseCapture() {
+        return this.api.cameraPauseCapture(this.camera)
+    }
+
+    unpauseCapture() {
+        return this.api.cameraUnpauseCapture(this.camera)
     }
 
     abortCapture() {

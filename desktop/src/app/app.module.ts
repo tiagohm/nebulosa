@@ -49,6 +49,7 @@ import { HistogramComponent } from '../shared/components/histogram/histogram.com
 import { MapComponent } from '../shared/components/map/map.component'
 import { MenuItemComponent } from '../shared/components/menu-item/menu-item.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
+import { PathChooserComponent } from '../shared/components/path-chooser/path-chooser.component'
 import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { ScrollableNumberDirective } from '../shared/directives/input-number-scrollable'
@@ -56,6 +57,7 @@ import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
 import { LocationInterceptor } from '../shared/interceptors/location.interceptor'
 import { AnglePipe } from '../shared/pipes/angle.pipe'
+import { DropdownOptionsPipe } from '../shared/pipes/dropdown-options'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
 import { EnvPipe } from '../shared/pipes/env.pipe'
 import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
@@ -84,7 +86,6 @@ import { MountComponent } from './mount/mount.component'
 import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
 import { SettingsComponent } from './settings/settings.component'
-import { PathChooserComponent } from '../shared/components/path-chooser/path-chooser.component'
 
 @NgModule({
     declarations: [
@@ -101,6 +102,7 @@ import { PathChooserComponent } from '../shared/components/path-chooser/path-cho
         DeviceChooserComponent,
         DeviceListMenuComponent,
         DialogMenuComponent,
+        DropdownOptionsPipe,
         EnumPipe,
         EnvPipe,
         ExposureTimePipe,
@@ -179,6 +181,7 @@ import { PathChooserComponent } from '../shared/components/path-chooser/path-cho
         AnglePipe,
         ConfirmationService,
         DialogService,
+        DropdownOptionsPipe,
         EnumPipe,
         EnvPipe,
         ExposureTimePipe,

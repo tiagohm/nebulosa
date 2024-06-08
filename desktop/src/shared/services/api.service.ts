@@ -87,6 +87,14 @@ export class ApiService {
         return this.http.put<void>(`cameras/${camera.id}/capture/start`, data)
     }
 
+    cameraPauseCapture(camera: Camera) {
+        return this.http.put<void>(`cameras/${camera.id}/capture/pause`)
+    }
+
+    cameraUnpauseCapture(camera: Camera) {
+        return this.http.put<void>(`cameras/${camera.id}/capture/unpause`)
+    }
+
     cameraAbortCapture(camera: Camera) {
         return this.http.put<void>(`cameras/${camera.id}/capture/abort`)
     }

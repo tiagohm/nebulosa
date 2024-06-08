@@ -13,6 +13,7 @@ import { JsonFile } from '../../shared/types/app.types'
 import { Camera, CameraCaptureEvent, CameraStartCapture } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Mount } from '../../shared/types/mount.types'
+import { Rotator } from '../../shared/types/rotator.types'
 import { EMPTY_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
@@ -34,11 +35,13 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
     mounts: Mount[] = []
     wheels: FilterWheel[] = []
     focusers: Focuser[] = []
+    rotators: Rotator[] = []
 
     camera?: Camera
     mount?: Mount
     wheel?: FilterWheel
     focuser?: Focuser
+    rotator?: Rotator
 
     readonly captureModes: SequenceCaptureMode[] = ['FULLY', 'INTERLEAVED']
     readonly plan = structuredClone(EMPTY_SEQUENCE_PLAN)
@@ -177,43 +180,53 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
         })
 
         electron.on('CAMERA.UPDATED', event => {
-            ngZone.run(() => {
-                const camera = this.cameras.find(e => e.id === event.device.id)
+            const camera = this.cameras.find(e => e.id === event.device.id)
 
-                if (camera) {
+            if (camera) {
+                ngZone.run(() => {
                     Object.assign(camera, event.device)
-                }
-            })
+                })
+            }
         })
 
         electron.on('MOUNT.UPDATED', event => {
-            ngZone.run(() => {
-                const mount = this.mounts.find(e => e.id === event.device.id)
+            const mount = this.mounts.find(e => e.id === event.device.id)
 
-                if (mount) {
+            if (mount) {
+                ngZone.run(() => {
                     Object.assign(mount, event.device)
-                }
-            })
+                })
+            }
         })
 
         electron.on('WHEEL.UPDATED', event => {
-            ngZone.run(() => {
-                const wheel = this.wheels.find(e => e.id === event.device.id)
+            const wheel = this.wheels.find(e => e.id === event.device.id)
 
-                if (wheel) {
+            if (wheel) {
+                ngZone.run(() => {
                     Object.assign(wheel, event.device)
-                }
-            })
+                })
+            }
         })
 
         electron.on('FOCUSER.UPDATED', event => {
-            ngZone.run(() => {
-                const focuser = this.focusers.find(e => e.id === event.device.id)
+            const focuser = this.focusers.find(e => e.id === event.device.id)
 
-                if (focuser) {
+            if (focuser) {
+                ngZone.run(() => {
                     Object.assign(focuser, event.device)
-                }
-            })
+                })
+            }
+        })
+
+        electron.on('ROTATOR.UPDATED', event => {
+            const rotator = this.rotators.find(e => e.id === event.device.id)
+
+            if (rotator) {
+                ngZone.run(() => {
+                    Object.assign(rotator, event.device)
+                })
+            }
         })
 
         electron.on('SEQUENCER.ELAPSED', event => {
@@ -246,6 +259,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
         this.mounts = (await this.api.mounts()).sort(deviceComparator)
         this.wheels = (await this.api.wheels()).sort(deviceComparator)
         this.focusers = (await this.api.focusers()).sort(deviceComparator)
+        this.rotators = (await this.api.rotators()).sort(deviceComparator)
 
         this.loadSavedJsonFileFromPathOrAddDefault()
 
@@ -262,6 +276,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
         if (this.mount) this.api.mountListen(this.mount)
         if (this.focuser) this.api.focuserListen(this.focuser)
         if (this.wheel) this.api.wheelListen(this.wheel)
+        if (this.rotator) this.api.rotatorListen(this.rotator)
     }
 
     private enableOrDisableTopbarMenu(enable: boolean) {
@@ -272,6 +287,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
         const camera = this.camera ?? this.cameras[0]
         // const wheel = this.wheel ?? this.wheels[0]
         // const focuser = this.focuser ?? this.focusers[0]
+        // const rotator = this.rotator ?? this.rotators[0]
 
         this.plan.entries.push({
             enabled: true,
@@ -301,7 +317,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
                 type: 'SIRIL',
                 executablePath: '',
                 rotate: 0,
-                use32Bits: false
+                use32Bits: false,
+                slot: 1,
             },
         })
 
@@ -355,8 +372,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 
         this.camera = this.cameras.find(e => e.name === this.plan.camera?.name) ?? this.cameras[0]
         this.mount = this.mounts.find(e => e.name === this.plan.mount?.name) ?? this.mounts[0]
-        this.focuser = this.focusers.find(e => e.name === this.plan.focuser?.name) ?? this.focusers[0]
         this.wheel = this.wheels.find(e => e.name === this.plan.wheel?.name) ?? this.wheels[0]
+        this.focuser = this.focusers.find(e => e.name === this.plan.focuser?.name) ?? this.focusers[0]
+        this.rotator = this.rotators.find(e => e.name === this.plan.rotator?.name) ?? this.rotators[0]
 
         return plan.entries.length
     }
@@ -372,16 +390,6 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
                     break
             }
 
-            this.savePlan()
-        }
-    }
-
-    async chooseSavePath() {
-        const defaultPath = this.plan.savePath
-        const path = await this.electron.openDirectory({ defaultPath })
-
-        if (path) {
-            this.plan.savePath = path
             this.savePlan()
         }
     }
@@ -414,11 +422,16 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
         this.ping()
     }
 
+    rotatorChanged() {
+        this.ping()
+    }
+
     savePlan() {
         this.plan.camera = this.camera
         this.plan.mount = this.mount
         this.plan.wheel = this.wheel
         this.plan.focuser = this.focuser
+        this.plan.rotator = this.rotator
         this.storage.set(SEQUENCER_PLAN_KEY, this.plan)
         this.savedPathWasModified = !!this.savedPath
     }

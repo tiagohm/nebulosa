@@ -48,6 +48,14 @@ class CameraCaptureExecutor(
         }
     }
 
+    fun pause(camera: Camera) {
+        jobs.find { it.task.camera === camera }?.pause()
+    }
+
+    fun unpause(camera: Camera) {
+        jobs.find { it.task.camera === camera }?.unpause()
+    }
+
     fun stop(camera: Camera) {
         jobs.find { it.task.camera === camera }?.stop()
     }

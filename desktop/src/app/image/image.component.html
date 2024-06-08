@@ -10,9 +10,9 @@
         <circle cx="50%" cy="50%" r="32%" stroke="#E53935" stroke-width="3" fill="transparent"></circle>
     </svg>
 
-    <svg *ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotationIsVisible"
+    <svg *ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible"
          class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
-        <g *ngFor="let a of annotations" (dblclick)="showAnnotationInfo(a)" class="pointer-events-auto cursor-pointer">
+        <g *ngFor="let a of annotation.data" (dblclick)="showAnnotationInfo(a)" class="pointer-events-auto cursor-pointer">
             <circle [attr.cx]="a.x" [attr.cy]="a.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"></circle>
             <text [attr.x]="a.x" [attr.y]="a.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">
                 {{ (a.star ?? a.dso ?? a.minorPlanet) | skyObject:'name' }}
@@ -85,71 +85,76 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button [disabled]="annotating" icon="mdi mdi-check" label="Annotate" (onClick)="annotateImage()" [text]="true" size="small" />
+        <p-button [disabled]="annotation.running" icon="mdi mdi-check" label="Annotate" (onClick)="annotateImage()" [text]="true" size="small" />
     </ng-template>
 </p-dialog>
 
-<p-dialog header="Astronomical Object" [draggable]="true" [(visible)]="showAnnotationInfoDialog" [modal]="false"
+<p-dialog header="Astronomical Object" [draggable]="true" [(visible)]="annotationInfo.showDialog" [modal]="false"
           [style]="{width: 'min-content', minWidth: '325px'}">
     <div class="grid mt-2">
-        <ng-container *ngIf="annotationInfo">
+        <ng-container *ngIf="annotationInfo.info">
             <div class="col-12">
                 <span class="p-float-label">
-                    <input pInputText readonly [value]="annotationInfo | skyObject:'name'" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly [value]="annotationInfo.info | skyObject:'name'" class="border-0 p-inputtext-sm" />
                     <label>Name</label>
                 </span>
             </div>
             <div class="col-6">
                 <span class="p-float-label">
-                    <input pInputText readonly [value]="annotationInfo.rightAscensionJ2000 | angle:true:24"
+                    <input pInputText readonly [value]="annotationInfo.info.rightAscensionJ2000 | angle:true:24"
                            class="border-0 p-inputtext-sm" />
                     <label>RA (J2000)</label>
                 </span>
             </div>
             <div class="col-6">
                 <span class="p-float-label">
-                    <input pInputText readonly [value]="annotationInfo.declinationJ2000 | angle:true:360"
+                    <input pInputText readonly [value]="annotationInfo.info.declinationJ2000 | angle:true:360"
                            class="border-0 p-inputtext-sm" />
                     <label>DEC (J2000)</label>
                 </span>
             </div>
-            <div class="col-6" *ngIf="annotationInfo.magnitude">
+            <div class="col-6" *ngIf="annotationInfo.info.magnitude">
                 <span class="p-float-label">
-                    <input pInputText readonly value="{{ annotationInfo.magnitude < 30.0 ? annotationInfo.magnitude.toFixed(2) : '-' }}"
+                    <input pInputText readonly value="{{ annotationInfo.info.magnitude < 30.0 ? annotationInfo.info.magnitude.toFixed(2) : '-' }}"
                            class="border-0 p-inputtext-sm" />
                     <label>Magnitude</label>
                 </span>
             </div>
-            <div class="col-6" *ngIf="annotationInfo.constellation">
+            <div class="col-6" *ngIf="annotationInfo.info.constellation">
                 <span class="p-float-label">
-                    <input pInputText readonly [value]="annotationInfo.constellation" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly [value]="annotationInfo.info.constellation" class="border-0 p-inputtext-sm" />
                     <label>Constellation</label>
                 </span>
             </div>
-            <div class="col-6" *ngIf="annotationInfo.type">
+            <div class="col-6" *ngIf="annotationInfo.info.type">
                 <span class="p-float-label">
-                    <input pInputText readonly value="{{ annotationInfo.type | enum }}" class="border-0 p-inputtext-sm" />
+                    <input pInputText readonly value="{{ annotationInfo.info.type | enum }}" class="border-0 p-inputtext-sm" />
                     <label>Type</label>
                 </span>
             </div>
-            <div class="col-6" *ngIf="annotationInfo.distance">
+            <div class="col-6" *ngIf="annotationInfo.info.distance">
                 <span class="p-float-label">
-                    <input pInputText readonly value="{{ annotationInfo.distance <= 0 ? '-' : annotationInfo.distance }}"
+                    <input pInputText readonly value="{{ annotationInfo.info.distance <= 0 ? '-' : annotationInfo.info.distance }}"
                            class="border-0 p-inputtext-sm" />
                     <label>Distance (ly)</label>
                 </span>
             </div>
         </ng-container>
-        <div class="col-12 justify-content-center text-sm" *ngIf="annotationInfo?.type">
-            <a target="_blank" href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + (annotationInfo | skyObject:'firstName') }}">Simbad</a>
+        <div class="col-12 justify-content-center text-sm" *ngIf="annotationInfo.info?.type">
+            <a target="_blank"
+               href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + (annotationInfo.info | skyObject:'firstName') }}">Simbad</a>
         </div>
     </div>
     <ng-template pTemplate="footer">
         <div class="col-12 flex justify-content-center">
-            <p-button (onClick)="mountSync(annotationInfo!)" icon="mdi mdi-sync" label="Sync" [text]="true" severity="info" size="small" />
-            <p-button (onClick)="mountGoTo(annotationInfo!)" icon="mdi mdi-telescope" label="Go To" [text]="true" severity="success" size="small" />
-            <p-button (onClick)="mountSlew(annotationInfo!)" icon="mdi mdi-telescope" label="Slew" [text]="true" severity="success" size="small" />
-            <p-button (onClick)="frame(annotationInfo!)" icon="mdi mdi-image" label="Frame" [text]="true" size="small" />
+            <p-button [disabled]="!annotationInfo.info" (onClick)="mountSync(annotationInfo.info!)" icon="mdi mdi-sync" label="Sync" [text]="true"
+                      severity="info" size="small" />
+            <p-button [disabled]="!annotationInfo.info" (onClick)="mountGoTo(annotationInfo.info!)" icon="mdi mdi-telescope" label="Go To"
+                      [text]="true" severity="success" size="small" />
+            <p-button [disabled]="!annotationInfo.info" (onClick)="mountSlew(annotationInfo.info!)" icon="mdi mdi-telescope" label="Slew"
+                      [text]="true" severity="success" size="small" />
+            <p-button [disabled]="!annotationInfo.info" (onClick)="frame(annotationInfo.info!)" icon="mdi mdi-image" label="Frame" [text]="true"
+                      size="small" />
         </div>
     </ng-template>
 </p-dialog>
@@ -159,7 +164,8 @@
     <div class="grid pt-2">
         <div class="col-12 gap-2 align-items-center">
             <span class="p-float-label">
-                <p-dropdown [options]="solver.types" [(ngModel)]="solver.type" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
+                <p-dropdown [options]="'PLATE_SOLVER' | dropdownOptions" [(ngModel)]="solver.type" styleClass="p-inputtext-sm border-0"
+                            [autoDisplayFirst]="false" />
                 <label>Type</label>
             </span>
             <p-checkbox [binary]="true" label="Blind" [(ngModel)]="solver.blind" />
@@ -230,18 +236,18 @@
         </div>
         <div class="grid mb-2 mt-2">
             <div class="col-12 flex justify-content-center">
-                <p-button [disabled]="solver.solving || !solver.solved.solved" (onClick)="mountSync(solver.solved)" icon="mdi mdi-sync" label="Sync"
+                <p-button [disabled]="solver.running || !solver.solved.solved" (onClick)="mountSync(solver.solved)" icon="mdi mdi-sync" label="Sync"
                           [text]="true" severity="info" size="small" />
-                <p-button [disabled]="solver.solving || !solver.solved.solved" (onClick)="mountGoTo(solver.solved)" icon="mdi mdi-telescope"
+                <p-button [disabled]="solver.running || !solver.solved.solved" (onClick)="mountGoTo(solver.solved)" icon="mdi mdi-telescope"
                           label="Go To" [text]="true" severity="success" size="small" />
-                <p-button [disabled]="solver.solving || !solver.solved.solved" (onClick)="mountSlew(solver.solved)" icon="mdi mdi-telescope"
+                <p-button [disabled]="solver.running || !solver.solved.solved" (onClick)="mountSlew(solver.solved)" icon="mdi mdi-telescope"
                           label="Slew" [text]="true" severity="success" size="small" />
-                <p-button [disabled]="solver.solving || !solver.solved.solved" (onClick)="frame(solver.solved)" icon="mdi mdi-image" label="Frame"
+                <p-button [disabled]="solver.running || !solver.solved.solved" (onClick)="frame(solver.solved)" icon="mdi mdi-image" label="Frame"
                           [text]="true" size="small" />
             </div>
         </div>
 
-        <p-button [disabled]="solver.solving" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" size="small" />
+        <p-button [disabled]="solver.running" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" size="small" />
     </ng-template>
 </p-dialog>
 
@@ -295,7 +301,7 @@
         <div class="col-7 flex align-items-center">
             <span class="p-float-label w-full max-w-full">
                 <p-dropdown [disabled]="!scnr.channel" appendTo="body" [(ngModel)]="scnr.method"
-                            [options]="scnrMethods" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false">
+                            [options]="'SCNR_PROTECTION_METHOD' | dropdownOptions" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="flex align-items-center gap-2">
                             <span>{{ item | enum }}</span>
@@ -421,7 +427,7 @@
     <div class="grid mt-2">
         <div class="col-7 flex align-items-center">
             <span class="p-float-label w-full max-w-full">
-                <p-dropdown appendTo="body" [(ngModel)]="starDetection.type" [options]="['ASTAP']"
+                <p-dropdown appendTo="body" [(ngModel)]="starDetection.type" [options]="'STAR_DETECTOR' | dropdownOptions"
                             styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
                 <label>Detector</label>
             </span>
@@ -457,7 +463,7 @@
         <div class="col-4 align-items-center">
             <span class="p-float-label">
                 <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                       value="{{ starDetection.computed.minFlux }} | {{ starDetection.computed.maxFlux }}" />
+                       value="{{ starDetection.computed.minFlux.toFixed(0) }} | {{ starDetection.computed.maxFlux.toFixed(0) }}" />
                 <label>Flux (min | max)</label>
             </span>
         </div>
@@ -478,7 +484,7 @@
                 </div>
                 <div class="col-6 align-items-center">
                     <span class="p-float-label">
-                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.flux" />
+                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.flux.toFixed(0)" />
                         <label>Flux</label>
                     </span>
                 </div>
@@ -490,7 +496,7 @@
                 </div>
                 <div class="col-6 align-items-center">
                     <span class="p-float-label">
-                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.snr" />
+                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.snr.toFixed(1)" />
                         <label>SNR</label>
                     </span>
                 </div>
@@ -498,7 +504,7 @@
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button icon="mdi mdi-check" label="Detect" (onClick)="detectStars()" [text]="true" size="small" />
+        <p-button [disabled]="starDetection.running" icon="mdi mdi-check" label="Detect" (onClick)="detectStars()" [text]="true" size="small" />
     </ng-template>
 </p-dialog>
 
@@ -673,13 +679,13 @@
             </span>
         </div>
         <div class="col-12 flex align-items-center justify-content-center">
-            <p-selectButton class="w-full" styleClass="border-0" [options]="['FITS', 'XISF', 'PNG', 'JPG']" [(ngModel)]="saveAs.format"
+            <p-selectButton class="w-full" styleClass="border-0" [options]="'IMAGE_FORMAT' | dropdownOptions" [(ngModel)]="saveAs.format"
                             [multiple]="false" />
         </div>
         <div class="col-7 align-items-center justify-content-center">
             <span class="p-float-label">
                 <p-dropdown [disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
-                            [options]="['BYTE', 'SHORT', 'INTEGER', 'FLOAT', 'DOUBLE']" [(ngModel)]="saveAs.bitpix"
+                            [options]="'IMAGE_BITPIX' | dropdownOptions" [(ngModel)]="saveAs.bitpix"
                             styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" appendTo="body" />
                 <label>Format</label>
             </span>

@@ -13,7 +13,7 @@ export type AutoSubFolderMode = 'OFF' | 'NOON' | 'MIDNIGHT'
 
 export type ExposureMode = 'SINGLE' | 'FIXED' | 'LOOP'
 
-export type LiveStackerType = 'SIRIL'
+export type LiveStackerType = 'SIRIL' | 'PIXINSIGHT'
 
 export enum ExposureTimeUnit {
     MINUTE = 'm',
@@ -199,6 +199,7 @@ export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {
         executablePath: "",
         rotate: 0,
         use32Bits: false,
+        slot: 1,
     }
 }
 
@@ -234,7 +235,7 @@ export interface CameraCaptureEvent extends MessageEvent {
     capture?: CameraStartCapture
 }
 
-export type CameraCaptureState = 'IDLE' | 'CAPTURE_STARTED' | 'EXPOSURE_STARTED' | 'EXPOSURING' | 'WAITING' | 'SETTLING' | 'EXPOSURE_FINISHED' | 'CAPTURE_FINISHED'
+export type CameraCaptureState = 'IDLE' | 'CAPTURE_STARTED' | 'EXPOSURE_STARTED' | 'EXPOSURING' | 'WAITING' | 'SETTLING' | 'PAUSING' | 'PAUSED' | 'EXPOSURE_FINISHED' | 'CAPTURE_FINISHED'
 
 export interface CameraDialogInput {
     mode: CameraDialogMode
@@ -288,13 +289,15 @@ export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
 }
 
 export interface LiveStackingRequest {
-    enabled: boolean,
-    type: LiveStackerType,
-    executablePath: string,
-    dark?: string,
-    flat?: string,
-    rotate: number,
-    use32Bits: boolean,
+    enabled: boolean
+    type: LiveStackerType
+    executablePath: string
+    dark?: string
+    flat?: string
+    bias?: string
+    rotate: number
+    use32Bits: boolean
+    slot: number
 }
 
 export const EMPTY_LIVE_STACKING_REQUEST: LiveStackingRequest = {
@@ -302,5 +305,6 @@ export const EMPTY_LIVE_STACKING_REQUEST: LiveStackingRequest = {
     type: 'SIRIL',
     executablePath: '',
     rotate: 0,
-    use32Bits: false
+    use32Bits: false,
+    slot: 1,
 }
