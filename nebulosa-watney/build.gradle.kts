@@ -6,7 +6,7 @@ plugins {
 dependencies {
     api(project(":nebulosa-erfa"))
     api(project(":nebulosa-image"))
-    api(project(":nebulosa-star-detection"))
+    api(project(":nebulosa-stardetector"))
     api(project(":nebulosa-platesolver"))
     api(libs.apache.collections)
     implementation(project(":nebulosa-log"))
