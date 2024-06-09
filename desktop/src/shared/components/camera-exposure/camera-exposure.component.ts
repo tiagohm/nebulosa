@@ -47,7 +47,7 @@ export class CameraExposureComponent {
             this.state = 'EXPOSURING'
         } else if (event.state === 'IDLE' || event.state === 'CAPTURE_FINISHED') {
             this.reset()
-        } else if (event.state === 'PAUSING' || event.state === 'PAUSED') {
+        } else if (event.state !== 'EXPOSURE_FINISHED') {
             this.state = event.state
         }
 

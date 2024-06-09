@@ -11,6 +11,7 @@ interface LiveStacker : Closeable {
 
     fun start()
 
+    // TODO: add CancellationToken parameter?
     fun add(path: Path): Path?
 
     fun stop()

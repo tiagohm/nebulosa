@@ -64,7 +64,7 @@
                     <label>Temperature ({{ camera.temperature | number: '1.1-1' }}°C)</label>
                 </span>
                 <p-button [disabled]="!camera.connected || !camera.canSetTemperature || running" (onClick)="applySetpointTemperature()"
-                          icon="mdi mdi-check" size="small" severity="success" pTooltip="Apply" tooltipPosition="bottom" />
+                          icon="mdi mdi-check" size="small" severity="success" pTooltip="Apply" tooltipPosition="bottom" [text]="true" />
             </div>
         </div>
     </div>

@@ -339,7 +339,9 @@ export class EnumPipe implements PipeTransform {
         'PAUSING': 'Pausing',
         // Camera Exposure.
         'SETTLING': 'Settling',
+        'DITHERING': 'Dithering',
         'WAITING': 'Waiting',
+        'STACKING': 'Stacking',
         'EXPOSURING': 'Exposuring',
         'CAPTURE_STARTED': undefined,
         'EXPOSURE_STARTED': undefined,

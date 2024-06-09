@@ -859,7 +859,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         const image = this.image.nativeElement
 
         const transformation = structuredClone(this.transformation)
-        if (this.calibrationViaCamera) transformation.calibrationGroup = this.imageData.capture?.calibrationGroup
+        if (this.calibrationViaCamera && !this.showLiveStackedImage) transformation.calibrationGroup = this.imageData.capture?.calibrationGroup
         const { info, blob } = await this.api.openImage(path, transformation, this.imageData.camera)
 
         this.imageInfo = info

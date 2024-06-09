@@ -3,6 +3,7 @@ package nebulosa.api.cameras
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.calibration.CalibrationFrameProvider
+import nebulosa.api.guiding.DitherAfterExposureEvent
 import nebulosa.api.guiding.DitherAfterExposureTask
 import nebulosa.api.guiding.WaitForSettleTask
 import nebulosa.api.livestacking.LiveStackingRequest
@@ -22,6 +23,7 @@ import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.path.exists
 
 data class CameraCaptureTask(
     @JvmField val camera: Camera,
@@ -82,7 +84,7 @@ data class CameraCaptureTask(
 
     private fun LiveStackingRequest.processCalibrationGroup(): LiveStackingRequest {
         return if (calibrationFrameProvider != null && enabled &&
-            !request.calibrationGroup.isNullOrBlank() && (dark == null || flat == null)
+            !request.calibrationGroup.isNullOrBlank() && (dark == null || flat == null || bias == null)
         ) {
             val calibrationGroup = request.calibrationGroup
             val temperature = camera.temperature
@@ -96,19 +98,29 @@ data class CameraCaptureTask(
             val wheel = camera.snoopedDevices.firstOrNull { it is FilterWheel } as? FilterWheel
             val filter = wheel?.let { it.names.getOrNull(it.position - 1) }
 
-            val newDark = dark ?: calibrationFrameProvider
+            LOG.info(
+                "find calibration frames for live stacking. group={}, temperature={}, binX={}, binY={}. width={}, height={}, exposureTime={}, gain={}, filter={}",
+                calibrationGroup, temperature, binX, binY, width, height, exposureTime, gain, filter
+            )
+
+            val newDark = dark?.takeIf { it.exists() } ?: calibrationFrameProvider
                 .findBestDarkFrames(calibrationGroup, temperature, width, height, binX, binY, exposureTime, gain)
                 .firstOrNull()
                 ?.path
 
-            val newFlat = flat ?: calibrationFrameProvider
+            val newFlat = flat?.takeIf { it.exists() } ?: calibrationFrameProvider
                 .findBestFlatFrames(calibrationGroup, width, height, binX, binY, filter)
                 .firstOrNull()
                 ?.path
 
-            LOG.info("live stacking will use dark frame at {} and flat frame at {}", newDark, newFlat)
+            val newBias = if (newDark != null) null else bias?.takeIf { it.exists() } ?: calibrationFrameProvider
+                .findBestBiasFrames(calibrationGroup, width, height, binX, binY)
+                .firstOrNull()
+                ?.path
 
-            copy(dark = newDark, flat = newFlat)
+            LOG.info("live stacking will use calibration frames. group={}, dark={}, flat={}, bias={}", calibrationGroup, newDark, newFlat, newBias)
+
+            copy(dark = newDark, flat = newFlat, bias = newBias)
         } else {
             this
         }
@@ -228,7 +240,12 @@ data class CameraCaptureTask(
                     }
                 }
             }
-            else -> return LOG.warn("unknown event: {}", event)
+            is DitherAfterExposureEvent -> {
+                CameraCaptureState.DITHERING
+            }
+            else -> {
+                return LOG.warn("unknown event: {}", event)
+            }
         }
 
         sendEvent(state)
@@ -254,7 +271,14 @@ data class CameraCaptureTask(
     }
 
     private fun addFrameToLiveStacker(path: Path?): Path? {
-        return liveStacker?.add(path ?: return null)
+        return if (path == null) {
+            null
+        } else if (liveStacker != null) {
+            sendEvent(CameraCaptureState.STACKING)
+            liveStacker!!.add(path)
+        } else {
+            path
+        }
     }
 
     override fun close() {

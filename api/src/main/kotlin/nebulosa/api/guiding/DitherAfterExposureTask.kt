@@ -19,7 +19,6 @@ data class DitherAfterExposureTask(
 
     private val ditherLatch = CountUpDownLatch()
 
-    @Volatile private var state = DitherAfterExposureState.IDLE
     @Volatile private var dx = 0.0
     @Volatile private var dy = 0.0
     @Volatile private var elapsedTime = Duration.ZERO
@@ -36,21 +35,19 @@ data class DitherAfterExposureTask(
                 guider.registerGuiderListener(this)
                 ditherLatch.countUp()
 
-                state = DitherAfterExposureState.STARTED
-                sendEvent()
+                sendEvent(DitherAfterExposureState.STARTED)
 
                 elapsedTime = Duration.ofMillis(measureTimeMillis {
                     guider.dither(request.amount, request.raOnly)
                     ditherLatch.await()
                 })
             } finally {
-                state = DitherAfterExposureState.FINISHED
-                sendEvent()
+                sendEvent(DitherAfterExposureState.FINISHED)
 
                 guider.unregisterGuiderListener(this)
                 cancellationToken.unlisten(this)
 
-                LOG.info("Dither finished. request={}", request)
+                LOG.info("Dither finished. elapsedTime={}, request={}", elapsedTime, request)
             }
         }
     }
@@ -58,10 +55,9 @@ data class DitherAfterExposureTask(
     override fun onDithered(dx: Double, dy: Double) {
         this.dx = dx
         this.dy = dy
-        state = DitherAfterExposureState.DITHERED
 
+        sendEvent(DitherAfterExposureState.DITHERED)
         LOG.info("dithered. dx={}, dy={}", dx, dy)
-
         ditherLatch.reset()
     }
 
@@ -73,10 +69,9 @@ data class DitherAfterExposureTask(
         dx = 0.0
         dy = 0.0
         elapsedTime = Duration.ZERO
-        state = DitherAfterExposureState.IDLE
     }
 
-    private fun sendEvent() {
+    private fun sendEvent(state: DitherAfterExposureState) {
         onNext(DitherAfterExposureEvent(this, state, dx, dy, elapsedTime))
     }
 
