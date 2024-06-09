@@ -1,6 +1,6 @@
 package nebulosa.watney.platesolver.quad
 
-import nebulosa.star.detection.ImageStar
+import nebulosa.stardetector.StarPoint
 
 @Suppress("ArrayInDataClass")
 data class ImageStarQuad(
@@ -8,10 +8,10 @@ data class ImageStarQuad(
     override val largestDistance: Double,
     override val midPointX: Double,
     override val midPointY: Double,
-    override val stars: List<ImageStar> = emptyList(),
+    override val stars: List<StarPoint> = emptyList(),
 ) : StarQuad {
 
-    constructor(ratios: DoubleArray, largestDistance: Double, stars: List<ImageStar> = emptyList())
+    constructor(ratios: DoubleArray, largestDistance: Double, stars: List<StarPoint> = emptyList())
             : this(
         ratios, largestDistance,
         (stars[0].x + stars[1].x + stars[2].x + stars[3].x) / 4.0,

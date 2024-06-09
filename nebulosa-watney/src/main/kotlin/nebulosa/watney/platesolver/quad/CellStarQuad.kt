@@ -1,6 +1,6 @@
 package nebulosa.watney.platesolver.quad
 
-import nebulosa.star.detection.ImageStar
+import nebulosa.stardetector.StarPoint
 
 @Suppress("ArrayInDataClass")
 data class CellStarQuad(
@@ -10,5 +10,5 @@ data class CellStarQuad(
     override val midPointY: Double,
 ) : StarQuad {
 
-    override val stars: List<ImageStar> = emptyList()
+    override val stars: List<StarPoint> = emptyList()
 }

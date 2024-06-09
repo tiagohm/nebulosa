@@ -10,7 +10,7 @@ import nebulosa.test.AbstractFitsAndXisfTest
 import nebulosa.test.NonGitHubOnlyCondition
 import nebulosa.watney.platesolver.WatneyPlateSolver
 import nebulosa.watney.platesolver.quad.CompactQuadDatabase
-import nebulosa.watney.star.detection.Star
+import nebulosa.watney.stardetector.Star
 import java.nio.file.Path
 
 @EnabledIf(NonGitHubOnlyCondition::class)

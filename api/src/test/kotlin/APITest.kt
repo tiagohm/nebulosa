@@ -9,7 +9,7 @@ import nebulosa.api.autofocus.AutoFocusRequest
 import nebulosa.api.beans.converters.time.DurationSerializer
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.connection.ConnectionType
-import nebulosa.api.stardetection.StarDetectionRequest
+import nebulosa.api.stardetector.StarDetectionRequest
 import nebulosa.common.json.PathSerializer
 import nebulosa.test.NonGitHubOnlyCondition
 import okhttp3.MediaType.Companion.toMediaType

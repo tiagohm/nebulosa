@@ -1,9 +1,9 @@
-package nebulosa.watney.star.detection
+package nebulosa.watney.stardetector
 
 import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.algorithms.computation.hfd.HFD
-import nebulosa.star.detection.StarDetector
+import nebulosa.stardetector.StarDetector
 import kotlin.math.roundToInt
 
 data class WatneyStarDetector(

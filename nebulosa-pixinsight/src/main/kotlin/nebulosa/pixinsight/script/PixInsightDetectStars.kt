@@ -2,7 +2,7 @@ package nebulosa.pixinsight.script
 
 import nebulosa.io.resource
 import nebulosa.io.transferAndClose
-import nebulosa.star.detection.ImageStar
+import nebulosa.stardetector.StarPoint
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -53,7 +53,7 @@ data class PixInsightDetectStars(
         override val snr: Double = 0.0,
         @JvmField val peak: Double = 0.0,
         override val hfd: Double = 0.0,
-    ) : ImageStar
+    ) : StarPoint
 
     private val scriptPath = Files.createTempFile("pi-", ".js")
     private val statusPath = Files.createTempFile("pi-", ".txt")

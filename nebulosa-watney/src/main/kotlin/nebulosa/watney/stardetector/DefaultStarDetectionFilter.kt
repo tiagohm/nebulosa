@@ -1,4 +1,4 @@
-package nebulosa.watney.star.detection
+package nebulosa.watney.stardetector
 
 import nebulosa.constants.PI
 import nebulosa.constants.TAU

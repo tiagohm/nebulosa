@@ -1,4 +1,4 @@
-package nebulosa.api.stardetection
+package nebulosa.api.stardetector
 
 enum class StarDetectorType {
     ASTAP,

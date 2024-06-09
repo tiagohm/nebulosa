@@ -1,11 +1,11 @@
-package nebulosa.api.stardetection
+package nebulosa.api.stardetector
 
-import nebulosa.astap.star.detection.AstapStarDetector
+import nebulosa.astap.stardetector.AstapStarDetector
 import nebulosa.pixinsight.script.PixInsightIsRunning
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.pixinsight.script.PixInsightStartup
-import nebulosa.pixinsight.star.detection.PixInsightStarDetector
-import nebulosa.star.detection.StarDetector
+import nebulosa.pixinsight.stardetector.PixInsightStarDetector
+import nebulosa.stardetector.StarDetector
 import java.nio.file.Path
 import java.time.Duration
 import java.util.function.Supplier

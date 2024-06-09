@@ -1,4 +1,4 @@
-package nebulosa.watney.star.detection
+package nebulosa.watney.stardetector
 
 import kotlin.math.hypot
 

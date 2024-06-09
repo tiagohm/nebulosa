@@ -1,4 +1,4 @@
-package nebulosa.watney.star.detection
+package nebulosa.watney.stardetector
 
 internal data class StarPixel(
     @JvmField val x: Int,

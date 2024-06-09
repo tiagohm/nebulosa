@@ -1,11 +1,11 @@
-package nebulosa.astap.star.detection
+package nebulosa.astap.stardetector
 
 import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
 import nebulosa.common.exec.commandLine
 import nebulosa.log.loggerFor
-import nebulosa.star.detection.ImageStar
-import nebulosa.star.detection.StarDetector
+import nebulosa.stardetector.StarDetector
+import nebulosa.stardetector.StarPoint
 import java.io.InputStreamReader
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
@@ -18,7 +18,15 @@ data class AstapStarDetector(
     private val minSNR: Double = 0.0,
 ) : StarDetector<Path> {
 
-    override fun detect(input: Path): List<ImageStar> {
+    data class Star(
+        override val x: Double = 0.0,
+        override val y: Double = 0.0,
+        override val hfd: Double = 0.0,
+        override val snr: Double = 0.0,
+        override val flux: Double = 0.0,
+    ) : StarPoint
+
+    override fun detect(input: Path): List<StarPoint> {
         val cmd = commandLine {
             executablePath(executablePath)
             workingDirectory(input.parent)
@@ -40,7 +48,7 @@ data class AstapStarDetector(
 
         if (!csvPath.exists()) return emptyList()
 
-        val detectedStars = ArrayList<ImageStar>(1024)
+        val detectedStars = ArrayList<StarPoint>(1024)
 
         try {
             csvPath.inputStream().use {

@@ -1,13 +1,13 @@
-package nebulosa.api.stardetection
+package nebulosa.api.stardetector
 
-import nebulosa.star.detection.ImageStar
+import nebulosa.stardetector.StarPoint
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
 @Service
 class StarDetectionService {
 
-    fun detectStars(path: Path, options: StarDetectionRequest): List<ImageStar> {
+    fun detectStars(path: Path, options: StarDetectionRequest): List<StarPoint> {
         val starDetector = options.get()
         return starDetector.detect(path)
     }

@@ -1,6 +1,6 @@
 package nebulosa.watney.platesolver.quad
 
-import nebulosa.star.detection.ImageStar
+import nebulosa.stardetector.StarPoint
 
 /**
  * Represents a star quad (in database or in image).
@@ -30,7 +30,7 @@ interface StarQuad {
     /**
      * The stars that make up this quad.
      */
-    val stars: List<ImageStar>
+    val stars: List<StarPoint>
 
     class StarBasedEqualityKey(@JvmField val quad: StarQuad) {
 

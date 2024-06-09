@@ -1,4 +1,4 @@
-package nebulosa.api.stardetection
+package nebulosa.api.stardetector
 
 import jakarta.validation.Valid
 import org.springframework.validation.annotation.Validated

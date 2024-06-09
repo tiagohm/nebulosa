@@ -14,8 +14,8 @@ import nebulosa.math.toDegrees
 import nebulosa.platesolver.Parity
 import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
-import nebulosa.star.detection.ImageStar
-import nebulosa.star.detection.StarDetector
+import nebulosa.stardetector.StarDetector
+import nebulosa.stardetector.StarPoint
 import nebulosa.watney.platesolver.math.equatorialToStandardCoordinates
 import nebulosa.watney.platesolver.math.lerp
 import nebulosa.watney.platesolver.math.solveLeastSquares
@@ -24,7 +24,7 @@ import nebulosa.watney.platesolver.quad.ImageStarQuad
 import nebulosa.watney.platesolver.quad.QuadDatabase
 import nebulosa.watney.platesolver.quad.StarQuad
 import nebulosa.watney.platesolver.quad.StarQuadMatch
-import nebulosa.watney.star.detection.WatneyStarDetector
+import nebulosa.watney.stardetector.WatneyStarDetector
 import org.apache.commons.collections4.bag.HashBag
 import java.nio.file.Path
 import java.time.Duration
@@ -135,7 +135,7 @@ data class WatneyPlateSolver(
         @JvmStatic private val DEFAULT_STAR_DETECTOR = WatneyStarDetector()
 
         @JvmStatic
-        internal fun formImageStarQuads(starsFound: List<ImageStar>): Pair<List<ImageStarQuad>, Int> {
+        internal fun formImageStarQuads(starsFound: List<StarPoint>): Pair<List<ImageStarQuad>, Int> {
             val quads = ArrayList<ImageStarQuad>()
             var countInFirstPass = 0
 

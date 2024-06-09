@@ -19,8 +19,8 @@ import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.log.loggerFor
-import nebulosa.star.detection.ImageStar
-import nebulosa.star.detection.StarDetector
+import nebulosa.stardetector.StarDetector
+import nebulosa.stardetector.StarPoint
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -401,7 +401,7 @@ data class AutoFocusTask(
         }
 
         @JvmStatic
-        private fun List<ImageStar>.measureDetectedStars(): Double {
+        private fun List<StarPoint>.measureDetectedStars(): Double {
             return if (isEmpty()) 0.0
             else if (size == 1) this[0].hfd
             else if (size == 2) (this[0].hfd + this[1].hfd) / 2.0
