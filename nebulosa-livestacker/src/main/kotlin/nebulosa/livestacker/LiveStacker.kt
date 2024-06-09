@@ -1,4 +1,4 @@
-package nebulosa.livestacking
+package nebulosa.livestacker
 
 import java.io.Closeable
 import java.nio.file.Path

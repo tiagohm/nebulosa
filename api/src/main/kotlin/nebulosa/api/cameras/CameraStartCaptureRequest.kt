@@ -4,7 +4,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.guiding.DitherAfterExposureRequest
-import nebulosa.api.livestacking.LiveStackingRequest
+import nebulosa.api.livestacker.LiveStackingRequest
 import nebulosa.indi.device.camera.FrameType
 import org.hibernate.validator.constraints.Range
 import org.hibernate.validator.constraints.time.DurationMax

@@ -1,10 +1,10 @@
-package nebulosa.siril.livestacking
+package nebulosa.siril.livestacker
 
 import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.common.exec.CommandLine
 import nebulosa.common.exec.LineReadListener
 import nebulosa.common.exec.commandLine
-import nebulosa.livestacking.LiveStacker
+import nebulosa.livestacker.LiveStacker
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle

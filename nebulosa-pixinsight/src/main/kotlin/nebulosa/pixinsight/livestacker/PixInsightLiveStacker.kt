@@ -1,6 +1,6 @@
-package nebulosa.pixinsight.livestacking
+package nebulosa.pixinsight.livestacker
 
-import nebulosa.livestacking.LiveStacker
+import nebulosa.livestacker.LiveStacker
 import nebulosa.log.loggerFor
 import nebulosa.pixinsight.script.*
 import java.nio.file.Path

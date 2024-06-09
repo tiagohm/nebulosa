@@ -1,13 +1,13 @@
-package nebulosa.api.livestacking
+package nebulosa.api.livestacker
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import nebulosa.api.beans.converters.angle.DegreesDeserializer
-import nebulosa.livestacking.LiveStacker
-import nebulosa.pixinsight.livestacking.PixInsightLiveStacker
+import nebulosa.livestacker.LiveStacker
+import nebulosa.pixinsight.livestacker.PixInsightLiveStacker
 import nebulosa.pixinsight.script.PixInsightIsRunning
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.pixinsight.script.PixInsightStartup
-import nebulosa.siril.livestacking.SirilLiveStacker
+import nebulosa.siril.livestacker.SirilLiveStacker
 import org.jetbrains.annotations.NotNull
 import java.nio.file.Files
 import java.nio.file.Path

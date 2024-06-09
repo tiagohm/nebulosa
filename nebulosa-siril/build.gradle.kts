@@ -6,7 +6,7 @@ plugins {
 dependencies {
     api(project(":nebulosa-common"))
     api(project(":nebulosa-math"))
-    api(project(":nebulosa-livestacking"))
+    api(project(":nebulosa-livestacker"))
     implementation(project(":nebulosa-log"))
 }
 

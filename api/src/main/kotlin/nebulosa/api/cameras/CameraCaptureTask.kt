@@ -6,7 +6,7 @@ import nebulosa.api.calibration.CalibrationFrameProvider
 import nebulosa.api.guiding.DitherAfterExposureEvent
 import nebulosa.api.guiding.DitherAfterExposureTask
 import nebulosa.api.guiding.WaitForSettleTask
-import nebulosa.api.livestacking.LiveStackingRequest
+import nebulosa.api.livestacker.LiveStackingRequest
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.SplitTask
 import nebulosa.api.tasks.delay.DelayEvent
@@ -17,7 +17,7 @@ import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.filterwheel.FilterWheel
-import nebulosa.livestacking.LiveStacker
+import nebulosa.livestacker.LiveStacker
 import nebulosa.log.loggerFor
 import java.nio.file.Path
 import java.time.Duration

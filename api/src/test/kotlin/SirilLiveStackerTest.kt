@@ -1,6 +1,6 @@
 import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
-import nebulosa.siril.livestacking.SirilLiveStacker
+import nebulosa.siril.livestacker.SirilLiveStacker
 import nebulosa.test.NonGitHubOnlyCondition
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries

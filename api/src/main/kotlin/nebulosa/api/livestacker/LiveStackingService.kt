@@ -1,7 +1,7 @@
-package nebulosa.api.livestacking
+package nebulosa.api.livestacker
 
 import nebulosa.indi.device.camera.Camera
-import nebulosa.livestacking.LiveStacker
+import nebulosa.livestacker.LiveStacker
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap

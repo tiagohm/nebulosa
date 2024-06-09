@@ -1,4 +1,4 @@
-package nebulosa.api.livestacking
+package nebulosa.api.livestacker
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
