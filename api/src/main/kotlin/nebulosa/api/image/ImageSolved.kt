@@ -1,7 +1,7 @@
 package nebulosa.api.image
 
 import nebulosa.math.*
-import nebulosa.plate.solving.PlateSolution
+import nebulosa.platesolver.PlateSolution
 
 data class ImageSolved(
     val solved: Boolean = false,

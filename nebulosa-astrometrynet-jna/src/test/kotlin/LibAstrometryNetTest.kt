@@ -5,7 +5,7 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import nebulosa.astrometrynet.plate.solving.*
+import nebulosa.astrometrynet.platesolver.*
 import nebulosa.test.NonGitHubOnlyCondition
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries

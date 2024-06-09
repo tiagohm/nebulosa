@@ -4,10 +4,10 @@ import io.kotest.matchers.maps.shouldContainKey
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.math.toDegrees
-import nebulosa.watney.plate.solving.BlindSearchStrategy
-import nebulosa.watney.plate.solving.BlindSearchStrategyOptions
-import nebulosa.watney.plate.solving.NearbySearchStrategy
-import nebulosa.watney.plate.solving.NearbySearchStrategyOptions
+import nebulosa.watney.platesolver.BlindSearchStrategy
+import nebulosa.watney.platesolver.BlindSearchStrategyOptions
+import nebulosa.watney.platesolver.NearbySearchStrategy
+import nebulosa.watney.platesolver.NearbySearchStrategyOptions
 
 class SearchStrategyTest : StringSpec() {
 

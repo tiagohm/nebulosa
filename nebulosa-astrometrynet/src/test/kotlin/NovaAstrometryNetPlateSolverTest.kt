@@ -2,7 +2,7 @@ import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.shouldBeExactly
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
-import nebulosa.astrometrynet.plate.solving.NovaAstrometryNetPlateSolver
+import nebulosa.astrometrynet.platesolver.NovaAstrometryNetPlateSolver
 import nebulosa.math.deg
 import nebulosa.math.toArcsec
 import nebulosa.math.toDegrees

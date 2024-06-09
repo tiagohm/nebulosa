@@ -6,7 +6,7 @@ import nebulosa.math.Angle
 import nebulosa.math.Vector3D
 import nebulosa.math.cos
 import nebulosa.math.sin
-import nebulosa.plate.solving.PlateSolution
+import nebulosa.platesolver.PlateSolution
 import nebulosa.time.InstantOfTime
 import nebulosa.time.UTC
 import kotlin.math.abs

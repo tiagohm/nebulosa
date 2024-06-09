@@ -21,7 +21,7 @@ import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
-import nebulosa.plate.solving.PlateSolver
+import nebulosa.platesolver.PlateSolver
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration

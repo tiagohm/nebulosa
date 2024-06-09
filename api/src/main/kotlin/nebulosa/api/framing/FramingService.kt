@@ -7,7 +7,7 @@ import nebulosa.image.Image
 import nebulosa.io.transferAndCloseOutput
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
-import nebulosa.plate.solving.PlateSolution
+import nebulosa.platesolver.PlateSolution
 import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.nio.file.Path

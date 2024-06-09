@@ -8,8 +8,8 @@ import nebulosa.image.Image
 import nebulosa.math.deg
 import nebulosa.test.AbstractFitsAndXisfTest
 import nebulosa.test.NonGitHubOnlyCondition
-import nebulosa.watney.plate.solving.WatneyPlateSolver
-import nebulosa.watney.plate.solving.quad.CompactQuadDatabase
+import nebulosa.watney.platesolver.WatneyPlateSolver
+import nebulosa.watney.platesolver.quad.CompactQuadDatabase
 import nebulosa.watney.star.detection.Star
 import java.nio.file.Path
 

@@ -3,7 +3,7 @@ package nebulosa.api.image
 import nebulosa.fits.fits
 import nebulosa.image.Image
 import nebulosa.log.loggerFor
-import nebulosa.plate.solving.PlateSolution
+import nebulosa.platesolver.PlateSolution
 import nebulosa.xisf.xisf
 import org.springframework.stereotype.Component
 import java.io.Closeable

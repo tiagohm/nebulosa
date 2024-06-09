@@ -1,7 +1,7 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.watney.plate.solving.math.solveLeastSquares
+import nebulosa.watney.platesolver.math.solveLeastSquares
 
 class EquationsTest : StringSpec() {
 
