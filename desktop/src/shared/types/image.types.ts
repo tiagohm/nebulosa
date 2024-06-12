@@ -114,6 +114,8 @@ export interface ImageStatistics {
 export interface ImagePreference {
     solverRadius?: number
     solverType?: PlateSolverType
+    solverFocalLength?: number
+    solverPixelSize?: number
     savePath?: string
     starDetectionType?: StarDetectorType
     starDetectionMinSNR?: number
@@ -215,6 +217,8 @@ export interface ImageSolverDialog {
     centerRA: Angle
     centerDEC: Angle
     radius: number
+    focalLength: number
+    pixelSize: number
     readonly solved: ImageSolved
     type: PlateSolverType
 }

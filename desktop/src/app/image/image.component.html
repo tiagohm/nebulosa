@@ -165,34 +165,52 @@
         <div class="col-12 gap-2 align-items-center">
             <span class="p-float-label">
                 <p-dropdown [options]="'PLATE_SOLVER' | dropdownOptions" [(ngModel)]="solver.type" styleClass="p-inputtext-sm border-0"
-                            [autoDisplayFirst]="false" />
+                            [autoDisplayFirst]="false" appendTo="body" />
                 <label>Type</label>
             </span>
-            <p-checkbox [binary]="true" label="Blind" [(ngModel)]="solver.blind" />
+            <p-checkbox [binary]="true" [disabled]="solver.type === 'SIRIL'" label="Blind" [(ngModel)]="solver.blind" />
         </div>
         <div class="col-8">
             <div class="grid">
                 <div class="col-6">
                     <span class="p-float-label">
-                        <input pInputText [disabled]="solver.blind" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solver.centerRA" />
+                        <input pInputText [disabled]="solver.blind && solver.type !== 'SIRIL'" class="p-inputtext-sm border-0 w-full"
+                               [(ngModel)]="solver.centerRA" />
                         <label>Center RA (h)</label>
                     </span>
                 </div>
                 <div class="col-6">
                     <span class="p-float-label">
-                        <input pInputText [disabled]="solver.blind" class="p-inputtext-sm border-0 w-full" [(ngModel)]="solver.centerDEC" />
+                        <input pInputText [disabled]="solver.blind && solver.type !== 'SIRIL'" class="p-inputtext-sm border-0 w-full"
+                               [(ngModel)]="solver.centerDEC" />
                         <label>Center DEC (°)</label>
                     </span>
                 </div>
             </div>
         </div>
-        <div class="col-4 flex flex-row align-items-center gap-2">
+        <div class="col-4 flex flex-row align-items-center">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="solver.blind" [min]="1" [max]="180" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true"
-                               [(ngModel)]="solver.radius" scrollableNumber />
+                <p-inputNumber [disabled]="solver.blind && solver.type !== 'SIRIL'" [min]="1" [max]="180" styleClass="p-inputtext-sm border-0 w-full"
+                               [showButtons]="true" [(ngModel)]="solver.radius" scrollableNumber />
                 <label>Radius (°)</label>
             </span>
         </div>
+        @if (solver.type === 'SIRIL') {
+        <div class="col-6 flex flex-row align-items-center">
+            <span class="p-float-label">
+                <p-inputNumber [min]="0" [max]="10000" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true"
+                               [(ngModel)]="solver.focalLength" [allowEmpty]="false" locale="en" scrollableNumber />
+                <label>Focal length (mm)</label>
+            </span>
+        </div>
+        <div class="col-6 flex flex-row align-items-center">
+            <span class="p-float-label">
+                <p-inputNumber [min]="0" [max]="100" [step]="0.01" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true"
+                               [(ngModel)]="solver.pixelSize" [allowEmpty]="false" locale="en" scrollableNumber />
+                <label>Pixel size (µm)</label>
+            </span>
+        </div>
+        }
     </div>
     <ng-template pTemplate="footer">
         <div class="grid pt-2">
@@ -247,7 +265,8 @@
             </div>
         </div>
 
-        <p-button [disabled]="solver.running" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true" size="small" />
+        <p-button [disabled]="solver.running || !canPlateSolve" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true"
+                  size="small" />
     </ng-template>
 </p-dialog>
 

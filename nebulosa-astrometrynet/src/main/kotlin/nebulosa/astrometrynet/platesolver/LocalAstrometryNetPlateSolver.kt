@@ -23,7 +23,7 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
     override fun solve(
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
-        downsampleFactor: Int, timeout: Duration?,
+        downsampleFactor: Int, timeout: Duration,
         cancellationToken: CancellationToken,
     ): PlateSolution {
         requireNotNull(path) { "path is required" }
@@ -39,7 +39,7 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
 
             putArg("--dir", outFolder)
 
-            putArg("--cpulimit", timeout?.takeIf { it.toSeconds() > 0 }?.toSeconds() ?: 300)
+            putArg("--cpulimit", timeout.takeIf { it.toSeconds() > 0 }?.toSeconds() ?: 300)
             putArg("--scale-units", "degwidth")
             putArg("--guess-scale")
             putArg("--crpix-center")

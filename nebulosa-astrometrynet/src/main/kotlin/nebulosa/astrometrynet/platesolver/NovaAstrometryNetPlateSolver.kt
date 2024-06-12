@@ -43,7 +43,7 @@ data class NovaAstrometryNetPlateSolver(
     override fun solve(
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
-        downsampleFactor: Int, timeout: Duration?,
+        downsampleFactor: Int, timeout: Duration,
         cancellationToken: CancellationToken,
     ): PlateSolution {
         renewSession()
@@ -69,7 +69,7 @@ data class NovaAstrometryNetPlateSolver(
             throw PlateSolverException(submission.errorMessage)
         }
 
-        var timeLeft = timeout?.takeIf { it.toSeconds() > 0 }?.toMillis() ?: 300000L
+        var timeLeft = timeout.takeIf { it.toSeconds() > 0 }?.toMillis() ?: 300000L
 
         while (timeLeft >= 0L && !cancellationToken.isCancelled) {
             val startTime = System.currentTimeMillis()

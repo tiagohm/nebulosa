@@ -13,7 +13,7 @@ data class LibAstrometryNetPlateSolver(private val solver: LibAstrometryNet) : P
     override fun solve(
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
-        downsampleFactor: Int, timeout: Duration?,
+        downsampleFactor: Int, timeout: Duration,
         cancellationToken: CancellationToken,
     ): PlateSolution {
         return PlateSolution.NO_SOLUTION

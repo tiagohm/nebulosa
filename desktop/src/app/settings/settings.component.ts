@@ -60,6 +60,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 
         this.plateSolvers.set('ASTAP', preference.plateSolverRequest('ASTAP').get())
         this.plateSolvers.set('ASTROMETRY_NET_ONLINE', preference.plateSolverRequest('ASTROMETRY_NET_ONLINE').get())
+        this.plateSolvers.set('SIRIL', preference.plateSolverRequest('SIRIL').get())
 
         this.starDetectors.set('ASTAP', preference.starDetectionRequest('ASTAP').get())
         this.starDetectors.set('PIXINSIGHT', preference.starDetectionRequest('PIXINSIGHT').get())
@@ -130,6 +131,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     save() {
         this.preference.plateSolverRequest('ASTAP').set(this.plateSolvers.get('ASTAP'))
         this.preference.plateSolverRequest('ASTROMETRY_NET_ONLINE').set(this.plateSolvers.get('ASTROMETRY_NET_ONLINE'))
+        this.preference.plateSolverRequest('SIRIL').set(this.plateSolvers.get('SIRIL'))
 
         this.preference.starDetectionRequest('ASTAP').set(this.starDetectors.get('ASTAP'))
         this.preference.starDetectionRequest('PIXINSIGHT').set(this.starDetectors.get('PIXINSIGHT'))

@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 data class PlateSolve(
     @JvmField val path: Path,
     @JvmField val focalLength: Double = 0.0,
+    @JvmField val pixelSize: Double = 0.0,
     @JvmField val useCenterCoordinates: Boolean = false,
     @JvmField val rightAscension: Angle = 0.0, val declination: Angle = 0.0,
     @JvmField val downsampleFactor: Int = 0,
@@ -39,7 +40,8 @@ data class PlateSolve(
             if (useCenterCoordinates) append(" ${rightAscension.toHours},${declination.toDegrees}")
             append(" -platesolve -noflip")
             if (focalLength > 0.0) append(" -focal=$focalLength")
-            if (downsampleFactor > 0) append(" -downscale=$downsampleFactor")
+            if (pixelSize > 0.0) append(" -pixelsize=$pixelSize")
+            if (downsampleFactor > 1) append(" -downscale")
         }
     }
 

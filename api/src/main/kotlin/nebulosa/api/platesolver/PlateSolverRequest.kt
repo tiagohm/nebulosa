@@ -4,6 +4,7 @@ import nebulosa.astap.platesolver.AstapPlateSolver
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.platesolver.LocalAstrometryNetPlateSolver
 import nebulosa.astrometrynet.platesolver.NovaAstrometryNetPlateSolver
+import nebulosa.siril.platesolver.SirilPlateSolver
 import okhttp3.OkHttpClient
 import org.hibernate.validator.constraints.time.DurationMax
 import org.hibernate.validator.constraints.time.DurationMin
@@ -16,6 +17,8 @@ data class PlateSolverRequest(
     @JvmField val type: PlateSolverType = PlateSolverType.ASTROMETRY_NET_ONLINE,
     @JvmField val executablePath: Path? = null,
     @JvmField val downsampleFactor: Int = 0,
+    @JvmField val focalLength: Double = 0.0,
+    @JvmField val pixelSize: Double = 0.0,
     @JvmField val apiUrl: String = "",
     @JvmField val apiKey: String = "",
     @field:DurationMin(seconds = 0) @field:DurationMax(minutes = 5) @field:DurationUnit(ChronoUnit.SECONDS)
@@ -31,6 +34,7 @@ data class PlateSolverRequest(
                 val service = NOVA_ASTROMETRY_NET_CACHE.getOrPut(key) { NovaAstrometryNetService(apiUrl, httpClient) }
                 NovaAstrometryNetPlateSolver(service, apiKey)
             }
+            PlateSolverType.SIRIL -> SirilPlateSolver(executablePath!!, focalLength, pixelSize)
         }
     }
 

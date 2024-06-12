@@ -18,7 +18,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { Angle, EquatorialCoordinateJ2000 } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
-import { AnnotationInfoDialog, DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, StarDetectionDialog } from '../../shared/types/image.types'
+import { AnnotationInfoDialog, DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, StarDetectionDialog } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
@@ -130,12 +130,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     readonly solver: ImageSolverDialog = {
         showDialog: false,
         running: false,
+        type: 'ASTAP',
         blind: true,
         centerRA: '',
         centerDEC: '',
         radius: 4,
+        focalLength: 0,
+        pixelSize: 0,
         solved: structuredClone(EMPTY_IMAGE_SOLVED),
-        type: 'ASTAP'
     }
 
     crossHair = false
@@ -457,6 +459,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     get imagePath() {
         return (this.showLiveStackedImage && this.imageData.liveStackedPath) || this.imageData.path
+    }
+
+    get canPlateSolve() {
+        return this.solver.type !== 'SIRIL' || (this.solver.focalLength > 0 && this.solver.pixelSize > 0)
     }
 
     constructor(
@@ -879,6 +885,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
         this.fitsHeaders.headers = info.headers
 
+        this.retrieveInfoFromImageHeaders(info.headers)
+
         if (this.imageURL) window.URL.revokeObjectURL(this.imageURL)
         this.imageURL = window.URL.createObjectURL(blob)
         image.src = this.imageURL
@@ -889,6 +897,21 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         }
 
         this.retrieveCoordinateInterpolation()
+    }
+
+    private retrieveInfoFromImageHeaders(headers: FITSHeaderItem[]) {
+        const imagePreference = this.preference.imagePreference.get()
+
+        for (const item of headers) {
+            if (item.name === 'FOCALLEN') {
+                this.solver.focalLength = parseFloat(item.value)
+            } else if (item.name === 'XPIXSZ') {
+                this.solver.pixelSize = parseFloat(item.value)
+            }
+        }
+
+        this.solver.focalLength ||= imagePreference.solverFocalLength || 0
+        this.solver.pixelSize ||= imagePreference.solverPixelSize || 0
     }
 
     imageClicked(event: MouseEvent, contextMenu: boolean) {
@@ -1254,6 +1277,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         const preference = this.preference.imagePreference.get()
         preference.solverRadius = this.solver.radius
         preference.solverType = this.solver.type
+        preference.solverPixelSize = this.solver.pixelSize
+        preference.solverFocalLength = this.solver.focalLength
         preference.starDetectionType = this.starDetection.type
         preference.starDetectionMinSNR = this.starDetection.minSNR
         this.preference.imagePreference.set(preference)
