@@ -106,6 +106,8 @@ data class CommandLine internal constructor(
 
         process.destroyForcibly()
         process.waitFor()
+
+        listeners.clear()
     }
 
     fun get(timeout: Duration): Int {

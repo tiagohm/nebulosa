@@ -1,8 +1,6 @@
 package nebulosa.image.format
 
-interface WritableHeader {
-
-    fun clear()
+interface WritableHeader : MutableCollection<HeaderCard> {
 
     fun add(key: HeaderKey, value: Boolean) = add(key.key, value, key.comment)
 
@@ -19,8 +17,6 @@ interface WritableHeader {
     fun add(key: String, value: Double, comment: String = "")
 
     fun add(key: String, value: String, comment: String = "")
-
-    fun add(card: HeaderCard)
 
     fun addAll(cards: Iterable<HeaderCard>) = cards.forEach(::add)
 

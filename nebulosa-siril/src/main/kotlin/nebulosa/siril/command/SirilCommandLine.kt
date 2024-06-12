@@ -4,6 +4,8 @@ import nebulosa.common.concurrency.cancel.CancellationListener
 import nebulosa.common.concurrency.cancel.CancellationSource
 import nebulosa.common.exec.CommandLineListener
 import nebulosa.common.exec.commandLine
+import nebulosa.log.debug
+import nebulosa.log.loggerFor
 import java.io.Closeable
 import java.nio.file.Path
 
@@ -37,6 +39,7 @@ data class SirilCommandLine(private val executablePath: Path) : Runnable, Cancel
 
     internal fun write(command: String) {
         if (commandLine.isRunning) {
+            LOG.debug { "writing command: $command" }
             commandLine.writer.println(command)
         }
     }
@@ -52,5 +55,10 @@ data class SirilCommandLine(private val executablePath: Path) : Runnable, Cancel
     override fun close() {
         execute(Exit)
         commandLine.stop()
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<SirilCommandLine>()
     }
 }

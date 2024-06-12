@@ -3,6 +3,7 @@ package nebulosa.siril.livestacker
 import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.common.exec.CommandLineListener
 import nebulosa.livestacker.LiveStacker
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.siril.command.*
 import java.nio.file.Path
@@ -36,8 +37,13 @@ data class SirilLiveStacker(
 
             LOG.info("live stacking started. pid={}", commandLine.pid)
 
-            check(commandLine.execute(Cd(workingDirectory))) { "failed to run cd command" }
-            check(commandLine.execute(StartLs(dark, flat, use32Bits))) { "failed to start livestacking" }
+            try {
+                check(commandLine.execute(Cd(workingDirectory))) { "failed to run cd command" }
+                check(commandLine.execute(StartLs(dark, flat, use32Bits))) { "failed to start livestacking" }
+            } catch (e: Throwable) {
+                commandLine.close()
+                throw e
+            }
         }
     }
 
@@ -54,6 +60,7 @@ data class SirilLiveStacker(
     override fun stop() {
         waitForStacking.reset()
         commandLine.execute(StopLs)
+        commandLine.close()
     }
 
     override fun close() {
@@ -62,8 +69,7 @@ data class SirilLiveStacker(
     }
 
     override fun onLineRead(line: String) {
-        // LOG.debug { line }
-        LOG.info(line)
+        LOG.debug { line }
     }
 
     override fun onExit(exitCode: Int, exception: Throwable?) {

@@ -1,7 +1,7 @@
 package nebulosa.astrometrynet.platesolver
 
 import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.exec.LineReadListener
+import nebulosa.common.exec.CommandLineListener
 import nebulosa.common.exec.commandLine
 import nebulosa.image.Image
 import nebulosa.log.loggerFor
@@ -61,7 +61,7 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
 
         try {
             cancellationToken.listen(cmd)
-            cmd.registerLineReadListener(solution)
+            cmd.registerCommandLineListener(solution)
             cmd.start()
             LOG.info("astrometry.net exited. code={}", cmd.get())
             return solution.get()
@@ -74,14 +74,14 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
         }
     }
 
-    private class PlateSolutionLineReader : LineReadListener.OnInput, Supplier<PlateSolution> {
+    private class PlateSolutionLineReader : CommandLineListener.OnLineRead, Supplier<PlateSolution> {
 
         @Volatile private var fieldCenter: DoubleArray? = null
         @Volatile private var fieldRotation: Angle = 0.0
         @Volatile private var pixelScale: Angle = 0.0
         @Volatile private var fieldSize: DoubleArray? = null
 
-        override fun onInputRead(line: String) {
+        override fun onLineRead(line: String) {
             fieldCenter(line)?.also { fieldCenter = it }
                 ?: fieldRotation(line)?.also { fieldRotation = it }
                 ?: pixelScale(line)?.also { pixelScale = it }

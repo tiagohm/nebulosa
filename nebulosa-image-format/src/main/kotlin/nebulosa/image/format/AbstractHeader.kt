@@ -4,7 +4,7 @@ import java.io.Serializable
 import java.util.*
 
 abstract class AbstractHeader protected constructor(@JvmField protected val cards: LinkedList<HeaderCard>) :
-    Header, Collection<HeaderCard> by cards, Serializable {
+    Header, MutableCollection<HeaderCard> by cards, Serializable {
 
     constructor() : this(LinkedList<HeaderCard>())
 
@@ -12,8 +12,19 @@ abstract class AbstractHeader protected constructor(@JvmField protected val card
 
     abstract fun readOnly(): Header
 
-    override fun clear() {
-        cards.clear()
+    override fun add(element: HeaderCard): Boolean {
+        return if (!element.isKeyValuePair) {
+            cards.add(element)
+        } else {
+            val index = cards.indexOfFirst { it.key == element.key }
+
+            if (index >= 0) {
+                cards[index] = element
+                true
+            } else {
+                cards.add(element)
+            }
+        }
     }
 
     override fun delete(key: String): Boolean {
