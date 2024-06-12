@@ -3,7 +3,7 @@ package nebulosa.pixinsight.script
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.common.exec.CommandLine
-import nebulosa.common.exec.LineReadListener
+import nebulosa.common.exec.CommandLineListener
 import nebulosa.common.json.PathDeserializer
 import nebulosa.common.json.PathSerializer
 import nebulosa.log.loggerFor
@@ -11,11 +11,11 @@ import org.apache.commons.codec.binary.Hex
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
-abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListener, CompletableFuture<T>() {
+abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, CommandLineListener, CompletableFuture<T>() {
 
-    override fun onInputRead(line: String) = Unit
+    override fun onLineRead(line: String) = Unit
 
-    override fun onErrorRead(line: String) = Unit
+    override fun onExit(exitCode: Int, exception: Throwable?) = Unit
 
     protected open fun beforeRun() = Unit
 
@@ -36,11 +36,11 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, LineReadListen
                 else if (exception != null) completeExceptionally(exception)
                 else complete(processOnComplete(exitCode).also { LOG.info("script processed. output={}", it) })
             } finally {
-                commandLine.unregisterLineReadListener(this)
+                commandLine.unregisterCommandLineListener(this)
             }
         }
 
-        commandLine.registerLineReadListener(this)
+        commandLine.registerCommandLineListener(this)
         beforeRun()
         commandLine.start()
     }

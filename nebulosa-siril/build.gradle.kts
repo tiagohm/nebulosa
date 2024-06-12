@@ -8,6 +8,7 @@ dependencies {
     api(project(":nebulosa-math"))
     api(project(":nebulosa-livestacker"))
     implementation(project(":nebulosa-log"))
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

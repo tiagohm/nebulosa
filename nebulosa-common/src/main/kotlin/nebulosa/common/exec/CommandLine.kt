@@ -2,6 +2,7 @@ package nebulosa.common.exec
 
 import nebulosa.common.concurrency.cancel.CancellationListener
 import nebulosa.common.concurrency.cancel.CancellationSource
+import nebulosa.log.loggerFor
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintStream
@@ -17,10 +18,10 @@ inline fun commandLine(action: CommandLine.Builder.() -> Unit): CommandLine {
 
 data class CommandLine internal constructor(
     private val builder: ProcessBuilder,
-    private val listeners: HashSet<LineReadListener>,
+    private val listeners: LinkedHashSet<CommandLineListener>,
 ) : CompletableFuture<Int>(), CancellationListener {
 
-    @Volatile private var process: Process? = null
+    @Volatile private lateinit var process: Process
     @Volatile private var waiter: ProcessWaiter? = null
     @Volatile private var inputReader: StreamLineReader? = null
     @Volatile private var errorReader: StreamLineReader? = null
@@ -29,63 +30,65 @@ data class CommandLine internal constructor(
         get() = builder.command()
 
     val pid
-        get() = process?.pid() ?: -1L
+        get() = process.pid()
 
     val exitCode
-        get() = process?.takeIf { !it.isAlive }?.exitValue() ?: -1
+        get() = process.takeIf { !it.isAlive }?.exitValue() ?: -1
+
+    val isRunning
+        get() = ::process.isInitialized && process.isAlive
 
     val writer = PrintStream(object : OutputStream() {
 
         override fun write(b: Int) {
-            process?.outputStream?.write(b)
+            process.outputStream?.write(b)
         }
 
         override fun write(b: ByteArray) {
-            process?.outputStream?.write(b)
+            process.outputStream?.write(b)
         }
 
         override fun write(b: ByteArray, off: Int, len: Int) {
-            process?.outputStream?.write(b, off, len)
+            process.outputStream?.write(b, off, len)
         }
 
         override fun flush() {
-            process?.outputStream?.flush()
+            process.outputStream?.flush()
         }
 
         override fun close() {
-            process?.outputStream?.close()
+            process.outputStream?.close()
         }
     }, true)
 
-    fun registerLineReadListener(listener: LineReadListener) {
-        listeners.add(listener)
+    fun registerCommandLineListener(listener: CommandLineListener) {
+        synchronized(listeners) { listeners.add(listener) }
     }
 
-    fun unregisterLineReadListener(listener: LineReadListener) {
-        listeners.remove(listener)
+    fun unregisterCommandLineListener(listener: CommandLineListener) {
+        synchronized(listeners) { listeners.remove(listener) }
     }
 
     @Synchronized
     fun start(timeout: Duration = Duration.ZERO): CommandLine {
-        if (process == null) {
-            process = try {
-                builder.start()
-            } catch (e: Throwable) {
-                completeExceptionally(e)
-                return this
-            }
+        require(!::process.isInitialized) { "process has already executed" }
 
-            if (listeners.isNotEmpty()) {
-                inputReader = StreamLineReader(process!!.inputStream, false)
-                inputReader!!.start()
-
-                errorReader = StreamLineReader(process!!.errorStream, true)
-                errorReader!!.start()
-            }
-
-            waiter = ProcessWaiter(process!!, timeout.toMillis())
-            waiter!!.start()
+        process = try {
+            builder.start()
+        } catch (e: Throwable) {
+            completeExceptionally(e)
+            listeners.forEach { it.onExit(-1, e) }
+            return this
         }
+
+        inputReader = StreamLineReader(process.inputStream, false)
+        inputReader!!.start()
+
+        errorReader = StreamLineReader(process.errorStream, true)
+        errorReader!!.start()
+
+        waiter = ProcessWaiter(process, timeout.toMillis())
+        waiter!!.start()
 
         return this
     }
@@ -101,9 +104,8 @@ data class CommandLine internal constructor(
         errorReader?.interrupt()
         errorReader = null
 
-        process?.destroyForcibly()
-        process?.waitFor()
-        process = null
+        process.destroyForcibly()
+        process.waitFor()
     }
 
     fun get(timeout: Duration): Int {
@@ -140,7 +142,14 @@ data class CommandLine internal constructor(
                     process.waitFor()
                 }
 
-                complete(process.exitValue())
+                with(process.exitValue()) {
+                    complete(this)
+                    synchronized(listeners) { listeners.forEach { it.onExit(this, null) } }
+                }
+
+                waiter = null
+                inputReader = null
+                errorReader = null
             }
         }
     }
@@ -161,10 +170,15 @@ data class CommandLine internal constructor(
             try {
                 while (true) {
                     val line = reader.readLine() ?: break
-                    if (isError) listeners.forEach { it.onErrorRead(line) }
-                    else listeners.forEach { it.onInputRead(line) }
+
+                    synchronized(listeners) {
+                        listeners.forEach { it.onLineRead(line) }
+                    }
                 }
-            } catch (ignored: Throwable) {
+            } catch (e: InterruptedException) {
+                LOG.error("command line interrupted")
+            } catch (e: Throwable) {
+                LOG.error("command line failed", e)
             } finally {
                 completable.complete(Unit)
                 reader.close()
@@ -182,7 +196,7 @@ data class CommandLine internal constructor(
         private val environment by lazy { builder.environment() }
         private val arguments = mutableMapOf<String, Any?>()
         private var executable = ""
-        private val listeners = HashSet<LineReadListener>(1)
+        private val listeners = LinkedHashSet<CommandLineListener>(1)
 
         fun executablePath(path: Path) = executable("$path")
 
@@ -208,9 +222,9 @@ data class CommandLine internal constructor(
 
         fun workingDirectory(path: Path): Unit = run { builder.directory(path.toFile()) }
 
-        fun registerLineReadListener(listener: LineReadListener) = listeners.add(listener)
+        fun registerCommandLineListener(listener: CommandLineListener) = listeners.add(listener)
 
-        fun unregisterLineReadListener(listener: LineReadListener) = listeners.remove(listener)
+        fun unregisterCommandLineListener(listener: CommandLineListener) = listeners.remove(listener)
 
         override fun get(): CommandLine {
             val args = ArrayList<String>(1 + arguments.size * 2)
@@ -228,5 +242,10 @@ data class CommandLine internal constructor(
 
             return CommandLine(builder, listeners)
         }
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<CommandLine>()
     }
 }

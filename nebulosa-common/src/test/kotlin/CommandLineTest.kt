@@ -6,7 +6,7 @@ import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.ints.shouldNotBeExactly
 import io.kotest.matchers.longs.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.longs.shouldBeLessThan
-import nebulosa.common.exec.LineReadListener
+import nebulosa.common.exec.CommandLineListener
 import nebulosa.common.exec.commandLine
 import nebulosa.test.NonGitHubOnlyCondition
 import java.nio.file.Path
@@ -51,9 +51,9 @@ class CommandLineTest : StringSpec() {
             } shouldBeGreaterThanOrEqual 2000 shouldBeLessThan 10000
         }
         "ls" {
-            val lineReadListener = object : LineReadListener.OnInput, ArrayList<String>() {
+            val lineReadListener = object : CommandLineListener.OnLineRead, ArrayList<String>(64) {
 
-                override fun onInputRead(line: String) {
+                override fun onLineRead(line: String) {
                     add(line)
                 }
             }
@@ -61,7 +61,7 @@ class CommandLineTest : StringSpec() {
             val cmd = commandLine {
                 executable("ls")
                 workingDirectory(Path.of("../"))
-                registerLineReadListener(lineReadListener)
+                registerCommandLineListener(lineReadListener)
             }
 
             cmd.start().get() shouldBeExactly 0
