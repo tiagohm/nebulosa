@@ -3,8 +3,7 @@ package nebulosa.image.format
 import java.io.Serializable
 import java.util.*
 
-abstract class AbstractHeader protected constructor(@JvmField protected val cards: LinkedList<HeaderCard>) :
-    Header, MutableCollection<HeaderCard> by cards, Serializable {
+abstract class AbstractHeader protected constructor(@JvmField protected val cards: LinkedList<HeaderCard>) : Header, Serializable {
 
     constructor() : this(LinkedList<HeaderCard>())
 
@@ -25,6 +24,41 @@ abstract class AbstractHeader protected constructor(@JvmField protected val card
                 cards.add(element)
             }
         }
+    }
+
+    override val size
+        get() = cards.size
+
+    override fun contains(element: HeaderCard): Boolean {
+        return element in cards
+    }
+
+    override fun containsAll(elements: Collection<HeaderCard>): Boolean {
+        return cards.containsAll(elements)
+    }
+
+    override fun isEmpty(): Boolean {
+        return cards.isEmpty()
+    }
+
+    override fun iterator(): MutableIterator<HeaderCard> {
+        return cards.iterator()
+    }
+
+    override fun clear() {
+        cards.clear()
+    }
+
+    override fun remove(element: HeaderCard): Boolean {
+        return cards.remove(element)
+    }
+
+    override fun removeAll(elements: Collection<HeaderCard>): Boolean {
+        return cards.removeAll(elements.toSet())
+    }
+
+    override fun retainAll(elements: Collection<HeaderCard>): Boolean {
+        return cards.retainAll(elements.toSet())
     }
 
     override fun delete(key: String): Boolean {

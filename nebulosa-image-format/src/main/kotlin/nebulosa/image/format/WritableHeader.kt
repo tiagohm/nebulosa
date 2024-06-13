@@ -20,6 +20,8 @@ interface WritableHeader : MutableCollection<HeaderCard> {
 
     fun addAll(cards: Iterable<HeaderCard>) = cards.forEach(::add)
 
+    override fun addAll(elements: Collection<HeaderCard>) = elements.fold(false) { a, b -> add(b) || a }
+
     fun delete(key: HeaderKey) = delete(key.key)
 
     fun delete(key: String): Boolean
