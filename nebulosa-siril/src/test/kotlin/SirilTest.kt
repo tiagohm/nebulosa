@@ -18,7 +18,7 @@ import kotlin.io.path.copyTo
 import kotlin.io.path.listDirectoryEntries
 
 @EnabledIf(NonGitHubOnlyCondition::class)
-class SirilLiveStackerTest : AbstractFitsAndXisfTest() {
+class SirilTest : AbstractFitsAndXisfTest() {
 
     init {
         val executablePath = Path.of("siril-cli")
@@ -62,9 +62,21 @@ class SirilLiveStackerTest : AbstractFitsAndXisfTest() {
         }
         "star detector" {
             val detector = SirilStarDetector(executablePath)
-            val stars = detector.detect(PI_01_LIGHT)
-            stars shouldHaveSize 126
-            println(stars)
+
+            with(detector.detect(PI_FOCUS_0)) {
+                this shouldHaveSize 307
+                map { it.hfd }.average() shouldBe (7.9 plusOrMinus 1e-1)
+            }
+
+            with(detector.detect(PI_FOCUS_30000)) {
+                this shouldHaveSize 258
+                map { it.hfd }.average() shouldBe (1.1 plusOrMinus 1e-1)
+            }
+
+            with(detector.detect(PI_FOCUS_100000)) {
+                this shouldHaveSize 82
+                map { it.hfd }.average() shouldBe (22.4 plusOrMinus 1e-1)
+            }
         }
     }
 }

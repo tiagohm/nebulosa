@@ -921,8 +921,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         }
 
-        this.solver.focalLength ||= imagePreference.solverFocalLength || 0
-        this.solver.pixelSize ||= imagePreference.solverPixelSize || 0
+        this.solver.focalLength ||= imagePreference.solver?.focalLength || 0
+        this.solver.pixelSize ||= imagePreference.solver?.pixelSize || 0
     }
 
     imageClicked(event: MouseEvent, contextMenu: boolean) {
@@ -1275,8 +1275,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private loadPreference() {
         const preference = this.preference.imagePreference.get()
-        this.solver.radius = preference.solverRadius ?? this.solver.radius
-        this.solver.type = preference.solverType ?? 'ASTAP'
+        this.solver.radius = preference.solver?.radius ?? this.solver.radius
+        this.solver.type = preference.solver?.type ?? 'ASTAP'
+        this.solver.focalLength = preference.solver?.focalLength ?? 0
+        this.solver.pixelSize = preference.solver?.pixelSize ?? 0
         this.starDetection.type = preference.starDetection?.type ?? this.starDetection.type
         this.starDetection.minSNR = preference.starDetection?.minSNR ?? this.preference.starDetectionRequest(this.starDetection.type).get().minSNR ?? this.starDetection.minSNR
         this.starDetection.maxStars = preference.starDetection?.maxStars ?? this.starDetection.maxStars
@@ -1287,11 +1289,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private savePreference() {
         const preference = this.preference.imagePreference.get()
-        preference.solverRadius = this.solver.radius
-        preference.solverType = this.solver.type
-        preference.solverPixelSize = this.solver.pixelSize
-        preference.solverFocalLength = this.solver.focalLength
-        preference.starDetection = this.starDetection
+
+        preference.solver = {
+            type: this.solver.type,
+            focalLength: this.solver.focalLength,
+            pixelSize: this.solver.pixelSize,
+            radius: this.solver.radius,
+        }
+        preference.starDetection = {
+            type: this.starDetection.type,
+            maxStars: this.starDetection.maxStars,
+            minSNR: this.starDetection.minSNR,
+        }
+
         this.preference.imagePreference.set(preference)
     }
 

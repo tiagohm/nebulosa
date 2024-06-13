@@ -6,6 +6,8 @@ import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
 import java.nio.file.Path
 
+// https://gitlab.com/free-astro/siril/-/blob/master/src/algos/star_finder.c
+
 data class SirilStarDetector(
     private val executablePath: Path,
     private val maxStars: Int = 0,

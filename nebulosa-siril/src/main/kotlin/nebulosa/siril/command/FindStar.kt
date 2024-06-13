@@ -94,14 +94,16 @@ data class FindStar(
                     if (line.startsWith('#')) continue
 
                     val columns = line.split('\t')
-                    val x = columns[5].trim().toDouble()
-                    val y = columns[6].trim().toDouble()
-                    val fwhmx = columns[7].trim().toDouble()
-                    val fwhmy = columns[8].trim().toDouble()
+                    val flux = columns[3].trim().toDouble() // A ???
+                    val x = columns[5].trim().toDouble() // X
+                    val y = columns[6].trim().toDouble() // Y
+                    val fwhmx = columns[7].trim().toDouble() // FWHMx [px]
+                    val fwhmy = columns[8].trim().toDouble() // FWHMy [px]
+                    val snr = columns[12].trim().toDouble() // RMSE ???
                     val fwhm = (fwhmx + fwhmy) / 2.0
                     val hfd = fwhm / FWHM
 
-                    stars.add(Star(x, height - y, hfd, 0.0, 0.0))
+                    stars.add(Star(x, height - y, hfd, snr, flux))
                 }
             }
 
