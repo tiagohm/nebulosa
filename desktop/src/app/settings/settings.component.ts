@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
+import { DropdownOptionsPipe } from '../../shared/pipes/dropdown-options'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
@@ -52,21 +53,22 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         private preference: PreferenceService,
         private electron: ElectronService,
         private prime: PrimeService,
+        private dropdownOptions: DropdownOptionsPipe,
     ) {
         app.title = 'Settings'
 
         this.locations = preference.locations.get()
         this.location = preference.selectedLocation.get(this.locations[0])
 
-        this.plateSolvers.set('ASTAP', preference.plateSolverRequest('ASTAP').get())
-        this.plateSolvers.set('ASTROMETRY_NET_ONLINE', preference.plateSolverRequest('ASTROMETRY_NET_ONLINE').get())
-        this.plateSolvers.set('SIRIL', preference.plateSolverRequest('SIRIL').get())
-
-        this.starDetectors.set('ASTAP', preference.starDetectionRequest('ASTAP').get())
-        this.starDetectors.set('PIXINSIGHT', preference.starDetectionRequest('PIXINSIGHT').get())
-
-        this.liveStackers.set('SIRIL', preference.liveStackingRequest('SIRIL').get())
-        this.liveStackers.set('PIXINSIGHT', preference.liveStackingRequest('PIXINSIGHT').get())
+        for (const type of dropdownOptions.transform('PLATE_SOLVER')) {
+            this.plateSolvers.set(type, preference.plateSolverRequest(type).get())
+        }
+        for (const type of dropdownOptions.transform('STAR_DETECTOR')) {
+            this.starDetectors.set(type, preference.starDetectionRequest(type).get())
+        }
+        for (const type of dropdownOptions.transform('LIVE_STACKER')) {
+            this.liveStackers.set(type, preference.liveStackingRequest(type).get())
+        }
     }
 
     async ngAfterViewInit() { }
@@ -129,14 +131,14 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     }
 
     save() {
-        this.preference.plateSolverRequest('ASTAP').set(this.plateSolvers.get('ASTAP'))
-        this.preference.plateSolverRequest('ASTROMETRY_NET_ONLINE').set(this.plateSolvers.get('ASTROMETRY_NET_ONLINE'))
-        this.preference.plateSolverRequest('SIRIL').set(this.plateSolvers.get('SIRIL'))
-
-        this.preference.starDetectionRequest('ASTAP').set(this.starDetectors.get('ASTAP'))
-        this.preference.starDetectionRequest('PIXINSIGHT').set(this.starDetectors.get('PIXINSIGHT'))
-
-        this.preference.liveStackingRequest('SIRIL').set(this.liveStackers.get('SIRIL'))
-        this.preference.liveStackingRequest('PIXINSIGHT').set(this.liveStackers.get('PIXINSIGHT'))
+        for (const type of this.dropdownOptions.transform('PLATE_SOLVER')) {
+            this.preference.plateSolverRequest(type).set(this.plateSolvers.get(type))
+        }
+        for (const type of this.dropdownOptions.transform('STAR_DETECTOR')) {
+            this.preference.starDetectionRequest(type).set(this.starDetectors.get(type))
+        }
+        for (const type of this.dropdownOptions.transform('LIVE_STACKER')) {
+            this.preference.liveStackingRequest(type).set(this.liveStackers.get(type))
+        }
     }
 }
