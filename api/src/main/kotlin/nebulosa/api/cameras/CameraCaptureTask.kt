@@ -271,13 +271,11 @@ data class CameraCaptureTask(
     }
 
     private fun addFrameToLiveStacker(path: Path?): Path? {
-        return if (path == null) {
+        return if (path == null || liveStacker == null) {
             null
-        } else if (liveStacker != null) {
+        } else {
             sendEvent(CameraCaptureState.STACKING)
             liveStacker!!.add(path)
-        } else {
-            path
         }
     }
 

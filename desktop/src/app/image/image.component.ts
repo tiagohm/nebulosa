@@ -605,9 +605,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private markCalibrationGroupItem(name?: string) {
+        this.calibrationMenuItem.items![2].disabled = !this.imageInfo?.camera?.id
+        this.calibrationMenuItem.items![2].checked = this.calibrationViaCamera
+
         for (let i = 3; i < this.calibrationMenuItem.items!.length; i++) {
             const item = this.calibrationMenuItem.items![i]
-            item.checked = item.label === (name ?? 'None')
+            item.checked = !this.calibrationViaCamera && item.data === name
         }
     }
 
@@ -628,13 +631,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
             return <MenuItem>{
                 label, icon,
-                checked: this.transformation.calibrationGroup === name,
-                command: async (e) => {
-                    if (!this.calibrationViaCamera) {
-                        this.transformation.calibrationGroup = name
-                        this.markCalibrationGroupItem(label)
-                        await this.loadImage()
-                    }
+                checked: !this.calibrationViaCamera && this.transformation.calibrationGroup === name,
+                data: name,
+                command: async () => {
+                    this.calibrationViaCamera = false
+                    this.transformation.calibrationGroup = name
+                    this.markCalibrationGroupItem(name)
+                    await this.loadImage()
                 },
             }
         }
@@ -647,19 +650,23 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             command: () => this.browserWindow.openCalibration()
         })
 
+        menu.push(SEPARATOR_MENU_ITEM)
+
         menu.push({
             label: 'Camera',
             icon: 'mdi mdi-camera-iris',
-            toggleable: true,
-            toggled: this.calibrationViaCamera,
-            toggle: (e) => {
-                e.originalEvent?.stopImmediatePropagation()
-                this.calibrationViaCamera = !!e.checked
-                this.markCalibrationGroupItem(this.transformation.calibrationGroup)
+            checked: this.calibrationViaCamera,
+            disabled: !this.imageInfo?.camera?.id,
+            data: 0,
+            command: async () => {
+                if (this.imageInfo?.camera?.id) {
+                    this.calibrationViaCamera = !this.calibrationViaCamera
+                    this.markCalibrationGroupItem(this.transformation.calibrationGroup)
+                    await this.loadImage()
+                }
             }
         })
 
-        menu.push(SEPARATOR_MENU_ITEM)
         menu.push(makeItem())
 
         for (const group of groups) {
@@ -894,6 +901,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         if (!info.camera?.id) {
             this.calibrationViaCamera = false
             this.markCalibrationGroupItem(this.transformation.calibrationGroup)
+        } else {
+            this.calibrationMenuItem.items![2].disabled = false
         }
 
         this.retrieveCoordinateInterpolation()
