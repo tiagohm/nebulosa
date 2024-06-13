@@ -1,7 +1,7 @@
 import { Point, Size } from 'electron'
 import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
 import { Camera, CameraStartCapture } from './camera.types'
-import { PlateSolverType, StarDetectorType } from './settings.types'
+import { PlateSolverType, StarDetectionRequest, StarDetectorType } from './settings.types'
 
 export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
 
@@ -117,14 +117,17 @@ export interface ImagePreference {
     solverFocalLength?: number
     solverPixelSize?: number
     savePath?: string
-    starDetectionType?: StarDetectorType
-    starDetectionMinSNR?: number
+    starDetection?: Pick<StarDetectionRequest, 'type' | 'minSNR' | 'maxStars'>
 }
 
 export const EMPTY_IMAGE_PREFERENCE: ImagePreference = {
     solverRadius: 4,
     solverType: 'ASTAP',
-    starDetectionType: 'ASTAP'
+    starDetection: {
+        type: 'ASTAP',
+        minSNR: 0,
+        maxStars: 0,
+    }
 }
 
 export interface ImageData {
@@ -286,6 +289,7 @@ export interface StarDetectionDialog {
     running: boolean
     type: StarDetectorType
     minSNR: number
+    maxStars: number
     visible: boolean
     stars: DetectedStar[]
     computed: Omit<DetectedStar, 'x' | 'y' | 'flux'> & { minFlux: number, maxFlux: number }

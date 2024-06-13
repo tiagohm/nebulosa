@@ -110,6 +110,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         running: false,
         type: 'ASTAP',
         minSNR: 0,
+        maxStars: 0,
         visible: false,
         stars: [],
         computed: {
@@ -799,6 +800,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     async detectStars() {
         const options = this.preference.starDetectionRequest(this.starDetection.type).get()
         options.minSNR = this.starDetection.minSNR
+        options.maxStars = this.starDetection.maxStars
 
         try {
             this.starDetection.running = true
@@ -1275,8 +1277,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         const preference = this.preference.imagePreference.get()
         this.solver.radius = preference.solverRadius ?? this.solver.radius
         this.solver.type = preference.solverType ?? 'ASTAP'
-        this.starDetection.type = preference.starDetectionType ?? this.starDetection.type
-        this.starDetection.minSNR = preference.starDetectionMinSNR ?? this.preference.starDetectionRequest(this.starDetection.type).get().minSNR ?? this.starDetection.minSNR
+        this.starDetection.type = preference.starDetection?.type ?? this.starDetection.type
+        this.starDetection.minSNR = preference.starDetection?.minSNR ?? this.preference.starDetectionRequest(this.starDetection.type).get().minSNR ?? this.starDetection.minSNR
+        this.starDetection.maxStars = preference.starDetection?.maxStars ?? this.starDetection.maxStars
 
         this.fov.fovs = this.preference.imageFOVs.get()
         this.fov.fovs.forEach(e => { e.enabled = false; e.computed = undefined })
@@ -1288,8 +1291,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         preference.solverType = this.solver.type
         preference.solverPixelSize = this.solver.pixelSize
         preference.solverFocalLength = this.solver.focalLength
-        preference.starDetectionType = this.starDetection.type
-        preference.starDetectionMinSNR = this.starDetection.minSNR
+        preference.starDetection = this.starDetection
         this.preference.imagePreference.set(preference)
     }
 

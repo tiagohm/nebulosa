@@ -23,7 +23,7 @@ export class DropdownOptionsPipe implements PipeTransform {
 
     transform<K extends keyof DropdownOptions>(type: K): DropdownOptions[K] {
         switch (type) {
-            case 'STAR_DETECTOR': return ['ASTAP', 'PIXINSIGHT'] as DropdownOptions[K]
+            case 'STAR_DETECTOR': return ['ASTAP', 'PIXINSIGHT', 'SIRIL'] as DropdownOptions[K]
             case 'PLATE_SOLVER': return ['ASTAP', 'ASTROMETRY_NET_ONLINE', 'SIRIL'] as DropdownOptions[K]
             case 'AUTO_FOCUS_FITTING_MODE': return ['TRENDLINES', 'PARABOLIC', 'TREND_PARABOLIC', 'HYPERBOLIC', 'TREND_HYPERBOLIC'] as DropdownOptions[K]
             case 'AUTO_FOCUS_BACKLASH_COMPENSATION_MODE': return ['NONE', 'ABSOLUTE', 'OVERSHOOT'] as DropdownOptions[K]

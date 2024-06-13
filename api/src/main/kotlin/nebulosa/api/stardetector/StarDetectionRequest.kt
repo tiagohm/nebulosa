@@ -5,6 +5,7 @@ import nebulosa.pixinsight.script.PixInsightIsRunning
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.pixinsight.script.PixInsightStartup
 import nebulosa.pixinsight.stardetector.PixInsightStarDetector
+import nebulosa.siril.stardetector.SirilStarDetector
 import nebulosa.stardetector.StarDetector
 import java.nio.file.Path
 import java.time.Duration
@@ -15,11 +16,13 @@ data class StarDetectionRequest(
     @JvmField val executablePath: Path? = null,
     @JvmField val timeout: Duration = Duration.ZERO,
     @JvmField val minSNR: Double = 0.0,
+    @JvmField val maxStars: Int = 0,
     @JvmField val slot: Int = 1,
 ) : Supplier<StarDetector<Path>> {
 
     override fun get() = when (type) {
         StarDetectorType.ASTAP -> AstapStarDetector(executablePath!!, minSNR)
+        StarDetectorType.SIRIL -> SirilStarDetector(executablePath!!, maxStars)
         StarDetectorType.PIXINSIGHT -> {
             val runner = PixInsightScriptRunner(executablePath!!)
 

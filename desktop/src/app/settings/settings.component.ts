@@ -6,7 +6,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
 import { LiveStackerType, LiveStackingRequest } from '../../shared/types/camera.types'
-import { PlateSolverOptions, PlateSolverType, StarDetectionOptions, StarDetectorType } from '../../shared/types/settings.types'
+import { PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetectorType } from '../../shared/types/settings.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -40,10 +40,10 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
     location: Location
 
     plateSolverType: PlateSolverType = 'ASTAP'
-    readonly plateSolvers = new Map<PlateSolverType, PlateSolverOptions>()
+    readonly plateSolvers = new Map<PlateSolverType, PlateSolverRequest>()
 
     starDetectorType: StarDetectorType = 'ASTAP'
-    readonly starDetectors = new Map<StarDetectorType, StarDetectionOptions>()
+    readonly starDetectors = new Map<StarDetectorType, StarDetectionRequest>()
 
     liveStackerType: LiveStackerType = 'SIRIL'
     readonly liveStackers = new Map<LiveStackerType, LiveStackingRequest>()

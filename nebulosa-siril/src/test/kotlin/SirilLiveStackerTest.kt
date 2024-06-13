@@ -10,6 +10,7 @@ import nebulosa.math.*
 import nebulosa.platesolver.Parity
 import nebulosa.siril.livestacker.SirilLiveStacker
 import nebulosa.siril.platesolver.SirilPlateSolver
+import nebulosa.siril.stardetector.SirilStarDetector
 import nebulosa.test.AbstractFitsAndXisfTest
 import nebulosa.test.NonGitHubOnlyCondition
 import java.nio.file.Path
@@ -58,6 +59,12 @@ class SirilLiveStackerTest : AbstractFitsAndXisfTest() {
             solution.parity shouldBe Parity.FLIPPED
             solution.widthInPixels shouldBeExactly 1280.0
             solution.heightInPixels shouldBeExactly 1024.0
+        }
+        "star detector" {
+            val detector = SirilStarDetector(executablePath)
+            val stars = detector.detect(PI_01_LIGHT)
+            stars shouldHaveSize 126
+            println(stars)
         }
     }
 }
