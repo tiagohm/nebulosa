@@ -43,7 +43,7 @@ data class WatneyPlateSolver(
     override fun solve(
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
-        downsampleFactor: Int, timeout: Duration?,
+        downsampleFactor: Int, timeout: Duration,
         cancellationToken: CancellationToken,
     ): PlateSolution {
         val image = image ?: path!!.fits().use(Image::open)
