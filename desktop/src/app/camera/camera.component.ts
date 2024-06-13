@@ -446,6 +446,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
                 checked: this.request.calibrationGroup === name,
                 command: () => {
                     this.request.calibrationGroup = name
+                    this.savePreference()
                     this.loadCalibrationGroups()
                 },
             }
@@ -669,6 +670,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             this.request.gain = preference.gain ?? 0
             this.request.offset = preference.offset ?? 0
             this.request.frameFormat = preference.frameFormat ?? (this.camera.frameFormats[0] || '')
+            this.request.calibrationGroup = preference.calibrationGroup
 
             if (preference.dither) {
                 Object.assign(this.request.dither, preference.dither)
