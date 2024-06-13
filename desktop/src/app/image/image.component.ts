@@ -1281,7 +1281,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.solver.pixelSize = preference.solver?.pixelSize ?? 0
         this.starDetection.type = preference.starDetection?.type ?? this.starDetection.type
         this.starDetection.minSNR = preference.starDetection?.minSNR ?? this.preference.starDetectionRequest(this.starDetection.type).get().minSNR ?? this.starDetection.minSNR
-        this.starDetection.maxStars = preference.starDetection?.maxStars ?? this.starDetection.maxStars
+        this.starDetection.maxStars = preference.starDetection?.maxStars ?? this.preference.starDetectionRequest(this.starDetection.type).get().maxStars ?? this.starDetection.maxStars
 
         this.fov.fovs = this.preference.imageFOVs.get()
         this.fov.fovs.forEach(e => { e.enabled = false; e.computed = undefined })
