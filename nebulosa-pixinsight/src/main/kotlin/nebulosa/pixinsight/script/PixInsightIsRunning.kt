@@ -11,11 +11,7 @@ data class PixInsightIsRunning(private val slot: Int) : AbstractPixInsightScript
     private val slotCrashed = "The requested application instance #$slot has crashed"
     private val yieldedExecutionInstance = "$YIELDED_EXECUTION_INSTANCE$slot"
 
-    override fun onInputRead(line: String) {
-        processLine(line)
-    }
-
-    override fun onErrorRead(line: String) {
+    override fun onLineRead(line: String) {
         processLine(line)
     }
 

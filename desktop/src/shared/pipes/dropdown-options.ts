@@ -19,7 +19,7 @@ export class DropdownOptionsPipe implements PipeTransform {
     transform(type: DropdownOptionType): DropdownOptionReturnType | undefined {
         switch (type) {
             case 'STAR_DETECTOR': return ['ASTAP', 'PIXINSIGHT']
-            case 'PLATE_SOLVER': return ['ASTAP', 'ASTROMETRY_NET_ONLINE']
+            case 'PLATE_SOLVER': return ['ASTAP', 'ASTROMETRY_NET_ONLINE', 'SIRIL']
             case 'AUTO_FOCUS_FITTING_MODE': return ['TRENDLINES', 'PARABOLIC', 'TREND_PARABOLIC', 'HYPERBOLIC', 'TREND_HYPERBOLIC']
             case 'AUTO_FOCUS_BACKLASH_COMPENSATION_MODE': return ['NONE', 'ABSOLUTE', 'OVERSHOOT']
             case 'LIVE_STACKER': return ['SIRIL', 'PIXINSIGHT']

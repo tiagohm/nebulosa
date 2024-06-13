@@ -1,4 +1,4 @@
-export type PlateSolverType = 'ASTROMETRY_NET' | 'ASTROMETRY_NET_ONLINE' | 'ASTAP'
+export type PlateSolverType = 'ASTROMETRY_NET' | 'ASTROMETRY_NET_ONLINE' | 'ASTAP' | 'SIRIL'
 
 export interface PlateSolverOptions {
     type: PlateSolverType
@@ -15,7 +15,7 @@ export const EMPTY_PLATE_SOLVER_OPTIONS: PlateSolverOptions = {
     downsampleFactor: 0,
     apiUrl: 'https://nova.astrometry.net/',
     apiKey: '',
-    timeout: 600,
+    timeout: 300,
 }
 
 export type StarDetectorType = 'ASTAP' | 'PIXINSIGHT'
@@ -31,7 +31,7 @@ export interface StarDetectionOptions {
 export const EMPTY_STAR_DETECTION_OPTIONS: StarDetectionOptions = {
     type: 'ASTAP',
     executablePath: '',
-    timeout: 600,
+    timeout: 300,
     minSNR: 0,
     slot: 1,
 }

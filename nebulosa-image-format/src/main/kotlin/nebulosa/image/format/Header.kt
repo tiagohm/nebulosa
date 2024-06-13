@@ -1,10 +1,12 @@
 package nebulosa.image.format
 
+import java.util.function.Predicate
+
 interface Header : ReadableHeader, WritableHeader, Cloneable {
 
     public override fun clone(): Header
 
-    data object Empty : Header, Iterator<HeaderCard> {
+    data object Empty : Header, MutableIterator<HeaderCard> {
 
         override fun clone() = this
 
@@ -20,6 +22,12 @@ interface Header : ReadableHeader, WritableHeader, Cloneable {
 
         override fun clear() = Unit
 
+        override fun remove(element: HeaderCard) = false
+
+        override fun removeAll(elements: Collection<HeaderCard>) = false
+
+        override fun retainAll(elements: Collection<HeaderCard>) = false
+
         override fun add(key: String, value: Boolean, comment: String) = Unit
 
         override fun add(key: String, value: Int, comment: String) = Unit
@@ -28,12 +36,18 @@ interface Header : ReadableHeader, WritableHeader, Cloneable {
 
         override fun add(key: String, value: String, comment: String) = Unit
 
-        override fun add(card: HeaderCard) = Unit
+        override fun add(element: HeaderCard) = false
+
+        override fun addAll(elements: Collection<HeaderCard>) = false
 
         override fun delete(key: String) = false
 
         override fun hasNext() = false
 
         override fun next() = TODO("Unsupported operation")
+
+        override fun remove() = Unit
+
+        override fun removeIf(filter: Predicate<in HeaderCard>) = false
     }
 }

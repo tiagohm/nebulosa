@@ -48,15 +48,18 @@ class CountUpDownLatch(initialCount: Int = 0) : Supplier<Boolean>, CancellationL
     }
 
     fun await(n: Int = 0) {
-        if (n >= 0) sync.acquireSharedInterruptibly(n)
+        require(n >= 0) { "n must be greater or equal to 0" }
+        sync.acquireSharedInterruptibly(n)
     }
 
     fun await(timeout: Long, unit: TimeUnit, n: Int = 0): Boolean {
-        return n >= 0 && sync.tryAcquireSharedNanos(n, unit.toNanos(timeout))
+        require(n >= 0) { "n must be greater or equal to 0" }
+        return sync.tryAcquireSharedNanos(n, unit.toNanos(timeout))
     }
 
     fun await(timeout: Duration, n: Int = 0): Boolean {
-        return n >= 0 && sync.tryAcquireSharedNanos(n, timeout.toNanos())
+        require(n >= 0) { "n must be greater or equal to 0" }
+        return sync.tryAcquireSharedNanos(n, timeout.toNanos())
     }
 
     override fun onCancel(source: CancellationSource) {

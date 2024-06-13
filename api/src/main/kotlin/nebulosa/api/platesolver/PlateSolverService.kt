@@ -26,6 +26,5 @@ class PlateSolverService(
     fun solve(
         options: PlateSolverRequest, path: Path,
         centerRA: Angle = 0.0, centerDEC: Angle = 0.0, radius: Angle = 0.0,
-    ) = options.get(httpClient)
-        .solve(path, null, centerRA, centerDEC, radius, 1, options.timeout.takeIf { it.toSeconds() > 0 })
+    ) = options.get(httpClient).solve(path, null, centerRA, centerDEC, radius, options.downsampleFactor, options.timeout)
 }

@@ -53,7 +53,7 @@
                     <label>Timeout (s)</label>
                 </span>
             </div>
-            <div class="col-12" *ngIf="plateSolverType === 'ASTAP'">
+            <div class="col-12" *ngIf="plateSolverType !== 'ASTROMETRY_NET_ONLINE'">
                 <neb-path-chooser key="PLATE_SOLVER_EXECUTABLE_PATH" [directory]="false" label="Executable path"
                                   [path]="plateSolvers.get(plateSolverType)!.executablePath" class="w-full"
                                   (pathChange)="plateSolvers.get(plateSolverType)!.executablePath = $event; save()" />

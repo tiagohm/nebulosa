@@ -7,10 +7,7 @@ import nebulosa.image.format.ReadableHeader
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.wcs.computeCdMatrix
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.hypot
+import kotlin.math.*
 
 data class PlateSolution(
     @JvmField val solved: Boolean = false,
@@ -22,8 +19,8 @@ data class PlateSolution(
     @JvmField val height: Angle = 0.0,
     @JvmField val parity: Parity = Parity.NORMAL,
     @JvmField val radius: Angle = hypot(width, height).rad / 2.0,
-    @JvmField val widthInPixels: Double = width / scale,
-    @JvmField val heightInPixels: Double = height / scale,
+    @JvmField val widthInPixels: Double = truncate(width / scale),
+    @JvmField val heightInPixels: Double = truncate(height / scale),
     private val header: Collection<HeaderCard> = emptyList(),
 ) : FitsHeader.ReadOnly(header) {
 

@@ -7,7 +7,9 @@ dependencies {
     api(project(":nebulosa-common"))
     api(project(":nebulosa-math"))
     api(project(":nebulosa-livestacker"))
+    api(project(":nebulosa-platesolver"))
     implementation(project(":nebulosa-log"))
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

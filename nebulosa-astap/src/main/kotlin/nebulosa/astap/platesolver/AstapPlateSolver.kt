@@ -30,7 +30,7 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
     override fun solve(
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
-        downsampleFactor: Int, timeout: Duration?,
+        downsampleFactor: Int, timeout: Duration,
         cancellationToken: CancellationToken,
     ): PlateSolution {
         requireNotNull(path) { "path is required" }
@@ -61,7 +61,7 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
         LOG.info("ASTAP solving. command={}", cmd.command)
 
         try {
-            val timeoutOrDefault = timeout?.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5)
+            val timeoutOrDefault = timeout.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5)
             cancellationToken.listen(cmd)
             cmd.start(timeoutOrDefault)
 
