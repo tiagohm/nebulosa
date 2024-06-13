@@ -10,6 +10,7 @@ import nebulosa.math.*
 import nebulosa.platesolver.Parity
 import nebulosa.siril.livestacker.SirilLiveStacker
 import nebulosa.siril.platesolver.SirilPlateSolver
+import nebulosa.siril.stardetector.SirilStarDetector
 import nebulosa.test.AbstractFitsAndXisfTest
 import nebulosa.test.NonGitHubOnlyCondition
 import java.nio.file.Path
@@ -17,7 +18,7 @@ import kotlin.io.path.copyTo
 import kotlin.io.path.listDirectoryEntries
 
 @EnabledIf(NonGitHubOnlyCondition::class)
-class SirilLiveStackerTest : AbstractFitsAndXisfTest() {
+class SirilTest : AbstractFitsAndXisfTest() {
 
     init {
         val executablePath = Path.of("siril-cli")
@@ -58,6 +59,24 @@ class SirilLiveStackerTest : AbstractFitsAndXisfTest() {
             solution.parity shouldBe Parity.FLIPPED
             solution.widthInPixels shouldBeExactly 1280.0
             solution.heightInPixels shouldBeExactly 1024.0
+        }
+        "star detector" {
+            val detector = SirilStarDetector(executablePath)
+
+            with(detector.detect(PI_FOCUS_0)) {
+                this shouldHaveSize 307
+                map { it.hfd }.average() shouldBe (7.9 plusOrMinus 1e-1)
+            }
+
+            with(detector.detect(PI_FOCUS_30000)) {
+                this shouldHaveSize 258
+                map { it.hfd }.average() shouldBe (1.1 plusOrMinus 1e-1)
+            }
+
+            with(detector.detect(PI_FOCUS_100000)) {
+                this shouldHaveSize 82
+                map { it.hfd }.average() shouldBe (22.4 plusOrMinus 1e-1)
+            }
         }
     }
 }

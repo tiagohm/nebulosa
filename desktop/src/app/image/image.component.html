@@ -451,11 +451,18 @@
                 <label>Detector</label>
             </span>
         </div>
-        <div class="col-5 align-items-center">
+        <div class="col-5 align-items-center" *ngIf="starDetection.type !== 'SIRIL'">
             <span class="p-float-label">
                 <p-inputNumber [min]="0" [max]="500" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
                                [(ngModel)]="starDetection.minSNR" locale="en" [allowEmpty]="false" scrollableNumber />
                 <label>Min SNR</label>
+            </span>
+        </div>
+        <div class="col-5 align-items-center" *ngIf="starDetection.type === 'SIRIL'">
+            <span class="p-float-label">
+                <p-inputNumber [min]="0" [max]="2000" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
+                               [(ngModel)]="starDetection.maxStars" locale="en" [allowEmpty]="false" scrollableNumber />
+                <label>Max Stars</label>
             </span>
         </div>
         <div class="col-12 mt-1">

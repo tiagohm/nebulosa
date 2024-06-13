@@ -10,7 +10,7 @@ import { Focuser, FocuserPreference } from '../types/focuser.types'
 import { ConnectionDetails, Equipment, HomePreference } from '../types/home.types'
 import { EMPTY_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
 import { Rotator, RotatorPreference } from '../types/rotator.types'
-import { EMPTY_PLATE_SOLVER_OPTIONS, EMPTY_STAR_DETECTION_OPTIONS, PlateSolverOptions as PlateSolverRequest, PlateSolverType, StarDetectionOptions as StarDetectionRequest, StarDetectorType } from '../types/settings.types'
+import { EMPTY_PLATE_SOLVER_REQUEST, EMPTY_STAR_DETECTION_REQUEST, PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetectorType } from '../types/settings.types'
 import { FilterWheel, WheelPreference } from '../types/wheel.types'
 import { LocalStorageService } from './local-storage.service'
 
@@ -69,11 +69,11 @@ export class PreferenceService {
     }
 
     plateSolverRequest(type: PlateSolverType) {
-        return new PreferenceData<PlateSolverRequest>(this.storage, `plateSolver.${type}`, () => <PlateSolverRequest>{ ...EMPTY_PLATE_SOLVER_OPTIONS, type })
+        return new PreferenceData<PlateSolverRequest>(this.storage, `plateSolver.${type}`, () => <PlateSolverRequest>{ ...EMPTY_PLATE_SOLVER_REQUEST, type })
     }
 
     starDetectionRequest(type: StarDetectorType) {
-        return new PreferenceData<StarDetectionRequest>(this.storage, `starDetection.${type}`, () => <StarDetectionRequest>{ ...EMPTY_STAR_DETECTION_OPTIONS, type })
+        return new PreferenceData<StarDetectionRequest>(this.storage, `starDetection.${type}`, () => <StarDetectionRequest>{ ...EMPTY_STAR_DETECTION_REQUEST, type })
     }
 
     liveStackingRequest(type: LiveStackerType) {

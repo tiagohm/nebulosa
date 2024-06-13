@@ -2,5 +2,6 @@ package nebulosa.api.stardetector
 
 enum class StarDetectorType {
     ASTAP,
-    PIXINSIGHT
+    PIXINSIGHT,
+    SIRIL,
 }

@@ -1,6 +1,6 @@
 import { Point } from 'electron'
 import { CameraCaptureEvent, CameraStartCapture } from './camera.types'
-import { EMPTY_STAR_DETECTION_OPTIONS, StarDetectionOptions } from './settings.types'
+import { EMPTY_STAR_DETECTION_REQUEST, StarDetectionRequest } from './settings.types'
 
 export type AutoFocusState = 'IDLE' | 'MOVING' | 'EXPOSURING' | 'EXPOSURED' | 'ANALYSING' | 'ANALYSED' | 'CURVE_FITTED' | 'FAILED' | 'FINISHED'
 
@@ -22,7 +22,7 @@ export interface AutoFocusRequest {
     initialOffsetSteps: number
     stepSize: number
     totalNumberOfAttempts: number
-    starDetector: StarDetectionOptions
+    starDetector: StarDetectionRequest
 }
 
 export interface AutoFocusPreference extends Omit<AutoFocusRequest, 'capture'> { }
@@ -38,7 +38,7 @@ export const EMPTY_AUTO_FOCUS_PREFERENCE: AutoFocusPreference = {
         backlashIn: 0,
         backlashOut: 0
     },
-    starDetector: EMPTY_STAR_DETECTION_OPTIONS,
+    starDetector: EMPTY_STAR_DETECTION_REQUEST,
 }
 
 export interface Curve {

@@ -178,9 +178,9 @@ data class CommandLine internal constructor(
                     }
                 }
             } catch (e: InterruptedException) {
-                LOG.error("command line interrupted")
+                LOG.warn("command line interrupted")
             } catch (e: Throwable) {
-                LOG.error("command line failed", e)
+                LOG.warn("command line exited: {}", e.message)
             } finally {
                 completable.complete(Unit)
                 reader.close()
