@@ -9,7 +9,7 @@ import nebulosa.math.arcsec
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.math.toArcsec
-import nebulosa.plate.solving.PlateSolution
+import nebulosa.platesolver.PlateSolution
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 

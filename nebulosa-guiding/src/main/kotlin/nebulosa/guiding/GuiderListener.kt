@@ -8,5 +8,9 @@ interface GuiderListener {
 
     fun onDithered(dx: Double, dy: Double) = Unit
 
+    fun onSettleStarted() = Unit
+
+    fun onSettleDone(error: String?) = Unit
+
     fun onMessageReceived(message: String) = Unit
 }

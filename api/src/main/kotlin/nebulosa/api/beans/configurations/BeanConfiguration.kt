@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.objectbox.BoxStore
+import io.objectbox.kotlin.boxFor
 import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
@@ -170,16 +171,16 @@ class BeanConfiguration {
         .build()!!
 
     @Bean
-    fun calibrationFrameBox(boxStore: BoxStore) = boxStore.boxFor(CalibrationFrameEntity::class.java)!!
+    fun calibrationFrameBox(boxStore: BoxStore) = boxStore.boxFor<CalibrationFrameEntity>()
 
     @Bean
-    fun preferenceBox(boxStore: BoxStore) = boxStore.boxFor(PreferenceEntity::class.java)!!
+    fun preferenceBox(boxStore: BoxStore) = boxStore.boxFor<PreferenceEntity>()
 
     @Bean
-    fun satelliteBox(boxStore: BoxStore) = boxStore.boxFor(SatelliteEntity::class.java)!!
+    fun satelliteBox(boxStore: BoxStore) = boxStore.boxFor<SatelliteEntity>()
 
     @Bean
-    fun simbadEntityBox(@Qualifier("simbadBoxStore") boxStore: BoxStore) = boxStore.boxFor(SimbadEntity::class.java)!!
+    fun simbadBox(@Qualifier("simbadBoxStore") boxStore: BoxStore) = boxStore.boxFor<SimbadEntity>()
 
     @Bean
     fun webMvcConfigurer(

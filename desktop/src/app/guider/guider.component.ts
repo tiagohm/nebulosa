@@ -70,7 +70,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
     }
 
     readonly chartData: ChartData = {
-        labels: Array.from({ length: 100 }),
+        labels: Array.from({ length: 100 }, (_, i) => `${i}`),
         datasets: [
             // RA.
             {
@@ -129,9 +129,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
                         const scale = barType ? this.phdDurationScale : 1.0
                         const y = context.parsed.y * scale
                         const prefix = raType ? 'RA: ' : 'DEC: '
-                        const barSuffix = ' ms'
                         const lineSuffix = this.yAxisUnit === 'ARCSEC' ? '"' : 'px'
-                        const formattedY = prefix + (barType ? y.toFixed(0) + barSuffix : y.toFixed(2) + lineSuffix)
+                        const formattedY = prefix + (barType ? y.toFixed(0) + ' ms' : y.toFixed(2) + lineSuffix)
                         return formattedY
                     }
                 }
@@ -188,7 +187,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
                 }
             },
             x: {
-                stacked: false,
+                type: 'linear',
+                stacked: true,
                 min: 0,
                 max: 100,
                 border: {
@@ -196,13 +196,20 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
                     dash: [2, 4],
                 },
                 ticks: {
-                    autoSkip: true,
+                    autoSkip: false,
                     count: 11,
                     maxRotation: 0,
                     minRotation: 0,
-                    callback: (value) => {
+                    callback: (value, i, ticks) => {
                         const a = value as number
-                        return (a - Math.trunc(a) > 0) ? undefined : a.toFixed(0)
+
+                        if (i === 0) {
+                            return a.toFixed(0)
+                        } else if (ticks[i - 1]) {
+                            if (Math.abs(Math.trunc(ticks[i - 1].value) - Math.trunc(a)) >= 1) {
+                                return a.toFixed(0)
+                            }
+                        }
                     }
                 },
                 grid: {
@@ -285,11 +292,11 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
                 this.message = event.data
             })
         })
-
-        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
+        this.pinger.register(this, 30000)
+
         const settle = await this.api.getGuidingSettle()
 
         this.settleAmount = settle.amount ?? 1.5

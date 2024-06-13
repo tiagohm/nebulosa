@@ -3,7 +3,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.math.toDegrees
-import nebulosa.watney.plate.solving.quad.SkySegmentSphere
+import nebulosa.watney.platesolver.quad.SkySegmentSphere
 
 class SkySegmentSphereTest : StringSpec() {
 

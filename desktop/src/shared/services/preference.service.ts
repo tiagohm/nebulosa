@@ -4,13 +4,13 @@ import { AlignmentPreference, EMPTY_ALIGNMENT_PREFERENCE } from '../types/alignm
 import { EMPTY_LOCATION, Location } from '../types/atlas.types'
 import { AutoFocusPreference, EMPTY_AUTO_FOCUS_PREFERENCE } from '../types/autofocus.type'
 import { CalibrationPreference } from '../types/calibration.types'
-import { Camera, CameraPreference, CameraStartCapture, EMPTY_CAMERA_PREFERENCE } from '../types/camera.types'
+import { Camera, CameraPreference, CameraStartCapture, EMPTY_CAMERA_PREFERENCE, EMPTY_LIVE_STACKING_REQUEST, LiveStackerType, LiveStackingRequest } from '../types/camera.types'
 import { Device } from '../types/device.types'
 import { Focuser, FocuserPreference } from '../types/focuser.types'
 import { ConnectionDetails, Equipment, HomePreference } from '../types/home.types'
 import { EMPTY_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
 import { Rotator, RotatorPreference } from '../types/rotator.types'
-import { EMPTY_PLATE_SOLVER_OPTIONS, EMPTY_STAR_DETECTION_OPTIONS, PlateSolverOptions, PlateSolverType, StarDetectionOptions, StarDetectorType } from '../types/settings.types'
+import { EMPTY_PLATE_SOLVER_REQUEST, EMPTY_STAR_DETECTION_REQUEST, PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetectorType } from '../types/settings.types'
 import { FilterWheel, WheelPreference } from '../types/wheel.types'
 import { LocalStorageService } from './local-storage.service'
 
@@ -68,12 +68,16 @@ export class PreferenceService {
         return new PreferenceData<CameraStartCapture>(this.storage, `camera.${camera.name}.autoFocus`, () => this.cameraPreference(camera).get())
     }
 
-    plateSolverOptions(type: PlateSolverType) {
-        return new PreferenceData<PlateSolverOptions>(this.storage, `plateSolver.${type}`, () => <PlateSolverOptions>{ ...EMPTY_PLATE_SOLVER_OPTIONS, type })
+    plateSolverRequest(type: PlateSolverType) {
+        return new PreferenceData<PlateSolverRequest>(this.storage, `plateSolver.${type}`, () => <PlateSolverRequest>{ ...EMPTY_PLATE_SOLVER_REQUEST, type })
     }
 
-    starDetectionOptions(type: StarDetectorType) {
-        return new PreferenceData<StarDetectionOptions>(this.storage, `starDetection.${type}`, () => <StarDetectionOptions>{ ...EMPTY_STAR_DETECTION_OPTIONS, type })
+    starDetectionRequest(type: StarDetectorType) {
+        return new PreferenceData<StarDetectionRequest>(this.storage, `starDetection.${type}`, () => <StarDetectionRequest>{ ...EMPTY_STAR_DETECTION_REQUEST, type })
+    }
+
+    liveStackingRequest(type: LiveStackerType) {
+        return new PreferenceData<LiveStackingRequest>(this.storage, `liveStacking.${type}`, () => <LiveStackingRequest>{ ...EMPTY_LIVE_STACKING_REQUEST, type })
     }
 
     equipmentForDevice(device: Device) {

@@ -43,6 +43,14 @@ class CameraService(
         cameraCaptureExecutor.execute(camera, request.copy(savePath = savePath))
     }
 
+    fun pauseCapture(camera: Camera) {
+        cameraCaptureExecutor.pause(camera)
+    }
+
+    fun unpauseCapture(camera: Camera) {
+        cameraCaptureExecutor.unpause(camera)
+    }
+
     @Synchronized
     fun abortCapture(camera: Camera) {
         cameraCaptureExecutor.stop(camera)

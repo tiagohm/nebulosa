@@ -109,6 +109,26 @@ abstract class AbstractFitsAndXisfTest : StringSpec() {
     protected val STAR_FOCUS_16 by lazy { download("STAR.FOCUS.16.fits", GITHUB_FITS_URL) }
     protected val STAR_FOCUS_17 by lazy { download("STAR.FOCUS.17.fits", GITHUB_FITS_URL) }
 
+    protected val PI_01_LIGHT by lazy { download("PI.01.LIGHT.fits", GITHUB_FITS_URL) }
+    protected val PI_02_LIGHT by lazy { download("PI.02.LIGHT.fits", GITHUB_FITS_URL) }
+    protected val PI_03_LIGHT by lazy { download("PI.03.LIGHT.fits", GITHUB_FITS_URL) }
+    protected val PI_04_LIGHT by lazy { download("PI.04.LIGHT.fits", GITHUB_FITS_URL) }
+    protected val PI_05_LIGHT by lazy { download("PI.05.LIGHT.fits", GITHUB_FITS_URL) }
+    protected val PI_06_LIGHT by lazy { download("PI.06.LIGHT.fits", GITHUB_FITS_URL) }
+    protected val PI_07_LIGHT by lazy { download("PI.07.LIGHT.fits", GITHUB_FITS_URL) }
+    protected val PI_08_LIGHT by lazy { download("PI.08.LIGHT.fits", GITHUB_FITS_URL) }
+    protected val PI_09_LIGHT by lazy { download("PI.09.LIGHT.fits", GITHUB_FITS_URL) }
+    protected val PI_10_LIGHT by lazy { download("PI.10.LIGHT.fits", GITHUB_FITS_URL) }
+    protected val PI_BIAS by lazy { download("PI.BIAS.fits", GITHUB_FITS_URL) }
+    protected val PI_DARK by lazy { download("PI.DARK.fits", GITHUB_FITS_URL) }
+    protected val PI_FLAT by lazy { download("PI.FLAT.fits", GITHUB_FITS_URL) }
+
+    protected val PI_FOCUS_0 by lazy { download("PI.FOCUS.0.fits", GITHUB_FITS_URL) }
+    protected val PI_FOCUS_10000 by lazy { download("PI.FOCUS.10000.fits", GITHUB_FITS_URL) }
+    protected val PI_FOCUS_20000 by lazy { download("PI.FOCUS.20000.fits", GITHUB_FITS_URL) }
+    protected val PI_FOCUS_30000 by lazy { download("PI.FOCUS.30000.fits", GITHUB_FITS_URL) }
+    protected val PI_FOCUS_100000 by lazy { download("PI.FOCUS.100000.fits", GITHUB_FITS_URL) }
+
     private val afterEach = AfterEach()
 
     init {

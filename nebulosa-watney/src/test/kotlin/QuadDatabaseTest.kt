@@ -9,9 +9,9 @@ import io.kotest.matchers.string.shouldEndWith
 import nebulosa.io.ByteOrder
 import nebulosa.math.deg
 import nebulosa.test.NonGitHubOnlyCondition
-import nebulosa.watney.plate.solving.quad.CellStarQuad
-import nebulosa.watney.plate.solving.quad.CompactQuadDatabase
-import nebulosa.watney.plate.solving.quad.QuadDatabaseCellFileIndex
+import nebulosa.watney.platesolver.quad.CellStarQuad
+import nebulosa.watney.platesolver.quad.CompactQuadDatabase
+import nebulosa.watney.platesolver.quad.QuadDatabaseCellFileIndex
 import java.nio.file.Path
 
 @Suppress("NestedLambdaShadowedImplicitParameter")

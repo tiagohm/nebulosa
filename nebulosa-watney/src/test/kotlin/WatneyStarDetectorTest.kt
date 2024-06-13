@@ -4,9 +4,9 @@ import nebulosa.fits.fits
 import nebulosa.image.Image
 import nebulosa.image.algorithms.transformation.Draw
 import nebulosa.image.algorithms.transformation.convolution.Mean
-import nebulosa.star.detection.ImageStar
+import nebulosa.stardetector.StarPoint
 import nebulosa.test.AbstractFitsAndXisfTest
-import nebulosa.watney.star.detection.WatneyStarDetector
+import nebulosa.watney.stardetector.WatneyStarDetector
 import java.awt.Color
 import java.awt.Graphics2D
 import kotlin.math.roundToInt
@@ -31,7 +31,7 @@ class WatneyStarDetectorTest : AbstractFitsAndXisfTest() {
         }
     }
 
-    private data class ImageStarsDraw(private val stars: List<ImageStar>) : Draw() {
+    private data class ImageStarsDraw(private val stars: List<StarPoint>) : Draw() {
 
         override fun draw(source: Image, graphics: Graphics2D) {
             graphics.color = Color.YELLOW

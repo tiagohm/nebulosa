@@ -5,9 +5,9 @@ import nebulosa.common.Resettable
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.constants.DEG2RAD
 import nebulosa.math.Angle
-import nebulosa.plate.solving.PlateSolution
-import nebulosa.plate.solving.PlateSolver
-import nebulosa.plate.solving.PlateSolvingException
+import nebulosa.platesolver.PlateSolution
+import nebulosa.platesolver.PlateSolver
+import nebulosa.platesolver.PlateSolverException
 import nebulosa.time.UTC
 import java.nio.file.Path
 
@@ -62,7 +62,7 @@ data class ThreePointPolarAlignment(
 
         val solution = try {
             solver.solve(path, null, rightAscension, declination, radius, cancellationToken = cancellationToken)
-        } catch (e: PlateSolvingException) {
+        } catch (e: PlateSolverException) {
             return NoPlateSolution(e)
         }
 

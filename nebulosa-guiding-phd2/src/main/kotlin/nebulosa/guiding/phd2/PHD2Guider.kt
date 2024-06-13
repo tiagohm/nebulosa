@@ -3,6 +3,7 @@ package nebulosa.guiding.phd2
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.guiding.*
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.arcsec
 import nebulosa.math.toArcsec
@@ -280,7 +281,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
     }
 
     override fun onEventReceived(event: PHD2Event) {
-        LOG.info("event received: {}", event)
+        LOG.debug { "event received: $event" }
 
         when (event) {
             is AlertEvent -> Unit
@@ -312,6 +313,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
                 dither[0] = event.dx
                 dither[1] = event.dy
                 fireMessage { "dithered. dx=${event.dx} dy=${event.dy}" }
+                listeners.forEach { it.onDithered(event.dx, event.dy) }
             }
             GuidingStoppedEvent -> fireMessage { "guiding stopped" }
             LockPositionLostEvent -> {
@@ -330,11 +332,15 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
             LoopingExposuresStoppedEvent -> state = GuideState.STOPPED
             PausedEvent -> state = GuideState.PAUSED
             ResumedEvent -> Unit
-            SettleBeginEvent -> fireMessage { "settling started" }
+            SettleBeginEvent -> {
+                fireMessage { "settling started" }
+                listeners.forEach { it.onSettleStarted() }
+            }
             is SettleDoneEvent -> {
                 settling.reset()
                 if (event.error.isEmpty()) fireMessage { "settling done" }
                 else fireMessage { event.error }
+                listeners.forEach { it.onSettleDone(event.error.ifBlank { null }) }
             }
             is SettlingEvent -> {
                 settling.countUp()
@@ -361,7 +367,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         if (result != null) {
             if (command is GetPixelScale) {
                 pixelScale = result as Double
-                LOG.info("pixel scale = {}", pixelScale)
+                LOG.debug { "pixel scale = $pixelScale" }
                 listeners.forEach { it.onStateChanged(state, pixelScale) }
             }
         } else if (error != null) {

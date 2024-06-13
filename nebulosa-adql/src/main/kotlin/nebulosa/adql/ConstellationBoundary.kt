@@ -6,7 +6,7 @@ import nebulosa.io.resource
 import nebulosa.math.hours
 import nebulosa.math.toDegrees
 
-class ConstellationBoundary internal constructor(override val operand: PolygonFunction) : Region {
+data class ConstellationBoundary(override val operand: PolygonFunction) : Region {
 
     constructor(constellationName: String) : this(PolygonFunction(Region.ICRS, BOUNDARY[constellationName.uppercase()]))
 
@@ -15,17 +15,19 @@ class ConstellationBoundary internal constructor(override val operand: PolygonFu
         private val BOUNDARY = HashMap<String, MutableList<NumericConstant>>(88)
 
         init {
-            for (line in resource("constellations_bound_in_20.txt")!!.bufferedReader().lines()) {
-                if (line.isEmpty() || line.startsWith('#')) continue
+            resource("constellations_bound_in_20.txt")!!.use {
+                for (line in it.bufferedReader().lines()) {
+                    if (line.isEmpty() || line.startsWith('#')) continue
 
-                val parts = line.split(" ")
-                val rightAscension = parts[0].hours.toDegrees
-                val declination = parts[1].toDouble()
-                val name = parts[2].trim()
+                    val parts = line.split(" ")
+                    val rightAscension = parts[0].hours.toDegrees
+                    val declination = parts[1].toDouble()
+                    val name = parts[2].trim()
 
-                with(BOUNDARY.getOrPut(name) { ArrayList(150) }) {
-                    add(NumericConstant(rightAscension))
-                    add(NumericConstant(declination))
+                    with(BOUNDARY.getOrPut(name) { ArrayList(150) }) {
+                        add(NumericConstant(rightAscension))
+                        add(NumericConstant(declination))
+                    }
                 }
             }
         }

@@ -5,6 +5,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -16,9 +17,9 @@ class SequencerController(
     @PutMapping("{camera}/start")
     fun start(
         camera: Camera,
-        mount: Mount?, wheel: FilterWheel?, focuser: Focuser?,
+        mount: Mount?, wheel: FilterWheel?, focuser: Focuser?, rotator: Rotator?,
         @RequestBody @Valid body: SequencePlanRequest,
-    ) = sequencerService.start(camera, body, mount, wheel, focuser)
+    ) = sequencerService.start(camera, body, mount, wheel, focuser, rotator)
 
     @PutMapping("{camera}/stop")
     fun stop(camera: Camera) {

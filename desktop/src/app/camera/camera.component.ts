@@ -75,43 +75,57 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
     }
 
     showDitherDialog = false
+    showLiveStackingDialog = false
 
     calibrationModel: MenuItem[] = []
 
-    readonly cameraModel: MenuItem[] = [
-        {
-            icon: 'icomoon random-dither',
-            label: 'Dither',
-            command: () => {
-                this.showDitherDialog = true
+    private readonly ditherMenuItem: MenuItem = {
+        icon: 'icomoon random-dither',
+        label: 'Dither',
+        command: () => {
+            this.showDitherDialog = true
+        },
+    }
+
+    private readonly liveStackingMenuItem: MenuItem = {
+        icon: 'mdi mdi-image-multiple',
+        label: 'Live Stacking',
+        command: () => {
+            this.showLiveStackingDialog = true
+        },
+    }
+
+    private readonly snoopDevicesMenuItem: MenuItem = {
+        icon: 'mdi mdi-connection',
+        label: 'Snoop Devices',
+        subMenu: [
+            {
+                icon: 'mdi mdi-telescope',
+                label: 'Mount',
+                subMenu: [],
             },
-        },
-        {
-            icon: 'mdi mdi-connection',
-            label: 'Snoop Devices',
-            subMenu: [
-                {
-                    icon: 'mdi mdi-telescope',
-                    label: 'Mount',
-                    subMenu: [],
-                },
-                {
-                    icon: 'mdi mdi-palette',
-                    label: 'Filter Wheel',
-                    subMenu: [],
-                },
-                {
-                    icon: 'mdi mdi-image-filter-center-focus',
-                    label: 'Focuser',
-                    subMenu: [],
-                },
-                {
-                    icon: 'mdi mdi-rotate-right',
-                    label: 'Rotator',
-                    subMenu: [],
-                },
-            ]
-        },
+            {
+                icon: 'mdi mdi-palette',
+                label: 'Filter Wheel',
+                subMenu: [],
+            },
+            {
+                icon: 'mdi mdi-image-filter-center-focus',
+                label: 'Focuser',
+                subMenu: [],
+            },
+            {
+                icon: 'mdi mdi-rotate-right',
+                label: 'Rotator',
+                subMenu: [],
+            },
+        ]
+    }
+
+    readonly cameraModel: MenuItem[] = [
+        this.ditherMenuItem,
+        this.liveStackingMenuItem,
+        this.snoopDevicesMenuItem,
     ]
 
     hasDewHeater = false
@@ -161,6 +175,14 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 
     @ViewChild('cameraExposure')
     private readonly cameraExposure!: CameraExposureComponent
+
+    get status() {
+        return this.cameraExposure?.state ?? 'IDLE'
+    }
+
+    get pausingOrPaused() {
+        return this.status === 'PAUSING' || this.status === 'PAUSED'
+    }
 
     constructor(
         private app: AppComponent,
@@ -246,27 +268,27 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             }
         })
 
-        this.cameraModel[1].visible = !app.modal
-
-        pinger.register(this, 30000)
+        this.snoopDevicesMenuItem.visible = !app.modal
     }
 
     ngAfterContentInit() {
-        this.route.queryParams.subscribe(e => {
+        this.route.queryParams.subscribe(async e => {
             const decodedData = JSON.parse(decodeURIComponent(e.data))
 
             if (this.app.modal) {
-                this.loadCameraStartCaptureForDialogMode(decodedData)
+                await this.loadCameraStartCaptureForDialogMode(decodedData)
             } else {
-                this.cameraChanged(decodedData)
+                await this.cameraChanged(decodedData)
             }
+
+            this.pinger.register(this, 30000)
+
+            if (!this.app.modal) {
+                await this.loadEquipment()
+            }
+
+            await this.loadCalibrationGroups()
         })
-
-        if (!this.app.modal) {
-            this.loadEquipment()
-        }
-
-        this.loadCalibrationGroups()
     }
 
     @HostListener('window:unload')
@@ -355,10 +377,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             return makeItem(this.equipment.mount?.name === mount?.name, () => this.equipment.mount = mount, mount)
         }
 
-        this.cameraModel[1].subMenu![0].subMenu!.push(makeMountItem())
+        this.snoopDevicesMenuItem.subMenu![0].subMenu!.push(makeMountItem())
 
         for (const mount of mounts) {
-            this.cameraModel[1].subMenu![0].subMenu!.push(makeMountItem(mount))
+            this.snoopDevicesMenuItem.subMenu![0].subMenu!.push(makeMountItem(mount))
         }
 
         // FILTER WHEEL
@@ -370,10 +392,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             return makeItem(this.equipment.wheel?.name === wheel?.name, () => this.equipment.wheel = wheel, wheel)
         }
 
-        this.cameraModel[1].subMenu![1].subMenu!.push(makeWheelItem())
+        this.snoopDevicesMenuItem.subMenu![1].subMenu!.push(makeWheelItem())
 
         for (const wheel of wheels) {
-            this.cameraModel[1].subMenu![1].subMenu!.push(makeWheelItem(wheel))
+            this.snoopDevicesMenuItem.subMenu![1].subMenu!.push(makeWheelItem(wheel))
         }
 
         // FOCUSER
@@ -385,10 +407,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             return makeItem(this.equipment.focuser?.name === focuser?.name, () => this.equipment.focuser = focuser, focuser)
         }
 
-        this.cameraModel[1].subMenu![2].subMenu!.push(makeFocuserItem())
+        this.snoopDevicesMenuItem.subMenu![2].subMenu!.push(makeFocuserItem())
 
         for (const focuser of focusers) {
-            this.cameraModel[1].subMenu![2].subMenu!.push(makeFocuserItem(focuser))
+            this.snoopDevicesMenuItem.subMenu![2].subMenu!.push(makeFocuserItem(focuser))
         }
 
         // ROTATOR
@@ -400,10 +422,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             return makeItem(this.equipment.rotator?.name === rotator?.name, () => this.equipment.rotator = rotator, rotator)
         }
 
-        this.cameraModel[1].subMenu![3].subMenu!.push(makeRotatorItem())
+        this.snoopDevicesMenuItem.subMenu![3].subMenu!.push(makeRotatorItem())
 
         for (const rotator of rotators) {
-            this.cameraModel[1].subMenu![3].subMenu!.push(makeRotatorItem(rotator))
+            this.snoopDevicesMenuItem.subMenu![3].subMenu!.push(makeRotatorItem(rotator))
         }
 
         buildStartTooltip()
@@ -424,6 +446,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
                 checked: this.request.calibrationGroup === name,
                 command: () => {
                     this.request.calibrationGroup = name
+                    this.savePreference()
                     this.loadCalibrationGroups()
                 },
             }
@@ -518,6 +541,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
         const exposureAmount = this.exposureMode === 'LOOP' ? 0 : (this.exposureMode === 'FIXED' ? this.request.exposureAmount : 1)
         const savePath = this.mode !== 'CAPTURE' ? this.request.savePath : this.savePath
 
+        const liveStackingRequest = this.preference.liveStackingRequest(this.request.liveStacking.type).get()
+        this.request.liveStacking.executablePath = liveStackingRequest.executablePath
+        this.request.liveStacking.slot = liveStackingRequest.slot || 1
+
         return {
             ...this.request,
             x, y, width, height,
@@ -527,10 +554,23 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
     }
 
     async startCapture() {
-        await this.openCameraImage()
-        await this.api.cameraSnoop(this.camera, this.equipment)
-        await this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
-        this.preference.equipmentForDevice(this.camera).set(this.equipment)
+        try {
+            this.running = true
+            await this.openCameraImage()
+            await this.api.cameraSnoop(this.camera, this.equipment)
+            await this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
+            this.preference.equipmentForDevice(this.camera).set(this.equipment)
+        } catch {
+            this.running = false
+        }
+    }
+
+    pauseCapture() {
+        return this.api.cameraPauseCapture(this.camera)
+    }
+
+    unpauseCapture() {
+        return this.api.cameraUnpauseCapture(this.camera)
     }
 
     abortCapture() {
@@ -630,11 +670,15 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             this.request.gain = preference.gain ?? 0
             this.request.offset = preference.offset ?? 0
             this.request.frameFormat = preference.frameFormat ?? (this.camera.frameFormats[0] || '')
+            this.request.calibrationGroup = preference.calibrationGroup
 
-            this.request.dither!.enabled = preference.dither?.enabled ?? false
-            this.request.dither!.raOnly = preference.dither?.raOnly ?? false
-            this.request.dither!.amount = preference.dither?.amount ?? 1.5
-            this.request.dither!.afterExposures = preference.dither?.afterExposures ?? 1
+            if (preference.dither) {
+                Object.assign(this.request.dither, preference.dither)
+            }
+
+            if (preference.liveStacking) {
+                Object.assign(this.request.liveStacking, preference.liveStacking)
+            }
 
             Object.assign(this.equipment, this.preference.equipmentForDevice(this.camera).get())
         }

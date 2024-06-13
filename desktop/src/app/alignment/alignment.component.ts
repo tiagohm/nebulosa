@@ -10,7 +10,7 @@ import { Angle } from '../../shared/types/atlas.types'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureTimeUnit, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { EMPTY_GUIDE_OUTPUT, GuideDirection, GuideOutput } from '../../shared/types/guider.types'
 import { EMPTY_MOUNT, Mount } from '../../shared/types/mount.types'
-import { EMPTY_PLATE_SOLVER_OPTIONS } from '../../shared/types/settings.types'
+import { EMPTY_PLATE_SOLVER_REQUEST } from '../../shared/types/settings.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
@@ -40,7 +40,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 
     readonly tppaRequest: TPPAStart = {
         capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
-        plateSolver: structuredClone(EMPTY_PLATE_SOLVER_OPTIONS),
+        plateSolver: structuredClone(EMPTY_PLATE_SOLVER_REQUEST),
         startFromCurrentPosition: true,
         stepDirection: 'EAST',
         compensateRefraction: true,
@@ -224,11 +224,11 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
         })
 
         this.loadPreference()
-
-        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
+        this.pinger.register(this, 30000)
+
         this.cameras = (await this.api.cameras()).sort(deviceComparator)
         this.mounts = (await this.api.mounts()).sort(deviceComparator)
         this.guideOutputs = (await this.api.guideOutputs()).sort(deviceComparator)
@@ -294,7 +294,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
     }
 
     plateSolverChanged() {
-        this.tppaRequest.plateSolver = this.preference.plateSolverOptions(this.tppaRequest.plateSolver.type).get()
+        this.tppaRequest.plateSolver = this.preference.plateSolverRequest(this.tppaRequest.plateSolver.type).get()
         this.savePreference()
     }
 

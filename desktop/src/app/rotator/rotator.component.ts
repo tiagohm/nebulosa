@@ -47,14 +47,13 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
                 })
             }
         })
-
-        pinger.register(this, 30000)
     }
 
     async ngAfterViewInit() {
-        this.route.queryParams.subscribe(e => {
+        this.route.queryParams.subscribe(async e => {
             const rotator = JSON.parse(decodeURIComponent(e.data)) as Rotator
-            this.rotatorChanged(rotator)
+            await this.rotatorChanged(rotator)
+            this.pinger.register(this, 30000)
         })
     }
 

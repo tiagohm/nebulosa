@@ -27,13 +27,8 @@
                         <i *ngIf="plan.autoSubFolderMode === 'MIDNIGHT'" (click)="toggleAutoSubFolder()"
                            class="mdi mdi-weather-night text-blue-600 cursor-pointer" pTooltip="Auto sub folder: MIDNIGHT" tooltipPosition="bottom"
                            [positionTop]="8"></i>
-
-                        <span class="p-float-label">
-                            <input pInputText [disabled]="running" class="p-inputtext-sm border-0 w-full" [(ngModel)]="plan.savePath"
-                                   (ngModelChange)="savePlan()" />
-                            <label>Path</label>
-                        </span>
-                        <p-button [disabled]="running" icon="mdi mdi-folder-open" size="small" (onClick)="chooseSavePath()" />
+                        <neb-path-chooser key="SEQUENCER_SAVE_PATH" [directory]="true" [(path)]="plan.savePath" (pathChange)="savePlan()"
+                                          class="w-full" />
                     </div>
                 </div>
             </p-tabPanel>
@@ -144,6 +139,8 @@
                                 (deviceChange)="wheelChanged()" />
             <neb-device-chooser title="FOCUSER" icon="mdi mdi-image-filter-center-focus" [devices]="focusers" [(device)]="focuser"
                                 [hasNone]="true" (deviceChange)="focuserChanged()" />
+            <neb-device-chooser title="ROTATOR" icon="mdi mdi-rotate-right" [devices]="rotators" [(device)]="rotator"
+                                [hasNone]="true" (deviceChange)="rotatorChanged()" />
         </div>
     </div>
     <div class="grid mt-0">
@@ -226,9 +223,9 @@
         <div class="grid">
             <div class="col-12 flex align-items-center justify-content-center gap-1">
                 <p-button [disabled]="!plan.entries.length || !canStart || running" label="Start" (onClick)="start()" icon="mdi mdi-play"
-                          severity="success" size="small" />
+                          severity="success" size="small" [text]="true" />
                 <p-button [disabled]="!plan.entries.length || !canStart || !running" label="Abort" (onClick)="stop()" icon="mdi mdi-stop"
-                          severity="danger" size="small" />
+                          severity="danger" size="small" [text]="true" />
             </div>
         </div>
     </div>

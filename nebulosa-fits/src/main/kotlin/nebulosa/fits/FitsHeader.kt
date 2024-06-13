@@ -7,6 +7,7 @@ import nebulosa.io.SeekableSource
 import nebulosa.io.source
 import nebulosa.log.loggerFor
 import java.util.*
+import java.util.function.Predicate
 
 open class FitsHeader : AbstractHeader {
 
@@ -54,15 +55,6 @@ open class FitsHeader : AbstractHeader {
         FitsHeaderCard.create(key, value, comment).also(::add)
     }
 
-    override fun add(card: HeaderCard) {
-        if (!card.isKeyValuePair) cards.add(card)
-        else {
-            val index = cards.indexOfFirst { it.key == card.key }
-            if (index >= 0) cards[index] = card
-            else cards.add(card)
-        }
-    }
-
     open class ReadOnly : FitsHeader {
 
         constructor() : super(LinkedList<HeaderCard>())
@@ -87,9 +79,19 @@ open class FitsHeader : AbstractHeader {
 
         final override fun add(key: String, value: String, comment: String) = Unit
 
-        final override fun add(card: HeaderCard) = Unit
+        final override fun add(element: HeaderCard) = false
 
         final override fun addAll(cards: Iterable<HeaderCard>) = Unit
+
+        final override fun addAll(elements: Collection<HeaderCard>) = false
+
+        final override fun removeIf(filter: Predicate<in HeaderCard>) = false
+
+        final override fun remove(element: HeaderCard) = false
+
+        final override fun removeAll(elements: Collection<HeaderCard>) = false
+
+        final override fun retainAll(elements: Collection<HeaderCard>) = false
 
         final override fun delete(key: HeaderKey) = false
 

@@ -64,7 +64,7 @@
                     <label>Temperature ({{ camera.temperature | number: '1.1-1' }}°C)</label>
                 </span>
                 <p-button [disabled]="!camera.connected || !camera.canSetTemperature || running" (onClick)="applySetpointTemperature()"
-                          icon="mdi mdi-check" size="small" severity="success" pTooltip="Apply" tooltipPosition="bottom" />
+                          icon="mdi mdi-check" size="small" severity="success" pTooltip="Apply" tooltipPosition="bottom" [text]="true" />
             </div>
         </div>
     </div>
@@ -156,7 +156,7 @@
         </div>
         <div class="col-3 flex pt-3 flex-row align-items-center justify-content-center">
             <p-button [disabled]="!camera.connected || running" icon="mdi mdi-fullscreen" (onClick)="fullsize()"
-                      severity="info" size="small" pTooltip="Full size" tooltipPosition="bottom" />
+                      severity="info" size="small" pTooltip="Full size" tooltipPosition="bottom" [text]="true" />
         </div>
         <div class="col-3">
             <span class="p-float-label">
@@ -203,13 +203,20 @@
     </div>
     <div class="grid mt-0">
         <div class="col-12 flex align-items-center justify-content-center gap-1">
+            @if (pausingOrPaused) {
+            <p-button *ngIf="canStartOrAbort" [disabled]="status === 'PAUSING'" label="Unpause" (onClick)="unpauseCapture()" icon="mdi mdi-play"
+                      severity="success" size="small" [text]="true" />
+            } @else if(!running) {
             <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || running" label="Start" (onClick)="startCapture()" icon="mdi mdi-play"
                       severity="success" size="small" [pTooltip]="startTooltip" tooltipPosition="top" [escape]="false"
-                      tooltipStyleClass="min-w-22rem flex justify-content-center" />
+                      tooltipStyleClass="min-w-22rem flex justify-content-center" [text]="true" />
+            }
+            <p-button *ngIf="canStartOrAbort && running && !pausingOrPaused" label="Pause" (onClick)="pauseCapture()" icon="mdi mdi-pause"
+                      severity="info" size="small" [text]="true" />
             <p-button *ngIf="canStartOrAbort" [disabled]="!camera.connected || !running" label="Abort" (onClick)="abortCapture()" icon="mdi mdi-stop"
-                      severity="danger" size="small" />
+                      severity="danger" size="small" [text]="true" />
             <p-button *ngIf="canSave" [disabled]="!camera.connected" label="Save" (onClick)="apply()" icon="mdi mdi-content-save"
-                      severity="info" size="small" />
+                      severity="info" size="small" [text]="true" />
         </div>
     </div>
 </div>
@@ -221,28 +228,70 @@
     <div class="grid mt-2">
         <div class="col-3 flex flex-column justify-content-center text-center gap-2">
             <span class="text-xs text-gray-100">Enabled</span>
-            <p-inputSwitch [disabled]="!camera.connected || running" [(ngModel)]="request.dither!.enabled" (ngModelChange)="savePreference()" />
+            <p-inputSwitch [disabled]="!camera.connected || running" [(ngModel)]="request.dither.enabled" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-3 flex flex-column justify-content-center text-center gap-2">
             <span class="text-xs text-gray-100">RA only</span>
-            <p-inputSwitch [disabled]="!camera.connected || running || !request.dither!.enabled" [(ngModel)]="request.dither!.raOnly"
+            <p-inputSwitch [disabled]="!camera.connected || running || !request.dither.enabled" [(ngModel)]="request.dither.raOnly"
                            (ngModelChange)="savePreference()" />
         </div>
         <div class="col-6">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || running || !request.dither!.enabled" [showButtons]="true"
-                               styleClass="border-0 p-inputtext-sm w-full" [min]="0.1" [max]="60" [(ngModel)]="request.dither!.amount" [step]="0.1"
+                <p-inputNumber [disabled]="!camera.connected || running || !request.dither.enabled" [showButtons]="true"
+                               styleClass="border-0 p-inputtext-sm w-full" [min]="0.1" [max]="60" [(ngModel)]="request.dither.amount" [step]="0.1"
                                locale="en" [minFractionDigits]="1" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Dither (px)</label>
             </span>
         </div>
         <div class="col-6 col-offset-3">
             <span class="p-float-label">
-                <p-inputNumber [disabled]="!camera.connected || running || !request.dither!.enabled" [showButtons]="true"
+                <p-inputNumber [disabled]="!camera.connected || running || !request.dither.enabled" [showButtons]="true"
                                styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
-                               [(ngModel)]="request.dither!.afterExposures" [step]="1" (ngModelChange)="savePreference()" scrollableNumber />
+                               [(ngModel)]="request.dither.afterExposures" [step]="1" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>After exposures</label>
             </span>
+        </div>
+    </div>
+</p-dialog>
+
+<p-dialog header="Live Stacking" [draggable]="true" [(visible)]="showLiveStackingDialog" [modal]="true" [style]="{width: '80vw', maxWidth: '280px'}">
+    <div class="grid mt-2">
+        <div class="col-4 flex flex-column align-items-center justify-content-center text-center gap-2">
+            <span class="text-xs text-gray-100">Enabled</span>
+            <p-inputSwitch [(ngModel)]="request.liveStacking.enabled" (ngModelChange)="savePreference()" />
+        </div>
+        <div class="col-8 align-items-center">
+            <span class="p-float-label">
+                <p-dropdown [disabled]="!request.liveStacking.enabled" [options]="'LIVE_STACKER' | dropdownOptions"
+                            [(ngModel)]="request.liveStacking.type" styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()"
+                            [autoDisplayFirst]="false" />
+                <label>Live Stacker</label>
+            </span>
+        </div>
+        <div class="col-6 flex flex-column align-items-center justify-content-center text-center gap-2">
+            <span class="text-xs text-gray-100">32-bits (slower)</span>
+            <p-inputSwitch [disabled]="!request.liveStacking.enabled"
+                           [(ngModel)]="request.liveStacking.use32Bits" (ngModelChange)="savePreference()" />
+        </div>
+        <div class="col-6 align-items-center">
+            <span class="p-float-label">
+                <p-inputNumber [disabled]="!request.liveStacking.enabled || request.liveStacking.type !== 'SIRIL'" [showButtons]="true"
+                               styleClass="border-0 p-inputtext-sm w-full" [min]="0" [max]="360" [(ngModel)]="request.liveStacking.rotate"
+                               [step]="0.1" locale="en" (ngModelChange)="savePreference()" scrollableNumber />
+                <label>Rotate (°)</label>
+            </span>
+        </div>
+        <div class="col-12 align-items-center">
+            <neb-path-chooser [disabled]="!request.liveStacking.enabled" [directory]="false" label="Dark File"
+                              key="LS_DARK" [(path)]="request.liveStacking.dark" class="w-full" (pathChange)="savePreference()" />
+        </div>
+        <div class="col-12 align-items-center">
+            <neb-path-chooser [disabled]="!request.liveStacking.enabled" [directory]="false" label="Flat File"
+                              key="LS_FLAT" [(path)]="request.liveStacking.flat" class="w-full" (pathChange)="savePreference()" />
+        </div>
+        <div class="col-12 align-items-center">
+            <neb-path-chooser [disabled]="!request.liveStacking.enabled || request.liveStacking.type !== 'PIXINSIGHT'" [directory]="false"
+                              label="Bias File" key="LS_BIAS" [(path)]="request.liveStacking.bias" class="w-full" (pathChange)="savePreference()" />
         </div>
     </div>
 </p-dialog>

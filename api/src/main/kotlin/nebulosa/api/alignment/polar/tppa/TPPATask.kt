@@ -21,7 +21,7 @@ import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
-import nebulosa.plate.solving.PlateSolver
+import nebulosa.platesolver.PlateSolver
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -84,7 +84,7 @@ data class TPPATask(
                 captureEvent = event
 
                 if (event.state == CameraCaptureState.EXPOSURE_FINISHED) {
-                    savedImage = event.savePath!!
+                    savedImage = event.savedPath!!
                 }
 
                 if (!finished.get()) {
@@ -110,7 +110,7 @@ data class TPPATask(
         rightAscension = mount?.rightAscension ?: 0.0
         declination = mount?.declination ?: 0.0
 
-        camera.snoop(listOf(mount))
+        camera.snoop(camera.snoopedDevices.filter { it !is Mount } + mount)
 
         cancellationToken.listenToPause(this)
 

@@ -6,9 +6,16 @@
     </span>
 
     <span class="relative" *ngFor="let e of topMenu; let i = index">
+        @if (e.toggleable) {
+        <div *ngIf="e.visible" class="flex flex-column align-items-center justify-content-center gap-1">
+            <span class="text-xs">{{ e.label }}</span>
+            <p-inputSwitch [disabled]="e.disabled ?? false" [(ngModel)]="e.toggled" (onChange)="e.toggle?.($event)" />
+        </div>
+        } @else {
         <p-badge *ngIf="e.badge" [severity]="e.badgeSeverity ?? 'danger'" />
         <p-button [text]="true" [rounded]="true" [icon]="e.icon" [disabled]="e.disabled" [pTooltip]="e.tooltip ?? e.label" tooltipPosition="bottom"
                   (onClick)="e.command?.({originalEvent: $event, item: e, index: i})" size="small" />
+        }
     </span>
 
     <span class="separator flex justify-content-center" *ngIf="topMenu.length"></span>

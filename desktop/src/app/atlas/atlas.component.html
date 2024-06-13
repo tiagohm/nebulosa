@@ -144,8 +144,10 @@
                             <label>Search</label>
                         </span>
                         <div class="flex flex-row gap-1">
-                            <p-button [disabled]="refreshing" (onClick)="searchSkyObject()" icon="mdi mdi-magnify" size="small" severity="info" />
-                            <p-button [disabled]="refreshing" (onClick)="showSkyObjectFilterDialog()" icon="mdi mdi-filter" size="small" />
+                            <p-button [disabled]="refreshing" (onClick)="searchSkyObject()" icon="mdi mdi-magnify" size="small" severity="info"
+                                      [text]="true" pTooltip="Search" tooltipPosition="bottom" />
+                            <p-button [disabled]="refreshing" (onClick)="showSkyObjectFilterDialog()" icon="mdi mdi-filter" size="small"
+                                      [text]="true" pTooltip="Filter" tooltipPosition="bottom" />
                         </div>
                     </div>
                 </div>
@@ -187,9 +189,9 @@
                         </span>
                         <div class="flex flex-row gap-1">
                             <p-button [disabled]="refreshing" (onClick)="searchSatellite()" icon="mdi mdi-magnify"
-                                      size="small" severity="info" />
+                                      size="small" severity="info" [text]="true" pTooltip="Search" tooltipPosition="bottom" />
                             <p-button [disabled]="refreshing" (onClick)="showSatelliteFilterDialog = true" icon="mdi mdi-filter"
-                                      size="small" />
+                                      size="small" [text]="true" pTooltip="Filter" tooltipPosition="bottom" />
                         </div>
                     </div>
                 </div>

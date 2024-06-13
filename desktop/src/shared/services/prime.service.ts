@@ -41,8 +41,8 @@ export class PrimeService {
                 message,
                 header: 'Confirmation',
                 icon: 'mdi mdi-lg mdi-help-circle',
-                acceptButtonStyleClass: 'p-button-success',
-                rejectButtonStyleClass: 'p-button-danger',
+                acceptButtonStyleClass: 'p-button-success p-button-text',
+                rejectButtonStyleClass: 'p-button-danger p-button-text',
                 accept: () => {
                     resolve(ConfirmEventType.ACCEPT)
                 },

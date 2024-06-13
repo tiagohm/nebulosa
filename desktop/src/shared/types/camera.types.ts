@@ -13,11 +13,21 @@ export type AutoSubFolderMode = 'OFF' | 'NOON' | 'MIDNIGHT'
 
 export type ExposureMode = 'SINGLE' | 'FIXED' | 'LOOP'
 
+export type LiveStackerType = 'SIRIL' | 'PIXINSIGHT'
+
 export enum ExposureTimeUnit {
     MINUTE = 'm',
     SECOND = 's',
     MILLISECOND = 'ms',
     MICROSECOND = 'µs',
+}
+
+export function isCamera(device?: Device): device is Camera {
+    return !!device && 'exposuring' in device
+}
+
+export function isGuideHead(device?: Device): device is GuideHead {
+    return isCamera(device) && isCompanionDevice(device) && !!device.main
 }
 
 export interface Camera extends GuideOutput, Thermometer {
@@ -154,11 +164,12 @@ export interface CameraStartCapture {
     autoSave: boolean
     savePath?: string
     autoSubFolderMode: AutoSubFolderMode
-    dither?: Dither
+    dither: Dither
     filterPosition?: number
     shutterPosition?: number
     focusOffset?: number
     calibrationGroup?: string
+    liveStacking: LiveStackingRequest
 }
 
 export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {
@@ -181,6 +192,14 @@ export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {
         afterExposures: 1,
         amount: 1.5,
         raOnly: false,
+    },
+    liveStacking: {
+        enabled: false,
+        type: 'SIRIL',
+        executablePath: "",
+        rotate: 0,
+        use32Bits: false,
+        slot: 1,
     }
 }
 
@@ -210,11 +229,13 @@ export interface CameraCaptureEvent extends MessageEvent {
     stepElapsedTime: number
     stepProgress: number
     stepRemainingTime: number
-    savePath?: string
+    savedPath?: string
+    liveStackedPath?: string
     state: CameraCaptureState
+    capture?: CameraStartCapture
 }
 
-export type CameraCaptureState = 'IDLE' | 'CAPTURE_STARTED' | 'EXPOSURE_STARTED' | 'EXPOSURING' | 'WAITING' | 'SETTLING' | 'EXPOSURE_FINISHED' | 'CAPTURE_FINISHED'
+export type CameraCaptureState = 'IDLE' | 'CAPTURE_STARTED' | 'EXPOSURE_STARTED' | 'EXPOSURING' | 'WAITING' | 'SETTLING' | 'DITHERING' | 'STACKING' | 'PAUSING' | 'PAUSED' | 'EXPOSURE_FINISHED' | 'CAPTURE_FINISHED'
 
 export interface CameraDialogInput {
     mode: CameraDialogMode
@@ -267,10 +288,23 @@ export const EMPTY_CAMERA_CAPTURE_INFO: CameraCaptureInfo = {
     count: 0,
 }
 
-export function isCamera(device?: Device): device is Camera {
-    return !!device && 'exposuring' in device
+export interface LiveStackingRequest {
+    enabled: boolean
+    type: LiveStackerType
+    executablePath: string
+    dark?: string
+    flat?: string
+    bias?: string
+    rotate: number
+    use32Bits: boolean
+    slot: number
 }
 
-export function isGuideHead(device?: Device): device is GuideHead {
-    return isCamera(device) && isCompanionDevice(device) && !!device.main
+export const EMPTY_LIVE_STACKING_REQUEST: LiveStackingRequest = {
+    enabled: false,
+    type: 'SIRIL',
+    executablePath: '',
+    rotate: 0,
+    use32Bits: false,
+    slot: 1,
 }

@@ -17,6 +17,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.mount.Mount
 import nebulosa.log.loggerFor
 import java.nio.file.Files
 import java.time.Duration
@@ -64,7 +65,7 @@ data class DARVTask(
     override fun execute(cancellationToken: CancellationToken) {
         LOG.info("DARV started. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
 
-        camera.snoop(listOf(guideOutput))
+        if (guideOutput is Mount) camera.snoop(camera.snoopedDevices.filter { it !is Mount } + guideOutput)
 
         val task = SplitTask(listOf(cameraCaptureTask, Task.of(delayTask, forwardGuidePulseTask, backwardGuidePulseTask)), executor)
         task.execute(cancellationToken)

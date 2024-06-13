@@ -1,12 +1,12 @@
 import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
-import path from 'path'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
-import { ApiService } from '../../shared/services/api.service'
+import { DropdownOptionsPipe } from '../../shared/pipes/dropdown-options'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
-import { PlateSolverOptions, PlateSolverType, StarDetectionOptions, StarDetectorType } from '../../shared/types/settings.types'
+import { LiveStackerType, LiveStackingRequest } from '../../shared/types/camera.types'
+import { PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetectorType } from '../../shared/types/settings.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -16,31 +16,59 @@ import { AppComponent } from '../app.component'
 })
 export class SettingsComponent implements AfterViewInit, OnDestroy {
 
+    tab = 0
+    readonly tabs: { id: number, name: string }[] = [
+        {
+            id: 0,
+            name: 'Location'
+        },
+        {
+            id: 1,
+            name: 'Plate Solver'
+        },
+        {
+            id: 2,
+            name: 'Star Detection'
+        },
+        {
+            id: 3,
+            name: 'Live Stacking'
+        },
+    ]
+
     readonly locations: Location[]
     location: Location
 
-    solverType: PlateSolverType = 'ASTAP'
-    readonly solvers = new Map<PlateSolverType, PlateSolverOptions>()
+    plateSolverType: PlateSolverType = 'ASTAP'
+    readonly plateSolvers = new Map<PlateSolverType, PlateSolverRequest>()
 
     starDetectorType: StarDetectorType = 'ASTAP'
-    readonly starDetectors = new Map<StarDetectorType, StarDetectionOptions>()
+    readonly starDetectors = new Map<StarDetectorType, StarDetectionRequest>()
+
+    liveStackerType: LiveStackerType = 'SIRIL'
+    readonly liveStackers = new Map<LiveStackerType, LiveStackingRequest>()
 
     constructor(
         app: AppComponent,
-        private api: ApiService,
         private preference: PreferenceService,
         private electron: ElectronService,
         private prime: PrimeService,
+        private dropdownOptions: DropdownOptionsPipe,
     ) {
         app.title = 'Settings'
 
         this.locations = preference.locations.get()
         this.location = preference.selectedLocation.get(this.locations[0])
 
-        this.solvers.set('ASTAP', preference.plateSolverOptions('ASTAP').get())
-        this.solvers.set('ASTROMETRY_NET_ONLINE', preference.plateSolverOptions('ASTROMETRY_NET_ONLINE').get())
-
-        this.starDetectors.set('ASTAP', preference.starDetectionOptions('ASTAP').get())
+        for (const type of dropdownOptions.transform('PLATE_SOLVER')) {
+            this.plateSolvers.set(type, preference.plateSolverRequest(type).get())
+        }
+        for (const type of dropdownOptions.transform('STAR_DETECTOR')) {
+            this.starDetectors.set(type, preference.starDetectionRequest(type).get())
+        }
+        for (const type of dropdownOptions.transform('LIVE_STACKER')) {
+            this.liveStackers.set(type, preference.liveStackingRequest(type).get())
+        }
     }
 
     async ngAfterViewInit() { }
@@ -102,31 +130,15 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
         this.electron.send('LOCATION.CHANGED', this.location)
     }
 
-    async chooseExecutablePathForPlateSolver() {
-        const options = this.solvers.get(this.solverType)!
-        this.chooseExecutablePath(options)
-    }
-
-    async chooseExecutablePathForStarDetection() {
-        const options = this.solvers.get(this.starDetectorType)!
-        this.chooseExecutablePath(options)
-    }
-
-    private async chooseExecutablePath(options: { executablePath: string }) {
-        const executablePath = await this.electron.openFile({ defaultPath: path.dirname(options.executablePath) })
-
-        if (executablePath) {
-            options.executablePath = executablePath
-            this.save()
-        }
-
-        return executablePath
-    }
-
     save() {
-        this.preference.plateSolverOptions('ASTAP').set(this.solvers.get('ASTAP')!)
-        this.preference.plateSolverOptions('ASTROMETRY_NET_ONLINE').set(this.solvers.get('ASTROMETRY_NET_ONLINE')!)
-
-        this.preference.starDetectionOptions('ASTAP').set(this.starDetectors.get('ASTAP')!)
+        for (const type of this.dropdownOptions.transform('PLATE_SOLVER')) {
+            this.preference.plateSolverRequest(type).set(this.plateSolvers.get(type))
+        }
+        for (const type of this.dropdownOptions.transform('STAR_DETECTOR')) {
+            this.preference.starDetectionRequest(type).set(this.starDetectors.get(type))
+        }
+        for (const type of this.dropdownOptions.transform('LIVE_STACKER')) {
+            this.preference.liveStackingRequest(type).set(this.liveStackers.get(type))
+        }
     }
 }
