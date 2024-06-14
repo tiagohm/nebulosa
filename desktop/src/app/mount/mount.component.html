@@ -244,11 +244,11 @@
                 <label>Port</label>
             </span>
         </div>
-        <div class="col-12 flex align-items-center text-sm">
-            <span *ngIf="remoteControl.type === 'LX200'">Used with the <a target="_blank"
-                   href="https://stellarium-labs.com/stellarium-mobile-plus/">mobile app</a></span>
-            <span *ngIf="remoteControl.type === 'STELLARIUM'">Used with the <a target="_blank"
-                   href="https://stellarium.org/">desktop app</a></span>
+        <div class="col-12 pt-0 justify-content-center flex align-items-center text-sm">
+            <span *ngIf="remoteControl.type === 'LX200'">Use together with the <a target="_blank"
+                   href="https://stellarium-labs.com/stellarium-mobile-plus/">Stellarium Mobile Plus</a></span>
+            <span *ngIf="remoteControl.type === 'STELLARIUM'">Use together with the <a target="_blank"
+                   href="https://stellarium.org/">Stellarium</a></span>
         </div>
         <div class="col-12 flex justify-content-center align-items-center">
             <p-button [disabled]="!remoteControl.host || !remoteControl.port" label="Connect" icon="mdi mdi-connection"
@@ -256,7 +256,7 @@
         </div>
         <div class="col-12 mt-2">
             <p-listbox [options]="remoteControl.data" [style]="{ width: '100%' }"
-                       [listStyle]="{'max-height': '100px'}" styleClass="border-0" emptyMessage="No remote control">
+                       [listStyle]="{'max-height': '100px'}" styleClass="border-0" emptyMessage="No remote control connected">
                 <ng-template let-item pTemplate="item">
                     <div class="flex flex-row w-full align-items-center justify-content-between">
                         <div class="flex flex-column justify-content-center">

@@ -1,9 +1,8 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
-import { MenuItem } from 'primeng/api'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
-import { SlideMenuItem } from '../../shared/components/slide-menu/slide-menu.component'
+import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -89,7 +88,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
         },
     ]
 
-    readonly targetCoordinateModel: SlideMenuItem[] = [
+    readonly targetCoordinateModel: MenuItem[] = [
         {
             icon: 'mdi mdi-telescope',
             label: 'Go To',
@@ -125,7 +124,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
         {
             icon: 'mdi mdi-crosshairs-gps',
             label: 'Locations',
-            subMenu: [
+            slideMenu: [
                 {
                     icon: 'mdi mdi-crosshairs-gps',
                     label: 'Current location',
@@ -179,7 +178,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
                 {
                     icon: 'mdi mdi-crosshairs',
                     label: 'Intersection points',
-                    subMenu: [
+                    slideMenu: [
                         {
                             icon: 'mdi mdi-crosshairs-gps',
                             label: 'Meridian x Equator',

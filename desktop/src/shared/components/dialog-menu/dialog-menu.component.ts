@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core'
-import { MenuItem } from '../menu-item/menu-item.component'
-import { SlideMenuItemCommandEvent } from '../slide-menu/slide-menu.component'
+import { MenuItem, MenuItemCommandEvent } from '../menu-item/menu-item.component'
 
 @Component({
     selector: 'neb-dialog-menu',
@@ -37,8 +36,8 @@ export class DialogMenuComponent {
         this.visibleChange.emit(false)
     }
 
-    next(event: SlideMenuItemCommandEvent) {
-        if (!event.item?.subMenu?.length) {
+    next(event: MenuItemCommandEvent) {
+        if (!event.item?.slideMenu?.length) {
             this.hide()
         } else {
             this.navigationHeader.push(this.header)

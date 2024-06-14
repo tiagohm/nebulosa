@@ -77,7 +77,7 @@ export class DeviceChooserComponent<T extends Device = Device> {
 
                 if (device.connected) {
                     item.icon = 'mdi mdi-close'
-                    item.toolbarButtonSeverity = 'danger'
+                    item.severity = 'danger'
                     item.label = 'Disconnect'
                     resolve({ device, item })
                 } else {
@@ -100,7 +100,7 @@ export class DeviceChooserComponent<T extends Device = Device> {
 
                 if (!device.connected) {
                     item.icon = 'mdi mdi-connection'
-                    item.toolbarButtonSeverity = 'info'
+                    item.severity = 'info'
                     item.label = 'Connect'
                     resolve({ device, item })
                 } else {

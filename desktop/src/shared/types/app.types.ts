@@ -2,6 +2,8 @@ import { MessageEvent } from './api.types'
 
 export type Severity = 'success' | 'info' | 'warning' | 'danger'
 
+export type TooltipPosition = 'right' | 'left' | 'top' | 'bottom'
+
 export interface NotificationEvent extends MessageEvent {
     type: string
     body: string

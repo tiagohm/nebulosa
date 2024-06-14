@@ -9,7 +9,6 @@ import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
 import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
-import { SlideMenuItem } from '../../shared/components/slide-menu/slide-menu.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -230,10 +229,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     private readonly autoStretchMenuItem: MenuItem = {
-        id: 'auto-stretch-menuitem',
         label: 'Auto stretch',
         icon: 'mdi mdi-auto-fix',
-        checked: true,
+        selected: true,
         command: () => {
             this.toggleStretch()
         },
@@ -251,10 +249,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private readonly horizontalMirrorMenuItem: MenuItem = {
         label: 'Horizontal mirror',
         icon: 'mdi mdi-flip-horizontal',
-        checked: false,
+        selected: false,
         command: () => {
             this.transformation.mirrorHorizontal = !this.transformation.mirrorHorizontal
-            this.horizontalMirrorMenuItem.checked = this.transformation.mirrorHorizontal
+            this.horizontalMirrorMenuItem.selected = this.transformation.mirrorHorizontal
             this.loadImage()
         },
     }
@@ -262,10 +260,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private readonly verticalMirrorMenuItem: MenuItem = {
         label: 'Vertical mirror',
         icon: 'mdi mdi-flip-vertical',
-        checked: false,
+        selected: false,
         command: () => {
             this.transformation.mirrorVertical = !this.transformation.mirrorVertical
-            this.verticalMirrorMenuItem.checked = this.transformation.mirrorVertical
+            this.verticalMirrorMenuItem.selected = this.transformation.mirrorVertical
             this.loadImage()
         },
     }
@@ -273,7 +271,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private readonly invertMenuItem: MenuItem = {
         label: 'Invert',
         icon: 'mdi mdi-invert-colors',
-        checked: false,
+        selected: false,
         command: () => {
             this.invertImage()
         },
@@ -329,7 +327,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private readonly crosshairMenuItem: MenuItem = {
         label: 'Crosshair',
         icon: 'mdi mdi-bullseye',
-        checked: false,
+        selected: false,
         command: () => {
             this.toggleCrosshair()
         },
@@ -339,12 +337,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Annotate',
         icon: 'mdi mdi-marker',
         disabled: true,
-        toggleable: true,
+        checkable: true,
         toggled: false,
         command: () => {
             this.annotation.showDialog = true
         },
-        toggle: (event) => {
+        check: (event) => {
             event.originalEvent?.stopImmediatePropagation()
             this.annotation.visible = event.checked
         },
@@ -354,12 +352,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         label: 'Detect stars',
         icon: 'mdi mdi-creation',
         disabled: false,
-        toggleable: false,
-        toggled: false,
+        checkable: false,
+        selected: false,
         command: () => {
             this.starDetection.showDialog = true
         },
-        toggle: (event) => {
+        check: (event) => {
             this.starDetection.visible = event.checked
             event.originalEvent?.stopImmediatePropagation()
         },
@@ -368,7 +366,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private readonly roiMenuItem: MenuItem = {
         label: 'ROI',
         icon: 'mdi mdi-select',
-        checked: false,
+        selected: false,
         command: () => {
             if (this.roiInteractable) {
                 this.roiInteractable.unset()
@@ -401,7 +399,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
                     })
             }
 
-            this.roiMenuItem.checked = !!this.roiInteractable
+            this.roiMenuItem.selected = !!this.roiInteractable
         },
     }
 
@@ -607,11 +605,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private markCalibrationGroupItem(name?: string) {
         this.calibrationMenuItem.items![2].disabled = !this.imageInfo?.camera?.id
-        this.calibrationMenuItem.items![2].checked = this.calibrationViaCamera
+        this.calibrationMenuItem.items![2].selected = this.calibrationViaCamera
 
         for (let i = 3; i < this.calibrationMenuItem.items!.length; i++) {
             const item = this.calibrationMenuItem.items![i]
-            item.checked = !this.calibrationViaCamera && item.data === name
+            item.selected = !this.calibrationViaCamera && item.data === name
         }
     }
 
@@ -632,7 +630,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
             return <MenuItem>{
                 label, icon,
-                checked: !this.calibrationViaCamera && this.transformation.calibrationGroup === name,
+                selected: !this.calibrationViaCamera && this.transformation.calibrationGroup === name,
                 data: name,
                 command: async () => {
                     this.calibrationViaCamera = false
@@ -643,7 +641,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             }
         }
 
-        const menu: SlideMenuItem[] = []
+        const menu: MenuItem[] = []
 
         menu.push({
             label: 'Open',
@@ -656,7 +654,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         menu.push({
             label: 'Camera',
             icon: 'mdi mdi-camera-iris',
-            checked: this.calibrationViaCamera,
+            selected: this.calibrationViaCamera,
             disabled: !this.imageInfo?.camera?.id,
             data: 0,
             command: async () => {
@@ -777,11 +775,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     private clearOverlay() {
         this.annotation.data = []
         this.annotation.visible = false
-        this.annotationMenuItem.toggleable = false
+        this.annotationMenuItem.checkable = false
 
         this.starDetection.stars = []
         this.starDetection.visible = false
-        this.detectStarsMenuItem.toggleable = false
+        this.detectStarsMenuItem.checkable = false
 
         Object.assign(this.solver.solved, EMPTY_IMAGE_SOLVED)
 
@@ -830,8 +828,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         this.savePreference()
 
         this.starDetection.visible = this.starDetection.stars.length > 0
-        this.detectStarsMenuItem.toggleable = this.starDetection.visible
-        this.detectStarsMenuItem.toggled = this.starDetection.visible
+        this.detectStarsMenuItem.checkable = this.starDetection.visible
+        this.detectStarsMenuItem.checked = this.starDetection.visible
     }
 
     selectDetectedStar(star: DetectedStar) {
@@ -960,8 +958,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
             this.annotation.data = await this.api.annotationsOfImage(this.imagePath!, this.annotation.useStarsAndDSOs,
                 this.annotation.useMinorPlanets, this.annotation.minorPlanetsMagLimit, this.annotation.useSimbad)
             this.annotation.visible = this.annotation.data.length > 0
-            this.annotationMenuItem.toggleable = this.annotation.visible
-            this.annotationMenuItem.toggled = this.annotation.visible
+            this.annotationMenuItem.checkable = this.annotation.visible
+            this.annotationMenuItem.checked = this.annotation.visible
             this.annotation.showDialog = false
         } finally {
             this.annotation.running = false
@@ -975,7 +973,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     private disableAutoStretch() {
         this.stretch.auto = false
-        this.autoStretchMenuItem.checked = false
+        this.autoStretchMenuItem.selected = false
     }
 
     private disableCalibration(canEnable: boolean = true) {
@@ -986,7 +984,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     autoStretch() {
         this.stretch.auto = true
-        this.autoStretchMenuItem.checked = true
+        this.autoStretchMenuItem.selected = true
 
         this.loadImage()
     }
@@ -1019,7 +1017,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     invertImage() {
         this.transformation.invert = !this.transformation.invert
-        this.invertMenuItem.checked = this.transformation.invert
+        this.invertMenuItem.selected = this.transformation.invert
         this.loadImage()
     }
 
@@ -1029,7 +1027,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
     toggleCrosshair() {
         this.crossHair = !this.crossHair
-        this.crosshairMenuItem.checked = this.crossHair
+        this.crosshairMenuItem.selected = this.crossHair
     }
 
     zoomIn() {

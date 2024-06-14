@@ -1,0 +1,23 @@
+<div class="flex align-items-center justify-content-center gap-1">
+    <span class="relative" *ngFor="let e of model; let i = index">
+        @if (e.visible !== false) {
+        @if (e.toggleable) {
+        <div *ngIf="e.visible" class="flex flex-column align-items-center justify-content-center gap-1">
+            <span class="text-xs">{{ e.label }}</span>
+            <p-inputSwitch [disabled]="e.disabled ?? false" [(ngModel)]="e.toggled" (onChange)="e.toggle?.($event)" />
+        </div>
+        } @else if (e.checkable) {
+        <div *ngIf="e.visible" class="flex flex-column align-items-center justify-content-center gap-1">
+            <span class="text-xs">{{ e.label }}</span>
+            <p-checkbox [binary]="true" [disabled]="e.disabled ?? false" [(ngModel)]="e.checked" (onChange)="e.check?.($event)" />
+        </div>
+        }
+        @else {
+        <p-badge *ngIf="e.badge" [severity]="e.badgeSeverity ?? 'danger'" />
+        <p-button [text]="true" [rounded]="true" [icon]="e.icon" [disabled]="e.disabled" [pTooltip]="e.tooltip ?? e.label"
+                  [tooltipPosition]="e.tooltipPosition ?? 'bottom'" [severity]="e.severity"
+                  (onClick)="e.command?.({originalEvent: $event, item: e, index: i}); $event.stopImmediatePropagation()" size="small" />
+        }
+        }
+    </span>
+</div>

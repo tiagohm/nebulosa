@@ -6,7 +6,6 @@ import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
 import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
 import { MenuItem } from '../menu-item/menu-item.component'
-import { SlideMenuItem } from '../slide-menu/slide-menu.component'
 
 export interface DeviceConnectionCommandEvent {
     device: Device
@@ -21,7 +20,7 @@ export interface DeviceConnectionCommandEvent {
 export class DeviceListMenuComponent {
 
     @Input()
-    readonly model: SlideMenuItem[] = []
+    readonly model: MenuItem[] = []
 
     @Input()
     readonly modelAtFirst: boolean = true
@@ -47,7 +46,7 @@ export class DeviceListMenuComponent {
     constructor(private prime: PrimeService) { }
 
     show<T extends Device>(devices: T[], selected?: NoInfer<T>) {
-        const model: SlideMenuItem[] = []
+        const model: MenuItem[] = []
 
         return new Promise<T | 'NONE' | undefined>(resolve => {
             if (devices.length <= 0) {
@@ -72,6 +71,7 @@ export class DeviceListMenuComponent {
                 model.push({
                     icon: 'mdi mdi-close',
                     label: 'None',
+                    selected: !selected,
                     command: () => {
                         resolve('NONE')
                     },
@@ -81,12 +81,12 @@ export class DeviceListMenuComponent {
             for (const device of devices.sort(deviceComparator)) {
                 model.push({
                     label: device.name,
-                    checked: selected === device,
+                    selected: selected === device,
                     disabled: this.disableIfDeviceIsNotConnected && !device.connected,
                     toolbarMenu: [
                         {
                             icon: 'mdi ' + (device.connected ? 'mdi-close' : 'mdi-connection'),
-                            toolbarButtonSeverity: device.connected ? 'danger' : 'info',
+                            severity: device.connected ? 'danger' : 'info',
                             label: device.connected ? 'Disconnect' : 'Connect',
                             visible: !isGuideHead(device),
                             command: event => {

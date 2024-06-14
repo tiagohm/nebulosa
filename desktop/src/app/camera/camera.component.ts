@@ -1,8 +1,7 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { MenuItem } from 'primeng/api'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
-import { SlideMenuItem, SlideMenuItemCommandEvent } from '../../shared/components/slide-menu/slide-menu.component'
+import { MenuItem, MenuItemCommandEvent } from '../../shared/components/menu-item/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -98,26 +97,26 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
     private readonly snoopDevicesMenuItem: MenuItem = {
         icon: 'mdi mdi-connection',
         label: 'Snoop Devices',
-        subMenu: [
+        slideMenu: [
             {
                 icon: 'mdi mdi-telescope',
                 label: 'Mount',
-                subMenu: [],
+                slideMenu: [],
             },
             {
                 icon: 'mdi mdi-palette',
                 label: 'Filter Wheel',
-                subMenu: [],
+                slideMenu: [],
             },
             {
                 icon: 'mdi mdi-image-filter-center-focus',
                 label: 'Focuser',
-                subMenu: [],
+                slideMenu: [],
             },
             {
                 icon: 'mdi mdi-rotate-right',
                 label: 'Rotator',
-                subMenu: [],
+                slideMenu: [],
             },
         ]
     }
@@ -354,16 +353,16 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             <b>ROTATOR</b>: ${this.equipment.rotator?.name ?? 'None'}`
         }
 
-        const makeItem = (checked: boolean, command: () => void, device?: Device) => {
+        const makeItem = (selected: boolean, command: () => void, device?: Device) => {
             return <MenuItem>{
                 icon: device ? 'mdi mdi-connection' : 'mdi mdi-close',
                 label: device?.name ?? 'None',
-                checked,
-                command: async (event: SlideMenuItemCommandEvent) => {
+                selected,
+                command: async (event: MenuItemCommandEvent) => {
                     command()
                     buildStartTooltip()
                     this.preference.equipmentForDevice(this.camera).set(this.equipment)
-                    event.parent?.subMenu?.forEach(item => item.checked = item === event.item)
+                    event.parentItem?.slideMenu?.forEach(item => item.selected = item === event.item)
                 },
             }
         }
@@ -377,10 +376,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             return makeItem(this.equipment.mount?.name === mount?.name, () => this.equipment.mount = mount, mount)
         }
 
-        this.snoopDevicesMenuItem.subMenu![0].subMenu!.push(makeMountItem())
+        this.snoopDevicesMenuItem.slideMenu![0].slideMenu!.push(makeMountItem())
 
         for (const mount of mounts) {
-            this.snoopDevicesMenuItem.subMenu![0].subMenu!.push(makeMountItem(mount))
+            this.snoopDevicesMenuItem.slideMenu![0].slideMenu!.push(makeMountItem(mount))
         }
 
         // FILTER WHEEL
@@ -392,10 +391,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             return makeItem(this.equipment.wheel?.name === wheel?.name, () => this.equipment.wheel = wheel, wheel)
         }
 
-        this.snoopDevicesMenuItem.subMenu![1].subMenu!.push(makeWheelItem())
+        this.snoopDevicesMenuItem.slideMenu![1].slideMenu!.push(makeWheelItem())
 
         for (const wheel of wheels) {
-            this.snoopDevicesMenuItem.subMenu![1].subMenu!.push(makeWheelItem(wheel))
+            this.snoopDevicesMenuItem.slideMenu![1].slideMenu!.push(makeWheelItem(wheel))
         }
 
         // FOCUSER
@@ -407,10 +406,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             return makeItem(this.equipment.focuser?.name === focuser?.name, () => this.equipment.focuser = focuser, focuser)
         }
 
-        this.snoopDevicesMenuItem.subMenu![2].subMenu!.push(makeFocuserItem())
+        this.snoopDevicesMenuItem.slideMenu![2].slideMenu!.push(makeFocuserItem())
 
         for (const focuser of focusers) {
-            this.snoopDevicesMenuItem.subMenu![2].subMenu!.push(makeFocuserItem(focuser))
+            this.snoopDevicesMenuItem.slideMenu![2].slideMenu!.push(makeFocuserItem(focuser))
         }
 
         // ROTATOR
@@ -422,10 +421,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             return makeItem(this.equipment.rotator?.name === rotator?.name, () => this.equipment.rotator = rotator, rotator)
         }
 
-        this.snoopDevicesMenuItem.subMenu![3].subMenu!.push(makeRotatorItem())
+        this.snoopDevicesMenuItem.slideMenu![3].slideMenu!.push(makeRotatorItem())
 
         for (const rotator of rotators) {
-            this.snoopDevicesMenuItem.subMenu![3].subMenu!.push(makeRotatorItem(rotator))
+            this.snoopDevicesMenuItem.slideMenu![3].slideMenu!.push(makeRotatorItem(rotator))
         }
 
         buildStartTooltip()
@@ -443,7 +442,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             return <MenuItem>{
                 label: name ?? 'None',
                 icon: name ? 'mdi mdi-wrench' : 'mdi mdi-close',
-                checked: this.request.calibrationGroup === name,
+                selected: this.request.calibrationGroup === name,
                 command: () => {
                     this.request.calibrationGroup = name
                     this.savePreference()
@@ -452,7 +451,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
             }
         }
 
-        const menu: SlideMenuItem[] = []
+        const menu: MenuItem[] = []
 
         menu.push({
             icon: 'mdi mdi-wrench',

@@ -1,27 +1,48 @@
 import { Component, Input } from '@angular/core'
-import { MenuItem as PrimeMenuItem, MenuItemCommandEvent as PrimeMenuItemCommandEvent } from 'primeng/api'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
-import { Severity } from '../../types/app.types'
+import { InputSwitchChangeEvent } from 'primeng/inputswitch'
+import { Severity, TooltipPosition } from '../../types/app.types'
 
-export interface MenuItemCommandEvent extends PrimeMenuItemCommandEvent {
+export interface MenuItemCommandEvent {
+    originalEvent?: Event
     item?: MenuItem
+    index?: number
+    parentItem?: MenuItem // Slide menu
+    level?: number // Slide menu
 }
 
-export interface MenuItem extends PrimeMenuItem {
+export interface MenuItem {
+    separator?: boolean
+
+    icon?: string
+    label?: string
+    visible?: boolean
+    disabled?: boolean
+    severity?: Severity
+    data?: any
+
+    tooltip?: string
+    tooltipPosition?: TooltipPosition
+
+    badge?: string
     badgeSeverity?: Severity
 
+    checkable?: boolean
     checked?: boolean
+
+    selectable?: boolean
+    selected?: boolean
 
     toggleable?: boolean
     toggled?: boolean
 
-    subMenu?: MenuItem[]
-
-    toolbarMenu?: MenuItem[]
-    toolbarButtonSeverity?: Severity
+    items?: MenuItem[] // Context menu
+    slideMenu?: MenuItem[] // Submenu for Slider menu
+    toolbarMenu?: MenuItem[] // Menu bar on menu item
 
     command?: (event: MenuItemCommandEvent) => void
-    toggle?: (event: CheckboxChangeEvent) => void
+    check?: (event: CheckboxChangeEvent) => void
+    toggle?: (event: InputSwitchChangeEvent) => void
 }
 
 @Component({

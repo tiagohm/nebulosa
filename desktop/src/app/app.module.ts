@@ -47,6 +47,7 @@ import { DeviceListMenuComponent } from '../shared/components/device-list-menu/d
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
 import { MapComponent } from '../shared/components/map/map.component'
+import { MenuBarComponent } from '../shared/components/menu-bar/menu-bar.component'
 import { MenuItemComponent } from '../shared/components/menu-item/menu-item.component'
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { PathChooserComponent } from '../shared/components/path-chooser/path-chooser.component'
@@ -120,6 +121,7 @@ import { SettingsComponent } from './settings/settings.component'
         INDIPropertyComponent,
         LocationDialog,
         MapComponent,
+        MenuBarComponent,
         MenuItemComponent,
         MoonComponent,
         MountComponent,

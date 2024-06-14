@@ -1,18 +1,6 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core'
 import { MenuItem, MenuItemCommandEvent } from '../menu-item/menu-item.component'
 
-export interface SlideMenuItem extends MenuItem {
-    command?: (event: SlideMenuItemCommandEvent) => void
-}
-
-export interface SlideMenuItemCommandEvent extends MenuItemCommandEvent {
-    item?: SlideMenuItem
-    parent?: SlideMenuItem
-    level?: number
-}
-
-export type SlideMenu = SlideMenuItem[]
-
 @Component({
     selector: 'neb-slide-menu',
     templateUrl: './slide-menu.component.html',
@@ -21,50 +9,51 @@ export type SlideMenu = SlideMenuItem[]
 export class SlideMenuComponent implements OnInit {
 
     @Input({ required: true })
-    readonly model!: SlideMenu
+    readonly model!: MenuItem[]
 
     @Input()
     readonly appendTo: HTMLElement | ElementRef | TemplateRef<any> | string | null | undefined | any
 
     @Output()
-    readonly onNext = new EventEmitter<SlideMenuItemCommandEvent>()
+    readonly onNext = new EventEmitter<MenuItemCommandEvent>()
 
     @Output()
     readonly onBack = new EventEmitter<any>()
 
-    menu!: SlideMenu
-    private readonly navigation: SlideMenu[] = []
+    currentMenu!: MenuItem[]
+
+    private navigation: MenuItem[][] = []
 
     ngOnInit() {
         this.processMenu(this.model, 0)
-        this.menu = this.model
+        this.currentMenu = this.model
     }
 
     back(event: MouseEvent) {
         if (this.navigation.length) {
-            this.menu = this.navigation.splice(this.navigation.length - 1, 1)[0]
+            this.currentMenu = this.navigation.splice(this.navigation.length - 1, 1)[0]
             this.onBack.emit(undefined)
         }
     }
 
-    private processMenu(menu: SlideMenu, level: number, parent?: SlideMenuItem) {
+    private processMenu(menu: MenuItem[], level: number, parentItem?: MenuItem) {
         for (const item of menu) {
             const command = item.command
 
-            if (item.subMenu?.length) {
-                item.command = (event: SlideMenuItemCommandEvent) => {
-                    this.menu = item.subMenu!
+            if (item.slideMenu?.length) {
+                item.command = (event: MenuItemCommandEvent) => {
+                    this.currentMenu = item.slideMenu!
                     this.navigation.push(menu)
-                    event.parent = parent
+                    event.parentItem = parentItem
                     event.level = level
                     command?.(event)
                     this.onNext.emit(event)
                 }
 
-                this.processMenu(item.subMenu, level + 1, item)
+                this.processMenu(item.slideMenu, level + 1, item)
             } else {
-                item.command = (event: SlideMenuItemCommandEvent) => {
-                    event.parent = parent
+                item.command = (event: MenuItemCommandEvent) => {
+                    event.parentItem = parentItem
                     event.level = level
                     command?.(event)
                     this.onNext.emit(event)

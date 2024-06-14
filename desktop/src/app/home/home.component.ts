@@ -2,7 +2,7 @@ import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild
 import { dirname } from 'path'
 import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { SlideMenuItem } from '../../shared/components/slide-menu/slide-menu.component'
+import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -120,9 +120,9 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
         return this.connection?.type === 'ALPACA' && this.hasDevices
     }
 
-    readonly deviceModel: SlideMenuItem[] = []
+    readonly deviceModel: MenuItem[] = []
 
-    readonly imageModel: SlideMenuItem[] = [
+    readonly imageModel: MenuItem[] = [
         {
             icon: 'mdi mdi-image-plus',
             label: 'Open new image',
