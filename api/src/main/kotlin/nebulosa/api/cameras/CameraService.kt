@@ -2,6 +2,10 @@ package nebulosa.api.cameras
 
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -35,12 +39,15 @@ class CameraService(
     }
 
     @Synchronized
-    fun startCapture(camera: Camera, request: CameraStartCaptureRequest) {
+    fun startCapture(
+        camera: Camera, request: CameraStartCaptureRequest,
+        mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null, rotator: Rotator? = null
+    ) {
         val savePath = request.savePath
             ?.takeIf { "$it".isNotBlank() && it.exists() && it.isDirectory() }
             ?: Path.of("$capturesPath", camera.name, request.frameType.name)
 
-        cameraCaptureExecutor.execute(camera, request.copy(savePath = savePath))
+        cameraCaptureExecutor.execute(camera, request.copy(savePath = savePath), mount, wheel, focuser, rotator)
     }
 
     fun pauseCapture(camera: Camera) {

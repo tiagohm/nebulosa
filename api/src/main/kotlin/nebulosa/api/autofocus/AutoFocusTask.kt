@@ -43,7 +43,7 @@ data class AutoFocusTask(
 
     private val focusPoints = ArrayList<CurvePoint>()
     private val measurements = DoubleArray(request.capture.exposureAmount)
-    private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = max(1, request.capture.exposureAmount))
+    private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, focuser = focuser)
     private val focuserMoveTask = BacklashCompensationFocuserMoveTask(focuser, 0, request.backlashCompensation)
 
     @Volatile private var trendLineCurve: TrendLineFitting.Curve? = null
@@ -75,6 +75,8 @@ data class AutoFocusTask(
 
         val initialFocusPosition = focuser.position
 
+        cameraCaptureTask.initialize(cancellationToken)
+
         // Get initial position information, as average of multiple exposures, if configured this way.
         val initialHFD = if (request.rSquaredThreshold <= 0.0) takeExposure(cancellationToken) else 0.0
         val reverse = request.backlashCompensation.mode == BacklashCompensationMode.OVERSHOOT && request.backlashCompensation.backlashIn > 0
@@ -84,8 +86,6 @@ data class AutoFocusTask(
         var exited = false
         var numberOfAttempts = 0
         val maximumFocusPoints = request.capture.exposureAmount * request.initialOffsetSteps * 10
-
-        camera.snoop(camera.snoopedDevices.filter { it !is Focuser } + focuser)
 
         while (!exited && !cancellationToken.isCancelled) {
             numberOfAttempts++
@@ -186,6 +186,8 @@ data class AutoFocusTask(
             }
         }
 
+        cameraCaptureTask.finalize(cancellationToken)
+
         if (exited || cancellationToken.isCancelled) {
             LOG.warn("Auto Focus did not complete successfully, so restoring the focuser position to $initialFocusPosition")
             sendEvent(if (exited) AutoFocusState.FAILED else AutoFocusState.FINISHED)
@@ -237,7 +239,7 @@ data class AutoFocusTask(
         return if (!cancellationToken.isCancelled) {
             measurementPos = 0
             sendEvent(AutoFocusState.EXPOSURING)
-            cameraCaptureTask.execute(cancellationToken)
+            cameraCaptureTask.executeUntil(cancellationToken, max(1, request.capture.exposureAmount))
             evaluateAllMeasurements()
         } else {
             0.0

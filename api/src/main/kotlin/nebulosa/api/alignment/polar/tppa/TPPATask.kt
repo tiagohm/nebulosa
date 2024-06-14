@@ -47,7 +47,7 @@ data class TPPATask(
     )
 
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
-    private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = 1)
+    private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, mount = mount)
     private val settleDelayTask = DelayTask(SETTLE_TIME)
     private val mountMoveState = BooleanArray(3)
     private val elapsedTime = Stopwatch()
@@ -110,9 +110,9 @@ data class TPPATask(
         rightAscension = mount?.rightAscension ?: 0.0
         declination = mount?.declination ?: 0.0
 
-        camera.snoop(camera.snoopedDevices.filter { it !is Mount } + mount)
-
         cancellationToken.listenToPause(this)
+
+        cameraCaptureTask.initialize(cancellationToken)
 
         while (!cancellationToken.isCancelled) {
             if (cancellationToken.isPaused) {
@@ -151,7 +151,7 @@ data class TPPATask(
             sendEvent(TPPAState.EXPOSURING)
 
             // CAPTURE.
-            cameraCaptureTask.execute(cancellationToken)
+            cameraCaptureTask.executeOnce(cancellationToken)
 
             if (cancellationToken.isCancelled || savedImage == null) {
                 break
@@ -235,6 +235,8 @@ data class TPPATask(
                 }
             }
         }
+
+        cameraCaptureTask.finalize(cancellationToken)
 
         pausing.set(false)
         cancellationToken.unlistenToPause(this)

@@ -83,8 +83,10 @@ export class ApiService {
         return this.http.put<void>(`cameras/${camera.id}/temperature/setpoint?temperature=${temperature}`)
     }
 
-    cameraStartCapture(camera: Camera, data: CameraStartCapture) {
-        return this.http.put<void>(`cameras/${camera.id}/capture/start`, data)
+    cameraStartCapture(camera: Camera, data: CameraStartCapture, equipment: Equipment) {
+        const { mount, wheel, focuser, rotator } = equipment
+        const query = this.http.query({ mount: mount?.id, wheel: wheel?.id, focuser: focuser?.id, rotator: rotator?.id })
+        return this.http.put<void>(`cameras/${camera.id}/capture/start?${query}`, data)
     }
 
     cameraPauseCapture(camera: Camera) {

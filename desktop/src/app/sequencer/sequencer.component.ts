@@ -507,15 +507,19 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
             }
         }
 
+        this.savePlan()
+
         this.showEntryPropertiesToApplyDialog = false
     }
 
     deleteEntry(entry: CameraStartCapture, index: number) {
         this.plan.entries.splice(index, 1)
+        this.savePlan()
     }
 
     duplicateEntry(entry: CameraStartCapture, index: number) {
         this.plan.entries.splice(index + 1, 0, structuredClone(entry))
+        this.savePlan()
     }
 
     async start() {

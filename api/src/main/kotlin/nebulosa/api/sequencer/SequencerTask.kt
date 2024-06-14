@@ -80,34 +80,55 @@ data class SequencerTask(
 
                 // CAPTURE.
                 val cameraCaptureTask = CameraCaptureTask(
-                    camera, request, guider, executor = executor,
-                    calibrationFrameProvider = calibrationFrameProvider
+                    camera, request, guider, false, executor,
+                    calibrationFrameProvider,
+                    mount, wheel, focuser, rotator
                 )
+
                 cameraCaptureTask.subscribe(this)
                 estimatedCaptureTime += cameraCaptureTask.estimatedCaptureTime
-                tasks.add(cameraCaptureTask)
+                tasks.add(SequenceCaptureModeCameraCaptureTask(cameraCaptureTask, SequenceCaptureMode.FULLY, i))
             }
         } else {
             val sequenceIdTasks = usedEntries.map { req -> SequencerIdTask(plan.entries.indexOfFirst { it === req } + 1) }
             val requests = usedEntries.map { mapRequest(it) }
             val cameraCaptureTasks = requests
-                .mapIndexed { i, req -> CameraCaptureTask(camera, req, guider, i > 0, 1, executor, calibrationFrameProvider) }
+                .mapIndexed { i, req ->
+                    val task = CameraCaptureTask(
+                        camera, req, guider,
+                        i > 0, executor, calibrationFrameProvider,
+                        mount, wheel, focuser, rotator
+                    )
+
+                    SequenceCaptureModeCameraCaptureTask(task, SequenceCaptureMode.INTERLEAVED, i)
+                }
             val wheelMoveTasks = requests.map { it.wheelMoveTask() }
             val count = IntArray(requests.size) { usedEntries[it].exposureAmount }
 
-            for (task in cameraCaptureTasks) {
-                task.subscribe(this)
-                estimatedCaptureTime += task.estimatedCaptureTime
+            for ((cameraCaptureTask) in cameraCaptureTasks) {
+                cameraCaptureTask.subscribe(this)
+                estimatedCaptureTime += cameraCaptureTask.estimatedCaptureTime
             }
 
             while (count.sum() > 0) {
                 for (i in usedEntries.indices) {
                     if (count[i] > 0) {
-                        count[i]--
-
                         tasks.add(sequenceIdTasks[i])
                         wheelMoveTasks[i]?.also(tasks::add)
-                        tasks.add(cameraCaptureTasks[i])
+
+                        val task = cameraCaptureTasks[i]
+
+                        if (count[i] == usedEntries[i].exposureAmount) {
+                            tasks.add(InitializeCameraCaptureTask(task.task))
+                        }
+
+                        tasks.add(task)
+
+                        count[i]--
+
+                        if (count[i] == 0) {
+                            tasks.add(FininalizeCameraCaptureTask(task.task))
+                        }
                     }
                 }
             }
@@ -115,25 +136,22 @@ data class SequencerTask(
     }
 
     override fun handleCameraEvent(event: CameraEvent) {
-        val task = currentTask.get()
-
-        if (task is CameraCaptureTask) {
-            task.handleCameraEvent(event)
+        when (val task = currentTask.get()) {
+            is CameraCaptureTask -> task.handleCameraEvent(event)
+            is SequenceCaptureModeCameraCaptureTask -> task.task.handleCameraEvent(event)
         }
     }
 
     override fun handleFilterWheelEvent(event: FilterWheelEvent) {
-        val task = currentTask.get()
-
-        if (task is WheelMoveTask) {
-            task.handleFilterWheelEvent(event)
+        when (val task = currentTask.get()) {
+            is WheelMoveTask -> task.handleFilterWheelEvent(event)
+            is CameraCaptureTask -> task.handleFilterWheelEvent(event)
+            is SequenceCaptureModeCameraCaptureTask -> task.task.handleFilterWheelEvent(event)
         }
     }
 
     override fun execute(cancellationToken: CancellationToken) {
         LOG.info("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, plan={}", camera, mount, wheel, focuser, plan)
-
-        camera.snoop(listOf(mount, wheel, focuser, rotator))
 
         for (task in tasks) {
             if (cancellationToken.isCancelled) break
@@ -212,8 +230,39 @@ data class SequencerTask(
     private inner class SequencerIdTask(private val id: Int) : Task {
 
         override fun execute(cancellationToken: CancellationToken) {
-            LOG.info("Sequence started. id={}", id)
+            LOG.info("Sequence in execution. id={}", id)
             sequencerId.set(id)
+        }
+    }
+
+    private data class InitializeCameraCaptureTask(@JvmField val task: CameraCaptureTask) : Task {
+
+        override fun execute(cancellationToken: CancellationToken) {
+            task.initialize(cancellationToken)
+        }
+    }
+
+    private data class SequenceCaptureModeCameraCaptureTask(
+        @JvmField val task: CameraCaptureTask,
+        @JvmField val mode: SequenceCaptureMode,
+        @JvmField val index: Int,
+    ) : Task {
+
+        override fun execute(cancellationToken: CancellationToken) {
+            if (mode == SequenceCaptureMode.FULLY) {
+                task.initialize(cancellationToken)
+                task.executeInLoop(cancellationToken)
+                task.finalize(cancellationToken)
+            } else {
+                task.executeOnce(cancellationToken)
+            }
+        }
+    }
+
+    private data class FininalizeCameraCaptureTask(@JvmField val task: CameraCaptureTask) : Task {
+
+        override fun execute(cancellationToken: CancellationToken) {
+            task.finalize(cancellationToken)
         }
     }
 

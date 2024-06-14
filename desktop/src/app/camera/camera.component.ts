@@ -545,8 +545,16 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
         this.request.liveStacking.executablePath = liveStackingRequest.executablePath
         this.request.liveStacking.slot = liveStackingRequest.slot || 1
 
+        let shutterPosition: number | undefined
+
+        if (this.equipment.wheel) {
+            const wheelPreference = this.preference.wheelPreference(this.equipment.wheel).get()
+            shutterPosition = wheelPreference.shutterPosition
+        }
+
         return {
             ...this.request,
+            shutterPosition,
             x, y, width, height,
             exposureTime, exposureAmount,
             savePath,
@@ -557,8 +565,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
         try {
             this.running = true
             await this.openCameraImage()
-            await this.api.cameraSnoop(this.camera, this.equipment)
-            await this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture())
+            await this.api.cameraStartCapture(this.camera, this.makeCameraStartCapture(), this.equipment)
             this.preference.equipmentForDevice(this.camera).set(this.equipment)
         } catch {
             this.running = false
