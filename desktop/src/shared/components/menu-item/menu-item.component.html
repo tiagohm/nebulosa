@@ -1,14 +1,20 @@
-<a [class.p-menuitem-selected]="item.selected" class="p-menuitem-link flex justify-content-between align-items-center gap-2">
-    <div class="flex justify-content-between align-items-center gap-2">
-        <i [class]="item.icon"></i> <span>{{ item.label }}</span>
-    </div>
-    @if (item.toolbarMenu?.length) {
-    <neb-menu-bar [model]="item.toolbarMenu!" />
-    }
-    @if(item.checkable) {
-    <p-checkbox [binary]="true" [(ngModel)]="item.checked" (onChange)="item.check?.($event)" />
-    }
-    @if (item.items?.length || item.slideMenu?.length) {
-    <i class="mdi mdi-menu-right mdi"></i>
-    }
+<a
+	[class.p-menuitem-selected]="item.selected"
+	class="p-menuitem-link flex justify-content-between align-items-center gap-2">
+	<div class="flex justify-content-between align-items-center gap-2">
+		<i [class]="item.icon"></i>
+		<span>{{ item.label }}</span>
+	</div>
+	@if (item.toolbarMenu?.length) {
+		<neb-menu-bar [model]="item.toolbarMenu!" />
+	}
+	@if (item.checkable) {
+		<p-checkbox
+			[binary]="true"
+			[(ngModel)]="item.checked"
+			(onChange)="item.check?.($event)" />
+	}
+	@if (item.items?.length || item.slideMenu?.length) {
+		<i class="mdi mdi-menu-right mdi"></i>
+	}
 </a>

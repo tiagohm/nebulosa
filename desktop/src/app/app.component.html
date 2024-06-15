@@ -1,28 +1,64 @@
-<section *ngIf="showTopBar" id="titlebar" class="flex flex-row align-items-center justify-content-end gap-2 sticky pr-1"
-         [style]="{ height: '42px', zIndex: '1000', backgroundColor }">
-    <span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
-        <div>{{ title }}</div>
-        <div class="text-xs text-gray-100 font-normal">{{ subTitle }}</div>
-    </span>
+<section
+	*ngIf="showTopBar"
+	id="titlebar"
+	class="flex flex-row align-items-center justify-content-end gap-2 sticky pr-1"
+	[style]="{ height: '42px', zIndex: '1000', backgroundColor }">
+	<span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
+		<div>{{ title }}</div>
+		<div class="text-xs text-gray-100 font-normal">{{ subTitle }}</div>
+	</span>
 
-    <neb-menu-bar *ngIf="topMenu.length" [model]="topMenu" />
+	<neb-menu-bar
+		*ngIf="topMenu.length"
+		[model]="topMenu" />
 
-    <span class="separator flex justify-content-center" *ngIf="topMenu.length"></span>
+	<span
+		class="separator flex justify-content-center"
+		*ngIf="topMenu.length"></span>
 
-    <p-button *ngIf="pinned && !modal" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin" (onClick)="pin()"
-              styleClass="select-none cursor-pointer"></p-button>
-    <p-button *ngIf="!pinned && !modal" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin-off" (onClick)="pin()"
-              styleClass="select-none cursor-pointer"></p-button>
-    <p-button *ngIf="!modal" [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-minimize" (onClick)="minimize()"
-              styleClass="select-none cursor-pointer"></p-button>
-    <p-button *ngIf="!modal && maximizable" [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-maximize"
-              (onClick)="maximize()" styleClass="select-none cursor-pointer"></p-button>
-    <p-button [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-close" (onClick)="close()"
-              styleClass="select-none cursor-pointer mr-1"></p-button>
+	<p-button
+		*ngIf="pinned && !modal"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-pin"
+		(onClick)="pin()"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		*ngIf="!pinned && !modal"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-pin-off"
+		(onClick)="pin()"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		*ngIf="!modal"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-window-minimize"
+		(onClick)="minimize()"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		*ngIf="!modal && maximizable"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-window-maximize"
+		(onClick)="maximize()"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-window-close"
+		(onClick)="close()"
+		styleClass="select-none cursor-pointer mr-1"></p-button>
 </section>
 
 <section id="main">
-    <router-outlet></router-outlet>
+	<router-outlet></router-outlet>
 </section>
 
 <p-toast position="bottom-center" />

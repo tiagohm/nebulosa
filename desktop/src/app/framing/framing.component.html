@@ -1,70 +1,128 @@
 <div class="grid px-4 py-2 mt-1">
-    <div class="col-6">
-        <p-floatLabel>
-            <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="rightAscension" />
-            <label>RA (J2000)</label>
-        </p-floatLabel>
-    </div>
-    <div class="col-6">
-        <p-floatLabel>
-            <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="declination" />
-            <label>DEC (J2000)</label>
-        </p-floatLabel>
-    </div>
-    <div class="col-6">
-        <p-floatLabel>
-            <p-inputNumber [min]="1" [max]="7680" class="w-full" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
-                           [(ngModel)]="width" locale="en" scrollableNumber />
-            <label>Width</label>
-        </p-floatLabel>
-    </div>
-    <div class="col-6">
-        <p-floatLabel>
-            <p-inputNumber [min]="1" [max]="4320" class="w-full" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
-                           [(ngModel)]="height" locale="en" scrollableNumber />
-            <label>Height</label>
-        </p-floatLabel>
-    </div>
-    <div class="col-6">
-        <p-floatLabel>
-            <p-inputNumber [min]="0.1" [max]="90" [step]="0.1" class="w-full" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
-                           [(ngModel)]="fov" locale="en" [minFractionDigits]="1" scrollableNumber />
-            <label>FOV (°)</label>
-        </p-floatLabel>
-    </div>
-    <div class="col-6">
-        <p-floatLabel>
-            <p-inputNumber [min]="-360" [max]="360" [step]="0.1" class="w-full" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
-                           [(ngModel)]="rotation" locale="en" [minFractionDigits]="1" scrollableNumber />
-            <label>Rotation (°)</label>
-        </p-floatLabel>
-    </div>
-    <div class="col-12">
-        <p-floatLabel class="w-full">
-            <p-dropdown [options]="hipsSurveys" [(ngModel)]="hipsSurvey" styleClass="border-0" emptyMessage="No HiPS survey found"
-                        [autoDisplayFirst]="false">
-                <ng-template let-item pTemplate="selectedItem">
-                    <div class="flex flex-column">
-                        <span class="text-xs">{{ item?.regime }} ({{ item?.skyFraction | percent:'1.1-1' }})</span>
-                        <span>{{ item?.id }}</span>
-                    </div>
-                </ng-template>
-                <ng-template let-item pTemplate="item">
-                    <div class="flex flex-column">
-                        <span class="text-xs">{{ item.regime }} ({{ item?.skyFraction | percent:'1.1-1' }})</span>
-                        <span>{{ item.id }}</span>
-                    </div>
-                </ng-template>
-            </p-dropdown>
-            <label>HiPS Survey</label>
-        </p-floatLabel>
-    </div>
-    <div class="col-12 justify-content-center mt-2">
-        <p-button [disabled]="loading" icon="mdi mdi-download" label="Load" (onClick)="frame()" [text]="true" size="small" />
-    </div>
-    <div class="col-12 justify-content-center">
-        <span class="text-sm text-gray-700">Made use of <a target="_blank"
-               href="https://alasky.cds.unistra.fr/hips-image-services/hips2fits">hips2fits</a>, a
-            service provided by CDS.</span>
-    </div>
+	<div class="col-6">
+		<p-floatLabel>
+			<input
+				pInputText
+				class="p-inputtext-sm border-0 w-full"
+				[(ngModel)]="rightAscension" />
+			<label>RA (J2000)</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-6">
+		<p-floatLabel>
+			<input
+				pInputText
+				class="p-inputtext-sm border-0 w-full"
+				[(ngModel)]="declination" />
+			<label>DEC (J2000)</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-6">
+		<p-floatLabel>
+			<p-inputNumber
+				[min]="1"
+				[max]="7680"
+				class="w-full"
+				[showButtons]="true"
+				styleClass="p-inputtext-sm border-0 w-full"
+				[(ngModel)]="width"
+				locale="en"
+				scrollableNumber />
+			<label>Width</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-6">
+		<p-floatLabel>
+			<p-inputNumber
+				[min]="1"
+				[max]="4320"
+				class="w-full"
+				[showButtons]="true"
+				styleClass="p-inputtext-sm border-0 w-full"
+				[(ngModel)]="height"
+				locale="en"
+				scrollableNumber />
+			<label>Height</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-6">
+		<p-floatLabel>
+			<p-inputNumber
+				[min]="0.1"
+				[max]="90"
+				[step]="0.1"
+				class="w-full"
+				[showButtons]="true"
+				styleClass="p-inputtext-sm border-0 w-full"
+				[(ngModel)]="fov"
+				locale="en"
+				[minFractionDigits]="1"
+				scrollableNumber />
+			<label>FOV (°)</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-6">
+		<p-floatLabel>
+			<p-inputNumber
+				[min]="-360"
+				[max]="360"
+				[step]="0.1"
+				class="w-full"
+				[showButtons]="true"
+				styleClass="p-inputtext-sm border-0 w-full"
+				[(ngModel)]="rotation"
+				locale="en"
+				[minFractionDigits]="1"
+				scrollableNumber />
+			<label>Rotation (°)</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-12">
+		<p-floatLabel class="w-full">
+			<p-dropdown
+				[options]="hipsSurveys"
+				[(ngModel)]="hipsSurvey"
+				styleClass="border-0"
+				emptyMessage="No HiPS survey found"
+				[autoDisplayFirst]="false">
+				<ng-template
+					let-item
+					pTemplate="selectedItem">
+					<div class="flex flex-column">
+						<span class="text-xs">{{ item?.regime }} ({{ item?.skyFraction | percent: '1.1-1' }})</span>
+						<span>{{ item?.id }}</span>
+					</div>
+				</ng-template>
+				<ng-template
+					let-item
+					pTemplate="item">
+					<div class="flex flex-column">
+						<span class="text-xs">{{ item.regime }} ({{ item?.skyFraction | percent: '1.1-1' }})</span>
+						<span>{{ item.id }}</span>
+					</div>
+				</ng-template>
+			</p-dropdown>
+			<label>HiPS Survey</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-12 justify-content-center mt-2">
+		<p-button
+			[disabled]="loading"
+			icon="mdi mdi-download"
+			label="Load"
+			(onClick)="frame()"
+			[text]="true"
+			size="small" />
+	</div>
+	<div class="col-12 justify-content-center">
+		<span class="text-sm text-gray-700">
+			Made use of
+			<a
+				target="_blank"
+				href="https://alasky.cds.unistra.fr/hips-image-services/hips2fits">
+				hips2fits
+			</a>
+			, a service provided by CDS.
+		</span>
+	</div>
 </div>

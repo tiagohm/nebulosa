@@ -1,155 +1,277 @@
 <div class="grid px-3 py-2 relative">
-    <div class="col-12 my-2">
-        <p-floatLabel class="w-full">
-            <p-dropdown [options]="tabs" [(ngModel)]="tab" dataKey="id"
-                        optionLabel="name" optionValue="id" styleClass="p-inputtext-sm border-0"
-                        [autoDisplayFirst]="false" />
-            <label>Settings</label>
-        </p-floatLabel>
-    </div>
-    <div class="col-12" *ngIf="tab === 0">
-        <div class="grid">
-            <div class="col-12 gap-2">
-                <p-floatLabel class="w-full">
-                    <p-dropdown [options]="locations" [(ngModel)]="location" (ngModelChange)="locationChanged()"
-                                optionLabel="name" dataKey="id" styleClass="p-inputtext-sm border-0" emptyMessage="No location found"
-                                [autoDisplayFirst]="false" />
-                    <label>Location</label>
-                </p-floatLabel>
-                <div class="flex gap-1">
-                    <p-button icon="mdi mdi-plus" size="small" severity="success" [text]="true"
-                              pTooltip="New" tooltipPosition="bottom" (onClick)="addLocation()" />
-                    <p-button icon="mdi mdi-pencil" size="small" severity="info" [text]="true"
-                              pTooltip="Edit" tooltipPosition="bottom" (onClick)="editLocation()" />
-                    <p-button [disabled]="locations.length <= 1" icon="mdi mdi-delete" size="small" severity="danger" [text]="true"
-                              pTooltip="Delete" tooltipPosition="bottom" (onClick)="deleteLocation()" />
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12" *ngIf="tab === 1">
-        <div class="grid">
-            <div class="col-8">
-                <p-floatLabel class="w-full">
-                    <p-dropdown [options]="'PLATE_SOLVER' | dropdownOptions" [(ngModel)]="plateSolverType" styleClass="p-inputtext-sm border-0"
-                                (ngModelChange)="plateSolvers.get(plateSolverType)!.type = $event; save()" [autoDisplayFirst]="false" />
-                    <label>Solver</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-12" *ngIf="plateSolverType !== 'ASTROMETRY_NET_ONLINE'">
-                <neb-path-chooser key="PLATE_SOLVER_EXECUTABLE_PATH" [directory]="false" label="Executable path"
-                                  [path]="plateSolvers.get(plateSolverType)!.executablePath" class="w-full"
-                                  (pathChange)="plateSolvers.get(plateSolverType)!.executablePath = $event; save()" />
-            </div>
-            @if (plateSolverType === 'ASTROMETRY_NET_ONLINE') {
-            <div class="col-8">
-                <p-floatLabel class="w-full">
-                    <input pInputText class="p-inputtext-sm border-0 w-full" [ngModel]="plateSolvers.get(plateSolverType)!.apiUrl"
-                           (ngModelChange)="plateSolvers.get(plateSolverType)!.apiUrl = $event; save()" />
-                    <label>API URL</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-4">
-                <p-floatLabel class="w-full">
-                    <input pInputText class="p-inputtext-sm border-0 w-full" [ngModel]="plateSolvers.get(plateSolverType)!.apiKey"
-                           (ngModelChange)="plateSolvers.get(plateSolverType)!.apiKey = $event; save()" />
-                    <label>API Key</label>
-                </p-floatLabel>
-            </div>
-            }
-            <div class="col-6">
-                <p-floatLabel>
-                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full"
-                                   [ngModel]="plateSolvers.get(plateSolverType)!.downsampleFactor"
-                                   (ngModelChange)="plateSolvers.get(plateSolverType)!.downsampleFactor = $event; save()" [showButtons]="true"
-                                   [min]="0" [max]="4" scrollableNumber />
-                    <label>Downsample factor</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-6">
-                <p-floatLabel>
-                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [ngModel]="plateSolvers.get(plateSolverType)!.timeout"
-                                   (ngModelChange)="plateSolvers.get(plateSolverType)!.timeout = $event; save()" [showButtons]="true"
-                                   [min]="0" [max]="300" scrollableNumber />
-                    <label>Timeout (s)</label>
-                </p-floatLabel>
-            </div>
-        </div>
-    </div>
-    <div class="col-12" *ngIf="tab === 2">
-        <div class="grid">
-            <div class="col-6">
-                <p-floatLabel class="w-full">
-                    <p-dropdown [options]="'STAR_DETECTOR' | dropdownOptions" [(ngModel)]="starDetectorType" styleClass="p-inputtext-sm border-0"
-                                (ngModelChange)="starDetectors.get(starDetectorType)!.type = $event; save()" [autoDisplayFirst]="false" />
-                    <label>Detector</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-12">
-                <neb-path-chooser key="STAR_DETECTION_EXECUTABLE_PATH" [directory]="false" label="Executable path"
-                                  [path]="starDetectors.get(starDetectorType)!.executablePath" class="w-full"
-                                  (pathChange)="starDetectors.get(starDetectorType)!.executablePath = $event; save()" />
-            </div>
-            <div class="col-4" *ngIf="starDetectorType !== 'SIRIL'">
-                <p-floatLabel>
-                    <p-inputNumber [min]="0" [max]="500" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
-                                   [ngModel]="starDetectors.get(starDetectorType)!.minSNR"
-                                   (ngModelChange)="starDetectors.get(starDetectorType)!.minSNR = $event; save()" locale="en" [allowEmpty]="false"
-                                   scrollableNumber />
-                    <label>Min SNR</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-4" *ngIf="starDetectorType === 'SIRIL'">
-                <p-floatLabel>
-                    <p-inputNumber [min]="0" [max]="2000" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
-                                   [ngModel]="starDetectors.get(starDetectorType)!.maxStars"
-                                   (ngModelChange)="starDetectors.get(starDetectorType)!.maxStars = $event; save()" locale="en" [allowEmpty]="false"
-                                   scrollableNumber />
-                    <label>Max stars</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-4">
-                <p-floatLabel>
-                    <p-inputNumber styleClass="p-inputtext-sm border-0 w-full" [ngModel]="starDetectors.get(starDetectorType)!.timeout"
-                                   (ngModelChange)="starDetectors.get(starDetectorType)!.timeout = $event; save()" [showButtons]="true"
-                                   [min]="0" [max]="300" scrollableNumber />
-                    <label>Timeout (s)</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-4" *ngIf="starDetectorType === 'PIXINSIGHT'">
-                <p-floatLabel>
-                    <p-inputNumber [min]="1" [max]="256" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
-                                   [ngModel]="starDetectors.get(starDetectorType)!.slot"
-                                   (ngModelChange)="starDetectors.get(starDetectorType)!.slot = $event; save()" [allowEmpty]="false"
-                                   scrollableNumber />
-                    <label>Slot</label>
-                </p-floatLabel>
-            </div>
-        </div>
-    </div>
-    <div class="col-12" *ngIf="tab === 3">
-        <div class="grid">
-            <div class="col-6">
-                <p-floatLabel class="w-full">
-                    <p-dropdown [options]="'LIVE_STACKER' | dropdownOptions" [(ngModel)]="liveStackerType" styleClass="p-inputtext-sm border-0"
-                                (ngModelChange)="liveStackers.get(liveStackerType)!.type = $event; save()" [autoDisplayFirst]="false" />
-                    <label>Stacker</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-12">
-                <neb-path-chooser key="LIVE_STACKING_EXECUTABLE_PATH" [directory]="false" class="w-full"
-                                  [path]="liveStackers.get(liveStackerType)!.executablePath" label="Executable path"
-                                  (pathChange)="liveStackers.get(liveStackerType)!.executablePath = $event; save()" />
-            </div>
-            <div class="col-4" *ngIf="liveStackerType === 'PIXINSIGHT'">
-                <p-floatLabel>
-                    <p-inputNumber [min]="1" [max]="256" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
-                                   [ngModel]="liveStackers.get(liveStackerType)!.slot"
-                                   (ngModelChange)="liveStackers.get(liveStackerType)!.slot = $event; save()" [allowEmpty]="false"
-                                   scrollableNumber />
-                    <label>Slot</label>
-                </p-floatLabel>
-            </div>
-        </div>
-    </div>
+	<div class="col-12 my-2">
+		<p-floatLabel class="w-full">
+			<p-dropdown
+				[options]="tabs"
+				[(ngModel)]="tab"
+				dataKey="id"
+				optionLabel="name"
+				optionValue="id"
+				styleClass="p-inputtext-sm border-0"
+				[autoDisplayFirst]="false" />
+			<label>Settings</label>
+		</p-floatLabel>
+	</div>
+	<div
+		class="col-12"
+		*ngIf="tab === 0">
+		<div class="grid">
+			<div class="col-12 gap-2">
+				<p-floatLabel class="w-full">
+					<p-dropdown
+						[options]="locations"
+						[(ngModel)]="location"
+						(ngModelChange)="locationChanged()"
+						optionLabel="name"
+						dataKey="id"
+						styleClass="p-inputtext-sm border-0"
+						emptyMessage="No location found"
+						[autoDisplayFirst]="false" />
+					<label>Location</label>
+				</p-floatLabel>
+				<div class="flex gap-1">
+					<p-button
+						icon="mdi mdi-plus"
+						size="small"
+						severity="success"
+						[text]="true"
+						pTooltip="New"
+						tooltipPosition="bottom"
+						(onClick)="addLocation()" />
+					<p-button
+						icon="mdi mdi-pencil"
+						size="small"
+						severity="info"
+						[text]="true"
+						pTooltip="Edit"
+						tooltipPosition="bottom"
+						(onClick)="editLocation()" />
+					<p-button
+						[disabled]="locations.length <= 1"
+						icon="mdi mdi-delete"
+						size="small"
+						severity="danger"
+						[text]="true"
+						pTooltip="Delete"
+						tooltipPosition="bottom"
+						(onClick)="deleteLocation()" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div
+		class="col-12"
+		*ngIf="tab === 1">
+		<div class="grid">
+			<div class="col-8">
+				<p-floatLabel class="w-full">
+					<p-dropdown
+						[options]="'PLATE_SOLVER' | dropdownOptions"
+						[(ngModel)]="plateSolverType"
+						styleClass="p-inputtext-sm border-0"
+						(ngModelChange)="plateSolvers.get(plateSolverType)!.type = $event; save()"
+						[autoDisplayFirst]="false" />
+					<label>Solver</label>
+				</p-floatLabel>
+			</div>
+			<div
+				class="col-12"
+				*ngIf="plateSolverType !== 'ASTROMETRY_NET_ONLINE'">
+				<neb-path-chooser
+					key="PLATE_SOLVER_EXECUTABLE_PATH"
+					[directory]="false"
+					label="Executable path"
+					[path]="plateSolvers.get(plateSolverType)!.executablePath"
+					class="w-full"
+					(pathChange)="plateSolvers.get(plateSolverType)!.executablePath = $event; save()" />
+			</div>
+			@if (plateSolverType === 'ASTROMETRY_NET_ONLINE') {
+				<div class="col-8">
+					<p-floatLabel class="w-full">
+						<input
+							pInputText
+							class="p-inputtext-sm border-0 w-full"
+							[ngModel]="plateSolvers.get(plateSolverType)!.apiUrl"
+							(ngModelChange)="plateSolvers.get(plateSolverType)!.apiUrl = $event; save()" />
+						<label>API URL</label>
+					</p-floatLabel>
+				</div>
+				<div class="col-4">
+					<p-floatLabel class="w-full">
+						<input
+							pInputText
+							class="p-inputtext-sm border-0 w-full"
+							[ngModel]="plateSolvers.get(plateSolverType)!.apiKey"
+							(ngModelChange)="plateSolvers.get(plateSolverType)!.apiKey = $event; save()" />
+						<label>API Key</label>
+					</p-floatLabel>
+				</div>
+			}
+			<div class="col-6">
+				<p-floatLabel>
+					<p-inputNumber
+						styleClass="p-inputtext-sm border-0 w-full"
+						[ngModel]="plateSolvers.get(plateSolverType)!.downsampleFactor"
+						(ngModelChange)="plateSolvers.get(plateSolverType)!.downsampleFactor = $event; save()"
+						[showButtons]="true"
+						[min]="0"
+						[max]="4"
+						scrollableNumber />
+					<label>Downsample factor</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-6">
+				<p-floatLabel>
+					<p-inputNumber
+						styleClass="p-inputtext-sm border-0 w-full"
+						[ngModel]="plateSolvers.get(plateSolverType)!.timeout"
+						(ngModelChange)="plateSolvers.get(plateSolverType)!.timeout = $event; save()"
+						[showButtons]="true"
+						[min]="0"
+						[max]="300"
+						scrollableNumber />
+					<label>Timeout (s)</label>
+				</p-floatLabel>
+			</div>
+		</div>
+	</div>
+	<div
+		class="col-12"
+		*ngIf="tab === 2">
+		<div class="grid">
+			<div class="col-6">
+				<p-floatLabel class="w-full">
+					<p-dropdown
+						[options]="'STAR_DETECTOR' | dropdownOptions"
+						[(ngModel)]="starDetectorType"
+						styleClass="p-inputtext-sm border-0"
+						(ngModelChange)="starDetectors.get(starDetectorType)!.type = $event; save()"
+						[autoDisplayFirst]="false" />
+					<label>Detector</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-12">
+				<neb-path-chooser
+					key="STAR_DETECTION_EXECUTABLE_PATH"
+					[directory]="false"
+					label="Executable path"
+					[path]="starDetectors.get(starDetectorType)!.executablePath"
+					class="w-full"
+					(pathChange)="starDetectors.get(starDetectorType)!.executablePath = $event; save()" />
+			</div>
+			<div
+				class="col-4"
+				*ngIf="starDetectorType !== 'SIRIL'">
+				<p-floatLabel>
+					<p-inputNumber
+						[min]="0"
+						[max]="500"
+						[step]="1"
+						[showButtons]="true"
+						class="w-full"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[ngModel]="starDetectors.get(starDetectorType)!.minSNR"
+						(ngModelChange)="starDetectors.get(starDetectorType)!.minSNR = $event; save()"
+						locale="en"
+						[allowEmpty]="false"
+						scrollableNumber />
+					<label>Min SNR</label>
+				</p-floatLabel>
+			</div>
+			<div
+				class="col-4"
+				*ngIf="starDetectorType === 'SIRIL'">
+				<p-floatLabel>
+					<p-inputNumber
+						[min]="0"
+						[max]="2000"
+						[step]="1"
+						[showButtons]="true"
+						class="w-full"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[ngModel]="starDetectors.get(starDetectorType)!.maxStars"
+						(ngModelChange)="starDetectors.get(starDetectorType)!.maxStars = $event; save()"
+						locale="en"
+						[allowEmpty]="false"
+						scrollableNumber />
+					<label>Max stars</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<p-inputNumber
+						styleClass="p-inputtext-sm border-0 w-full"
+						[ngModel]="starDetectors.get(starDetectorType)!.timeout"
+						(ngModelChange)="starDetectors.get(starDetectorType)!.timeout = $event; save()"
+						[showButtons]="true"
+						[min]="0"
+						[max]="300"
+						scrollableNumber />
+					<label>Timeout (s)</label>
+				</p-floatLabel>
+			</div>
+			<div
+				class="col-4"
+				*ngIf="starDetectorType === 'PIXINSIGHT'">
+				<p-floatLabel>
+					<p-inputNumber
+						[min]="1"
+						[max]="256"
+						[step]="1"
+						[showButtons]="true"
+						class="w-full"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[ngModel]="starDetectors.get(starDetectorType)!.slot"
+						(ngModelChange)="starDetectors.get(starDetectorType)!.slot = $event; save()"
+						[allowEmpty]="false"
+						scrollableNumber />
+					<label>Slot</label>
+				</p-floatLabel>
+			</div>
+		</div>
+	</div>
+	<div
+		class="col-12"
+		*ngIf="tab === 3">
+		<div class="grid">
+			<div class="col-6">
+				<p-floatLabel class="w-full">
+					<p-dropdown
+						[options]="'LIVE_STACKER' | dropdownOptions"
+						[(ngModel)]="liveStackerType"
+						styleClass="p-inputtext-sm border-0"
+						(ngModelChange)="liveStackers.get(liveStackerType)!.type = $event; save()"
+						[autoDisplayFirst]="false" />
+					<label>Stacker</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-12">
+				<neb-path-chooser
+					key="LIVE_STACKING_EXECUTABLE_PATH"
+					[directory]="false"
+					class="w-full"
+					[path]="liveStackers.get(liveStackerType)!.executablePath"
+					label="Executable path"
+					(pathChange)="liveStackers.get(liveStackerType)!.executablePath = $event; save()" />
+			</div>
+			<div
+				class="col-4"
+				*ngIf="liveStackerType === 'PIXINSIGHT'">
+				<p-floatLabel>
+					<p-inputNumber
+						[min]="1"
+						[max]="256"
+						[step]="1"
+						[showButtons]="true"
+						class="w-full"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[ngModel]="liveStackers.get(liveStackerType)!.slot"
+						(ngModelChange)="liveStackers.get(liveStackerType)!.slot = $event; save()"
+						[allowEmpty]="false"
+						scrollableNumber />
+					<label>Slot</label>
+				</p-floatLabel>
+			</div>
+		</div>
+	</div>
 </div>

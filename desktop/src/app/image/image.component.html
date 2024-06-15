@@ -1,740 +1,1427 @@
 <div class="inline-block relative">
-    <img #image (load)="imageLoaded()" (click)="imageClicked($event, false)" (contextmenu)="imageClicked($event, true)"
-         class="select-none pixelated" (mousemove)="imageMouseMoved($event)" [class.cursor-crosshair]="isMouseCoordinateVisible" />
+	<img
+		#image
+		(load)="imageLoaded()"
+		(click)="imageClicked($event, false)"
+		(contextmenu)="imageClicked($event, true)"
+		class="select-none pixelated"
+		(mousemove)="imageMouseMoved($event)"
+		[class.cursor-crosshair]="isMouseCoordinateVisible" />
 
-    <svg *ngIf="crossHair" class="absolute left-0 top-0 w-full h-full pointer-events-none">
-        <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#E53935" stroke-width="3"></line>
-        <line x1="50%" y1="0" x2="50%" y2="100%" stroke="#E53935" stroke-width="3"></line>
-        <circle cx="50%" cy="50%" r="4%" stroke="#E53935" stroke-width="3" fill="transparent"></circle>
-        <circle cx="50%" cy="50%" r="16%" stroke="#E53935" stroke-width="3" fill="transparent"></circle>
-        <circle cx="50%" cy="50%" r="32%" stroke="#E53935" stroke-width="3" fill="transparent"></circle>
-    </svg>
+	<svg
+		*ngIf="crossHair"
+		class="absolute left-0 top-0 w-full h-full pointer-events-none">
+		<line
+			x1="0"
+			y1="50%"
+			x2="100%"
+			y2="50%"
+			stroke="#E53935"
+			stroke-width="3"></line>
+		<line
+			x1="50%"
+			y1="0"
+			x2="50%"
+			y2="100%"
+			stroke="#E53935"
+			stroke-width="3"></line>
+		<circle
+			cx="50%"
+			cy="50%"
+			r="4%"
+			stroke="#E53935"
+			stroke-width="3"
+			fill="transparent"></circle>
+		<circle
+			cx="50%"
+			cy="50%"
+			r="16%"
+			stroke="#E53935"
+			stroke-width="3"
+			fill="transparent"></circle>
+		<circle
+			cx="50%"
+			cy="50%"
+			r="32%"
+			stroke="#E53935"
+			stroke-width="3"
+			fill="transparent"></circle>
+	</svg>
 
-    <svg *ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible"
-         class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
-        <g *ngFor="let a of annotation.data" (dblclick)="showAnnotationInfo(a)" class="pointer-events-auto cursor-pointer">
-            <circle [attr.cx]="a.x" [attr.cy]="a.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"></circle>
-            <text [attr.x]="a.x" [attr.y]="a.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">
-                {{ (a.star ?? a.dso ?? a.minorPlanet) | skyObject:'name' }}
-            </text>
-        </g>
-    </svg>
+	<svg
+		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible"
+		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+		<g
+			*ngFor="let a of annotation.data"
+			(dblclick)="showAnnotationInfo(a)"
+			class="pointer-events-auto cursor-pointer">
+			<circle
+				[attr.cx]="a.x"
+				[attr.cy]="a.y"
+				r="4"
+				stroke="#FDD835"
+				stroke-width="1"
+				fill="transparent"></circle>
+			<text
+				[attr.x]="a.x"
+				[attr.y]="a.y"
+				fill="#00897B"
+				style="font-size: 5px"
+				class="pointer-events-none select-none">
+				{{ a.star ?? a.dso ?? a.minorPlanet | skyObject: 'name' }}
+			</text>
+		</g>
+	</svg>
 
-    <svg *ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetection.visible"
-         class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
-        <g *ngFor="let s of starDetection.stars" class="pointer-events-auto cursor-pointer">
-            <circle [attr.cx]="s.x" [attr.cy]="s.y" r="4" stroke="#FDD835" stroke-width="1" fill="transparent"
-                    (click)="selectDetectedStar(s)"> </circle>
-            <text [attr.x]="s.x" [attr.y]="s.y" fill="#00897B" style="font-size: 5px" class="pointer-events-none select-none">
-                {{ s.hfd.toFixed(1) }}
-            </text>
-        </g>
-    </svg>
+	<svg
+		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetection.visible"
+		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+		<g
+			*ngFor="let s of starDetection.stars"
+			class="pointer-events-auto cursor-pointer">
+			<circle
+				[attr.cx]="s.x"
+				[attr.cy]="s.y"
+				r="4"
+				stroke="#FDD835"
+				stroke-width="1"
+				fill="transparent"
+				(click)="selectDetectedStar(s)"></circle>
+			<text
+				[attr.x]="s.x"
+				[attr.y]="s.y"
+				fill="#00897B"
+				style="font-size: 5px"
+				class="pointer-events-none select-none">
+				{{ s.hfd.toFixed(1) }}
+			</text>
+		</g>
+	</svg>
 
-    <svg class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible" *ngIf="imageInfo">
-        @for (item of fov.fovs; track $index) {
-        @if (item.enabled && item.computed) {
-        <rect [attr.width]="item.computed.svg.width" [attr.height]="item.computed.svg.height" [attr.x]="item.computed.svg.x"
-              [attr.y]="item.computed.svg.y" [attr.stroke]="item.color" style="transform: translate(-50%, -50%)" />
-        }
-        }
-    </svg>
+	<svg
+		*ngIf="imageInfo"
+		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible">
+		@for (item of fov.fovs; track $index) {
+			@if (item.enabled && item.computed) {
+				<rect
+					[attr.width]="item.computed.svg.width"
+					[attr.height]="item.computed.svg.height"
+					[attr.x]="item.computed.svg.x"
+					[attr.y]="item.computed.svg.y"
+					[attr.stroke]="item.color"
+					style="transform: translate(-50%, -50%)" />
+			}
+		}
+	</svg>
 
-    <div #roi [class.hidden]="!roiInteractable" class="roi absolute left-0 top-0" data-x="0" data-y="0" (contextmenu)="imageClicked($event, true)">
-    </div>
+	<div
+		#roi
+		[class.hidden]="!roiInteractable"
+		class="roi absolute left-0 top-0"
+		data-x="0"
+		data-y="0"
+		(contextmenu)="imageClicked($event, true)"></div>
 </div>
 
-<div *ngIf="roiInteractable" class="roi-coordinates fixed flex flex-row align-items-center gap-2">
-    <span>X: {{ imageROI.x }} Y: {{ imageROI.y }} W: {{ imageROI.width }} H: {{ imageROI.height }}</span>
-    <p-button [text]="true" (onClick)="roiForCamera()" icon="mdi mdi-check" size="small" severity="success" pTooltip="Apply to Mount"
-              tooltipPosition="bottom" />
+<div
+	*ngIf="roiInteractable"
+	class="roi-coordinates fixed flex flex-row align-items-center gap-2">
+	<span>X: {{ imageROI.x }} Y: {{ imageROI.y }} W: {{ imageROI.width }} H: {{ imageROI.height }}</span>
+	<p-button
+		[text]="true"
+		(onClick)="roiForCamera()"
+		icon="mdi mdi-check"
+		size="small"
+		severity="success"
+		pTooltip="Apply to Mount"
+		tooltipPosition="bottom" />
 </div>
 
-<p-contextMenu #menu [model]="contextMenuItems">
-    <ng-template pTemplate="item" let-item>
-        <neb-menu-item [item]="item" />
-    </ng-template>
+<p-contextMenu
+	#menu
+	[model]="contextMenuItems">
+	<ng-template
+		pTemplate="item"
+		let-item>
+		<neb-menu-item [item]="item" />
+	</ng-template>
 </p-contextMenu>
 
-<p-dialog header="Annotation" [draggable]="false" [(visible)]="annotation.showDialog" [modal]="true"
-          [style]="{width: 'min-content', minWidth: '338px'}">
-    <div class="grid">
-        <div class="col-12 flex flex-column gap-3">
-            <div class="flex flex-row align-items-center gap-2">
-                <p-checkbox [(ngModel)]="annotation.useStarsAndDSOs" class="py-1" [binary]="true" label="Annotate with stars & DSOs" />
-                <p-checkbox [disabled]="!annotation.useStarsAndDSOs" [(ngModel)]="annotation.useSimbad" class="py-1" [binary]="true"
-                            label="Online" pTooltip="Use SIMBAD online service" tooltipPosition="bottom" />
-            </div>
-            <div class="flex flex-row align-items-center gap-2">
-                <p-checkbox [(ngModel)]="annotation.useMinorPlanets" class="py-1" [binary]="true" label="Annotate with minor planets" />
-                <p-floatLabel>
-                    <p-inputNumber [disabled]="!annotation.useMinorPlanets" [min]="-10" [max]="30" class="max-w-10rem w-full" [showButtons]="true"
-                                   styleClass="p-inputtext-sm border-0 w-full" [step]="0.1" [(ngModel)]="annotation.minorPlanetsMagLimit"
-                                   [minFractionDigits]="1" locale="en" scrollableNumber />
-                    <label>Mag. Limit</label>
-                </p-floatLabel>
-            </div>
-        </div>
-        <div class="col-12 flex-column text-sm">
-            <p class="m-0">Star and DSO annotations made use of
-                <a target="_blank" href="https://simbad.cds.unistra.fr/simbad/">SIMBAD Astronomical Database - CDS (Strasbourg)</a>
-            </p>
-            <p class="m-0">Minor planets annotations made use of
-                <a target="_blank" href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">Small-Body Identification API</a>
-            </p>
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button [disabled]="annotation.running" icon="mdi mdi-check" label="Annotate" (onClick)="annotateImage()" [text]="true" size="small" />
-    </ng-template>
+<p-dialog
+	header="Annotation"
+	[draggable]="false"
+	[(visible)]="annotation.showDialog"
+	[modal]="true"
+	[style]="{ width: 'min-content', minWidth: '338px' }">
+	<div class="grid">
+		<div class="col-12 flex flex-column gap-3">
+			<div class="flex flex-row align-items-center gap-2">
+				<p-checkbox
+					[(ngModel)]="annotation.useStarsAndDSOs"
+					class="py-1"
+					[binary]="true"
+					label="Annotate with stars & DSOs" />
+				<p-checkbox
+					[disabled]="!annotation.useStarsAndDSOs"
+					[(ngModel)]="annotation.useSimbad"
+					class="py-1"
+					[binary]="true"
+					label="Online"
+					pTooltip="Use SIMBAD online service"
+					tooltipPosition="bottom" />
+			</div>
+			<div class="flex flex-row align-items-center gap-2">
+				<p-checkbox
+					[(ngModel)]="annotation.useMinorPlanets"
+					class="py-1"
+					[binary]="true"
+					label="Annotate with minor planets" />
+				<p-floatLabel>
+					<p-inputNumber
+						[disabled]="!annotation.useMinorPlanets"
+						[min]="-10"
+						[max]="30"
+						class="max-w-10rem w-full"
+						[showButtons]="true"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[step]="0.1"
+						[(ngModel)]="annotation.minorPlanetsMagLimit"
+						[minFractionDigits]="1"
+						locale="en"
+						scrollableNumber />
+					<label>Mag. Limit</label>
+				</p-floatLabel>
+			</div>
+		</div>
+		<div class="col-12 flex-column text-sm">
+			<p class="m-0">
+				Star and DSO annotations made use of
+				<a
+					target="_blank"
+					href="https://simbad.cds.unistra.fr/simbad/">
+					SIMBAD Astronomical Database - CDS (Strasbourg)
+				</a>
+			</p>
+			<p class="m-0">
+				Minor planets annotations made use of
+				<a
+					target="_blank"
+					href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">
+					Small-Body Identification API
+				</a>
+			</p>
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			[disabled]="annotation.running"
+			icon="mdi mdi-check"
+			label="Annotate"
+			(onClick)="annotateImage()"
+			[text]="true"
+			size="small" />
+	</ng-template>
 </p-dialog>
 
-<p-dialog header="Astronomical Object" [draggable]="true" [(visible)]="annotationInfo.showDialog" [modal]="false"
-          [style]="{width: 'min-content', minWidth: '325px'}">
-    <div class="grid mt-2">
-        <ng-container *ngIf="annotationInfo.info">
-            <div class="col-12">
-                <p-floatLabel>
-                    <input pInputText readonly [value]="annotationInfo.info | skyObject:'name'" class="border-0 p-inputtext-sm" />
-                    <label>Name</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-6">
-                <p-floatLabel>
-                    <input pInputText readonly [value]="annotationInfo.info.rightAscensionJ2000 | angle:true:24"
-                           class="border-0 p-inputtext-sm" />
-                    <label>RA (J2000)</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-6">
-                <p-floatLabel>
-                    <input pInputText readonly [value]="annotationInfo.info.declinationJ2000 | angle:true:360"
-                           class="border-0 p-inputtext-sm" />
-                    <label>DEC (J2000)</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-6" *ngIf="annotationInfo.info.magnitude">
-                <p-floatLabel>
-                    <input pInputText readonly value="{{ annotationInfo.info.magnitude < 30.0 ? annotationInfo.info.magnitude.toFixed(2) : '-' }}"
-                           class="border-0 p-inputtext-sm" />
-                    <label>Magnitude</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-6" *ngIf="annotationInfo.info.constellation">
-                <p-floatLabel>
-                    <input pInputText readonly [value]="annotationInfo.info.constellation" class="border-0 p-inputtext-sm" />
-                    <label>Constellation</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-6" *ngIf="annotationInfo.info.type">
-                <p-floatLabel>
-                    <input pInputText readonly value="{{ annotationInfo.info.type | enum }}" class="border-0 p-inputtext-sm" />
-                    <label>Type</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-6" *ngIf="annotationInfo.info.distance">
-                <p-floatLabel>
-                    <input pInputText readonly value="{{ annotationInfo.info.distance <= 0 ? '-' : annotationInfo.info.distance }}"
-                           class="border-0 p-inputtext-sm" />
-                    <label>Distance (ly)</label>
-                </p-floatLabel>
-            </div>
-        </ng-container>
-        <div class="col-12 justify-content-center text-sm" *ngIf="annotationInfo.info?.type">
-            <a target="_blank"
-               href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + (annotationInfo.info | skyObject:'firstName') }}">Simbad</a>
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <div class="col-12 flex justify-content-center">
-            <p-button [disabled]="!annotationInfo.info" (onClick)="mountSync(annotationInfo.info!)" icon="mdi mdi-sync" label="Sync" [text]="true"
-                      severity="info" size="small" />
-            <p-button [disabled]="!annotationInfo.info" (onClick)="mountGoTo(annotationInfo.info!)" icon="mdi mdi-telescope" label="Go To"
-                      [text]="true" severity="success" size="small" />
-            <p-button [disabled]="!annotationInfo.info" (onClick)="mountSlew(annotationInfo.info!)" icon="mdi mdi-telescope" label="Slew"
-                      [text]="true" severity="success" size="small" />
-            <p-button [disabled]="!annotationInfo.info" (onClick)="frame(annotationInfo.info!)" icon="mdi mdi-image" label="Frame" [text]="true"
-                      size="small" />
-        </div>
-    </ng-template>
+<p-dialog
+	header="Astronomical Object"
+	[draggable]="true"
+	[(visible)]="annotationInfo.showDialog"
+	[modal]="false"
+	[style]="{ width: 'min-content', minWidth: '325px' }">
+	<div class="grid mt-2">
+		<ng-container *ngIf="annotationInfo.info">
+			<div class="col-12">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						[value]="annotationInfo.info | skyObject: 'name'"
+						class="border-0 p-inputtext-sm" />
+					<label>Name</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-6">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						[value]="annotationInfo.info.rightAscensionJ2000 | angle: true : 24"
+						class="border-0 p-inputtext-sm" />
+					<label>RA (J2000)</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-6">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						[value]="annotationInfo.info.declinationJ2000 | angle: true : 360"
+						class="border-0 p-inputtext-sm" />
+					<label>DEC (J2000)</label>
+				</p-floatLabel>
+			</div>
+			<div
+				class="col-6"
+				*ngIf="annotationInfo.info.magnitude">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						value="{{ annotationInfo.info.magnitude < 30.0 ? annotationInfo.info.magnitude.toFixed(2) : '-' }}"
+						class="border-0 p-inputtext-sm" />
+					<label>Magnitude</label>
+				</p-floatLabel>
+			</div>
+			<div
+				class="col-6"
+				*ngIf="annotationInfo.info.constellation">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						[value]="annotationInfo.info.constellation"
+						class="border-0 p-inputtext-sm" />
+					<label>Constellation</label>
+				</p-floatLabel>
+			</div>
+			<div
+				class="col-6"
+				*ngIf="annotationInfo.info.type">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						value="{{ annotationInfo.info.type | enum }}"
+						class="border-0 p-inputtext-sm" />
+					<label>Type</label>
+				</p-floatLabel>
+			</div>
+			<div
+				class="col-6"
+				*ngIf="annotationInfo.info.distance">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						value="{{ annotationInfo.info.distance <= 0 ? '-' : annotationInfo.info.distance }}"
+						class="border-0 p-inputtext-sm" />
+					<label>Distance (ly)</label>
+				</p-floatLabel>
+			</div>
+		</ng-container>
+		<div
+			class="col-12 justify-content-center text-sm"
+			*ngIf="annotationInfo.info?.type">
+			<a
+				target="_blank"
+				href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + (annotationInfo.info | skyObject: 'firstName') }}">
+				Simbad
+			</a>
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<div class="col-12 flex justify-content-center">
+			<p-button
+				[disabled]="!annotationInfo.info"
+				(onClick)="mountSync(annotationInfo.info!)"
+				icon="mdi mdi-sync"
+				label="Sync"
+				[text]="true"
+				severity="info"
+				size="small" />
+			<p-button
+				[disabled]="!annotationInfo.info"
+				(onClick)="mountGoTo(annotationInfo.info!)"
+				icon="mdi mdi-telescope"
+				label="Go To"
+				[text]="true"
+				severity="success"
+				size="small" />
+			<p-button
+				[disabled]="!annotationInfo.info"
+				(onClick)="mountSlew(annotationInfo.info!)"
+				icon="mdi mdi-telescope"
+				label="Slew"
+				[text]="true"
+				severity="success"
+				size="small" />
+			<p-button
+				[disabled]="!annotationInfo.info"
+				(onClick)="frame(annotationInfo.info!)"
+				icon="mdi mdi-image"
+				label="Frame"
+				[text]="true"
+				size="small" />
+		</div>
+	</ng-template>
 </p-dialog>
 
-<p-dialog header="Plate Solver" [draggable]="true" [(visible)]="solver.showDialog" [modal]="false" [style]="{width: 'min-content', minWidth: '340px'}"
-          class="pointer-events-none">
-    <div class="grid pt-2">
-        <div class="col-12 gap-2 align-items-center">
-            <p-floatLabel class="w-full">
-                <p-dropdown [options]="'PLATE_SOLVER' | dropdownOptions" [(ngModel)]="solver.type" styleClass="p-inputtext-sm border-0"
-                            [autoDisplayFirst]="false" appendTo="body" />
-                <label>Type</label>
-            </p-floatLabel>
-            <p-checkbox [binary]="true" [disabled]="solver.type === 'SIRIL'" label="Blind" [(ngModel)]="solver.blind" />
-        </div>
-        <div class="col-8">
-            <div class="grid">
-                <div class="col-6">
-                    <p-floatLabel>
-                        <input pInputText [disabled]="solver.blind && solver.type !== 'SIRIL'" class="p-inputtext-sm border-0 w-full"
-                               [(ngModel)]="solver.centerRA" />
-                        <label>Center RA (h)</label>
-                    </p-floatLabel>
-                </div>
-                <div class="col-6">
-                    <p-floatLabel>
-                        <input pInputText [disabled]="solver.blind && solver.type !== 'SIRIL'" class="p-inputtext-sm border-0 w-full"
-                               [(ngModel)]="solver.centerDEC" />
-                        <label>Center DEC (°)</label>
-                    </p-floatLabel>
-                </div>
-            </div>
-        </div>
-        <div class="col-4 flex flex-row align-items-center">
-            <p-floatLabel>
-                <p-inputNumber [disabled]="solver.blind && solver.type !== 'SIRIL'" [min]="1" [max]="180" styleClass="p-inputtext-sm border-0 w-full"
-                               [showButtons]="true" [(ngModel)]="solver.radius" scrollableNumber />
-                <label>Radius (°)</label>
-            </p-floatLabel>
-        </div>
-        @if (solver.type === 'SIRIL') {
-        <div class="col-6 flex flex-row align-items-center">
-            <p-floatLabel>
-                <p-inputNumber [min]="0" [max]="10000" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true"
-                               [(ngModel)]="solver.focalLength" [allowEmpty]="false" locale="en" scrollableNumber />
-                <label>Focal length (mm)</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-6 flex flex-row align-items-center">
-            <p-floatLabel>
-                <p-inputNumber [min]="0" [max]="100" [step]="0.01" styleClass="p-inputtext-sm border-0 w-full" [showButtons]="true"
-                               [(ngModel)]="solver.pixelSize" [allowEmpty]="false" locale="en" scrollableNumber />
-                <label>Pixel size (µm)</label>
-            </p-floatLabel>
-        </div>
-        }
-    </div>
-    <ng-template pTemplate="footer">
-        <div class="grid pt-2">
-            <div class="col-4">
-                <p-floatLabel>
-                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.rightAscensionJ2000" />
-                    <label>RA (J2000)</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-4">
-                <p-floatLabel>
-                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.declinationJ2000" />
-                    <label>DEC (J2000)</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-4">
-                <p-floatLabel>
-                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.orientation.toFixed(4)" />
-                    <label>Orientation (°)</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-4">
-                <p-floatLabel>
-                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.scale.toFixed(4)" />
-                    <label>Scale (arcsec/px)</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-4">
-                <p-floatLabel>
-                    <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                           [value]="(solver.solved.width.toFixed(2)) + ' x ' + (solver.solved.height.toFixed(2))" />
-                    <label>Field size (arcmin)</label>
-                </p-floatLabel>
-            </div>
-            <div class="col-4">
-                <p-floatLabel>
-                    <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="solver.solved.radius.toFixed(4)" />
-                    <label>Radius (°)</label>
-                </p-floatLabel>
-            </div>
-        </div>
-        <div class="grid mb-2 mt-2">
-            <div class="col-12 flex justify-content-center">
-                <p-button [disabled]="solver.running || !solver.solved.solved" (onClick)="mountSync(solver.solved)" icon="mdi mdi-sync" label="Sync"
-                          [text]="true" severity="info" size="small" />
-                <p-button [disabled]="solver.running || !solver.solved.solved" (onClick)="mountGoTo(solver.solved)" icon="mdi mdi-telescope"
-                          label="Go To" [text]="true" severity="success" size="small" />
-                <p-button [disabled]="solver.running || !solver.solved.solved" (onClick)="mountSlew(solver.solved)" icon="mdi mdi-telescope"
-                          label="Slew" [text]="true" severity="success" size="small" />
-                <p-button [disabled]="solver.running || !solver.solved.solved" (onClick)="frame(solver.solved)" icon="mdi mdi-image" label="Frame"
-                          [text]="true" size="small" />
-            </div>
-        </div>
+<p-dialog
+	header="Plate Solver"
+	[draggable]="true"
+	[(visible)]="solver.showDialog"
+	[modal]="false"
+	[style]="{ width: 'min-content', minWidth: '340px' }"
+	class="pointer-events-none">
+	<div class="grid pt-2">
+		<div class="col-12 gap-2 align-items-center">
+			<p-floatLabel class="w-full">
+				<p-dropdown
+					[options]="'PLATE_SOLVER' | dropdownOptions"
+					[(ngModel)]="solver.type"
+					styleClass="p-inputtext-sm border-0"
+					[autoDisplayFirst]="false"
+					appendTo="body" />
+				<label>Type</label>
+			</p-floatLabel>
+			<p-checkbox
+				[binary]="true"
+				[disabled]="solver.type === 'SIRIL'"
+				label="Blind"
+				[(ngModel)]="solver.blind" />
+		</div>
+		<div class="col-8">
+			<div class="grid">
+				<div class="col-6">
+					<p-floatLabel>
+						<input
+							pInputText
+							[disabled]="solver.blind && solver.type !== 'SIRIL'"
+							class="p-inputtext-sm border-0 w-full"
+							[(ngModel)]="solver.centerRA" />
+						<label>Center RA (h)</label>
+					</p-floatLabel>
+				</div>
+				<div class="col-6">
+					<p-floatLabel>
+						<input
+							pInputText
+							[disabled]="solver.blind && solver.type !== 'SIRIL'"
+							class="p-inputtext-sm border-0 w-full"
+							[(ngModel)]="solver.centerDEC" />
+						<label>Center DEC (°)</label>
+					</p-floatLabel>
+				</div>
+			</div>
+		</div>
+		<div class="col-4 flex flex-row align-items-center">
+			<p-floatLabel>
+				<p-inputNumber
+					[disabled]="solver.blind && solver.type !== 'SIRIL'"
+					[min]="1"
+					[max]="180"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[showButtons]="true"
+					[(ngModel)]="solver.radius"
+					scrollableNumber />
+				<label>Radius (°)</label>
+			</p-floatLabel>
+		</div>
+		@if (solver.type === 'SIRIL') {
+			<div class="col-6 flex flex-row align-items-center">
+				<p-floatLabel>
+					<p-inputNumber
+						[min]="0"
+						[max]="10000"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[showButtons]="true"
+						[(ngModel)]="solver.focalLength"
+						[allowEmpty]="false"
+						locale="en"
+						scrollableNumber />
+					<label>Focal length (mm)</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-6 flex flex-row align-items-center">
+				<p-floatLabel>
+					<p-inputNumber
+						[min]="0"
+						[max]="100"
+						[step]="0.01"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[showButtons]="true"
+						[(ngModel)]="solver.pixelSize"
+						[allowEmpty]="false"
+						locale="en"
+						scrollableNumber />
+					<label>Pixel size (µm)</label>
+				</p-floatLabel>
+			</div>
+		}
+	</div>
+	<ng-template pTemplate="footer">
+		<div class="grid pt-2">
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="solver.solved.rightAscensionJ2000" />
+					<label>RA (J2000)</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="solver.solved.declinationJ2000" />
+					<label>DEC (J2000)</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="solver.solved.orientation.toFixed(4)" />
+					<label>Orientation (°)</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="solver.solved.scale.toFixed(4)" />
+					<label>Scale (arcsec/px)</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="solver.solved.width.toFixed(2) + ' x ' + solver.solved.height.toFixed(2)" />
+					<label>Field size (arcmin)</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="solver.solved.radius.toFixed(4)" />
+					<label>Radius (°)</label>
+				</p-floatLabel>
+			</div>
+		</div>
+		<div class="grid mb-2 mt-2">
+			<div class="col-12 flex justify-content-center">
+				<p-button
+					[disabled]="solver.running || !solver.solved.solved"
+					(onClick)="mountSync(solver.solved)"
+					icon="mdi mdi-sync"
+					label="Sync"
+					[text]="true"
+					severity="info"
+					size="small" />
+				<p-button
+					[disabled]="solver.running || !solver.solved.solved"
+					(onClick)="mountGoTo(solver.solved)"
+					icon="mdi mdi-telescope"
+					label="Go To"
+					[text]="true"
+					severity="success"
+					size="small" />
+				<p-button
+					[disabled]="solver.running || !solver.solved.solved"
+					(onClick)="mountSlew(solver.solved)"
+					icon="mdi mdi-telescope"
+					label="Slew"
+					[text]="true"
+					severity="success"
+					size="small" />
+				<p-button
+					[disabled]="solver.running || !solver.solved.solved"
+					(onClick)="frame(solver.solved)"
+					icon="mdi mdi-image"
+					label="Frame"
+					[text]="true"
+					size="small" />
+			</div>
+		</div>
 
-        <p-button [disabled]="solver.running || !canPlateSolve" icon="mdi mdi-sigma" label="Solve" (onClick)="solveImage()" [text]="true"
-                  size="small" />
-    </ng-template>
+		<p-button
+			[disabled]="solver.running || !canPlateSolve"
+			icon="mdi mdi-sigma"
+			label="Solve"
+			(onClick)="solveImage()"
+			[text]="true"
+			size="small" />
+	</ng-template>
 </p-dialog>
 
-<p-dialog header="Stretching" [draggable]="true" [(visible)]="stretch.showDialog" [modal]="false"
-          [style]="{width: 'min-content', minWidth: '320px'}"
-          class="pointer-events-none">
-    <div class="grid px-2 pt-2">
-        <div class="col-8 flex flex-column">
-            <div class="flex flex-row gap-2 align-items-center justify-content-between">
-                <p-floatLabel>
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchShadow" locale="en" scrollableNumber />
-                    <label>Shadow</label>
-                </p-floatLabel>
-                <p-floatLabel>
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchHighlight" locale="en" scrollableNumber />
-                    <label>Highlight</label>
-                </p-floatLabel>
-            </div>
+<p-dialog
+	header="Stretching"
+	[draggable]="true"
+	[(visible)]="stretch.showDialog"
+	[modal]="false"
+	[style]="{ width: 'min-content', minWidth: '320px' }"
+	class="pointer-events-none">
+	<div class="grid px-2 pt-2">
+		<div class="col-8 flex flex-column">
+			<div class="flex flex-row gap-2 align-items-center justify-content-between">
+				<p-floatLabel>
+					<p-inputNumber
+						[min]="0"
+						[max]="65536"
+						[showButtons]="true"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[(ngModel)]="stretchShadow"
+						locale="en"
+						scrollableNumber />
+					<label>Shadow</label>
+				</p-floatLabel>
+				<p-floatLabel>
+					<p-inputNumber
+						[min]="0"
+						[max]="65536"
+						[showButtons]="true"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[(ngModel)]="stretchHighlight"
+						locale="en"
+						scrollableNumber />
+					<label>Highlight</label>
+				</p-floatLabel>
+			</div>
 
-            <p-slider class="mt-3 px-2" [min]="0" [max]="65536" [ngModel]="stretchShadowAndHighlight()"
-                      (ngModelChange)="stretchShadow.set($event[0]); stretchHighlight.set($event[1])" [range]="true" />
-        </div>
-        <div class="col-4 flex flex-column">
-            <div class="text-center w-full">
-                <p-floatLabel>
-                    <p-inputNumber [min]="0" [max]="65536" [showButtons]="true" styleClass="p-inputtext-sm border-0 w-full"
-                                   [(ngModel)]="stretchMidtone" locale="en" scrollableNumber />
-                    <label>Midtone</label>
-                </p-floatLabel>
-            </div>
+			<p-slider
+				class="mt-3 px-2"
+				[min]="0"
+				[max]="65536"
+				[ngModel]="stretchShadowAndHighlight()"
+				(ngModelChange)="stretchShadow.set($event[0]); stretchHighlight.set($event[1])"
+				[range]="true" />
+		</div>
+		<div class="col-4 flex flex-column">
+			<div class="text-center w-full">
+				<p-floatLabel>
+					<p-inputNumber
+						[min]="0"
+						[max]="65536"
+						[showButtons]="true"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[(ngModel)]="stretchMidtone"
+						locale="en"
+						scrollableNumber />
+					<label>Midtone</label>
+				</p-floatLabel>
+			</div>
 
-            <p-slider class="mt-3 px-2" [min]="0" [max]="65536" [(ngModel)]="stretchMidtone" />
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button icon="mdi mdi-auto-fix" label="Auto" (onClick)="autoStretch()" [text]="true" severity="info" size="small" />
-        <p-button icon="mdi mdi-restore" label="Reset" (onClick)="resetStretch()" [text]="true" severity="danger" size="small" />
-        <p-button icon="mdi mdi-check" label="Stretch" (onClick)="stretchImage()" [text]="true" size="small" />
-    </ng-template>
+			<p-slider
+				class="mt-3 px-2"
+				[min]="0"
+				[max]="65536"
+				[(ngModel)]="stretchMidtone" />
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			icon="mdi mdi-auto-fix"
+			label="Auto"
+			(onClick)="autoStretch()"
+			[text]="true"
+			severity="info"
+			size="small" />
+		<p-button
+			icon="mdi mdi-restore"
+			label="Reset"
+			(onClick)="resetStretch()"
+			[text]="true"
+			severity="danger"
+			size="small" />
+		<p-button
+			icon="mdi mdi-check"
+			label="Stretch"
+			(onClick)="stretchImage()"
+			[text]="true"
+			size="small" />
+	</ng-template>
 </p-dialog>
 
-<p-dialog header="SCNR" [draggable]="true" [(visible)]="scnr.showDialog" [modal]="false" [style]="{width: '270px'}"
-          class="pointer-events-none">
-    <div class="grid px-2">
-        <div class="col-12 flex align-items-center">
-            <p-selectButton class="w-full" styleClass="border-0" [options]="scnrChannels" optionLabel="name" optionValue="value"
-                            [(ngModel)]="scnr.channel" [multiple]="false" />
-        </div>
-        <div class="col-7 flex align-items-center">
-            <p-floatLabel class="w-full">
-                <p-dropdown [disabled]="!scnr.channel" appendTo="body" [(ngModel)]="scnr.method"
-                            [options]="'SCNR_PROTECTION_METHOD' | dropdownOptions" styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false">
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                    <ng-template let-item pTemplate="item">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                </p-dropdown>
-                <label>Protection Method</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-5 flex align-items-center">
-            <p-floatLabel>
-                <p-inputNumber [disabled]="!scnr.channel || !scnr.method.endsWith('MASK')" [min]="0" [max]="1" [step]="0.1"
-                               [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full" [minFractionDigits]="1"
-                               [(ngModel)]="scnr.amount" locale="en" [allowEmpty]="false" scrollableNumber />
-                <label>Amount</label>
-            </p-floatLabel>
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button icon="mdi mdi-check" label="Apply" (onClick)="scnrImage()" [text]="true" size="small" />
-    </ng-template>
+<p-dialog
+	header="SCNR"
+	[draggable]="true"
+	[(visible)]="scnr.showDialog"
+	[modal]="false"
+	[style]="{ width: '270px' }"
+	class="pointer-events-none">
+	<div class="grid px-2">
+		<div class="col-12 flex align-items-center">
+			<p-selectButton
+				class="w-full"
+				styleClass="border-0"
+				[options]="scnrChannels"
+				optionLabel="name"
+				optionValue="value"
+				[(ngModel)]="scnr.channel"
+				[multiple]="false" />
+		</div>
+		<div class="col-7 flex align-items-center">
+			<p-floatLabel class="w-full">
+				<p-dropdown
+					[disabled]="!scnr.channel"
+					appendTo="body"
+					[(ngModel)]="scnr.method"
+					[options]="'SCNR_PROTECTION_METHOD' | dropdownOptions"
+					styleClass="p-inputtext-sm border-0"
+					[autoDisplayFirst]="false">
+					<ng-template
+						let-item
+						pTemplate="selectedItem">
+						<div class="flex align-items-center gap-2">
+							<span>{{ item | enum }}</span>
+						</div>
+					</ng-template>
+					<ng-template
+						let-item
+						pTemplate="item">
+						<div class="flex align-items-center gap-2">
+							<span>{{ item | enum }}</span>
+						</div>
+					</ng-template>
+				</p-dropdown>
+				<label>Protection Method</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-5 flex align-items-center">
+			<p-floatLabel>
+				<p-inputNumber
+					[disabled]="!scnr.channel || !scnr.method.endsWith('MASK')"
+					[min]="0"
+					[max]="1"
+					[step]="0.1"
+					[showButtons]="true"
+					class="w-full"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[minFractionDigits]="1"
+					[(ngModel)]="scnr.amount"
+					locale="en"
+					[allowEmpty]="false"
+					scrollableNumber />
+				<label>Amount</label>
+			</p-floatLabel>
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			icon="mdi mdi-check"
+			label="Apply"
+			(onClick)="scnrImage()"
+			[text]="true"
+			size="small" />
+	</ng-template>
 </p-dialog>
 
-<p-dialog header="FITS Headers" [draggable]="true" [(visible)]="fitsHeaders.showDialog" [modal]="false"
-          [style]="{width: 'min-content', minWidth: '340px', minHeight: '340px'}" class="pointer-events-none">
-    <div class="p-2">
-        <p-table [value]="fitsHeaders.headers" class="w-full" dataKey="name" styleClass="w-full pb-4 p-datatable-striped">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th>Name</th>
-                    <th>Value</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-item>
-                <tr [pSelectableRow]="item">
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.value }}</td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
+<p-dialog
+	header="FITS Headers"
+	[draggable]="true"
+	[(visible)]="fitsHeaders.showDialog"
+	[modal]="false"
+	[style]="{ width: 'min-content', minWidth: '340px', minHeight: '340px' }"
+	class="pointer-events-none">
+	<div class="p-2">
+		<p-table
+			[value]="fitsHeaders.headers"
+			class="w-full"
+			dataKey="name"
+			styleClass="w-full pb-4 p-datatable-striped">
+			<ng-template pTemplate="header">
+				<tr>
+					<th>Name</th>
+					<th>Value</th>
+				</tr>
+			</ng-template>
+			<ng-template
+				pTemplate="body"
+				let-item>
+				<tr [pSelectableRow]="item">
+					<td>{{ item.name }}</td>
+					<td>{{ item.value }}</td>
+				</tr>
+			</ng-template>
+		</p-table>
+	</div>
 </p-dialog>
 
-<p-dialog header="Statistics" [draggable]="true" [(visible)]="showStatisticsDialog" [modal]="false"
-          [style]="{width: 'min-content', minWidth: '336px'}" class="pointer-events-none">
-    <div class="grid p-2" *ngIf="imageInfo">
-        <div class="col-4">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="imageInfo.statistics.count" />
-                <label>Count (px)</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-4">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.mean * statisticsBitLength.rangeMax).toFixed(8)" />
-                <label>Mean</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-4">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.median * statisticsBitLength.rangeMax).toFixed(8)" />
-                <label>Median</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-4">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.variance * statisticsBitLength.rangeMax * statisticsBitLength.rangeMax).toFixed(8)" />
-                <label>Variance</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-4">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.avgDev * statisticsBitLength.rangeMax).toFixed(8)" />
-                <label>Avg Dev</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-4">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.stdDev * statisticsBitLength.rangeMax).toFixed(8)" />
-                <label>Std Dev</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-3">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.minimum * statisticsBitLength.rangeMax).toFixed(8)" />
-                <label>Minimum</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-3">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                       [value]="(imageInfo.statistics.maximum * statisticsBitLength.rangeMax).toFixed(8)" />
-                <label>Maximum</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-6">
-            <p-floatLabel class="w-full">
-                <p-dropdown [options]="statisticsBitOptions" [(ngModel)]="statisticsBitLength" optionLabel="name"
-                            [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0" appendTo="body"
-                            (ngModelChange)="statisticsBitLengthChanged()" />
-                <label>Bits</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-12">
-            <neb-histogram #histogram class="w-full" style="max-height: 94px" />
-        </div>
-    </div>
+<p-dialog
+	header="Statistics"
+	[draggable]="true"
+	[(visible)]="showStatisticsDialog"
+	[modal]="false"
+	[style]="{ width: 'min-content', minWidth: '336px' }"
+	class="pointer-events-none">
+	<div
+		class="grid p-2"
+		*ngIf="imageInfo">
+		<div class="col-4">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					[value]="imageInfo.statistics.count" />
+				<label>Count (px)</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					[value]="(imageInfo.statistics.mean * statisticsBitLength.rangeMax).toFixed(8)" />
+				<label>Mean</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					[value]="(imageInfo.statistics.median * statisticsBitLength.rangeMax).toFixed(8)" />
+				<label>Median</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					[value]="(imageInfo.statistics.variance * statisticsBitLength.rangeMax * statisticsBitLength.rangeMax).toFixed(8)" />
+				<label>Variance</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					[value]="(imageInfo.statistics.avgDev * statisticsBitLength.rangeMax).toFixed(8)" />
+				<label>Avg Dev</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					[value]="(imageInfo.statistics.stdDev * statisticsBitLength.rangeMax).toFixed(8)" />
+				<label>Std Dev</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-3">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					[value]="(imageInfo.statistics.minimum * statisticsBitLength.rangeMax).toFixed(8)" />
+				<label>Minimum</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-3">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					[value]="(imageInfo.statistics.maximum * statisticsBitLength.rangeMax).toFixed(8)" />
+				<label>Maximum</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-6">
+			<p-floatLabel class="w-full">
+				<p-dropdown
+					[options]="statisticsBitOptions"
+					[(ngModel)]="statisticsBitLength"
+					optionLabel="name"
+					[autoDisplayFirst]="false"
+					styleClass="p-inputtext-sm border-0"
+					appendTo="body"
+					(ngModelChange)="statisticsBitLengthChanged()" />
+				<label>Bits</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-12">
+			<neb-histogram
+				#histogram
+				class="w-full"
+				style="max-height: 94px" />
+		</div>
+	</div>
 </p-dialog>
 
-<p-dialog header="Star Detection" [draggable]="true" [(visible)]="starDetection.showDialog" [modal]="false" [style]="{width: '360px'}"
-          class="pointer-events-none">
-    <div class="grid mt-2">
-        <div class="col-7 flex align-items-center">
-            <p-floatLabel class="w-full">
-                <p-dropdown appendTo="body" [(ngModel)]="starDetection.type" [options]="'STAR_DETECTOR' | dropdownOptions"
-                            styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
-                <label>Detector</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-5 align-items-center" *ngIf="starDetection.type !== 'SIRIL'">
-            <p-floatLabel>
-                <p-inputNumber [min]="0" [max]="500" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
-                               [(ngModel)]="starDetection.minSNR" locale="en" [allowEmpty]="false" scrollableNumber />
-                <label>Min SNR</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-5 align-items-center" *ngIf="starDetection.type === 'SIRIL'">
-            <p-floatLabel>
-                <p-inputNumber [min]="0" [max]="2000" [step]="1" [showButtons]="true" class="w-full" styleClass="p-inputtext-sm border-0 w-full"
-                               [(ngModel)]="starDetection.maxStars" locale="en" [allowEmpty]="false" scrollableNumber />
-                <label>Max Stars</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-12 mt-1">
-            <span class="font-bold text-sm">COMPUTED</span>
-        </div>
-        <div class="col-4 align-items-center">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.stars.length" />
-                <label>Star Count</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-2 align-items-center">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.computed.hfd.toFixed(2)" />
-                <label>HFD</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-2 align-items-center">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.computed.snr.toFixed(1)" />
-                <label>SNR</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-4 align-items-center">
-            <p-floatLabel>
-                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                       value="{{ starDetection.computed.minFlux.toFixed(0) }} | {{ starDetection.computed.maxFlux.toFixed(0) }}" />
-                <label>Flux (min | max)</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-12 mt-1">
-            <span class="font-bold text-sm">SELECTED</span>
-        </div>
-        <div class="col-5">
-            <canvas #detectedStarCanvas class="detected-star"></canvas>
-        </div>
-        <div class="col-7">
-            <div class="grid">
-                <div class="col-6 align-items-center">
-                    <p-floatLabel>
-                        <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                               value="{{ starDetection.selected.x.toFixed(0) }} | {{ starDetection.selected.y.toFixed(0) }}" />
-                        <label>Coordinates</label>
-                    </p-floatLabel>
-                </div>
-                <div class="col-6 align-items-center">
-                    <p-floatLabel>
-                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.flux.toFixed(0)" />
-                        <label>Flux</label>
-                    </p-floatLabel>
-                </div>
-                <div class="col-6 align-items-center">
-                    <p-floatLabel>
-                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.hfd.toFixed(2)" />
-                        <label>HFD</label>
-                    </p-floatLabel>
-                </div>
-                <div class="col-6 align-items-center">
-                    <p-floatLabel>
-                        <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="starDetection.selected.snr.toFixed(1)" />
-                        <label>SNR</label>
-                    </p-floatLabel>
-                </div>
-            </div>
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button [disabled]="starDetection.running" icon="mdi mdi-check" label="Detect" (onClick)="detectStars()" [text]="true" size="small" />
-    </ng-template>
+<p-dialog
+	header="Star Detection"
+	[draggable]="true"
+	[(visible)]="starDetection.showDialog"
+	[modal]="false"
+	[style]="{ width: '360px' }"
+	class="pointer-events-none">
+	<div class="grid mt-2">
+		<div class="col-7 flex align-items-center">
+			<p-floatLabel class="w-full">
+				<p-dropdown
+					appendTo="body"
+					[(ngModel)]="starDetection.type"
+					[options]="'STAR_DETECTOR' | dropdownOptions"
+					styleClass="p-inputtext-sm border-0"
+					[autoDisplayFirst]="false" />
+				<label>Detector</label>
+			</p-floatLabel>
+		</div>
+		<div
+			class="col-5 align-items-center"
+			*ngIf="starDetection.type !== 'SIRIL'">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="0"
+					[max]="500"
+					[step]="1"
+					[showButtons]="true"
+					class="w-full"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[(ngModel)]="starDetection.minSNR"
+					locale="en"
+					[allowEmpty]="false"
+					scrollableNumber />
+				<label>Min SNR</label>
+			</p-floatLabel>
+		</div>
+		<div
+			class="col-5 align-items-center"
+			*ngIf="starDetection.type === 'SIRIL'">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="0"
+					[max]="2000"
+					[step]="1"
+					[showButtons]="true"
+					class="w-full"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[(ngModel)]="starDetection.maxStars"
+					locale="en"
+					[allowEmpty]="false"
+					scrollableNumber />
+				<label>Max Stars</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-12 mt-1">
+			<span class="font-bold text-sm">COMPUTED</span>
+		</div>
+		<div class="col-4 align-items-center">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					[value]="starDetection.stars.length" />
+				<label>Star Count</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-2 align-items-center">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					[value]="starDetection.computed.hfd.toFixed(2)" />
+				<label>HFD</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-2 align-items-center">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					[value]="starDetection.computed.snr.toFixed(1)" />
+				<label>SNR</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4 align-items-center">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					value="{{ starDetection.computed.minFlux.toFixed(0) }} | {{ starDetection.computed.maxFlux.toFixed(0) }}" />
+				<label>Flux (min | max)</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-12 mt-1">
+			<span class="font-bold text-sm">SELECTED</span>
+		</div>
+		<div class="col-5">
+			<canvas
+				#detectedStarCanvas
+				class="detected-star"></canvas>
+		</div>
+		<div class="col-7">
+			<div class="grid">
+				<div class="col-6 align-items-center">
+					<p-floatLabel>
+						<input
+							pInputText
+							readonly
+							class="p-inputtext-sm border-0 w-full"
+							value="{{ starDetection.selected.x.toFixed(0) }} | {{ starDetection.selected.y.toFixed(0) }}" />
+						<label>Coordinates</label>
+					</p-floatLabel>
+				</div>
+				<div class="col-6 align-items-center">
+					<p-floatLabel>
+						<input
+							pInputText
+							readonly
+							class="p-inputtext-sm border-0 w-full"
+							[value]="starDetection.selected.flux.toFixed(0)" />
+						<label>Flux</label>
+					</p-floatLabel>
+				</div>
+				<div class="col-6 align-items-center">
+					<p-floatLabel>
+						<input
+							pInputText
+							readonly
+							class="p-inputtext-sm border-0 w-full"
+							[value]="starDetection.selected.hfd.toFixed(2)" />
+						<label>HFD</label>
+					</p-floatLabel>
+				</div>
+				<div class="col-6 align-items-center">
+					<p-floatLabel>
+						<input
+							pInputText
+							readonly
+							class="p-inputtext-sm border-0 w-full"
+							[value]="starDetection.selected.snr.toFixed(1)" />
+						<label>SNR</label>
+					</p-floatLabel>
+				</div>
+			</div>
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			[disabled]="starDetection.running"
+			icon="mdi mdi-check"
+			label="Detect"
+			(onClick)="detectStars()"
+			[text]="true"
+			size="small" />
+	</ng-template>
 </p-dialog>
 
-<p-dialog header="Field of View" [draggable]="true" [(visible)]="fov.showDialog" [modal]="false"
-          [style]="{width: '390px'}" class="pointer-events-none">
-    <div class="grid p-2">
-        <div class="col-2 align-items-center justify-content-center gap-2">
-            <p-colorPicker [(ngModel)]="fov.color" appendTo="body" [style]="{width: '23px', height: '23px'}" />
-        </div>
-        <div class="col-6 align-items-center justify-content-start gap-2">
-            <p-button [text]="true" icon="mdi mdi-telescope" (onClick)="showFOVTelescopes()" pTooltip="Choose telescope"
-                      tooltipPosition="bottom" />
-            <p-floatLabel>
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.focalLength" scrollableNumber />
-                <label>Focal Length (mm)</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-4">
-            <p-floatLabel>
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [(ngModel)]="fov.aperture" scrollableNumber />
-                <label>Aperture (mm)</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-4 justify-content-center align-items-center">
-            Resolution (px)
-        </div>
-        <div class="col-4 justify-content-center align-items-center gap-2">
-            <p-button [text]="true" icon="mdi mdi-camera-iris" (onClick)="showFOVCameras()" pTooltip="Choose camera"
-                      tooltipPosition="bottom" />
-        </div>
-        <div class="col-4 justify-content-center align-items-center">
-            Pixel Size (µm)
-        </div>
-        <div class="col-3">
-            <p-floatLabel>
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="9999" [(ngModel)]="fov.cameraSize.width"
-                               scrollableNumber />
-                <label>Width</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-3">
-            <p-floatLabel>
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="9999" [(ngModel)]="fov.cameraSize.height"
-                               scrollableNumber />
-                <label>Height</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-3">
-            <p-floatLabel>
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0" [max]="99.99" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.pixelSize.width" locale="en" scrollableNumber />
-                <label>Width</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-3">
-            <p-floatLabel>
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0" [max]="99.99" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.pixelSize.height" locale="en" scrollableNumber />
-                <label>Height</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-5">
-            <p-floatLabel>
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0.01" [max]="5" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.barlowReducer" locale="en" scrollableNumber />
-                <label>Barlow/Reducer</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-3">
-            <p-floatLabel>
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="1" [max]="5" [(ngModel)]="fov.bin" scrollableNumber />
-                <label>Bin</label>
-            </p-floatLabel>
-        </div>
-        <!-- <div class="col-4">
-            <p-floatLabel>
-                <p-inputNumber styleClass="p-inputtext-sm border-0" [showButtons]="true" [min]="0" [max]="360" [step]="0.01"
-                               [minFractionDigits]="0" [maxFractionDigits]="2" [(ngModel)]="fov.rotation" locale="en" scrollableNumber />
-                <label>Rotation (°)</label>
-            </span>
-        </div> -->
-        <div class="col-12 flex align-items-center justify-content-center gap-2">
-            <p-button *ngIf="fov.edited" [text]="true" label="Cancel" icon="mdi mdi-close" severity="danger" styleClass="p-button-sm"
-                      (onClick)="cancelEditFOV()" />
-            <p-button *ngIf="fov.edited" [disabled]="!canAddFOV" [text]="true" label="Save" icon="mdi mdi-content-save" severity="info"
-                      styleClass="p-button-sm" (onClick)="saveFOV()" />
-            <p-button *ngIf="!fov.edited" [disabled]="!canAddFOV" [text]="true" label="Add" icon="mdi mdi-plus" severity="success"
-                      styleClass="p-button-sm" (onClick)="addFOV()" />
-        </div>
-        <div class="col-12 p-0 flex-column overflow-auto" *ngIf="fov.fovs.length" style="max-height: 123px">
-            @for (item of fov.fovs; track $index) {
-            <div class="flex align-items-center gap-2 border-left-3 px-2" [style.border-color]="item.color">
-                <div class="flex align-items-center justify-content-center">
-                    <p-checkbox [binary]="true" [(ngModel)]="item.enabled" />
-                </div>
-                <div class="flex align-items-center flex-wrap gap-1px row-gap-0">
-                    <p-tag severity="info" value="focal length: {{ item.focalLength }} mm" />
-                    <p-tag severity="info" value="aperture: {{ item.aperture }} mm" />
-                    <p-tag severity="info" value="resolution: {{ item.cameraSize.width }}x{{ item.cameraSize.height }}" />
-                    <p-tag severity="info" value="pixel size: {{ item.pixelSize.width }}x{{ item.pixelSize.height }}" />
-                    <p-tag severity="info" value="multiplier: {{ item.barlowReducer }}" />
-                    <p-tag severity="info" value="bin: {{ item.bin }}" />
-                    <p-tag severity="info" value="angle: {{ item.rotation }}°" />
-                    @if (item.computed) {
-                    <p-tag severity="success" value="focal ratio: {{ item.computed.focalRatio.toFixed(1) }}" />
-                    <p-tag severity="success"
-                           value="scale: {{ item.computed.cameraResolution.width.toFixed(2) }}&quot;x{{ item.computed.cameraResolution.height.toFixed(2) }}&quot;" />
-                    <p-tag severity="success"
-                           value="fov: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
-                    }
-                </div>
-                <div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
-                    <p-button [text]="true" severity="info" icon="mdi mdi-pencil" (onClick)="editFOV(item)" />
-                    <p-button [text]="true" severity="danger" icon="mdi mdi-delete" (onClick)="deleteFOV(item)" />
-                </div>
-            </div>
-            }
-        </div>
-    </div>
+<p-dialog
+	header="Field of View"
+	[draggable]="true"
+	[(visible)]="fov.showDialog"
+	[modal]="false"
+	[style]="{ width: '390px' }"
+	class="pointer-events-none">
+	<div class="grid p-2">
+		<div class="col-2 align-items-center justify-content-center gap-2">
+			<p-colorPicker
+				[(ngModel)]="fov.color"
+				appendTo="body"
+				[style]="{ width: '23px', height: '23px' }" />
+		</div>
+		<div class="col-6 align-items-center justify-content-start gap-2">
+			<p-button
+				[text]="true"
+				icon="mdi mdi-telescope"
+				(onClick)="showFOVTelescopes()"
+				pTooltip="Choose telescope"
+				tooltipPosition="bottom" />
+			<p-floatLabel>
+				<p-inputNumber
+					styleClass="p-inputtext-sm border-0"
+					[showButtons]="true"
+					[(ngModel)]="fov.focalLength"
+					scrollableNumber />
+				<label>Focal Length (mm)</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel>
+				<p-inputNumber
+					styleClass="p-inputtext-sm border-0"
+					[showButtons]="true"
+					[(ngModel)]="fov.aperture"
+					scrollableNumber />
+				<label>Aperture (mm)</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4 justify-content-center align-items-center">Resolution (px)</div>
+		<div class="col-4 justify-content-center align-items-center gap-2">
+			<p-button
+				[text]="true"
+				icon="mdi mdi-camera-iris"
+				(onClick)="showFOVCameras()"
+				pTooltip="Choose camera"
+				tooltipPosition="bottom" />
+		</div>
+		<div class="col-4 justify-content-center align-items-center">Pixel Size (µm)</div>
+		<div class="col-3">
+			<p-floatLabel>
+				<p-inputNumber
+					styleClass="p-inputtext-sm border-0"
+					[showButtons]="true"
+					[min]="1"
+					[max]="9999"
+					[(ngModel)]="fov.cameraSize.width"
+					scrollableNumber />
+				<label>Width</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-3">
+			<p-floatLabel>
+				<p-inputNumber
+					styleClass="p-inputtext-sm border-0"
+					[showButtons]="true"
+					[min]="1"
+					[max]="9999"
+					[(ngModel)]="fov.cameraSize.height"
+					scrollableNumber />
+				<label>Height</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-3">
+			<p-floatLabel>
+				<p-inputNumber
+					styleClass="p-inputtext-sm border-0"
+					[showButtons]="true"
+					[min]="0"
+					[max]="99.99"
+					[step]="0.01"
+					[minFractionDigits]="0"
+					[maxFractionDigits]="2"
+					[(ngModel)]="fov.pixelSize.width"
+					locale="en"
+					scrollableNumber />
+				<label>Width</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-3">
+			<p-floatLabel>
+				<p-inputNumber
+					styleClass="p-inputtext-sm border-0"
+					[showButtons]="true"
+					[min]="0"
+					[max]="99.99"
+					[step]="0.01"
+					[minFractionDigits]="0"
+					[maxFractionDigits]="2"
+					[(ngModel)]="fov.pixelSize.height"
+					locale="en"
+					scrollableNumber />
+				<label>Height</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-5">
+			<p-floatLabel>
+				<p-inputNumber
+					styleClass="p-inputtext-sm border-0"
+					[showButtons]="true"
+					[min]="0.01"
+					[max]="5"
+					[step]="0.01"
+					[minFractionDigits]="0"
+					[maxFractionDigits]="2"
+					[(ngModel)]="fov.barlowReducer"
+					locale="en"
+					scrollableNumber />
+				<label>Barlow/Reducer</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-3">
+			<p-floatLabel>
+				<p-inputNumber
+					styleClass="p-inputtext-sm border-0"
+					[showButtons]="true"
+					[min]="1"
+					[max]="5"
+					[(ngModel)]="fov.bin"
+					scrollableNumber />
+				<label>Bin</label>
+			</p-floatLabel>
+		</div>
+		<!-- <div class="col-4">
+			<p-floatLabel>
+				<p-inputNumber
+					styleClass="p-inputtext-sm border-0"
+					[showButtons]="true"
+					[min]="0"
+					[max]="360"
+					[step]="0.01"
+					[minFractionDigits]="0"
+					[maxFractionDigits]="2"
+					[(ngModel)]="fov.rotation"
+					locale="en"
+					scrollableNumber />
+				<label>Rotation (°)</label>
+			</p-floatLabel>
+		</div> -->
+		<div class="col-12 flex align-items-center justify-content-center gap-2">
+			<p-button
+				*ngIf="fov.edited"
+				[text]="true"
+				label="Cancel"
+				icon="mdi mdi-close"
+				severity="danger"
+				styleClass="p-button-sm"
+				(onClick)="cancelEditFOV()" />
+			<p-button
+				*ngIf="fov.edited"
+				[disabled]="!canAddFOV"
+				[text]="true"
+				label="Save"
+				icon="mdi mdi-content-save"
+				severity="info"
+				styleClass="p-button-sm"
+				(onClick)="saveFOV()" />
+			<p-button
+				*ngIf="!fov.edited"
+				[disabled]="!canAddFOV"
+				[text]="true"
+				label="Add"
+				icon="mdi mdi-plus"
+				severity="success"
+				styleClass="p-button-sm"
+				(onClick)="addFOV()" />
+		</div>
+		<div
+			class="col-12 p-0 flex-column overflow-auto"
+			*ngIf="fov.fovs.length"
+			style="max-height: 123px">
+			@for (item of fov.fovs; track $index) {
+				<div
+					class="flex align-items-center gap-2 border-left-3 px-2"
+					[style.border-color]="item.color">
+					<div class="flex align-items-center justify-content-center">
+						<p-checkbox
+							[binary]="true"
+							[(ngModel)]="item.enabled" />
+					</div>
+					<div class="flex align-items-center flex-wrap gap-1px row-gap-0">
+						<p-tag
+							severity="info"
+							value="focal length: {{ item.focalLength }} mm" />
+						<p-tag
+							severity="info"
+							value="aperture: {{ item.aperture }} mm" />
+						<p-tag
+							severity="info"
+							value="resolution: {{ item.cameraSize.width }}x{{ item.cameraSize.height }}" />
+						<p-tag
+							severity="info"
+							value="pixel size: {{ item.pixelSize.width }}x{{ item.pixelSize.height }}" />
+						<p-tag
+							severity="info"
+							value="multiplier: {{ item.barlowReducer }}" />
+						<p-tag
+							severity="info"
+							value="bin: {{ item.bin }}" />
+						<p-tag
+							severity="info"
+							value="angle: {{ item.rotation }}°" />
+						@if (item.computed) {
+							<p-tag
+								severity="success"
+								value="focal ratio: {{ item.computed.focalRatio.toFixed(1) }}" />
+							<p-tag
+								severity="success"
+								value="scale: {{ item.computed.cameraResolution.width.toFixed(2) }}&quot;x{{ item.computed.cameraResolution.height.toFixed(2) }}&quot;" />
+							<p-tag
+								severity="success"
+								value="fov: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
+						}
+					</div>
+					<div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
+						<p-button
+							[text]="true"
+							severity="info"
+							icon="mdi mdi-pencil"
+							(onClick)="editFOV(item)" />
+						<p-button
+							[text]="true"
+							severity="danger"
+							icon="mdi mdi-delete"
+							(onClick)="deleteFOV(item)" />
+					</div>
+				</div>
+			}
+		</div>
+	</div>
 </p-dialog>
 
-<p-dialog header="Cameras" [draggable]="true" [(visible)]="fov.showCameraDialog" [modal]="false"
-          [style]="{width: '300px'}" class="pointer-events-none">
-    <div class="grid">
-        <div class="col-12">
-            <p-listbox [options]="fov.cameras" [(ngModel)]="fov.camera" [filter]="true" [style]="{ width: '100%' }"
-                       [listStyle]="{'max-height': '210px'}" [virtualScroll]="true" [virtualScrollItemSize]="42" filterBy="name,sensor"
-                       filterMatchMode="contains" [filterFields]="['name', 'sensor']" styleClass="border-0">
-                <ng-template let-item pTemplate="item">
-                    <div class="flex flex-column justify-content-center">
-                        <span class="font-bold white-space-nowrap">{{ item.name }}</span>
-                        <span class="font-italic text-sm white-space-nowrap">{{ item.sensor }}</span>
-                        <span class="text-sm">{{ item.width }}x{{ item.height }} / {{ item.pixelSize }}µm</span>
-                    </div>
-                </ng-template>
-            </p-listbox>
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button [disabled]="!fov.camera" icon="mdi mdi-check" label="Choose" (onClick)="chooseCamera()" [text]="true" size="small" />
-    </ng-template>
+<p-dialog
+	header="Cameras"
+	[draggable]="true"
+	[(visible)]="fov.showCameraDialog"
+	[modal]="false"
+	[style]="{ width: '300px' }"
+	class="pointer-events-none">
+	<div class="grid">
+		<div class="col-12">
+			<p-listbox
+				[options]="fov.cameras"
+				[(ngModel)]="fov.camera"
+				[filter]="true"
+				[style]="{ width: '100%' }"
+				[listStyle]="{ 'max-height': '210px' }"
+				[virtualScroll]="true"
+				[virtualScrollItemSize]="42"
+				filterBy="name,sensor"
+				filterMatchMode="contains"
+				[filterFields]="['name', 'sensor']"
+				styleClass="border-0">
+				<ng-template
+					let-item
+					pTemplate="item">
+					<div class="flex flex-column justify-content-center">
+						<span class="font-bold white-space-nowrap">{{ item.name }}</span>
+						<span class="font-italic text-sm white-space-nowrap">{{ item.sensor }}</span>
+						<span class="text-sm">{{ item.width }}x{{ item.height }} / {{ item.pixelSize }}µm</span>
+					</div>
+				</ng-template>
+			</p-listbox>
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			[disabled]="!fov.camera"
+			icon="mdi mdi-check"
+			label="Choose"
+			(onClick)="chooseCamera()"
+			[text]="true"
+			size="small" />
+	</ng-template>
 </p-dialog>
 
-<p-dialog header="Telescopes" [draggable]="true" [(visible)]="fov.showTelescopeDialog" [modal]="false"
-          [style]="{width: '300px'}" class="pointer-events-none">
-    <div class="grid">
-        <div class="col-12">
-            <p-listbox [options]="fov.telescopes" [(ngModel)]="fov.telescope" [filter]="true" [style]="{ width: '100%' }"
-                       [listStyle]="{'max-height': '210px'}" [virtualScroll]="true" [virtualScrollItemSize]="42" filterBy="name"
-                       filterMatchMode="contains" [filterFields]="['name']" styleClass="border-0">
-                <ng-template let-item pTemplate="item">
-                    <div class="flex flex-column justify-content-center">
-                        <span class="font-bold white-space-nowrap">{{ item.name }}</span>
-                        <span class="text-sm">{{ item.aperture }}mm / {{ item.focalLength }}mm</span>
-                    </div>
-                </ng-template>
-            </p-listbox>
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button [disabled]="!fov.telescope" icon="mdi mdi-check" label="Choose" (onClick)="chooseTelescope()" [text]="true" size="small" />
-    </ng-template>
+<p-dialog
+	header="Telescopes"
+	[draggable]="true"
+	[(visible)]="fov.showTelescopeDialog"
+	[modal]="false"
+	[style]="{ width: '300px' }"
+	class="pointer-events-none">
+	<div class="grid">
+		<div class="col-12">
+			<p-listbox
+				[options]="fov.telescopes"
+				[(ngModel)]="fov.telescope"
+				[filter]="true"
+				[style]="{ width: '100%' }"
+				[listStyle]="{ 'max-height': '210px' }"
+				[virtualScroll]="true"
+				[virtualScrollItemSize]="42"
+				filterBy="name"
+				filterMatchMode="contains"
+				[filterFields]="['name']"
+				styleClass="border-0">
+				<ng-template
+					let-item
+					pTemplate="item">
+					<div class="flex flex-column justify-content-center">
+						<span class="font-bold white-space-nowrap">{{ item.name }}</span>
+						<span class="text-sm">{{ item.aperture }}mm / {{ item.focalLength }}mm</span>
+					</div>
+				</ng-template>
+			</p-listbox>
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			[disabled]="!fov.telescope"
+			icon="mdi mdi-check"
+			label="Choose"
+			(onClick)="chooseTelescope()"
+			[text]="true"
+			size="small" />
+	</ng-template>
 </p-dialog>
 
-<p-dialog header="Save As" [draggable]="true" [(visible)]="saveAs.showDialog" [modal]="false"
-          [style]="{width: '260px'}" class="pointer-events-none">
-    <div class="grid mt-2">
-        <div class="col-12">
-            <p-floatLabel>
-                <input pInputText readonly [value]="saveAs.path" class="border-0 p-inputtext-sm" />
-                <label>Path</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-12 flex align-items-center justify-content-center">
-            <p-selectButton class="w-full" styleClass="border-0" [options]="'IMAGE_FORMAT' | dropdownOptions" [(ngModel)]="saveAs.format"
-                            [multiple]="false" />
-        </div>
-        <div class="col-7 align-items-center justify-content-center">
-            <p-floatLabel class="w-full">
-                <p-dropdown [disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
-                            [options]="'IMAGE_BITPIX' | dropdownOptions" [(ngModel)]="saveAs.bitpix"
-                            styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" appendTo="body" />
-                <label>Format</label>
-            </p-floatLabel>
-        </div>
-        <div class="col-5 flex-column align-items-center justify-content-center gap-1">
-            <span class="text-sm">Transformed</span>
-            <p-checkbox [binary]="true" [(ngModel)]="saveAs.shouldBeTransformed" />
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button icon="mdi mdi-content-save" label="Save" (onClick)="saveImageAs()" [text]="true" size="small" />
-    </ng-template>
+<p-dialog
+	header="Save As"
+	[draggable]="true"
+	[(visible)]="saveAs.showDialog"
+	[modal]="false"
+	[style]="{ width: '260px' }"
+	class="pointer-events-none">
+	<div class="grid mt-2">
+		<div class="col-12">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					[value]="saveAs.path"
+					class="border-0 p-inputtext-sm" />
+				<label>Path</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-12 flex align-items-center justify-content-center">
+			<p-selectButton
+				class="w-full"
+				styleClass="border-0"
+				[options]="'IMAGE_FORMAT' | dropdownOptions"
+				[(ngModel)]="saveAs.format"
+				[multiple]="false" />
+		</div>
+		<div class="col-7 align-items-center justify-content-center">
+			<p-floatLabel class="w-full">
+				<p-dropdown
+					[disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
+					[options]="'IMAGE_BITPIX' | dropdownOptions"
+					[(ngModel)]="saveAs.bitpix"
+					styleClass="p-inputtext-sm border-0"
+					[autoDisplayFirst]="false"
+					appendTo="body" />
+				<label>Format</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-5 flex-column align-items-center justify-content-center gap-1">
+			<span class="text-sm">Transformed</span>
+			<p-checkbox
+				[binary]="true"
+				[(ngModel)]="saveAs.shouldBeTransformed" />
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			icon="mdi mdi-content-save"
+			label="Save"
+			(onClick)="saveImageAs()"
+			[text]="true"
+			size="small" />
+	</ng-template>
 </p-dialog>
 
-<div class="fixed p-3 text-sm coordinates monospaced" *ngIf="mouseCoordinate && isMouseCoordinateVisible">
-    <div class="grid m-0">
-        <div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
-        <div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
-        <div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
-        <div class="col-6 m-0 p-0">δ: {{ mouseCoordinate.delta }}</div>
-        <div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
-        <div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
-    </div>
+<div
+	class="fixed p-3 text-sm coordinates monospaced"
+	*ngIf="mouseCoordinate && isMouseCoordinateVisible">
+	<div class="grid m-0">
+		<div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
+		<div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
+		<div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
+		<div class="col-6 m-0 p-0">δ: {{ mouseCoordinate.delta }}</div>
+		<div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
+		<div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
+	</div>
 </div>
 
 <neb-device-list-menu #deviceMenu />
