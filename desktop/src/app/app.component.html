@@ -21,23 +21,27 @@
 		[text]="true"
 		[rounded]="true"
 		size="small"
-		icon="mdi mdi-pin"
+		icon="mdi mdi-pin text-gray-300"
 		(onClick)="pin()"
+		pTooltip="Unpin Window"
+		tooltipPosition="bottom"
 		styleClass="select-none cursor-pointer"></p-button>
 	<p-button
 		*ngIf="!pinned && !modal"
 		[text]="true"
 		[rounded]="true"
 		size="small"
-		icon="mdi mdi-pin-off"
+		icon="mdi mdi-pin-off text-gray-300"
 		(onClick)="pin()"
+		pTooltip="Pin Window"
+		tooltipPosition="bottom"
 		styleClass="select-none cursor-pointer"></p-button>
 	<p-button
 		*ngIf="!modal"
 		[text]="true"
 		[rounded]="true"
 		size="small"
-		icon="mdi mdi-window-minimize"
+		icon="mdi mdi-window-minimize text-gray-300"
 		(onClick)="minimize()"
 		styleClass="select-none cursor-pointer"></p-button>
 	<p-button
@@ -45,14 +49,14 @@
 		[text]="true"
 		[rounded]="true"
 		size="small"
-		icon="mdi mdi-window-maximize"
+		icon="mdi mdi-window-maximize text-gray-300"
 		(onClick)="maximize()"
 		styleClass="select-none cursor-pointer"></p-button>
 	<p-button
 		[text]="true"
 		[rounded]="true"
 		size="small"
-		icon="mdi mdi-window-close"
+		icon="mdi mdi-window-close text-red-700"
 		(onClick)="close()"
 		styleClass="select-none cursor-pointer mr-1"></p-button>
 </section>
