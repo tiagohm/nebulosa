@@ -9,6 +9,7 @@
     "module": "CommonJS",
     "target": "ES2022",
     "noFallthroughCasesInSwitch": true,
+	"incremental": true,
     "types": [
       "node"
     ],
