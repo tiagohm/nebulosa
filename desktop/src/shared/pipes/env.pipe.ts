@@ -3,8 +3,7 @@ import { APP_CONFIG } from '../../environments/environment'
 
 @Pipe({ name: 'env' })
 export class EnvPipe implements PipeTransform {
-
-    transform(value: string) {
-        return (<any>APP_CONFIG)[value]
-    }
+	transform(value: string) {
+		return (<any>APP_CONFIG)[value]
+	}
 }

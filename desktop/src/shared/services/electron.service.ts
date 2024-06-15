@@ -25,209 +25,209 @@ import { FilterWheel, WheelRenamed } from '../types/wheel.types'
 import { AutoFocusEvent } from '../types/autofocus.type'
 
 type EventMappedType = {
-    'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
-    'DEVICE.PROPERTY_DELETED': INDIMessageEvent
-    'DEVICE.MESSAGE_RECEIVED': INDIMessageEvent
-    'CAMERA.UPDATED': DeviceMessageEvent<Camera>
-    'CAMERA.ATTACHED': DeviceMessageEvent<Camera>
-    'CAMERA.DETACHED': DeviceMessageEvent<Camera>
-    'CAMERA.CAPTURE_ELAPSED': CameraCaptureEvent
-    'MOUNT.UPDATED': DeviceMessageEvent<Mount>
-    'MOUNT.ATTACHED': DeviceMessageEvent<Mount>
-    'MOUNT.DETACHED': DeviceMessageEvent<Mount>
-    'FOCUSER.UPDATED': DeviceMessageEvent<Focuser>
-    'FOCUSER.ATTACHED': DeviceMessageEvent<Focuser>
-    'FOCUSER.DETACHED': DeviceMessageEvent<Focuser>
-    'ROTATOR.UPDATED': DeviceMessageEvent<Rotator>
-    'ROTATOR.ATTACHED': DeviceMessageEvent<Rotator>
-    'ROTATOR.DETACHED': DeviceMessageEvent<Rotator>
-    'WHEEL.UPDATED': DeviceMessageEvent<FilterWheel>
-    'WHEEL.ATTACHED': DeviceMessageEvent<FilterWheel>
-    'WHEEL.DETACHED': DeviceMessageEvent<FilterWheel>
-    'GUIDE_OUTPUT.UPDATED': DeviceMessageEvent<GuideOutput>
-    'GUIDE_OUTPUT.ATTACHED': DeviceMessageEvent<GuideOutput>
-    'GUIDE_OUTPUT.DETACHED': DeviceMessageEvent<GuideOutput>
-    'GUIDER.CONNECTED': GuiderMessageEvent<undefined>
-    'GUIDER.DISCONNECTED': GuiderMessageEvent<undefined>
-    'GUIDER.UPDATED': GuiderMessageEvent<Guider>
-    'GUIDER.STEPPED': GuiderMessageEvent<GuiderHistoryStep>
-    'GUIDER.MESSAGE_RECEIVED': GuiderMessageEvent<string>
-    'DARV.ELAPSED': DARVEvent
-    'TPPA.ELAPSED': TPPAEvent
-    'DATA.CHANGED': any
-    'LOCATION.CHANGED': Location
-    'SEQUENCER.ELAPSED': SequencerEvent
-    'FLAT_WIZARD.ELAPSED': FlatWizardEvent
-    'CONNECTION.CLOSED': ConnectionClosed
-    'SKY_ATLAS.PROGRESS_CHANGED': SkyAtlasUpdated
-    'CALIBRATION.CHANGED': unknown
-    'FILE.OPEN': OpenFile
-    'FILE.SAVE': OpenFile
-    'DIRECTORY.OPEN': OpenDirectory
-    'JSON.WRITE': JsonFile
-    'JSON.READ': string
-    'WINDOW.RESIZE': number
-    'WINDOW.PIN': unknown
-    'WINDOW.UNPIN': unknown
-    'WINDOW.MINIMIZE': unknown
-    'WINDOW.MAXIMIZE': unknown
-    'WINDOW.FULLSCREEN': boolean
-    'WINDOW.CLOSE': CloseWindow
-    'WHEEL.RENAMED': WheelRenamed
-    'ROI.SELECTED': ROISelected
-    'AUTO_FOCUS.ELAPSED': AutoFocusEvent
+	'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
+	'DEVICE.PROPERTY_DELETED': INDIMessageEvent
+	'DEVICE.MESSAGE_RECEIVED': INDIMessageEvent
+	'CAMERA.UPDATED': DeviceMessageEvent<Camera>
+	'CAMERA.ATTACHED': DeviceMessageEvent<Camera>
+	'CAMERA.DETACHED': DeviceMessageEvent<Camera>
+	'CAMERA.CAPTURE_ELAPSED': CameraCaptureEvent
+	'MOUNT.UPDATED': DeviceMessageEvent<Mount>
+	'MOUNT.ATTACHED': DeviceMessageEvent<Mount>
+	'MOUNT.DETACHED': DeviceMessageEvent<Mount>
+	'FOCUSER.UPDATED': DeviceMessageEvent<Focuser>
+	'FOCUSER.ATTACHED': DeviceMessageEvent<Focuser>
+	'FOCUSER.DETACHED': DeviceMessageEvent<Focuser>
+	'ROTATOR.UPDATED': DeviceMessageEvent<Rotator>
+	'ROTATOR.ATTACHED': DeviceMessageEvent<Rotator>
+	'ROTATOR.DETACHED': DeviceMessageEvent<Rotator>
+	'WHEEL.UPDATED': DeviceMessageEvent<FilterWheel>
+	'WHEEL.ATTACHED': DeviceMessageEvent<FilterWheel>
+	'WHEEL.DETACHED': DeviceMessageEvent<FilterWheel>
+	'GUIDE_OUTPUT.UPDATED': DeviceMessageEvent<GuideOutput>
+	'GUIDE_OUTPUT.ATTACHED': DeviceMessageEvent<GuideOutput>
+	'GUIDE_OUTPUT.DETACHED': DeviceMessageEvent<GuideOutput>
+	'GUIDER.CONNECTED': GuiderMessageEvent<undefined>
+	'GUIDER.DISCONNECTED': GuiderMessageEvent<undefined>
+	'GUIDER.UPDATED': GuiderMessageEvent<Guider>
+	'GUIDER.STEPPED': GuiderMessageEvent<GuiderHistoryStep>
+	'GUIDER.MESSAGE_RECEIVED': GuiderMessageEvent<string>
+	'DARV.ELAPSED': DARVEvent
+	'TPPA.ELAPSED': TPPAEvent
+	'DATA.CHANGED': any
+	'LOCATION.CHANGED': Location
+	'SEQUENCER.ELAPSED': SequencerEvent
+	'FLAT_WIZARD.ELAPSED': FlatWizardEvent
+	'CONNECTION.CLOSED': ConnectionClosed
+	'SKY_ATLAS.PROGRESS_CHANGED': SkyAtlasUpdated
+	'CALIBRATION.CHANGED': unknown
+	'FILE.OPEN': OpenFile
+	'FILE.SAVE': OpenFile
+	'DIRECTORY.OPEN': OpenDirectory
+	'JSON.WRITE': JsonFile
+	'JSON.READ': string
+	'WINDOW.RESIZE': number
+	'WINDOW.PIN': unknown
+	'WINDOW.UNPIN': unknown
+	'WINDOW.MINIMIZE': unknown
+	'WINDOW.MAXIMIZE': unknown
+	'WINDOW.FULLSCREEN': boolean
+	'WINDOW.CLOSE': CloseWindow
+	'WHEEL.RENAMED': WheelRenamed
+	'ROI.SELECTED': ROISelected
+	'AUTO_FOCUS.ELAPSED': AutoFocusEvent
 }
 
 @Injectable({ providedIn: 'root' })
 export class ElectronService {
+	ipcRenderer!: typeof ipcRenderer
+	webFrame!: typeof webFrame
+	childProcess!: typeof childProcess
+	fs!: typeof fs
 
-    ipcRenderer!: typeof ipcRenderer
-    webFrame!: typeof webFrame
-    childProcess!: typeof childProcess
-    fs!: typeof fs
+	constructor() {
+		if (this.isElectron) {
+			this.ipcRenderer = (window as any).require('electron').ipcRenderer
+			this.webFrame = (window as any).require('electron').webFrame
 
-    constructor() {
-        if (this.isElectron) {
-            this.ipcRenderer = (window as any).require('electron').ipcRenderer
-            this.webFrame = (window as any).require('electron').webFrame
+			this.fs = (window as any).require('fs')
 
-            this.fs = (window as any).require('fs')
+			this.childProcess = (window as any).require('child_process')
+			this.childProcess.exec('node -v')
 
-            this.childProcess = (window as any).require('child_process')
-            this.childProcess.exec('node -v')
+			// Notes :
+			// * A NodeJS's dependency imported with 'window.require' MUST BE present in `dependencies` of both `app/package.json`
+			// and `package.json (root folder)` in order to make it work here in Electron's Renderer process (src folder)
+			// because it will loaded at runtime by Electron.
+			// * A NodeJS's dependency imported with TS module import (ex: import { Dropbox } from 'dropbox') CAN only be present
+			// in `dependencies` of `package.json (root folder)` because it is loaded during build phase and does not need to be
+			// in the final bundle. Reminder : only if not used in Electron's Main process (app folder)
 
-            // Notes :
-            // * A NodeJS's dependency imported with 'window.require' MUST BE present in `dependencies` of both `app/package.json`
-            // and `package.json (root folder)` in order to make it work here in Electron's Renderer process (src folder)
-            // because it will loaded at runtime by Electron.
-            // * A NodeJS's dependency imported with TS module import (ex: import { Dropbox } from 'dropbox') CAN only be present
-            // in `dependencies` of `package.json (root folder)` because it is loaded during build phase and does not need to be
-            // in the final bundle. Reminder : only if not used in Electron's Main process (app folder)
+			// If you want to use a NodeJS 3rd party deps in Renderer process,
+			// ipcRenderer.invoke can serve many common use cases.
+			// https://www.electronjs.org/docs/latest/api/ipc-renderer#ipcrendererinvokechannel-args
+		}
+	}
 
-            // If you want to use a NodeJS 3rd party deps in Renderer process,
-            // ipcRenderer.invoke can serve many common use cases.
-            // https://www.electronjs.org/docs/latest/api/ipc-renderer#ipcrendererinvokechannel-args
-        }
-    }
+	get isElectron() {
+		return !!(window && window.process && window.process.type)
+	}
 
-    get isElectron() {
-        return !!(window && window.process && window.process.type)
-    }
+	send<K extends keyof EventMappedType>(channel: K, data?: EventMappedType[K]) {
+		return this.ipcRenderer.invoke(channel, data)
+	}
 
-    send<K extends keyof EventMappedType>(channel: K, data?: EventMappedType[K]) {
-        return this.ipcRenderer.invoke(channel, data)
-    }
+	on<K extends keyof EventMappedType>(channel: K, listener: (arg: EventMappedType[K]) => void) {
+		console.info('listening to channel: %s', channel)
+		this.ipcRenderer.on(channel, (_, arg) => listener(arg))
+	}
 
-    on<K extends keyof EventMappedType>(channel: K, listener: (arg: EventMappedType[K]) => void) {
-        console.info('listening to channel: %s', channel)
-        this.ipcRenderer.on(channel, (_, arg) => listener(arg))
-    }
+	openFile(data?: OpenFile): Promise<string | undefined> {
+		return this.send('FILE.OPEN', data)
+	}
 
-    openFile(data?: OpenFile): Promise<string | undefined> {
-        return this.send('FILE.OPEN', data)
-    }
+	saveFile(data?: OpenFile): Promise<string | undefined> {
+		return this.send('FILE.SAVE', data)
+	}
 
-    saveFile(data?: OpenFile): Promise<string | undefined> {
-        return this.send('FILE.SAVE', data)
-    }
+	openImage(data?: OpenFile): Promise<string | undefined> {
+		return this.openFile({
+			...data,
+			filters: [
+				{ name: 'All', extensions: ['fits', 'fit', 'xisf'] },
+				{ name: 'FITS', extensions: ['fits', 'fit'] },
+				{ name: 'XISF', extensions: ['xisf'] },
+			],
+		})
+	}
 
-    openImage(data?: OpenFile): Promise<string | undefined> {
-        return this.openFile({
-            ...data, filters: [
-                { name: 'All', extensions: ['fits', 'fit', 'xisf'] },
-                { name: 'FITS', extensions: ['fits', 'fit'] },
-                { name: 'XISF', extensions: ['xisf'] },
-            ]
-        })
-    }
+	saveImage(data?: OpenFile) {
+		return this.saveFile({
+			...data,
+			filters: [
+				{ name: 'All', extensions: ['fits', 'fit', 'xisf', 'png', 'jpg', 'jpeg'] },
+				{ name: 'FITS', extensions: ['fits', 'fit'] },
+				{ name: 'XISF', extensions: ['xisf'] },
+				{ name: 'Image', extensions: ['png', 'jpg', 'jpeg'] },
+			],
+		})
+	}
 
-    saveImage(data?: OpenFile) {
-        return this.saveFile({
-            ...data,
-            filters: [
-                { name: 'All', extensions: ['fits', 'fit', 'xisf', 'png', 'jpg', 'jpeg'] },
-                { name: 'FITS', extensions: ['fits', 'fit'] },
-                { name: 'XISF', extensions: ['xisf'] },
-                { name: 'Image', extensions: ['png', 'jpg', 'jpeg'] },
-            ]
-        })
-    }
+	openDirectory(data?: OpenDirectory): Promise<string | false> {
+		return this.send('DIRECTORY.OPEN', data)
+	}
 
-    openDirectory(data?: OpenDirectory): Promise<string | false> {
-        return this.send('DIRECTORY.OPEN', data)
-    }
+	async saveJson<T>(data: SaveJson<T>): Promise<JsonFile<T> | false> {
+		data.path = data.path || (await this.saveFile({ ...data, filters: [{ name: 'JSON files', extensions: ['json'] }] }))
 
-    async saveJson<T>(data: SaveJson<T>): Promise<JsonFile<T> | false> {
-        data.path = data.path || await this.saveFile({ ...data, filters: [{ name: 'JSON files', extensions: ['json'] }] })
+		if (data.path) {
+			if (await this.writeJson(data)) {
+				return data
+			}
+		}
 
-        if (data.path) {
-            if (await this.writeJson(data)) {
-                return data
-            }
-        }
+		return false
+	}
 
-        return false
-    }
+	async openJson<T>(data?: OpenFile): Promise<JsonFile<T> | false> {
+		const path = await this.openFile({ ...data, filters: [{ name: 'JSON files', extensions: ['json'] }] })
 
-    async openJson<T>(data?: OpenFile): Promise<JsonFile<T> | false> {
-        const path = await this.openFile({ ...data, filters: [{ name: 'JSON files', extensions: ['json'] }] })
+		if (path) {
+			return await this.readJson<T>(path)
+		}
 
-        if (path) {
-            return await this.readJson<T>(path)
-        }
+		return false
+	}
 
-        return false
-    }
+	writeJson<T>(json: JsonFile<T>): Promise<boolean> {
+		return this.send('JSON.WRITE', json)
+	}
 
-    writeJson<T>(json: JsonFile<T>): Promise<boolean> {
-        return this.send('JSON.WRITE', json)
-    }
+	readJson<T>(path: string): Promise<JsonFile<T> | false> {
+		return this.send('JSON.READ', path)
+	}
 
-    readJson<T>(path: string): Promise<JsonFile<T> | false> {
-        return this.send('JSON.READ', path)
-    }
+	resizeWindow(size: number) {
+		this.send('WINDOW.RESIZE', Math.floor(size))
+	}
 
-    resizeWindow(size: number) {
-        this.send('WINDOW.RESIZE', Math.floor(size))
-    }
+	autoResizeWindow(timeout: number = 500): any {
+		if (timeout <= 0) {
+			const size = document.getElementsByTagName('app-root')[0]?.getBoundingClientRect()?.height
 
-    autoResizeWindow(timeout: number = 500): any {
-        if (timeout <= 0) {
-            const size = document.getElementsByTagName('app-root')[0]?.getBoundingClientRect()?.height
+			if (size > 0) {
+				this.resizeWindow(size)
+			}
+		} else {
+			return setTimeout(() => this.autoResizeWindow(0), timeout)
+		}
+	}
 
-            if (size > 0) {
-                this.resizeWindow(size)
-            }
-        } else {
-            return setTimeout(() => this.autoResizeWindow(0), timeout)
-        }
-    }
+	pinWindow() {
+		this.send('WINDOW.PIN')
+	}
 
-    pinWindow() {
-        this.send('WINDOW.PIN')
-    }
+	unpinWindow() {
+		this.send('WINDOW.UNPIN')
+	}
 
-    unpinWindow() {
-        this.send('WINDOW.UNPIN')
-    }
+	minimizeWindow() {
+		this.send('WINDOW.MINIMIZE')
+	}
 
-    minimizeWindow() {
-        this.send('WINDOW.MINIMIZE')
-    }
+	maximizeWindow() {
+		this.send('WINDOW.MAXIMIZE')
+	}
 
-    maximizeWindow() {
-        this.send('WINDOW.MAXIMIZE')
-    }
+	fullscreenWindow(enabled?: boolean): Promise<boolean> {
+		return this.send('WINDOW.FULLSCREEN', enabled)
+	}
 
-    fullscreenWindow(enabled?: boolean): Promise<boolean> {
-        return this.send('WINDOW.FULLSCREEN', enabled)
-    }
+	closeWindow<T>(data: CloseWindow<T>) {
+		return this.send('WINDOW.CLOSE', data)
+	}
 
-    closeWindow<T>(data: CloseWindow<T>) {
-        return this.send('WINDOW.CLOSE', data)
-    }
-
-    calibrationChanged() {
-        this.send('CALIBRATION.CHANGED')
-    }
+	calibrationChanged() {
+		this.send('CALIBRATION.CHANGED')
+	}
 }

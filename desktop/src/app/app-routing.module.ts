@@ -22,93 +22,91 @@ import { SequencerComponent } from './sequencer/sequencer.component'
 import { SettingsComponent } from './settings/settings.component'
 
 const routes: Routes = [
-    {
-        path: '',
-        pathMatch: 'full',
-        component: HomeComponent,
-    },
-    {
-        path: 'home',
-        component: HomeComponent,
-    },
-    {
-        path: 'camera',
-        component: CameraComponent,
-    },
-    {
-        path: 'focuser',
-        component: FocuserComponent,
-    },
-    {
-        path: 'wheel',
-        component: FilterWheelComponent,
-    },
-    {
-        path: 'mount',
-        component: MountComponent,
-    },
-    {
-        path: 'rotator',
-        component: RotatorComponent,
-    },
-    {
-        path: 'guider',
-        component: GuiderComponent,
-    },
-    {
-        path: 'image',
-        component: ImageComponent,
-    },
-    {
-        path: 'indi',
-        component: INDIComponent,
-    },
-    {
-        path: 'atlas',
-        component: AtlasComponent,
-    },
-    {
-        path: 'framing',
-        component: FramingComponent,
-    },
-    {
-        path: 'alignment',
-        component: AlignmentComponent,
-    },
-    {
-        path: 'sequencer',
-        component: SequencerComponent,
-    },
-    {
-        path: 'flat-wizard',
-        component: FlatWizardComponent,
-    },
-    {
-        path: 'calibration',
-        component: CalibrationComponent,
-    },
-    {
-        path: 'auto-focus',
-        component: AutoFocusComponent,
-    },
-    {
-        path: 'calculator',
-        component: CalculatorComponent,
-    },
-    {
-        path: 'settings',
-        component: SettingsComponent,
-    },
-    {
-        path: 'about',
-        component: AboutComponent,
-    },
+	{
+		path: '',
+		pathMatch: 'full',
+		component: HomeComponent,
+	},
+	{
+		path: 'home',
+		component: HomeComponent,
+	},
+	{
+		path: 'camera',
+		component: CameraComponent,
+	},
+	{
+		path: 'focuser',
+		component: FocuserComponent,
+	},
+	{
+		path: 'wheel',
+		component: FilterWheelComponent,
+	},
+	{
+		path: 'mount',
+		component: MountComponent,
+	},
+	{
+		path: 'rotator',
+		component: RotatorComponent,
+	},
+	{
+		path: 'guider',
+		component: GuiderComponent,
+	},
+	{
+		path: 'image',
+		component: ImageComponent,
+	},
+	{
+		path: 'indi',
+		component: INDIComponent,
+	},
+	{
+		path: 'atlas',
+		component: AtlasComponent,
+	},
+	{
+		path: 'framing',
+		component: FramingComponent,
+	},
+	{
+		path: 'alignment',
+		component: AlignmentComponent,
+	},
+	{
+		path: 'sequencer',
+		component: SequencerComponent,
+	},
+	{
+		path: 'flat-wizard',
+		component: FlatWizardComponent,
+	},
+	{
+		path: 'calibration',
+		component: CalibrationComponent,
+	},
+	{
+		path: 'auto-focus',
+		component: AutoFocusComponent,
+	},
+	{
+		path: 'calculator',
+		component: CalculatorComponent,
+	},
+	{
+		path: 'settings',
+		component: SettingsComponent,
+	},
+	{
+		path: 'about',
+		component: AboutComponent,
+	},
 ]
 
 @NgModule({
-    imports: [
-        RouterModule.forRoot(routes, { useHash: APP_CONFIG.production }),
-    ],
-    exports: [RouterModule]
+	imports: [RouterModule.forRoot(routes, { useHash: APP_CONFIG.production })],
+	exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

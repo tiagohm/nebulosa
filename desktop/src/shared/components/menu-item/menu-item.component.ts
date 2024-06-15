@@ -4,55 +4,54 @@ import { InputSwitchChangeEvent } from 'primeng/inputswitch'
 import { Severity, TooltipPosition } from '../../types/app.types'
 
 export interface MenuItemCommandEvent {
-    originalEvent?: Event
-    item?: MenuItem
-    index?: number
-    parentItem?: MenuItem // Slide menu
-    level?: number // Slide menu
+	originalEvent?: Event
+	item?: MenuItem
+	index?: number
+	parentItem?: MenuItem // Slide menu
+	level?: number // Slide menu
 }
 
 export interface MenuItem {
-    separator?: boolean
+	separator?: boolean
 
-    icon?: string
-    label?: string
-    visible?: boolean
-    disabled?: boolean
-    severity?: Severity
-    data?: any
+	icon?: string
+	label?: string
+	visible?: boolean
+	disabled?: boolean
+	severity?: Severity
+	data?: any
 
-    tooltip?: string
-    tooltipPosition?: TooltipPosition
+	tooltip?: string
+	tooltipPosition?: TooltipPosition
 
-    badge?: string
-    badgeSeverity?: Severity
+	badge?: string
+	badgeSeverity?: Severity
 
-    checkable?: boolean
-    checked?: boolean
+	checkable?: boolean
+	checked?: boolean
 
-    selectable?: boolean
-    selected?: boolean
+	selectable?: boolean
+	selected?: boolean
 
-    toggleable?: boolean
-    toggled?: boolean
+	toggleable?: boolean
+	toggled?: boolean
 
-    items?: MenuItem[] // Context menu
-    slideMenu?: MenuItem[] // Submenu for Slider menu
-    toolbarMenu?: MenuItem[] // Menu bar on menu item
-    splitButtonMenu?: MenuItem[] // Menu for SplitButton
+	items?: MenuItem[] // Context menu
+	slideMenu?: MenuItem[] // Submenu for Slider menu
+	toolbarMenu?: MenuItem[] // Menu bar on menu item
+	splitButtonMenu?: MenuItem[] // Menu for SplitButton
 
-    command?: (event: MenuItemCommandEvent) => void
-    check?: (event: CheckboxChangeEvent) => void
-    toggle?: (event: InputSwitchChangeEvent) => void
+	command?: (event: MenuItemCommandEvent) => void
+	check?: (event: CheckboxChangeEvent) => void
+	toggle?: (event: InputSwitchChangeEvent) => void
 }
 
 @Component({
-    selector: 'neb-menu-item',
-    templateUrl: './menu-item.component.html',
-    styleUrls: ['./menu-item.component.scss'],
+	selector: 'neb-menu-item',
+	templateUrl: './menu-item.component.html',
+	styleUrls: ['./menu-item.component.scss'],
 })
 export class MenuItemComponent {
-
-    @Input({ required: true })
-    readonly item!: MenuItem
+	@Input({ required: true })
+	readonly item!: MenuItem
 }
