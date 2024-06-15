@@ -1,16 +1,16 @@
 :host {
-    ::ng-deep {
-        .p-listbox-list-wrapper {
-            max-height: calc(100vh - 175px) !important;
-        }
-    }
+	::ng-deep {
+		.p-listbox-list-wrapper {
+			max-height: calc(100vh - 175px) !important;
+		}
+	}
 }
 
 .properties {
-    height: calc(100vh - 100px);
-    overflow-y: auto;
+	height: calc(100vh - 100px);
+	overflow-y: auto;
 }
 
 .properties::-webkit-scrollbar {
-    display: none;
+	display: none;
 }

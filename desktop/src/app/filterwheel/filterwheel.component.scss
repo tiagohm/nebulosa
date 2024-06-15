@@ -1,10 +1,10 @@
 .filter {
-    &.current {
-        border-left: 5px solid #00ffe0;
-        background-color: #38363f;
-    }
+	&.current {
+		border-left: 5px solid #00ffe0;
+		background-color: #38363f;
+	}
 
-    &:not(.current):hover {
-        background-color: #1a1a1a;
-    }
+	&:not(.current):hover {
+		background-color: #1a1a1a;
+	}
 }

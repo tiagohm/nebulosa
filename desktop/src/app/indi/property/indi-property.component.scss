@@ -1,21 +1,21 @@
 :host {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    display: block;
-    margin-bottom: 4px;
+	background: rgba(0, 0, 0, 0.1);
+	border-radius: 8px;
+	display: block;
+	margin-bottom: 4px;
 }
 
 .mdi.mdi-circle {
-    &.IDLE {
-        color: #039be5;
-    }
-    &.OK {
-        color: #43a047;
-    }
-    &.BUSY {
-        color: #f57c00;
-    }
-    &.ALERT {
-        color: #e53935;
-    }
+	&.IDLE {
+		color: #039be5;
+	}
+	&.OK {
+		color: #43a047;
+	}
+	&.BUSY {
+		color: #f57c00;
+	}
+	&.ALERT {
+		color: #e53935;
+	}
 }
