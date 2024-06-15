@@ -13,6 +13,8 @@ export type ImageFormat = 'FITS' | 'XISF' | 'PNG' | 'JPG'
 
 export type Bitpix = 'BYTE' | 'SHORT' | 'INTEGER' | 'LONG' | 'FLOAT' | 'DOUBLE'
 
+export type LiveStackingMode = 'NONE' | 'RAW' | 'STACKED'
+
 export interface FITSHeaderItem {
     name: string
     value: string

@@ -17,7 +17,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { Angle, EquatorialCoordinateJ2000 } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
-import { AnnotationInfoDialog, DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, StarDetectionDialog } from '../../shared/types/image.types'
+import { AnnotationInfoDialog, DEFAULT_FOV, DetectedStar, EMPTY_IMAGE_SOLVED, FITSHeaderItem, FOV, IMAGE_STATISTICS_BIT_OPTIONS, ImageAnnotation, ImageAnnotationDialog, ImageChannel, ImageData, ImageFITSHeadersDialog, ImageFOVDialog, ImageInfo, ImageROI, ImageSCNRDialog, ImageSaveDialog, ImageSolved, ImageSolverDialog, ImageStatisticsBitOption, ImageStretchDialog, ImageTransformation, LiveStackingMode, StarDetectionDialog } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
@@ -50,7 +50,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     imageInfo?: ImageInfo
     private imageURL!: string
     imageData: ImageData = {}
-    showLiveStackedImage?: boolean
+    liveStackingMode: LiveStackingMode = 'NONE'
 
     readonly scnrChannels: { name: string, value?: ImageChannel }[] = [
         { name: 'None', value: undefined },
@@ -457,11 +457,32 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     }
 
     get imagePath() {
-        return (this.showLiveStackedImage && this.imageData.liveStackedPath) || this.imageData.path
+        if (this.liveStackingMode === 'NONE' || this.liveStackingMode === 'RAW' || !this.imageData.liveStackedPath) {
+            return this.imageData.path
+        } else {
+            return this.imageData.liveStackedPath
+        }
     }
 
     get canPlateSolve() {
         return this.solver.type !== 'SIRIL' || (this.solver.focalLength > 0 && this.solver.pixelSize > 0)
+    }
+
+    private readonly liveStackingMenuItem: MenuItem = {
+        label: 'RAW',
+        icon: 'mdi mdi-image-multiple',
+        tooltip: 'Live Stacking',
+        visible: false,
+        splitButtonMenu: [
+            {
+                label: 'RAW',
+                command: () => this.changeLiveStackingMode('RAW'),
+            },
+            {
+                label: 'STACKED',
+                command: () => this.changeLiveStackingMode('STACKED'),
+            },
+        ]
     }
 
     constructor(
@@ -476,22 +497,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
     ) {
         app.title = 'Image'
 
-        app.topMenu.push({
-            label: 'Live Stacking',
-            toggleable: true,
-            visible: false,
-            toggle: (event) => {
-                if (event.originalEvent) {
-                    this.showLiveStackedImage = !!event.checked
-
-                    if (this.showLiveStackedImage) {
-                        this.disableCalibration(true)
-                    }
-
-                    this.loadImage(true)
-                }
-            },
-        })
+        app.topMenu.push(this.liveStackingMenuItem)
 
         app.topMenu.push({
             icon: 'mdi mdi-fullscreen',
@@ -538,17 +544,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         electron.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
             if (event.state === 'EXPOSURE_FINISHED' && event.camera.id === this.imageData.camera?.id) {
                 ngZone.run(() => {
-                    if (this.showLiveStackedImage === undefined) {
+                    if (this.liveStackingMode === 'NONE') {
                         if (event.liveStackedPath) {
-                            this.showLiveStackedImage = true
-                            this.app.topMenu[0].toggled = true
-                            this.app.topMenu[0].visible = true
-                            this.disableCalibration(true)
+                            this.changeLiveStackingMode('STACKED')
                         }
                     } else if (!event.liveStackedPath) {
-                        this.showLiveStackedImage = undefined
-                        this.app.topMenu[0].toggled = false
-                        this.app.topMenu[0].visible = false
+                        this.changeLiveStackingMode('NONE')
                     }
 
                     this.imageData.path = event.savedPath
@@ -688,6 +689,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         if (this.imageData.liveStackedPath && force) {
             await this.api.closeImage(this.imageData.liveStackedPath)
         }
+    }
+
+    private changeLiveStackingMode(mode: LiveStackingMode) {
+        this.liveStackingMode = mode
+
+        if (this.liveStackingMode !== 'NONE') {
+            this.disableCalibration(true)
+        }
+
+        this.liveStackingMenuItem.visible = this.liveStackingMode !== 'NONE'
+        this.liveStackingMenuItem.label = mode
+
+        this.loadImage(true)
     }
 
     private roiResizableMove(event: any) {
@@ -872,7 +886,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
         const image = this.image.nativeElement
 
         const transformation = structuredClone(this.transformation)
-        if (this.calibrationViaCamera && !this.showLiveStackedImage) transformation.calibrationGroup = this.imageData.capture?.calibrationGroup
+        if (this.calibrationViaCamera && this.liveStackingMode !== 'NONE') transformation.calibrationGroup = this.imageData.capture?.calibrationGroup
         const { info, blob } = await this.api.openImage(path, transformation, this.imageData.camera)
 
         this.imageInfo = info
