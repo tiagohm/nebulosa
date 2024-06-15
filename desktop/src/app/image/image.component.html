@@ -232,7 +232,7 @@
 	<div class="grid mt-2">
 		<ng-container *ngIf="annotationInfo.info">
 			<div class="col-12">
-				<p-floatLabel>
+				<p-floatLabel class="w-full">
 					<input
 						pInputText
 						readonly
@@ -241,8 +241,8 @@
 					<label>Name</label>
 				</p-floatLabel>
 			</div>
-			<div class="col-6">
-				<p-floatLabel>
+			<div class="col-4">
+				<p-floatLabel class="w-full">
 					<input
 						pInputText
 						readonly
@@ -251,8 +251,8 @@
 					<label>RA (J2000)</label>
 				</p-floatLabel>
 			</div>
-			<div class="col-6">
-				<p-floatLabel>
+			<div class="col-4">
+				<p-floatLabel class="w-full">
 					<input
 						pInputText
 						readonly
@@ -262,9 +262,21 @@
 				</p-floatLabel>
 			</div>
 			<div
-				class="col-6"
+				class="col-4"
+				*ngIf="annotationInfo.info.constellation">
+				<p-floatLabel class="w-full">
+					<input
+						pInputText
+						readonly
+						value="{{ annotationInfo.info.constellation }} | {{ annotationInfo.info.constellation | enum }}"
+						class="border-0 p-inputtext-sm" />
+					<label>Constellation</label>
+				</p-floatLabel>
+			</div>
+			<div
+				class="col-3"
 				*ngIf="annotationInfo.info.magnitude">
-				<p-floatLabel>
+				<p-floatLabel class="w-full">
 					<input
 						pInputText
 						readonly
@@ -275,20 +287,8 @@
 			</div>
 			<div
 				class="col-6"
-				*ngIf="annotationInfo.info.constellation">
-				<p-floatLabel>
-					<input
-						pInputText
-						readonly
-						[value]="annotationInfo.info.constellation"
-						class="border-0 p-inputtext-sm" />
-					<label>Constellation</label>
-				</p-floatLabel>
-			</div>
-			<div
-				class="col-6"
 				*ngIf="annotationInfo.info.type">
-				<p-floatLabel>
+				<p-floatLabel class="w-full">
 					<input
 						pInputText
 						readonly
@@ -298,15 +298,15 @@
 				</p-floatLabel>
 			</div>
 			<div
-				class="col-6"
+				class="col-3"
 				*ngIf="annotationInfo.info.distance">
-				<p-floatLabel>
+				<p-floatLabel class="w-full">
 					<input
 						pInputText
 						readonly
-						value="{{ annotationInfo.info.distance <= 0 ? '-' : annotationInfo.info.distance }}"
+						value="{{ annotationInfo.info.distance <= 0 ? '-' : annotationInfo.info.distance.toFixed(3) }}"
 						class="border-0 p-inputtext-sm" />
-					<label>Distance (ly)</label>
+					<label>Dist. (ly)</label>
 				</p-floatLabel>
 			</div>
 		</ng-container>
