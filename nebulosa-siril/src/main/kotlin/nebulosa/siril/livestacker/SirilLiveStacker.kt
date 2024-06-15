@@ -8,7 +8,6 @@ import nebulosa.log.loggerFor
 import nebulosa.siril.command.*
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
-import kotlin.io.path.isSymbolicLink
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 
@@ -86,7 +85,7 @@ data class SirilLiveStacker(
         @JvmStatic
         fun Path.deleteStackingFiles() {
             for (file in listDirectoryEntries("*.fit")) {
-                if (file.isSymbolicLink() && LIVE_STACK_FIT_REGEX.matches(file.name)) {
+                if (LIVE_STACK_FIT_REGEX.matches(file.name)) {
                     file.deleteIfExists()
                 }
             }

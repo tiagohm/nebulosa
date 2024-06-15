@@ -121,7 +121,7 @@ data class PixInsightLiveStacker(
         referencePath.deleteIfExists()
         calibratedPath.deleteIfExists()
         alignedPath.deleteIfExists()
-        // stackedPath.deleteIfExists()
+        stackedPath.deleteIfExists()
     }
 
     companion object {

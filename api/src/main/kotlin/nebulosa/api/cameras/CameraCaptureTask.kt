@@ -30,6 +30,7 @@ import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.path.copyTo
 import kotlin.io.path.exists
 
 data class CameraCaptureTask(
@@ -331,7 +332,12 @@ data class CameraCaptureTask(
             null
         } else {
             sendEvent(CameraCaptureState.STACKING)
-            liveStacker!!.add(path)
+
+            liveStacker!!.add(path)?.let {
+                val stackedPath = Path.of("${path.parent}", "STACKED.fits")
+                it.copyTo(stackedPath, true)
+                stackedPath
+            }
         }
     }
 
