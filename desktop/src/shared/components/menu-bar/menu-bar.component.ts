@@ -1,5 +1,10 @@
-import { Component, Input } from '@angular/core'
+import { Component, EventEmitter, Input, Output } from '@angular/core'
 import { MenuItem } from '../menu-item/menu-item.component'
+
+export interface SplitButtonClickEvent {
+    event: MouseEvent
+    item: MenuItem
+}
 
 @Component({
     selector: 'neb-menu-bar',
@@ -10,4 +15,7 @@ export class MenuBarComponent {
 
     @Input({ required: true })
     readonly model!: MenuItem[]
+
+    @Output()
+    readonly onSplitButtonClick = new EventEmitter<SplitButtonClickEvent>()
 }

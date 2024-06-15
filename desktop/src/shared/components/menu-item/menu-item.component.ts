@@ -39,6 +39,7 @@ export interface MenuItem {
     items?: MenuItem[] // Context menu
     slideMenu?: MenuItem[] // Submenu for Slider menu
     toolbarMenu?: MenuItem[] // Menu bar on menu item
+    splitButtonMenu?: MenuItem[] // Menu for SplitButton
 
     command?: (event: MenuItemCommandEvent) => void
     check?: (event: CheckboxChangeEvent) => void
