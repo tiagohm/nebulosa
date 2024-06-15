@@ -26,33 +26,33 @@
                 <p-tabPanel header="TPPA">
                     <div class="grid mt-3">
                         <div class="col-5 gap-2 align-items-center">
-                            <span class="p-float-label">
+                            <p-floatLabel class="w-full">
                                 <p-dropdown [options]="['ASTROMETRY_NET_ONLINE', 'ASTAP']" [(ngModel)]="tppaRequest.plateSolver.type"
                                             [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0" (ngModelChange)="plateSolverChanged()" />
                                 <label>Plate Solver</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-4 align-items-center">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="tppaRequest.stepDuration"
                                                [showButtons]="true" [min]="1" [max]="60" (ngModelChange)="savePreference()" scrollableNumber />
                                 <label>Step duration (s)</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3 flex flex-column align-items-center justify-content-start">
-                            <span class="p-float-label">
+                            <p-floatLabel class="w-full">
                                 <p-dropdown [options]="['EAST', 'WEST']" [(ngModel)]="tppaRequest.stepDirection" styleClass="p-inputtext-sm border-0"
                                             [autoDisplayFirst]="false" (ngModelChange)="savePreference()" />
                                 <label>Direction</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-4 align-items-center">
-                            <span class="p-float-label">
+                            <p-floatLabel class="w-full">
                                 <p-dropdown [disabled]="!mount.connected" [options]="mount.slewRates" [(ngModel)]="tppaRequest.stepSpeed"
                                             styleClass="p-inputtext-sm border-0" optionLabel="label" optionValue="name"
                                             [autoDisplayFirst]="false" (ngModelChange)="savePreference()" />
                                 <label>Step speed</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-4 flex align-items-center justify-content-center text-center gap-2 text-sm">
                             <p-checkbox [binary]="true" [(ngModel)]="tppaRequest.stopTrackingWhenDone" label="Stop tracking when done"
@@ -100,25 +100,25 @@
                 <p-tabPanel header="DARV">
                     <div class="grid mt-3">
                         <div class="col-4">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvRequest.initialPause"
                                                [showButtons]="true" [min]="1" [max]="60" (ngModelChange)="initialPauseChanged()" scrollableNumber />
                                 <label>Initial pause (s)</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-4">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="darvRequest.exposureTime"
                                                [showButtons]="true" [min]="1" [max]="600" (ngModelChange)="driftForChanged()" scrollableNumber />
                                 <label>Drift for (s)</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-4">
-                            <span class="p-float-label">
+                            <p-floatLabel class="w-full">
                                 <p-dropdown [options]="['NORTHERN', 'SOUTHERN']" [(ngModel)]="darvHemisphere" styleClass="p-inputtext-sm border-0"
                                             [autoDisplayFirst]="false" (ngModelChange)="savePreference()" />
                                 <label>Hemisphere</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                     </div>
                     <div class="grid mt-2">

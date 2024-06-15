@@ -9,12 +9,12 @@
             <span class="text-xl text-bold">{{ item.prefix }}</span>
         </div>
         <div class="col-8 flex justify-content-center">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [(ngModel)]="item.value" (ngModelChange)="calculateFormula()"
                                [minFractionDigits]="item.minFractionDigits ?? 0" [maxFractionDigits]="item.maxFractionDigits ?? 4"
                                [min]="item.min ?? 0" [showButtons]="true" styleClass="border-0 p-inputtext-sm" locale="en" scrollableNumber />
                 <label>{{ item.label }}</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-2 align-items-center justify-content-start">
             <span class="text-xl text-bold">{{ item.suffix }}</span>
@@ -25,11 +25,11 @@
 <p class="text-bold text-center text-5xl mt-0 mb-1">=</p>
 <div class="flex flex-row justify-content-center align-items-center gap-2">
     <span class="text-2xl text-bold">{{ formula.result.prefix }}</span>
-    <span class="p-float-label">
+    <p-floatLabel>
         <p-inputNumber readonly [ngModel]="formula.result.value" [minFractionDigits]="formula.result.minFractionDigits ?? 0"
                        [maxFractionDigits]="formula.result.maxFractionDigits ?? 4" styleClass="border-0 p-inputtext-sm" locale="en" />
         <label>{{ formula.result.label }}</label>
-    </span>
+    </p-floatLabel>
     <span class="text-xl text-bold">{{ formula.result.suffix }}</span>
 </div>
 <div class="flex justify-content-center mt-3 text-sm" *ngIf="formula.tip">

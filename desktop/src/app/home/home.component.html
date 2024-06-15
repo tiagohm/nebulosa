@@ -3,7 +3,7 @@
         <div class="col-12 px-2 gap-1">
             <p-button (onClick)="addConnection()" size="small" icon="mdi mdi-plus" severity="success" [text]="true" pTooltip="New connection"
                       tooltipPosition="bottom" [positionLeft]="16" />
-            <span class="p-float-label">
+            <p-floatLabel class="w-full">
                 <p-dropdown [disabled]="connected" [options]="connections" [(ngModel)]="connection"
                             styleClass="border-0 p-inputtext-sm w-full" [autoDisplayFirst]="false" emptyMessage="No connection found">
                     <ng-template let-item pTemplate="selectedItem">
@@ -31,7 +31,7 @@
                     </ng-template>
                 </p-dropdown>
                 <label>Connection</label>
-            </span>
+            </p-floatLabel>
             <p-button *ngIf="!connected" [disabled]="!connection" (onClick)="connect()" size="small" icon="mdi mdi-connection" severity="info"
                       [text]="true" pTooltip="Connect" tooltipPosition="bottom" />
             <p-button *ngIf="connected" [disabled]="!connection" (onClick)="disconnect()" size="small" icon="mdi mdi-close" severity="danger"
@@ -176,23 +176,23 @@
 <p-dialog header="Connection" [modal]="true" [draggable]="false" [(visible)]="showConnectionDialog" [style]="{width: '90vw'}">
     <div class="grid p-2" *ngIf="newConnection">
         <div class="col-12">
-            <span class="p-float-label">
+            <p-floatLabel class="w-full">
                 <input pInputText class="p-inputtext-sm border-0 w-full" [maxLength]="32" [(ngModel)]="newConnection[0].name" />
                 <label>Name</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-12">
-            <span class="p-float-label">
+            <p-floatLabel class="w-full">
                 <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="newConnection[0].host" />
                 <label>Host</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-4">
-            <span class="p-float-label" style="min-width: 80px;">
+            <p-floatLabel style="min-width: 80px;">
                 <p-inputNumber [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" placeholder="7624"
                                [(ngModel)]="newConnection[0].port" [min]="80" [max]="65535" [format]="false" scrollableNumber />
                 <label>Port</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-8">
             <p-selectButton [options]="connectionTypes" [(ngModel)]="newConnection[0].type" styleClass="border-0 w-full" />

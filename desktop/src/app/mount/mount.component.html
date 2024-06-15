@@ -1,10 +1,10 @@
 <div class="container px-4 py-3">
     <div class="grid flex align-items-center">
         <div class="col-8 align-items-center gap-2">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly [value]="mount.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Mount</label>
-            </span>
+            </p-floatLabel>
             <p-button *ngIf="mount.connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-close"
                       size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!mount.connected" [disabled]="!mount || slewing || parking" (onClick)="connect()" icon="mdi mdi-connection"
@@ -23,64 +23,64 @@
     </div>
     <div class="grid pt-2">
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="rightAscensionJ2000" />
                 <label>RA (J2000)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="declinationJ2000" />
                 <label>DEC (J2000)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="rightAscension" />
                 <label>RA</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="declination" />
                 <label>DEC</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="azimuth" />
                 <label>Azimuth</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="altitude" />
                 <label>Altitude</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="lst" />
                 <label>LST</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="constellation ?? '-'" />
                 <label>Constellation</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" value="{{meridianAt}} (-{{ timeLeftToMeridianFlip }})" />
                 <label>Meridian at</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="pierSide" />
                 <label>Pier</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
         </div>
@@ -118,18 +118,18 @@
             </div>
         </div>
         <div class="col-4">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText noDropdown [disabled]="!mount.connected || slewing || parking || parked" class="p-inputtext-sm border-0 w-full"
                        [(ngModel)]="targetRightAscension" (ngModelChange)="computeTargetCoordinates()" />
                 <label>RA (h)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-4">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText noDropdown [disabled]="!mount.connected || slewing || parking || parked" class="p-inputtext-sm border-0 w-full"
                        [(ngModel)]="targetDeclination" (ngModelChange)="computeTargetCoordinates()" />
                 <label>DEC (°)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-4">
             <p-splitButton noDropdown [disabled]="!mount.connected || slewing || parking || parked" [label]="targetCoordinateCommand.label"
@@ -202,20 +202,20 @@
                               pTooltip="Home" tooltipPosition="bottom" severity="info" [text]="true" size="small" />
                 </div>
                 <div class="col-6">
-                    <span class="p-float-label">
+                    <p-floatLabel class="w-full">
                         <p-dropdown [disabled]="!mount.connected || slewing || parking || parked" [options]="trackModes" [(ngModel)]="trackMode"
                                     (ngModelChange)="trackModeChanged()" [autoDisplayFirst]="false"
                                     styleClass="p-inputtext-sm border-0" emptyMessage="No mode found" />
                         <label>Tracking mode</label>
-                    </span>
+                    </p-floatLabel>
                 </div>
                 <div class="col-6">
-                    <span class="p-float-label">
+                    <p-floatLabel class="w-full">
                         <p-dropdown [disabled]="!mount.connected || slewing || parking || parked" [options]="slewRates" [(ngModel)]="slewRate"
                                     (ngModelChange)="slewRateChanged()" [autoDisplayFirst]="false"
                                     styleClass="p-inputtext-sm border-0" emptyMessage="No rate found" />
                         <label>Slew rate</label>
-                    </span>
+                    </p-floatLabel>
                 </div>
             </div>
         </div>
@@ -225,24 +225,24 @@
 <p-dialog header="Remote Control" [modal]="true" [draggable]="false" [(visible)]="remoteControl.showDialog" [style]="{maxWidth: '90vw'}">
     <div class="grid p-2">
         <div class="col-4">
-            <span class="p-float-label">
+            <p-floatLabel class="w-full">
                 <p-dropdown [options]="'MOUNT_REMOTE_CONTROL_TYPE' | dropdownOptions" [(ngModel)]="remoteControl.type" [autoDisplayFirst]="false"
                             styleClass="p-inputtext-sm border-0" />
                 <label>Type</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-5">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="remoteControl.host" placeholder="0.0.0.0" />
                 <label>Host</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="remoteControl.port"
                                [showButtons]="true" [min]="1024" [max]="65535" placeholder="10001" scrollableNumber />
                 <label>Port</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-12 pt-0 justify-content-center flex align-items-center text-sm">
             <span *ngIf="remoteControl.type === 'LX200'">Use together with the <a target="_blank"

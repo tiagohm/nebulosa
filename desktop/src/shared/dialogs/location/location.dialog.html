@@ -1,37 +1,37 @@
 <div class="grid pt-2">
     <div class="col-12">
-        <span class="p-float-label">
+        <p-floatLabel class="w-full">
             <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="location.name" />
             <label>Name</label>
-        </span>
+        </p-floatLabel>
     </div>
     <div class="col-6">
-        <span class="p-float-label">
+        <p-floatLabel>
             <p-inputNumber locale="en" type="number" styleClass="p-inputtext-sm border-0 w-full" [min]="-720" [max]="720"
                            [(ngModel)]="location.offsetInMinutes" [showButtons]="true" [allowEmpty]="false" scrollableNumber />
             <label>UTC Offset (min)</label>
-        </span>
+        </p-floatLabel>
     </div>
     <div class="col-6">
-        <span class="p-float-label">
+        <p-floatLabel>
             <p-inputNumber locale="en" type="number" styleClass="p-inputtext-sm border-0 w-full" [min]="-1000" [max]="10000"
                            [(ngModel)]="location.elevation" [showButtons]="true" [allowEmpty]="false" scrollableNumber />
             <label>Elevation (m)</label>
-        </span>
+        </p-floatLabel>
     </div>
     <div class="col-6">
-        <span class="p-float-label">
+        <p-floatLabel>
             <p-inputNumber locale="en" styleClass="p-inputtext-sm border-0 w-full" [min]="-90" [max]="90" [maxFractionDigits]="5"
                            [(ngModel)]="location.latitude" [allowEmpty]="false" scrollableNumber />
             <label>Latitude</label>
-        </span>
+        </p-floatLabel>
     </div>
     <div class="col-6">
-        <span class="p-float-label">
+        <p-floatLabel>
             <p-inputNumber locale="en" styleClass="p-inputtext-sm border-0 w-full" [min]="-180" [max]="180" [maxFractionDigits]="5"
                            [(ngModel)]="location.longitude" [allowEmpty]="false" scrollableNumber />
             <label>Longitude</label>
-        </span>
+        </p-floatLabel>
     </div>
     <div class=col-12>
         <neb-map #map [(latitude)]="location.latitude" [(longitude)]="location.longitude" />

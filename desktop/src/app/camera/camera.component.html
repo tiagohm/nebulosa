@@ -1,10 +1,10 @@
 <div class="container px-4 py-3">
     <div class="grid py-1 flex align-items-center">
         <div class="col-8 align-items-center gap-2">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly [value]="camera.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Camera</label>
-            </span>
+            </p-floatLabel>
             <p-button *ngIf="!camera || camera.connected" [disabled]="!camera || running" (onClick)="connect()" icon="mdi mdi-close"
                       size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!camera.connected" [disabled]="!camera || running" (onClick)="connect()" icon="mdi mdi-connection"
@@ -56,13 +56,13 @@
         </div>
         <div class="col-6 flex flex-column">
             <div class="flex justify-content-center align-items-center gap-1">
-                <span class="p-float-label">
+                <p-floatLabel>
                     <p-inputNumber [disabled]="!camera.connected || !camera.canSetTemperature || running" [(ngModel)]="setpointTemperature"
                                    mode="decimal" [showButtons]="true" (ngModelChange)="savePreference()" [step]="0.1" suffix="℃" [min]="-50"
                                    [max]="50" locale="en" styleClass="p-inputtext-sm border-0" [allowEmpty]="false" [minFractionDigits]="1"
                                    scrollableNumber />
                     <label>Temperature ({{ camera.temperature | number: '1.1-1' }}°C)</label>
-                </span>
+                </p-floatLabel>
                 <p-button [disabled]="!camera.connected || !camera.canSetTemperature || running" (onClick)="applySetpointTemperature()"
                           icon="mdi mdi-check" size="small" severity="success" pTooltip="Apply" tooltipPosition="bottom" [text]="true" />
             </div>
@@ -71,24 +71,24 @@
     <div class="grid py-1 flex align-items-center">
         <div class="col-6">
             <div class="flex justify-content-center align-items-center gap-1">
-                <span class="p-float-label">
+                <p-floatLabel>
                     <p-inputNumber [disabled]="!canExposureTime || !camera.connected || running" [(ngModel)]="request.exposureTime" mode="decimal"
                                    [showButtons]="true" [step]="1.0" [min]="exposureTimeMin" [max]="exposureTimeMax" locale="en"
                                    styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                     <label>Exposure Time</label>
-                </span>
+                </p-floatLabel>
                 <p-menu #exposureTimeMenu [model]="exposureTimeUnitModel" [popup]="true" appendTo="body" />
                 <button pButton [disabled]="!canExposureTime || !canExposureTimeUnit || !camera.connected || running" type="button"
                         (click)="exposureTimeMenu.toggle($event)" [label]="exposureTimeUnit"></button>
             </div>
         </div>
         <div class="col-6">
-            <span class="p-float-label">
+            <p-floatLabel class="w-full">
                 <p-dropdown [disabled]="!canFrameType || !camera.connected || running" [options]="frameTypeOptions" [(ngModel)]="request.frameType"
                             styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false"
                             (ngModelChange)="savePreference()" />
                 <label>Frame Type</label>
-            </span>
+            </p-floatLabel>
         </div>
     </div>
     <div class="grid py-1 flex align-items-center">
@@ -98,55 +98,55 @@
                             styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || exposureMode === 'SINGLE' || running" [(ngModel)]="request.exposureDelay"
                                mode="decimal" [showButtons]="true" [step]="1" [min]="0" [max]="60" locale="en" styleClass="p-inputtext-sm border-0"
                                [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Delay (s)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!canExposureAmount || !camera.connected || exposureMode !== 'FIXED' || running"
                                [(ngModel)]="request.exposureAmount" mode="decimal" [showButtons]="true" [step]="1.0" [min]="1" [max]="1000"
                                locale="en" styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()"
                                scrollableNumber />
                 <label>Count</label>
-            </span>
+            </p-floatLabel>
         </div>
     </div>
     <div class="grid py-1 flex align-items-center">
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.x" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="camera.minX" [max]="camera.maxX" locale="en" styleClass="p-inputtext-sm border-0"
                                [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>X</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.y" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="camera.minY" [max]="camera.maxY" locale="en" styleClass="p-inputtext-sm border-0"
                                [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Y</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.width" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="camera.minWidth" [max]="camera.maxWidth" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Width</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || !subFrame || running" [(ngModel)]="request.height" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="camera.minHeight" [max]="camera.maxHeight" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Height</label>
-            </span>
+            </p-floatLabel>
         </div>
     </div>
     <div class="grid py-1 flex align-items-center">
@@ -159,46 +159,46 @@
                       severity="info" size="small" pTooltip="Full size" tooltipPosition="bottom" [text]="true" />
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.binX" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="1" [max]="4" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
                                (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Bin X</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.binY" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="1" [max]="4" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
                                (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Bin Y</label>
-            </span>
+            </p-floatLabel>
         </div>
     </div>
     <div class="grid py-1 flex align-items-center">
         <div class="col-6">
-            <span class="p-float-label">
+            <p-floatLabel class="w-full">
                 <p-dropdown [disabled]="!camera.connected || running || !camera.frameFormats.length" [options]="camera.frameFormats"
                             [(ngModel)]="request.frameFormat" styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()"
                             [autoDisplayFirst]="false" />
                 <label>Frame Format</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.gain" mode="decimal" [showButtons]="true"
                                [step]="1.0" [min]="camera.gainMin" [max]="camera.gainMax" styleClass="p-inputtext-sm border-0" [allowEmpty]="false"
                                (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Gain</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || running || !camera.offsetMax" [(ngModel)]="request.offset" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="camera.offsetMin" [max]="camera.offsetMax"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Offset</label>
-            </span>
+            </p-floatLabel>
         </div>
     </div>
     <div class="grid mt-0">
@@ -236,20 +236,20 @@
                            (ngModelChange)="savePreference()" />
         </div>
         <div class="col-6">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || running || !request.dither.enabled" [showButtons]="true"
                                styleClass="border-0 p-inputtext-sm w-full" [min]="0.1" [max]="60" [(ngModel)]="request.dither.amount" [step]="0.1"
                                locale="en" [minFractionDigits]="1" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Dither (px)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-6 col-offset-3">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || running || !request.dither.enabled" [showButtons]="true"
                                styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
                                [(ngModel)]="request.dither.afterExposures" [step]="1" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>After exposures</label>
-            </span>
+            </p-floatLabel>
         </div>
     </div>
 </p-dialog>
@@ -261,12 +261,12 @@
             <p-inputSwitch [(ngModel)]="request.liveStacking.enabled" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-8 align-items-center">
-            <span class="p-float-label">
+            <p-floatLabel class="w-full">
                 <p-dropdown [disabled]="!request.liveStacking.enabled" [options]="'LIVE_STACKER' | dropdownOptions"
                             [(ngModel)]="request.liveStacking.type" styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()"
                             [autoDisplayFirst]="false" />
                 <label>Live Stacker</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-6 flex flex-column align-items-center justify-content-center text-center gap-2">
             <span class="text-xs text-gray-100">32-bits (slower)</span>
@@ -274,24 +274,25 @@
                            [(ngModel)]="request.liveStacking.use32Bits" (ngModelChange)="savePreference()" />
         </div>
         <div class="col-6 align-items-center">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!request.liveStacking.enabled || request.liveStacking.type !== 'SIRIL'" [showButtons]="true"
                                styleClass="border-0 p-inputtext-sm w-full" [min]="0" [max]="360" [(ngModel)]="request.liveStacking.rotate"
                                [step]="0.1" locale="en" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Rotate (°)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-12 align-items-center">
             <neb-path-chooser [disabled]="!request.liveStacking.enabled" [directory]="false" label="Dark File"
-                              key="LS_DARK" [(path)]="request.liveStacking.dark" class="w-full" (pathChange)="savePreference()" />
+                              key="LS_DARK_PATH" [(path)]="request.liveStacking.dark" class="w-full" (pathChange)="savePreference()" />
         </div>
         <div class="col-12 align-items-center">
             <neb-path-chooser [disabled]="!request.liveStacking.enabled" [directory]="false" label="Flat File"
-                              key="LS_FLAT" [(path)]="request.liveStacking.flat" class="w-full" (pathChange)="savePreference()" />
+                              key="LS_FLAT_PATH" [(path)]="request.liveStacking.flat" class="w-full" (pathChange)="savePreference()" />
         </div>
         <div class="col-12 align-items-center">
             <neb-path-chooser [disabled]="!request.liveStacking.enabled || request.liveStacking.type !== 'PIXINSIGHT'" [directory]="false"
-                              label="Bias File" key="LS_BIAS" [(path)]="request.liveStacking.bias" class="w-full" (pathChange)="savePreference()" />
+                              label="Bias File" key="LS_BIAS_PATH" [(path)]="request.liveStacking.bias" class="w-full"
+                              (pathChange)="savePreference()" />
         </div>
     </div>
 </p-dialog>

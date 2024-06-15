@@ -220,16 +220,6 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
         }
     }
 
-    async chooseSavePath() {
-        const defaultPath = this.request.capture.savePath
-        const path = await this.electron.openDirectory({ defaultPath })
-
-        if (path) {
-            this.request.capture.savePath = path
-            this.savePreference()
-        }
-    }
-
     async start() {
         await this.browserWindow.openCameraImage(this.camera, 'FLAT_WIZARD')
         // TODO: Iniciar para cada filtro selecionado. Usar os eventos para percorrer (se houver filtro).

@@ -4,18 +4,18 @@
             <p-tabPanel header="PHD2" leftIcon="mdi mdi-target">
                 <div class="grid mt-3 px-4 flex align-items-center">
                     <div class="col-6 px-0">
-                        <span class="p-float-label">
+                        <p-floatLabel class="w-full">
                             <input pInputText [disabled]="connected" class="border-0 p-inputtext-sm w-full" placeholder="localhost"
                                    [(ngModel)]="host" />
                             <label>Host</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-3 pr-0">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="connected" [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full"
                                            placeholder="7624" [(ngModel)]="port" [format]="false" scrollableNumber />
                             <label>Port</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-2 text-center pr-0">
                         <p-button *ngIf="connected" (onClick)="guidingConnect()" icon="mdi mdi-close" size="small" severity="danger" [text]="true" />
@@ -32,57 +32,57 @@
                             <p-tabPanel header="Chart" leftIcon="mdi mdi-chart-bell-curve">
                                 <div class="grid mt-3">
                                     <div class="col-3">
-                                        <span class="p-float-label">
+                                        <p-floatLabel>
                                             <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                                                    value="{{ rmsRA.toFixed(2) + ' (' + (rmsRA * pixelScale).toFixed(2) + '\" )' }}" />
                                             <label>RMS RA</label>
-                                        </span>
+                                        </p-floatLabel>
                                     </div>
                                     <div class="col-3">
-                                        <span class="p-float-label">
+                                        <p-floatLabel>
                                             <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                                                    value="{{ rmsDEC.toFixed(2) + ' (' + (rmsDEC * pixelScale).toFixed(2) + '\" )' }}" />
                                             <label>RMS DEC</label>
-                                        </span>
+                                        </p-floatLabel>
                                     </div>
                                     <div class="col-3">
-                                        <span class="p-float-label">
+                                        <p-floatLabel>
                                             <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                                                    value="{{ rmsTotal.toFixed(2) + ' (' + (rmsTotal * pixelScale).toFixed(2) + '\" )' }}" />
                                             <label>RMS Total</label>
-                                        </span>
+                                        </p-floatLabel>
                                     </div>
                                     <div class="col-3">
-                                        <span class="p-float-label">
+                                        <p-floatLabel>
                                             <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="guideStep?.starMass ?? 0" />
                                             <label>Star mass</label>
-                                        </span>
+                                        </p-floatLabel>
                                     </div>
                                     <div class="col-2">
-                                        <span class="p-float-label">
+                                        <p-floatLabel>
                                             <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="guideStep?.hfd ?? 0" />
                                             <label>HFD</label>
-                                        </span>
+                                        </p-floatLabel>
                                     </div>
                                     <div class="col-2">
-                                        <span class="p-float-label">
+                                        <p-floatLabel>
                                             <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="guideStep?.snr ?? 0" />
                                             <label>SNR</label>
-                                        </span>
+                                        </p-floatLabel>
                                     </div>
                                     <div class="col-4">
-                                        <span class="p-float-label">
+                                        <p-floatLabel class="w-full">
                                             <p-dropdown [options]="plotModes" [(ngModel)]="plotMode" (ngModelChange)="plotModeChanged()"
                                                         styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
                                             <label>Plot Mode</label>
-                                        </span>
+                                        </p-floatLabel>
                                     </div>
                                     <div class="col-4">
-                                        <span class="p-float-label">
+                                        <p-floatLabel class="w-full">
                                             <p-dropdown [options]="yAxisUnits" [(ngModel)]="yAxisUnit" (ngModelChange)="yAxisUnitChanged()"
                                                         styleClass="p-inputtext-sm border-0" [autoDisplayFirst]="false" />
                                             <label>Unit</label>
-                                        </span>
+                                        </p-floatLabel>
                                     </div>
                                 </div>
                                 <div class="grid relative">
@@ -95,31 +95,31 @@
                             </p-tabPanel>
                             <p-tabPanel header="Settings" leftIcon="mdi mdi-cog">
                                 <div class="grid mt-3">
-                                    <div class="col-6">
-                                        <span class="p-float-label">
+                                    <div class="col-4">
+                                        <p-floatLabel>
                                             <p-inputNumber [disabled]="!connected || guiding" [showButtons]="true"
                                                            styleClass="border-0 p-inputtext-sm w-full" locale="en" [min]="1" [max]="25"
                                                            [(ngModel)]="settleAmount" (ngModelChange)="settleChanged()" [step]="0.1"
                                                            [minFractionDigits]="1" scrollableNumber />
                                             <label>Settle tolerance (px)</label>
-                                        </span>
+                                        </p-floatLabel>
                                     </div>
-                                    <div class="col-6">
-                                        <span class="p-float-label">
+                                    <div class="col-4">
+                                        <p-floatLabel>
                                             <p-inputNumber [disabled]="!connected || guiding" [showButtons]="true"
                                                            styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"
                                                            [(ngModel)]="settleTime" (ngModelChange)="settleChanged()" [step]="1" scrollableNumber />
                                             <label>Min settle time (s)</label>
-                                        </span>
+                                        </p-floatLabel>
                                     </div>
-                                    <div class="col-6">
-                                        <span class="p-float-label">
+                                    <div class="col-4">
+                                        <p-floatLabel>
                                             <p-inputNumber [disabled]="!connected || guiding" [showButtons]="true"
                                                            styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="60"
                                                            [(ngModel)]="settleTimeout" (ngModelChange)="settleChanged()" [step]="1"
                                                            scrollableNumber />
                                             <label>Settle timeout (s)</label>
-                                        </span>
+                                        </p-floatLabel>
                                     </div>
                                 </div>
                             </p-tabPanel>
@@ -145,19 +145,19 @@
                     </div>
                     <div class="col-4"></div>
                     <div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" [(ngModel)]="guideNorthDuration" [step]="1" [min]="1"
                                            [max]="1800000" locale="en" styleClass="p-inputtext-sm border-0" [showButtons]="true" scrollableNumber />
                             <label>North (ms)</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-4"></div>
                     <div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" [(ngModel)]="guideWestDuration" [step]="1" [min]="1"
                                            [max]="1800000" locale="en" styleClass="p-inputtext-sm border-0" [showButtons]="true" scrollableNumber />
                             <label>West (ms)</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-4">
                         <div class="grid">
@@ -200,21 +200,21 @@
                         </div>
                     </div>
                     <div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('EAST')"
                                            [(ngModel)]="guideEastDuration" [step]="1" [min]="1" [max]="1800000" locale="en"
                                            styleClass="p-inputtext-sm border-0" [showButtons]="true" scrollableNumber />
                             <label>East (ms)</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-4"></div>
                     <div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="!guideOutputConnected || pulseGuiding" (onClick)="guidePulseStart('SOUTH')"
                                            [(ngModel)]="guideSouthDuration" [step]="1" [min]="1" [max]="1800000" locale="en"
                                            styleClass="p-inputtext-sm border-0" [showButtons]="true" scrollableNumber />
                             <label>South (ms)</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-4"></div>
                 </div>

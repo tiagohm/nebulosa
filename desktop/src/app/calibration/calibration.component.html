@@ -51,10 +51,10 @@
 <p-dialog header="New Group" [modal]="true" [(visible)]="showNewGroupDialog" [style]="{width: '80vw', maxWidth: '240px'}">
     <div class="grid p-2">
         <div class="col-12">
-            <span class="p-float-label">
+            <p-floatLabel class="w-full">
                 <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="newGroupName" />
                 <label>Name</label>
-            </span>
+            </p-floatLabel>
         </div>
     </div>
     <ng-template pTemplate="footer">

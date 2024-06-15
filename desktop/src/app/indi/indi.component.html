@@ -1,11 +1,11 @@
 <div class="container px-4 py-3">
     <div class="grid flex align-items-center">
         <div class="col-12 sm:col-4">
-            <span class="p-float-label">
+            <p-floatLabel class="w-full">
                 <p-dropdown [options]="devices" [ngModel]="device" (ngModelChange)="deviceChanged($event)" optionLabel="name"
                             styleClass="border-0" emptyMessage="No device found" [autoDisplayFirst]="false" />
                 <label>Device</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-12 sm:col-8 flex flex-row align-items-center gap-1">
             <p-splitButton [label]="group" icon="mdi mdi-sitemap" (onClick)="changeGroup(group)" [model]="groups" class="w-auto"

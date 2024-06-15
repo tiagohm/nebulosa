@@ -1,10 +1,10 @@
 <div class="container px-4 py-3">
     <div class="grid flex align-items-center">
         <div class="col-12 align-items-center gap-2">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly [value]="wheel.name" class="p-inputtext-sm border-0 w-full" />
                 <label>Filter Wheel</label>
-            </span>
+            </p-floatLabel>
             <p-button *ngIf="wheel.connected" [disabled]="!wheel || moving" (onClick)="connect()" icon="mdi mdi-close"
                       size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
             <p-button *ngIf="!wheel.connected" [disabled]="!wheel || moving" (onClick)="connect()" icon="mdi mdi-connection"
@@ -18,7 +18,7 @@
     </div>
     <div class="grid mt-2">
         <div class="col-9">
-            <span class="p-float-label">
+            <p-floatLabel class="w-full">
                 <p-dropdown [disabled]="!wheel.connected || moving" [options]="filters" [(ngModel)]="filter" styleClass="border-0"
                             emptyMessage="No filter found" [autoDisplayFirst]="false" (ngModelChange)="filterChanged()" appendTo="body">
                     <ng-template let-item pTemplate="selectedItem">
@@ -43,7 +43,7 @@
                     </ng-template>
                 </p-dropdown>
                 <label>Filter</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3 flex align-items-center justify-content-center">
             <p-button [disabled]="!canMoveTo || !wheel.connected || moving || filter?.position === position" label="Move" icon="mdi mdi-check"
@@ -52,26 +52,26 @@
     </div>
     <div class="grid mt-2" *ngIf="filter && canEdit">
         <div class="col-8">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText [disabled]="!wheel.connected || moving" [(ngModel)]="filter.name"
                        (ngModelChange)="filterNameChanged(filter)" [maxLength]="16" class="border-0 w-full p-inputtext-sm">
                 <label>Name</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-4 flex flex-column justify-content-center gap-2">
             <p-checkbox [binary]="true" [disabled]="!wheel.connected || moving" [ngModel]="filter.dark"
                         (onChange)="shutterToggled(filter, $event)" label="Shutter" />
         </div>
-        <div class="col-12 flex align-items-center justify-content-between gap-1">
+        <div class="col-12 flex align-items-center justify-content-between gap-2">
             <neb-device-chooser title="FOCUSER" icon="mdi mdi-image-filter-center-focus" [devices]="focusers" [(device)]="focuser"
                                 (deviceChange)="focuserChanged()" style="max-width: 60%" />
 
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!wheel.connected || moving || !focuser" [(ngModel)]="focusOffset" [min]="focusOffsetMin"
                                [max]="focusOffsetMax" [showButtons]="true" locale="en" styleClass="border-0 w-full p-inputtext-sm"
                                (ngModelChange)="focusOffsetChanged()" scrollableNumber />
                 <label>Focus offset</label>
-            </span>
+            </p-floatLabel>
         </div>
     </div>
     <div class="grid mt-2" *ngIf="canApply">

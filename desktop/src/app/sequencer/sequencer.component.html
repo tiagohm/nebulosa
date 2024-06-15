@@ -4,19 +4,19 @@
             <p-tabPanel header="Capture" leftIcon="mdi mdi-camera-iris">
                 <div class="grid mt-3">
                     <div class="col-3">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="running" [(ngModel)]="plan.initialDelay"
                                            mode="decimal" [showButtons]="true" [step]="1" [min]="0" [max]="60" locale="en"
                                            styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>Initial Delay (s)</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-3">
-                        <span class="p-float-label">
+                        <p-floatLabel class="w-full">
                             <p-dropdown [disabled]="running" [options]="captureModes" [(ngModel)]="plan.captureMode" [autoDisplayFirst]="false"
                                         styleClass="w-100 p-inputtext-sm border-0" emptyMessage="No mode found" (ngModelChange)="savePlan()" />
                             <label>Mode</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-6 gap-2">
                         <i *ngIf="plan.autoSubFolderMode === 'OFF'" (click)="toggleAutoSubFolder()" class="mdi mdi-folder-off cursor-pointer"
@@ -46,20 +46,20 @@
                                     [(ngModel)]="plan.dither.raOnly" (ngModelChange)="savePlan()" />
                     </div>
                     <div class="col-3 align-items-center">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="running || !plan.dither.enabled" [showButtons]="true"
                                            styleClass="border-0 p-inputtext-sm w-full" [min]="0.1" [max]="60" [(ngModel)]="plan.dither.amount"
                                            [step]="0.1" locale="en" [minFractionDigits]="1" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>Dither (px)</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-3 align-items-center">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="running || !plan.dither.enabled" [showButtons]="true"
                                            styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
                                            [(ngModel)]="plan.dither.afterExposures" [step]="1" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>After exposures</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                 </div>
             </p-tabPanel>
@@ -71,59 +71,51 @@
                         <p-checkbox [binary]="true" [disabled]="running" [(ngModel)]="plan.autoFocus.enabled" (ngModelChange)="savePlan()" />
                     </div>
                 </ng-template>
-                <div class="grid mt-3">
-                    <div class="col-5">
-                        <div class="grid">
-                            <div class="col-5 flex align-items-center">
-                                <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled" label="On start"
-                                            [(ngModel)]="plan.autoFocus.onStart" (ngModelChange)="savePlan()" />
-                            </div>
-                            <div class="col-7 flex align-items-center">
-                                <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled" label="On filter change"
-                                            [(ngModel)]="plan.autoFocus.onFilterChange" (ngModelChange)="savePlan()" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-4 align-items-center gap-1">
+                <div class="flex align-items-center gap-4 flex-wrap mt-3">
+                    <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled" label="On start"
+                                [(ngModel)]="plan.autoFocus.onStart" (ngModelChange)="savePlan()" />
+                    <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled" label="On filter change"
+                                [(ngModel)]="plan.autoFocus.onFilterChange" (ngModelChange)="savePlan()" />
+                    <div class="flex align-items-center gap-1">
                         <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled"
                                     [(ngModel)]="plan.autoFocus.afterElapsedTimeEnabled" (ngModelChange)="savePlan()" />
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="running || !plan.autoFocus.afterElapsedTimeEnabled || !plan.autoFocus.enabled"
                                            [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="86400"
                                            [(ngModel)]="plan.autoFocus.afterElapsedTime" [step]="1" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>After elapsed time (s)</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
-                    <div class="col-3 align-items-center gap-1">
+                    <div class="flex align-items-center gap-1">
                         <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled"
                                     [(ngModel)]="plan.autoFocus.afterExposuresEnabled" (ngModelChange)="savePlan()" />
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="running || !plan.autoFocus.afterExposuresEnabled || !plan.autoFocus.enabled"
                                            [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
                                            [(ngModel)]="plan.autoFocus.afterExposures" [step]="1" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>After exposures</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
-                    <div class="col-4 align-items-center gap-1">
+                    <div class="flex align-items-center gap-1">
                         <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled"
                                     [(ngModel)]="plan.autoFocus.afterTemperatureChangeEnabled" (ngModelChange)="savePlan()" />
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="running || !plan.autoFocus.afterTemperatureChangeEnabled || !plan.autoFocus.enabled"
                                            [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="10"
                                            [(ngModel)]="plan.autoFocus.afterTemperatureChange" [step]="1" (ngModelChange)="savePlan()"
                                            scrollableNumber />
                             <label>After temperature change (°C)</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
-                    <div class="col-4 align-items-center gap-1">
+                    <div class="flex align-items-center gap-1">
                         <p-checkbox [binary]="true" [disabled]="running || !plan.autoFocus.enabled"
                                     [(ngModel)]="plan.autoFocus.afterHFDIncreaseEnabled" (ngModelChange)="savePlan()" />
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="running || !plan.autoFocus.afterHFDIncreaseEnabled || !plan.autoFocus.enabled"
                                            [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" [min]="1" [max]="1000"
                                            [(ngModel)]="plan.autoFocus.afterHFDIncrease" [step]="1" (ngModelChange)="savePlan()" scrollableNumber />
                             <label>After HFD increase (%)</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                 </div>
             </p-tabPanel>

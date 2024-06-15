@@ -11,22 +11,22 @@
     </div>
     <div class="col-12 pb-0">
         <div class="col-3 align-items-center">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 max-w-full" [value]="focuser.position" />
                 <label>Position</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3 align-items-center">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 max-w-full" [value]="starCount" />
                 <label>Star Count</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-3 align-items-center">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText readonly class="p-inputtext-sm border-0 max-w-full" [value]="starHFD.toFixed(2)">
                 <label>HFD</label>
-            </span>
+            </p-floatLabel>
         </div>
     </div>
     <div class="col-12 pt-0">
@@ -34,78 +34,78 @@
             <p-tabPanel header="Parameters" leftIcon="mdi mdi-wrench">
                 <div class="grid mt-3">
                     <div class="col-4 align-items-center">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="!focuser.connected" styleClass="p-inputtext-sm border-0 max-w-full"
                                            [(ngModel)]="request.stepSize" [showButtons]="true" [min]="1" [max]="focuser.maxPosition"
                                            (ngModelChange)="savePreference()" scrollableNumber />
                             <label>Step Size</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-5 align-items-center">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber [disabled]="!focuser.connected" styleClass="p-inputtext-sm border-0 max-w-full"
                                            [(ngModel)]="request.initialOffsetSteps" [showButtons]="true" [min]="1" [max]="1000"
                                            (ngModelChange)="savePreference()" scrollableNumber />
                             <label>Initial Offset Steps ({{ request.initialOffsetSteps * request.stepSize }})</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-3 align-items-center">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="request.totalNumberOfAttempts"
                                            [showButtons]="true" [min]="1" [max]="10" (ngModelChange)="savePreference()" scrollableNumber />
                             <label>Attempts</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-5 align-items-center">
-                        <span class="p-float-label">
+                        <p-floatLabel class="w-full">
                             <p-dropdown [options]="'AUTO_FOCUS_FITTING_MODE' | dropdownOptions"
                                         [(ngModel)]="request.fittingMode" [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0"
                                         (ngModelChange)="savePreference()" />
                             <label>Curve Fitting</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-4 align-items-center">
-                        <span class="p-float-label">
+                        <p-floatLabel class="w-full">
                             <p-dropdown [options]="'STAR_DETECTOR' | dropdownOptions" [(ngModel)]="request.starDetector.type"
                                         [autoDisplayFirst]="false" styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" />
                             <label>Star Detector</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-3">
-                        <span class="p-float-label">
+                        <p-floatLabel>
                             <p-inputNumber styleClass="p-inputtext-sm border-0 max-w-full"
                                            [(ngModel)]="request.rSquaredThreshold" [showButtons]="true" [min]="0.1" [max]="1" [step]="0.1"
                                            (ngModelChange)="savePreference()" locale="en" scrollableNumber />
                             <label>R-Squared</label>
-                        </span>
+                        </p-floatLabel>
                     </div>
                     <div class="col-10">
                         <div class="grid">
                             <div class="col-6 align-items-center">
-                                <span class="p-float-label">
+                                <p-floatLabel class="w-full">
                                     <p-dropdown [options]="'AUTO_FOCUS_BACKLASH_COMPENSATION_MODE' | dropdownOptions"
                                                 [(ngModel)]="request.backlashCompensation.mode" [autoDisplayFirst]="false"
                                                 styleClass="p-inputtext-sm border-0" (ngModelChange)="savePreference()" />
                                     <label>Backlash Compensation</label>
-                                </span>
+                                </p-floatLabel>
                             </div>
                             <div class="col-3 align-items-center">
-                                <span class="p-float-label">
+                                <p-floatLabel>
                                     <p-inputNumber [disabled]="request.backlashCompensation.mode === 'NONE'"
                                                    styleClass="p-inputtext-sm border-0 max-w-full"
                                                    [(ngModel)]="request.backlashCompensation.backlashIn" [showButtons]="true" [min]="1" [max]="1000"
                                                    (ngModelChange)="savePreference()" scrollableNumber />
                                     <label>In</label>
-                                </span>
+                                </p-floatLabel>
                             </div>
                             <div class="col-3 align-items-center">
-                                <span class="p-float-label">
+                                <p-floatLabel>
                                     <p-inputNumber [disabled]="request.backlashCompensation.mode === 'NONE'"
                                                    styleClass="p-inputtext-sm border-0 max-w-full"
                                                    [(ngModel)]="request.backlashCompensation.backlashOut" [showButtons]="true" [min]="1" [max]="1000"
                                                    (ngModelChange)="savePreference()" scrollableNumber />
                                     <label>Out</label>
-                                </span>
+                                </p-floatLabel>
                             </div>
                         </div>
                     </div>

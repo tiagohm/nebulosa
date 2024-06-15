@@ -58,12 +58,12 @@
                     <p-tabPanel header="Search">
                         <div class="flex mt-3 flex-column align-items-center justify-content-center">
                             <div class="flex w-full align-items-center px-4 gap-2">
-                                <span class="p-float-label flex-1">
+                                <p-floatLabel class="w-full">
                                     <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="minorPlanetSearchText"
                                            pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
                                            tooltipPosition="bottom" />
                                     <label>Search</label>
-                                </span>
+                                </p-floatLabel>
                                 <p-button [disabled]="minorPlanetSearchText.length < 3 || refreshing" (onClick)="searchMinorPlanet()"
                                           icon="mdi mdi-magnify" severity="success" size="small" />
                             </div>
@@ -90,20 +90,21 @@
                     <p-tabPanel header="Close Approaches">
                         <div class="flex mt-3 flex-column align-items-center justify-content-center">
                             <div class="flex w-full align-items-center px-4 gap-2">
-                                <span class="p-float-label">
+                                <p-floatLabel>
                                     <p-inputNumber [min]="1" [max]="30" class="w-full" [step]="1" [showButtons]="true"
                                                    inputStyleClass="p-inputtext-sm border-0 w-full" [(ngModel)]="closeApproachDays"
                                                    scrollableNumber />
                                     <label>Days</label>
-                                </span>
-                                <span class="p-float-label">
+                                </p-floatLabel>
+                                <p-floatLabel>
                                     <p-inputNumber [min]="1" [max]="100" class="w-full" [step]="0.1" [showButtons]="true"
-                                                   inputStyleClass="p-inputtext-sm border-0 w-full" locale="en" [(ngModel)]="closeApproachDistance"
+                                                   inputStyleClass="p-inputtext-sm border-0 w-full" locale="en"
+                                                   [(ngModel)]="closeApproachDistance"
                                                    scrollableNumber />
                                     <label>Distance (LD)</label>
-                                </span>
+                                </p-floatLabel>
                                 <p-button [disabled]="refreshing" (onClick)="closeApproachesForMinorPlanets()"
-                                          icon="mdi mdi-magnify" severity="success" size="small" />
+                                          icon="mdi mdi-magnify" severity="success" size="small" [text]="true" />
                             </div>
                         </div>
                         <div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
@@ -139,10 +140,10 @@
                 </ng-template>
                 <div class="flex mt-2 align-items-center justify-content-center">
                     <div class="flex w-full align-items-center px-4 gap-2">
-                        <span class="p-float-label flex-1">
+                        <p-floatLabel class="w-full">
                             <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="skyObjectSearchText" />
                             <label>Search</label>
-                        </span>
+                        </p-floatLabel>
                         <div class="flex flex-row gap-1">
                             <p-button [disabled]="refreshing" (onClick)="searchSkyObject()" icon="mdi mdi-magnify" size="small" severity="info"
                                       [text]="true" pTooltip="Search" tooltipPosition="bottom" />
@@ -183,10 +184,10 @@
                 </ng-template>
                 <div class="flex mt-2 flex-column align-items-center justify-content-center">
                     <div class="flex w-full align-items-center px-4 gap-2">
-                        <span class="p-float-label flex-1">
+                        <p-floatLabel class="w-full">
                             <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="satelliteSearchText" />
                             <label>Search</label>
-                        </span>
+                        </p-floatLabel>
                         <div class="flex flex-row gap-1">
                             <p-button [disabled]="refreshing" (onClick)="searchSatellite()" icon="mdi mdi-magnify"
                                       size="small" severity="info" [text]="true" pTooltip="Search" tooltipPosition="bottom" />
@@ -229,77 +230,77 @@
                 <div class="col-12">
                     <div class="grid">
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.rightAscensionJ2000" />
                                 <label>RA (J2000)</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.declinationJ2000" />
                                 <label>DEC (J2000)</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.rightAscension" />
                                 <label>RA</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.declination" />
                                 <label>DEC</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.azimuth" />
                                 <label>Azimuth</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.altitude" />
                                 <label>Altitude</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full"
                                        [value]="bodyPosition.magnitude < 30 ? bodyPosition.magnitude.toFixed(2) : '-'" />
                                 <label>Magnitude</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.constellation" />
                                 <label>Constellation</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.distance.toFixed(3)" />
                                 <label>Distance ({{ bodyPosition.distanceUnit }})</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.illuminated" />
                                 <label>Illuminated (%)</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.elongation" />
                                 <label>Elongation (°)</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                         <div class="col-3">
-                            <span class="p-float-label">
+                            <p-floatLabel>
                                 <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.pierSide" />
                                 <label>Pier Side</label>
-                            </span>
+                            </p-floatLabel>
                         </div>
                     </div>
                 </div>
@@ -340,26 +341,26 @@
 <p-dialog header="Filter" [draggable]="false" [(visible)]="showSkyObjectFilter" [modal]="true" [style]="{width: '80vw'}">
     <div class="grid mt-2" *ngIf="skyObjectFilter">
         <div class="col-4">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText class="p-inputtext-sm border-0 w-full" [value]="skyObjectFilter.rightAscension" />
                 <label>RA (h)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-4">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <input pInputText class="p-inputtext-sm border-0 w-full" [value]="skyObjectFilter.declination" />
                 <label>DEC (°)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-4">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [min]="0" [max]="90" class="w-full" [step]="0.1" [maxFractionDigits]="1" [showButtons]="true"
                                inputStyleClass="p-inputtext-sm border-0 w-full" locale="en" [(ngModel)]="skyObjectFilter.radius" scrollableNumber />
                 <label>Radius (°)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-6">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-dropdown [options]="constellationOptions" [(ngModel)]="skyObjectFilter.constellation" [filter]="true" appendTo="body"
                             styleClass="border-0" [autoDisplayFirst]="false">
                     <ng-template let-item pTemplate="selectedItem">
@@ -374,10 +375,10 @@
                     </ng-template>
                 </p-dropdown>
                 <label>Constellation</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-6">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-dropdown [options]="skyObjectFilter.types" [(ngModel)]="skyObjectFilter.type" appendTo="body" [filter]="true"
                             styleClass="border-0" [autoDisplayFirst]="false">
                     <ng-template let-item pTemplate="selectedItem">
@@ -392,7 +393,7 @@
                     </ng-template>
                 </p-dropdown>
                 <label>Type</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-12 flex-column">
             <p>Magnitude min: {{ skyObjectFilter.magnitude[0] }} max: {{ skyObjectFilter.magnitude[1] }}</p>

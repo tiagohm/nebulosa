@@ -19,6 +19,7 @@ import { ContextMenuModule } from 'primeng/contextmenu'
 import { DialogModule } from 'primeng/dialog'
 import { DropdownModule } from 'primeng/dropdown'
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog'
+import { FloatLabelModule } from 'primeng/floatlabel'
 import { InplaceModule } from 'primeng/inplace'
 import { InputNumberModule } from 'primeng/inputnumber'
 import { InputSwitchModule } from 'primeng/inputswitch'
@@ -154,6 +155,7 @@ import { SettingsComponent } from './settings/settings.component'
         DragDropModule,
         DropdownModule,
         DynamicDialogModule,
+        FloatLabelModule,
         FormsModule,
         HttpClientModule,
         InplaceModule,

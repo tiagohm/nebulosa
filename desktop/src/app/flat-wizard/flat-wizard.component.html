@@ -15,53 +15,49 @@
     </div>
     <div class="grid mt-2">
         <div class="col-12">
-            <span class="p-float-label">
-                <input pInputText [disabled]="!camera.connected || running" class="p-inputtext-sm border-0 w-full"
-                       [(ngModel)]="request.capture.savePath" (ngModelChange)="savePreference()" />
-                <label>Path</label>
-            </span>
-            <p-button [disabled]="!camera.connected || running" icon="mdi mdi-folder-open" size="small" (onClick)="chooseSavePath()" />
+            <neb-path-chooser key="FLAT_WIZARD_SAVE_PATH" [disabled]="!camera.connected || running" [directory]="true"
+                              [(path)]="request.capture.savePath" (pathChange)="savePreference()" class="w-full" />
         </div>
         <div class="col-6">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.exposureMin" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="1" [max]="60000" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Min Exposure (ms)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-6">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.exposureMax" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="request.exposureMin" [max]="60000" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Max Exposure (ms)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-6">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.meanTarget" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="0" [max]="65535" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Mean Target ({{ meanTargetMin }} - {{ meanTargetMax }})</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-6">
-            <span class="p-float-label">
+            <p-floatLabel>
                 <p-inputNumber [disabled]="!camera.connected || running" [(ngModel)]="request.meanTolerance" mode="decimal"
                                [showButtons]="true" [step]="1.0" [min]="0" [max]="100" locale="en"
                                styleClass="p-inputtext-sm border-0" [allowEmpty]="false" (ngModelChange)="savePreference()" scrollableNumber />
                 <label>Mean Tolerance (%)</label>
-            </span>
+            </p-floatLabel>
         </div>
         <div class="col-12">
-            <span class="p-float-label">
+            <p-floatLabel class="w-full">
                 <p-multiSelect [disabled]="!wheel.connected || filters.length <= 0" [options]="filters" [(ngModel)]="selectedFilters"
                                optionLabel="name" (ngModelChange)="savePreference()"
                                styleClass="border-0" [style]="{minHeight: '45px'}" display="chip" [showClear]="true" [showToggleAll]="true"
                                [maxSelectedLabels]="wheel.count" scrollHeight="105px" />
                 <label>Filters</label>
-            </span>
+            </p-floatLabel>
         </div>
     </div>
     <div class="grid mt-1">
