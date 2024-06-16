@@ -151,67 +151,88 @@
 	header="Annotation"
 	[draggable]="false"
 	[(visible)]="annotation.showDialog"
-	[modal]="true"
+	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '338px' }">
-	<div class="grid">
-		<div class="col-12 flex flex-column gap-3">
-			<div class="flex flex-row align-items-center gap-2">
-				<p-checkbox
-					[(ngModel)]="annotation.useStarsAndDSOs"
-					class="py-1"
-					[binary]="true"
-					label="Annotate with stars & DSOs" />
-				<p-checkbox
-					[disabled]="!annotation.useStarsAndDSOs"
-					[(ngModel)]="annotation.useSimbad"
-					class="py-1"
-					[binary]="true"
-					label="Online"
-					pTooltip="Use SIMBAD online service"
-					tooltipPosition="bottom" />
+	<p-tabView>
+		<p-tabPanel header="Stars & DSOs">
+			<ng-template pTemplate="header">
+				<div class="flex gap-2 align-items-center">
+					<span>Stars & DSOs</span>
+					<p-checkbox
+						[(ngModel)]="annotation.useStarsAndDSOs"
+						class="py-1"
+						[binary]="true" />
+				</div>
+			</ng-template>
+			<div class="grid mt-2">
+				<div class="col-12">
+					<p-checkbox
+						[disabled]="!annotation.useStarsAndDSOs"
+						[(ngModel)]="annotation.useSimbad"
+						class="py-1"
+						[binary]="true"
+						label="Search on SIMBAD Database Service" />
+				</div>
+				<div class="col-12 mt-2">
+					<p class="bg-black-alpha-30 border-round m-0 p-3 text-gray-400 text-sm">
+						Stars and DSOs Annotation uses the
+						<a
+							target="_blank"
+							href="https://simbad.cds.unistra.fr/simbad/">
+							SIMBAD Astronomical Database - CDS (Strasbourg)
+						</a>
+					</p>
+				</div>
 			</div>
-			<div class="flex flex-row align-items-center gap-2">
-				<p-checkbox
-					[(ngModel)]="annotation.useMinorPlanets"
-					class="py-1"
-					[binary]="true"
-					label="Annotate with minor planets" />
-				<p-floatLabel>
-					<p-inputNumber
-						[disabled]="!annotation.useMinorPlanets"
-						[min]="-10"
-						[max]="30"
-						class="max-w-10rem w-full"
-						[showButtons]="true"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[step]="0.1"
-						[(ngModel)]="annotation.minorPlanetsMagLimit"
-						[minFractionDigits]="1"
-						locale="en"
-						scrollableNumber />
-					<label>Mag. Limit</label>
-				</p-floatLabel>
+		</p-tabPanel>
+		<p-tabPanel header="Minor Planets">
+			<ng-template pTemplate="header">
+				<div class="flex gap-2 align-items-center">
+					<span>Minor Planets</span>
+					<p-checkbox
+						[(ngModel)]="annotation.useMinorPlanets"
+						class="py-1"
+						[binary]="true" />
+				</div>
+			</ng-template>
+			<div class="grid mt-2">
+				<div class="col-5">
+					<p-floatLabel class="w-full">
+						<p-inputNumber
+							[disabled]="!annotation.useMinorPlanets"
+							[min]="-10"
+							[max]="30"
+							[showButtons]="true"
+							styleClass="p-inputtext-sm border-0 w-full"
+							[step]="0.1"
+							[(ngModel)]="annotation.minorPlanetsMagLimit"
+							[minFractionDigits]="1"
+							locale="en"
+							scrollableNumber />
+						<label>Mag. Limit</label>
+					</p-floatLabel>
+				</div>
+				<div class="col-7">
+					<p-checkbox
+					[disabled]="!annotation.useMinorPlanets"
+					[(ngModel)]="annotation.includeMinorPlanetsWithoutMagnitude"
+						class="py-1"
+						[binary]="true"
+						label="Include objects without magnitude" />
+				</div>
+				<div class="col-12 mt-2">
+					<p class="bg-black-alpha-30 border-round m-0 p-3 text-gray-400 text-sm">
+						Minor planets Annotation uses the
+						<a
+							target="_blank"
+							href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">
+							Small-Body Identification API
+						</a>
+					</p>
+				</div>
 			</div>
-		</div>
-		<div class="col-12 flex-column text-sm">
-			<p class="m-0">
-				Star and DSO annotations made use of
-				<a
-					target="_blank"
-					href="https://simbad.cds.unistra.fr/simbad/">
-					SIMBAD Astronomical Database - CDS (Strasbourg)
-				</a>
-			</p>
-			<p class="m-0">
-				Minor planets annotations made use of
-				<a
-					target="_blank"
-					href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">
-					Small-Body Identification API
-				</a>
-			</p>
-		</div>
-	</div>
+		</p-tabPanel>
+	</p-tabView>
 	<ng-template pTemplate="footer">
 		<p-button
 			[disabled]="annotation.running"

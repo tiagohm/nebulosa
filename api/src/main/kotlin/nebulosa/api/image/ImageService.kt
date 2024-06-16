@@ -23,6 +23,7 @@ import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadSearch
 import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
+import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
@@ -167,7 +168,8 @@ class ImageService(
     fun annotations(
         path: Path,
         starsAndDSOs: Boolean, minorPlanets: Boolean,
-        minorPlanetMagLimit: Double = 12.0, useSimbad: Boolean = false,
+        minorPlanetMagLimit: Double = 12.0, includeMinorPlanetsWithoutMagnitude: Boolean = false,
+        useSimbad: Boolean = false,
         location: Location? = null,
     ): List<ImageAnnotation> {
         val (image, calibration) = imageBucket.open(path)
@@ -201,7 +203,7 @@ class ImageService(
                 val identifiedBody = smallBodyDatabaseService.identify(
                     dateTime, latitude, longitude, 0.0,
                     calibration.rightAscension, calibration.declination, calibration.radius,
-                    minorPlanetMagLimit,
+                    minorPlanetMagLimit, !includeMinorPlanetsWithoutMagnitude,
                 ).execute().body() ?: return@submitCompletable
 
                 val radiusInSeconds = calibration.radius.toArcsec
@@ -214,7 +216,8 @@ class ImageService(
                         val rightAscension = it[1].hours.takeIf(Angle::isFinite) ?: return@forEach
                         val declination = it[2].deg.takeIf(Angle::isFinite) ?: return@forEach
                         val (x, y) = wcs.skyToPix(rightAscension, declination)
-                        val minorPlanet = ImageAnnotation.MinorPlanet(0L, it[0], rightAscension, declination, it[6].toDouble())
+                        val magnitude = it[6].replace(INVALID_MAG_CHARS, "").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+                        val minorPlanet = ImageAnnotation.MinorPlanet(0L, it[0], rightAscension, declination, magnitude)
                         val annotation = ImageAnnotation(x, y, minorPlanet = minorPlanet)
                         annotations.add(annotation)
                         count++
@@ -337,6 +340,7 @@ class ImageService(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<ImageService>()
+        @JvmStatic private val INVALID_MAG_CHARS = "[^.\\-+0-9]+".toRegex()
 
         private const val IMAGE_INFO_HEADER = "X-Image-Info"
         private const val COORDINATE_INTERPOLATION_DELTA = 24

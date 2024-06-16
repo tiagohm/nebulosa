@@ -287,6 +287,7 @@ export interface ImageAnnotationDialog {
 	useStarsAndDSOs: boolean
 	useMinorPlanets: boolean
 	minorPlanetsMagLimit: number
+	includeMinorPlanetsWithoutMagnitude: boolean
 	useSimbad: boolean
 	data: ImageAnnotation[]
 }

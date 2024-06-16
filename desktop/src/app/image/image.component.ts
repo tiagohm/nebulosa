@@ -120,6 +120,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		useStarsAndDSOs: true,
 		useMinorPlanets: false,
 		minorPlanetsMagLimit: 18.0,
+		includeMinorPlanetsWithoutMagnitude: true,
 		useSimbad: false,
 		data: [],
 	}
@@ -1037,7 +1038,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	async annotateImage() {
 		try {
 			this.annotation.running = true
-			this.annotation.data = await this.api.annotationsOfImage(this.imagePath!, this.annotation.useStarsAndDSOs, this.annotation.useMinorPlanets, this.annotation.minorPlanetsMagLimit, this.annotation.useSimbad)
+			this.annotation.data = await this.api.annotationsOfImage(this.imagePath!, this.annotation.useStarsAndDSOs, this.annotation.useMinorPlanets, this.annotation.minorPlanetsMagLimit, this.annotation.includeMinorPlanetsWithoutMagnitude, this.annotation.useSimbad)
 			this.annotation.visible = this.annotation.data.length > 0
 			this.annotationMenuItem.checkable = this.annotation.visible
 			this.annotationMenuItem.checked = this.annotation.visible

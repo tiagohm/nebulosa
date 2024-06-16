@@ -14,13 +14,13 @@ internal interface SmallBodyDatabase {
     )
     fun search(@Query("sstr") text: String): Call<SmallBody>
 
-    @GET("sb_ident.api?mag-required=true&two-pass=true&suppress-first-pass=true")
+    @GET("sb_ident.api?two-pass=true&suppress-first-pass=true")
     fun identify(
         @Query("obs-time") dateTime: String,
         @Query("lat") lat: Double, @Query("lon") lon: Double, @Query("alt") alt: Double,
         @Query("fov-ra-center") fovRA: String, @Query("fov-dec-center") fovDEC: String,
         @Query("fov-ra-hwidth") fovRAWidth: Double, @Query("fov-dec-hwidth") fovDECWidth: Double = fovRAWidth,
-        @Query("vmag-lim") magLimit: Double = 12.0,
+        @Query("vmag-lim") magLimit: Double = 18.0, @Query("mag-required") magRequired: Boolean,
     ): Call<SmallBodyIdentified>
 
     @GET("cad.api?neo=false&diameter=true&fullname=true")
