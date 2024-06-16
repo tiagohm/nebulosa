@@ -1,5 +1,6 @@
 package nebulosa.curve.fitting
 
+import nebulosa.math.squared
 import kotlin.math.*
 
 // https://bitbucket.org/Isbeorn/nina/src/master/NINA.Core.WPF/Utility/AutoFocus/HyperbolicFitting.cs
@@ -109,7 +110,7 @@ data object HyperbolicFitting : CurveFitting<HyperbolicFitting.Curve> {
     }
 
     private fun scaledErrorHyperbola(points: Collection<CurvePoint>, perfectFocusPosition: Double, a: Double, b: Double): Double {
-        return sqrt(points.sumOf { (hyperbolicFittingHfrCalc(it.x, perfectFocusPosition, a, b) - it.y).pow(2.0) })
+        return sqrt(points.sumOf { ((hyperbolicFittingHfrCalc(it.x, perfectFocusPosition, a, b) - it.y) / it.weight).squared })
     }
 
     private fun hyperbolicFittingHfrCalc(position: Double, perfectFocusPosition: Double, a: Double, b: Double): Double {

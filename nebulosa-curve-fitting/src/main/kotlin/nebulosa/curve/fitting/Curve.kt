@@ -9,7 +9,7 @@ fun interface Curve : UnivariateFunction {
     companion object {
 
         @JvmStatic
-        fun DoubleArray.curvePoints(): Collection<CurvePoint> {
+        fun DoubleArray.curvePoints(): List<CurvePoint> {
             val points = ArrayList<CurvePoint>(size / 2)
 
             for (i in indices step 2) {

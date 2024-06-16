@@ -10,6 +10,7 @@ import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg
+import nebulosa.math.squared
 import nebulosa.math.toDegrees
 import nebulosa.platesolver.Parity
 import nebulosa.platesolver.PlateSolution
@@ -555,7 +556,7 @@ data class WatneyPlateSolver(
 
             val weightedMean = total / divider
 
-            val differenceSquared = matches.sumOf { (it.scaleRatio - weightedMean).pow(2) }
+            val differenceSquared = matches.sumOf { (it.scaleRatio - weightedMean).squared }
             val stdDev = sqrt(differenceSquared / matches.size)
 
             return matches

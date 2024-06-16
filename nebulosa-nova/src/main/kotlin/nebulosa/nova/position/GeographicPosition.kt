@@ -12,7 +12,6 @@ import nebulosa.time.IERS
 import nebulosa.time.InstantOfTime
 import kotlin.math.abs
 import kotlin.math.atan2
-import kotlin.math.pow
 import kotlin.math.tan
 
 class GeographicPosition(
@@ -136,7 +135,7 @@ class GeographicPosition(
                 val refractedZenithDistanceRadian = z - roller
 
                 // dZ = A tan Z + B tan^3 Z.
-                val dZ2 = refa * tan(refractedZenithDistanceRadian) + refb * tan(refractedZenithDistanceRadian).pow(3.0)
+                val dZ2 = refa * tan(refractedZenithDistanceRadian) + refb * tan(refractedZenithDistanceRadian).cubic
 
                 if (dZ2.isNaN()) {
                     return altitude

@@ -179,3 +179,15 @@ inline infix fun Double.fmod(other: Double) = (this % other + other) % other
  */
 @Suppress("NOTHING_TO_INLINE")
 inline infix fun Int.fmod(other: Int) = (this % other + other) % other
+
+/**
+ * Computes the square number.
+ */
+inline val Double.squared
+    get() = this * this
+
+/**
+ * Computes the cube number.
+ */
+inline val Double.cubic
+    get() = this * this * this

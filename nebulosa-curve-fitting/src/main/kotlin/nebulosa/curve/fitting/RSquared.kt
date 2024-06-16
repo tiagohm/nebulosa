@@ -1,8 +1,8 @@
 package nebulosa.curve.fitting
 
+import nebulosa.math.squared
 import org.apache.commons.math3.analysis.UnivariateFunction
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
-import kotlin.math.pow
 
 object RSquared {
 
@@ -12,12 +12,12 @@ object RSquared {
         val predictedValues = DoubleArray(points.size)
         var residualSumOfSquares = 0.0
 
-        for ((i, point) in points.withIndex()) {
+        points.forEachIndexed { i, point ->
             val actualValue = point.y
             val predictedValue = function.value(point.x)
             predictedValues[i] = predictedValue
 
-            val t = (predictedValue - actualValue).pow(2.0)
+            val t = (predictedValue - actualValue).squared
             residualSumOfSquares += t
             descriptiveStatistics.addValue(actualValue)
         }
@@ -26,7 +26,7 @@ object RSquared {
         var totalSumOfSquares = 0.0
 
         repeat(points.size) {
-            totalSumOfSquares += (predictedValues[it] - avgActualValues).pow(2.0)
+            totalSumOfSquares += (predictedValues[it] - avgActualValues).squared
         }
 
         return 1.0 - (residualSumOfSquares / totalSumOfSquares)
