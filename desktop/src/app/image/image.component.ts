@@ -139,8 +139,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		computed: {
 			hfd: 0,
 			snr: 0,
-			maxFlux: 0,
-			minFlux: 0,
+			stdDev: 0,
+			fluxMax: 0,
+			fluxMin: 0,
 		},
 		selected: {
 			x: 0,
@@ -871,22 +872,40 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 
 		let hfd = 0
+		let stdDev = 0
 		let snr = 0
-		let maxFlux = 0
-		let minFlux = 10000000
-
-		for (const star of this.starDetection.stars) {
-			hfd += star.hfd
-			snr += star.snr
-			minFlux = Math.min(minFlux, star.flux)
-			maxFlux = Math.max(maxFlux, star.flux)
-		}
+		let fluxMin = 0
+		let fluxMax = 0
 
 		const starCount = this.starDetection.stars.length
-		this.starDetection.computed.hfd = starCount > 0 ? hfd / starCount : 0
-		this.starDetection.computed.snr = starCount > 0 ? snr / starCount : 0
-		this.starDetection.computed.maxFlux = maxFlux
-		this.starDetection.computed.minFlux = minFlux
+
+		if (starCount) {
+			fluxMax = this.starDetection.stars[0].flux
+
+			for (const star of this.starDetection.stars) {
+				hfd += star.hfd
+				snr += star.snr
+				fluxMax = Math.min(fluxMax, star.flux)
+				fluxMin = Math.max(fluxMin, star.flux)
+			}
+
+			hfd = hfd / starCount
+			snr = snr / starCount
+
+			let squared = 0
+
+			for (const star of this.starDetection.stars) {
+				squared += Math.pow(star.hfd - hfd, 2)
+			}
+
+			stdDev = Math.sqrt(squared / starCount)
+		}
+
+		this.starDetection.computed.hfd = hfd
+		this.starDetection.computed.stdDev = stdDev
+		this.starDetection.computed.snr = snr
+		this.starDetection.computed.fluxMax = fluxMin
+		this.starDetection.computed.fluxMin = fluxMax
 
 		this.savePreference()
 

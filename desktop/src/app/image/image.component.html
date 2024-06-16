@@ -913,24 +913,24 @@
 		<div class="col-12 mt-1">
 			<span class="font-bold text-sm">COMPUTED</span>
 		</div>
-		<div class="col-4 align-items-center">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="starDetection.stars.length" />
-				<label>Star Count</label>
-			</p-floatLabel>
-		</div>
 		<div class="col-2 align-items-center">
 			<p-floatLabel>
 				<input
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					[value]="starDetection.computed.hfd.toFixed(2)" />
-				<label>HFD</label>
+					[value]="starDetection.stars.length" />
+				<label>Stars</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4 align-items-center">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					class="p-inputtext-sm border-0 w-full"
+					value="{{ starDetection.computed.hfd.toFixed(2) }} | {{ starDetection.computed.stdDev.toFixed(4) }}" />
+				<label>HFD (Std Dev)</label>
 			</p-floatLabel>
 		</div>
 		<div class="col-2 align-items-center">
@@ -949,7 +949,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					value="{{ starDetection.computed.minFlux.toFixed(0) }} | {{ starDetection.computed.maxFlux.toFixed(0) }}" />
+					value="{{ starDetection.computed.fluxMin.toFixed(0) }} | {{ starDetection.computed.fluxMax.toFixed(0) }}" />
 				<label>Flux (min | max)</label>
 			</p-floatLabel>
 		</div>

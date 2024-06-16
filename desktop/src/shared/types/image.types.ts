@@ -84,6 +84,14 @@ export interface DetectedStar {
 	flux: number
 }
 
+export interface ComputedDetectedStars {
+	hfd: number
+	stdDev: number
+	snr: number
+	fluxMin: number
+	fluxMax: number
+}
+
 export interface ImageStatisticsBitOption {
 	name: string
 	rangeMax: number
@@ -296,7 +304,7 @@ export interface StarDetectionDialog extends StarDetectionImagePreference {
 	running: boolean
 	visible: boolean
 	stars: DetectedStar[]
-	computed: Omit<DetectedStar, 'x' | 'y' | 'flux'> & { minFlux: number; maxFlux: number }
+	computed: ComputedDetectedStars
 	selected: DetectedStar
 }
 
