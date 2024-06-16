@@ -56,10 +56,12 @@
 						<div class="col-5 gap-2 align-items-center">
 							<p-floatLabel class="w-full">
 								<p-dropdown
-									[options]="['ASTROMETRY_NET_ONLINE', 'ASTAP']"
+									[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
 									[(ngModel)]="tppaRequest.plateSolver.type"
-									[autoDisplayFirst]="false"
 									styleClass="p-inputtext-sm border-0"
+									optionLabel="label"
+									optionValue="value"
+									[autoDisplayFirst]="false"
 									(ngModelChange)="plateSolverChanged()" />
 								<label>Plate Solver</label>
 							</p-floatLabel>
@@ -80,8 +82,10 @@
 						<div class="col-3 flex flex-column align-items-center justify-content-start">
 							<p-floatLabel class="w-full">
 								<p-dropdown
-									[options]="['EAST', 'WEST']"
+									[options]="'GUIDE_DIRECTION_WE' | dropdownOptions | enumDropdown"
 									[(ngModel)]="tppaRequest.stepDirection"
+									optionsLabel="label"
+									optionsValue="value"
 									styleClass="p-inputtext-sm border-0"
 									[autoDisplayFirst]="false"
 									(ngModelChange)="savePreference()" />
@@ -213,9 +217,11 @@
 						<div class="col-4">
 							<p-floatLabel class="w-full">
 								<p-dropdown
-									[options]="['NORTHERN', 'SOUTHERN']"
+									[options]="'HEMISPHERE' | dropdownOptions | enumDropdown"
 									[(ngModel)]="darvHemisphere"
 									styleClass="p-inputtext-sm border-0"
+									optionsLabel="label"
+									optionsValue="value"
 									[autoDisplayFirst]="false"
 									(ngModelChange)="savePreference()" />
 								<label>Hemisphere</label>

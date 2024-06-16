@@ -59,7 +59,8 @@ import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
 import { LocationInterceptor } from '../shared/interceptors/location.interceptor'
 import { AnglePipe } from '../shared/pipes/angle.pipe'
-import { DropdownOptionsPipe } from '../shared/pipes/dropdown-options'
+import { DropdownOptionsPipe } from '../shared/pipes/dropdown-options.pipe'
+import { EnumDropdownPipe } from '../shared/pipes/enum-dropdown.pipe'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
 import { EnvPipe } from '../shared/pipes/env.pipe'
 import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
@@ -106,6 +107,7 @@ import { SettingsComponent } from './settings/settings.component'
 		DialogMenuComponent,
 		DropdownOptionsPipe,
 		EnumPipe,
+		EnumDropdownPipe,
 		EnvPipe,
 		ExposureTimePipe,
 		FilterWheelComponent,
@@ -187,6 +189,7 @@ import { SettingsComponent } from './settings/settings.component'
 		DialogService,
 		DropdownOptionsPipe,
 		EnumPipe,
+		EnumDropdownPipe,
 		EnvPipe,
 		ExposureTimePipe,
 		MessageService,

@@ -47,11 +47,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 	rmsDEC = 0.0
 	rmsTotal = 0.0
 
-	readonly plotModes: GuiderPlotMode[] = ['RA/DEC', 'DX/DY']
-	plotMode = this.plotModes[0]
-
-	readonly yAxisUnits: GuiderYAxisUnit[] = ['ARCSEC', 'PIXEL']
-	yAxisUnit = this.yAxisUnits[0]
+	plotMode: GuiderPlotMode = 'RA/DEC'
+	yAxisUnit: GuiderYAxisUnit = 'ARCSEC'
 
 	@ViewChild('chart')
 	private readonly chart!: UIChart

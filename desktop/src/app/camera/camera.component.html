@@ -209,8 +209,10 @@
 			<p-floatLabel class="w-full">
 				<p-dropdown
 					[disabled]="!canFrameType || !camera.connected || running"
-					[options]="frameTypeOptions"
+					[options]="'FRAME_TYPE' | dropdownOptions | enumDropdown"
 					[(ngModel)]="request.frameType"
+					optionLabel="label"
+					optionValue="value"
 					styleClass="p-inputtext-sm border-0"
 					[autoDisplayFirst]="false"
 					(ngModelChange)="savePreference()" />
@@ -223,9 +225,11 @@
 			<span class="text-xs text-gray-100">Exposure Mode</span>
 			<p-selectButton
 				[disabled]="!canExposureMode || !camera.connected || running"
-				[options]="exposureModeOptions"
+				[options]="'EXPOSURE_MODE' | dropdownOptions | enumDropdown"
 				[(ngModel)]="exposureMode"
-				styleClass="p-inputtext-sm border-0"
+				optionLabel="label"
+				optionValue="value"
+				styleClass="p-button-sm border-0"
 				(ngModelChange)="savePreference()" />
 		</div>
 		<div class="col-3">
@@ -580,8 +584,10 @@
 			<p-floatLabel class="w-full">
 				<p-dropdown
 					[disabled]="!request.liveStacking.enabled"
-					[options]="'LIVE_STACKER' | dropdownOptions"
+					[options]="'LIVE_STACKER' | dropdownOptions | enumDropdown"
 					[(ngModel)]="request.liveStacking.type"
+					optionsLabel="label"
+					optionsValue="value"
 					styleClass="p-inputtext-sm border-0"
 					(ngModelChange)="savePreference()"
 					[autoDisplayFirst]="false" />

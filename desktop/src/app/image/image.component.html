@@ -368,8 +368,10 @@
 		<div class="col-12 gap-2 align-items-center">
 			<p-floatLabel class="w-full">
 				<p-dropdown
-					[options]="'PLATE_SOLVER' | dropdownOptions"
+					[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
 					[(ngModel)]="solver.type"
+					optionsLabel="label"
+					optionsValue="value"
 					styleClass="p-inputtext-sm border-0"
 					[autoDisplayFirst]="false"
 					appendTo="body" />
@@ -671,24 +673,11 @@
 					[disabled]="!scnr.channel"
 					appendTo="body"
 					[(ngModel)]="scnr.method"
-					[options]="'SCNR_PROTECTION_METHOD' | dropdownOptions"
+					[options]="'SCNR_PROTECTION_METHOD' | dropdownOptions | enumDropdown"
+					optionLabel="label"
+					optionValue="value"
 					styleClass="p-inputtext-sm border-0"
-					[autoDisplayFirst]="false">
-					<ng-template
-						let-item
-						pTemplate="selectedItem">
-						<div class="flex align-items-center gap-2">
-							<span>{{ item | enum }}</span>
-						</div>
-					</ng-template>
-					<ng-template
-						let-item
-						pTemplate="item">
-						<div class="flex align-items-center gap-2">
-							<span>{{ item | enum }}</span>
-						</div>
-					</ng-template>
-				</p-dropdown>
+					[autoDisplayFirst]="false" />
 				<label>Protection Method</label>
 			</p-floatLabel>
 		</div>
@@ -877,7 +866,9 @@
 				<p-dropdown
 					appendTo="body"
 					[(ngModel)]="starDetection.type"
-					[options]="'STAR_DETECTOR' | dropdownOptions"
+					[options]="'STAR_DETECTOR' | dropdownOptions | enumDropdown"
+					optionsLabel="label"
+					optionsValue="value"
 					styleClass="p-inputtext-sm border-0"
 					[autoDisplayFirst]="false" />
 				<label>Detector</label>
@@ -1386,7 +1377,9 @@
 			<p-floatLabel class="w-full">
 				<p-dropdown
 					[disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
-					[options]="'IMAGE_BITPIX' | dropdownOptions"
+					[options]="'IMAGE_BITPIX' | dropdownOptions | enumDropdown"
+					optionsLabel="label"
+					optionsValue="value"
 					[(ngModel)]="saveAs.bitpix"
 					styleClass="p-inputtext-sm border-0"
 					[autoDisplayFirst]="false"

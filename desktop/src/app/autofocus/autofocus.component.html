@@ -107,10 +107,12 @@
 					<div class="col-5 align-items-center">
 						<p-floatLabel class="w-full">
 							<p-dropdown
-								[options]="'AUTO_FOCUS_FITTING_MODE' | dropdownOptions"
+								[options]="'CURVE_FITTING_MODE' | dropdownOptions | enumDropdown"
 								[(ngModel)]="request.fittingMode"
-								[autoDisplayFirst]="false"
+								optionLabel="label"
+								optionValue="value"
 								styleClass="p-inputtext-sm border-0"
+								[autoDisplayFirst]="false"
 								(ngModelChange)="savePreference()" />
 							<label>Curve Fitting</label>
 						</p-floatLabel>
@@ -118,10 +120,12 @@
 					<div class="col-4 align-items-center">
 						<p-floatLabel class="w-full">
 							<p-dropdown
-								[options]="'STAR_DETECTOR' | dropdownOptions"
+								[options]="'STAR_DETECTOR' | dropdownOptions | enumDropdown"
 								[(ngModel)]="request.starDetector.type"
-								[autoDisplayFirst]="false"
+								optionLabel="label"
+								optionValue="value"
 								styleClass="p-inputtext-sm border-0"
+								[autoDisplayFirst]="false"
 								(ngModelChange)="savePreference()" />
 							<label>Star Detector</label>
 						</p-floatLabel>
@@ -146,10 +150,12 @@
 							<div class="col-6 align-items-center">
 								<p-floatLabel class="w-full">
 									<p-dropdown
-										[options]="'AUTO_FOCUS_BACKLASH_COMPENSATION_MODE' | dropdownOptions"
+										[options]="'BACKLASH_COMPENSATION_MODE' | dropdownOptions | enumDropdown"
 										[(ngModel)]="request.backlashCompensation.mode"
-										[autoDisplayFirst]="false"
+										optionLabel="label"
+										optionValue="value"
 										styleClass="p-inputtext-sm border-0"
+										[autoDisplayFirst]="false"
 										(ngModelChange)="savePreference()" />
 									<label>Backlash Compensation</label>
 								</p-floatLabel>

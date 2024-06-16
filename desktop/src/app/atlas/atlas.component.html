@@ -675,68 +675,64 @@
 			</p-floatLabel>
 		</div>
 		<div class="col-6">
-			<p-floatLabel>
+			<p-floatLabel class="w-full">
 				<p-dropdown
-					[options]="constellationOptions"
+					[options]="constellationOptions | enumDropdown"
 					[(ngModel)]="skyObjectFilter.constellation"
 					[filter]="true"
 					appendTo="body"
-					styleClass="border-0"
-					[autoDisplayFirst]="false">
-					<ng-template
-						let-item
-						pTemplate="selectedItem">
-						<div class="flex align-items-center gap-2">
-							<span>{{ item | enum }}</span>
-						</div>
-					</ng-template>
-					<ng-template
-						let-item
-						pTemplate="item">
-						<div class="flex align-items-center gap-2">
-							<span>{{ item | enum }}</span>
-						</div>
-					</ng-template>
-				</p-dropdown>
+					optionLabel="label"
+					optionValue="value"
+					styleClass="p-inputtext-sm border-0"
+					[autoDisplayFirst]="false" />
 				<label>Constellation</label>
 			</p-floatLabel>
 		</div>
 		<div class="col-6">
-			<p-floatLabel>
+			<p-floatLabel class="w-full">
 				<p-dropdown
-					[options]="skyObjectFilter.types"
+					[options]="skyObjectFilter.types | enumDropdown"
 					[(ngModel)]="skyObjectFilter.type"
 					appendTo="body"
 					[filter]="true"
-					styleClass="border-0"
-					[autoDisplayFirst]="false">
-					<ng-template
-						let-item
-						pTemplate="selectedItem">
-						<div class="flex align-items-center gap-2">
-							<span>{{ item | enum }}</span>
-						</div>
-					</ng-template>
-					<ng-template
-						let-item
-						pTemplate="item">
-						<div class="flex align-items-center gap-2">
-							<span>{{ item | enum }}</span>
-						</div>
-					</ng-template>
-				</p-dropdown>
+					optionLabel="label"
+					optionValue="value"
+					styleClass="p-inputtext-sm border-0"
+					[autoDisplayFirst]="false" />
 				<label>Type</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-12 flex-column">
-			<p>Magnitude min: {{ skyObjectFilter.magnitude[0] }} max: {{ skyObjectFilter.magnitude[1] }}</p>
-			<p-slider
-				class="mt-3"
-				[min]="-30"
-				[max]="30"
-				styleClass="mx-2"
-				[(ngModel)]="skyObjectFilter.magnitude"
-				[range]="true" />
+		<div class="col-4">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="-30"
+					[max]="30"
+					class="w-full"
+					[step]="0.1"
+					[maxFractionDigits]="1"
+					[showButtons]="true"
+					inputStyleClass="p-inputtext-sm border-0 w-full"
+					locale="en"
+					[(ngModel)]="skyObjectFilter.magnitude[0]"
+					scrollableNumber />
+				<label>Mag. min</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="-30"
+					[max]="30"
+					class="w-full"
+					[step]="0.1"
+					[maxFractionDigits]="1"
+					[showButtons]="true"
+					inputStyleClass="p-inputtext-sm border-0 w-full"
+					locale="en"
+					[(ngModel)]="skyObjectFilter.magnitude[1]"
+					scrollableNumber />
+				<label>Mag. max</label>
+			</p-floatLabel>
 		</div>
 	</div>
 	<ng-template pTemplate="footer">

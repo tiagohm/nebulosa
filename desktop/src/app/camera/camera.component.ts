@@ -133,9 +133,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	readonly request = structuredClone(EMPTY_CAMERA_START_CAPTURE)
 	running = false
 
-	readonly exposureModeOptions: ExposureMode[] = ['SINGLE', 'FIXED', 'LOOP']
-	readonly frameTypeOptions: FrameType[] = ['LIGHT', 'DARK', 'FLAT', 'BIAS']
-
 	readonly exposureTimeUnitModel: MenuItem[] = [
 		{
 			label: 'Minute (m)',

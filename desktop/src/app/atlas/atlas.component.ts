@@ -465,7 +465,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			this.satelliteSearchGroup.set(group, enabled)
 		}
 
-		this.skyObjectFilter.types.push(...(await this.api.skyObjectTypes()))
+		this.skyObjectFilter.types = ['ALL', ...await this.api.skyObjectTypes()]
 	}
 
 	ngAfterContentInit() {

@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
-import { DropdownOptionsPipe } from '../../shared/pipes/dropdown-options'
+import { DropdownOptionsPipe } from '../../shared/pipes/dropdown-options.pipe'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'

@@ -401,7 +401,9 @@
 		<div class="col-4">
 			<p-floatLabel class="w-full">
 				<p-dropdown
-					[options]="'MOUNT_REMOTE_CONTROL_TYPE' | dropdownOptions"
+					[options]="'MOUNT_REMOTE_CONTROL_TYPE' | dropdownOptions | enumDropdown"
+					optionsLabel="label"
+					optionsValue="value"
 					[(ngModel)]="remoteControl.type"
 					[autoDisplayFirst]="false"
 					styleClass="p-inputtext-sm border-0" />

@@ -1,5 +1,5 @@
 <div class="grid px-3 py-2 relative">
-	<div class="col-12 my-2">
+	<div class="col-12 mb-2 mt-3">
 		<p-floatLabel class="w-full">
 			<p-dropdown
 				[options]="tabs"
@@ -66,7 +66,9 @@
 			<div class="col-8">
 				<p-floatLabel class="w-full">
 					<p-dropdown
-						[options]="'PLATE_SOLVER' | dropdownOptions"
+						[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
+						optionsLabel="label"
+						optionsValue="value"
 						[(ngModel)]="plateSolverType"
 						styleClass="p-inputtext-sm border-0"
 						(ngModelChange)="plateSolvers.get(plateSolverType)!.type = $event; save()"
@@ -142,7 +144,9 @@
 			<div class="col-6">
 				<p-floatLabel class="w-full">
 					<p-dropdown
-						[options]="'STAR_DETECTOR' | dropdownOptions"
+						[options]="'STAR_DETECTOR' | dropdownOptions | enumDropdown"
+						optionsLabel="label"
+						optionsValue="value"
 						[(ngModel)]="starDetectorType"
 						styleClass="p-inputtext-sm border-0"
 						(ngModelChange)="starDetectors.get(starDetectorType)!.type = $event; save()"
@@ -237,7 +241,9 @@
 			<div class="col-6">
 				<p-floatLabel class="w-full">
 					<p-dropdown
-						[options]="'LIVE_STACKER' | dropdownOptions"
+						[options]="'LIVE_STACKER' | dropdownOptions | enumDropdown"
+						optionsLabel="label"
+						optionsValue="value"
 						[(ngModel)]="liveStackerType"
 						styleClass="p-inputtext-sm border-0"
 						(ngModelChange)="liveStackers.get(liveStackerType)!.type = $event; save()"

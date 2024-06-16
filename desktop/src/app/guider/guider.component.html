@@ -125,8 +125,10 @@
 									<div class="col-4">
 										<p-floatLabel class="w-full">
 											<p-dropdown
-												[options]="plotModes"
+												[options]="'GUIDER_PLOT_MODE' | dropdownOptions | enumDropdown"
 												[(ngModel)]="plotMode"
+												optionsLabel="label"
+												optionsValue="value"
 												(ngModelChange)="plotModeChanged()"
 												styleClass="p-inputtext-sm border-0"
 												[autoDisplayFirst]="false" />
@@ -136,8 +138,10 @@
 									<div class="col-4">
 										<p-floatLabel class="w-full">
 											<p-dropdown
-												[options]="yAxisUnits"
+												[options]="'GUIDER_Y_AXIS_UNIT' | dropdownOptions | enumDropdown"
 												[(ngModel)]="yAxisUnit"
+												optionsLabel="label"
+												optionsValue="value"
 												(ngModelChange)="yAxisUnitChanged()"
 												styleClass="p-inputtext-sm border-0"
 												[autoDisplayFirst]="false" />

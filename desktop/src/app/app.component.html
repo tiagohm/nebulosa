@@ -5,7 +5,7 @@
 	[style]="{ height: '42px', zIndex: '1000', backgroundColor }">
 	<span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
 		<div>{{ title }}</div>
-		<div class="text-xs text-gray-100 font-normal">{{ subTitle }}</div>
+		<div class="text-xs text-gray-200 font-normal">{{ subTitle }}</div>
 	</span>
 
 	<neb-menu-bar
@@ -21,7 +21,7 @@
 		[text]="true"
 		[rounded]="true"
 		size="small"
-		icon="mdi mdi-pin text-gray-300"
+		icon="mdi mdi-pin text-gray-200"
 		(onClick)="pin()"
 		pTooltip="Unpin Window"
 		tooltipPosition="bottom"
@@ -31,7 +31,7 @@
 		[text]="true"
 		[rounded]="true"
 		size="small"
-		icon="mdi mdi-pin-off text-gray-300"
+		icon="mdi mdi-pin-off text-gray-200"
 		(onClick)="pin()"
 		pTooltip="Pin Window"
 		tooltipPosition="bottom"
@@ -41,7 +41,7 @@
 		[text]="true"
 		[rounded]="true"
 		size="small"
-		icon="mdi mdi-window-minimize text-gray-300"
+		icon="mdi mdi-window-minimize text-gray-200"
 		(onClick)="minimize()"
 		styleClass="select-none cursor-pointer"></p-button>
 	<p-button
@@ -49,7 +49,7 @@
 		[text]="true"
 		[rounded]="true"
 		size="small"
-		icon="mdi mdi-window-maximize text-gray-300"
+		icon="mdi mdi-window-maximize text-gray-200"
 		(onClick)="maximize()"
 		styleClass="select-none cursor-pointer"></p-button>
 	<p-button
