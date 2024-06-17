@@ -42,7 +42,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 	connections: ConnectionDetails[] = []
 	connection?: ConnectionDetails
 	newConnection?: [ConnectionDetails, ConnectionDetails | undefined]
-	skyAtlasProgress?: number = undefined
 
 	cameras: Camera[] = []
 	mounts: Mount[] = []
@@ -252,16 +251,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 					this.updateConnection()
 				})
 			}
-		})
-
-		electron.on('SKY_ATLAS.PROGRESS_CHANGED', (event) => {
-			ngZone.run(() => {
-				if (event.progress >= 100) {
-					this.skyAtlasProgress = undefined
-				} else {
-					this.skyAtlasProgress = event.progress
-				}
-			})
 		})
 
 		this.connections = preference.connections.get().sort((a, b) => (b.connectedAt ?? 0) - (a.connectedAt ?? 0))

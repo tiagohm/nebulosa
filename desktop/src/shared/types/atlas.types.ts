@@ -470,7 +470,3 @@ export const EMPTY_LOCATION: Location = {
 	elevation: 0,
 	offsetInMinutes: 0,
 }
-
-export interface SkyAtlasUpdated extends NotificationEvent {
-	progress: number
-}

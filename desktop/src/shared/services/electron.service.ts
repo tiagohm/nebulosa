@@ -10,7 +10,8 @@ import * as fs from 'fs'
 import { DARVEvent, TPPAEvent } from '../types/alignment.types'
 import { DeviceMessageEvent } from '../types/api.types'
 import { CloseWindow, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
-import { Location, SkyAtlasUpdated } from '../types/atlas.types'
+import { Location } from '../types/atlas.types'
+import { AutoFocusEvent } from '../types/autofocus.type'
 import { Camera, CameraCaptureEvent } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
 import { FlatWizardEvent } from '../types/flat-wizard.types'
@@ -22,7 +23,6 @@ import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
 import { FilterWheel, WheelRenamed } from '../types/wheel.types'
-import { AutoFocusEvent } from '../types/autofocus.type'
 
 type EventMappedType = {
 	'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
@@ -59,7 +59,6 @@ type EventMappedType = {
 	'SEQUENCER.ELAPSED': SequencerEvent
 	'FLAT_WIZARD.ELAPSED': FlatWizardEvent
 	'CONNECTION.CLOSED': ConnectionClosed
-	'SKY_ATLAS.PROGRESS_CHANGED': SkyAtlasUpdated
 	'CALIBRATION.CHANGED': unknown
 	'FILE.OPEN': OpenFile
 	'FILE.SAVE': OpenFile

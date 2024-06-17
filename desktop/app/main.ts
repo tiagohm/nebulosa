@@ -281,10 +281,10 @@ function createSplashScreen() {
 }
 
 function showNotification(event: NotificationEvent) {
-	if (event.silent) {
-		sendToAllWindows(event.type, event)
+	if (event.target) {
+		sendToAllWindows(event.target, event)
 	} else {
-		new Notification({ ...event, icon: appIcon }).on('click', () => sendToAllWindows(event.type, event)).show()
+		new Notification({ ...event, icon: appIcon }).show()
 	}
 }
 
