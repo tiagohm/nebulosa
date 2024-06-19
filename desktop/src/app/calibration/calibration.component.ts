@@ -147,7 +147,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 	}
 
 	openImage(frame: CalibrationFrame) {
-		this.browserWindow.openImage({ path: frame.path })
+		this.browserWindow.openImage({ path: frame.path, source: 'PATH' })
 	}
 
 	toggleCalibrationFrame(node: CalibrationNode, enabled: boolean) {

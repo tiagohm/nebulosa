@@ -120,7 +120,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 			const title = `Framing ・ ${this.rightAscension} ・ ${this.declination}`
 
 			this.framePath = path
-			this.frameId = await this.browserWindow.openImage({ id: 'framing', source: 'FRAMING', path, title })
+			this.frameId = await this.browserWindow.openImage({ path, source: 'FRAMING', id: 'framing', title })
 
 			this.savePreference()
 		} catch (e: any) {

@@ -6,7 +6,6 @@
 main.js
 src/**/*.js
 app/**/*.js
-!app/**/preload.js
 *.js.map
 
 node_modules

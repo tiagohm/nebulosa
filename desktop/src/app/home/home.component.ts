@@ -385,19 +385,19 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 	private openDeviceWindow<K extends keyof MappedDevice>(type: K, device: MappedDevice[K]) {
 		switch (type) {
 			case 'MOUNT':
-				this.browserWindow.openMount({ bringToFront: true, data: device as Mount })
+				this.browserWindow.openMount(device as Mount, { bringToFront: true })
 				break
 			case 'CAMERA':
-				this.browserWindow.openCamera({ bringToFront: true, data: device as Camera })
+				this.browserWindow.openCamera(device as Camera, { bringToFront: true })
 				break
 			case 'FOCUSER':
-				this.browserWindow.openFocuser({ bringToFront: true, data: device as Focuser })
+				this.browserWindow.openFocuser(device as Focuser, { bringToFront: true })
 				break
 			case 'WHEEL':
-				this.browserWindow.openWheel({ bringToFront: true, data: device as FilterWheel })
+				this.browserWindow.openWheel(device as FilterWheel, { bringToFront: true })
 				break
 			case 'ROTATOR':
-				this.browserWindow.openRotator({ bringToFront: true, data: device as Rotator })
+				this.browserWindow.openRotator(device as Rotator, { bringToFront: true })
 				break
 		}
 	}
@@ -434,10 +434,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 				this.browserWindow.openGuider({ bringToFront: true })
 				break
 			case 'SKY_ATLAS':
-				this.browserWindow.openSkyAtlas({ bringToFront: true, data: undefined })
+				this.browserWindow.openSkyAtlas(undefined, { bringToFront: true })
 				break
 			case 'FRAMING':
-				this.browserWindow.openFraming({ bringToFront: true, data: undefined })
+				this.browserWindow.openFraming(undefined, { bringToFront: true })
 				break
 			case 'ALIGNMENT':
 				this.browserWindow.openAlignment({ bringToFront: true })
@@ -452,7 +452,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 				this.browserWindow.openFlatWizard({ bringToFront: true })
 				break
 			case 'INDI':
-				this.browserWindow.openINDI({ data: undefined, bringToFront: true })
+				this.browserWindow.openINDI(undefined, { bringToFront: true })
 				break
 			case 'IMAGE':
 				this.openImage()

@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core'
-import { v4 as uuidv4 } from 'uuid'
 import { SkyAtlasData } from '../../app/atlas/atlas.component'
 import { FramingData } from '../../app/framing/framing.component'
-import { OpenWindow, OpenWindowOptions, OpenWindowOptionsWithData } from '../types/app.types'
+import { OpenWindow, WindowPreference } from '../types/app.types'
 import { Camera, CameraDialogInput, CameraStartCapture } from '../types/camera.types'
 import { Device } from '../types/device.types'
 import { Focuser } from '../types/focuser.types'
-import { ImageData, ImageSource } from '../types/image.types'
+import { ImageSource, OpenImage } from '../types/image.types'
 import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { FilterWheel, WheelDialogInput } from '../types/wheel.types'
@@ -16,152 +15,135 @@ import { ElectronService } from './electron.service'
 export class BrowserWindowService {
 	constructor(private electron: ElectronService) {}
 
-	openWindow<T>(data: Omit<OpenWindow<T>, 'modal'>): Promise<boolean> {
-		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', data)
+	openWindow(open: OpenWindow): Promise<boolean> {
+		open.preference.modal = false
+		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open })
 	}
 
-	openModal<T, R = any>(data: Omit<OpenWindow<T>, 'modal' | 'bringToFront' | 'requestFocus'>): Promise<R | undefined> {
-		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...data, modal: true })
+	openModal<R = unknown>(open: OpenWindow): Promise<R | undefined> {
+		open.preference.modal = true
+		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open })
 	}
 
-	openMount(options: OpenWindowOptionsWithData<Mount>) {
-		Object.assign(options, { icon: 'telescope', width: 400, height: 477 })
-		this.openWindow({ ...options, id: `mount.${options.data.name}`, path: 'mount' })
+	openMount(data: Mount, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'telescope', width: 400, height: 477 })
+		this.openWindow({ preference, data, id: `mount.${data.name}`, path: 'mount' })
 	}
 
-	openCamera(options: OpenWindowOptionsWithData<Camera>) {
-		Object.assign(options, { icon: 'camera', width: 400, height: 467 })
-		return this.openWindow({ ...options, id: `camera.${options.data.name}`, path: 'camera' })
+	openCamera(data: Camera, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'camera', width: 400, height: 467 })
+		return this.openWindow({ preference, data, id: `camera.${data.name}`, path: 'camera' })
 	}
 
-	openCameraDialog(options: OpenWindowOptionsWithData<CameraDialogInput>) {
-		Object.assign(options, { icon: 'camera', width: 400, height: 424 })
-		return this.openModal<CameraDialogInput, CameraStartCapture>({
-			...options,
-			id: `camera.${options.data.camera.name}.modal`,
+	openCameraDialog(data: CameraDialogInput, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'camera', width: 400, height: 424 })
+		return this.openModal<CameraStartCapture>({
+			preference,
+			data,
+			id: `camera.${data.camera.name}.modal`,
 			path: 'camera',
 		})
 	}
 
-	openFocuser(options: OpenWindowOptionsWithData<Focuser>) {
-		Object.assign(options, { icon: 'focus', width: 252, height: 252 })
-		this.openWindow({ ...options, id: `focuser.${options.data.name}`, path: 'focuser' })
+	openFocuser(data: Focuser, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'focus', width: 252, height: 252 })
+		this.openWindow({ preference, data, id: `focuser.${data.name}`, path: 'focuser' })
 	}
 
-	openWheel(options: OpenWindowOptionsWithData<FilterWheel>) {
-		Object.assign(options, { icon: 'filter-wheel', width: 280, height: 195 })
-		this.openWindow({ ...options, id: `wheel.${options.data.name}`, path: 'wheel' })
+	openWheel(data: FilterWheel, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'filter-wheel', width: 280, height: 195 })
+		this.openWindow({ preference, data, id: `wheel.${data.name}`, path: 'wheel' })
 	}
 
-	openRotator(options: OpenWindowOptionsWithData<Rotator>) {
-		Object.assign(options, { icon: 'rotate', width: 280, height: 210 })
-		this.openWindow({ ...options, id: `rotator.${options.data.name}`, path: 'rotator' })
+	openRotator(data: Rotator, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'rotate', width: 280, height: 210 })
+		this.openWindow({ preference, data, id: `rotator.${data.name}`, path: 'rotator' })
 	}
 
-	openWheelDialog(options: OpenWindowOptionsWithData<WheelDialogInput>) {
-		Object.assign(options, { icon: 'filter-wheel', width: 300, height: 217 })
-		return this.openModal<WheelDialogInput, CameraStartCapture>({
-			...options,
-			id: `wheel.${options.data.wheel.name}.modal`,
+	openWheelDialog(data: WheelDialogInput, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'filter-wheel', width: 300, height: 217 })
+		return this.openModal<CameraStartCapture>({
+			preference,
+			data,
+			id: `wheel.${data.wheel.name}.modal`,
 			path: 'wheel',
 		})
 	}
 
-	openGuider(options: OpenWindowOptions = {}) {
-		Object.assign(options, { icon: 'guider', width: 440, height: 455 })
-		this.openWindow({ ...options, id: 'guider', path: 'guider', data: undefined })
+	openGuider(preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'guider', width: 440, height: 455 })
+		this.openWindow({ preference, id: 'guider', path: 'guider' })
 	}
 
 	async openCameraImage(camera: Camera, source: ImageSource = 'CAMERA', capture?: CameraStartCapture) {
 		const factor = camera.height / camera.width
 		const id = `image.${camera.name}`
-		await this.openWindow<ImageData>({
-			id,
-			path: 'image',
-			icon: 'image',
-			width: '50%',
-			height: `${factor}w`,
-			resizable: true,
-			data: { camera, source, capture },
-		})
+		const preference: WindowPreference = { icon: 'image', width: '50%', height: `${factor}w`, resizable: true }
+		const data = { camera, source, capture }
+		await this.openWindow({ preference, data, id, path: 'image' })
 		return id
 	}
 
-	async openImage(data: Omit<ImageData, 'camera'> & { id?: string; path: string }) {
-		const hash = data.id || uuidv4()
+	async openImage(data: OpenImage) {
+		const hash = data.id || btoa(data.path)
 		const id = `image.${hash}`
-		await this.openWindow<ImageData>({
-			id,
-			path: 'image',
-			icon: 'image',
-			width: '50%',
-			height: `0.9w`,
-			resizable: true,
-			data,
-			autoResizable: false,
-		})
+		const preference: WindowPreference = { icon: 'image', width: '50%', height: `0.9w`, resizable: true, autoResizable: false }
+		await this.openWindow({ preference, data, id, path: 'image' })
 		return id
 	}
 
-	openINDI(options: OpenWindowOptionsWithData<Device | undefined>) {
-		Object.assign(options, { icon: 'indi', width: 760, height: 420, resizable: true })
-		this.openWindow({ ...options, id: 'indi', path: 'indi' })
+	openINDI(data: Device | undefined, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'indi', width: 760, height: 420, resizable: true })
+		this.openWindow({ preference, data, id: 'indi', path: 'indi' })
 	}
 
-	openSkyAtlas(options: OpenWindowOptionsWithData<SkyAtlasData | undefined>) {
-		Object.assign(options, { icon: 'atlas', width: 450, height: 530, autoResizable: false })
-		this.openWindow({ ...options, id: 'atlas', path: 'atlas' })
+	openSkyAtlas(data: SkyAtlasData | undefined, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'atlas', width: 450, height: 530, autoResizable: false })
+		this.openWindow({ preference, data, id: 'atlas', path: 'atlas' })
 	}
 
-	openFraming(options: OpenWindowOptionsWithData<FramingData | undefined>) {
-		Object.assign(options, { icon: 'framing', width: 280, height: 303 })
-		this.openWindow({ ...options, id: 'framing', path: 'framing' })
+	openFraming(data: FramingData | undefined, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'framing', width: 280, height: 303 })
+		this.openWindow({ preference, data, id: 'framing', path: 'framing' })
 	}
 
-	openAlignment(options: OpenWindowOptions = {}) {
-		Object.assign(options, { icon: 'star', width: 425, height: 365 })
-		this.openWindow({ ...options, id: 'alignment', path: 'alignment', data: undefined })
+	openAlignment(preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'star', width: 425, height: 365 })
+		this.openWindow({ preference, id: 'alignment', path: 'alignment' })
 	}
 
-	openSequencer(options: OpenWindowOptions = {}) {
-		Object.assign(options, { icon: 'workflow', width: 630, height: 570, resizable: true })
-		this.openWindow({ ...options, id: 'sequencer', path: 'sequencer', data: undefined })
+	openSequencer(preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'workflow', width: 630, height: 570, resizable: true })
+		this.openWindow({ preference, id: 'sequencer', path: 'sequencer' })
 	}
 
-	openAutoFocus(options: OpenWindowOptions = {}) {
-		Object.assign(options, { icon: 'auto-focus', width: 425, height: 420 })
-		this.openWindow({ ...options, id: 'auto-focus', path: 'auto-focus', data: undefined })
+	openAutoFocus(preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'auto-focus', width: 425, height: 420 })
+		this.openWindow({ preference, id: 'auto-focus', path: 'auto-focus' })
 	}
 
-	openFlatWizard(options: OpenWindowOptions = {}) {
-		Object.assign(options, { icon: 'star', width: 385, height: 370 })
-		this.openWindow({ ...options, id: 'flat-wizard', path: 'flat-wizard', data: undefined })
+	openFlatWizard(preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'star', width: 385, height: 370 })
+		this.openWindow({ preference, id: 'flat-wizard', path: 'flat-wizard' })
 	}
 
-	openSettings(options: OpenWindowOptions = {}) {
-		Object.assign(options, { icon: 'settings', width: 350, height: 450 })
-		this.openWindow({ ...options, id: 'settings', path: 'settings', data: undefined, autoResizable: false })
+	openSettings(preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'settings', width: 350, height: 450, autoResizable: false })
+		this.openWindow({ preference, id: 'settings', path: 'settings' })
 	}
 
-	openCalculator(options: OpenWindowOptions = {}) {
-		Object.assign(options, { icon: 'calculator', width: 345, height: 340 })
-		this.openWindow({ ...options, id: 'calculator', path: 'calculator', data: undefined })
+	openCalculator(preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'calculator', width: 345, height: 340 })
+		this.openWindow({ preference, id: 'calculator', path: 'calculator' })
 	}
 
-	openCalibration(options: OpenWindowOptions = {}) {
-		Object.assign(options, { icon: 'stack', width: 420, height: 400, minHeight: 400 })
-		this.openWindow({ ...options, id: 'calibration', path: 'calibration', data: undefined })
+	openCalibration(preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'stack', width: 420, height: 400, minHeight: 400 })
+		this.openWindow({ preference, id: 'calibration', path: 'calibration' })
 	}
 
 	openAbout() {
-		this.openWindow({
-			id: 'about',
-			path: 'about',
-			icon: 'about',
-			width: 430,
-			height: 307,
-			bringToFront: true,
-			data: undefined,
-		})
+		const preference: WindowPreference = { icon: 'about', width: 430, height: 307, bringToFront: true }
+		this.openWindow({ preference, id: 'about', path: 'about' })
 	}
 }

@@ -8,7 +8,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Equipment } from '../../shared/types/home.types'
@@ -711,7 +711,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	}
 
 	static async showAsDialog(window: BrowserWindowService, mode: CameraDialogMode, camera: Camera, request: CameraStartCapture) {
-		const result = await window.openCameraDialog({ data: { mode, camera, request } })
+		const result = await window.openCameraDialog({ mode, camera, request })
 
 		if (result) {
 			Object.assign(request, result)

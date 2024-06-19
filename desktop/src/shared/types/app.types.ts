@@ -33,7 +33,9 @@ export const INTERNAL_EVENT_TYPES = [
 
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
 
-export interface OpenWindowOptions {
+export interface WindowPreference {
+	modal?: boolean
+	autoResizable?: boolean
 	icon?: string
 	resizable?: boolean
 	width?: number | string
@@ -44,20 +46,16 @@ export interface OpenWindowOptions {
 	minHeight?: number
 }
 
-export interface OpenWindowOptionsWithData<T> extends OpenWindowOptions {
-	data: T
-}
-
-export interface OpenWindow<T> extends OpenWindowOptionsWithData<T> {
+export interface OpenWindow {
 	id: string
 	path: string
-	modal?: boolean
-	autoResizable?: boolean
+	preference: WindowPreference
+	data?: any
 }
 
-export interface CloseWindow<T = any> {
+export interface CloseWindow {
 	id?: string
-	data?: T
+	data?: any
 }
 
 export interface OpenDirectory {
@@ -74,3 +72,12 @@ export interface JsonFile<T = any> {
 }
 
 export type SaveJson<T = any> = OpenFile & JsonFile<T>
+
+export interface StoredWindowData {
+	[key: `window.${string}`]: {
+		x: number
+		y: number
+		width: number
+		height: number
+	}
+}

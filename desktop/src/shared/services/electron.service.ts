@@ -222,7 +222,7 @@ export class ElectronService {
 		return this.send('WINDOW.FULLSCREEN', enabled)
 	}
 
-	closeWindow<T>(data: CloseWindow<T>) {
+	closeWindow<T = unknown>(data: CloseWindow): Promise<T> {
 		return this.send('WINDOW.CLOSE', data)
 	}
 

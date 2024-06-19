@@ -149,6 +149,14 @@ export const EMPTY_IMAGE_PREFERENCE: ImagePreference = {
 	},
 }
 
+export interface OpenImage {
+	path: string
+	source: ImageSource
+	id?: string
+	title?: string
+	capture?: CameraStartCapture
+}
+
 export interface ImageData {
 	camera?: Camera
 	path?: string

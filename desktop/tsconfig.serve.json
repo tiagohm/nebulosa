@@ -23,10 +23,15 @@
     ]
   },
   "files": [
-    "app/main.ts"
+    "app/main.ts",
+	"app/preload.ts",
+	"app/argument.parser.ts",
+	"app/local.storage.ts",
+	"app/window.manager.ts"
   ],
   "include": [
-    "src/shared/types/*.ts"
+    "src/shared/types/*.ts",
+	"src/typings.d.ts"
   ],
   "exclude": [
     "node_modules",

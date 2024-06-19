@@ -12,8 +12,8 @@ import { ElectronService } from '../shared/services/electron.service'
 })
 export class AppComponent implements AfterViewInit {
 	pinned = false
-	readonly maximizable = !!window.options.resizable
-	readonly modal = window.options.modal ?? false
+	readonly maximizable = !!window.preference.resizable
+	readonly modal = window.preference.modal ?? false
 	subTitle? = ''
 	backgroundColor = '#212121'
 	topMenu: MenuItem[] = []
@@ -35,14 +35,14 @@ export class AppComponent implements AfterViewInit {
 		console.info('APP_CONFIG', APP_CONFIG)
 
 		if (electron.isElectron) {
-			console.info('Run in electron', window.options)
+			console.info('Run in electron', window.preference)
 		} else {
-			console.info('Run in browser', window.options)
+			console.info('Run in browser', window.preference)
 		}
 	}
 
 	async ngAfterViewInit() {
-		if (window.options.autoResizable !== false) {
+		if (window.preference.autoResizable !== false) {
 			this.electron.autoResizeWindow()
 		}
 	}
@@ -62,6 +62,6 @@ export class AppComponent implements AfterViewInit {
 	}
 
 	close(data?: any) {
-		this.electron.closeWindow({ data })
+		this.electron.closeWindow({ id: window.id, data })
 	}
 }

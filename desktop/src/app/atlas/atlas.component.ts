@@ -465,7 +465,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			this.satelliteSearchGroup.set(group, enabled)
 		}
 
-		this.skyObjectFilter.types = ['ALL', ...await this.api.skyObjectTypes()]
+		this.skyObjectFilter.types = ['ALL', ...(await this.api.skyObjectTypes())]
 	}
 
 	ngAfterContentInit() {
@@ -685,10 +685,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 	frame() {
 		this.browserWindow.openFraming({
-			data: {
-				rightAscension: this.bodyPosition.rightAscensionJ2000,
-				declination: this.bodyPosition.declinationJ2000,
-			},
+			rightAscension: this.bodyPosition.rightAscensionJ2000,
+			declination: this.bodyPosition.declinationJ2000,
 		})
 	}
 

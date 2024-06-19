@@ -416,7 +416,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 	}
 
 	static async showAsDialog(window: BrowserWindowService, mode: WheelDialogMode, wheel: FilterWheel, request: CameraStartCapture) {
-		const result = await window.openWheelDialog({ data: { mode, wheel, request } })
+		const result = await window.openWheelDialog({ mode, wheel, request })
 
 		if (result) {
 			Object.assign(request, result)

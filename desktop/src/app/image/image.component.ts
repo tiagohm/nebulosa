@@ -41,6 +41,7 @@ import {
 	ImageStretchDialog,
 	ImageTransformation,
 	LiveStackingMode,
+	OpenImage,
 	StarDetectionDialog,
 } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
@@ -582,9 +583,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			}
 		})
 
-		electron.on('DATA.CHANGED', async (event: ImageData) => {
+		electron.on('DATA.CHANGED', async (event: OpenImage) => {
 			ngZone.run(() => {
-				this.loadImageFromData(event)
+				this.loadImageFromOpenImage(event)
 			})
 		})
 
@@ -642,8 +643,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		await this.loadCalibrationGroups()
 
 		this.route.queryParams.subscribe((e) => {
-			const data = JSON.parse(decodeURIComponent(e.data)) as ImageData
-			this.loadImageFromData(data)
+			const data = JSON.parse(decodeURIComponent(e.data)) as OpenImage
+			this.loadImageFromOpenImage(data)
 		})
 	}
 
@@ -812,10 +813,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}, false)
 	}
 
-	private loadImageFromData(data: ImageData) {
+	private loadImageFromOpenImage(data: OpenImage) {
 		console.info('loading image from data: %s', data)
 
-		this.imageData = data
+		Object.assign(this.imageData, data)
 
 		// Not clicked on menu item.
 		if (this.calibrationViaCamera && this.transformation.calibrationGroup !== data.capture?.calibrationGroup) {
@@ -1217,12 +1218,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	frame(coordinate: EquatorialCoordinateJ2000) {
 		this.browserWindow.openFraming({
-			data: {
-				rightAscension: coordinate.rightAscensionJ2000,
-				declination: coordinate.declinationJ2000,
-				fov: this.solver.solved!.width / 60,
-				rotation: this.solver.solved!.orientation,
-			},
+			rightAscension: coordinate.rightAscensionJ2000,
+			declination: coordinate.declinationJ2000,
+			fov: this.solver.solved!.width / 60,
+			rotation: this.solver.solved!.orientation,
 		})
 	}
 

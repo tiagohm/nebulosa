@@ -13,7 +13,8 @@ import { PrimeService } from '../../shared/services/prime.service'
 import { Angle, ComputedLocation, Constellation, EMPTY_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
 import { EMPTY_MOUNT, Mount, MountRemoteControlDialog, MountRemoteControlType, MoveDirectionType, PierSide, SlewRate, TargetCoordinateType, TrackMode } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
-import { SkyAtlasTab } from '../atlas/atlas.component'
+import { SkyAtlasData, SkyAtlasTab } from '../atlas/atlas.component'
+import { FramingData } from '../framing/framing.component'
 
 export function mountPreferenceKey(mount: Mount) {
 	return `mount.${mount.name}`
@@ -71,9 +72,8 @@ export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
 			icon: 'mdi mdi-image',
 			label: 'Frame',
 			command: () => {
-				this.browserWindow.openFraming({
-					data: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 },
-				})
+				const data: FramingData = { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 }
+				this.browserWindow.openFraming(data)
 			},
 		},
 		SEPARATOR_MENU_ITEM,
@@ -81,13 +81,12 @@ export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
 			icon: 'mdi mdi-magnify',
 			label: 'Find sky objects around the coordinates',
 			command: () => {
-				this.browserWindow.openSkyAtlas({
-					bringToFront: true,
-					data: {
-						tab: SkyAtlasTab.SKY_OBJECT,
-						filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 },
-					},
-				})
+				const data: SkyAtlasData = {
+					tab: SkyAtlasTab.SKY_OBJECT,
+					filter: { rightAscension: this.rightAscensionJ2000, declination: this.declinationJ2000 },
+				}
+
+				this.browserWindow.openSkyAtlas(data, { bringToFront: true })
 			},
 		},
 	]
@@ -121,9 +120,8 @@ export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
 			icon: 'mdi mdi-image',
 			label: 'Frame',
 			command: () => {
-				this.browserWindow.openFraming({
-					data: { rightAscension: this.targetRightAscension, declination: this.targetDeclination },
-				})
+				const data: FramingData = { rightAscension: this.targetRightAscension, declination: this.targetDeclination }
+				this.browserWindow.openFraming(data)
 			},
 		},
 		SEPARATOR_MENU_ITEM,
