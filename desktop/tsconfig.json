@@ -20,12 +20,8 @@
       "node_modules/@types"
     ],
     "lib": [
-      "es2022",
-      "es2018",
-      "es2017",
-      "es2016",
-      "es2015",
-      "dom"
+      "ES2023",
+	  "dom"
     ],
     "useDefineForClassFields": false
   },
