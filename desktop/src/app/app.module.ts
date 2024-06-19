@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http'
+import { HTTP_INTERCEPTORS, provideHttpClient } from '@angular/common/http'
 import { LOCALE_ID, NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
@@ -159,7 +159,6 @@ import { SettingsComponent } from './settings/settings.component'
 		DynamicDialogModule,
 		FloatLabelModule,
 		FormsModule,
-		HttpClientModule,
 		InplaceModule,
 		InputNumberModule,
 		InputSwitchModule,
@@ -194,6 +193,7 @@ import { SettingsComponent } from './settings/settings.component'
 		ExposureTimePipe,
 		MessageService,
 		SkyObjectPipe,
+		provideHttpClient(),
 		WinPipe,
 		{
 			provide: LOCALE_ID,
