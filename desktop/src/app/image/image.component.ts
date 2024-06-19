@@ -1084,7 +1084,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	toggleStretch() {
 		this.stretch.auto = !this.stretch.auto
-		this.autoStretchMenuItem.checked = this.stretch.auto
+		this.autoStretchMenuItem.selected = this.stretch.auto
 
 		if (!this.stretch.auto) {
 			this.resetStretch()
