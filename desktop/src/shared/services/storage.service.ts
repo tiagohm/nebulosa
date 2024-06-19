@@ -1,12 +1,11 @@
 export interface StorageService {
+	clear(): void
 
-    clear(): void
+	delete(key: string): void
 
-    delete(key: string): void
+	get<T>(key: string, defaultValue: T): Promise<T> | T
 
-    get<T>(key: string, defaultValue: T): Promise<T> | T
+	has(key: string): Promise<boolean> | boolean
 
-    has(key: string): Promise<boolean> | boolean
-
-    set(key: string, value: any): void
+	set(key: string, value: any): void
 }

@@ -8,9 +8,9 @@ export const deviceComparator: Comparator<Device> = (a: Device, b: Device) => te
 export const numericTextComparator: Comparator<string> = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
 
 export function negateComparator<T>(comparator: Comparator<T>): Comparator<T> {
-    return (a, b) => -comparator(a, b)
+	return (a, b) => -comparator(a, b)
 }
 
 export function compareBy<T>(name: keyof T, comparator: (a: T[typeof name], b: T[typeof name]) => number): Comparator<T> {
-    return (a, b) => comparator(a[name], b[name])
+	return (a, b) => comparator(a[name], b[name])
 }

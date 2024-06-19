@@ -11,6 +11,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.bufferedReader
+import kotlin.io.path.deleteIfExists
 
 /**
  * Detects stars in the currently loaded image.
@@ -76,7 +77,7 @@ data class FindStar(
     }
 
     override fun close() {
-        // outputPath.deleteIfExists()
+        outputPath.deleteIfExists()
     }
 
     companion object {

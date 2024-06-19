@@ -1,36 +1,57 @@
 import { Component, Input } from '@angular/core'
-import { MenuItem as PrimeMenuItem, MenuItemCommandEvent as PrimeMenuItemCommandEvent } from 'primeng/api'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
-import { Severity } from '../../types/app.types'
+import { InputSwitchChangeEvent } from 'primeng/inputswitch'
+import { Severity, TooltipPosition } from '../../types/app.types'
 
-export interface MenuItemCommandEvent extends PrimeMenuItemCommandEvent {
-    item?: MenuItem
+export interface MenuItemCommandEvent {
+	originalEvent?: Event
+	item?: MenuItem
+	index?: number
+	parentItem?: MenuItem // Slide menu
+	level?: number // Slide menu
 }
 
-export interface MenuItem extends PrimeMenuItem {
-    badgeSeverity?: Severity
+export interface MenuItem {
+	separator?: boolean
 
-    checked?: boolean
+	icon?: string
+	label?: string
+	visible?: boolean
+	disabled?: boolean
+	severity?: Severity
+	data?: any
 
-    toggleable?: boolean
-    toggled?: boolean
+	tooltip?: string
+	tooltipPosition?: TooltipPosition
 
-    subMenu?: MenuItem[]
+	badge?: string
+	badgeSeverity?: Severity
 
-    toolbarMenu?: MenuItem[]
-    toolbarButtonSeverity?: Severity
+	checkable?: boolean
+	checked?: boolean
 
-    command?: (event: MenuItemCommandEvent) => void
-    toggle?: (event: CheckboxChangeEvent) => void
+	selectable?: boolean
+	selected?: boolean
+
+	toggleable?: boolean
+	toggled?: boolean
+
+	items?: MenuItem[] // Context menu
+	slideMenu?: MenuItem[] // Submenu for Slider menu
+	toolbarMenu?: MenuItem[] // Menu bar on menu item
+	splitButtonMenu?: MenuItem[] // Menu for SplitButton
+
+	command?: (event: MenuItemCommandEvent) => void
+	check?: (event: CheckboxChangeEvent) => void
+	toggle?: (event: InputSwitchChangeEvent) => void
 }
 
 @Component({
-    selector: 'neb-menu-item',
-    templateUrl: './menu-item.component.html',
-    styleUrls: ['./menu-item.component.scss'],
+	selector: 'neb-menu-item',
+	templateUrl: './menu-item.component.html',
+	styleUrls: ['./menu-item.component.scss'],
 })
 export class MenuItemComponent {
-
-    @Input({ required: true })
-    readonly item!: MenuItem
+	@Input({ required: true })
+	readonly item!: MenuItem
 }

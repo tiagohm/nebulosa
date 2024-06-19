@@ -1,9 +1,23 @@
 <div class="flex align-items-center gap-1">
-    <span class="p-float-label w-full">
-        <input pInputText [disabled]="disabled" [readonly]="readonly" class="p-inputtext-sm border-0 w-full"
-               [placeholder]="placeholder ?? ''" [ngModel]="path" (ngModelChange)="pathChange.emit($event)" />
-        <label>{{ label ?? 'Path' }}</label>
-    </span>
-    <p-button [disabled]="disabled || readonly" icon="mdi mdi-folder-open" size="small" [text]="true" (onClick)="choosePath()"
-              pTooltip="{{ directory ? 'Choose directory' : 'Choose file' }}" tooltipPosition="left" positionTop="1" positionLeft="-1" />
+	<p-floatLabel class="w-full">
+		<input
+			pInputText
+			[disabled]="disabled"
+			[readonly]="readonly"
+			class="p-inputtext-sm border-0 w-full"
+			[placeholder]="placeholder ?? ''"
+			[ngModel]="path"
+			(ngModelChange)="pathChange.emit($event)" />
+		<label>{{ label ?? 'Path' }}</label>
+	</p-floatLabel>
+	<p-button
+		[disabled]="disabled || readonly"
+		icon="mdi mdi-folder-open"
+		size="small"
+		[text]="true"
+		(onClick)="choosePath()"
+		pTooltip="{{ directory ? 'Choose directory' : 'Choose file' }}"
+		tooltipPosition="left"
+		positionTop="1"
+		positionLeft="-1" />
 </div>

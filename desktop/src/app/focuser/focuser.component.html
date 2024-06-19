@@ -1,60 +1,134 @@
 <div class="container px-4 py-3">
-    <div class="grid flex align-items-center">
-        <div class="col-12 align-items-center gap-2">
-            <span class="p-float-label">
-                <input pInputText readonly [value]="focuser.name" class="p-inputtext-sm border-0 w-full" />
-                <label>Focuser</label>
-            </span>
-            <p-button *ngIf="focuser.connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-close"
-                      size="small" severity="danger" pTooltip="Disconnect" tooltipPosition="bottom" [text]="true" />
-            <p-button *ngIf="!focuser.connected" [disabled]="!focuser || moving" (onClick)="connect()" icon="mdi mdi-connection"
-                      size="small" severity="info" pTooltip="Connect" tooltipPosition="bottom" [text]="true" />
-        </div>
-        <div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center justify-content-between my-1 gap-1">
-            <div class="flex align-items-center gap-1">
-                <i class="mdi mdi-information text-blue-600"></i>
-                <span style="display: contents">{{ moving ? 'moving' : 'idle' }}</span>
-            </div>
-            <div class="flex align-items-center gap-1" *ngIf="focuser.hasThermometer">
-                <i class="mdi mdi-thermometer text-red-600"></i>
-                <span style="display: contents">{{ focuser.temperature | number: '1.2-2' }}°C</span>
-            </div>
-        </div>
-    </div>
-    <div class="grid mt-1">
-        <div class="col-8">
-            <span class="p-float-label">
-                <p-inputNumber readonly styleClass="p-inputtext-sm border-0 max-w-full" [ngModel]="focuser.position" locale="en"
-                               scrollableNumber />
-                <label>Position (max: {{ focuser.maxPosition }})</label>
-            </span>
-        </div>
-        <div class="col-3 text-center justify-content-between gap-2">
-            <p-button [disabled]="!focuser.connected || !focuser.canAbort || !moving" icon="mdi mdi-stop" [text]="true" severity="danger"
-                      size="small" pTooltip="Abort" tooltipPosition="bottom" (onClick)="abort()" />
-            <p-button [disabled]="!focuser.connected || !focuser.canSync || moving" (onClick)="sync()" icon="mdi mdi-sync"
-                      [text]="true" severity="info" size="small" pTooltip="Sync" tooltipPosition="bottom" />
-        </div>
-        <div class="col-12 flex align-items-center gap-1">
-            <p-button [disabled]="!focuser.connected || !focuser.canRelativeMove || moving || !stepsRelative" (onClick)="moveIn()"
-                      icon="mdi mdi-arrow-left-bold" [text]="true" size="small" pTooltip="Move In" tooltipPosition="bottom" />
-            <span class="p-float-label">
-                <p-inputNumber [disabled]="!focuser.connected || !focuser.canRelativeMove" [min]="0" [max]="focuser.maxPosition" [showButtons]="true"
-                               styleClass="p-inputtext-sm border-0" [(ngModel)]="stepsRelative" [allowEmpty]="false" locale="en" scrollableNumber />
-                <label>Relative</label>
-            </span>
-            <p-button [disabled]="!focuser.connected || !focuser.canRelativeMove || moving || !stepsRelative" (onClick)="moveOut()"
-                      icon="mdi mdi-arrow-right-bold" [text]="true" size="small" pTooltip="Move Out" tooltipPosition="bottom" />
-        </div>
-        <div class="col-12 flex align-items-center gap-1">
-            <span class="p-float-label">
-                <p-inputNumber [disabled]="!focuser.connected || !focuser.canAbsoluteMove" [min]="0" [max]="focuser.maxPosition" [showButtons]="true"
-                               styleClass="p-inputtext-sm border-0 max-w-full" [(ngModel)]="stepsAbsolute" [allowEmpty]="false" locale="en"
-                               scrollableNumber />
-                <label>Absolute</label>
-            </span>
-            <p-button [disabled]="!focuser.connected || !focuser.canAbsoluteMove || moving || stepsAbsolute === focuser.position" (onClick)="moveTo()"
-                      icon="mdi mdi-check" [text]="true" severity="success" size="small" pTooltip="Move To" tooltipPosition="bottom" />
-        </div>
-    </div>
+	<div class="grid flex align-items-center">
+		<div class="col-12 align-items-center gap-2">
+			<p-floatLabel>
+				<input
+					pInputText
+					readonly
+					[value]="focuser.name"
+					class="p-inputtext-sm border-0 w-full" />
+				<label>Focuser</label>
+			</p-floatLabel>
+			<p-button
+				*ngIf="focuser.connected"
+				[disabled]="!focuser || moving"
+				(onClick)="connect()"
+				icon="mdi mdi-close"
+				size="small"
+				severity="danger"
+				pTooltip="Disconnect"
+				tooltipPosition="bottom"
+				[text]="true" />
+			<p-button
+				*ngIf="!focuser.connected"
+				[disabled]="!focuser || moving"
+				(onClick)="connect()"
+				icon="mdi mdi-connection"
+				size="small"
+				severity="info"
+				pTooltip="Connect"
+				tooltipPosition="bottom"
+				[text]="true" />
+		</div>
+		<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center justify-content-between my-1 gap-1">
+			<div class="flex align-items-center gap-1">
+				<i class="mdi mdi-information text-blue-600"></i>
+				<span style="display: contents">{{ moving ? 'moving' : 'idle' }}</span>
+			</div>
+			<div
+				class="flex align-items-center gap-1"
+				*ngIf="focuser.hasThermometer">
+				<i class="mdi mdi-thermometer text-red-600"></i>
+				<span style="display: contents">{{ focuser.temperature | number: '1.2-2' }}°C</span>
+			</div>
+		</div>
+	</div>
+	<div class="grid mt-1">
+		<div class="col-8">
+			<p-floatLabel>
+				<p-inputNumber
+					readonly
+					styleClass="p-inputtext-sm border-0 max-w-full"
+					[ngModel]="focuser.position"
+					locale="en"
+					scrollableNumber />
+				<label>Position (max: {{ focuser.maxPosition }})</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-3 text-center justify-content-between gap-2">
+			<p-button
+				[disabled]="!focuser.connected || !focuser.canAbort || !moving"
+				icon="mdi mdi-stop"
+				[text]="true"
+				severity="danger"
+				size="small"
+				pTooltip="Abort"
+				tooltipPosition="bottom"
+				(onClick)="abort()" />
+			<p-button
+				[disabled]="!focuser.connected || !focuser.canSync || moving"
+				(onClick)="sync()"
+				icon="mdi mdi-sync"
+				[text]="true"
+				severity="info"
+				size="small"
+				pTooltip="Sync"
+				tooltipPosition="bottom" />
+		</div>
+		<div class="col-12 flex align-items-center gap-1">
+			<p-button
+				[disabled]="!focuser.connected || !focuser.canRelativeMove || moving || !stepsRelative"
+				(onClick)="moveIn()"
+				icon="mdi mdi-arrow-left-bold"
+				[text]="true"
+				size="small"
+				pTooltip="Move In"
+				tooltipPosition="bottom" />
+			<p-floatLabel>
+				<p-inputNumber
+					[disabled]="!focuser.connected || !focuser.canRelativeMove"
+					[min]="0"
+					[max]="focuser.maxPosition"
+					[showButtons]="true"
+					styleClass="p-inputtext-sm border-0"
+					[(ngModel)]="stepsRelative"
+					[allowEmpty]="false"
+					locale="en"
+					scrollableNumber />
+				<label>Relative</label>
+			</p-floatLabel>
+			<p-button
+				[disabled]="!focuser.connected || !focuser.canRelativeMove || moving || !stepsRelative"
+				(onClick)="moveOut()"
+				icon="mdi mdi-arrow-right-bold"
+				[text]="true"
+				size="small"
+				pTooltip="Move Out"
+				tooltipPosition="bottom" />
+		</div>
+		<div class="col-12 flex align-items-center gap-1">
+			<p-floatLabel>
+				<p-inputNumber
+					[disabled]="!focuser.connected || !focuser.canAbsoluteMove"
+					[min]="0"
+					[max]="focuser.maxPosition"
+					[showButtons]="true"
+					styleClass="p-inputtext-sm border-0 max-w-full"
+					[(ngModel)]="stepsAbsolute"
+					[allowEmpty]="false"
+					locale="en"
+					scrollableNumber />
+				<label>Absolute</label>
+			</p-floatLabel>
+			<p-button
+				[disabled]="!focuser.connected || !focuser.canAbsoluteMove || moving || stepsAbsolute === focuser.position"
+				(onClick)="moveTo()"
+				icon="mdi mdi-check"
+				[text]="true"
+				severity="success"
+				size="small"
+				pTooltip="Move To"
+				tooltipPosition="bottom" />
+		</div>
+	</div>
 </div>

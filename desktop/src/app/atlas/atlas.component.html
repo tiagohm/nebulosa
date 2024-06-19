@@ -1,448 +1,848 @@
 <div class="grid flex-1">
-    <div class="col-12">
-        <p-tabView [(activeIndex)]="tab" (activeIndexChange)="tabChanged()">
-            <p-tabPanel header="Sun" [disabled]="refreshing" headerStyleClass="main">
-                <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="Sun" tooltipPosition="bottom">
-                        <img src="assets/icons/sun.png">
-                    </div>
-                </ng-template>
-                <div class="grid flex flex-column align-items-center justify-content-center" style="height: 235px;">
-                    <img #imageOfSun style="width: 215px">
-                    <a class="text-sm" target="_blank" href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
-                        <p-tag severity="success">SDO/HMI</p-tag>
-                    </a>
-                </div>
-            </p-tabPanel>
-            <p-tabPanel header="Moon" [disabled]="refreshing" headerStyleClass="main">
-                <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="Moon" tooltipPosition="bottom">
-                        <img src="assets/icons/moon.png">
-                    </div>
-                </ng-template>
-                <div class="grid flex align-items-center justify-content-center" style="height: 235px;">
-                    <neb-moon [width]="215" [height]="215" [illuminationRatio]="moonIlluminated" [waning]="moonWaning" />
-                </div>
-            </p-tabPanel>
-            <p-tabPanel header="Planets" [disabled]="refreshing" headerStyleClass="main">
-                <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="Planets" tooltipPosition="bottom">
-                        <img src="assets/icons/jupiter.png">
-                    </div>
-                </ng-template>
-                <div class="flex align-items-center justify-content-center px-1">
-                    <p-table [value]="planets" class="planet" [(selection)]="planet" (selectionChange)="planetChanged()" selectionMode="single"
-                             dataKey="code" styleClass="p-datatable-sm p-datatable-striped">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th>Name</th>
-                                <th>Type</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr [pSelectableRow]="item">
-                                <td>{{ item.name }}</td>
-                                <td>{{ item.type }}</td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
-                </div>
-            </p-tabPanel>
-            <p-tabPanel header="Minor Planets" [disabled]="refreshing" headerStyleClass="main">
-                <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="Minor planets" tooltipPosition="bottom">
-                        <img src="assets/icons/asteroid.png">
-                    </div>
-                </ng-template>
-                <p-tabView [(activeIndex)]="minorPlanetTab">
-                    <p-tabPanel header="Search">
-                        <div class="flex mt-3 flex-column align-items-center justify-content-center">
-                            <div class="flex w-full align-items-center px-4 gap-2">
-                                <span class="p-float-label flex-1">
-                                    <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="minorPlanetSearchText"
-                                           pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
-                                           tooltipPosition="bottom" />
-                                    <label>Search</label>
-                                </span>
-                                <p-button [disabled]="minorPlanetSearchText.length < 3 || refreshing" (onClick)="searchMinorPlanet()"
-                                          icon="mdi mdi-magnify" severity="success" size="small" />
-                            </div>
-                        </div>
-                        <div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
-                            <p-table [value]="minorPlanet?.parameters ?? []" class="minorPlanet" styleClass="p-datatable-sm p-datatable-striped">
-                                <ng-template pTemplate="header">
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Description</th>
-                                        <th>Value</th>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-item>
-                                    <tr>
-                                        <td>{{ item.name }}</td>
-                                        <td>{{ item.description }}</td>
-                                        <td>{{ item.value }} {{ item.unit }}</td>
-                                    </tr>
-                                </ng-template>
-                            </p-table>
-                        </div>
-                    </p-tabPanel>
-                    <p-tabPanel header="Close Approaches">
-                        <div class="flex mt-3 flex-column align-items-center justify-content-center">
-                            <div class="flex w-full align-items-center px-4 gap-2">
-                                <span class="p-float-label">
-                                    <p-inputNumber [min]="1" [max]="30" class="w-full" [step]="1" [showButtons]="true"
-                                                   inputStyleClass="p-inputtext-sm border-0 w-full" [(ngModel)]="closeApproachDays"
-                                                   scrollableNumber />
-                                    <label>Days</label>
-                                </span>
-                                <span class="p-float-label">
-                                    <p-inputNumber [min]="1" [max]="100" class="w-full" [step]="0.1" [showButtons]="true"
-                                                   inputStyleClass="p-inputtext-sm border-0 w-full" locale="en" [(ngModel)]="closeApproachDistance"
-                                                   scrollableNumber />
-                                    <label>Distance (LD)</label>
-                                </span>
-                                <p-button [disabled]="refreshing" (onClick)="closeApproachesForMinorPlanets()"
-                                          icon="mdi mdi-magnify" severity="success" size="small" />
-                            </div>
-                        </div>
-                        <div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
-                            <p-table [value]="closeApproaches" class="minorPlanet" selectionMode="single"
-                                     styleClass="p-datatable-sm p-datatable-striped" [(selection)]="closeApproach"
-                                     (selectionChange)="closeApproachChanged()" dataKey="designation">
-                                <ng-template pTemplate="header">
-                                    <tr>
-                                        <th>Name</th>
-                                        <th pSortableColumn="dateTime">Date/Time (Local) <p-sortIcon field="dateTime" /></th>
-                                        <th pSortableColumn="distance">Distance (LD) <p-sortIcon field="distance" /></th>
-                                        <th pSortableColumn="absoluteMagnitude">H (mag) <p-sortIcon field="absoluteMagnitude" /></th>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-item>
-                                    <tr [pSelectableRow]="item">
-                                        <td>{{ item.name }}</td>
-                                        <td>{{ item.dateTime | date:'yyyy-MM-dd HH:mm' }}</td>
-                                        <td>{{ item.distance.toFixed(2) }}</td>
-                                        <td>{{ item.absoluteMagnitude.toFixed(2) }}</td>
-                                    </tr>
-                                </ng-template>
-                            </p-table>
-                        </div>
-                    </p-tabPanel>
-                </p-tabView>
-            </p-tabPanel>
-            <p-tabPanel header="Sky Objects" [disabled]="refreshing" headerStyleClass="main">
-                <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="Sky Objects" tooltipPosition="bottom">
-                        <img src="assets/icons/magnifier.png">
-                    </div>
-                </ng-template>
-                <div class="flex mt-2 align-items-center justify-content-center">
-                    <div class="flex w-full align-items-center px-4 gap-2">
-                        <span class="p-float-label flex-1">
-                            <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="skyObjectSearchText" />
-                            <label>Search</label>
-                        </span>
-                        <div class="flex flex-row gap-1">
-                            <p-button [disabled]="refreshing" (onClick)="searchSkyObject()" icon="mdi mdi-magnify" size="small" severity="info"
-                                      [text]="true" pTooltip="Search" tooltipPosition="bottom" />
-                            <p-button [disabled]="refreshing" (onClick)="showSkyObjectFilterDialog()" icon="mdi mdi-filter" size="small"
-                                      [text]="true" pTooltip="Filter" tooltipPosition="bottom" />
-                        </div>
-                    </div>
-                </div>
-                <div class="flex align-items-center justify-content-center mt-2 px-1">
-                    <p-table [value]="skyObjectItems" class="skyObject" sortField="magnitude" [(selection)]="skyObject"
-                             (selectionChange)="skyObjectChanged()" selectionMode="single" dataKey="id"
-                             styleClass="p-datatable-sm p-datatable-striped" [paginator]="true" [rows]="100" [pageLinks]="3"
-                             [showCurrentPageReport]="true" currentPageReportTemplate="{first}-{last} / {totalRecords}">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th style="width: 40%" pSortableColumn="name">Name <p-sortIcon field="name" /></th>
-                                <th style="width: 25%" pSortableColumn="type">Type <p-sortIcon field="type" /></th>
-                                <th style="width: 15%" pSortableColumn="magnitude">Mag. <p-sortIcon field="magnitude" /></th>
-                                <th style="width: 20%" pSortableColumn="constellation">Const. <p-sortIcon field="constellation" /></th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr [pSelectableRow]="item">
-                                <td class="text-sm">{{ item | skyObject:'name' }}</td>
-                                <td class="text-sm">{{ item.type | enum }}</td>
-                                <td class="text-sm text-center">{{ item.magnitude < 30 ? item.magnitude.toFixed(1) : '-' }}</td>
-                                <td class="text-sm text-center">{{ item.constellation }}</td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
-                </div>
-            </p-tabPanel>
-            <p-tabPanel header="TLEs" [disabled]="refreshing" headerStyleClass="main">
-                <ng-template pTemplate="header">
-                    <div class="p-3" pTooltip="Satellites" tooltipPosition="bottom">
-                        <img src="assets/icons/satellite.png">
-                    </div>
-                </ng-template>
-                <div class="flex mt-2 flex-column align-items-center justify-content-center">
-                    <div class="flex w-full align-items-center px-4 gap-2">
-                        <span class="p-float-label flex-1">
-                            <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="satelliteSearchText" />
-                            <label>Search</label>
-                        </span>
-                        <div class="flex flex-row gap-1">
-                            <p-button [disabled]="refreshing" (onClick)="searchSatellite()" icon="mdi mdi-magnify"
-                                      size="small" severity="info" [text]="true" pTooltip="Search" tooltipPosition="bottom" />
-                            <p-button [disabled]="refreshing" (onClick)="showSatelliteFilterDialog = true" icon="mdi mdi-filter"
-                                      size="small" [text]="true" pTooltip="Filter" tooltipPosition="bottom" />
-                        </div>
-                    </div>
-                </div>
-                <div class="flex align-items-center justify-content-center mt-2 px-1">
-                    <p-table [value]="satelliteItems" class="satellite" sortField="name" [(selection)]="satellite"
-                             (selectionChange)="satelliteChanged()"
-                             selectionMode="single" dataKey="id" styleClass="p-datatable-sm p-datatable-striped" [paginator]="true" [rows]="100"
-                             [pageLinks]="3" [showCurrentPageReport]="true" currentPageReportTemplate="{first}-{last} / {totalRecords}">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th style="width: 20%" pSortableColumn="id">NORAD ID<p-sortIcon field="id" /></th>
-                                <th style="width: 40%" pSortableColumn="name">Name <p-sortIcon field="name" /></th>
-                                <th style="width: 40%">Groups</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr [pSelectableRow]="item">
-                                <td class="w-8rem">{{ item.id }}</td>
-                                <td>{{ item.name }}</td>
-                                <td class="flex flex-row flex-wrap gap-1 max-w-16rem">
-                                    <p-tag *ngFor="let item of item.groups" severity="success" [value]="item" />
-                                </td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
-                </div>
-            </p-tabPanel>
-        </p-tabView>
-    </div>
+	<div class="col-12">
+		<p-tabView
+			[(activeIndex)]="tab"
+			(activeIndexChange)="tabChanged()">
+			<p-tabPanel
+				header="Sun"
+				[disabled]="refreshing"
+				headerStyleClass="main">
+				<ng-template pTemplate="header">
+					<div
+						class="p-3"
+						pTooltip="Sun"
+						tooltipPosition="bottom">
+						<img src="assets/icons/sun.png" />
+					</div>
+				</ng-template>
+				<div
+					class="grid flex flex-column align-items-center justify-content-center"
+					style="height: 235px">
+					<img
+						#imageOfSun
+						style="width: 215px" />
+					<a
+						class="text-sm"
+						target="_blank"
+						href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
+						<p-tag severity="success">SDO/HMI</p-tag>
+					</a>
+				</div>
+			</p-tabPanel>
+			<p-tabPanel
+				header="Moon"
+				[disabled]="refreshing"
+				headerStyleClass="main">
+				<ng-template pTemplate="header">
+					<div
+						class="p-3"
+						pTooltip="Moon"
+						tooltipPosition="bottom">
+						<img src="assets/icons/moon.png" />
+					</div>
+				</ng-template>
+				<div
+					class="grid flex align-items-center justify-content-center"
+					style="height: 235px">
+					<neb-moon
+						[width]="215"
+						[height]="215"
+						[illuminationRatio]="moonIlluminated"
+						[waning]="moonWaning" />
+				</div>
+			</p-tabPanel>
+			<p-tabPanel
+				header="Planets"
+				[disabled]="refreshing"
+				headerStyleClass="main">
+				<ng-template pTemplate="header">
+					<div
+						class="p-3"
+						pTooltip="Planets"
+						tooltipPosition="bottom">
+						<img src="assets/icons/jupiter.png" />
+					</div>
+				</ng-template>
+				<div class="flex align-items-center justify-content-center px-1">
+					<p-table
+						[value]="planets"
+						class="planet"
+						[(selection)]="planet"
+						(selectionChange)="planetChanged()"
+						selectionMode="single"
+						dataKey="code"
+						styleClass="p-datatable-sm p-datatable-striped">
+						<ng-template pTemplate="header">
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+							</tr>
+						</ng-template>
+						<ng-template
+							pTemplate="body"
+							let-item>
+							<tr [pSelectableRow]="item">
+								<td>{{ item.name }}</td>
+								<td>{{ item.type }}</td>
+							</tr>
+						</ng-template>
+					</p-table>
+				</div>
+			</p-tabPanel>
+			<p-tabPanel
+				header="Minor Planets"
+				[disabled]="refreshing"
+				headerStyleClass="main">
+				<ng-template pTemplate="header">
+					<div
+						class="p-3"
+						pTooltip="Minor planets"
+						tooltipPosition="bottom">
+						<img src="assets/icons/asteroid.png" />
+					</div>
+				</ng-template>
+				<p-tabView [(activeIndex)]="minorPlanetTab">
+					<p-tabPanel header="Search">
+						<div class="flex mt-3 flex-column align-items-center justify-content-center">
+							<div class="flex w-full align-items-center px-4 gap-2">
+								<p-floatLabel class="w-full">
+									<input
+										pInputText
+										class="p-inputtext-sm border-0 w-full"
+										[(ngModel)]="minorPlanetSearchText"
+										pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
+										tooltipPosition="bottom" />
+									<label>Search</label>
+								</p-floatLabel>
+								<p-button
+									[disabled]="minorPlanetSearchText.length < 3 || refreshing"
+									(onClick)="searchMinorPlanet()"
+									icon="mdi mdi-magnify"
+									severity="success"
+									size="small"
+									[text]="true" />
+							</div>
+						</div>
+						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
+							<p-table
+								[value]="minorPlanet?.parameters ?? []"
+								class="minorPlanet"
+								styleClass="p-datatable-sm p-datatable-striped">
+								<ng-template pTemplate="header">
+									<tr>
+										<th>Name</th>
+										<th>Description</th>
+										<th>Value</th>
+									</tr>
+								</ng-template>
+								<ng-template
+									pTemplate="body"
+									let-item>
+									<tr>
+										<td>{{ item.name }}</td>
+										<td>{{ item.description }}</td>
+										<td>{{ item.value }} {{ item.unit }}</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</p-tabPanel>
+					<p-tabPanel header="Close Approaches">
+						<div class="flex mt-3 flex-column align-items-center justify-content-center">
+							<div class="flex w-full align-items-center px-4 gap-2">
+								<p-floatLabel>
+									<p-inputNumber
+										[min]="1"
+										[max]="30"
+										class="w-full"
+										[step]="1"
+										[showButtons]="true"
+										inputStyleClass="p-inputtext-sm border-0 w-full"
+										[(ngModel)]="closeApproachDays"
+										scrollableNumber />
+									<label>Days</label>
+								</p-floatLabel>
+								<p-floatLabel>
+									<p-inputNumber
+										[min]="1"
+										[max]="100"
+										class="w-full"
+										[step]="0.1"
+										[showButtons]="true"
+										inputStyleClass="p-inputtext-sm border-0 w-full"
+										locale="en"
+										[(ngModel)]="closeApproachDistance"
+										scrollableNumber />
+									<label>Distance (LD)</label>
+								</p-floatLabel>
+								<p-button
+									[disabled]="refreshing"
+									(onClick)="closeApproachesForMinorPlanets()"
+									icon="mdi mdi-magnify"
+									severity="success"
+									size="small"
+									[text]="true" />
+							</div>
+						</div>
+						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
+							<p-table
+								[value]="closeApproaches"
+								class="minorPlanet"
+								selectionMode="single"
+								styleClass="p-datatable-sm p-datatable-striped"
+								[(selection)]="closeApproach"
+								(selectionChange)="closeApproachChanged()"
+								dataKey="designation">
+								<ng-template pTemplate="header">
+									<tr>
+										<th>Name</th>
+										<th pSortableColumn="dateTime">
+											Date/Time (Local)
+											<p-sortIcon field="dateTime" />
+										</th>
+										<th pSortableColumn="distance">
+											Distance (LD)
+											<p-sortIcon field="distance" />
+										</th>
+										<th pSortableColumn="absoluteMagnitude">
+											H (mag)
+											<p-sortIcon field="absoluteMagnitude" />
+										</th>
+									</tr>
+								</ng-template>
+								<ng-template
+									pTemplate="body"
+									let-item>
+									<tr [pSelectableRow]="item">
+										<td>{{ item.name }}</td>
+										<td>{{ item.dateTime | date: 'yyyy-MM-dd HH:mm' }}</td>
+										<td>{{ item.distance.toFixed(2) }}</td>
+										<td>{{ item.absoluteMagnitude.toFixed(2) }}</td>
+									</tr>
+								</ng-template>
+							</p-table>
+						</div>
+					</p-tabPanel>
+				</p-tabView>
+			</p-tabPanel>
+			<p-tabPanel
+				header="Sky Objects"
+				[disabled]="refreshing"
+				headerStyleClass="main">
+				<ng-template pTemplate="header">
+					<div
+						class="p-3"
+						pTooltip="Sky Objects"
+						tooltipPosition="bottom">
+						<img src="assets/icons/magnifier.png" />
+					</div>
+				</ng-template>
+				<div class="flex mt-2 align-items-center justify-content-center">
+					<div class="flex w-full align-items-center px-4 gap-2">
+						<p-floatLabel class="w-full">
+							<input
+								pInputText
+								class="p-inputtext-sm border-0 w-full"
+								[(ngModel)]="skyObjectSearchText" />
+							<label>Search</label>
+						</p-floatLabel>
+						<div class="flex flex-row gap-1">
+							<p-button
+								[disabled]="refreshing"
+								(onClick)="searchSkyObject()"
+								icon="mdi mdi-magnify"
+								size="small"
+								severity="info"
+								[text]="true"
+								pTooltip="Search"
+								tooltipPosition="bottom" />
+							<p-button
+								[disabled]="refreshing"
+								(onClick)="showSkyObjectFilterDialog()"
+								icon="mdi mdi-filter"
+								size="small"
+								[text]="true"
+								pTooltip="Filter"
+								tooltipPosition="bottom" />
+						</div>
+					</div>
+				</div>
+				<div class="flex align-items-center justify-content-center mt-2 px-1">
+					<p-table
+						[value]="skyObjectItems"
+						class="skyObject"
+						sortField="magnitude"
+						[(selection)]="skyObject"
+						(selectionChange)="skyObjectChanged()"
+						selectionMode="single"
+						dataKey="id"
+						styleClass="p-datatable-sm p-datatable-striped"
+						[paginator]="true"
+						[rows]="100"
+						[pageLinks]="3"
+						[showCurrentPageReport]="true"
+						currentPageReportTemplate="{first}-{last} / {totalRecords}">
+						<ng-template pTemplate="header">
+							<tr>
+								<th
+									style="width: 40%"
+									pSortableColumn="name">
+									Name
+									<p-sortIcon field="name" />
+								</th>
+								<th
+									style="width: 25%"
+									pSortableColumn="type">
+									Type
+									<p-sortIcon field="type" />
+								</th>
+								<th
+									style="width: 15%"
+									pSortableColumn="magnitude">
+									Mag.
+									<p-sortIcon field="magnitude" />
+								</th>
+								<th
+									style="width: 20%"
+									pSortableColumn="constellation">
+									Const.
+									<p-sortIcon field="constellation" />
+								</th>
+							</tr>
+						</ng-template>
+						<ng-template
+							pTemplate="body"
+							let-item>
+							<tr [pSelectableRow]="item">
+								<td class="text-sm">{{ item | skyObject: 'name' }}</td>
+								<td class="text-sm">{{ item.type | enum }}</td>
+								<td class="text-sm text-center">{{ item.magnitude < 30 ? item.magnitude.toFixed(1) : '-' }}</td>
+								<td class="text-sm text-center">{{ item.constellation }}</td>
+							</tr>
+						</ng-template>
+					</p-table>
+				</div>
+			</p-tabPanel>
+			<p-tabPanel
+				header="TLEs"
+				[disabled]="refreshing"
+				headerStyleClass="main">
+				<ng-template pTemplate="header">
+					<div
+						class="p-3"
+						pTooltip="Satellites"
+						tooltipPosition="bottom">
+						<img src="assets/icons/satellite.png" />
+					</div>
+				</ng-template>
+				<div class="flex mt-2 flex-column align-items-center justify-content-center">
+					<div class="flex w-full align-items-center px-4 gap-2">
+						<p-floatLabel class="w-full">
+							<input
+								pInputText
+								class="p-inputtext-sm border-0 w-full"
+								[(ngModel)]="satelliteSearchText" />
+							<label>Search</label>
+						</p-floatLabel>
+						<div class="flex flex-row gap-1">
+							<p-button
+								[disabled]="refreshing"
+								(onClick)="searchSatellite()"
+								icon="mdi mdi-magnify"
+								size="small"
+								severity="info"
+								[text]="true"
+								pTooltip="Search"
+								tooltipPosition="bottom" />
+							<p-button
+								[disabled]="refreshing"
+								(onClick)="showSatelliteFilterDialog = true"
+								icon="mdi mdi-filter"
+								size="small"
+								[text]="true"
+								pTooltip="Filter"
+								tooltipPosition="bottom" />
+						</div>
+					</div>
+				</div>
+				<div class="flex align-items-center justify-content-center mt-2 px-1">
+					<p-table
+						[value]="satelliteItems"
+						class="satellite"
+						sortField="name"
+						[(selection)]="satellite"
+						(selectionChange)="satelliteChanged()"
+						selectionMode="single"
+						dataKey="id"
+						styleClass="p-datatable-sm p-datatable-striped"
+						[paginator]="true"
+						[rows]="100"
+						[pageLinks]="3"
+						[showCurrentPageReport]="true"
+						currentPageReportTemplate="{first}-{last} / {totalRecords}">
+						<ng-template pTemplate="header">
+							<tr>
+								<th
+									style="width: 20%"
+									pSortableColumn="id">
+									NORAD ID
+									<p-sortIcon field="id" />
+								</th>
+								<th
+									style="width: 40%"
+									pSortableColumn="name">
+									Name
+									<p-sortIcon field="name" />
+								</th>
+								<th style="width: 40%">Groups</th>
+							</tr>
+						</ng-template>
+						<ng-template
+							pTemplate="body"
+							let-item>
+							<tr [pSelectableRow]="item">
+								<td class="w-8rem">{{ item.id }}</td>
+								<td>{{ item.name }}</td>
+								<td class="flex flex-row flex-wrap gap-1 max-w-16rem">
+									<p-tag
+										*ngFor="let item of item.groups"
+										severity="success"
+										[value]="item" />
+								</td>
+							</tr>
+						</ng-template>
+					</p-table>
+				</div>
+			</p-tabPanel>
+		</p-tabView>
+	</div>
 </div>
-<div class="grid px-2 fixed bottom-0" style="height: 212px;">
-    <p-tabView [style]="{height: '258px', width: '100vw'}" styleClass="info">
-        <p-tabPanel leftIcon="mdi mdi-information">
-            <div class="grid pt-3 px-3 flex-row justify-content-center">
-                <div class="col-12">
-                    <div class="grid">
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.rightAscensionJ2000" />
-                                <label>RA (J2000)</label>
-                            </span>
-                        </div>
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.declinationJ2000" />
-                                <label>DEC (J2000)</label>
-                            </span>
-                        </div>
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.rightAscension" />
-                                <label>RA</label>
-                            </span>
-                        </div>
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.declination" />
-                                <label>DEC</label>
-                            </span>
-                        </div>
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.azimuth" />
-                                <label>Azimuth</label>
-                            </span>
-                        </div>
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.altitude" />
-                                <label>Altitude</label>
-                            </span>
-                        </div>
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full"
-                                       [value]="bodyPosition.magnitude < 30 ? bodyPosition.magnitude.toFixed(2) : '-'" />
-                                <label>Magnitude</label>
-                            </span>
-                        </div>
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.constellation" />
-                                <label>Constellation</label>
-                            </span>
-                        </div>
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.distance.toFixed(3)" />
-                                <label>Distance ({{ bodyPosition.distanceUnit }})</label>
-                            </span>
-                        </div>
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.illuminated" />
-                                <label>Illuminated (%)</label>
-                            </span>
-                        </div>
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.elongation" />
-                                <label>Elongation (°)</label>
-                            </span>
-                        </div>
-                        <div class="col-3">
-                            <span class="p-float-label">
-                                <input pInputText readonly class="p-inputtext-sm border-0 w-full" [value]="bodyPosition.pierSide" />
-                                <label>Pier Side</label>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 pt-0 flex justify-content-center">
-                    <p-button [disabled]="!name || refreshing" [text]="true" severity="info" (onClick)="mountSync()" icon="mdi mdi-sync"
-                              label="Sync" size="small" />
-                    <p-button [disabled]="!name || refreshing" [text]="true" severity="success" (onClick)="mountGoTo()" icon="mdi mdi-telescope"
-                              label="Go To" size="small" />
-                    <p-button [disabled]="!name || refreshing" [text]="true" severity="success" (onClick)="mountSlew()" icon="mdi mdi-telescope"
-                              label="Slew" size="small" />
-                    <p-button [disabled]="!name || refreshing" [text]="true" (onClick)="frame()" icon="mdi mdi-image" label="Frame" size="small" />
-                </div>
-            </div>
-        </p-tabPanel>
-        <p-tabPanel leftIcon="mdi mdi-chart-bell-curve">
-            <div class="p-1">
-                <p-chart #chart width="100%" height="170px" [data]="altitudeData" [responsive]="true" [options]="altitudeOptions" />
-            </div>
-        </p-tabPanel>
-    </p-tabView>
-    <div class="col-9 flex align-items-center justify-content-between absolute gap-2" style="height: 32px; left: 90px; top: 2px;">
-        <p-button [disabled]="!name || refreshing" [text]="true" [rounded]="true" icon="mdi mdi-md mdi-dots-vertical"
-                  (click)="ephemerisMenu.show()" />
-        <span class="flex w-full align-items-center gap-1 justify-content-center">
-            <span class="text-overflow-scroll font-bold">{{ name ?? '' }}</span>
-            <p-tag *ngFor="let tag of tags" [severity]="tag.severity" [value]="tag.title" />
-        </span>
-    </div>
+<div
+	class="grid px-2 fixed bottom-0"
+	style="height: 212px">
+	<p-tabView
+		[style]="{ height: '258px', width: '100vw' }"
+		styleClass="info">
+		<p-tabPanel leftIcon="mdi mdi-information">
+			<div class="grid pt-3 px-3 flex-row justify-content-center">
+				<div class="col-12">
+					<div class="grid">
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.rightAscensionJ2000" />
+								<label>RA (J2000)</label>
+							</p-floatLabel>
+						</div>
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.declinationJ2000" />
+								<label>DEC (J2000)</label>
+							</p-floatLabel>
+						</div>
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.rightAscension" />
+								<label>RA</label>
+							</p-floatLabel>
+						</div>
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.declination" />
+								<label>DEC</label>
+							</p-floatLabel>
+						</div>
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.azimuth" />
+								<label>Azimuth</label>
+							</p-floatLabel>
+						</div>
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.altitude" />
+								<label>Altitude</label>
+							</p-floatLabel>
+						</div>
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.magnitude < 30 ? bodyPosition.magnitude.toFixed(2) : '-'" />
+								<label>Magnitude</label>
+							</p-floatLabel>
+						</div>
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.constellation" />
+								<label>Constellation</label>
+							</p-floatLabel>
+						</div>
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.distance.toFixed(3)" />
+								<label>Distance ({{ bodyPosition.distanceUnit }})</label>
+							</p-floatLabel>
+						</div>
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.illuminated" />
+								<label>Illuminated (%)</label>
+							</p-floatLabel>
+						</div>
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.elongation" />
+								<label>Elongation (°)</label>
+							</p-floatLabel>
+						</div>
+						<div class="col-3">
+							<p-floatLabel>
+								<input
+									pInputText
+									readonly
+									class="p-inputtext-sm border-0 w-full"
+									[value]="bodyPosition.pierSide" />
+								<label>Pier Side</label>
+							</p-floatLabel>
+						</div>
+					</div>
+				</div>
+				<div class="col-12 pt-0 flex justify-content-center">
+					<p-button
+						[disabled]="!name || refreshing"
+						[text]="true"
+						severity="info"
+						(onClick)="mountSync()"
+						icon="mdi mdi-sync"
+						label="Sync"
+						size="small" />
+					<p-button
+						[disabled]="!name || refreshing"
+						[text]="true"
+						severity="success"
+						(onClick)="mountGoTo()"
+						icon="mdi mdi-telescope"
+						label="Go To"
+						size="small" />
+					<p-button
+						[disabled]="!name || refreshing"
+						[text]="true"
+						severity="success"
+						(onClick)="mountSlew()"
+						icon="mdi mdi-telescope"
+						label="Slew"
+						size="small" />
+					<p-button
+						[disabled]="!name || refreshing"
+						[text]="true"
+						(onClick)="frame()"
+						icon="mdi mdi-image"
+						label="Frame"
+						size="small" />
+				</div>
+			</div>
+		</p-tabPanel>
+		<p-tabPanel leftIcon="mdi mdi-chart-bell-curve">
+			<div class="p-1">
+				<p-chart
+					#chart
+					width="100%"
+					height="170px"
+					[data]="altitudeData"
+					[responsive]="true"
+					[options]="altitudeOptions" />
+			</div>
+		</p-tabPanel>
+	</p-tabView>
+	<div
+		class="col-9 flex align-items-center justify-content-between absolute gap-2"
+		style="height: 32px; left: 90px; top: 2px">
+		<p-button
+			[disabled]="!name || refreshing"
+			[text]="true"
+			[rounded]="true"
+			icon="mdi mdi-md mdi-dots-vertical"
+			(click)="ephemerisMenu.show()" />
+		<span class="flex w-full align-items-center gap-1 justify-content-center">
+			<span class="text-overflow-scroll font-bold">{{ name ?? '' }}</span>
+			<p-tag
+				*ngFor="let tag of tags"
+				[severity]="tag.severity"
+				[value]="tag.title" />
+		</span>
+	</div>
 </div>
 
-<p-dialog header="Minor Planets" [modal]="true" [(visible)]="showMinorPlanetChoiceDialog" [style]="{width: '80vw'}">
-    <div class="grid p-2">
-        <p-listbox [options]="minorPlanetChoiceItems" (onChange)="minorPlanetChoosen($event)" [filter]="true" optionLabel="name"
-                   [listStyle]="{ 'max-height': '250px' }" class="w-full" />
-    </div>
+<p-dialog
+	header="Minor Planets"
+	[modal]="true"
+	[(visible)]="showMinorPlanetChoiceDialog"
+	[style]="{ width: '80vw' }">
+	<div class="grid p-2">
+		<p-listbox
+			[options]="minorPlanetChoiceItems"
+			(onChange)="minorPlanetChoosen($event)"
+			[filter]="true"
+			optionLabel="name"
+			[listStyle]="{ 'max-height': '250px' }"
+			class="w-full" />
+	</div>
 </p-dialog>
 
-<p-dialog header="Filter" [draggable]="false" [(visible)]="showSkyObjectFilter" [modal]="true" [style]="{width: '80vw'}">
-    <div class="grid mt-2" *ngIf="skyObjectFilter">
-        <div class="col-4">
-            <span class="p-float-label">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [value]="skyObjectFilter.rightAscension" />
-                <label>RA (h)</label>
-            </span>
-        </div>
-        <div class="col-4">
-            <span class="p-float-label">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [value]="skyObjectFilter.declination" />
-                <label>DEC (°)</label>
-            </span>
-        </div>
-        <div class="col-4">
-            <span class="p-float-label">
-                <p-inputNumber [min]="0" [max]="90" class="w-full" [step]="0.1" [maxFractionDigits]="1" [showButtons]="true"
-                               inputStyleClass="p-inputtext-sm border-0 w-full" locale="en" [(ngModel)]="skyObjectFilter.radius" scrollableNumber />
-                <label>Radius (°)</label>
-            </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <p-dropdown [options]="constellationOptions" [(ngModel)]="skyObjectFilter.constellation" [filter]="true" appendTo="body"
-                            styleClass="border-0" [autoDisplayFirst]="false">
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                    <ng-template let-item pTemplate="item">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                </p-dropdown>
-                <label>Constellation</label>
-            </span>
-        </div>
-        <div class="col-6">
-            <span class="p-float-label">
-                <p-dropdown [options]="skyObjectFilter.types" [(ngModel)]="skyObjectFilter.type" appendTo="body" [filter]="true"
-                            styleClass="border-0" [autoDisplayFirst]="false">
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                    <ng-template let-item pTemplate="item">
-                        <div class="flex align-items-center gap-2">
-                            <span>{{ item | enum }}</span>
-                        </div>
-                    </ng-template>
-                </p-dropdown>
-                <label>Type</label>
-            </span>
-        </div>
-        <div class="col-12 flex-column">
-            <p>Magnitude min: {{ skyObjectFilter.magnitude[0] }} max: {{ skyObjectFilter.magnitude[1] }}</p>
-            <p-slider class="mt-3" [min]="-30" [max]="30" styleClass="mx-2" [(ngModel)]="skyObjectFilter.magnitude" [range]="true" />
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" size="small" (onClick)="filterSkyObject()" />
-    </ng-template>
+<p-dialog
+	header="Filter"
+	[draggable]="false"
+	[(visible)]="showSkyObjectFilter"
+	[modal]="true"
+	[style]="{ width: '80vw' }">
+	<div
+		class="grid mt-2"
+		*ngIf="skyObjectFilter">
+		<div class="col-4">
+			<p-floatLabel>
+				<input
+					pInputText
+					class="p-inputtext-sm border-0 w-full"
+					[value]="skyObjectFilter.rightAscension" />
+				<label>RA (h)</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel>
+				<input
+					pInputText
+					class="p-inputtext-sm border-0 w-full"
+					[value]="skyObjectFilter.declination" />
+				<label>DEC (°)</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="0"
+					[max]="90"
+					class="w-full"
+					[step]="0.1"
+					[maxFractionDigits]="1"
+					[showButtons]="true"
+					inputStyleClass="p-inputtext-sm border-0 w-full"
+					locale="en"
+					[(ngModel)]="skyObjectFilter.radius"
+					scrollableNumber />
+				<label>Radius (°)</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-6">
+			<p-floatLabel class="w-full">
+				<p-dropdown
+					[options]="constellationOptions | enumDropdown"
+					[(ngModel)]="skyObjectFilter.constellation"
+					[filter]="true"
+					appendTo="body"
+					optionLabel="label"
+					optionValue="value"
+					styleClass="p-inputtext-sm border-0"
+					[autoDisplayFirst]="false" />
+				<label>Constellation</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-6">
+			<p-floatLabel class="w-full">
+				<p-dropdown
+					[options]="skyObjectFilter.types | enumDropdown"
+					[(ngModel)]="skyObjectFilter.type"
+					appendTo="body"
+					[filter]="true"
+					optionLabel="label"
+					optionValue="value"
+					styleClass="p-inputtext-sm border-0"
+					[autoDisplayFirst]="false" />
+				<label>Type</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="-30"
+					[max]="30"
+					class="w-full"
+					[step]="0.1"
+					[maxFractionDigits]="1"
+					[showButtons]="true"
+					inputStyleClass="p-inputtext-sm border-0 w-full"
+					locale="en"
+					[(ngModel)]="skyObjectFilter.magnitude[0]"
+					scrollableNumber />
+				<label>Mag. min</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="-30"
+					[max]="30"
+					class="w-full"
+					[step]="0.1"
+					[maxFractionDigits]="1"
+					[showButtons]="true"
+					inputStyleClass="p-inputtext-sm border-0 w-full"
+					locale="en"
+					[(ngModel)]="skyObjectFilter.magnitude[1]"
+					scrollableNumber />
+				<label>Mag. max</label>
+			</p-floatLabel>
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			[disabled]="refreshing"
+			[text]="true"
+			icon="mdi mdi-filter"
+			label="Filter"
+			size="small"
+			(onClick)="filterSkyObject()" />
+	</ng-template>
 </p-dialog>
 
-<p-dialog header="Satellite Filter" [draggable]="false" [(visible)]="showSatelliteFilterDialog" [modal]="true" [style]="{width: '80vw'}">
-    <div class="grid mt-2">
-        <div class="col-12 flex flex-column gap-1 align-items-start flex-wrap">
-            <ng-container *ngFor="let item of satelliteSearchGroup | keyvalue">
-                <p-checkbox [binary]="true" [ngModel]="satelliteSearchGroup.get(item.key)"
-                            (ngModelChange)="satelliteSearchGroup.set(item.key, $event)" [label]="item.key | enum" class="white-space-nowrap" />
-            </ng-container>
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button [disabled]="refreshing" [text]="true" severity="danger" icon="mdi mdi-restore" label="Reset" size="small"
-                  (onClick)="resetSatelliteFilter()" />
-        <p-button [disabled]="refreshing" [text]="true" icon="mdi mdi-filter" label="Filter" size="small" (onClick)="filterSatellite()" />
-    </ng-template>
+<p-dialog
+	header="Satellite Filter"
+	[draggable]="false"
+	[(visible)]="showSatelliteFilterDialog"
+	[modal]="true"
+	[style]="{ width: '80vw' }">
+	<div class="grid mt-2">
+		<div class="col-12 flex flex-column gap-1 align-items-start flex-wrap">
+			<ng-container *ngFor="let item of satelliteSearchGroup | keyvalue">
+				<p-checkbox
+					[binary]="true"
+					[ngModel]="satelliteSearchGroup.get(item.key)"
+					(ngModelChange)="satelliteSearchGroup.set(item.key, $event)"
+					[label]="item.key | enum"
+					class="white-space-nowrap" />
+			</ng-container>
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			[disabled]="refreshing"
+			[text]="true"
+			severity="danger"
+			icon="mdi mdi-restore"
+			label="Reset"
+			size="small"
+			(onClick)="resetSatelliteFilter()" />
+		<p-button
+			[disabled]="refreshing"
+			[text]="true"
+			icon="mdi mdi-filter"
+			label="Filter"
+			size="small"
+			(onClick)="filterSatellite()" />
+	</ng-template>
 </p-dialog>
 
-<p-overlayPanel #calendarPanel [style]="{width: 'calc(100% - 8px)', marginLeft: '4px'}" appendTo="body">
-    <ng-template pTemplate="content">
-        <div class="grid">
-            <div class="col-8 flex-column gap-2">
-                <p-calendar [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTime" (ngModelChange)="dateTimeChanged(true)"
-                            [inline]="true" [showIcon]="true" [showWeek]="true" [showButtonBar]="false" dateFormat="yy-mm-dd" styleClass="w-full" />
-            </div>
-            <div class="col-4 flex-column gap-3 align-items-center justify-content-start gap-1">
-                <p-inputSwitch [disabled]="refreshing" [(ngModel)]="useManualDateTime" (ngModelChange)="useManualDateTimeChanged()" />
-                <div class="flex flex-column align-items-center">
-                    <div class="flex align-items-center justify-content-center gap-2">
-                        <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeHour" [showButtons]="true" [min]="0"
-                                       [max]="23" class="w-fit" [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)"
-                                       styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" scrollableNumber />
-                        <p-inputNumber [disabled]="refreshing || !useManualDateTime" [(ngModel)]="dateTimeMinute" [showButtons]="true" [min]="0"
-                                       [max]="59" class="w-fit" [format]="false" [allowEmpty]="false" (ngModelChange)="dateTimeChanged(false)"
-                                       styleClass="p-inputtext-sm border-0" [style]="{width: '54px'}" scrollableNumber />
-                    </div>
-                </div>
-            </div>
-        </div>
-    </ng-template>
+<p-overlayPanel
+	#calendarPanel
+	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
+	appendTo="body">
+	<ng-template pTemplate="content">
+		<div class="grid">
+			<div class="col-8 flex-column gap-2">
+				<p-calendar
+					[disabled]="refreshing || !useManualDateTime"
+					[(ngModel)]="dateTime"
+					(ngModelChange)="dateTimeChanged(true)"
+					[inline]="true"
+					[showIcon]="true"
+					[showWeek]="true"
+					[showButtonBar]="false"
+					dateFormat="yy-mm-dd"
+					styleClass="w-full" />
+			</div>
+			<div class="col-4 flex-column gap-3 align-items-center justify-content-start gap-1">
+				<p-inputSwitch
+					[disabled]="refreshing"
+					[(ngModel)]="useManualDateTime"
+					(ngModelChange)="useManualDateTimeChanged()" />
+				<div class="flex flex-column align-items-center">
+					<div class="flex align-items-center justify-content-center gap-2">
+						<p-inputNumber
+							[disabled]="refreshing || !useManualDateTime"
+							[(ngModel)]="dateTimeHour"
+							[showButtons]="true"
+							[min]="0"
+							[max]="23"
+							class="w-fit"
+							[format]="false"
+							[allowEmpty]="false"
+							(ngModelChange)="dateTimeChanged(false)"
+							styleClass="p-inputtext-sm border-0"
+							[style]="{ width: '54px' }"
+							scrollableNumber />
+						<p-inputNumber
+							[disabled]="refreshing || !useManualDateTime"
+							[(ngModel)]="dateTimeMinute"
+							[showButtons]="true"
+							[min]="0"
+							[max]="59"
+							class="w-fit"
+							[format]="false"
+							[allowEmpty]="false"
+							(ngModelChange)="dateTimeChanged(false)"
+							styleClass="p-inputtext-sm border-0"
+							[style]="{ width: '54px' }"
+							scrollableNumber />
+					</div>
+				</div>
+			</div>
+		</div>
+	</ng-template>
 </p-overlayPanel>
 
-<neb-dialog-menu #ephemerisMenu [model]="ephemerisModel" [header]="name" />
+<neb-dialog-menu
+	#ephemerisMenu
+	[model]="ephemerisModel"
+	[header]="name" />
 <neb-device-list-menu #deviceMenu />

@@ -58,8 +58,9 @@ class CameraController(
     @PutMapping("{camera}/capture/start")
     fun startCapture(
         camera: Camera,
+        mount: Mount?, wheel: FilterWheel?, focuser: Focuser?, rotator: Rotator?,
         @RequestBody body: CameraStartCaptureRequest,
-    ) = cameraService.startCapture(camera, body)
+    ) = cameraService.startCapture(camera, body, mount, wheel, focuser, rotator)
 
     @PutMapping("{camera}/capture/pause")
     fun pauseCapture(camera: Camera) {

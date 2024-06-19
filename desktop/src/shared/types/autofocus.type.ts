@@ -9,85 +9,84 @@ export type AutoFocusFittingMode = 'TRENDLINES' | 'PARABOLIC' | 'TREND_PARABOLIC
 export type BacklashCompensationMode = 'NONE' | 'ABSOLUTE' | 'OVERSHOOT'
 
 export interface BacklashCompensation {
-    mode: BacklashCompensationMode
-    backlashIn: number
-    backlashOut: number
+	mode: BacklashCompensationMode
+	backlashIn: number
+	backlashOut: number
 }
 
 export interface AutoFocusRequest {
-    fittingMode: AutoFocusFittingMode
-    capture: CameraStartCapture
-    rSquaredThreshold: number
-    backlashCompensation: BacklashCompensation
-    initialOffsetSteps: number
-    stepSize: number
-    totalNumberOfAttempts: number
-    starDetector: StarDetectionRequest
+	fittingMode: AutoFocusFittingMode
+	capture: CameraStartCapture
+	rSquaredThreshold: number
+	backlashCompensation: BacklashCompensation
+	initialOffsetSteps: number
+	stepSize: number
+	totalNumberOfAttempts: number
+	starDetector: StarDetectionRequest
 }
 
-export interface AutoFocusPreference extends Omit<AutoFocusRequest, 'capture'> { }
+export interface AutoFocusPreference extends Omit<AutoFocusRequest, 'capture'> {}
 
 export const EMPTY_AUTO_FOCUS_PREFERENCE: AutoFocusPreference = {
-    fittingMode: 'HYPERBOLIC',
-    rSquaredThreshold: 0.5,
-    initialOffsetSteps: 4,
-    stepSize: 100,
-    totalNumberOfAttempts: 1,
-    backlashCompensation: {
-        mode: 'NONE',
-        backlashIn: 0,
-        backlashOut: 0
-    },
-    starDetector: EMPTY_STAR_DETECTION_REQUEST,
+	fittingMode: 'HYPERBOLIC',
+	rSquaredThreshold: 0.5,
+	initialOffsetSteps: 4,
+	stepSize: 100,
+	totalNumberOfAttempts: 1,
+	backlashCompensation: {
+		mode: 'NONE',
+		backlashIn: 0,
+		backlashOut: 0,
+	},
+	starDetector: EMPTY_STAR_DETECTION_REQUEST,
 }
 
 export interface Curve {
-    minimum: Point
-    rSquared: number
+	minimum: Point
+	rSquared: number
 }
 
 export interface Plottable {
-    points: Point[]
+	points: Point[]
 }
 
 export interface HyperbolicCurve extends Curve, Plottable {
-    a: number
-    b: number
-    p: number
+	a: number
+	b: number
+	p: number
 }
 
-export interface ParabolicCurve extends Curve, Plottable {
-}
+export interface ParabolicCurve extends Curve, Plottable {}
 
 export interface Line extends Plottable {
-    slope: number
-    intercept: number
-    rSquared: number
+	slope: number
+	intercept: number
+	rSquared: number
 }
 
 export interface TrendLineCurve extends Curve {
-    left: Line
-    right: Line
-    intersection: Point
+	left: Line
+	right: Line
+	intersection: Point
 }
 
 export interface CurveChart {
-    predictedFocusPoint?: Point
-    minX: number
-    maxX: number
-    minY: number
-    maxY: number
-    trendLine?: TrendLineCurve
-    parabolic?: ParabolicCurve
-    hyperbolic?: HyperbolicCurve
+	predictedFocusPoint?: Point
+	minX: number
+	maxX: number
+	minY: number
+	maxY: number
+	trendLine?: TrendLineCurve
+	parabolic?: ParabolicCurve
+	hyperbolic?: HyperbolicCurve
 }
 
 export interface AutoFocusEvent {
-    state: AutoFocusState
-    focusPoint?: Point
-    determinedFocusPoint?: Point
-    starCount: number
-    starHFD: number
-    chart?: CurveChart
-    capture?: CameraCaptureEvent
+	state: AutoFocusState
+	focusPoint?: Point
+	determinedFocusPoint?: Point
+	starCount: number
+	starHFD: number
+	chart?: CurveChart
+	capture?: CameraCaptureEvent
 }

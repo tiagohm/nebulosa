@@ -11,18 +11,26 @@ import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.SplitTask
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
+import nebulosa.api.wheels.WheelEventAware
+import nebulosa.api.wheels.WheelMoveTask
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.common.concurrency.latch.PauseListener
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
+import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheelEvent
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import nebulosa.livestacker.LiveStacker
 import nebulosa.log.loggerFor
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.path.copyTo
 import kotlin.io.path.exists
 
 data class CameraCaptureTask(
@@ -30,16 +38,20 @@ data class CameraCaptureTask(
     @JvmField val request: CameraStartCaptureRequest,
     @JvmField val guider: Guider? = null,
     private val useFirstExposure: Boolean = false,
-    private val exposureMaxRepeat: Int = 0,
     private val executor: Executor? = null,
     private val calibrationFrameProvider: CalibrationFrameProvider? = null,
-) : AbstractTask<CameraCaptureEvent>(), Consumer<Any>, PauseListener, CameraEventAware {
+    @JvmField val mount: Mount? = null,
+    @JvmField val wheel: FilterWheel? = null,
+    @JvmField val focuser: Focuser? = null,
+    @JvmField val rotator: Rotator? = null,
+) : AbstractTask<CameraCaptureEvent>(), Consumer<Any>, PauseListener, CameraEventAware, WheelEventAware {
 
     private val delayTask = DelayTask(request.exposureDelay)
     private val waitForSettleTask = WaitForSettleTask(guider)
     private val delayAndWaitForSettleSplitTask = SplitTask(listOf(delayTask, waitForSettleTask), executor)
     private val cameraExposureTask = CameraExposureTask(camera, request)
     private val ditherAfterExposureTask = DitherAfterExposureTask(guider, request.dither)
+    private val shutterWheelMoveTask = if (wheel != null && request.shutterPosition > 0) WheelMoveTask(wheel, request.shutterPosition) else null
 
     @Volatile private var exposureCount = 0
     @Volatile private var captureRemainingTime = Duration.ZERO
@@ -72,6 +84,10 @@ data class CameraCaptureTask(
 
     override fun handleCameraEvent(event: CameraEvent) {
         cameraExposureTask.handleCameraEvent(event)
+    }
+
+    override fun handleFilterWheelEvent(event: FilterWheelEvent) {
+        shutterWheelMoveTask?.handleFilterWheelEvent(event)
     }
 
     override fun onPause(paused: Boolean) {
@@ -126,17 +142,8 @@ data class CameraCaptureTask(
         }
     }
 
-    override fun execute(cancellationToken: CancellationToken) {
-        LOG.info("Camera Capture started. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
-
-        cameraExposureTask.reset()
-
-        pausing.set(false)
-        cancellationToken.listenToPause(this)
-
-        if (liveStacker == null && request.liveStacking.enabled &&
-            (request.isLoop || request.exposureAmount > 1 || exposureMaxRepeat > 1)
-        ) {
+    private fun startLiveStacking() {
+        if (liveStacker == null && request.liveStacking.enabled && (request.isLoop || request.exposureAmount > 1)) {
             try {
                 liveStacker = request.liveStacking.processCalibrationGroup().get()
                 liveStacker!!.start()
@@ -147,61 +154,111 @@ data class CameraCaptureTask(
                 liveStacker = null
             }
         }
+    }
 
-        while (!cancellationToken.isCancelled &&
-            !cameraExposureTask.isAborted &&
-            ((exposureMaxRepeat > 0 && exposureRepeatCount < exposureMaxRepeat)
-                    || (exposureMaxRepeat <= 0 && (request.isLoop || exposureCount < request.exposureAmount)))
-        ) {
-            if (cancellationToken.isPaused) {
-                pausing.set(false)
-                sendEvent(CameraCaptureState.PAUSED)
-                cancellationToken.waitForPause()
-            }
+    fun initialize(
+        cancellationToken: CancellationToken,
+        canLiveStack: Boolean = false, hasShutter: Boolean = false,
+        snoopDevices: Boolean = true,
+    ) {
+        LOG.info(
+            "Camera Capture started. request={}, exposureCount={}, camera={}, mount={}, wheel={}, focuser={}", request, exposureCount,
+            camera, mount, wheel, focuser
+        )
 
-            if (exposureCount == 0) {
-                sendEvent(CameraCaptureState.CAPTURE_STARTED)
+        cameraExposureTask.reset()
 
-                if (guider != null) {
-                    if (useFirstExposure) {
-                        // DELAY & WAIT FOR SETTLE.
-                        delayAndWaitForSettleSplitTask.execute(cancellationToken)
-                    } else {
-                        // WAIT FOR SETTLE.
-                        waitForSettleTask.execute(cancellationToken)
-                    }
-                } else if (useFirstExposure) {
-                    // DELAY.
-                    delayTask.execute(cancellationToken)
-                }
-            } else if (guider != null) {
-                // DELAY & WAIT FOR SETTLE.
-                delayAndWaitForSettleSplitTask.execute(cancellationToken)
-            } else {
-                // DELAY.
-                delayTask.execute(cancellationToken)
-            }
+        pausing.set(false)
+        cancellationToken.listenToPause(this)
 
-            // CAPTURE.
-            cameraExposureTask.execute(cancellationToken)
-
-            // DITHER.
-            if (!cancellationToken.isCancelled && !cameraExposureTask.isAborted && guider != null
-                && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0
-            ) {
-                ditherAfterExposureTask.execute(cancellationToken)
-            }
+        if (canLiveStack) {
+            startLiveStacking()
         }
 
+        if (snoopDevices) {
+            camera.snoop(listOf(mount, wheel, focuser, rotator))
+        }
+
+        if (hasShutter && shutterWheelMoveTask != null && request.frameType == FrameType.DARK) {
+            shutterWheelMoveTask.execute(cancellationToken)
+        }
+    }
+
+    fun finalize(cancellationToken: CancellationToken) {
         pausing.set(false)
         cancellationToken.unlistenToPause(this)
 
         sendEvent(CameraCaptureState.CAPTURE_FINISHED)
 
         liveStacker?.close()
-        exposureRepeatCount = 0
 
         LOG.info("Camera Capture finished. camera={}, request={}, exposureCount={}", camera, request, exposureCount)
+    }
+
+    override fun execute(cancellationToken: CancellationToken) {
+        try {
+            initialize(cancellationToken, true, true)
+            executeInLoop(cancellationToken)
+        } finally {
+            finalize(cancellationToken)
+        }
+    }
+
+    fun executeUntil(cancellationToken: CancellationToken, count: Int) {
+        exposureRepeatCount = 0
+
+        while (!cancellationToken.isCancelled && !cameraExposureTask.isAborted && exposureRepeatCount < count) {
+            executeOnce(cancellationToken)
+        }
+    }
+
+    fun executeInLoop(cancellationToken: CancellationToken) {
+        exposureCount = 0
+
+        while (!cancellationToken.isCancelled && !cameraExposureTask.isAborted && (request.isLoop || exposureCount < request.exposureAmount)) {
+            executeOnce(cancellationToken)
+        }
+    }
+
+    fun executeOnce(cancellationToken: CancellationToken) {
+        if (cancellationToken.isPaused) {
+            pausing.set(false)
+            sendEvent(CameraCaptureState.PAUSED)
+            cancellationToken.waitForPause()
+        }
+
+        if (exposureCount == 0) {
+            sendEvent(CameraCaptureState.CAPTURE_STARTED)
+
+            if (guider != null) {
+                if (useFirstExposure) {
+                    // DELAY & WAIT FOR SETTLE.
+                    delayAndWaitForSettleSplitTask.execute(cancellationToken)
+                } else {
+                    // WAIT FOR SETTLE.
+                    waitForSettleTask.execute(cancellationToken)
+                }
+            } else if (useFirstExposure) {
+                // DELAY.
+                delayTask.execute(cancellationToken)
+            }
+        } else if (guider != null) {
+            // DELAY & WAIT FOR SETTLE.
+            delayAndWaitForSettleSplitTask.execute(cancellationToken)
+        } else {
+            // DELAY.
+            delayTask.execute(cancellationToken)
+        }
+
+        // CAPTURE.
+        cameraExposureTask.execute(cancellationToken)
+
+        // DITHER.
+        if (!cancellationToken.isCancelled && !cameraExposureTask.isAborted && guider != null
+            && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0
+        ) {
+            ditherAfterExposureTask.execute(cancellationToken)
+        }
     }
 
     @Synchronized
@@ -275,7 +332,12 @@ data class CameraCaptureTask(
             null
         } else {
             sendEvent(CameraCaptureState.STACKING)
-            liveStacker!!.add(path)
+
+            liveStacker!!.add(path)?.let {
+                val stackedPath = Path.of("${path.parent}", "STACKED.fits")
+                it.copyTo(stackedPath, true)
+                stackedPath
+            }
         }
     }
 

@@ -9,23 +9,25 @@
     "module": "CommonJS",
     "target": "ES2022",
     "noFallthroughCasesInSwitch": true,
+	"incremental": true,
     "types": [
       "node"
     ],
     "lib": [
-      "es2022",
-      "es2018",
-      "es2017",
-      "es2016",
-      "es2015",
-      "dom"
+      "ES2023",
+	  "dom"
     ]
   },
   "files": [
-    "app/main.ts"
+    "app/main.ts",
+	"app/preload.ts",
+	"app/argument.parser.ts",
+	"app/local.storage.ts",
+	"app/window.manager.ts"
   ],
   "include": [
-    "src/shared/types/*.ts"
+    "src/shared/types/*.ts",
+	"src/typings.d.ts"
   ],
   "exclude": [
     "node_modules",

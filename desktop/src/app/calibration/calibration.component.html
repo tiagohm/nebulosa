@@ -1,64 +1,139 @@
 <div class="container px-4 py-3">
-    <div class="grid">
-        <div class="col-12 justify-content-end">
-            <p-button styleClass="p-button-sm" label="New group" icon="mdi mdi-plus" (onClick)="showNewGroupDialogForAdd()" />
-        </div>
-        <div class="col-12">
-            <p-tree class="w-full" styleClass="border-0 p-0" [value]="frames" emptyMessage="No frames found"
-                    [draggableNodes]="true" [droppableNodes]="true" draggableScope="self" droppableScope="self"
-                    [validateDrop]="true" (onNodeDrop)="frameDropped($event)">
-                <ng-template let-node pTemplate="default">
-                    <div class="w-full flex align-items-center justify-content-between gap-2">
-                        @if (node.data.type === 'NAME') {
-                        <span class="text-md font-bold">{{ node.label }}</span>
-                        } @else if (node.data.type === 'GROUP') {
-                        <div class="flex align-items-center gap-1px">
-                            <p-tag [value]="node.data.data.key.type" severity="success" />
-                            <p-tag *ngIf="node.data.data.key.type === 'FLAT'" [value]="node.data.data.key.filter ?? 'NO FILTER'"
-                                   severity="warning" />
-                            <p-tag *ngIf="node.data.data.key.type === 'DARK'" value="{{ node.data.data.key.exposureTime | exposureTime }}"
-                                   severity="warning" />
-                            <p-tag value="SIZE: {{ node.data.data.key.width }}x{{ node.data.data.key.height }}" severity="info" />
-                            <p-tag value="BIN: {{ node.data.data.key.binX }}x{{ node.data.data.key.binY }}" severity="info" />
-                            <p-tag *ngIf="node.data.data.key.type === 'DARK'" value="{{ node.data.data.key.temperature }}°C" severity="danger" />
-                            <p-tag *ngIf="node.data.data.key.type !== 'FLAT'" value="GAIN: {{ node.data.data.key.gain }}" severity="info" />
-                        </div>
-                        } @else if (node.data.type === 'FRAME') {
-                        <div class="flex align-items-center gap-2">
-                            <p-checkbox [binary]="true" [(ngModel)]="node.data.data.enabled" (ngModelChange)="toggleCalibrationFrame(node, $event)" />
-                            <span class="text-sm text-overflow-scroll" style="max-width: 276px;">{{ node.data.data.path }}</span>
-                        </div>
-                        }
-                        <div class="flex align-items-center justify-content-end gap-1">
-                            @if (node.data.type === 'NAME') {
-                            <p-button styleClass="p-button-sm" [text]="true" [rounded]="true" icon="mdi mdi-pencil" pTooltip="Rename"
-                                      tooltipPosition="bottom" (onClick)="showNewGroupDialogForEdit(node)" severity="info" />
-                            <p-button styleClass="p-button-sm" [text]="true" [rounded]="true" icon="mdi mdi-image-plus" pTooltip="Add image"
-                                      tooltipPosition="bottom" (onClick)="openFileToUpload(node)" />
-                            <p-button styleClass="p-button-sm" [text]="true" [rounded]="true" icon="mdi mdi-folder-plus" pTooltip="Add folder"
-                                      tooltipPosition="bottom" (onClick)="openDirectoryToUpload(node)" />
-                            }
-                            <p-button styleClass="p-button-sm" [text]="true" [rounded]="true" icon="mdi mdi-delete" pTooltip="Delete"
-                                      tooltipPosition="bottom" (onClick)="deleteFrame(node)" severity="danger" />
-                        </div>
-                    </div>
-                </ng-template>
-            </p-tree>
-        </div>
-    </div>
+	<div class="grid">
+		<div class="col-12 justify-content-end">
+			<p-button
+				styleClass="p-button-sm"
+				label="New group"
+				icon="mdi mdi-plus"
+				(onClick)="showNewGroupDialogForAdd()" />
+		</div>
+		<div class="col-12">
+			<p-tree
+				class="w-full"
+				styleClass="border-0 p-0"
+				[value]="frames"
+				emptyMessage="No frames found"
+				[draggableNodes]="true"
+				[droppableNodes]="true"
+				draggableScope="self"
+				droppableScope="self"
+				[validateDrop]="true"
+				(onNodeDrop)="frameDropped($event)">
+				<ng-template
+					let-node
+					pTemplate="default">
+					<div class="w-full flex align-items-center justify-content-between gap-2">
+						@if (node.data.type === 'NAME') {
+							<span class="text-md font-bold">{{ node.label }}</span>
+						} @else if (node.data.type === 'GROUP') {
+							<div class="flex align-items-center gap-1px">
+								<p-tag
+									[value]="node.data.data.key.type"
+									severity="success" />
+								<p-tag
+									*ngIf="node.data.data.key.type === 'FLAT'"
+									[value]="node.data.data.key.filter ?? 'NO FILTER'"
+									severity="warning" />
+								<p-tag
+									*ngIf="node.data.data.key.type === 'DARK'"
+									value="{{ node.data.data.key.exposureTime | exposureTime }}"
+									severity="warning" />
+								<p-tag
+									value="SIZE: {{ node.data.data.key.width }}x{{ node.data.data.key.height }}"
+									severity="info" />
+								<p-tag
+									value="BIN: {{ node.data.data.key.binX }}x{{ node.data.data.key.binY }}"
+									severity="info" />
+								<p-tag
+									*ngIf="node.data.data.key.type === 'DARK'"
+									value="{{ node.data.data.key.temperature }}°C"
+									severity="danger" />
+								<p-tag
+									*ngIf="node.data.data.key.type !== 'FLAT'"
+									value="GAIN: {{ node.data.data.key.gain }}"
+									severity="info" />
+							</div>
+						} @else if (node.data.type === 'FRAME') {
+							<div class="flex align-items-center gap-2">
+								<p-checkbox
+									[binary]="true"
+									[(ngModel)]="node.data.data.enabled"
+									(ngModelChange)="toggleCalibrationFrame(node, $event)" />
+								<span
+									class="text-sm text-overflow-scroll"
+									style="max-width: 276px">
+									{{ node.data.data.path }}
+								</span>
+							</div>
+						}
+						<div class="flex align-items-center justify-content-end gap-1">
+							@if (node.data.type === 'NAME') {
+								<p-button
+									styleClass="p-button-sm"
+									[text]="true"
+									[rounded]="true"
+									icon="mdi mdi-pencil"
+									pTooltip="Rename"
+									tooltipPosition="bottom"
+									(onClick)="showNewGroupDialogForEdit(node)"
+									severity="info" />
+								<p-button
+									styleClass="p-button-sm"
+									[text]="true"
+									[rounded]="true"
+									icon="mdi mdi-image-plus"
+									pTooltip="Add image"
+									tooltipPosition="bottom"
+									(onClick)="openFileToUpload(node)" />
+								<p-button
+									styleClass="p-button-sm"
+									[text]="true"
+									[rounded]="true"
+									icon="mdi mdi-folder-plus"
+									pTooltip="Add folder"
+									tooltipPosition="bottom"
+									(onClick)="openDirectoryToUpload(node)" />
+							}
+							<p-button
+								styleClass="p-button-sm"
+								[text]="true"
+								[rounded]="true"
+								icon="mdi mdi-delete"
+								pTooltip="Delete"
+								tooltipPosition="bottom"
+								(onClick)="deleteFrame(node)"
+								severity="danger" />
+						</div>
+					</div>
+				</ng-template>
+			</p-tree>
+		</div>
+	</div>
 </div>
 
-<p-dialog header="New Group" [modal]="true" [(visible)]="showNewGroupDialog" [style]="{width: '80vw', maxWidth: '240px'}">
-    <div class="grid p-2">
-        <div class="col-12">
-            <span class="p-float-label">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="newGroupName" />
-                <label>Name</label>
-            </span>
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button [disabled]="!newGroupName.length" [text]="true" icon="mdi mdi-check" label="OK" size="small"
-                  (onClick)="newGroupDialogSave()" />
-    </ng-template>
+<p-dialog
+	header="New Group"
+	[modal]="true"
+	[(visible)]="showNewGroupDialog"
+	[style]="{ width: '80vw', maxWidth: '240px' }">
+	<div class="grid p-2">
+		<div class="col-12">
+			<p-floatLabel class="w-full">
+				<input
+					pInputText
+					class="p-inputtext-sm border-0 w-full"
+					[(ngModel)]="newGroupName" />
+				<label>Name</label>
+			</p-floatLabel>
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			[disabled]="!newGroupName.length"
+			[text]="true"
+			icon="mdi mdi-check"
+			label="OK"
+			size="small"
+			(onClick)="newGroupDialogSave()" />
+	</ng-template>
 </p-dialog>

@@ -7,6 +7,7 @@ import retrofit2.create
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 
 class SmallBodyDatabaseService(
     url: String = "https://ssd-api.jpl.nasa.gov/",
@@ -16,17 +17,21 @@ class SmallBodyDatabaseService(
     private val service by lazy { retrofit.create<SmallBodyDatabase>() }
 
     override fun withOkHttpClientBuilder(builder: OkHttpClient.Builder) {
-        builder.addInterceptor {
-            val response = it.proceed(it.request())
+        builder.readTimeout(5L, TimeUnit.MINUTES)
+            .writeTimeout(5L, TimeUnit.MINUTES)
+            .connectTimeout(5L, TimeUnit.MINUTES)
+            .callTimeout(5L, TimeUnit.MINUTES)
+            .addInterceptor {
+                val response = it.proceed(it.request())
 
-            if (response.code == 300) {
-                response.newBuilder()
-                    .code(200)
-                    .build()
-            } else {
-                response
+                if (response.code == 300) {
+                    response.newBuilder()
+                        .code(200)
+                        .build()
+                } else {
+                    response
+                }
             }
-        }
     }
 
     fun search(text: String) = service.search(text)
@@ -35,12 +40,12 @@ class SmallBodyDatabaseService(
         dateTime: LocalDateTime,
         latitude: Angle, longitude: Angle, elevation: Distance = 0.m,
         centerRA: Angle, centerDEC: Angle, fov: Angle = DEFAULT_FOV,
-        magLimit: Double = 12.0,
+        magLimit: Double = 18.0, magRequired: Boolean = true,
     ) = service.identify(
         dateTime.format(DATE_TIME_FORMAT),
         latitude.toDegrees, longitude.toDegrees, elevation.toKilometers,
         centerRA.format(RA_FORMAT), centerDEC.format(DEC_FORMAT), fovRAWidth = fov.toDegrees,
-        magLimit = magLimit,
+        magLimit = magLimit, magRequired = magRequired && magLimit < 30.0
     )
 
     fun closeApproaches(

@@ -179,3 +179,61 @@ inline infix fun Double.fmod(other: Double) = (this % other + other) % other
  */
 @Suppress("NOTHING_TO_INLINE")
 inline infix fun Int.fmod(other: Int) = (this % other + other) % other
+
+/**
+ * Computes the square number.
+ */
+inline val Double.squared
+    get() = this * this
+
+/**
+ * Computes the cube number.
+ */
+inline val Double.cubic
+    get() = this * this * this
+
+/**
+ * Returns evenly spaced numbers over a specified interval.
+ */
+fun evenlySpacedNumbers(
+    start: Double, end: Double, n: Int,
+    endpoint: Boolean = true,
+): DoubleArray {
+    val div = if (endpoint) n - 1 else n
+    val res = DoubleArray(n)
+    val step = (end - start) / div
+    var c = start
+
+    repeat(res.size) {
+        res[it] = c
+        c += step
+    }
+
+    if (endpoint) {
+        res[res.size - 1] = end
+    }
+
+    return res
+}
+
+/**
+ * Iterate evenly spaced numbers over a specified interval.
+ */
+inline fun evenlySpacedNumbers(
+    start: Double, end: Double, n: Int,
+    endpoint: Boolean = true,
+    action: (Double) -> Unit,
+) {
+    val div = if (endpoint) n - 1 else n
+    val step = (end - start) / div
+    var c = start
+
+    repeat(n) {
+        action(c)
+        c += step
+    }
+
+    if (endpoint) {
+        action(end)
+    }
+}

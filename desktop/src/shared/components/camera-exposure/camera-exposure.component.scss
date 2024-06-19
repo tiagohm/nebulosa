@@ -1,29 +1,29 @@
 :host {
-    min-height: 29px;
-    width: 100%;
+	min-height: 29px;
+	width: 100%;
 
-    .state {
-        padding: 1px 6px;
-        height: 13px;
+	.state {
+		padding: 1px 6px;
+		height: 13px;
 
-        &.percentage {
-            min-width: 50px;
-        }
+		&.percentage {
+			min-width: 50px;
+		}
 
-        &.time {
-            min-width: 56px;
-        }
+		&.time {
+			min-width: 56px;
+		}
 
-        &.counter {
-            min-width: 78px;
-        }
+		&.counter {
+			min-width: 78px;
+		}
 
-        .mdi:before {
-            font-size: 0.9rem !important;
-        }
-    }
+		.mdi:before {
+			font-size: 0.9rem !important;
+		}
+	}
 
-    .mdi-information::before {
-        font-size: 0.9rem !important;
-    }
+	.mdi-information::before {
+		font-size: 0.9rem !important;
+	}
 }

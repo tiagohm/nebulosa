@@ -4,9 +4,15 @@ import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.messages.MessageService
+import nebulosa.api.wheels.WheelEventAware
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheelEvent
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
@@ -20,7 +26,7 @@ class CameraCaptureExecutor(
     private val guider: Guider,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val calibrationFrameService: CalibrationFrameService,
-) : Consumer<CameraCaptureEvent>, CameraEventAware {
+) : Consumer<CameraCaptureEvent>, CameraEventAware, WheelEventAware {
 
     private val jobs = ConcurrentHashMap.newKeySet<CameraCaptureJob>(2)
 
@@ -29,16 +35,28 @@ class CameraCaptureExecutor(
         jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
     }
 
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    override fun handleFilterWheelEvent(event: FilterWheelEvent) {
+        jobs.find { it.task.wheel === event.device }?.handleFilterWheelEvent(event)
+    }
+
     override fun accept(event: CameraCaptureEvent) {
         messageService.sendMessage(event)
     }
 
     @Synchronized
-    fun execute(camera: Camera, request: CameraStartCaptureRequest) {
+    fun execute(
+        camera: Camera, request: CameraStartCaptureRequest,
+        mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null, rotator: Rotator? = null
+    ) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(jobs.none { it.task.camera === camera }) { "${camera.name} Camera Capture is already in progress" }
 
-        val task = CameraCaptureTask(camera, request, guider, executor = threadPoolTaskExecutor, calibrationFrameProvider = calibrationFrameService)
+        val task = CameraCaptureTask(
+            camera, request, guider, false, threadPoolTaskExecutor,
+            calibrationFrameService, mount, wheel, focuser, rotator
+        )
+
         task.subscribe(this)
 
         with(CameraCaptureJob(task)) {

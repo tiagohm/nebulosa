@@ -21,6 +21,7 @@ import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -34,6 +35,14 @@ data class AutoFocusTask(
     @JvmField val starDetection: StarDetector<Path>,
 ) : AbstractTask<MessageEvent>(), Consumer<CameraCaptureEvent>, CameraEventAware, FocuserEventAware {
 
+    data class MeasuredStars(@JvmField val hfd: Double, @JvmField val stdDev: Double) {
+
+        companion object {
+
+            @JvmStatic val EMPTY = MeasuredStars(0.0, 0.0)
+        }
+    }
+
     @JvmField val cameraRequest = request.capture.copy(
         exposureAmount = 0, exposureDelay = Duration.ZERO,
         savePath = CAPTURE_SAVE_PATH,
@@ -42,15 +51,14 @@ data class AutoFocusTask(
     )
 
     private val focusPoints = ArrayList<CurvePoint>()
-    private val measurements = DoubleArray(request.capture.exposureAmount)
-    private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, exposureMaxRepeat = max(1, request.capture.exposureAmount))
+    private val measurements = ArrayList<MeasuredStars>(request.capture.exposureAmount)
+    private val cameraCaptureTask = CameraCaptureTask(camera, cameraRequest, focuser = focuser)
     private val focuserMoveTask = BacklashCompensationFocuserMoveTask(focuser, 0, request.backlashCompensation)
 
     @Volatile private var trendLineCurve: TrendLineFitting.Curve? = null
     @Volatile private var parabolicCurve: QuadraticFitting.Curve? = null
     @Volatile private var hyperbolicCurve: HyperbolicFitting.Curve? = null
 
-    @Volatile private var measurementPos = 0
     @Volatile private var focusPoint: CurvePoint? = null
     @Volatile private var starCount = 0
     @Volatile private var starHFD = 0.0
@@ -75,8 +83,10 @@ data class AutoFocusTask(
 
         val initialFocusPosition = focuser.position
 
+        cameraCaptureTask.initialize(cancellationToken)
+
         // Get initial position information, as average of multiple exposures, if configured this way.
-        val initialHFD = if (request.rSquaredThreshold <= 0.0) takeExposure(cancellationToken) else 0.0
+        val initialHFD = if (request.rSquaredThreshold <= 0.0) takeExposure(cancellationToken) else MeasuredStars.EMPTY
         val reverse = request.backlashCompensation.mode == BacklashCompensationMode.OVERSHOOT && request.backlashCompensation.backlashIn > 0
 
         LOG.info("Auto Focus started. initialHFD={}, reverse={}, request={}, camera={}, focuser={}", initialHFD, reverse, request, camera, focuser)
@@ -84,8 +94,6 @@ data class AutoFocusTask(
         var exited = false
         var numberOfAttempts = 0
         val maximumFocusPoints = request.capture.exposureAmount * request.initialOffsetSteps * 10
-
-        camera.snoop(camera.snoopedDevices.filter { it !is Focuser } + focuser)
 
         while (!exited && !cancellationToken.isCancelled) {
             numberOfAttempts++
@@ -167,7 +175,7 @@ data class AutoFocusTask(
 
             val finalFocusPoint = determineFinalFocusPoint()
 
-            if (finalFocusPoint == null || !validateCalculatedFocusPosition(finalFocusPoint, initialHFD, cancellationToken)) {
+            if (finalFocusPoint == null || !validateCalculatedFocusPosition(finalFocusPoint, initialHFD.hfd, cancellationToken)) {
                 if (cancellationToken.isCancelled) {
                     break
                 } else if (numberOfAttempts < request.totalNumberOfAttempts) {
@@ -185,6 +193,8 @@ data class AutoFocusTask(
                 break
             }
         }
+
+        cameraCaptureTask.finalize(cancellationToken)
 
         if (exited || cancellationToken.isCancelled) {
             LOG.warn("Auto Focus did not complete successfully, so restoring the focuser position to $initialFocusPosition")
@@ -212,8 +222,12 @@ data class AutoFocusTask(
         }
     }
 
-    private fun evaluateAllMeasurements(): Double {
-        return if (measurements.isEmpty()) 0.0 else measurements.average()
+    private fun evaluateAllMeasurements(): MeasuredStars {
+        if (measurements.isEmpty()) MeasuredStars.EMPTY
+        if (measurements.size == 1) return measurements[0]
+        val descriptiveStatistics = DescriptiveStatistics(measurements.size)
+        measurements.forEach { descriptiveStatistics.addValue(it.hfd) }
+        return MeasuredStars(descriptiveStatistics.mean, descriptiveStatistics.standardDeviation)
     }
 
     override fun accept(event: CameraCaptureEvent) {
@@ -223,9 +237,9 @@ data class AutoFocusTask(
             val detectedStars = starDetection.detect(event.savedPath!!)
             starCount = detectedStars.size
             LOG.info("detected $starCount stars")
-            starHFD = detectedStars.measureDetectedStars()
-            LOG.info("HFD measurement. mean={}", starHFD)
-            measurements[measurementPos++] = starHFD
+            val measurement = detectedStars.measureDetectedStars()
+            LOG.info("HFD measurement: hfd={}, stdDev={}", measurement.hfd, measurement.stdDev)
+            measurements.add(measurement)
             sendEvent(AutoFocusState.ANALYSED)
             onNext(event)
         } else {
@@ -233,14 +247,14 @@ data class AutoFocusTask(
         }
     }
 
-    private fun takeExposure(cancellationToken: CancellationToken): Double {
+    private fun takeExposure(cancellationToken: CancellationToken): MeasuredStars {
         return if (!cancellationToken.isCancelled) {
-            measurementPos = 0
+            measurements.clear()
             sendEvent(AutoFocusState.EXPOSURING)
-            cameraCaptureTask.execute(cancellationToken)
+            cameraCaptureTask.executeUntil(cancellationToken, max(1, request.capture.exposureAmount))
             evaluateAllMeasurements()
         } else {
-            0.0
+            MeasuredStars.EMPTY
         }
     }
 
@@ -275,10 +289,10 @@ data class AutoFocusTask(
 
             // If star measurement is 0, we didn't detect any stars or shapes,
             // and want this point to be ignored by the fitting as much as possible.
-            if (measurement == 0.0) {
+            if (measurement.hfd == 0.0) {
                 LOG.warn("No stars detected in step")
             } else {
-                focusPoint = CurvePoint(currentFocusPosition.toDouble(), measurement)
+                focusPoint = CurvePoint(currentFocusPosition.toDouble(), measurement.hfd, measurement.stdDev)
                 focusPoints.add(focusPoint!!)
                 focusPoints.sortBy { it.x }
 
@@ -340,7 +354,7 @@ data class AutoFocusTask(
         if (cancellationToken.isCancelled) return false
 
         moveFocuser(focusPoint.x.roundToInt(), cancellationToken, false)
-        val hfd = takeExposure(cancellationToken)
+        val (hfd) = takeExposure(cancellationToken)
 
         if (threshold <= 0) {
             if (initialHFD != 0.0 && hfd > initialHFD * 1.15) {
@@ -395,17 +409,11 @@ data class AutoFocusTask(
         @JvmStatic private val LOG = loggerFor<AutoFocusTask>()
 
         @JvmStatic
-        private fun DoubleArray.median(): Double {
-            return if (size % 2 == 0) (this[size / 2] + this[size / 2 - 1]) / 2.0
-            else this[size / 2]
-        }
-
-        @JvmStatic
-        private fun List<StarPoint>.measureDetectedStars(): Double {
-            return if (isEmpty()) 0.0
-            else if (size == 1) this[0].hfd
-            else if (size == 2) (this[0].hfd + this[1].hfd) / 2.0
-            else DoubleArray(size) { this[it].hfd }.also { it.sort() }.median()
+        private fun List<StarPoint>.measureDetectedStars(): MeasuredStars {
+            if (isEmpty()) return MeasuredStars.EMPTY
+            val descriptiveStatistics = DescriptiveStatistics(size)
+            forEach { descriptiveStatistics.addValue(it.hfd) }
+            return MeasuredStars(descriptiveStatistics.mean, descriptiveStatistics.standardDeviation)
         }
     }
 }

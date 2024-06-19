@@ -121,13 +121,13 @@ data class OsculatingElements(
 
         @JvmStatic
         private fun eccentricityVector(position: Vector3D, velocity: Vector3D, mu: Double) =
-            ((position * (velocity.length.pow(2.0) - mu / position.length)) - (velocity * position.dot(velocity))) / mu
+            ((position * (velocity.length.squared - mu / position.length)) - (velocity * position.dot(velocity))) / mu
 
         @JvmStatic
         private fun nodeVector(h: Vector3D) = Vector3D(-h[1], h[0], 0.0).normalized
 
         @JvmStatic
-        private fun meanMotion(a: Distance, mu: Double) = sqrt(mu / abs(a).pow(3))
+        private fun meanMotion(a: Distance, mu: Double) = sqrt(mu / abs(a).cubic)
 
         @JvmStatic
         private fun inclination(h: Vector3D) = h.angle(Vector3D.Z)
@@ -136,7 +136,7 @@ data class OsculatingElements(
         private fun longitudeOfAscendingNode(i: Angle, h: Vector3D) = if (i == 0.0) i else atan2(h[0], -h[1]).rad.normalized
 
         @JvmStatic
-        private fun semiLatusRectum(h: Vector3D, mu: Double) = h.length.pow(2) / mu
+        private fun semiLatusRectum(h: Vector3D, mu: Double) = h.length.squared / mu
 
         @JvmStatic
         private fun semiMajorAxis(p: Distance, e: Double) = if (e == 1.0) INFINITY_DISTANCE else p / (1.0 - e * e)
@@ -149,7 +149,7 @@ data class OsculatingElements(
         }
 
         @JvmStatic
-        private fun period(a: Distance, mu: Double) = TAU * sqrt(a.pow(3) / mu)
+        private fun period(a: Distance, mu: Double) = TAU * sqrt(a.cubic / mu)
 
         @JvmStatic
         private fun periapsisDistance(p: Distance, e: Double) = if (e == 1.0) p / 2.0 else p * (1.0 - e) / (1.0 - e * e)
@@ -249,7 +249,7 @@ data class OsculatingElements(
                 M / n
             } else {
                 val D = tan(v / 2)
-                sqrt(2 * (p / 2).pow(3) / mu) * (D + D.pow(3) / 3)
+                sqrt(2 * (p / 2).cubic / mu) * (D + D.cubic / 3)
             }
         }
 

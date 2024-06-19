@@ -7,6 +7,7 @@ import nebulosa.math.Angle
 import nebulosa.math.Point2D
 import nebulosa.math.Velocity
 import nebulosa.nova.astrometry.Constellation
+import nebulosa.nova.position.ICRF
 import nebulosa.skycatalog.DeepSkyObject
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
@@ -47,5 +48,6 @@ data class ImageAnnotation(
         @field:JsonSerialize(using = RightAscensionSerializer::class) override val rightAscensionJ2000: Angle = 0.0,
         @field:JsonSerialize(using = DeclinationSerializer::class) override val declinationJ2000: Angle = 0.0,
         override val magnitude: Double = SkyObject.UNKNOWN_MAGNITUDE,
+        val constellation: Constellation = Constellation.find(ICRF.equatorial(rightAscensionJ2000, declinationJ2000)),
     ) : SkyObject
 }

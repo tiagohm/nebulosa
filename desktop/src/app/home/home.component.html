@@ -1,209 +1,352 @@
 <div class="container px-4 pt-4">
-    <div class="grid flex justify-content-center align-items-center">
-        <div class="col-12 px-2 gap-1">
-            <p-button (onClick)="addConnection()" size="small" icon="mdi mdi-plus" severity="success" [text]="true" pTooltip="New connection"
-                      tooltipPosition="bottom" [positionLeft]="16" />
-            <span class="p-float-label">
-                <p-dropdown [disabled]="connected" [options]="connections" [(ngModel)]="connection"
-                            styleClass="border-0 p-inputtext-sm w-full" [autoDisplayFirst]="false" emptyMessage="No connection found">
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div class="flex flex-row justify-content-between gap-1">
-                            <span>{{ item?.name }}</span>
-                        </div>
-                    </ng-template>
-                    <ng-template let-item pTemplate="item">
-                        <div class="flex flex-row align-items-center justify-content-between gap-1 text-xs">
-                            <div class="flex flex-column gap-1">
-                                <span class="font-bold text-lg">{{ item.name }}</span>
-                                <span class="text-sm">{{ item.host }}:{{ item.port }}</span>
-                                <div class="flex flex-row align-items-center gap-1 text-xs">
-                                    <i class="mdi mdi-sm mdi-clock"></i>
-                                    <span>{{ (item.connectedAt | date:'yyyy-MM-dd HH:mm:ss') ?? 'never' }}</span>
-                                </div>
-                            </div>
-                            <div class="flex flex-column gap-3">
-                                <i class="mdi mdi-18px mdi-pencil" pTooltip="Edit" tooltipPosition="bottom"
-                                   (click)="editConnection(item, $event)"></i>
-                                <i class="mdi mdi-18px mdi-close" pTooltip="Remove" tooltipPosition="bottom"
-                                   (click)="deleteConnection(item, $event)"></i>
-                            </div>
-                        </div>
-                    </ng-template>
-                </p-dropdown>
-                <label>Connection</label>
-            </span>
-            <p-button *ngIf="!connected" [disabled]="!connection" (onClick)="connect()" size="small" icon="mdi mdi-connection" severity="info"
-                      [text]="true" pTooltip="Connect" tooltipPosition="bottom" />
-            <p-button *ngIf="connected" [disabled]="!connection" (onClick)="disconnect()" size="small" icon="mdi mdi-close" severity="danger"
-                      [text]="true" pTooltip="Disconnect" tooltipPosition="bottom" />
-        </div>
-    </div>
-    <div class="buttons grid my-2 overflow-y-auto relative" style="height: calc(62px * 5);" (scroll)="scrolled($event)">
-        <div class="col-4 p-1 scroll-child" scroll-page="0">
-            <p-button [text]="true" [disabled]="!connected || !hasCamera" (onClick)="open('CAMERA')"
-                      styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/camera.png" />
-                <div class="mt-1 text-sm">Camera</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasMount" (onClick)="open('MOUNT')"
-                      styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/telescope.png" />
-                <div class="mt-1 text-sm">Mount</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasGuider" (onClick)="open('GUIDER')"
-                      styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/guider.png" />
-                <div class="mt-1 text-sm">Guider</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasWheel" (onClick)="open('WHEEL')"
-                      styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/filter-wheel.png" />
-                <div class="mt-1 text-sm">Filter Wheel</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasFocuser" (onClick)="open('FOCUSER')"
-                      styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/focus.png" />
-                <div class="mt-1 text-sm">Focuser</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasRotator" (onClick)="open('ROTATOR')"
-                      styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/rotate.png" />
-                <div class="mt-1 text-sm">Rotator</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasDome" styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/observatory.png" />
-                <div class="mt-1 text-sm">Dome</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasSwitch" styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/switch.png" />
-                <div class="mt-1 text-sm">Switch</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" (onClick)="open('SKY_ATLAS')" styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/atlas.png" />
-                <div class="mt-1 text-sm">Sky Atlas</div>
-                <p-progressBar *ngIf="skyAtlasProgress !== undefined" mode="indeterminate" class="w-full" styleClass="ml-auto mr-auto"
-                               [style]="{width: '50%', height: '2px', marginTop: '2px'}" />
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasAlignment" (onClick)="open('ALIGNMENT')"
-                      styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/star.png" />
-                <div class="mt-1 text-sm">Alignment</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" (onClick)="open('SEQUENCER')" [disabled]="!connected || !hasSequencer"
-                      styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/sequencer.png" />
-                <div class="mt-1 text-sm">Sequencer</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" (onClick)="open('IMAGE')" styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/image.png" />
-                <div class="mt-1 text-sm">Image Viewer</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" (onClick)="open('FRAMING')" styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/framing.png" />
-                <div class="mt-1 text-sm">Framing</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" (onClick)="open('AUTO_FOCUS')" [disabled]="!connected || !hasAutoFocus"
-                      styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/auto-focus.png" />
-                <div class="mt-1 text-sm">Auto Focus</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" (onClick)="open('FLAT_WIZARD')" [disabled]="!connected || !hasFlatWizard"
-                      styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/flat-wizard.png" />
-                <div class="mt-1 text-sm">Flat Wizard</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" [disabled]="!connected || !hasINDI" (onClick)="open('INDI')"
-                      styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/indi.png" />
-                <div class="mt-1 text-sm">INDI</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1 scroll-child" scroll-page="1">
-            <p-button [text]="true" (onClick)="open('CALCULATOR')" styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/calculator.png" />
-                <div class="mt-1 text-sm">Calculator</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" (onClick)="open('SETTINGS')" styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/settings.png" />
-                <div class="mt-1 text-sm">Settings</div>
-            </p-button>
-        </div>
-        <div class="col-4 p-1">
-            <p-button [text]="true" (onClick)="open('ABOUT')" styleClass="min-w-full w-full px-1 py-2 flex-column">
-                <img src="assets/icons/about.png" />
-                <div class="mt-1 text-sm">About</div>
-            </p-button>
-        </div>
-        <div class="fixed flex flex-column align-items-center justify-content-center indicators">
-            <span class="indicator" [class.selected]="currentPage === 0" (click)="scrollTo($event, 0)"></span>
-            <span class="indicator" [class.selected]="currentPage === 1" (click)="scrollTo($event, 1)"></span>
-        </div>
-    </div>
+	<div class="grid flex justify-content-center align-items-center">
+		<div class="col-12 px-2 gap-1">
+			<p-button
+				(onClick)="addConnection()"
+				size="small"
+				icon="mdi mdi-plus"
+				severity="success"
+				[text]="true"
+				pTooltip="New connection"
+				tooltipPosition="bottom"
+				[positionLeft]="16" />
+			<p-floatLabel class="w-full">
+				<p-dropdown
+					[disabled]="connected"
+					[options]="connections"
+					[(ngModel)]="connection"
+					styleClass="border-0 p-inputtext-sm w-full"
+					[autoDisplayFirst]="false"
+					emptyMessage="No connection found">
+					<ng-template
+						let-item
+						pTemplate="selectedItem">
+						<div class="flex flex-row justify-content-between gap-1">
+							<span>{{ item?.name }}</span>
+						</div>
+					</ng-template>
+					<ng-template
+						let-item
+						pTemplate="item">
+						<div class="flex flex-row align-items-center justify-content-between gap-1 text-xs">
+							<div class="flex flex-column gap-1">
+								<span class="font-bold text-lg">{{ item.name }}</span>
+								<span class="text-sm">{{ item.host }}:{{ item.port }}</span>
+								<div class="flex flex-row align-items-center gap-1 text-xs">
+									<i class="mdi mdi-sm mdi-clock"></i>
+									<span>{{ (item.connectedAt | date: 'yyyy-MM-dd HH:mm:ss') ?? 'never' }}</span>
+								</div>
+							</div>
+							<div class="flex flex-column gap-3">
+								<i
+									class="mdi mdi-18px mdi-pencil"
+									pTooltip="Edit"
+									tooltipPosition="bottom"
+									(click)="editConnection(item, $event)"></i>
+								<i
+									class="mdi mdi-18px mdi-close"
+									pTooltip="Remove"
+									tooltipPosition="bottom"
+									(click)="deleteConnection(item, $event)"></i>
+							</div>
+						</div>
+					</ng-template>
+				</p-dropdown>
+				<label>Connection</label>
+			</p-floatLabel>
+			<p-button
+				*ngIf="!connected"
+				[disabled]="!connection"
+				(onClick)="connect()"
+				size="small"
+				icon="mdi mdi-connection"
+				severity="info"
+				[text]="true"
+				pTooltip="Connect"
+				tooltipPosition="bottom" />
+			<p-button
+				*ngIf="connected"
+				[disabled]="!connection"
+				(onClick)="disconnect()"
+				size="small"
+				icon="mdi mdi-close"
+				severity="danger"
+				[text]="true"
+				pTooltip="Disconnect"
+				tooltipPosition="bottom" />
+		</div>
+	</div>
+	<div
+		class="buttons grid my-2 overflow-y-auto relative"
+		style="height: calc(62px * 5)"
+		(scroll)="scrolled($event)">
+		<div
+			class="col-4 p-1 scroll-child"
+			scroll-page="0">
+			<p-button
+				[text]="true"
+				[disabled]="!connected || !hasCamera"
+				(onClick)="open('CAMERA')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/camera.png" />
+				<div class="mt-1 text-sm">Camera</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				[disabled]="!connected || !hasMount"
+				(onClick)="open('MOUNT')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/telescope.png" />
+				<div class="mt-1 text-sm">Mount</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				[disabled]="!connected || !hasGuider"
+				(onClick)="open('GUIDER')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/guider.png" />
+				<div class="mt-1 text-sm">Guider</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				[disabled]="!connected || !hasWheel"
+				(onClick)="open('WHEEL')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/filter-wheel.png" />
+				<div class="mt-1 text-sm">Filter Wheel</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				[disabled]="!connected || !hasFocuser"
+				(onClick)="open('FOCUSER')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/focus.png" />
+				<div class="mt-1 text-sm">Focuser</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				[disabled]="!connected || !hasRotator"
+				(onClick)="open('ROTATOR')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/rotate.png" />
+				<div class="mt-1 text-sm">Rotator</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				[disabled]="!connected || !hasDome"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/observatory.png" />
+				<div class="mt-1 text-sm">Dome</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				[disabled]="!connected || !hasSwitch"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/switch.png" />
+				<div class="mt-1 text-sm">Switch</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				(onClick)="open('SKY_ATLAS')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/atlas.png" />
+				<div class="mt-1 text-sm">Sky Atlas</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				[disabled]="!connected || !hasAlignment"
+				(onClick)="open('ALIGNMENT')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/star.png" />
+				<div class="mt-1 text-sm">Alignment</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				(onClick)="open('SEQUENCER')"
+				[disabled]="!connected || !hasSequencer"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/sequencer.png" />
+				<div class="mt-1 text-sm">Sequencer</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				(onClick)="open('IMAGE')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/image.png" />
+				<div class="mt-1 text-sm">Image Viewer</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				(onClick)="open('FRAMING')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/framing.png" />
+				<div class="mt-1 text-sm">Framing</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				(onClick)="open('AUTO_FOCUS')"
+				[disabled]="!connected || !hasAutoFocus"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/auto-focus.png" />
+				<div class="mt-1 text-sm">Auto Focus</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				(onClick)="open('FLAT_WIZARD')"
+				[disabled]="!connected || !hasFlatWizard"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/flat-wizard.png" />
+				<div class="mt-1 text-sm">Flat Wizard</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				[disabled]="!connected || !hasINDI"
+				(onClick)="open('INDI')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/indi.png" />
+				<div class="mt-1 text-sm">INDI</div>
+			</p-button>
+		</div>
+		<div
+			class="col-4 p-1 scroll-child"
+			scroll-page="1">
+			<p-button
+				[text]="true"
+				(onClick)="open('CALCULATOR')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/calculator.png" />
+				<div class="mt-1 text-sm">Calculator</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				(onClick)="open('SETTINGS')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/settings.png" />
+				<div class="mt-1 text-sm">Settings</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				(onClick)="open('ABOUT')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/about.png" />
+				<div class="mt-1 text-sm">About</div>
+			</p-button>
+		</div>
+		<div class="fixed flex flex-column align-items-center justify-content-center indicators">
+			<span
+				class="indicator"
+				[class.selected]="currentPage === 0"
+				(click)="scrollTo($event, 0)"></span>
+			<span
+				class="indicator"
+				[class.selected]="currentPage === 1"
+				(click)="scrollTo($event, 1)"></span>
+		</div>
+	</div>
 </div>
 
-<p-dialog header="Connection" [modal]="true" [draggable]="false" [(visible)]="showConnectionDialog" [style]="{width: '90vw'}">
-    <div class="grid p-2" *ngIf="newConnection">
-        <div class="col-12">
-            <span class="p-float-label">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [maxLength]="32" [(ngModel)]="newConnection[0].name" />
-                <label>Name</label>
-            </span>
-        </div>
-        <div class="col-12">
-            <span class="p-float-label">
-                <input pInputText class="p-inputtext-sm border-0 w-full" [(ngModel)]="newConnection[0].host" />
-                <label>Host</label>
-            </span>
-        </div>
-        <div class="col-4">
-            <span class="p-float-label" style="min-width: 80px;">
-                <p-inputNumber [showButtons]="true" styleClass="border-0 p-inputtext-sm w-full" placeholder="7624"
-                               [(ngModel)]="newConnection[0].port" [min]="80" [max]="65535" [format]="false" scrollableNumber />
-                <label>Port</label>
-            </span>
-        </div>
-        <div class="col-8">
-            <p-selectButton [options]="connectionTypes" [(ngModel)]="newConnection[0].type" styleClass="border-0 w-full" />
-        </div>
-    </div>
-    <ng-template pTemplate="footer">
-        <p-button *ngIf="newConnection" [disabled]="!newConnection[0].name || !newConnection[0].host || !newConnection[0].port"
-                  icon="mdi mdi-content-save" label="Save" (onClick)="saveConnection()" [text]="true" size="small" />
-    </ng-template>
+<p-dialog
+	header="Connection"
+	[modal]="true"
+	[draggable]="false"
+	[(visible)]="showConnectionDialog"
+	[style]="{ width: '90vw' }">
+	<div
+		class="grid p-2"
+		*ngIf="newConnection">
+		<div class="col-12">
+			<p-floatLabel class="w-full">
+				<input
+					pInputText
+					class="p-inputtext-sm border-0 w-full"
+					[maxLength]="32"
+					[(ngModel)]="newConnection[0].name" />
+				<label>Name</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-12">
+			<p-floatLabel class="w-full">
+				<input
+					pInputText
+					class="p-inputtext-sm border-0 w-full"
+					[(ngModel)]="newConnection[0].host" />
+				<label>Host</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-4">
+			<p-floatLabel style="min-width: 80px">
+				<p-inputNumber
+					[showButtons]="true"
+					styleClass="border-0 p-inputtext-sm w-full"
+					placeholder="7624"
+					[(ngModel)]="newConnection[0].port"
+					[min]="80"
+					[max]="65535"
+					[format]="false"
+					scrollableNumber />
+				<label>Port</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-8">
+			<p-selectButton
+				[options]="connectionTypes"
+				[(ngModel)]="newConnection[0].type"
+				styleClass="border-0 w-full" />
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			*ngIf="newConnection"
+			[disabled]="!newConnection[0].name || !newConnection[0].host || !newConnection[0].port"
+			icon="mdi mdi-content-save"
+			label="Save"
+			(onClick)="saveConnection()"
+			[text]="true"
+			size="small" />
+	</ng-template>
 </p-dialog>
 
-<neb-device-list-menu #deviceMenu [disableIfDeviceIsNotConnected]="false" (deviceConnect)="deviceConnected($event)"
-                      (deviceDisconnect)="deviceDisconnected($event)" />
-<neb-device-list-menu #imageMenu [model]="imageModel" [disableIfDeviceIsNotConnected]="false" header="Image" />
+<neb-device-list-menu
+	#deviceMenu
+	[disableIfDeviceIsNotConnected]="false"
+	(deviceConnect)="deviceConnected($event)"
+	(deviceDisconnect)="deviceDisconnected($event)" />
+<neb-device-list-menu
+	#imageMenu
+	[model]="imageModel"
+	[disableIfDeviceIsNotConnected]="false"
+	header="Image" />

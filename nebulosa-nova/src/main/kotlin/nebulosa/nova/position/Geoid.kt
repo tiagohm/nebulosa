@@ -80,7 +80,7 @@ data class Geoid(
         var c = 1.0
 
         repeat(3) {
-            c = 1.0 / sqrt(1.0 - e2 * sin(lat).pow(2))
+            c = 1.0 / sqrt(1.0 - e2 * sin(lat).squared)
             lat = atan2(z + a * c * e2 * sin(lat), r)
         }
 

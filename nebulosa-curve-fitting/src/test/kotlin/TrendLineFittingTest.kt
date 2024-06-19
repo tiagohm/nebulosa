@@ -1,6 +1,5 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
-import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import nebulosa.curve.fitting.CurveFitting
 import nebulosa.curve.fitting.TrendLineFitting
@@ -15,8 +14,8 @@ class TrendLineFittingTest : StringSpec(), CurveFitting<TrendLineFitting.Curve> 
                 5.0, 2.0, // tip
             )
 
-            curve.intersection.x shouldBeExactly 5.0
-            curve.intersection.y shouldBeExactly 2.0
+            curve.intersection.x shouldBe (5.0 plusOrMinus 1e-12)
+            curve.intersection.y shouldBe (2.0 plusOrMinus 1e-12)
         }
         "perfect V-curve with flat tip with multiple points" {
             val curve = calculate(

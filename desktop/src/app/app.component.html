@@ -1,39 +1,68 @@
-<section *ngIf="showTopBar" id="titlebar" class="flex flex-row align-items-center justify-content-end gap-2 sticky pr-1"
-         [style]="{ height: '42px', zIndex: '1000', backgroundColor }">
-    <span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
-        <div>{{ title }}</div>
-        <div class="text-xs text-gray-100 font-normal">{{ subTitle }}</div>
-    </span>
+<section
+	*ngIf="showTopBar"
+	id="titlebar"
+	class="flex flex-row align-items-center justify-content-end gap-2 sticky pr-1"
+	[style]="{ height: '42px', zIndex: '1000', backgroundColor }">
+	<span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
+		<div>{{ title }}</div>
+		<div class="text-xs text-gray-200 font-normal">{{ subTitle }}</div>
+	</span>
 
-    <span class="relative" *ngFor="let e of topMenu; let i = index">
-        @if (e.toggleable) {
-        <div *ngIf="e.visible" class="flex flex-column align-items-center justify-content-center gap-1">
-            <span class="text-xs">{{ e.label }}</span>
-            <p-inputSwitch [disabled]="e.disabled ?? false" [(ngModel)]="e.toggled" (onChange)="e.toggle?.($event)" />
-        </div>
-        } @else {
-        <p-badge *ngIf="e.badge" [severity]="e.badgeSeverity ?? 'danger'" />
-        <p-button [text]="true" [rounded]="true" [icon]="e.icon" [disabled]="e.disabled" [pTooltip]="e.tooltip ?? e.label" tooltipPosition="bottom"
-                  (onClick)="e.command?.({originalEvent: $event, item: e, index: i})" size="small" />
-        }
-    </span>
+	<neb-menu-bar
+		*ngIf="topMenu.length"
+		[model]="topMenu" />
 
-    <span class="separator flex justify-content-center" *ngIf="topMenu.length"></span>
+	<span
+		class="separator flex justify-content-center"
+		*ngIf="topMenu.length"></span>
 
-    <p-button *ngIf="pinned && !modal" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin" (onClick)="pin()"
-              styleClass="select-none cursor-pointer"></p-button>
-    <p-button *ngIf="!pinned && !modal" [text]="true" [rounded]="true" size="small" icon="mdi mdi-pin-off" (onClick)="pin()"
-              styleClass="select-none cursor-pointer"></p-button>
-    <p-button *ngIf="!modal" [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-minimize" (onClick)="minimize()"
-              styleClass="select-none cursor-pointer"></p-button>
-    <p-button *ngIf="!modal && maximizable" [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-maximize"
-              (onClick)="maximize()" styleClass="select-none cursor-pointer"></p-button>
-    <p-button [text]="true" [rounded]="true" size="small" icon="mdi mdi-window-close" (onClick)="close()"
-              styleClass="select-none cursor-pointer mr-1"></p-button>
+	<p-button
+		*ngIf="pinned && !modal"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-pin text-gray-200"
+		(onClick)="pin()"
+		pTooltip="Unpin Window"
+		tooltipPosition="bottom"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		*ngIf="!pinned && !modal"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-pin-off text-gray-200"
+		(onClick)="pin()"
+		pTooltip="Pin Window"
+		tooltipPosition="bottom"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		*ngIf="!modal"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-window-minimize text-gray-200"
+		(onClick)="minimize()"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		*ngIf="!modal && maximizable"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-window-maximize text-gray-200"
+		(onClick)="maximize()"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-window-close text-red-700"
+		(onClick)="close()"
+		styleClass="select-none cursor-pointer mr-1"></p-button>
 </section>
 
 <section id="main">
-    <router-outlet></router-outlet>
+	<router-outlet></router-outlet>
 </section>
 
 <p-toast position="bottom-center" />

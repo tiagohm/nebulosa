@@ -340,7 +340,7 @@ fun eraGd2Gce(
 ): Vector3D {
     val sp = phi.sin
     val cp = phi.cos
-    val w = (1.0 - flattening).let { it * it }
+    val w = (1.0 - flattening).squared
     val d = cp * cp + w * sp * sp
 
     assert(d > 0.0)
