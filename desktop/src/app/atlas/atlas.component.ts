@@ -447,8 +447,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			})
 		})
 
-		electron.on('DATA.CHANGED', (event) => {
-			this.loadTabFromData(event)
+		electron.on('DATA.CHANGED', async (event) => {
+			await this.loadTabFromData(event)
 		})
 
 		this.location = this.preference.selectedLocation.get()
@@ -485,14 +485,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			}
 		})
 
-		this.route.queryParams.subscribe((e) => {
+		this.route.queryParams.subscribe(async (e) => {
 			const data = JSON.parse(decodeURIComponent(e.data)) as SkyAtlasData
-			this.loadTabFromData(data)
+			await this.loadTabFromData(data)
 		})
 	}
 
-	ngAfterViewInit() {
-		this.refreshTab()
+	async ngAfterViewInit() {
+		await this.refreshTab()
 
 		this.calendarPanel.onOverlayClick = (e) => {
 			e.stopImmediatePropagation()
@@ -504,8 +504,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		this.refreshTimer?.unsubscribe()
 	}
 
-	private loadTabFromData(data?: SkyAtlasData) {
-		if (data) {
+	private async loadTabFromData(data?: SkyAtlasData) {
+		if (data && data.tab) {
 			this.tab = data.tab
 
 			if (this.tab === SkyAtlasTab.SKY_OBJECT) {
@@ -516,8 +516,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				this.skyObjectFilter.magnitude = data.filter?.magnitude || this.skyObjectFilter.magnitude
 				this.skyObjectFilter.type = data.filter?.type || this.skyObjectFilter.type
 
-				this.tabChanged()
-				this.filterSkyObject()
+				await this.tabChanged()
+				await this.filterSkyObject()
 			}
 		}
 	}
