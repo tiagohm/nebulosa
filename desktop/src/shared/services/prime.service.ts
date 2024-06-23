@@ -10,7 +10,7 @@ export class PrimeService {
 		private messager: MessageService,
 	) {}
 
-	open<T, R = T>(componentType: Type<any>, config: DynamicDialogConfig<T>) {
+	open<T, R = T>(componentType: Type<unknown>, config: DynamicDialogConfig<T>) {
 		const ref = this.dialog.open(componentType, {
 			...config,
 			draggable: config.draggable ?? true,
@@ -27,9 +27,9 @@ export class PrimeService {
 		})
 
 		return new Promise<R | undefined>((resolve) => {
-			const subscription = ref.onClose.subscribe((data) => {
+			const subscription = ref.onClose.subscribe((data?: R) => {
 				subscription.unsubscribe()
-				resolve(data ?? undefined)
+				resolve(data)
 			})
 		})
 	}

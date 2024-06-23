@@ -12,11 +12,12 @@ Object.assign(global, { WebSocket })
 
 app.commandLine.appendSwitch('disable-http-cache')
 
-const args = ArgumentParser.parse()
+const argParser = new ArgumentParser()
+const parsedArgs = argParser.parse(process.argv.slice(1))
 const configPath = resolve(app.getPath('userData'), 'config.json')
 const storage = new LocalStorage<StoredWindowData>(configPath)
-const appIcon = join(__dirname, args.serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
-const windowManager = new WindowManager(args, storage, appIcon)
+const appIcon = join(__dirname, parsedArgs.serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
+const windowManager = new WindowManager(parsedArgs, storage, appIcon)
 let apiProcess: ChildProcessWithoutNullStreams | null
 
 process.on('beforeExit', () => {
@@ -24,13 +25,13 @@ process.on('beforeExit', () => {
 	apiProcess?.kill()
 })
 
-function createApiProcess(port: number = args.port) {
+function createApiProcess(port: number = parsedArgs.port) {
 	const apiJar = join(process.resourcesPath, 'api.jar')
 	const apiProcess = spawn('java', ['-jar', apiJar, `--server.port=${port}`])
 
 	apiProcess.on('close', (code) => {
 		console.warn(`server process exited with code: ${code}`)
-		process.exit(code || 0)
+		process.exit(code ?? 0)
 	})
 
 	return apiProcess
@@ -38,19 +39,19 @@ function createApiProcess(port: number = args.port) {
 
 let started = false
 
-function startApp() {
+async function startApp() {
 	if (!started) {
 		started = true
 
 		try {
-			if (args.apiMode) {
+			if (parsedArgs.apiMode) {
 				apiProcess = createApiProcess()
-			} else if (args.uiMode) {
-				windowManager.createMainWindow()
-			} else if (args.serve) {
-				windowManager.createMainWindow()
+			} else if (parsedArgs.uiMode) {
+				await windowManager.createMainWindow()
+			} else if (parsedArgs.serve) {
+				await windowManager.createMainWindow()
 			} else {
-				const splashWindow = windowManager.createSplashWindow()
+				const splashWindow = await windowManager.createSplashWindow()
 
 				apiProcess = createApiProcess()
 
@@ -65,10 +66,10 @@ function startApp() {
 
 						if (match) {
 							const port = parseInt(match[1])
-							apiProcess!.stdout!.removeAllListeners('data')
-							console.info(`server was started at ${args.host}@${port}`)
+							apiProcess?.stdout.removeAllListeners('data')
+							console.info(`server was started at ${parsedArgs.host}@${port}`)
 							splashWindow?.close()
-							windowManager.createMainWindow(apiProcess!, port)
+							void windowManager.createMainWindow(apiProcess!, port)
 						}
 					}
 				})
@@ -83,11 +84,15 @@ function startApp() {
 }
 
 try {
-	if (!args.serve) {
+	if (!parsedArgs.serve) {
 		Menu.setApplicationMenu(null)
 	}
 
-	app.on('ready', () => setTimeout(() => startApp(), 400))
+	app.on('ready', () =>
+		setTimeout(() => {
+			void startApp()
+		}, 400),
+	)
 
 	app.on('window-all-closed', () => {
 		apiProcess?.kill()
@@ -97,20 +102,25 @@ try {
 		}
 	})
 
-	app.on('activate', () => startApp())
-
-	ipcMain.handle('JSON.WRITE', async (_, data: JsonFile) => {
-		try {
-			const json = JSON.stringify(data.json)
-			fs.writeFileSync(data.path!, json)
-			return true
-		} catch (e) {
-			console.error(e)
-			return false
-		}
+	app.on('activate', () => {
+		void startApp()
 	})
 
-	ipcMain.handle('JSON.READ', async (_, path: string) => {
+	ipcMain.handle('JSON.WRITE', (_, data: JsonFile) => {
+		try {
+			if (data.path) {
+				const json = JSON.stringify(data.json)
+				fs.writeFileSync(data.path, json)
+				return true
+			}
+		} catch (e) {
+			console.error(e)
+		}
+
+		return false
+	})
+
+	ipcMain.handle('JSON.READ', (_, path: string) => {
 		try {
 			if (fs.existsSync(path)) {
 				const buffer = fs.readFileSync(path)

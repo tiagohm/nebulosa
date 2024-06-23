@@ -1,51 +1,37 @@
 {
-  "asar": true,
-  "directories": {
-    "output": "release/"
-  },
-  "files": [
-    "**/*",
-    "!**/*.ts",
-    "!*.map",
-    "!package.json",
-    "!package-lock.json",
-    {
-      "from": "../dist",
-      "filter": [
-        "**/*"
-      ]
-    }
-  ],
-  "extraResources": [
-    "api.jar"
-  ],
-  "win": {
-    "icon": "dist/assets/icons",
-    "target": [
-      "portable"
-    ]
-  },
-  "portable": {
-    "splashImage": "dist/assets/images/splash.png"
-  },
-  "mac": {
-    "icon": "dist/assets/icons",
-    "target": [
-      "dmg"
-    ]
-  },
-  "linux": {
-    "icon": "dist/assets/icons",
-    "category": "Science",
-    "target": [
-      "AppImage",
-      "deb",
-      "rpm"
-    ]
-  },
-  "rpm": {
-    "depends": [
-      "/usr/lib64/libuuid.so.1"
-    ]
-  }
+	"asar": true,
+	"directories": {
+		"output": "release/"
+	},
+	"files": [
+		"**/*",
+		"!**/*.ts",
+		"!*.map",
+		"!package.json",
+		"!package-lock.json",
+		{
+			"from": "../dist",
+			"filter": ["**/*"]
+		}
+	],
+	"extraResources": ["api.jar"],
+	"win": {
+		"icon": "dist/assets/icons",
+		"target": ["portable"]
+	},
+	"portable": {
+		"splashImage": "dist/assets/images/splash.png"
+	},
+	"mac": {
+		"icon": "dist/assets/icons",
+		"target": ["dmg"]
+	},
+	"linux": {
+		"icon": "dist/assets/icons",
+		"category": "Science",
+		"target": ["AppImage", "deb", "rpm"]
+	},
+	"rpm": {
+		"depends": ["/usr/lib64/libuuid.so.1"]
+	}
 }

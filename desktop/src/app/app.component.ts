@@ -1,6 +1,5 @@
 import { AfterViewInit, Component } from '@angular/core'
 import { Title } from '@angular/platform-browser'
-import { ActivatedRoute } from '@angular/router'
 import { APP_CONFIG } from '../environments/environment'
 import { MenuItem } from '../shared/components/menu-item/menu-item.component'
 import { ElectronService } from '../shared/services/electron.service'
@@ -29,7 +28,6 @@ export class AppComponent implements AfterViewInit {
 
 	constructor(
 		private windowTitle: Title,
-		private route: ActivatedRoute,
 		private electron: ElectronService,
 	) {
 		console.info('APP_CONFIG', APP_CONFIG)
@@ -43,25 +41,25 @@ export class AppComponent implements AfterViewInit {
 
 	async ngAfterViewInit() {
 		if (window.preference.autoResizable !== false) {
-			this.electron.autoResizeWindow()
+			await this.electron.autoResizeWindow()
 		}
 	}
 
 	pin() {
 		this.pinned = !this.pinned
-		if (this.pinned) this.electron.pinWindow()
-		else this.electron.unpinWindow()
+		if (this.pinned) return this.electron.pinWindow()
+		else return this.electron.unpinWindow()
 	}
 
 	minimize() {
-		this.electron.minimizeWindow()
+		return this.electron.minimizeWindow()
 	}
 
 	maximize() {
-		this.electron.maximizeWindow()
+		return this.electron.maximizeWindow()
 	}
 
-	close(data?: any) {
-		this.electron.closeWindow({ id: window.id, data })
+	close(data?: unknown) {
+		return this.electron.closeWindow({ id: window.id, data })
 	}
 }

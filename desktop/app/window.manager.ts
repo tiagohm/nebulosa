@@ -1,5 +1,5 @@
 import { Client } from '@stomp/stompjs'
-import { BrowserWindow, dialog, Notification, screen, shell } from 'electron'
+import { BrowserWindow, Notification, dialog, screen, shell } from 'electron'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { join } from 'path'
 import { MessageEvent } from '../src/shared/types/api.types'
@@ -10,11 +10,11 @@ import { LocalStorage } from './local.storage'
 export class ApplicationWindow {
 	constructor(
 		public readonly browserWindow: BrowserWindow,
-		public readonly open: OpenWindow,
+		public readonly data: OpenWindow,
 		public readonly parentWindow?: BrowserWindow,
 		public webSocket?: Client,
 		public apiProcess?: ChildProcessWithoutNullStreams,
-		public resolver?: (data: any) => void,
+		public resolver?: (data: unknown) => void,
 	) {}
 
 	get isParent() {
@@ -22,11 +22,11 @@ export class ApplicationWindow {
 	}
 
 	get isModal() {
-		return !!this.parentWindow || this.open.id.endsWith('.modal')
+		return !!this.parentWindow || this.data.id.endsWith('.modal')
 	}
 
 	get isHome() {
-		return !this.webSocket || this.open.id === 'home'
+		return !this.webSocket || this.data.id === 'home'
 	}
 
 	get windowId() {
@@ -34,7 +34,7 @@ export class ApplicationWindow {
 	}
 
 	get appId() {
-		return this.open.id
+		return this.data.id
 	}
 
 	close() {
@@ -71,8 +71,8 @@ export class WindowManager {
 	private host = 'localhost'
 
 	constructor(
-		readonly args: ParsedArgument,
-		readonly storage: LocalStorage<StoredWindowData>,
+		public readonly args: ParsedArgument,
+		public readonly storage: LocalStorage<StoredWindowData>,
 		defaultAppIcon: string = 'nebulosa.png',
 	) {
 		this.appIcon = join(__dirname, args.serve ? `../src/assets/icons/${defaultAppIcon}` : `assets/icons/${defaultAppIcon}`)
@@ -80,7 +80,7 @@ export class WindowManager {
 		this.host = args.host
 	}
 
-	createWindow(open: OpenWindow, parent?: BrowserWindow) {
+	async createWindow(open: OpenWindow, parent?: BrowserWindow) {
 		let appWindow = this.windows.get(open.id)
 
 		if (appWindow) {
@@ -127,7 +127,7 @@ export class WindowManager {
 				nodeIntegration: true,
 				allowRunningInsecureContent: this.args.serve,
 				contextIsolation: false,
-				additionalArguments: [`--host=${this.host}`, `--port=${this.port}`, `--data=${encodedData}`, `--preference=${encodedPreference}`],
+				additionalArguments: [`--host=${this.host}`, `--port=${this.port}`, `--id=${open.id}`, `--data=${encodedData}`, `--preference=${encodedPreference}`],
 				preload: join(__dirname, 'preload.js'),
 				devTools: this.args.serve,
 			},
@@ -138,14 +138,14 @@ export class WindowManager {
 		}
 
 		if (this.args.serve) {
-			browserWindow.loadURL(`http://localhost:4200/${open.path}?data=${encodedData}`)
+			await browserWindow.loadURL(`http://localhost:4200/${open.path}?data=${encodedData}`)
 		} else {
 			const url = new URL(join('file:', __dirname, `index.html`) + `#/${open.path}?data=${encodedData}`)
-			browserWindow.loadURL(url.href)
+			await browserWindow.loadURL(url.href)
 		}
 
 		browserWindow.webContents.setWindowOpenHandler(({ url }) => {
-			shell.openExternal(url)
+			void shell.openExternal(url)
 			return { action: 'deny' }
 		})
 
@@ -158,7 +158,7 @@ export class WindowManager {
 				this.saveWindowData(appWindow)
 			}
 
-			if (browserWindow === homeWindow?.browserWindow || open.id === homeWindow?.open?.id) {
+			if (browserWindow === homeWindow?.browserWindow || open.id === homeWindow?.data.id) {
 				this.windows.delete('home')
 
 				for (const [, value] of this.windows) {
@@ -171,7 +171,7 @@ export class WindowManager {
 				homeWindow.apiProcess = undefined
 			} else {
 				for (const [key, value] of this.windows) {
-					if (value.browserWindow === browserWindow || value.open.id === open.id) {
+					if (value.browserWindow === browserWindow || value.data.id === open.id) {
 						this.windows.delete(key)
 						break
 					}
@@ -187,16 +187,16 @@ export class WindowManager {
 	saveWindowData(window: ApplicationWindow) {
 		const [x, y] = window.browserWindow.getPosition()
 		const [width, height] = window.browserWindow.getSize()
-		this.storage.set(`window.${window.open.id}`, { x, y, width, height })
+		this.storage.set(`window.${window.data.id}`, { x, y, width, height })
 		this.storage.save()
 	}
 
-	createMainWindow(apiProcess?: ChildProcessWithoutNullStreams, port: number = this.port, host: string = this.host) {
+	async createMainWindow(apiProcess?: ChildProcessWithoutNullStreams, port: number = this.port, host: string = this.host) {
 		this.port = port
 		this.host = host
 
 		const open: OpenWindow = { id: 'home', path: 'home', preference: {} }
-		const appWindow = this.createWindow(open)
+		const appWindow = await this.createWindow(open)
 
 		const webSocket = new Client({
 			brokerURL: `ws://${host}:${port}/ws`,
@@ -232,7 +232,7 @@ export class WindowManager {
 		appWindow.apiProcess = apiProcess
 	}
 
-	createSplashWindow() {
+	async createSplashWindow() {
 		if (!this.args.serve && !this.windows.has('splash')) {
 			const browserWindow = new BrowserWindow({
 				width: 512,
@@ -246,7 +246,7 @@ export class WindowManager {
 
 			const url = new URL(join('file:', __dirname, 'assets', 'images', 'splash.png'))
 
-			browserWindow.loadURL(url.href)
+			await browserWindow.loadURL(url.href)
 			browserWindow.show()
 			browserWindow.center()
 
@@ -319,17 +319,16 @@ export class WindowManager {
 		}
 	}
 
-	handleWindowOpen(event: Electron.IpcMainInvokeEvent, data: OpenWindow) {
+	async handleWindowOpen(event: Electron.IpcMainInvokeEvent, data: OpenWindow) {
 		if (data.preference.modal) {
 			const parentWindow = this.findWindow(event.sender.id)
-			const appWindow = this.createWindow(data, parentWindow?.browserWindow)
+			const appWindow = await this.createWindow(data, parentWindow?.browserWindow)
 
-			return new Promise<any>((resolve) => {
+			return new Promise<unknown>((resolve) => {
 				appWindow.resolver = resolve
 			})
 		} else {
-			const isNew = !this.windows.has(data.id)
-			const appWindow = this.createWindow(data)
+			const appWindow = await this.createWindow(data)
 
 			if (data.preference.bringToFront) {
 				appWindow.browserWindow.show()
@@ -337,15 +336,7 @@ export class WindowManager {
 				appWindow.browserWindow.focus()
 			}
 
-			return new Promise<boolean>((resolve) => {
-				if (isNew) {
-					appWindow.browserWindow.webContents.once('did-finish-load', () => {
-						resolve(true)
-					})
-				} else {
-					resolve(true)
-				}
-			})
+			return true
 		}
 	}
 
@@ -365,12 +356,12 @@ export class WindowManager {
 	handleWindowResize(event: Electron.IpcMainInvokeEvent, newHeight: number) {
 		const window = this.findWindow(event.sender.id)
 
-		if (window && !window.open.preference.resizable && window.open.preference.autoResizable !== false) {
-			const data = window.open
+		if (window && !window.data.preference.resizable && window.data.preference.autoResizable !== false) {
+			const data = window.data
 
 			const [width] = window.browserWindow.getSize()
 			const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
-			const height = Math.max(data?.preference.minHeight ?? 0, Math.min(newHeight, maxHeight))
+			const height = Math.max(data.preference.minHeight ?? 0, Math.min(newHeight, maxHeight))
 
 			// https://github.com/electron/electron/issues/16711#issuecomment-1311824063
 			window.browserWindow.setResizable(true)
@@ -396,13 +387,13 @@ export class WindowManager {
 
 	handleWindowPin(event: Electron.IpcMainInvokeEvent) {
 		const window = this.findWindow(event.sender.id)
-		window?.browserWindow?.setAlwaysOnTop(true)
+		window?.browserWindow.setAlwaysOnTop(true)
 		return window && window.browserWindow.isAlwaysOnTop()
 	}
 
 	handleWindowUnpin(event: Electron.IpcMainInvokeEvent) {
 		const window = this.findWindow(event.sender.id)
-		window?.browserWindow?.setAlwaysOnTop(false)
+		window?.browserWindow.setAlwaysOnTop(false)
 		return window && window.browserWindow.isAlwaysOnTop()
 	}
 

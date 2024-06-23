@@ -5,7 +5,7 @@ import { AutoFocusFittingMode, AutoFocusState, BacklashCompensationMode } from '
 import { CameraCaptureState, ExposureMode, FrameType, LiveStackerType } from '../types/camera.types'
 import { FlatWizardState } from '../types/flat-wizard.types'
 import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
-import { SCNRProtectionMethod } from '../types/image.types'
+import { Bitpix, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlType } from '../types/mount.types'
 import { SequenceCaptureMode } from '../types/sequencer.types'
 import { PlateSolverType, StarDetectorType } from '../types/settings.types'
@@ -34,8 +34,8 @@ export type EnumPipeKey =
 	| GuiderYAxisUnit
 	| MountRemoteControlType
 	| SequenceCaptureMode
+	| Bitpix
 	| 'ALL'
-	| string
 
 @Pipe({ name: 'enum' })
 export class EnumPipe implements PipeTransform {
@@ -406,9 +406,16 @@ export class EnumPipe implements PipeTransform {
 		STELLARIUM: 'Stellarium',
 		FULLY: 'Fully',
 		INTERLEAVED: 'Interleaved',
+		BYTE: 'Byte',
+		SHORT: 'Short',
+		INTEGER: 'Integer',
+		LONG: 'Long',
+		FLOAT: 'Float',
+		DOUBLE: 'Double',
 	}
 
-	transform(value: EnumPipeKey) {
-		return this.enums[value] ?? value
+	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+	transform(value: EnumPipeKey | string) {
+		return this.enums[value as EnumPipeKey] ?? value
 	}
 }

@@ -20,33 +20,33 @@ export class HttpService {
 		return firstValueFrom(this.http.get(`${this.baseUrl}/${path}`, { observe: 'response', responseType: 'blob' }))
 	}
 
-	post<T>(path: string, body?: any) {
+	post<T>(path: string, body?: unknown) {
 		return firstValueFrom(this.http.post<T>(`${this.baseUrl}/${path}`, body))
 	}
 
-	postBodyAsQueryParams<T>(path: string, body: Record<string, any>) {
+	postBodyAsQueryParams<T>(path: string, body: Record<string, QueryParamType>) {
 		const query = this.query(body)
 		return firstValueFrom(this.http.post<T>(`${this.baseUrl}/${path}?${query}`, null))
 	}
 
-	postBlob(path: string, body?: any) {
+	postBlob(path: string, body?: unknown) {
 		return firstValueFrom(this.http.post(`${this.baseUrl}/${path}`, body, { observe: 'response', responseType: 'blob' }))
 	}
 
-	patch<T>(path: string, body?: any) {
+	patch<T>(path: string, body?: unknown) {
 		return firstValueFrom(this.http.patch<T>(`${this.baseUrl}/${path}`, body))
 	}
 
-	put<T>(path: string, body?: any) {
+	put<T>(path: string, body?: unknown) {
 		return firstValueFrom(this.http.put<T>(`${this.baseUrl}/${path}`, body))
 	}
 
-	putBodyAsQueryParams<T>(path: string, body: Record<string, any>) {
+	putBodyAsQueryParams<T>(path: string, body: Record<string, QueryParamType>) {
 		const query = this.query(body)
 		return firstValueFrom(this.http.put<T>(`${this.baseUrl}/${path}?${query}`, null))
 	}
 
-	putBlob(path: string, body?: any) {
+	putBlob(path: string, body?: unknown) {
 		return firstValueFrom(this.http.put(`${this.baseUrl}/${path}`, body, { observe: 'response', responseType: 'blob' }))
 	}
 

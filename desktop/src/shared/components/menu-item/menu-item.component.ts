@@ -19,7 +19,7 @@ export interface MenuItem {
 	visible?: boolean
 	disabled?: boolean
 	severity?: Severity
-	data?: any
+	data?: unknown
 
 	tooltip?: string
 	tooltipPosition?: TooltipPosition
@@ -44,6 +44,10 @@ export interface MenuItem {
 	command?: (event: MenuItemCommandEvent) => void
 	check?: (event: CheckboxChangeEvent) => void
 	toggle?: (event: InputSwitchChangeEvent) => void
+}
+
+export interface SlideMenuItem extends MenuItem {
+	slideMenu: SlideMenuItem[]
 }
 
 @Component({

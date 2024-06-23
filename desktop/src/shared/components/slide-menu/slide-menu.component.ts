@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core'
-import { MenuItem, MenuItemCommandEvent } from '../menu-item/menu-item.component'
+import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.component'
 
 @Component({
 	selector: 'neb-slide-menu',
@@ -8,20 +8,20 @@ import { MenuItem, MenuItemCommandEvent } from '../menu-item/menu-item.component
 })
 export class SlideMenuComponent implements OnInit {
 	@Input({ required: true })
-	readonly model!: MenuItem[]
+	readonly model!: SlideMenuItem[]
 
 	@Input()
-	readonly appendTo: HTMLElement | ElementRef | TemplateRef<any> | string | null | undefined | any
+	readonly appendTo: HTMLElement | ElementRef | TemplateRef<unknown> | string | null | undefined
 
 	@Output()
 	readonly onNext = new EventEmitter<MenuItemCommandEvent>()
 
 	@Output()
-	readonly onBack = new EventEmitter<any>()
+	readonly onBack = new EventEmitter<MenuItemCommandEvent>()
 
-	currentMenu!: MenuItem[]
+	currentMenu!: SlideMenuItem[]
 
-	private navigation: MenuItem[][] = []
+	private navigation: SlideMenuItem[][] = []
 
 	ngOnInit() {
 		this.processMenu(this.model, 0)
@@ -31,17 +31,17 @@ export class SlideMenuComponent implements OnInit {
 	back(event: MouseEvent) {
 		if (this.navigation.length) {
 			this.currentMenu = this.navigation.splice(this.navigation.length - 1, 1)[0]
-			this.onBack.emit(undefined)
+			this.onBack.emit({ originalEvent: event })
 		}
 	}
 
-	private processMenu(menu: MenuItem[], level: number, parentItem?: MenuItem) {
+	private processMenu(menu: SlideMenuItem[], level: number, parentItem?: SlideMenuItem) {
 		for (const item of menu) {
 			const command = item.command
 
-			if (item.slideMenu?.length) {
+			if (item.slideMenu.length) {
 				item.command = (event: MenuItemCommandEvent) => {
-					this.currentMenu = item.slideMenu!
+					this.currentMenu = item.slideMenu
 					this.navigation.push(menu)
 					event.parentItem = parentItem
 					event.level = level

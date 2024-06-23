@@ -9,6 +9,7 @@ import { Device } from '../types/device.types'
 import { Focuser, FocuserPreference } from '../types/focuser.types'
 import { ConnectionDetails, Equipment, HomePreference } from '../types/home.types'
 import { EMPTY_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
+import { EMPTY_MOUNT_PREFERENCE, Mount, MountPreference } from '../types/mount.types'
 import { Rotator, RotatorPreference } from '../types/rotator.types'
 import { EMPTY_PLATE_SOLVER_REQUEST, EMPTY_STAR_DETECTION_REQUEST, PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetectorType } from '../types/settings.types'
 import { FilterWheel, WheelPreference } from '../types/wheel.types'
@@ -64,6 +65,10 @@ export class PreferenceService {
 
 	cameraStartCaptureForAutoFocus(camera: Camera) {
 		return new PreferenceData<CameraStartCapture>(this.storage, `camera.${camera.name}.autoFocus`, () => this.cameraPreference(camera).get())
+	}
+
+	mountPreference(mount: Mount) {
+		return new PreferenceData<MountPreference>(this.storage, `mount.${mount.name}`, () => structuredClone(EMPTY_MOUNT_PREFERENCE))
 	}
 
 	plateSolverRequest(type: PlateSolverType) {

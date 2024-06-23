@@ -54,7 +54,7 @@ type EventMappedType = {
 	'GUIDER.MESSAGE_RECEIVED': GuiderMessageEvent<string>
 	'DARV.ELAPSED': DARVEvent
 	'TPPA.ELAPSED': TPPAEvent
-	'DATA.CHANGED': any
+	'DATA.CHANGED': never
 	'LOCATION.CHANGED': Location
 	'SEQUENCER.ELAPSED': SequencerEvent
 	'FLAT_WIZARD.ELAPSED': FlatWizardEvent
@@ -86,12 +86,12 @@ export class ElectronService {
 
 	constructor() {
 		if (this.isElectron) {
-			this.ipcRenderer = (window as any).require('electron').ipcRenderer
-			this.webFrame = (window as any).require('electron').webFrame
+			this.ipcRenderer = window.require('electron').ipcRenderer
+			this.webFrame = window.require('electron').webFrame
 
-			this.fs = (window as any).require('fs')
+			this.fs = window.require('fs')
 
-			this.childProcess = (window as any).require('child_process')
+			this.childProcess = window.require('child_process')
 			this.childProcess.exec('node -v')
 
 			// Notes :
@@ -109,6 +109,7 @@ export class ElectronService {
 	}
 
 	get isElectron() {
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		return !!(window && window.process && window.process.type)
 	}
 
@@ -118,7 +119,10 @@ export class ElectronService {
 
 	on<K extends keyof EventMappedType>(channel: K, listener: (arg: EventMappedType[K]) => void) {
 		console.info('listening to channel: %s', channel)
-		this.ipcRenderer.on(channel, (_, arg) => listener(arg))
+
+		this.ipcRenderer.on(channel, (_, arg) => {
+			listener(arg)
+		})
 	}
 
 	openFile(data?: OpenFile): Promise<string | undefined> {
@@ -187,35 +191,37 @@ export class ElectronService {
 	}
 
 	resizeWindow(size: number) {
-		this.send('WINDOW.RESIZE', Math.floor(size))
+		return this.send('WINDOW.RESIZE', Math.floor(size))
 	}
 
-	autoResizeWindow(timeout: number = 500): any {
+	async autoResizeWindow(timeout: number = 500): Promise<number | undefined> {
 		if (timeout <= 0) {
-			const size = document.getElementsByTagName('app-root')[0]?.getBoundingClientRect()?.height
+			const size = document.getElementsByTagName('app-root')[0].getBoundingClientRect().height
 
-			if (size > 0) {
-				this.resizeWindow(size)
+			if (size) {
+				await this.resizeWindow(size)
 			}
 		} else {
-			return setTimeout(() => this.autoResizeWindow(0), timeout)
+			return setTimeout(() => this.autoResizeWindow(0), timeout) as unknown as number
 		}
+
+		return undefined
 	}
 
 	pinWindow() {
-		this.send('WINDOW.PIN')
+		return this.send('WINDOW.PIN')
 	}
 
 	unpinWindow() {
-		this.send('WINDOW.UNPIN')
+		return this.send('WINDOW.UNPIN')
 	}
 
 	minimizeWindow() {
-		this.send('WINDOW.MINIMIZE')
+		return this.send('WINDOW.MINIMIZE')
 	}
 
 	maximizeWindow() {
-		this.send('WINDOW.MAXIMIZE')
+		return this.send('WINDOW.MAXIMIZE')
 	}
 
 	fullscreenWindow(enabled?: boolean): Promise<boolean> {
@@ -227,6 +233,6 @@ export class ElectronService {
 	}
 
 	calibrationChanged() {
-		this.send('CALIBRATION.CHANGED')
+		return this.send('CALIBRATION.CHANGED')
 	}
 }

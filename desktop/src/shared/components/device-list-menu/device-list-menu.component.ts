@@ -5,7 +5,7 @@ import { isGuideHead } from '../../types/camera.types'
 import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
 import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
-import { MenuItem } from '../menu-item/menu-item.component'
+import { MenuItem, SlideMenuItem } from '../menu-item/menu-item.component'
 
 export interface DeviceConnectionCommandEvent {
 	device: Device
@@ -19,7 +19,7 @@ export interface DeviceConnectionCommandEvent {
 })
 export class DeviceListMenuComponent {
 	@Input()
-	readonly model: MenuItem[] = []
+	readonly model: SlideMenuItem[] = []
 
 	@Input()
 	readonly modelAtFirst: boolean = true
@@ -45,13 +45,25 @@ export class DeviceListMenuComponent {
 	constructor(private prime: PrimeService) {}
 
 	show<T extends Device>(devices: T[], selected?: NoInfer<T>) {
-		const model: MenuItem[] = []
+		const model: SlideMenuItem[] = []
 
 		return new Promise<T | 'NONE' | undefined>((resolve) => {
 			if (devices.length <= 0) {
 				resolve(undefined)
 				this.prime.message('Please connect your equipment first!', 'warn')
 				return
+			}
+
+			const populateWithModel = () => {
+				for (const item of this.model) {
+					model.push({
+						...item,
+						command: (event) => {
+							item.command?.(event)
+							resolve(undefined)
+						},
+					})
+				}
 			}
 
 			const subscription = this.menu.visibleChange.subscribe((visible) => {
@@ -62,7 +74,7 @@ export class DeviceListMenuComponent {
 			})
 
 			if (this.model.length > 0 && this.modelAtFirst) {
-				model.push(...this.model)
+				populateWithModel()
 				model.push(SEPARATOR_MENU_ITEM)
 			}
 
@@ -71,6 +83,7 @@ export class DeviceListMenuComponent {
 					icon: 'mdi mdi-close',
 					label: 'None',
 					selected: !selected,
+					slideMenu: [],
 					command: () => {
 						resolve('NONE')
 					},
@@ -82,6 +95,7 @@ export class DeviceListMenuComponent {
 					label: device.name,
 					selected: selected === device,
 					disabled: this.disableIfDeviceIsNotConnected && !device.connected,
+					slideMenu: [],
 					toolbarMenu: [
 						{
 							icon: 'mdi ' + (device.connected ? 'mdi-close' : 'mdi-connection'),
@@ -89,8 +103,10 @@ export class DeviceListMenuComponent {
 							label: device.connected ? 'Disconnect' : 'Connect',
 							visible: !isGuideHead(device),
 							command: (event) => {
-								if (device.connected) this.deviceDisconnect.emit({ device, item: event.item! })
-								else this.deviceConnect.emit({ device, item: event.item! })
+								if (event.item) {
+									if (device.connected) this.deviceDisconnect.emit({ device, item: event.item })
+									else this.deviceConnect.emit({ device, item: event.item })
+								}
 							},
 						},
 					],
@@ -102,7 +118,7 @@ export class DeviceListMenuComponent {
 
 			if (this.model.length > 0 && !this.modelAtFirst) {
 				model.push(SEPARATOR_MENU_ITEM)
-				model.push(...this.model)
+				populateWithModel()
 			}
 
 			this.menu.model = model

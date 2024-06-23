@@ -644,6 +644,7 @@
 			<p-floatLabel>
 				<input
 					pInputText
+					[disabled]="skyObjectFilter.radius <= 0"
 					class="p-inputtext-sm border-0 w-full"
 					[value]="skyObjectFilter.rightAscension" />
 				<label>RA (h)</label>
@@ -653,6 +654,7 @@
 			<p-floatLabel>
 				<input
 					pInputText
+					[disabled]="skyObjectFilter.radius <= 0"
 					class="p-inputtext-sm border-0 w-full"
 					[value]="skyObjectFilter.declination" />
 				<label>DEC (°)</label>

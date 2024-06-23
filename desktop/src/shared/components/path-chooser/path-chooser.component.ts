@@ -35,8 +35,8 @@ export class PathChooserComponent implements OnChanges {
 	constructor(private electron: ElectronService) {}
 
 	ngOnChanges(changes: SimpleChanges) {
-		if (changes.path) {
-			this.path = changes.path.currentValue
+		if (changes['path']?.currentValue) {
+			this.path = changes['path'].currentValue as string
 		}
 	}
 

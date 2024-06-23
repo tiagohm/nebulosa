@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core'
-import { MenuItem, MenuItemCommandEvent } from '../menu-item/menu-item.component'
+import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.component'
 
 @Component({
 	selector: 'neb-dialog-menu',
@@ -14,7 +14,7 @@ export class DialogMenuComponent {
 	readonly visibleChange = new EventEmitter<boolean>()
 
 	@Input()
-	model: MenuItem[] = []
+	model: SlideMenuItem[] = []
 
 	@Input()
 	header?: string
@@ -42,7 +42,7 @@ export class DialogMenuComponent {
 			this.navigationHeader.push(this.header)
 
 			if (this.updateHeaderWithMenuLabel) {
-				this.header = event.item?.label
+				this.header = event.item.label
 			}
 		}
 	}

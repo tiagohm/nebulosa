@@ -1,3 +1,5 @@
+export type Coefficients = [number, number, number, number]
+
 export class BicubicInterpolationBase {
 	constructor(
 		protected M: number[],
@@ -34,21 +36,21 @@ export class BicubicInterpolationBase {
 	}
 
 	getRow(fp: number, j0: number, j2: number, j3: number) {
-		const p = new Array<number>(4)
+		const p: Coefficients = [0, 0, 0, 0]
 
 		if (j0 < 0) ++fp
-		p[0] = this.M[fp]
+		p[0] = this.M[fp]!
 
 		if (j0 >= 0) ++fp
-		p[1] = this.M[fp]
+		p[1] = this.M[fp]!
 
 		if (j2 < this.cols) {
-			p[2] = this.M[++fp]
+			p[2] = this.M[++fp]!
 			if (j3 < this.cols) ++fp
-			p[3] = this.M[fp]
+			p[3] = this.M[fp]!
 		} else {
-			p[2] = this.M[fp]
-			p[3] = this.M[fp - 1]
+			p[2] = this.M[fp]!
+			p[3] = this.M[fp - 1]!
 		}
 
 		return p
@@ -66,11 +68,11 @@ export class BicubicSplineInterpolation extends BicubicInterpolationBase {
 	interpolate(x: number, y: number) {
 		const { i1, j1, p0, p1, p2, p3 } = this.initXY(x, y)
 		const C = this.coefficients(x - j1)
-		const c = [this.spline(p0, C), this.spline(p1, C), this.spline(p2, C), this.spline(p3, C)]
+		const c: Coefficients = [this.spline(p0, C), this.spline(p1, C), this.spline(p2, C), this.spline(p3, C)]
 		return this.spline(c, this.coefficients(y - i1))
 	}
 
-	private coefficients(dx: number) {
+	private coefficients(dx: number): Coefficients {
 		const dx2 = dx * dx
 		const dx3 = dx2 * dx
 		const dx1_2 = dx / 2
@@ -81,7 +83,7 @@ export class BicubicSplineInterpolation extends BicubicInterpolationBase {
 		return [dx2 - dx3_2 - dx1_2, dx315 - dx22 - dx2_2 + 1, dx22 - dx315 + dx1_2, dx3_2 - dx2_2]
 	}
 
-	private spline(p: number[], C: number[]) {
+	private spline(p: Coefficients, C: Coefficients) {
 		const f12 = p[1] * C[1] + p[2] * C[2]
 		const f03 = p[0] * C[0] + p[3] * C[3]
 		return -f03 < f12 * this.clamp ? f12 + f03 : f12 / (C[1] + C[2])

@@ -8,7 +8,7 @@ import { ListboxChangeEvent } from 'primeng/listbox'
 import { OverlayPanel } from 'primeng/overlaypanel'
 import { Subscription, timer } from 'rxjs'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
 import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
 import { ApiService } from '../../shared/services/api.service'
@@ -16,7 +16,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { Angle, CONSTELLATIONS, CloseApproach, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType } from '../../shared/types/atlas.types'
+import { Angle, CONSTELLATIONS, CloseApproach, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, MinorPlanetSearchItem, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType } from '../../shared/types/atlas.types'
 import { Mount } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
@@ -385,7 +385,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 						const hours = ((value as number) + 12) % 24
 						const h = Math.trunc(hours)
 						const m = Math.trunc((hours - h) * 60)
-						return m === 0 ? `${TWO_DIGITS_FORMATTER.format(h)}` : ''
+						return m === 0 ? TWO_DIGITS_FORMATTER.format(h) : ''
 					},
 				},
 				grid: {
@@ -399,17 +399,20 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 	private static readonly DEFAULT_SATELLITE_FILTERS: SatelliteGroupType[] = ['AMATEUR', 'BEIDOU', 'GALILEO', 'GLO_OPS', 'GNSS', 'GPS_OPS', 'ONEWEB', 'SCIENCE', 'STARLINK', 'STATIONS', 'VISUAL']
 
-	readonly ephemerisModel: MenuItem[] = [
+	readonly ephemerisModel: SlideMenuItem[] = [
 		{
 			icon: 'mdi mdi-magnify',
 			label: 'Find sky objects around this object',
-			command: () => {
+			slideMenu: [],
+			command: async () => {
 				this.skyObjectFilter.rightAscension = this.bodyPosition.rightAscensionJ2000
 				this.skyObjectFilter.declination = this.bodyPosition.declinationJ2000
 				if (this.skyObjectFilter.radius <= 0) this.skyObjectFilter.radius = 4
+
 				this.tab = SkyAtlasTab.SKY_OBJECT
-				this.tabChanged()
-				this.filterSkyObject()
+
+				await this.tabChanged()
+				await this.filterSkyObject()
 			},
 		},
 	]
@@ -440,10 +443,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			},
 		})
 
-		electron.on('LOCATION.CHANGED', (event) => {
-			ngZone.run(() => {
+		electron.on('LOCATION.CHANGED', async (event) => {
+			await ngZone.run(() => {
 				this.location = event
-				this.refreshTab(true, true)
+				return this.refreshTab(true, true)
 			})
 		})
 
@@ -479,14 +482,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 		const now = new Date()
 		const initialDelay = 60 * 1000 - (now.getSeconds() * 1000 + now.getMilliseconds())
-		this.refreshTimer = timer(initialDelay, 60 * 1000).subscribe(() => {
+		this.refreshTimer = timer(initialDelay, 60 * 1000).subscribe(async () => {
 			if (!this.useManualDateTime) {
-				this.refreshTab()
+				await this.refreshTab()
 			}
 		})
 
 		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e.data)) as SkyAtlasData
+			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as SkyAtlasData
 			await this.loadTabFromData(data)
 		})
 	}
@@ -548,9 +551,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 	}
 
-	minorPlanetChoosen(event: ListboxChangeEvent) {
-		this.minorPlanetSearchText = event.value.pdes
-		this.searchMinorPlanet()
+	async minorPlanetChoosen(event: ListboxChangeEvent) {
+		this.minorPlanetSearchText = (event.value as MinorPlanetSearchItem).pdes
+		await this.searchMinorPlanet()
 		this.showMinorPlanetChoiceDialog = false
 	}
 
@@ -568,28 +571,28 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 	}
 
-	closeApproachChanged() {
+	async closeApproachChanged() {
 		if (this.closeApproach) {
 			this.minorPlanetSearchText = this.closeApproach.designation
 			this.minorPlanetTab = 0
-			this.searchMinorPlanet()
+			await this.searchMinorPlanet()
 		}
 	}
 
-	async starChanged() {
-		await this.refreshTab(false, true)
+	starChanged() {
+		return this.refreshTab(false, true)
 	}
 
-	async dsoChanged() {
-		await this.refreshTab(false, true)
+	dsoChanged() {
+		return this.refreshTab(false, true)
 	}
 
-	async skyObjectChanged() {
-		await this.refreshTab(false, true)
+	skyObjectChanged() {
+		return this.refreshTab(false, true)
 	}
 
-	async satelliteChanged() {
-		await this.refreshTab(false, true)
+	satelliteChanged() {
+		return this.refreshTab(false, true)
 	}
 
 	showSkyObjectFilterDialog() {
@@ -610,10 +613,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	}
 
 	async filterSkyObject() {
-		if (!this.skyObjectFilter) return
-
 		await this.searchSkyObject()
-
 		this.showSkyObjectFilter = false
 	}
 
@@ -639,14 +639,15 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	resetSatelliteFilter() {
 		const preference = this.preference.skyAtlasPreference.get()
 
-		preference.satellites = []
+		const satellites = []
 
 		for (const group of SATELLITE_GROUPS) {
 			const enabled = AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(group)
-			preference.satellites!.push({ group, enabled })
+			satellites.push({ group, enabled })
 			this.satelliteSearchGroup.set(group, enabled)
 		}
 
+		preference.satellites = satellites
 		this.preference.skyAtlasPreference.set(preference)
 	}
 
@@ -665,26 +666,26 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 	}
 
-	async mountGoTo() {
-		this.executeMount((mount) => {
-			this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+	mountGoTo() {
+		return this.executeMount((mount) => {
+			return this.api.mountGoTo(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
 		})
 	}
 
-	async mountSlew() {
-		this.executeMount((mount) => {
-			this.api.mountSlew(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+	mountSlew() {
+		return this.executeMount((mount) => {
+			return this.api.mountSlew(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
 		})
 	}
 
-	async mountSync() {
-		this.executeMount((mount) => {
-			this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
+	mountSync() {
+		return this.executeMount((mount) => {
+			return this.api.mountSync(mount, this.bodyPosition.rightAscension, this.bodyPosition.declination, false)
 		})
 	}
 
 	frame() {
-		this.browserWindow.openFraming({
+		return this.browserWindow.openFraming({
 			rightAscension: this.bodyPosition.rightAscensionJ2000,
 			declination: this.bodyPosition.declinationJ2000,
 		})
@@ -706,10 +707,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		this.app.subTitle = `${this.location.name} · ${moment(this.dateTime).format('YYYY-MM-DD HH:mm')}`
 
 		try {
-			if (this.tab === undefined) {
-				this.tab = SkyAtlasTab.SUN
-			}
-
 			// Sun.
 			if (this.tab === SkyAtlasTab.SUN) {
 				this.name = 'Sun'
@@ -772,7 +769,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				}
 			}
 			// Satellite.
-			else if (this.tab === SkyAtlasTab.SATELLITE) {
+			else {
 				this.tags = []
 
 				if (this.satellite) {
@@ -823,7 +820,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 					[twilight.civilDawn[1], 90],
 					[24.0, 90],
 				]
-				this.chart?.refresh()
+				this.chart.refresh()
 			}
 
 			if (this.refreshTabCount === 1 || refreshChart) {
@@ -887,7 +884,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			return
 		}
 
-		this.chart?.refresh()
+		this.chart.refresh()
 	}
 
 	private static belowZeroPoints(points: [number, number][]) {
@@ -898,21 +895,21 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 	}
 
-	private async executeMount(action: (mount: Mount) => void) {
+	private async executeMount(action: (mount: Mount) => void | Promise<void>) {
 		if (await this.prime.confirm('Are you sure that you want to proceed?')) {
-			return
+			return false
 		}
 
 		const mounts = await this.api.mounts()
 
 		if (mounts.length === 1) {
-			action(mounts[0])
+			await action(mounts[0])
 			return true
 		} else {
 			const mount = await this.deviceMenu.show(mounts)
 
 			if (mount && mount !== 'NONE' && mount.connected) {
-				action(mount)
+				await action(mount)
 				return true
 			}
 		}

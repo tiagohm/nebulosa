@@ -70,7 +70,7 @@ export interface TrendLineCurve extends Curve {
 	intersection: Point
 }
 
-export interface CurveChart {
+export interface AutoFocusChart {
 	predictedFocusPoint?: Point
 	minX: number
 	maxX: number
@@ -87,6 +87,6 @@ export interface AutoFocusEvent {
 	determinedFocusPoint?: Point
 	starCount: number
 	starHFD: number
-	chart?: CurveChart
+	chart?: AutoFocusChart
 	capture?: CameraCaptureEvent
 }

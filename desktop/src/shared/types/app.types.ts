@@ -50,12 +50,12 @@ export interface OpenWindow {
 	id: string
 	path: string
 	preference: WindowPreference
-	data?: any
+	data?: unknown
 }
 
 export interface CloseWindow {
 	id?: string
-	data?: any
+	data?: unknown
 }
 
 export interface OpenDirectory {
@@ -66,12 +66,12 @@ export interface OpenFile extends OpenDirectory {
 	filters?: Electron.FileFilter[]
 }
 
-export interface JsonFile<T = any> {
+export interface JsonFile<T = unknown> {
 	path?: string
 	json: T
 }
 
-export type SaveJson<T = any> = OpenFile & JsonFile<T>
+export interface SaveJson<T = unknown> extends OpenFile, JsonFile<T> {}
 
 export interface StoredWindowData {
 	[key: `window.${string}`]: {

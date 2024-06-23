@@ -1,4 +1,3 @@
-import { NotificationEvent } from './app.types'
 import { PierSide } from './mount.types'
 
 export type Angle = string | number
@@ -312,6 +311,11 @@ export interface Twilight {
 
 export type MinorPlanetKind = 'ASTEROID' | 'COMET'
 
+export interface MinorPlanetSearchItem {
+	name: string
+	pdes: string
+}
+
 export interface MinorPlanet {
 	found: boolean
 	name: string
@@ -321,7 +325,7 @@ export interface MinorPlanet {
 	neo: boolean
 	orbitType: string
 	parameters: OrbitalPhysicalParameter[]
-	searchItems: { name: string; pdes: string }[]
+	searchItems: MinorPlanetSearchItem[]
 }
 
 export interface OrbitalPhysicalParameter {

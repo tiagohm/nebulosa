@@ -22,11 +22,11 @@ export interface CompanionDevice<D = Device> extends Device {
 }
 
 export interface INDIMessageEvent extends DeviceMessageEvent<Device> {
-	property?: INDIProperty<any>
+	property?: INDIProperty
 	message?: string
 }
 
-export interface INDIProperty<T> {
+export interface INDIProperty<T = never> {
 	name: string
 	label: string
 	type: INDIPropertyType
@@ -52,7 +52,7 @@ export interface INDISendProperty {
 
 export interface INDISendPropertyItem {
 	name: string
-	value: any
+	value: unknown
 }
 
 export interface INDIDeviceMessage {

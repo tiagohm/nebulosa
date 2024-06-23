@@ -1,7 +1,7 @@
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
-import { MenuItem, MenuItemCommandEvent } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem, MenuItemCommandEvent, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -75,25 +75,27 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	showDitherDialog = false
 	showLiveStackingDialog = false
 
-	calibrationModel: MenuItem[] = []
+	calibrationModel: SlideMenuItem[] = []
 
-	private readonly ditherMenuItem: MenuItem = {
+	private readonly ditherMenuItem: SlideMenuItem = {
 		icon: 'icomoon random-dither',
 		label: 'Dither',
+		slideMenu: [],
 		command: () => {
 			this.showDitherDialog = true
 		},
 	}
 
-	private readonly liveStackingMenuItem: MenuItem = {
+	private readonly liveStackingMenuItem: SlideMenuItem = {
 		icon: 'mdi mdi-image-multiple',
 		label: 'Live Stacking',
+		slideMenu: [],
 		command: () => {
 			this.showLiveStackingDialog = true
 		},
 	}
 
-	private readonly snoopDevicesMenuItem: MenuItem = {
+	private readonly snoopDevicesMenuItem: SlideMenuItem = {
 		icon: 'mdi mdi-connection',
 		label: 'Snoop Devices',
 		slideMenu: [
@@ -120,7 +122,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		],
 	}
 
-	readonly cameraModel: MenuItem[] = [this.ditherMenuItem, this.liveStackingMenuItem, this.snoopDevicesMenuItem]
+	readonly cameraModel: SlideMenuItem[] = [this.ditherMenuItem, this.liveStackingMenuItem, this.snoopDevicesMenuItem]
 
 	hasDewHeater = false
 	setpointTemperature = 0.0
@@ -165,7 +167,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	]
 
 	@ViewChild('cameraExposure')
-	private readonly cameraExposure!: CameraExposureComponent
+	private readonly cameraExposure?: CameraExposureComponent
 
 	get status() {
 		return this.cameraExposure?.state ?? 'IDLE'
@@ -185,7 +187,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		private pinger: Pinger,
 		ngZone: NgZone,
 	) {
-		if (app) app.title = 'Camera'
+		app.title = 'Camera'
 
 		electron.on('CAMERA.UPDATED', (event) => {
 			if (event.device.id === this.camera.id) {
@@ -207,7 +209,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		electron.on('CAMERA.CAPTURE_ELAPSED', (event) => {
 			if (event.camera.id === this.camera.id) {
 				ngZone.run(() => {
-					this.running = this.cameraExposure.handleCameraCaptureEvent(event)
+					this.running = this.cameraExposure?.handleCameraCaptureEvent(event) ?? false
 				})
 			}
 		})
@@ -215,7 +217,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		electron.on('MOUNT.UPDATED', (event) => {
 			if (event.device.id === this.equipment.mount?.id) {
 				ngZone.run(() => {
-					Object.assign(this.equipment.mount!, event.device)
+					if (this.equipment.mount) {
+						Object.assign(this.equipment.mount, event.device)
+					}
 				})
 			}
 		})
@@ -223,7 +227,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		electron.on('WHEEL.UPDATED', (event) => {
 			if (event.device.id === this.equipment.wheel?.id) {
 				ngZone.run(() => {
-					Object.assign(this.equipment.wheel!, event.device)
+					if (this.equipment.wheel) {
+						Object.assign(this.equipment.wheel, event.device)
+					}
 				})
 			}
 		})
@@ -231,7 +237,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		electron.on('FOCUSER.UPDATED', (event) => {
 			if (event.device.id === this.equipment.focuser?.id) {
 				ngZone.run(() => {
-					Object.assign(this.equipment.focuser!, event.device)
+					if (this.equipment.focuser) {
+						Object.assign(this.equipment.focuser, event.device)
+					}
 				})
 			}
 		})
@@ -239,13 +247,15 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		electron.on('ROTATOR.UPDATED', (event) => {
 			if (event.device.id === this.equipment.rotator?.id) {
 				ngZone.run(() => {
-					Object.assign(this.equipment.rotator!, event.device)
+					if (this.equipment.rotator) {
+						Object.assign(this.equipment.rotator, event.device)
+					}
 				})
 			}
 		})
 
-		electron.on('CALIBRATION.CHANGED', () => {
-			ngZone.run(() => this.loadCalibrationGroups())
+		electron.on('CALIBRATION.CHANGED', async () => {
+			await ngZone.run(() => this.loadCalibrationGroups())
 		})
 
 		electron.on('ROI.SELECTED', (event) => {
@@ -264,12 +274,12 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 
 	ngAfterContentInit() {
 		this.route.queryParams.subscribe(async (e) => {
-			const decodedData = JSON.parse(decodeURIComponent(e.data))
+			const decodedData = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
 
 			if (this.app.modal) {
-				await this.loadCameraStartCaptureForDialogMode(decodedData)
+				await this.loadCameraStartCaptureForDialogMode(decodedData as CameraDialogInput)
 			} else {
-				await this.cameraChanged(decodedData)
+				await this.cameraChanged(decodedData as Camera)
 			}
 
 			this.pinger.register(this, 30000)
@@ -283,16 +293,16 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	}
 
 	@HostListener('window:unload')
-	async ngOnDestroy() {
+	ngOnDestroy() {
 		this.pinger.unregister(this)
 
 		if (this.mode === 'CAPTURE') {
-			await this.abortCapture()
+			void this.abortCapture()
 		}
 	}
 
 	ping() {
-		this.api.cameraListen(this.camera)
+		return this.api.cameraListen(this.camera)
 	}
 
 	private async loadCameraStartCaptureForDialogMode(data?: CameraDialogInput) {
@@ -328,9 +338,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 			this.update()
 		}
 
-		if (this.app) {
-			this.app.subTitle = camera?.name ?? ''
-		}
+		this.app.subTitle = camera?.name ?? ''
+
 		if (this.mode !== 'CAPTURE') {
 			this.app.subTitle += ` · ${this.mode}`
 		}
@@ -345,18 +354,21 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		}
 
 		const makeItem = (selected: boolean, command: () => void, device?: Device) => {
-			return <MenuItem>{
+			return {
 				icon: device ? 'mdi mdi-connection' : 'mdi mdi-close',
 				label: device?.name ?? 'None',
 				selected,
-				command: async (event: MenuItemCommandEvent) => {
+				slideMenu: [],
+				command: (event: MenuItemCommandEvent) => {
 					command()
 					buildStartTooltip()
 					this.preference.equipmentForDevice(this.camera).set(this.equipment)
 					event.parentItem?.slideMenu?.forEach((item) => (item.selected = item === event.item))
 				},
-			}
+			} as SlideMenuItem
 		}
+
+		const slideMenu = this.snoopDevicesMenuItem.slideMenu
 
 		// MOUNT
 
@@ -367,10 +379,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 			return makeItem(this.equipment.mount?.name === mount?.name, () => (this.equipment.mount = mount), mount)
 		}
 
-		this.snoopDevicesMenuItem.slideMenu![0].slideMenu!.push(makeMountItem())
+		slideMenu[0]?.slideMenu.push(makeMountItem())
 
 		for (const mount of mounts) {
-			this.snoopDevicesMenuItem.slideMenu![0].slideMenu!.push(makeMountItem(mount))
+			slideMenu[0]?.slideMenu.push(makeMountItem(mount))
 		}
 
 		// FILTER WHEEL
@@ -382,10 +394,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 			return makeItem(this.equipment.wheel?.name === wheel?.name, () => (this.equipment.wheel = wheel), wheel)
 		}
 
-		this.snoopDevicesMenuItem.slideMenu![1].slideMenu!.push(makeWheelItem())
+		slideMenu[1]?.slideMenu.push(makeWheelItem())
 
 		for (const wheel of wheels) {
-			this.snoopDevicesMenuItem.slideMenu![1].slideMenu!.push(makeWheelItem(wheel))
+			slideMenu[1]?.slideMenu.push(makeWheelItem(wheel))
 		}
 
 		// FOCUSER
@@ -397,10 +409,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 			return makeItem(this.equipment.focuser?.name === focuser?.name, () => (this.equipment.focuser = focuser), focuser)
 		}
 
-		this.snoopDevicesMenuItem.slideMenu![2].slideMenu!.push(makeFocuserItem())
+		slideMenu[2]?.slideMenu.push(makeFocuserItem())
 
 		for (const focuser of focusers) {
-			this.snoopDevicesMenuItem.slideMenu![2].slideMenu!.push(makeFocuserItem(focuser))
+			slideMenu[2]?.slideMenu.push(makeFocuserItem(focuser))
 		}
 
 		// ROTATOR
@@ -412,10 +424,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 			return makeItem(this.equipment.rotator?.name === rotator?.name, () => (this.equipment.rotator = rotator), rotator)
 		}
 
-		this.snoopDevicesMenuItem.slideMenu![3].slideMenu!.push(makeRotatorItem())
+		slideMenu[3]?.slideMenu.push(makeRotatorItem())
 
 		for (const rotator of rotators) {
-			this.snoopDevicesMenuItem.slideMenu![3].slideMenu!.push(makeRotatorItem(rotator))
+			slideMenu[3]?.slideMenu.push(makeRotatorItem(rotator))
 		}
 
 		buildStartTooltip()
@@ -430,23 +442,25 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		}
 
 		const makeItem = (name?: string) => {
-			return <MenuItem>{
+			return {
 				label: name ?? 'None',
 				icon: name ? 'mdi mdi-wrench' : 'mdi mdi-close',
 				selected: this.request.calibrationGroup === name,
+				slideMenu: [],
 				command: () => {
 					this.request.calibrationGroup = name
 					this.savePreference()
-					this.loadCalibrationGroups()
+					void this.loadCalibrationGroups()
 				},
-			}
+			} as SlideMenuItem
 		}
 
-		const menu: MenuItem[] = []
+		const menu: SlideMenuItem[] = []
 
 		menu.push({
 			icon: 'mdi mdi-wrench',
 			label: 'Open Calibration',
+			slideMenu: [],
 			command: () => {
 				return this.browserWindow.openCalibration({ bringToFront: true })
 			},
@@ -464,9 +478,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 
 	connect() {
 		if (this.camera.connected) {
-			this.api.cameraDisconnect(this.camera)
+			return this.api.cameraDisconnect(this.camera)
 		} else {
-			this.api.cameraConnect(this.camera)
+			return this.api.cameraConnect(this.camera)
 		}
 	}
 
@@ -503,21 +517,19 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 
 	applySetpointTemperature() {
 		this.savePreference()
-		this.api.cameraSetpointTemperature(this.camera, this.setpointTemperature)
+		return this.api.cameraSetpointTemperature(this.camera, this.setpointTemperature)
 	}
 
 	toggleCooler() {
-		this.api.cameraCooler(this.camera, this.camera.cooler)
+		return this.api.cameraCooler(this.camera, this.camera.cooler)
 	}
 
 	fullsize() {
-		if (this.camera) {
-			this.request.x = this.camera.minX
-			this.request.y = this.camera.minY
-			this.request.width = this.camera.maxWidth
-			this.request.height = this.camera.maxHeight
-			this.savePreference()
-		}
+		this.request.x = this.camera.minX
+		this.request.y = this.camera.minY
+		this.request.width = this.camera.maxWidth
+		this.request.height = this.camera.maxHeight
+		this.savePreference()
 	}
 
 	openCameraImage() {
@@ -654,12 +666,12 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	}
 
 	apply() {
-		this.app.close(this.makeCameraStartCapture())
+		return this.app.close(this.makeCameraStartCapture())
 	}
 
 	private loadPreference() {
 		if (this.mode === 'CAPTURE' && this.camera.name) {
-			const preference = this.preference.cameraPreference(this.camera).get()
+			const preference: Partial<CameraPreference> = this.preference.cameraPreference(this.camera).get()
 
 			this.request.autoSave = preference.autoSave ?? false
 			this.savePath = preference.savePath ?? ''
@@ -682,14 +694,18 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 			this.request.offset = preference.offset ?? 0
 			this.request.frameFormat = preference.frameFormat ?? (this.camera.frameFormats[0] || '')
 			this.request.calibrationGroup = preference.calibrationGroup
-
-			if (preference.dither) {
-				Object.assign(this.request.dither, preference.dither)
-			}
-
-			if (preference.liveStacking) {
-				Object.assign(this.request.liveStacking, preference.liveStacking)
-			}
+			this.request.dither.enabled = preference.dither?.enabled ?? false
+			this.request.dither.amount = preference.dither?.amount ?? 1.5
+			this.request.dither.raOnly = preference.dither?.raOnly ?? false
+			this.request.dither.afterExposures = preference.dither?.afterExposures ?? 1
+			this.request.liveStacking.enabled = preference.liveStacking?.enabled ?? false
+			this.request.liveStacking.type = preference.liveStacking?.type ?? 'SIRIL'
+			this.request.liveStacking.executablePath = preference.liveStacking?.executablePath ?? ''
+			this.request.liveStacking.dark = preference.liveStacking?.dark
+			this.request.liveStacking.flat = preference.liveStacking?.flat
+			this.request.liveStacking.bias = preference.liveStacking?.bias
+			this.request.liveStacking.use32Bits = preference.liveStacking?.use32Bits ?? false
+			this.request.liveStacking.slot = preference.liveStacking?.slot ?? 1
 
 			Object.assign(this.equipment, this.preference.equipmentForDevice(this.camera).get())
 		}

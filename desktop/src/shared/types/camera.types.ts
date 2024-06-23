@@ -195,7 +195,6 @@ export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {
 		enabled: false,
 		type: 'SIRIL',
 		executablePath: '',
-		rotate: 0,
 		use32Bits: false,
 		slot: 1,
 	},
@@ -293,7 +292,6 @@ export interface LiveStackingRequest {
 	dark?: string
 	flat?: string
 	bias?: string
-	rotate: number
 	use32Bits: boolean
 	slot: number
 }
@@ -302,7 +300,6 @@ export const EMPTY_LIVE_STACKING_REQUEST: LiveStackingRequest = {
 	enabled: false,
 	type: 'SIRIL',
 	executablePath: '',
-	rotate: 0,
 	use32Bits: false,
 	slot: 1,
 }

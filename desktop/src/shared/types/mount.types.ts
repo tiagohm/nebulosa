@@ -97,6 +97,18 @@ export interface MountRemoteControlDialog {
 	data: MountRemoteControl[]
 }
 
+export interface MountPreference {
+	targetCoordinateType: TargetCoordinateType
+	targetRightAscension: Angle
+	targetDeclination: Angle
+}
+
+export const EMPTY_MOUNT_PREFERENCE: MountPreference = {
+	targetCoordinateType: 'JNOW',
+	targetRightAscension: '',
+	targetDeclination: '',
+}
+
 export function isMount(device?: Device): device is Mount {
 	return !!device && 'tracking' in device
 }

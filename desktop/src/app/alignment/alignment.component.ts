@@ -71,7 +71,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 	@ViewChild('cameraExposure')
 	private readonly cameraExposure!: CameraExposureComponent
 
-	private autoResizeTimeout?: any
+	private autoResizeTimeout?: number
 
 	constructor(
 		app: AppComponent,
@@ -171,9 +171,9 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 			})
 		})
 
-		electron.on('TPPA.ELAPSED', (event) => {
-			if (event.camera.id === this.camera?.id) {
-				ngZone.run(() => {
+		electron.on('TPPA.ELAPSED', async (event) => {
+			if (event.camera.id === this.camera.id) {
+				await ngZone.run(async () => {
 					this.status = event.state
 					this.running = event.state !== 'FINISHED'
 					this.pausingOrPaused = event.state === 'PAUSING' || event.state === 'PAUSED'
@@ -188,10 +188,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 						this.tppaAltitudeErrorDirection = event.altitudeErrorDirection
 						this.tppaTotalError = event.totalError
 						clearTimeout(this.autoResizeTimeout)
-						this.autoResizeTimeout = electron.autoResizeWindow()
+						this.autoResizeTimeout = await electron.autoResizeWindow()
 					} else if (event.state === 'FINISHED') {
 						this.cameraExposure.reset()
-						electron.autoResizeWindow()
+						await electron.autoResizeWindow()
 					} else if (event.state === 'SOLVED' || event.state === 'SLEWED') {
 						this.tppaFailed = false
 						this.tppaRightAscension = event.rightAscension
@@ -208,7 +208,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 		})
 
 		electron.on('DARV.ELAPSED', (event) => {
-			if (event.camera.id === this.camera?.id) {
+			if (event.camera.id === this.camera.id) {
 				ngZone.run(() => {
 					this.status = event.state
 					this.running = this.cameraExposure.handleCameraCaptureEvent(event.capture)
@@ -234,22 +234,22 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	@HostListener('window:unload')
-	async ngOnDestroy() {
+	ngOnDestroy() {
 		this.pinger.unregister(this)
 
-		this.darvStop()
-		this.tppaStop()
+		void this.darvStop()
+		void this.tppaStop()
 	}
 
-	ping() {
-		if (this.camera.id) this.api.cameraListen(this.camera)
-		if (this.mount.id) this.api.mountListen(this.mount)
-		if (this.guideOutput.id) this.api.guideOutputListen(this.guideOutput)
+	async ping() {
+		if (this.camera.id) await this.api.cameraListen(this.camera)
+		if (this.mount.id) await this.api.mountListen(this.mount)
+		if (this.guideOutput.id) await this.api.guideOutputListen(this.guideOutput)
 	}
 
 	async cameraChanged() {
 		if (this.camera.id) {
-			this.ping()
+			await this.ping()
 
 			const camera = await this.api.camera(this.camera.id)
 			Object.assign(this.camera, camera)
@@ -258,7 +258,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	async mountChanged() {
 		if (this.mount.id) {
-			this.ping()
+			await this.ping()
 
 			const mount = await this.api.mount(this.mount.id)
 			Object.assign(this.mount, mount)
@@ -268,7 +268,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	async guideOutputChanged() {
 		if (this.guideOutput.id) {
-			this.ping()
+			await this.ping()
 
 			const guideOutput = await this.api.guideOutput(this.guideOutput.id)
 			Object.assign(this.guideOutput, guideOutput)

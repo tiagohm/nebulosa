@@ -1,8 +1,8 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { AfterContentInit, Component, NgZone, ViewChild } from '@angular/core'
 import { dirname } from 'path'
 import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -25,12 +25,16 @@ type MappedDevice = {
 	ROTATOR: Rotator
 }
 
+function scrollPageOf(element: Element) {
+	return parseInt(element.getAttribute('scroll-page') || '0')
+}
+
 @Component({
 	selector: 'app-home',
 	templateUrl: './home.component.html',
 	styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements AfterContentInit, OnDestroy {
+export class HomeComponent implements AfterContentInit {
 	@ViewChild('deviceMenu')
 	private readonly deviceMenu!: DeviceListMenuComponent
 
@@ -119,12 +123,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
 	readonly deviceModel: MenuItem[] = []
 
-	readonly imageModel: MenuItem[] = [
+	readonly imageModel: SlideMenuItem[] = [
 		{
 			icon: 'mdi mdi-image-plus',
 			label: 'Open new image',
+			slideMenu: [],
 			command: () => {
-				this.openImage(true)
+				return this.openImage(true)
 			},
 		},
 	]
@@ -245,10 +250,10 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 			},
 		)
 
-		electron.on('CONNECTION.CLOSED', (event) => {
+		electron.on('CONNECTION.CLOSED', async (event) => {
 			if (this.connection?.id === event.id) {
-				ngZone.run(() => {
-					this.updateConnection()
+				await ngZone.run(() => {
+					return this.updateConnection()
 				})
 			}
 		})
@@ -272,9 +277,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 			this.rotators = await this.api.rotators()
 		}
 	}
-
-	@HostListener('window:unload')
-	ngOnDestroy() {}
 
 	addConnection() {
 		this.newConnection = [structuredClone(EMPTY_CONNECTION_DETAILS), undefined]
@@ -339,13 +341,13 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 
 	async disconnect() {
 		try {
-			if (this.connection && this.connection.connected) {
-				await this.api.disconnect(this.connection.id!)
+			if (this.connection?.id && this.connection.connected) {
+				await this.api.disconnect(this.connection.id)
 			}
 		} catch (e) {
 			console.error(e)
 		} finally {
-			this.updateConnection()
+			await this.updateConnection()
 		}
 	}
 
@@ -353,12 +355,12 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 		return this.cameras.find((e) => e.id === id) || this.mounts.find((e) => e.id === id) || this.wheels.find((e) => e.id === id) || this.focusers.find((e) => e.id === id) || this.rotators.find((e) => e.id === id)
 	}
 
-	protected async deviceConnected(event: DeviceConnectionCommandEvent) {
-		DeviceChooserComponent.handleConnectDevice(this.api, event.device, event.item)
+	protected deviceConnected(event: DeviceConnectionCommandEvent) {
+		return DeviceChooserComponent.handleConnectDevice(this.api, event.device, event.item)
 	}
 
-	protected async deviceDisconnected(event: DeviceConnectionCommandEvent) {
-		DeviceChooserComponent.handleDisconnectDevice(this.api, event.device, event.item)
+	protected deviceDisconnected(event: DeviceConnectionCommandEvent) {
+		return DeviceChooserComponent.handleDisconnectDevice(this.api, event.device, event.item)
 	}
 
 	private async openDevice<K extends keyof MappedDevice>(type: K) {
@@ -378,26 +380,26 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 		const device = await this.deviceMenu.show(devices)
 
 		if (device && device !== 'NONE') {
-			this.openDeviceWindow(type, device as any)
+			await this.openDeviceWindow(type, device as never)
 		}
 	}
 
-	private openDeviceWindow<K extends keyof MappedDevice>(type: K, device: MappedDevice[K]) {
+	private async openDeviceWindow<K extends keyof MappedDevice>(type: K, device: MappedDevice[K]) {
 		switch (type) {
 			case 'MOUNT':
-				this.browserWindow.openMount(device as Mount, { bringToFront: true })
+				await this.browserWindow.openMount(device as Mount, { bringToFront: true })
 				break
 			case 'CAMERA':
-				this.browserWindow.openCamera(device as Camera, { bringToFront: true })
+				await this.browserWindow.openCamera(device as Camera, { bringToFront: true })
 				break
 			case 'FOCUSER':
-				this.browserWindow.openFocuser(device as Focuser, { bringToFront: true })
+				await this.browserWindow.openFocuser(device as Focuser, { bringToFront: true })
 				break
 			case 'WHEEL':
-				this.browserWindow.openWheel(device as FilterWheel, { bringToFront: true })
+				await this.browserWindow.openWheel(device as FilterWheel, { bringToFront: true })
 				break
 			case 'ROTATOR':
-				this.browserWindow.openRotator(device as Rotator, { bringToFront: true })
+				await this.browserWindow.openRotator(device as Rotator, { bringToFront: true })
 				break
 		}
 	}
@@ -410,61 +412,61 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 			if (path) {
 				preference.imagePath = dirname(path)
 				this.preference.homePreference.set(preference)
-				this.browserWindow.openImage({ path, source: 'PATH' })
+				await this.browserWindow.openImage({ path, source: 'PATH' })
 			}
 		} else {
 			const camera = await this.imageMenu.show(this.cameras)
 
 			if (camera && camera !== 'NONE') {
-				this.browserWindow.openCameraImage(camera)
+				await this.browserWindow.openCameraImage(camera)
 			}
 		}
 	}
 
-	open(type: HomeWindowType) {
+	async open(type: HomeWindowType) {
 		switch (type) {
 			case 'MOUNT':
 			case 'CAMERA':
 			case 'FOCUSER':
 			case 'WHEEL':
 			case 'ROTATOR':
-				this.openDevice(type)
+				await this.openDevice(type)
 				break
 			case 'GUIDER':
-				this.browserWindow.openGuider({ bringToFront: true })
+				await this.browserWindow.openGuider({ bringToFront: true })
 				break
 			case 'SKY_ATLAS':
-				this.browserWindow.openSkyAtlas(undefined, { bringToFront: true })
+				await this.browserWindow.openSkyAtlas(undefined, { bringToFront: true })
 				break
 			case 'FRAMING':
-				this.browserWindow.openFraming(undefined, { bringToFront: true })
+				await this.browserWindow.openFraming(undefined, { bringToFront: true })
 				break
 			case 'ALIGNMENT':
-				this.browserWindow.openAlignment({ bringToFront: true })
+				await this.browserWindow.openAlignment({ bringToFront: true })
 				break
 			case 'SEQUENCER':
-				this.browserWindow.openSequencer({ bringToFront: true })
+				await this.browserWindow.openSequencer({ bringToFront: true })
 				break
 			case 'AUTO_FOCUS':
-				this.browserWindow.openAutoFocus({ bringToFront: true })
+				await this.browserWindow.openAutoFocus({ bringToFront: true })
 				break
 			case 'FLAT_WIZARD':
-				this.browserWindow.openFlatWizard({ bringToFront: true })
+				await this.browserWindow.openFlatWizard({ bringToFront: true })
 				break
 			case 'INDI':
-				this.browserWindow.openINDI(undefined, { bringToFront: true })
+				await this.browserWindow.openINDI(undefined, { bringToFront: true })
 				break
 			case 'IMAGE':
-				this.openImage()
+				await this.openImage()
 				break
 			case 'SETTINGS':
-				this.browserWindow.openSettings()
+				await this.browserWindow.openSettings()
 				break
 			case 'CALCULATOR':
-				this.browserWindow.openCalculator()
+				await this.browserWindow.openCalculator()
 				break
 			case 'ABOUT':
-				this.browserWindow.openAbout()
+				await this.browserWindow.openAbout()
 				break
 		}
 	}
@@ -472,7 +474,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 	private async updateConnection() {
 		if (this.connection && this.connection.id) {
 			try {
-				const status = await this.api.connectionStatus(this.connection.id!)
+				const status = await this.api.connectionStatus(this.connection.id)
 
 				if (status && !this.connection.connected) {
 					this.connection.connectedAt = Date.now()
@@ -515,10 +517,6 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 		}
 	}
 
-	private scrollPageOf(element: Element) {
-		return parseInt(element.getAttribute('scroll-page') || '0')
-	}
-
 	scrolled(event: Event) {
 		function isVisible(element: Element) {
 			const bound = element.getBoundingClientRect()
@@ -533,7 +531,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 			const child = scrollChidren[i]
 
 			if (isVisible(child)) {
-				page = Math.max(page, this.scrollPageOf(child))
+				page = Math.max(page, scrollPageOf(child))
 			}
 		}
 
@@ -552,7 +550,7 @@ export class HomeComponent implements AfterContentInit, OnDestroy {
 		for (let i = 0; i < scrollChidren.length; i++) {
 			const child = scrollChidren[i]
 
-			if (this.scrollPageOf(child) === page) {
+			if (scrollPageOf(child) === page) {
 				child.scrollIntoView({ behavior: 'smooth' })
 				break
 			}

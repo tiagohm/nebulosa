@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, Output, ViewChild } from '@angular/core'
 import * as L from 'leaflet'
 
 @Component({
@@ -58,20 +58,18 @@ export class MapComponent implements AfterViewInit, OnChanges {
 		tiles.addTo(this.map)
 	}
 
-	ngOnChanges(changes: SimpleChanges) {
+	ngOnChanges() {
 		const coordinate: L.LatLngLiteral = { lat: this.latitude, lng: this.longitude }
-		this.map?.setView(coordinate)
+		this.map.setView(coordinate)
 		this.updateMarker(coordinate)
 	}
 
 	refresh() {
-		this.map?.invalidateSize()
+		this.map.invalidateSize()
 	}
 
 	private updateMarker(coordinate: L.LatLngExpression) {
-		if (this.map) {
-			this.marker?.remove()
-			this.marker = new L.Marker(coordinate, { icon: this.markerIcon }).addTo(this.map)
-		}
+		this.marker?.remove()
+		this.marker = new L.Marker(coordinate, { icon: this.markerIcon }).addTo(this.map)
 	}
 }

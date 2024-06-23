@@ -9,17 +9,17 @@ export class HistogramComponent implements AfterViewInit {
 	@ViewChild('canvas')
 	private readonly canvas!: ElementRef<HTMLCanvasElement>
 
-	private ctx!: CanvasRenderingContext2D
+	private ctx?: CanvasRenderingContext2D | null
 
 	ngAfterViewInit() {
-		this.ctx = this.canvas.nativeElement.getContext('2d')!
+		this.ctx = this.canvas.nativeElement.getContext('2d')
 	}
 
 	update(data: number[], dontClear: boolean = false) {
 		const canvas = this.canvas.nativeElement
 
 		if (!dontClear || !data.length) {
-			this.ctx.clearRect(0, 0, canvas.width, canvas.height)
+			this.ctx?.clearRect(0, 0, canvas.width, canvas.height)
 		}
 
 		if (!data.length) {
@@ -32,26 +32,28 @@ export class HistogramComponent implements AfterViewInit {
 	}
 
 	private drawColorGraph(max: number, data: number[], color: string | CanvasGradient | CanvasPattern) {
-		const canvas = this.canvas.nativeElement
+		if (this.ctx) {
+			const canvas = this.canvas.nativeElement
 
-		const graphHeight = canvas.height
-		const graphWidth = canvas.width
-		const graphX = 0
-		const graphY = canvas.height
+			const graphHeight = canvas.height
+			const graphWidth = canvas.width
+			const graphX = 0
+			const graphY = canvas.height
 
-		this.ctx.fillStyle = color
-		this.ctx.beginPath()
-		this.ctx.moveTo(graphX, graphHeight)
+			this.ctx.fillStyle = color
+			this.ctx.beginPath()
+			this.ctx.moveTo(graphX, graphHeight)
 
-		for (let i = 0; i < data.length; i++) {
-			const value = data[i]
-			const drawHeight = Math.round((value / max) * graphHeight)
-			const drawX = graphX + (graphWidth / (data.length - 1)) * i
-			this.ctx.lineTo(drawX, graphY - drawHeight)
+			for (let i = 0; i < data.length; i++) {
+				const value = data[i]
+				const drawHeight = Math.round((value / max) * graphHeight)
+				const drawX = graphX + (graphWidth / (data.length - 1)) * i
+				this.ctx.lineTo(drawX, graphY - drawHeight)
+			}
+
+			this.ctx.lineTo(graphX + graphWidth, graphY)
+			this.ctx.closePath()
+			this.ctx.fill()
 		}
-
-		this.ctx.lineTo(graphX + graphWidth, graphY)
-		this.ctx.closePath()
-		this.ctx.fill()
 	}
 }

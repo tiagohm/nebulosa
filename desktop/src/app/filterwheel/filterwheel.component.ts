@@ -67,17 +67,17 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		private pinger: Pinger,
 		ngZone: NgZone,
 	) {
-		if (app) app.title = 'Filter Wheel'
+		app.title = 'Filter Wheel'
 
-		electron.on('WHEEL.UPDATED', (event) => {
+		electron.on('WHEEL.UPDATED', async (event) => {
 			if (event.device.id === this.wheel.id) {
-				ngZone.run(() => {
+				await ngZone.run(async () => {
 					const wasConnected = this.wheel.connected
 					Object.assign(this.wheel, event.device)
 					this.update()
 
 					if (wasConnected !== event.device.connected) {
-						electron.autoResizeWindow(1000)
+						await electron.autoResizeWindow(1000)
 					}
 				})
 			}
@@ -94,7 +94,9 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		electron.on('FOCUSER.UPDATED', (event) => {
 			if (event.device.id === this.focuser?.id) {
 				ngZone.run(() => {
-					Object.assign(this.focuser!, event.device)
+					if (this.focuser) {
+						Object.assign(this.focuser, event.device)
+					}
 				})
 			}
 		})
@@ -114,64 +116,64 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 			}
 		})
 
-		this.subscription = this.filterChangedPublisher.pipe(debounceTime(1500)).subscribe((filter) => {
+		this.subscription = this.filterChangedPublisher.pipe(debounceTime(1500)).subscribe(async (filter) => {
 			this.savePreference()
-			this.electron.send('WHEEL.RENAMED', { wheel: this.wheel, filter })
+			await this.electron.send('WHEEL.RENAMED', { wheel: this.wheel, filter })
 		})
 
 		hotkeys('enter', (event) => {
 			event.preventDefault()
-			this.moveToSelectedFilter()
+			void this.moveToSelectedFilter()
 		})
 		hotkeys('up', (event) => {
 			event.preventDefault()
-			this.moveUp()
+			void this.moveUp()
 		})
 		hotkeys('down', (event) => {
 			event.preventDefault()
-			this.moveDown()
+			void this.moveDown()
 		})
 		hotkeys('1', (event) => {
 			event.preventDefault()
-			this.moveToPosition(1)
+			void this.moveToPosition(1)
 		})
 		hotkeys('2', (event) => {
 			event.preventDefault()
-			this.moveToPosition(2)
+			void this.moveToPosition(2)
 		})
 		hotkeys('3', (event) => {
 			event.preventDefault()
-			this.moveToPosition(3)
+			void this.moveToPosition(3)
 		})
 		hotkeys('4', (event) => {
 			event.preventDefault()
-			this.moveToPosition(4)
+			void this.moveToPosition(4)
 		})
 		hotkeys('5', (event) => {
 			event.preventDefault()
-			this.moveToPosition(5)
+			void this.moveToPosition(5)
 		})
 		hotkeys('6', (event) => {
 			event.preventDefault()
-			this.moveToPosition(6)
+			void this.moveToPosition(6)
 		})
 		hotkeys('7', (event) => {
 			event.preventDefault()
-			this.moveToPosition(7)
+			void this.moveToPosition(7)
 		})
 		hotkeys('8', (event) => {
 			event.preventDefault()
-			this.moveToPosition(8)
+			void this.moveToPosition(8)
 		})
 		hotkeys('9', (event) => {
 			event.preventDefault()
-			this.moveToPosition(9)
+			void this.moveToPosition(9)
 		})
 	}
 
 	async ngAfterContentInit() {
 		this.route.queryParams.subscribe(async (e) => {
-			const decodedData = JSON.parse(decodeURIComponent(e.data))
+			const decodedData = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
 
 			if (this.app.modal) {
 				const request = decodedData as WheelDialogInput
@@ -179,7 +181,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 				this.mode = request.mode
 				await this.wheelChanged(request.wheel)
 			} else {
-				await this.wheelChanged(decodedData)
+				await this.wheelChanged(decodedData as FilterWheel)
 			}
 
 			this.pinger.register(this, 30000)
@@ -189,7 +191,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 
 		if (this.focusers.length === 1) {
 			this.focuser = this.focusers[0]
-			this.focuserChanged()
+			await this.focuserChanged()
 		}
 	}
 
@@ -199,34 +201,32 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		this.subscription?.unsubscribe()
 	}
 
-	ping() {
-		this.api.wheelListen(this.wheel)
-		if (this.focuser) this.api.focuserListen(this.focuser)
+	async ping() {
+		await this.api.wheelListen(this.wheel)
+		if (this.focuser) await this.api.focuserListen(this.focuser)
 	}
 
 	async wheelChanged(wheel?: FilterWheel) {
 		if (wheel && wheel.id) {
 			wheel = await this.api.wheel(wheel.id)
 
-			this.ping()
+			await this.ping()
 
 			Object.assign(this.wheel, wheel)
 
 			this.loadPreference()
 			this.update()
-			this.electron.autoResizeWindow()
+			await this.electron.autoResizeWindow()
 		}
 
-		if (this.app) {
-			this.app.subTitle = wheel?.name ?? ''
-		}
+		this.app.subTitle = wheel?.name ?? ''
 	}
 
 	connect() {
 		if (this.wheel.connected) {
-			this.api.wheelDisconnect(this.wheel)
+			return this.api.wheelDisconnect(this.wheel)
 		} else {
-			this.api.wheelConnect(this.wheel)
+			return this.api.wheelConnect(this.wheel)
 		}
 	}
 
@@ -236,20 +236,22 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 
 	async moveTo(filter: FilterSlot) {
 		try {
-			this.moving = true
+			if (this.currentFilter) {
+				this.moving = true
 
-			const currentFocusOffset = this.focusOffsetForFilter(this.currentFilter!)
-			const nextFocusOffset = this.focusOffsetForFilter(filter)
+				const currentFocusOffset = this.focusOffsetForFilter(this.currentFilter)
+				const nextFocusOffset = this.focusOffsetForFilter(filter)
 
-			await this.api.wheelMoveTo(this.wheel, filter.position)
+				await this.api.wheelMoveTo(this.wheel, filter.position)
 
-			const offset = nextFocusOffset - currentFocusOffset
+				const offset = nextFocusOffset - currentFocusOffset
 
-			if (this.focuser && offset !== 0) {
-				console.info('moving focuser %d steps', offset)
+				if (this.focuser && offset !== 0) {
+					console.info('moving focuser %d steps', offset)
 
-				if (offset < 0) this.api.focuserMoveIn(this.focuser, -offset)
-				else this.api.focuserMoveOut(this.focuser, offset)
+					if (offset < 0) await this.api.focuserMoveIn(this.focuser, -offset)
+					else await this.api.focuserMoveOut(this.focuser, offset)
+				}
 			}
 		} catch (e) {
 			console.error(e)
@@ -257,51 +259,49 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		}
 	}
 
-	moveToSelectedFilter() {
+	async moveToSelectedFilter() {
 		if (this.filter) {
-			this.moveTo(this.filter)
+			await this.moveTo(this.filter)
 		}
 	}
 
 	moveUp() {
-		this.moveToPosition(this.wheel.position - 1)
+		return this.moveToPosition(this.wheel.position - 1)
 	}
 
 	moveDown() {
-		this.moveToPosition(this.wheel.position + 1)
+		return this.moveToPosition(this.wheel.position + 1)
 	}
 
-	moveToIndex(index: number) {
+	async moveToIndex(index: number) {
 		if (!this.moving) {
-			if (index >= 0 && index < this.filters.length) {
-				this.moveTo(this.filters[index])
-			} else if (index < 0) {
-				this.moveToIndex(this.filters.length + index)
-			} else {
-				this.moveToIndex(index % this.filters.length)
-			}
+			index =
+				index >= 0 && index < this.filters.length ? index
+				: index < 0 ? this.filters.length + index
+				: index % this.filters.length
+
+			await this.moveTo(this.filters[index])
 		}
 	}
 
-	moveToPosition(position: number) {
+	async moveToPosition(position: number) {
 		if (!this.moving) {
-			if (position >= 1 && position <= this.wheel.count) {
-				for (const filter of this.filters) {
-					if (filter.position === position) {
-						this.moveTo(filter)
-						break
-					}
+			position =
+				position >= 1 && position <= this.wheel.count ? position
+				: position < 1 ? this.wheel.count + position
+				: position % this.wheel.count
+
+			for (const filter of this.filters) {
+				if (filter.position === position) {
+					await this.moveTo(filter)
+					break
 				}
-			} else if (position < 1) {
-				this.moveToPosition(this.wheel.count + position)
-			} else {
-				this.moveToPosition(position % this.wheel.count)
 			}
 		}
 	}
 
 	shutterToggled(filter: FilterSlot, event: CheckboxChangeEvent) {
-		this.filters.forEach((e) => (e.dark = event.checked && e === filter))
+		this.filters.forEach((e) => (e.dark = !!event.checked && e === filter))
 		this.filterChangedPublisher.next(structuredClone(filter))
 	}
 
@@ -311,9 +311,9 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		}
 	}
 
-	focuserChanged() {
+	async focuserChanged() {
 		if (this.focuser) {
-			this.ping()
+			await this.ping()
 
 			this.focusOffsetMax = this.focuser.maxPosition
 			this.focusOffsetMin = -this.focusOffsetMax
@@ -358,7 +358,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 			this.filters = []
 			return
 		} else if (this.wheel.count !== this.filters.length) {
-			filters = new Array(this.wheel.count)
+			filters = new Array<FilterSlot>(this.wheel.count)
 		} else {
 			filters = this.filters
 			filtersChanged = false
@@ -400,7 +400,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 			}
 
 			this.preference.wheelPreference(this.wheel).set(preference)
-			this.api.wheelSync(this.wheel, preference.names!)
+
+			// TODO: this.api.wheelSync(this.wheel, preference.names!)
 		}
 	}
 
@@ -412,7 +413,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 	}
 
 	apply() {
-		this.app.close(this.makeCameraStartCapture())
+		return this.app.close(this.makeCameraStartCapture())
 	}
 
 	static async showAsDialog(window: BrowserWindowService, mode: WheelDialogMode, wheel: FilterWheel, request: CameraStartCapture) {

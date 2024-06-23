@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component } from '@angular/core'
 import { dirname } from 'path'
 import { TreeDragDropService, TreeNode } from 'primeng/api'
 import { TreeNodeDropEvent } from 'primeng/tree'
@@ -25,7 +25,7 @@ export type TreeNodeData = { type: 'NAME'; data: string } | { type: 'GROUP'; dat
 	styleUrls: ['./calibration.component.scss'],
 	providers: [TreeDragDropService],
 })
-export class CalibrationComponent implements AfterViewInit, OnDestroy {
+export class CalibrationComponent implements AfterViewInit {
 	readonly frames: CalibrationNode[] = []
 
 	showNewGroupDialog = false
@@ -42,12 +42,9 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 		app.title = 'Calibration'
 	}
 
-	ngAfterViewInit() {
-		this.load()
+	async ngAfterViewInit() {
+		await this.load()
 	}
-
-	@HostListener('window:unload')
-	ngOnDestroy() {}
 
 	private makeTreeNode(key: string, label: string, data: TreeNodeData, parent?: CalibrationNode): CalibrationNode {
 		const draggable = data.type === 'FRAME'
@@ -58,7 +55,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 	addGroup(name: string) {
 		const node = this.frames.find((e) => e.label === name) ?? this.makeTreeNode(`group-${name}`, name, { type: 'NAME', data: name })
 
-		if (this.frames.indexOf(node) < 0) {
+		if (!this.frames.includes(node)) {
 			this.frames.push(node)
 		}
 
@@ -97,7 +94,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 			if (path) {
 				preference.openPath = dirname(path)
 				this.preference.calibrationPreference.set(preference)
-				this.upload(node, path)
+				await this.upload(node, path)
 			}
 		}
 	}
@@ -110,7 +107,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 			if (path) {
 				preference.openPath = path
 				this.preference.calibrationPreference.set(preference)
-				this.upload(node, path)
+				await this.upload(node, path)
 			}
 		}
 	}
@@ -120,8 +117,8 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 			const frames = await this.api.uploadCalibrationFrame(node.data.data, path)
 
 			if (frames.length > 0) {
-				this.electron.calibrationChanged()
-				this.load()
+				await this.electron.calibrationChanged()
+				await this.load()
 			}
 		}
 	}
@@ -137,22 +134,24 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 			const groups = await this.api.calibrationFrames(name)
 
 			for (const group of groups) {
-				const frameGroupNode = this.addFrameGroup(nameNode, group)!
+				const frameGroupNode = this.addFrameGroup(nameNode, group)
 
-				for (const frame of group.frames) {
-					this.addFrame(frameGroupNode, frame)
+				if (frameGroupNode) {
+					for (const frame of group.frames) {
+						this.addFrame(frameGroupNode, frame)
+					}
 				}
 			}
 		}
 	}
 
 	openImage(frame: CalibrationFrame) {
-		this.browserWindow.openImage({ path: frame.path, source: 'PATH' })
+		return this.browserWindow.openImage({ path: frame.path, source: 'PATH' })
 	}
 
-	toggleCalibrationFrame(node: CalibrationNode, enabled: boolean) {
+	async toggleCalibrationFrame(node: CalibrationNode, enabled: boolean) {
 		if (node.data.type === 'FRAME') {
-			this.api.editCalibrationFrame(node.data.data)
+			await this.api.editCalibrationFrame(node.data.data)
 		}
 	}
 
@@ -175,7 +174,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 				if (idx >= 0) {
 					this.frames.splice(idx, 1)
 					console.info('frame deleted', node)
-					this.electron.calibrationChanged()
+					await this.electron.calibrationChanged()
 				}
 			}
 		}
@@ -198,12 +197,16 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 		const frames: CalibrationFrame[] = []
 
 		function recursive(node: TreeNode<TreeNodeData>) {
-			if (node.data!.type === 'NAME' || node.data!.type === 'GROUP') {
-				for (const child of node.children!) {
-					recursive(child)
+			if (node.data) {
+				if (node.data.type === 'NAME' || node.data.type === 'GROUP') {
+					if (node.children) {
+						for (const child of node.children) {
+							recursive(child)
+						}
+					}
+				} else {
+					frames.push(node.data.data)
 				}
-			} else {
-				frames.push(node.data!.data)
 			}
 		}
 
@@ -230,11 +233,11 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 				for (const frame of frames) {
 					frame.name = this.newGroupName
 					await this.api.editCalibrationFrame(frame)
-					this.electron.calibrationChanged()
+					await this.electron.calibrationChanged()
 				}
 
 				this.showNewGroupDialog = false
-				this.load()
+				await this.load()
 			}
 
 			this.newGroupName = node.data.data
@@ -253,8 +256,8 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 		if (dragNode.data.type === 'FRAME' && dropNode.data.type === 'NAME' && dragNode.data.data.name !== dropNode.data.data) {
 			dragNode.data.data.name = dropNode.data.data
 			await this.api.editCalibrationFrame(dragNode.data.data)
-			this.electron.calibrationChanged()
-			this.load()
+			await this.electron.calibrationChanged()
+			await this.load()
 		}
 	}
 }

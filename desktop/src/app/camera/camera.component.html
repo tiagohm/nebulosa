@@ -568,18 +568,22 @@
 </p-dialog>
 
 <p-dialog
-	header="Live Stacking"
 	[draggable]="true"
 	[(visible)]="showLiveStackingDialog"
 	[modal]="true"
 	[style]="{ width: '80vw', maxWidth: '280px' }">
-	<div class="grid mt-2">
-		<div class="col-4 flex flex-column align-items-center justify-content-center text-center gap-2">
-			<span class="text-xs text-gray-100">Enabled</span>
-			<p-inputSwitch
-				[(ngModel)]="request.liveStacking.enabled"
-				(ngModelChange)="savePreference()" />
+	<ng-template pTemplate="header">
+		<div class="flex w-full align-items-center justify-content-start gap-2 ng-star-inserted">
+			<span class="p-dialog-title">Live Stacking</span>
+			<div class="flex flex-1 flex-column align-items-center justify-content-center text-center gap-2">
+				<span class="text-xs text-gray-100">Enabled</span>
+				<p-inputSwitch
+					[(ngModel)]="request.liveStacking.enabled"
+					(ngModelChange)="savePreference()" />
+			</div>
 		</div>
+	</ng-template>
+	<div class="grid mt-2">
 		<div class="col-8 align-items-center">
 			<p-floatLabel class="w-full">
 				<p-dropdown
@@ -594,28 +598,12 @@
 				<label>Live Stacker</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-6 flex flex-column align-items-center justify-content-center text-center gap-2">
-			<span class="text-xs text-gray-100">32-bits (slower)</span>
+		<div class="col-4 flex flex-column align-items-center justify-content-center text-center gap-2">
+			<span class="text-xs text-gray-100">32-bit (slower)</span>
 			<p-inputSwitch
 				[disabled]="!request.liveStacking.enabled"
 				[(ngModel)]="request.liveStacking.use32Bits"
 				(ngModelChange)="savePreference()" />
-		</div>
-		<div class="col-6 align-items-center">
-			<p-floatLabel>
-				<p-inputNumber
-					[disabled]="!request.liveStacking.enabled || request.liveStacking.type !== 'SIRIL'"
-					[showButtons]="true"
-					styleClass="border-0 p-inputtext-sm w-full"
-					[min]="0"
-					[max]="360"
-					[(ngModel)]="request.liveStacking.rotate"
-					[step]="0.1"
-					locale="en"
-					(ngModelChange)="savePreference()"
-					scrollableNumber />
-				<label>Rotate (°)</label>
-			</p-floatLabel>
 		</div>
 		<div class="col-12 align-items-center">
 			<neb-path-chooser

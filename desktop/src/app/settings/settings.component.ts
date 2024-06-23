@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
+import { Component } from '@angular/core'
 import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
 import { DropdownOptionsPipe } from '../../shared/pipes/dropdown-options.pipe'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -14,7 +14,7 @@ import { AppComponent } from '../app.component'
 	templateUrl: './settings.component.html',
 	styleUrls: ['./settings.component.scss'],
 })
-export class SettingsComponent implements AfterViewInit, OnDestroy {
+export class SettingsComponent {
 	tab = 0
 	readonly tabs: { id: number; name: string }[] = [
 		{
@@ -70,17 +70,12 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	async ngAfterViewInit() {}
-
-	@HostListener('window:unload')
-	ngOnDestroy() {}
-
 	addLocation() {
-		this.showLocation(structuredClone(EMPTY_LOCATION))
+		return this.showLocation(structuredClone(EMPTY_LOCATION))
 	}
 
 	editLocation() {
-		this.showLocation(this.location)
+		return this.showLocation(this.location)
 	}
 
 	private async showLocation(location: Location) {
@@ -104,7 +99,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 			this.preference.locations.set(this.locations)
 			this.preference.selectedLocation.set(this.location)
 
-			this.electron.send('LOCATION.CHANGED', this.location)
+			await this.electron.send('LOCATION.CHANGED', this.location)
 		}
 	}
 
@@ -114,19 +109,19 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 
 			if (index >= 0) {
 				this.locations.splice(index, 1)
-				this.location = this.locations[0]
+				this.location = this.locations[0]!
 
 				this.preference.locations.set(this.locations)
 				this.preference.selectedLocation.set(this.location)
 
-				this.electron.send('LOCATION.CHANGED', this.location)
+				await this.electron.send('LOCATION.CHANGED', this.location)
 			}
 		}
 	}
 
 	locationChanged() {
 		this.preference.selectedLocation.set(this.location)
-		this.electron.send('LOCATION.CHANGED', this.location)
+		return this.electron.send('LOCATION.CHANGED', this.location)
 	}
 
 	save() {

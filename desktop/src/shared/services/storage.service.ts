@@ -7,5 +7,5 @@ export interface StorageService {
 
 	has(key: string): Promise<boolean> | boolean
 
-	set(key: string, value: any): void
+	set(key: string, value: unknown): void
 }

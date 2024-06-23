@@ -1,14 +1,14 @@
 import * as fs from 'fs'
 import { dirname } from 'path'
 
-export class LocalStorage<T extends {}> {
-	private readonly data: T = Object.create(null)
+export class LocalStorage<T extends NonNullable<unknown>> {
+	private readonly data = Object.create(null) as T
 
 	constructor(private path: string) {
 		try {
 			console.info(`loading config file at ${path}`)
 
-			const parsedData = JSON.parse(fs.readFileSync(path, 'utf8'))
+			const parsedData = JSON.parse(fs.readFileSync(path, 'utf8')) as unknown
 
 			if (typeof parsedData === 'object' && !Array.isArray(parsedData) && parsedData) {
 				Object.assign(this.data, parsedData)
@@ -28,12 +28,6 @@ export class LocalStorage<T extends {}> {
 
 	set<K extends keyof T>(key: K, value: T[K]) {
 		this.data[key] = value
-	}
-
-	delete<K extends keyof T>(key: K) {
-		if (this.has(key)) {
-			delete this.data[key]
-		}
 	}
 
 	has<K extends keyof T>(key: K | string) {

@@ -50,35 +50,35 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 
 		hotkeys('left', (event) => {
 			event.preventDefault()
-			this.moveIn()
+			void this.moveIn()
 		})
 		hotkeys('ctrl+left', (event) => {
 			event.preventDefault()
-			this.moveIn(2)
+			void this.moveIn(2)
 		})
 		hotkeys('alt+left', (event) => {
 			event.preventDefault()
-			this.moveIn(0.5)
+			void this.moveIn(0.5)
 		})
 		hotkeys('right', (event) => {
 			event.preventDefault()
-			this.moveOut()
+			void this.moveOut()
 		})
 		hotkeys('ctrl+right', (event) => {
 			event.preventDefault()
-			this.moveOut(2)
+			void this.moveOut(2)
 		})
 		hotkeys('alt+right', (event) => {
 			event.preventDefault()
-			this.moveOut(0.5)
+			void this.moveOut(0.5)
 		})
 		hotkeys('space', (event) => {
 			event.preventDefault()
-			this.abort()
+			void this.abort()
 		})
 		hotkeys('enter', (event) => {
 			event.preventDefault()
-			this.moveTo()
+			void this.moveTo()
 		})
 		hotkeys('up', (event) => {
 			event.preventDefault()
@@ -98,9 +98,9 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 		})
 	}
 
-	async ngAfterViewInit() {
+	ngAfterViewInit() {
 		this.route.queryParams.subscribe(async (e) => {
-			const focuser = JSON.parse(decodeURIComponent(e.data)) as Focuser
+			const focuser = JSON.parse(decodeURIComponent(e['data'] as string)) as Focuser
 			await this.focuserChanged(focuser)
 			this.pinger.register(this, 30000)
 		})
@@ -109,11 +109,11 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 	@HostListener('window:unload')
 	ngOnDestroy() {
 		this.pinger.unregister(this)
-		this.abort()
+		void this.abort()
 	}
 
 	ping() {
-		this.api.focuserListen(this.focuser)
+		return this.api.focuserListen(this.focuser)
 	}
 
 	async focuserChanged(focuser?: Focuser) {
@@ -125,16 +125,14 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 			this.update()
 		}
 
-		if (this.app) {
-			this.app.subTitle = focuser?.name ?? ''
-		}
+		this.app.subTitle = focuser?.name ?? ''
 	}
 
 	connect() {
 		if (this.focuser.connected) {
-			this.api.focuserDisconnect(this.focuser)
+			return this.api.focuserDisconnect(this.focuser)
 		} else {
-			this.api.focuserConnect(this.focuser)
+			return this.api.focuserConnect(this.focuser)
 		}
 	}
 
@@ -170,7 +168,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	abort() {
-		this.api.focuserAbort(this.focuser)
+		return this.api.focuserAbort(this.focuser)
 	}
 
 	private update() {

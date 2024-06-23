@@ -7,7 +7,7 @@ import { PreferenceService } from '../services/preference.service'
 export class LocationInterceptor implements HttpInterceptor {
 	constructor(private preference: PreferenceService) {}
 
-	intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+	intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
 		if (req.urlWithParams.includes('hasLocation')) {
 			const selectedLocation = this.preference.selectedLocation.get()
 
