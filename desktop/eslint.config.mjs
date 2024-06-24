@@ -47,6 +47,7 @@ export default tseslint.config(
 			'@typescript-eslint/consistent-indexed-object-style': 'error',
 			'@typescript-eslint/prefer-readonly': 'error',
 			'@typescript-eslint/consistent-type-assertions': 'error',
+			'@typescript-eslint/consistent-type-definitions': 'error',
 			'@typescript-eslint/prefer-nullish-coalescing': [
 				'error',
 				{

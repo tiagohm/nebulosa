@@ -75,7 +75,7 @@ export interface SaveJson<T = unknown> extends OpenFile, JsonFile<T> {}
 
 export type StoredWindowDataKey = `window.${string}`
 
-export type StoredWindowDataValue = {
+export interface StoredWindowDataValue {
 	x: number
 	y: number
 	width: number

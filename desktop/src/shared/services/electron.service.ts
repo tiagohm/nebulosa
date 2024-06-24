@@ -24,7 +24,7 @@ import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
 import { FilterWheel, WheelRenamed } from '../types/wheel.types'
 
-type EventMappedType = {
+interface EventMappedType {
 	'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
 	'DEVICE.PROPERTY_DELETED': INDIMessageEvent
 	'DEVICE.MESSAGE_RECEIVED': INDIMessageEvent

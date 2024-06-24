@@ -133,7 +133,7 @@ export class BrowserWindowService {
 	}
 
 	openCalculator(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'calculator', width: 345, height: 340 })
+		Object.assign(preference, { icon: 'calculator', width: 300, height: 335 })
 		return this.openWindow({ preference, id: 'calculator', path: 'calculator' })
 	}
 

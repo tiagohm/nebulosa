@@ -17,7 +17,7 @@ import { Rotator } from '../../shared/types/rotator.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
-type MappedDevice = {
+interface MappedDevice {
 	CAMERA: Camera
 	MOUNT: Mount
 	FOCUSER: Focuser
