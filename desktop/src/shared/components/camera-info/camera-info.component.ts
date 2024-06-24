@@ -15,6 +15,9 @@ export class CameraInfoComponent {
 	@Input()
 	readonly wheel?: FilterWheel
 
+	@Input()
+	readonly hasExposure: boolean = true
+
 	get hasFilter() {
 		return !!this.wheel && !!this.info.filterPosition && this.wheel.connected
 	}

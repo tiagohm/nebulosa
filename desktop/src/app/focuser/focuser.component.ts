@@ -112,8 +112,10 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 		void this.abort()
 	}
 
-	ping() {
-		return this.api.focuserListen(this.focuser)
+	async ping() {
+		if (this.focuser.id) {
+			await this.api.focuserListen(this.focuser)
+		}
 	}
 
 	async focuserChanged(focuser?: Focuser) {

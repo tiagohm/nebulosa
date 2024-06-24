@@ -142,6 +142,8 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 				}
 			})
 		})
+
+		this.request.capture.frameType = 'FLAT'
 	}
 
 	async ngAfterViewInit() {
@@ -175,6 +177,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 			const cameraPreference = this.preference.cameraPreference(this.camera).get()
 			this.request.capture = this.preference.cameraStartCaptureForFlatWizard(this.camera).get(cameraPreference)
 			this.updateEntryFromCamera(this.camera)
+			this.request.capture.frameType = 'FLAT'
 		}
 	}
 

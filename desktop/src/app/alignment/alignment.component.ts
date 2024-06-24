@@ -73,6 +73,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	private autoResizeTimeout?: number
 
+	get cameraCaptureRequest() {
+		return this.tab === 1 ? this.darvRequest.capture : this.tppaRequest.capture
+	}
+
 	constructor(
 		app: AppComponent,
 		private readonly api: ApiService,
@@ -253,6 +257,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 
 			const camera = await this.api.camera(this.camera.id)
 			Object.assign(this.camera, camera)
+			this.loadPreference()
 		}
 	}
 
@@ -262,6 +267,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 
 			const mount = await this.api.mount(this.mount.id)
 			Object.assign(this.mount, mount)
+			this.loadPreference()
 			this.tppaRequest.stepSpeed = mount.slewRate?.name
 		}
 	}
@@ -371,11 +377,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	savePreference() {
-		if (this.tab === 0) {
-			this.preference.cameraStartCaptureForTPPA(this.camera).set(this.tppaRequest.capture)
-		} else if (this.tab === 1) {
-			this.preference.cameraStartCaptureForDARV(this.camera).set(this.darvRequest.capture)
-		}
+		this.preference.cameraStartCaptureForTPPA(this.camera).set(this.tppaRequest.capture)
+		this.preference.cameraStartCaptureForDARV(this.camera).set(this.darvRequest.capture)
 
 		const preference: AlignmentPreference = {
 			tppaStartFromCurrentPosition: this.tppaRequest.startFromCurrentPosition,

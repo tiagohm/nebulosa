@@ -109,7 +109,7 @@ export class BrowserWindowService {
 	}
 
 	openAlignment(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'star', width: 425, height: 365 })
+		Object.assign(preference, { icon: 'star', width: 425, height: 396 })
 		return this.openWindow({ preference, id: 'alignment', path: 'alignment' })
 	}
 
@@ -119,12 +119,12 @@ export class BrowserWindowService {
 	}
 
 	openAutoFocus(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'auto-focus', width: 425, height: 420 })
+		Object.assign(preference, { icon: 'auto-focus', width: 425, height: 453 })
 		return this.openWindow({ preference, id: 'auto-focus', path: 'auto-focus' })
 	}
 
 	openFlatWizard(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'star', width: 385, height: 370 })
+		Object.assign(preference, { icon: 'star', width: 385, height: 402 })
 		return this.openWindow({ preference, id: 'flat-wizard', path: 'flat-wizard' })
 	}
 

@@ -302,8 +302,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		}
 	}
 
-	ping() {
-		return this.api.cameraListen(this.camera)
+	async ping() {
+		if (this.camera.id) {
+			await this.api.cameraListen(this.camera)
+		}
 	}
 
 	private async loadCameraStartCaptureForDialogMode(data?: CameraDialogInput) {

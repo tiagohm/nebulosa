@@ -62,8 +62,10 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 		void this.abort()
 	}
 
-	ping() {
-		return this.api.rotatorListen(this.rotator)
+	async ping() {
+		if (this.rotator.id) {
+			await this.api.rotatorListen(this.rotator)
+		}
 	}
 
 	async rotatorChanged(rotator?: Rotator) {

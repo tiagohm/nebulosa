@@ -4,7 +4,7 @@
 		<label class="text-green-300">Type</label>
 	</div>
 	<div
-		*ngIf="info.exposureTime"
+		*ngIf="hasExposure && info.exposureTime"
 		class="tag">
 		<span class="min-w-4rem">{{ info.exposureAmount || '∞' }} of {{ info.exposureTime | exposureTime }}</span>
 		<label class="text-orange-300">Exposure</label>

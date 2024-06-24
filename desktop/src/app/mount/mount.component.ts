@@ -333,8 +333,10 @@ export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
 		void this.abort()
 	}
 
-	ping() {
-		return this.api.mountListen(this.mount)
+	async ping() {
+		if (this.mount.id) {
+			await this.api.mountListen(this.mount)
+		}
 	}
 
 	async mountChanged(mount?: Mount) {

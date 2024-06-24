@@ -320,7 +320,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	async ping() {
-		if (this.guideOutput) await this.api.guideOutputListen(this.guideOutput)
+		if (this.guideOutput?.id) await this.api.guideOutputListen(this.guideOutput)
 	}
 
 	private processGuiderStatus(event: Guider) {

@@ -277,11 +277,11 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	async ping() {
-		if (this.camera) await this.api.cameraListen(this.camera)
-		if (this.mount) await this.api.mountListen(this.mount)
-		if (this.focuser) await this.api.focuserListen(this.focuser)
-		if (this.wheel) await this.api.wheelListen(this.wheel)
-		if (this.rotator) await this.api.rotatorListen(this.rotator)
+		if (this.camera?.id) await this.api.cameraListen(this.camera)
+		if (this.mount?.id) await this.api.mountListen(this.mount)
+		if (this.focuser?.id) await this.api.focuserListen(this.focuser)
+		if (this.wheel?.id) await this.api.wheelListen(this.wheel)
+		if (this.rotator?.id) await this.api.rotatorListen(this.rotator)
 	}
 
 	private enableOrDisableTopbarMenu(enable: boolean) {
