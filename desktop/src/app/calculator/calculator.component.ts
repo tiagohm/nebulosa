@@ -215,7 +215,7 @@ export class CalculatorComponent {
 
 	formula = this.formulae[0]
 
-	private autoResizeTimeout: number | undefined
+	private autoResizeTimeout?: number
 
 	constructor(
 		app: AppComponent,

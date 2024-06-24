@@ -23,6 +23,7 @@ import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
 import { FilterWheel, WheelRenamed } from '../types/wheel.types'
+import { Undefinable } from '../utils/types'
 
 interface EventMappedType {
 	'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
@@ -125,15 +126,15 @@ export class ElectronService {
 		})
 	}
 
-	openFile(data?: OpenFile): Promise<string | undefined> {
+	openFile(data?: OpenFile): Promise<Undefinable<string>> {
 		return this.send('FILE.OPEN', data)
 	}
 
-	saveFile(data?: OpenFile): Promise<string | undefined> {
+	saveFile(data?: OpenFile): Promise<Undefinable<string>> {
 		return this.send('FILE.SAVE', data)
 	}
 
-	openImage(data?: OpenFile): Promise<string | undefined> {
+	openImage(data?: OpenFile): Promise<Undefinable<string>> {
 		return this.openFile({
 			...data,
 			filters: [
@@ -194,7 +195,7 @@ export class ElectronService {
 		return this.send('WINDOW.RESIZE', Math.floor(size))
 	}
 
-	async autoResizeWindow(timeout: number = 500): Promise<number | undefined> {
+	async autoResizeWindow(timeout: number = 500): Promise<Undefinable<number>> {
 		if (timeout <= 0) {
 			const size = document.getElementsByTagName('app-root')[0].getBoundingClientRect().height
 

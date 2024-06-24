@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
+import { Nullable } from '../utils/types'
 
-export type QueryParamType = string | number | boolean | undefined | null | QueryParamType[]
+export type QueryParamType = Nullable<string | number | boolean> | QueryParamType[]
 
 @Injectable({ providedIn: 'root' })
 export class HttpService {

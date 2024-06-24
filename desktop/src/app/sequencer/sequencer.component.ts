@@ -17,6 +17,7 @@ import { Rotator } from '../../shared/types/rotator.types'
 import { EMPTY_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
+import { Undefinable } from '../../shared/utils/types'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
@@ -113,7 +114,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		return this.app.subTitle
 	}
 
-	set savedPath(value: string | undefined) {
+	set savedPath(value: Undefinable<string>) {
 		this.app.subTitle = value
 	}
 
@@ -288,7 +289,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	add() {
-		const camera: Camera | undefined = this.camera ?? this.cameras[0]
+		const camera = this.camera ?? (this.cameras[0] as Undefinable<Camera>)
 		// const wheel = this.wheel ?? this.wheels[0]
 		// const focuser = this.focuser ?? this.focusers[0]
 		// const rotator = this.rotator ?? this.rotators[0]
@@ -351,7 +352,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	private async loadSavedJsonFileFromPathOrAddDefault() {
-		const savedPath = this.storage.get<string | undefined>(SEQUENCER_SAVED_PATH_KEY, undefined)
+		const savedPath = this.storage.get<Undefinable<string>>(SEQUENCER_SAVED_PATH_KEY, undefined)
 
 		if (savedPath) {
 			const file = await this.electron.readJson<SequencePlan>(savedPath)

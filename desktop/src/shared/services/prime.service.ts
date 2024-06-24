@@ -1,6 +1,7 @@
 import { Injectable, Type } from '@angular/core'
 import { ConfirmEventType, ConfirmationService, MessageService } from 'primeng/api'
 import { DialogService, DynamicDialogConfig } from 'primeng/dynamicdialog'
+import { Undefinable } from '../utils/types'
 
 @Injectable({ providedIn: 'root' })
 export class PrimeService {
@@ -26,7 +27,7 @@ export class PrimeService {
 			},
 		})
 
-		return new Promise<R | undefined>((resolve) => {
+		return new Promise<Undefinable<R>>((resolve) => {
 			const subscription = ref.onClose.subscribe((data?: R) => {
 				subscription.unsubscribe()
 				resolve(data)

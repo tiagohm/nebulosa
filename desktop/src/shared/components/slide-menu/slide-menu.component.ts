@@ -1,4 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core'
+import { Nullable } from '../../utils/types'
 import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.component'
 
 @Component({
@@ -11,7 +12,7 @@ export class SlideMenuComponent implements OnInit {
 	readonly model!: SlideMenuItem[]
 
 	@Input()
-	readonly appendTo: HTMLElement | ElementRef | TemplateRef<unknown> | string | null | undefined
+	readonly appendTo: Nullable<HTMLElement | ElementRef | TemplateRef<unknown> | string>
 
 	@Output()
 	readonly onNext = new EventEmitter<MenuItemCommandEvent>()

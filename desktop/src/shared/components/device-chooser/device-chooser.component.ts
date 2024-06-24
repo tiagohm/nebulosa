@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core'
 import { ApiService } from '../../services/api.service'
 import { Device } from '../../types/device.types'
+import { Undefinable } from '../../utils/types'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../device-list-menu/device-list-menu.component'
 import { MenuItem } from '../menu-item/menu-item.component'
 
@@ -70,7 +71,7 @@ export class DeviceChooserComponent<T extends Device = Device> {
 
 		item.disabled = true
 
-		return new Promise<DeviceConnectionCommandEvent | undefined>((resolve) => {
+		return new Promise<Undefinable<DeviceConnectionCommandEvent>>((resolve) => {
 			setTimeout(async () => {
 				Object.assign(device, await api.indiDevice(device))
 
@@ -93,7 +94,7 @@ export class DeviceChooserComponent<T extends Device = Device> {
 
 		item.disabled = true
 
-		return new Promise<DeviceConnectionCommandEvent | undefined>((resolve) => {
+		return new Promise<Undefinable<DeviceConnectionCommandEvent>>((resolve) => {
 			setTimeout(async () => {
 				Object.assign(device, await api.indiDevice(device))
 

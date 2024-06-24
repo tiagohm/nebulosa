@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core'
+import { Undefinable } from '../utils/types'
 import { ApiService } from './api.service'
 import { StorageService } from './storage.service'
 
@@ -15,7 +16,7 @@ export class RemoteStorageService implements StorageService {
 	}
 
 	async get<T>(key: string, defaultValue: T) {
-		return (await this.api.getPreference<T | undefined>(key)) ?? defaultValue
+		return (await this.api.getPreference<Undefinable<T>>(key)) ?? defaultValue
 	}
 
 	has(key: string) {

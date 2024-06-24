@@ -9,6 +9,7 @@ import { ImageSource, OpenImage } from '../types/image.types'
 import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { FilterWheel, WheelDialogInput } from '../types/wheel.types'
+import { Undefinable } from '../utils/types'
 import { ElectronService } from './electron.service'
 
 @Injectable({ providedIn: 'root' })
@@ -20,7 +21,7 @@ export class BrowserWindowService {
 		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open })
 	}
 
-	openModal<R = unknown>(open: OpenWindow): Promise<R | undefined> {
+	openModal<R = unknown>(open: OpenWindow): Promise<Undefinable<R>> {
 		open.preference.modal = true
 		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open })
 	}
@@ -92,17 +93,17 @@ export class BrowserWindowService {
 		return id
 	}
 
-	openINDI(data: Device | undefined, preference: WindowPreference = {}) {
+	openINDI(data?: Device, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'indi', width: 760, height: 420, resizable: true })
 		return this.openWindow({ preference, data, id: 'indi', path: 'indi' })
 	}
 
-	openSkyAtlas(data: SkyAtlasData | undefined, preference: WindowPreference = {}) {
+	openSkyAtlas(data?: SkyAtlasData, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'atlas', width: 450, height: 530, autoResizable: false })
 		return this.openWindow({ preference, data, id: 'atlas', path: 'atlas' })
 	}
 
-	openFraming(data: FramingData | undefined, preference: WindowPreference = {}) {
+	openFraming(data?: FramingData, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'framing', width: 280, height: 303 })
 		return this.openWindow({ preference, data, id: 'framing', path: 'framing' })
 	}

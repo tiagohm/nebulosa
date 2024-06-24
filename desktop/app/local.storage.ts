@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import { dirname } from 'path'
+import type { Undefinable } from '../src/shared/utils/types'
 
 export class LocalStorage<T extends NonNullable<unknown>> {
 	private readonly data = Object.create(null) as T
@@ -22,7 +23,7 @@ export class LocalStorage<T extends NonNullable<unknown>> {
 		}
 	}
 
-	get<K extends keyof T>(key: K): T[K] | undefined {
+	get<K extends keyof T>(key: K): Undefinable<T[K]> {
 		return this.data[key]
 	}
 

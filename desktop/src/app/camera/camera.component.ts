@@ -15,6 +15,7 @@ import { Equipment } from '../../shared/types/home.types'
 import { Mount } from '../../shared/types/mount.types'
 import { Rotator } from '../../shared/types/rotator.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
+import { Undefinable } from '../../shared/utils/types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -553,7 +554,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		this.request.liveStacking.executablePath = liveStackingRequest.executablePath
 		this.request.liveStacking.slot = liveStackingRequest.slot || 1
 
-		let shutterPosition: number | undefined
+		let shutterPosition: Undefinable<number>
 
 		if (this.equipment.wheel) {
 			const wheelPreference = this.preference.wheelPreference(this.equipment.wheel).get()

@@ -9,6 +9,7 @@ import { Bitpix, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlType } from '../types/mount.types'
 import { SequenceCaptureMode } from '../types/sequencer.types'
 import { PlateSolverType, StarDetectorType } from '../types/settings.types'
+import { Undefinable } from '../utils/types'
 
 export type EnumPipeKey =
 	| SCNRProtectionMethod
@@ -39,7 +40,7 @@ export type EnumPipeKey =
 
 @Pipe({ name: 'enum' })
 export class EnumPipe implements PipeTransform {
-	readonly enums: Record<EnumPipeKey, string | undefined> = {
+	readonly enums: Record<EnumPipeKey, Undefinable<string>> = {
 		ABSOLUTE: 'Absolute',
 		ACTIVE_GALAXY_NUCLEUS: 'Active Galaxy Nucleus',
 		ACTIVE: 'Active',

@@ -15,6 +15,7 @@ import { CONNECTION_TYPES, ConnectionDetails, EMPTY_CONNECTION_DETAILS, HomeWind
 import { Mount } from '../../shared/types/mount.types'
 import { Rotator } from '../../shared/types/rotator.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
+import { Undefinable } from '../../shared/utils/types'
 import { AppComponent } from '../app.component'
 
 interface MappedDevice {
@@ -45,7 +46,7 @@ export class HomeComponent implements AfterContentInit {
 	showConnectionDialog = false
 	connections: ConnectionDetails[] = []
 	connection?: ConnectionDetails
-	newConnection?: [ConnectionDetails, ConnectionDetails | undefined]
+	newConnection?: [ConnectionDetails, Undefinable<ConnectionDetails>]
 
 	cameras: Camera[] = []
 	mounts: Mount[] = []

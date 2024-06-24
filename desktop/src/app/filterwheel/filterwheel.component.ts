@@ -11,6 +11,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { EMPTY_WHEEL, FilterSlot, FilterWheel, WheelDialogInput, WheelDialogMode, WheelPreference } from '../../shared/types/wheel.types'
+import { Undefinable } from '../../shared/utils/types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -51,7 +52,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		return this.mode !== 'CAPTURE'
 	}
 
-	get currentFilter(): FilterSlot | undefined {
+	get currentFilter(): Undefinable<FilterSlot> {
 		return this.filters[this.position - 1]
 	}
 
@@ -202,8 +203,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 	}
 
 	async ping() {
-		await this.api.wheelListen(this.wheel)
-		if (this.focuser) await this.api.focuserListen(this.focuser)
+		if (this.wheel.id) await this.api.wheelListen(this.wheel)
+		if (this.focuser?.id) await this.api.focuserListen(this.focuser)
 	}
 
 	async wheelChanged(wheel?: FilterWheel) {

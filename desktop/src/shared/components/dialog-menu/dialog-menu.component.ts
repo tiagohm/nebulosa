@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { Undefinable } from '../../utils/types'
 import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.component'
 
 @Component({
@@ -22,7 +23,7 @@ export class DialogMenuComponent {
 	@Input()
 	updateHeaderWithMenuLabel: boolean = true
 
-	private readonly navigationHeader: (string | undefined)[] = []
+	private readonly navigationHeader: Undefinable<string>[] = []
 
 	show() {
 		this.visible = true

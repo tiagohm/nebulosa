@@ -13,6 +13,7 @@ import { EMPTY_MOUNT_PREFERENCE, Mount, MountPreference } from '../types/mount.t
 import { Rotator, RotatorPreference } from '../types/rotator.types'
 import { EMPTY_PLATE_SOLVER_REQUEST, EMPTY_STAR_DETECTION_REQUEST, PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetectorType } from '../types/settings.types'
 import { FilterWheel, WheelPreference } from '../types/wheel.types'
+import { Undefinable } from '../utils/types'
 import { LocalStorageService } from './local-storage.service'
 
 export class PreferenceData<T> {
@@ -30,7 +31,7 @@ export class PreferenceData<T> {
 		return this.storage.get<T>(this.key, defaultValue ?? this.defaultValue)
 	}
 
-	set(value: T | undefined) {
+	set(value: Undefinable<T>) {
 		this.storage.set(this.key, value)
 	}
 

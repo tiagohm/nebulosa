@@ -17,6 +17,7 @@ import { Rotator } from '../types/rotator.types'
 import { SequencePlan } from '../types/sequencer.types'
 import { PlateSolverRequest, StarDetectionRequest } from '../types/settings.types'
 import { FilterWheel } from '../types/wheel.types'
+import { Undefinable } from '../utils/types'
 import { HttpService } from './http.service'
 
 @Injectable({ providedIn: 'root' })
@@ -43,7 +44,7 @@ export class ApiService {
 	}
 
 	connectionStatus(id: string) {
-		return this.http.get<ConnectionStatus | undefined>(`connection/${id}`)
+		return this.http.get<Undefinable<ConnectionStatus>>(`connection/${id}`)
 	}
 
 	// CAMERA

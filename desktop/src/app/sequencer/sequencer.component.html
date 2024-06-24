@@ -381,24 +381,8 @@
 						</div>
 					</ng-template>
 					<div class="grid">
-						<div class="col-12 pt-0 flex">
-							<div class="flex gap-1 align-items-center flex-wrap">
-								<p-tag
-									[value]="entry.frameType"
-									severity="success" />
-								<p-tag
-									value="{{ entry.exposureAmount }} of {{ entry.exposureTime | exposureTime }}"
-									severity="info" />
-								<p-tag value="DELAY: {{ entry.exposureDelay * 1000000 | exposureTime }}" />
-								<p-tag value="ROI: {{ entry.x }} {{ entry.y }} {{ entry.width }}x{{ entry.height }}" />
-								<p-tag value="BIN: {{ entry.binX }}x{{ entry.binY }}" />
-								<p-tag value="GAIN: {{ entry.gain }}" />
-								<p-tag value="OFFSET: {{ entry.offset }}" />
-								<p-tag value="FORMAT: {{ entry.frameFormat }}" />
-								<p-tag
-									*ngIf="entry.filterPosition"
-									value="FILTER: {{ entry.filterPosition }}" />
-							</div>
+						<div class="col-12 pt-1 flex">
+							<neb-camera-info [info]="entry" [wheel]="wheel" />
 						</div>
 						<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm">
 							<neb-camera-exposure #cameraExposure />

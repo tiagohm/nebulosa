@@ -4,6 +4,7 @@ import { PrimeService } from '../../services/prime.service'
 import { isGuideHead } from '../../types/camera.types'
 import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
+import { Undefinable } from '../../utils/types'
 import { DialogMenuComponent } from '../dialog-menu/dialog-menu.component'
 import { MenuItem, SlideMenuItem } from '../menu-item/menu-item.component'
 
@@ -47,7 +48,7 @@ export class DeviceListMenuComponent {
 	show<T extends Device>(devices: T[], selected?: NoInfer<T>) {
 		const model: SlideMenuItem[] = []
 
-		return new Promise<T | 'NONE' | undefined>((resolve) => {
+		return new Promise<Undefinable<T | 'NONE'>>((resolve) => {
 			if (devices.length <= 0) {
 				resolve(undefined)
 				this.prime.message('Please connect your equipment first!', 'warn')
