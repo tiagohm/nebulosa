@@ -1,8 +1,8 @@
-import { AutoSubFolderMode, Camera, CameraCaptureEvent, CameraStartCapture, Dither } from './camera.types'
-import { Focuser } from './focuser.types'
-import { Mount } from './mount.types'
-import { Rotator } from './rotator.types'
-import { FilterWheel } from './wheel.types'
+import type { AutoSubFolderMode, Camera, CameraCaptureEvent, CameraStartCapture, Dither } from './camera.types'
+import type { Focuser } from './focuser.types'
+import type { Mount } from './mount.types'
+import type { Rotator } from './rotator.types'
+import type { FilterWheel } from './wheel.types'
 
 export type SequenceCaptureMode = 'FULLY' | 'INTERLEAVED'
 

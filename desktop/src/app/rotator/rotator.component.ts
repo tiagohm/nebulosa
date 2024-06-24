@@ -20,12 +20,12 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 	angle = 0
 
 	constructor(
-		private app: AppComponent,
-		private api: ApiService,
+		private readonly app: AppComponent,
+		private readonly api: ApiService,
 		electron: ElectronService,
-		private preference: PreferenceService,
-		private route: ActivatedRoute,
-		private pinger: Pinger,
+		private readonly preference: PreferenceService,
+		private readonly route: ActivatedRoute,
+		private readonly pinger: Pinger,
 		ngZone: NgZone,
 	) {
 		app.title = 'Rotator'
@@ -67,7 +67,7 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	async rotatorChanged(rotator?: Rotator) {
-		if (rotator && rotator.id) {
+		if (rotator?.id) {
 			rotator = await this.api.rotator(rotator.id)
 			Object.assign(this.rotator, rotator)
 

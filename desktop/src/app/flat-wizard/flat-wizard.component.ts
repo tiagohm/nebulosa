@@ -54,12 +54,12 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	constructor(
 		app: AppComponent,
-		private api: ApiService,
-		private electron: ElectronService,
-		private browserWindow: BrowserWindowService,
-		private prime: PrimeService,
-		private preference: PreferenceService,
-		private pinger: Pinger,
+		private readonly api: ApiService,
+		private readonly electron: ElectronService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly prime: PrimeService,
+		private readonly preference: PreferenceService,
+		private readonly pinger: Pinger,
 		ngZone: NgZone,
 	) {
 		app.title = 'Flat Wizard'
@@ -179,7 +179,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	private updateEntryFromCamera(camera?: Camera) {
-		if (camera && camera.connected) {
+		if (camera?.connected) {
 			updateCameraStartCaptureFromCamera(this.request.capture, camera)
 		}
 	}

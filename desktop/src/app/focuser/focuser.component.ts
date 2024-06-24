@@ -21,12 +21,12 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 	stepsAbsolute = 0
 
 	constructor(
-		private app: AppComponent,
-		private api: ApiService,
+		private readonly app: AppComponent,
+		private readonly api: ApiService,
 		electron: ElectronService,
-		private preference: PreferenceService,
-		private route: ActivatedRoute,
-		private pinger: Pinger,
+		private readonly preference: PreferenceService,
+		private readonly route: ActivatedRoute,
+		private readonly pinger: Pinger,
 		ngZone: NgZone,
 	) {
 		app.title = 'Focuser'
@@ -117,7 +117,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	async focuserChanged(focuser?: Focuser) {
-		if (focuser && focuser.id) {
+		if (focuser?.id) {
 			focuser = await this.api.focuser(focuser.id)
 			Object.assign(this.focuser, focuser)
 

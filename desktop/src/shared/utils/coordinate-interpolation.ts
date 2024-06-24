@@ -1,7 +1,8 @@
-import { Angle, EquatorialCoordinateJ2000 } from '../types/atlas.types'
+import type { Angle, EquatorialCoordinateJ2000 } from '../types/atlas.types'
 import { degreesToRadians, formatAngle } from './angle'
 import { BicubicSplineInterpolation } from './bicubic-interpolation'
-import { SphericalRepresentation, TimeRepresentation, longitudeDegreesConstrained, obliquity, rectangularEquatorialToEcliptic, rectangularEquatorialToGalactic, rectangularToSphericalDegreesConstrained, sphericalToRectangular } from './ephemeris'
+import type { SphericalRepresentation, TimeRepresentation } from './ephemeris'
+import { longitudeDegreesConstrained, obliquity, rectangularEquatorialToEcliptic, rectangularEquatorialToGalactic, rectangularToSphericalDegreesConstrained, sphericalToRectangular } from './ephemeris'
 
 export interface InterpolatedCoordinate<T extends Angle> extends EquatorialCoordinateJ2000 {
 	alpha: T
@@ -17,19 +18,19 @@ export interface InterpolatedCoordinate<T extends Angle> extends EquatorialCoord
 export class CoordinateInterpolator {
 	private readonly Ia: BicubicSplineInterpolation
 	private readonly Id: BicubicSplineInterpolation
-	private se = 0.0
-	private ce = 0.0
+	private readonly se: number
+	private readonly ce: number
 
 	constructor(
 		Ma: number[],
 		Md: number[],
-		private x0: number,
-		private y0: number,
-		private x1: number,
-		private y1: number,
-		private delta: number,
-		private date?: TimeRepresentation,
-		private precision: number = 1,
+		private readonly x0: number,
+		private readonly y0: number,
+		private readonly x1: number,
+		private readonly y1: number,
+		private readonly delta: number,
+		private readonly date?: TimeRepresentation,
+		private readonly precision: number = 1,
 	) {
 		x0 = Math.min(x0, x1)
 		x1 = Math.max(x0, x1)
@@ -40,6 +41,9 @@ export class CoordinateInterpolator {
 			const eps = obliquity(this.date)
 			this.se = Math.sin(eps)
 			this.ce = Math.cos(eps)
+		} else {
+			this.se = 0.0
+			this.ce = 0.0
 		}
 
 		const width = this.x1 - this.x0

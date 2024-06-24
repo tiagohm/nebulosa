@@ -5,9 +5,9 @@ import { DialogService, DynamicDialogConfig } from 'primeng/dynamicdialog'
 @Injectable({ providedIn: 'root' })
 export class PrimeService {
 	constructor(
-		private dialog: DialogService,
-		private confirmation: ConfirmationService,
-		private messager: MessageService,
+		private readonly dialog: DialogService,
+		private readonly confirmation: ConfirmationService,
+		private readonly messager: MessageService,
 	) {}
 
 	open<T, R = T>(componentType: Type<unknown>, config: DynamicDialogConfig<T>) {

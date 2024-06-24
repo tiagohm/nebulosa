@@ -8,7 +8,7 @@ export interface EnumDropdownItem {
 
 @Pipe({ name: 'enumDropdown' })
 export class EnumDropdownPipe implements PipeTransform {
-	constructor(private enumPipe: EnumPipe) {}
+	constructor(private readonly enumPipe: EnumPipe) {}
 
 	transform(value: EnumPipeKey[]): EnumDropdownItem[] {
 		return value.map((value) => {

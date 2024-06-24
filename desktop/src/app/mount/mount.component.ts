@@ -54,7 +54,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
 
 	private readonly computeCoordinatePublisher = new Subject<void>()
 	private readonly computeTargetCoordinatePublisher = new Subject<void>()
-	private computeCoordinateSubscriptions: Subscription[] = []
+	private readonly computeCoordinateSubscriptions: Subscription[] = []
 	private readonly moveToDirection = [false, false]
 
 	readonly ephemerisModel: SlideMenuItem[] = [
@@ -229,14 +229,14 @@ export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
 	}
 
 	constructor(
-		private app: AppComponent,
-		private api: ApiService,
-		private browserWindow: BrowserWindowService,
+		private readonly app: AppComponent,
+		private readonly api: ApiService,
+		private readonly browserWindow: BrowserWindowService,
 		electron: ElectronService,
-		private preference: PreferenceService,
-		private route: ActivatedRoute,
-		private prime: PrimeService,
-		private pinger: Pinger,
+		private readonly preference: PreferenceService,
+		private readonly route: ActivatedRoute,
+		private readonly prime: PrimeService,
+		private readonly pinger: Pinger,
 		ngZone: NgZone,
 	) {
 		app.title = 'Mount'
@@ -338,7 +338,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
 	}
 
 	async mountChanged(mount?: Mount) {
-		if (mount && mount.id) {
+		if (mount?.id) {
 			mount = await this.api.mount(mount.id)
 			Object.assign(this.mount, mount)
 

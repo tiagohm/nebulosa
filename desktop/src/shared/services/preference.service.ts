@@ -17,9 +17,9 @@ import { LocalStorageService } from './local-storage.service'
 
 export class PreferenceData<T> {
 	constructor(
-		private storage: LocalStorageService,
-		private key: string,
-		private defaultValue: T | (() => T),
+		private readonly storage: LocalStorageService,
+		private readonly key: string,
+		private readonly defaultValue: T | (() => T),
 	) {}
 
 	has() {
@@ -41,7 +41,7 @@ export class PreferenceData<T> {
 
 @Injectable({ providedIn: 'root' })
 export class PreferenceService {
-	constructor(private storage: LocalStorageService) {}
+	constructor(private readonly storage: LocalStorageService) {}
 
 	wheelPreference(wheel: FilterWheel) {
 		return new PreferenceData<WheelPreference>(this.storage, `wheel.${wheel.name}`, {})
@@ -72,19 +72,19 @@ export class PreferenceService {
 	}
 
 	plateSolverRequest(type: PlateSolverType) {
-		return new PreferenceData<PlateSolverRequest>(this.storage, `plateSolver.${type}`, () => <PlateSolverRequest>{ ...EMPTY_PLATE_SOLVER_REQUEST, type })
+		return new PreferenceData<PlateSolverRequest>(this.storage, `plateSolver.${type}`, () => ({ ...EMPTY_PLATE_SOLVER_REQUEST, type }) as PlateSolverRequest)
 	}
 
 	starDetectionRequest(type: StarDetectorType) {
-		return new PreferenceData<StarDetectionRequest>(this.storage, `starDetection.${type}`, () => <StarDetectionRequest>{ ...EMPTY_STAR_DETECTION_REQUEST, type })
+		return new PreferenceData<StarDetectionRequest>(this.storage, `starDetection.${type}`, () => ({ ...EMPTY_STAR_DETECTION_REQUEST, type }) as StarDetectionRequest)
 	}
 
 	liveStackingRequest(type: LiveStackerType) {
-		return new PreferenceData<LiveStackingRequest>(this.storage, `liveStacking.${type}`, () => <LiveStackingRequest>{ ...EMPTY_LIVE_STACKING_REQUEST, type })
+		return new PreferenceData<LiveStackingRequest>(this.storage, `liveStacking.${type}`, () => ({ ...EMPTY_LIVE_STACKING_REQUEST, type }) as LiveStackingRequest)
 	}
 
 	equipmentForDevice(device: Device) {
-		return new PreferenceData<Equipment>(this.storage, `equipment.${device.name}`, () => <Equipment>{})
+		return new PreferenceData<Equipment>(this.storage, `equipment.${device.name}`, () => ({}) as Equipment)
 	}
 
 	focusOffset(wheel: FilterWheel, focuser: Focuser, position: number) {
@@ -102,11 +102,11 @@ export class PreferenceService {
 	readonly connections = new PreferenceData<ConnectionDetails[]>(this.storage, 'home.connections', () => [])
 	readonly locations = new PreferenceData<Location[]>(this.storage, 'locations', () => [structuredClone(EMPTY_LOCATION)])
 	readonly selectedLocation = new PreferenceData<Location>(this.storage, 'locations.selected', () => structuredClone(EMPTY_LOCATION))
-	readonly homePreference = new PreferenceData<HomePreference>(this.storage, 'home', () => <HomePreference>{})
+	readonly homePreference = new PreferenceData<HomePreference>(this.storage, 'home', () => ({}) as HomePreference)
 	readonly imagePreference = new PreferenceData<ImagePreference>(this.storage, 'image', () => structuredClone(EMPTY_IMAGE_PREFERENCE))
-	readonly skyAtlasPreference = new PreferenceData<SkyAtlasPreference>(this.storage, 'atlas', () => <SkyAtlasPreference>{})
+	readonly skyAtlasPreference = new PreferenceData<SkyAtlasPreference>(this.storage, 'atlas', () => ({}) as SkyAtlasPreference)
 	readonly alignmentPreference = new PreferenceData<AlignmentPreference>(this.storage, 'alignment', () => structuredClone(EMPTY_ALIGNMENT_PREFERENCE))
 	readonly imageFOVs = new PreferenceData<FOV[]>(this.storage, 'image.fovs', () => [])
-	readonly calibrationPreference = new PreferenceData<CalibrationPreference>(this.storage, 'calibration', () => <CalibrationPreference>{})
+	readonly calibrationPreference = new PreferenceData<CalibrationPreference>(this.storage, 'calibration', () => ({}) as CalibrationPreference)
 	readonly autoFocusPreference = new PreferenceData<AutoFocusPreference>(this.storage, 'autoFocus', () => structuredClone(EMPTY_AUTO_FOCUS_PREFERENCE))
 }

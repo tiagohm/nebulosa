@@ -423,14 +423,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	private location: Location
 
 	constructor(
-		private app: AppComponent,
-		private api: ApiService,
-		private browserWindow: BrowserWindowService,
-		private route: ActivatedRoute,
+		private readonly app: AppComponent,
+		private readonly api: ApiService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly route: ActivatedRoute,
 		electron: ElectronService,
-		private preference: PreferenceService,
-		private skyObjectPipe: SkyObjectPipe,
-		private prime: PrimeService,
+		private readonly preference: PreferenceService,
+		private readonly skyObjectPipe: SkyObjectPipe,
+		private readonly prime: PrimeService,
 		ngZone: NgZone,
 	) {
 		app.title = 'Sky Atlas'
@@ -508,16 +508,16 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	}
 
 	private async loadTabFromData(data?: SkyAtlasData) {
-		if (data && data.tab) {
+		if (data?.tab) {
 			this.tab = data.tab
 
 			if (this.tab === SkyAtlasTab.SKY_OBJECT) {
-				this.skyObjectFilter.rightAscension = data.filter?.rightAscension || this.skyObjectFilter.rightAscension
-				this.skyObjectFilter.declination = data.filter?.declination || this.skyObjectFilter.declination
-				this.skyObjectFilter.radius = data.filter?.radius || this.skyObjectFilter.radius || 4.0
-				this.skyObjectFilter.constellation = data.filter?.constellation || this.skyObjectFilter.constellation
-				this.skyObjectFilter.magnitude = data.filter?.magnitude || this.skyObjectFilter.magnitude
-				this.skyObjectFilter.type = data.filter?.type || this.skyObjectFilter.type
+				this.skyObjectFilter.rightAscension = data.filter?.rightAscension ?? this.skyObjectFilter.rightAscension
+				this.skyObjectFilter.declination = data.filter?.declination ?? this.skyObjectFilter.declination
+				this.skyObjectFilter.radius = (data.filter?.radius ?? this.skyObjectFilter.radius) || 4.0
+				this.skyObjectFilter.constellation = data.filter?.constellation ?? this.skyObjectFilter.constellation
+				this.skyObjectFilter.magnitude = data.filter?.magnitude ?? this.skyObjectFilter.magnitude
+				this.skyObjectFilter.type = data.filter?.type ?? this.skyObjectFilter.type
 
 				await this.tabChanged()
 				await this.filterSkyObject()

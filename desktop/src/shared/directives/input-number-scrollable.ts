@@ -3,7 +3,7 @@ import { InputNumber } from 'primeng/inputnumber'
 
 @Directive({ selector: '[scrollableNumber]' })
 export class ScrollableNumberDirective {
-	constructor(@Host() private inputNumber: InputNumber) {}
+	constructor(@Host() private readonly inputNumber: InputNumber) {}
 
 	@HostListener('wheel', ['$event'])
 	handleEvent(event: WheelEvent) {

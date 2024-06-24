@@ -1,4 +1,4 @@
-import { PierSide } from './mount.types'
+import type { PierSide } from './mount.types'
 
 export type Angle = string | number
 

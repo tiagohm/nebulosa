@@ -12,6 +12,12 @@ export default tseslint.config(
 			...config,
 		}
 	}),
+	...tseslint.configs.stylisticTypeCheckedOnly.map((config) => {
+		return {
+			files: ['**/*.ts'],
+			...config,
+		}
+	}),
 	{
 		languageOptions: {
 			parserOptions: {
@@ -35,6 +41,18 @@ export default tseslint.config(
 			'@typescript-eslint/no-unsafe-return': 'off',
 			'@typescript-eslint/no-extraneous-class': 'off',
 			'@typescript-eslint/no-non-null-assertion': 'off',
+			'@typescript-eslint/consistent-type-imports': 'error',
+			'@typescript-eslint/no-empty-interface': 'error',
+			'@typescript-eslint/consistent-return': 'error',
+			'@typescript-eslint/consistent-indexed-object-style': 'error',
+			'@typescript-eslint/prefer-readonly': 'error',
+			'@typescript-eslint/consistent-type-assertions': 'error',
+			'@typescript-eslint/prefer-nullish-coalescing': [
+				'error',
+				{
+					ignorePrimitives: true,
+				},
+			],
 		},
 	},
 )

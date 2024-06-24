@@ -22,7 +22,7 @@ export class DialogMenuComponent {
 	@Input()
 	updateHeaderWithMenuLabel: boolean = true
 
-	private navigationHeader: (string | undefined)[] = []
+	private readonly navigationHeader: (string | undefined)[] = []
 
 	show() {
 		this.visible = true

@@ -1,4 +1,4 @@
-import { MessageEvent } from './api.types'
+import type { MessageEvent } from './api.types'
 
 export type Severity = 'success' | 'info' | 'warning' | 'danger'
 
@@ -73,11 +73,13 @@ export interface JsonFile<T = unknown> {
 
 export interface SaveJson<T = unknown> extends OpenFile, JsonFile<T> {}
 
-export interface StoredWindowData {
-	[key: `window.${string}`]: {
-		x: number
-		y: number
-		width: number
-		height: number
-	}
+export type StoredWindowDataKey = `window.${string}`
+
+export type StoredWindowDataValue = {
+	x: number
+	y: number
+	width: number
+	height: number
 }
+
+export type StoredWindowData = Record<StoredWindowDataKey, StoredWindowDataValue>

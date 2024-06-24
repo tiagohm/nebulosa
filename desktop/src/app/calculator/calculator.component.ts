@@ -219,7 +219,7 @@ export class CalculatorComponent {
 
 	constructor(
 		app: AppComponent,
-		private electron: ElectronService,
+		private readonly electron: ElectronService,
 	) {
 		app.title = 'Calculator'
 	}

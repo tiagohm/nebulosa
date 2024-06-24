@@ -1,4 +1,4 @@
-import { FrameType } from './camera.types'
+import type { FrameType } from './camera.types'
 
 export interface CalibrationFrame {
 	id: number

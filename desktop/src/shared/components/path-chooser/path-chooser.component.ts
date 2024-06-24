@@ -32,7 +32,7 @@ export class PathChooserComponent implements OnChanges {
 	@Output()
 	readonly pathChange = new EventEmitter<string>()
 
-	constructor(private electron: ElectronService) {}
+	constructor(private readonly electron: ElectronService) {}
 
 	ngOnChanges(changes: SimpleChanges) {
 		if (changes['path']?.currentValue) {
@@ -42,10 +42,10 @@ export class PathChooserComponent implements OnChanges {
 
 	async choosePath() {
 		const storageKey = `pathChooser.${this.key}.defaultPath`
-		const defaultPath = localStorage.getItem(storageKey)
-		const dirName = defaultPath && !this.directory ? dirname(defaultPath) : defaultPath
+		const storedPath = localStorage.getItem(storageKey)
+		const defaultPath = storedPath && !this.directory ? dirname(storedPath) : this.path
 
-		const path = await (this.directory ? this.electron.openDirectory({ defaultPath: dirName || this.path }) : this.electron.openFile({ defaultPath: dirName || this.path }))
+		const path = await (this.directory ? this.electron.openDirectory({ defaultPath }) : this.electron.openFile({ defaultPath }))
 
 		if (path) {
 			this.path = path

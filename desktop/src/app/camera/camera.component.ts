@@ -178,13 +178,13 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	}
 
 	constructor(
-		private app: AppComponent,
-		private api: ApiService,
-		private browserWindow: BrowserWindowService,
-		private electron: ElectronService,
-		private preference: PreferenceService,
-		private route: ActivatedRoute,
-		private pinger: Pinger,
+		private readonly app: AppComponent,
+		private readonly api: ApiService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly electron: ElectronService,
+		private readonly preference: PreferenceService,
+		private readonly route: ActivatedRoute,
+		private readonly pinger: Pinger,
 		ngZone: NgZone,
 	) {
 		app.title = 'Camera'
@@ -330,7 +330,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	}
 
 	async cameraChanged(camera?: Camera) {
-		if (camera && camera.id) {
+		if (camera?.id) {
 			camera = await this.api.camera(camera.id)
 			Object.assign(this.camera, camera)
 
@@ -606,6 +606,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 				return 60000
 			case ExposureTimeUnit.MICROSECOND:
 				return 60000000
+			default:
+				return 0
 		}
 	}
 

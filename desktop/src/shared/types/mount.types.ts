@@ -1,7 +1,7 @@
-import { Angle, EquatorialCoordinate } from './atlas.types'
-import { Device } from './device.types'
-import { GPS } from './gps.types'
-import { GuideOutput } from './guider.types'
+import type { Angle, EquatorialCoordinate } from './atlas.types'
+import type { Device } from './device.types'
+import type { GPS } from './gps.types'
+import type { GuideOutput } from './guider.types'
 
 export type PierSide = 'EAST' | 'WEST' | 'NEITHER'
 

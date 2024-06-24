@@ -222,8 +222,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	constructor(
 		title: Title,
-		private api: ApiService,
-		private pinger: Pinger,
+		private readonly api: ApiService,
+		private readonly pinger: Pinger,
 		electron: ElectronService,
 		ngZone: NgZone,
 	) {

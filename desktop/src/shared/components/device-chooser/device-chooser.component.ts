@@ -40,7 +40,7 @@ export class DeviceChooserComponent<T extends Device = Device> {
 	@ViewChild('deviceMenu')
 	private readonly deviceMenu!: DeviceListMenuComponent
 
-	constructor(private api: ApiService) {}
+	constructor(private readonly api: ApiService) {}
 
 	async show() {
 		const device = await this.deviceMenu.show(this.devices, this.device)

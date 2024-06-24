@@ -4,7 +4,7 @@ import { StorageService } from './storage.service'
 
 @Injectable({ providedIn: 'root' })
 export class RemoteStorageService implements StorageService {
-	constructor(private api: ApiService) {}
+	constructor(private readonly api: ApiService) {}
 
 	clear() {
 		return this.api.clearPreferences()

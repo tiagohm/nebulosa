@@ -1,4 +1,4 @@
-import { MenuItem, SlideMenuItem } from './components/menu-item/menu-item.component'
+import type { MenuItem, SlideMenuItem } from './components/menu-item/menu-item.component'
 
 export const EVERY_MINUTE_CRON_TIME = '0 */1 * * * *'
 

@@ -75,10 +75,10 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	constructor(
 		app: AppComponent,
-		private api: ApiService,
-		private browserWindow: BrowserWindowService,
-		private preference: PreferenceService,
-		private pinger: Pinger,
+		private readonly api: ApiService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly preference: PreferenceService,
+		private readonly pinger: Pinger,
 		electron: ElectronService,
 		ngZone: NgZone,
 	) {

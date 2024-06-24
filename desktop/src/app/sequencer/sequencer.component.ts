@@ -126,13 +126,13 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	constructor(
-		private app: AppComponent,
-		private api: ApiService,
-		private browserWindow: BrowserWindowService,
-		private electron: ElectronService,
-		private storage: LocalStorageService,
-		private prime: PrimeService,
-		private pinger: Pinger,
+		private readonly app: AppComponent,
+		private readonly api: ApiService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly electron: ElectronService,
+		private readonly storage: LocalStorageService,
+		private readonly prime: PrimeService,
+		private readonly pinger: Pinger,
 		ngZone: NgZone,
 	) {
 		app.title = 'Sequencer'

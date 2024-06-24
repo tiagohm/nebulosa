@@ -27,8 +27,8 @@ export class AppComponent implements AfterViewInit {
 	}
 
 	constructor(
-		private windowTitle: Title,
-		private electron: ElectronService,
+		private readonly windowTitle: Title,
+		private readonly electron: ElectronService,
 	) {
 		console.info('APP_CONFIG', APP_CONFIG)
 

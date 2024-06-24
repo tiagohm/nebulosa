@@ -6,7 +6,7 @@ export type QueryParamType = string | number | boolean | undefined | null | Quer
 
 @Injectable({ providedIn: 'root' })
 export class HttpService {
-	constructor(private http: HttpClient) {}
+	constructor(private readonly http: HttpClient) {}
 
 	get baseUrl() {
 		return `http://${window.apiHost}:${window.apiPort}`

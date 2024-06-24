@@ -34,10 +34,10 @@ export class CalibrationComponent implements AfterViewInit {
 
 	constructor(
 		app: AppComponent,
-		private api: ApiService,
-		private electron: ElectronService,
-		private browserWindow: BrowserWindowService,
-		private preference: PreferenceService,
+		private readonly api: ApiService,
+		private readonly electron: ElectronService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly preference: PreferenceService,
 	) {
 		app.title = 'Calibration'
 	}

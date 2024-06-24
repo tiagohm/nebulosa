@@ -1,4 +1,4 @@
-import { Device } from '../types/device.types'
+import type { Device } from '../types/device.types'
 
 export type Comparator<T = unknown> = (a: T, b: T) => number
 

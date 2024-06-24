@@ -1,11 +1,11 @@
 import { Client } from '@stomp/stompjs'
 import { BrowserWindow, Notification, dialog, screen, shell } from 'electron'
-import { ChildProcessWithoutNullStreams } from 'node:child_process'
+import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { join } from 'path'
-import { MessageEvent } from '../src/shared/types/api.types'
-import { CloseWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, StoredWindowData } from '../src/shared/types/app.types'
-import { ParsedArgument } from './argument.parser'
-import { LocalStorage } from './local.storage'
+import type { MessageEvent } from '../src/shared/types/api.types'
+import type { CloseWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, StoredWindowData } from '../src/shared/types/app.types'
+import type { ParsedArgument } from './argument.parser'
+import type { LocalStorage } from './local.storage'
 
 export class ApplicationWindow {
 	constructor(
@@ -251,6 +251,8 @@ export class WindowManager {
 			browserWindow.center()
 
 			return browserWindow
+		} else {
+			return undefined
 		}
 	}
 
@@ -377,24 +379,24 @@ export class WindowManager {
 	handleWindowMinimize(event: Electron.IpcMainInvokeEvent) {
 		const window = this.findWindow(event.sender.id)
 		window?.browserWindow.minimize()
-		return window && window.browserWindow.isMinimized()
+		return !!window && window.browserWindow.isMinimized()
 	}
 
 	handleWindowMaximize(event: Electron.IpcMainInvokeEvent) {
 		const window = this.findWindow(event.sender.id)
-		return window && window.toggleMaximize()
+		return !!window && window.toggleMaximize()
 	}
 
 	handleWindowPin(event: Electron.IpcMainInvokeEvent) {
 		const window = this.findWindow(event.sender.id)
 		window?.browserWindow.setAlwaysOnTop(true)
-		return window && window.browserWindow.isAlwaysOnTop()
+		return !!window && window.browserWindow.isAlwaysOnTop()
 	}
 
 	handleWindowUnpin(event: Electron.IpcMainInvokeEvent) {
 		const window = this.findWindow(event.sender.id)
 		window?.browserWindow.setAlwaysOnTop(false)
-		return window && window.browserWindow.isAlwaysOnTop()
+		return !!window && window.browserWindow.isAlwaysOnTop()
 	}
 
 	handleWindowFullscreen(event: Electron.IpcMainInvokeEvent, enabled?: boolean) {
@@ -406,7 +408,7 @@ export class WindowManager {
 			else window.toggleFullscreen()
 		}
 
-		return window && window.browserWindow.isFullScreen()
+		return !!window && window.browserWindow.isFullScreen()
 	}
 
 	showNotification(event: NotificationEvent) {

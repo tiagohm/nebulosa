@@ -13,6 +13,8 @@ export class SkyObjectPipe implements PipeTransform {
 				return value?.name.replaceAll('|', ' · ')
 			case 'firstName':
 				return value?.name.split(/\[([^\]]+)\]/g).filter(Boolean)[0]
+			default:
+				return `${value}`
 		}
 	}
 }

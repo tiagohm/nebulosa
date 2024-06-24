@@ -1,7 +1,7 @@
-import { Point, Size } from 'electron'
-import { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
-import { Camera, CameraStartCapture } from './camera.types'
-import { PlateSolverRequest, StarDetectionRequest } from './settings.types'
+import type { Point, Size } from 'electron'
+import type { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
+import type { Camera, CameraStartCapture } from './camera.types'
+import type { PlateSolverRequest, StarDetectionRequest } from './settings.types'
 
 export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
 
@@ -121,7 +121,7 @@ export interface ImageStatistics {
 	maximum: number
 }
 
-export interface StarDetectionImagePreference extends Pick<StarDetectionRequest, 'type' | 'minSNR' | 'maxStars'> {}
+export type StarDetectionImagePreference = Pick<StarDetectionRequest, 'type' | 'minSNR' | 'maxStars'>
 
 export interface PlateSolverImagePreference extends Pick<PlateSolverRequest, 'type'> {
 	radius: number

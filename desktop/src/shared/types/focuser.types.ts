@@ -1,5 +1,5 @@
-import { Thermometer } from './auxiliary.types'
-import { Device } from './device.types'
+import type { Thermometer } from './auxiliary.types'
+import type { Device } from './device.types'
 
 export interface Focuser extends Device, Thermometer {
 	moving: boolean

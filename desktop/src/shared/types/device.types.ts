@@ -1,4 +1,4 @@
-import { DeviceMessageEvent } from './api.types'
+import type { DeviceMessageEvent } from './api.types'
 
 export type PropertyState = 'IDLE' | 'OK' | 'BUSY' | 'ALERT'
 

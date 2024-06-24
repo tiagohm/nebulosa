@@ -49,10 +49,10 @@ export class SettingsComponent {
 
 	constructor(
 		app: AppComponent,
-		private preference: PreferenceService,
-		private electron: ElectronService,
-		private prime: PrimeService,
-		private dropdownOptions: DropdownOptionsPipe,
+		private readonly preference: PreferenceService,
+		private readonly electron: ElectronService,
+		private readonly prime: PrimeService,
+		private readonly dropdownOptions: DropdownOptionsPipe,
 	) {
 		app.title = 'Settings'
 

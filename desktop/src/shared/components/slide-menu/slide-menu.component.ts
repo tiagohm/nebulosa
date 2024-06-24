@@ -21,7 +21,7 @@ export class SlideMenuComponent implements OnInit {
 
 	currentMenu!: SlideMenuItem[]
 
-	private navigation: SlideMenuItem[][] = []
+	private readonly navigation: SlideMenuItem[][] = []
 
 	ngOnInit() {
 		this.processMenu(this.model, 0)

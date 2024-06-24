@@ -21,7 +21,7 @@ import { HttpService } from './http.service'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-	constructor(private http: HttpService) {}
+	constructor(private readonly http: HttpService) {}
 
 	get baseUrl() {
 		return this.http.baseUrl

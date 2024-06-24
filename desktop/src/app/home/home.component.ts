@@ -26,7 +26,7 @@ type MappedDevice = {
 }
 
 function scrollPageOf(element: Element) {
-	return parseInt(element.getAttribute('scroll-page') || '0')
+	return parseInt(element.getAttribute('scroll-page') ?? '0')
 }
 
 @Component({
@@ -156,12 +156,12 @@ export class HomeComponent implements AfterContentInit {
 
 	constructor(
 		app: AppComponent,
-		private electron: ElectronService,
-		private browserWindow: BrowserWindowService,
-		private api: ApiService,
-		private prime: PrimeService,
-		private preference: PreferenceService,
-		private ngZone: NgZone,
+		private readonly electron: ElectronService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly api: ApiService,
+		private readonly prime: PrimeService,
+		private readonly preference: PreferenceService,
+		private readonly ngZone: NgZone,
 	) {
 		app.title = 'Nebulosa'
 
@@ -352,7 +352,7 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	protected findDeviceById(id: string) {
-		return this.cameras.find((e) => e.id === id) || this.mounts.find((e) => e.id === id) || this.wheels.find((e) => e.id === id) || this.focusers.find((e) => e.id === id) || this.rotators.find((e) => e.id === id)
+		return this.cameras.find((e) => e.id === id) ?? this.mounts.find((e) => e.id === id) ?? this.wheels.find((e) => e.id === id) ?? this.focusers.find((e) => e.id === id) ?? this.rotators.find((e) => e.id === id)
 	}
 
 	protected deviceConnected(event: DeviceConnectionCommandEvent) {
@@ -472,7 +472,7 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	private async updateConnection() {
-		if (this.connection && this.connection.id) {
+		if (this.connection?.id) {
 			try {
 				const status = await this.api.connectionStatus(this.connection.id)
 

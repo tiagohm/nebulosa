@@ -110,7 +110,7 @@ export class ElectronService {
 
 	get isElectron() {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		return !!(window && window.process && window.process.type)
+		return !!(window && window.process?.type)
 	}
 
 	send<K extends keyof EventMappedType>(channel: K, data?: EventMappedType[K]) {

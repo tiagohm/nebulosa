@@ -1,5 +1,5 @@
-import { CameraStartCapture } from './camera.types'
-import { Device } from './device.types'
+import type { CameraStartCapture } from './camera.types'
+import type { Device } from './device.types'
 
 export type WheelDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD'
 

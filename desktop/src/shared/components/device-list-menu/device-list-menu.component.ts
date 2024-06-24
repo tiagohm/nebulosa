@@ -42,7 +42,7 @@ export class DeviceListMenuComponent {
 	@ViewChild('menu')
 	private readonly menu!: DialogMenuComponent
 
-	constructor(private prime: PrimeService) {}
+	constructor(private readonly prime: PrimeService) {}
 
 	show<T extends Device>(devices: T[], selected?: NoInfer<T>) {
 		const model: SlideMenuItem[] = []

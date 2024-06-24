@@ -13,7 +13,7 @@ import { ElectronService } from './electron.service'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
-	constructor(private electron: ElectronService) {}
+	constructor(private readonly electron: ElectronService) {}
 
 	openWindow(open: OpenWindow): Promise<boolean> {
 		open.preference.modal = false

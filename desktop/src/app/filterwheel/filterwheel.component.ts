@@ -56,15 +56,15 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 	}
 
 	private readonly filterChangedPublisher = new Subject<FilterSlot>()
-	private subscription?: Subscription
+	private readonly subscription?: Subscription
 
 	constructor(
-		private app: AppComponent,
-		private api: ApiService,
-		private electron: ElectronService,
-		private preference: PreferenceService,
-		private route: ActivatedRoute,
-		private pinger: Pinger,
+		private readonly app: AppComponent,
+		private readonly api: ApiService,
+		private readonly electron: ElectronService,
+		private readonly preference: PreferenceService,
+		private readonly route: ActivatedRoute,
+		private readonly pinger: Pinger,
 		ngZone: NgZone,
 	) {
 		app.title = 'Filter Wheel'
@@ -207,7 +207,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 	}
 
 	async wheelChanged(wheel?: FilterWheel) {
-		if (wheel && wheel.id) {
+		if (wheel?.id) {
 			wheel = await this.api.wheel(wheel.id)
 
 			await this.ping()

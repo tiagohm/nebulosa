@@ -4,7 +4,7 @@ import { dirname } from 'path'
 export class LocalStorage<T extends NonNullable<unknown>> {
 	private readonly data = Object.create(null) as T
 
-	constructor(private path: string) {
+	constructor(private readonly path: string) {
 		try {
 			console.info(`loading config file at ${path}`)
 

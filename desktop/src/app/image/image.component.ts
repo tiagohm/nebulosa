@@ -229,7 +229,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 					: extension === '.png' ? 'PNG'
 					: extension === '.jpg' ? 'JPG'
 					: 'FITS'
-				this.saveAs.bitpix = this.imageInfo?.bitpix || 'BYTE'
+				this.saveAs.bitpix = this.imageInfo?.bitpix ?? 'BYTE'
 				this.saveAs.path = path
 				this.saveAs.showDialog = true
 
@@ -525,14 +525,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	constructor(
-		private app: AppComponent,
-		private route: ActivatedRoute,
-		private api: ApiService,
-		private electron: ElectronService,
-		private browserWindow: BrowserWindowService,
-		private preference: PreferenceService,
-		private prime: PrimeService,
-		private ngZone: NgZone,
+		private readonly app: AppComponent,
+		private readonly route: ActivatedRoute,
+		private readonly api: ApiService,
+		private readonly electron: ElectronService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly preference: PreferenceService,
+		private readonly prime: PrimeService,
+		private readonly ngZone: NgZone,
 	) {
 		app.title = 'Image'
 
@@ -712,7 +712,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			const label = name ?? 'None'
 			const icon = name ? 'mdi mdi-wrench' : 'mdi mdi-close'
 
-			return <MenuItem>{
+			return {
 				label,
 				icon,
 				selected: !this.calibrationViaCamera && this.transformation.calibrationGroup === name,
@@ -723,7 +723,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 					this.markCalibrationGroupItem(name)
 					void this.loadImage()
 				},
-			}
+			} as MenuItem
 		}
 
 		const menu: MenuItem[] = []
@@ -1052,8 +1052,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			}
 		}
 
-		this.solver.focalLength ||= imagePreference.solver?.focalLength || 0
-		this.solver.pixelSize ||= imagePreference.solver?.pixelSize || 0
+		this.solver.focalLength ||= imagePreference.solver?.focalLength ?? 0
+		this.solver.pixelSize ||= imagePreference.solver?.pixelSize ?? 0
 	}
 
 	imageClicked(event: MouseEvent, contextMenu: boolean) {

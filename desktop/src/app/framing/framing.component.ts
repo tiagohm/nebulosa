@@ -52,12 +52,12 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 
 	constructor(
 		app: AppComponent,
-		private route: ActivatedRoute,
-		private api: ApiService,
-		private browserWindow: BrowserWindowService,
-		private electron: ElectronService,
-		private storage: LocalStorageService,
-		private prime: PrimeService,
+		private readonly route: ActivatedRoute,
+		private readonly api: ApiService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly electron: ElectronService,
+		private readonly storage: LocalStorageService,
+		private readonly prime: PrimeService,
 		ngZone: NgZone,
 	) {
 		app.title = 'Framing'

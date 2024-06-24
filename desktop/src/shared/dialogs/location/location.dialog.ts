@@ -14,7 +14,7 @@ export class LocationDialog implements AfterViewInit {
 	readonly location: Location
 
 	constructor(
-		private dialogRef: DynamicDialogRef,
+		private readonly dialogRef: DynamicDialogRef,
 		config: DynamicDialogConfig<Location>,
 	) {
 		this.location = config.data ?? structuredClone(EMPTY_LOCATION)

@@ -28,8 +28,8 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 
 	constructor(
 		app: AppComponent,
-		private route: ActivatedRoute,
-		private api: ApiService,
+		private readonly route: ActivatedRoute,
+		private readonly api: ApiService,
 		electron: ElectronService,
 		ngZone: NgZone,
 	) {
