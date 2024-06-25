@@ -19,7 +19,9 @@
 			(deviceChange)="focuserChanged()" />
 	</div>
 	<div class="col-12 justify-content-center align-items-center">
-		<neb-camera-info [info]="request.capture" />
+		<neb-camera-info
+			[info]="request.capture"
+			[hasType]="false" />
 	</div>
 	<div
 		class="col-12 relative pt-0 text-sm text-gray-400 flex align-items-center mt-1 gap-1 text-sm"

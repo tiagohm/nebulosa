@@ -20,7 +20,10 @@
 				(deviceChange)="wheelChanged()" />
 		</div>
 		<div class="col-12 justify-content-center align-items-center">
-			<neb-camera-info [info]="request.capture" [hasExposure]="false" />
+			<neb-camera-info
+				[info]="request.capture"
+				[hasExposure]="false"
+				[hasType]="false" />
 		</div>
 		<div class="col-12 pt-0 pb-1 text-sm text-gray-400 flex-column flex align-items-center my-1 gap-1 text-center text-xs">
 			<neb-camera-exposure #cameraExposure />

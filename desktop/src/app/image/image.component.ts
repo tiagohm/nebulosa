@@ -852,8 +852,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private async loadImageFromOpenImage(data: OpenImage) {
-		console.info('loading image from data: %s', data)
-
 		Object.assign(this.imageData, data)
 
 		// Not clicked on menu item.
@@ -872,9 +870,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			this.disableCalibration(false)
 		}
 
-		this.clearOverlay()
-
-		return this.loadImage(true)
+		if (data.path) {
+			this.clearOverlay()
+			await this.loadImage(true)
+		}
 	}
 
 	private clearOverlay() {

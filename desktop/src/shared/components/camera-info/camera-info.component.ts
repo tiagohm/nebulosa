@@ -16,6 +16,9 @@ export class CameraInfoComponent {
 	readonly wheel?: FilterWheel
 
 	@Input()
+	readonly hasType: boolean = true
+
+	@Input()
 	readonly hasExposure: boolean = true
 
 	get hasFilter() {

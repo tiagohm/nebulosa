@@ -1,18 +1,20 @@
 <div class="flex gap-2 align-items-center flex-wrap">
-	<div class="tag">
+	<div
+		*ngIf="hasType"
+		class="tag">
 		<span class="min-w-3rem">{{ info.frameType }}</span>
 		<label class="text-green-300">Type</label>
 	</div>
 	<div
 		*ngIf="hasExposure && info.exposureTime"
 		class="tag">
-		<span class="min-w-4rem">{{ info.exposureAmount || '∞' }} of {{ info.exposureTime | exposureTime }}</span>
+		<span class="min-w-4rem">{{ info.exposureAmount || '∞' }} / {{ info.exposureTime | exposureTime }}</span>
 		<label class="text-orange-300">Exposure</label>
 	</div>
 	<div
 		*ngIf="info.exposureDelay"
 		class="tag">
-		<span class="min-w-4rem">{{ info.exposureDelay * 1000000 | exposureTime }}</span>
+		<span class="min-w-3rem">{{ info.exposureDelay * 1000000 | exposureTime }}</span>
 		<label class="text-blue-300">Delay</label>
 	</div>
 	<div

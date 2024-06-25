@@ -80,7 +80,7 @@ export class BrowserWindowService {
 		const factor = camera.height / camera.width
 		const id = `image.${camera.name}`
 		const preference: WindowPreference = { icon: 'image', width: '50%', height: `${factor}w`, resizable: true }
-		const data = { camera, source, capture }
+		const data: OpenImage = { camera, source, capture, path: '' }
 		await this.openWindow({ preference, data, id, path: 'image' })
 		return id
 	}

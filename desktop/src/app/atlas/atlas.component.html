@@ -118,7 +118,7 @@
 									[disabled]="minorPlanetSearchText.length < 3 || refreshing"
 									(onClick)="searchMinorPlanet()"
 									icon="mdi mdi-magnify"
-									severity="success"
+									severity="info"
 									size="small"
 									[text]="true" />
 							</div>
@@ -179,7 +179,7 @@
 									[disabled]="refreshing"
 									(onClick)="closeApproachesForMinorPlanets()"
 									icon="mdi mdi-magnify"
-									severity="success"
+									severity="info"
 									size="small"
 									[text]="true" />
 							</div>
@@ -597,8 +597,8 @@
 		</p-tabPanel>
 	</p-tabView>
 	<div
-		class="col-9 flex align-items-center justify-content-between absolute gap-2"
-		style="height: 32px; left: 90px; top: 2px">
+		class="col-9 flex align-items-center justify-content-between absolute gap-2 overflow-hidden"
+		style="height: 32px; left: 95px; top: 2px; padding-right: 45px;">
 		<p-button
 			[disabled]="!name || refreshing"
 			[text]="true"

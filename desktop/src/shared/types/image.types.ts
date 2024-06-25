@@ -150,6 +150,7 @@ export const EMPTY_IMAGE_PREFERENCE: ImagePreference = {
 }
 
 export interface OpenImage {
+	camera?: Camera
 	path: string
 	source: ImageSource
 	id?: string
