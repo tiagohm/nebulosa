@@ -1,4 +1,4 @@
-import { Undefinable } from '../utils/types'
+import type { Undefinable } from '../utils/types'
 
 export interface CalculatorOperand {
 	label: string
