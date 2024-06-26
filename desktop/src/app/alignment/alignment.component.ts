@@ -71,8 +71,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 	@ViewChild('cameraExposure')
 	private readonly cameraExposure!: CameraExposureComponent
 
-	private autoResizeTimeout?: number
-
 	get cameraCaptureRequest() {
 		return this.tab === 1 ? this.darvRequest.capture : this.tppaRequest.capture
 	}
@@ -175,9 +173,9 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 			})
 		})
 
-		electron.on('TPPA.ELAPSED', async (event) => {
+		electron.on('TPPA.ELAPSED', (event) => {
 			if (event.camera.id === this.camera.id) {
-				await ngZone.run(async () => {
+				ngZone.run(() => {
 					this.status = event.state
 					this.running = event.state !== 'FINISHED'
 					this.pausingOrPaused = event.state === 'PAUSING' || event.state === 'PAUSED'
@@ -191,11 +189,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 						this.tppaAzimuthErrorDirection = event.azimuthErrorDirection
 						this.tppaAltitudeErrorDirection = event.altitudeErrorDirection
 						this.tppaTotalError = event.totalError
-						clearTimeout(this.autoResizeTimeout)
-						this.autoResizeTimeout = await electron.autoResizeWindow()
 					} else if (event.state === 'FINISHED') {
 						this.cameraExposure.reset()
-						await electron.autoResizeWindow()
 					} else if (event.state === 'SOLVED' || event.state === 'SLEWED') {
 						this.tppaFailed = false
 						this.tppaRightAscension = event.rightAscension

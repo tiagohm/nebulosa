@@ -70,16 +70,11 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 	) {
 		app.title = 'Filter Wheel'
 
-		electron.on('WHEEL.UPDATED', async (event) => {
+		electron.on('WHEEL.UPDATED', (event) => {
 			if (event.device.id === this.wheel.id) {
-				await ngZone.run(async () => {
-					const wasConnected = this.wheel.connected
+				ngZone.run(() => {
 					Object.assign(this.wheel, event.device)
 					this.update()
-
-					if (wasConnected !== event.device.connected) {
-						await electron.autoResizeWindow(1000)
-					}
 				})
 			}
 		})
@@ -217,7 +212,6 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 
 			this.loadPreference()
 			this.update()
-			await this.electron.autoResizeWindow()
 		}
 
 		this.app.subTitle = wheel?.name ?? ''

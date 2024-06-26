@@ -73,8 +73,6 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 		this.hipsSurveys = await this.api.hipsSurveys()
 		this.hipsSurvey = this.hipsSurveys.find((e) => e.id === this.hipsSurvey?.id) ?? this.hipsSurveys[0]
 
-		await this.electron.autoResizeWindow()
-
 		this.route.queryParams.subscribe((e) => {
 			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as FramingData
 			return this.frameFromData(data)

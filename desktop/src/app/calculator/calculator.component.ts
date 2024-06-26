@@ -1,5 +1,4 @@
 import { Component, Type } from '@angular/core'
-import { ElectronService } from '../../shared/services/electron.service'
 import { CalculatorFormula } from '../../shared/types/calculator.types'
 import { AppComponent } from '../app.component'
 import { FormulaComponent } from './formula/formula.component'
@@ -215,17 +214,9 @@ export class CalculatorComponent {
 
 	formula = this.formulae[0]
 
-	private autoResizeTimeout?: number
-
-	constructor(
-		app: AppComponent,
-		private readonly electron: ElectronService,
-	) {
+	constructor(app: AppComponent) {
 		app.title = 'Calculator'
 	}
 
-	async formulaChanged() {
-		clearTimeout(this.autoResizeTimeout)
-		this.autoResizeTimeout = await this.electron.autoResizeWindow()
-	}
+	formulaChanged() {}
 }

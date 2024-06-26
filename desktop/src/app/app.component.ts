@@ -1,4 +1,4 @@
-import { AfterViewInit, Component } from '@angular/core'
+import { Component, ElementRef, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { APP_CONFIG } from '../environments/environment'
 import { MenuItem } from '../shared/components/menu-item/menu-item.component'
@@ -9,7 +9,7 @@ import { ElectronService } from '../shared/services/electron.service'
 	templateUrl: './app.component.html',
 	styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements OnDestroy {
 	pinned = false
 	readonly maximizable = !!window.preference.resizable
 	readonly modal = window.preference.modal ?? false
@@ -17,6 +17,8 @@ export class AppComponent implements AfterViewInit {
 	backgroundColor = '#212121'
 	topMenu: MenuItem[] = []
 	showTopBar = true
+
+	private readonly resizeObserver?: ResizeObserver
 
 	get title() {
 		return this.windowTitle.getTitle()
@@ -29,6 +31,7 @@ export class AppComponent implements AfterViewInit {
 	constructor(
 		private readonly windowTitle: Title,
 		private readonly electron: ElectronService,
+		hostElementRef: ElementRef<Element>,
 	) {
 		console.info('APP_CONFIG', APP_CONFIG)
 
@@ -37,12 +40,24 @@ export class AppComponent implements AfterViewInit {
 		} else {
 			console.info('Run in browser', window.preference)
 		}
+
+		if (!window.preference.resizable && window.preference.autoResizable !== false) {
+			this.resizeObserver = new ResizeObserver((entries) => {
+				const height = entries[0].target.clientHeight
+
+				if (height) {
+					void this.electron.resizeWindow(height)
+				}
+			})
+
+			this.resizeObserver.observe(hostElementRef.nativeElement)
+		} else {
+			this.resizeObserver = undefined
+		}
 	}
 
-	async ngAfterViewInit() {
-		if (window.preference.autoResizable !== false) {
-			await this.electron.autoResizeWindow()
-		}
+	ngOnDestroy() {
+		this.resizeObserver?.disconnect()
 	}
 
 	pin() {

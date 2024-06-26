@@ -55,7 +55,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 	constructor(
 		app: AppComponent,
 		private readonly api: ApiService,
-		private readonly electron: ElectronService,
+		electron: ElectronService,
 		private readonly browserWindow: BrowserWindowService,
 		private readonly prime: PrimeService,
 		private readonly preference: PreferenceService,
@@ -65,19 +65,17 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 		app.title = 'Flat Wizard'
 
 		electron.on('FLAT_WIZARD.ELAPSED', (event) => {
-			return ngZone.run(async () => {
+			ngZone.run(() => {
 				if (event.state === 'EXPOSURING' && event.capture && event.capture.camera.id === this.camera.id) {
 					this.running = true
 					this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
 				} else if (event.state === 'CAPTURED') {
 					this.running = false
 					this.savedPath = event.savedPath
-					await this.electron.autoResizeWindow()
 					this.prime.message(`Flat frame captured`)
 				} else if (event.state === 'FAILED') {
 					this.running = false
 					this.savedPath = undefined
-					await this.electron.autoResizeWindow()
 					this.prime.message(`Failed to find an optimal exposure time from given parameters`, 'error')
 				}
 			})
