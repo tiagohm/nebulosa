@@ -10,7 +10,7 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureEvent, CameraStartCapture } from '../../shared/types/camera.types'
+import { Camera, CameraCaptureEvent, CameraStartCapture, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Mount } from '../../shared/types/mount.types'
 import { Rotator } from '../../shared/types/rotator.types'
@@ -416,8 +416,18 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		}
 	}
 
-	cameraChanged() {
-		return this.ping()
+	async cameraChanged() {
+		await this.ping()
+
+		this.updateEntriesFromCamera(this.camera)
+	}
+
+	private updateEntriesFromCamera(camera?: Camera) {
+		if (camera?.connected) {
+			for (const entry of this.plan.entries) {
+				updateCameraStartCaptureFromCamera(entry, camera)
+			}
+		}
 	}
 
 	mountChanged() {
