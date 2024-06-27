@@ -27,18 +27,19 @@ class ConnectionEventHub(
     private val rotatorEventHub: RotatorEventHub,
 ) : DeviceEventHandler.EventReceived {
 
-    @Suppress("CascadeIf")
     override fun onEventReceived(event: DeviceEvent<*>) {
+        val device = event.device ?: return
+
         if (event is DeviceConnectionEvent) {
-            val device = event.device ?: return
+            when (device) {
+                is Camera -> cameraEventHub.onConnectionChanged(device)
+                is Mount -> mountEventHub.onConnectionChanged(device)
+                is Focuser -> focuserEventHub.onConnectionChanged(device)
+                is FilterWheel -> wheelEventHub.onConnectionChanged(device)
+                is Rotator -> rotatorEventHub.onConnectionChanged(device)
+            }
 
-            if (device is Camera) cameraEventHub.sendUpdate(device)
-            else if (device is Mount) mountEventHub.sendUpdate(device)
-            else if (device is Focuser) focuserEventHub.sendUpdate(device)
-            else if (device is FilterWheel) wheelEventHub.sendUpdate(device)
-            else if (device is Rotator) rotatorEventHub.sendUpdate(device)
-
-            if (device is GuideOutput) guideOutputEventHub.sendUpdate(device)
+            if (device is GuideOutput) guideOutputEventHub.onConnectionChanged(device)
         }
     }
 }

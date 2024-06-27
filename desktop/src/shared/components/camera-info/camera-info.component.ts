@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core'
-import { PreferenceService } from '../../services/preference.service'
 import { CameraStartCapture } from '../../types/camera.types'
 import { FilterWheel } from '../../types/wheel.types'
 
@@ -27,12 +26,9 @@ export class CameraInfoComponent {
 
 	get filter() {
 		if (this.wheel && this.info.filterPosition) {
-			const preference = this.preference.wheelPreference(this.wheel).get()
-			return preference.names?.[this.info.filterPosition - 1] ?? `#${this.info.filterPosition}`
+			return this.wheel.names[this.info.filterPosition - 1] || `#${this.info.filterPosition}`
 		} else {
 			return undefined
 		}
 	}
-
-	constructor(private readonly preference: PreferenceService) {}
 }

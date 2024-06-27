@@ -18,7 +18,7 @@ class WheelService(private val wheelEventHub: WheelEventHub) {
         wheel.moveTo(steps)
     }
 
-    fun sync(wheel: FilterWheel, names: List<String>) {
+    fun sync(wheel: FilterWheel, names: Iterable<String>) {
         wheel.names(names)
     }
 

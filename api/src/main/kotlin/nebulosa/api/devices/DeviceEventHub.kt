@@ -8,10 +8,14 @@ import java.io.Closeable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>> : Closeable {
+abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(eventName: String) : Closeable {
 
     private val throttler = PublishSubject.create<E>()
     private val listenable = ConcurrentHashMap<D, Long>(2)
+
+    private val updateEventName = "$eventName.UPDATED"
+    private val attachedEventName = "$eventName.ATTACHED"
+    private val detachedEventName = "$eventName.DETACHED"
 
     init {
         throttler
@@ -30,7 +34,15 @@ abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>> : Closeable {
             }
     }
 
-    abstract fun sendUpdate(device: D)
+    abstract fun sendMessage(eventName: String, device: D)
+
+    open fun sendUpdate(device: D) = sendMessage(updateEventName, device)
+
+    open fun onAttached(device: D) = sendMessage(attachedEventName, device)
+
+    open fun onDetached(device: D) = sendMessage(detachedEventName, device)
+
+    open fun onConnectionChanged(device: D) = sendUpdate(device)
 
     protected fun onNext(event: E) = throttler.onNext(event)
 

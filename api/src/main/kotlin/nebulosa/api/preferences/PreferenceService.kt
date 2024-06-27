@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 class PreferenceService(
     private val preferenceRepository: PreferenceRepository,
     private val objectMapper: ObjectMapper,
-) {
+) : Collection<PreferenceEntity> by preferenceRepository {
 
     operator fun get(key: String) = preferenceRepository.findByKey(key)
 

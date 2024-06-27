@@ -18,6 +18,9 @@ class WheelSerializer : StdSerializer<FilterWheel>(FilterWheel::class.java) {
         gen.writeNumberField("count", value.count)
         gen.writeNumberField("position", value.position)
         gen.writeBooleanField("moving", value.moving)
+        gen.writeArrayFieldStart("names")
+        value.names.forEach(gen::writeString)
+        gen.writeEndArray()
         gen.writeEndObject()
     }
 }

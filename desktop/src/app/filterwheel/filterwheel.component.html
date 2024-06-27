@@ -36,6 +36,9 @@
 			<i class="mdi mdi-information text-blue-600"></i>
 			<span class="mr-3">{{ moving ? 'moving' : 'idle' }}</span>
 			<p-tag
+				*ngIf="wheel.connected && currentFilter && currentFilter.position"
+				value="#{{ currentFilter.position }}" />
+			<p-tag
 				*ngIf="wheel.connected && currentFilter"
 				[value]="currentFilter.name"
 				severity="info" />
@@ -136,11 +139,11 @@
 				[devices]="focusers"
 				[(device)]="focuser"
 				(deviceChange)="focuserChanged()"
+				(deviceConnect)="focuserChanged()"
 				style="max-width: 60%" />
-
 			<p-floatLabel>
 				<p-inputNumber
-					[disabled]="!wheel.connected || moving || !focuser"
+					[disabled]="!wheel.connected || moving || !focuser?.connected"
 					[(ngModel)]="focusOffset"
 					[min]="focusOffsetMin"
 					[max]="focusOffsetMax"

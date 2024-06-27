@@ -10,7 +10,7 @@ import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { EMPTY_WHEEL, FilterSlot, FilterWheel, WheelDialogInput, WheelDialogMode, WheelPreference } from '../../shared/types/wheel.types'
+import { EMPTY_WHEEL, FilterSlot, FilterWheel, WheelDialogInput, WheelDialogMode, WheelPreference, makeFilterSlots } from '../../shared/types/wheel.types'
 import { Undefinable } from '../../shared/utils/types'
 import { AppComponent } from '../app.component'
 
@@ -114,6 +114,9 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 
 		this.subscription = this.filterChangedPublisher.pipe(debounceTime(1500)).subscribe(async (filter) => {
 			this.savePreference()
+
+			const names = this.filters.map(e => e.name)
+			await this.api.wheelSync(this.wheel, names)
 			await this.electron.send('WHEEL.RENAMED', { wheel: this.wheel, filter })
 		})
 
@@ -317,18 +320,18 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 	}
 
 	focusOffsetForFilter(filter: FilterSlot) {
-		return this.focuser ? this.preference.focusOffset(this.wheel, this.focuser, filter.position).get() : 0
+		return this.focuser ? this.preference.focusOffsets(this.wheel, this.focuser).get()[filter.position - 1] ?? 0 : 0
 	}
 
 	private updateFocusOffset() {
-		if (this.filter) {
-			this.focusOffset = this.focuser ? this.preference.focusOffset(this.wheel, this.focuser, this.filter.position).get() : 0
-		}
+		this.focusOffset = this.filter ? this.focusOffsetForFilter(this.filter) : 0
 	}
 
 	focusOffsetChanged() {
 		if (this.filter && this.focuser) {
-			this.preference.focusOffset(this.wheel, this.focuser, this.filter.position).set(this.focusOffset)
+			const offsets = this.preference.focusOffsets(this.wheel, this.focuser).get()
+			offsets[this.filter.position - 1] = this.focusOffset
+			this.preference.focusOffsets(this.wheel, this.focuser).set(offsets)
 		}
 	}
 
@@ -346,30 +349,10 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 
 		if (this.moving) return
 
-		let filters: FilterSlot[] = []
-		let filtersChanged = true
+		const preference = this.preference.wheelPreference(this.wheel).get()
+		const filters = makeFilterSlots(this.wheel, this.filters, preference.shutterPosition)
 
-		if (this.wheel.count <= 0) {
-			this.filters = []
-			return
-		} else if (this.wheel.count !== this.filters.length) {
-			filters = new Array<FilterSlot>(this.wheel.count)
-		} else {
-			filters = this.filters
-			filtersChanged = false
-		}
-
-		if (filtersChanged) {
-			const preference = this.preference.wheelPreference(this.wheel).get()
-
-			for (let position = 1; position <= filters.length; position++) {
-				const name = preference.names?.[position - 1] ?? `Filter #${position}`
-				const offset = preference.offsets?.[position - 1] ?? 0
-				const dark = position === preference.shutterPosition
-				const filter = { position, name, dark, offset }
-				filters[position - 1] = filter
-			}
-
+		if (filters !== this.filters) {
 			this.filters = filters
 			this.filter = filters[(this.filter?.position ?? this.position) - 1] ?? filters[0]
 		}
@@ -391,7 +374,6 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 
 			const preference: WheelPreference = {
 				shutterPosition: dark?.position ?? 0,
-				names: this.filters.map((e) => e.name),
 			}
 
 			this.preference.wheelPreference(this.wheel).set(preference)

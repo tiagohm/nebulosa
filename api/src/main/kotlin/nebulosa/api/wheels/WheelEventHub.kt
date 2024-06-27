@@ -16,30 +16,18 @@ import org.springframework.stereotype.Component
 @Subscriber
 class WheelEventHub(
     private val messageService: MessageService,
-) : DeviceEventHub<FilterWheel, FilterWheelEvent>(), WheelEventAware {
+) : DeviceEventHub<FilterWheel, FilterWheelEvent>("WHEEL"), WheelEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleFilterWheelEvent(event: FilterWheelEvent) {
         when (event) {
             is PropertyChangedEvent -> onNext(event)
-            is FilterWheelAttached -> sendMessage(WHEEL_ATTACHED, event.device)
-            is FilterWheelDetached -> sendMessage(WHEEL_DETACHED, event.device)
+            is FilterWheelAttached -> onAttached(event.device)
+            is FilterWheelDetached -> onDetached(event.device)
         }
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendMessage(eventName: String, device: FilterWheel) {
+    override fun sendMessage(eventName: String, device: FilterWheel) {
         messageService.sendMessage(WheelMessageEvent(eventName, device))
-    }
-
-    override fun sendUpdate(device: FilterWheel) {
-        sendMessage(WHEEL_UPDATED, device)
-    }
-
-    companion object {
-
-        const val WHEEL_UPDATED = "WHEEL.UPDATED"
-        const val WHEEL_ATTACHED = "WHEEL.ATTACHED"
-        const val WHEEL_DETACHED = "WHEEL.DETACHED"
     }
 }

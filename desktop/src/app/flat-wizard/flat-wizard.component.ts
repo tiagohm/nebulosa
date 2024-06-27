@@ -8,7 +8,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { FlatWizardRequest } from '../../shared/types/flat-wizard.types'
-import { EMPTY_WHEEL, FilterSlot, FilterWheel } from '../../shared/types/wheel.types'
+import { EMPTY_WHEEL, FilterSlot, FilterWheel, makeFilterSlots } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
@@ -33,8 +33,6 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	filters: FilterSlot[] = []
 	selectedFilters: FilterSlot[] = []
-
-	private readonly selectedFiltersMap = new Map<string, FilterSlot[]>()
 
 	readonly request: FlatWizardRequest = {
 		capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
@@ -189,33 +187,12 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 		if (this.wheel.id) {
 			await this.ping()
 
-			let filters: FilterSlot[] = []
-			let filtersChanged = true
+			const preference = this.preference.wheelPreference(this.wheel).get()
+			const filters = makeFilterSlots(this.wheel, this.filters, preference.shutterPosition)
 
-			if (this.wheel.count <= 0) {
-				this.filters = []
-				return
-			} else if (this.wheel.count !== this.filters.length) {
-				filters = new Array<FilterSlot>(this.wheel.count)
-			} else {
-				filters = this.filters
-				filtersChanged = false
-			}
-
-			if (filtersChanged) {
-				const preference = this.preference.wheelPreference(this.wheel).get()
-
-				for (let position = 1; position <= filters.length; position++) {
-					const name = preference.names?.[position - 1] ?? `Filter #${position}`
-					const offset = preference.offsets?.[position - 1] ?? 0
-					const dark = position === preference.shutterPosition
-					const filter = { position, name, dark, offset }
-					filters[position - 1] = filter
-				}
-
+			if (filters !== this.filters) {
 				this.filters = filters
-				this.selectedFilters = this.selectedFiltersMap.get(this.wheel.name) ?? []
-				this.selectedFiltersMap.set(this.wheel.name, this.selectedFilters)
+				this.selectedFilters = []
 			}
 		}
 	}

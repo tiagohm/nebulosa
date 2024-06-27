@@ -88,8 +88,8 @@ export class PreferenceService {
 		return new PreferenceData<Equipment>(this.storage, `equipment.${device.name}`, () => ({}) as Equipment)
 	}
 
-	focusOffset(wheel: FilterWheel, focuser: Focuser, position: number) {
-		return new PreferenceData<number>(this.storage, `focusOffset.${wheel.name}.${position}.${focuser.name}`, () => 0)
+	focusOffsets(wheel: FilterWheel, focuser: Focuser) {
+		return new PreferenceData<number[]>(this.storage, `focusOffsets.${wheel.name}.${focuser.name}`, () => new Array<number>(wheel.count).fill(0))
 	}
 
 	focuserPreference(focuser: Focuser) {

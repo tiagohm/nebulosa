@@ -16,30 +16,18 @@ import org.springframework.stereotype.Component
 @Subscriber
 class RotatorEventHub(
     private val messageService: MessageService,
-) : DeviceEventHub<Rotator, RotatorEvent>(), RotatorEventAware {
+) : DeviceEventHub<Rotator, RotatorEvent>("ROTATOR"), RotatorEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleRotatorEvent(event: RotatorEvent) {
         when (event) {
             is PropertyChangedEvent -> onNext(event)
-            is RotatorAttached -> sendMessage(ROTATOR_ATTACHED, event.device)
-            is RotatorDetached -> sendMessage(ROTATOR_DETACHED, event.device)
+            is RotatorAttached -> onAttached(event.device)
+            is RotatorDetached -> onDetached(event.device)
         }
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendMessage(eventName: String, device: Rotator) {
+    override fun sendMessage(eventName: String, device: Rotator) {
         messageService.sendMessage(RotatorMessageEvent(eventName, device))
-    }
-
-    override fun sendUpdate(device: Rotator) {
-        sendMessage(ROTATOR_UPDATED, device)
-    }
-
-    companion object {
-
-        const val ROTATOR_UPDATED = "ROTATOR.UPDATED"
-        const val ROTATOR_ATTACHED = "ROTATOR.ATTACHED"
-        const val ROTATOR_DETACHED = "ROTATOR.DETACHED"
     }
 }
