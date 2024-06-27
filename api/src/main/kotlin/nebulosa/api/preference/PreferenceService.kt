@@ -1,4 +1,4 @@
-package nebulosa.api.preferences
+package nebulosa.api.preference
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Service

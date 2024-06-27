@@ -11,9 +11,9 @@ import io.kotest.matchers.shouldBe
 import io.objectbox.kotlin.boxFor
 import nebulosa.api.atlas.Location
 import nebulosa.api.database.MyObjectBox
-import nebulosa.api.preferences.PreferenceEntity
-import nebulosa.api.preferences.PreferenceRepository
-import nebulosa.api.preferences.PreferenceService
+import nebulosa.api.preference.PreferenceEntity
+import nebulosa.api.preference.PreferenceRepository
+import nebulosa.api.preference.PreferenceService
 import nebulosa.indi.device.camera.FrameType
 import java.util.*
 

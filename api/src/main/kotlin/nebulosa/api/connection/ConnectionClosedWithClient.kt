@@ -1,6 +1,6 @@
 package nebulosa.api.connection
 
-import nebulosa.api.messages.MessageEvent
+import nebulosa.api.message.MessageEvent
 
 data class ConnectionClosedWithClient(@JvmField val id: String) : MessageEvent {
 

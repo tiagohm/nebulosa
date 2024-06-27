@@ -3,7 +3,7 @@ package nebulosa.api.sequencer
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.calibration.CalibrationFrameProvider
 import nebulosa.api.cameras.*
-import nebulosa.api.messages.MessageEvent
+import nebulosa.api.message.MessageEvent
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.Task
 import nebulosa.api.tasks.delay.DelayEvent

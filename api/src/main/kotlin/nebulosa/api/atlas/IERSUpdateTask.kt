@@ -1,6 +1,6 @@
 package nebulosa.api.atlas
 
-import nebulosa.api.preferences.PreferenceService
+import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import nebulosa.time.IERS

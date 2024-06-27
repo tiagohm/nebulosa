@@ -2,7 +2,7 @@ package nebulosa.api.cameras
 
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.devices.DeviceEventHub
-import nebulosa.api.messages.MessageService
+import nebulosa.api.message.MessageService
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached

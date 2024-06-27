@@ -11,7 +11,7 @@ import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.database.MyObjectBox
-import nebulosa.api.preferences.PreferenceEntity
+import nebulosa.api.preference.PreferenceEntity
 import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.common.json.PathDeserializer
 import nebulosa.common.json.PathSerializer
