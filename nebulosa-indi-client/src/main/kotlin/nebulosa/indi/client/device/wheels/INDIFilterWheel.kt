@@ -55,12 +55,8 @@ internal open class INDIFilterWheel(
                     "FILTER_NAME" -> {
                         names.clear()
 
-                        repeat(16) {
-                            val key = "FILTER_SLOT_NAME_${it + 1}"
-
-                            if (key in message) {
-                                names.add(message[key]!!.value)
-                            }
+                        for (i in 1..16) {
+                            message["FILTER_SLOT_NAME_$i"]?.value?.also(names::add) ?: break
                         }
 
                         sender.fireOnEventReceived(FilterWheelNamesChanged(this))
