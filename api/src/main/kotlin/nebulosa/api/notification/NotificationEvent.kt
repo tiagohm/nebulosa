@@ -18,7 +18,7 @@ interface NotificationEvent : MessageEvent {
         get() = null
 
     override val eventName
-        get() = "NOTIFICATION.SENT"
+        get() = "NOTIFICATION"
 
     interface Info : NotificationEvent {
 

@@ -279,7 +279,6 @@ export interface BodyPosition extends EquatorialCoordinate, EquatorialCoordinate
 	illuminated: number
 	elongation: number
 	leading: boolean
-	pierSide: PierSide
 }
 
 export const EMPTY_BODY_POSITION: BodyPosition = {
@@ -296,7 +295,6 @@ export const EMPTY_BODY_POSITION: BodyPosition = {
 	illuminated: 0,
 	elongation: 0,
 	leading: false,
-	pierSide: 'NEITHER',
 }
 
 export interface Twilight {

@@ -54,10 +54,13 @@ import { MenuItemComponent } from '../shared/components/menu-item/menu-item.comp
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { PathChooserComponent } from '../shared/components/path-chooser/path-chooser.component'
 import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
+import { ConfirmDialog } from '../shared/dialogs/confirm/confirm.dialog'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { ScrollableNumberDirective } from '../shared/directives/input-number-scrollable'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
+import { ConfirmationInterceptor } from '../shared/interceptors/confirmation.interceptor'
+import { IdempotencyKeyInterceptor } from '../shared/interceptors/idempotency-key.interceptor'
 import { LocationInterceptor } from '../shared/interceptors/location.interceptor'
 import { AnglePipe } from '../shared/pipes/angle.pipe'
 import { DropdownOptionsPipe } from '../shared/pipes/dropdown-options.pipe'
@@ -104,6 +107,7 @@ import { SettingsComponent } from './settings/settings.component'
 		CameraComponent,
 		CameraInfoComponent,
 		CameraExposureComponent,
+		ConfirmDialog,
 		DeviceChooserComponent,
 		DeviceListMenuComponent,
 		DialogMenuComponent,
@@ -204,6 +208,16 @@ import { SettingsComponent } from './settings/settings.component'
 		{
 			provide: HTTP_INTERCEPTORS,
 			useClass: LocationInterceptor,
+			multi: true,
+		},
+		{
+			provide: HTTP_INTERCEPTORS,
+			useClass: IdempotencyKeyInterceptor,
+			multi: true,
+		},
+		{
+			provide: HTTP_INTERCEPTORS,
+			useClass: ConfirmationInterceptor,
 			multi: true,
 		},
 	],

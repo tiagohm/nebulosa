@@ -5,14 +5,16 @@ import { PreferenceService } from '../services/preference.service'
 
 @Injectable({ providedIn: 'root' })
 export class LocationInterceptor implements HttpInterceptor {
+	static readonly HEADER_KEY = 'X-Location'
+
 	constructor(private readonly preference: PreferenceService) {}
 
 	intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
 		if (req.urlWithParams.includes('hasLocation')) {
-			const selectedLocation = this.preference.selectedLocation.get()
+			const location = this.preference.selectedLocation.get()
 
 			req = req.clone({
-				headers: req.headers.set('X-Location', JSON.stringify(selectedLocation)),
+				headers: req.headers.set(LocationInterceptor.HEADER_KEY, JSON.stringify(location)),
 			})
 		}
 

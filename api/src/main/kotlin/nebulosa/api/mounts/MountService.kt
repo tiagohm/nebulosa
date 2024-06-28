@@ -1,6 +1,8 @@
 package nebulosa.api.mounts
 
+import nebulosa.api.atlas.SkyAtlasService
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.confirmation.ConfirmationService
 import nebulosa.api.image.ImageBucket
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
@@ -26,12 +28,15 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 
 @Service
 @Subscriber
 class MountService(
     private val imageBucket: ImageBucket,
     private val mountEventHub: MountEventHub,
+    private val skyAtlasService: SkyAtlasService,
+    private val confirmationService: ConfirmationService,
 ) {
 
     private val sites = ConcurrentHashMap<Mount, GeographicPosition>(2)
@@ -60,14 +65,38 @@ class MountService(
         else mount.sync(ra, dec)
     }
 
-    fun slewTo(mount: Mount, ra: Angle, dec: Angle, j2000: Boolean) {
-        if (j2000) mount.slewToJ2000(ra, dec)
-        else mount.slewTo(ra, dec)
+    fun slewTo(mount: Mount, ra: Angle, dec: Angle, j2000: Boolean, idempotencyKey: String? = null) {
+        if (idempotencyKey.isNullOrBlank() || verifyMountWillPointToSun(idempotencyKey, mount, ra, dec, j2000)) {
+            if (j2000) mount.slewToJ2000(ra, dec)
+            else mount.slewTo(ra, dec)
+        }
     }
 
-    fun goTo(mount: Mount, ra: Angle, dec: Angle, j2000: Boolean) {
-        if (j2000) mount.goToJ2000(ra, dec)
-        else mount.goTo(ra, dec)
+    fun goTo(mount: Mount, ra: Angle, dec: Angle, j2000: Boolean, idempotencyKey: String? = null) {
+        if (idempotencyKey.isNullOrBlank() || verifyMountWillPointToSun(idempotencyKey, mount, ra, dec, j2000)) {
+            if (j2000) mount.goToJ2000(ra, dec)
+            else mount.goTo(ra, dec)
+        }
+    }
+
+    /**
+     * Verifies if the [mount] will be point to Sun.
+     *
+     * @return true if mount can slew to [ra] and [dec] coordinates.
+     */
+    private fun verifyMountWillPointToSun(idempotencyKey: String, mount: Mount, ra: Angle, dec: Angle, j2000: Boolean): Boolean {
+        val location = sites[mount] ?: return true
+
+        val sunPosition = skyAtlasService.positionOfSun(location, LocalDateTime.now())
+            .let { ICRF.equatorial(it.rightAscensionJ2000, it.declinationJ2000) }
+        val mountPosition = if (j2000) ICRF.equatorial(ra, dec) else ICRF.equatorial(ra, dec, epoch = CurrentTime)
+
+        return if (sunPosition.separationFrom(mountPosition).toDegrees <= 1.0) {
+            val event = MountWillPointToSunEvent(idempotencyKey)
+            confirmationService.ask(idempotencyKey, event).waitForConfirmation(30, TimeUnit.SECONDS)
+        } else {
+            true
+        }
     }
 
     fun home(mount: Mount) {

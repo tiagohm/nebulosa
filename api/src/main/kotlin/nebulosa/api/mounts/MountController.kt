@@ -70,8 +70,9 @@ class MountController(
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
+        @RequestHeader("X-Idempotency-Key") idempotencyKey: String?,
     ) {
-        mountService.slewTo(mount, rightAscension.hours, declination.deg, j2000)
+        mountService.slewTo(mount, rightAscension.hours, declination.deg, j2000, idempotencyKey)
     }
 
     @PutMapping("{mount}/goto")
@@ -80,8 +81,9 @@ class MountController(
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
+        @RequestHeader("X-Idempotency-Key") idempotencyKey: String?,
     ) {
-        mountService.goTo(mount, rightAscension.hours, declination.deg, j2000)
+        mountService.goTo(mount, rightAscension.hours, declination.deg, j2000, idempotencyKey)
     }
 
     @PutMapping("{mount}/home")

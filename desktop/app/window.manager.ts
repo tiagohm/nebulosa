@@ -3,7 +3,7 @@ import { BrowserWindow, Notification, dialog, screen, shell } from 'electron'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { join } from 'path'
 import type { MessageEvent } from '../src/shared/types/api.types'
-import type { CloseWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, StoredWindowData } from '../src/shared/types/app.types'
+import type { CloseWindow, ConfirmationEvent, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, StoredWindowData } from '../src/shared/types/app.types'
 import type { ParsedArgument } from './argument.parser'
 import type { LocalStorage } from './local.storage'
 
@@ -61,7 +61,11 @@ export class ApplicationWindow {
 }
 
 export function isNotificationEvent(event: MessageEvent): event is NotificationEvent {
-	return event.eventName === 'NOTIFICATION.SENT'
+	return event.eventName === 'NOTIFICATION'
+}
+
+export function isConfirmationEvent(event: MessageEvent): event is ConfirmationEvent {
+	return event.eventName === 'CONFIRMATION'
 }
 
 export class WindowManager {
@@ -206,6 +210,8 @@ export class WindowManager {
 
 					if (isNotificationEvent(event)) {
 						this.showNotification(event)
+					} else if (isConfirmationEvent(event)) {
+						this.showConfirmation(event)
 					} else if (event.eventName) {
 						this.dispatchEvent(event)
 					} else {
@@ -417,6 +423,10 @@ export class WindowManager {
 		} else {
 			new Notification({ ...event, icon: this.appIcon }).show()
 		}
+	}
+
+	showConfirmation(event: ConfirmationEvent) {
+		this.dispatchEvent(event)
 	}
 
 	dispatchEvent(event: MessageEvent) {

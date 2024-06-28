@@ -1,7 +1,8 @@
-import { Component, ElementRef, OnDestroy } from '@angular/core'
+import { Component, ElementRef, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { APP_CONFIG } from '../environments/environment'
 import { MenuItem } from '../shared/components/menu-item/menu-item.component'
+import { ConfirmationService } from '../shared/services/confirmation.service'
 import { ElectronService } from '../shared/services/electron.service'
 
 @Component({
@@ -31,6 +32,8 @@ export class AppComponent implements OnDestroy {
 	constructor(
 		private readonly windowTitle: Title,
 		private readonly electron: ElectronService,
+		confirmation: ConfirmationService,
+		ngZone: NgZone,
 		hostElementRef: ElementRef<Element>,
 	) {
 		console.info('APP_CONFIG', APP_CONFIG)
@@ -54,6 +57,14 @@ export class AppComponent implements OnDestroy {
 		} else {
 			this.resizeObserver = undefined
 		}
+
+		electron.on('CONFIRMATION', (event) => {
+			if (confirmation.has(event.idempotencyKey)) {
+				void ngZone.run(() => {
+					return confirmation.processConfirmationEvent(event)
+				})
+			}
+		})
 	}
 
 	ngOnDestroy() {

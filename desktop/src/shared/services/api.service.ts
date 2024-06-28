@@ -133,12 +133,12 @@ export class ApiService {
 	}
 
 	mountSlew(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
-		const query = this.http.query({ rightAscension, declination, j2000 })
+		const query = this.http.query({ rightAscension, declination, j2000, hasConfirmation: true })
 		return this.http.put<never>(`mounts/${mount.id}/slew?${query}`)
 	}
 
 	mountGoTo(mount: Mount, rightAscension: Angle, declination: Angle, j2000: boolean) {
-		const query = this.http.query({ rightAscension, declination, j2000 })
+		const query = this.http.query({ rightAscension, declination, j2000, hasConfirmation: true })
 		return this.http.put<never>(`mounts/${mount.id}/goto?${query}`)
 	}
 
@@ -700,5 +700,12 @@ export class ApiService {
 
 	hasPreference(key: string) {
 		return this.http.get<boolean>(`preferences/${key}/exists`)
+	}
+
+	// CONFIRMATION
+
+	confirm(idempotencyKey: string, accepted: boolean) {
+		const query = this.http.query({ accepted })
+		return this.http.put(`confirmation/${idempotencyKey}?${query}`)
 	}
 }

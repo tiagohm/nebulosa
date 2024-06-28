@@ -537,16 +537,6 @@
 								<label>Elongation (°)</label>
 							</p-floatLabel>
 						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.pierSide" />
-								<label>Pier Side</label>
-							</p-floatLabel>
-						</div>
 					</div>
 				</div>
 				<div class="col-12 pt-0 flex justify-content-center">
@@ -598,7 +588,7 @@
 	</p-tabView>
 	<div
 		class="col-9 flex align-items-center justify-content-between absolute gap-2 overflow-hidden"
-		style="height: 32px; left: 95px; top: 2px; padding-right: 45px;">
+		style="height: 32px; left: 95px; top: 2px; padding-right: 45px">
 		<p-button
 			[disabled]="!name || refreshing"
 			[text]="true"

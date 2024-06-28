@@ -2,7 +2,6 @@ package nebulosa.api.preference
 
 import io.objectbox.Box
 import io.objectbox.kotlin.equal
-import nebulosa.api.preferences.PreferenceEntity_
 import nebulosa.api.repositories.BoxRepository
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component

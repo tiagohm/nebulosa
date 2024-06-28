@@ -9,7 +9,7 @@ import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
 import { DARVEvent, TPPAEvent } from '../types/alignment.types'
 import { DeviceMessageEvent } from '../types/api.types'
-import { CloseWindow, JsonFile, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
+import { CloseWindow, ConfirmationEvent, JsonFile, NotificationEvent, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
 import { Location } from '../types/atlas.types'
 import { AutoFocusEvent } from '../types/autofocus.type'
 import { Camera, CameraCaptureEvent } from '../types/camera.types'
@@ -26,6 +26,8 @@ import { FilterWheel, WheelRenamed } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 
 interface EventMappedType {
+	NOTIFICATION: NotificationEvent
+	CONFIRMATION: ConfirmationEvent
 	'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
 	'DEVICE.PROPERTY_DELETED': INDIMessageEvent
 	'DEVICE.MESSAGE_RECEIVED': INDIMessageEvent

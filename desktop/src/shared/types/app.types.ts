@@ -11,6 +11,11 @@ export interface NotificationEvent extends MessageEvent {
 	body: string
 }
 
+export interface ConfirmationEvent extends MessageEvent {
+	message: string
+	idempotencyKey: string
+}
+
 export const INTERNAL_EVENT_TYPES = [
 	'DIRECTORY.OPEN',
 	'FILE.OPEN',
