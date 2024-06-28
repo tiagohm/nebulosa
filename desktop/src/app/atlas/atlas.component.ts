@@ -16,59 +16,28 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { Angle, CONSTELLATIONS, CloseApproach, Constellation, DeepSkyObject, EMPTY_BODY_POSITION, Location, MinorPlanet, MinorPlanetSearchItem, SATELLITE_GROUPS, Satellite, SatelliteGroupType, SkyObjectType } from '../../shared/types/atlas.types'
+import {
+	CONSTELLATIONS,
+	CloseApproach,
+	Constellation,
+	DeepSkyObject,
+	EMPTY_BODY_POSITION,
+	EMPTY_SEARCH_FILTER,
+	Location,
+	MinorPlanet,
+	MinorPlanetSearchItem,
+	PlanetTableItem,
+	SATELLITE_GROUPS,
+	Satellite,
+	SatelliteGroupType,
+	SettingsDialog,
+	SkyAtlasInput,
+	SkyAtlasTab,
+} from '../../shared/types/atlas.types'
 import { Mount } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 Chart.register(zoomPlugin)
-
-export const ATLAS_KEY = 'atlas'
-
-export interface PlanetItem {
-	name: string
-	type: string
-	code: string
-}
-
-export interface SearchFilter {
-	text: string
-	rightAscension: Angle
-	declination: Angle
-	radius: number
-	constellation: Constellation | 'ALL'
-	magnitude: [number, number]
-	type: SkyObjectType | 'ALL'
-	types: (SkyObjectType | 'ALL')[]
-}
-
-export const EMPTY_SEARCH_FILTER: SearchFilter = {
-	text: '',
-	rightAscension: '00h00m00s',
-	declination: `+000°00'00"`,
-	radius: 0,
-	constellation: 'ALL',
-	magnitude: [-30, 30],
-	type: 'ALL',
-	types: ['ALL'],
-}
-
-export interface SkyAtlasPreference {
-	satellites?: { group: SatelliteGroupType; enabled: boolean }[]
-}
-
-export enum SkyAtlasTab {
-	SUN,
-	MOON,
-	PLANET,
-	MINOR_PLANET,
-	SKY_OBJECT,
-	SATELLITE,
-}
-
-export interface SkyAtlasData {
-	tab: SkyAtlasTab
-	filter?: Partial<Exclude<SearchFilter, 'types'>>
-}
 
 @Component({
 	selector: 'app-atlas',
@@ -76,8 +45,13 @@ export interface SkyAtlasData {
 	styleUrls: ['./atlas.component.scss'],
 })
 export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, OnDestroy {
-	refreshing = false
+	refreshingPosition = false
+	refreshingChart = false
 	tab = SkyAtlasTab.SUN
+
+	get refreshing() {
+		return this.refreshingPosition || this.refreshingChart
+	}
 
 	readonly bodyPosition = structuredClone(EMPTY_BODY_POSITION)
 	moonIlluminated = 1
@@ -88,8 +62,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	dateTimeHour = this.dateTime.getHours()
 	dateTimeMinute = this.dateTime.getMinutes()
 
-	planet?: PlanetItem
-	readonly planets: PlanetItem[] = [
+	planet?: PlanetTableItem
+	readonly planets: PlanetTableItem[] = [
 		{ name: 'Mercury', type: 'Planet', code: '199' },
 		{ name: 'Venus', type: 'Planet', code: '299' },
 		{ name: 'Mars', type: 'Planet', code: '499' },
@@ -422,6 +396,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 	private location: Location
 
+	readonly settings: SettingsDialog = {
+		showDialog: false,
+		fast: false,
+	}
+
 	constructor(
 		private readonly app: AppComponent,
 		private readonly api: ApiService,
@@ -435,6 +414,13 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	) {
 		app.title = 'Sky Atlas'
 
+		app.topMenu.push({
+			icon: 'mdi mdi-cog',
+			tooltip: 'Settings',
+			command: () => {
+				this.settings.showDialog = true
+			},
+		})
 		app.topMenu.push({
 			icon: 'mdi mdi-calendar',
 			tooltip: 'Date & time',
@@ -460,15 +446,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	}
 
 	async ngOnInit() {
-		const preference = this.preference.skyAtlasPreference.get()
-
-		for (const group of SATELLITE_GROUPS) {
-			const satellite = preference.satellites?.find((e) => e.group === group)
-			const enabled = satellite?.enabled ?? AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(group)
-			this.satelliteSearchGroup.set(group, enabled)
-		}
-
-		this.skyObjectFilter.types = ['ALL', ...(await this.api.skyObjectTypes())]
+		this.loadPreference()
+		const types = await this.api.skyObjectTypes()
+		this.skyObjectFilter.types = ['ALL', ...types]
 	}
 
 	ngAfterContentInit() {
@@ -489,7 +469,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		})
 
 		this.route.queryParams.subscribe(async (e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as SkyAtlasData
+			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as SkyAtlasInput
 			await this.loadTabFromData(data)
 		})
 	}
@@ -507,7 +487,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		this.refreshTimer?.unsubscribe()
 	}
 
-	private async loadTabFromData(data?: SkyAtlasData) {
+	private async loadTabFromData(data?: SkyAtlasInput) {
 		if (data?.tab) {
 			this.tab = data.tab
 
@@ -534,7 +514,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	}
 
 	async searchMinorPlanet() {
-		this.refreshing = true
+		this.refreshingPosition = true
 
 		try {
 			const minorPlanet = await this.api.searchMinorPlanet(this.minorPlanetSearchText)
@@ -547,7 +527,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				this.showMinorPlanetChoiceDialog = true
 			}
 		} finally {
-			this.refreshing = false
+			this.refreshingPosition = false
 		}
 	}
 
@@ -558,7 +538,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	}
 
 	async closeApproachesForMinorPlanets() {
-		this.refreshing = true
+		this.refreshingPosition = true
 
 		try {
 			this.closeApproaches = await this.api.closeApproachesForMinorPlanets(this.closeApproachDays, this.closeApproachDistance, this.dateTime)
@@ -567,7 +547,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				this.prime.message('No close approaches found for the given days and lunar distance', 'warn')
 			}
 		} finally {
-			this.refreshing = false
+			this.refreshingPosition = false
 		}
 	}
 
@@ -603,12 +583,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		const constellation = this.skyObjectFilter.constellation === 'ALL' ? undefined : this.skyObjectFilter.constellation
 		const type = this.skyObjectFilter.type === 'ALL' ? undefined : this.skyObjectFilter.type
 
-		this.refreshing = true
+		this.refreshingPosition = true
 
 		try {
 			this.skyObjectItems = await this.api.searchSkyObject(this.skyObjectSearchText, this.skyObjectFilter.rightAscension, this.skyObjectFilter.declination, this.skyObjectFilter.radius, constellation, this.skyObjectFilter.magnitude[0], this.skyObjectFilter.magnitude[1], type)
 		} finally {
-			this.refreshing = false
+			this.refreshingPosition = false
 		}
 	}
 
@@ -618,37 +598,24 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	}
 
 	async searchSatellite() {
-		this.refreshing = true
+		this.refreshingPosition = true
 
 		try {
-			const preference = this.preference.skyAtlasPreference.get()
-
-			preference.satellites = SATELLITE_GROUPS.map((group) => {
-				return { group, enabled: this.satelliteSearchGroup.get(group) ?? false }
-			})
-
-			this.preference.skyAtlasPreference.set(preference)
-
+			this.savePreference()
 			const groups = SATELLITE_GROUPS.filter((e) => this.satelliteSearchGroup.get(e))
 			this.satelliteItems = await this.api.searchSatellites(this.satelliteSearchText, groups)
 		} finally {
-			this.refreshing = false
+			this.refreshingPosition = false
 		}
 	}
 
 	resetSatelliteFilter() {
-		const preference = this.preference.skyAtlasPreference.get()
-
-		const satellites = []
-
 		for (const group of SATELLITE_GROUPS) {
 			const enabled = AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(group)
-			satellites.push({ group, enabled })
 			this.satelliteSearchGroup.set(group, enabled)
 		}
 
-		preference.satellites = satellites
-		this.preference.skyAtlasPreference.set(preference)
+		this.savePreference()
 	}
 
 	async filterSatellite() {
@@ -692,7 +659,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	}
 
 	async refreshTab(refreshTwilight: boolean = false, refreshChart: boolean = false) {
-		this.refreshing = true
+		this.refreshingPosition = true
 		this.refreshTabCount++
 
 		if (!this.useManualDateTime) {
@@ -712,14 +679,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				this.name = 'Sun'
 				this.tags = []
 				this.imageOfSun.nativeElement.src = `${this.api.baseUrl}/sky-atlas/sun/image`
-				const bodyPosition = await this.api.positionOfSun(this.dateTime)
+				const bodyPosition = await this.api.positionOfSun(this.dateTime, this.settings.fast)
 				Object.assign(this.bodyPosition, bodyPosition)
 			}
 			// Moon.
 			else if (this.tab === SkyAtlasTab.MOON) {
 				this.name = 'Moon'
 				this.tags = []
-				const bodyPosition = await this.api.positionOfMoon(this.dateTime)
+				const bodyPosition = await this.api.positionOfMoon(this.dateTime, this.settings.fast)
 				Object.assign(this.bodyPosition, bodyPosition)
 				this.moonIlluminated = this.bodyPosition.illuminated / 100.0
 				this.moonWaning = this.bodyPosition.leading
@@ -730,7 +697,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 				if (this.planet) {
 					this.name = this.planet.name
-					const bodyPosition = await this.api.positionOfPlanet(this.planet.code, this.dateTime)
+					const bodyPosition = await this.api.positionOfPlanet(this.planet.code, this.dateTime, this.settings.fast)
 					Object.assign(this.bodyPosition, bodyPosition)
 				} else {
 					this.name = undefined
@@ -782,8 +749,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				}
 			}
 
+			this.refreshingPosition = false
+
 			if (this.refreshTabCount === 1 || refreshTwilight) {
-				const twilight = await this.api.twilight(this.dateTime)
+				this.refreshingChart = true
+
+				const twilight = await this.api.twilight(this.dateTime, this.settings.fast)
 				this.altitudeData.datasets[0].data = [
 					[0.0, 90],
 					[twilight.civilDusk[0], 90],
@@ -827,64 +798,94 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				await this.refreshChart()
 			}
 		} finally {
-			this.refreshing = false
+			this.refreshingPosition = false
+			this.refreshingChart = false
 		}
 	}
 
 	private async refreshChart() {
-		// Sun.
-		if (this.tab === SkyAtlasTab.SUN) {
-			const points = await this.api.altitudePointsOfSun(this.dateTime)
-			AtlasComponent.belowZeroPoints(points)
-			this.altitudeData.datasets[9].data = points
-		}
-		// Moon.
-		else if (this.tab === SkyAtlasTab.MOON) {
-			const points = await this.api.altitudePointsOfMoon(this.dateTime)
-			AtlasComponent.belowZeroPoints(points)
-			this.altitudeData.datasets[9].data = points
-		}
-		// Planet.
-		else if (this.tab === SkyAtlasTab.PLANET && this.planet) {
-			const points = await this.api.altitudePointsOfPlanet(this.planet.code, this.dateTime)
-			AtlasComponent.belowZeroPoints(points)
-			this.altitudeData.datasets[9].data = points
-		}
-		// Minor Planet.
-		else if (this.tab === SkyAtlasTab.MINOR_PLANET) {
-			if (this.minorPlanet) {
-				const code = `DES=${this.minorPlanet.spkId};`
-				const points = await this.api.altitudePointsOfPlanet(code, this.dateTime)
-				AtlasComponent.belowZeroPoints(points)
-				this.altitudeData.datasets[9].data = points
-			} else {
-				this.altitudeData.datasets[9].data = []
-			}
-		}
-		// Sky Object.
-		else if (this.tab === SkyAtlasTab.SKY_OBJECT) {
-			if (this.skyObject) {
-				const points = await this.api.altitudePointsOfSkyObject(this.skyObject, this.dateTime)
-				AtlasComponent.belowZeroPoints(points)
-				this.altitudeData.datasets[9].data = points
-			} else {
-				this.altitudeData.datasets[9].data = []
-			}
-		}
-		// Satellite.
-		else if (this.tab === SkyAtlasTab.SATELLITE) {
-			if (this.satellite) {
-				const points = await this.api.altitudePointsOfSatellite(this.satellite, this.dateTime)
-				AtlasComponent.belowZeroPoints(points)
-				this.altitudeData.datasets[9].data = points
-			} else {
-				this.altitudeData.datasets[9].data = []
-			}
-		} else {
-			return
-		}
+		this.refreshingChart = true
 
-		this.chart.refresh()
+		try {
+			// Sun.
+			if (this.tab === SkyAtlasTab.SUN) {
+				const points = await this.api.altitudePointsOfSun(this.dateTime, this.settings.fast)
+				AtlasComponent.belowZeroPoints(points)
+				this.altitudeData.datasets[9].data = points
+			}
+			// Moon.
+			else if (this.tab === SkyAtlasTab.MOON) {
+				const points = await this.api.altitudePointsOfMoon(this.dateTime, this.settings.fast)
+				AtlasComponent.belowZeroPoints(points)
+				this.altitudeData.datasets[9].data = points
+			}
+			// Planet.
+			else if (this.tab === SkyAtlasTab.PLANET && this.planet) {
+				const points = await this.api.altitudePointsOfPlanet(this.planet.code, this.dateTime, this.settings.fast)
+				AtlasComponent.belowZeroPoints(points)
+				this.altitudeData.datasets[9].data = points
+			}
+			// Minor Planet.
+			else if (this.tab === SkyAtlasTab.MINOR_PLANET) {
+				if (this.minorPlanet) {
+					const code = `DES=${this.minorPlanet.spkId};`
+					const points = await this.api.altitudePointsOfPlanet(code, this.dateTime)
+					AtlasComponent.belowZeroPoints(points)
+					this.altitudeData.datasets[9].data = points
+				} else {
+					this.altitudeData.datasets[9].data = []
+				}
+			}
+			// Sky Object.
+			else if (this.tab === SkyAtlasTab.SKY_OBJECT) {
+				if (this.skyObject) {
+					const points = await this.api.altitudePointsOfSkyObject(this.skyObject, this.dateTime)
+					AtlasComponent.belowZeroPoints(points)
+					this.altitudeData.datasets[9].data = points
+				} else {
+					this.altitudeData.datasets[9].data = []
+				}
+			}
+			// Satellite.
+			else if (this.tab === SkyAtlasTab.SATELLITE) {
+				if (this.satellite) {
+					const points = await this.api.altitudePointsOfSatellite(this.satellite, this.dateTime)
+					AtlasComponent.belowZeroPoints(points)
+					this.altitudeData.datasets[9].data = points
+				} else {
+					this.altitudeData.datasets[9].data = []
+				}
+			} else {
+				return
+			}
+
+			this.chart.refresh()
+		} finally {
+			this.refreshingChart = false
+		}
+	}
+
+	private loadPreference() {
+		const preference = this.preference.skyAtlasPreference.get()
+
+		this.settings.fast = preference.fast
+
+		for (const group of SATELLITE_GROUPS) {
+			const satellite = preference.satellites.find((e) => e.group === group)
+			const enabled = satellite?.enabled ?? AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(group)
+			this.satelliteSearchGroup.set(group, enabled)
+		}
+	}
+
+	savePreference() {
+		const preference = this.preference.skyAtlasPreference.get()
+
+		preference.fast = this.settings.fast
+		preference.satellites = SATELLITE_GROUPS.map((group) => {
+			return { group, enabled: this.satelliteSearchGroup.get(group) ?? false }
+		})
+
+		this.preference.skyAtlasPreference.set(preference)
 	}
 
 	private static belowZeroPoints(points: [number, number][]) {

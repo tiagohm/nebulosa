@@ -1,9 +1,9 @@
 package nebulosa.nova.position
 
+import nebulosa.constants.PI
 import nebulosa.constants.TAU
 import nebulosa.math.Angle
 import nebulosa.math.Vector3D
-import nebulosa.math.normalized
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Observable
 import nebulosa.nova.frame.Ecliptic
@@ -56,13 +56,15 @@ class Barycentric internal constructor(
      * longitudes of [target] object and [center], viewed from this position,
      * constrained to the interval 0-1.
      *
-     * For Moon as [target] viewed from Earth, it represents the Moon phase,
-     * where 0 is New Moon and 0.5 is Full Moon.
+     * For Moon as [target], Sun as [center] and viewed from Earth, it represents the Moon phase,
+     * where 0 is New Moon and PI is Full Moon. ???
      */
-    fun elongation(target: Body, center: Body): Double {
-        val mLon = observe(target).latLon(Ecliptic).theta
-        val sLon = observe(center).latLon(Ecliptic).phi
-        val angle = (mLon - sLon).normalized
-        return angle / TAU
+    fun elongation(target: Body, center: Body): Pair<Double, Boolean> {
+        val cobs = observe(center)
+        val tobs = observe(target)
+        val clon = cobs.latLon(Ecliptic).theta
+        val tlon = tobs.latLon(Ecliptic).theta
+        val isEast = (tlon - clon) % TAU < PI
+        return cobs.separationFrom(tobs) to isEast
     }
 }

@@ -523,7 +523,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.illuminated" />
+									[value]="bodyPosition.illuminated.toFixed(3)" />
 								<label>Illuminated (%)</label>
 							</p-floatLabel>
 						</div>
@@ -533,7 +533,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.elongation" />
+									[value]="bodyPosition.elongation.toFixed(3)" />
 								<label>Elongation (°)</label>
 							</p-floatLabel>
 						</div>
@@ -541,7 +541,7 @@
 				</div>
 				<div class="col-12 pt-0 flex justify-content-center">
 					<p-button
-						[disabled]="!name || refreshing"
+						[disabled]="!name || refreshingPosition"
 						[text]="true"
 						severity="info"
 						(onClick)="mountSync()"
@@ -549,7 +549,7 @@
 						label="Sync"
 						size="small" />
 					<p-button
-						[disabled]="!name || refreshing"
+						[disabled]="!name || refreshingPosition"
 						[text]="true"
 						severity="success"
 						(onClick)="mountGoTo()"
@@ -557,7 +557,7 @@
 						label="Go To"
 						size="small" />
 					<p-button
-						[disabled]="!name || refreshing"
+						[disabled]="!name || refreshingPosition"
 						[text]="true"
 						severity="success"
 						(onClick)="mountSlew()"
@@ -565,7 +565,7 @@
 						label="Slew"
 						size="small" />
 					<p-button
-						[disabled]="!name || refreshing"
+						[disabled]="!name || refreshingPosition"
 						[text]="true"
 						(onClick)="frame()"
 						icon="mdi mdi-image"
@@ -775,6 +775,31 @@
 	</ng-template>
 </p-dialog>
 
+<p-dialog
+	header="Settings"
+	[draggable]="false"
+	[(visible)]="settings.showDialog"
+	[modal]="true"
+	[style]="{ width: '70vw' }">
+	<div class="grid mt-2">
+		<div class="col-12">
+			<p-checkbox
+				[binary]="true"
+				[(ngModel)]="settings.fast"
+				label="Use VSOP87E (fast, but less accurate)"
+				(ngModelChange)="savePreference(); refreshTab(true, true)" />
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			[text]="true"
+			icon="mdi mdi-check"
+			label="OK"
+			size="small"
+			(onClick)="settings.showDialog = false" />
+	</ng-template>
+</p-dialog>
+
 <p-overlayPanel
 	#calendarPanel
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
@@ -794,38 +819,47 @@
 					styleClass="w-full" />
 			</div>
 			<div class="col-4 flex-column gap-3 align-items-center justify-content-start gap-1">
-				<p-inputSwitch
-					[disabled]="refreshing"
-					[(ngModel)]="useManualDateTime"
-					(ngModelChange)="useManualDateTimeChanged()" />
+				<div class="flex flex-column justify-content-center align-items-center gap-1">
+					<span>Enable</span>
+					<p-inputSwitch
+						[disabled]="refreshing"
+						[(ngModel)]="useManualDateTime"
+						(ngModelChange)="useManualDateTimeChanged()" />
+				</div>
 				<div class="flex flex-column align-items-center">
 					<div class="flex align-items-center justify-content-center gap-2">
-						<p-inputNumber
-							[disabled]="refreshing || !useManualDateTime"
-							[(ngModel)]="dateTimeHour"
-							[showButtons]="true"
-							[min]="0"
-							[max]="23"
-							class="w-fit"
-							[format]="false"
-							[allowEmpty]="false"
-							(ngModelChange)="dateTimeChanged(false)"
-							styleClass="p-inputtext-sm border-0"
-							[style]="{ width: '54px' }"
-							scrollableNumber />
-						<p-inputNumber
-							[disabled]="refreshing || !useManualDateTime"
-							[(ngModel)]="dateTimeMinute"
-							[showButtons]="true"
-							[min]="0"
-							[max]="59"
-							class="w-fit"
-							[format]="false"
-							[allowEmpty]="false"
-							(ngModelChange)="dateTimeChanged(false)"
-							styleClass="p-inputtext-sm border-0"
-							[style]="{ width: '54px' }"
-							scrollableNumber />
+						<div class="flex flex-column justify-content-center align-items-center gap-1">
+							<span>Hour</span>
+							<p-inputNumber
+								[disabled]="refreshing || !useManualDateTime"
+								[(ngModel)]="dateTimeHour"
+								[showButtons]="true"
+								[min]="0"
+								[max]="23"
+								class="w-fit"
+								[format]="false"
+								[allowEmpty]="false"
+								(ngModelChange)="dateTimeChanged(false)"
+								styleClass="p-inputtext-sm border-0"
+								[style]="{ width: '54px' }"
+								scrollableNumber />
+						</div>
+						<div class="flex flex-column justify-content-center align-items-center gap-1">
+							<span>Minute</span>
+							<p-inputNumber
+								[disabled]="refreshing || !useManualDateTime"
+								[(ngModel)]="dateTimeMinute"
+								[showButtons]="true"
+								[min]="0"
+								[max]="59"
+								class="w-fit"
+								[format]="false"
+								[allowEmpty]="false"
+								(ngModelChange)="dateTimeChanged(false)"
+								styleClass="p-inputtext-sm border-0"
+								[style]="{ width: '54px' }"
+								scrollableNumber />
+						</div>
 					</div>
 				</div>
 			</div>

@@ -44,8 +44,7 @@ class MountService(
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onMountGeographicCoordinateChanged(event: MountGeographicCoordinateChanged) {
-        val site = Geoid.IERS2010.lonLat(event.device.longitude, event.device.latitude, event.device.elevation)
-        sites[event.device] = site
+        sites[event.device] = Geoid.IERS2010.lonLat(event.device)
     }
 
     fun connect(mount: Mount) {
@@ -93,8 +92,7 @@ class MountService(
      * @return true if mount can slew to [mountPosition] coordinates.
      */
     private fun verifyMountWillPointToSun(idempotencyKey: String, mount: Mount, mountPosition: ICRF): Boolean {
-        val location = sites[mount] ?: return true
-        val sunPosition = skyAtlasService.positionOfSun(location, LocalDateTime.now())
+        val sunPosition = skyAtlasService.positionOfSun(mount, LocalDateTime.now(), true)
             .let { ICRF.equatorial(it.rightAscensionJ2000, it.declinationJ2000) }
 
         return if (sunPosition.separationFrom(mountPosition).toDegrees <= 1.0) {

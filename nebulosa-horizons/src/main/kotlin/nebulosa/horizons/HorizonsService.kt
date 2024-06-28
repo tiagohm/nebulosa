@@ -12,7 +12,6 @@ import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.create
 import java.lang.reflect.Type
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -29,13 +28,13 @@ class HorizonsService(
         command: String,
         longitude: Angle, latitude: Angle, elevation: Distance = 0.0,
         startTime: LocalDateTime, endTime: LocalDateTime = startTime.plusDays(1L),
-        stepSize: Duration = DEFAULT_STEP_SIZE,
+        stepSizeInMinutes: Int = 1,
         apparent: ApparentRefractionCorrection = ApparentRefractionCorrection.AIRLESS,
         extraPrecision: Boolean = false,
         vararg quantities: HorizonsQuantity = HorizonsQuantity.ENTRIES,
     ) = service.observer(
         wrap(command), wrap("${longitude.toDegrees},${latitude.toDegrees},${elevation.toKilometers}"),
-        wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
+        wrap(startTime), wrap(endTime), wrap("${stepSizeInMinutes}m"),
         wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
         wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
     )
@@ -55,7 +54,7 @@ class HorizonsService(
         absoluteMagnitude: String? = null,
         longitude: Angle, latitude: Angle, elevation: Distance = 0.0,
         startTime: LocalDateTime, endTime: LocalDateTime = startTime.plusDays(1L),
-        stepSize: Duration = DEFAULT_STEP_SIZE,
+        stepSizeInMinutes: Int = 1,
         apparent: ApparentRefractionCorrection = ApparentRefractionCorrection.AIRLESS,
         extraPrecision: Boolean = false,
         vararg quantities: HorizonsQuantity = HorizonsQuantity.ENTRIES,
@@ -65,7 +64,7 @@ class HorizonsService(
         wrap(argumentOfPerihelion), wrap(inclination), wrapNull(meanAnomaly),
         wrapNull(semiMajorAxis), wrapNull(meanMotion), wrapNull(absoluteMagnitude),
         wrap("${longitude.toDegrees},${latitude.toDegrees},${elevation.toKilometers}"),
-        wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
+        wrap(startTime), wrap(endTime), wrap("${stepSizeInMinutes}m"),
         wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
         wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
     )
@@ -74,13 +73,13 @@ class HorizonsService(
         tle: String,
         longitude: Angle, latitude: Angle, elevation: Distance = 0.0,
         startTime: LocalDateTime, endTime: LocalDateTime = startTime.plusDays(1L),
-        stepSize: Duration = DEFAULT_STEP_SIZE,
+        stepSizeInMinutes: Int = 1,
         apparent: ApparentRefractionCorrection = ApparentRefractionCorrection.AIRLESS,
         extraPrecision: Boolean = false,
         vararg quantities: HorizonsQuantity = HorizonsQuantity.ENTRIES,
     ) = service.observerWithTLE(
         wrap(tle), wrap("${longitude.toDegrees},${latitude.toDegrees},${elevation.toKilometers}"),
-        wrap(startTime), wrap(endTime), wrap("${stepSize.toMinutes()}m"),
+        wrap(startTime), wrap(endTime), wrap("${stepSizeInMinutes}m"),
         wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
         wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),
     )
@@ -113,7 +112,6 @@ class HorizonsService(
         const val URL = "https://ssd.jpl.nasa.gov/api/"
 
         @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-        @JvmStatic private val DEFAULT_STEP_SIZE = Duration.ofMinutes(1L)
 
         @Suppress("NOTHING_TO_INLINE")
         private inline fun wrapNull(o: Any?) = if (o == null) null else "'$o'"

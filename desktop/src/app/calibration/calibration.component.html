@@ -2,7 +2,7 @@
 	<div class="grid">
 		<div class="col-12 justify-content-end">
 			<p-button
-				styleClass="p-button-sm"
+				size="small"
 				label="New group"
 				icon="mdi mdi-plus"
 				(onClick)="showNewGroupDialogForAdd()" />
@@ -69,7 +69,7 @@
 						<div class="flex align-items-center justify-content-end gap-1">
 							@if (node.data.type === 'NAME') {
 								<p-button
-									styleClass="p-button-sm"
+									size="small"
 									[text]="true"
 									[rounded]="true"
 									icon="mdi mdi-pencil"
@@ -78,7 +78,7 @@
 									(onClick)="showNewGroupDialogForEdit(node)"
 									severity="info" />
 								<p-button
-									styleClass="p-button-sm"
+									size="small"
 									[text]="true"
 									[rounded]="true"
 									icon="mdi mdi-image-plus"
@@ -86,7 +86,7 @@
 									tooltipPosition="bottom"
 									(onClick)="openFileToUpload(node)" />
 								<p-button
-									styleClass="p-button-sm"
+									size="small"
 									[text]="true"
 									[rounded]="true"
 									icon="mdi mdi-folder-plus"
@@ -95,7 +95,7 @@
 									(onClick)="openDirectoryToUpload(node)" />
 							}
 							<p-button
-								styleClass="p-button-sm"
+								size="small"
 								[text]="true"
 								[rounded]="true"
 								icon="mdi mdi-delete"

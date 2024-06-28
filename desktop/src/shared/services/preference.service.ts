@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core'
-import { SkyAtlasPreference } from '../../app/atlas/atlas.component'
 import { AlignmentPreference, EMPTY_ALIGNMENT_PREFERENCE } from '../types/alignment.types'
-import { EMPTY_LOCATION, Location } from '../types/atlas.types'
+import { EMPTY_LOCATION, EMPTY_SKY_ATLAS_PREFERENCE, Location, SkyAtlasPreference } from '../types/atlas.types'
 import { AutoFocusPreference, EMPTY_AUTO_FOCUS_PREFERENCE } from '../types/autofocus.type'
 import { CalibrationPreference } from '../types/calibration.types'
 import { Camera, CameraPreference, CameraStartCapture, EMPTY_CAMERA_PREFERENCE, EMPTY_LIVE_STACKING_REQUEST, LiveStackerType, LiveStackingRequest } from '../types/camera.types'
@@ -105,7 +104,7 @@ export class PreferenceService {
 	readonly selectedLocation = new PreferenceData<Location>(this.storage, 'locations.selected', () => structuredClone(EMPTY_LOCATION))
 	readonly homePreference = new PreferenceData<HomePreference>(this.storage, 'home', () => ({}) as HomePreference)
 	readonly imagePreference = new PreferenceData<ImagePreference>(this.storage, 'image', () => structuredClone(EMPTY_IMAGE_PREFERENCE))
-	readonly skyAtlasPreference = new PreferenceData<SkyAtlasPreference>(this.storage, 'atlas', () => ({}) as SkyAtlasPreference)
+	readonly skyAtlasPreference = new PreferenceData<SkyAtlasPreference>(this.storage, 'atlas', () => structuredClone(EMPTY_SKY_ATLAS_PREFERENCE))
 	readonly alignmentPreference = new PreferenceData<AlignmentPreference>(this.storage, 'alignment', () => structuredClone(EMPTY_ALIGNMENT_PREFERENCE))
 	readonly imageFOVs = new PreferenceData<FOV[]>(this.storage, 'image.fovs', () => [])
 	readonly calibrationPreference = new PreferenceData<CalibrationPreference>(this.storage, 'calibration', () => ({}) as CalibrationPreference)

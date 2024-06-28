@@ -51,14 +51,14 @@ data class BodyPosition(
                 element.asDouble(HorizonsQuantity.ASTROMETRIC_RA).deg,
                 element.asDouble(HorizonsQuantity.ASTROMETRIC_DEC).deg,
                 rightAscension, declination,
-                element.asDouble(HorizonsQuantity.APPARENT_AZ).deg,
-                element.asDouble(HorizonsQuantity.APPARENT_ALT).deg,
+                element.asDoubleOrNull(HorizonsQuantity.APPARENT_AZ)?.deg ?: element.asDouble(HorizonsQuantity.APPARENT_REFRACTED_AZ).deg,
+                element.asDoubleOrNull(HorizonsQuantity.APPARENT_ALT)?.deg ?: element.asDouble(HorizonsQuantity.APPARENT_REFRACTED_ALT).deg,
                 element.asDouble(HorizonsQuantity.VISUAL_MAGNITUDE, SkyObject.UNKNOWN_MAGNITUDE),
                 element.asEnum(HorizonsQuantity.CONSTELLATION, Constellation.AND),
                 distance, distanceUnit,
                 element.asDouble(HorizonsQuantity.ILLUMINATED_FRACTION),
                 element.asDouble(HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE),
-                element.asString(HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE, index = 1) == "/L",
+                element.asStringOrNull(HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE, index = 1) == "/L",
             )
         }
     }

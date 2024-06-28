@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
-import { SkyAtlasData } from '../../app/atlas/atlas.component'
 import { FramingData } from '../../app/framing/framing.component'
 import { OpenWindow, WindowPreference } from '../types/app.types'
+import { SkyAtlasInput } from '../types/atlas.types'
 import { Camera, CameraDialogInput, CameraStartCapture } from '../types/camera.types'
 import { Device } from '../types/device.types'
 import { Focuser } from '../types/focuser.types'
@@ -98,7 +98,7 @@ export class BrowserWindowService {
 		return this.openWindow({ preference, data, id: 'indi', path: 'indi' })
 	}
 
-	openSkyAtlas(data?: SkyAtlasData, preference: WindowPreference = {}) {
+	openSkyAtlas(data?: SkyAtlasInput, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'atlas', width: 450, height: 530, autoResizable: false })
 		return this.openWindow({ preference, data, id: 'atlas', path: 'atlas' })
 	}
