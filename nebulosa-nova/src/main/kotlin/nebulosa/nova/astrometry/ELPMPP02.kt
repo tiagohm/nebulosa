@@ -18,7 +18,7 @@ import kotlin.math.sqrt
  * @see <a href="ftp://cyrano-se.obspm.fr/pub/2_lunar_solutions/2_elpmpp02">Fortran</a>
  * @see <a href="https://github.com/timmyd7777/SSCore/blob/master/SSCode/VSOP2013/ELPMPP02.cpp">C++</a>
  */
-object ELPMPP02 : Body {
+data object ELPMPP02 : Body {
 
     private val main = Array(3) { readMainProblemFile(it + 1) }
     private val pert = Array(3) { readPertubationFile(it + 1) }

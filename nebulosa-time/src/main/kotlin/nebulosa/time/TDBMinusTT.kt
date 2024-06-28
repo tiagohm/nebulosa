@@ -4,7 +4,7 @@ import nebulosa.constants.DAYSEC
 import nebulosa.constants.TTMINUSTAI
 import nebulosa.erfa.eraDtDb
 
-object TDBMinusTT : TimeDelta {
+data object TDBMinusTT : TimeDelta {
 
     /**
      * Computes TDB - TT in seconds at [time].

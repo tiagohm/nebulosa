@@ -6,7 +6,7 @@ import nebulosa.io.readDoubleArrayLe
 import nebulosa.math.interpolation
 import kotlin.math.min
 
-object DeltaT : TimeDelta {
+data object DeltaT : TimeDelta {
 
     private val DAILY_TT = bufferedResource("DAILY_TT.dat") { readDoubleArrayLe(readLongLe().toInt()) }
     private val DAILY_DELTA_T = bufferedResource("DAILY_DELTA_T.dat") { readDoubleArrayLe(readLongLe().toInt()) }

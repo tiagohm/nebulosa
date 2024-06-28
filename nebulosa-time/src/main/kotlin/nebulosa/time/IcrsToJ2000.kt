@@ -20,4 +20,4 @@ private const val A00 = 1.0 - 0.5 * (A10 * A10 + A20 * A20)
 private const val A11 = 1.0 - 0.5 * (A10 * A10 + A21 * A21)
 private const val A22 = 1.0 - 0.5 * (A21 * A21 + A20 * A20)
 
-object IcrsToJ2000 : Matrix3D(A00, A01, A02, A10, A11, A12, A20, A21, A22)
+data object IcrsToJ2000 : Matrix3D(A00, A01, A02, A10, A11, A12, A20, A21, A22)

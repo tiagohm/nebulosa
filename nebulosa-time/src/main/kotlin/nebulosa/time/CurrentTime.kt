@@ -2,7 +2,7 @@ package nebulosa.time
 
 import nebulosa.common.time.Stopwatch
 
-object CurrentTime : InstantOfTime() {
+data object CurrentTime : InstantOfTime() {
 
     @JvmField @Volatile var ELAPSED_INTERVAL = 5L
 

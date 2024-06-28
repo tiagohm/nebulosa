@@ -16,7 +16,7 @@ import nebulosa.time.InstantOfTime
  * J2000 systems to produce right ascension and declination for a given
  * date relative to the Earth’s axis and equator of rotation.
  */
-object TrueEquatorAndEquinoxOfDate : Frame {
+data object TrueEquatorAndEquinoxOfDate : Frame {
 
     override fun rotationAt(time: InstantOfTime) = time.m
 }
