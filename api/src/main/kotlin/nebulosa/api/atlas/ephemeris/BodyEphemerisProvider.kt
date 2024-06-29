@@ -48,7 +48,7 @@ class BodyEphemerisProvider(private val threadPoolTaskExecutor: ThreadPoolTaskEx
         val tasks = ArrayList<CompletableFuture<*>>(numberOfTasks)
 
         repeat(numberOfTasks) {
-            CompletableFuture.runAsync({
+            threadPoolTaskExecutor.submitCompletable {
                 while (true) {
                     val element = synchronized(elementQueue) {
                         elementQueue.removeFirstOrNull()
@@ -78,7 +78,7 @@ class BodyEphemerisProvider(private val threadPoolTaskExecutor: ThreadPoolTaskEx
                     val (elongation, east) = if (target === VSOP87E.SUN) SUN_ELONGATION else barycentric.elongation(target, VSOP87E.SUN)
                     element[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE] = "${elongation.toDegrees},/${if (east) 'L' else 'T'}"
                 }
-            }, threadPoolTaskExecutor).also(tasks::add)
+            }.also(tasks::add)
         }
 
         val elapsedTime = measureTimeMillis { tasks.forEach { it.get() } }

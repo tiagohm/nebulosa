@@ -19,10 +19,36 @@ class TimeYMDHMS(
 
     constructor(date: LocalDateTime) : this(date.year, date.monthValue, date.dayOfMonth, date.hour, date.minute, date.second + date.nano / 1E+9)
 
-    override fun toString(): String {
-        return "TimeYMDHMS(whole=$whole, fraction=$fraction, year=$year, month=$month, day=$day," +
-                " hour=$hour, minute=$minute, second=$second, cutoff=$cutoff)"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is TimeYMDHMS) return false
+        if (!super.equals(other)) return false
+
+        if (year != other.year) return false
+        if (month != other.month) return false
+        if (day != other.day) return false
+        if (hour != other.hour) return false
+        if (minute != other.minute) return false
+        if (second != other.second) return false
+        if (cutoff != other.cutoff) return false
+
+        return true
     }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + year
+        result = 31 * result + month
+        result = 31 * result + day
+        result = 31 * result + hour
+        result = 31 * result + minute
+        result = 31 * result + second.hashCode()
+        result = 31 * result + cutoff.hashCode()
+        return result
+    }
+
+    override fun toString() = "TimeYMDHMS(whole=$whole, fraction=$fraction, year=$year, month=$month, day=$day," +
+            " hour=$hour, minute=$minute, second=$second, cutoff=$cutoff)"
 
     companion object {
 
