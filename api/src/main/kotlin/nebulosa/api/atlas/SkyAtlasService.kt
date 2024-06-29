@@ -97,9 +97,9 @@ class SkyAtlasService(
         dateTime: LocalDateTime, fully: Boolean,
     ): List<HorizonsElement> {
         val position = synchronized(positions) {
-            if (location is Location || location is Mount) positions.getOrPut(location) { location.geographicPosition()!! }
+            if (location is Location || location is Mount) positions.getOrPut(location) { location.geographicPosition() }
             else location.geographicPosition()
-        } ?: return emptyList()
+        }
 
         val lock = synchronized(targetLocks) { targetLocks.getOrPut(target) { Any() } }
 
@@ -237,8 +237,7 @@ class SkyAtlasService(
         @JvmStatic
         private fun GeographicCoordinate.geographicPosition() = when (this) {
             is GeographicPosition -> this
-            is Location -> Geoid.IERS2010.lonLat(this)
-            else -> null
+            else -> Geoid.IERS2010.lonLat(this)
         }
 
         @JvmStatic
