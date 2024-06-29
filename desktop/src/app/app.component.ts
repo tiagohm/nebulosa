@@ -15,7 +15,6 @@ export class AppComponent implements OnDestroy {
 	readonly maximizable = !!window.preference.resizable
 	readonly modal = window.preference.modal ?? false
 	subTitle? = ''
-	backgroundColor = '#212121'
 	topMenu: MenuItem[] = []
 	showTopBar = true
 
