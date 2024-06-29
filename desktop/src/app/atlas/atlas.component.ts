@@ -398,7 +398,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 	readonly settings: SettingsDialog = {
 		showDialog: false,
-		fast: false,
 	}
 
 	constructor(
@@ -417,13 +416,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		app.topMenu.push({
 			icon: 'mdi mdi-cog',
 			tooltip: 'Settings',
+			visible: false,
 			command: () => {
 				this.settings.showDialog = true
 			},
 		})
 		app.topMenu.push({
 			icon: 'mdi mdi-calendar',
-			tooltip: 'Date & time',
+			tooltip: 'Date & Time',
 			command: (e) => {
 				this.calendarPanel.toggle(e.originalEvent)
 			},
@@ -679,14 +679,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				this.name = 'Sun'
 				this.tags = []
 				this.imageOfSun.nativeElement.src = `${this.api.baseUrl}/sky-atlas/sun/image`
-				const bodyPosition = await this.api.positionOfSun(this.dateTime, this.settings.fast)
+				const bodyPosition = await this.api.positionOfSun(this.dateTime)
 				Object.assign(this.bodyPosition, bodyPosition)
 			}
 			// Moon.
 			else if (this.tab === SkyAtlasTab.MOON) {
 				this.name = 'Moon'
 				this.tags = []
-				const bodyPosition = await this.api.positionOfMoon(this.dateTime, this.settings.fast)
+				const bodyPosition = await this.api.positionOfMoon(this.dateTime)
 				Object.assign(this.bodyPosition, bodyPosition)
 				this.moonIlluminated = this.bodyPosition.illuminated / 100.0
 				this.moonWaning = this.bodyPosition.leading
@@ -697,7 +697,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 				if (this.planet) {
 					this.name = this.planet.name
-					const bodyPosition = await this.api.positionOfPlanet(this.planet.code, this.dateTime, this.settings.fast)
+					const bodyPosition = await this.api.positionOfPlanet(this.planet.code, this.dateTime)
 					Object.assign(this.bodyPosition, bodyPosition)
 				} else {
 					this.name = undefined
@@ -754,7 +754,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			if (this.refreshTabCount === 1 || refreshTwilight) {
 				this.refreshingChart = true
 
-				const twilight = await this.api.twilight(this.dateTime, this.settings.fast)
+				const twilight = await this.api.twilight(this.dateTime)
 				this.altitudeData.datasets[0].data = [
 					[0.0, 90],
 					[twilight.civilDusk[0], 90],
@@ -809,19 +809,19 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		try {
 			// Sun.
 			if (this.tab === SkyAtlasTab.SUN) {
-				const points = await this.api.altitudePointsOfSun(this.dateTime, this.settings.fast)
+				const points = await this.api.altitudePointsOfSun(this.dateTime)
 				AtlasComponent.belowZeroPoints(points)
 				this.altitudeData.datasets[9].data = points
 			}
 			// Moon.
 			else if (this.tab === SkyAtlasTab.MOON) {
-				const points = await this.api.altitudePointsOfMoon(this.dateTime, this.settings.fast)
+				const points = await this.api.altitudePointsOfMoon(this.dateTime)
 				AtlasComponent.belowZeroPoints(points)
 				this.altitudeData.datasets[9].data = points
 			}
 			// Planet.
 			else if (this.tab === SkyAtlasTab.PLANET && this.planet) {
-				const points = await this.api.altitudePointsOfPlanet(this.planet.code, this.dateTime, this.settings.fast)
+				const points = await this.api.altitudePointsOfPlanet(this.planet.code, this.dateTime)
 				AtlasComponent.belowZeroPoints(points)
 				this.altitudeData.datasets[9].data = points
 			}
@@ -868,8 +868,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	private loadPreference() {
 		const preference = this.preference.skyAtlasPreference.get()
 
-		this.settings.fast = preference.fast
-
 		for (const group of SATELLITE_GROUPS) {
 			const satellite = preference.satellites.find((e) => e.group === group)
 			const enabled = satellite?.enabled ?? AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(group)
@@ -880,7 +878,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	savePreference() {
 		const preference = this.preference.skyAtlasPreference.get()
 
-		preference.fast = this.settings.fast
 		preference.satellites = SATELLITE_GROUPS.map((group) => {
 			return { group, enabled: this.satelliteSearchGroup.get(group) ?? false }
 		})

@@ -61,7 +61,6 @@ export interface SkyAtlasInput {
 
 export interface SettingsDialog {
 	showDialog: boolean
-	fast: boolean
 }
 
 export const CONSTELLATIONS = [

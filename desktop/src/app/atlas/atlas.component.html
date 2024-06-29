@@ -818,11 +818,6 @@
 	[style]="{ width: '70vw' }">
 	<div class="grid mt-2">
 		<div class="col-12">
-			<p-checkbox
-				[binary]="true"
-				[(ngModel)]="settings.fast"
-				label="Use VSOP87E for Sun, Moon and planets (offline, faster, but less accurate)"
-				(ngModelChange)="savePreference(); refreshTab(true, true)" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
