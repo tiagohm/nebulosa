@@ -1,29 +1,29 @@
 <div class="flex flex-column align-items-start justify-content-center gap-1">
 	<span class="text-left flex align-items-center gap-1">
-		<i class="mdi mdi-information text-blue-600"></i>
+		<i class="mdi mdi-information text-info"></i>
 		{{ info || state || 'IDLE' | enum | lowercase }}
 	</span>
 
 	<span class="flex flex-row gap-1px">
-		<span class="bg-orange-500 state counter flex align-items-center gap-1 justify-content-center text-gray-900">
+		<span class="bg-warning state counter flex align-items-center gap-1 justify-content-center text-gray-900">
 			<i class="mdi mdi-counter"></i>
 			{{ capture.count }}
 			<span *ngIf="!capture.looping">/ {{ capture.amount }}</span>
 		</span>
 		@if (!capture.looping) {
-			<span class="bg-green-300 state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
+			<span class="bg-success state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
 				<i class="mdi mdi-percent"></i>
 				{{ capture.progress * 100 | number: '1.1-1' }}
 			</span>
 		}
 		@if (capture.looping) {
-			<span class="bg-blue-300 state time flex align-items-center gap-1 justify-content-center text-gray-900">
+			<span class="bg-info state time flex align-items-center gap-1 justify-content-center text-gray-900">
 				<i class="mdi mdi-timer-sand-complete"></i>
 				{{ capture.elapsedTime | exposureTime }}
 			</span>
 		} @else {
 			<span
-				class="bg-blue-300 state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
+				class="bg-info state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
 				(click)="showRemainingTime = !showRemainingTime">
 				<span
 					class="flex align-items-center gap-1"

@@ -1,5 +1,27 @@
-@import '@fontsource/roboto';
 @import '@mdi/font/scss/materialdesignicons.scss';
+
+$successButtonBg: #81c784;
+$successButtonHoverBg: rgba($successButtonBg, 0.92);
+$successButtonActiveBg: rgba($successButtonBg, 0.68);
+
+$infoButtonBg: #4fc3f7;
+$infoButtonHoverBg: rgba($infoButtonBg, 0.92) !default;
+$infoButtonActiveBg: rgba($infoButtonBg, 0.68) !default;
+
+$warningButtonBg: #ffb74d;
+$warningButtonHoverBg: rgba($warningButtonBg, 0.92) !default;
+$warningButtonActiveBg: rgba($warningButtonBg, 0.68) !default;
+
+$dangerButtonBg: #e57373;
+$dangerButtonHoverBg: rgba($dangerButtonBg, 0.92) !default;
+$dangerButtonActiveBg: rgba($dangerButtonBg, 0.68) !default;
+
+$primaryColor: #7986cb;
+$accentColor: #f06292;
+$primaryTextColor: #121212;
+$accentTextColor: #121212;
+
+@import 'primeng-sass-theme/themes/material/material-dark/compact/indigo/theme.scss';
 
 html,
 body {
@@ -17,9 +39,38 @@ body {
 }
 
 a:any-link {
-	color: var(--blue-400);
+	color: $infoButtonBg;
 }
 
+.text-info {
+	color: $infoButtonBg;
+}
+
+.text-success {
+	color: $successButtonBg;
+}
+
+.text-warning {
+	color: $warningButtonBg;
+}
+.text-danger {
+	color: $dangerButtonBg;
+}
+
+.bg-info {
+	background-color: $infoButtonBg;
+}
+
+.bg-success {
+	background-color: $successButtonBg;
+}
+
+.bg-warning {
+	background-color: $warningButtonBg;
+}
+.bg-danger {
+	background-color: $dangerButtonBg;
+}
 .p-checkbox-box {
 	aspect-ratio: 1;
 	min-width: fit-content;
@@ -192,7 +243,7 @@ i.mdi {
 
 .p-menuitem-link {
 	&.p-menuitem-selected {
-		background-color: #c5e1a5;
+		background-color: $successButtonBg;
 		color: #212121 !important;
 	}
 }

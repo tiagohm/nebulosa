@@ -3,7 +3,7 @@
 		*ngIf="hasType"
 		class="tag">
 		<span class="min-w-3rem">{{ info.frameType }}</span>
-		<label class="text-green-300">Type</label>
+		<label class="text-success">Type</label>
 	</div>
 	<div
 		*ngIf="hasExposure && info.exposureTime"
@@ -15,7 +15,7 @@
 		*ngIf="info.exposureDelay"
 		class="tag">
 		<span class="min-w-3rem">{{ info.exposureDelay * 1000000 | exposureTime }}</span>
-		<label class="text-blue-300">Delay</label>
+		<label class="text-info">Delay</label>
 	</div>
 	<div
 		*ngIf="info.x !== undefined && info.y !== undefined && info.width && info.height"

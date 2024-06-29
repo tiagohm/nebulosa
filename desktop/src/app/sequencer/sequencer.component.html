@@ -1,10 +1,10 @@
-<div class="container px-4 pt-1 pb-3">
+<div class="container pt-1 pb-3">
 	<div class="grid py-1 flex align-items-center">
 		<p-tabView class="w-full">
 			<p-tabPanel
 				header="Capture"
 				leftIcon="mdi mdi-camera-iris">
-				<div class="grid mt-3">
+				<div class="grid px-4 mt-3">
 					<div class="col-3">
 						<p-floatLabel>
 							<p-inputNumber
@@ -54,7 +54,7 @@
 						<i
 							*ngIf="plan.autoSubFolderMode === 'MIDNIGHT'"
 							(click)="toggleAutoSubFolder()"
-							class="mdi mdi-weather-night text-blue-600 cursor-pointer"
+							class="mdi mdi-weather-night text-info cursor-pointer"
 							pTooltip="Auto sub folder: MIDNIGHT"
 							tooltipPosition="bottom"
 							[positionTop]="8"></i>
@@ -79,7 +79,7 @@
 							(ngModelChange)="savePlan()" />
 					</div>
 				</ng-template>
-				<div class="grid mt-3">
+				<div class="grid px-4 mt-3">
 					<div class="col-2 flex align-items-center">
 						<p-checkbox
 							[binary]="true"
@@ -134,7 +134,7 @@
 							(ngModelChange)="savePlan()" />
 					</div>
 				</ng-template>
-				<div class="flex align-items-center gap-4 flex-wrap mt-3">
+				<div class="flex px-4 align-items-center gap-4 flex-wrap mt-3">
 					<p-checkbox
 						[binary]="true"
 						[disabled]="running || !plan.autoFocus.enabled"
@@ -153,7 +153,7 @@
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(ngModel)]="plan.autoFocus.afterElapsedTimeEnabled"
 							(ngModelChange)="savePlan()" />
-						<p-floatLabel>
+						<p-floatLabel class="max-w-12rem">
 							<p-inputNumber
 								[disabled]="running || !plan.autoFocus.afterElapsedTimeEnabled || !plan.autoFocus.enabled"
 								[showButtons]="true"
@@ -173,7 +173,7 @@
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(ngModel)]="plan.autoFocus.afterExposuresEnabled"
 							(ngModelChange)="savePlan()" />
-						<p-floatLabel>
+						<p-floatLabel class="max-w-10rem">
 							<p-inputNumber
 								[disabled]="running || !plan.autoFocus.afterExposuresEnabled || !plan.autoFocus.enabled"
 								[showButtons]="true"
@@ -193,7 +193,7 @@
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(ngModel)]="plan.autoFocus.afterTemperatureChangeEnabled"
 							(ngModelChange)="savePlan()" />
-						<p-floatLabel>
+						<p-floatLabel class="max-w-15rem">
 							<p-inputNumber
 								[disabled]="running || !plan.autoFocus.afterTemperatureChangeEnabled || !plan.autoFocus.enabled"
 								[showButtons]="true"
@@ -213,7 +213,7 @@
 							[disabled]="running || !plan.autoFocus.enabled"
 							[(ngModel)]="plan.autoFocus.afterHFDIncreaseEnabled"
 							(ngModelChange)="savePlan()" />
-						<p-floatLabel>
+						<p-floatLabel class="max-w-12rem">
 							<p-inputNumber
 								[disabled]="running || !plan.autoFocus.afterHFDIncreaseEnabled || !plan.autoFocus.enabled"
 								[showButtons]="true"
@@ -231,7 +231,7 @@
 			</p-tabPanel>
 		</p-tabView>
 	</div>
-	<div class="grid">
+	<div class="grid px-4">
 		<div class="col-12 align-items-center justify-content-center pt-4 gap-2">
 			<neb-device-chooser
 				title="CAMERA"
@@ -270,17 +270,17 @@
 				(deviceChange)="rotatorChanged()" />
 		</div>
 	</div>
-	<div class="grid mt-0">
+	<div class="grid px-4 mt-0">
 		<div class="col-12 justify-content-end">
 			<ng-container *ngIf="event && running">
 				<span
-					class="bg-orange-500 border-round-left-md text-gray-900 line-height-3 text-sm text-center"
+					class="bg-warning border-round-left-md text-gray-900 line-height-3 text-sm text-center"
 					style="min-width: 48px">
 					<i class="mdi mdi-counter mdi-sm"></i>
 					{{ event.id }}
 				</span>
 				<span
-					class="bg-green-300 text-gray-900 line-height-3 text-sm text-center"
+					class="bg-success text-gray-900 line-height-3 text-sm text-center"
 					style="min-width: 62px"
 					pTooltip="Elapsed time"
 					tooltipPosition="bottom">
@@ -288,7 +288,7 @@
 					{{ event.elapsedTime | exposureTime }}
 				</span>
 				<span
-					class="bg-green-300 text-gray-900 line-height-3 text-sm text-center"
+					class="bg-success text-gray-900 line-height-3 text-sm text-center"
 					style="min-width: 62px"
 					pTooltip="Remaining time"
 					tooltipPosition="bottom">
@@ -296,7 +296,7 @@
 					{{ event.remainingTime | exposureTime }}
 				</span>
 				<span
-					class="bg-green-300 border-round-right-md text-gray-900 line-height-3 text-sm text-center"
+					class="bg-success border-round-right-md text-gray-900 line-height-3 text-sm text-center"
 					style="min-width: 52px">
 					<i class="mdi mdi-percent mdi-sm"></i>
 					{{ event.progress * 100 | number: '1.1-1' }}
@@ -304,7 +304,7 @@
 			</ng-container>
 		</div>
 	</div>
-	<div class="grid mt-1 flex align-items-center">
+	<div class="grid px-4 mt-1 flex align-items-center">
 		<p-scrollPanel
 			class="w-full"
 			[style]="{ width: '100%', height: 'calc(100vh - 250px)' }"
@@ -382,7 +382,9 @@
 					</ng-template>
 					<div class="grid">
 						<div class="col-12 pt-1 flex">
-							<neb-camera-info [info]="entry" [wheel]="wheel" />
+							<neb-camera-info
+								[info]="entry"
+								[wheel]="wheel" />
 						</div>
 						<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm">
 							<neb-camera-exposure #cameraExposure />
