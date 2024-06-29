@@ -134,17 +134,17 @@ try {
 		return false
 	})
 
-	ipcMain.handle('WINDOW.OPEN', (e, data) => windowManager.handleWindowOpen(e, data))
-	ipcMain.handle('FILE.OPEN', (e, data) => windowManager.handleFileOpen(e, data))
-	ipcMain.handle('FILE.SAVE', (e, data) => windowManager.handleFileSave(e, data))
-	ipcMain.handle('DIRECTORY.OPEN', (e, data) => windowManager.handleDirectoryOpen(e, data))
-	ipcMain.handle('WINDOW.PIN', (e) => windowManager.handleWindowPin(e))
-	ipcMain.handle('WINDOW.UNPIN', (e) => windowManager.handleWindowUnpin(e))
-	ipcMain.handle('WINDOW.MINIMIZE', (e) => windowManager.handleWindowMinimize(e))
-	ipcMain.handle('WINDOW.MAXIMIZE', (e) => windowManager.handleWindowMaximize(e))
-	ipcMain.handle('WINDOW.RESIZE', (e, data) => windowManager.handleWindowResize(e, data))
-	ipcMain.handle('WINDOW.FULLSCREEN', (e, data) => windowManager.handleWindowFullscreen(e, data))
-	ipcMain.handle('WINDOW.CLOSE', (e, data) => windowManager.handleWindowClose(e, data))
+	ipcMain.handle('WINDOW.OPEN', (e, command) => windowManager.handleWindowOpen(e, command))
+	ipcMain.handle('FILE.OPEN', (e, command) => windowManager.handleFileOpen(e, command))
+	ipcMain.handle('FILE.SAVE', (e, command) => windowManager.handleFileSave(e, command))
+	ipcMain.handle('DIRECTORY.OPEN', (e, command) => windowManager.handleDirectoryOpen(e, command))
+	ipcMain.handle('WINDOW.PIN', (e, command) => windowManager.handleWindowPin(e, command))
+	ipcMain.handle('WINDOW.UNPIN', (e, command) => windowManager.handleWindowUnpin(e, command))
+	ipcMain.handle('WINDOW.MINIMIZE', (e, command) => windowManager.handleWindowMinimize(e, command))
+	ipcMain.handle('WINDOW.MAXIMIZE', (e, command) => windowManager.handleWindowMaximize(e, command))
+	ipcMain.handle('WINDOW.RESIZE', (e, command) => windowManager.handleWindowResize(e, command))
+	ipcMain.handle('WINDOW.FULLSCREEN', (e, command) => windowManager.handleWindowFullscreen(e, command))
+	ipcMain.handle('WINDOW.CLOSE', (e, command) => windowManager.handleWindowClose(e, command))
 
 	const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED', 'CALIBRATION.CHANGED', 'ROI.SELECTED']
 

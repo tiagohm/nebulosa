@@ -86,6 +86,6 @@ export class AppComponent implements OnDestroy {
 	}
 
 	close(data?: unknown) {
-		return this.electron.closeWindow({ id: window.id, data })
+		return this.electron.closeWindow(data)
 	}
 }

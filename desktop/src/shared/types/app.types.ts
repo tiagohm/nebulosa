@@ -51,19 +51,30 @@ export interface WindowPreference {
 	minHeight?: number
 }
 
-export interface OpenWindow {
+export interface WindowCommand {
+	windowId?: string
+}
+
+export interface OpenWindow extends WindowCommand {
 	id: string
 	path: string
 	preference: WindowPreference
 	data?: unknown
 }
 
-export interface CloseWindow {
-	id?: string
+export interface CloseWindow extends WindowCommand {
 	data?: unknown
 }
 
-export interface OpenDirectory {
+export interface FullscreenWindow extends WindowCommand {
+	enabled?: boolean
+}
+
+export interface ResizeWindow extends WindowCommand {
+	height: number
+}
+
+export interface OpenDirectory extends WindowCommand {
 	defaultPath?: string
 }
 

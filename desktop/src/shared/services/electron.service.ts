@@ -9,7 +9,7 @@ import { ipcRenderer, webFrame } from 'electron'
 import * as fs from 'fs'
 import { DARVEvent, TPPAEvent } from '../types/alignment.types'
 import { DeviceMessageEvent } from '../types/api.types'
-import { CloseWindow, ConfirmationEvent, JsonFile, NotificationEvent, OpenDirectory, OpenFile, SaveJson } from '../types/app.types'
+import { CloseWindow, ConfirmationEvent, FullscreenWindow, JsonFile, NotificationEvent, OpenDirectory, OpenFile, ResizeWindow, SaveJson, WindowCommand } from '../types/app.types'
 import { Location } from '../types/atlas.types'
 import { AutoFocusEvent } from '../types/autofocus.type'
 import { Camera, CameraCaptureEvent } from '../types/camera.types'
@@ -68,12 +68,12 @@ interface EventMappedType {
 	'DIRECTORY.OPEN': OpenDirectory
 	'JSON.WRITE': JsonFile
 	'JSON.READ': string
-	'WINDOW.RESIZE': number
-	'WINDOW.PIN': unknown
-	'WINDOW.UNPIN': unknown
-	'WINDOW.MINIMIZE': unknown
-	'WINDOW.MAXIMIZE': unknown
-	'WINDOW.FULLSCREEN': boolean
+	'WINDOW.RESIZE': ResizeWindow
+	'WINDOW.PIN': WindowCommand
+	'WINDOW.UNPIN': WindowCommand
+	'WINDOW.MINIMIZE': WindowCommand
+	'WINDOW.MAXIMIZE': WindowCommand
+	'WINDOW.FULLSCREEN': FullscreenWindow
 	'WINDOW.CLOSE': CloseWindow
 	'WHEEL.RENAMED': WheelRenamed
 	'ROI.SELECTED': ROISelected
@@ -129,16 +129,17 @@ export class ElectronService {
 	}
 
 	openFile(data?: OpenFile): Promise<Undefinable<string>> {
-		return this.send('FILE.OPEN', data)
+		return this.send('FILE.OPEN', { ...data, windowId: data?.windowId ?? window.id })
 	}
 
 	saveFile(data?: OpenFile): Promise<Undefinable<string>> {
-		return this.send('FILE.SAVE', data)
+		return this.send('FILE.SAVE', { ...data, windowId: data?.windowId ?? window.id })
 	}
 
 	openImage(data?: OpenFile): Promise<Undefinable<string>> {
 		return this.openFile({
 			...data,
+			windowId: data?.windowId ?? window.id,
 			filters: [
 				{ name: 'All', extensions: ['fits', 'fit', 'xisf'] },
 				{ name: 'FITS', extensions: ['fits', 'fit'] },
@@ -150,6 +151,7 @@ export class ElectronService {
 	saveImage(data?: OpenFile) {
 		return this.saveFile({
 			...data,
+			windowId: data?.windowId ?? window.id,
 			filters: [
 				{ name: 'All', extensions: ['fits', 'fit', 'xisf', 'png', 'jpg', 'jpeg'] },
 				{ name: 'FITS', extensions: ['fits', 'fit'] },
@@ -160,11 +162,11 @@ export class ElectronService {
 	}
 
 	openDirectory(data?: OpenDirectory): Promise<string | false> {
-		return this.send('DIRECTORY.OPEN', data)
+		return this.send('DIRECTORY.OPEN', { ...data, windowId: data?.windowId ?? window.id })
 	}
 
 	async saveJson<T>(data: SaveJson<T>): Promise<JsonFile<T> | false> {
-		data.path = data.path || (await this.saveFile({ ...data, filters: [{ name: 'JSON files', extensions: ['json'] }] }))
+		data.path = data.path || (await this.saveFile({ ...data, windowId: data.windowId ?? window.id, filters: [{ name: 'JSON files', extensions: ['json'] }] }))
 
 		if (data.path) {
 			if (await this.writeJson(data)) {
@@ -176,7 +178,7 @@ export class ElectronService {
 	}
 
 	async openJson<T>(data?: OpenFile): Promise<JsonFile<T> | false> {
-		const path = await this.openFile({ ...data, filters: [{ name: 'JSON files', extensions: ['json'] }] })
+		const path = await this.openFile({ ...data, windowId: data?.windowId ?? window.id, filters: [{ name: 'JSON files', extensions: ['json'] }] })
 
 		if (path) {
 			return await this.readJson<T>(path)
@@ -194,7 +196,7 @@ export class ElectronService {
 	}
 
 	resizeWindow(size: number) {
-		return this.send('WINDOW.RESIZE', Math.floor(size))
+		return this.send('WINDOW.RESIZE', { height: Math.floor(size), windowId: window.id })
 	}
 
 	async autoResizeWindow(timeout: number = 500): Promise<Undefinable<number>> {
@@ -212,27 +214,27 @@ export class ElectronService {
 	}
 
 	pinWindow() {
-		return this.send('WINDOW.PIN')
+		return this.send('WINDOW.PIN', { windowId: window.id })
 	}
 
 	unpinWindow() {
-		return this.send('WINDOW.UNPIN')
+		return this.send('WINDOW.UNPIN', { windowId: window.id })
 	}
 
 	minimizeWindow() {
-		return this.send('WINDOW.MINIMIZE')
+		return this.send('WINDOW.MINIMIZE', { windowId: window.id })
 	}
 
 	maximizeWindow() {
-		return this.send('WINDOW.MAXIMIZE')
+		return this.send('WINDOW.MAXIMIZE', { windowId: window.id })
 	}
 
 	fullscreenWindow(enabled?: boolean): Promise<boolean> {
-		return this.send('WINDOW.FULLSCREEN', enabled)
+		return this.send('WINDOW.FULLSCREEN', { enabled, windowId: window.id })
 	}
 
-	closeWindow<T = unknown>(data: CloseWindow): Promise<T> {
-		return this.send('WINDOW.CLOSE', data)
+	closeWindow<T = unknown>(data?: unknown, id?: string): Promise<T> {
+		return this.send('WINDOW.CLOSE', { data, windowId: id ?? window.id })
 	}
 
 	calibrationChanged() {

@@ -18,12 +18,12 @@ export class BrowserWindowService {
 
 	openWindow(open: OpenWindow): Promise<boolean> {
 		open.preference.modal = false
-		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open })
+		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}
 
 	openModal<R = unknown>(open: OpenWindow): Promise<Undefinable<R>> {
 		open.preference.modal = true
-		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open })
+		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}
 
 	openMount(data: Mount, preference: WindowPreference = {}) {

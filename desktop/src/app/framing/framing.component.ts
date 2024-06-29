@@ -70,8 +70,14 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 	}
 
 	async ngAfterViewInit() {
-		this.hipsSurveys = await this.api.hipsSurveys()
-		this.hipsSurvey = this.hipsSurveys.find((e) => e.id === this.hipsSurvey?.id) ?? this.hipsSurveys[0]
+		this.loading = true
+
+		try {
+			this.hipsSurveys = await this.api.hipsSurveys()
+			this.hipsSurvey = this.hipsSurveys.find((e) => e.id === this.hipsSurvey?.id) ?? this.hipsSurveys[0]
+		} finally {
+			this.loading = false
+		}
 
 		this.route.queryParams.subscribe((e) => {
 			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as FramingData
@@ -82,7 +88,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 	@HostListener('window:unload')
 	ngOnDestroy() {
 		void this.closeFrameImage()
-		void this.electron.closeWindow({ id: this.frameId })
+		void this.electron.closeWindow(undefined, this.frameId)
 	}
 
 	private async frameFromData(data: FramingData) {
