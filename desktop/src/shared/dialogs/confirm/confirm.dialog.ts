@@ -13,24 +13,22 @@ export class ConfirmDialog {
 
 	constructor(
 		private readonly dialogRef: DynamicDialogRef,
-		private readonly config: DynamicDialogConfig<Confirmation>,
+		config: DynamicDialogConfig<Confirmation>,
 	) {
 		this.header = config.data?.header ?? config.header ?? 'Confirmation'
 		this.message = config.data?.message ?? 'Are you sure that you want to proceed?'
 	}
 
 	reject() {
-		this.config.data?.reject?.(ConfirmEventType.REJECT)
 		this.dialogRef.close(ConfirmEventType.REJECT)
 	}
 
 	accept() {
-		this.config.data?.accept?.()
 		this.dialogRef.close(ConfirmEventType.ACCEPT)
 	}
 
 	static async open(prime: PrimeService, message: string) {
 		const data: Confirmation = { message }
-		return (await prime.open<Confirmation, ConfirmEventType>(ConfirmDialog, { header: 'Confirmation', data })) ?? ConfirmEventType.CANCEL
+		return (await prime.open<Confirmation, ConfirmEventType>(ConfirmDialog, { header: 'Confirmation', data, style: { maxWidth: '320px' } })) ?? ConfirmEventType.CANCEL
 	}
 }

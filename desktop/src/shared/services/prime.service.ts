@@ -19,8 +19,8 @@ export class PrimeService {
 			resizable: false,
 			width: config.width || '80vw',
 			style: {
-				...config.style,
 				'max-width': '480px',
+				...config.style,
 			},
 			contentStyle: {
 				...config.contentStyle,
