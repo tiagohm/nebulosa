@@ -13,6 +13,7 @@ import nebulosa.nova.position.Barycentric
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -21,7 +22,7 @@ import java.util.concurrent.CompletableFuture
 import kotlin.system.measureTimeMillis
 
 @Service
-class BodyEphemerisProvider : CachedEphemerisProvider<Body>() {
+class BodyEphemerisProvider(private val threadPoolTaskExecutor: ThreadPoolTaskExecutor) : CachedEphemerisProvider<Body>() {
 
     private val timeBucket = HashMap<LocalDateTime, UTC>()
     private val cachedBodies = HashMap<GeographicPosition, Body>()
@@ -47,7 +48,7 @@ class BodyEphemerisProvider : CachedEphemerisProvider<Body>() {
         val tasks = ArrayList<CompletableFuture<*>>(numberOfTasks)
 
         repeat(numberOfTasks) {
-            CompletableFuture.runAsync {
+            CompletableFuture.runAsync({
                 while (true) {
                     val element = synchronized(elementQueue) {
                         elementQueue.removeFirstOrNull()
@@ -77,7 +78,7 @@ class BodyEphemerisProvider : CachedEphemerisProvider<Body>() {
                     val (elongation, east) = if (target === VSOP87E.SUN) SUN_ELONGATION else barycentric.elongation(target, VSOP87E.SUN)
                     element[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE] = "${elongation.toDegrees},/${if (east) 'L' else 'T'}"
                 }
-            }.also(tasks::add)
+            }, threadPoolTaskExecutor).also(tasks::add)
         }
 
         val elapsedTime = measureTimeMillis { tasks.forEach { it.get() } }

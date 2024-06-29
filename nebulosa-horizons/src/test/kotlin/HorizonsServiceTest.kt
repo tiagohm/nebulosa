@@ -19,7 +19,6 @@ import nebulosa.nasa.spk.Spk
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import okio.ByteString.Companion.decodeBase64
-import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
@@ -44,9 +43,7 @@ class HorizonsServiceTest : StringSpec() {
                 138.73119026648095.deg, 35.36276754848444.deg, 3776.m,
                 startDate, startDate.plusDays(1L),
                 extraPrecision = true,
-            ).execute()
-            .body()
-            .shouldNotBeNull()
+            ).execute().body().shouldNotBeNull()
             .also { it.shouldNotBeEmpty() }
 
         "spk" {
@@ -106,9 +103,8 @@ class HorizonsServiceTest : StringSpec() {
                     startTime = LocalDateTime.of(2023, 3, 11, 0, 0, 0),
                     endTime = LocalDateTime.of(2023, 4, 11, 0, 0, 0),
                     extraPrecision = true,
-                    stepSize = Duration.ofDays(1L),
-                ).execute()
-                .body().shouldNotBeNull()
+                    stepSizeInMinutes = 1,
+                ).execute().body().shouldNotBeNull()
 
             ephemeris.shouldNotBeEmpty()
 

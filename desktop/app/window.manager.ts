@@ -108,8 +108,9 @@ export class WindowManager {
 
 		const screenSize = screen.getPrimaryDisplay().workAreaSize
 		const storedData = this.storage.get(`window.${open.id}`)
-		const width = preference.resizable ? Math.max(minWidth, Math.min(storedData?.width ?? computedWidth, screenSize.width)) : computedWidth
-		const height = preference.resizable ? Math.max(minHeight, Math.min(storedData?.height ?? computedHeight, screenSize.height)) : computedHeight
+		const resizable = preference.resizable
+		const width = resizable ? Math.max(minWidth, Math.min(storedData?.width ?? computedWidth, screenSize.width)) : computedWidth
+		const height = resizable ? Math.max(minHeight, Math.min(storedData?.height ?? computedHeight, screenSize.height)) : computedHeight
 		const x = Math.max(0, Math.min(storedData?.x ?? 0, screenSize.width - width))
 		const y = Math.max(0, Math.min(storedData?.y ?? 0, screenSize.height - height))
 
@@ -124,7 +125,7 @@ export class WindowManager {
 			minHeight,
 			x,
 			y,
-			resizable: this.args.serve || preference.resizable,
+			resizable: this.args.serve || resizable,
 			autoHideMenuBar: true,
 			icon: preference.icon ? join(__dirname, this.args.serve ? `../src/assets/icons/${preference.icon}.png` : `assets/icons/${preference.icon}.png`) : this.appIcon,
 			webPreferences: {

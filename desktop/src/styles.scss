@@ -15,8 +15,13 @@ body {
 	font-family: 'Roboto';
 }
 
+a:any-link {
+	color: var(--blue-400);
+}
+
 .p-checkbox-box {
 	aspect-ratio: 1;
+	min-width: fit-content;
 }
 
 .invisible {
@@ -40,7 +45,7 @@ p-table {
 	display: inline-flex;
 	justify-content: center;
 	align-items: center;
-	aspect-ratio: auto 1/1;
+	aspect-ratio: 1;
 }
 
 .mdi.mdi-sm:before {
@@ -180,7 +185,7 @@ p-calendar.border-0 .p-calendar-w-btn {
 }
 
 i.mdi {
-	aspect-ratio: 1/1;
+	aspect-ratio: 1;
 	display: inline-flex;
 }
 
