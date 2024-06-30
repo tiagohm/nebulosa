@@ -240,7 +240,7 @@ class ImageService(
                 val catalog = if (useSimbad) {
                     simbadService.search(SimbadSearch.Builder().region(rightAscension, declination, radius).build())
                 } else {
-                    simbadEntityRepository.find(null, null, rightAscension, declination, radius)
+                    simbadEntityRepository.search(null, null, rightAscension, declination, radius)
                 }
 
                 var count = 0

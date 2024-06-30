@@ -1,3 +1,3 @@
 package nebulosa.api.beans.converters.angle
 
-class DegreesDeserializer : AngleDeserializer(false, defaultValue = 0.0)
+class DegreesDeserializer : FormattedAngleDeserializer(false, defaultValue = 0.0)

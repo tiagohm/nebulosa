@@ -3,6 +3,7 @@ package nebulosa.api.atlas
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import nebulosa.api.beans.converters.angle.AzimuthSerializer
 import nebulosa.api.beans.converters.angle.DeclinationSerializer
+import nebulosa.api.beans.converters.angle.DegreesSerializer
 import nebulosa.api.beans.converters.angle.RightAscensionSerializer
 import nebulosa.constants.AU_KM
 import nebulosa.constants.SPEED_OF_LIGHT
@@ -25,7 +26,7 @@ data class BodyPosition(
     val distance: Double,
     val distanceUnit: String,
     val illuminated: Double,
-    val elongation: Double,
+    @field:JsonSerialize(using = DegreesSerializer::class) val elongation: Angle,
     val leading: Boolean, // true = rises and sets BEFORE Sun.
 ) {
 
@@ -57,7 +58,7 @@ data class BodyPosition(
                 element.asEnum(HorizonsQuantity.CONSTELLATION, Constellation.AND),
                 distance, distanceUnit,
                 element.asDouble(HorizonsQuantity.ILLUMINATED_FRACTION),
-                element.asDouble(HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE),
+                element.asDouble(HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE).deg,
                 element.asStringOrNull(HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE, index = 1) == "/L",
             )
         }

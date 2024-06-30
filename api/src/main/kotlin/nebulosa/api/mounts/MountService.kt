@@ -82,7 +82,7 @@ class MountService(
         val location = sites[mount] ?: return true
         val mountPosition = if (j2000) ICRF.equatorial(ra, dec, center = location)
         else ICRF.equatorial(ra, dec, epoch = CurrentTime, center = location)
-        return verifyMountWillPointToSun(idempotencyKey, mount, mountPosition) &&
+        return verifyMountWillPointToSun(idempotencyKey, location, mountPosition) &&
                 verifiyMountWillPointBelowHorizon(idempotencyKey, mountPosition)
     }
 
@@ -91,8 +91,8 @@ class MountService(
      *
      * @return true if mount can slew to [mountPosition] coordinates.
      */
-    private fun verifyMountWillPointToSun(idempotencyKey: String, mount: Mount, mountPosition: ICRF): Boolean {
-        val sunPosition = skyAtlasService.positionOfSun(mount, LocalDateTime.now(), true)
+    private fun verifyMountWillPointToSun(idempotencyKey: String, location: GeographicPosition, mountPosition: ICRF): Boolean {
+        val sunPosition = skyAtlasService.positionOfSun(location, LocalDateTime.now(), true)
             .let { ICRF.equatorial(it.rightAscensionJ2000, it.declinationJ2000) }
 
         return if (sunPosition.separationFrom(mountPosition).toDegrees <= 1.0) {

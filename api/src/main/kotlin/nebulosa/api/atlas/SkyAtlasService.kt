@@ -5,7 +5,6 @@ import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
-import nebulosa.indi.device.mount.Mount
 import nebulosa.math.Angle
 import nebulosa.math.toLightYears
 import nebulosa.math.toMas
@@ -97,7 +96,7 @@ class SkyAtlasService(
         dateTime: LocalDateTime, fully: Boolean,
     ): List<HorizonsElement> {
         val position = synchronized(positions) {
-            if (location is Location || location is Mount) positions.getOrPut(location) { location.geographicPosition() }
+            if (location is Location) positions.getOrPut(location) { location.geographicPosition() }
             else location.geographicPosition()
         }
 
@@ -206,7 +205,7 @@ class SkyAtlasService(
         constellation: Constellation? = null,
         magnitudeMin: Double = SkyObject.MAGNITUDE_MIN, magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
         type: SkyObjectType? = null,
-    ) = simbadEntityRepository.find(text, constellation, rightAscension, declination, radius, magnitudeMin, magnitudeMax, type)
+    ) = simbadEntityRepository.search(text, constellation, rightAscension, declination, radius, magnitudeMin, magnitudeMax, type)
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
     fun refreshImageOfSun() {
@@ -249,8 +248,7 @@ class SkyAtlasService(
         @JvmStatic
         private fun GeographicCoordinate.offsetInMinutes() = when (this) {
             is Location -> offsetInMinutes
-            is TimeZonedInSeconds -> offsetInSeconds / 60
-            else -> 0
+            else -> offsetInSeconds() / 60
         }
 
         @JvmStatic

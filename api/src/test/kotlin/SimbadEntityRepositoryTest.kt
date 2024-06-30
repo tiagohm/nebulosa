@@ -34,35 +34,35 @@ class SimbadEntityRepositoryTest : StringSpec() {
         repository.save("Car Nebula", SkyObjectType.NEBULA, Constellation.CAR, 5.0, "10 45 15".hours, "-59 43 35".deg)
 
         "find all" {
-            repository.find().shouldHaveSize(4).first().magnitude shouldBeExactly -1.45
+            repository.search().shouldHaveSize(4).first().magnitude shouldBeExactly -1.45
         }
         "find by name" {
-            repository.find(name = "dolphin").shouldHaveSize(1).first().name shouldBe "Dolphin Nebula"
-            repository.find(name = "andromeda").shouldBeEmpty()
-            repository.find(name = "nebula").shouldHaveSize(2).first().magnitude shouldBeExactly 5.0
+            repository.search(name = "dolphin").shouldHaveSize(1).first().name shouldBe "Dolphin Nebula"
+            repository.search(name = "andromeda").shouldBeEmpty()
+            repository.search(name = "nebula").shouldHaveSize(2).first().magnitude shouldBeExactly 5.0
         }
         "find by constellation" {
-            repository.find(constellation = Constellation.CMA).shouldHaveSize(2).first().magnitude shouldBeExactly -1.45
-            repository.find(constellation = Constellation.AND).shouldBeEmpty()
+            repository.search(constellation = Constellation.CMA).shouldHaveSize(2).first().magnitude shouldBeExactly -1.45
+            repository.search(constellation = Constellation.AND).shouldBeEmpty()
         }
         "find by region" {
-            repository.find(rightAscension = "06 45 59".hours, declination = "-20 45 29".deg, radius = 4.5.deg).shouldHaveSize(2)
+            repository.search(rightAscension = "06 45 59".hours, declination = "-20 45 29".deg, radius = 4.5.deg).shouldHaveSize(2)
                 .first().magnitude shouldBeExactly -1.45
-            repository.find(rightAscension = "06 45 59".hours, declination = "-20 45 29".deg, radius = 4.0.deg).shouldHaveSize(1)
+            repository.search(rightAscension = "06 45 59".hours, declination = "-20 45 29".deg, radius = 4.0.deg).shouldHaveSize(1)
                 .first().name shouldBe "Dolphin Nebula"
-            repository.find(rightAscension = "00 42 43".hours, declination = "41 15 53".deg, radius = 10.deg).shouldBeEmpty()
+            repository.search(rightAscension = "00 42 43".hours, declination = "41 15 53".deg, radius = 10.deg).shouldBeEmpty()
         }
         "find by magnitude" {
-            repository.find(magnitudeMin = 5.0).shouldHaveSize(3)
-            repository.find(magnitudeMax = 4.9).shouldHaveSize(1).first().name shouldBe "Sirius"
-            repository.find(magnitudeMin = 6.6, magnitudeMax = 6.99).shouldHaveSize(1).first().name shouldBe "Dolphin Nebula"
-            repository.find(magnitudeMax = -2.0).shouldBeEmpty()
-            repository.find(magnitudeMin = 7.0).shouldBeEmpty()
-            repository.find(magnitudeMin = 5.1, magnitudeMax = 6.0).shouldBeEmpty()
+            repository.search(magnitudeMin = 5.0).shouldHaveSize(3)
+            repository.search(magnitudeMax = 4.9).shouldHaveSize(1).first().name shouldBe "Sirius"
+            repository.search(magnitudeMin = 6.6, magnitudeMax = 6.99).shouldHaveSize(1).first().name shouldBe "Dolphin Nebula"
+            repository.search(magnitudeMax = -2.0).shouldBeEmpty()
+            repository.search(magnitudeMin = 7.0).shouldBeEmpty()
+            repository.search(magnitudeMin = 5.1, magnitudeMax = 6.0).shouldBeEmpty()
         }
         "find by type" {
-            repository.find(type = SkyObjectType.NEBULA).shouldHaveSize(2).first().magnitude shouldBeExactly 5.0
-            repository.find(type = SkyObjectType.GALAXY).shouldBeEmpty()
+            repository.search(type = SkyObjectType.NEBULA).shouldHaveSize(2).first().magnitude shouldBeExactly 5.0
+            repository.search(type = SkyObjectType.GALAXY).shouldBeEmpty()
         }
     }
 
