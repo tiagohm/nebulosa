@@ -4,7 +4,7 @@ package nebulosa.nova.frame
  * Supergalactic System reference frame.
  */
 @Suppress("FloatingPointLiteralPrecision")
-object Supergalactic : InertialFrame(
+data object Supergalactic : InertialFrame(
     0.3750155557060191496, 0.3413588718572082374, 0.8618801851666388868,
     -0.8983204377254853439, -0.0957271002509969235, 0.4287851600069993011,
     0.2288749093788964371, -0.9350456902643365859, 0.2707504994914917474,

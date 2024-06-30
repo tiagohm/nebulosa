@@ -6,7 +6,7 @@ import kotlin.math.sin
 /**
  * TDB - TT by Fairhead & Bretagnon, 1990.
  */
-object TDBMinusTTByFairheadAndBretagnon1990 : TimeDelta {
+data object TDBMinusTTByFairheadAndBretagnon1990 : TimeDelta {
 
     /**
      * Computes TDB - TT in seconds at [time].

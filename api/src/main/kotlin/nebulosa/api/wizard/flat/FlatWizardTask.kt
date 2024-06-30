@@ -1,7 +1,7 @@
 package nebulosa.api.wizard.flat
 
 import nebulosa.api.cameras.*
-import nebulosa.api.messages.MessageEvent
+import nebulosa.api.message.MessageEvent
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.fits.fits

@@ -3,7 +3,7 @@ package nebulosa.api.cameras
 import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.calibration.CalibrationFrameService
-import nebulosa.api.messages.MessageService
+import nebulosa.api.message.MessageService
 import nebulosa.api.wheels.WheelEventAware
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera

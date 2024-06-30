@@ -1,7 +1,7 @@
 package nebulosa.api.autofocus
 
 import nebulosa.api.cameras.CameraCaptureEvent
-import nebulosa.api.messages.MessageEvent
+import nebulosa.api.message.MessageEvent
 import nebulosa.curve.fitting.CurvePoint
 import nebulosa.curve.fitting.HyperbolicFitting
 import nebulosa.curve.fitting.QuadraticFitting

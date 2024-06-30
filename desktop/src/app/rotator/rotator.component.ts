@@ -20,12 +20,12 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 	angle = 0
 
 	constructor(
-		private app: AppComponent,
-		private api: ApiService,
+		private readonly app: AppComponent,
+		private readonly api: ApiService,
 		electron: ElectronService,
-		private preference: PreferenceService,
-		private route: ActivatedRoute,
-		private pinger: Pinger,
+		private readonly preference: PreferenceService,
+		private readonly route: ActivatedRoute,
+		private readonly pinger: Pinger,
 		ngZone: NgZone,
 	) {
 		app.title = 'Rotator'
@@ -48,9 +48,9 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 		})
 	}
 
-	async ngAfterViewInit() {
+	ngAfterViewInit() {
 		this.route.queryParams.subscribe(async (e) => {
-			const rotator = JSON.parse(decodeURIComponent(e.data)) as Rotator
+			const rotator = JSON.parse(decodeURIComponent(e['data'] as string)) as Rotator
 			await this.rotatorChanged(rotator)
 			this.pinger.register(this, 30000)
 		})
@@ -59,15 +59,17 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 	@HostListener('window:unload')
 	ngOnDestroy() {
 		this.pinger.unregister(this)
-		this.abort()
+		void this.abort()
 	}
 
-	ping() {
-		this.api.rotatorListen(this.rotator)
+	async ping() {
+		if (this.rotator.id) {
+			await this.api.rotatorListen(this.rotator)
+		}
 	}
 
 	async rotatorChanged(rotator?: Rotator) {
-		if (rotator && rotator.id) {
+		if (rotator?.id) {
 			rotator = await this.api.rotator(rotator.id)
 			Object.assign(this.rotator, rotator)
 
@@ -75,21 +77,19 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 			this.update()
 		}
 
-		if (this.app) {
-			this.app.subTitle = rotator?.name ?? ''
-		}
+		this.app.subTitle = rotator?.name ?? ''
 	}
 
 	connect() {
 		if (this.rotator.connected) {
-			this.api.rotatorDisconnect(this.rotator)
+			return this.api.rotatorDisconnect(this.rotator)
 		} else {
-			this.api.rotatorConnect(this.rotator)
+			return this.api.rotatorConnect(this.rotator)
 		}
 	}
 
 	reverse(enabled: boolean) {
-		this.api.rotatorReverse(this.rotator, enabled)
+		return this.api.rotatorReverse(this.rotator, enabled)
 	}
 
 	async move() {
@@ -108,11 +108,11 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	abort() {
-		this.api.rotatorAbort(this.rotator)
+		return this.api.rotatorAbort(this.rotator)
 	}
 
 	home() {
-		this.api.rotatorHome(this.rotator)
+		return this.api.rotatorHome(this.rotator)
 	}
 
 	private update() {

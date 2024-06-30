@@ -2,7 +2,7 @@ package nebulosa.api.guiding
 
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.devices.DeviceEventHub
-import nebulosa.api.messages.MessageService
+import nebulosa.api.message.MessageService
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.guide.GuideOutput
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component
 @Subscriber
 class GuideOutputEventHub(
     private val messageService: MessageService,
-) : DeviceEventHub<GuideOutput, DeviceEvent<GuideOutput>>(), GuideOutputEventAware {
+) : DeviceEventHub<GuideOutput, DeviceEvent<GuideOutput>>("GUIDE_OUTPUT"), GuideOutputEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleGuideOutputEvent(event: DeviceEvent<GuideOutput>) {
@@ -28,25 +28,13 @@ class GuideOutputEventHub(
             }
         } else {
             when (event) {
-                is GuideOutputAttached -> sendMessage(GUIDE_OUTPUT_ATTACHED, event.device)
-                is GuideOutputDetached -> sendMessage(GUIDE_OUTPUT_DETACHED, event.device)
+                is GuideOutputAttached -> onAttached(event.device)
+                is GuideOutputDetached -> onDetached(event.device)
             }
         }
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendMessage(eventName: String, device: GuideOutput) {
+    override fun sendMessage(eventName: String, device: GuideOutput) {
         messageService.sendMessage(GuideOutputMessageEvent(eventName, device))
-    }
-
-    override fun sendUpdate(device: GuideOutput) {
-        sendMessage(GUIDE_OUTPUT_UPDATED, device)
-    }
-
-    companion object {
-
-        const val GUIDE_OUTPUT_UPDATED = "GUIDE_OUTPUT.UPDATED"
-        const val GUIDE_OUTPUT_ATTACHED = "GUIDE_OUTPUT.ATTACHED"
-        const val GUIDE_OUTPUT_DETACHED = "GUIDE_OUTPUT.DETACHED"
     }
 }

@@ -1,4 +1,4 @@
-import { MenuItem } from './components/menu-item/menu-item.component'
+import type { MenuItem, SlideMenuItem } from './components/menu-item/menu-item.component'
 
 export const EVERY_MINUTE_CRON_TIME = '0 */1 * * * *'
 
@@ -17,6 +17,7 @@ export const ONE_DECIMAL_PLACE_FORMATTER = new Intl.NumberFormat('en-US', {
 	maximumFractionDigits: 1,
 })
 
-export const SEPARATOR_MENU_ITEM: MenuItem = {
+export const SEPARATOR_MENU_ITEM: MenuItem & SlideMenuItem = {
 	separator: true,
+	slideMenu: [],
 }

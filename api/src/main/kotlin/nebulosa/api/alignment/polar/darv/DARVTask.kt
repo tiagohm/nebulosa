@@ -5,7 +5,7 @@ import nebulosa.api.cameras.*
 import nebulosa.api.guiding.GuidePulseEvent
 import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.guiding.GuidePulseTask
-import nebulosa.api.messages.MessageEvent
+import nebulosa.api.message.MessageEvent
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.SplitTask
 import nebulosa.api.tasks.Task

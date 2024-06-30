@@ -1,5 +1,6 @@
 package nebulosa.nova.position
 
+import nebulosa.constants.AU_M
 import nebulosa.constants.DAYSEC
 import nebulosa.constants.SPEED_OF_LIGHT
 import nebulosa.erfa.CartesianCoordinate
@@ -66,7 +67,7 @@ open class ICRF protected constructor(
      * Length of this vector in days of light travel time.
      */
     inline val lightTime
-        get() = position.length * (1000.0 / (SPEED_OF_LIGHT * DAYSEC))
+        get() = position.length * (AU_M / SPEED_OF_LIGHT / DAYSEC)
 
     /**
      * Computes the equatorial (RA, declination, distance)

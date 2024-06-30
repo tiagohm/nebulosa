@@ -52,59 +52,55 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 
 	constructor(
 		app: AppComponent,
-		private route: ActivatedRoute,
-		private api: ApiService,
-		private browserWindow: BrowserWindowService,
-		private electron: ElectronService,
-		private storage: LocalStorageService,
-		private prime: PrimeService,
+		private readonly route: ActivatedRoute,
+		private readonly api: ApiService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly electron: ElectronService,
+		private readonly storage: LocalStorageService,
+		private readonly prime: PrimeService,
 		ngZone: NgZone,
 	) {
 		app.title = 'Framing'
 
 		electron.on('DATA.CHANGED', (event: FramingData) => {
-			ngZone.run(() => this.frameFromData(event))
+			return ngZone.run(() => this.frameFromData(event))
 		})
 
 		this.loadPreference()
 	}
 
 	async ngAfterViewInit() {
-		this.hipsSurveys = await this.api.hipsSurveys()
+		this.loading = true
 
-		if (this.hipsSurvey) {
-			this.hipsSurvey = this.hipsSurveys.find((e) => e.id === this.hipsSurvey!.id)
+		try {
+			this.hipsSurveys = await this.api.hipsSurveys()
+			this.hipsSurvey = this.hipsSurveys.find((e) => e.id === this.hipsSurvey?.id) ?? this.hipsSurveys[0]
+		} finally {
+			this.loading = false
 		}
-
-		if (!this.hipsSurvey) {
-			this.hipsSurvey = this.hipsSurveys[0]
-		}
-
-		this.electron.autoResizeWindow()
 
 		this.route.queryParams.subscribe((e) => {
-			const data = JSON.parse(decodeURIComponent(e.data)) as FramingData
-			this.frameFromData(data)
+			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as FramingData
+			return this.frameFromData(data)
 		})
 	}
 
 	@HostListener('window:unload')
 	ngOnDestroy() {
-		this.closeFrameImage()
-		this.electron.closeWindow({ id: this.frameId })
+		void this.closeFrameImage()
+		void this.electron.closeWindow(undefined, this.frameId)
 	}
 
-	private frameFromData(data: FramingData) {
-		console.info(data)
-		this.rightAscension = data.rightAscension ?? this.rightAscension
-		this.declination = data.declination ?? this.declination
+	private async frameFromData(data: FramingData) {
+		this.rightAscension = data.rightAscension || this.rightAscension
+		this.declination = data.declination || this.declination
 		this.width = data.width || this.width
 		this.height = data.height || this.height
 		this.fov = data.fov || this.fov
 		if (data.rotation === 0 || data.rotation) this.rotation = data.rotation
 
 		if (data.rightAscension && data.declination) {
-			this.frame()
+			await this.frame()
 		}
 	}
 
@@ -116,17 +112,17 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 		this.loading = true
 
 		try {
-			const path = await this.api.frame(this.rightAscension, this.declination, this.width, this.height, this.fov, this.rotation, this.hipsSurvey!)
+			const path = await this.api.frame(this.rightAscension, this.declination, this.width, this.height, this.fov, this.rotation, this.hipsSurvey)
 			const title = `Framing ・ ${this.rightAscension} ・ ${this.declination}`
 
 			this.framePath = path
 			this.frameId = await this.browserWindow.openImage({ path, source: 'FRAMING', id: 'framing', title })
 
 			this.savePreference()
-		} catch (e: any) {
+		} catch (e) {
 			console.error(e)
 
-			this.prime.message(e.message || 'Failed to retrieve the image', 'error')
+			this.prime.message('Failed to retrieve the image', 'error')
 		} finally {
 			this.loading = false
 		}

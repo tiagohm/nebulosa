@@ -1,6 +1,7 @@
-import { Point } from 'electron'
-import { CameraCaptureEvent, CameraStartCapture } from './camera.types'
-import { EMPTY_STAR_DETECTION_REQUEST, StarDetectionRequest } from './settings.types'
+import type { Point } from 'electron'
+import type { CameraCaptureEvent, CameraStartCapture } from './camera.types'
+import type { StarDetectionRequest } from './settings.types'
+import { EMPTY_STAR_DETECTION_REQUEST } from './settings.types'
 
 export type AutoFocusState = 'IDLE' | 'MOVING' | 'EXPOSURING' | 'EXPOSURED' | 'ANALYSING' | 'ANALYSED' | 'CURVE_FITTED' | 'FAILED' | 'FINISHED'
 
@@ -25,7 +26,7 @@ export interface AutoFocusRequest {
 	starDetector: StarDetectionRequest
 }
 
-export interface AutoFocusPreference extends Omit<AutoFocusRequest, 'capture'> {}
+export type AutoFocusPreference = Omit<AutoFocusRequest, 'capture'>
 
 export const EMPTY_AUTO_FOCUS_PREFERENCE: AutoFocusPreference = {
 	fittingMode: 'HYPERBOLIC',
@@ -70,7 +71,7 @@ export interface TrendLineCurve extends Curve {
 	intersection: Point
 }
 
-export interface CurveChart {
+export interface AutoFocusChart {
 	predictedFocusPoint?: Point
 	minX: number
 	maxX: number
@@ -87,6 +88,6 @@ export interface AutoFocusEvent {
 	determinedFocusPoint?: Point
 	starCount: number
 	starHFD: number
-	chart?: CurveChart
+	chart?: AutoFocusChart
 	capture?: CameraCaptureEvent
 }

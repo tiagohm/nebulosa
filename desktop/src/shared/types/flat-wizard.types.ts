@@ -1,4 +1,4 @@
-import { CameraCaptureEvent, CameraStartCapture } from './camera.types'
+import type { CameraCaptureEvent, CameraStartCapture } from './camera.types'
 
 export interface FlatWizardRequest {
 	capture: CameraStartCapture

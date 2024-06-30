@@ -1,5 +1,4 @@
 import { Component, Type } from '@angular/core'
-import { ElectronService } from '../../shared/services/electron.service'
 import { CalculatorFormula } from '../../shared/types/calculator.types'
 import { AppComponent } from '../app.component'
 import { FormulaComponent } from './formula/formula.component'
@@ -10,7 +9,7 @@ import { FormulaComponent } from './formula/formula.component'
 	styleUrls: ['./calculator.component.scss'],
 })
 export class CalculatorComponent {
-	readonly formulae: { component: Type<any>; formula: CalculatorFormula }[] = [
+	readonly formulae: { component: Type<unknown>; formula: CalculatorFormula }[] = [
 		{
 			component: FormulaComponent,
 			formula: {
@@ -35,6 +34,8 @@ export class CalculatorComponent {
 				calculate: (aperture, focalRatio) => {
 					if (aperture && focalRatio) {
 						return aperture * focalRatio
+					} else {
+						return undefined
 					}
 				},
 			},
@@ -64,6 +65,8 @@ export class CalculatorComponent {
 				calculate: (focalLength, aperture) => {
 					if (focalLength && aperture) {
 						return focalLength / aperture
+					} else {
+						return undefined
 					}
 				},
 			},
@@ -88,6 +91,8 @@ export class CalculatorComponent {
 				calculate: (aperture) => {
 					if (aperture) {
 						return 116 / aperture
+					} else {
+						return undefined
 					}
 				},
 			},
@@ -112,6 +117,8 @@ export class CalculatorComponent {
 				calculate: (aperture) => {
 					if (aperture) {
 						return 138 / aperture
+					} else {
+						return undefined
 					}
 				},
 			},
@@ -135,6 +142,8 @@ export class CalculatorComponent {
 				calculate: (aperture) => {
 					if (aperture) {
 						return 2.7 + 5 * Math.log10(aperture)
+					} else {
+						return undefined
 					}
 				},
 			},
@@ -163,6 +172,8 @@ export class CalculatorComponent {
 				calculate: (larger, smaller) => {
 					if (larger && smaller) {
 						return Math.pow(larger, 2) / Math.pow(smaller, 2)
+					} else {
+						return undefined
 					}
 				},
 				tip: 'Compare against the human eye by putting 7 in the smaller telescope aperture box. 7mm is the aproximate maximum aperture of the human eye.',
@@ -193,6 +204,8 @@ export class CalculatorComponent {
 				calculate: (pixelSize, focalLength) => {
 					if (pixelSize && focalLength) {
 						return (pixelSize / focalLength) * 206.265
+					} else {
+						return undefined
 					}
 				},
 			},
@@ -201,17 +214,9 @@ export class CalculatorComponent {
 
 	formula = this.formulae[0]
 
-	private autoResizeTimeout: any
-
-	constructor(
-		app: AppComponent,
-		private electron: ElectronService,
-	) {
+	constructor(app: AppComponent) {
 		app.title = 'Calculator'
 	}
 
-	formulaChanged() {
-		clearTimeout(this.autoResizeTimeout)
-		this.autoResizeTimeout = this.electron.autoResizeWindow()
-	}
+	formulaChanged() {}
 }

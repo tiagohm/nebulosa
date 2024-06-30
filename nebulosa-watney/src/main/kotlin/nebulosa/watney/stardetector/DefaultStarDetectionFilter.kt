@@ -5,7 +5,7 @@ import nebulosa.constants.TAU
 import nebulosa.image.Image
 import kotlin.math.max
 
-object DefaultStarDetectionFilter : StarDetectionFilter {
+data object DefaultStarDetectionFilter : StarDetectionFilter {
 
     override fun filter(bins: MutableList<StarPixelBin>, image: Image) {
         val binIter = bins.iterator()

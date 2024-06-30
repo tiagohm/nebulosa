@@ -1,23 +1,14 @@
 package nebulosa.indi.device.gps
 
 import nebulosa.indi.device.Device
-import nebulosa.math.Angle
-import nebulosa.math.Distance
+import nebulosa.nova.position.GeographicCoordinate
+import nebulosa.time.TimeStampedWithOffset
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
-interface GPS : Device {
+interface GPS : GeographicCoordinate, TimeStampedWithOffset, Device {
 
     val hasGPS: Boolean
-
-    val longitude: Angle
-
-    val latitude: Angle
-
-    val elevation: Distance
-
-    val dateTime: OffsetDateTime
 
     companion object {
 

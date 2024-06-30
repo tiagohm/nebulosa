@@ -1,4 +1,4 @@
-package nebulosa.api.preferences
+package nebulosa.api.preference
 
 import io.objectbox.Box
 import io.objectbox.kotlin.equal

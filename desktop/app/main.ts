@@ -1,9 +1,10 @@
 import { Menu, app, ipcMain } from 'electron'
 import * as fs from 'fs'
-import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
+import type { ChildProcessWithoutNullStreams } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { join, resolve } from 'path'
 import { WebSocket } from 'ws'
-import { InternalEventType, JsonFile, StoredWindowData } from '../src/shared/types/app.types'
+import type { InternalEventType, JsonFile, StoredWindowData } from '../src/shared/types/app.types'
 import { ArgumentParser } from './argument.parser'
 import { LocalStorage } from './local.storage'
 import { WindowManager } from './window.manager'
@@ -12,11 +13,12 @@ Object.assign(global, { WebSocket })
 
 app.commandLine.appendSwitch('disable-http-cache')
 
-const args = ArgumentParser.parse()
+const argParser = new ArgumentParser()
+const parsedArgs = argParser.parse(process.argv.slice(1))
 const configPath = resolve(app.getPath('userData'), 'config.json')
 const storage = new LocalStorage<StoredWindowData>(configPath)
-const appIcon = join(__dirname, args.serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
-const windowManager = new WindowManager(args, storage, appIcon)
+const appIcon = join(__dirname, parsedArgs.serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
+const windowManager = new WindowManager(parsedArgs, storage, appIcon)
 let apiProcess: ChildProcessWithoutNullStreams | null
 
 process.on('beforeExit', () => {
@@ -24,13 +26,13 @@ process.on('beforeExit', () => {
 	apiProcess?.kill()
 })
 
-function createApiProcess(port: number = args.port) {
+function createApiProcess(port: number = parsedArgs.port) {
 	const apiJar = join(process.resourcesPath, 'api.jar')
 	const apiProcess = spawn('java', ['-jar', apiJar, `--server.port=${port}`])
 
 	apiProcess.on('close', (code) => {
 		console.warn(`server process exited with code: ${code}`)
-		process.exit(code || 0)
+		process.exit(code ?? 0)
 	})
 
 	return apiProcess
@@ -38,19 +40,19 @@ function createApiProcess(port: number = args.port) {
 
 let started = false
 
-function startApp() {
+async function startApp() {
 	if (!started) {
 		started = true
 
 		try {
-			if (args.apiMode) {
+			if (parsedArgs.apiMode) {
 				apiProcess = createApiProcess()
-			} else if (args.uiMode) {
-				windowManager.createMainWindow()
-			} else if (args.serve) {
-				windowManager.createMainWindow()
+			} else if (parsedArgs.uiMode) {
+				await windowManager.createMainWindow()
+			} else if (parsedArgs.serve) {
+				await windowManager.createMainWindow()
 			} else {
-				const splashWindow = windowManager.createSplashWindow()
+				const splashWindow = await windowManager.createSplashWindow()
 
 				apiProcess = createApiProcess()
 
@@ -65,10 +67,10 @@ function startApp() {
 
 						if (match) {
 							const port = parseInt(match[1])
-							apiProcess!.stdout!.removeAllListeners('data')
-							console.info(`server was started at ${args.host}@${port}`)
+							apiProcess?.stdout.removeAllListeners('data')
+							console.info(`server was started at ${parsedArgs.host}@${port}`)
 							splashWindow?.close()
-							windowManager.createMainWindow(apiProcess!, port)
+							void windowManager.createMainWindow(apiProcess!, port)
 						}
 					}
 				})
@@ -83,11 +85,15 @@ function startApp() {
 }
 
 try {
-	if (!args.serve) {
+	if (!parsedArgs.serve) {
 		Menu.setApplicationMenu(null)
 	}
 
-	app.on('ready', () => setTimeout(() => startApp(), 400))
+	app.on('ready', () =>
+		setTimeout(() => {
+			void startApp()
+		}, 400),
+	)
 
 	app.on('window-all-closed', () => {
 		apiProcess?.kill()
@@ -97,20 +103,25 @@ try {
 		}
 	})
 
-	app.on('activate', () => startApp())
-
-	ipcMain.handle('JSON.WRITE', async (_, data: JsonFile) => {
-		try {
-			const json = JSON.stringify(data.json)
-			fs.writeFileSync(data.path!, json)
-			return true
-		} catch (e) {
-			console.error(e)
-			return false
-		}
+	app.on('activate', () => {
+		void startApp()
 	})
 
-	ipcMain.handle('JSON.READ', async (_, path: string) => {
+	ipcMain.handle('JSON.WRITE', (_, data: JsonFile) => {
+		try {
+			if (data.path) {
+				const json = JSON.stringify(data.json)
+				fs.writeFileSync(data.path, json)
+				return true
+			}
+		} catch (e) {
+			console.error(e)
+		}
+
+		return false
+	})
+
+	ipcMain.handle('JSON.READ', (_, path: string) => {
 		try {
 			if (fs.existsSync(path)) {
 				const buffer = fs.readFileSync(path)
@@ -123,17 +134,17 @@ try {
 		return false
 	})
 
-	ipcMain.handle('WINDOW.OPEN', (e, data) => windowManager.handleWindowOpen(e, data))
-	ipcMain.handle('FILE.OPEN', (e, data) => windowManager.handleFileOpen(e, data))
-	ipcMain.handle('FILE.SAVE', (e, data) => windowManager.handleFileSave(e, data))
-	ipcMain.handle('DIRECTORY.OPEN', (e, data) => windowManager.handleDirectoryOpen(e, data))
-	ipcMain.handle('WINDOW.PIN', (e) => windowManager.handleWindowPin(e))
-	ipcMain.handle('WINDOW.UNPIN', (e) => windowManager.handleWindowUnpin(e))
-	ipcMain.handle('WINDOW.MINIMIZE', (e) => windowManager.handleWindowMinimize(e))
-	ipcMain.handle('WINDOW.MAXIMIZE', (e) => windowManager.handleWindowMaximize(e))
-	ipcMain.handle('WINDOW.RESIZE', (e, data) => windowManager.handleWindowResize(e, data))
-	ipcMain.handle('WINDOW.FULLSCREEN', (e, data) => windowManager.handleWindowFullscreen(e, data))
-	ipcMain.handle('WINDOW.CLOSE', (e, data) => windowManager.handleWindowClose(e, data))
+	ipcMain.handle('WINDOW.OPEN', (e, command) => windowManager.handleWindowOpen(e, command))
+	ipcMain.handle('FILE.OPEN', (e, command) => windowManager.handleFileOpen(e, command))
+	ipcMain.handle('FILE.SAVE', (e, command) => windowManager.handleFileSave(e, command))
+	ipcMain.handle('DIRECTORY.OPEN', (e, command) => windowManager.handleDirectoryOpen(e, command))
+	ipcMain.handle('WINDOW.PIN', (e, command) => windowManager.handleWindowPin(e, command))
+	ipcMain.handle('WINDOW.UNPIN', (e, command) => windowManager.handleWindowUnpin(e, command))
+	ipcMain.handle('WINDOW.MINIMIZE', (e, command) => windowManager.handleWindowMinimize(e, command))
+	ipcMain.handle('WINDOW.MAXIMIZE', (e, command) => windowManager.handleWindowMaximize(e, command))
+	ipcMain.handle('WINDOW.RESIZE', (e, command) => windowManager.handleWindowResize(e, command))
+	ipcMain.handle('WINDOW.FULLSCREEN', (e, command) => windowManager.handleWindowFullscreen(e, command))
+	ipcMain.handle('WINDOW.CLOSE', (e, command) => windowManager.handleWindowClose(e, command))
 
 	const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED', 'CALIBRATION.CHANGED', 'ROI.SELECTED']
 

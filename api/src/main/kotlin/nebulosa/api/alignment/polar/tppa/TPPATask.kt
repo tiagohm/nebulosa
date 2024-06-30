@@ -4,7 +4,7 @@ import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignmentResult
 import nebulosa.api.cameras.*
-import nebulosa.api.messages.MessageEvent
+import nebulosa.api.message.MessageEvent
 import nebulosa.api.mounts.MountMoveRequest
 import nebulosa.api.mounts.MountMoveTask
 import nebulosa.api.tasks.AbstractTask

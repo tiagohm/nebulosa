@@ -8,7 +8,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { AutoFocusPreference, AutoFocusRequest, AutoFocusState, CurveChart, EMPTY_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
+import { AutoFocusChart, AutoFocusPreference, AutoFocusRequest, AutoFocusState, EMPTY_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
 import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { EMPTY_FOCUSER, Focuser } from '../../shared/types/focuser.types'
 import { deviceComparator } from '../../shared/utils/comparators'
@@ -60,10 +60,10 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 				},
 				callbacks: {
 					title: (item) => {
-						return `${item[0].parsed.x.toFixed(0)}`
+						return item[0]?.parsed.x.toFixed(0)
 					},
 					label: (item) => {
-						return `${item.parsed.y.toFixed(1)}`
+						return item.parsed.y.toFixed(1)
 					},
 				},
 			},
@@ -209,12 +209,36 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 		],
 	}
 
+	private get trendLineLeftDataset() {
+		return this.chartData.datasets[0]
+	}
+
+	private get trendLineRightDataset() {
+		return this.chartData.datasets[1]
+	}
+
+	private get parabolicDataset() {
+		return this.chartData.datasets[2]
+	}
+
+	private get hyperbolicDataset() {
+		return this.chartData.datasets[3]
+	}
+
+	private get focusPointsDataset() {
+		return this.chartData.datasets[4]
+	}
+
+	private get predictedFocusPointsDataset() {
+		return this.chartData.datasets[5]
+	}
+
 	constructor(
 		app: AppComponent,
-		private api: ApiService,
-		private browserWindow: BrowserWindowService,
-		private preference: PreferenceService,
-		private pinger: Pinger,
+		private readonly api: ApiService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly preference: PreferenceService,
+		private readonly pinger: Pinger,
 		electron: ElectronService,
 		ngZone: NgZone,
 	) {
@@ -287,8 +311,8 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 					this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
 				}
 
-				if (event.state === 'CURVE_FITTED') {
-					this.focusPoints.push(event.focusPoint!)
+				if (event.state === 'CURVE_FITTED' && event.focusPoint) {
+					this.focusPoints.push(event.focusPoint)
 				} else if (event.state === 'ANALYSED') {
 					this.starCount = event.starCount
 					this.starHFD = event.starHFD
@@ -311,19 +335,19 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	@HostListener('window:unload')
-	async ngOnDestroy() {
+	ngOnDestroy() {
 		this.pinger.unregister(this)
-		this.stop()
+		void this.stop()
 	}
 
-	ping() {
-		if (this.camera.id) this.api.cameraListen(this.camera)
-		if (this.focuser.id) this.api.focuserListen(this.focuser)
+	async ping() {
+		if (this.camera.id) await this.api.cameraListen(this.camera)
+		if (this.focuser.id) await this.api.focuserListen(this.focuser)
 	}
 
 	async cameraChanged() {
 		if (this.camera.id) {
-			this.ping()
+			await this.ping()
 
 			const camera = await this.api.camera(this.camera.id)
 			Object.assign(this.camera, camera)
@@ -333,7 +357,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	async focuserChanged() {
 		if (this.focuser.id) {
-			this.ping()
+			await this.ping()
 
 			const focuser = await this.api.focuser(this.focuser.id)
 			Object.assign(this.focuser, focuser)
@@ -366,69 +390,69 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 		return this.browserWindow.openCameraImage(this.camera, 'ALIGNMENT')
 	}
 
-	private updateChart(data: CurveChart) {
+	private updateChart(data: AutoFocusChart) {
 		if (data.trendLine) {
-			this.chartData.datasets[0].data = data.trendLine.left.points
-			this.chartData.datasets[1].data = data.trendLine.right.points
+			this.trendLineLeftDataset.data = data.trendLine.left.points
+			this.trendLineRightDataset.data = data.trendLine.right.points
 		} else {
-			this.chartData.datasets[0].data = []
-			this.chartData.datasets[1].data = []
+			this.trendLineLeftDataset.data = []
+			this.trendLineRightDataset.data = []
 		}
 
 		if (data.parabolic) {
-			this.chartData.datasets[2].data = data.parabolic.points
+			this.parabolicDataset.data = data.parabolic.points
 		} else {
-			this.chartData.datasets[2].data = []
+			this.parabolicDataset.data = []
 		}
 
 		if (data.hyperbolic) {
-			this.chartData.datasets[3].data = data.hyperbolic.points
+			this.hyperbolicDataset.data = data.hyperbolic.points
 		} else {
-			this.chartData.datasets[3].data = []
+			this.hyperbolicDataset.data = []
 		}
 
-		this.chartData.datasets[4].data = this.focusPoints
+		this.focusPointsDataset.data = this.focusPoints
 
 		if (data.predictedFocusPoint) {
-			this.chartData.datasets[5].data = [data.predictedFocusPoint]
+			this.predictedFocusPointsDataset.data = [data.predictedFocusPoint]
 		} else {
-			this.chartData.datasets[5].data = []
+			this.predictedFocusPointsDataset.data = []
 		}
 
 		const scales = this.chartOptions.scales!
-		scales.x!.min = Math.max(0, data.minX - this.stepSizeForScale)
-		scales.x!.max = data.maxX + this.stepSizeForScale
-		scales.y!.max = (data.maxY || 19) + 1
+		scales['x']!.min = Math.max(0, data.minX - this.stepSizeForScale)
+		scales['x']!.max = data.maxX + this.stepSizeForScale
+		scales['y']!.max = (data.maxY || 19) + 1
 
 		const zoom = this.chartOptions.plugins!.zoom!
-		zoom.limits!.x!.min = scales.x!.min
-		zoom.limits!.x!.max = scales.x!.max
-		zoom.limits!.y!.max = scales.y!.max
+		zoom.limits!['x']!.min = scales['x']!.min
+		zoom.limits!['x']!.max = scales['x']!.max
+		zoom.limits!['y']!.max = scales['y']!.max
 
-		this.chart?.refresh()
+		this.chart.refresh()
 	}
 
 	private clearChart() {
 		this.focusPoints = []
 
-		for (let i = 0; i < this.chartData.datasets.length; i++) {
-			this.chartData.datasets[i].data = []
+		for (const dataset of this.chartData.datasets) {
+			dataset.data = []
 		}
 
-		this.chart?.refresh()
+		this.chart.refresh()
 	}
 
 	private loadPreference() {
-		const preference = this.preference.autoFocusPreference.get()
+		const preference: Partial<AutoFocusPreference> = this.preference.autoFocusPreference.get()
 
 		this.request.fittingMode = preference.fittingMode ?? 'HYPERBOLIC'
 		this.request.initialOffsetSteps = preference.initialOffsetSteps ?? 4
 		this.request.rSquaredThreshold = preference.rSquaredThreshold ?? 0.5
 		this.request.stepSize = preference.stepSize ?? 100
 		this.request.totalNumberOfAttempts = preference.totalNumberOfAttempts ?? 1
-		this.request.backlashCompensation.mode = preference.backlashCompensation.mode ?? 'NONE'
-		this.request.backlashCompensation.backlashIn = preference.backlashCompensation.backlashIn ?? 0
-		this.request.backlashCompensation.backlashOut = preference.backlashCompensation.backlashOut ?? 0
+		this.request.backlashCompensation.mode = preference.backlashCompensation?.mode ?? 'NONE'
+		this.request.backlashCompensation.backlashIn = preference.backlashCompensation?.backlashIn ?? 0
+		this.request.backlashCompensation.backlashOut = preference.backlashCompensation?.backlashOut ?? 0
 
 		if (this.camera.id) {
 			const cameraPreference = this.preference.cameraPreference(this.camera).get()

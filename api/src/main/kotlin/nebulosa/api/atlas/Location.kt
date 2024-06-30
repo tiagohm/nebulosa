@@ -1,18 +1,22 @@
 package nebulosa.api.atlas
 
-import nebulosa.math.deg
-import nebulosa.math.m
-import nebulosa.nova.position.GeographicPosition
-import nebulosa.nova.position.Geoid
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import nebulosa.api.beans.converters.angle.DegreesDeserializer
+import nebulosa.api.beans.converters.angle.DegreesSerializer
+import nebulosa.api.beans.converters.distance.MetersDeserializer
+import nebulosa.api.beans.converters.distance.MetersSerializer
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.nova.position.GeographicCoordinate
+import nebulosa.time.TimeZonedInSeconds
 
 data class Location(
-    val latitude: Double = 0.0, // deg.
-    val longitude: Double = 0.0, // deg.
-    val elevation: Double = 0.0, // m.
+    @field:JsonSerialize(using = DegreesSerializer::class) @field:JsonDeserialize(using = DegreesDeserializer::class) override val latitude: Angle = 0.0,
+    @field:JsonSerialize(using = DegreesSerializer::class) @field:JsonDeserialize(using = DegreesDeserializer::class) override val longitude: Angle = 0.0,
+    @field:JsonSerialize(using = MetersSerializer::class) @field:JsonDeserialize(using = MetersDeserializer::class) override val elevation: Distance = 0.0,
     val offsetInMinutes: Int = 0,
-) {
+) : GeographicCoordinate, TimeZonedInSeconds {
 
-    fun geographicPosition(): GeographicPosition {
-        return Geoid.IERS2010.lonLat(longitude.deg, latitude.deg, elevation.m)
-    }
+    override val offsetInSeconds = offsetInMinutes * 60
 }

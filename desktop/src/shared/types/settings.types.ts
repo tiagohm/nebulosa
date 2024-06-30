@@ -24,8 +24,8 @@ export interface StarDetectionRequest {
 	type: StarDetectorType
 	executablePath: string
 	timeout: number
-	minSNR: number
-	maxStars: number
+	minSNR?: number
+	maxStars?: number
 	slot: number
 }
 

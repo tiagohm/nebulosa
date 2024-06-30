@@ -1,6 +1,6 @@
 package nebulosa.api.atlas
 
-import nebulosa.api.notifications.NotificationEvent
+import nebulosa.api.notification.NotificationEvent
 
 sealed interface SatelliteUpdateNotificationEvent : NotificationEvent.System {
 

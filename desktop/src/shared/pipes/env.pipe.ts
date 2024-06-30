@@ -4,6 +4,6 @@ import { APP_CONFIG } from '../../environments/environment'
 @Pipe({ name: 'env' })
 export class EnvPipe implements PipeTransform {
 	transform(value: string) {
-		return (<any>APP_CONFIG)[value]
+		return (APP_CONFIG as unknown as Record<string, unknown>)[value]
 	}
 }

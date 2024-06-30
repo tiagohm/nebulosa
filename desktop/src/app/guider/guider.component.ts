@@ -120,6 +120,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 						return ''
 					},
 					label: (context) => {
+						// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 						const barType = context.dataset.type === 'bar'
 						const raType = context.datasetIndex === 0 || context.datasetIndex === 2
 						const scale = barType ? this.phdDurationScale : 1.0
@@ -206,6 +207,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 								return a.toFixed(0)
 							}
 						}
+
+						return undefined
 					},
 				},
 				grid: {
@@ -219,8 +222,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	constructor(
 		title: Title,
-		private api: ApiService,
-		private pinger: Pinger,
+		private readonly api: ApiService,
+		private readonly pinger: Pinger,
 		electron: ElectronService,
 		ngZone: NgZone,
 	) {
@@ -229,8 +232,10 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 		electron.on('GUIDE_OUTPUT.UPDATED', (event) => {
 			if (event.device.id === this.guideOutput?.id) {
 				ngZone.run(() => {
-					Object.assign(this.guideOutput!, event.device)
-					this.update()
+					if (this.guideOutput) {
+						Object.assign(this.guideOutput, event.device)
+						this.update()
+					}
 				})
 			}
 		})
@@ -295,9 +300,9 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 
 		const settle = await this.api.getGuidingSettle()
 
-		this.settleAmount = settle.amount ?? 1.5
-		this.settleTime = settle.time ?? 10
-		this.settleTimeout = settle.timeout ?? 30
+		this.settleAmount = settle.amount
+		this.settleTime = settle.time
+		this.settleTimeout = settle.timeout
 
 		this.guideOutputs = await this.api.guideOutputs()
 
@@ -314,8 +319,8 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 		this.pinger.unregister(this)
 	}
 
-	ping() {
-		if (this.guideOutput) this.api.guideOutputListen(this.guideOutput)
+	async ping() {
+		if (this.guideOutput?.id) await this.api.guideOutputListen(this.guideOutput)
 	}
 
 	private processGuiderStatus(event: Guider) {
@@ -343,7 +348,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 		}
 
 		const startId = this.phdGuideHistory[0].id
-		const guideSteps = this.phdGuideHistory.filter((e) => e.guideStep)
+		const guideSteps = this.phdGuideHistory.filter((e) => e.guideStep !== undefined)
 		const scale = this.yAxisUnit === 'ARCSEC' ? this.pixelScale : 1.0
 
 		let maxDuration = 0
@@ -370,12 +375,12 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 		this.chartData.datasets[2].data = this.phdGuideHistory.map((e) => (e.guideStep?.raDuration ?? 0) / durationScale(e.guideStep?.raDirection))
 		this.chartData.datasets[3].data = this.phdGuideHistory.map((e) => (e.guideStep?.decDuration ?? 0) / durationScale(e.guideStep?.decDirection))
 
-		this.chart?.refresh()
+		this.chart.refresh()
 	}
 
 	async guideOutputChanged() {
 		if (this.guideOutput?.id) {
-			this.ping()
+			await this.ping()
 
 			const guideOutput = await this.api.guideOutput(this.guideOutput.id)
 			Object.assign(this.guideOutput, guideOutput)
@@ -384,37 +389,41 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 		}
 	}
 
-	guidePulseStart(...directions: GuideDirection[]) {
-		for (const direction of directions) {
-			switch (direction) {
-				case 'NORTH':
-					this.api.guideOutputPulse(this.guideOutput!, direction, this.guideNorthDuration * 1000)
-					break
-				case 'SOUTH':
-					this.api.guideOutputPulse(this.guideOutput!, direction, this.guideSouthDuration * 1000)
-					break
-				case 'WEST':
-					this.api.guideOutputPulse(this.guideOutput!, direction, this.guideWestDuration * 1000)
-					break
-				case 'EAST':
-					this.api.guideOutputPulse(this.guideOutput!, direction, this.guideEastDuration * 1000)
-					break
+	async guidePulseStart(...directions: GuideDirection[]) {
+		if (this.guideOutput) {
+			for (const direction of directions) {
+				switch (direction) {
+					case 'NORTH':
+						await this.api.guideOutputPulse(this.guideOutput, direction, this.guideNorthDuration * 1000)
+						break
+					case 'SOUTH':
+						await this.api.guideOutputPulse(this.guideOutput, direction, this.guideSouthDuration * 1000)
+						break
+					case 'WEST':
+						await this.api.guideOutputPulse(this.guideOutput, direction, this.guideWestDuration * 1000)
+						break
+					case 'EAST':
+						await this.api.guideOutputPulse(this.guideOutput, direction, this.guideEastDuration * 1000)
+						break
+				}
 			}
 		}
 	}
 
-	guidePulseStop() {
-		this.api.guideOutputPulse(this.guideOutput!, 'NORTH', 0)
-		this.api.guideOutputPulse(this.guideOutput!, 'SOUTH', 0)
-		this.api.guideOutputPulse(this.guideOutput!, 'WEST', 0)
-		this.api.guideOutputPulse(this.guideOutput!, 'EAST', 0)
+	async guidePulseStop() {
+		if (this.guideOutput) {
+			await this.api.guideOutputPulse(this.guideOutput, 'NORTH', 0)
+			await this.api.guideOutputPulse(this.guideOutput, 'SOUTH', 0)
+			await this.api.guideOutputPulse(this.guideOutput, 'WEST', 0)
+			await this.api.guideOutputPulse(this.guideOutput, 'EAST', 0)
+		}
 	}
 
 	guidingConnect() {
 		if (this.connected) {
-			this.api.guidingDisconnect()
+			return this.api.guidingDisconnect()
 		} else {
-			this.api.guidingConnect(this.host, this.port)
+			return this.api.guidingConnect(this.host, this.port)
 		}
 	}
 
@@ -433,11 +442,11 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	guidingClearHistory() {
 		this.phdGuideHistory.length = 0
-		this.api.guidingClearHistory()
+		return this.api.guidingClearHistory()
 	}
 
 	guidingStop() {
-		this.api.guidingStop()
+		return this.api.guidingStop()
 	}
 
 	private update() {

@@ -1,4 +1,4 @@
-package nebulosa.api.preferences
+package nebulosa.api.preference
 
 import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Entity

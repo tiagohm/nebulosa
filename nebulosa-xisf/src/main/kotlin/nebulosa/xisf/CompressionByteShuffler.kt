@@ -6,7 +6,7 @@ package nebulosa.xisf
  * compression ratios by increasing data locality, i.e. by redistributing the
  * sequence such that similar byte values tend to be placed close together.
  */
-object CompressionByteShuffler {
+data object CompressionByteShuffler {
 
     fun shuffle(input: ByteArray, output: ByteArray, itemSize: Int) {
         val size = input.size

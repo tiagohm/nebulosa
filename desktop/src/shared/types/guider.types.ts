@@ -1,4 +1,4 @@
-import { Device } from './device.types'
+import type { Device } from './device.types'
 
 export type GuideDirection =
 	| 'NORTH' // DEC+
@@ -87,6 +87,8 @@ export function reverseGuideDirection(direction: GuideDirection): GuideDirection
 			return 'EAST'
 		case 'EAST':
 			return 'WEST'
+		default:
+			return direction
 	}
 }
 

@@ -71,14 +71,16 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 	@ViewChild('cameraExposure')
 	private readonly cameraExposure!: CameraExposureComponent
 
-	private autoResizeTimeout?: any
+	get cameraCaptureRequest() {
+		return this.tab === 1 ? this.darvRequest.capture : this.tppaRequest.capture
+	}
 
 	constructor(
 		app: AppComponent,
-		private api: ApiService,
-		private browserWindow: BrowserWindowService,
-		private preference: PreferenceService,
-		private pinger: Pinger,
+		private readonly api: ApiService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly preference: PreferenceService,
+		private readonly pinger: Pinger,
 		electron: ElectronService,
 		ngZone: NgZone,
 	) {
@@ -172,7 +174,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 		})
 
 		electron.on('TPPA.ELAPSED', (event) => {
-			if (event.camera.id === this.camera?.id) {
+			if (event.camera.id === this.camera.id) {
 				ngZone.run(() => {
 					this.status = event.state
 					this.running = event.state !== 'FINISHED'
@@ -187,11 +189,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 						this.tppaAzimuthErrorDirection = event.azimuthErrorDirection
 						this.tppaAltitudeErrorDirection = event.altitudeErrorDirection
 						this.tppaTotalError = event.totalError
-						clearTimeout(this.autoResizeTimeout)
-						this.autoResizeTimeout = electron.autoResizeWindow()
 					} else if (event.state === 'FINISHED') {
 						this.cameraExposure.reset()
-						electron.autoResizeWindow()
 					} else if (event.state === 'SOLVED' || event.state === 'SLEWED') {
 						this.tppaFailed = false
 						this.tppaRightAscension = event.rightAscension
@@ -208,7 +207,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 		})
 
 		electron.on('DARV.ELAPSED', (event) => {
-			if (event.camera.id === this.camera?.id) {
+			if (event.camera.id === this.camera.id) {
 				ngZone.run(() => {
 					this.status = event.state
 					this.running = this.cameraExposure.handleCameraCaptureEvent(event.capture)
@@ -234,41 +233,43 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	@HostListener('window:unload')
-	async ngOnDestroy() {
+	ngOnDestroy() {
 		this.pinger.unregister(this)
 
-		this.darvStop()
-		this.tppaStop()
+		void this.darvStop()
+		void this.tppaStop()
 	}
 
-	ping() {
-		if (this.camera.id) this.api.cameraListen(this.camera)
-		if (this.mount.id) this.api.mountListen(this.mount)
-		if (this.guideOutput.id) this.api.guideOutputListen(this.guideOutput)
+	async ping() {
+		if (this.camera.id) await this.api.cameraListen(this.camera)
+		if (this.mount.id) await this.api.mountListen(this.mount)
+		if (this.guideOutput.id) await this.api.guideOutputListen(this.guideOutput)
 	}
 
 	async cameraChanged() {
 		if (this.camera.id) {
-			this.ping()
+			await this.ping()
 
 			const camera = await this.api.camera(this.camera.id)
 			Object.assign(this.camera, camera)
+			this.loadPreference()
 		}
 	}
 
 	async mountChanged() {
 		if (this.mount.id) {
-			this.ping()
+			await this.ping()
 
 			const mount = await this.api.mount(this.mount.id)
 			Object.assign(this.mount, mount)
+			this.loadPreference()
 			this.tppaRequest.stepSpeed = mount.slewRate?.name
 		}
 	}
 
 	async guideOutputChanged() {
 		if (this.guideOutput.id) {
-			this.ping()
+			await this.ping()
 
 			const guideOutput = await this.api.guideOutput(this.guideOutput.id)
 			Object.assign(this.guideOutput, guideOutput)
@@ -371,11 +372,8 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	savePreference() {
-		if (this.tab === 0) {
-			this.preference.cameraStartCaptureForTPPA(this.camera).set(this.tppaRequest.capture)
-		} else if (this.tab === 1) {
-			this.preference.cameraStartCaptureForDARV(this.camera).set(this.darvRequest.capture)
-		}
+		this.preference.cameraStartCaptureForTPPA(this.camera).set(this.tppaRequest.capture)
+		this.preference.cameraStartCaptureForDARV(this.camera).set(this.darvRequest.capture)
 
 		const preference: AlignmentPreference = {
 			tppaStartFromCurrentPosition: this.tppaRequest.startFromCurrentPosition,

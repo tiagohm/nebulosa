@@ -1,4 +1,4 @@
-import { Device } from './device.types'
+import type { Device } from './device.types'
 
 export interface MessageEvent {
 	eventName: string

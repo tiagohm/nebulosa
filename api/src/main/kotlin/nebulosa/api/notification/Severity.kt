@@ -1,4 +1,4 @@
-package nebulosa.api.notifications
+package nebulosa.api.notification
 
 import com.fasterxml.jackson.annotation.JsonValue
 

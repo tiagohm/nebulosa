@@ -1,4 +1,4 @@
-package nebulosa.api.preferences
+package nebulosa.api.preference
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Service
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 class PreferenceService(
     private val preferenceRepository: PreferenceRepository,
     private val objectMapper: ObjectMapper,
-) {
+) : Collection<PreferenceEntity> by preferenceRepository {
 
     operator fun get(key: String) = preferenceRepository.findByKey(key)
 

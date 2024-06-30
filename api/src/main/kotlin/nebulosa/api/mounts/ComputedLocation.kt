@@ -18,7 +18,7 @@ data class ComputedLocation(
     @field:JsonSerialize(using = DeclinationSerializer::class) var declinationJ2000: Angle = 0.0,
     @field:JsonSerialize(using = AzimuthSerializer::class) var azimuth: Angle = 0.0,
     @field:JsonSerialize(using = DeclinationSerializer::class) var altitude: Angle = 0.0,
-    var constellation: Constellation? = null,
+    var constellation: Constellation = Constellation.AND,
     @field:JsonSerialize(using = LSTSerializer::class) var lst: Angle = 0.0,
     @field:JsonFormat(pattern = "HH:mm") var meridianAt: LocalDateTime = LocalDateTime.MIN,
     @field:JsonSerialize(using = LSTSerializer::class) var timeLeftToMeridianFlip: Angle = 0.0,

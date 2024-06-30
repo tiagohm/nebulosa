@@ -14,10 +14,8 @@ import java.time.LocalDateTime
 class HorizonsEphemerisProvider(private val horizonsService: HorizonsService) : CachedEphemerisProvider<Any>() {
 
     override fun compute(
-        target: Any,
-        position: GeographicPosition,
-        startTime: LocalDateTime,
-        endTime: LocalDateTime,
+        target: Any, position: GeographicPosition,
+        startTime: LocalDateTime, endTime: LocalDateTime,
     ): List<HorizonsElement> {
         return when (target) {
             is SmallBody -> {

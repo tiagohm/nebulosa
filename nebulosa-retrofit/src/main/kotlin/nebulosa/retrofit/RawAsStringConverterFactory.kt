@@ -4,7 +4,7 @@ import retrofit2.Converter
 import retrofit2.Retrofit
 import java.lang.reflect.Type
 
-object RawAsStringConverterFactory : Converter.Factory() {
+data object RawAsStringConverterFactory : Converter.Factory() {
 
     override fun responseBodyConverter(
         type: Type,

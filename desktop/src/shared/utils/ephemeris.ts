@@ -54,7 +54,9 @@ export function centuriesSinceJ2000(jd: JulianDate) {
 	return (jd.jdi - 2451545 + jd.jdf) / 36525
 }
 
-export const DELTA_AT = [
+export type DeltaT = [number, number, number, number] | [number, number]
+
+export const DELTA_AT: DeltaT[] = [
 	[2436934.5, 1.417818, 37300, 0.001296],
 	[2437300.5, 1.422818, 37300, 0.001296],
 	[2437512.5, 1.372818, 37300, 0.001296],
@@ -108,7 +110,7 @@ export function deltaAT(jd: JulianDate) {
 
 			if (t >= D[0]) {
 				if (t >= 2441317.5) return D[1]
-				return D[1] + (t - 2400000.5 - D[2]) * D[3]
+				return D[1] + (t - 2400000.5 - D[2]!) * D[3]!
 			}
 		}
 

@@ -16,13 +16,13 @@
 					</div>
 				</ng-template>
 				<div
-					class="grid flex flex-column align-items-center justify-content-center"
+					class="relative grid flex flex-column align-items-center justify-content-center"
 					style="height: 235px">
 					<img
 						#imageOfSun
 						style="width: 215px" />
 					<a
-						class="text-sm"
+						class="text-sm absolute bottom-0"
 						target="_blank"
 						href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
 						<p-tag severity="success">SDO/HMI</p-tag>
@@ -103,7 +103,7 @@
 				</ng-template>
 				<p-tabView [(activeIndex)]="minorPlanetTab">
 					<p-tabPanel header="Search">
-						<div class="flex mt-3 flex-column align-items-center justify-content-center">
+						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
 							<div class="flex w-full align-items-center px-4 gap-2">
 								<p-floatLabel class="w-full">
 									<input
@@ -118,10 +118,20 @@
 									[disabled]="minorPlanetSearchText.length < 3 || refreshing"
 									(onClick)="searchMinorPlanet()"
 									icon="mdi mdi-magnify"
-									severity="success"
+									severity="info"
 									size="small"
 									[text]="true" />
 							</div>
+							<span
+								class="text-xs absolute text-gray-500"
+								style="top: -30px; right: 64px">
+								Powered by
+								<a
+									target="_blank"
+									href="https://ssd-api.jpl.nasa.gov/doc/sbdb.html">
+									JPL SBDB Lookup API
+								</a>
+							</span>
 						</div>
 						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
 							<p-table
@@ -148,7 +158,7 @@
 						</div>
 					</p-tabPanel>
 					<p-tabPanel header="Close Approaches">
-						<div class="flex mt-3 flex-column align-items-center justify-content-center">
+						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
 							<div class="flex w-full align-items-center px-4 gap-2">
 								<p-floatLabel>
 									<p-inputNumber
@@ -179,10 +189,20 @@
 									[disabled]="refreshing"
 									(onClick)="closeApproachesForMinorPlanets()"
 									icon="mdi mdi-magnify"
-									severity="success"
+									severity="info"
 									size="small"
 									[text]="true" />
 							</div>
+							<span
+								class="text-xs absolute text-gray-500"
+								style="top: -30px; right: 46px">
+								Powered by
+								<a
+									target="_blank"
+									href="https://ssd-api.jpl.nasa.gov/doc/cad.html">
+									JPL SBDB Close-Approach API
+								</a>
+							</span>
 						</div>
 						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
 							<p-table
@@ -424,8 +444,8 @@
 		[style]="{ height: '258px', width: '100vw' }"
 		styleClass="info">
 		<p-tabPanel leftIcon="mdi mdi-information">
-			<div class="grid pt-3 px-3 flex-row justify-content-center">
-				<div class="col-12">
+			<div class="relative grid pt-3 px-3 flex-row justify-content-center">
+				<div class="col-12 pb-0">
 					<div class="grid">
 						<div class="col-3">
 							<p-floatLabel>
@@ -523,7 +543,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.illuminated" />
+									[value]="bodyPosition.illuminated.toFixed(3)" />
 								<label>Illuminated (%)</label>
 							</p-floatLabel>
 						</div>
@@ -533,25 +553,27 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.elongation" />
+									[value]="bodyPosition.elongation.toFixed(3)" />
 								<label>Elongation (°)</label>
-							</p-floatLabel>
-						</div>
-						<div class="col-3">
-							<p-floatLabel>
-								<input
-									pInputText
-									readonly
-									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.pierSide" />
-								<label>Pier Side</label>
 							</p-floatLabel>
 						</div>
 					</div>
 				</div>
+				<div
+					[class.invisible]="tab === 4"
+					class="col-12 justify-content-center pt-0">
+					<span class="text-xs text-gray-500">
+						Ephemeris provided by
+						<a
+							target="_blank"
+							href="https://ssd.jpl.nasa.gov/horizons/">
+							JPL Horizons
+						</a>
+					</span>
+				</div>
 				<div class="col-12 pt-0 flex justify-content-center">
 					<p-button
-						[disabled]="!name || refreshing"
+						[disabled]="!name || refreshingPosition"
 						[text]="true"
 						severity="info"
 						(onClick)="mountSync()"
@@ -559,7 +581,7 @@
 						label="Sync"
 						size="small" />
 					<p-button
-						[disabled]="!name || refreshing"
+						[disabled]="!name || refreshingPosition"
 						[text]="true"
 						severity="success"
 						(onClick)="mountGoTo()"
@@ -567,7 +589,7 @@
 						label="Go To"
 						size="small" />
 					<p-button
-						[disabled]="!name || refreshing"
+						[disabled]="!name || refreshingPosition"
 						[text]="true"
 						severity="success"
 						(onClick)="mountSlew()"
@@ -575,7 +597,7 @@
 						label="Slew"
 						size="small" />
 					<p-button
-						[disabled]="!name || refreshing"
+						[disabled]="!name || refreshingPosition"
 						[text]="true"
 						(onClick)="frame()"
 						icon="mdi mdi-image"
@@ -597,20 +619,23 @@
 		</p-tabPanel>
 	</p-tabView>
 	<div
-		class="col-9 flex align-items-center justify-content-between absolute gap-2"
-		style="height: 32px; left: 90px; top: 2px">
+		class="col-9 flex align-items-center justify-content-between absolute gap-2 overflow-hidden"
+		style="height: 32px; left: 95px; top: 2px; padding-right: 45px">
 		<p-button
 			[disabled]="!name || refreshing"
 			[text]="true"
 			[rounded]="true"
 			icon="mdi mdi-md mdi-dots-vertical"
 			(click)="ephemerisMenu.show()" />
-		<span class="flex w-full align-items-center gap-1 justify-content-center">
+		<span
+			class="flex w-full align-items-center gap-1 justify-content-center"
+			style="min-width: -webkit-fill-available">
 			<span class="text-overflow-scroll font-bold">{{ name ?? '' }}</span>
 			<p-tag
 				*ngFor="let tag of tags"
 				[severity]="tag.severity"
-				[value]="tag.title" />
+				[value]="tag.title"
+				styleClass="white-space-nowrap" />
 		</span>
 	</div>
 </div>
@@ -644,6 +669,7 @@
 			<p-floatLabel>
 				<input
 					pInputText
+					[disabled]="skyObjectFilter.radius <= 0"
 					class="p-inputtext-sm border-0 w-full"
 					[value]="skyObjectFilter.rightAscension" />
 				<label>RA (h)</label>
@@ -653,6 +679,7 @@
 			<p-floatLabel>
 				<input
 					pInputText
+					[disabled]="skyObjectFilter.radius <= 0"
 					class="p-inputtext-sm border-0 w-full"
 					[value]="skyObjectFilter.declination" />
 				<label>DEC (°)</label>
@@ -783,6 +810,26 @@
 	</ng-template>
 </p-dialog>
 
+<p-dialog
+	header="Settings"
+	[draggable]="false"
+	[(visible)]="settings.showDialog"
+	[modal]="true"
+	[style]="{ width: '70vw' }">
+	<div class="grid mt-2">
+		<div class="col-12">
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<p-button
+			[text]="true"
+			icon="mdi mdi-check"
+			label="OK"
+			size="small"
+			(onClick)="settings.showDialog = false" />
+	</ng-template>
+</p-dialog>
+
 <p-overlayPanel
 	#calendarPanel
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
@@ -802,38 +849,47 @@
 					styleClass="w-full" />
 			</div>
 			<div class="col-4 flex-column gap-3 align-items-center justify-content-start gap-1">
-				<p-inputSwitch
-					[disabled]="refreshing"
-					[(ngModel)]="useManualDateTime"
-					(ngModelChange)="useManualDateTimeChanged()" />
+				<div class="flex flex-column justify-content-center align-items-center gap-1">
+					<span>Enable</span>
+					<p-inputSwitch
+						[disabled]="refreshing"
+						[(ngModel)]="useManualDateTime"
+						(ngModelChange)="useManualDateTimeChanged()" />
+				</div>
 				<div class="flex flex-column align-items-center">
 					<div class="flex align-items-center justify-content-center gap-2">
-						<p-inputNumber
-							[disabled]="refreshing || !useManualDateTime"
-							[(ngModel)]="dateTimeHour"
-							[showButtons]="true"
-							[min]="0"
-							[max]="23"
-							class="w-fit"
-							[format]="false"
-							[allowEmpty]="false"
-							(ngModelChange)="dateTimeChanged(false)"
-							styleClass="p-inputtext-sm border-0"
-							[style]="{ width: '54px' }"
-							scrollableNumber />
-						<p-inputNumber
-							[disabled]="refreshing || !useManualDateTime"
-							[(ngModel)]="dateTimeMinute"
-							[showButtons]="true"
-							[min]="0"
-							[max]="59"
-							class="w-fit"
-							[format]="false"
-							[allowEmpty]="false"
-							(ngModelChange)="dateTimeChanged(false)"
-							styleClass="p-inputtext-sm border-0"
-							[style]="{ width: '54px' }"
-							scrollableNumber />
+						<div class="flex flex-column justify-content-center align-items-center gap-1">
+							<span>Hour</span>
+							<p-inputNumber
+								[disabled]="refreshing || !useManualDateTime"
+								[(ngModel)]="dateTimeHour"
+								[showButtons]="true"
+								[min]="0"
+								[max]="23"
+								class="w-fit"
+								[format]="false"
+								[allowEmpty]="false"
+								(ngModelChange)="dateTimeChanged(false)"
+								styleClass="p-inputtext-sm border-0"
+								[style]="{ width: '54px' }"
+								scrollableNumber />
+						</div>
+						<div class="flex flex-column justify-content-center align-items-center gap-1">
+							<span>Minute</span>
+							<p-inputNumber
+								[disabled]="refreshing || !useManualDateTime"
+								[(ngModel)]="dateTimeMinute"
+								[showButtons]="true"
+								[min]="0"
+								[max]="59"
+								class="w-fit"
+								[format]="false"
+								[allowEmpty]="false"
+								(ngModelChange)="dateTimeChanged(false)"
+								styleClass="p-inputtext-sm border-0"
+								[style]="{ width: '54px' }"
+								scrollableNumber />
+						</div>
 					</div>
 				</div>
 			</div>

@@ -1,7 +1,8 @@
-import { MessageEvent } from './api.types'
-import { Thermometer } from './auxiliary.types'
-import { CompanionDevice, Device, PropertyState, isCompanionDevice } from './device.types'
-import { GuideOutput } from './guider.types'
+import type { MessageEvent } from './api.types'
+import type { Thermometer } from './auxiliary.types'
+import type { CompanionDevice, Device, PropertyState } from './device.types'
+import { isCompanionDevice } from './device.types'
+import type { GuideOutput } from './guider.types'
 
 export type CameraDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD' | 'TPPA' | 'DARV' | 'AUTO_FOCUS'
 
@@ -195,7 +196,6 @@ export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {
 		enabled: false,
 		type: 'SIRIL',
 		executablePath: '',
-		rotate: 0,
 		use32Bits: false,
 		slot: 1,
 	},
@@ -293,7 +293,6 @@ export interface LiveStackingRequest {
 	dark?: string
 	flat?: string
 	bias?: string
-	rotate: number
 	use32Bits: boolean
 	slot: number
 }
@@ -302,7 +301,6 @@ export const EMPTY_LIVE_STACKING_REQUEST: LiveStackingRequest = {
 	enabled: false,
 	type: 'SIRIL',
 	executablePath: '',
-	rotate: 0,
 	use32Bits: false,
 	slot: 1,
 }

@@ -2,55 +2,97 @@ package nebulosa.api.atlas.ephemeris
 
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
+import nebulosa.log.debug
+import nebulosa.log.loggerFor
 import nebulosa.math.normalized
 import nebulosa.math.toDegrees
 import nebulosa.nova.astrometry.Body
+import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import java.util.*
+import java.util.concurrent.CompletableFuture
+import kotlin.system.measureTimeMillis
 
 @Service
-class BodyEphemerisProvider : CachedEphemerisProvider<Body>() {
+class BodyEphemerisProvider(private val threadPoolTaskExecutor: ThreadPoolTaskExecutor) : CachedEphemerisProvider<Body>() {
 
     private val timeBucket = HashMap<LocalDateTime, UTC>()
+    private val cachedBodies = HashMap<GeographicPosition, Body>()
 
     override fun compute(
-        target: Body,
-        position: GeographicPosition,
-        startTime: LocalDateTime,
-        endTime: LocalDateTime,
+        target: Body, position: GeographicPosition,
+        startTime: LocalDateTime, endTime: LocalDateTime,
     ): List<HorizonsElement> {
-        val site = VSOP87E.EARTH + position
+        val site = cachedBodies.getOrPut(position) { VSOP87E.EARTH + position }
 
-        var time = startTime
         val intervalInMinutes = ChronoUnit.MINUTES.between(startTime, endTime).toInt() + 1
-        val res = ArrayList<HorizonsElement>(intervalInMinutes)
+        val elementMap = LinkedHashMap<LocalDateTime, HorizonsElement>(intervalInMinutes)
+        val elementQueue = LinkedList<HorizonsElement>()
 
-        while (time <= endTime) {
-            val utc = timeBucket.getOrPut(time) { UTC(TimeYMDHMS(time)) }
-
-            val astrometric = site.at<Barycentric>(utc).observe(target)
-            val (az, alt) = astrometric.horizontal()
-            val (ra, dec) = astrometric.equatorialAtDate()
-            val (raJ2000, decJ2000) = astrometric.equatorial()
-
+        repeat(intervalInMinutes) {
+            val time = startTime.plusMinutes(it.toLong())
             val element = HorizonsElement(time)
-            element[HorizonsQuantity.ASTROMETRIC_RA] = "${raJ2000.normalized.toDegrees}"
-            element[HorizonsQuantity.ASTROMETRIC_DEC] = "${decJ2000.toDegrees}"
-            element[HorizonsQuantity.APPARENT_RA] = "${ra.normalized.toDegrees}"
-            element[HorizonsQuantity.APPARENT_DEC] = "${dec.toDegrees}"
-            element[HorizonsQuantity.APPARENT_AZ] = "${az.normalized.toDegrees}"
-            element[HorizonsQuantity.APPARENT_ALT] = "${alt.toDegrees}"
-            res.add(element)
-
-            time = time.plusMinutes(1L)
+            elementMap[time] = element
+            elementQueue.add(element)
         }
 
-        return res
+        val numberOfTasks = Runtime.getRuntime().availableProcessors()
+        val tasks = ArrayList<CompletableFuture<*>>(numberOfTasks)
+
+        repeat(numberOfTasks) {
+            threadPoolTaskExecutor.submitCompletable {
+                while (true) {
+                    val element = synchronized(elementQueue) {
+                        elementQueue.removeFirstOrNull()
+                    } ?: break
+
+                    val utcTime = synchronized(timeBucket) {
+                        val time = element.dateTime
+                        timeBucket.getOrPut(time) { UTC(TimeYMDHMS(time)) }
+                    }
+
+                    val barycentric = site.at<Barycentric>(utcTime)
+                    val astrometric = barycentric.observe(target)
+                    val (az, alt) = astrometric.horizontal()
+                    val (ra, dec) = astrometric.equatorialAtDate()
+                    val (raJ2000, decJ2000) = astrometric.equatorial()
+
+                    element[HorizonsQuantity.ASTROMETRIC_RA] = "${raJ2000.normalized.toDegrees}"
+                    element[HorizonsQuantity.ASTROMETRIC_DEC] = "${decJ2000.toDegrees}"
+                    element[HorizonsQuantity.APPARENT_RA] = "${ra.normalized.toDegrees}"
+                    element[HorizonsQuantity.APPARENT_DEC] = "${dec.toDegrees}"
+                    element[HorizonsQuantity.APPARENT_AZ] = "${az.normalized.toDegrees}"
+                    element[HorizonsQuantity.APPARENT_ALT] = "${alt.toDegrees}"
+                    val illuminatedFraction = if (target === VSOP87E.SUN) SUN_ILLUMINATED else astrometric.illuminated(VSOP87E.SUN) * 100.0
+                    element[HorizonsQuantity.ILLUMINATED_FRACTION] = "$illuminatedFraction"
+                    element[HorizonsQuantity.CONSTELLATION] = Constellation.find(astrometric).name
+                    element[HorizonsQuantity.ONE_WAY_LIGHT_TIME] = (astrometric.lightTime * 1440.0).toString()
+                    val (elongation, east) = if (target === VSOP87E.SUN) SUN_ELONGATION else barycentric.elongation(target, VSOP87E.SUN)
+                    element[HorizonsQuantity.SUN_OBSERVER_TARGET_ELONGATION_ANGLE] = "${elongation.toDegrees},/${if (east) 'L' else 'T'}"
+                }
+            }.also(tasks::add)
+        }
+
+        val elapsedTime = measureTimeMillis { tasks.forEach { it.get() } }
+
+        LOG.debug { "elapsed $elapsedTime ms for computing body ephemeris" }
+
+        return elementMap.values.toList()
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<BodyEphemerisProvider>()
+
+        private const val SUN_ILLUMINATED = 100.0
+        @JvmStatic private val SUN_ELONGATION = 0.0 to true
     }
 }

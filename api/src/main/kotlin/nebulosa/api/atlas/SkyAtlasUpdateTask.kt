@@ -1,7 +1,7 @@
 package nebulosa.api.atlas
 
-import nebulosa.api.messages.MessageService
-import nebulosa.api.preferences.PreferenceService
+import nebulosa.api.message.MessageService
+import nebulosa.api.preference.PreferenceService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request

@@ -1,7 +1,7 @@
-import { Angle, EquatorialCoordinate } from './atlas.types'
-import { Device } from './device.types'
-import { GPS } from './gps.types'
-import { GuideOutput } from './guider.types'
+import type { Angle, EquatorialCoordinate } from './atlas.types'
+import type { Device } from './device.types'
+import type { GPS } from './gps.types'
+import type { GuideOutput } from './guider.types'
 
 export type PierSide = 'EAST' | 'WEST' | 'NEITHER'
 
@@ -95,6 +95,18 @@ export interface MountRemoteControlDialog {
 	host: string
 	port: number
 	data: MountRemoteControl[]
+}
+
+export interface MountPreference {
+	targetCoordinateType: TargetCoordinateType
+	targetRightAscension: Angle
+	targetDeclination: Angle
+}
+
+export const EMPTY_MOUNT_PREFERENCE: MountPreference = {
+	targetCoordinateType: 'JNOW',
+	targetRightAscension: '',
+	targetDeclination: '',
 }
 
 export function isMount(device?: Device): device is Mount {

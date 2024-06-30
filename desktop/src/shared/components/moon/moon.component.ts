@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, ViewChild } from '@angular/core'
 
 @Component({
 	selector: 'neb-moon',
@@ -7,7 +7,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, 
 })
 export class MoonComponent implements AfterViewInit, OnChanges {
 	@ViewChild('moon')
-	private readonly moon!: ElementRef<HTMLCanvasElement>
+	private readonly moon?: ElementRef<HTMLCanvasElement>
 
 	@Input()
 	height = 256
@@ -25,16 +25,14 @@ export class MoonComponent implements AfterViewInit, OnChanges {
 		this.draw()
 	}
 
-	ngOnChanges(changes: SimpleChanges) {
+	ngOnChanges() {
 		this.draw()
 	}
 
 	// Adapted from https://codepen.io/ardathksheyna/pen/adMyXx.
 	private draw() {
 		const canvas = this.moon?.nativeElement
-
 		if (!canvas) return
-
 		const ctx = canvas.getContext('2d')!
 
 		ctx.clearRect(0, 0, canvas.width, canvas.height)

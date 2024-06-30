@@ -6,7 +6,7 @@ export interface Pingable {
 
 @Injectable({ providedIn: 'root' })
 export class Pinger {
-	private readonly pingables = new Map<Pingable, any>()
+	private readonly pingables = new Map<Pingable, number>()
 
 	isRegistered(pingable: Pingable) {
 		return this.pingables.has(pingable)
@@ -16,13 +16,17 @@ export class Pinger {
 		this.unregister(pingable)
 
 		if (interval > 0) {
-			if (initialDelay <= 0) pingable.ping()
-			else if (initialDelay < interval - 1000) setTimeout(() => pingable.ping(), initialDelay)
+			if (initialDelay > 0 && initialDelay < interval - 1000) {
+				setTimeout(() => {
+					pingable.ping()
+				}, initialDelay)
+			}
 
-			this.pingables.set(
-				pingable,
-				setInterval(() => pingable.ping(), interval),
-			)
+			const ping = setInterval(() => {
+				pingable.ping()
+			}, interval) as unknown as number
+
+			this.pingables.set(pingable, ping)
 		}
 	}
 

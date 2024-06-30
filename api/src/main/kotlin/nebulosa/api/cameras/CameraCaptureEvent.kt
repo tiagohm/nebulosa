@@ -1,7 +1,7 @@
 package nebulosa.api.cameras
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import nebulosa.api.messages.MessageEvent
+import nebulosa.api.message.MessageEvent
 import nebulosa.indi.device.camera.Camera
 import java.nio.file.Path
 import java.time.Duration

@@ -1,153 +1,139 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "cli": {
-    "schematicCollections": [
-      "@angular-eslint/schematics"
-    ],
-    "analytics": false
-  },
-  "version": 1,
-  "newProjectRoot": "projects",
-  "projects": {
-    "angular-electron": {
-      "root": "",
-      "sourceRoot": "src",
-      "projectType": "application",
-      "schematics": {
-        "@schematics/angular:application": {
-          "strict": true
-        },
-        "@schematics/angular:component": {
-          "style": "scss"
-        }
-      },
-      "prefix": "app",
-      "architect": {
-        "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
-          "options": {
-            "outputPath": "dist",
-            "index": "src/index.html",
-            "main": "src/main.ts",
-            "tsConfig": "src/tsconfig.app.json",
-            "polyfills": "src/polyfills.ts",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ],
-            "styles": [
-              "node_modules/leaflet/dist/leaflet.css",
-              "node_modules/primeng/resources/themes/mdc-dark-indigo/theme.css",
-              "node_modules/primeng/resources/primeng.min.css",
-              "node_modules/primeflex/primeflex.css",
-              "node_modules/primeicons/primeicons.css",
-              "src/styles.scss"
-            ],
-            "scripts": [
-              "node_modules/chart.js/dist/chart.umd.js"
-            ],
-            "customWebpackConfig": {
-              "path": "./angular.webpack.js",
-              "replaceDuplicatePlugins": true
-            }
-          },
-          "configurations": {
-            "dev": {
-              "optimization": false,
-              "outputHashing": "none",
-              "sourceMap": true,
-              "namedChunks": false,
-              "aot": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": false,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.dev.ts"
-                }
-              ]
-            },
-            "production": {
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ]
-            },
-            "web": {
-              "optimization": false,
-              "outputHashing": "none",
-              "sourceMap": true,
-              "namedChunks": false,
-              "aot": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": false,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.web.ts"
-                }
-              ]
-            },
-            "web-production": {
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.web.prod.ts"
-                }
-              ]
-            }
-          }
-        },
-        "serve": {
-          "builder": "@angular-builders/custom-webpack:dev-server",
-          "options": {
-            "buildTarget": "angular-electron:build"
-          },
-          "configurations": {
-            "dev": {
-              "buildTarget": "angular-electron:build:dev"
-            },
-            "production": {
-              "buildTarget": "angular-electron:build:production"
-            },
-            "web": {
-              "buildTarget": "angular-electron:build:web"
-            },
-            "web-production": {
-              "buildTarget": "angular-electron:build:web-production"
-            }
-          }
-        }
-      }
-    }
-  },
-  "schematics": {
-    "@angular-eslint/schematics:application": {
-      "setParserOptionsProject": true
-    },
-    "@angular-eslint/schematics:library": {
-      "setParserOptionsProject": true
-    }
-  }
+	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+	"cli": {
+		"schematicCollections": ["@angular-eslint/schematics"],
+		"analytics": false
+	},
+	"version": 1,
+	"newProjectRoot": "projects",
+	"projects": {
+		"angular-electron": {
+			"root": "",
+			"sourceRoot": "src",
+			"projectType": "application",
+			"schematics": {
+				"@schematics/angular:application": {
+					"strict": true
+				},
+				"@schematics/angular:component": {
+					"style": "scss"
+				}
+			},
+			"prefix": "app",
+			"architect": {
+				"build": {
+					"builder": "@angular-builders/custom-webpack:browser",
+					"options": {
+						"outputPath": "dist",
+						"index": "src/index.html",
+						"main": "src/main.ts",
+						"tsConfig": "src/tsconfig.app.json",
+						"polyfills": "src/polyfills.ts",
+						"inlineStyleLanguage": "scss",
+						"assets": ["src/favicon.ico", "src/assets"],
+						"styles": ["node_modules/leaflet/dist/leaflet.css", "node_modules/primeng/resources/primeng.min.css", "node_modules/primeflex/primeflex.css", "node_modules/primeicons/primeicons.css", "src/styles.scss"],
+						"scripts": ["node_modules/chart.js/dist/chart.umd.js"],
+						"customWebpackConfig": {
+							"path": "./angular.webpack.js",
+							"replaceDuplicatePlugins": true
+						}
+					},
+					"configurations": {
+						"dev": {
+							"optimization": false,
+							"outputHashing": "none",
+							"sourceMap": true,
+							"namedChunks": false,
+							"aot": false,
+							"extractLicenses": true,
+							"vendorChunk": false,
+							"buildOptimizer": false,
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.dev.ts"
+								}
+							]
+						},
+						"production": {
+							"optimization": true,
+							"outputHashing": "all",
+							"sourceMap": false,
+							"namedChunks": false,
+							"aot": true,
+							"extractLicenses": true,
+							"vendorChunk": false,
+							"buildOptimizer": true,
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.prod.ts"
+								}
+							]
+						},
+						"web": {
+							"optimization": false,
+							"outputHashing": "none",
+							"sourceMap": true,
+							"namedChunks": false,
+							"aot": false,
+							"extractLicenses": true,
+							"vendorChunk": false,
+							"buildOptimizer": false,
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.web.ts"
+								}
+							]
+						},
+						"web-production": {
+							"optimization": true,
+							"outputHashing": "all",
+							"sourceMap": false,
+							"namedChunks": false,
+							"aot": true,
+							"extractLicenses": true,
+							"vendorChunk": false,
+							"buildOptimizer": true,
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.web.prod.ts"
+								}
+							]
+						}
+					}
+				},
+				"serve": {
+					"builder": "@angular-builders/custom-webpack:dev-server",
+					"options": {
+						"buildTarget": "angular-electron:build"
+					},
+					"configurations": {
+						"dev": {
+							"buildTarget": "angular-electron:build:dev"
+						},
+						"production": {
+							"buildTarget": "angular-electron:build:production"
+						},
+						"web": {
+							"buildTarget": "angular-electron:build:web"
+						},
+						"web-production": {
+							"buildTarget": "angular-electron:build:web-production"
+						}
+					}
+				}
+			}
+		}
+	},
+	"schematics": {
+		"@angular-eslint/schematics:application": {
+			"setParserOptionsProject": true
+		},
+		"@angular-eslint/schematics:library": {
+			"setParserOptionsProject": true
+		}
+	}
 }

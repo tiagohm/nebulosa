@@ -1,28 +1,35 @@
 {
-    "printWidth": 300,
+	"printWidth": 300,
 	"singleQuote": true,
 	"useTabs": true,
 	"tabWidth": 4,
-    "bracketSpacing": true,
+	"bracketSpacing": true,
 	"htmlWhitespaceSensitivity": "ignore",
-    "bracketSameLine": true,
-    "singleAttributePerLine": true,
-    "trailingComma": "all",
-    "semi": false,
-    "endOfLine": "lf",
+	"bracketSameLine": true,
+	"singleAttributePerLine": true,
+	"trailingComma": "all",
+	"semi": false,
+	"endOfLine": "lf",
 	"overrides": [
-        {
-            "files": "*.html",
-            "options": {
-                "parser": "angular"
-            }
-        },
-        {
-            "files": "*.scss",
-            "options": {
-                "parser": "scss"
-            }
-        },
+		{
+			"files": "*.html",
+			"options": {
+				"parser": "angular"
+			}
+		},
+		{
+			"files": "*.scss",
+			"options": {
+				"parser": "scss"
+			}
+		},
+		{
+			"files": "*.json",
+			"excludeFiles": "*-lock.json",
+			"options": {
+				"parser": "json"
+			}
+		},
 		{
 			"files": "*.ts",
 			"options": {
@@ -30,5 +37,5 @@
 				"parser": "typescript"
 			}
 		}
-    ]
+	]
 }

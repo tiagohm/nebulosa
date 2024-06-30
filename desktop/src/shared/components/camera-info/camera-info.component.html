@@ -1,0 +1,56 @@
+<div class="flex gap-2 align-items-center flex-wrap">
+	<div
+		*ngIf="hasType"
+		class="tag">
+		<span class="min-w-3rem">{{ info.frameType }}</span>
+		<label class="text-success">Type</label>
+	</div>
+	<div
+		*ngIf="hasExposure && info.exposureTime"
+		class="tag">
+		<span class="min-w-4rem">{{ info.exposureAmount || '∞' }} / {{ info.exposureTime | exposureTime }}</span>
+		<label class="text-orange-300">Exposure</label>
+	</div>
+	<div
+		*ngIf="info.exposureDelay"
+		class="tag">
+		<span class="min-w-3rem">{{ info.exposureDelay * 1000000 | exposureTime }}</span>
+		<label class="text-info">Delay</label>
+	</div>
+	<div
+		*ngIf="info.x !== undefined && info.y !== undefined && info.width && info.height"
+		class="tag">
+		<span class="min-w-5rem">{{ info.x }} {{ info.y }} {{ info.width }} {{ info.height }}</span>
+		<label class="text-yellow-300">ROI</label>
+	</div>
+	<div
+		*ngIf="info.binX && info.binY"
+		class="tag">
+		<span class="min-w-2rem">{{ info.binX }}x{{ info.binY }}</span>
+		<label class="text-cyan-300">Bin</label>
+	</div>
+	<div
+		*ngIf="info.gain"
+		class="tag">
+		<span class="min-w-3rem">{{ info.gain }}</span>
+		<label>Gain</label>
+	</div>
+	<div
+		*ngIf="info.offset"
+		class="tag">
+		<span class="min-w-3rem">{{ info.offset }}</span>
+		<label>Offset</label>
+	</div>
+	<div
+		*ngIf="info.frameFormat"
+		class="tag">
+		<span class="min-w-5rem">{{ info.frameFormat }}</span>
+		<label class="text-purple-300">Format</label>
+	</div>
+	<div
+		*ngIf="hasFilter"
+		class="tag">
+		<span class="min-w-5rem">{{ filter }}</span>
+		<label class="text-teal-300">Filter</label>
+	</div>
+</div>

@@ -4,11 +4,13 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
+import nebulosa.api.beans.converters.angle.AngleParam
 import nebulosa.api.beans.converters.time.DateAndTimeParam
 import nebulosa.api.connection.ConnectionService
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
+import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.math.m
@@ -70,8 +72,9 @@ class MountController(
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
+        @RequestHeader("X-Idempotency-Key") idempotencyKey: String?,
     ) {
-        mountService.slewTo(mount, rightAscension.hours, declination.deg, j2000)
+        mountService.slewTo(mount, rightAscension.hours, declination.deg, j2000, idempotencyKey)
     }
 
     @PutMapping("{mount}/goto")
@@ -80,8 +83,9 @@ class MountController(
         @RequestParam @Valid @NotBlank rightAscension: String,
         @RequestParam @Valid @NotBlank declination: String,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
+        @RequestHeader("X-Idempotency-Key") idempotencyKey: String?,
     ) {
-        mountService.goTo(mount, rightAscension.hours, declination.deg, j2000)
+        mountService.goTo(mount, rightAscension.hours, declination.deg, j2000, idempotencyKey)
     }
 
     @PutMapping("{mount}/home")
@@ -164,17 +168,13 @@ class MountController(
     @GetMapping("{mount}/location")
     fun location(
         mount: Mount,
-        @RequestParam rightAscension: String, @RequestParam declination: String,
+        @AngleParam(isHours = true) rightAscension: Angle,
+        @AngleParam declination: Angle,
         @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
         @RequestParam(required = false, defaultValue = "true") equatorial: Boolean,
         @RequestParam(required = false, defaultValue = "true") horizontal: Boolean,
         @RequestParam(required = false, defaultValue = "true") meridianAt: Boolean,
-    ): ComputedLocation {
-        return mountService.computeLocation(
-            mount, rightAscension.hours, declination.deg,
-            j2000, equatorial, horizontal, meridianAt,
-        )
-    }
+    ) = mountService.computeLocation(mount, rightAscension, declination, j2000, equatorial, horizontal, meridianAt)
 
     @PutMapping("{mount}/point-here")
     fun pointMountHere(

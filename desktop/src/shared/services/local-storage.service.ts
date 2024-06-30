@@ -4,17 +4,17 @@ import { StorageService } from './storage.service'
 @Injectable({ providedIn: 'root' })
 export class LocalStorageService implements StorageService {
 	clear() {
-		return localStorage.clear()
+		localStorage.clear()
 	}
 
 	delete(key: string) {
-		return localStorage.removeItem(key)
+		localStorage.removeItem(key)
 	}
 
 	get<T>(key: string, defaultValue: T | (() => T)): T {
 		const value = localStorage.getItem(key)
 
-		if (value === undefined || value === null) {
+		if (value === null) {
 			return defaultValue instanceof Function ? defaultValue() : defaultValue
 		}
 
@@ -31,8 +31,8 @@ export class LocalStorageService implements StorageService {
 		return false
 	}
 
-	set(key: string, value: any) {
-		if (value === null || value === undefined) return this.delete(key)
-		else return localStorage.setItem(key, JSON.stringify(value))
+	set(key: string, value: unknown) {
+		if (value === null || value === undefined) this.delete(key)
+		else localStorage.setItem(key, JSON.stringify(value))
 	}
 }

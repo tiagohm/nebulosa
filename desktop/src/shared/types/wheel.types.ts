@@ -1,5 +1,5 @@
-import { CameraStartCapture } from './camera.types'
-import { Device } from './device.types'
+import type { CameraStartCapture } from './camera.types'
+import type { Device } from './device.types'
 
 export type WheelDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD'
 
@@ -29,8 +29,6 @@ export interface WheelDialogInput {
 
 export interface WheelPreference {
 	shutterPosition?: number
-	names?: string[]
-	offsets?: number[]
 }
 
 export interface FilterSlot {
@@ -42,6 +40,30 @@ export interface FilterSlot {
 export interface WheelRenamed {
 	wheel: FilterWheel
 	filter: FilterSlot
+}
+
+export function makeFilterSlots(wheel: FilterWheel, filters: FilterSlot[], shutterPosition: number = 0) {
+	if (wheel.count <= 0) {
+		filters = []
+	} else if (wheel.count !== filters.length) {
+		filters = new Array<FilterSlot>(wheel.count)
+	}
+
+	if (filters.length) {
+		for (let position = 0; position < filters.length; position++) {
+			const name = wheel.names[position] || `Filter #${position}`
+			const dark = position + 1 === shutterPosition
+
+			if (!filters[position]) {
+				filters[position] = { position: position + 1, name, dark }
+			} else {
+				filters[position].dark = dark
+				filters[position].name = name
+			}
+		}
+	}
+
+	return filters
 }
 
 export function isFilterWheel(device?: Device): device is FilterWheel {

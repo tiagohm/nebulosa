@@ -10,4 +10,4 @@ import nebulosa.math.Matrix3D
  * precision of J2000 itself).  The ICRS also supersedes older
  * equinox-based systems like B1900 and B1950.
  */
-object ICRS : InertialFrame(Matrix3D(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0))
+data object ICRS : InertialFrame(Matrix3D(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0))

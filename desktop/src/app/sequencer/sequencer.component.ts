@@ -2,7 +2,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren } from '@angular/core'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
-import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -10,13 +10,14 @@ import { LocalStorageService } from '../../shared/services/local-storage.service
 import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureEvent, CameraStartCapture } from '../../shared/types/camera.types'
+import { Camera, CameraCaptureEvent, CameraStartCapture, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Mount } from '../../shared/types/mount.types'
 import { Rotator } from '../../shared/types/rotator.types'
 import { EMPTY_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
+import { Undefinable } from '../../shared/utils/types'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
@@ -49,10 +50,11 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	private entryToApplyCount: [number, number] = [0, 0]
 	readonly availableEntryPropertiesToApply = new Map<SequenceEntryProperty, boolean>()
 	showEntryPropertiesToApplyDialog = false
-	readonly entryMenuModel: MenuItem[] = [
+	readonly entryMenuModel: SlideMenuItem[] = [
 		{
 			icon: 'mdi mdi-content-copy',
 			label: 'Apply to all',
+			slideMenu: [],
 			command: () => {
 				this.entryToApplyCount = [-1000, 1000]
 				this.showEntryPropertiesToApplyDialog = true
@@ -61,6 +63,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		{
 			icon: 'mdi mdi-content-copy',
 			label: 'Apply to all above',
+			slideMenu: [],
 			command: () => {
 				this.entryToApplyCount = [-1000, 0]
 				this.showEntryPropertiesToApplyDialog = true
@@ -69,6 +72,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		{
 			icon: 'mdi mdi-content-copy',
 			label: 'Apply to above',
+			slideMenu: [],
 			command: () => {
 				this.entryToApplyCount = [-1, 0]
 				this.showEntryPropertiesToApplyDialog = true
@@ -77,6 +81,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		{
 			icon: 'mdi mdi-content-copy',
 			label: 'Apply to below',
+			slideMenu: [],
 			command: () => {
 				this.entryToApplyCount = [1, 0]
 				this.showEntryPropertiesToApplyDialog = true
@@ -85,6 +90,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		{
 			icon: 'mdi mdi-content-copy',
 			label: 'Apply to all below',
+			slideMenu: [],
 			command: () => {
 				this.entryToApplyCount = [1000, 0]
 				this.showEntryPropertiesToApplyDialog = true
@@ -108,7 +114,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		return this.app.subTitle
 	}
 
-	set savedPath(value: string | undefined) {
+	set savedPath(value: Undefinable<string>) {
 		this.app.subTitle = value
 	}
 
@@ -121,13 +127,13 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	constructor(
-		private app: AppComponent,
-		private api: ApiService,
-		private browserWindow: BrowserWindowService,
-		private electron: ElectronService,
-		private storage: LocalStorageService,
-		private prime: PrimeService,
-		private pinger: Pinger,
+		private readonly app: AppComponent,
+		private readonly api: ApiService,
+		private readonly browserWindow: BrowserWindowService,
+		private readonly electron: ElectronService,
+		private readonly storage: LocalStorageService,
+		private readonly prime: PrimeService,
+		private readonly pinger: Pinger,
 		ngZone: NgZone,
 	) {
 		app.title = 'Sequencer'
@@ -135,7 +141,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		app.topMenu.push({
 			icon: 'mdi mdi-plus',
 			label: 'Create new',
-			command: async () => {
+			command: () => {
 				this.savedPath = undefined
 				this.savedPathWasModified = false
 				this.storage.delete(SEQUENCER_SAVED_PATH_KEY)
@@ -260,7 +266,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		this.focusers = (await this.api.focusers()).sort(deviceComparator)
 		this.rotators = (await this.api.rotators()).sort(deviceComparator)
 
-		this.loadSavedJsonFileFromPathOrAddDefault()
+		await this.loadSavedJsonFileFromPathOrAddDefault()
 
 		// this.route.queryParams.subscribe(e => { })
 	}
@@ -270,12 +276,12 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		this.pinger.unregister(this)
 	}
 
-	ping() {
-		if (this.camera) this.api.cameraListen(this.camera)
-		if (this.mount) this.api.mountListen(this.mount)
-		if (this.focuser) this.api.focuserListen(this.focuser)
-		if (this.wheel) this.api.wheelListen(this.wheel)
-		if (this.rotator) this.api.rotatorListen(this.rotator)
+	async ping() {
+		if (this.camera?.id) await this.api.cameraListen(this.camera)
+		if (this.mount?.id) await this.api.mountListen(this.mount)
+		if (this.focuser?.id) await this.api.focuserListen(this.focuser)
+		if (this.wheel?.id) await this.api.wheelListen(this.wheel)
+		if (this.rotator?.id) await this.api.rotatorListen(this.rotator)
 	}
 
 	private enableOrDisableTopbarMenu(enable: boolean) {
@@ -283,7 +289,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	add() {
-		const camera = this.camera ?? this.cameras[0]
+		const camera = this.camera ?? (this.cameras[0] as Undefinable<Camera>)
 		// const wheel = this.wheel ?? this.wheels[0]
 		// const focuser = this.focuser ?? this.focusers[0]
 		// const rotator = this.rotator ?? this.rotators[0]
@@ -315,7 +321,6 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 				enabled: false,
 				type: 'SIRIL',
 				executablePath: '',
-				rotate: 0,
 				use32Bits: false,
 				slot: 1,
 			},
@@ -329,9 +334,11 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	private afterSavedJsonFile(file: JsonFile<SequencePlan>) {
-		this.savedPath = file.path!
-		this.storage.set(SEQUENCER_SAVED_PATH_KEY, this.savedPath)
-		this.savedPathWasModified = false
+		if (file.path) {
+			this.savedPath = file.path
+			this.storage.set(SEQUENCER_SAVED_PATH_KEY, this.savedPath)
+			this.savedPathWasModified = false
+		}
 	}
 
 	private loadSavedJsonFile(file: JsonFile<SequencePlan>) {
@@ -345,13 +352,14 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	private async loadSavedJsonFileFromPathOrAddDefault() {
-		const savedPath = this.storage.get<string | undefined>(SEQUENCER_SAVED_PATH_KEY, undefined)
+		const savedPath = this.storage.get<Undefinable<string>>(SEQUENCER_SAVED_PATH_KEY, undefined)
 
 		if (savedPath) {
 			const file = await this.electron.readJson<SequencePlan>(savedPath)
 
 			if (file !== false) {
-				return this.loadSavedJsonFile(file)
+				this.loadSavedJsonFile(file)
+				return
 			}
 
 			this.prime.message(`Failed to load the saved Sequence at: ${savedPath}`, 'error')
@@ -397,35 +405,45 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	async showCameraDialog(entry: CameraStartCapture) {
-		if (await CameraComponent.showAsDialog(this.browserWindow, 'SEQUENCER', this.camera!, entry)) {
+		if (this.camera && (await CameraComponent.showAsDialog(this.browserWindow, 'SEQUENCER', this.camera, entry))) {
 			this.savePlan()
 		}
 	}
 
 	async showWheelDialog(entry: CameraStartCapture) {
-		if (await FilterWheelComponent.showAsDialog(this.browserWindow, 'SEQUENCER', this.wheel!, entry)) {
+		if (this.wheel && (await FilterWheelComponent.showAsDialog(this.browserWindow, 'SEQUENCER', this.wheel, entry))) {
 			this.savePlan()
 		}
 	}
 
-	cameraChanged() {
-		this.ping()
+	async cameraChanged() {
+		await this.ping()
+
+		this.updateEntriesFromCamera(this.camera)
+	}
+
+	private updateEntriesFromCamera(camera?: Camera) {
+		if (camera?.connected) {
+			for (const entry of this.plan.entries) {
+				updateCameraStartCaptureFromCamera(entry, camera)
+			}
+		}
 	}
 
 	mountChanged() {
-		this.ping()
+		return this.ping()
 	}
 
 	focuserChanged() {
-		this.ping()
+		return this.ping()
 	}
 
 	wheelChanged() {
-		this.ping()
+		return this.ping()
 	}
 
 	rotatorChanged() {
-		this.ping()
+		return this.ping()
 	}
 
 	savePlan() {
@@ -472,7 +490,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	applyCameraStartCaptureToEntries() {
-		const source = this.entryToApply!
+		const source = this.entryToApply
+		if (!source) return
 		const index = this.plan.entries.indexOf(source)
 
 		for (let count of this.entryToApplyCount) {
@@ -515,8 +534,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	deleteEntry(entry: CameraStartCapture, index: number) {
-		this.plan.entries.splice(index, 1)
-		this.savePlan()
+		if (entry === this.plan.entries[index]) {
+			this.plan.entries.splice(index, 1)
+			this.savePlan()
+		}
 	}
 
 	duplicateEntry(entry: CameraStartCapture, index: number) {
@@ -525,18 +546,21 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	async start() {
-		for (let i = 0; i < this.cameraExposures.length; i++) {
-			this.cameraExposures.get(i)?.reset()
+		if (this.camera) {
+			for (let i = 0; i < this.cameraExposures.length; i++) {
+				this.cameraExposures.get(i)?.reset()
+			}
+
+			this.savePlan()
+
+			await this.browserWindow.openCameraImage(this.camera, 'SEQUENCER')
+			await this.api.sequencerStart(this.camera, this.plan)
 		}
-
-		this.savePlan()
-
-		await this.browserWindow.openCameraImage(this.camera!, 'SEQUENCER')
-
-		this.api.sequencerStart(this.camera!, this.plan)
 	}
 
-	stop() {
-		this.api.sequencerStop(this.camera!)
+	async stop() {
+		if (this.camera) {
+			await this.api.sequencerStop(this.camera)
+		}
 	}
 }

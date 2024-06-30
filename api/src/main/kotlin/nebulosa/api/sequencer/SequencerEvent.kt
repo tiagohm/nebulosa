@@ -1,7 +1,7 @@
 package nebulosa.api.sequencer
 
 import nebulosa.api.cameras.CameraCaptureEvent
-import nebulosa.api.messages.MessageEvent
+import nebulosa.api.message.MessageEvent
 import java.time.Duration
 
 data class SequencerEvent(

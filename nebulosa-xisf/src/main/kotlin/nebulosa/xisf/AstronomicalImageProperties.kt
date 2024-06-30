@@ -3,7 +3,7 @@ package nebulosa.xisf
 import nebulosa.fits.FitsHeaderKey
 import nebulosa.fits.FitsKeyword
 
-object AstronomicalImageProperties : Map<String, FitsHeaderKey?> by mapOf(
+data object AstronomicalImageProperties : Map<String, FitsHeaderKey?> by mapOf(
     "Observer:EmailAddress" to null,
     "Observer:Name" to null,
     "Observer:PostalAddress" to null,

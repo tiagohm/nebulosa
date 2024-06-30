@@ -1,24 +1,26 @@
 import { Injectable, Type } from '@angular/core'
-import { ConfirmEventType, ConfirmationService, MessageService } from 'primeng/api'
+import { MessageService } from 'primeng/api'
 import { DialogService, DynamicDialogConfig } from 'primeng/dynamicdialog'
+import { ConfirmDialog } from '../dialogs/confirm/confirm.dialog'
+import { Undefinable } from '../utils/types'
 
 @Injectable({ providedIn: 'root' })
 export class PrimeService {
 	constructor(
-		private dialog: DialogService,
-		private confirmation: ConfirmationService,
-		private messager: MessageService,
+		private readonly dialog: DialogService,
+		private readonly messager: MessageService,
 	) {}
 
-	open<T, R = T>(componentType: Type<any>, config: DynamicDialogConfig<T>) {
+	open<T, R = T>(componentType: Type<unknown>, config: DynamicDialogConfig<T>) {
 		const ref = this.dialog.open(componentType, {
 			...config,
+			duplicate: true,
 			draggable: config.draggable ?? true,
 			resizable: false,
 			width: config.width || '80vw',
 			style: {
-				...config.style,
 				'max-width': '480px',
+				...config.style,
 			},
 			contentStyle: {
 				...config.contentStyle,
@@ -26,30 +28,16 @@ export class PrimeService {
 			},
 		})
 
-		return new Promise<R | undefined>((resolve) => {
-			const subscription = ref.onClose.subscribe((data) => {
+		return new Promise<Undefinable<R>>((resolve) => {
+			const subscription = ref.onClose.subscribe((data?: R) => {
 				subscription.unsubscribe()
-				resolve(data ?? undefined)
+				resolve(data)
 			})
 		})
 	}
 
 	confirm(message: string) {
-		return new Promise<ConfirmEventType>((resolve) => {
-			this.confirmation.confirm({
-				message,
-				header: 'Confirmation',
-				icon: 'mdi mdi-lg mdi-help-circle',
-				acceptButtonStyleClass: 'p-button-success p-button-text',
-				rejectButtonStyleClass: 'p-button-danger p-button-text',
-				accept: () => {
-					resolve(ConfirmEventType.ACCEPT)
-				},
-				reject: (type: ConfirmEventType) => {
-					resolve(type)
-				},
-			})
-		})
+		return ConfirmDialog.open(this, message)
 	}
 
 	message(text: string, severity: 'info' | 'warn' | 'error' | 'success' = 'success') {

@@ -5,7 +5,7 @@ import nebulosa.api.cameras.*
 import nebulosa.api.focusers.BacklashCompensationFocuserMoveTask
 import nebulosa.api.focusers.BacklashCompensationMode
 import nebulosa.api.focusers.FocuserEventAware
-import nebulosa.api.messages.MessageEvent
+import nebulosa.api.message.MessageEvent
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.curve.fitting.CurvePoint

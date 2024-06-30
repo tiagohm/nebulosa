@@ -1,0 +1,28 @@
+.tag {
+	position: relative;
+	display: flex;
+	align-items: end;
+	border-radius: 4px;
+
+	span {
+		display: block;
+		text-align: center;
+		margin-top: 9px;
+		font-size: 0.875rem !important;
+	}
+
+	label {
+		border-radius: 2px;
+		font-size: 9px !important;
+		font-weight: bold;
+		top: -0.5rem !important;
+		background-color: #151515d0;
+		padding: 2px 4px;
+		position: absolute;
+		pointer-events: none;
+		left: 50%;
+		transform: translate(-50%, 0%);
+		display: block;
+		width: max-content;
+	}
+}

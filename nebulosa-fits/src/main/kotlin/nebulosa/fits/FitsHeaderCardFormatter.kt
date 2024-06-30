@@ -4,7 +4,7 @@ import nebulosa.image.format.HeaderCard
 import java.util.*
 import kotlin.math.min
 
-object FitsHeaderCardFormatter {
+data object FitsHeaderCardFormatter {
 
     fun format(card: HeaderCard): String {
         return with(StringBuilder(FitsHeaderCard.FITS_HEADER_CARD_SIZE)) {

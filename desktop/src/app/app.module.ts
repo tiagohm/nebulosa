@@ -43,6 +43,7 @@ import { ToastModule } from 'primeng/toast'
 import { TooltipModule } from 'primeng/tooltip'
 import { TreeModule } from 'primeng/tree'
 import { CameraExposureComponent } from '../shared/components/camera-exposure/camera-exposure.component'
+import { CameraInfoComponent } from '../shared/components/camera-info/camera-info.component'
 import { DeviceChooserComponent } from '../shared/components/device-chooser/device-chooser.component'
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
@@ -53,10 +54,13 @@ import { MenuItemComponent } from '../shared/components/menu-item/menu-item.comp
 import { MoonComponent } from '../shared/components/moon/moon.component'
 import { PathChooserComponent } from '../shared/components/path-chooser/path-chooser.component'
 import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
+import { ConfirmDialog } from '../shared/dialogs/confirm/confirm.dialog'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { ScrollableNumberDirective } from '../shared/directives/input-number-scrollable'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
+import { ConfirmationInterceptor } from '../shared/interceptors/confirmation.interceptor'
+import { IdempotencyKeyInterceptor } from '../shared/interceptors/idempotency-key.interceptor'
 import { LocationInterceptor } from '../shared/interceptors/location.interceptor'
 import { AnglePipe } from '../shared/pipes/angle.pipe'
 import { DropdownOptionsPipe } from '../shared/pipes/dropdown-options.pipe'
@@ -101,7 +105,9 @@ import { SettingsComponent } from './settings/settings.component'
 		CalculatorComponent,
 		CalibrationComponent,
 		CameraComponent,
+		CameraInfoComponent,
 		CameraExposureComponent,
+		ConfirmDialog,
 		DeviceChooserComponent,
 		DeviceListMenuComponent,
 		DialogMenuComponent,
@@ -202,6 +208,16 @@ import { SettingsComponent } from './settings/settings.component'
 		{
 			provide: HTTP_INTERCEPTORS,
 			useClass: LocationInterceptor,
+			multi: true,
+		},
+		{
+			provide: HTTP_INTERCEPTORS,
+			useClass: IdempotencyKeyInterceptor,
+			multi: true,
+		},
+		{
+			provide: HTTP_INTERCEPTORS,
+			useClass: ConfirmationInterceptor,
 			multi: true,
 		},
 	],

@@ -5,7 +5,7 @@ import nebulosa.math.Angle
 import nebulosa.math.deg
 import kotlin.math.abs
 
-object SkySegmentSphere : Collection<SkySegmentSphere.Cell> {
+data object SkySegmentSphere : Collection<SkySegmentSphere.Cell> {
 
     data class Cell(val bounds: CoordinateBounds, val bandIndex: Int, val cellIndex: Int) {
 

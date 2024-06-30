@@ -1,25 +1,35 @@
 {
-  "editor.formatOnSave": true,
-  "explorer.excludeGitIgnore": true,
-  "javascript.format.semicolons": "remove",
-  "javascript.preferences.quoteStyle": "single",
-  "typescript.format.semicolons": "remove",
-  "typescript.preferences.quoteStyle": "single",
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "html.format.indentInnerHtml": true,
-  "html.format.wrapAttributes": "force-aligned",
-  "html.format.wrapLineLength": 300,
-  "json.format.keepLines": true,
-  "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit"
-  },
-  "[html]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[scss]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescript]": {
-	"editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+	"editor.formatOnSave": true,
+	"explorer.excludeGitIgnore": true,
+	"eslint.lintTask.enable": true,
+	"javascript.format.semicolons": "remove",
+	"javascript.preferences.quoteStyle": "single",
+	"typescript.format.semicolons": "remove",
+	"typescript.preferences.quoteStyle": "single",
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"html.format.indentInnerHtml": true,
+	"html.format.wrapAttributes": "force-aligned",
+	"html.format.wrapLineLength": 300,
+	"json.format.keepLines": true,
+	"editor.codeActionsOnSave": {
+		"source.organizeImports": "explicit"
+	},
+	"[html]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[scss]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	}
 }

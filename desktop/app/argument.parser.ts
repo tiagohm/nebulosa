@@ -28,9 +28,9 @@ export class ParsedArgument {
 }
 
 export class ArgumentParser {
-	static parse(args?: string[]): ParsedArgument {
+	parse(args: string[]): ParsedArgument {
 		const parsed = parseArgs({
-			args: args ?? process.argv.slice(1),
+			args,
 			allowPositionals: true,
 			options: {
 				serve: {

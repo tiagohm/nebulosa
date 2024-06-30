@@ -2,7 +2,7 @@ package nebulosa.api.cameras
 
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.devices.DeviceEventHub
-import nebulosa.api.messages.MessageService
+import nebulosa.api.message.MessageService
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
@@ -16,30 +16,18 @@ import org.springframework.stereotype.Component
 @Subscriber
 class CameraEventHub(
     private val messageService: MessageService,
-) : DeviceEventHub<Camera, CameraEvent>(), CameraEventAware {
+) : DeviceEventHub<Camera, CameraEvent>("CAMERA"), CameraEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleCameraEvent(event: CameraEvent) {
         when (event) {
             is PropertyChangedEvent -> onNext(event)
-            is CameraAttached -> sendMessage(CAMERA_ATTACHED, event.device)
-            is CameraDetached -> sendMessage(CAMERA_DETACHED, event.device)
+            is CameraAttached -> onAttached(event.device)
+            is CameraDetached -> onDetached(event.device)
         }
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendMessage(eventName: String, camera: Camera) {
-        messageService.sendMessage(CameraMessageEvent(eventName, camera))
-    }
-
-    override fun sendUpdate(device: Camera) {
-        sendMessage(CAMERA_UPDATED, device)
-    }
-
-    companion object {
-
-        const val CAMERA_UPDATED = "CAMERA.UPDATED"
-        const val CAMERA_ATTACHED = "CAMERA.ATTACHED"
-        const val CAMERA_DETACHED = "CAMERA.DETACHED"
+    override fun sendMessage(eventName: String, device: Camera) {
+        messageService.sendMessage(CameraMessageEvent(eventName, device))
     }
 }

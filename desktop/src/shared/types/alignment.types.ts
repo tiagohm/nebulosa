@@ -1,7 +1,7 @@
-import { Angle } from './atlas.types'
-import { Camera, CameraCaptureEvent, CameraStartCapture } from './camera.types'
-import { GuideDirection } from './guider.types'
-import { PlateSolverRequest, PlateSolverType } from './settings.types'
+import type { Angle } from './atlas.types'
+import type { Camera, CameraCaptureEvent, CameraStartCapture } from './camera.types'
+import type { GuideDirection } from './guider.types'
+import type { PlateSolverRequest, PlateSolverType } from './settings.types'
 
 export type Hemisphere = 'NORTHERN' | 'SOUTHERN'
 

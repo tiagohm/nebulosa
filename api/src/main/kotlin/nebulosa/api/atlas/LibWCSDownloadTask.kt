@@ -1,7 +1,7 @@
 package nebulosa.api.atlas
 
 import com.sun.jna.Platform
-import nebulosa.api.preferences.PreferenceService
+import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndCloseOutput
 import nebulosa.log.loggerFor
 import nebulosa.wcs.LibWCS

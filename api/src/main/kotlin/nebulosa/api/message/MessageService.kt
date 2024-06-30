@@ -1,4 +1,4 @@
-package nebulosa.api.messages
+package nebulosa.api.message
 
 import nebulosa.log.debug
 import nebulosa.log.loggerFor

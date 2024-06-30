@@ -8,7 +8,7 @@ import { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem 
 })
 export class INDIPropertyComponent implements AfterContentInit, OnDestroy {
 	@Input({ required: true })
-	property!: INDIProperty<any>
+	property!: INDIProperty
 
 	@Input()
 	disabled = false
@@ -19,7 +19,7 @@ export class INDIPropertyComponent implements AfterContentInit, OnDestroy {
 	ngAfterContentInit() {
 		for (const item of this.property.items) {
 			if (!item.valueToSend) {
-				item.valueToSend = item.value
+				item.valueToSend = `${item.value}`
 			}
 		}
 	}

@@ -8,7 +8,7 @@ import { MountRemoteControlType } from '../types/mount.types'
 import { SequenceCaptureMode } from '../types/sequencer.types'
 import { PlateSolverType, StarDetectorType } from '../types/settings.types'
 
-export type DropdownOptions = {
+export interface DropdownOptions {
 	STAR_DETECTOR: StarDetectorType[]
 	PLATE_SOLVER: PlateSolverType[]
 	LIVE_STACKER: LiveStackerType[]

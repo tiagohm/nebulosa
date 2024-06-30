@@ -33,7 +33,7 @@ type UnitFormatter = (value: number) => string
 const hourFormatter = formatter(TWO_DIGITS_FORMATTER, 'h')
 const minuteFormatter = formatter(TWO_DIGITS_FORMATTER, 'm')
 const secondFormatter = formatter(TWO_DIGITS_FORMATTER, 's')
-const millisecondFormatter = formatter(THREE_DIGITS_FORMATTER, 'ms')
+// const millisecondFormatter = formatter(THREE_DIGITS_FORMATTER, 'ms')
 
 function format(value: number, factors: [number, number], formatters: [UnitFormatter, UnitFormatter]) {
 	const a = value / factors[0]

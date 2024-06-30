@@ -70,8 +70,9 @@ open class Vector3D protected constructor(@PublishedApi @JvmField internal val v
      * Computes the angle between this vector and [vector].
      */
     fun angle(coordinate: Vector3D): Angle {
-        // val a = this * vector.length
-        // val b = vector * length
+        // https://people.eecs.berkeley.edu/~wkahan/Mindless.pdf
+        // val a = this * coordinate.length
+        // val b = coordinate * length
         // return (2.0 * atan2((a - b).length, (a + b).length)).rad
 
         val dot = dot(coordinate)

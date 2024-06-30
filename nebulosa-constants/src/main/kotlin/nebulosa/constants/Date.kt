@@ -18,6 +18,11 @@ const val B1950 = 2433282.4235
 const val DAYSEC = 86400.0
 
 /**
+ * Minutes per day.
+ */
+const val DAYMIN = 1440.0
+
+/**
  * Days per Julian year.
  */
 const val DAYSPERJY = 365.25

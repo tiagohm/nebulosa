@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ViewChild } from '@angular/core'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { MapComponent } from '../../components/map/map.component'
-import { Location } from '../../types/atlas.types'
+import { EMPTY_LOCATION, Location } from '../../types/atlas.types'
 
 @Component({
 	templateUrl: './location.dialog.html',
@@ -14,10 +14,10 @@ export class LocationDialog implements AfterViewInit {
 	readonly location: Location
 
 	constructor(
-		private dialogRef: DynamicDialogRef,
+		private readonly dialogRef: DynamicDialogRef,
 		config: DynamicDialogConfig<Location>,
 	) {
-		this.location = config.data!
+		this.location = config.data ?? structuredClone(EMPTY_LOCATION)
 	}
 
 	ngAfterViewInit() {

@@ -9,10 +9,9 @@ export function degreesToRadians(deg: number) {
 }
 
 export function formatAngle(angle: number, range: AngleRange, sign: boolean, precision: number = 0, units: boolean = true) {
-	const d = decimalToSexagesimal(angle)
-	let dd = d[1]
-	let mm = d[2]
-	let ss = d[3]
+	const parts = decimalToSexagesimal(angle)
+	let [, dd, mm, ss] = parts
+	const [s] = parts
 
 	ss = roundTo(ss, precision)
 
@@ -51,17 +50,17 @@ export function formatAngle(angle: number, range: AngleRange, sign: boolean, pre
 		}
 	}
 
-	let result = ((sign && (d[0] < 0 ? '-' : '+')) || '') + zeroPadded(dd, dw) + du + zeroPadded(mm, 2) + mu + zeroPadded(ss, 2)
+	let result = (sign ? s : '') + zeroPadded(dd, dw) + du + zeroPadded(mm, 2) + mu + zeroPadded(ss, 2)
 	if (precision > 0) result += '.' + zeroPadded(ff, precision)
 	if (units) result += su
 
 	return result
 }
 
-function decimalToSexagesimal(d: number) {
+function decimalToSexagesimal(d: number): [string, number, number, number] {
 	const t1 = Math.abs(d)
 	const t2 = (t1 - Math.trunc(t1)) * 60
-	return [d < 0 ? -1 : +1, Math.trunc(t1), Math.trunc(t2), (t2 - Math.trunc(t2)) * 60]
+	return [d < 0 ? '-' : '+', Math.trunc(t1), Math.trunc(t2), (t2 - Math.trunc(t2)) * 60]
 }
 
 function roundTo(x: number, n: number) {

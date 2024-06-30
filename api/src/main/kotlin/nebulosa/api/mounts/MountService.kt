@@ -1,6 +1,8 @@
 package nebulosa.api.mounts
 
+import nebulosa.api.atlas.SkyAtlasService
 import nebulosa.api.beans.annotations.Subscriber
+import nebulosa.api.confirmation.ConfirmationService
 import nebulosa.api.image.ImageBucket
 import nebulosa.constants.PI
 import nebulosa.constants.TAU
@@ -26,12 +28,15 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 
 @Service
 @Subscriber
 class MountService(
     private val imageBucket: ImageBucket,
     private val mountEventHub: MountEventHub,
+    private val skyAtlasService: SkyAtlasService,
+    private val confirmationService: ConfirmationService,
 ) {
 
     private val sites = ConcurrentHashMap<Mount, GeographicPosition>(2)
@@ -39,8 +44,7 @@ class MountService(
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onMountGeographicCoordinateChanged(event: MountGeographicCoordinateChanged) {
-        val site = Geoid.IERS2010.lonLat(event.device.longitude, event.device.latitude, event.device.elevation)
-        sites[event.device] = site
+        sites[event.device] = Geoid.IERS2010.lonLat(event.device)
     }
 
     fun connect(mount: Mount) {
@@ -60,14 +64,57 @@ class MountService(
         else mount.sync(ra, dec)
     }
 
-    fun slewTo(mount: Mount, ra: Angle, dec: Angle, j2000: Boolean) {
-        if (j2000) mount.slewToJ2000(ra, dec)
-        else mount.slewTo(ra, dec)
+    fun slewTo(mount: Mount, ra: Angle, dec: Angle, j2000: Boolean, idempotencyKey: String? = null) {
+        if (idempotencyKey.isNullOrBlank() || verifyMountCanSlew(idempotencyKey, mount, ra, dec, j2000)) {
+            if (j2000) mount.slewToJ2000(ra, dec)
+            else mount.slewTo(ra, dec)
+        }
     }
 
-    fun goTo(mount: Mount, ra: Angle, dec: Angle, j2000: Boolean) {
-        if (j2000) mount.goToJ2000(ra, dec)
-        else mount.goTo(ra, dec)
+    fun goTo(mount: Mount, ra: Angle, dec: Angle, j2000: Boolean, idempotencyKey: String? = null) {
+        if (idempotencyKey.isNullOrBlank() || verifyMountCanSlew(idempotencyKey, mount, ra, dec, j2000)) {
+            if (j2000) mount.goToJ2000(ra, dec)
+            else mount.goTo(ra, dec)
+        }
+    }
+
+    private fun verifyMountCanSlew(idempotencyKey: String, mount: Mount, ra: Angle, dec: Angle, j2000: Boolean): Boolean {
+        val location = sites[mount] ?: return true
+        val mountPosition = if (j2000) ICRF.equatorial(ra, dec, center = location)
+        else ICRF.equatorial(ra, dec, epoch = CurrentTime, center = location)
+        return verifyMountWillPointToSun(idempotencyKey, location, mountPosition) &&
+                verifiyMountWillPointBelowHorizon(idempotencyKey, mountPosition)
+    }
+
+    /**
+     * Verifies if the Mount will be point to the Sun.
+     *
+     * @return true if mount can slew to [mountPosition] coordinates.
+     */
+    private fun verifyMountWillPointToSun(idempotencyKey: String, location: GeographicPosition, mountPosition: ICRF): Boolean {
+        val sunPosition = skyAtlasService.positionOfSun(location, LocalDateTime.now(), true)
+            .let { ICRF.equatorial(it.rightAscensionJ2000, it.declinationJ2000) }
+
+        return if (sunPosition.separationFrom(mountPosition).toDegrees <= 1.0) {
+            val event = MountWillPointToSunEvent(idempotencyKey)
+            confirmationService.ask(idempotencyKey, event).waitForConfirmation(30, TimeUnit.SECONDS)
+        } else {
+            true
+        }
+    }
+
+    /**
+     * Verifies if the Mount will be point below horizon.
+     *
+     * @return true if mount can slew to [mountPosition] coordinates.
+     */
+    private fun verifiyMountWillPointBelowHorizon(idempotencyKey: String, mountPosition: ICRF): Boolean {
+        return if (mountPosition.horizontal().latitude < 0.0) {
+            val event = MountWillPointToBelowHorizonEvent(idempotencyKey)
+            confirmationService.ask(idempotencyKey, event).waitForConfirmation(30, TimeUnit.SECONDS)
+        } else {
+            true
+        }
     }
 
     fun home(mount: Mount) {

@@ -15,12 +15,12 @@ import kotlin.math.atan2
 import kotlin.math.tan
 
 class GeographicPosition(
-    val longitude: Angle,
-    val latitude: Angle,
-    val elevation: Distance,
+    override val longitude: Angle,
+    override val latitude: Angle,
+    override val elevation: Distance,
     itrs: Vector3D,
     val model: Geoid,
-) : ITRSPosition(itrs), Frame {
+) : ITRSPosition(itrs), GeographicCoordinate, Frame {
 
     private val rLat by lazy { Matrix3D.rotY(-latitude).flipX() }
     private val rLatLon by lazy { rLat * Matrix3D.rotZ(longitude) }

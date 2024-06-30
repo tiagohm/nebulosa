@@ -1,7 +1,7 @@
 package nebulosa.api.connection
 
 import nebulosa.alpaca.indi.client.AlpacaClient
-import nebulosa.api.messages.MessageService
+import nebulosa.api.message.MessageService
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.connection.INDISocketConnection
 import nebulosa.indi.device.Device

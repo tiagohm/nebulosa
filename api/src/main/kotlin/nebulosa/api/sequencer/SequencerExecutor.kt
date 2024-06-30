@@ -5,8 +5,8 @@ import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.focusers.FocuserEventAware
-import nebulosa.api.messages.MessageEvent
-import nebulosa.api.messages.MessageService
+import nebulosa.api.message.MessageEvent
+import nebulosa.api.message.MessageService
 import nebulosa.api.wheels.WheelEventAware
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera

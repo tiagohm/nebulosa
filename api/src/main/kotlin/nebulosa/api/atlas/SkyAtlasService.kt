@@ -5,17 +5,21 @@ import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
-import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.toLightYears
 import nebulosa.math.toMas
 import nebulosa.nova.almanac.findDiscrete
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
+import nebulosa.nova.astrometry.ELPMPP02
+import nebulosa.nova.astrometry.VSOP87E
+import nebulosa.nova.position.GeographicCoordinate
 import nebulosa.nova.position.GeographicPosition
+import nebulosa.nova.position.Geoid
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
+import nebulosa.time.TimeZonedInSeconds
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpStatus
@@ -28,7 +32,6 @@ import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import kotlin.math.hypot
@@ -44,8 +47,9 @@ class SkyAtlasService(
     private val httpClient: OkHttpClient,
 ) {
 
-    private val positions = HashMap<Location, GeographicPosition>()
+    private val positions = HashMap<GeographicCoordinate, GeographicPosition>()
     private val cachedSimbadEntities = HashMap<Long, SimbadEntity>()
+    private val targetLocks = HashMap<Any, Any>()
     @Volatile private var sunImage = ByteArray(0)
 
     val objectTypes: Collection<SkyObjectType> by lazy { simbadEntityRepository.findAll().map { it.type }.toSortedSet() }
@@ -55,19 +59,20 @@ class SkyAtlasService(
         output.outputStream.write(sunImage)
     }
 
-    fun positionOfSun(location: Location, dateTime: LocalDateTime): BodyPosition {
-        return positionOfBody(SUN, location, dateTime)!!
+    fun positionOfSun(location: GeographicCoordinate, dateTime: LocalDateTime, fast: Boolean = false): BodyPosition {
+        return positionOfBody(if (fast) VSOP87E.SUN else SUN, location, dateTime)!!
     }
 
-    fun positionOfMoon(location: Location, dateTime: LocalDateTime): BodyPosition {
-        return positionOfBody(MOON, location, dateTime)!!
+    fun positionOfMoon(location: GeographicCoordinate, dateTime: LocalDateTime, fast: Boolean = false): BodyPosition {
+        return positionOfBody(if (fast) FAST_MOON else MOON, location, dateTime)!!
     }
 
-    fun positionOfPlanet(location: Location, code: String, dateTime: LocalDateTime): BodyPosition {
-        return positionOfBody(code, location, dateTime)!!
+    fun positionOfPlanet(location: GeographicCoordinate, code: String, dateTime: LocalDateTime, fast: Boolean = false): BodyPosition {
+        val target: Any = VSOP87E.entries.takeIf { fast }?.find { "${it.target}" == code } ?: code
+        return positionOfBody(target, location, dateTime)!!
     }
 
-    fun positionOfSkyObject(location: Location, id: Long, dateTime: LocalDateTime): BodyPosition {
+    fun positionOfSkyObject(location: GeographicCoordinate, id: Long, dateTime: LocalDateTime): BodyPosition {
         val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id)
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found sky object: [$id]")
         cachedSimbadEntities[id] = target
@@ -76,30 +81,39 @@ class SkyAtlasService(
             .copy(magnitude = target.magnitude, constellation = target.constellation, distance = distance.toLightYears, distanceUnit = "ly")
     }
 
-    fun positionOfSatellite(location: Location, satellite: SatelliteEntity, dateTime: LocalDateTime): BodyPosition {
+    fun positionOfSatellite(location: GeographicCoordinate, satellite: SatelliteEntity, dateTime: LocalDateTime): BodyPosition {
         return positionOfBody("TLE@${satellite.tle}", location, dateTime)!!
     }
 
-    private fun positionOfBody(target: Any, location: Location, dateTime: LocalDateTime): BodyPosition? {
-        val position = positions.getOrPut(location, location::geographicPosition)
-        return bodyEphemeris(target, location, dateTime)
+    private fun positionOfBody(target: Any, location: GeographicCoordinate, dateTime: LocalDateTime): BodyPosition? {
+        return bodyEphemeris(target, location, dateTime, false)
             .withLocationAndDateTime(location, dateTime)
-            ?.let { BodyPosition.of(it, position) }
+            ?.let(BodyPosition::of)
     }
 
-    private fun bodyEphemeris(target: Any, location: Location, dateTime: LocalDateTime): List<HorizonsElement> {
-        val position = positions.getOrPut(location, location::geographicPosition)
-        val offsetInSeconds = location.offsetInMinutes * 60
-        val zoneId = ZoneOffset.ofTotalSeconds(offsetInSeconds)
-        return if (target is Body) bodyEphemerisProvider.compute(target, position, dateTime, zoneId)
-        else horizonsEphemerisProvider.compute(target, position, dateTime, zoneId)
+    private fun bodyEphemeris(
+        target: Any, location: GeographicCoordinate,
+        dateTime: LocalDateTime, fully: Boolean,
+    ): List<HorizonsElement> {
+        val position = synchronized(positions) {
+            if (location is Location) positions.getOrPut(location) { location.geographicPosition() }
+            else location.geographicPosition()
+        }
+
+        val lock = synchronized(targetLocks) { targetLocks.getOrPut(target) { Any() } }
+
+        return synchronized(lock) {
+            val offsetInSeconds = location.offsetInSeconds().toLong()
+            if (target is Body) bodyEphemerisProvider.compute(target, position, dateTime, offsetInSeconds, fully)
+            else horizonsEphemerisProvider.compute(target, position, dateTime, offsetInSeconds, fully)
+        }
     }
 
     fun searchSatellites(text: String, groups: List<SatelliteGroupType>): List<SatelliteEntity> {
         return satelliteRepository.search(text.ifBlank { null }, groups)
     }
 
-    fun twilight(location: Location, date: LocalDate): Twilight {
+    fun twilight(location: GeographicCoordinate, date: LocalDate, fast: Boolean = false): Twilight {
         val civilDusk = doubleArrayOf(0.0, 0.0)
         val nauticalDusk = doubleArrayOf(0.0, 0.0)
         val astronomicalDusk = doubleArrayOf(0.0, 0.0)
@@ -108,7 +122,7 @@ class SkyAtlasService(
         val nauticalDawn = doubleArrayOf(0.0, 0.0)
         val civilDawn = doubleArrayOf(0.0, 0.0)
 
-        val ephemeris = bodyEphemeris(SUN, location, LocalDateTime.of(date, LocalTime.now()))
+        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, LocalDateTime.of(date, LocalTime.now()), true)
         val (a) = findDiscrete(0.0, (ephemeris.size - 1).toDouble(), TwilightDiscreteFunction(ephemeris), 1.0)
 
         civilDusk[0] = a[0] / 60.0
@@ -132,31 +146,35 @@ class SkyAtlasService(
         )
     }
 
-    fun altitudePointsOfSun(location: Location, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(SUN, location, LocalDateTime.of(date, LocalTime.now()))
+    fun altitudePointsOfSun(location: GeographicCoordinate, date: LocalDate, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
+        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, LocalDateTime.of(date, LocalTime.now()), true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfMoon(location: Location, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(MOON, location, LocalDateTime.of(date, LocalTime.now()))
+    fun altitudePointsOfMoon(location: GeographicCoordinate, date: LocalDate, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
+        val ephemeris = bodyEphemeris(if (fast) FAST_MOON else MOON, location, LocalDateTime.of(date, LocalTime.now()), true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfPlanet(location: Location, code: String, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(code, location, LocalDateTime.of(date, LocalTime.now()))
+    fun altitudePointsOfPlanet(
+        location: GeographicCoordinate, code: String, date: LocalDate,
+        stepSize: Int, fast: Boolean = false
+    ): List<DoubleArray> {
+        val target: Any = VSOP87E.entries.takeIf { fast }?.find { "${it.target}" == code } ?: code
+        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now()), true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfSkyObject(location: Location, id: Long, date: LocalDate, stepSize: Int): List<DoubleArray> {
+    fun altitudePointsOfSkyObject(location: GeographicCoordinate, id: Long, date: LocalDate, stepSize: Int): List<DoubleArray> {
         val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id)
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found sky object: [$id]")
         cachedSimbadEntities[id] = target
-        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now()))
+        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now()), true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfSatellite(location: Location, satellite: SatelliteEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now()))
+    fun altitudePointsOfSatellite(location: GeographicCoordinate, satellite: SatelliteEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
+        val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now()), true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
@@ -187,7 +205,7 @@ class SkyAtlasService(
         constellation: Constellation? = null,
         magnitudeMin: Double = SkyObject.MAGNITUDE_MIN, magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
         type: SkyObjectType? = null,
-    ) = simbadEntityRepository.find(text, constellation, rightAscension, declination, radius, magnitudeMin, magnitudeMax, type)
+    ) = simbadEntityRepository.search(text, constellation, rightAscension, declination, radius, magnitudeMin, magnitudeMax, type)
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
     fun refreshImageOfSun() {
@@ -213,8 +231,25 @@ class SkyAtlasService(
         private const val SUN = "10"
         private const val MOON = "301"
 
-        @JvmStatic private val LOG = loggerFor<SkyAtlasService>()
-        @JvmStatic private val INVALID_DSO_CHARS = Regex("[^\\w\\-\\s\\[\\].+%]+")
+        @JvmStatic private val FAST_MOON = VSOP87E.EARTH + ELPMPP02
+
+        @JvmStatic
+        private fun GeographicCoordinate.geographicPosition() = when (this) {
+            is GeographicPosition -> this
+            else -> Geoid.IERS2010.lonLat(this)
+        }
+
+        @JvmStatic
+        private fun GeographicCoordinate.offsetInSeconds() = when (this) {
+            is TimeZonedInSeconds -> offsetInSeconds
+            else -> 0
+        }
+
+        @JvmStatic
+        private fun GeographicCoordinate.offsetInMinutes() = when (this) {
+            is Location -> offsetInMinutes
+            else -> offsetInSeconds() / 60
+        }
 
         @JvmStatic
         private fun Double.clampMagnitude(): Double {
@@ -224,8 +259,9 @@ class SkyAtlasService(
         }
 
         @JvmStatic
-        private fun List<HorizonsElement>.withLocationAndDateTime(location: Location, dateTime: LocalDateTime): HorizonsElement? {
-            return let { HorizonsElement.of(it, dateTime.minusMinutes(location.offsetInMinutes.toLong())) }
+        private fun List<HorizonsElement>.withLocationAndDateTime(location: GeographicCoordinate, dateTime: LocalDateTime): HorizonsElement? {
+            val offsetInMinutes = location.offsetInMinutes().toLong()
+            return let { HorizonsElement.of(it, dateTime.minusMinutes(offsetInMinutes)) }
         }
 
         @JvmStatic

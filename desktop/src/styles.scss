@@ -1,5 +1,27 @@
-@import '@fontsource/roboto';
 @import '@mdi/font/scss/materialdesignicons.scss';
+
+$successButtonBg: #81c784;
+$successButtonHoverBg: rgba($successButtonBg, 0.92);
+$successButtonActiveBg: rgba($successButtonBg, 0.68);
+
+$infoButtonBg: #4fc3f7;
+$infoButtonHoverBg: rgba($infoButtonBg, 0.92) !default;
+$infoButtonActiveBg: rgba($infoButtonBg, 0.68) !default;
+
+$warningButtonBg: #ffb74d;
+$warningButtonHoverBg: rgba($warningButtonBg, 0.92) !default;
+$warningButtonActiveBg: rgba($warningButtonBg, 0.68) !default;
+
+$dangerButtonBg: #e57373;
+$dangerButtonHoverBg: rgba($dangerButtonBg, 0.92) !default;
+$dangerButtonActiveBg: rgba($dangerButtonBg, 0.68) !default;
+
+$primaryColor: #7986cb;
+$accentColor: #f06292;
+$primaryTextColor: #121212;
+$accentTextColor: #121212;
+
+@import 'primeng-sass-theme/themes/material/material-dark/compact/indigo/theme.scss';
 
 html,
 body {
@@ -8,6 +30,7 @@ body {
 	font-size: 11.5px;
 	border: 1px solid #212121;
 	scroll-behavior: smooth;
+	background-color: #1a1a1a;
 }
 
 body {
@@ -15,8 +38,42 @@ body {
 	font-family: 'Roboto';
 }
 
+a:any-link {
+	color: $infoButtonBg;
+}
+
+.text-info {
+	color: $infoButtonBg;
+}
+
+.text-success {
+	color: $successButtonBg;
+}
+
+.text-warning {
+	color: $warningButtonBg;
+}
+.text-danger {
+	color: $dangerButtonBg;
+}
+
+.bg-info {
+	background-color: $infoButtonBg;
+}
+
+.bg-success {
+	background-color: $successButtonBg;
+}
+
+.bg-warning {
+	background-color: $warningButtonBg;
+}
+.bg-danger {
+	background-color: $dangerButtonBg;
+}
 .p-checkbox-box {
 	aspect-ratio: 1;
+	min-width: fit-content;
 }
 
 .invisible {
@@ -40,7 +97,7 @@ p-table {
 	display: inline-flex;
 	justify-content: center;
 	align-items: center;
-	aspect-ratio: auto 1/1;
+	aspect-ratio: 1;
 }
 
 .mdi.mdi-sm:before {
@@ -180,13 +237,13 @@ p-calendar.border-0 .p-calendar-w-btn {
 }
 
 i.mdi {
-	aspect-ratio: 1/1;
+	aspect-ratio: 1;
 	display: inline-flex;
 }
 
 .p-menuitem-link {
 	&.p-menuitem-selected {
-		background-color: #c5e1a5;
+		background-color: $successButtonBg;
 		color: #212121 !important;
 	}
 }

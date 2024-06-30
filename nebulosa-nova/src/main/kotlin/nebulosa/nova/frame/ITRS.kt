@@ -16,7 +16,7 @@ import nebulosa.time.InstantOfTime
  * respect to the stars, and the polar wobble of the crust with respect
  * to the Earth’s pole of rotation.
  */
-object ITRS : Frame {
+data object ITRS : Frame {
 
     @JvmStatic private val EARTH_ANGULAR_VELOCITY_MATRIX = Matrix3D(
         0.0, DAYSEC * ANGULAR_VELOCITY, 0.0,

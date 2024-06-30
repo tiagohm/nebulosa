@@ -52,7 +52,7 @@ export class StopPropagationDirective {
 	@HostListener('touchmove', ['$event'])
 	@HostListener('touchstart', ['$event'])
 	handleEvent(event: Event) {
-		if (!this.enabled) return
+		if (!this.enabled) return false
 		if (this.immediate) event.stopImmediatePropagation()
 		else event.stopPropagation()
 		return !this.preventDefault

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import nebulosa.math.Angle
 
-abstract class AngleDeserializer(
+abstract class FormattedAngleDeserializer(
     private val isHours: Boolean = false,
     private val decimalIsHours: Boolean = isHours,
     private val defaultValue: Angle = Double.NaN,

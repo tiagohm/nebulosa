@@ -5,12 +5,12 @@ interface NodeModule {
 }
 
 interface Window {
-	process: any
-	require: any
+	process: unknown
+	require: (string) => never
 	apiHost: string
 	apiPort: number
 	id: string
-	data?: any
+	data?: unknown
 	preference: {
 		modal?: boolean
 		autoResizable?: boolean

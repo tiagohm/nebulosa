@@ -1,20 +1,21 @@
 import { Client } from '@stomp/stompjs'
-import { BrowserWindow, dialog, Notification, screen, shell } from 'electron'
-import { ChildProcessWithoutNullStreams } from 'node:child_process'
+import { BrowserWindow, Notification, dialog, screen, shell } from 'electron'
+import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { join } from 'path'
-import { MessageEvent } from '../src/shared/types/api.types'
-import { CloseWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, StoredWindowData } from '../src/shared/types/app.types'
-import { ParsedArgument } from './argument.parser'
-import { LocalStorage } from './local.storage'
+import type { MessageEvent } from '../src/shared/types/api.types'
+import type { CloseWindow, ConfirmationEvent, FullscreenWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, ResizeWindow, StoredWindowData, WindowCommand } from '../src/shared/types/app.types'
+import type { Nullable } from '../src/shared/utils/types'
+import type { ParsedArgument } from './argument.parser'
+import type { LocalStorage } from './local.storage'
 
 export class ApplicationWindow {
 	constructor(
 		public readonly browserWindow: BrowserWindow,
-		public readonly open: OpenWindow,
+		public readonly data: OpenWindow,
 		public readonly parentWindow?: BrowserWindow,
 		public webSocket?: Client,
 		public apiProcess?: ChildProcessWithoutNullStreams,
-		public resolver?: (data: any) => void,
+		public resolver?: (data: unknown) => void,
 	) {}
 
 	get isParent() {
@@ -22,19 +23,19 @@ export class ApplicationWindow {
 	}
 
 	get isModal() {
-		return !!this.parentWindow || this.open.id.endsWith('.modal')
+		return !!this.parentWindow || this.data.id.endsWith('.modal')
 	}
 
 	get isHome() {
-		return !this.webSocket || this.open.id === 'home'
+		return !this.webSocket || this.data.id === 'home'
 	}
 
-	get windowId() {
+	get electronId() {
 		return this.browserWindow.id
 	}
 
-	get appId() {
-		return this.open.id
+	get windowId() {
+		return this.data.id
 	}
 
 	close() {
@@ -61,7 +62,11 @@ export class ApplicationWindow {
 }
 
 export function isNotificationEvent(event: MessageEvent): event is NotificationEvent {
-	return event.eventName === 'NOTIFICATION.SENT'
+	return event.eventName === 'NOTIFICATION'
+}
+
+export function isConfirmationEvent(event: MessageEvent): event is ConfirmationEvent {
+	return event.eventName === 'CONFIRMATION'
 }
 
 export class WindowManager {
@@ -71,8 +76,8 @@ export class WindowManager {
 	private host = 'localhost'
 
 	constructor(
-		readonly args: ParsedArgument,
-		readonly storage: LocalStorage<StoredWindowData>,
+		public readonly args: ParsedArgument,
+		public readonly storage: LocalStorage<StoredWindowData>,
 		defaultAppIcon: string = 'nebulosa.png',
 	) {
 		this.appIcon = join(__dirname, args.serve ? `../src/assets/icons/${defaultAppIcon}` : `assets/icons/${defaultAppIcon}`)
@@ -80,7 +85,7 @@ export class WindowManager {
 		this.host = args.host
 	}
 
-	createWindow(open: OpenWindow, parent?: BrowserWindow) {
+	async createWindow(open: OpenWindow, parent?: BrowserWindow) {
 		let appWindow = this.windows.get(open.id)
 
 		if (appWindow) {
@@ -104,8 +109,9 @@ export class WindowManager {
 
 		const screenSize = screen.getPrimaryDisplay().workAreaSize
 		const storedData = this.storage.get(`window.${open.id}`)
-		const width = preference.resizable ? Math.max(minWidth, Math.min(storedData?.width ?? computedWidth, screenSize.width)) : computedWidth
-		const height = preference.resizable ? Math.max(minHeight, Math.min(storedData?.height ?? computedHeight, screenSize.height)) : computedHeight
+		const resizable = preference.resizable
+		const width = resizable ? Math.max(minWidth, Math.min(storedData?.width ?? computedWidth, screenSize.width)) : computedWidth
+		const height = resizable ? Math.max(minHeight, Math.min(storedData?.height ?? computedHeight, screenSize.height)) : computedHeight
 		const x = Math.max(0, Math.min(storedData?.x ?? 0, screenSize.width - width))
 		const y = Math.max(0, Math.min(storedData?.y ?? 0, screenSize.height - height))
 
@@ -120,14 +126,14 @@ export class WindowManager {
 			minHeight,
 			x,
 			y,
-			resizable: this.args.serve || preference.resizable,
+			resizable: this.args.serve || resizable,
 			autoHideMenuBar: true,
 			icon: preference.icon ? join(__dirname, this.args.serve ? `../src/assets/icons/${preference.icon}.png` : `assets/icons/${preference.icon}.png`) : this.appIcon,
 			webPreferences: {
 				nodeIntegration: true,
 				allowRunningInsecureContent: this.args.serve,
 				contextIsolation: false,
-				additionalArguments: [`--host=${this.host}`, `--port=${this.port}`, `--data=${encodedData}`, `--preference=${encodedPreference}`],
+				additionalArguments: [`--host=${this.host}`, `--port=${this.port}`, `--id=${open.id}`, `--data=${encodedData}`, `--preference=${encodedPreference}`],
 				preload: join(__dirname, 'preload.js'),
 				devTools: this.args.serve,
 			},
@@ -138,14 +144,14 @@ export class WindowManager {
 		}
 
 		if (this.args.serve) {
-			browserWindow.loadURL(`http://localhost:4200/${open.path}?data=${encodedData}`)
+			await browserWindow.loadURL(`http://localhost:4200/${open.path}?data=${encodedData}`)
 		} else {
 			const url = new URL(join('file:', __dirname, `index.html`) + `#/${open.path}?data=${encodedData}`)
-			browserWindow.loadURL(url.href)
+			await browserWindow.loadURL(url.href)
 		}
 
 		browserWindow.webContents.setWindowOpenHandler(({ url }) => {
-			shell.openExternal(url)
+			void shell.openExternal(url)
 			return { action: 'deny' }
 		})
 
@@ -158,7 +164,7 @@ export class WindowManager {
 				this.saveWindowData(appWindow)
 			}
 
-			if (browserWindow === homeWindow?.browserWindow || open.id === homeWindow?.open?.id) {
+			if (browserWindow === homeWindow?.browserWindow || open.id === homeWindow?.data.id) {
 				this.windows.delete('home')
 
 				for (const [, value] of this.windows) {
@@ -171,7 +177,7 @@ export class WindowManager {
 				homeWindow.apiProcess = undefined
 			} else {
 				for (const [key, value] of this.windows) {
-					if (value.browserWindow === browserWindow || value.open.id === open.id) {
+					if (value.browserWindow === browserWindow || value.data.id === open.id) {
 						this.windows.delete(key)
 						break
 					}
@@ -187,16 +193,16 @@ export class WindowManager {
 	saveWindowData(window: ApplicationWindow) {
 		const [x, y] = window.browserWindow.getPosition()
 		const [width, height] = window.browserWindow.getSize()
-		this.storage.set(`window.${window.open.id}`, { x, y, width, height })
+		this.storage.set(`window.${window.data.id}`, { x, y, width, height })
 		this.storage.save()
 	}
 
-	createMainWindow(apiProcess?: ChildProcessWithoutNullStreams, port: number = this.port, host: string = this.host) {
+	async createMainWindow(apiProcess?: ChildProcessWithoutNullStreams, port: number = this.port, host: string = this.host) {
 		this.port = port
 		this.host = host
 
 		const open: OpenWindow = { id: 'home', path: 'home', preference: {} }
-		const appWindow = this.createWindow(open)
+		const appWindow = await this.createWindow(open)
 
 		const webSocket = new Client({
 			brokerURL: `ws://${host}:${port}/ws`,
@@ -206,6 +212,8 @@ export class WindowManager {
 
 					if (isNotificationEvent(event)) {
 						this.showNotification(event)
+					} else if (isConfirmationEvent(event)) {
+						this.showConfirmation(event)
 					} else if (event.eventName) {
 						this.dispatchEvent(event)
 					} else {
@@ -232,7 +240,7 @@ export class WindowManager {
 		appWindow.apiProcess = apiProcess
 	}
 
-	createSplashWindow() {
+	async createSplashWindow() {
 		if (!this.args.serve && !this.windows.has('splash')) {
 			const browserWindow = new BrowserWindow({
 				width: 512,
@@ -246,11 +254,13 @@ export class WindowManager {
 
 			const url = new URL(join('file:', __dirname, 'assets', 'images', 'splash.png'))
 
-			browserWindow.loadURL(url.href)
+			await browserWindow.loadURL(url.href)
 			browserWindow.show()
 			browserWindow.center()
 
 			return browserWindow
+		} else {
+			return undefined
 		}
 	}
 
@@ -262,24 +272,26 @@ export class WindowManager {
 		homeWindow?.close()
 	}
 
-	findWindow(id: number) {
-		for (const [, window] of this.windows) {
-			if (window.windowId === id) {
-				return window
+	findWindow(id: Nullable<number | string>) {
+		if (id) {
+			for (const [, window] of this.windows) {
+				if (window.electronId === id || window.windowId === id) {
+					return window
+				}
 			}
 		}
 
 		return undefined
 	}
 
-	async handleFileOpen(event: Electron.IpcMainInvokeEvent, data: OpenFile) {
-		const window = this.findWindow(event.sender.id)
+	async handleFileOpen(event: Electron.IpcMainInvokeEvent, command: OpenFile) {
+		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
 
 		if (window) {
 			const ret = await dialog.showOpenDialog(window.browserWindow, {
-				filters: data.filters,
+				filters: command.filters,
 				properties: ['openFile'],
-				defaultPath: data.defaultPath || undefined,
+				defaultPath: command.defaultPath || undefined,
 			})
 
 			return !ret.canceled && ret.filePaths[0]
@@ -288,14 +300,14 @@ export class WindowManager {
 		}
 	}
 
-	async handleFileSave(event: Electron.IpcMainInvokeEvent, data: OpenFile) {
-		const window = this.findWindow(event.sender.id)
+	async handleFileSave(event: Electron.IpcMainInvokeEvent, command: OpenFile) {
+		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
 
 		if (window) {
 			const ret = await dialog.showSaveDialog(window.browserWindow, {
-				filters: data.filters,
+				filters: command.filters,
 				properties: ['createDirectory', 'showOverwriteConfirmation'],
-				defaultPath: data.defaultPath || undefined,
+				defaultPath: command.defaultPath || undefined,
 			})
 
 			return !ret.canceled && ret.filePath
@@ -304,13 +316,13 @@ export class WindowManager {
 		}
 	}
 
-	async handleDirectoryOpen(event: Electron.IpcMainInvokeEvent, data: OpenDirectory) {
-		const window = this.findWindow(event.sender.id)
+	async handleDirectoryOpen(event: Electron.IpcMainInvokeEvent, command: OpenDirectory) {
+		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
 
 		if (window) {
 			const ret = await dialog.showOpenDialog(window.browserWindow, {
 				properties: ['openDirectory'],
-				defaultPath: data.defaultPath || undefined,
+				defaultPath: command.defaultPath || undefined,
 			})
 
 			return !ret.canceled && ret.filePaths[0]
@@ -319,41 +331,32 @@ export class WindowManager {
 		}
 	}
 
-	handleWindowOpen(event: Electron.IpcMainInvokeEvent, data: OpenWindow) {
-		if (data.preference.modal) {
-			const parentWindow = this.findWindow(event.sender.id)
-			const appWindow = this.createWindow(data, parentWindow?.browserWindow)
+	async handleWindowOpen(event: Electron.IpcMainInvokeEvent, command: OpenWindow) {
+		if (command.preference.modal) {
+			const parentWindow = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+			const appWindow = await this.createWindow(command, parentWindow?.browserWindow)
 
-			return new Promise<any>((resolve) => {
+			return new Promise<unknown>((resolve) => {
 				appWindow.resolver = resolve
 			})
 		} else {
-			const isNew = !this.windows.has(data.id)
-			const appWindow = this.createWindow(data)
+			const appWindow = await this.createWindow(command)
 
-			if (data.preference.bringToFront) {
+			if (command.preference.bringToFront) {
 				appWindow.browserWindow.show()
-			} else if (data.preference.requestFocus) {
+			} else if (command.preference.requestFocus) {
 				appWindow.browserWindow.focus()
 			}
 
-			return new Promise<boolean>((resolve) => {
-				if (isNew) {
-					appWindow.browserWindow.webContents.once('did-finish-load', () => {
-						resolve(true)
-					})
-				} else {
-					resolve(true)
-				}
-			})
+			return true
 		}
 	}
 
-	handleWindowClose(event: Electron.IpcMainInvokeEvent, data: CloseWindow) {
-		const window = this.findWindow(event.sender.id)
+	handleWindowClose(event: Electron.IpcMainInvokeEvent, command: CloseWindow) {
+		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
 
 		if (window) {
-			window.resolver?.(data.data)
+			window.resolver?.(command.data)
 			window.resolver = undefined
 			window.close()
 			return true
@@ -362,15 +365,13 @@ export class WindowManager {
 		}
 	}
 
-	handleWindowResize(event: Electron.IpcMainInvokeEvent, newHeight: number) {
-		const window = this.findWindow(event.sender.id)
+	handleWindowResize(event: Electron.IpcMainInvokeEvent, command: ResizeWindow) {
+		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
 
-		if (window && !window.open.preference.resizable && window.open.preference.autoResizable !== false) {
-			const data = window.open
-
+		if (window && !window.data.preference.resizable && window.data.preference.autoResizable !== false) {
 			const [width] = window.browserWindow.getSize()
 			const maxHeight = screen.getPrimaryDisplay().workAreaSize.height
-			const height = Math.max(data?.preference.minHeight ?? 0, Math.min(newHeight, maxHeight))
+			const height = Math.max(window.data.preference.minHeight ?? 0, Math.min(command.height, maxHeight))
 
 			// https://github.com/electron/electron/issues/16711#issuecomment-1311824063
 			window.browserWindow.setResizable(true)
@@ -383,39 +384,39 @@ export class WindowManager {
 		}
 	}
 
-	handleWindowMinimize(event: Electron.IpcMainInvokeEvent) {
-		const window = this.findWindow(event.sender.id)
+	handleWindowMinimize(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
+		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
 		window?.browserWindow.minimize()
-		return window && window.browserWindow.isMinimized()
+		return !!window && window.browserWindow.isMinimized()
 	}
 
-	handleWindowMaximize(event: Electron.IpcMainInvokeEvent) {
-		const window = this.findWindow(event.sender.id)
-		return window && window.toggleMaximize()
+	handleWindowMaximize(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
+		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		return !!window && window.toggleMaximize()
 	}
 
-	handleWindowPin(event: Electron.IpcMainInvokeEvent) {
-		const window = this.findWindow(event.sender.id)
-		window?.browserWindow?.setAlwaysOnTop(true)
-		return window && window.browserWindow.isAlwaysOnTop()
+	handleWindowPin(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
+		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		window?.browserWindow.setAlwaysOnTop(true)
+		return !!window && window.browserWindow.isAlwaysOnTop()
 	}
 
-	handleWindowUnpin(event: Electron.IpcMainInvokeEvent) {
-		const window = this.findWindow(event.sender.id)
-		window?.browserWindow?.setAlwaysOnTop(false)
-		return window && window.browserWindow.isAlwaysOnTop()
+	handleWindowUnpin(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
+		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		window?.browserWindow.setAlwaysOnTop(false)
+		return !!window && window.browserWindow.isAlwaysOnTop()
 	}
 
-	handleWindowFullscreen(event: Electron.IpcMainInvokeEvent, enabled?: boolean) {
-		const window = this.findWindow(event.sender.id)
+	handleWindowFullscreen(event: Electron.IpcMainInvokeEvent, command: FullscreenWindow) {
+		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
 
 		if (window) {
-			if (enabled) window.browserWindow.setFullScreen(true)
-			else if (enabled === false) window.browserWindow.setFullScreen(false)
+			if (command.enabled) window.browserWindow.setFullScreen(true)
+			else if (command.enabled === false) window.browserWindow.setFullScreen(false)
 			else window.toggleFullscreen()
 		}
 
-		return window && window.browserWindow.isFullScreen()
+		return !!window && window.browserWindow.isFullScreen()
 	}
 
 	showNotification(event: NotificationEvent) {
@@ -424,6 +425,10 @@ export class WindowManager {
 		} else {
 			new Notification({ ...event, icon: this.appIcon }).show()
 		}
+	}
+
+	showConfirmation(event: ConfirmationEvent) {
+		this.dispatchEvent(event)
 	}
 
 	dispatchEvent(event: MessageEvent) {

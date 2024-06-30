@@ -7,7 +7,7 @@ package nebulosa.nova.frame
  * M = {1.0, 0.0, 0.0, 0.0, cos(ecliptic), sin(ecliptic), 0.0, -sin(ecliptic), cos(ecliptic)}
  */
 @Suppress("FloatingPointLiteralPrecision")
-object EclipticJ2000 : InertialFrame(
+data object EclipticJ2000 : InertialFrame(
     1.0, 0.0, 0.0,
     0.0, 0.917482137086962521575615807374, 0.397776982901650696710316869067,
     0.0, -0.397776982901650696710316869067, 0.917482137086962521575615807374,

@@ -30,7 +30,7 @@
 				tooltipPosition="bottom"
 				[text]="true" />
 		</div>
-		<div class="col-4 flex justify-content-start align-items-center gap-2">
+		<div class="col-4 flex justify-content-end align-items-center gap-2">
 			<p-button
 				[disabled]="!mount.connected"
 				(onClick)="showRemoteControlDialog()"
@@ -38,10 +38,11 @@
 				size="small"
 				pTooltip="Remote Control"
 				tooltipPosition="bottom"
+				positionLeft="-12"
 				[text]="true" />
 		</div>
 		<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
-			<i class="mdi mdi-information text-blue-600"></i>
+			<i class="mdi mdi-information text-info"></i>
 			<span style="display: contents">
 				{{ parking ? 'parking' : parked ? 'parked' : slewing ? 'slewing' : tracking ? 'tracking' : 'idle' }}
 			</span>

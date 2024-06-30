@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core'
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange, SimpleChanges } from '@angular/core'
 import { dirname } from 'path'
 import { ElectronService } from '../../services/electron.service'
+import { Undefinable } from '../../utils/types'
 
 @Component({
 	selector: 'neb-path-chooser',
@@ -32,25 +33,27 @@ export class PathChooserComponent implements OnChanges {
 	@Output()
 	readonly pathChange = new EventEmitter<string>()
 
-	constructor(private electron: ElectronService) {}
+	constructor(private readonly electron: ElectronService) {}
 
 	ngOnChanges(changes: SimpleChanges) {
-		if (changes.path) {
-			this.path = changes.path.currentValue
+		const pathChanged = changes['path'] as Undefinable<SimpleChange>
+
+		if (pathChanged?.currentValue) {
+			this.path = pathChanged.currentValue as string
 		}
 	}
 
 	async choosePath() {
-		const storageKey = `pathChooser.${this.key}.defaultPath`
-		const defaultPath = localStorage.getItem(storageKey)
-		const dirName = defaultPath && !this.directory ? dirname(defaultPath) : defaultPath
+		const key = `pathChooser.${this.key}.defaultPath`
+		const storedPath = localStorage.getItem(key)
+		const defaultPath = storedPath && !this.directory ? dirname(storedPath) : this.path
 
-		const path = await (this.directory ? this.electron.openDirectory({ defaultPath: dirName || this.path }) : this.electron.openFile({ defaultPath: dirName || this.path }))
+		const path = await (this.directory ? this.electron.openDirectory({ defaultPath }) : this.electron.openFile({ defaultPath }))
 
 		if (path) {
 			this.path = path
 			this.pathChange.emit(path)
-			localStorage.setItem(storageKey, path)
+			localStorage.setItem(key, path)
 		}
 	}
 }

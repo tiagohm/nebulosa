@@ -1,9 +1,9 @@
-import { Camera } from './camera.types'
-import { DeviceType } from './device.types'
-import { Focuser } from './focuser.types'
-import { Mount } from './mount.types'
-import { Rotator } from './rotator.types'
-import { FilterWheel } from './wheel.types'
+import type { Camera } from './camera.types'
+import type { DeviceType } from './device.types'
+import type { Focuser } from './focuser.types'
+import type { Mount } from './mount.types'
+import type { Rotator } from './rotator.types'
+import type { FilterWheel } from './wheel.types'
 
 export type HomeWindowType = DeviceType | 'GUIDER' | 'SKY_ATLAS' | 'ALIGNMENT' | 'SEQUENCER' | 'IMAGE' | 'FRAMING' | 'INDI' | 'SETTINGS' | 'CALCULATOR' | 'ABOUT' | 'FLAT_WIZARD' | 'AUTO_FOCUS'
 

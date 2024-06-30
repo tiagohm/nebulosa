@@ -32,42 +32,48 @@ class SkyAtlasController(
     fun positionOfSun(
         @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDateTime,
-    ) = skyAtlasService.positionOfSun(location, dateTime)
+        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
+    ) = skyAtlasService.positionOfSun(location, dateTime, fast)
 
     @GetMapping("sun/altitude-points")
     fun altitudePointsOfSun(
         @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
         @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfSun(location, dateTime, stepSize)
+        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
+    ) = skyAtlasService.altitudePointsOfSun(location, dateTime, stepSize, fast)
 
     @GetMapping("moon/position")
     fun positionOfMoon(
         @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDateTime,
-    ) = skyAtlasService.positionOfMoon(location, dateTime)
+        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
+    ) = skyAtlasService.positionOfMoon(location, dateTime, fast)
 
     @GetMapping("moon/altitude-points")
     fun altitudePointsOfMoon(
         @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
-        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfMoon(location, dateTime, stepSize)
+        @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
+        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
+    ) = skyAtlasService.altitudePointsOfMoon(location, dateTime, stepSize, fast)
 
     @GetMapping("planets/{code}/position")
     fun positionOfPlanet(
         @PathVariable code: String,
         @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDateTime,
-    ) = skyAtlasService.positionOfPlanet(location, code, dateTime)
+        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
+    ) = skyAtlasService.positionOfPlanet(location, code, dateTime, fast)
 
     @GetMapping("planets/{code}/altitude-points")
     fun altitudePointsOfPlanet(
         @PathVariable code: String,
         @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
-        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfPlanet(location, code, dateTime, stepSize)
+        @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
+        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
+    ) = skyAtlasService.altitudePointsOfPlanet(location, code, dateTime, stepSize, fast)
 
     @GetMapping("minor-planets")
     fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String) = skyAtlasService.searchMinorPlanet(text)
@@ -91,7 +97,7 @@ class SkyAtlasController(
         @PathVariable id: Long,
         @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
-        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
+        @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
     ) = skyAtlasService.altitudePointsOfSkyObject(location, id, dateTime, stepSize)
 
     @GetMapping("sky-objects")
@@ -124,7 +130,7 @@ class SkyAtlasController(
         satellite: SatelliteEntity,
         @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
-        @RequestParam(required = false, defaultValue = "1") stepSize: Int,
+        @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
     ) = skyAtlasService.altitudePointsOfSatellite(location, satellite, dateTime, stepSize)
 
     @GetMapping("satellites")
@@ -137,5 +143,6 @@ class SkyAtlasController(
     fun twilight(
         @LocationParam location: Location,
         @DateAndTimeParam dateTime: LocalDate,
-    ) = skyAtlasService.twilight(location, dateTime)
+        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
+    ) = skyAtlasService.twilight(location, dateTime, fast)
 }

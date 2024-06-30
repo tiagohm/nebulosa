@@ -48,6 +48,13 @@ data class Geoid(
     }
 
     /**
+     * Returns the geographic position of a given [coordinate].
+     */
+    fun lonLat(coordinate: GeographicCoordinate): GeographicPosition {
+        return lonLat(coordinate.longitude, coordinate.latitude, coordinate.elevation)
+    }
+
+    /**
      * Return Earth latitude and longitude beneath a celestial [position].
      *
      * The input [position] should have a center of 399, the

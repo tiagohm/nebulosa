@@ -11,13 +11,12 @@ import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.connection.ConnectionType
 import nebulosa.api.stardetector.StarDetectionRequest
 import nebulosa.common.json.PathSerializer
+import nebulosa.test.AbstractFitsAndXisfTest.Companion.HTTP_CLIENT
 import nebulosa.test.NonGitHubOnlyCondition
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.logging.HttpLoggingInterceptor
 import java.nio.file.Path
 import java.time.Duration
 
@@ -181,10 +180,6 @@ class APITest : StringSpec() {
             starDetector = STAR_DETECTION_OPTIONS
         )
 
-        @JvmStatic private val CLIENT = OkHttpClient.Builder()
-            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-            .build()
-
         @JvmStatic private val KOTLIN_MODULE = kotlinModule()
             .addSerializer(PathSerializer)
             .addSerializer(DurationSerializer())
@@ -199,13 +194,13 @@ class APITest : StringSpec() {
         @JvmStatic
         private fun get(path: String) {
             val request = Request.Builder().get().url("$BASE_URL/$path").build()
-            CLIENT.newCall(request).execute().use { it.isSuccessful.shouldBeTrue() }
+            HTTP_CLIENT.newCall(request).execute().use { it.isSuccessful.shouldBeTrue() }
         }
 
         @JvmStatic
         private fun put(path: String, body: RequestBody = EMPTY_BODY) {
             val request = Request.Builder().put(body).url("$BASE_URL/$path").build()
-            CLIENT.newCall(request).execute().use { it.isSuccessful.shouldBeTrue() }
+            HTTP_CLIENT.newCall(request).execute().use { it.isSuccessful.shouldBeTrue() }
         }
 
         @JvmStatic
@@ -218,7 +213,7 @@ class APITest : StringSpec() {
         @JvmStatic
         private fun delete(path: String) {
             val request = Request.Builder().delete().url("$BASE_URL/$path").build()
-            CLIENT.newCall(request).execute().use { it.isSuccessful.shouldBeTrue() }
+            HTTP_CLIENT.newCall(request).execute().use { it.isSuccessful.shouldBeTrue() }
         }
     }
 }

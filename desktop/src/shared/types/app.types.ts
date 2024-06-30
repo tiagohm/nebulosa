@@ -1,4 +1,4 @@
-import { MessageEvent } from './api.types'
+import type { MessageEvent } from './api.types'
 
 export type Severity = 'success' | 'info' | 'warning' | 'danger'
 
@@ -9,6 +9,11 @@ export interface NotificationEvent extends MessageEvent {
 	severity: Severity
 	title?: string
 	body: string
+}
+
+export interface ConfirmationEvent extends MessageEvent {
+	message: string
+	idempotencyKey: string
 }
 
 export const INTERNAL_EVENT_TYPES = [
@@ -46,19 +51,30 @@ export interface WindowPreference {
 	minHeight?: number
 }
 
-export interface OpenWindow {
+export interface WindowCommand {
+	windowId?: string
+}
+
+export interface OpenWindow extends WindowCommand {
 	id: string
 	path: string
 	preference: WindowPreference
-	data?: any
+	data?: unknown
 }
 
-export interface CloseWindow {
-	id?: string
-	data?: any
+export interface CloseWindow extends WindowCommand {
+	data?: unknown
 }
 
-export interface OpenDirectory {
+export interface FullscreenWindow extends WindowCommand {
+	enabled?: boolean
+}
+
+export interface ResizeWindow extends WindowCommand {
+	height: number
+}
+
+export interface OpenDirectory extends WindowCommand {
 	defaultPath?: string
 }
 
@@ -66,18 +82,20 @@ export interface OpenFile extends OpenDirectory {
 	filters?: Electron.FileFilter[]
 }
 
-export interface JsonFile<T = any> {
+export interface JsonFile<T = unknown> {
 	path?: string
 	json: T
 }
 
-export type SaveJson<T = any> = OpenFile & JsonFile<T>
+export interface SaveJson<T = unknown> extends OpenFile, JsonFile<T> {}
 
-export interface StoredWindowData {
-	[key: `window.${string}`]: {
-		x: number
-		y: number
-		width: number
-		height: number
-	}
+export type StoredWindowDataKey = `window.${string}`
+
+export interface StoredWindowDataValue {
+	x: number
+	y: number
+	width: number
+	height: number
 }
+
+export type StoredWindowData = Record<StoredWindowDataKey, StoredWindowDataValue>

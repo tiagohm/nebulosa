@@ -4,7 +4,7 @@ import nebulosa.math.squared
 import org.apache.commons.math3.analysis.UnivariateFunction
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 
-object RSquared {
+data object RSquared {
 
     @JvmStatic
     fun calculate(points: Collection<CurvePoint>, function: UnivariateFunction): Double {

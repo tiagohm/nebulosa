@@ -4,8 +4,8 @@ import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.focusers.FocuserEventAware
-import nebulosa.api.messages.MessageEvent
-import nebulosa.api.messages.MessageService
+import nebulosa.api.message.MessageEvent
+import nebulosa.api.message.MessageService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.focuser.Focuser

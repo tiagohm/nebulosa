@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import nebulosa.api.beans.converters.angle.DeclinationSerializer
 import nebulosa.api.beans.converters.angle.RightAscensionSerializer
 import nebulosa.api.cameras.CameraCaptureEvent
-import nebulosa.api.messages.MessageEvent
+import nebulosa.api.message.MessageEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.math.Angle
 

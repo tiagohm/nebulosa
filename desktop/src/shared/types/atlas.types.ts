@@ -1,7 +1,67 @@
-import { NotificationEvent } from './app.types'
-import { PierSide } from './mount.types'
+import type { PierSide } from './mount.types'
 
 export type Angle = string | number
+
+export interface PlanetTableItem {
+	name: string
+	type: string
+	code: string
+}
+
+export interface SearchFilter {
+	text: string
+	rightAscension: Angle
+	declination: Angle
+	radius: number
+	constellation: Constellation | 'ALL'
+	magnitude: [number, number]
+	type: SkyObjectType | 'ALL'
+	types: (SkyObjectType | 'ALL')[]
+}
+
+export const EMPTY_SEARCH_FILTER: SearchFilter = {
+	text: '',
+	rightAscension: '00h00m00s',
+	declination: `+000°00'00"`,
+	radius: 0,
+	constellation: 'ALL',
+	magnitude: [-30, 30],
+	type: 'ALL',
+	types: ['ALL'],
+}
+
+export interface SatelliteGroupFilterItem {
+	group: SatelliteGroupType
+	enabled: boolean
+}
+
+export interface SkyAtlasPreference {
+	satellites: SatelliteGroupFilterItem[]
+	fast: boolean
+}
+
+export const EMPTY_SKY_ATLAS_PREFERENCE: SkyAtlasPreference = {
+	satellites: [],
+	fast: false,
+}
+
+export enum SkyAtlasTab {
+	SUN,
+	MOON,
+	PLANET,
+	MINOR_PLANET,
+	SKY_OBJECT,
+	SATELLITE,
+}
+
+export interface SkyAtlasInput {
+	tab: SkyAtlasTab
+	filter?: Partial<Exclude<SearchFilter, 'types'>>
+}
+
+export interface SettingsDialog {
+	showDialog: boolean
+}
 
 export const CONSTELLATIONS = [
 	'AND',
@@ -280,7 +340,6 @@ export interface BodyPosition extends EquatorialCoordinate, EquatorialCoordinate
 	illuminated: number
 	elongation: number
 	leading: boolean
-	pierSide: PierSide
 }
 
 export const EMPTY_BODY_POSITION: BodyPosition = {
@@ -297,7 +356,6 @@ export const EMPTY_BODY_POSITION: BodyPosition = {
 	illuminated: 0,
 	elongation: 0,
 	leading: false,
-	pierSide: 'NEITHER',
 }
 
 export interface Twilight {
@@ -312,6 +370,11 @@ export interface Twilight {
 
 export type MinorPlanetKind = 'ASTEROID' | 'COMET'
 
+export interface MinorPlanetSearchItem {
+	name: string
+	pdes: string
+}
+
 export interface MinorPlanet {
 	found: boolean
 	name: string
@@ -321,7 +384,7 @@ export interface MinorPlanet {
 	neo: boolean
 	orbitType: string
 	parameters: OrbitalPhysicalParameter[]
-	searchItems: { name: string; pdes: string }[]
+	searchItems: MinorPlanetSearchItem[]
 }
 
 export interface OrbitalPhysicalParameter {

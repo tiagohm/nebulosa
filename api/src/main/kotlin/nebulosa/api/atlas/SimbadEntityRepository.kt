@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 @Component
 class SimbadEntityRepository(@Qualifier("simbadBox") override val box: Box<SimbadEntity>) : BoxRepository<SimbadEntity>() {
 
-    fun find(
+    fun search(
         name: String? = null, constellation: Constellation? = null,
         rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
         magnitudeMin: Double = SkyObject.MAGNITUDE_MIN, magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
