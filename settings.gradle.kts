@@ -25,7 +25,7 @@ dependencyResolutionManagement {
             library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
             library("netty-transport", "io.netty:netty-transport:4.1.110.Final")
             library("netty-codec", "io.netty:netty-codec:4.1.110.Final")
-            library("xml", "com.fasterxml:aalto-xml:1.3.2")
+            library("xml", "com.fasterxml:aalto-xml:1.3.3")
             library("csv", "de.siegmar:fastcsv:3.1.0")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.14.0")
             library("apache-codec", "commons-codec:commons-codec:1.17.0")
