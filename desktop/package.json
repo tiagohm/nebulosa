@@ -71,7 +71,7 @@
 		"@types/leaflet": "1.9.12",
 		"@types/node": "20.14.6",
 		"@types/uuid": "9.0.8",
-		"electron": "31.0.1",
+		"electron": "31.1.0",
 		"electron-builder": "24.13.3",
 		"eslint": "8.57.0",
 		"node-polyfill-webpack-plugin": "4.0.0",
