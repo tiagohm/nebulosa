@@ -10,9 +10,8 @@ import { PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetector
 import { AppComponent } from '../app.component'
 
 @Component({
-	selector: 'app-settings',
+	selector: 'neb-settings',
 	templateUrl: './settings.component.html',
-	styleUrls: ['./settings.component.scss'],
 })
 export class SettingsComponent {
 	tab = 0

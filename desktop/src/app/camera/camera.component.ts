@@ -19,9 +19,8 @@ import { Undefinable } from '../../shared/utils/types'
 import { AppComponent } from '../app.component'
 
 @Component({
-	selector: 'app-camera',
+	selector: 'neb-camera',
 	templateUrl: './camera.component.html',
-	styleUrls: ['./camera.component.scss'],
 })
 export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	readonly camera = structuredClone(EMPTY_CAMERA)

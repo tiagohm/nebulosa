@@ -2,7 +2,7 @@ import { AfterViewInit, Component, Input } from '@angular/core'
 import { CalculatorFormula } from '../../../shared/types/calculator.types'
 
 @Component({
-	selector: 'app-formula',
+	selector: 'neb-formula',
 	templateUrl: './formula.component.html',
 	styleUrls: ['./formula.component.scss'],
 })

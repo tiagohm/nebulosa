@@ -31,9 +31,8 @@ export interface FramingData {
 }
 
 @Component({
-	selector: 'app-framing',
+	selector: 'neb-framing',
 	templateUrl: './framing.component.html',
-	styleUrls: ['./framing.component.scss'],
 })
 export class FramingComponent implements AfterViewInit, OnDestroy {
 	rightAscension: Angle = '00h00m00s'

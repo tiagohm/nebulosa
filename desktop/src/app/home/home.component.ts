@@ -31,7 +31,7 @@ function scrollPageOf(element: Element) {
 }
 
 @Component({
-	selector: 'app-home',
+	selector: 'neb-home',
 	templateUrl: './home.component.html',
 	styleUrls: ['./home.component.scss'],
 })

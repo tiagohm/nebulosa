@@ -49,7 +49,7 @@ import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/uti
 import { AppComponent } from '../app.component'
 
 @Component({
-	selector: 'app-image',
+	selector: 'neb-image',
 	templateUrl: './image.component.html',
 	styleUrls: ['./image.component.scss'],
 })

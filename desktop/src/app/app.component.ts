@@ -6,7 +6,7 @@ import { ConfirmationService } from '../shared/services/confirmation.service'
 import { ElectronService } from '../shared/services/electron.service'
 
 @Component({
-	selector: 'app-root',
+	selector: 'neb-root',
 	templateUrl: './app.component.html',
 	styleUrls: ['./app.component.scss'],
 })

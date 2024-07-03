@@ -16,7 +16,7 @@ import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
-	selector: 'app-alignment',
+	selector: 'neb-alignment',
 	templateUrl: './alignment.component.html',
 	styleUrls: ['./alignment.component.scss'],
 })

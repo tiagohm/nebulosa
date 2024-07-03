@@ -7,16 +7,9 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { GuideDirection, GuideOutput, GuideState, GuideStep, Guider, GuiderHistoryStep, GuiderPlotMode, GuiderYAxisUnit } from '../../shared/types/guider.types'
 
-export interface GuiderPreference {
-	settleAmount?: number
-	settleTime?: number
-	settleTimeout?: number
-}
-
 @Component({
-	selector: 'app-guider',
+	selector: 'neb-guider',
 	templateUrl: './guider.component.html',
-	styleUrls: ['./guider.component.scss'],
 })
 export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 	guideOutputs: GuideOutput[] = []

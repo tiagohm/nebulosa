@@ -8,9 +8,8 @@ import { EMPTY_ROTATOR, Rotator } from '../../shared/types/rotator.types'
 import { AppComponent } from '../app.component'
 
 @Component({
-	selector: 'app-rotator',
+	selector: 'neb-rotator',
 	templateUrl: './rotator.component.html',
-	styleUrls: ['./rotator.component.scss'],
 })
 export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 	readonly rotator = structuredClone(EMPTY_ROTATOR)

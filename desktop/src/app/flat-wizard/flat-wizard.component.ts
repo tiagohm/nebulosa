@@ -14,9 +14,8 @@ import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
-	selector: 'app-flat-wizard',
+	selector: 'neb-flat-wizard',
 	templateUrl: './flat-wizard.component.html',
-	styleUrls: ['./flat-wizard.component.scss'],
 })
 export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 	cameras: Camera[] = []

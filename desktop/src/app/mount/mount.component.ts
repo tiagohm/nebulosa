@@ -16,9 +16,8 @@ import { AppComponent } from '../app.component'
 import { FramingData } from '../framing/framing.component'
 
 @Component({
-	selector: 'app-mount',
+	selector: 'neb-mount',
 	templateUrl: './mount.component.html',
-	styleUrls: ['./mount.component.scss'],
 })
 export class MountComponent implements AfterContentInit, OnDestroy, Pingable {
 	readonly mount = structuredClone(EMPTY_MOUNT)

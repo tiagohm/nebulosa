@@ -20,7 +20,7 @@ export interface CalibrationNode extends TreeNode<TreeNodeData> {
 export type TreeNodeData = { type: 'NAME'; data: string } | { type: 'GROUP'; data: CalibrationFrameGroup } | { type: 'FRAME'; data: CalibrationFrame }
 
 @Component({
-	selector: 'app-calibration',
+	selector: 'neb-calibration',
 	templateUrl: './calibration.component.html',
 	styleUrls: ['./calibration.component.scss'],
 	providers: [TreeDragDropService],

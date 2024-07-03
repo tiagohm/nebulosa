@@ -16,9 +16,8 @@ import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
-	selector: 'app-autofocus',
+	selector: 'neb-autofocus',
 	templateUrl: './autofocus.component.html',
-	styleUrls: ['./autofocus.component.scss'],
 })
 export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 	cameras: Camera[] = []

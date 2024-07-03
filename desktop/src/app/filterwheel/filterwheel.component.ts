@@ -15,7 +15,7 @@ import { Undefinable } from '../../shared/utils/types'
 import { AppComponent } from '../app.component'
 
 @Component({
-	selector: 'app-filterwheel',
+	selector: 'neb-filterwheel',
 	templateUrl: './filterwheel.component.html',
 	styleUrls: ['./filterwheel.component.scss'],
 })
@@ -115,7 +115,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		this.subscription = this.filterChangedPublisher.pipe(debounceTime(1500)).subscribe(async (filter) => {
 			this.savePreference()
 
-			const names = this.filters.map(e => e.name)
+			const names = this.filters.map((e) => e.name)
 			await this.api.wheelSync(this.wheel, names)
 			await this.electron.send('WHEEL.RENAMED', { wheel: this.wheel, filter })
 		})

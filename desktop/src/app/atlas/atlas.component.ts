@@ -40,7 +40,7 @@ import { AppComponent } from '../app.component'
 Chart.register(zoomPlugin)
 
 @Component({
-	selector: 'app-atlas',
+	selector: 'neb-atlas',
 	templateUrl: './atlas.component.html',
 	styleUrls: ['./atlas.component.scss'],
 })

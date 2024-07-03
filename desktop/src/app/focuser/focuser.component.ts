@@ -9,9 +9,8 @@ import { EMPTY_FOCUSER, Focuser } from '../../shared/types/focuser.types'
 import { AppComponent } from '../app.component'
 
 @Component({
-	selector: 'app-focuser',
+	selector: 'neb-focuser',
 	templateUrl: './focuser.component.html',
-	styleUrls: ['./focuser.component.scss'],
 })
 export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 	readonly focuser = structuredClone(EMPTY_FOCUSER)

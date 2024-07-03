@@ -2,7 +2,7 @@ import { AfterContentInit, Component, EventEmitter, Input, OnDestroy, Output } f
 import { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem } from '../../../shared/types/device.types'
 
 @Component({
-	selector: 'app-indi-property',
+	selector: 'neb-indi-property',
 	templateUrl: './indi-property.component.html',
 	styleUrls: ['./indi-property.component.scss'],
 })

@@ -26,7 +26,7 @@ export const SEQUENCER_SAVED_PATH_KEY = 'sequencer.savedPath'
 export const SEQUENCER_PLAN_KEY = 'sequencer.plan'
 
 @Component({
-	selector: 'app-sequencer',
+	selector: 'neb-sequencer',
 	templateUrl: './sequencer.component.html',
 	styleUrls: ['./sequencer.component.scss'],
 })

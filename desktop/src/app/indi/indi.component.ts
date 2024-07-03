@@ -9,7 +9,7 @@ import { deviceComparator, textComparator } from '../../shared/utils/comparators
 import { AppComponent } from '../app.component'
 
 @Component({
-	selector: 'app-indi',
+	selector: 'neb-indi',
 	templateUrl: './indi.component.html',
 	styleUrls: ['./indi.component.scss'],
 })

@@ -4,9 +4,8 @@ import { AppComponent } from '../app.component'
 import { FormulaComponent } from './formula/formula.component'
 
 @Component({
-	selector: 'app-calculator',
+	selector: 'neb-calculator',
 	templateUrl: './calculator.component.html',
-	styleUrls: ['./calculator.component.scss'],
 })
 export class CalculatorComponent {
 	readonly formulae: { component: Type<unknown>; formula: CalculatorFormula }[] = [

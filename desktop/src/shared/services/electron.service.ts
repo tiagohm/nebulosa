@@ -199,20 +199,6 @@ export class ElectronService {
 		return this.send('WINDOW.RESIZE', { height: Math.floor(size), windowId: window.id })
 	}
 
-	async autoResizeWindow(timeout: number = 500): Promise<Undefinable<number>> {
-		if (timeout <= 0) {
-			const size = document.getElementsByTagName('app-root')[0].getBoundingClientRect().height
-
-			if (size) {
-				await this.resizeWindow(size)
-			}
-		} else {
-			return setTimeout(() => this.autoResizeWindow(0), timeout) as unknown as number
-		}
-
-		return undefined
-	}
-
 	pinWindow() {
 		return this.send('WINDOW.PIN', { windowId: window.id })
 	}
