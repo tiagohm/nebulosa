@@ -180,6 +180,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 			if (camera) {
 				ngZone.run(() => {
 					Object.assign(camera, event.device)
+					this.updateEntriesFromCamera(this.camera)
 				})
 			}
 		})
