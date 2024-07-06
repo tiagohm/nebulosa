@@ -222,11 +222,11 @@ class CalibrationFrameService(
         @JvmStatic private val LOG = loggerFor<CalibrationFrameService>()
 
         @JvmStatic val ReadableHeader.frameType
-            get() = frame?.uppercase()?.let {
-                if ("LIGHT" in it) FrameType.LIGHT
-                else if ("DARK" in it) FrameType.DARK
-                else if ("FLAT" in it) FrameType.FLAT
-                else if ("BIAS" in it) FrameType.BIAS
+            get() = frame?.let {
+                if (it.contains("LIGHT", true)) FrameType.LIGHT
+                else if (it.contains("DARK", true)) FrameType.DARK
+                else if (it.contains("FLAT", true)) FrameType.FLAT
+                else if (it.contains("BIAS", true)) FrameType.BIAS
                 else null
             }
 

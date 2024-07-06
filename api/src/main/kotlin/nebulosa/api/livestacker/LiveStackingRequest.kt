@@ -43,6 +43,6 @@ data class LiveStackingRequest(
 
     companion object {
 
-        @JvmStatic val EMPTY = LiveStackingRequest()
+        @JvmStatic val DISABLED = LiveStackingRequest()
     }
 }

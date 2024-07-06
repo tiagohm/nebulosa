@@ -1,20 +1,24 @@
 package nebulosa.api.cameras
 
+import nebulosa.api.cameras.CameraCaptureNamingFormatter.Companion.namingFormat
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.common.concurrency.cancel.CancellationListener
 import nebulosa.common.concurrency.cancel.CancellationSource
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.common.concurrency.latch.CountUpDownLatch
+import nebulosa.fits.fits
+import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
 import okio.sink
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.createParentDirectories
+import kotlin.io.path.moveTo
 import kotlin.io.path.outputStream
 
 data class CameraExposureTask(
@@ -30,6 +34,9 @@ data class CameraExposureTask(
     @Volatile private var remainingTime = Duration.ZERO
     @Volatile private var progress = 0.0
     @Volatile private var savedPath: Path? = null
+
+    private val outputPath = Files.createTempFile(camera.name, ".fits")
+    private val formatter = CameraCaptureNamingFormatter(camera)
 
     val isAborted
         get() = aborted.get()
@@ -114,22 +121,24 @@ data class CameraExposureTask(
 
     private fun save(event: CameraFrameCaptured) {
         try {
-            val savedPath = request.makeSavePath(event.device)
-
-            LOG.info("saving FITS image at {}", savedPath)
-
-            savedPath.createParentDirectories()
-
-            if (event.stream != null) {
-                event.stream!!.transferAndClose(savedPath.outputStream())
+            val header = if (event.stream != null) {
+                event.stream!!.transferAndClose(outputPath.outputStream())
+                null
             } else if (event.image != null) {
-                savedPath.sink().use(event.image!!::write)
+                outputPath.sink().use(event.image!!::write)
+                event.image?.first?.header
             } else {
                 LOG.warn("invalid event. event={}", event)
                 return
             }
 
-            this.savedPath = savedPath
+            with(request.makeSavePath(header = header)) {
+                LOG.info("saving FITS image at {}", this)
+                createParentDirectories()
+                outputPath.moveTo(this, true)
+                savedPath = this
+            }
+
             state = CameraExposureState.FINISHED
 
             sendEvent()
@@ -145,26 +154,26 @@ data class CameraExposureTask(
         onNext(CameraExposureEvent(this, state, elapsedTime, remainingTime, progress, savedPath))
     }
 
+    private fun CameraStartCaptureRequest.makeSavePath(
+        autoSave: Boolean = this.autoSave,
+        header: ReadableHeader? = null,
+    ): Path {
+        require(savePath != null) { "savePath is required" }
+
+        return if (autoSave) {
+            val now = LocalDateTime.now(formatter.clock)
+            val savePath = autoSubFolderMode.pathFor(savePath, now)
+            val format = namingFormat.ifBlank { frameType.namingFormat() }
+            val fileName = formatter.format(format, header ?: outputPath.fits().use { it.first!!.header })
+            Path.of("$savePath", fileName)
+        } else {
+            val fileName = "%s.fits".format(formatter.camera.name)
+            Path.of("$savePath", fileName)
+        }
+    }
+
     companion object {
 
         @JvmStatic private val LOG = loggerFor<CameraExposureTask>()
-        @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmssSSS")
-
-        @JvmStatic
-        internal fun CameraStartCaptureRequest.makeSavePath(
-            camera: Camera, autoSave: Boolean = this.autoSave,
-        ): Path {
-            require(savePath != null) { "savePath is required" }
-
-            return if (autoSave) {
-                val now = LocalDateTime.now()
-                val savePath = autoSubFolderMode.pathFor(savePath, now)
-                val fileName = "%s-%s.fits".format(now.format(DATE_TIME_FORMAT), frameType)
-                Path.of("$savePath", fileName)
-            } else {
-                val fileName = "%s.fits".format(camera.name)
-                Path.of("$savePath", fileName)
-            }
-        }
     }
 }
