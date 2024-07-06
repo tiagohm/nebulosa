@@ -118,6 +118,13 @@ class CameraCaptureNamingFormatterTest : StringSpec() {
         "rotator" {
             formatter.format("[rotator]", header) shouldBe "Rotator Simulator"
         }
+        "n" {
+            formatter.format("[n]", header) shouldBe "0001"
+            formatter.format("[n:1]", header) shouldBe "2"
+            formatter.format("[n:2]", header) shouldBe "03"
+            formatter.format("[n:3]", header) shouldBe "004"
+            formatter.format("[n:6]", header) shouldBe "000005"
+        }
         "light" {
             with(header.clone()) {
                 add("FRAME", "Light")

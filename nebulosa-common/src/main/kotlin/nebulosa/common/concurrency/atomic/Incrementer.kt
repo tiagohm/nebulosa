@@ -2,16 +2,19 @@ package nebulosa.common.concurrency.atomic
 
 import nebulosa.common.Resettable
 import java.util.concurrent.atomic.AtomicLong
+import java.util.function.Supplier
 
-class Incrementer(initialValue: Long = 0L) : Number(), Resettable {
+class Incrementer(private val initialValue: Long = 0L) : Number(), Supplier<Long>, Resettable {
 
     private val incrementer = AtomicLong(initialValue)
 
     fun increment() = incrementer.incrementAndGet()
 
-    override fun reset() = incrementer.set(0)
+    override fun reset() = reset(initialValue)
 
-    fun get() = incrementer.get()
+    fun reset(value: Long) = incrementer.set(value)
+
+    override fun get() = incrementer.get()
 
     override fun toByte() = toLong().toByte()
 
@@ -24,4 +27,6 @@ class Incrementer(initialValue: Long = 0L) : Number(), Resettable {
     override fun toLong() = get()
 
     override fun toShort() = toLong().toShort()
+
+    override fun toString() = "Incrementer(value=${get()})"
 }

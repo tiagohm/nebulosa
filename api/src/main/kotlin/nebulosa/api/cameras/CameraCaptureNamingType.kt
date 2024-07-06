@@ -22,7 +22,8 @@ enum class CameraCaptureNamingType(private vararg val alias: String) {
     MOUNT,
     FOCUSER,
     WHEEL,
-    ROTATOR;
+    ROTATOR,
+    N;
 
     companion object {
 

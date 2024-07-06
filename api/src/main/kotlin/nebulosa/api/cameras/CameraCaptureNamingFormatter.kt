@@ -1,6 +1,7 @@
 package nebulosa.api.cameras
 
 import nebulosa.api.calibration.CalibrationFrameService.Companion.frameType
+import nebulosa.common.concurrency.atomic.Incrementer
 import nebulosa.fits.*
 import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.Camera
@@ -14,6 +15,7 @@ import nebulosa.math.format
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 data class CameraCaptureNamingFormatter(
@@ -23,6 +25,7 @@ data class CameraCaptureNamingFormatter(
     @JvmField internal val focuser: Focuser? = null,
     @JvmField internal val rotator: Rotator? = null,
     @JvmField internal val clock: Clock = Clock.systemDefaultZone(),
+    @JvmField internal val incrementer: Incrementer = Incrementer(),
 ) {
 
     fun format(text: String, header: ReadableHeader): String {
@@ -75,6 +78,10 @@ data class CameraCaptureNamingFormatter(
             CameraCaptureNamingType.FOCUSER -> focuser?.name ?: camera.snoopedDevices.firstOrNull { it is Focuser }?.name
             CameraCaptureNamingType.WHEEL -> wheel?.name ?: camera.snoopedDevices.firstOrNull { it is FilterWheel }?.name
             CameraCaptureNamingType.ROTATOR -> rotator?.name ?: camera.snoopedDevices.firstOrNull { it is Rotator }?.name
+            CameraCaptureNamingType.N -> with(incrementer.increment()) {
+                val format = args.firstOrNull()?.toIntOrNull()?.absoluteValue ?: 4
+                "%0${format}d".format(this)
+            }
         }
     }
 
