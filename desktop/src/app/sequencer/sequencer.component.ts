@@ -463,12 +463,12 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	savePlan() {
 		const sequencerPreference = this.preference.sequencerPreference.get()
 		sequencerPreference.savedPath = this.savedPath
+		this.plan.camera = this.camera?.id
+		this.plan.mount = this.mount?.id
+		this.plan.wheel = this.wheel?.id
+		this.plan.focuser = this.focuser?.id
+		this.plan.rotator = this.rotator?.id
 		Object.assign(sequencerPreference.plan, this.plan)
-		sequencerPreference.plan.camera = this.camera?.id
-		sequencerPreference.plan.mount = this.mount?.id
-		sequencerPreference.plan.wheel = this.wheel?.id
-		sequencerPreference.plan.focuser = this.focuser?.id
-		sequencerPreference.plan.rotator = this.rotator?.id
 		this.preference.sequencerPreference.set(sequencerPreference)
 	}
 
