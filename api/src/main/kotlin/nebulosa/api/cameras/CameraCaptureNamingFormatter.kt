@@ -38,7 +38,7 @@ data class CameraCaptureNamingFormatter(
             } else {
                 val groupValues = m.groups.mapNotNull { it?.value?.ifBlank { null } }
                 val arguments = if (groupValues.size > 2) groupValues.subList(2, groupValues.size) else emptyList()
-                type.replaceWith(header, arguments)?.ifBlank { null } ?: value
+                type.replaceWith(header, arguments)?.ifBlank { null } ?: ""
             }
         }.replace(ILLEGAL_CHARS_REGEX, "")
     }
@@ -95,6 +95,6 @@ data class CameraCaptureNamingFormatter(
         const val FLAT_FORMAT = "[camera]_[type]_[filter]_[width]_[height]_[bin]"
         const val DARK_FORMAT = "[camera]_[type]_[width]_[height]_[exp]_[bin]_[gain]"
         const val BIAS_FORMAT = "[camera]_[type]_[width]_[height]_[bin]_[gain]"
-        const val LIGHT_FORMAT = "[camera]_[type]_[year][month][day][hour][min][sec][ms]_[width]_[height]_[exp]_[bin]_[gain]"
+        const val LIGHT_FORMAT = "[camera]_[type]_[year:2][month][day][hour][min][sec][ms]_[filter]_[width]_[height]_[exp]_[bin]_[gain]"
     }
 }

@@ -48,7 +48,7 @@ export interface CameraCaptureNamingFormat {
 }
 
 export const DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT: CameraCaptureNamingFormat = {
-	light: '[camera]_[type]_[year][month][day][hour][min][sec][ms]_[width]_[height]_[exp]_[bin]_[gain]',
+	light: '[camera]_[type]_[year:2][month][day][hour][min][sec][ms]_[filter]_[width]_[height]_[exp]_[bin]_[gain]',
 	dark: '[camera]_[type]_[width]_[height]_[exp]_[bin]_[gain]',
 	flat: '[camera]_[type]_[filter]_[width]_[height]_[bin]',
 	bias: '[camera]_[type]_[width]_[height]_[bin]_[gain]',

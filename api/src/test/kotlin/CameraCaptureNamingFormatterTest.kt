@@ -89,9 +89,11 @@ class CameraCaptureNamingFormatterTest : StringSpec() {
         }
         "width" {
             formatter.format("[width]", header) shouldBe "1280"
+            formatter.format("[w]", header) shouldBe "1280"
         }
         "height" {
             formatter.format("[height]", header) shouldBe "1024"
+            formatter.format("[h]", header) shouldBe "1024"
         }
         "temperature" {
             formatter.format("[temp]", header) shouldBe "-15"
@@ -128,7 +130,7 @@ class CameraCaptureNamingFormatterTest : StringSpec() {
         "light" {
             with(header.clone()) {
                 add("FRAME", "Light")
-                formatter.format(LIGHT_FORMAT, this) shouldBe "Camera Simulator_LIGHT_20240704173736369_1280_1024_1500000_2_80"
+                formatter.format(LIGHT_FORMAT, this) shouldBe "Camera Simulator_LIGHT_240704173736369_Red_1280_1024_1500000_2_80"
             }
         }
         "dark" {
@@ -155,7 +157,8 @@ class CameraCaptureNamingFormatterTest : StringSpec() {
         "not found" {
             with(header.clone()) {
                 delete(FitsKeyword.RA)
-                formatter.format("[ra]", this) shouldBe "ra"
+                formatter.format("[ra]", this) shouldBe ""
+                formatter.format("[ra]_[ra]", this) shouldBe "_"
             }
         }
         "illegal chars" {
