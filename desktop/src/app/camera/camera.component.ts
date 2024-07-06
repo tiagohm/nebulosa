@@ -8,12 +8,28 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { Camera, CameraDialogInput, CameraDialogMode, CameraPreference, CameraStartCapture, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, ExposureMode, ExposureTimeUnit, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import {
+	Camera,
+	CameraDialogInput,
+	CameraDialogMode,
+	CameraDitherDialog,
+	CameraLiveStackingDialog,
+	CameraNamingFormatDialog,
+	CameraPreference,
+	CameraStartCapture,
+	EMPTY_CAMERA,
+	EMPTY_CAMERA_START_CAPTURE,
+	ExposureMode,
+	ExposureTimeUnit,
+	FrameType,
+	updateCameraStartCaptureFromCamera,
+} from '../../shared/types/camera.types'
 import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Equipment } from '../../shared/types/home.types'
 import { Mount } from '../../shared/types/mount.types'
 import { Rotator } from '../../shared/types/rotator.types'
+import { resetCameraCaptureNamingFormat } from '../../shared/types/settings.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { Undefinable } from '../../shared/utils/types'
 import { AppComponent } from '../app.component'
@@ -72,9 +88,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		return this.mode !== 'CAPTURE'
 	}
 
-	showDitherDialog = false
-	showLiveStackingDialog = false
-
 	calibrationModel: SlideMenuItem[] = []
 
 	private readonly ditherMenuItem: SlideMenuItem = {
@@ -82,7 +95,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		label: 'Dither',
 		slideMenu: [],
 		command: () => {
-			this.showDitherDialog = true
+			this.dither.showDialog = true
 		},
 	}
 
@@ -91,7 +104,16 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		label: 'Live Stacking',
 		slideMenu: [],
 		command: () => {
-			this.showLiveStackingDialog = true
+			this.liveStacking.showDialog = true
+		},
+	}
+
+	private readonly namingFormatMenuItem: SlideMenuItem = {
+		icon: 'mdi mdi-rename',
+		label: 'Naming Format',
+		slideMenu: [],
+		command: () => {
+			this.namingFormat.showDialog = true
 		},
 	}
 
@@ -122,8 +144,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		],
 	}
 
-	readonly cameraModel: SlideMenuItem[] = [this.ditherMenuItem, this.liveStackingMenuItem, this.snoopDevicesMenuItem]
+	readonly cameraModel: SlideMenuItem[] = [this.ditherMenuItem, this.liveStackingMenuItem, this.namingFormatMenuItem, this.snoopDevicesMenuItem]
 
+	running = false
 	hasDewHeater = false
 	setpointTemperature = 0.0
 	exposureTimeMin = 1
@@ -133,7 +156,21 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	subFrame = false
 
 	readonly request = structuredClone(EMPTY_CAMERA_START_CAPTURE)
-	running = false
+
+	readonly dither: CameraDitherDialog = {
+		showDialog: false,
+		request: this.request.dither,
+	}
+
+	readonly liveStacking: CameraLiveStackingDialog = {
+		showDialog: false,
+		request: this.request.liveStacking,
+	}
+
+	readonly namingFormat: CameraNamingFormatDialog = {
+		showDialog: false,
+		format: this.request.namingFormat,
+	}
 
 	readonly exposureTimeUnitModel: MenuItem[] = [
 		{
@@ -669,47 +706,61 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		this.savePreference()
 	}
 
+	resetCameraCaptureNamingFormat(type: FrameType) {
+		const namingFormatPreference = this.preference.cameraCaptureNamingFormatPreference.get()
+		resetCameraCaptureNamingFormat(type, this.namingFormat.format, namingFormatPreference)
+		this.savePreference()
+	}
+
 	apply() {
 		return this.app.close(this.makeCameraStartCapture())
 	}
 
 	private loadPreference() {
 		if (this.mode === 'CAPTURE' && this.camera.name) {
-			const preference: Partial<CameraPreference> = this.preference.cameraPreference(this.camera).get()
+			const cameraPreference: Partial<CameraPreference> = this.preference.cameraPreference(this.camera).get()
 
-			this.request.autoSave = preference.autoSave ?? false
-			this.savePath = preference.savePath ?? ''
-			this.request.autoSubFolderMode = preference.autoSubFolderMode ?? 'OFF'
-			this.setpointTemperature = preference.setpointTemperature ?? 0
-			this.request.exposureTime = preference.exposureTime ?? this.camera.exposureMin
-			this.exposureTimeUnit = preference.exposureTimeUnit ?? ExposureTimeUnit.MICROSECOND
-			this.exposureMode = preference.exposureMode ?? 'SINGLE'
-			this.request.exposureDelay = preference.exposureDelay ?? 0
-			this.request.exposureAmount = preference.exposureAmount ?? 1
-			this.request.x = preference.x ?? this.camera.minX
-			this.request.y = preference.y ?? this.camera.minY
-			this.request.width = preference.width ?? this.camera.maxWidth
-			this.request.height = preference.height ?? this.camera.maxHeight
-			this.subFrame = preference.subFrame ?? false
-			this.request.binX = preference.binX ?? 1
-			this.request.binY = preference.binY ?? 1
-			this.request.frameType = preference.frameType ?? 'LIGHT'
-			this.request.gain = preference.gain ?? 0
-			this.request.offset = preference.offset ?? 0
-			this.request.frameFormat = preference.frameFormat ?? (this.camera.frameFormats[0] || '')
-			this.request.calibrationGroup = preference.calibrationGroup
-			this.request.dither.enabled = preference.dither?.enabled ?? false
-			this.request.dither.amount = preference.dither?.amount ?? 1.5
-			this.request.dither.raOnly = preference.dither?.raOnly ?? false
-			this.request.dither.afterExposures = preference.dither?.afterExposures ?? 1
-			this.request.liveStacking.enabled = preference.liveStacking?.enabled ?? false
-			this.request.liveStacking.type = preference.liveStacking?.type ?? 'SIRIL'
-			this.request.liveStacking.executablePath = preference.liveStacking?.executablePath ?? ''
-			this.request.liveStacking.dark = preference.liveStacking?.dark
-			this.request.liveStacking.flat = preference.liveStacking?.flat
-			this.request.liveStacking.bias = preference.liveStacking?.bias
-			this.request.liveStacking.use32Bits = preference.liveStacking?.use32Bits ?? false
-			this.request.liveStacking.slot = preference.liveStacking?.slot ?? 1
+			this.request.autoSave = cameraPreference.autoSave ?? false
+			this.savePath = cameraPreference.savePath ?? ''
+			this.request.autoSubFolderMode = cameraPreference.autoSubFolderMode ?? 'OFF'
+			this.setpointTemperature = cameraPreference.setpointTemperature ?? 0
+			this.request.exposureTime = cameraPreference.exposureTime ?? this.camera.exposureMin
+			this.exposureTimeUnit = cameraPreference.exposureTimeUnit ?? ExposureTimeUnit.MICROSECOND
+			this.exposureMode = cameraPreference.exposureMode ?? 'SINGLE'
+			this.request.exposureDelay = cameraPreference.exposureDelay ?? 0
+			this.request.exposureAmount = cameraPreference.exposureAmount ?? 1
+			this.request.x = cameraPreference.x ?? this.camera.minX
+			this.request.y = cameraPreference.y ?? this.camera.minY
+			this.request.width = cameraPreference.width ?? this.camera.maxWidth
+			this.request.height = cameraPreference.height ?? this.camera.maxHeight
+			this.subFrame = cameraPreference.subFrame ?? false
+			this.request.binX = cameraPreference.binX ?? 1
+			this.request.binY = cameraPreference.binY ?? 1
+			this.request.frameType = cameraPreference.frameType ?? 'LIGHT'
+			this.request.gain = cameraPreference.gain ?? 0
+			this.request.offset = cameraPreference.offset ?? 0
+			this.request.frameFormat = cameraPreference.frameFormat ?? (this.camera.frameFormats[0] || '')
+			this.request.calibrationGroup = cameraPreference.calibrationGroup
+
+			this.request.dither.enabled = cameraPreference.dither?.enabled ?? false
+			this.request.dither.amount = cameraPreference.dither?.amount ?? 1.5
+			this.request.dither.raOnly = cameraPreference.dither?.raOnly ?? false
+			this.request.dither.afterExposures = cameraPreference.dither?.afterExposures ?? 1
+
+			this.request.liveStacking.enabled = cameraPreference.liveStacking?.enabled ?? false
+			this.request.liveStacking.type = cameraPreference.liveStacking?.type ?? 'SIRIL'
+			this.request.liveStacking.executablePath = cameraPreference.liveStacking?.executablePath ?? ''
+			this.request.liveStacking.dark = cameraPreference.liveStacking?.dark
+			this.request.liveStacking.flat = cameraPreference.liveStacking?.flat
+			this.request.liveStacking.bias = cameraPreference.liveStacking?.bias
+			this.request.liveStacking.use32Bits = cameraPreference.liveStacking?.use32Bits ?? false
+			this.request.liveStacking.slot = cameraPreference.liveStacking?.slot ?? 1
+
+			const cameraCaptureNamingFormatPreference = this.preference.cameraCaptureNamingFormatPreference.get()
+			this.request.namingFormat.light = cameraPreference.namingFormat?.light ?? cameraCaptureNamingFormatPreference.light
+			this.request.namingFormat.dark = cameraPreference.namingFormat?.dark ?? cameraCaptureNamingFormatPreference.dark
+			this.request.namingFormat.flat = cameraPreference.namingFormat?.flat ?? cameraCaptureNamingFormatPreference.flat
+			this.request.namingFormat.bias = cameraPreference.namingFormat?.bias ?? cameraCaptureNamingFormatPreference.bias
 
 			Object.assign(this.equipment, this.preference.equipmentForDevice(this.camera).get())
 		}

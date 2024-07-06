@@ -26,10 +26,9 @@ data class CameraCaptureNamingFormatter(
 ) {
 
     fun format(text: String, header: ReadableHeader): String {
-        return REGEX.replace(text) { m ->
+        return REGEX.replace(text.trim()) { m ->
             val value = m.groups[1]!!.value
-
-            val type = CameraCaptureNamingType.entries.firstOrNull { it.name.equals(value, true) }
+            val type = CameraCaptureNamingType.find(value)
 
             if (type == null) {
                 value
@@ -86,17 +85,9 @@ data class CameraCaptureNamingFormatter(
         @JvmStatic private val RA_FORMAT = AngleFormatter.HMS.newBuilder().secondsDecimalPlaces(0).build()
         @JvmStatic private val DEC_FORMAT = AngleFormatter.SIGNED_DMS.newBuilder().secondsDecimalPlaces(0).separators("d", "m", "s").build()
 
-        const val FLAT = "[camera]_[type]_[filter]_[width]_[height]_[bin]"
-        const val DARK = "[camera]_[type]_[width]_[height]_[exp]_[bin]_[gain]"
-        const val BIAS = "[camera]_[type]_[width]_[height]_[bin]_[gain]"
-        const val LIGHT = "[camera]_[type]_[year][month][day][hour][min][sec][ms]_[width]_[height]_[exp]_[bin]_[gain]"
-
-        @JvmStatic
-        fun FrameType.namingFormat() = when (this) {
-            FrameType.LIGHT -> LIGHT
-            FrameType.DARK -> DARK
-            FrameType.FLAT -> FLAT
-            FrameType.BIAS -> BIAS
-        }
+        const val FLAT_FORMAT = "[camera]_[type]_[filter]_[width]_[height]_[bin]"
+        const val DARK_FORMAT = "[camera]_[type]_[width]_[height]_[exp]_[bin]_[gain]"
+        const val BIAS_FORMAT = "[camera]_[type]_[width]_[height]_[bin]_[gain]"
+        const val LIGHT_FORMAT = "[camera]_[type]_[year][month][day][hour][min][sec][ms]_[width]_[height]_[exp]_[bin]_[gain]"
     }
 }

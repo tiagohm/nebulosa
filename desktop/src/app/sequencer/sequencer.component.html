@@ -229,10 +229,80 @@
 					</div>
 				</div>
 			</p-tabPanel>
+			<p-tabPanel
+				header="Naming"
+				leftIcon="mdi mdi-rename">
+				<div class="flex px-4 align-items-center justify-content-center gap-2 flex-wrap mt-3">
+					<div class="flex gap-1">
+						<p-floatLabel class="w-full min-w-20rem">
+							<input
+								pInputText
+								class="p-inputtext-sm border-0"
+								[(ngModel)]="plan.namingFormat.light"
+								(ngModelChange)="savePlan()" />
+							<label>Light</label>
+						</p-floatLabel>
+						<p-button
+							[text]="true"
+							icon="mdi mdi-restore"
+							(onClick)="resetCameraCaptureNamingFormat('LIGHT')"
+							pTooltip="Reset"
+							tooltipPosition="bottom" />
+					</div>
+					<div class="flex gap-1">
+						<p-floatLabel class="w-full min-w-20rem">
+							<input
+								pInputText
+								class="p-inputtext-sm border-0"
+								[(ngModel)]="plan.namingFormat.dark"
+								(ngModelChange)="savePlan()" />
+							<label>Dark</label>
+						</p-floatLabel>
+						<p-button
+							[text]="true"
+							icon="mdi mdi-restore"
+							(onClick)="resetCameraCaptureNamingFormat('DARK')"
+							pTooltip="Reset"
+							tooltipPosition="bottom" />
+					</div>
+					<div class="flex gap-1">
+						<p-floatLabel class="w-full min-w-20rem">
+							<input
+								pInputText
+								class="p-inputtext-sm border-0"
+								[(ngModel)]="plan.namingFormat.flat"
+								(ngModelChange)="savePlan()" />
+							<label>Flat</label>
+						</p-floatLabel>
+						<p-button
+							[text]="true"
+							icon="mdi mdi-restore"
+							(onClick)="resetCameraCaptureNamingFormat('FLAT')"
+							pTooltip="Reset"
+							tooltipPosition="bottom" />
+					</div>
+					<div class="flex gap-1">
+						<p-floatLabel class="w-full min-w-20rem">
+							<input
+								pInputText
+								class="p-inputtext-sm border-0"
+								[(ngModel)]="plan.namingFormat.bias"
+								(ngModelChange)="savePlan()" />
+							<label>Bias</label>
+						</p-floatLabel>
+						<p-button
+							[text]="true"
+							icon="mdi mdi-restore"
+							(onClick)="resetCameraCaptureNamingFormat('BIAS')"
+							pTooltip="Reset"
+							tooltipPosition="bottom" />
+					</div>
+				</div>
+			</p-tabPanel>
 		</p-tabView>
 	</div>
 	<div class="grid px-4">
-		<div class="col-12 align-items-center justify-content-center pt-4 gap-2">
+		<div class="col-12 align-items-center justify-content-center flex-wrap pt-4 gap-2">
 			<neb-device-chooser
 				title="CAMERA"
 				icon="mdi mdi-camera-iris"

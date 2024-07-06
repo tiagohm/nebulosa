@@ -3,6 +3,7 @@ package nebulosa.api.sequencer
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotEmpty
 import nebulosa.api.cameras.AutoSubFolderMode
+import nebulosa.api.cameras.CameraCaptureNamingFormat
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.guiding.DitherAfterExposureRequest
 import org.hibernate.validator.constraints.time.DurationMax
@@ -20,4 +21,5 @@ data class SequencePlanRequest(
     @JvmField @field:NotEmpty val entries: List<CameraStartCaptureRequest> = emptyList(),
     @JvmField @field:Valid val dither: DitherAfterExposureRequest = DitherAfterExposureRequest.DISABLED,
     @JvmField @field:Valid val autoFocus: AutoFocusAfterConditions = AutoFocusAfterConditions.DISABLED,
+    @JvmField val namingFormat: CameraCaptureNamingFormat = CameraCaptureNamingFormat.DEFAULT,
 )

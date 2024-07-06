@@ -1,8 +1,5 @@
-import type { AutoSubFolderMode, Camera, CameraCaptureEvent, CameraStartCapture, Dither } from './camera.types'
-import type { Focuser } from './focuser.types'
-import type { Mount } from './mount.types'
-import type { Rotator } from './rotator.types'
-import type { FilterWheel } from './wheel.types'
+import type { AutoSubFolderMode, CameraCaptureEvent, CameraStartCapture, Dither } from './camera.types'
+import type { CameraCaptureNamingFormat } from './settings.types'
 
 export type SequenceCaptureMode = 'FULLY' | 'INTERLEAVED'
 
@@ -32,11 +29,12 @@ export interface SequencePlan {
 	entries: CameraStartCapture[]
 	dither: Dither
 	autoFocus: AutoFocusAfterConditions
-	camera?: Camera
-	mount?: Mount
-	wheel?: FilterWheel
-	focuser?: Focuser
-	rotator?: Rotator
+	namingFormat: CameraCaptureNamingFormat
+	camera?: string
+	mount?: string
+	wheel?: string
+	focuser?: string
+	rotator?: string
 }
 
 export const EMPTY_SEQUENCE_PLAN: SequencePlan = {
@@ -63,6 +61,7 @@ export const EMPTY_SEQUENCE_PLAN: SequencePlan = {
 		afterTemperatureChangeEnabled: false,
 		afterHFDIncreaseEnabled: false,
 	},
+	namingFormat: {},
 }
 
 export interface SequencerEvent extends MessageEvent {
@@ -71,4 +70,13 @@ export interface SequencerEvent extends MessageEvent {
 	remainingTime: number
 	progress: number
 	capture?: CameraCaptureEvent
+}
+
+export interface SequencerPreference {
+	savedPath?: string
+	plan: SequencePlan
+}
+
+export const EMPTY_SEQUENCER_PREFERENCE: SequencerPreference = {
+	plan: structuredClone(EMPTY_SEQUENCE_PLAN),
 }

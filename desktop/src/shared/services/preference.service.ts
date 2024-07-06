@@ -10,7 +10,8 @@ import { ConnectionDetails, Equipment, HomePreference } from '../types/home.type
 import { EMPTY_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
 import { EMPTY_MOUNT_PREFERENCE, Mount, MountPreference } from '../types/mount.types'
 import { Rotator, RotatorPreference } from '../types/rotator.types'
-import { EMPTY_PLATE_SOLVER_REQUEST, EMPTY_STAR_DETECTION_REQUEST, PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetectorType } from '../types/settings.types'
+import { EMPTY_SEQUENCER_PREFERENCE, SequencerPreference } from '../types/sequencer.types'
+import { CameraCaptureNamingFormat, DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, EMPTY_PLATE_SOLVER_REQUEST, EMPTY_STAR_DETECTION_REQUEST, PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetectorType } from '../types/settings.types'
 import { FilterWheel, WheelPreference } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 import { LocalStorageService } from './local-storage.service'
@@ -109,4 +110,6 @@ export class PreferenceService {
 	readonly imageFOVs = new PreferenceData<FOV[]>(this.storage, 'image.fovs', () => [])
 	readonly calibrationPreference = new PreferenceData<CalibrationPreference>(this.storage, 'calibration', () => ({}) as CalibrationPreference)
 	readonly autoFocusPreference = new PreferenceData<AutoFocusPreference>(this.storage, 'autoFocus', () => structuredClone(EMPTY_AUTO_FOCUS_PREFERENCE))
+	readonly sequencerPreference = new PreferenceData<SequencerPreference>(this.storage, 'sequencer', () => structuredClone(EMPTY_SEQUENCER_PREFERENCE))
+	readonly cameraCaptureNamingFormatPreference = new PreferenceData<CameraCaptureNamingFormat>(this.storage, 'camera.namingFormat', () => structuredClone(DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT))
 }

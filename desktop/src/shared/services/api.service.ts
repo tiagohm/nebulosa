@@ -645,7 +645,7 @@ export class ApiService {
 
 	sequencerStart(camera: Camera, plan: SequencePlan) {
 		const body: SequencePlan = { ...plan, mount: undefined, camera: undefined, wheel: undefined, focuser: undefined }
-		const query = this.http.query({ mount: plan.mount?.id, focuser: plan.focuser?.id, wheel: plan.wheel?.id })
+		const query = this.http.query({ mount: plan.mount, focuser: plan.focuser, wheel: plan.wheel })
 		return this.http.put<never>(`sequencer/${camera.id}/start?${query}`, body)
 	}
 

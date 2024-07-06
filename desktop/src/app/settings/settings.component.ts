@@ -5,8 +5,8 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
-import { LiveStackerType, LiveStackingRequest } from '../../shared/types/camera.types'
-import { PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetectorType } from '../../shared/types/settings.types'
+import { FrameType, LiveStackerType, LiveStackingRequest } from '../../shared/types/camera.types'
+import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, PlateSolverRequest, PlateSolverType, resetCameraCaptureNamingFormat, StarDetectionRequest, StarDetectorType } from '../../shared/types/settings.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -32,6 +32,10 @@ export class SettingsComponent {
 			id: 3,
 			name: 'Live Stacking',
 		},
+		{
+			id: 4,
+			name: 'Capture Naming Format',
+		},
 	]
 
 	readonly locations: Location[]
@@ -45,6 +49,8 @@ export class SettingsComponent {
 
 	liveStackerType: LiveStackerType = 'SIRIL'
 	readonly liveStackers = new Map<LiveStackerType, LiveStackingRequest>()
+
+	readonly cameraCaptureNamingFormat = structuredClone(DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT)
 
 	constructor(
 		app: AppComponent,
@@ -67,6 +73,8 @@ export class SettingsComponent {
 		for (const type of dropdownOptions.transform('LIVE_STACKER')) {
 			this.liveStackers.set(type, preference.liveStackingRequest(type).get())
 		}
+
+		Object.assign(this.cameraCaptureNamingFormat, preference.cameraCaptureNamingFormatPreference.get(this.cameraCaptureNamingFormat))
 	}
 
 	addLocation() {
@@ -123,6 +131,11 @@ export class SettingsComponent {
 		return this.electron.send('LOCATION.CHANGED', this.location)
 	}
 
+	resetCameraCaptureNamingFormat(type: FrameType) {
+		resetCameraCaptureNamingFormat(type, this.cameraCaptureNamingFormat, DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT)
+		this.save()
+	}
+
 	save() {
 		for (const type of this.dropdownOptions.transform('PLATE_SOLVER')) {
 			this.preference.plateSolverRequest(type).set(this.plateSolvers.get(type))
@@ -133,5 +146,7 @@ export class SettingsComponent {
 		for (const type of this.dropdownOptions.transform('LIVE_STACKER')) {
 			this.preference.liveStackingRequest(type).set(this.liveStackers.get(type))
 		}
+
+		this.preference.cameraCaptureNamingFormatPreference.set(this.cameraCaptureNamingFormat)
 	}
 }

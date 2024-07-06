@@ -255,7 +255,7 @@ data class CameraCaptureTask(
 
         // DITHER.
         if (!cancellationToken.isCancelled && !cameraExposureTask.isAborted && guider != null
-            && exposureCount >= 1 && exposureCount % request.dither.afterExposures == 0
+            && exposureCount >= 1 && request.dither.afterExposures > 0 && exposureCount % request.dither.afterExposures == 0
         ) {
             ditherAfterExposureTask.execute(cancellationToken)
         }

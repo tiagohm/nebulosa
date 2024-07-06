@@ -280,4 +280,74 @@
 			</div>
 		</div>
 	</div>
+	<div
+		class="col-12"
+		*ngIf="tab === 4">
+		<div class="grid">
+			<div class="col-12 gap-1">
+				<p-floatLabel class="w-full">
+					<input
+						pInputText
+						class="p-inputtext-sm border-0"
+						[(ngModel)]="cameraCaptureNamingFormat.light"
+						(ngModelChange)="save()" />
+					<label>Light</label>
+				</p-floatLabel>
+				<p-button
+					[text]="true"
+					icon="mdi mdi-restore"
+					(onClick)="resetCameraCaptureNamingFormat('LIGHT')"
+					pTooltip="Reset"
+					tooltipPosition="bottom" />
+			</div>
+			<div class="col-12 gap-1">
+				<p-floatLabel class="w-full">
+					<input
+						pInputText
+						class="p-inputtext-sm border-0"
+						[(ngModel)]="cameraCaptureNamingFormat.dark"
+						(ngModelChange)="save()" />
+					<label>Dark</label>
+				</p-floatLabel>
+				<p-button
+					[text]="true"
+					icon="mdi mdi-restore"
+					(onClick)="resetCameraCaptureNamingFormat('DARK')"
+					pTooltip="Reset"
+					tooltipPosition="bottom" />
+			</div>
+			<div class="col-12 gap-1">
+				<p-floatLabel class="w-full">
+					<input
+						pInputText
+						class="p-inputtext-sm border-0"
+						[(ngModel)]="cameraCaptureNamingFormat.flat"
+						(ngModelChange)="save()" />
+					<label>Flat</label>
+				</p-floatLabel>
+				<p-button
+					[text]="true"
+					icon="mdi mdi-restore"
+					(onClick)="resetCameraCaptureNamingFormat('FLAT')"
+					pTooltip="Reset"
+					tooltipPosition="bottom" />
+			</div>
+			<div class="col-12 gap-1">
+				<p-floatLabel class="w-full">
+					<input
+						pInputText
+						class="p-inputtext-sm border-0"
+						[(ngModel)]="cameraCaptureNamingFormat.bias"
+						(ngModelChange)="save()" />
+					<label>Bias</label>
+				</p-floatLabel>
+				<p-button
+					[text]="true"
+					icon="mdi mdi-restore"
+					(onClick)="resetCameraCaptureNamingFormat('BIAS')"
+					pTooltip="Reset"
+					tooltipPosition="bottom" />
+			</div>
+		</div>
+	</div>
 </div>

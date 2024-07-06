@@ -43,7 +43,7 @@ data class CameraStartCaptureRequest(
     // Focuser.
     @JvmField val focusOffset: Int = 0,
     // Others.
-    @JvmField val namingFormat: String = "",
+    @JvmField val namingFormat: CameraCaptureNamingFormat = CameraCaptureNamingFormat.DEFAULT,
 ) {
 
     inline val isLoop

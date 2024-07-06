@@ -6,15 +6,16 @@ import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.compo
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { LocalStorageService } from '../../shared/services/local-storage.service'
 import { Pingable, Pinger } from '../../shared/services/pinger.service'
+import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureEvent, CameraStartCapture, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import { Camera, CameraCaptureEvent, CameraStartCapture, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Mount } from '../../shared/types/mount.types'
 import { Rotator } from '../../shared/types/rotator.types'
 import { EMPTY_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
+import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, resetCameraCaptureNamingFormat } from '../../shared/types/settings.types'
 import { FilterWheel } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { Undefinable } from '../../shared/utils/types'
@@ -23,7 +24,6 @@ import { CameraComponent } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
 
 export const SEQUENCER_SAVED_PATH_KEY = 'sequencer.savedPath'
-export const SEQUENCER_PLAN_KEY = 'sequencer.plan'
 
 @Component({
 	selector: 'neb-sequencer',
@@ -118,20 +118,12 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		this.app.subTitle = value
 	}
 
-	get savedPathWasModified() {
-		return !!this.app.topMenu[1].badge
-	}
-
-	set savedPathWasModified(value: boolean) {
-		this.app.topMenu[1].badge = value ? '1' : undefined
-	}
-
 	constructor(
 		private readonly app: AppComponent,
 		private readonly api: ApiService,
 		private readonly browserWindow: BrowserWindowService,
 		private readonly electron: ElectronService,
-		private readonly storage: LocalStorageService,
+		private readonly preference: PreferenceService,
 		private readonly prime: PrimeService,
 		private readonly pinger: Pinger,
 		ngZone: NgZone,
@@ -142,9 +134,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 			icon: 'mdi mdi-plus',
 			label: 'Create new',
 			command: () => {
-				this.savedPath = undefined
-				this.savedPathWasModified = false
-				this.storage.delete(SEQUENCER_SAVED_PATH_KEY)
+				this.updateSavedPath()
 
 				Object.assign(this.plan, structuredClone(EMPTY_SEQUENCE_PLAN))
 				this.add()
@@ -324,6 +314,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 				use32Bits: false,
 				slot: 1,
 			},
+			namingFormat: this.plan.namingFormat,
 		})
 
 		this.savePlan()
@@ -335,9 +326,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 
 	private afterSavedJsonFile(file: JsonFile<SequencePlan>) {
 		if (file.path) {
-			this.savedPath = file.path
-			this.storage.set(SEQUENCER_SAVED_PATH_KEY, this.savedPath)
-			this.savedPathWasModified = false
+			this.updateSavedPath(file.path)
 		}
 	}
 
@@ -352,19 +341,20 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	private async loadSavedJsonFileFromPathOrAddDefault() {
-		const savedPath = this.storage.get<Undefinable<string>>(SEQUENCER_SAVED_PATH_KEY, undefined)
+		const sequencerPreference = this.preference.sequencerPreference.get()
 
-		if (savedPath) {
-			const file = await this.electron.readJson<SequencePlan>(savedPath)
+		if (sequencerPreference.savedPath) {
+			const file = await this.electron.readJson<SequencePlan>(sequencerPreference.savedPath)
 
 			if (file !== false) {
 				this.loadSavedJsonFile(file)
 				return
 			}
 
-			this.prime.message(`Failed to load the saved Sequence at: ${savedPath}`, 'error')
+			this.prime.message(`Failed to load the saved Sequence at: ${sequencerPreference.savedPath}`, 'error')
 
-			this.storage.delete(SEQUENCER_SAVED_PATH_KEY)
+			sequencerPreference.savedPath = undefined
+			this.preference.sequencerPreference.set(sequencerPreference)
 		}
 
 		if (!this.loadPlan()) {
@@ -372,18 +362,41 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		}
 	}
 
+	private updateSavedPath(savedPath?: string) {
+		this.savedPath = savedPath
+		const sequencerPreference = this.preference.sequencerPreference.get()
+		sequencerPreference.savedPath = savedPath
+		this.preference.sequencerPreference.set(sequencerPreference)
+	}
+
 	private loadPlan(plan?: SequencePlan) {
-		plan ??= this.storage.get(SEQUENCER_PLAN_KEY, this.plan)
+		const sequencerPreference = this.preference.sequencerPreference.get()
 
-		Object.assign(this.plan, structuredClone(plan))
+		plan ??= sequencerPreference.plan
 
-		this.camera = this.cameras.find((e) => e.name === this.plan.camera?.name) ?? this.cameras[0]
-		this.mount = this.mounts.find((e) => e.name === this.plan.mount?.name) ?? this.mounts[0]
-		this.wheel = this.wheels.find((e) => e.name === this.plan.wheel?.name) ?? this.wheels[0]
-		this.focuser = this.focusers.find((e) => e.name === this.plan.focuser?.name) ?? this.focusers[0]
-		this.rotator = this.rotators.find((e) => e.name === this.plan.rotator?.name) ?? this.rotators[0]
+		if (this.plan !== plan) {
+			Object.assign(this.plan, structuredClone(plan))
+		}
 
-		return plan.entries.length
+		this.camera = this.cameras.find((e) => e.id === this.plan.camera) ?? this.cameras[0]
+		this.mount = this.mounts.find((e) => e.id === this.plan.mount) ?? this.mounts[0]
+		this.wheel = this.wheels.find((e) => e.id === this.plan.wheel) ?? this.wheels[0]
+		this.focuser = this.focusers.find((e) => e.id === this.plan.focuser) ?? this.focusers[0]
+		this.rotator = this.rotators.find((e) => e.id === this.plan.rotator) ?? this.rotators[0]
+
+		const cameraCaptureNamingFormatPreference = this.preference.cameraCaptureNamingFormatPreference.get()
+		this.plan.namingFormat.light ??= cameraCaptureNamingFormatPreference.light ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.light
+		this.plan.namingFormat.dark ??= cameraCaptureNamingFormatPreference.dark ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.dark
+		this.plan.namingFormat.flat ??= cameraCaptureNamingFormatPreference.flat ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.flat
+		this.plan.namingFormat.bias ??= cameraCaptureNamingFormatPreference.bias ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.bias
+
+		return this.plan.entries.length
+	}
+
+	resetCameraCaptureNamingFormat(type: FrameType) {
+		const namingFormatPreference = this.preference.cameraCaptureNamingFormatPreference.get()
+		resetCameraCaptureNamingFormat(type, this.plan.namingFormat, namingFormatPreference)
+		this.savePlan()
 	}
 
 	toggleAutoSubFolder() {
@@ -447,13 +460,15 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	savePlan() {
-		this.plan.camera = this.camera
-		this.plan.mount = this.mount
-		this.plan.wheel = this.wheel
-		this.plan.focuser = this.focuser
-		this.plan.rotator = this.rotator
-		this.storage.set(SEQUENCER_PLAN_KEY, this.plan)
-		this.savedPathWasModified = !!this.savedPath
+		const sequencerPreference = this.preference.sequencerPreference.get()
+		sequencerPreference.savedPath = this.savedPath
+		Object.assign(sequencerPreference.plan, this.plan)
+		sequencerPreference.plan.camera = this.camera?.id
+		sequencerPreference.plan.mount = this.mount?.id
+		sequencerPreference.plan.wheel = this.wheel?.id
+		sequencerPreference.plan.focuser = this.focuser?.id
+		sequencerPreference.plan.rotator = this.rotator?.id
+		this.preference.sequencerPreference.set(sequencerPreference)
 	}
 
 	showEntryMenu(entry: CameraStartCapture, dialogMenu: DialogMenuComponent) {

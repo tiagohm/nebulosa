@@ -15,6 +15,7 @@ import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.algorithms.transformation.*
 import nebulosa.image.format.ImageModifier
 import nebulosa.indi.device.camera.Camera
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.astrometry.VSOP87E
@@ -161,7 +162,7 @@ class ImageService(
     @Synchronized
     fun closeImage(path: Path) {
         imageBucket.remove(path)
-        LOG.info("image closed. path={}", path)
+        LOG.debug { "image closed. path=$path" }
     }
 
     @Synchronized

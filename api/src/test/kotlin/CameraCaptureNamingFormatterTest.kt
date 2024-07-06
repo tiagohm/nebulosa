@@ -1,10 +1,10 @@
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import nebulosa.api.cameras.CameraCaptureNamingFormatter
-import nebulosa.api.cameras.CameraCaptureNamingFormatter.Companion.BIAS
-import nebulosa.api.cameras.CameraCaptureNamingFormatter.Companion.DARK
-import nebulosa.api.cameras.CameraCaptureNamingFormatter.Companion.FLAT
-import nebulosa.api.cameras.CameraCaptureNamingFormatter.Companion.LIGHT
+import nebulosa.api.cameras.CameraCaptureNamingFormatter.Companion.BIAS_FORMAT
+import nebulosa.api.cameras.CameraCaptureNamingFormatter.Companion.DARK_FORMAT
+import nebulosa.api.cameras.CameraCaptureNamingFormatter.Companion.FLAT_FORMAT
+import nebulosa.api.cameras.CameraCaptureNamingFormatter.Companion.LIGHT_FORMAT
 import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsKeyword
 import nebulosa.image.algorithms.transformation.CfaPattern
@@ -62,9 +62,11 @@ class CameraCaptureNamingFormatterTest : StringSpec() {
         }
         "minute" {
             formatter.format("[min]", header) shouldBe "37"
+            formatter.format("[minute]", header) shouldBe "37"
         }
         "second" {
             formatter.format("[sec]", header) shouldBe "36"
+            formatter.format("[second]", header) shouldBe "36"
         }
         "millisecond" {
             formatter.format("[ms]", header) shouldBe "369"
@@ -74,6 +76,7 @@ class CameraCaptureNamingFormatterTest : StringSpec() {
             formatter.format("[exp:s]", header) shouldBe "1s"
             formatter.format("[exp:ms]", header) shouldBe "1500ms"
             formatter.format("[exp:us]", header) shouldBe "1500000"
+            formatter.format("[exposure]", header) shouldBe "1500000"
         }
         "filter" {
             formatter.format("[filter]", header) shouldBe "Red"
@@ -92,6 +95,7 @@ class CameraCaptureNamingFormatterTest : StringSpec() {
         }
         "temperature" {
             formatter.format("[temp]", header) shouldBe "-15"
+            formatter.format("[temperature]", header) shouldBe "-15"
         }
         "right ascension" {
             formatter.format("[ra]", header) shouldBe "06h45m09s"
@@ -117,25 +121,25 @@ class CameraCaptureNamingFormatterTest : StringSpec() {
         "light" {
             with(header.clone()) {
                 add("FRAME", "Light")
-                formatter.format(LIGHT, this) shouldBe "Camera Simulator_LIGHT_20240704173736369_1280_1024_1500000_2_80"
+                formatter.format(LIGHT_FORMAT, this) shouldBe "Camera Simulator_LIGHT_20240704173736369_1280_1024_1500000_2_80"
             }
         }
         "dark" {
             with(header.clone()) {
                 add("FRAME", "Dark")
-                formatter.format(DARK, this) shouldBe "Camera Simulator_DARK_1280_1024_1500000_2_80"
+                formatter.format(DARK_FORMAT, this) shouldBe "Camera Simulator_DARK_1280_1024_1500000_2_80"
             }
         }
         "flat" {
             with(header.clone()) {
                 add("FRAME", "Flat")
-                formatter.format(FLAT, this) shouldBe "Camera Simulator_FLAT_Red_1280_1024_2"
+                formatter.format(FLAT_FORMAT, this) shouldBe "Camera Simulator_FLAT_Red_1280_1024_2"
             }
         }
         "bias" {
             with(header.clone()) {
                 add("FRAME", "Bias")
-                formatter.format(BIAS, this) shouldBe "Camera Simulator_BIAS_1280_1024_2_80"
+                formatter.format(BIAS_FORMAT, this) shouldBe "Camera Simulator_BIAS_1280_1024_2_80"
             }
         }
         "unknown" {

@@ -1,6 +1,5 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.cameras.CameraCaptureNamingFormatter.Companion.namingFormat
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.common.concurrency.cancel.CancellationListener
 import nebulosa.common.concurrency.cancel.CancellationSource
@@ -163,12 +162,11 @@ data class CameraExposureTask(
         return if (autoSave) {
             val now = LocalDateTime.now(formatter.clock)
             val savePath = autoSubFolderMode.pathFor(savePath, now)
-            val format = namingFormat.ifBlank { frameType.namingFormat() }
+            val format = namingFormat.formatFor(frameType)
             val fileName = formatter.format(format, header ?: outputPath.fits().use { it.first!!.header })
-            Path.of("$savePath", fileName)
+            Path.of("$savePath", "$fileName.fits")
         } else {
-            val fileName = "%s.fits".format(formatter.camera.name)
-            Path.of("$savePath", fileName)
+            Path.of("$savePath", "${formatter.camera.name}.fits")
         }
     }
 

@@ -64,9 +64,12 @@ data class SequencerTask(
         initialDelayTask.subscribe(this)
         tasks.add(initialDelayTask)
 
-        fun mapRequest(request: CameraStartCaptureRequest): CameraStartCaptureRequest {
-            return request.copy(savePath = plan.savePath, autoSave = true, autoSubFolderMode = plan.autoSubFolderMode)
-        }
+        fun mapRequest(request: CameraStartCaptureRequest) = request.copy(
+            savePath = plan.savePath, autoSave = true,
+            autoSubFolderMode = plan.autoSubFolderMode,
+            dither = plan.dither,
+            namingFormat = plan.namingFormat,
+        )
 
         if (plan.captureMode == SequenceCaptureMode.FULLY || usedEntries.size == 1) {
             for (i in usedEntries.indices) {

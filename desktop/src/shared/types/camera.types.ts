@@ -3,6 +3,7 @@ import type { Thermometer } from './auxiliary.types'
 import type { CompanionDevice, Device, PropertyState } from './device.types'
 import { isCompanionDevice } from './device.types'
 import type { GuideOutput } from './guider.types'
+import { type CameraCaptureNamingFormat } from './settings.types'
 
 export type CameraDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD' | 'TPPA' | 'DARV' | 'AUTO_FOCUS'
 
@@ -169,6 +170,7 @@ export interface CameraStartCapture {
 	focusOffset?: number
 	calibrationGroup?: string
 	liveStacking: LiveStackingRequest
+	namingFormat: CameraCaptureNamingFormat
 }
 
 export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {
@@ -199,6 +201,7 @@ export const EMPTY_CAMERA_START_CAPTURE: CameraStartCapture = {
 		use32Bits: false,
 		slot: 1,
 	},
+	namingFormat: {},
 }
 
 export function updateCameraStartCaptureFromCamera(request: CameraStartCapture, camera: Camera) {
@@ -303,4 +306,19 @@ export const EMPTY_LIVE_STACKING_REQUEST: LiveStackingRequest = {
 	executablePath: '',
 	use32Bits: false,
 	slot: 1,
+}
+
+export interface CameraDitherDialog {
+	showDialog: boolean
+	request: Dither
+}
+
+export interface CameraLiveStackingDialog {
+	showDialog: boolean
+	request: LiveStackingRequest
+}
+
+export interface CameraNamingFormatDialog {
+	showDialog: boolean
+	format: CameraCaptureNamingFormat
 }
