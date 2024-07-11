@@ -1,11 +1,11 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.calibration.CalibrationFrameService.Companion.frameType
 import nebulosa.common.concurrency.atomic.Incrementer
 import nebulosa.fits.*
 import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
+import nebulosa.indi.device.camera.FrameType.Companion.frameType
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount

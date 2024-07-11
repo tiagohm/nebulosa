@@ -34,7 +34,7 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, CommandLineLis
 
                 if (isDone) return@whenComplete
                 else if (exception != null) completeExceptionally(exception)
-                else complete(processOnComplete(exitCode).also { LOG.info("script processed. output={}", it) })
+                else complete(processOnComplete(exitCode).also { LOG.info("{} script processed. output={}", this::class.simpleName, it) })
             } finally {
                 commandLine.unregisterCommandLineListener(this)
             }

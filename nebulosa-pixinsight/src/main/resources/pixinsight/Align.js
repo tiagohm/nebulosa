@@ -103,7 +103,7 @@ function alignment() {
         P.pixelInterpolation = StarAlignment.prototype.Auto
         P.clampingThreshold = 0.30
         P.outputDirectory = outputDirectory
-        P.outputExtension = ".fits"
+        P.outputExtension = ".xisf"
         P.outputPrefix = ""
         P.outputPostfix = "_a"
         P.maskPostfix = "_m"

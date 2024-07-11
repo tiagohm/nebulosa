@@ -2,12 +2,15 @@ package nebulosa.pixinsight.livestacker
 
 import nebulosa.livestacker.LiveStacker
 import nebulosa.log.loggerFor
-import nebulosa.pixinsight.script.*
+import nebulosa.pixinsight.script.PixInsightIsRunning
+import nebulosa.pixinsight.script.PixInsightScript
+import nebulosa.pixinsight.script.PixInsightScriptRunner
+import nebulosa.pixinsight.script.PixInsightStartup
+import nebulosa.pixinsight.stacker.PixInsightStacker
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.copyTo
 import kotlin.io.path.deleteIfExists
-import kotlin.io.path.moveTo
 
 data class PixInsightLiveStacker(
     private val runner: PixInsightScriptRunner,
@@ -16,7 +19,7 @@ data class PixInsightLiveStacker(
     private val flat: Path? = null,
     private val bias: Path? = null,
     private val use32Bits: Boolean = false,
-    private val slot: Int = PixInsightScript.DEFAULT_SLOT,
+    private val slot: Int = PixInsightScript.UNSPECIFIED_SLOT,
 ) : LiveStacker {
 
     private val running = AtomicBoolean()
@@ -30,9 +33,10 @@ data class PixInsightLiveStacker(
 
     @Volatile private var stackCount = 0
 
+    private val stacker = PixInsightStacker(runner, workingDirectory, slot)
     private val referencePath = Path.of("$workingDirectory", "reference.fits")
-    private val calibratedPath = Path.of("$workingDirectory", "calibrated.fits")
-    private val alignedPath = Path.of("$workingDirectory", "aligned.fits")
+    private val calibratedPath = Path.of("$workingDirectory", "calibrated.xisf")
+    private val alignedPath = Path.of("$workingDirectory", "aligned.xisf")
     private val stackedPath = Path.of("$workingDirectory", "stacked.fits")
 
     @Synchronized
@@ -60,41 +64,23 @@ data class PixInsightLiveStacker(
         return if (running.get()) {
             stacking.set(true)
 
-            // Calibrate.
-            val calibrated = if (dark == null && flat == null && bias == null) false else {
-                PixInsightCalibrate(slot, workingDirectory, targetPath, dark, flat, if (dark == null) bias else null).use { s ->
-                    val outputPath = s.runSync(runner).outputImage ?: return@use false
-                    LOG.info("live stacking calibrated. count={}, output={}", stackCount, outputPath)
-                    outputPath.moveTo(calibratedPath, true)
-                    true
-                }
-            }
-
-            if (calibrated) {
+            if (stacker.calibrate(targetPath, calibratedPath, dark, flat, bias)) {
+                LOG.info("live stacking calibrated. count={}, output={}", stackCount, calibratedPath)
                 targetPath = calibratedPath
             }
 
             // TODO: Debayer, Resample?
 
             if (stackCount > 0) {
-                // Align.
-                val aligned = PixInsightAlign(slot, workingDirectory, referencePath, targetPath).use { s ->
-                    val outputPath = s.runSync(runner).outputImage ?: return@use false
-                    LOG.info("live stacking aligned. count={}, output={}", stackCount, outputPath)
-                    outputPath.moveTo(alignedPath, true)
-                    true
-                }
-
-                if (aligned) {
+                if (stacker.align(referencePath, targetPath, alignedPath)) {
+                    LOG.info("live stacking aligned. count={}, output={}", stackCount, alignedPath)
                     targetPath = alignedPath
 
-                    // Stack.
-                    val expressionRK = "({{0}} * $stackCount + {{1}}) / ${stackCount + 1}"
-                    PixInsightPixelMath(slot, listOf(stackedPath, targetPath), stackedPath, expressionRK).use { s ->
-                        s.runSync(runner).stackedImage?.also {
-                            LOG.info("live stacking finished. count={}, output={}", stackCount++, it)
-                        }
+                    if (stacker.integrate(stackCount, stackedPath, targetPath, stackedPath)) {
+                        LOG.info("live stacking finished. count={}, output={}", stackCount, stackedPath)
                     }
+
+                    stackCount++
                 }
             } else {
                 targetPath.copyTo(referencePath, true)

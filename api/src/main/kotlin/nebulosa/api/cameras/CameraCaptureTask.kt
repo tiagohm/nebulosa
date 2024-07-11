@@ -32,6 +32,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.copyTo
 import kotlin.io.path.exists
+import kotlin.io.path.extension
 
 data class CameraCaptureTask(
     @JvmField val camera: Camera,
@@ -334,7 +335,7 @@ data class CameraCaptureTask(
             sendEvent(CameraCaptureState.STACKING)
 
             liveStacker!!.add(path)?.let {
-                val stackedPath = Path.of("${path.parent}", "STACKED.fits")
+                val stackedPath = Path.of("${path.parent}", "STACKED.${it.extension}")
                 it.copyTo(stackedPath, true)
                 stackedPath
             }

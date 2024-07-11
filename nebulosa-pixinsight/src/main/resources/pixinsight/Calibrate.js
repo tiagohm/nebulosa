@@ -89,7 +89,7 @@ function calibrate() {
         P.psfGrowth = 1.00
         P.maxStars = 24576
         P.outputDirectory = outputDirectory
-        P.outputExtension = ".fits"
+        P.outputExtension = ".xisf"
         P.outputPrefix = ""
         P.outputPostfix = "_c"
         P.outputSampleFormat = use32Bit ? ImageCalibration.prototype.f32 : ImageCalibration.prototype.i16

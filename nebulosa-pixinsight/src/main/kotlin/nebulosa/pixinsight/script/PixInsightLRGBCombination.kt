@@ -8,26 +8,24 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 import kotlin.io.path.readText
 
-data class PixInsightCalibrate(
+data class PixInsightLRGBCombination(
     private val slot: Int,
-    private val workingDirectory: Path,
-    private val targetPath: Path,
-    private val darkPath: Path? = null,
-    private val flatPath: Path? = null,
-    private val biasPath: Path? = null,
-    private val compress: Boolean = false,
-    private val use32Bit: Boolean = false,
-) : AbstractPixInsightScript<PixInsightCalibrate.Output>() {
+    private val outputPath: Path,
+    private val luminancePath: Path? = null,
+    private val redPath: Path? = null,
+    private val greenPath: Path? = null,
+    private val bluePath: Path? = null,
+) : AbstractPixInsightScript<PixInsightLRGBCombination.Output>() {
 
+    @Suppress("ArrayInDataClass")
     private data class Input(
-        @JvmField val targetPath: Path,
-        @JvmField val outputDirectory: Path,
+        @JvmField val outputPath: Path,
         @JvmField val statusPath: Path,
-        @JvmField val masterDark: Path? = null,
-        @JvmField val masterFlat: Path? = null,
-        @JvmField val masterBias: Path? = null,
-        @JvmField val compress: Boolean = false,
-        @JvmField val use32Bit: Boolean = false,
+        @JvmField val luminancePath: Path?,
+        @JvmField val redPath: Path?,
+        @JvmField val greenPath: Path?,
+        @JvmField val bluePath: Path?,
+        @JvmField val channelWeights: DoubleArray,
     )
 
     data class Output(
@@ -46,11 +44,11 @@ data class PixInsightCalibrate(
     private val statusPath = Files.createTempFile("pi-", ".txt")
 
     init {
-        resource("pixinsight/Calibrate.js")!!.transferAndClose(scriptPath.outputStream())
+        resource("pixinsight/LRGBCombination.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
     override val arguments =
-        listOf("-x=${execute(slot, scriptPath, Input(targetPath, workingDirectory, statusPath, darkPath, flatPath, biasPath, compress, use32Bit))}")
+        listOf("-x=${execute(slot, scriptPath, Input(outputPath, statusPath, luminancePath, redPath, greenPath, bluePath, DEFAULT_CHANNEL_WEIGHTS))}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {
@@ -71,5 +69,10 @@ data class PixInsightCalibrate(
     override fun close() {
         scriptPath.deleteIfExists()
         statusPath.deleteIfExists()
+    }
+
+    companion object {
+
+        @JvmStatic private val DEFAULT_CHANNEL_WEIGHTS = doubleArrayOf(1.0, 1.0, 1.0, 1.0)
     }
 }
