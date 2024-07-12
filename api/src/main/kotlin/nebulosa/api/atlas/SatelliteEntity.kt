@@ -7,7 +7,7 @@ import nebulosa.api.database.BoxEntity
 @Entity
 data class SatelliteEntity(
     @Id(assignable = true) override var id: Long = 0L,
-    var name: String = "",
-    var tle: String = "",
-    var groups: MutableList<String> = ArrayList(0),
+    @JvmField var name: String = "",
+    @JvmField var tle: String = "",
+    @JvmField var groups: MutableList<String> = ArrayList(0),
 ) : BoxEntity

@@ -15,9 +15,9 @@ import nebulosa.skycatalog.SkyObjectType
 data class ImageAnnotation(
     override val x: Double,
     override val y: Double,
-    val star: StarDSO? = null,
-    val dso: StarDSO? = null,
-    val minorPlanet: MinorPlanet? = null,
+    @JvmField val star: StarDSO? = null,
+    @JvmField val dso: StarDSO? = null,
+    @JvmField val minorPlanet: MinorPlanet? = null,
 ) : Point2D {
 
     data class StarDSO(
@@ -48,6 +48,6 @@ data class ImageAnnotation(
         @field:JsonSerialize(using = RightAscensionSerializer::class) override val rightAscensionJ2000: Angle = 0.0,
         @field:JsonSerialize(using = DeclinationSerializer::class) override val declinationJ2000: Angle = 0.0,
         override val magnitude: Double = SkyObject.UNKNOWN_MAGNITUDE,
-        val constellation: Constellation = Constellation.find(ICRF.equatorial(rightAscensionJ2000, declinationJ2000)),
+        @JvmField val constellation: Constellation = Constellation.find(ICRF.equatorial(rightAscensionJ2000, declinationJ2000)),
     ) : SkyObject
 }

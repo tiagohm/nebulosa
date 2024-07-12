@@ -10,6 +10,7 @@ import nebulosa.fits.isFits
 import nebulosa.image.Image
 import nebulosa.image.algorithms.transformation.AutoScreenTransformFunction
 import nebulosa.pixinsight.script.*
+import nebulosa.pixinsight.script.PixInsightScript.Companion.UNSPECIFIED_SLOT
 import nebulosa.test.AbstractFitsAndXisfTest
 import nebulosa.test.NonGitHubOnlyCondition
 import nebulosa.xisf.isXisf
@@ -32,48 +33,89 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
                 .use { it.runSync(runner).shouldBeTrue() }
         }
         "calibrate" {
-            PixInsightCalibrate(PixInsightScript.UNSPECIFIED_SLOT, workingDirectory, PI_01_LIGHT, PI_DARK, PI_FLAT, PI_BIAS)
+            PixInsightCalibrate(UNSPECIFIED_SLOT, workingDirectory, PI_01_LIGHT, PI_DARK, PI_FLAT, PI_BIAS)
                 .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
                 .transform(AutoScreenTransformFunction).save("pi-calibrate").second shouldBe "731562ee12f45bf7c1095f4773f70e71"
         }
         "align" {
-            PixInsightAlign(PixInsightScript.UNSPECIFIED_SLOT, workingDirectory, PI_01_LIGHT, PI_02_LIGHT)
+            PixInsightAlign(UNSPECIFIED_SLOT, workingDirectory, PI_01_LIGHT, PI_02_LIGHT)
                 .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
                 .transform(AutoScreenTransformFunction).save("pi-align").second shouldBe "483ebaf15afa5957fe099f3ee2beff78"
         }
         "detect stars" {
-            PixInsightDetectStars(PixInsightScript.UNSPECIFIED_SLOT, PI_FOCUS_0)
+            PixInsightDetectStars(UNSPECIFIED_SLOT, PI_FOCUS_0)
                 .use { it.runSync(runner).also(::println).stars }
                 .map { it.hfd }
                 .average() shouldBe (8.43 plusOrMinus 1e-2)
 
-            PixInsightDetectStars(PixInsightScript.UNSPECIFIED_SLOT, PI_FOCUS_30000)
+            PixInsightDetectStars(UNSPECIFIED_SLOT, PI_FOCUS_30000)
                 .use { it.runSync(runner).also(::println).stars }
                 .map { it.hfd }
                 .average() shouldBe (1.85 plusOrMinus 1e-2)
 
-            PixInsightDetectStars(PixInsightScript.UNSPECIFIED_SLOT, PI_FOCUS_100000)
+            PixInsightDetectStars(UNSPECIFIED_SLOT, PI_FOCUS_100000)
                 .use { it.runSync(runner).also(::println).stars }
                 .map { it.hfd }
                 .average() shouldBe (18.35 plusOrMinus 1e-2)
         }
         "pixel math" {
             val outputPath = tempfile("pi-stacked-", ".fits").toPath()
-            PixInsightPixelMath(PixInsightScript.UNSPECIFIED_SLOT, listOf(PI_01_LIGHT, PI_02_LIGHT), outputPath, "{{0}} + {{1}}")
-                .use { it.runSync(runner).also(::println).stackedImage.shouldNotBeNull().openAsImage() }
+            PixInsightPixelMath(UNSPECIFIED_SLOT, listOf(PI_01_LIGHT, PI_02_LIGHT), outputPath, "{{0}} + {{1}}")
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
                 .transform(AutoScreenTransformFunction).save("pi-pixelmath").second shouldBe "cafc8138e2ce17614dcfa10edf410b07"
         }
         "abe" {
             val outputPath = tempfile("pi-abe-", ".fits").toPath()
-            PixInsightAutomaticBackgroundExtractor(PixInsightScript.UNSPECIFIED_SLOT, PI_01_LIGHT, outputPath)
+            PixInsightAutomaticBackgroundExtractor(UNSPECIFIED_SLOT, PI_01_LIGHT, outputPath)
                 .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
                 .transform(AutoScreenTransformFunction).save("pi-abe").second shouldBe "bf62207dc17190009ba215da7c011297"
         }
         "lrgb combination" {
             val outputPath = tempfile("pi-lrgb-", ".fits").toPath()
-            PixInsightLRGBCombination(PixInsightScript.UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT)
+            PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT)
                 .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
                 .transform(AutoScreenTransformFunction).save("pi-lrgb").second shouldBe "99db35d78f7b360e7592217f4179b189"
+
+            val weights = doubleArrayOf(1.0, 0.2470588, 0.31764705, 0.709803921) // LRGB #3F51B5
+            PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT, weights)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
+                .transform(AutoScreenTransformFunction).save("pi-weighted-lrgb").second shouldBe "1148ee222fbfb382ad2d708df5b0f79f"
+
+            PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, PI_01_LIGHT, null, null)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
+                .transform(AutoScreenTransformFunction).save("pi-lr").second shouldBe "9100d3ce892f05f4b832b2fb5f35b5a1"
+
+            PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, null, PI_01_LIGHT, null)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
+                .transform(AutoScreenTransformFunction).save("pi-lg").second shouldBe "b4e8d8f7e289db60b41ba2bbe0035344"
+
+            PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, null, null, PI_01_LIGHT)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
+                .transform(AutoScreenTransformFunction).save("pi-lb").second shouldBe "1760e7cb1d139b63022dd975fe84897d"
+
+            PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, null, PI_01_LIGHT, PI_01_LIGHT, null)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
+                .transform(AutoScreenTransformFunction).save("pi-rg").second shouldBe "8c59307b5943932aefdf2dedfe1c8178"
+
+            PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, null, PI_01_LIGHT, null, PI_01_LIGHT)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
+                .transform(AutoScreenTransformFunction).save("pi-rb").second shouldBe "1bdf9cada6a33f76dceaccdaacf30fef"
+
+            PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, null, null, PI_01_LIGHT, PI_01_LIGHT)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
+                .transform(AutoScreenTransformFunction).save("pi-bg").second shouldBe "4a9c81c71fd37546fd300d1037742fa2"
+
+            PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT, null)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
+                .transform(AutoScreenTransformFunction).save("pi-lrg").second shouldBe "06c32c8679d409302423baa3a07fb241"
+
+            PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, PI_01_LIGHT, null, PI_01_LIGHT)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
+                .transform(AutoScreenTransformFunction).save("pi-lrb").second shouldBe "f6d026cb63f7a58fc325e422c277ff89"
+
+            PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, null, PI_01_LIGHT, PI_01_LIGHT)
+                .use { it.runSync(runner).also(::println).outputImage.shouldNotBeNull().openAsImage() }
+                .transform(AutoScreenTransformFunction).save("pi-lbg").second shouldBe "67f961110fb4b9f0033b3b8dbc8b1638"
         }
     }
 

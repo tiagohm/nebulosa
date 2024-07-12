@@ -26,6 +26,7 @@ function lrgbCombination() {
         const greenPath = input.greenPath
         const bluePath = input.bluePath
 
+        console.writeln("LRGB combination started")
         console.writeln("outputPath=" + outputPath)
         console.writeln("statusPath=" + statusPath)
         console.writeln("channelWeights=" + channelWeights)
@@ -41,10 +42,10 @@ function lrgbCombination() {
 
         var P = new LRGBCombination
         P.channels = [ // enabled, id, k
-           [!!luminancePath, luminanceWindow? luminanceWindow.mainView.id : "", channelWeights[0]],
            [!!redPath, redWindow ? redWindow.mainView.id : "", channelWeights[1]],
            [!!greenPath, greenWindow ? greenWindow.mainView.id : "", channelWeights[2]],
-           [!!bluePath, blueWindow ? blueWindow.mainView.id : "", channelWeights[3]]
+           [!!bluePath, blueWindow ? blueWindow.mainView.id : "", channelWeights[3]],
+           [!!luminancePath, luminanceWindow ? luminanceWindow.mainView.id : "", channelWeights[0]]
         ]
         P.mL = 0.500
         P.mc = 0.500

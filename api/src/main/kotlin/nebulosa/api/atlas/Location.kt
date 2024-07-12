@@ -15,7 +15,7 @@ data class Location(
     @field:JsonSerialize(using = DegreesSerializer::class) @field:JsonDeserialize(using = DegreesDeserializer::class) override val latitude: Angle = 0.0,
     @field:JsonSerialize(using = DegreesSerializer::class) @field:JsonDeserialize(using = DegreesDeserializer::class) override val longitude: Angle = 0.0,
     @field:JsonSerialize(using = MetersSerializer::class) @field:JsonDeserialize(using = MetersDeserializer::class) override val elevation: Distance = 0.0,
-    val offsetInMinutes: Int = 0,
+    @JvmField val offsetInMinutes: Int = 0,
 ) : GeographicCoordinate, TimeZonedInSeconds {
 
     override val offsetInSeconds = offsetInMinutes * 60

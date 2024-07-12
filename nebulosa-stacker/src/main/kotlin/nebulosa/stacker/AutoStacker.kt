@@ -2,7 +2,7 @@ package nebulosa.stacker
 
 import java.nio.file.Path
 
-interface AutoStacker {
+interface AutoStacker : Stacker {
 
     fun stack(paths: Collection<Path>, outputPath: Path, referencePath: Path = paths.first()): Boolean
 }

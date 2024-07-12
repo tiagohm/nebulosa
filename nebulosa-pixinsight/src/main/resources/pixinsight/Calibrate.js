@@ -27,6 +27,7 @@ function calibrate() {
         const compress = input.compress
         const use32Bit = input.use32Bit
 
+        console.writeln("calibration started")
         console.writeln("targetPath=" + targetPath)
         console.writeln("outputDirectory=" + outputDirectory)
         console.writeln("statusPath=" + statusPath)

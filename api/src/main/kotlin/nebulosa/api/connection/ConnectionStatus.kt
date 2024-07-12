@@ -1,8 +1,9 @@
 package nebulosa.api.connection
 
 data class ConnectionStatus(
-    val id: String,
-    val type: ConnectionType,
-    val host: String, val port: Int,
-    val ip: String? = null,
+    @JvmField val id: String,
+    @JvmField val type: ConnectionType,
+    @JvmField val host: String,
+    @JvmField val port: Int,
+    @JvmField val ip: String? = null,
 )

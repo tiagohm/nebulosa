@@ -29,6 +29,23 @@ data class PixInsightStacker(
     override fun integrate(stackCount: Int, stackedPath: Path, targetPath: Path, outputPath: Path): Boolean {
         val expressionRK = "({{0}} * $stackCount + {{1}}) / ${stackCount + 1}"
         return PixInsightPixelMath(slot, listOf(stackedPath, targetPath), outputPath, expressionRK)
-            .use { it.runSync(runner).stackedImage != null }
+            .use { it.runSync(runner).outputImage != null }
+    }
+
+    override fun combineLRGB(outputPath: Path, luminancePath: Path?, redPath: Path?, greenPath: Path?, bluePath: Path?): Boolean {
+        if (luminancePath == null && redPath == null && greenPath == null && bluePath == null) return false
+
+        return PixInsightLRGBCombination(slot, outputPath, luminancePath, redPath, greenPath, bluePath)
+            .use { it.runSync(runner).outputImage != null }
+    }
+
+    override fun combineLuminance(outputPath: Path, luminancePath: Path, targetPath: Path, mono: Boolean): Boolean {
+        return if (mono) {
+            PixInsightPixelMath(slot, listOf(luminancePath, targetPath), outputPath, "{{0}} + (1 - {{0}}) * {{1}}")
+                .use { it.runSync(runner).outputImage != null }
+        } else {
+            PixInsightLuminanceCombination(slot, outputPath, luminancePath, targetPath)
+                .use { it.runSync(runner).outputImage != null }
+        }
     }
 }

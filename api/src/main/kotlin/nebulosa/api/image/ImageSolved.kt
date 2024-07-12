@@ -4,14 +4,14 @@ import nebulosa.math.*
 import nebulosa.platesolver.PlateSolution
 
 data class ImageSolved(
-    val solved: Boolean = false,
-    val orientation: Double = 0.0,
-    val scale: Double = 0.0,
-    val rightAscensionJ2000: String = "",
-    val declinationJ2000: String = "",
-    val width: Double = 0.0,
-    val height: Double = 0.0,
-    val radius: Double = 0.0,
+    @JvmField val solved: Boolean = false,
+    @JvmField val orientation: Double = 0.0,
+    @JvmField val scale: Double = 0.0,
+    @JvmField val rightAscensionJ2000: String = "",
+    @JvmField val declinationJ2000: String = "",
+    @JvmField val width: Double = 0.0,
+    @JvmField val height: Double = 0.0,
+    @JvmField val radius: Double = 0.0,
 ) {
 
     constructor(solution: PlateSolution) : this(

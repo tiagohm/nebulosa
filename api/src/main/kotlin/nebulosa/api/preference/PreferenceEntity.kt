@@ -9,6 +9,6 @@ import nebulosa.api.database.BoxEntity
 @Entity
 data class PreferenceEntity(
     @Id override var id: Long = 0L,
-    @Unique(onConflict = ConflictStrategy.REPLACE) var key: String = "",
-    var value: String? = null,
+    @Unique(onConflict = ConflictStrategy.REPLACE) @JvmField var key: String = "",
+    @JvmField var value: String? = null,
 ) : BoxEntity

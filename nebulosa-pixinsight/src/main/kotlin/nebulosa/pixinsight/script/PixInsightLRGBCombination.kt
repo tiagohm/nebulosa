@@ -8,6 +8,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 import kotlin.io.path.readText
 
+@Suppress("ArrayInDataClass")
 data class PixInsightLRGBCombination(
     private val slot: Int,
     private val outputPath: Path,
@@ -15,6 +16,7 @@ data class PixInsightLRGBCombination(
     private val redPath: Path? = null,
     private val greenPath: Path? = null,
     private val bluePath: Path? = null,
+    private val weights: DoubleArray = DEFAULT_CHANNEL_WEIGHTS,
 ) : AbstractPixInsightScript<PixInsightLRGBCombination.Output>() {
 
     @Suppress("ArrayInDataClass")
@@ -29,10 +31,10 @@ data class PixInsightLRGBCombination(
     )
 
     data class Output(
-        @JvmField val success: Boolean = false,
-        @JvmField val errorMessage: String? = null,
+        override val success: Boolean = false,
+        override val errorMessage: String? = null,
         @JvmField val outputImage: Path? = null,
-    ) {
+    ) : PixInsightOutput {
 
         companion object {
 
@@ -44,11 +46,12 @@ data class PixInsightLRGBCombination(
     private val statusPath = Files.createTempFile("pi-", ".txt")
 
     init {
+        require(weights.size >= 4) { "invalid weights size: ${weights.size}" }
         resource("pixinsight/LRGBCombination.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
     override val arguments =
-        listOf("-x=${execute(slot, scriptPath, Input(outputPath, statusPath, luminancePath, redPath, greenPath, bluePath, DEFAULT_CHANNEL_WEIGHTS))}")
+        listOf("-x=${execute(slot, scriptPath, Input(outputPath, statusPath, luminancePath, redPath, greenPath, bluePath, weights))}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {

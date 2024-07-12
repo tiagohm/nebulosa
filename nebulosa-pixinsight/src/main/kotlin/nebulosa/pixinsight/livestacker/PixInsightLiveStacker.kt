@@ -15,9 +15,9 @@ import kotlin.io.path.deleteIfExists
 data class PixInsightLiveStacker(
     private val runner: PixInsightScriptRunner,
     private val workingDirectory: Path,
-    private val dark: Path? = null,
-    private val flat: Path? = null,
-    private val bias: Path? = null,
+    private val darkPath: Path? = null,
+    private val flatPath: Path? = null,
+    private val biasPath: Path? = null,
     private val use32Bits: Boolean = false,
     private val slot: Int = PixInsightScript.UNSPECIFIED_SLOT,
 ) : LiveStacker {
@@ -42,9 +42,7 @@ data class PixInsightLiveStacker(
     @Synchronized
     override fun start() {
         if (!running.get()) {
-            val isPixInsightRunning = PixInsightIsRunning(slot).use { it.runSync(runner) }
-
-            if (!isPixInsightRunning) {
+            if (!PixInsightIsRunning(slot).use { it.runSync(runner) }) {
                 try {
                     check(PixInsightStartup(slot).use { it.runSync(runner) })
                 } catch (e: Throwable) {
@@ -64,7 +62,7 @@ data class PixInsightLiveStacker(
         return if (running.get()) {
             stacking.set(true)
 
-            if (stacker.calibrate(targetPath, calibratedPath, dark, flat, bias)) {
+            if (stacker.calibrate(targetPath, calibratedPath, darkPath, flatPath, biasPath)) {
                 LOG.info("live stacking calibrated. count={}, output={}", stackCount, calibratedPath)
                 targetPath = calibratedPath
             }

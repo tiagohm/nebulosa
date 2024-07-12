@@ -42,6 +42,7 @@ function alignment() {
         const outputDirectory = input.outputDirectory
         const statusPath = input.statusPath
 
+        console.writeln("alignment started")
         console.writeln("referencePath=" + referencePath)
         console.writeln("targetPath=" + targetPath)
         console.writeln("outputDirectory=" + outputDirectory)

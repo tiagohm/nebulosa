@@ -2,11 +2,10 @@
 	<div class="col-12 mb-2 mt-3">
 		<p-floatLabel class="w-full">
 			<p-dropdown
-				[options]="tabs"
+				[options]="'SETTINGS_TAB' | dropdownOptions | enumDropdown"
 				[(ngModel)]="tab"
-				dataKey="id"
-				optionLabel="name"
-				optionValue="id"
+				optionLabel="label"
+				optionValue="value"
 				styleClass="p-inputtext-sm border-0"
 				[autoDisplayFirst]="false" />
 			<label>Settings</label>
@@ -14,7 +13,7 @@
 	</div>
 	<div
 		class="col-12"
-		*ngIf="tab === 0">
+		*ngIf="tab === 'LOCATION'">
 		<div class="grid">
 			<div class="col-12 gap-2">
 				<p-floatLabel class="w-full">
@@ -61,7 +60,7 @@
 	</div>
 	<div
 		class="col-12"
-		*ngIf="tab === 1">
+		*ngIf="tab === 'PLATE_SOLVER'">
 		<div class="grid">
 			<div class="col-8">
 				<p-floatLabel class="w-full">
@@ -139,7 +138,7 @@
 	</div>
 	<div
 		class="col-12"
-		*ngIf="tab === 2">
+		*ngIf="tab === 'STAR_DETECTOR'">
 		<div class="grid">
 			<div class="col-6">
 				<p-floatLabel class="w-full">
@@ -236,7 +235,7 @@
 	</div>
 	<div
 		class="col-12"
-		*ngIf="tab === 3">
+		*ngIf="tab === 'LIVE_STACKER'">
 		<div class="grid">
 			<div class="col-6">
 				<p-floatLabel class="w-full">
@@ -282,7 +281,7 @@
 	</div>
 	<div
 		class="col-12"
-		*ngIf="tab === 4">
+		*ngIf="tab === 'CAPTURE_NAMING_FORMAT'">
 		<div class="grid">
 			<div class="col-12 gap-1">
 				<p-floatLabel class="w-full">

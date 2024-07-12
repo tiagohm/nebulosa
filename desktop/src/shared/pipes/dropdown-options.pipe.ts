@@ -6,7 +6,8 @@ import { GuideDirection, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider
 import { Bitpix, ImageChannel, ImageFormat, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlType } from '../types/mount.types'
 import { SequenceCaptureMode } from '../types/sequencer.types'
-import { PlateSolverType, StarDetectorType } from '../types/settings.types'
+import { PlateSolverType, SettingsTabKey, StarDetectorType } from '../types/settings.types'
+import { StackerType } from '../types/stacker.types'
 
 export interface DropdownOptions {
 	STAR_DETECTOR: StarDetectorType[]
@@ -28,6 +29,8 @@ export interface DropdownOptions {
 	GUIDER_PLOT_MODE: GuiderPlotMode[]
 	GUIDER_Y_AXIS_UNIT: GuiderYAxisUnit[]
 	SEQUENCE_CAPTURE_MODE: SequenceCaptureMode[]
+	STACKER: StackerType[]
+	SETTINGS_TAB: SettingsTabKey[]
 }
 
 @Pipe({ name: 'dropdownOptions' })
@@ -72,6 +75,10 @@ export class DropdownOptionsPipe implements PipeTransform {
 				return ['ARCSEC', 'PIXEL'] as DropdownOptions[K]
 			case 'SEQUENCE_CAPTURE_MODE':
 				return ['FULLY', 'INTERLEAVED'] as DropdownOptions[K]
+			case 'STACKER':
+				return ['PIXINSIGHT'] as DropdownOptions[K]
+			case 'SETTINGS_TAB':
+				return ['LOCATION', 'PLATE_SOLVER', 'STAR_DETECTOR', 'LIVE_STACKER', 'STACKER', 'CAPTURE_NAMING_FORMAT'] as DropdownOptions[K]
 		}
 
 		return []

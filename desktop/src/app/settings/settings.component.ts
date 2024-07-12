@@ -6,7 +6,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
 import { FrameType, LiveStackerType, LiveStackingRequest } from '../../shared/types/camera.types'
-import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, PlateSolverRequest, PlateSolverType, resetCameraCaptureNamingFormat, StarDetectionRequest, StarDetectorType } from '../../shared/types/settings.types'
+import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, PlateSolverRequest, PlateSolverType, resetCameraCaptureNamingFormat, SettingsTabKey, StarDetectionRequest, StarDetectorType } from '../../shared/types/settings.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -14,29 +14,8 @@ import { AppComponent } from '../app.component'
 	templateUrl: './settings.component.html',
 })
 export class SettingsComponent {
-	tab = 0
-	readonly tabs: { id: number; name: string }[] = [
-		{
-			id: 0,
-			name: 'Location',
-		},
-		{
-			id: 1,
-			name: 'Plate Solver',
-		},
-		{
-			id: 2,
-			name: 'Star Detection',
-		},
-		{
-			id: 3,
-			name: 'Live Stacking',
-		},
-		{
-			id: 4,
-			name: 'Capture Naming Format',
-		},
-	]
+	tab: SettingsTabKey = 'LOCATION'
+	readonly tabs: SettingsTabKey[] = ['LOCATION', 'PLATE_SOLVER', 'STAR_DETECTOR', 'LIVE_STACKER', 'STACKER', 'CAPTURE_NAMING_FORMAT']
 
 	readonly locations: Location[]
 	location: Location

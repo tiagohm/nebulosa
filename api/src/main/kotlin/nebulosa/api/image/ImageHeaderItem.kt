@@ -1,3 +1,3 @@
 package nebulosa.api.image
 
-data class ImageHeaderItem(val name: String, val value: String)
+data class ImageHeaderItem(@JvmField val name: String, @JvmField val value: String)

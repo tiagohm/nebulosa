@@ -22,6 +22,7 @@ function abe() {
         const outputPath = input.outputPath
         const statusPath = input.statusPath
 
+        console.writeln("abe started")
         console.writeln("targetPath=" + targetPath)
         console.writeln("outputPath=" + outputPath)
         console.writeln("statusPath=" + statusPath)

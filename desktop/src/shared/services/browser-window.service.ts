@@ -139,8 +139,13 @@ export class BrowserWindowService {
 	}
 
 	openCalibration(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'stack', width: 420, height: 400, minHeight: 400 })
+		Object.assign(preference, { icon: 'photo-filter', width: 420, height: 400, minHeight: 400 })
 		return this.openWindow({ preference, id: 'calibration', path: 'calibration' })
+	}
+
+	openStacker(preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'stack', width: 420, height: 400 })
+		return this.openWindow({ preference, id: 'stacker', path: 'stacker' })
 	}
 
 	openAbout() {
