@@ -1,8 +1,8 @@
 package nebulosa.api.calibration
 
 data class CalibrationFrameGroup(
-    val id: Int,
-    val name: String,
-    val key: CalibrationGroupKey,
-    val frames: List<CalibrationFrameEntity>,
+    @JvmField val id: Int,
+    @JvmField val name: String,
+    @JvmField val key: CalibrationGroupKey,
+    @JvmField val frames: List<CalibrationFrameEntity>,
 )

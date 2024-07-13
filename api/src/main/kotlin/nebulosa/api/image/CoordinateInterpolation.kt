@@ -4,8 +4,12 @@ import java.time.LocalDateTime
 
 @Suppress("ArrayInDataClass")
 data class CoordinateInterpolation(
-    val ma: DoubleArray,
-    val md: DoubleArray,
-    val x0: Int, val y0: Int, val x1: Int, val y1: Int,
-    val delta: Int, val date: LocalDateTime?,
+    @JvmField val ma: DoubleArray,
+    @JvmField val md: DoubleArray,
+    @JvmField val x0: Int,
+    @JvmField val y0: Int,
+    @JvmField val x1: Int,
+    @JvmField val y1: Int,
+    @JvmField val delta: Int,
+    @JvmField val date: LocalDateTime?,
 )

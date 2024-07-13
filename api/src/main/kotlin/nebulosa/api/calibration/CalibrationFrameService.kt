@@ -6,8 +6,8 @@ import nebulosa.image.algorithms.transformation.correction.BiasSubtraction
 import nebulosa.image.algorithms.transformation.correction.DarkSubtraction
 import nebulosa.image.algorithms.transformation.correction.FlatCorrection
 import nebulosa.image.format.ImageHdu
-import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.FrameType
+import nebulosa.indi.device.camera.FrameType.Companion.frameType
 import nebulosa.log.loggerFor
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
@@ -100,7 +100,7 @@ class CalibrationFrameService(
     }
 
     fun upload(name: String, path: Path): List<CalibrationFrameEntity> {
-        val files = if (path.isRegularFile() && path.isFits) listOf(path)
+        val files = if (path.isRegularFile()) listOf(path)
         else if (path.isDirectory()) path.listDirectoryEntries("*.{fits,fit,xisf}").filter { it.isRegularFile() }
         else return emptyList()
 
@@ -220,17 +220,5 @@ class CalibrationFrameService(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<CalibrationFrameService>()
-
-        @JvmStatic val ReadableHeader.frameType
-            get() = frame?.let {
-                if (it.contains("LIGHT", true)) FrameType.LIGHT
-                else if (it.contains("DARK", true)) FrameType.DARK
-                else if (it.contains("FLAT", true)) FrameType.FLAT
-                else if (it.contains("BIAS", true)) FrameType.BIAS
-                else null
-            }
-
-        inline val Path.isFits
-            get() = "$this".let { it.endsWith(".fits") || it.endsWith(".fit") }
     }
 }

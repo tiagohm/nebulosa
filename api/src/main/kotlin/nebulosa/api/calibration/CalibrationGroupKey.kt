@@ -4,11 +4,15 @@ import nebulosa.indi.device.camera.FrameType
 import kotlin.math.roundToInt
 
 data class CalibrationGroupKey(
-    val type: FrameType, val filter: String?,
-    val width: Int, val height: Int,
-    val binX: Int, val binY: Int,
-    val exposureTime: Long,
-    val temperature: Int, val gain: Double,
+    @JvmField val type: FrameType,
+    @JvmField val filter: String?,
+    @JvmField val width: Int,
+    @JvmField val height: Int,
+    @JvmField val binX: Int,
+    @JvmField val binY: Int,
+    @JvmField val exposureTime: Long,
+    @JvmField val temperature: Int,
+    @JvmField val gain: Double,
 ) {
 
     companion object {

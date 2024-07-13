@@ -12,9 +12,9 @@ data class PixInsightCalibrate(
     private val slot: Int,
     private val workingDirectory: Path,
     private val targetPath: Path,
-    private val dark: Path? = null,
-    private val flat: Path? = null,
-    private val bias: Path? = null,
+    private val darkPath: Path? = null,
+    private val flatPath: Path? = null,
+    private val biasPath: Path? = null,
     private val compress: Boolean = false,
     private val use32Bit: Boolean = false,
 ) : AbstractPixInsightScript<PixInsightCalibrate.Output>() {
@@ -31,10 +31,10 @@ data class PixInsightCalibrate(
     )
 
     data class Output(
-        @JvmField val success: Boolean = false,
-        @JvmField val errorMessage: String? = null,
+        override val success: Boolean = false,
+        override val errorMessage: String? = null,
         @JvmField val outputImage: Path? = null,
-    ) {
+    ) : PixInsightOutput {
 
         companion object {
 
@@ -50,7 +50,7 @@ data class PixInsightCalibrate(
     }
 
     override val arguments =
-        listOf("-x=${execute(slot, scriptPath, Input(targetPath, workingDirectory, statusPath, dark, flat, bias, compress, use32Bit))}")
+        listOf("-x=${execute(slot, scriptPath, Input(targetPath, workingDirectory, statusPath, darkPath, flatPath, biasPath, compress, use32Bit))}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {

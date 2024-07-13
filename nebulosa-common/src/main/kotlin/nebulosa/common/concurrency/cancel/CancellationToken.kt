@@ -2,6 +2,7 @@ package nebulosa.common.concurrency.cancel
 
 import nebulosa.common.concurrency.latch.Pauser
 import java.io.Closeable
+import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
@@ -43,6 +44,11 @@ class CancellationToken private constructor(private val completable: Completable
         listeners.remove(listener)
     }
 
+    @Synchronized
+    fun unlistenAll() {
+        listeners.clear()
+    }
+
     fun cancel() {
         cancel(true)
     }
@@ -72,6 +78,10 @@ class CancellationToken private constructor(private val completable: Completable
 
     override fun get(timeout: Long, unit: TimeUnit): CancellationSource {
         return completable?.get(timeout, unit) ?: CancellationSource.None
+    }
+
+    fun throwIfCancelled() {
+        if (isCancelled) throw CancellationException()
     }
 
     override fun close() {

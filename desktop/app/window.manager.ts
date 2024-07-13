@@ -288,13 +288,19 @@ export class WindowManager {
 		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
 
 		if (window) {
+			const properties: Electron.OpenDialogOptions['properties'] = ['openFile']
+
+			if (command.multiple) {
+				properties.push('multiSelections')
+			}
+
 			const ret = await dialog.showOpenDialog(window.browserWindow, {
 				filters: command.filters,
-				properties: ['openFile'],
+				properties,
 				defaultPath: command.defaultPath || undefined,
 			})
 
-			return !ret.canceled && ret.filePaths[0]
+			return !ret.canceled && (command.multiple ? ret.filePaths : ret.filePaths[0])
 		} else {
 			return false
 		}

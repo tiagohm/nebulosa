@@ -750,9 +750,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 			this.request.liveStacking.enabled = cameraPreference.liveStacking?.enabled ?? false
 			this.request.liveStacking.type = cameraPreference.liveStacking?.type ?? 'SIRIL'
 			this.request.liveStacking.executablePath = cameraPreference.liveStacking?.executablePath ?? ''
-			this.request.liveStacking.dark = cameraPreference.liveStacking?.dark
-			this.request.liveStacking.flat = cameraPreference.liveStacking?.flat
-			this.request.liveStacking.bias = cameraPreference.liveStacking?.bias
+			this.request.liveStacking.darkPath = cameraPreference.liveStacking?.darkPath
+			this.request.liveStacking.flatPath = cameraPreference.liveStacking?.flatPath
+			this.request.liveStacking.biasPath = cameraPreference.liveStacking?.biasPath
 			this.request.liveStacking.use32Bits = cameraPreference.liveStacking?.use32Bits ?? false
 			this.request.liveStacking.slot = cameraPreference.liveStacking?.slot ?? 1
 

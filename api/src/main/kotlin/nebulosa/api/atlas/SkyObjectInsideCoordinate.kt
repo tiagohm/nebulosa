@@ -9,9 +9,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 data class SkyObjectInsideCoordinate(
-    private val rightAscension: Angle,
-    private val declination: Angle,
-    private val radius: Angle,
+    @JvmField val rightAscension: Angle,
+    @JvmField val declination: Angle,
+    @JvmField val radius: Angle,
 ) : QueryFilter<SimbadEntity> {
 
     private val sinDEC = declination.sin

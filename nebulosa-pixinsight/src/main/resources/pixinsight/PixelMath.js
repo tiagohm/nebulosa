@@ -12,7 +12,7 @@ function pixelMath() {
     const data = {
         success: true,
         errorMessage: null,
-        stackedImage: null,
+        outputImage: null,
     }
 
     try {
@@ -47,6 +47,7 @@ function pixelMath() {
             }
         }
 
+        console.writeln("pixel math started")
         console.writeln("expressionRK=" + expressionRK)
         console.writeln("expressionG=" + expressionG)
         console.writeln("expressionB=" + expressionB)
@@ -87,9 +88,9 @@ function pixelMath() {
             windows[i].forceClose()
         }
 
-        data.stackedImage = outputPath
+        data.outputImage = outputPath
 
-        console.writeln("stacking finished")
+        console.writeln("pixel math finished")
     } catch (e) {
         data.success = false
         data.errorMessage = e.message

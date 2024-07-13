@@ -16,6 +16,7 @@ import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlTyp
 import { Rotator } from '../types/rotator.types'
 import { SequencePlan } from '../types/sequencer.types'
 import { PlateSolverRequest, StarDetectionRequest } from '../types/settings.types'
+import { AnalyzedTarget, StackingRequest } from '../types/stacker.types'
 import { FilterWheel } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 import { HttpService } from './http.service'
@@ -680,26 +681,22 @@ export class ApiService {
 		return this.http.put<never>(`auto-focus/${camera.id}/stop`)
 	}
 
-	// PREFERENCE
+	// STACKER
 
-	clearPreferences() {
-		return this.http.put<never>('preferences/clear')
+	stackerStart(request: StackingRequest) {
+		return this.http.put<string | null>('stacker/start', request)
 	}
 
-	deletePreference(key: string) {
-		return this.http.delete<never>(`preferences/${key}`)
+	stackerIsRunning() {
+		return this.http.get<boolean>('stacker/running')
 	}
 
-	getPreference<T>(key: string) {
-		return this.http.get<T>(`preferences/${key}`)
+	stackerStop() {
+		return this.http.put<never>('stacker/stop')
 	}
 
-	setPreference(key: string, data: unknown) {
-		return this.http.put<never>(`preferences/${key}`, { data })
-	}
-
-	hasPreference(key: string) {
-		return this.http.get<boolean>(`preferences/${key}/exists`)
+	stackerAnalyze(path: string) {
+		return this.http.put<AnalyzedTarget | null>(`stacker/analyze?path=${path}`)
 	}
 
 	// CONFIRMATION

@@ -27,10 +27,10 @@ data class PixInsightPixelMath(
     )
 
     data class Output(
-        @JvmField val success: Boolean = false,
-        @JvmField val errorMessage: String? = null,
-        @JvmField val stackedImage: Path? = null,
-    ) {
+        override val success: Boolean = false,
+        override val errorMessage: String? = null,
+        @JvmField val outputImage: Path? = null,
+    ) : PixInsightOutput {
 
         companion object {
 

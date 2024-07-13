@@ -15,19 +15,19 @@ import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 
 data class BodyPosition(
-    @field:JsonSerialize(using = RightAscensionSerializer::class) val rightAscensionJ2000: Angle,
-    @field:JsonSerialize(using = DeclinationSerializer::class) val declinationJ2000: Angle,
-    @field:JsonSerialize(using = RightAscensionSerializer::class) val rightAscension: Angle,
-    @field:JsonSerialize(using = DeclinationSerializer::class) val declination: Angle,
-    @field:JsonSerialize(using = AzimuthSerializer::class) val azimuth: Angle,
-    @field:JsonSerialize(using = DeclinationSerializer::class) val altitude: Angle,
-    val magnitude: Double,
-    val constellation: Constellation,
-    val distance: Double,
-    val distanceUnit: String,
-    val illuminated: Double,
-    @field:JsonSerialize(using = DegreesSerializer::class) val elongation: Angle,
-    val leading: Boolean, // true = rises and sets BEFORE Sun.
+    @field:JsonSerialize(using = RightAscensionSerializer::class) @JvmField val rightAscensionJ2000: Angle,
+    @field:JsonSerialize(using = DeclinationSerializer::class) @JvmField val declinationJ2000: Angle,
+    @field:JsonSerialize(using = RightAscensionSerializer::class) @JvmField val rightAscension: Angle,
+    @field:JsonSerialize(using = DeclinationSerializer::class) @JvmField val declination: Angle,
+    @field:JsonSerialize(using = AzimuthSerializer::class) @JvmField val azimuth: Angle,
+    @field:JsonSerialize(using = DeclinationSerializer::class) @JvmField val altitude: Angle,
+    @JvmField val magnitude: Double,
+    @JvmField val constellation: Constellation,
+    @JvmField val distance: Double,
+    @JvmField val distanceUnit: String,
+    @JvmField val illuminated: Double,
+    @field:JsonSerialize(using = DegreesSerializer::class) @JvmField val elongation: Angle,
+    @JvmField val leading: Boolean, // true = rises and sets BEFORE Sun.
 ) {
 
     companion object {

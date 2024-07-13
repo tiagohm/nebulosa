@@ -3,11 +3,11 @@ package nebulosa.api.guiding
 import nebulosa.guiding.GuideStep
 
 data class HistoryStep(
-    val id: Long = 0L,
-    val rmsRA: Double = 0.0,
-    val rmsDEC: Double = 0.0,
-    val rmsTotal: Double = 0.0,
-    val guideStep: GuideStep? = null,
-    val ditherX: Double = 0.0,
-    val ditherY: Double = 0.0,
+    @JvmField val id: Long = 0L,
+    @JvmField val rmsRA: Double = 0.0,
+    @JvmField val rmsDEC: Double = 0.0,
+    @JvmField val rmsTotal: Double = 0.0,
+    @JvmField val guideStep: GuideStep? = null,
+    @JvmField val ditherX: Double = 0.0,
+    @JvmField val ditherY: Double = 0.0,
 )

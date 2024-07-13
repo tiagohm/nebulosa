@@ -23,8 +23,8 @@ data class PixInsightAlign(
     )
 
     data class Output(
-        @JvmField val success: Boolean = false,
-        @JvmField val errorMessage: String? = null,
+        override val success: Boolean = false,
+        override val errorMessage: String? = null,
         @JvmField val outputImage: Path? = null,
         @JvmField val outputMaskImage: Path? = null,
         @JvmField val totalPairMatches: Int = 0,
@@ -45,7 +45,7 @@ data class PixInsightAlign(
         @JvmField val h31: Double = 0.0,
         @JvmField val h32: Double = 0.0,
         @JvmField val h33: Double = 0.0,
-    ) {
+    ) : PixInsightOutput {
 
         companion object {
 

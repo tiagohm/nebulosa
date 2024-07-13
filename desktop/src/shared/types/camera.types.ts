@@ -293,9 +293,9 @@ export interface LiveStackingRequest {
 	enabled: boolean
 	type: LiveStackerType
 	executablePath: string
-	dark?: string
-	flat?: string
-	bias?: string
+	darkPath?: string
+	flatPath?: string
+	biasPath?: string
 	use32Bits: boolean
 	slot: number
 }

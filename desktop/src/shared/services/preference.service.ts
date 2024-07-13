@@ -12,6 +12,7 @@ import { EMPTY_MOUNT_PREFERENCE, Mount, MountPreference } from '../types/mount.t
 import { Rotator, RotatorPreference } from '../types/rotator.types'
 import { EMPTY_SEQUENCER_PREFERENCE, SequencerPreference } from '../types/sequencer.types'
 import { CameraCaptureNamingFormat, DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, EMPTY_PLATE_SOLVER_REQUEST, EMPTY_STAR_DETECTION_REQUEST, PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetectorType } from '../types/settings.types'
+import { EMPTY_STACKER_PREFERENCE, EMPTY_STACKING_REQUEST, StackerPreference, StackerType, StackingRequest } from '../types/stacker.types'
 import { FilterWheel, WheelPreference } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 import { LocalStorageService } from './local-storage.service'
@@ -84,6 +85,10 @@ export class PreferenceService {
 		return new PreferenceData<LiveStackingRequest>(this.storage, `liveStacking.${type}`, () => ({ ...EMPTY_LIVE_STACKING_REQUEST, type }) as LiveStackingRequest)
 	}
 
+	stackingRequest(type: StackerType) {
+		return new PreferenceData<StackingRequest>(this.storage, `stacking.${type}`, () => ({ ...EMPTY_STACKING_REQUEST, type }) as StackingRequest)
+	}
+
 	equipmentForDevice(device: Device) {
 		return new PreferenceData<Equipment>(this.storage, `equipment.${device.name}`, () => ({}) as Equipment)
 	}
@@ -112,4 +117,5 @@ export class PreferenceService {
 	readonly autoFocusPreference = new PreferenceData<AutoFocusPreference>(this.storage, 'autoFocus', () => structuredClone(EMPTY_AUTO_FOCUS_PREFERENCE))
 	readonly sequencerPreference = new PreferenceData<SequencerPreference>(this.storage, 'sequencer', () => structuredClone(EMPTY_SEQUENCER_PREFERENCE))
 	readonly cameraCaptureNamingFormatPreference = new PreferenceData<CameraCaptureNamingFormat>(this.storage, 'camera.namingFormat', () => structuredClone(DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT))
+	readonly stackerPreference = new PreferenceData<StackerPreference>(this.storage, 'stacker', () => structuredClone(EMPTY_STACKER_PREFERENCE))
 }

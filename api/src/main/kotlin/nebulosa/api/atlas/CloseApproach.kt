@@ -8,11 +8,11 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 data class CloseApproach(
-    val name: String = "",
-    val designation: String = "",
-    val dateTime: Long = 0,
-    val distance: Double = 0.0,
-    val absoluteMagnitude: Double = 0.0,
+    @JvmField val name: String = "",
+    @JvmField val designation: String = "",
+    @JvmField val dateTime: Long = 0,
+    @JvmField val distance: Double = 0.0,
+    @JvmField val absoluteMagnitude: Double = 0.0,
 ) {
 
     companion object {

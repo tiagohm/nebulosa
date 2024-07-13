@@ -32,6 +32,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.copyTo
 import kotlin.io.path.exists
+import kotlin.io.path.extension
 
 data class CameraCaptureTask(
     @JvmField val camera: Camera,
@@ -100,7 +101,7 @@ data class CameraCaptureTask(
 
     private fun LiveStackingRequest.processCalibrationGroup(): LiveStackingRequest {
         return if (calibrationFrameProvider != null && enabled &&
-            !request.calibrationGroup.isNullOrBlank() && (dark == null || flat == null || bias == null)
+            !request.calibrationGroup.isNullOrBlank() && (darkPath == null || flatPath == null || biasPath == null)
         ) {
             val calibrationGroup = request.calibrationGroup
             val temperature = camera.temperature
@@ -119,24 +120,27 @@ data class CameraCaptureTask(
                 calibrationGroup, temperature, binX, binY, width, height, exposureTime, gain, filter
             )
 
-            val newDark = dark?.takeIf { it.exists() } ?: calibrationFrameProvider
+            val newDarkPath = darkPath?.takeIf { it.exists() } ?: calibrationFrameProvider
                 .findBestDarkFrames(calibrationGroup, temperature, width, height, binX, binY, exposureTime, gain)
                 .firstOrNull()
                 ?.path
 
-            val newFlat = flat?.takeIf { it.exists() } ?: calibrationFrameProvider
+            val newFlatPath = flatPath?.takeIf { it.exists() } ?: calibrationFrameProvider
                 .findBestFlatFrames(calibrationGroup, width, height, binX, binY, filter)
                 .firstOrNull()
                 ?.path
 
-            val newBias = if (newDark != null) null else bias?.takeIf { it.exists() } ?: calibrationFrameProvider
+            val newBiasPath = if (newDarkPath != null) null else biasPath?.takeIf { it.exists() } ?: calibrationFrameProvider
                 .findBestBiasFrames(calibrationGroup, width, height, binX, binY)
                 .firstOrNull()
                 ?.path
 
-            LOG.info("live stacking will use calibration frames. group={}, dark={}, flat={}, bias={}", calibrationGroup, newDark, newFlat, newBias)
+            LOG.info(
+                "live stacking will use calibration frames. group={}, dark={}, flat={}, bias={}",
+                calibrationGroup, newDarkPath, newFlatPath, newBiasPath
+            )
 
-            copy(dark = newDark, flat = newFlat, bias = newBias)
+            copy(darkPath = newDarkPath, flatPath = newFlatPath, biasPath = newBiasPath)
         } else {
             this
         }
@@ -334,7 +338,7 @@ data class CameraCaptureTask(
             sendEvent(CameraCaptureState.STACKING)
 
             liveStacker!!.add(path)?.let {
-                val stackedPath = Path.of("${path.parent}", "STACKED.fits")
+                val stackedPath = Path.of("${path.parent}", "STACKED.${it.extension}")
                 it.copyTo(stackedPath, true)
                 stackedPath
             }

@@ -12,16 +12,16 @@ import kotlin.io.path.isRegularFile
  * Initializes a livestacking session.
  */
 data class StartLs(
-    @JvmField val dark: Path? = null,
-    @JvmField val flat: Path? = null,
+    @JvmField val darkPath: Path? = null,
+    @JvmField val flatPath: Path? = null,
     @JvmField val use32Bits: Boolean = false,
 ) : SirilCommand<Boolean>, CommandLineListener {
 
     private val command by lazy {
         buildString(256) {
             append("start_ls")
-            if (dark != null && dark.exists() && dark.isRegularFile()) append(" \"-dark=$dark\"")
-            if (flat != null && flat.exists() && flat.isRegularFile()) append(" \"-flat=$flat\"")
+            if (darkPath != null && darkPath.exists() && darkPath.isRegularFile()) append(" \"-dark=$darkPath\"")
+            if (flatPath != null && flatPath.exists() && flatPath.isRegularFile()) append(" \"-flat=$flatPath\"")
             if (use32Bits) append(" -32bits")
         }
     }

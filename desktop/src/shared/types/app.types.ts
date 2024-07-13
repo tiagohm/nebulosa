@@ -80,6 +80,7 @@ export interface OpenDirectory extends WindowCommand {
 
 export interface OpenFile extends OpenDirectory {
 	filters?: Electron.FileFilter[]
+	multiple?: boolean
 }
 
 export interface JsonFile<T = unknown> {
