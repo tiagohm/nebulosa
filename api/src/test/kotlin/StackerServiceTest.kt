@@ -54,7 +54,8 @@ class StackerServiceTest : AbstractFitsAndXisfTest() {
 
             val request = StackingRequest(
                 Path.of(BASE_DIR, "stacker").createDirectories(), StackerType.PIXINSIGHT,
-                Path.of("PixInsight"), darkPath, null, null, false, 1, paths[0], targets
+                Path.of("PixInsight"), darkPath, true, null, false, null, false, false,
+                1, paths[0], targets
             )
 
             val image = service.stack(request).shouldNotBeNull().fits().use(Image::open)

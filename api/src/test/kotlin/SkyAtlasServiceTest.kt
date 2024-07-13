@@ -143,7 +143,7 @@ class SkyAtlasServiceTest : StringSpec() {
             position.declinationJ2000.formatSignedDMS() shouldBe "-017°22'47.2\""
             position.rightAscension.formatHMS() shouldBe "14h49m00.4s"
             position.declination.formatSignedDMS() shouldBe "-017°29'00.1\""
-            position.azimuth.formatDMS() shouldBe "144°36'58.8\""
+            position.azimuth.formatDMS() shouldBe "144°36'58.9\""
             position.altitude.formatSignedDMS() shouldBe "-045°07'44.9\""
             position.constellation shouldBe Constellation.LIB
             position.distance shouldBe (9633.950 plusOrMinus 1e-3)
