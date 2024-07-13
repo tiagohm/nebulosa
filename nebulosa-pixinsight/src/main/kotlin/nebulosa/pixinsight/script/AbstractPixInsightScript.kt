@@ -61,7 +61,9 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, CommandLineLis
         }
 
         @JvmStatic
-        internal fun execute(slot: Int, scriptPath: Path, data: Any?): String {
+        internal fun PixInsightScript<*>.execute(slot: Int, scriptPath: Path, data: Any?): String {
+            LOG.info("{} will be executed. slot={}, script={}, data={}", this::class.simpleName, slot, scriptPath, data)
+
             return buildString {
                 if (slot > 0) append("$slot:")
                 append("\"$scriptPath")

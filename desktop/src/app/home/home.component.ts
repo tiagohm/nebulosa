@@ -454,6 +454,9 @@ export class HomeComponent implements AfterContentInit {
 			case 'FLAT_WIZARD':
 				await this.browserWindow.openFlatWizard({ bringToFront: true })
 				break
+			case 'STACKER':
+				await this.browserWindow.openStacker({ bringToFront: true })
+				break
 			case 'INDI':
 				await this.browserWindow.openINDI(undefined, { bringToFront: true })
 				break

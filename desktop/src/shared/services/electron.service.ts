@@ -23,7 +23,12 @@ import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
 import { FilterWheel, WheelRenamed } from '../types/wheel.types'
-import { Undefinable } from '../utils/types'
+
+export const IMAGE_FILE_FILTER: Electron.FileFilter[] = [
+	{ name: 'All', extensions: ['fits', 'fit', 'xisf'] },
+	{ name: 'FITS', extensions: ['fits', 'fit'] },
+	{ name: 'XISF', extensions: ['xisf'] },
+]
 
 interface EventMappedType {
 	NOTIFICATION: NotificationEvent
@@ -128,23 +133,31 @@ export class ElectronService {
 		})
 	}
 
-	openFile(data?: OpenFile): Promise<Undefinable<string>> {
-		return this.send('FILE.OPEN', { ...data, windowId: data?.windowId ?? window.id })
+	openFile(data?: OpenFile): Promise<string | false> {
+		return this.send('FILE.OPEN', { ...data, windowId: data?.windowId ?? window.id, multiple: false })
 	}
 
-	saveFile(data?: OpenFile): Promise<Undefinable<string>> {
+	openFiles(data?: OpenFile): Promise<string[] | false> {
+		return this.send('FILE.OPEN', { ...data, windowId: data?.windowId ?? window.id, multiple: true })
+	}
+
+	saveFile(data?: OpenFile): Promise<string | false> {
 		return this.send('FILE.SAVE', { ...data, windowId: data?.windowId ?? window.id })
 	}
 
-	openImage(data?: OpenFile): Promise<Undefinable<string>> {
+	openImage(data?: OpenFile) {
 		return this.openFile({
 			...data,
 			windowId: data?.windowId ?? window.id,
-			filters: [
-				{ name: 'All', extensions: ['fits', 'fit', 'xisf'] },
-				{ name: 'FITS', extensions: ['fits', 'fit'] },
-				{ name: 'XISF', extensions: ['xisf'] },
-			],
+			filters: IMAGE_FILE_FILTER,
+		})
+	}
+
+	openImages(data?: OpenFile) {
+		return this.openFiles({
+			...data,
+			windowId: data?.windowId ?? window.id,
+			filters: IMAGE_FILE_FILTER,
 		})
 	}
 
@@ -166,7 +179,7 @@ export class ElectronService {
 	}
 
 	async saveJson<T>(data: SaveJson<T>): Promise<JsonFile<T> | false> {
-		data.path = data.path || (await this.saveFile({ ...data, windowId: data.windowId ?? window.id, filters: [{ name: 'JSON files', extensions: ['json'] }] }))
+		data.path = data.path || (await this.saveFile({ ...data, windowId: data.windowId ?? window.id, filters: [{ name: 'JSON files', extensions: ['json'] }] })) || undefined
 
 		if (data.path) {
 			if (await this.writeJson(data)) {

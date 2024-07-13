@@ -48,4 +48,9 @@ data class PixInsightStacker(
                 .use { it.runSync(runner).outputImage != null }
         }
     }
+
+    override fun saveAs(inputPath: Path, outputPath: Path): Boolean {
+        return PixInsightFileFormatConversion(slot, inputPath, outputPath)
+            .use { it.runSync(runner).outputImage != null }
+    }
 }

@@ -7,6 +7,7 @@ import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
 import { FrameType, LiveStackerType, LiveStackingRequest } from '../../shared/types/camera.types'
 import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, PlateSolverRequest, PlateSolverType, resetCameraCaptureNamingFormat, SettingsTabKey, StarDetectionRequest, StarDetectorType } from '../../shared/types/settings.types'
+import { StackerType, StackingRequest } from '../../shared/types/stacker.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -28,6 +29,9 @@ export class SettingsComponent {
 
 	liveStackerType: LiveStackerType = 'SIRIL'
 	readonly liveStackers = new Map<LiveStackerType, LiveStackingRequest>()
+
+	stackerType: StackerType = 'PIXINSIGHT'
+	readonly stackers = new Map<StackerType, StackingRequest>()
 
 	readonly cameraCaptureNamingFormat = structuredClone(DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT)
 
@@ -51,6 +55,9 @@ export class SettingsComponent {
 		}
 		for (const type of dropdownOptions.transform('LIVE_STACKER')) {
 			this.liveStackers.set(type, preference.liveStackingRequest(type).get())
+		}
+		for (const type of dropdownOptions.transform('STACKER')) {
+			this.stackers.set(type, preference.stackingRequest(type).get())
 		}
 
 		Object.assign(this.cameraCaptureNamingFormat, preference.cameraCaptureNamingFormatPreference.get(this.cameraCaptureNamingFormat))
@@ -124,6 +131,9 @@ export class SettingsComponent {
 		}
 		for (const type of this.dropdownOptions.transform('LIVE_STACKER')) {
 			this.preference.liveStackingRequest(type).set(this.liveStackers.get(type))
+		}
+		for (const type of this.dropdownOptions.transform('STACKER')) {
+			this.preference.stackingRequest(type).set(this.stackers.get(type))
 		}
 
 		this.preference.cameraCaptureNamingFormatPreference.set(this.cameraCaptureNamingFormat)

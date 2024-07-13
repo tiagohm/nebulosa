@@ -1,10 +1,12 @@
 package nebulosa.pixinsight.stacker
 
+import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.pixinsight.script.PixInsightScript
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.stacker.AutoStacker
 import java.nio.file.Path
-import kotlin.io.path.copyTo
+import java.util.concurrent.CancellationException
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.io.path.deleteIfExists
 
 data class PixInsightAutoStacker(
@@ -16,10 +18,12 @@ data class PixInsightAutoStacker(
     private val slot: Int = PixInsightScript.UNSPECIFIED_SLOT,
 ) : AutoStacker {
 
+    private val cancellationToken = AtomicReference<CancellationToken>()
     private val stacker = PixInsightStacker(runner, workingDirectory, slot)
 
     override fun stack(paths: Collection<Path>, outputPath: Path, referencePath: Path): Boolean {
         if (paths.isEmpty()) return false
+        if (!cancellationToken.compareAndSet(null, CancellationToken())) return false
 
         val calibratedPath = Path.of("$workingDirectory", "calibrated.xisf")
         val alignedPath = Path.of("$workingDirectory", "aligned.xisf")
@@ -27,26 +31,52 @@ data class PixInsightAutoStacker(
         try {
             var stackCount = 0
 
-            paths.forEach {
+            val realPaths = paths.map { it.toRealPath() }
+            val referenceRealPath = referencePath.toRealPath()
+
+            realPaths.forEach {
                 var targetPath = it
 
-                if (stacker.calibrate(targetPath, calibratedPath, darkPath, flatPath, biasPath)) {
+                cancellationToken.get().throwIfCancelled()
+
+                if (calibrate(targetPath, calibratedPath, darkPath, flatPath, biasPath)) {
                     targetPath = calibratedPath
                 }
 
+                cancellationToken.get().throwIfCancelled()
+
                 if (stackCount > 0) {
-                    if (stacker.align(referencePath, targetPath, alignedPath)) {
-                        stacker.integrate(stackCount, outputPath, alignedPath, outputPath)
+                    if (align(referenceRealPath, targetPath, alignedPath)) {
+                        cancellationToken.get().throwIfCancelled()
+                        integrate(stackCount, outputPath, alignedPath, outputPath)
                         stackCount++
                     }
                 } else {
-                    targetPath.copyTo(outputPath, true)
+                    if (referenceRealPath != it) {
+                        if (align(referenceRealPath, targetPath, alignedPath)) {
+                            cancellationToken.get().throwIfCancelled()
+                            saveAs(alignedPath, outputPath)
+                            cancellationToken.get().throwIfCancelled()
+                            integrate(0, outputPath, alignedPath, outputPath)
+                        } else {
+                            saveAs(targetPath, outputPath)
+                        }
+                    } else {
+                        saveAs(targetPath, outputPath)
+                    }
+
                     stackCount = 1
                 }
+
+                cancellationToken.get().throwIfCancelled()
             }
+        } catch (e: CancellationException) {
+            return false
         } finally {
             calibratedPath.deleteIfExists()
             alignedPath.deleteIfExists()
+
+            cancellationToken.getAndSet(null)
         }
 
         return true
@@ -70,5 +100,13 @@ data class PixInsightAutoStacker(
 
     override fun combineLuminance(outputPath: Path, luminancePath: Path, targetPath: Path, mono: Boolean): Boolean {
         return stacker.combineLuminance(outputPath, luminancePath, targetPath, mono)
+    }
+
+    override fun saveAs(inputPath: Path, outputPath: Path): Boolean {
+        return stacker.saveAs(inputPath, outputPath)
+    }
+
+    override fun stop() {
+        cancellationToken.get()?.cancel()
     }
 }

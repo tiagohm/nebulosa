@@ -144,7 +144,7 @@ export class BrowserWindowService {
 	}
 
 	openStacker(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'stack', width: 420, height: 400 })
+		Object.assign(preference, { icon: 'stack', width: 370, height: 460 })
 		return this.openWindow({ preference, id: 'stacker', path: 'stacker' })
 	}
 

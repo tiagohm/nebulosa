@@ -7,7 +7,7 @@ import { Bitpix, ImageChannel, ImageFormat, SCNRProtectionMethod } from '../type
 import { MountRemoteControlType } from '../types/mount.types'
 import { SequenceCaptureMode } from '../types/sequencer.types'
 import { PlateSolverType, SettingsTabKey, StarDetectorType } from '../types/settings.types'
-import { StackerType } from '../types/stacker.types'
+import { StackerGroupType, StackerType } from '../types/stacker.types'
 
 export interface DropdownOptions {
 	STAR_DETECTOR: StarDetectorType[]
@@ -31,6 +31,7 @@ export interface DropdownOptions {
 	SEQUENCE_CAPTURE_MODE: SequenceCaptureMode[]
 	STACKER: StackerType[]
 	SETTINGS_TAB: SettingsTabKey[]
+	STACKER_GROUP_TYPE: StackerGroupType[]
 }
 
 @Pipe({ name: 'dropdownOptions' })
@@ -79,6 +80,8 @@ export class DropdownOptionsPipe implements PipeTransform {
 				return ['PIXINSIGHT'] as DropdownOptions[K]
 			case 'SETTINGS_TAB':
 				return ['LOCATION', 'PLATE_SOLVER', 'STAR_DETECTOR', 'LIVE_STACKER', 'STACKER', 'CAPTURE_NAMING_FORMAT'] as DropdownOptions[K]
+			case 'STACKER_GROUP_TYPE':
+				return ['LUMINANCE', 'RED', 'GREEN', 'BLUE', 'MONO', 'RGB'] as DropdownOptions[K]
 		}
 
 		return []

@@ -7,7 +7,7 @@ export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
 
 export type SCNRProtectionMethod = 'MAXIMUM_MASK' | 'ADDITIVE_MASK' | 'AVERAGE_NEUTRAL' | 'MAXIMUM_NEUTRAL' | 'MINIMUM_NEUTRAL'
 
-export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD' | 'SEQUENCER' | 'ALIGNMENT' | 'AUTO_FOCUS'
+export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD' | 'SEQUENCER' | 'ALIGNMENT' | 'AUTO_FOCUS' | 'STACKER'
 
 export type ImageFormat = 'FITS' | 'XISF' | 'PNG' | 'JPG'
 

@@ -5,7 +5,7 @@ import type { Mount } from './mount.types'
 import type { Rotator } from './rotator.types'
 import type { FilterWheel } from './wheel.types'
 
-export type HomeWindowType = DeviceType | 'GUIDER' | 'SKY_ATLAS' | 'ALIGNMENT' | 'SEQUENCER' | 'IMAGE' | 'FRAMING' | 'INDI' | 'SETTINGS' | 'CALCULATOR' | 'ABOUT' | 'FLAT_WIZARD' | 'AUTO_FOCUS'
+export type HomeWindowType = DeviceType | 'GUIDER' | 'SKY_ATLAS' | 'ALIGNMENT' | 'SEQUENCER' | 'IMAGE' | 'FRAMING' | 'INDI' | 'SETTINGS' | 'CALCULATOR' | 'ABOUT' | 'FLAT_WIZARD' | 'AUTO_FOCUS' | 'STACKER'
 
 export const CONNECTION_TYPES = ['INDI', 'ALPACA'] as const
 

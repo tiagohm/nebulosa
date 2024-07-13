@@ -220,6 +220,15 @@
 		<div class="col-4 p-1">
 			<p-button
 				[text]="true"
+				(onClick)="open('STACKER')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/stack.png" />
+				<div class="mt-1 text-sm">Stacker</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
 				(onClick)="open('FLAT_WIZARD')"
 				[disabled]="!connected || !hasFlatWizard"
 				styleClass="min-w-full w-full px-1 py-2 flex-column">

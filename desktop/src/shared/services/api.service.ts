@@ -16,7 +16,7 @@ import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlTyp
 import { Rotator } from '../types/rotator.types'
 import { SequencePlan } from '../types/sequencer.types'
 import { PlateSolverRequest, StarDetectionRequest } from '../types/settings.types'
-import { StackingRequest } from '../types/stacker.types'
+import { AnalyzedTarget, StackingRequest } from '../types/stacker.types'
 import { FilterWheel } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 import { HttpService } from './http.service'
@@ -683,8 +683,20 @@ export class ApiService {
 
 	// STACKER
 
-	stacker(request: StackingRequest) {
-		return this.http.put<string>('stacker', request)
+	stackerStart(request: StackingRequest) {
+		return this.http.put<string | null>('stacker/start', request)
+	}
+
+	stackerIsRunning() {
+		return this.http.get<boolean>('stacker/running')
+	}
+
+	stackerStop() {
+		return this.http.put<never>('stacker/stop')
+	}
+
+	stackerAnalyze(path: string) {
+		return this.http.put<AnalyzedTarget | null>(`stacker/analyze?path=${path}`)
 	}
 
 	// CONFIRMATION
