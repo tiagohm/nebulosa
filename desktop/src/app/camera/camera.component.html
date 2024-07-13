@@ -608,7 +608,7 @@
 				[disabled]="!liveStacking.request.enabled"
 				[directory]="false"
 				label="Dark File"
-				key="LS_DARK_PATH"
+				key="LIVE_STACKER_DARK_PATH"
 				[(path)]="liveStacking.request.darkPath"
 				class="w-full"
 				(pathChange)="savePreference()" />
@@ -618,7 +618,7 @@
 				[disabled]="!liveStacking.request.enabled"
 				[directory]="false"
 				label="Flat File"
-				key="LS_FLAT_PATH"
+				key="LIVE_STACKER_FLAT_PATH"
 				[(path)]="liveStacking.request.flatPath"
 				class="w-full"
 				(pathChange)="savePreference()" />
@@ -628,7 +628,7 @@
 				[disabled]="!liveStacking.request.enabled || liveStacking.request.type !== 'PIXINSIGHT'"
 				[directory]="false"
 				label="Bias File"
-				key="LS_BIAS_PATH"
+				key="LIVE_STACKER_BIAS_PATH"
 				[(path)]="liveStacking.request.biasPath"
 				class="w-full"
 				(pathChange)="savePreference()" />

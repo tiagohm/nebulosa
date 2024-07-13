@@ -4,7 +4,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { StackerGroupType, StackingRequest, StackingTarget } from '../../shared/types/stacker.types'
+import { EMPTY_STACKING_REQUEST, StackingRequest, StackingTarget } from '../../shared/types/stacker.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -13,15 +13,7 @@ import { AppComponent } from '../app.component'
 })
 export class StackerComponent implements AfterViewInit {
 	running = false
-	readonly request: StackingRequest = {
-		outputDirectory: '',
-		type: 'PIXINSIGHT',
-		executablePath: '',
-		use32Bits: false,
-		slot: 0,
-		referencePath: '',
-		targets: [],
-	}
+	readonly request = structuredClone(EMPTY_STACKING_REQUEST)
 
 	get referenceTarget() {
 		return this.request.targets.find((e) => e.enabled && e.reference && e.type === 'LIGHT')
@@ -64,15 +56,14 @@ export class StackerComponent implements AfterViewInit {
 				for (const path of images) {
 					const analyzed = await this.api.stackerAnalyze(path)
 
-					if (analyzed) {
+					if (analyzed && analyzed.type === 'LIGHT') {
 						targets.push({
 							enabled: true,
 							path,
 							analyzed,
 							type: analyzed.type,
 							group: analyzed.group,
-							reference: analyzed.type === 'LIGHT' && !targets.length && !this.referenceTarget,
-							debayer: analyzed.type === 'LIGHT' && analyzed.group === 'RGB',
+							reference: !targets.length && !this.referenceTarget,
 						})
 					}
 				}
@@ -84,12 +75,6 @@ export class StackerComponent implements AfterViewInit {
 			}
 		} finally {
 			this.running = false
-		}
-	}
-
-	targetGroupChanged(target: StackingTarget, group: StackerGroupType) {
-		if (group === 'RGB') {
-			target.debayer = true
 		}
 	}
 
@@ -122,6 +107,8 @@ export class StackerComponent implements AfterViewInit {
 			targets: this.request.targets.filter((e) => e.enabled),
 		}
 
+		this.savePreference()
+
 		try {
 			this.running = true
 			const path = await this.api.stackerStart(request)
@@ -142,11 +129,25 @@ export class StackerComponent implements AfterViewInit {
 		const stackerPreference = this.preference.stackerPreference.get()
 
 		this.request.outputDirectory = stackerPreference.outputDirectory ?? ''
+		this.request.darkPath = stackerPreference.darkPath
+		this.request.darkEnabled = stackerPreference.darkEnabled ?? false
+		this.request.flatPath = stackerPreference.flatPath
+		this.request.flatEnabled = stackerPreference.flatEnabled ?? false
+		this.request.biasPath = stackerPreference.biasPath
+		this.request.biasEnabled = stackerPreference.biasEnabled ?? false
+		this.request.type = stackerPreference.type ?? 'PIXINSIGHT'
 	}
 
 	savePreference() {
 		const stackerPreference = this.preference.stackerPreference.get()
 		stackerPreference.outputDirectory = this.request.outputDirectory
+		stackerPreference.darkPath = this.request.darkPath
+		stackerPreference.darkEnabled = this.request.darkEnabled
+		stackerPreference.flatPath = this.request.flatPath
+		stackerPreference.flatEnabled = this.request.flatEnabled
+		stackerPreference.biasPath = this.request.biasPath
+		stackerPreference.biasEnabled = this.request.biasEnabled
+		stackerPreference.type = this.request.type
 		this.preference.stackerPreference.set(stackerPreference)
 	}
 }

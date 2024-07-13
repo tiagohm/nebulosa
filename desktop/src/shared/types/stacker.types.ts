@@ -9,8 +9,11 @@ export interface StackingRequest {
 	type: StackerType
 	executablePath: string
 	darkPath?: string
+	darkEnabled: boolean
 	flatPath?: string
+	flatEnabled: boolean
 	biasPath?: string
+	biasEnabled: boolean
 	use32Bits: boolean
 	slot: number
 	referencePath: string
@@ -25,6 +28,9 @@ export const EMPTY_STACKING_REQUEST: StackingRequest = {
 	slot: 1,
 	referencePath: '',
 	targets: [],
+	darkEnabled: false,
+	flatEnabled: false,
+	biasEnabled: false,
 }
 
 export interface StackingTarget {
@@ -32,7 +38,6 @@ export interface StackingTarget {
 	path: string
 	type: FrameType
 	group: StackerGroupType
-	debayer: boolean
 	reference: boolean
 	analyzed?: AnalyzedTarget
 }
@@ -49,8 +54,19 @@ export interface AnalyzedTarget {
 }
 
 export interface StackerPreference {
+	type?: StackerType
 	outputDirectory?: string
 	defaultPath?: string
+	darkPath?: string
+	darkEnabled?: boolean
+	flatPath?: string
+	flatEnabled?: boolean
+	biasPath?: string
+	biasEnabled?: boolean
 }
 
-export const EMPTY_STACKER_PREFERENCE: StackerPreference = {}
+export const EMPTY_STACKER_PREFERENCE: StackerPreference = {
+	darkEnabled: false,
+	flatEnabled: false,
+	biasEnabled: false,
+}

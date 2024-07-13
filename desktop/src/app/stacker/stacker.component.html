@@ -1,7 +1,7 @@
 <div class="grid p-4">
 	<div class="col-9">
 		<neb-path-chooser
-			key="STACKER_WORKING_DIRECTORY"
+			key="STACKER_OUTPUT_DIRECTORY"
 			[directory]="true"
 			[disabled]="running"
 			[(path)]="request.outputDirectory"
@@ -24,7 +24,7 @@
 		<p-tabView>
 			<p-tabPanel
 				header="Files"
-				leftIcon="mdi mdi-file">
+				leftIcon="mdi mdi-file-multiple">
 				<p-listbox
 					[options]="request.targets"
 					styleClass="border-0"
@@ -42,17 +42,9 @@
 									<p-dropdown
 										[options]="'STACKER_GROUP_TYPE' | dropdownOptions | enumDropdown"
 										[(ngModel)]="item.group"
-										(ngModelChange)="targetGroupChanged(item, $event)"
 										styleClass="border-0 p-inputtext-sm"
 										[autoDisplayFirst]="false"
 										appendTo="body" />
-									<div class="flex flex-column align-items-center justify-content-center gap-1">
-										<span class="text-xs">Debayer</span>
-										<p-checkbox
-											[disabled]="item.group !== 'RGB'"
-											[binary]="true"
-											[(ngModel)]="item.debayer" />
-									</div>
 									<div class="flex flex-column align-items-center justify-content-center gap-1">
 										<span class="text-xs">Reference</span>
 										<p-checkbox
@@ -95,6 +87,69 @@
 						</div>
 					</ng-template>
 				</p-listbox>
+			</p-tabPanel>
+			<p-tabPanel
+				header="Calibration"
+				leftIcon="mdi mdi-wrench">
+				<div class="col-12 mt-2 align-items-center flex gap-2">
+					<p-checkbox
+						[binary]="true"
+						[(ngModel)]="request.darkEnabled"
+						(ngModelChange)="savePreference()" />
+					<neb-path-chooser
+						[disabled]="!request.darkEnabled"
+						[directory]="false"
+						label="Dark File"
+						key="STACKER_DARK_PATH"
+						[(path)]="request.darkPath"
+						class="w-full"
+						(pathChange)="savePreference()" />
+				</div>
+				<div class="col-12 align-items-center flex gap-2">
+					<p-checkbox
+						[binary]="true"
+						[(ngModel)]="request.flatEnabled"
+						(ngModelChange)="savePreference()" />
+					<neb-path-chooser
+						[disabled]="!request.flatEnabled"
+						[directory]="false"
+						label="Flat File"
+						key="STACKER_FLAT_PATH"
+						[(path)]="request.flatPath"
+						class="w-full"
+						(pathChange)="savePreference()" />
+				</div>
+				<div class="col-12 align-items-center flex gap-2">
+					<p-checkbox
+						[binary]="true"
+						[(ngModel)]="request.biasEnabled"
+						(ngModelChange)="savePreference()" />
+					<neb-path-chooser
+						[disabled]="!request.biasEnabled"
+						[directory]="false"
+						label="Bias File"
+						key="STACKER_BIAS_PATH"
+						[(path)]="request.biasPath"
+						class="w-full"
+						(pathChange)="savePreference()" />
+				</div>
+			</p-tabPanel>
+			<p-tabPanel
+				header="Settings"
+				leftIcon="mdi mdi-cog">
+				<div class="col-12 align-items-center mt-2">
+					<p-floatLabel class="w-full">
+						<p-dropdown
+							[options]="'STACKER' | dropdownOptions | enumDropdown"
+							optionsLabel="label"
+							optionsValue="value"
+							[(ngModel)]="request.type"
+							(ngModelChange)="savePreference()"
+							styleClass="p-inputtext-sm border-0"
+							[autoDisplayFirst]="false" />
+						<label>Stacker</label>
+					</p-floatLabel>
+				</div>
 			</p-tabPanel>
 		</p-tabView>
 	</div>

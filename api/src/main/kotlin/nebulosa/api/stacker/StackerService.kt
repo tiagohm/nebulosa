@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
 
 @Service
 class StackerService {
@@ -101,6 +102,8 @@ class StackerService {
     }
 
     fun analyze(path: Path): AnalyzedTarget? {
+        if (!path.exists() || !path.isRegularFile()) return null
+
         val image = if (path.isFits()) path.fits()
         else if (path.isXisf()) path.xisf()
         else return null
