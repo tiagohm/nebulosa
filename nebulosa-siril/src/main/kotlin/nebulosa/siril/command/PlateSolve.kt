@@ -104,7 +104,7 @@ data class PlateSolve(
     }
 
     private fun String.matchesOrientation(): Boolean {
-        val m = ORIENTATION_REGEX.matchEntire(this) ?: return false
+        val m = ORIENTATION_REGEX.find(this) ?: return false
         orientation = m.groupValues[1].toDouble().deg
         parity = if ("flipped" in this) Parity.FLIPPED else Parity.NORMAL
         return true
@@ -120,13 +120,13 @@ data class PlateSolve(
     }
 
     private fun String.matchesResolution(): Boolean {
-        val m = RESOLUTION_REGEX.matchEntire(this) ?: return false
+        val m = RESOLUTION_REGEX.find(this) ?: return false
         resolution = m.groupValues[1].toDouble().arcsec
         return true
     }
 
     private fun String.matchesFOV(): Boolean {
-        val m = FOV_REGEX.matchEntire(this) ?: return false
+        val m = FOV_REGEX.find(this) ?: return false
         val (_, width, height) = m.groupValues
         fovWidth = width.parseFovInDHMS()
         fovHeight = height.parseFovInDHMS()
@@ -134,7 +134,7 @@ data class PlateSolve(
     }
 
     private fun String.matchesImageCenter(): Boolean {
-        val m = IMAGE_CENTER_REGEX.matchEntire(this) ?: return false
+        val m = IMAGE_CENTER_REGEX.find(this) ?: return false
         val (_, alpha, delta) = m.groupValues
         imageCenterRA = alpha.hours
         imageCenterDEC = delta.deg

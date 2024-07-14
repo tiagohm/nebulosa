@@ -35,7 +35,7 @@ data class PixInsightPlateSolver(
             .use { it.runSync(runner) }
 
         if (solver.success) {
-            val m = ROTATION_REGEX.find(solver.astrometricSolutionSummary, 0)
+            val m = ROTATION_REGEX.find(solver.astrometricSolutionSummary)
             val rotation = m?.groupValues?.get(1)?.toDoubleOrNull() ?: 0.0
 
             return PlateSolution(

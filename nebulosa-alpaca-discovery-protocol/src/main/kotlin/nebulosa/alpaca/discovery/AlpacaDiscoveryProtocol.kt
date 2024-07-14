@@ -84,7 +84,7 @@ class AlpacaDiscoveryProtocol : Runnable, Closeable {
             }
 
             val message = packet.data.decodeToString(0, packet.length)
-            val port = ALPACA_PORT_REGEX.matchEntire(message)?.groupValues?.get(1)?.toIntOrNull() ?: continue
+            val port = ALPACA_PORT_REGEX.find(message)?.groupValues?.get(1)?.toIntOrNull() ?: continue
             LOG.info("server found at {}:{}", packet.address, port)
             listeners.forEach { it.onServerFound(packet.address, port) }
         }
@@ -100,7 +100,7 @@ class AlpacaDiscoveryProtocol : Runnable, Closeable {
 
         private const val ALPACA_DISCOVERY_MESSAGE = "alpacadiscovery1"
 
-        @JvmStatic private val ALPACA_PORT_REGEX = Regex("\\{\"AlpacaPort\":(\\d+)\\}")
+        @JvmStatic private val ALPACA_PORT_REGEX = Regex("\\{\"AlpacaPort\":(\\d+)}")
         @JvmStatic private val LOG = loggerFor<AlpacaDiscoveryProtocol>()
     }
 }
