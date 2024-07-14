@@ -18,7 +18,7 @@ import java.nio.file.Path
 class QuadDatabaseTest : StringSpec() {
 
     init {
-        val quadDir = Path.of("~/Downloads/watneyqdb").toRealPath()
+        val quadDir = Path.of(System.getProperty("user.home"), "Downloads", "watneyqdb")
 
         "cell index file" {
             val source = Path.of("$quadDir", "gaia2-00-07-20.qdbindex")
