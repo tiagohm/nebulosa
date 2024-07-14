@@ -1,5 +1,6 @@
 package nebulosa.pixinsight.script
 
+import com.sun.jna.Platform
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.io.resource
 import nebulosa.io.transferAndClose
@@ -9,6 +10,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 import kotlin.math.max
 import kotlin.math.min
@@ -59,8 +61,18 @@ data class PixInsightImageSolver(
 
     private val scriptPath = Files.createTempFile("pi-", ".js")
     private val statusPath = Files.createTempFile("pi-", ".txt")
+    private val includePaths = ArrayList<Path>(INCLUDE_PATHS.size)
 
     init {
+        val scriptsDir = if (Platform.isWindows()) WINDOWS_SCRIPTS_DIR else LINUX_SCRIPTS_DIR
+
+        for (includePath in INCLUDE_PATHS) {
+            val inputPath = Path.of(scriptsDir, "AdP", includePath)
+            val outputPath = Path.of("${scriptPath.parent}", includePath)
+            inputPath.inputStream().transferAndClose(outputPath.outputStream())
+            includePaths.add(outputPath)
+        }
+
         resource("pixinsight/ImageSolver.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
@@ -83,5 +95,14 @@ data class PixInsightImageSolver(
     override fun close() {
         scriptPath.deleteIfExists()
         statusPath.deleteIfExists()
+        includePaths.forEach { it.deleteIfExists() }
+    }
+
+    companion object {
+
+        private const val WINDOWS_SCRIPTS_DIR = "C:\\Program Files\\PixInsight\\src\\scripts"
+        private const val LINUX_SCRIPTS_DIR = "/opt/PixInsight/src/scripts"
+
+        @JvmStatic private val INCLUDE_PATHS = listOf("Projections.js", "WCSmetadata.jsh", "AstronomicalCatalogs.jsh")
     }
 }

@@ -43,8 +43,8 @@
 #define SETTINGS_MODULE "SOLVER"
 #define SETTINGS_MODULE_SCRIPT "SOLVER"
 
-#include "/opt/PixInsight/src/scripts/AdP/WCSmetadata.jsh"
-#include "/opt/PixInsight/src/scripts/AdP/AstronomicalCatalogs.jsh"
+#include "WCSmetadata.jsh"
+#include "AstronomicalCatalogs.jsh"
 
 function CatalogMode() { }
 CatalogMode.prototype.LocalText = 0
