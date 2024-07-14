@@ -85,6 +85,8 @@ subprojects {
         }
 
         systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
+        systemProperty("kotest.framework.classpath.scanning.config.disable", "true")
+        systemProperty("kotest.framework.classpath.scanning.autoscan.disable", "true")
         systemProperty("github", System.getProperty("github", "false"))
     }
 
