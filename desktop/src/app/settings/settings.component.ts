@@ -6,8 +6,10 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
 import { FrameType, LiveStackerType, LiveStackingRequest } from '../../shared/types/camera.types'
-import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, PlateSolverRequest, PlateSolverType, resetCameraCaptureNamingFormat, SettingsTabKey, StarDetectionRequest, StarDetectorType } from '../../shared/types/settings.types'
+import { PlateSolverRequest, PlateSolverType } from '../../shared/types/platesolver.types'
+import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, resetCameraCaptureNamingFormat, SettingsTabKey } from '../../shared/types/settings.types'
 import { StackerType, StackingRequest } from '../../shared/types/stacker.types'
+import { StarDetectionRequest, StarDetectorType } from '../../shared/types/stardetector.types'
 import { AppComponent } from '../app.component'
 
 @Component({

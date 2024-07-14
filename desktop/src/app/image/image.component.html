@@ -400,7 +400,7 @@
 			</p-floatLabel>
 			<p-checkbox
 				[binary]="true"
-				[disabled]="solver.type === 'SIRIL'"
+				[disabled]="solver.type === 'SIRIL' || solver.type === 'PIXINSIGHT'"
 				label="Blind"
 				[(ngModel)]="solver.blind" />
 		</div>
@@ -431,7 +431,7 @@
 		<div class="col-4 flex flex-row align-items-center">
 			<p-floatLabel>
 				<p-inputNumber
-					[disabled]="solver.blind && solver.type !== 'SIRIL'"
+					[disabled]="(solver.blind && solver.type !== 'SIRIL') || solver.type === 'PIXINSIGHT'"
 					[min]="1"
 					[max]="180"
 					styleClass="p-inputtext-sm border-0 w-full"
@@ -441,7 +441,7 @@
 				<label>Radius (°)</label>
 			</p-floatLabel>
 		</div>
-		@if (solver.type === 'SIRIL') {
+		@if (solver.type === 'SIRIL' || solver.type === 'PIXINSIGHT') {
 			<div class="col-6 flex flex-row align-items-center">
 				<p-floatLabel>
 					<p-inputNumber
@@ -573,10 +573,18 @@
 		</div>
 
 		<p-button
+			[disabled]="!solver.running || !canPlateSolve"
+			icon="mdi mdi-stop"
+			label="Stop"
+			(onClick)="solverStop()"
+			[text]="true"
+			size="small"
+			severity="danger" />
+		<p-button
 			[disabled]="solver.running || !canPlateSolve"
 			icon="mdi mdi-sigma"
 			label="Solve"
-			(onClick)="solveImage()"
+			(onClick)="solverStart()"
 			[text]="true"
 			size="small" />
 	</ng-template>

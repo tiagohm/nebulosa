@@ -30,104 +30,104 @@ import kotlin.io.path.*
 @Suppress("PropertyName")
 abstract class AbstractFitsAndXisfTest : StringSpec() {
 
-    protected val M82_MONO_8_LZ4_XISF by lazy { download("M82.Mono.8.LZ4.xisf", GITHUB_XISF_URL) }
-    protected val M82_MONO_8_LZ4_HC_XISF by lazy { download("M82.Mono.8.LZ4-HC.xisf", GITHUB_XISF_URL) }
-    protected val M82_MONO_8_XISF by lazy { download("M82.Mono.8.xisf", GITHUB_XISF_URL) }
-    protected val M82_MONO_8_ZLIB_XISF by lazy { download("M82.Mono.8.ZLib.xisf", GITHUB_XISF_URL) }
-    protected val M82_MONO_8_ZSTANDARD_XISF by lazy { download("M82.Mono.8.ZStandard.xisf", GITHUB_XISF_URL) }
-    protected val M82_MONO_16_XISF by lazy { download("M82.Mono.16.xisf", GITHUB_XISF_URL) }
-    protected val M82_MONO_32_XISF by lazy { download("M82.Mono.32.xisf", GITHUB_XISF_URL) }
-    protected val M82_MONO_F32_XISF by lazy { download("M82.Mono.F32.xisf", GITHUB_XISF_URL) }
-    protected val M82_MONO_F64_XISF by lazy { download("M82.Mono.F64.xisf", GITHUB_XISF_URL) }
+    protected val M82_MONO_8_LZ4_XISF by lazy { download("$GITHUB_XISF_URL/M82.Mono.8.LZ4.xisf") }
+    protected val M82_MONO_8_LZ4_HC_XISF by lazy { download("$GITHUB_XISF_URL/M82.Mono.8.LZ4-HC.xisf") }
+    protected val M82_MONO_8_XISF by lazy { download("$GITHUB_XISF_URL/M82.Mono.8.xisf") }
+    protected val M82_MONO_8_ZLIB_XISF by lazy { download("$GITHUB_XISF_URL/M82.Mono.8.ZLib.xisf") }
+    protected val M82_MONO_8_ZSTANDARD_XISF by lazy { download("$GITHUB_XISF_URL/M82.Mono.8.ZStandard.xisf") }
+    protected val M82_MONO_16_XISF by lazy { download("$GITHUB_XISF_URL/M82.Mono.16.xisf") }
+    protected val M82_MONO_32_XISF by lazy { download("$GITHUB_XISF_URL/M82.Mono.32.xisf") }
+    protected val M82_MONO_F32_XISF by lazy { download("$GITHUB_XISF_URL/M82.Mono.F32.xisf") }
+    protected val M82_MONO_F64_XISF by lazy { download("$GITHUB_XISF_URL/M82.Mono.F64.xisf") }
 
-    protected val M82_COLOR_8_LZ4_XISF by lazy { download("M82.Color.8.LZ4.xisf", GITHUB_XISF_URL) }
-    protected val M82_COLOR_8_LZ4_HC_XISF by lazy { download("M82.Color.8.LZ4-HC.xisf", GITHUB_XISF_URL) }
-    protected val M82_COLOR_8_XISF by lazy { download("M82.Color.8.xisf", GITHUB_XISF_URL) }
-    protected val M82_COLOR_8_ZLIB_XISF by lazy { download("M82.Color.8.ZLib.xisf", GITHUB_XISF_URL) }
-    protected val M82_COLOR_8_ZSTANDARD_XISF by lazy { download("M82.Color.8.ZStandard.xisf", GITHUB_XISF_URL) }
-    protected val M82_COLOR_16_XISF by lazy { download("M82.Color.16.xisf", GITHUB_XISF_URL) }
-    protected val M82_COLOR_32_XISF by lazy { download("M82.Color.32.xisf", GITHUB_XISF_URL) }
-    protected val M82_COLOR_F32_XISF by lazy { download("M82.Color.F32.xisf", GITHUB_XISF_URL) }
-    protected val M82_COLOR_F64_XISF by lazy { download("M82.Color.F64.xisf", GITHUB_XISF_URL) }
-    protected val DEBAYER_XISF_PATH by lazy { download("Debayer.xisf", GITHUB_XISF_URL) }
+    protected val M82_COLOR_8_LZ4_XISF by lazy { download("$GITHUB_XISF_URL/M82.Color.8.LZ4.xisf") }
+    protected val M82_COLOR_8_LZ4_HC_XISF by lazy { download("$GITHUB_XISF_URL/M82.Color.8.LZ4-HC.xisf") }
+    protected val M82_COLOR_8_XISF by lazy { download("$GITHUB_XISF_URL/M82.Color.8.xisf") }
+    protected val M82_COLOR_8_ZLIB_XISF by lazy { download("$GITHUB_XISF_URL/M82.Color.8.ZLib.xisf") }
+    protected val M82_COLOR_8_ZSTANDARD_XISF by lazy { download("$GITHUB_XISF_URL/M82.Color.8.ZStandard.xisf") }
+    protected val M82_COLOR_16_XISF by lazy { download("$GITHUB_XISF_URL/M82.Color.16.xisf") }
+    protected val M82_COLOR_32_XISF by lazy { download("$GITHUB_XISF_URL/M82.Color.32.xisf") }
+    protected val M82_COLOR_F32_XISF by lazy { download("$GITHUB_XISF_URL/M82.Color.F32.xisf") }
+    protected val M82_COLOR_F64_XISF by lazy { download("$GITHUB_XISF_URL/M82.Color.F64.xisf") }
+    protected val DEBAYER_XISF_PATH by lazy { download("$GITHUB_XISF_URL/Debayer.xisf") }
 
-    protected val NGC3344_MONO_8_FITS by lazy { download("NGC3344.Mono.8.fits", GITHUB_FITS_URL) }
-    protected val NGC3344_MONO_16_FITS by lazy { download("NGC3344.Mono.16.fits", GITHUB_FITS_URL) }
-    protected val NGC3344_MONO_32_FITS by lazy { download("NGC3344.Mono.32.fits", GITHUB_FITS_URL) }
-    protected val NGC3344_MONO_F32_FITS by lazy { download("NGC3344.Mono.F32.fits", GITHUB_FITS_URL) }
-    protected val NGC3344_MONO_F64_FITS by lazy { download("NGC3344.Mono.F64.fits", GITHUB_FITS_URL) }
+    protected val NGC3344_MONO_8_FITS by lazy { download("$GITHUB_FITS_URL/NGC3344.Mono.8.fits") }
+    protected val NGC3344_MONO_16_FITS by lazy { download("$GITHUB_FITS_URL/NGC3344.Mono.16.fits") }
+    protected val NGC3344_MONO_32_FITS by lazy { download("$GITHUB_FITS_URL/NGC3344.Mono.32.fits") }
+    protected val NGC3344_MONO_F32_FITS by lazy { download("$GITHUB_FITS_URL/NGC3344.Mono.F32.fits") }
+    protected val NGC3344_MONO_F64_FITS by lazy { download("$GITHUB_FITS_URL/NGC3344.Mono.F64.fits") }
 
-    protected val NGC3344_COLOR_8_FITS by lazy { download("NGC3344.Color.8.fits", GITHUB_FITS_URL) }
-    protected val NGC3344_COLOR_16_FITS by lazy { download("NGC3344.Color.16.fits", GITHUB_FITS_URL) }
-    protected val NGC3344_COLOR_32_FITS by lazy { download("NGC3344.Color.32.fits", GITHUB_FITS_URL) }
-    protected val NGC3344_COLOR_F32_FITS by lazy { download("NGC3344.Color.F32.fits", GITHUB_FITS_URL) }
-    protected val NGC3344_COLOR_F64_FITS by lazy { download("NGC3344.Color.F64.fits", GITHUB_FITS_URL) }
+    protected val NGC3344_COLOR_8_FITS by lazy { download("$GITHUB_FITS_URL/NGC3344.Color.8.fits") }
+    protected val NGC3344_COLOR_16_FITS by lazy { download("$GITHUB_FITS_URL/NGC3344.Color.16.fits") }
+    protected val NGC3344_COLOR_32_FITS by lazy { download("$GITHUB_FITS_URL/NGC3344.Color.32.fits") }
+    protected val NGC3344_COLOR_F32_FITS by lazy { download("$GITHUB_FITS_URL/NGC3344.Color.F32.fits") }
+    protected val NGC3344_COLOR_F64_FITS by lazy { download("$GITHUB_FITS_URL/NGC3344.Color.F64.fits") }
 
-    protected val PALETTE_MONO_8_FITS by lazy { download("PALETTE.Mono.8.fits", GITHUB_FITS_URL) }
-    protected val PALETTE_MONO_16_FITS by lazy { download("PALETTE.Mono.16.fits", GITHUB_FITS_URL) }
-    protected val PALETTE_MONO_32_FITS by lazy { download("PALETTE.Mono.32.fits", GITHUB_FITS_URL) }
-    protected val PALETTE_MONO_F32_FITS by lazy { download("PALETTE.Mono.F32.fits", GITHUB_FITS_URL) }
-    protected val PALETTE_MONO_F64_FITS by lazy { download("PALETTE.Mono.F64.fits", GITHUB_FITS_URL) }
+    protected val PALETTE_MONO_8_FITS by lazy { download("$GITHUB_FITS_URL/PALETTE.Mono.8.fits") }
+    protected val PALETTE_MONO_16_FITS by lazy { download("$GITHUB_FITS_URL/PALETTE.Mono.16.fits") }
+    protected val PALETTE_MONO_32_FITS by lazy { download("$GITHUB_FITS_URL/PALETTE.Mono.32.fits") }
+    protected val PALETTE_MONO_F32_FITS by lazy { download("$GITHUB_FITS_URL/PALETTE.Mono.F32.fits") }
+    protected val PALETTE_MONO_F64_FITS by lazy { download("$GITHUB_FITS_URL/PALETTE.Mono.F64.fits") }
 
-    protected val PALETTE_COLOR_8_FITS by lazy { download("PALETTE.Color.8.fits", GITHUB_FITS_URL) }
-    protected val PALETTE_COLOR_16_FITS by lazy { download("PALETTE.Color.16.fits", GITHUB_FITS_URL) }
-    protected val PALETTE_COLOR_32_FITS by lazy { download("PALETTE.Color.32.fits", GITHUB_FITS_URL) }
-    protected val PALETTE_COLOR_F32_FITS by lazy { download("PALETTE.Color.F32.fits", GITHUB_FITS_URL) }
-    protected val PALETTE_COLOR_F64_FITS by lazy { download("PALETTE.Color.F64.fits", GITHUB_FITS_URL) }
+    protected val PALETTE_COLOR_8_FITS by lazy { download("$GITHUB_FITS_URL/PALETTE.Color.8.fits") }
+    protected val PALETTE_COLOR_16_FITS by lazy { download("$GITHUB_FITS_URL/PALETTE.Color.16.fits") }
+    protected val PALETTE_COLOR_32_FITS by lazy { download("$GITHUB_FITS_URL/PALETTE.Color.32.fits") }
+    protected val PALETTE_COLOR_F32_FITS by lazy { download("$GITHUB_FITS_URL/PALETTE.Color.F32.fits") }
+    protected val PALETTE_COLOR_F64_FITS by lazy { download("$GITHUB_FITS_URL/PALETTE.Color.F64.fits") }
 
-    protected val PALETTE_MONO_8_XISF by lazy { download("PALETTE.Mono.8.xisf", GITHUB_XISF_URL) }
-    protected val PALETTE_MONO_16_XISF by lazy { download("PALETTE.Mono.16.xisf", GITHUB_XISF_URL) }
-    protected val PALETTE_MONO_32_XISF by lazy { download("PALETTE.Mono.32.xisf", GITHUB_XISF_URL) }
-    protected val PALETTE_MONO_F32_XISF by lazy { download("PALETTE.Mono.F32.xisf", GITHUB_XISF_URL) }
-    protected val PALETTE_MONO_F64_XISF by lazy { download("PALETTE.Mono.F64.xisf", GITHUB_XISF_URL) }
+    protected val PALETTE_MONO_8_XISF by lazy { download("$GITHUB_XISF_URL/PALETTE.Mono.8.xisf") }
+    protected val PALETTE_MONO_16_XISF by lazy { download("$GITHUB_XISF_URL/PALETTE.Mono.16.xisf") }
+    protected val PALETTE_MONO_32_XISF by lazy { download("$GITHUB_XISF_URL/PALETTE.Mono.32.xisf") }
+    protected val PALETTE_MONO_F32_XISF by lazy { download("$GITHUB_XISF_URL/PALETTE.Mono.F32.xisf") }
+    protected val PALETTE_MONO_F64_XISF by lazy { download("$GITHUB_XISF_URL/PALETTE.Mono.F64.xisf") }
 
-    protected val PALETTE_COLOR_8_XISF by lazy { download("PALETTE.Color.8.xisf", GITHUB_XISF_URL) }
-    protected val PALETTE_COLOR_16_XISF by lazy { download("PALETTE.Color.16.xisf", GITHUB_XISF_URL) }
-    protected val PALETTE_COLOR_32_XISF by lazy { download("PALETTE.Color.32.xisf", GITHUB_XISF_URL) }
-    protected val PALETTE_COLOR_F32_XISF by lazy { download("PALETTE.Color.F32.xisf", GITHUB_XISF_URL) }
-    protected val PALETTE_COLOR_F64_XISF by lazy { download("PALETTE.Color.F64.xisf", GITHUB_XISF_URL) }
+    protected val PALETTE_COLOR_8_XISF by lazy { download("$GITHUB_XISF_URL/PALETTE.Color.8.xisf") }
+    protected val PALETTE_COLOR_16_XISF by lazy { download("$GITHUB_XISF_URL/PALETTE.Color.16.xisf") }
+    protected val PALETTE_COLOR_32_XISF by lazy { download("$GITHUB_XISF_URL/PALETTE.Color.32.xisf") }
+    protected val PALETTE_COLOR_F32_XISF by lazy { download("$GITHUB_XISF_URL/PALETTE.Color.F32.xisf") }
+    protected val PALETTE_COLOR_F64_XISF by lazy { download("$GITHUB_XISF_URL/PALETTE.Color.F64.xisf") }
 
-    protected val DEBAYER_FITS by lazy { download("Debayer.fits", GITHUB_FITS_URL) }
-    protected val M6707HH by lazy { download("M6707HH.fits", ASTROPY_PHOTOMETRY_URL) }
+    protected val DEBAYER_FITS by lazy { download("$GITHUB_FITS_URL/Debayer.fits") }
+    protected val M6707HH by lazy { download("$ASTROPY_PHOTOMETRY_URL/M6707HH.fits") }
     protected val M31_FITS by lazy { download("00 42 44.3".hours, "41 16 9".deg, 3.deg) }
 
-    protected val STAR_FOCUS_1 by lazy { download("STAR.FOCUS.1.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_2 by lazy { download("STAR.FOCUS.2.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_3 by lazy { download("STAR.FOCUS.3.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_4 by lazy { download("STAR.FOCUS.4.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_5 by lazy { download("STAR.FOCUS.5.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_6 by lazy { download("STAR.FOCUS.6.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_7 by lazy { download("STAR.FOCUS.7.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_8 by lazy { download("STAR.FOCUS.8.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_9 by lazy { download("STAR.FOCUS.9.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_10 by lazy { download("STAR.FOCUS.10.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_11 by lazy { download("STAR.FOCUS.11.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_12 by lazy { download("STAR.FOCUS.12.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_13 by lazy { download("STAR.FOCUS.13.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_14 by lazy { download("STAR.FOCUS.14.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_15 by lazy { download("STAR.FOCUS.15.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_16 by lazy { download("STAR.FOCUS.16.fits", GITHUB_FITS_URL) }
-    protected val STAR_FOCUS_17 by lazy { download("STAR.FOCUS.17.fits", GITHUB_FITS_URL) }
+    protected val STAR_FOCUS_1 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.1.fits") }
+    protected val STAR_FOCUS_2 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.2.fits") }
+    protected val STAR_FOCUS_3 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.3.fits") }
+    protected val STAR_FOCUS_4 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.4.fits") }
+    protected val STAR_FOCUS_5 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.5.fits") }
+    protected val STAR_FOCUS_6 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.6.fits") }
+    protected val STAR_FOCUS_7 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.7.fits") }
+    protected val STAR_FOCUS_8 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.8.fits") }
+    protected val STAR_FOCUS_9 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.9.fits") }
+    protected val STAR_FOCUS_10 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.10.fits") }
+    protected val STAR_FOCUS_11 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.11.fits") }
+    protected val STAR_FOCUS_12 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.12.fits") }
+    protected val STAR_FOCUS_13 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.13.fits") }
+    protected val STAR_FOCUS_14 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.14.fits") }
+    protected val STAR_FOCUS_15 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.15.fits") }
+    protected val STAR_FOCUS_16 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.16.fits") }
+    protected val STAR_FOCUS_17 by lazy { download("$GITHUB_FITS_URL/STAR.FOCUS.17.fits") }
 
-    protected val PI_01_LIGHT by lazy { download("PI.01.LIGHT.fits", GITHUB_FITS_URL) }
-    protected val PI_02_LIGHT by lazy { download("PI.02.LIGHT.fits", GITHUB_FITS_URL) }
-    protected val PI_03_LIGHT by lazy { download("PI.03.LIGHT.fits", GITHUB_FITS_URL) }
-    protected val PI_04_LIGHT by lazy { download("PI.04.LIGHT.fits", GITHUB_FITS_URL) }
-    protected val PI_05_LIGHT by lazy { download("PI.05.LIGHT.fits", GITHUB_FITS_URL) }
-    protected val PI_06_LIGHT by lazy { download("PI.06.LIGHT.fits", GITHUB_FITS_URL) }
-    protected val PI_07_LIGHT by lazy { download("PI.07.LIGHT.fits", GITHUB_FITS_URL) }
-    protected val PI_08_LIGHT by lazy { download("PI.08.LIGHT.fits", GITHUB_FITS_URL) }
-    protected val PI_09_LIGHT by lazy { download("PI.09.LIGHT.fits", GITHUB_FITS_URL) }
-    protected val PI_10_LIGHT by lazy { download("PI.10.LIGHT.fits", GITHUB_FITS_URL) }
-    protected val PI_BIAS by lazy { download("PI.BIAS.fits", GITHUB_FITS_URL) }
-    protected val PI_DARK by lazy { download("PI.DARK.fits", GITHUB_FITS_URL) }
-    protected val PI_FLAT by lazy { download("PI.FLAT.fits", GITHUB_FITS_URL) }
+    protected val PI_01_LIGHT by lazy { download("$GITHUB_FITS_URL/PI.01.LIGHT.fits") }
+    protected val PI_02_LIGHT by lazy { download("$GITHUB_FITS_URL/PI.02.LIGHT.fits") }
+    protected val PI_03_LIGHT by lazy { download("$GITHUB_FITS_URL/PI.03.LIGHT.fits") }
+    protected val PI_04_LIGHT by lazy { download("$GITHUB_FITS_URL/PI.04.LIGHT.fits") }
+    protected val PI_05_LIGHT by lazy { download("$GITHUB_FITS_URL/PI.05.LIGHT.fits") }
+    protected val PI_06_LIGHT by lazy { download("$GITHUB_FITS_URL/PI.06.LIGHT.fits") }
+    protected val PI_07_LIGHT by lazy { download("$GITHUB_FITS_URL/PI.07.LIGHT.fits") }
+    protected val PI_08_LIGHT by lazy { download("$GITHUB_FITS_URL/PI.08.LIGHT.fits") }
+    protected val PI_09_LIGHT by lazy { download("$GITHUB_FITS_URL/PI.09.LIGHT.fits") }
+    protected val PI_10_LIGHT by lazy { download("$GITHUB_FITS_URL/PI.10.LIGHT.fits") }
+    protected val PI_BIAS by lazy { download("$GITHUB_FITS_URL/PI.BIAS.fits") }
+    protected val PI_DARK by lazy { download("$GITHUB_FITS_URL/PI.DARK.fits") }
+    protected val PI_FLAT by lazy { download("$GITHUB_FITS_URL/PI.FLAT.fits") }
 
-    protected val PI_FOCUS_0 by lazy { download("PI.FOCUS.0.fits", GITHUB_FITS_URL) }
-    protected val PI_FOCUS_10000 by lazy { download("PI.FOCUS.10000.fits", GITHUB_FITS_URL) }
-    protected val PI_FOCUS_20000 by lazy { download("PI.FOCUS.20000.fits", GITHUB_FITS_URL) }
-    protected val PI_FOCUS_30000 by lazy { download("PI.FOCUS.30000.fits", GITHUB_FITS_URL) }
-    protected val PI_FOCUS_100000 by lazy { download("PI.FOCUS.100000.fits", GITHUB_FITS_URL) }
+    protected val PI_FOCUS_0 by lazy { download("$GITHUB_FITS_URL/PI.FOCUS.0.fits") }
+    protected val PI_FOCUS_10000 by lazy { download("$GITHUB_FITS_URL/PI.FOCUS.10000.fits") }
+    protected val PI_FOCUS_20000 by lazy { download("$GITHUB_FITS_URL/PI.FOCUS.20000.fits") }
+    protected val PI_FOCUS_30000 by lazy { download("$GITHUB_FITS_URL/PI.FOCUS.30000.fits") }
+    protected val PI_FOCUS_100000 by lazy { download("$GITHUB_FITS_URL/PI.FOCUS.100000.fits") }
 
     private val afterEach = AfterEach()
 
@@ -147,24 +147,24 @@ abstract class AbstractFitsAndXisfTest : StringSpec() {
         return path to md5
     }
 
-    protected fun ByteArray.md5(): String {
-        return toByteString().md5().hex()
-    }
+    protected fun ByteArray.md5() = toByteString().md5().hex()
 
-    protected fun Path.md5(): String {
-        return readBytes().md5()
-    }
+    protected fun Path.md5() = readBytes().md5()
 
-    protected fun download(name: String, baseUrl: String): Path {
-        return synchronize(name) {
-            val path = Path.of(System.getProperty("java.io.tmpdir"), name)
+    protected val String.extensionFromUrl
+        get() = if (endsWith(".fits", true)) "fits"
+        else if (endsWith(".xisf", true)) "xisf"
+        else ""
+
+    protected fun download(url: String, extension: String = url.extensionFromUrl): Path {
+        require(extension.isNotBlank())
+
+        return synchronize(url) {
+            val name = url.toByteArray().md5()
+            val path = Path.of(System.getProperty("java.io.tmpdir"), "$name.$extension")
 
             if (!path.exists() || path.fileSize() <= 0L) {
-                val request = Request.Builder()
-                    .get()
-                    .url("$baseUrl/$name")
-                    .build()
-
+                val request = Request.Builder().get().url(url).build()
                 val call = HTTP_CLIENT.newCall(request)
 
                 call.execute().use {

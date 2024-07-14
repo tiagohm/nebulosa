@@ -90,6 +90,8 @@ class CancellationToken private constructor(private val completable: Completable
         if (!isDone) {
             completable?.complete(CancellationSource.Close)
         }
+
+        unlistenAll()
     }
 
     companion object {

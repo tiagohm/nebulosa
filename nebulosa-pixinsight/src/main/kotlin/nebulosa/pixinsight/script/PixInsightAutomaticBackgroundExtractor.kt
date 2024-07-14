@@ -2,14 +2,14 @@ package nebulosa.pixinsight.script
 
 import nebulosa.io.resource
 import nebulosa.io.transferAndClose
+import nebulosa.pixinsight.script.PixInsightImageSolver.Output
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
-import kotlin.io.path.readText
 
 data class PixInsightAutomaticBackgroundExtractor(
-    private val slot: Int,
+    override val slot: Int,
     private val targetPath: Path,
     private val outputPath: Path,
 ) : AbstractPixInsightScript<PixInsightAutomaticBackgroundExtractor.Output>() {
@@ -24,7 +24,7 @@ data class PixInsightAutomaticBackgroundExtractor(
         override val success: Boolean = false,
         override val errorMessage: String? = null,
         @JvmField val outputImage: Path? = null,
-    ) : PixInsightOutput {
+    ) : PixInsightScript.Output {
 
         companion object {
 
@@ -39,18 +39,12 @@ data class PixInsightAutomaticBackgroundExtractor(
         resource("pixinsight/ABE.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments = listOf("-x=${execute(slot, scriptPath, Input(targetPath, outputPath, statusPath))}")
+    override val arguments = listOf("-x=${execute(scriptPath, Input(targetPath, outputPath, statusPath))}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {
             repeat(30) {
-                val text = statusPath.readText()
-
-                if (text.startsWith(START_FILE) && text.endsWith(END_FILE)) {
-                    return OBJECT_MAPPER.readValue(text.substring(1, text.length - 1), Output::class.java)
-                }
-
-                Thread.sleep(1000)
+                statusPath.parseStatus<Output>()?.also { return it } ?: Thread.sleep(1000)
             }
         }
 

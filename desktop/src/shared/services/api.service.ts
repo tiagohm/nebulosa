@@ -13,10 +13,11 @@ import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } fr
 import { ConnectionStatus, ConnectionType, Equipment } from '../types/home.types'
 import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlType, SlewRate, TrackMode } from '../types/mount.types'
+import { PlateSolverRequest } from '../types/platesolver.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencePlan } from '../types/sequencer.types'
-import { PlateSolverRequest, StarDetectionRequest } from '../types/settings.types'
 import { AnalyzedTarget, StackingRequest } from '../types/stacker.types'
+import { StarDetectionRequest } from '../types/stardetector.types'
 import { FilterWheel } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 import { HttpService } from './http.service'
@@ -666,9 +667,13 @@ export class ApiService {
 
 	// SOLVER
 
-	solveImage(solver: PlateSolverRequest, path: string, blind: boolean, centerRA: Angle, centerDEC: Angle, radius: Angle) {
+	solverStart(solver: PlateSolverRequest, path: string, blind: boolean, centerRA: Angle, centerDEC: Angle, radius: Angle) {
 		const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
-		return this.http.put<ImageSolved>(`plate-solver?${query}`, solver)
+		return this.http.put<ImageSolved>(`plate-solver/start?${query}`, solver)
+	}
+
+	solverStop() {
+		return this.http.put<never>('plate-solver/stop')
 	}
 
 	// AUTO FOCUS

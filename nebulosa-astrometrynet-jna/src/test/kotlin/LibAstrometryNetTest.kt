@@ -22,7 +22,7 @@ class LibAstrometryNetTest : StringSpec(), Solver.RecordMatchCallback {
         val lib = LibAstrometryNet.INSTANCE
 
         // http://data.astrometry.net/
-        val indexDir = Path.of("/home/tiagohm/Downloads/Index Files")
+        val indexDir = Path.of(System.getProperty("user.home"), "Downloads", "Index Files")
 
         "structure sizes" {
             val tan = Tan.ByValue()

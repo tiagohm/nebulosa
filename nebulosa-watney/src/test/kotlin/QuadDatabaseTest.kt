@@ -14,12 +14,11 @@ import nebulosa.watney.platesolver.quad.CompactQuadDatabase
 import nebulosa.watney.platesolver.quad.QuadDatabaseCellFileIndex
 import java.nio.file.Path
 
-@Suppress("NestedLambdaShadowedImplicitParameter")
 @EnabledIf(NonGitHubOnlyCondition::class)
 class QuadDatabaseTest : StringSpec() {
 
     init {
-        val quadDir = Path.of("/home/tiagohm/Downloads/watneyqdb")
+        val quadDir = Path.of(System.getProperty("user.home"), "Downloads", "watneyqdb")
 
         "cell index file" {
             val source = Path.of("$quadDir", "gaia2-00-07-20.qdbindex")

@@ -36,10 +36,10 @@ function luminanceCombination() {
 
         var P = new LRGBCombination
         P.channels = [ // enabled, id, k
-           [false, "", 1.0],
-           [false, "", 1.0],
-           [false, "", 1.0],
-           [true, luminanceWindow.mainView.id, weight]
+            [false, "", 1.0],
+            [false, "", 1.0],
+            [false, "", 1.0],
+            [true, luminanceWindow.mainView.id, weight]
         ]
         P.mL = 0.500
         P.mc = 0.500
@@ -62,7 +62,7 @@ function luminanceCombination() {
     } catch (e) {
         data.success = false
         data.errorMessage = e.message
-        console.writeln(data.errorMessage)
+        console.criticalln(data.errorMessage)
     } finally {
         File.writeTextFile(statusPath, "@" + JSON.stringify(data) + "#")
     }

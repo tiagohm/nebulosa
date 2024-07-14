@@ -94,7 +94,7 @@ function pixelMath() {
     } catch (e) {
         data.success = false
         data.errorMessage = e.message
-        console.writeln(data.errorMessage)
+        console.criticalln(data.errorMessage)
     } finally {
         File.writeTextFile(statusPath, "@" + JSON.stringify(data) + "#")
     }

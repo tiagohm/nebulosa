@@ -500,7 +500,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	get canPlateSolve() {
-		return this.solver.type !== 'SIRIL' || (this.solver.focalLength > 0 && this.solver.pixelSize > 0)
+		return (this.solver.type !== 'SIRIL' && this.solver.type !== 'PIXINSIGHT') || (this.solver.focalLength > 0 && this.solver.pixelSize > 0)
 	}
 
 	private readonly liveStackingMenuItem: MenuItem = {
@@ -1227,7 +1227,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	async solveImage() {
+	async solverStart() {
 		const path = this.imagePath
 
 		if (path) {
@@ -1235,7 +1235,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 			try {
 				const solver = this.preference.plateSolverRequest(this.solver.type).get()
-				const solved = await this.api.solveImage(solver, path, this.solver.blind, this.solver.centerRA, this.solver.centerDEC, this.solver.radius)
+				solver.pixelSize = this.solver.pixelSize
+				solver.focalLength = this.solver.focalLength
+				const solved = await this.api.solverStart(solver, path, this.solver.blind, this.solver.centerRA, this.solver.centerDEC, this.solver.radius)
 
 				this.savePreference()
 				this.updateImageSolved(solved)
@@ -1249,6 +1251,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				}
 			}
 		}
+	}
+
+	solverStop() {
+		return this.api.solverStop()
 	}
 
 	private updateImageSolved(solved?: ImageSolved) {

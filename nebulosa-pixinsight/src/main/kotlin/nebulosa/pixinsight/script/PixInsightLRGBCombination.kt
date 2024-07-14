@@ -6,11 +6,10 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
-import kotlin.io.path.readText
 
 @Suppress("ArrayInDataClass")
 data class PixInsightLRGBCombination(
-    private val slot: Int,
+    override val slot: Int,
     private val outputPath: Path,
     private val luminancePath: Path? = null,
     private val redPath: Path? = null,
@@ -34,7 +33,7 @@ data class PixInsightLRGBCombination(
         override val success: Boolean = false,
         override val errorMessage: String? = null,
         @JvmField val outputImage: Path? = null,
-    ) : PixInsightOutput {
+    ) : PixInsightScript.Output {
 
         companion object {
 
@@ -50,19 +49,13 @@ data class PixInsightLRGBCombination(
         resource("pixinsight/LRGBCombination.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments =
-        listOf("-x=${execute(slot, scriptPath, Input(outputPath, statusPath, luminancePath, redPath, greenPath, bluePath, weights))}")
+    private val input = Input(outputPath, statusPath, luminancePath, redPath, greenPath, bluePath, weights)
+    override val arguments = listOf("-x=${execute(scriptPath, input)}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {
             repeat(30) {
-                val text = statusPath.readText()
-
-                if (text.startsWith(START_FILE) && text.endsWith(END_FILE)) {
-                    return OBJECT_MAPPER.readValue(text.substring(1, text.length - 1), Output::class.java)
-                }
-
-                Thread.sleep(1000)
+                statusPath.parseStatus<Output>()?.also { return it } ?: Thread.sleep(1000)
             }
         }
 

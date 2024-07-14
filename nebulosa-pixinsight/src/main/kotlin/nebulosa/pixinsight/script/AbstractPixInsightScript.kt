@@ -1,5 +1,6 @@
 package nebulosa.pixinsight.script
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.common.exec.CommandLine
@@ -10,8 +11,9 @@ import nebulosa.log.loggerFor
 import org.apache.commons.codec.binary.Hex
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
+import kotlin.io.path.readText
 
-abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, CommandLineListener, CompletableFuture<T>() {
+abstract class AbstractPixInsightScript<T : PixInsightScript.Output> : PixInsightScript<T>, CommandLineListener, CompletableFuture<T>() {
 
     override fun onLineRead(line: String) = Unit
 
@@ -35,6 +37,9 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, CommandLineLis
                 if (isDone) return@whenComplete
                 else if (exception != null) completeExceptionally(exception)
                 else complete(processOnComplete(exitCode).also { LOG.info("{} script processed. output={}", this::class.simpleName, it) })
+            } catch (e: Throwable) {
+                LOG.error("{} finished with fatal exception. message={}", this::class.simpleName, e.message)
+                completeExceptionally(e)
             } finally {
                 commandLine.unregisterCommandLineListener(this)
             }
@@ -58,10 +63,11 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, CommandLineLis
 
         @JvmStatic internal val OBJECT_MAPPER = jsonMapper {
             addModule(KOTLIN_MODULE)
+            disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         }
 
         @JvmStatic
-        internal fun PixInsightScript<*>.execute(slot: Int, scriptPath: Path, data: Any?): String {
+        internal fun PixInsightScript<*>.execute(scriptPath: Path, data: Any?, slot: Int = this.slot): String {
             LOG.info("{} will be executed. slot={}, script={}, data={}", this::class.simpleName, slot, scriptPath, data)
 
             return buildString {
@@ -80,6 +86,21 @@ abstract class AbstractPixInsightScript<T> : PixInsightScript<T>, CommandLineLis
 
                 append('"')
             }
+        }
+
+        @JvmStatic
+        internal fun <T : PixInsightScript.Output> Path.parseStatus(type: Class<T>): T? {
+            val text = readText()
+
+            return if (text.startsWith(START_FILE) && text.endsWith(END_FILE)) {
+                OBJECT_MAPPER.readValue(text.substring(1, text.length - 1), type)
+            } else {
+                null
+            }
+        }
+
+        internal inline fun <reified T : PixInsightScript.Output> Path.parseStatus(): T? {
+            return parseStatus(T::class.java)
         }
     }
 }

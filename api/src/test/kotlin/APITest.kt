@@ -166,7 +166,7 @@ class APITest : StringSpec() {
         private const val FOCUSER_NAME = "ZWO Focuser (1)"
 
         @JvmStatic private val EXPOSURE_TIME = Duration.ofSeconds(5)
-        @JvmStatic private val CAPTURES_PATH = Path.of("/home/tiagohm/Git/nebulosa/data/captures")
+        @JvmStatic private val CAPTURES_PATH = Path.of(System.getProperty("user.home"), "/Git/nebulosa/data/captures")
 
         @JvmStatic private val STAR_DETECTION_OPTIONS = StarDetectionRequest(executablePath = Path.of("astap"))
 

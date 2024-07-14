@@ -3,7 +3,19 @@ package nebulosa.pixinsight.script
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 
-data class PixInsightIsRunning(private val slot: Int) : AbstractPixInsightScript<Boolean>() {
+data class PixInsightIsRunning(override val slot: Int) : AbstractPixInsightScript<PixInsightScript.Output>() {
+
+    data class Output(
+        override val success: Boolean,
+        override val errorMessage: String? = null,
+    ) : PixInsightScript.Output {
+
+        companion object {
+
+            @JvmStatic val SUCCESS = Output(true)
+            @JvmStatic val FAILED = Output(false)
+        }
+    }
 
     override val arguments = listOf(if (slot > 0) "-y=$slot" else "-y")
 
@@ -20,16 +32,16 @@ data class PixInsightIsRunning(private val slot: Int) : AbstractPixInsightScript
 
         if (slot > 0) {
             if (line.contains(slotIsNotRunning, true) || line.contains(slotCrashed, true)) {
-                complete(false)
+                complete(Output.FAILED)
             } else if (line.contains(yieldedExecutionInstance, true)) {
-                complete(true)
+                complete(Output.SUCCESS)
             } else {
                 return
             }
         } else if (line.contains(YIELDED_EXECUTION_INSTANCE, true)) {
-            complete(true)
+            complete(Output.SUCCESS)
         } else if (line.contains(NO_RUNNING_PROCESS, true)) {
-            complete(false)
+            complete(Output.FAILED)
         } else {
             return
         }
@@ -37,7 +49,7 @@ data class PixInsightIsRunning(private val slot: Int) : AbstractPixInsightScript
         LOG.debug { line }
     }
 
-    override fun processOnComplete(exitCode: Int) = false
+    override fun processOnComplete(exitCode: Int) = Output.FAILED
 
     override fun close() = Unit
 

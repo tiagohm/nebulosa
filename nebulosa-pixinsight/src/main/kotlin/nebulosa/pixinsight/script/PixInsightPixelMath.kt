@@ -2,14 +2,14 @@ package nebulosa.pixinsight.script
 
 import nebulosa.io.resource
 import nebulosa.io.transferAndClose
+import nebulosa.pixinsight.script.PixInsightImageSolver.Output
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
-import kotlin.io.path.readText
 
 data class PixInsightPixelMath(
-    private val slot: Int,
+    override val slot: Int,
     private val inputPaths: List<Path>,
     private val outputPath: Path,
     private val expressionRK: String? = null,
@@ -30,7 +30,7 @@ data class PixInsightPixelMath(
         override val success: Boolean = false,
         override val errorMessage: String? = null,
         @JvmField val outputImage: Path? = null,
-    ) : PixInsightOutput {
+    ) : PixInsightScript.Output {
 
         companion object {
 
@@ -45,19 +45,13 @@ data class PixInsightPixelMath(
         resource("pixinsight/PixelMath.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments =
-        listOf("-x=${execute(slot, scriptPath, Input(statusPath, inputPaths, outputPath, expressionRK, expressionG, expressionB))}")
+    private val input = Input(statusPath, inputPaths, outputPath, expressionRK, expressionG, expressionB)
+    override val arguments = listOf("-x=${execute(scriptPath, input)}")
 
-    override fun processOnComplete(exitCode: Int): Output? {
+    override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {
             repeat(30) {
-                val text = statusPath.readText()
-
-                if (text.startsWith(START_FILE) && text.endsWith(END_FILE)) {
-                    return OBJECT_MAPPER.readValue(text.substring(1, text.length - 1), Output::class.java)
-                }
-
-                Thread.sleep(1000)
+                statusPath.parseStatus<Output>()?.also { return it } ?: Thread.sleep(1000)
             }
         }
 

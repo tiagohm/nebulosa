@@ -4,6 +4,8 @@ import nebulosa.astap.platesolver.AstapPlateSolver
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.platesolver.LocalAstrometryNetPlateSolver
 import nebulosa.astrometrynet.platesolver.NovaAstrometryNetPlateSolver
+import nebulosa.pixinsight.platesolver.PixInsightPlateSolver
+import nebulosa.pixinsight.script.startPixInsight
 import nebulosa.siril.platesolver.SirilPlateSolver
 import okhttp3.OkHttpClient
 import org.hibernate.validator.constraints.time.DurationMax
@@ -23,6 +25,7 @@ data class PlateSolverRequest(
     @JvmField val apiKey: String = "",
     @field:DurationMin(seconds = 0) @field:DurationMax(minutes = 5) @field:DurationUnit(ChronoUnit.SECONDS)
     @JvmField val timeout: Duration = Duration.ZERO,
+    @JvmField val slot: Int = 1,
 ) {
 
     fun get(httpClient: OkHttpClient? = null) = with(this) {
@@ -30,11 +33,14 @@ data class PlateSolverRequest(
             PlateSolverType.ASTAP -> AstapPlateSolver(executablePath!!)
             PlateSolverType.ASTROMETRY_NET -> LocalAstrometryNetPlateSolver(executablePath!!)
             PlateSolverType.ASTROMETRY_NET_ONLINE -> {
-                val key = "$apiUrl@$apiKey"
-                val service = NOVA_ASTROMETRY_NET_CACHE.getOrPut(key) { NovaAstrometryNetService(apiUrl, httpClient) }
+                val service = NOVA_ASTROMETRY_NET_CACHE.getOrPut(apiUrl) { NovaAstrometryNetService(apiUrl, httpClient) }
                 NovaAstrometryNetPlateSolver(service, apiKey)
             }
             PlateSolverType.SIRIL -> SirilPlateSolver(executablePath!!, focalLength, pixelSize)
+            PlateSolverType.PIXINSIGHT -> {
+                val runner = startPixInsight(executablePath!!, slot)
+                PixInsightPlateSolver(runner, pixelSize, 0.0, focalLength, slot)
+            }
         }
     }
 

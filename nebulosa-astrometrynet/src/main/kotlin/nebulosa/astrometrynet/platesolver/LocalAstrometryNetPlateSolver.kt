@@ -99,32 +99,32 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
 
             private const val NUMBER_REGEX = "([\\d.+-]+)"
 
-            @JvmStatic private val FIELD_CENTER_REGEX = Regex(".*Field center: \\(RA,Dec\\) = \\($NUMBER_REGEX, $NUMBER_REGEX\\).*")
-            @JvmStatic private val FIELD_SIZE_REGEX = Regex(".*Field size: $NUMBER_REGEX x $NUMBER_REGEX arcminutes.*")
-            @JvmStatic private val FIELD_ROTATION_REGEX = Regex(".*Field rotation angle: up is $NUMBER_REGEX degrees.*")
-            @JvmStatic private val PIXEL_SCALE_REGEX = Regex(".*pixel scale $NUMBER_REGEX arcsec/pix.*")
+            @JvmStatic private val FIELD_CENTER_REGEX = Regex("Field center: \\(RA,Dec\\) = \\($NUMBER_REGEX, $NUMBER_REGEX\\)")
+            @JvmStatic private val FIELD_SIZE_REGEX = Regex("Field size: $NUMBER_REGEX x $NUMBER_REGEX arcminutes")
+            @JvmStatic private val FIELD_ROTATION_REGEX = Regex("Field rotation angle: up is $NUMBER_REGEX degrees")
+            @JvmStatic private val PIXEL_SCALE_REGEX = Regex("pixel scale $NUMBER_REGEX arcsec/pix")
 
             @JvmStatic
             private fun fieldCenter(line: String): DoubleArray? {
-                return FIELD_CENTER_REGEX.matchEntire(line)
+                return FIELD_CENTER_REGEX.find(line)
                     ?.let { doubleArrayOf(it.groupValues[1].toDouble().deg, it.groupValues[2].toDouble().deg) }
             }
 
             @JvmStatic
             private fun fieldSize(line: String): DoubleArray? {
-                return FIELD_SIZE_REGEX.matchEntire(line)
+                return FIELD_SIZE_REGEX.find(line)
                     ?.let { doubleArrayOf(it.groupValues[1].toDouble().arcmin, it.groupValues[2].toDouble().arcmin) }
             }
 
             @JvmStatic
             private fun fieldRotation(line: String): Angle? {
-                return FIELD_ROTATION_REGEX.matchEntire(line)
+                return FIELD_ROTATION_REGEX.find(line)
                     ?.let { it.groupValues[1].toDouble().deg }
             }
 
             @JvmStatic
             private fun pixelScale(line: String): Angle? {
-                return PIXEL_SCALE_REGEX.matchEntire(line)
+                return PIXEL_SCALE_REGEX.find(line)
                     ?.let { it.groupValues[1].toDouble().arcsec }
             }
         }

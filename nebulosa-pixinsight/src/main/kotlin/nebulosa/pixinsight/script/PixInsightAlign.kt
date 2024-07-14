@@ -6,10 +6,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
-import kotlin.io.path.readText
 
 data class PixInsightAlign(
-    private val slot: Int,
+    override val slot: Int,
     private val workingDirectory: Path,
     private val referencePath: Path,
     private val targetPath: Path,
@@ -45,7 +44,7 @@ data class PixInsightAlign(
         @JvmField val h31: Double = 0.0,
         @JvmField val h32: Double = 0.0,
         @JvmField val h33: Double = 0.0,
-    ) : PixInsightOutput {
+    ) : PixInsightScript.Output {
 
         companion object {
 
@@ -60,18 +59,12 @@ data class PixInsightAlign(
         resource("pixinsight/Align.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments = listOf("-x=${execute(slot, scriptPath, Input(referencePath, targetPath, workingDirectory, statusPath))}")
+    override val arguments = listOf("-x=${execute(scriptPath, Input(referencePath, targetPath, workingDirectory, statusPath))}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {
             repeat(30) {
-                val text = statusPath.readText()
-
-                if (text.startsWith(START_FILE) && text.endsWith(END_FILE)) {
-                    return OBJECT_MAPPER.readValue(text.substring(1, text.length - 1), Output::class.java)
-                }
-
-                Thread.sleep(1000)
+                statusPath.parseStatus<Output>()?.also { return it } ?: Thread.sleep(1000)
             }
         }
 
