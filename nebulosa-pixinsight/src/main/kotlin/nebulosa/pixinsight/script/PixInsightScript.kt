@@ -4,7 +4,14 @@ import nebulosa.common.exec.CommandLine
 import java.io.Closeable
 import java.util.concurrent.Future
 
-interface PixInsightScript<T> : Future<T>, Closeable {
+sealed interface PixInsightScript<T : PixInsightScript.Output> : Future<T>, Closeable {
+
+    sealed interface Output {
+
+        val success: Boolean
+
+        val errorMessage: String?
+    }
 
     val arguments: Iterable<String>
 

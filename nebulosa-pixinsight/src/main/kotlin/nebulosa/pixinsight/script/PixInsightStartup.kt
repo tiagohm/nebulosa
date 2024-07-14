@@ -8,7 +8,19 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 import kotlin.io.path.readText
 
-data class PixInsightStartup(private val slot: Int) : AbstractPixInsightScript<Boolean>() {
+data class PixInsightStartup(private val slot: Int) : AbstractPixInsightScript<PixInsightStartup.Output>() {
+
+    data class Output(
+        override val success: Boolean,
+        override val errorMessage: String? = null,
+    ) : PixInsightScript.Output {
+
+        companion object {
+
+            @JvmStatic val SUCCESS = Output(true)
+            @JvmStatic val FAILED = Output(false)
+        }
+    }
 
     private val scriptPath = Files.createTempFile("pi-", ".js")
     private val outputPath = Files.createTempFile("pi-", ".txt")
@@ -24,10 +36,10 @@ data class PixInsightStartup(private val slot: Int) : AbstractPixInsightScript<B
 
         timer("PixInsight Startup Timer", true, 1000L, 500L) {
             if (outputPath.readText() == "STARTED") {
-                complete(true)
+                complete(Output.SUCCESS)
                 cancel()
             } else if (count >= 60) {
-                complete(false)
+                complete(Output.FAILED)
                 cancel()
             }
 
@@ -35,7 +47,7 @@ data class PixInsightStartup(private val slot: Int) : AbstractPixInsightScript<B
         }
     }
 
-    override fun processOnComplete(exitCode: Int) = false
+    override fun processOnComplete(exitCode: Int) = Output.FAILED
 
     override fun close() {
         scriptPath.deleteIfExists()

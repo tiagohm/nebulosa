@@ -29,7 +29,7 @@ data class PixInsightDetectStars(
         override val success: Boolean = false,
         override val errorMessage: String? = null,
         @JvmField val stars: List<Star> = emptyList(),
-    ) : PixInsightOutput {
+    ) : PixInsightScript.Output {
 
         override fun toString() = "Output(success=$success, errorMessage=$errorMessage, stars=${stars.size})"
 

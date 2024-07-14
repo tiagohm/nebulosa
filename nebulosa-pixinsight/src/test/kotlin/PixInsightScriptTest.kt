@@ -3,12 +3,14 @@ import io.kotest.engine.spec.tempdir
 import io.kotest.engine.spec.tempfile
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.doubles.plusOrMinus
+import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.fits.fits
 import nebulosa.fits.isFits
 import nebulosa.image.Image
 import nebulosa.image.algorithms.transformation.AutoScreenTransformFunction
+import nebulosa.math.*
 import nebulosa.pixinsight.script.*
 import nebulosa.pixinsight.script.PixInsightScript.Companion.UNSPECIFIED_SLOT
 import nebulosa.test.AbstractFitsAndXisfTest
@@ -16,6 +18,7 @@ import nebulosa.test.NonGitHubOnlyCondition
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
 import java.nio.file.Path
+import kotlin.math.roundToInt
 
 @EnabledIf(NonGitHubOnlyCondition::class)
 class PixInsightScriptTest : AbstractFitsAndXisfTest() {
@@ -26,11 +29,11 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
 
         "!startup" {
             PixInsightStartup(PixInsightScript.DEFAULT_SLOT)
-                .use { it.runSync(runner).shouldBeTrue() }
+                .use { it.runSync(runner).success.shouldBeTrue() }
         }
         "!is running" {
             PixInsightIsRunning(PixInsightScript.DEFAULT_SLOT)
-                .use { it.runSync(runner).shouldBeTrue() }
+                .use { it.runSync(runner).success.shouldBeTrue() }
         }
         "calibrate" {
             PixInsightCalibrate(UNSPECIFIED_SLOT, workingDirectory, PI_01_LIGHT, PI_DARK, PI_FLAT, PI_BIAS)
@@ -125,6 +128,45 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
             val fitsPath = tempfile("pi-ffc", ".fits").toPath()
             PixInsightFileFormatConversion(UNSPECIFIED_SLOT, xisfPath, fitsPath)
                 .use { it.runSync(runner).outputImage.shouldNotBeNull().isFits().shouldBeTrue() }
+        }
+        "image solver" {
+            // https://nova.astrometry.net/user_images/10373761
+            val path = download("https://nova.astrometry.net/image/14603", "jpg")
+            val resolution = 6.78 // arcsec/px
+            val centerRA = "06 40 51".hours
+            val centerDEC = "09 49 53".deg
+
+            // Estimated to match resolution = (pixelSize / focalDistance) * 206.265
+            val focalDistance = 200.0 // mm
+            val pixelSize = 6.58
+
+            with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, resolution = resolution)
+                .use { it.runSync(runner) }) {
+                success.shouldBeTrue()
+                this.focalDistance shouldBe (200.355 plusOrMinus 1e-5)
+                this.pixelSize shouldBe (6.58 plusOrMinus 1e-2)
+                this.resolution.toArcsec shouldBe (6.774 plusOrMinus 1e-3)
+                rightAscension.formatHMS() shouldBe "06h40m51.8s"
+                declination.formatSignedDMS() shouldBe "+009°49'53.6\""
+                width.toArcmin shouldBe (90.321 plusOrMinus 1e-3)
+                height.toArcmin shouldBe (59.386 plusOrMinus 1e-3)
+                imageWidth.roundToInt() shouldBeExactly 800
+                imageHeight.roundToInt() shouldBeExactly 526
+            }
+
+            with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, focalDistance = focalDistance)
+                .use { it.runSync(runner) }) {
+                success.shouldBeTrue()
+                this.focalDistance shouldBe (200.355 plusOrMinus 1e-5)
+                this.pixelSize shouldBe (6.58 plusOrMinus 1e-2)
+                this.resolution.toArcsec shouldBe (6.774 plusOrMinus 1e-3)
+                rightAscension.formatHMS() shouldBe "06h40m51.8s"
+                declination.formatSignedDMS() shouldBe "+009°49'53.6\""
+                width.toArcmin shouldBe (90.321 plusOrMinus 1e-3)
+                height.toArcmin shouldBe (59.386 plusOrMinus 1e-3)
+                imageWidth.roundToInt() shouldBeExactly 800
+                imageHeight.roundToInt() shouldBeExactly 526
+            }
         }
     }
 

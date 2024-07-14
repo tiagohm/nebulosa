@@ -42,9 +42,9 @@ data class PixInsightLiveStacker(
     @Synchronized
     override fun start() {
         if (!running.get()) {
-            if (!PixInsightIsRunning(slot).use { it.runSync(runner) }) {
+            if (!PixInsightIsRunning(slot).use { it.runSync(runner).success }) {
                 try {
-                    check(PixInsightStartup(slot).use { it.runSync(runner) })
+                    check(PixInsightStartup(slot).use { it.runSync(runner).success })
                 } catch (e: Throwable) {
                     throw IllegalStateException("unable to start PixInsight")
                 }

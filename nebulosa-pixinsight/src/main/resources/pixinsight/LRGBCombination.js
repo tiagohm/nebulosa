@@ -42,10 +42,10 @@ function lrgbCombination() {
 
         var P = new LRGBCombination
         P.channels = [ // enabled, id, k
-           [!!redPath, redWindow ? redWindow.mainView.id : "", channelWeights[1]],
-           [!!greenPath, greenWindow ? greenWindow.mainView.id : "", channelWeights[2]],
-           [!!bluePath, blueWindow ? blueWindow.mainView.id : "", channelWeights[3]],
-           [!!luminancePath, luminanceWindow ? luminanceWindow.mainView.id : "", channelWeights[0]]
+            [!!redPath, redWindow ? redWindow.mainView.id : "", channelWeights[1]],
+            [!!greenPath, greenWindow ? greenWindow.mainView.id : "", channelWeights[2]],
+            [!!bluePath, blueWindow ? blueWindow.mainView.id : "", channelWeights[3]],
+            [!!luminancePath, luminanceWindow ? luminanceWindow.mainView.id : "", channelWeights[0]]
         ]
         P.mL = 0.500
         P.mc = 0.500
@@ -72,7 +72,7 @@ function lrgbCombination() {
     } catch (e) {
         data.success = false
         data.errorMessage = e.message
-        console.writeln(data.errorMessage)
+        console.criticalln(data.errorMessage)
     } finally {
         File.writeTextFile(statusPath, "@" + JSON.stringify(data) + "#")
     }
