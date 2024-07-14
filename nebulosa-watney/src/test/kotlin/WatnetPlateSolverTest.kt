@@ -17,7 +17,7 @@ import java.nio.file.Path
 class WatnetPlateSolverTest : AbstractFitsAndXisfTest() {
 
     init {
-        val quadDir = Path.of("/home/tiagohm/Downloads/watneyqdb")
+        val quadDir = Path.of("~/Downloads/watneyqdb").toRealPath()
         val quadDatabase = CompactQuadDatabase(quadDir)
         val solver = WatneyPlateSolver(quadDatabase)
 

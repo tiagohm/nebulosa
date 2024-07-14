@@ -24,7 +24,7 @@ class SirilTest : AbstractFitsAndXisfTest() {
         val executablePath = Path.of("siril-cli")
 
         "live stacking" {
-            val workingDirectory = Path.of("/home/tiagohm/Git/nebulosa/data/siril")
+            val workingDirectory = Path.of("../data/siril").toRealPath()
 
             SirilLiveStacker(executablePath, workingDirectory).use {
                 it.start()
