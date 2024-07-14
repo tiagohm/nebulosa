@@ -12,8 +12,8 @@ class PlateSolverController(
     private val plateSolverService: PlateSolverService,
 ) {
 
-    @PutMapping
-    fun solveImage(
+    @PutMapping("start")
+    fun startSolver(
         @RequestParam path: Path,
         @RequestBody @Valid solver: PlateSolverRequest,
         @RequestParam(required = false, defaultValue = "true") blind: Boolean,
@@ -21,4 +21,9 @@ class PlateSolverController(
         @AngleParam(required = false, defaultValue = "0.0") centerDEC: Angle,
         @AngleParam(required = false, defaultValue = "4.0") radius: Angle,
     ) = plateSolverService.solveImage(solver, path, centerRA, centerDEC, if (blind) 0.0 else radius)
+
+    @PutMapping("stop")
+    fun stopSolver() {
+        plateSolverService.stopSolver()
+    }
 }

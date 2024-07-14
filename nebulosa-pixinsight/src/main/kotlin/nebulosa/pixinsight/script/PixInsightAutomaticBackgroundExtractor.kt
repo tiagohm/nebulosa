@@ -9,7 +9,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 
 data class PixInsightAutomaticBackgroundExtractor(
-    private val slot: Int,
+    override val slot: Int,
     private val targetPath: Path,
     private val outputPath: Path,
 ) : AbstractPixInsightScript<PixInsightAutomaticBackgroundExtractor.Output>() {
@@ -39,7 +39,7 @@ data class PixInsightAutomaticBackgroundExtractor(
         resource("pixinsight/ABE.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments = listOf("-x=${execute(slot, scriptPath, Input(targetPath, outputPath, statusPath))}")
+    override val arguments = listOf("-x=${execute(scriptPath, Input(targetPath, outputPath, statusPath))}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {

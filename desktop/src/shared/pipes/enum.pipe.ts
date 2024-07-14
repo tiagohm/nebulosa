@@ -7,9 +7,11 @@ import { FlatWizardState } from '../types/flat-wizard.types'
 import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
 import { Bitpix, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlType } from '../types/mount.types'
+import { PlateSolverType } from '../types/platesolver.types'
 import { SequenceCaptureMode } from '../types/sequencer.types'
-import { PlateSolverType, SettingsTabKey, StarDetectorType } from '../types/settings.types'
+import { SettingsTabKey } from '../types/settings.types'
 import { StackerGroupType, StackerType } from '../types/stacker.types'
+import { StarDetectorType } from '../types/stardetector.types'
 import { Undefinable } from '../utils/types'
 
 export type EnumPipeKey =

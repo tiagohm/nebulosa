@@ -8,7 +8,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 
 data class PixInsightAlign(
-    private val slot: Int,
+    override val slot: Int,
     private val workingDirectory: Path,
     private val referencePath: Path,
     private val targetPath: Path,
@@ -59,7 +59,7 @@ data class PixInsightAlign(
         resource("pixinsight/Align.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments = listOf("-x=${execute(slot, scriptPath, Input(referencePath, targetPath, workingDirectory, statusPath))}")
+    override val arguments = listOf("-x=${execute(scriptPath, Input(referencePath, targetPath, workingDirectory, statusPath))}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {

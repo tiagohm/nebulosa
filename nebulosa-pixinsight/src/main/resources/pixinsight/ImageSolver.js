@@ -45,7 +45,6 @@
 
 #include "/opt/PixInsight/src/scripts/AdP/WCSmetadata.jsh"
 #include "/opt/PixInsight/src/scripts/AdP/AstronomicalCatalogs.jsh"
-#include "/opt/PixInsight/src/scripts/AdP/CatalogDownloader.js"
 
 function CatalogMode() { }
 CatalogMode.prototype.LocalText = 0
@@ -199,6 +198,17 @@ function ImageSolver() {
     this.config.projectionOriginMode = 0
     this.config.restrictToHQStars = false
     this.config.tryApparentCoordinates = true
+
+    this.finished = false
+
+    let listener = new MessageListener
+    listener.onMessage = function (instance, uniqueId, message) {
+        console.writeln("Received message: " + message)
+
+        if (message === "ABORTED") {
+            this.finished = true
+        }
+    }
 
     /*
      * Initializes the image solver. If the parameter prioritizeSettings is
@@ -574,7 +584,7 @@ function ImageSolver() {
     }
 
     // This warning is now silenced.
-    this.showedWarningOnTruncatedInputSet = true; //false
+    this.showedWarningOnTruncatedInputSet = true //false
 
     this.DetectStars = function (window, metadata) {
         /*
@@ -824,7 +834,7 @@ function ImageSolver() {
         let grayscaleImage = new Image
         grayscaleImage.assign(targetWindow.mainView.image)
         grayscaleImage.colorSpace = ColorSpace_HSI
-        grayscaleImage.selectedChannel = 2; // intensity component
+        grayscaleImage.selectedChannel = 2 // intensity component
 
         let workingWindow = new ImageWindow(grayscaleImage.width, grayscaleImage.height,
             1/*channels*/, 32/*bits*/, true/*float*/, false/*color*/,
@@ -856,7 +866,6 @@ function ImageSolver() {
     }
 
     this.OptimizeSolution = function (workingWindow, currentMetadata, stars) {
-        let finished = false
         let iteration = 1
         let numItersWithoutImprovement = 0
         let maxItersWithoutImprovement = 4
@@ -865,6 +874,10 @@ function ImageSolver() {
         let bestRMS = stars.rms
         let bestStarCount = stars.numValid
         let converged = false
+
+        if (this.finished) {
+            return
+        }
 
         do {
             console.abortEnabled = true
@@ -878,8 +891,7 @@ function ImageSolver() {
 
                 if (result == null)
                     throw ""
-            }
-            catch (ex) {
+            } catch (ex) {
                 let haveException = !console.isAborted && (ex.length === undefined || ex.length > 0)
                 if (haveException)
                     console.criticalln("<end><cbr><br>*** Error: " + ex.toString())
@@ -891,6 +903,14 @@ function ImageSolver() {
             }
 
             stars = this.DetectStars(workingWindow, result)
+
+            processEvents()
+
+            if (console.abortRequested || this.finished) {
+                this.finished = true
+                console.criticalln("*** User requested abort ***")
+                break
+            }
 
             /*
              * Calculate the difference between the current and previous
@@ -951,12 +971,13 @@ function ImageSolver() {
             }
 
             // Finish condition
-            finished = true
+            this.finished = true
+
             if (converged || numItersWithoutImprovement > maxItersWithoutImprovement) {
                 if (this.distortModel) {
                     converged = false
                     numItersWithoutImprovement = 0
-                    finished = false
+                    this.finished = false
                     this.distortModel = null
                     console.noteln("* The solution with distortion model has converged. Trying to optimize it without the model.")
                 }
@@ -968,25 +989,26 @@ function ImageSolver() {
             else if (iteration > this.config.maxIterations)
                 console.warningln("** Warning: Reached maximum number of iterations without convergence.")
             else
-                finished = false
+                this.finished = false
 
             ++iteration
 
             console.abortEnabled = true
+
             processEvents()
+
             if (console.abortRequested) {
-                finished = true
+                this.finished = true
                 console.criticalln("*** User requested abort ***")
             }
+
             gc(true)
-        }
-        while (!finished)
+        } while (!this.finished)
 
         if (converged)
             console.noteln(format("* Successful astrometry optimization. Score = %.3f", bestScore))
         else
             console.warningln(format("** Partial astrometry optimization. Score = %.3f", bestScore))
-        console.writeln()
 
         return bestMetadata
     }
@@ -1143,7 +1165,7 @@ function ImageSolver() {
                     if (d < this.psfMinimumDistance)
                         this.psfMinimumDistance = d
                 }
-                this.psfMinimumDistance = Math.max(2, Math.trunc(0.75 * (this.psfMinimumDistance - 2))); // StarDetector inflates detection regions
+                this.psfMinimumDistance = Math.max(2, Math.trunc(0.75 * (this.psfMinimumDistance - 2))) // StarDetector inflates detection regions
                 this.psfSearchRadius = 1.0 * this.psfMinimumDistance
                 console.writeln(format("<end><cbr>* Star matching tolerance: %d px", this.psfMinimumDistance))
                 console.flush()
@@ -1184,13 +1206,13 @@ function ImageSolver() {
                             xpsd.centerDec = this.metadata.dec
                             xpsd.radius = this.metadata.resolution * radiusPx
                             xpsd.magnitudeLow = -1.5
-                            xpsd.sourceLimit = 0; // do not retrieve objects, just count them.
+                            xpsd.sourceLimit = 0 // do not retrieve objects, just count them.
                             xpsd.exclusionFlags = GaiaFlag_NoPM
                             xpsd.inclusionFlags = this.config.restrictToHQStars ? GaiaFlag_GoodAstrometry : 0
-                            xpsd.verbosity = 0; // work quietly
+                            xpsd.verbosity = 0 // work quietly
                             xpsd.generateTextOutput = false
 
-                            const MAX_AUTOMAG_ITER = 100; // prevent a hypothetical case where the loop might stall
+                            const MAX_AUTOMAG_ITER = 100 // prevent a hypothetical case where the loop might stall
                             for (let m0 = 7, m1 = xpsd.databaseMagnitudeHigh, i = 0; i < MAX_AUTOMAG_ITER; ++i) {
                                 xpsd.magnitudeHigh = m
                                 xpsd.executeGlobal()
@@ -1362,7 +1384,7 @@ function imageSolver() {
         const centerDEC = input.centerDEC
         const pixelSize = input.pixelSize
         const resolution = input.resolution // arcsec/px
-        const focalDistance = input.focalDistance
+        const focalLength = input.focalLength
 
         console.writeln("image solver started")
         console.writeln("targetPath=" + targetPath)
@@ -1371,7 +1393,7 @@ function imageSolver() {
         console.writeln("centerDEC=" + centerDEC)
         console.writeln("pixelSize=" + pixelSize)
         console.writeln("resolution=" + resolution)
-        console.writeln("focalDistance=" + focalDistance)
+        console.writeln("focalLength=" + focalLength)
 
         const P = new ImageSolver
 
@@ -1384,10 +1406,10 @@ function imageSolver() {
         P.metadata.ra = centerRA
         P.metadata.dec = centerDEC
 
-        if (focalDistance > 0) {
+        if (focalLength > 0) {
             P.metadata.useFocal = false
-            P.metadata.focal = focalDistance
-            P.metadata.resolution = pixelSize / focalDistance * 0.18 / Math.PI
+            P.metadata.focal = focalLength
+            P.metadata.resolution = pixelSize / focalLength * 0.18 / Math.PI
         } else {
             P.metadata.useFocal = false
             P.metadata.resolution = resolution / 3600 // deg?
@@ -1402,7 +1424,7 @@ function imageSolver() {
             console.writeln(targetWindow.astrometricSolutionSummary())
             data.resolution = P.metadata.resolution * Math.PI / 180.0
             data.pixelSize = P.metadata.xpixsz
-            data.focalDistance = P.metadata.focal
+            data.focalLength = P.metadata.focal
             data.rightAscension = P.metadata.ra * Math.PI / 180.0
             data.declination = P.metadata.dec * Math.PI / 180.0
             data.imageWidth = P.metadata.width
@@ -1416,6 +1438,8 @@ function imageSolver() {
             data.errorMessage = "the image could not be plate solved"
             console.criticalln(data.errorMessage)
         }
+
+        data.success = !this.finished
 
         console.writeln("image solver finished")
     } catch (e) {

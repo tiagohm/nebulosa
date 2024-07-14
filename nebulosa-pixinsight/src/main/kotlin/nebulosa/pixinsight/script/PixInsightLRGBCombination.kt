@@ -9,7 +9,7 @@ import kotlin.io.path.outputStream
 
 @Suppress("ArrayInDataClass")
 data class PixInsightLRGBCombination(
-    private val slot: Int,
+    override val slot: Int,
     private val outputPath: Path,
     private val luminancePath: Path? = null,
     private val redPath: Path? = null,
@@ -50,7 +50,7 @@ data class PixInsightLRGBCombination(
     }
 
     private val input = Input(outputPath, statusPath, luminancePath, redPath, greenPath, bluePath, weights)
-    override val arguments = listOf("-x=${execute(slot, scriptPath, input)}")
+    override val arguments = listOf("-x=${execute(scriptPath, input)}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {

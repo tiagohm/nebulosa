@@ -9,7 +9,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 
 data class PixInsightPixelMath(
-    private val slot: Int,
+    override val slot: Int,
     private val inputPaths: List<Path>,
     private val outputPath: Path,
     private val expressionRK: String? = null,
@@ -46,7 +46,7 @@ data class PixInsightPixelMath(
     }
 
     private val input = Input(statusPath, inputPaths, outputPath, expressionRK, expressionG, expressionB)
-    override val arguments = listOf("-x=${execute(slot, scriptPath, input)}")
+    override val arguments = listOf("-x=${execute(scriptPath, input)}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {

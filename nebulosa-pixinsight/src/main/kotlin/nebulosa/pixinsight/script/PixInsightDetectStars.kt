@@ -11,7 +11,7 @@ import kotlin.io.path.outputStream
 import kotlin.io.path.readText
 
 data class PixInsightDetectStars(
-    private val slot: Int,
+    override val slot: Int,
     private val targetPath: Path,
     private val minSNR: Double = 0.0,
     private val invert: Boolean = false,
@@ -62,7 +62,7 @@ data class PixInsightDetectStars(
         resource("pixinsight/DetectStars.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments = listOf("-x=${execute(slot, scriptPath, Input(targetPath, statusPath, minSNR, invert))}")
+    override val arguments = listOf("-x=${execute(scriptPath, Input(targetPath, statusPath, minSNR, invert))}")
 
     override fun processOnComplete(exitCode: Int): Output {
         val timeoutInMillis = timeout.toMillis()

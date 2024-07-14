@@ -1,7 +1,7 @@
 import type { Point } from 'electron'
 import type { CameraCaptureEvent, CameraStartCapture } from './camera.types'
-import type { StarDetectionRequest } from './settings.types'
-import { EMPTY_STAR_DETECTION_REQUEST } from './settings.types'
+import type { StarDetectionRequest } from './stardetector.types'
+import { EMPTY_STAR_DETECTION_REQUEST } from './stardetector.types'
 
 export type AutoFocusState = 'IDLE' | 'MOVING' | 'EXPOSURING' | 'EXPOSURED' | 'ANALYSING' | 'ANALYSED' | 'CURVE_FITTED' | 'FAILED' | 'FINISHED'
 

@@ -6,6 +6,8 @@ import java.util.concurrent.Future
 
 sealed interface PixInsightScript<T : PixInsightScript.Output> : Future<T>, Closeable {
 
+    val slot: Int
+
     sealed interface Output {
 
         val success: Boolean

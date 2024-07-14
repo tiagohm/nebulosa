@@ -3,7 +3,7 @@ package nebulosa.pixinsight.script
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 
-data class PixInsightIsRunning(private val slot: Int) : AbstractPixInsightScript<PixInsightScript.Output>() {
+data class PixInsightIsRunning(override val slot: Int) : AbstractPixInsightScript<PixInsightScript.Output>() {
 
     data class Output(
         override val success: Boolean,

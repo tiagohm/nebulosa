@@ -1,7 +1,8 @@
 import type { Point, Size } from 'electron'
 import type { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
 import type { Camera, CameraStartCapture } from './camera.types'
-import type { PlateSolverRequest, StarDetectionRequest } from './settings.types'
+import type { PlateSolverRequest } from './platesolver.types'
+import type { StarDetectionRequest } from './stardetector.types'
 
 export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
 

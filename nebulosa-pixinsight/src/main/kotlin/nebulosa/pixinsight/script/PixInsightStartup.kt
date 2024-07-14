@@ -8,7 +8,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 import kotlin.io.path.readText
 
-data class PixInsightStartup(private val slot: Int) : AbstractPixInsightScript<PixInsightStartup.Output>() {
+data class PixInsightStartup(override val slot: Int) : AbstractPixInsightScript<PixInsightStartup.Output>() {
 
     data class Output(
         override val success: Boolean,
@@ -29,7 +29,7 @@ data class PixInsightStartup(private val slot: Int) : AbstractPixInsightScript<P
         resource("pixinsight/Startup.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments = listOf("-r=${execute(0, scriptPath, outputPath)}", if (slot > 0) "-n=$slot" else "-n")
+    override val arguments = listOf("-r=${execute(scriptPath, outputPath, 0)}", if (slot > 0) "-n=$slot" else "-n")
 
     override fun beforeRun() {
         var count = 0

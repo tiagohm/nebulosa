@@ -67,7 +67,7 @@ abstract class AbstractPixInsightScript<T : PixInsightScript.Output> : PixInsigh
         }
 
         @JvmStatic
-        internal fun PixInsightScript<*>.execute(slot: Int, scriptPath: Path, data: Any?): String {
+        internal fun PixInsightScript<*>.execute(scriptPath: Path, data: Any?, slot: Int = this.slot): String {
             LOG.info("{} will be executed. slot={}, script={}, data={}", this::class.simpleName, slot, scriptPath, data)
 
             return buildString {

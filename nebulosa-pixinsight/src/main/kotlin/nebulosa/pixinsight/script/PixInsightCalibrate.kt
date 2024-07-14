@@ -8,7 +8,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 
 data class PixInsightCalibrate(
-    private val slot: Int,
+    override val slot: Int,
     private val workingDirectory: Path,
     private val targetPath: Path,
     private val darkPath: Path? = null,
@@ -49,7 +49,7 @@ data class PixInsightCalibrate(
     }
 
     private val input = Input(targetPath, workingDirectory, statusPath, darkPath, flatPath, biasPath, compress, use32Bit)
-    override val arguments = listOf("-x=${execute(slot, scriptPath, input)}")
+    override val arguments = listOf("-x=${execute(scriptPath, input)}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {

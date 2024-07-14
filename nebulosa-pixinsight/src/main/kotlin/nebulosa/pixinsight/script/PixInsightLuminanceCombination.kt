@@ -8,7 +8,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 
 data class PixInsightLuminanceCombination(
-    private val slot: Int,
+    override val slot: Int,
     private val outputPath: Path,
     private val luminancePath: Path,
     private val targetPath: Path,
@@ -42,7 +42,7 @@ data class PixInsightLuminanceCombination(
     }
 
     private val input = Input(outputPath, statusPath, luminancePath, targetPath, 1.0)
-    override val arguments = listOf("-x=${execute(slot, scriptPath, input)}")
+    override val arguments = listOf("-x=${execute(scriptPath, input)}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {

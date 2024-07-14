@@ -5,9 +5,11 @@ import { ExposureMode, FrameType, LiveStackerType } from '../types/camera.types'
 import { GuideDirection, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
 import { Bitpix, ImageChannel, ImageFormat, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlType } from '../types/mount.types'
+import { PlateSolverType } from '../types/platesolver.types'
 import { SequenceCaptureMode } from '../types/sequencer.types'
-import { PlateSolverType, SettingsTabKey, StarDetectorType } from '../types/settings.types'
+import { SettingsTabKey } from '../types/settings.types'
 import { StackerGroupType, StackerType } from '../types/stacker.types'
+import { StarDetectorType } from '../types/stardetector.types'
 
 export interface DropdownOptions {
 	STAR_DETECTOR: StarDetectorType[]
@@ -41,7 +43,7 @@ export class DropdownOptionsPipe implements PipeTransform {
 			case 'STAR_DETECTOR':
 				return ['ASTAP', 'PIXINSIGHT', 'SIRIL'] as DropdownOptions[K]
 			case 'PLATE_SOLVER':
-				return ['ASTAP', 'ASTROMETRY_NET_ONLINE', 'SIRIL'] as DropdownOptions[K]
+				return ['ASTAP', 'ASTROMETRY_NET_ONLINE', 'SIRIL', 'PIXINSIGHT'] as DropdownOptions[K]
 			case 'CURVE_FITTING_MODE':
 				return ['TRENDLINES', 'PARABOLIC', 'TREND_PARABOLIC', 'HYPERBOLIC', 'TREND_HYPERBOLIC'] as DropdownOptions[K]
 			case 'BACKLASH_COMPENSATION_MODE':

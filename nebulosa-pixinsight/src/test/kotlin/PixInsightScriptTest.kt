@@ -143,7 +143,7 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
             with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, resolution = resolution)
                 .use { it.runSync(runner) }) {
                 success.shouldBeTrue()
-                this.focalDistance shouldBe (200.355 plusOrMinus 1e-5)
+                this.focalLength shouldBe (200.355 plusOrMinus 1e-5)
                 this.pixelSize shouldBe (6.58 plusOrMinus 1e-2)
                 this.resolution.toArcsec shouldBe (6.774 plusOrMinus 1e-3)
                 rightAscension.formatHMS() shouldBe "06h40m51.8s"
@@ -154,10 +154,10 @@ class PixInsightScriptTest : AbstractFitsAndXisfTest() {
                 imageHeight.roundToInt() shouldBeExactly 526
             }
 
-            with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, focalDistance = focalDistance)
+            with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, focalLength = focalDistance)
                 .use { it.runSync(runner) }) {
                 success.shouldBeTrue()
-                this.focalDistance shouldBe (200.355 plusOrMinus 1e-5)
+                this.focalLength shouldBe (200.355 plusOrMinus 1e-5)
                 this.pixelSize shouldBe (6.58 plusOrMinus 1e-2)
                 this.resolution.toArcsec shouldBe (6.774 plusOrMinus 1e-3)
                 rightAscension.formatHMS() shouldBe "06h40m51.8s"

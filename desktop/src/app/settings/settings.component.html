@@ -108,32 +108,52 @@
 					</p-floatLabel>
 				</div>
 			}
-			<div class="col-6">
-				<p-floatLabel>
-					<p-inputNumber
-						styleClass="p-inputtext-sm border-0 w-full"
-						[ngModel]="plateSolvers.get(plateSolverType)!.downsampleFactor"
-						(ngModelChange)="plateSolvers.get(plateSolverType)!.downsampleFactor = $event; save()"
-						[showButtons]="true"
-						[min]="0"
-						[max]="4"
-						scrollableNumber />
-					<label>Downsample factor</label>
-				</p-floatLabel>
-			</div>
-			<div class="col-6">
-				<p-floatLabel>
-					<p-inputNumber
-						styleClass="p-inputtext-sm border-0 w-full"
-						[ngModel]="plateSolvers.get(plateSolverType)!.timeout"
-						(ngModelChange)="plateSolvers.get(plateSolverType)!.timeout = $event; save()"
-						[showButtons]="true"
-						[min]="0"
-						[max]="300"
-						scrollableNumber />
-					<label>Timeout (s)</label>
-				</p-floatLabel>
-			</div>
+			@if (plateSolverType !== 'PIXINSIGHT') {
+				<div class="col-6">
+					<p-floatLabel>
+						<p-inputNumber
+							styleClass="p-inputtext-sm border-0 w-full"
+							[ngModel]="plateSolvers.get(plateSolverType)!.downsampleFactor"
+							(ngModelChange)="plateSolvers.get(plateSolverType)!.downsampleFactor = $event; save()"
+							[showButtons]="true"
+							[min]="0"
+							[max]="4"
+							scrollableNumber />
+						<label>Downsample factor</label>
+					</p-floatLabel>
+				</div>
+				<div class="col-6">
+					<p-floatLabel>
+						<p-inputNumber
+							styleClass="p-inputtext-sm border-0 w-full"
+							[ngModel]="plateSolvers.get(plateSolverType)!.timeout"
+							(ngModelChange)="plateSolvers.get(plateSolverType)!.timeout = $event; save()"
+							[showButtons]="true"
+							[min]="0"
+							[max]="300"
+							scrollableNumber />
+						<label>Timeout (s)</label>
+					</p-floatLabel>
+				</div>
+			}
+			@if (plateSolverType === 'PIXINSIGHT') {
+				<div class="col-4">
+					<p-floatLabel>
+						<p-inputNumber
+							[min]="1"
+							[max]="256"
+							[step]="1"
+							[showButtons]="true"
+							class="w-full"
+							styleClass="p-inputtext-sm border-0 w-full"
+							[ngModel]="plateSolvers.get(plateSolverType)!.slot"
+							(ngModelChange)="plateSolvers.get(plateSolverType)!.slot = $event; save()"
+							[allowEmpty]="false"
+							scrollableNumber />
+						<label>Slot</label>
+					</p-floatLabel>
+				</div>
+			}
 		</div>
 	</div>
 	<div

@@ -8,7 +8,7 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 
 data class PixInsightFileFormatConversion(
-    private val slot: Int,
+    override val slot: Int,
     private val inputPath: Path,
     private val outputPath: Path,
 ) : AbstractPixInsightScript<PixInsightFileFormatConversion.Output>() {
@@ -38,8 +38,7 @@ data class PixInsightFileFormatConversion(
         resource("pixinsight/FileFormatConversion.js")!!.transferAndClose(scriptPath.outputStream())
     }
 
-    override val arguments =
-        listOf("-x=${execute(slot, scriptPath, Input(inputPath, outputPath, statusPath))}")
+    override val arguments = listOf("-x=${execute(scriptPath, Input(inputPath, outputPath, statusPath))}")
 
     override fun processOnComplete(exitCode: Int): Output {
         if (exitCode == 0) {
