@@ -11,10 +11,19 @@ import { WindowManager } from './window.manager'
 
 Object.assign(global, { WebSocket })
 
-app.commandLine.appendSwitch('disable-http-cache')
-
 const argParser = new ArgumentParser()
 const parsedArgs = argParser.parse(process.argv.slice(1))
+
+app.commandLine.appendSwitch('disable-http-cache')
+
+if (parsedArgs.apiMode) {
+	// https://github.com/electron/electron/issues/32760#issuecomment-2227575986
+	app.commandLine.appendSwitch('ignore-gpu-blacklist')
+	app.commandLine.appendSwitch('disable-gpu')
+	app.commandLine.appendSwitch('disable-gpu-compositing')
+	app.disableHardwareAcceleration()
+}
+
 const configPath = resolve(app.getPath('userData'), 'config.json')
 const storage = new LocalStorage<StoredWindowData>(configPath)
 const appIcon = join(__dirname, parsedArgs.serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
