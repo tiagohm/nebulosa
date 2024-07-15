@@ -28,7 +28,7 @@ class StackerService {
         val name = "${System.currentTimeMillis()}"
 
         // Combined LRGB
-        return if (luminance.size + red.size + green.size + blue.size > 1) {
+        return if (red.size + green.size + blue.size >= 1) {
             val stacker = request.get()
 
             cancellationToken.listen { stacker.stop() }
@@ -47,7 +47,7 @@ class StackerService {
             }
         }
         // LRGB
-        else if (rgb.size > 1 || luminance.size + rgb.size > 1) {
+        else if (rgb.isNotEmpty()) {
             val stacker = request.get()
 
             val stackedLuminancePath = luminance.stack(request, stacker, name, StackerGroupType.LUMINANCE, cancellationToken)
@@ -64,7 +64,7 @@ class StackerService {
             }
         }
         // MONO
-        else if (mono.size > 1 || luminance.size + mono.size > 1) {
+        else if (mono.isNotEmpty() || luminance.isNotEmpty()) {
             val stacker = request.get()
 
             val stackedLuminancePath = luminance.stack(request, stacker, name, StackerGroupType.LUMINANCE, cancellationToken)
