@@ -88,6 +88,10 @@ export class StackerComponent implements AfterViewInit {
 		}
 	}
 
+	openTargetImage(target: StackingTarget) {
+		return this.browserWindow.openImage({ path: target.path, id: 'stacker', source: 'PATH' })
+	}
+
 	deleteTarget(target: StackingTarget) {
 		const index = this.request.targets.findIndex((e) => e === target)
 
