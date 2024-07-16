@@ -25,7 +25,13 @@
 						dataKey="id"
 						styleClass="p-inputtext-sm border-0"
 						emptyMessage="No location found"
-						[autoDisplayFirst]="false" />
+						[autoDisplayFirst]="false">
+						<ng-template pTemplate="selectedItem">
+							<div class="flex align-items-center gap-2">
+								<span>{{ location.name || '?' }}</span>
+							</div>
+						</ng-template>
+					</p-dropdown>
 					<label>Location</label>
 				</p-floatLabel>
 				<div class="flex gap-1">
@@ -38,14 +44,6 @@
 						tooltipPosition="bottom"
 						(onClick)="addLocation()" />
 					<p-button
-						icon="mdi mdi-pencil"
-						size="small"
-						severity="info"
-						[text]="true"
-						pTooltip="Edit"
-						tooltipPosition="bottom"
-						(onClick)="editLocation()" />
-					<p-button
 						[disabled]="locations.length <= 1"
 						icon="mdi mdi-delete"
 						size="small"
@@ -55,6 +53,11 @@
 						tooltipPosition="bottom"
 						(onClick)="deleteLocation()" />
 				</div>
+			</div>
+			<div class="col-12">
+				<neb-location
+					[location]="location"
+					(locationChange)="locationChanged()" />
 			</div>
 		</div>
 	</div>

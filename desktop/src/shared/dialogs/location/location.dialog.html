@@ -4,7 +4,8 @@
 			<input
 				pInputText
 				class="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="location.name" />
+				[(ngModel)]="location.name"
+				(ngModelChange)="locationChanged()" />
 			<label>Name</label>
 		</p-floatLabel>
 	</div>
@@ -17,6 +18,7 @@
 				[min]="-720"
 				[max]="720"
 				[(ngModel)]="location.offsetInMinutes"
+				(ngModelChange)="locationChanged()"
 				[showButtons]="true"
 				[allowEmpty]="false"
 				scrollableNumber />
@@ -32,6 +34,7 @@
 				[min]="-1000"
 				[max]="10000"
 				[(ngModel)]="location.elevation"
+				(ngModelChange)="locationChanged()"
 				[showButtons]="true"
 				[allowEmpty]="false"
 				scrollableNumber />
@@ -47,6 +50,7 @@
 				[max]="90"
 				[maxFractionDigits]="5"
 				[(ngModel)]="location.latitude"
+				(ngModelChange)="locationChanged()"
 				[allowEmpty]="false"
 				scrollableNumber />
 			<label>Latitude</label>
@@ -61,6 +65,7 @@
 				[max]="180"
 				[maxFractionDigits]="5"
 				[(ngModel)]="location.longitude"
+				(ngModelChange)="locationChanged()"
 				[allowEmpty]="false"
 				scrollableNumber />
 			<label>Longitude</label>
@@ -70,10 +75,14 @@
 		<neb-map
 			#map
 			[(latitude)]="location.latitude"
-			[(longitude)]="location.longitude" />
+			(latitudeChange)="locationChanged()"
+			[(longitude)]="location.longitude"
+			(longitudeChange)="locationChanged()" />
 	</div>
 </div>
-<div class="p-dialog-footer px-0">
+<div
+	*ngIf="isDialog"
+	class="p-dialog-footer px-0">
 	<p-button
 		[disabled]="!location.name"
 		icon="mdi mdi-check"

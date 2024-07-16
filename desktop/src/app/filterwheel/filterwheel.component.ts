@@ -56,8 +56,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		return this.filters[this.position - 1]
 	}
 
-	private readonly filterChangedPublisher = new Subject<FilterSlot>()
-	private readonly subscription?: Subscription
+	private readonly filterChangePublisher = new Subject<FilterSlot>()
+	private readonly filterChangeSubscription?: Subscription
 
 	constructor(
 		private readonly app: AppComponent,
@@ -112,7 +112,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 			}
 		})
 
-		this.subscription = this.filterChangedPublisher.pipe(debounceTime(1500)).subscribe(async (filter) => {
+		this.filterChangeSubscription = this.filterChangePublisher.pipe(debounceTime(1500)).subscribe(async (filter) => {
 			this.savePreference()
 
 			const names = this.filters.map((e) => e.name)
@@ -197,7 +197,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 	@HostListener('window:unload')
 	ngOnDestroy() {
 		this.pinger.unregister(this)
-		this.subscription?.unsubscribe()
+		this.filterChangeSubscription?.unsubscribe()
 	}
 
 	async ping() {
@@ -300,12 +300,12 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 
 	shutterToggled(filter: FilterSlot, event: CheckboxChangeEvent) {
 		this.filters.forEach((e) => (e.dark = !!event.checked && e === filter))
-		this.filterChangedPublisher.next(structuredClone(filter))
+		this.filterChangePublisher.next(structuredClone(filter))
 	}
 
 	filterNameChanged(filter: FilterSlot) {
 		if (filter.name) {
-			this.filterChangedPublisher.next(structuredClone(filter))
+			this.filterChangePublisher.next(structuredClone(filter))
 		}
 	}
 

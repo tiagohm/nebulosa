@@ -1,9 +1,8 @@
-import { Component } from '@angular/core'
-import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
+import { Component, OnDestroy } from '@angular/core'
+import { debounceTime, Subject, Subscription } from 'rxjs'
 import { DropdownOptionsPipe } from '../../shared/pipes/dropdown-options.pipe'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
 import { FrameType, LiveStackerType, LiveStackingRequest } from '../../shared/types/camera.types'
 import { PlateSolverRequest, PlateSolverType } from '../../shared/types/platesolver.types'
@@ -16,7 +15,7 @@ import { AppComponent } from '../app.component'
 	selector: 'neb-settings',
 	templateUrl: './settings.component.html',
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnDestroy {
 	tab: SettingsTabKey = 'LOCATION'
 	readonly tabs: SettingsTabKey[] = ['LOCATION', 'PLATE_SOLVER', 'STAR_DETECTOR', 'LIVE_STACKER', 'STACKER', 'CAPTURE_NAMING_FORMAT']
 
@@ -37,17 +36,20 @@ export class SettingsComponent {
 
 	readonly cameraCaptureNamingFormat = structuredClone(DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT)
 
+	private readonly locationChangePublisher = new Subject<Location>()
+	private readonly locationChangeSubscription?: Subscription
+
 	constructor(
 		app: AppComponent,
 		private readonly preference: PreferenceService,
 		private readonly electron: ElectronService,
-		private readonly prime: PrimeService,
 		private readonly dropdownOptions: DropdownOptionsPipe,
 	) {
 		app.title = 'Settings'
 
 		this.locations = preference.locations.get()
-		this.location = preference.selectedLocation.get(this.locations[0])
+		const selectedLocation = preference.selectedLocation.get(this.locations[0])
+		this.location = this.locations.find(e => e.id === selectedLocation.id) ?? this.locations[0]
 
 		for (const type of dropdownOptions.transform('PLATE_SOLVER')) {
 			this.plateSolvers.set(type, preference.plateSolverRequest(type).get())
@@ -63,42 +65,26 @@ export class SettingsComponent {
 		}
 
 		Object.assign(this.cameraCaptureNamingFormat, preference.cameraCaptureNamingFormatPreference.get(this.cameraCaptureNamingFormat))
+
+		this.locationChangeSubscription = this.locationChangePublisher.pipe(debounceTime(2000)).subscribe((location) => {
+			return this.electron.send('LOCATION.CHANGED', location)
+		})
+	}
+
+	ngOnDestroy() {
+		this.locationChangeSubscription?.unsubscribe()
 	}
 
 	addLocation() {
-		return this.showLocation(structuredClone(EMPTY_LOCATION))
+		const location = structuredClone(EMPTY_LOCATION)
+		location.id = +new Date()
+		this.locations.push(location)
+		this.location = location
+		this.save()
+		this.locationChangePublisher.next(this.location)
 	}
 
-	editLocation() {
-		return this.showLocation(this.location)
-	}
-
-	private async showLocation(location: Location) {
-		const result = await this.prime.open(LocationDialog, { header: 'Location', data: location })
-
-		if (result) {
-			const index = this.locations.findIndex((e) => e.id === result.id)
-
-			if (result.id === 0) {
-				result.id = Date.now()
-			}
-
-			if (index >= 0) {
-				Object.assign(this.locations[index], result)
-				this.location = this.locations[index]
-			} else {
-				this.locations.push(result)
-				this.location = result
-			}
-
-			this.preference.locations.set(this.locations)
-			this.preference.selectedLocation.set(this.location)
-
-			await this.electron.send('LOCATION.CHANGED', this.location)
-		}
-	}
-
-	async deleteLocation() {
+	deleteLocation() {
 		if (this.locations.length > 1) {
 			const index = this.locations.findIndex((e) => e.id === this.location.id)
 
@@ -106,17 +92,16 @@ export class SettingsComponent {
 				this.locations.splice(index, 1)
 				this.location = this.locations[0]!
 
-				this.preference.locations.set(this.locations)
-				this.preference.selectedLocation.set(this.location)
-
-				await this.electron.send('LOCATION.CHANGED', this.location)
+				this.save()
+				this.locationChangePublisher.next(this.location)
 			}
 		}
 	}
 
 	locationChanged() {
-		this.preference.selectedLocation.set(this.location)
-		return this.electron.send('LOCATION.CHANGED', this.location)
+		console.log(this.locations)
+		this.save()
+		this.locationChangePublisher.next(this.location)
 	}
 
 	resetCameraCaptureNamingFormat(type: FrameType) {
@@ -125,6 +110,11 @@ export class SettingsComponent {
 	}
 
 	save() {
+		if (this.location.name) {
+			this.preference.locations.set(this.locations)
+			this.preference.selectedLocation.set(this.location)
+		}
+
 		for (const type of this.dropdownOptions.transform('PLATE_SOLVER')) {
 			this.preference.plateSolverRequest(type).set(this.plateSolvers.get(type))
 		}

@@ -1,9 +1,10 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, EventEmitter, Input, Optional, Output, ViewChild } from '@angular/core'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { MapComponent } from '../../components/map/map.component'
 import { EMPTY_LOCATION, Location } from '../../types/atlas.types'
 
 @Component({
+	selector: 'neb-location',
 	templateUrl: './location.dialog.html',
 	styleUrls: ['./location.dialog.scss'],
 })
@@ -11,13 +12,23 @@ export class LocationDialog implements AfterViewInit {
 	@ViewChild('map')
 	private readonly map!: MapComponent
 
-	readonly location: Location
+	@Input()
+	readonly location!: Location
+
+	@Output()
+	readonly locationChange = new EventEmitter<Location>()
+
+	get isDialog() {
+		return !!this.dialogRef
+	}
 
 	constructor(
-		private readonly dialogRef: DynamicDialogRef,
-		config: DynamicDialogConfig<Location>,
+		@Optional() private readonly dialogRef?: DynamicDialogRef,
+		@Optional() config?: DynamicDialogConfig<Location>,
 	) {
-		this.location = config.data ?? structuredClone(EMPTY_LOCATION)
+		if (config) {
+			this.location = config.data ?? structuredClone(EMPTY_LOCATION)
+		}
 	}
 
 	ngAfterViewInit() {
@@ -25,6 +36,12 @@ export class LocationDialog implements AfterViewInit {
 	}
 
 	save() {
-		this.dialogRef.close(this.location)
+		this.dialogRef?.close(this.location)
+	}
+
+	locationChanged() {
+		if (!this.isDialog) {
+			this.locationChange.emit(this.location)
+		}
 	}
 }

@@ -22,7 +22,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
 	@Output()
 	readonly longitudeChange = new EventEmitter<number>()
 
-	private map!: L.Map
+	private map?: L.Map
 	private marker?: L.Marker
 
 	private readonly markerIcon = L.icon({
@@ -59,17 +59,21 @@ export class MapComponent implements AfterViewInit, OnChanges {
 	}
 
 	ngOnChanges() {
-		const coordinate: L.LatLngLiteral = { lat: this.latitude, lng: this.longitude }
-		this.map.setView(coordinate)
-		this.updateMarker(coordinate)
+		if (this.map) {
+			const coordinate: L.LatLngLiteral = { lat: this.latitude, lng: this.longitude }
+			this.map.setView(coordinate)
+			this.updateMarker(coordinate)
+		}
 	}
 
 	refresh() {
-		this.map.invalidateSize()
+		this.map?.invalidateSize()
 	}
 
 	private updateMarker(coordinate: L.LatLngExpression) {
-		this.marker?.remove()
-		this.marker = new L.Marker(coordinate, { icon: this.markerIcon }).addTo(this.map)
+		if (this.map) {
+			this.marker?.remove()
+			this.marker = new L.Marker(coordinate, { icon: this.markerIcon }).addTo(this.map)
+		}
 	}
 }

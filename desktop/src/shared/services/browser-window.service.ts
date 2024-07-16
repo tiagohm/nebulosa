@@ -129,7 +129,7 @@ export class BrowserWindowService {
 	}
 
 	openSettings(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'settings', width: 350, height: 450, autoResizable: false })
+		Object.assign(preference, { icon: 'settings', width: 320, height: 450, minHeight: 350 })
 		return this.openWindow({ preference, id: 'settings', path: 'settings' })
 	}
 
