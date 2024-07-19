@@ -42,8 +42,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	readonly camera = structuredClone(EMPTY_CAMERA)
 	readonly equipment: Equipment = {}
 
-	startTooltip = ''
-
 	savePath = ''
 	capturesPath = ''
 	mode: CameraDialogMode = 'CAPTURE'
@@ -91,7 +89,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	calibrationModel: SlideMenuItem[] = []
 
 	private readonly ditherMenuItem: SlideMenuItem = {
-		icon: 'icomoon random-dither',
+		icon: 'mdi mdi-pulse',
 		label: 'Dither',
 		slideMenu: [],
 		command: () => {
@@ -385,13 +383,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	}
 
 	private async loadEquipment() {
-		const buildStartTooltip = () => {
-			this.startTooltip = `<b>MOUNT</b>: ${this.equipment.mount?.name ?? 'None'}
-            <b>FILTER WHEEL</b>: ${this.equipment.wheel?.name ?? 'None'}
-            <b>FOCUSER</b>: ${this.equipment.focuser?.name ?? 'None'}
-            <b>ROTATOR</b>: ${this.equipment.rotator?.name ?? 'None'}`
-		}
-
 		const makeItem = (selected: boolean, command: () => void, device?: Device) => {
 			return {
 				icon: device ? 'mdi mdi-connection' : 'mdi mdi-close',
@@ -400,7 +391,6 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 				slideMenu: [],
 				command: (event: MenuItemCommandEvent) => {
 					command()
-					buildStartTooltip()
 					this.preference.equipmentForDevice(this.camera).set(this.equipment)
 					event.parentItem?.slideMenu?.forEach((item) => (item.selected = item === event.item))
 				},
@@ -418,10 +408,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 			return makeItem(this.equipment.mount?.name === mount?.name, () => (this.equipment.mount = mount), mount)
 		}
 
-		slideMenu[0]?.slideMenu.push(makeMountItem())
+		slideMenu[0].slideMenu.push(makeMountItem())
 
 		for (const mount of mounts) {
-			slideMenu[0]?.slideMenu.push(makeMountItem(mount))
+			slideMenu[0].slideMenu.push(makeMountItem(mount))
 		}
 
 		// FILTER WHEEL
@@ -433,10 +423,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 			return makeItem(this.equipment.wheel?.name === wheel?.name, () => (this.equipment.wheel = wheel), wheel)
 		}
 
-		slideMenu[1]?.slideMenu.push(makeWheelItem())
+		slideMenu[1].slideMenu.push(makeWheelItem())
 
 		for (const wheel of wheels) {
-			slideMenu[1]?.slideMenu.push(makeWheelItem(wheel))
+			slideMenu[1].slideMenu.push(makeWheelItem(wheel))
 		}
 
 		// FOCUSER
@@ -448,10 +438,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 			return makeItem(this.equipment.focuser?.name === focuser?.name, () => (this.equipment.focuser = focuser), focuser)
 		}
 
-		slideMenu[2]?.slideMenu.push(makeFocuserItem())
+		slideMenu[2].slideMenu.push(makeFocuserItem())
 
 		for (const focuser of focusers) {
-			slideMenu[2]?.slideMenu.push(makeFocuserItem(focuser))
+			slideMenu[2].slideMenu.push(makeFocuserItem(focuser))
 		}
 
 		// ROTATOR
@@ -463,13 +453,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 			return makeItem(this.equipment.rotator?.name === rotator?.name, () => (this.equipment.rotator = rotator), rotator)
 		}
 
-		slideMenu[3]?.slideMenu.push(makeRotatorItem())
+		slideMenu[3].slideMenu.push(makeRotatorItem())
 
 		for (const rotator of rotators) {
-			slideMenu[3]?.slideMenu.push(makeRotatorItem(rotator))
+			slideMenu[3].slideMenu.push(makeRotatorItem(rotator))
 		}
-
-		buildStartTooltip()
 	}
 
 	private async loadCalibrationGroups() {
@@ -569,6 +557,22 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		this.request.width = this.camera.maxWidth
 		this.request.height = this.camera.maxHeight
 		this.savePreference()
+	}
+
+	openMount(mount: Mount) {
+		return this.browserWindow.openMount(mount)
+	}
+
+	openFocuser(focuser: Focuser) {
+		return this.browserWindow.openFocuser(focuser)
+	}
+
+	openWheel(wheel: FilterWheel) {
+		return this.browserWindow.openWheel(wheel)
+	}
+
+	openRotator(rotator: Rotator) {
+		return this.browserWindow.openRotator(rotator)
 	}
 
 	openCameraImage() {

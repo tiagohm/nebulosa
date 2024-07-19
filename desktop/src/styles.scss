@@ -93,11 +93,14 @@ p-table {
 }
 
 .mdi:before {
-	font-size: 1.25rem;
 	display: inline-flex;
 	justify-content: center;
 	align-items: center;
 	aspect-ratio: 1;
+}
+
+.mdi:before {
+	font-size: 1.25rem;
 }
 
 .mdi.mdi-sm:before {
@@ -216,11 +219,14 @@ p-calendar.border-0 .p-calendar-w-btn {
 }
 
 .p-tag {
-	padding: 0.1rem 0.4rem;
 	border-radius: 2px;
+	padding: 1px 4px;
+	display: flex;
+	min-height: 1rem;
 
+	.p-tag-icon,
 	.p-tag-value {
-		line-height: 1.2 !important;
+		line-height: normal;
 	}
 }
 
@@ -494,28 +500,4 @@ p-tieredmenu *,
 
 ::-webkit-scrollbar-corner {
 	background-color: transparent;
-}
-
-@font-face {
-	font-family: 'icomoon';
-	src: url('assets/fonts/icomoon.ttf');
-	font-weight: normal;
-	font-style: normal;
-	font-display: block;
-}
-
-.icomoon {
-	font-family: 'icomoon' !important;
-	font-style: normal;
-	font-weight: normal;
-	font-variant: normal;
-	text-transform: none;
-	line-height: 1;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	font-size: 1.25rem;
-
-	&.random-dither:before {
-		content: '\e900';
-	}
 }

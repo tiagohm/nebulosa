@@ -444,6 +444,54 @@
 		</div>
 	</div>
 	<div class="grid mt-0">
+		<div class="col-12 gap-1 justify-content-center align-items-center flex-wrap">
+			<p-tag
+				icon="mdi mdi-wrench mdi-sm"
+				value="{{ request.calibrationGroup || 'None' }}"
+				styleClass="cursor-pointer text-xs"
+				severity="info"
+				(click)="calibrationMenu.show()" />
+			<p-tag
+				icon="mdi mdi-pulse mdi-sm"
+				value="Dither: {{ request.dither.enabled ? 'ON' : 'OFF' }}"
+				styleClass="cursor-pointer text-xs"
+				severity="info"
+				(click)="dither.showDialog = true" />
+			<p-tag
+				icon="mdi mdi-image-multiple mdi-sm"
+				value="Live stacking: {{ request.liveStacking.enabled ? 'ON' : 'OFF' }}"
+				styleClass="cursor-pointer text-xs"
+				severity="info"
+				(click)="liveStacking.showDialog = true" />
+			<p-tag
+				*ngIf="equipment.mount"
+				icon="mdi mdi-telescope mdi-sm"
+				[value]="equipment.mount.name"
+				[severity]="equipment.mount.connected ? 'success' : 'danger'"
+				styleClass="cursor-pointer text-xs"
+				(click)="openMount(equipment.mount)" />
+			<p-tag
+				*ngIf="equipment.focuser"
+				icon="mdi mdi-image-filter-center-focus mdi-sm"
+				[value]="equipment.focuser.name"
+				[severity]="equipment.focuser.connected ? 'success' : 'danger'"
+				styleClass="cursor-pointer text-xs"
+				(click)="openFocuser(equipment.focuser)" />
+			<p-tag
+				*ngIf="equipment.wheel"
+				icon="mdi mdi-palette mdi-sm"
+				[value]="equipment.wheel.name"
+				[severity]="equipment.wheel.connected ? 'success' : 'danger'"
+				styleClass="cursor-pointer text-xs"
+				(click)="openWheel(equipment.wheel)" />
+			<p-tag
+				*ngIf="equipment.rotator"
+				icon="mdi mdi-rotate-right mdi-sm"
+				[value]="equipment.rotator.name"
+				[severity]="equipment.rotator.connected ? 'success' : 'danger'"
+				styleClass="cursor-pointer text-xs"
+				(click)="openRotator(equipment.rotator)" />
+		</div>
 		<div class="col-12 flex align-items-center justify-content-center gap-1">
 			@if (pausingOrPaused) {
 				<p-button
@@ -464,10 +512,6 @@
 					icon="mdi mdi-play"
 					severity="success"
 					size="small"
-					[pTooltip]="startTooltip"
-					tooltipPosition="top"
-					[escape]="false"
-					tooltipStyleClass="min-w-22rem flex justify-content-center"
 					[text]="true" />
 			}
 			<p-button
@@ -515,14 +559,18 @@
 	[(visible)]="dither.showDialog"
 	[modal]="true"
 	[style]="{ width: '80vw', maxWidth: '320px' }">
-	<div class="grid mt-2">
-		<div class="col-3 flex flex-column justify-content-center text-center gap-2">
-			<span class="text-xs text-gray-100">Enabled</span>
-			<p-inputSwitch
-				[disabled]="!camera.connected || running"
-				[(ngModel)]="dither.request.enabled"
-				(ngModelChange)="savePreference()" />
+	<ng-template pTemplate="header">
+		<div class="flex w-full align-items-center justify-content-start gap-2 ng-star-inserted">
+			<span class="p-dialog-title">Dither</span>
+			<div class="flex flex-1 flex-column align-items-center justify-content-center text-center gap-2">
+				<span class="text-xs text-gray-100">Enabled</span>
+				<p-inputSwitch
+					[(ngModel)]="dither.request.enabled"
+					(ngModelChange)="savePreference()" />
+			</div>
 		</div>
+	</ng-template>
+	<div class="grid mt-2">
 		<div class="col-3 flex flex-column justify-content-center text-center gap-2">
 			<span class="text-xs text-gray-100">RA only</span>
 			<p-inputSwitch
@@ -530,7 +578,7 @@
 				[(ngModel)]="dither.request.raOnly"
 				(ngModelChange)="savePreference()" />
 		</div>
-		<div class="col-6">
+		<div class="col-4">
 			<p-floatLabel>
 				<p-inputNumber
 					[disabled]="!camera.connected || running || !dither.request.enabled"
@@ -547,7 +595,7 @@
 				<label>Dither (px)</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-6 col-offset-3">
+		<div class="col-5">
 			<p-floatLabel>
 				<p-inputNumber
 					[disabled]="!camera.connected || running || !dither.request.enabled"

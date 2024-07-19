@@ -246,15 +246,15 @@
 				</p-tabView>
 			</p-tabPanel>
 			<p-tabPanel
-				header="Sky Objects"
+				header="Stars & DSOs"
 				[disabled]="refreshing"
 				headerStyleClass="main">
 				<ng-template pTemplate="header">
 					<div
 						class="p-3"
-						pTooltip="Sky Objects"
+						pTooltip="Stars & DSOs"
 						tooltipPosition="bottom">
-						<img src="assets/icons/magnifier.png" />
+						<img src="assets/icons/blackhole.png" />
 					</div>
 				</ng-template>
 				<div class="flex mt-2 align-items-center justify-content-center">
@@ -817,8 +817,7 @@
 	[modal]="true"
 	[style]="{ width: '70vw' }">
 	<div class="grid mt-2">
-		<div class="col-12">
-		</div>
+		<div class="col-12"></div>
 	</div>
 	<ng-template pTemplate="footer">
 		<p-button
