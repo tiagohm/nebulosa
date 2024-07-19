@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jsonMapper
+import nebulosa.json.PathModule
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import retrofit2.CallAdapter
@@ -64,6 +65,7 @@ abstract class RetrofitService(
             .build()
 
         @JvmStatic private val DEFAULT_MAPPER = jsonMapper {
+            addModule(PathModule())
             addModule(JavaTimeModule())
             enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)

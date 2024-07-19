@@ -7,15 +7,14 @@ import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
-import nebulosa.common.json.PathDeserializer
 import nebulosa.guiding.GuideState
+import nebulosa.json.PathModule
 import nebulosa.log.loggerFor
 import nebulosa.netty.NettyClient
 import nebulosa.phd2.client.commands.CompletableCommand
 import nebulosa.phd2.client.commands.PHD2Command
 import nebulosa.phd2.client.events.GuideStateDeserializer
 import nebulosa.phd2.client.events.GuideStateSerializer
-import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -72,7 +71,6 @@ class PHD2Client : NettyClient() {
         @JvmStatic private val LOG = loggerFor<PHD2Client>()
 
         @JvmStatic private val MODULE = kotlinModule().also {
-            it.addDeserializer(Path::class.java, PathDeserializer)
             it.addDeserializer(GuideState::class.java, GuideStateDeserializer)
             it.addSerializer(GuideStateSerializer)
         }
@@ -81,6 +79,7 @@ class PHD2Client : NettyClient() {
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
             serializationInclusion(JsonInclude.Include.NON_NULL)
+            addModule(PathModule())
             addModule(MODULE)
         }
     }

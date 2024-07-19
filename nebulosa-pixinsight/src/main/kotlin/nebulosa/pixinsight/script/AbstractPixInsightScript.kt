@@ -2,11 +2,9 @@ package nebulosa.pixinsight.script
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
-import com.fasterxml.jackson.module.kotlin.kotlinModule
 import nebulosa.common.exec.CommandLine
 import nebulosa.common.exec.CommandLineListener
-import nebulosa.common.json.PathDeserializer
-import nebulosa.common.json.PathSerializer
+import nebulosa.json.PathModule
 import nebulosa.log.loggerFor
 import org.apache.commons.codec.binary.Hex
 import java.nio.file.Path
@@ -57,12 +55,8 @@ abstract class AbstractPixInsightScript<T : PixInsightScript.Output> : PixInsigh
 
         @JvmStatic private val LOG = loggerFor<AbstractPixInsightScript<*>>()
 
-        @JvmStatic private val KOTLIN_MODULE = kotlinModule()
-            .addDeserializer(Path::class.java, PathDeserializer)
-            .addSerializer(PathSerializer)
-
         @JvmStatic internal val OBJECT_MAPPER = jsonMapper {
-            addModule(KOTLIN_MODULE)
+            addModule(PathModule())
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         }
 

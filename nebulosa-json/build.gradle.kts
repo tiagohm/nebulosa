@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":nebulosa-log"))
+    api(libs.bundles.jackson)
     testImplementation(project(":nebulosa-test"))
 }
 

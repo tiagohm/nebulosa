@@ -13,12 +13,12 @@ import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.database.MyObjectBox
 import nebulosa.api.preference.PreferenceEntity
 import nebulosa.common.concurrency.DaemonThreadFactory
-import nebulosa.common.json.PathDeserializer
-import nebulosa.common.json.PathSerializer
 import nebulosa.guiding.Guider
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
+import nebulosa.json.PathDeserializer
+import nebulosa.json.PathSerializer
 import nebulosa.log.loggerFor
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
@@ -77,8 +77,8 @@ class BeanConfiguration {
     ): SimpleModule = kotlinModule()
         .apply { serializers.forEach { addSerializer(it) } }
         .apply { deserializers.forEach { addDeserializer(it.handledType() as Class<Any>, it) } }
-        .addSerializer(PathSerializer)
-        .addDeserializer(Path::class.java, PathDeserializer)
+        .addSerializer(PathSerializer())
+        .addDeserializer(Path::class.java, PathDeserializer())
 
     @Bean
     fun jackson2ObjectMapperBuilderCustomizer() = Jackson2ObjectMapperBuilderCustomizer {
@@ -217,7 +217,6 @@ class BeanConfiguration {
 
         private const val MAX_CACHE_SIZE = 1024L * 1024L * 32L // 32MB
 
-        @JvmStatic private val LOG = loggerFor<BeanConfiguration>()
         @JvmStatic private val OKHTTP_LOG = loggerFor<OkHttpClient>()
     }
 }
