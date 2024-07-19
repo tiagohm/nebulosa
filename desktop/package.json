@@ -85,7 +85,7 @@
 		"axios": "1.6.2"
 	},
 	"engines": {
-		"node": ">= 22.0.0"
+		"node": ">= 20.11.1"
 	},
 	"browserslist": ["chrome 114"]
 }
