@@ -1,26 +1,27 @@
-import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.math.toDegrees
 import nebulosa.watney.platesolver.quad.SkySegmentSphere
+import org.junit.jupiter.api.Test
 
-class SkySegmentSphereTest : StringSpec() {
+class SkySegmentSphereTest {
 
-    init {
-        "size" {
-            SkySegmentSphere shouldHaveSize CELLS.size
-        }
-        "cell" {
-            for (cell in CELLS) {
-                with(SkySegmentSphere[cell[0].toInt(), cell[1].toInt()]) {
-                    width.toDegrees shouldBe (cell[2] plusOrMinus 1e-4)
-                    height.toDegrees shouldBe (cell[3] plusOrMinus 1e-4)
-                    bounds.left.toDegrees shouldBe (cell[4] plusOrMinus 1e-4)
-                    bounds.right.toDegrees shouldBe (cell[5] plusOrMinus 1e-4)
-                    bounds.bottom.toDegrees shouldBe (cell[6] plusOrMinus 1e-4)
-                    bounds.top.toDegrees shouldBe (cell[7] plusOrMinus 1e-4)
-                }
+    @Test
+    fun size() {
+        SkySegmentSphere shouldHaveSize CELLS.size
+    }
+
+    @Test
+    fun cell() {
+        for (cell in CELLS) {
+            with(SkySegmentSphere[cell[0].toInt(), cell[1].toInt()]) {
+                width.toDegrees shouldBe (cell[2] plusOrMinus 1e-4)
+                height.toDegrees shouldBe (cell[3] plusOrMinus 1e-4)
+                bounds.left.toDegrees shouldBe (cell[4] plusOrMinus 1e-4)
+                bounds.right.toDegrees shouldBe (cell[5] plusOrMinus 1e-4)
+                bounds.bottom.toDegrees shouldBe (cell[6] plusOrMinus 1e-4)
+                bounds.top.toDegrees shouldBe (cell[7] plusOrMinus 1e-4)
             }
         }
     }

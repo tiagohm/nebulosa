@@ -1,42 +1,43 @@
-import io.kotest.core.annotation.Ignored
-import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.shouldBeExactly
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.platesolver.NovaAstrometryNetPlateSolver
 import nebulosa.math.deg
 import nebulosa.math.toArcsec
 import nebulosa.math.toDegrees
-import java.nio.file.Path
+import nebulosa.test.concat
+import nebulosa.test.dataDirectory
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
-@Ignored
-class NovaAstrometryNetPlateSolverTest : StringSpec() {
+@Disabled
+class NovaAstrometryNetPlateSolverTest {
 
-    init {
-        val file = Path.of("../data/ldn673s_block1123.jpg")
+    @Test
+    fun solve() {
+        val calibration = SOLVER.solve(FILE, null, centerRA = 290.0.deg, centerDEC = 11.0.deg, radius = 2.0.deg)
 
-        "solve" {
-            val service = NovaAstrometryNetService()
-            val solver = NovaAstrometryNetPlateSolver(service)
+        calibration.orientation.toDegrees shouldBeExactly 90.0397051079753
+        calibration.scale.toArcsec shouldBeExactly 2.0675124414774606
+        calibration.radius.toDegrees shouldBeExactly 0.36561535148882157
+        calibration.rightAscension.toDegrees shouldBeExactly 290.237669307
+        calibration.declination.toDegrees shouldBeExactly 11.1397773954
+    }
 
-            val calibration = solver.solve(file, null, centerRA = 290.0.deg, centerDEC = 11.0.deg, radius = 2.0.deg)
+    @Test
+    fun blindSolve() {
+        val calibration = SOLVER.solve(FILE, null)
 
-            calibration.orientation.toDegrees shouldBeExactly 90.0397051079753
-            calibration.scale.toArcsec shouldBeExactly 2.0675124414774606
-            calibration.radius.toDegrees shouldBeExactly 0.36561535148882157
-            calibration.rightAscension.toDegrees shouldBeExactly 290.237669307
-            calibration.declination.toDegrees shouldBeExactly 11.1397773954
-        }
-        "blind solve" {
-            val service = NovaAstrometryNetService()
-            val solver = NovaAstrometryNetPlateSolver(service)
+        calibration.orientation.toDegrees shouldBeExactly 90.0397051079753
+        calibration.scale.toArcsec shouldBeExactly 2.0675124414774606
+        calibration.radius.toDegrees shouldBeExactly 0.36561535148882157
+        calibration.rightAscension.toDegrees shouldBeExactly 290.237669307
+        calibration.declination.toDegrees shouldBeExactly 11.1397773954
+    }
 
-            val calibration = solver.solve(file, null)
+    companion object {
 
-            calibration.orientation.toDegrees shouldBeExactly 90.0397051079753
-            calibration.scale.toArcsec shouldBeExactly 2.0675124414774606
-            calibration.radius.toDegrees shouldBeExactly 0.36561535148882157
-            calibration.rightAscension.toDegrees shouldBeExactly 290.237669307
-            calibration.declination.toDegrees shouldBeExactly 11.1397773954
-        }
+        @JvmStatic private val FILE = dataDirectory.concat("ldn673s_block1123.jpg")
+        @JvmStatic private val SERVICE = NovaAstrometryNetService()
+        @JvmStatic private val SOLVER = NovaAstrometryNetPlateSolver(SERVICE)
     }
 }

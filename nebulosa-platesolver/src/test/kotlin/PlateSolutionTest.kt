@@ -1,4 +1,3 @@
-import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -8,12 +7,26 @@ import nebulosa.math.formatSignedDMS
 import nebulosa.math.toArcsec
 import nebulosa.math.toDegrees
 import nebulosa.platesolver.PlateSolution
+import org.junit.jupiter.api.Test
 
-class PlateSolutionTest : StringSpec() {
+class PlateSolutionTest {
 
-    init {
+    @Test
+    fun astrometryNet() {
+        val header = FitsHeader.from(ASTROMETRY_NET_FITS_HEADER)
+        val solution = PlateSolution.from(header).shouldNotBeNull()
+
+        solution.rightAscension.formatHMS() shouldBe "03h19m07.7s"
+        solution.declination.formatSignedDMS() shouldBe "-066°30'12.2\""
+        solution.orientation.toDegrees shouldBe (-136.9 plusOrMinus 1e-1)
+        solution.scale.toArcsec shouldBe (1.37 plusOrMinus 1e-2)
+        solution.radius.toDegrees shouldBe (0.476 plusOrMinus 1e-3)
+    }
+
+    companion object {
+
         // Don't have CDELT and CROTA
-        val astrometryNet = "SIMPLE  =                    T / Standard FITS file                             " +
+        @JvmStatic private val ASTROMETRY_NET_FITS_HEADER = "SIMPLE  =                    T / Standard FITS file                             " +
                 "BITPIX  =                    8 / ASCII or bytes array                           " +
                 "NAXIS   =                    0 / Minimal header                                 " +
                 "EXTEND  =                    T / There may be FITS ext                          " +
@@ -36,16 +49,5 @@ class PlateSolutionTest : StringSpec() {
                 "IMAGEW  =                 2072 / Image width,  in pixels.                       " +
                 "IMAGEH  =                 1410 / Image height, in pixels.                       " +
                 "END                                                                             "
-
-        "astrometry.net" {
-            val header = FitsHeader.from(astrometryNet)
-            val solution = PlateSolution.from(header).shouldNotBeNull()
-
-            solution.rightAscension.formatHMS() shouldBe "03h19m07.7s"
-            solution.declination.formatSignedDMS() shouldBe "-066°30'12.2\""
-            solution.orientation.toDegrees shouldBe (-136.9 plusOrMinus 1e-1)
-            solution.scale.toArcsec shouldBe (1.37 plusOrMinus 1e-2)
-            solution.radius.toDegrees shouldBe (0.476 plusOrMinus 1e-3)
-        }
     }
 }

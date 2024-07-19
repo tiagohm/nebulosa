@@ -9,7 +9,9 @@ dependencies {
     api(project(":nebulosa-fits"))
     api(project(":nebulosa-xisf"))
     api(libs.okhttp)
-    api(libs.bundles.kotest)
+    api(libs.kotest)
+    api(libs.junit.api)
+    runtimeOnly(libs.junit.engine)
 }
 
 publishing {

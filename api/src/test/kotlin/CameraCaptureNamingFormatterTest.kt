@@ -1,4 +1,3 @@
-import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import nebulosa.api.cameras.CameraCaptureNamingFormatter
 import nebulosa.api.cameras.CameraCaptureNamingFormatter.Companion.BIAS_FORMAT
@@ -21,16 +20,15 @@ import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
 import nebulosa.math.*
+import org.junit.jupiter.api.Test
 import java.time.*
 import java.util.*
 
-class CameraCaptureNamingFormatterTest : StringSpec() {
+class CameraCaptureNamingFormatterTest {
+
+    private val header = FitsHeader()
 
     init {
-        val header = FitsHeader()
-        val clock = Clock.fixed(Instant.ofEpochSecond(1720114656, 369000000), ZoneOffset.UTC)
-        val formatter = CameraCaptureNamingFormatter(CameraSim, MountSim, WheelSim, FocuserSim, RotatorSim, clock)
-
         header.add("FRAME", "Light")
         header.add(FitsKeyword.EXPTIME, 1.5)
         header.add(FitsKeyword.FILTER, "Red")
@@ -41,132 +39,191 @@ class CameraCaptureNamingFormatterTest : StringSpec() {
         header.add(FitsKeyword.CCD_TEMP, -15.0)
         header.add(FitsKeyword.RA, "06 45 08.91728".hours.toDegrees)
         header.add(FitsKeyword.DEC, "-16 42 58.0171".deg.toDegrees)
+    }
 
-        "type" {
-            formatter.format("[type]", header) shouldBe "LIGHT"
+    @Test
+    fun type() {
+        FORMATTER.format("[type]", header) shouldBe "LIGHT"
+    }
+
+    @Test
+    fun year() {
+        FORMATTER.format("[year]", header) shouldBe "2024"
+        FORMATTER.format("[year:2]", header) shouldBe "24"
+        FORMATTER.format("[year:4]", header) shouldBe "2024"
+        FORMATTER.format("[year:3]", header) shouldBe "2024"
+    }
+
+    @Test
+    fun month() {
+        FORMATTER.format("[month]", header) shouldBe "07"
+    }
+
+    @Test
+    fun day() {
+        FORMATTER.format("[day]", header) shouldBe "04"
+    }
+
+    @Test
+    fun hour() {
+        FORMATTER.format("[hour]", header) shouldBe "17"
+    }
+
+    @Test
+    fun minute() {
+        FORMATTER.format("[min]", header) shouldBe "37"
+        FORMATTER.format("[minute]", header) shouldBe "37"
+    }
+
+    @Test
+    fun second() {
+        FORMATTER.format("[sec]", header) shouldBe "36"
+        FORMATTER.format("[second]", header) shouldBe "36"
+    }
+
+    @Test
+    fun millisecond() {
+        FORMATTER.format("[ms]", header) shouldBe "369"
+    }
+
+    @Test
+    fun exposureTime() {
+        FORMATTER.format("[exp]", header) shouldBe "1500000"
+        FORMATTER.format("[exp:s]", header) shouldBe "1s"
+        FORMATTER.format("[exp:ms]", header) shouldBe "1500ms"
+        FORMATTER.format("[exp:us]", header) shouldBe "1500000"
+        FORMATTER.format("[exposure]", header) shouldBe "1500000"
+    }
+
+    @Test
+    fun filter() {
+        FORMATTER.format("[filter]", header) shouldBe "Red"
+    }
+
+    @Test
+    fun gain() {
+        FORMATTER.format("[gain]", header) shouldBe "80"
+    }
+
+    @Test
+    fun bin() {
+        FORMATTER.format("[bin]", header) shouldBe "2"
+    }
+
+    @Test
+    fun width() {
+        FORMATTER.format("[width]", header) shouldBe "1280"
+        FORMATTER.format("[w]", header) shouldBe "1280"
+    }
+
+    @Test
+    fun height() {
+        FORMATTER.format("[height]", header) shouldBe "1024"
+        FORMATTER.format("[h]", header) shouldBe "1024"
+    }
+
+    @Test
+    fun temperature() {
+        FORMATTER.format("[temp]", header) shouldBe "-15"
+        FORMATTER.format("[temperature]", header) shouldBe "-15"
+    }
+
+    @Test
+    fun rightAscension() {
+        FORMATTER.format("[ra]", header) shouldBe "06h45m09s"
+    }
+
+    @Test
+    fun declination() {
+        FORMATTER.format("[dec]", header) shouldBe "-016d42m58s"
+    }
+
+    @Test
+    fun camera() {
+        FORMATTER.format("[camera]", header) shouldBe "Camera Simulator"
+    }
+
+    @Test
+    fun mount() {
+        FORMATTER.format("[mount]", header) shouldBe "Mount Simulator"
+    }
+
+    @Test
+    fun focuser() {
+        FORMATTER.format("[focuser]", header) shouldBe "Focuser Simulator"
+    }
+
+    @Test
+    fun wheel() {
+        FORMATTER.format("[wheel]", header) shouldBe "Wheel Simulator"
+    }
+
+    @Test
+    fun rotator() {
+        FORMATTER.format("[rotator]", header) shouldBe "Rotator Simulator"
+    }
+
+    @Test
+    fun n() {
+        FORMATTER.format("[n]", header) shouldBe "0001"
+        FORMATTER.format("[n:1]", header) shouldBe "2"
+        FORMATTER.format("[n:2]", header) shouldBe "03"
+        FORMATTER.format("[n:3]", header) shouldBe "004"
+        FORMATTER.format("[n:6]", header) shouldBe "000005"
+    }
+
+    @Test
+    fun light() {
+        with(header) {
+            add("FRAME", "Light")
+            FORMATTER.format(LIGHT_FORMAT, this) shouldBe "Camera Simulator_LIGHT_240704173736369_Red_1280_1024_1500000_2_80"
         }
-        "year" {
-            formatter.format("[year]", header) shouldBe "2024"
-            formatter.format("[year:2]", header) shouldBe "24"
-            formatter.format("[year:4]", header) shouldBe "2024"
-            formatter.format("[year:3]", header) shouldBe "2024"
+    }
+
+    @Test
+    fun dark() {
+        with(header) {
+            add("FRAME", "Dark")
+            FORMATTER.format(DARK_FORMAT, this) shouldBe "Camera Simulator_DARK_1280_1024_1500000_2_80"
         }
-        "month" {
-            formatter.format("[month]", header) shouldBe "07"
+    }
+
+    @Test
+    fun flat() {
+        with(header) {
+            add("FRAME", "Flat")
+            FORMATTER.format(FLAT_FORMAT, this) shouldBe "Camera Simulator_FLAT_Red_1280_1024_2"
         }
-        "day" {
-            formatter.format("[day]", header) shouldBe "04"
+    }
+
+    @Test
+    fun bias() {
+        with(header) {
+            add("FRAME", "Bias")
+            FORMATTER.format(BIAS_FORMAT, this) shouldBe "Camera Simulator_BIAS_1280_1024_2_80"
         }
-        "hour" {
-            formatter.format("[hour]", header) shouldBe "17"
+    }
+
+    @Test
+    fun unknown() {
+        FORMATTER.format("[abc]_[camera]_[123]", header) shouldBe "abc_Camera Simulator_123"
+    }
+
+    @Test
+    fun notFound() {
+        with(header) {
+            delete(FitsKeyword.RA)
+            FORMATTER.format("[ra]", this) shouldBe ""
+            FORMATTER.format("[ra]_[ra]", this) shouldBe "_"
         }
-        "minute" {
-            formatter.format("[min]", header) shouldBe "37"
-            formatter.format("[minute]", header) shouldBe "37"
-        }
-        "second" {
-            formatter.format("[sec]", header) shouldBe "36"
-            formatter.format("[second]", header) shouldBe "36"
-        }
-        "millisecond" {
-            formatter.format("[ms]", header) shouldBe "369"
-        }
-        "exposure time" {
-            formatter.format("[exp]", header) shouldBe "1500000"
-            formatter.format("[exp:s]", header) shouldBe "1s"
-            formatter.format("[exp:ms]", header) shouldBe "1500ms"
-            formatter.format("[exp:us]", header) shouldBe "1500000"
-            formatter.format("[exposure]", header) shouldBe "1500000"
-        }
-        "filter" {
-            formatter.format("[filter]", header) shouldBe "Red"
-        }
-        "gain" {
-            formatter.format("[gain]", header) shouldBe "80"
-        }
-        "bin" {
-            formatter.format("[bin]", header) shouldBe "2"
-        }
-        "width" {
-            formatter.format("[width]", header) shouldBe "1280"
-            formatter.format("[w]", header) shouldBe "1280"
-        }
-        "height" {
-            formatter.format("[height]", header) shouldBe "1024"
-            formatter.format("[h]", header) shouldBe "1024"
-        }
-        "temperature" {
-            formatter.format("[temp]", header) shouldBe "-15"
-            formatter.format("[temperature]", header) shouldBe "-15"
-        }
-        "right ascension" {
-            formatter.format("[ra]", header) shouldBe "06h45m09s"
-        }
-        "declination" {
-            formatter.format("[dec]", header) shouldBe "-016d42m58s"
-        }
-        "camera" {
-            formatter.format("[camera]", header) shouldBe "Camera Simulator"
-        }
-        "mount" {
-            formatter.format("[mount]", header) shouldBe "Mount Simulator"
-        }
-        "focuser" {
-            formatter.format("[focuser]", header) shouldBe "Focuser Simulator"
-        }
-        "wheel" {
-            formatter.format("[wheel]", header) shouldBe "Wheel Simulator"
-        }
-        "rotator" {
-            formatter.format("[rotator]", header) shouldBe "Rotator Simulator"
-        }
-        "n" {
-            formatter.format("[n]", header) shouldBe "0001"
-            formatter.format("[n:1]", header) shouldBe "2"
-            formatter.format("[n:2]", header) shouldBe "03"
-            formatter.format("[n:3]", header) shouldBe "004"
-            formatter.format("[n:6]", header) shouldBe "000005"
-        }
-        "light" {
-            with(header.clone()) {
-                add("FRAME", "Light")
-                formatter.format(LIGHT_FORMAT, this) shouldBe "Camera Simulator_LIGHT_240704173736369_Red_1280_1024_1500000_2_80"
-            }
-        }
-        "dark" {
-            with(header.clone()) {
-                add("FRAME", "Dark")
-                formatter.format(DARK_FORMAT, this) shouldBe "Camera Simulator_DARK_1280_1024_1500000_2_80"
-            }
-        }
-        "flat" {
-            with(header.clone()) {
-                add("FRAME", "Flat")
-                formatter.format(FLAT_FORMAT, this) shouldBe "Camera Simulator_FLAT_Red_1280_1024_2"
-            }
-        }
-        "bias" {
-            with(header.clone()) {
-                add("FRAME", "Bias")
-                formatter.format(BIAS_FORMAT, this) shouldBe "Camera Simulator_BIAS_1280_1024_2_80"
-            }
-        }
-        "unknown" {
-            formatter.format("[abc]_[camera]_[123]", header) shouldBe "abc_Camera Simulator_123"
-        }
-        "not found" {
-            with(header.clone()) {
-                delete(FitsKeyword.RA)
-                formatter.format("[ra]", this) shouldBe ""
-                formatter.format("[ra]_[ra]", this) shouldBe "_"
-            }
-        }
-        "illegal chars" {
-            formatter.format("[???]", header) shouldBe "[]"
-            formatter.format("[???a]", header) shouldBe "[a]"
-            formatter.format("[a???]", header) shouldBe "[a]"
-            formatter.format("[][/\\:*?\"<>|]", header) shouldBe "[][]"
-        }
+    }
+
+    @Test
+    fun illegalChars() {
+        FORMATTER.format("[???]", header) shouldBe "[]"
+        FORMATTER.format("[???a]", header) shouldBe "[a]"
+        FORMATTER.format("[a???]", header) shouldBe "[a]"
+        FORMATTER.format("[][/\\:*?\"<>|]", header) shouldBe "[][]"
     }
 
     @Suppress("LeakingThis")
@@ -415,5 +472,11 @@ class CameraCaptureNamingFormatterTest : StringSpec() {
         override fun reverseRotator(enable: Boolean) = Unit
 
         override fun abortRotator() = Unit
+    }
+
+    companion object {
+
+        @JvmStatic private val CLOCK = Clock.fixed(Instant.ofEpochSecond(1720114656, 369000000), ZoneOffset.UTC)
+        @JvmStatic private val FORMATTER = CameraCaptureNamingFormatter(CameraSim, MountSim, WheelSim, FocuserSim, RotatorSim, CLOCK)
     }
 }

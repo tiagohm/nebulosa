@@ -1,6 +1,7 @@
 import io.kotest.matchers.ints.shouldBeExactly
 import nebulosa.io.sink
 import nebulosa.io.source
+import org.junit.jupiter.api.AfterEach
 import java.nio.ByteBuffer
 
 class ByteBufferWithOffsetTest : AbstractSeekableSinkAndSourceTest() {
@@ -11,11 +12,10 @@ class ByteBufferWithOffsetTest : AbstractSeekableSinkAndSourceTest() {
     override val sink = data.sink(8)
     override val source = data.source(8)
 
-    init {
-        afterEach {
-            for (i in 0..7) {
-                bytes[i].toInt() shouldBeExactly i
-            }
+    @AfterEach
+    fun checkValuesAfterEach() {
+        for (i in 0..7) {
+            bytes[i].toInt() shouldBeExactly i
         }
     }
 }

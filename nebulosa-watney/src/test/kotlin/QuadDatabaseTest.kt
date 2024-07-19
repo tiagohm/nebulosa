@@ -1,5 +1,3 @@
-import io.kotest.core.annotation.EnabledIf
-import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.longs.shouldBeExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -8,45 +6,50 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldEndWith
 import nebulosa.io.ByteOrder
 import nebulosa.math.deg
-import nebulosa.test.NonGitHubOnlyCondition
+import nebulosa.test.NonGitHubOnly
+import nebulosa.test.concat
+import nebulosa.test.homeDirectory
 import nebulosa.watney.platesolver.quad.CellStarQuad
 import nebulosa.watney.platesolver.quad.CompactQuadDatabase
 import nebulosa.watney.platesolver.quad.QuadDatabaseCellFileIndex
-import java.nio.file.Path
+import org.junit.jupiter.api.Test
 
-@EnabledIf(NonGitHubOnlyCondition::class)
-class QuadDatabaseTest : StringSpec() {
+@NonGitHubOnly
+class QuadDatabaseTest {
 
-    init {
-        val quadDir = Path.of(System.getProperty("user.home"), "Downloads", "watneyqdb")
+    @Test
+    fun cellIndexFile() {
+        val source = QUAD_DIR.concat("gaia2-00-07-20.qdbindex")
+        val index = QuadDatabaseCellFileIndex.read(source)
 
-        "cell index file" {
-            val source = Path.of("$quadDir", "gaia2-00-07-20.qdbindex")
-            val index = QuadDatabaseCellFileIndex.read(source)
+        index.byteOrder shouldBe ByteOrder.LITTLE
+        index.files shouldHaveSize 406
+        index.files.forEach { "${it.descriptor.path}" shouldContain it.descriptor.id shouldEndWith ".qdb" }
+        val totalSizeInBytes = index.files.sumOf { (descriptor) -> descriptor.passes.sumOf { it.dataBlockByteLength } }
+        totalSizeInBytes shouldBeExactly 397360102 - (406 * 13) // 406 files, 13 bytes header
+    }
 
-            index.byteOrder shouldBe ByteOrder.LITTLE
-            index.files shouldHaveSize 406
-            index.files.forEach { it.descriptor.path.toString().shouldContain(it.descriptor.id) shouldEndWith ".qdb" }
-            val totalSizeInBytes = index.files.sumOf { it.descriptor.passes.sumOf { it.dataBlockByteLength } }
-            totalSizeInBytes shouldBeExactly 397360102 - (406 * 13) // 406 files, 13 bytes header
-        }
-        "cell quads" {
-            val source = Path.of("$quadDir", "gaia2-00-07-20.qdbindex")
-            val index = QuadDatabaseCellFileIndex.read(source)
-            val cellFile = index.files.find { it.descriptor.id == "b10c01" }.shouldNotBeNull()
-            val quads = cellFile.quads(0.0, 0.0, 22.5.deg, 1, 4, 0, STAR_QUADS)
-            quads shouldHaveSize 1
-        }
-        "find quads" {
-            val quadDatabase = CompactQuadDatabase(quadDir)
-            val quads = quadDatabase.quads(0.0, 0.0, 22.5.deg, 0, intArrayOf(-2, -1, 0, 1, 2), 4, 0, STAR_QUADS)
-            // StarQuad([0.46529815, 0.56207234, 0.56207234, 0.7299413, 0.95694715], 0.3420919, [11.586886405944824, -14.680888175964355]),
-            // StarQuad([0.44183773, 0.5151515, 0.542522, 0.56751466, 0.8023483], 0.3123361, [5.6454176902771, 10.346973419189453]),
-            println(quads)
-        }
+    @Test
+    fun cellQuads() {
+        val source = QUAD_DIR.concat("gaia2-00-07-20.qdbindex")
+        val index = QuadDatabaseCellFileIndex.read(source)
+        val cellFile = index.files.find { it.descriptor.id == "b10c01" }.shouldNotBeNull()
+        val quads = cellFile.quads(0.0, 0.0, 22.5.deg, 1, 4, 0, STAR_QUADS)
+        quads shouldHaveSize 1
+    }
+
+    @Test
+    fun findQuads() {
+        val quadDatabase = CompactQuadDatabase(QUAD_DIR)
+        val quads = quadDatabase.quads(0.0, 0.0, 22.5.deg, 0, intArrayOf(-2, -1, 0, 1, 2), 4, 0, STAR_QUADS)
+        // StarQuad([0.46529815, 0.56207234, 0.56207234, 0.7299413, 0.95694715], 0.3420919, [11.586886405944824, -14.680888175964355]),
+        // StarQuad([0.44183773, 0.5151515, 0.542522, 0.56751466, 0.8023483], 0.3123361, [5.6454176902771, 10.346973419189453]),
+        println(quads)
     }
 
     companion object {
+
+        @JvmStatic private val QUAD_DIR = homeDirectory.concat("Downloads", "watneyqdb")
 
         @JvmStatic private val STAR_QUADS = listOf(
             CellStarQuad(doubleArrayOf(0.48065594, 0.5005079, 0.52168995, 0.59679097, 0.9971423), 259.138, 1933.375, 135.125),

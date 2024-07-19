@@ -1,25 +1,22 @@
-import io.kotest.core.annotation.EnabledIf
-import io.kotest.core.spec.style.StringSpec
-import kotlinx.coroutines.delay
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.PHD2Command
 import nebulosa.phd2.client.events.PHD2Event
-import nebulosa.test.NonGitHubOnlyCondition
+import nebulosa.test.NonGitHubOnly
+import org.junit.jupiter.api.Test
 
-@EnabledIf(NonGitHubOnlyCondition::class)
-class PHD2ClientTest : StringSpec(), PHD2EventListener {
+@NonGitHubOnly
+class PHD2ClientTest : PHD2EventListener {
 
-    init {
-        "start" {
-            val client = PHD2Client()
-            client.registerListener(this@PHD2ClientTest)
-            client.open("localhost", PHD2Client.DEFAULT_PORT)
+    @Test
+    fun start() {
+        val client = PHD2Client()
+        client.registerListener(this@PHD2ClientTest)
+        client.open("localhost", PHD2Client.DEFAULT_PORT)
 
-            delay(1000)
+        Thread.sleep(1000)
 
-            client.close()
-        }
+        client.close()
     }
 
     override fun onEventReceived(event: PHD2Event) {

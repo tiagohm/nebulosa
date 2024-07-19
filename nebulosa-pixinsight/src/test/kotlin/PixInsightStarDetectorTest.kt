@@ -1,19 +1,18 @@
-import io.kotest.core.annotation.EnabledIf
 import io.kotest.matchers.collections.shouldHaveSize
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.pixinsight.stardetector.PixInsightStarDetector
-import nebulosa.test.AbstractFitsAndXisfTest
-import nebulosa.test.NonGitHubOnlyCondition
+import nebulosa.test.NGC3344_MONO_8_FITS
+import nebulosa.test.NonGitHubOnly
+import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
-@EnabledIf(NonGitHubOnlyCondition::class)
-class PixInsightStarDetectorTest : AbstractFitsAndXisfTest() {
+@NonGitHubOnly
+class PixInsightStarDetectorTest {
 
-    init {
-        "detect stars" {
-            val runner = PixInsightScriptRunner(Path.of("PixInsight"))
-            val detectedStars = PixInsightStarDetector(runner, 0).detect(NGC3344_MONO_8_FITS)
-            detectedStars shouldHaveSize 15
-        }
+    @Test
+    fun detectStars() {
+        val runner = PixInsightScriptRunner(Path.of("PixInsight"))
+        val detectedStars = PixInsightStarDetector(runner, 0).detect(NGC3344_MONO_8_FITS)
+        detectedStars shouldHaveSize 15
     }
 }

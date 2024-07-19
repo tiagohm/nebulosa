@@ -1,5 +1,3 @@
-import com.adarshr.gradle.testlogger.TestLoggerExtension
-import com.adarshr.gradle.testlogger.theme.ThemeType
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -8,7 +6,6 @@ buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0")
         classpath("org.jetbrains.kotlin:kotlin-allopen:2.0.0")
-        classpath("com.adarshr:gradle-test-logger-plugin:4.0.0")
         classpath("io.objectbox:objectbox-gradle-plugin:4.0.1")
     }
 
@@ -44,22 +41,6 @@ subprojects {
     val project = this@subprojects
     if (project.name == "nebulosa-bom") return@subprojects
 
-    apply {
-        plugin("com.adarshr.test-logger")
-    }
-
-    configure<TestLoggerExtension> {
-        theme = ThemeType.STANDARD
-        slowThreshold = 2000L
-        showStackTraces = false
-        showSkipped = true
-        showStandardStreams = true
-        showPassedStandardStreams = true
-        showSkippedStandardStreams = false
-        showFailedStandardStreams = true
-        logLevel = LogLevel.QUIET
-    }
-
     tasks.withType<KotlinCompile> {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
@@ -84,10 +65,11 @@ subprojects {
             exceptionFormat = TestExceptionFormat.FULL
         }
 
-        systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
-        systemProperty("kotest.framework.classpath.scanning.config.disable", "true")
-        systemProperty("kotest.framework.classpath.scanning.autoscan.disable", "true")
+        systemProperty("junit.jupiter.extensions.autodetection.enabled", "false")
         systemProperty("github", System.getProperty("github", "false"))
+        systemProperty("root.dir", "$rootDir")
+        systemProperty("project.dir", "$projectDir")
+        systemProperty("app.dir", "$rootDir/data") // LOGBACK
     }
 
     tasks.withType<JavaCompile> {
