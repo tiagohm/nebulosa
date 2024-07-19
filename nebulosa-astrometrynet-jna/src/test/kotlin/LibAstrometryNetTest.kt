@@ -17,7 +17,7 @@ import kotlin.math.min
 class LibAstrometryNetTest : Solver.RecordMatchCallback {
 
     init {
-        System.setProperty("LIBASTROMETRYNET_PATH", "/home/tiagohm/Git/astrometry.net/solver/libastrometry.so")
+        System.setProperty(LibAstrometryNet.PATH, "$homeDirectory/Git/astrometry.net/solver/libastrometry.so")
     }
 
     @Test
@@ -58,7 +58,7 @@ class LibAstrometryNetTest : Solver.RecordMatchCallback {
 
     @Test
     fun openXyls() {
-        val xyls = LibAstrometryNet.INSTANCE.xylist_open("/home/tiagohm/Git/astrometry.net/solver/apod4.xy")
+        val xyls = LibAstrometryNet.INSTANCE.xylist_open("$homeDirectory/Git/astrometry.net/solver/apod4.xy")
         xyls.xname shouldBe "X"
         xyls.yname shouldBe "Y"
         xyls.xtype shouldBeExactly 8
@@ -99,7 +99,7 @@ class LibAstrometryNetTest : Solver.RecordMatchCallback {
             LibAstrometryNet.INSTANCE.solver_add_index(solver, index)
         }
 
-        val xyls = LibAstrometryNet.INSTANCE.xylist_open("/home/tiagohm/Git/astrometry.net/solver/apod4.xy")
+        val xyls = LibAstrometryNet.INSTANCE.xylist_open("$homeDirectory/Git/astrometry.net/solver/apod4.xy")
         val xy = LibAstrometryNet.INSTANCE.xylist_read_field(xyls, null)
         LibAstrometryNet.INSTANCE.solver_reset_counters(solver)
         LibAstrometryNet.INSTANCE.solver_reset_best_match(solver)

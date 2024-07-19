@@ -6,14 +6,14 @@ import io.kotest.matchers.longs.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.longs.shouldBeLessThan
 import nebulosa.common.exec.CommandLineListener
 import nebulosa.common.exec.commandLine
-import nebulosa.test.NonGitHubOnly
+import nebulosa.test.LinuxOnly
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.time.Duration
 import kotlin.concurrent.thread
 import kotlin.system.measureTimeMillis
 
-@NonGitHubOnly
+@LinuxOnly
 class CommandLineTest {
 
     @Test
@@ -37,7 +37,7 @@ class CommandLineTest {
 
         measureTimeMillis {
             cmd.start(Duration.ofSeconds(2)).get() shouldNotBeExactly 0
-        } shouldBeGreaterThanOrEqual 2000
+        } shouldBeGreaterThanOrEqual 2000 shouldBeLessThan 10000
     }
 
     @Test

@@ -16,10 +16,9 @@ class PixInsightPlateSolverTest : AbstractTest() {
 
     @Test
     fun solver() {
-        val runner = PixInsightScriptRunner(Path.of("PixInsight"))
         val pixelSize = 6.58
         val resolution = 6.78.arcsec
-        val solver = PixInsightPlateSolver(runner, pixelSize, resolution = resolution)
+        val solver = PixInsightPlateSolver(RUNNER, pixelSize, resolution = resolution)
         val path = download("https://nova.astrometry.net/image/14603", "jpg")
         val centerRA = "06 40 51".hours
         val centerDEC = "09 49 53".deg
@@ -33,5 +32,10 @@ class PixInsightPlateSolverTest : AbstractTest() {
         solution.height.toArcmin shouldBe (59.386 plusOrMinus 1e-3)
         solution.widthInPixels.roundToInt() shouldBeExactly 800
         solution.heightInPixels.roundToInt() shouldBeExactly 526
+    }
+
+    companion object {
+
+        @JvmStatic val RUNNER = PixInsightScriptRunner(Path.of("PixInsight"))
     }
 }

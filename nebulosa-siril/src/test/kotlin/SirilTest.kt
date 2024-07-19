@@ -44,8 +44,7 @@ class SirilTest : AbstractTest() {
 
     @Test
     fun plateSolver() {
-        val solver = SirilPlateSolver(EXECUTABLE_PATH)
-        val solution = solver.solve(PI_01_LIGHT, null)
+        val solution = SOLVER.solve(PI_01_LIGHT, null)
 
         solution.solved.shouldBeTrue()
         solution.orientation.toDegrees shouldBe (-90.02 plusOrMinus 1e-2)
@@ -82,5 +81,6 @@ class SirilTest : AbstractTest() {
     companion object {
 
         @JvmStatic private val EXECUTABLE_PATH = Path.of("siril-cli")
+        @JvmStatic private val SOLVER = SirilPlateSolver(EXECUTABLE_PATH)
     }
 }

@@ -4,15 +4,18 @@ import nebulosa.fits.fits
 import nebulosa.image.format.ReadableHeader
 import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
-import nebulosa.test.NonGitHubOnly
+import nebulosa.test.LinuxOnly
+import nebulosa.test.download
+import nebulosa.wcs.LibWCS
 import nebulosa.wcs.WCS
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.random.Random
 
 // https://www.atnf.csiro.au/people/mcalabre/WCS/example_data.html
 
-@NonGitHubOnly
+@LinuxOnly
 class LibWCSTest {
 
     @Test
@@ -133,6 +136,13 @@ class LibWCSTest {
     // "BON", "COD", "COE", "COO", "COP", "ZPN" // FAILED
 
     companion object {
+
+        @BeforeAll
+        @JvmStatic
+        fun loadLibWCS() {
+            val libPath = download("https://github.com/tiagohm/nebulosa.data/raw/main/wcs/linux-x86-64/libwcs.so")
+            System.setProperty(LibWCS.PATH, "$libPath")
+        }
 
         @JvmStatic
         private fun pixToSky(projectionName: String, width: Int, height: Int) {
