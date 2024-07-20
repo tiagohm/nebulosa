@@ -263,6 +263,11 @@ data class CameraCaptureTask(
         ) {
             ditherAfterExposureTask.execute(cancellationToken)
         }
+
+        if (cancellationToken.isPaused) {
+            pausing.set(false)
+            sendEvent(CameraCaptureState.PAUSED)
+        }
     }
 
     @Synchronized
@@ -321,7 +326,8 @@ data class CameraCaptureTask(
         val isExposureFinished = state == CameraCaptureState.EXPOSURE_FINISHED
 
         val event = CameraCaptureEvent(
-            this, camera, if (pausing.get() && !isExposureFinished) CameraCaptureState.PAUSING else state, request.exposureAmount, exposureCount,
+            this, camera, if (pausing.get() && !isExposureFinished) CameraCaptureState.PAUSING else state,
+            request.exposureAmount, exposureCount,
             captureRemainingTime, captureElapsedTime, captureProgress,
             stepRemainingTime, stepElapsedTime, stepProgress,
             savedPath, liveStackedPath,

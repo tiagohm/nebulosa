@@ -651,6 +651,14 @@ export class ApiService {
 		return this.http.put<never>(`sequencer/${camera.id}/start?${query}`, body)
 	}
 
+	sequencerPause(camera: Camera) {
+		return this.http.put<never>(`sequencer/${camera.id}/pause`)
+	}
+
+	sequencerUnpause(camera: Camera) {
+		return this.http.put<never>(`sequencer/${camera.id}/unpause`)
+	}
+
 	sequencerStop(camera: Camera) {
 		return this.http.put<never>(`sequencer/${camera.id}/stop`)
 	}

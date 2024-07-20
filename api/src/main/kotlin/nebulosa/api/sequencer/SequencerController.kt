@@ -26,6 +26,16 @@ class SequencerController(
         sequencerService.stop(camera)
     }
 
+    @PutMapping("{camera}/pause")
+    fun pause(camera: Camera) {
+        sequencerService.pause(camera)
+    }
+
+    @PutMapping("{camera}/unpause")
+    fun unpause(camera: Camera) {
+        sequencerService.unpause(camera)
+    }
+
     @GetMapping("{camera}/status")
     fun status(camera: Camera): SequencerEvent? {
         return sequencerService.status(camera)

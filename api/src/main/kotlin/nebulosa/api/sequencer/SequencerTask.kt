@@ -11,6 +11,7 @@ import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.api.wheels.WheelEventAware
 import nebulosa.api.wheels.WheelMoveTask
 import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.common.concurrency.latch.PauseListener
 import nebulosa.guiding.Guider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
@@ -24,6 +25,7 @@ import nebulosa.log.loggerFor
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
@@ -41,7 +43,7 @@ data class SequencerTask(
     @JvmField val rotator: Rotator? = null,
     private val executor: Executor? = null,
     private val calibrationFrameProvider: CalibrationFrameProvider? = null,
-) : AbstractTask<MessageEvent>(), Consumer<Any>, CameraEventAware, WheelEventAware {
+) : AbstractTask<MessageEvent>(), Consumer<Any>, CameraEventAware, WheelEventAware, PauseListener {
 
     private val usedEntries = plan.entries.filter { it.enabled }
 
@@ -50,6 +52,8 @@ data class SequencerTask(
     private val sequencerId = AtomicInteger()
     private val tasks = LinkedList<Task>()
     private val currentTask = AtomicReference<Task>()
+    private val pausing = AtomicBoolean()
+    private val paused = AtomicBoolean()
 
     @Volatile private var estimatedCaptureTime = initialDelayTask.duration
 
@@ -153,11 +157,22 @@ data class SequencerTask(
         }
     }
 
+    override fun onPause(paused: Boolean) {
+        pausing.set(paused)
+
+        if (paused) {
+            sendEvent(SequencerState.PAUSING)
+        }
+    }
+
     override fun execute(cancellationToken: CancellationToken) {
         LOG.info("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, plan={}", camera, mount, wheel, focuser, plan)
 
+        cancellationToken.listenToPause(this)
+
         for (task in tasks) {
             if (cancellationToken.isCancelled) break
+
             currentTask.set(task)
             task.execute(cancellationToken)
             currentTask.set(null)
@@ -166,8 +181,10 @@ data class SequencerTask(
         if (remainingTime.toMillis() > 0L) {
             remainingTime = Duration.ZERO
             progress = 1.0
-            sendEvent()
+            sendEvent(SequencerState.IDLE)
         }
+
+        cancellationToken.unlistenToPause(this)
 
         LOG.info("Sequencer finished. camera={}, mount={}, wheel={}, focuser={}, plan={}", camera, mount, wheel, focuser, plan)
     }
@@ -192,15 +209,19 @@ data class SequencerTask(
                 if (event.task === initialDelayTask) {
                     elapsedTime += event.waitTime
                     computeRemainingTimeAndProgress()
-                    sendEvent()
+                    sendEvent(SequencerState.RUNNING)
                 }
             }
             is CameraCaptureEvent -> {
+                pausing.set(event.state == CameraCaptureState.PAUSING)
+                paused.set(event.state == CameraCaptureState.PAUSED)
+
                 when (event.state) {
                     CameraCaptureState.CAPTURE_STARTED -> {
                         prevElapsedTime = elapsedTime
                     }
-                    CameraCaptureState.EXPOSURING, CameraCaptureState.WAITING -> {
+                    CameraCaptureState.EXPOSURING,
+                    CameraCaptureState.WAITING -> {
                         elapsedTime = prevElapsedTime + event.captureElapsedTime
                         computeRemainingTimeAndProgress()
                     }
@@ -210,7 +231,7 @@ data class SequencerTask(
                     else -> Unit
                 }
 
-                sendEvent(event)
+                sendEvent(SequencerState.RUNNING, event)
             }
         }
     }
@@ -222,8 +243,13 @@ data class SequencerTask(
     }
 
     @Suppress("NOTHING_TO_INLINE")
-    private inline fun sendEvent(capture: CameraCaptureEvent? = null) {
-        onNext(SequencerEvent(sequencerId.get(), elapsedTime, remainingTime, progress, capture))
+    private inline fun sendEvent(state: SequencerState, capture: CameraCaptureEvent? = null) {
+        onNext(
+            SequencerEvent(
+                sequencerId.get(), elapsedTime, remainingTime, progress, capture,
+                if (pausing.get()) SequencerState.PAUSING else if (paused.get()) SequencerState.PAUSED else state
+            )
+        )
     }
 
     override fun close() {

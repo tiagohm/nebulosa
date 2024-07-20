@@ -110,6 +110,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		return !!this.camera && this.camera.connected && !!this.plan.entries.find((e) => e.enabled)
 	}
 
+	get pausingOrPaused() {
+		return this.event?.state === 'PAUSING' || this.event?.state === 'PAUSED'
+	}
+
 	get savedPath() {
 		return this.app.subTitle
 	}
@@ -574,9 +578,15 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		}
 	}
 
-	async stop() {
-		if (this.camera) {
-			await this.api.sequencerStop(this.camera)
-		}
+	pause() {
+		return this.api.sequencerPause(this.camera!)
+	}
+
+	unpause() {
+		return this.api.sequencerUnpause(this.camera!)
+	}
+
+	stop() {
+		return this.api.sequencerStop(this.camera!)
 	}
 }

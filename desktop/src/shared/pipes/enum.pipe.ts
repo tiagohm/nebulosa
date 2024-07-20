@@ -8,7 +8,7 @@ import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../
 import { Bitpix, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlType } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
-import { SequenceCaptureMode } from '../types/sequencer.types'
+import { SequenceCaptureMode, SequencerState } from '../types/sequencer.types'
 import { SettingsTabKey } from '../types/settings.types'
 import { StackerGroupType, StackerType } from '../types/stacker.types'
 import { StarDetectorType } from '../types/stardetector.types'
@@ -42,6 +42,7 @@ export type EnumPipeKey =
 	| StackerType
 	| StackerGroupType
 	| SettingsTabKey
+	| SequencerState
 	| 'ALL'
 
 @Pipe({ name: 'enum' })
@@ -350,6 +351,7 @@ export class EnumPipe implements PipeTransform {
 		ROTATING_VARIABLE: 'Rotating Variable',
 		RR_LYRAE_VARIABLE: 'RR Lyrae Variable',
 		RS_CVN_VARIABLE: 'RS CVn Variable',
+		RUNNING: 'Running',
 		RV_TAURI_VARIABLE: 'RV Tauri Variable',
 		S_STAR: 'S Star',
 		SARSAT: 'Search & Rescue (SARSAT)',

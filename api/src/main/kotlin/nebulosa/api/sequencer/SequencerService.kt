@@ -29,6 +29,16 @@ class SequencerService(
     }
 
     @Synchronized
+    fun pause(camera: Camera) {
+        sequencerExecutor.pause(camera)
+    }
+
+    @Synchronized
+    fun unpause(camera: Camera) {
+        sequencerExecutor.unpause(camera)
+    }
+
+    @Synchronized
     fun stop(camera: Camera) {
         sequencerExecutor.stop(camera)
     }

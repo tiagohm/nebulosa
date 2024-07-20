@@ -28,7 +28,6 @@ data class CameraExposureTask(
     private val latch = CountUpDownLatch()
     private val aborted = AtomicBoolean()
 
-    @Volatile private var state = CameraExposureState.IDLE
     @Volatile private var elapsedTime = Duration.ZERO
     @Volatile private var remainingTime = Duration.ZERO
     @Volatile private var progress = 0.0
@@ -58,8 +57,7 @@ data class CameraExposureTask(
                     remainingTime = minOf(event.device.exposureTime, request.exposureTime)
                     elapsedTime = exposureTime - remainingTime
                     progress = elapsedTime.toNanos().toDouble() / exposureTime.toNanos()
-                    state = CameraExposureState.ELAPSED
-                    sendEvent()
+                    sendEvent(CameraExposureState.ELAPSED)
                 }
             }
         }
@@ -73,8 +71,7 @@ data class CameraExposureTask(
 
             latch.countUp()
 
-            state = CameraExposureState.STARTED
-            sendEvent()
+            sendEvent(CameraExposureState.STARTED)
 
             with(camera) {
                 enableBlob()
@@ -138,9 +135,7 @@ data class CameraExposureTask(
                 savedPath = this
             }
 
-            state = CameraExposureState.FINISHED
-
-            sendEvent()
+            sendEvent(CameraExposureState.FINISHED)
         } catch (e: Throwable) {
             LOG.error("failed to save FITS image", e)
             aborted.set(true)
@@ -149,7 +144,7 @@ data class CameraExposureTask(
         }
     }
 
-    private fun sendEvent() {
+    private fun sendEvent(state: CameraExposureState) {
         onNext(CameraExposureEvent(this, state, elapsedTime, remainingTime, progress, savedPath))
     }
 

@@ -3,6 +3,8 @@ import type { CameraCaptureNamingFormat } from './settings.types'
 
 export type SequenceCaptureMode = 'FULLY' | 'INTERLEAVED'
 
+export type SequencerState = 'IDLE' | 'PAUSING' | 'PAUSED' | 'RUNNING'
+
 export const SEQUENCE_ENTRY_PROPERTIES = ['EXPOSURE_TIME', 'EXPOSURE_AMOUNT', 'EXPOSURE_DELAY', 'FRAME_TYPE', 'X', 'Y', 'WIDTH', 'HEIGHT', 'BIN', 'FRAME_FORMAT', 'GAIN', 'OFFSET'] as const
 
 export type SequenceEntryProperty = (typeof SEQUENCE_ENTRY_PROPERTIES)[number]
@@ -70,6 +72,7 @@ export interface SequencerEvent extends MessageEvent {
 	remainingTime: number
 	progress: number
 	capture?: CameraCaptureEvent
+	state: SequencerState
 }
 
 export interface SequencerPreference {
