@@ -437,9 +437,9 @@ export class WindowManager {
 		this.dispatchEvent(event)
 	}
 
-	dispatchEvent(event: MessageEvent) {
+	dispatchEvent(event: MessageEvent, parentOnly: boolean = false) {
 		for (const [, window] of this.windows) {
-			if (window.isParent) {
+			if (!parentOnly || window.isParent) {
 				window.sendMessage(event)
 			}
 		}
