@@ -41,6 +41,7 @@
 				tooltipPosition="bottom"
 				size="small" />
 			<p-button
+				*ngIf="hasCalibration"
 				[disabled]="!camera"
 				[text]="true"
 				[rounded]="true"
@@ -446,18 +447,21 @@
 	<div class="grid mt-0">
 		<div class="col-12 gap-1 justify-content-center align-items-center flex-wrap">
 			<p-tag
+				*ngIf="hasCalibration"
 				icon="mdi mdi-wrench mdi-sm"
 				value="{{ request.calibrationGroup || 'None' }}"
 				styleClass="cursor-pointer text-xs"
 				severity="info"
 				(click)="calibrationMenu.show()" />
 			<p-tag
+				*ngIf="hasDither"
 				icon="mdi mdi-pulse mdi-sm"
 				value="Dither: {{ request.dither.enabled ? 'ON' : 'OFF' }}"
 				styleClass="cursor-pointer text-xs"
 				severity="info"
 				(click)="dither.showDialog = true" />
 			<p-tag
+				*ngIf="hasLiveStacking"
 				icon="mdi mdi-image-multiple mdi-sm"
 				value="Live stacking: {{ request.liveStacking.enabled ? 'ON' : 'OFF' }}"
 				styleClass="cursor-pointer text-xs"

@@ -47,7 +47,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 	mode: CameraDialogMode = 'CAPTURE'
 
 	get canShowMenu() {
-		return this.mode === 'CAPTURE'
+		return this.hasCalibration || this.hasLiveStacking || this.hasDither || this.canSnoopDevices
 	}
 
 	get canShowSavePath() {
@@ -212,6 +212,22 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		return this.status === 'PAUSING' || this.status === 'PAUSED'
 	}
 
+	get hasCalibration() {
+		return !this.app.modal
+	}
+
+	get hasLiveStacking() {
+		return !this.app.modal
+	}
+
+	get hasDither() {
+		return !this.app.modal
+	}
+
+	get canSnoopDevices() {
+		return !this.app.modal
+	}
+
 	constructor(
 		private readonly app: AppComponent,
 		private readonly api: ApiService,
@@ -364,6 +380,9 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Pingable {
 		} else if (mode === 'DARV') {
 			this.exposureTimeUnit = ExposureTimeUnit.SECOND
 		}
+
+		this.ditherMenuItem.visible = this.hasDither
+		this.liveStackingMenuItem.visible = this.hasLiveStacking
 	}
 
 	async cameraChanged(camera?: Camera) {
