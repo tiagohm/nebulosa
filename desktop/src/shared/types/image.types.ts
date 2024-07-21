@@ -264,6 +264,7 @@ export interface ImageFOVDialog extends FOV {
 }
 
 export interface ImageROI {
+	show: boolean
 	x: number
 	y: number
 	width: number

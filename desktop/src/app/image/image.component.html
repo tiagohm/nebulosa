@@ -116,24 +116,32 @@
 
 	<div
 		#roi
-		[class.hidden]="!roiInteractable"
+		[class.hidden]="!imageROI.show"
 		class="roi absolute left-0 top-0"
-		data-x="0"
-		data-y="0"
 		(contextmenu)="imageClicked($event, true)"></div>
+	<ngx-moveable
+		#moveable
+		[target]="roi"
+		[origin]="true"
+		*ngIf="imageROI.show"
+		[draggable]="true"
+		[resizable]="true"
+		[rotatable]="false"
+		(drag)="roiDrag($event)"
+		(rotate)="roiRotate($event)"
+		(resize)="roiResize($event)" />
 </div>
 
 <div
-	*ngIf="roiInteractable"
+	*ngIf="imageROI.show"
 	class="roi-coordinates fixed flex flex-row align-items-center gap-2">
-	<span>X: {{ imageROI.x }} Y: {{ imageROI.y }} W: {{ imageROI.width }} H: {{ imageROI.height }}</span>
+	<span>X: {{ imageROI.x.toFixed(0) }} Y: {{ imageROI.y.toFixed(0) }} W: {{ imageROI.width.toFixed(0) }} H: {{ imageROI.height.toFixed(0) }}</span>
 	<p-button
 		[text]="true"
 		(onClick)="roiForCamera()"
-		icon="mdi mdi-check"
+		icon="mdi mdi-camera-iris"
 		size="small"
-		severity="success"
-		pTooltip="Apply to Mount"
+		pTooltip="Apply"
 		tooltipPosition="bottom" />
 </div>
 

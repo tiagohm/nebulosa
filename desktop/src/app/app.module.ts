@@ -5,6 +5,7 @@ import { LOCALE_ID, NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { NgxMoveableModule } from 'ngx-moveable'
 import { AccordionModule } from 'primeng/accordion'
 import { ConfirmationService, MessageService } from 'primeng/api'
 import { BadgeModule } from 'primeng/badge'
@@ -175,6 +176,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		MenuModule,
 		MessageModule,
 		MultiSelectModule,
+		NgxMoveableModule,
 		OverlayPanelModule,
 		ProgressBarModule,
 		ScrollPanelModule,

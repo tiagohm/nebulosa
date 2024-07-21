@@ -1,8 +1,7 @@
 import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild, computed, model } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { DragEvent, Interactable, ResizeEvent } from '@interactjs/types/index'
 import hotkeys from 'hotkeys-js'
-import interact from 'interactjs'
+import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
 import createPanZoom, { PanZoom } from 'panzoom'
 import { basename, dirname, extname } from 'path'
 import { ContextMenu } from 'primeng/contextmenu'
@@ -71,6 +70,9 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	@ViewChild('detectedStarCanvas')
 	private readonly detectedStarCanvas!: ElementRef<HTMLCanvasElement>
+
+	@ViewChild('moveable')
+	private readonly moveable!: NgxLegacyMoveableComponent
 
 	imageInfo?: ImageInfo
 	private imageURL!: string
@@ -197,8 +199,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	private imageMouseX = 0
 	private imageMouseY = 0
 
-	roiInteractable?: Interactable
 	readonly imageROI: ImageROI = {
+		show: false,
 		x: 0,
 		y: 0,
 		width: 128,
@@ -399,49 +401,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		icon: 'mdi mdi-select',
 		selected: false,
 		command: () => {
-			if (this.roiInteractable) {
-				this.roiInteractable.unset()
-				this.roiInteractable = undefined
-			} else {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-				this.roiInteractable = interact(this.roi.nativeElement)
-					.origin({ x: 0, y: 0 })
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-					.resizable({
-						edges: { left: true, right: true, bottom: true, top: true },
-						inertia: true,
-						listeners: {
-							move: (event: ResizeEvent) => {
-								this.roiResizableMove(event)
-							},
-						},
-						modifiers: [
-							interact.modifiers.restrictEdges({
-								outer: 'parent',
-							}),
-							interact.modifiers.restrictSize({
-								min: { width: 8, height: 8 },
-							}),
-						],
-					})
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-					.draggable({
-						listeners: {
-							move: (event: DragEvent) => {
-								this.roiDraggableMove(event)
-							},
-						},
-						inertia: true,
-						modifiers: [
-							interact.modifiers.restrictRect({
-								restriction: 'parent',
-								endOnly: true,
-							}),
-						],
-					})
-			}
-
-			this.roiMenuItem.selected = !!this.roiInteractable
+			this.imageROI.show = !this.imageROI.show
+			this.roiMenuItem.selected = this.imageROI.show
 		},
 	}
 
@@ -532,7 +493,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		private readonly browserWindow: BrowserWindowService,
 		private readonly preference: PreferenceService,
 		private readonly prime: PrimeService,
-		private readonly ngZone: NgZone,
+		ngZone: NgZone,
 	) {
 		app.title = 'Image'
 
@@ -677,10 +638,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	@HostListener('window:unload')
-	async ngOnDestroy() {
-		await this.closeImage(true)
-
-		this.roiInteractable?.unset()
+	ngOnDestroy() {
+		void this.closeImage(true)
 	}
 
 	private markCalibrationGroupItem(name?: string) {
@@ -790,62 +749,41 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		await this.loadImage(true)
 	}
 
-	private roiResizableMove(event: ResizeEvent) {
-		const target = event.target
+	roiDrag(event: OnDrag) {
+		const { target, transform } = event
+		target.style.transform = transform
 
-		if (this.panZoom) {
-			const { scale } = this.panZoom.getTransform()
-
-			let x = parseFloat(target.getAttribute('data-x') ?? '0') || 0
-			let y = parseFloat(target.getAttribute('data-y') ?? '0') || 0
-
-			target.style.width = `${event.rect.width / scale}px`
-			target.style.height = `${event.rect.height / scale}px`
-
-			x += event.deltaRect!.left / scale
-			y += event.deltaRect!.top / scale
-
-			target.style.transform = `translate(${x}px, ${y}px)`
-
-			target.setAttribute('data-x', `${x}`)
-			target.setAttribute('data-y', `${y}`)
-
-			this.ngZone.run(() => {
-				this.imageROI.x = Math.round(x)
-				this.imageROI.y = Math.round(y)
-				this.imageROI.width = Math.round(event.rect.width / scale)
-				this.imageROI.height = Math.round(event.rect.height / scale)
-			})
-		}
+		const rect = this.moveable.getRect()
+		this.imageROI.x = Math.round(rect.left)
+		this.imageROI.y = Math.round(rect.top)
 	}
 
-	private roiDraggableMove(event: DragEvent) {
-		const target = event.target
+	roiResize(event: OnResize) {
+		const { target, width, height, transform } = event
+		target.style.transform = transform
 
-		if (this.panZoom) {
-			const { scale } = this.panZoom.getTransform()
+		const rect = this.moveable.getRect()
 
-			const x = (parseFloat(target.getAttribute('data-x') ?? '0') || 0) + event.dx / scale
-			const y = (parseFloat(target.getAttribute('data-y') ?? '0') || 0) + event.dy / scale
+		target.style.width = `${width}px`
+		this.imageROI.x = Math.round(rect.left)
+		this.imageROI.width = Math.round(width)
 
-			target.style.transform = `translate(${x}px, ${y}px)`
+		target.style.height = `${height}px`
+		this.imageROI.y = Math.round(rect.top)
+		this.imageROI.height = Math.round(height)
+	}
 
-			target.setAttribute('data-x', `${x}`)
-			target.setAttribute('data-y', `${y}`)
-
-			this.ngZone.run(() => {
-				this.imageROI.x = Math.round(x)
-				this.imageROI.y = Math.round(y)
-			})
-		}
+	roiRotate(event: OnRotate) {
+		const { target, transform } = event
+		target.style.transform = transform
 	}
 
 	roiForCamera() {
 		return this.executeCamera((camera) => {
-			const x = camera.x + this.imageROI.x
-			const y = camera.y + this.imageROI.y
-			const width = camera.binX * this.imageROI.width
-			const height = camera.binY * this.imageROI.height
+			const x = Math.max(0, Math.min(camera.x + this.imageROI.x, camera.maxX))
+			const y = Math.max(0, Math.min(camera.y + this.imageROI.y, camera.maxY))
+			const width = Math.max(0, Math.min(camera.binX * this.imageROI.width, camera.maxWidth))
+			const height = Math.max(0, Math.min(camera.binY * this.imageROI.height, camera.maxHeight))
 
 			return this.electron.send('ROI.SELECTED', { camera, x, y, width, height })
 		}, false)
@@ -1309,11 +1247,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				filterKey: () => {
 					return true
 				},
-				beforeWheel: (e) => {
-					return e.target !== this.image.nativeElement && e.target !== this.roi.nativeElement
+				beforeWheel: () => {
+					return false // e.target !== this.image.nativeElement && e.target !== this.roi.nativeElement
 				},
 				beforeMouseDown: (e) => {
-					return e.target !== this.image.nativeElement
+					// return e.target !== this.image.nativeElement
+					return e.target === this.roi.nativeElement
 				},
 			})
 		}
