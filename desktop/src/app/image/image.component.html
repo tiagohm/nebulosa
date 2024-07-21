@@ -1,4 +1,12 @@
-<div class="inline-block relative">
+<span
+	class="bg-black-alpha-20 border-round-sm fixed pointer-events-none px-3 py-2 select-none z-1"
+	style="top: 48px; left: 6px">
+	{{ imageZoom.toFixed(1) }}x
+</span>
+
+<div
+	class="inline-block relative"
+	style="will-change: transform; backface-visibility: hidden">
 	<img
 		#image
 		(load)="imageLoaded()"
@@ -127,6 +135,8 @@
 		[draggable]="true"
 		[resizable]="true"
 		[rotatable]="false"
+		[edgeDraggable]="true"
+		[zoom]="1"
 		(drag)="roiDrag($event)"
 		(rotate)="roiRotate($event)"
 		(resize)="roiResize($event)" />

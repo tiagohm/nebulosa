@@ -78,6 +78,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	private imageURL!: string
 	imageData: ImageData = {}
 	liveStackingMode: LiveStackingMode = 'NONE'
+	imageZoom = 1
 
 	readonly scnrChannels: { name: string; value?: ImageChannel }[] = [
 		{ name: 'None', value: undefined },
@@ -754,8 +755,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		target.style.transform = transform
 
 		const rect = this.moveable.getRect()
-		this.imageROI.x = Math.round(rect.left)
-		this.imageROI.y = Math.round(rect.top)
+		this.imageROI.x = Math.trunc(rect.left)
+		this.imageROI.y = Math.trunc(rect.top)
 	}
 
 	roiResize(event: OnResize) {
@@ -765,12 +766,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		const rect = this.moveable.getRect()
 
 		target.style.width = `${width}px`
-		this.imageROI.x = Math.round(rect.left)
-		this.imageROI.width = Math.round(width)
+		this.imageROI.x = Math.trunc(rect.left)
+		this.imageROI.width = Math.trunc(width)
 
 		target.style.height = `${height}px`
-		this.imageROI.y = Math.round(rect.top)
-		this.imageROI.height = Math.round(height)
+		this.imageROI.y = Math.trunc(rect.top)
+		this.imageROI.height = Math.trunc(height)
 	}
 
 	roiRotate(event: OnRotate) {
@@ -1244,6 +1245,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				maxZoom: 500.0,
 				autocenter: true,
 				zoomDoubleClickSpeed: 1,
+				zoomSpeed: 1,
 				filterKey: () => {
 					return true
 				},
@@ -1254,6 +1256,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 					// return e.target !== this.image.nativeElement
 					return e.target === this.roi.nativeElement
 				},
+			})
+
+			this.panZoom.on('zoom', () => {
+				const { scale } = this.panZoom!.getTransform()
+				this.imageZoom = scale
 			})
 		}
 	}
