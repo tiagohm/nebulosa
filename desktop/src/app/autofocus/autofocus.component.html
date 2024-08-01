@@ -7,7 +7,7 @@
 			[(device)]="camera"
 			(deviceChange)="cameraChanged()" />
 		<p-button
-			[disabled]="!camera.name || running"
+			[disabled]="!camera?.name || running"
 			icon="mdi mdi-cog"
 			(onClick)="showCameraDialog()"
 			size="small" />
@@ -37,7 +37,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 max-w-full"
-					[value]="focuser.position" />
+					[value]="focuser?.position ?? 0" />
 				<label>Position</label>
 			</p-floatLabel>
 		</div>
@@ -71,28 +71,28 @@
 					<div class="col-4 align-items-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!focuser.connected"
+								[disabled]="!focuser?.connected"
 								styleClass="p-inputtext-sm border-0 max-w-full"
 								[(ngModel)]="request.stepSize"
 								[showButtons]="true"
 								[min]="1"
-								[max]="focuser.maxPosition"
+								[max]="focuser?.maxPosition ?? 1"
 								(ngModelChange)="savePreference()"
-								scrollableNumber />
+								spinnableNumber />
 							<label>Step Size</label>
 						</p-floatLabel>
 					</div>
 					<div class="col-5 align-items-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!focuser.connected"
+								[disabled]="!focuser?.connected"
 								styleClass="p-inputtext-sm border-0 max-w-full"
 								[(ngModel)]="request.initialOffsetSteps"
 								[showButtons]="true"
 								[min]="1"
 								[max]="1000"
 								(ngModelChange)="savePreference()"
-								scrollableNumber />
+								spinnableNumber />
 							<label>Initial Offset Steps ({{ request.initialOffsetSteps * request.stepSize }})</label>
 						</p-floatLabel>
 					</div>
@@ -105,7 +105,7 @@
 								[min]="1"
 								[max]="10"
 								(ngModelChange)="savePreference()"
-								scrollableNumber />
+								spinnableNumber />
 							<label>Attempts</label>
 						</p-floatLabel>
 					</div>
@@ -146,7 +146,7 @@
 								[step]="0.1"
 								(ngModelChange)="savePreference()"
 								locale="en"
-								scrollableNumber />
+								spinnableNumber />
 							<label>R-Squared</label>
 						</p-floatLabel>
 					</div>
@@ -175,7 +175,7 @@
 										[min]="1"
 										[max]="1000"
 										(ngModelChange)="savePreference()"
-										scrollableNumber />
+										spinnableNumber />
 									<label>In</label>
 								</p-floatLabel>
 							</div>
@@ -189,7 +189,7 @@
 										[min]="1"
 										[max]="1000"
 										(ngModelChange)="savePreference()"
-										scrollableNumber />
+										spinnableNumber />
 									<label>Out</label>
 								</p-floatLabel>
 							</div>
@@ -214,7 +214,7 @@
 	</div>
 	<div class="col-12 flex align-items-center justify-content-center gap-1">
 		<p-button
-			[disabled]="!camera.connected || !focuser.connected || running"
+			[disabled]="!camera?.connected || !focuser?.connected || running"
 			label="Start"
 			(onClick)="start()"
 			icon="mdi mdi-play"
@@ -222,7 +222,7 @@
 			size="small"
 			[text]="true" />
 		<p-button
-			[disabled]="!camera.connected || !focuser.connected || !running"
+			[disabled]="!camera?.connected || !focuser?.connected || !running"
 			label="Abort"
 			(onClick)="stop()"
 			icon="mdi mdi-stop"
@@ -230,7 +230,7 @@
 			size="small"
 			[text]="true" />
 		<p-button
-			[disabled]="!camera.connected"
+			[disabled]="!camera?.connected"
 			(onClick)="openCameraImage()"
 			icon="mdi mdi-image"
 			[text]="true"

@@ -57,8 +57,8 @@ import { PathChooserComponent } from '../shared/components/path-chooser/path-cho
 import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
 import { ConfirmDialog } from '../shared/dialogs/confirm/confirm.dialog'
 import { LocationDialog } from '../shared/dialogs/location/location.dialog'
-import { ScrollableNumberDirective } from '../shared/directives/input-number-scrollable'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
+import { SpinnableNumberDirective } from '../shared/directives/spinnable-number.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
 import { ConfirmationInterceptor } from '../shared/interceptors/confirmation.interceptor'
 import { IdempotencyKeyInterceptor } from '../shared/interceptors/idempotency-key.interceptor'
@@ -81,6 +81,7 @@ import { CalculatorComponent } from './calculator/calculator.component'
 import { FormulaComponent } from './calculator/formula/formula.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
+import { ExposureTimeComponent } from './camera/exposure-time.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FlatWizardComponent } from './flat-wizard/flat-wizard.component'
 import { FocuserComponent } from './focuser/focuser.component'
@@ -117,6 +118,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		EnumPipe,
 		EnumDropdownPipe,
 		EnvPipe,
+		ExposureTimeComponent,
 		ExposureTimePipe,
 		FilterWheelComponent,
 		FlatWizardComponent,
@@ -127,7 +129,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		HistogramComponent,
 		HomeComponent,
 		ImageComponent,
-		ScrollableNumberDirective,
+		SpinnableNumberDirective,
 		INDIComponent,
 		INDIPropertyComponent,
 		LocationDialog,

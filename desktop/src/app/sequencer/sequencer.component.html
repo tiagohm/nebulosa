@@ -19,7 +19,7 @@
 								styleClass="p-inputtext-sm border-0"
 								[allowEmpty]="false"
 								(ngModelChange)="savePlan()"
-								scrollableNumber />
+								spinnableNumber />
 							<label>Initial Delay (s)</label>
 						</p-floatLabel>
 					</div>
@@ -59,7 +59,7 @@
 							tooltipPosition="bottom"
 							[positionTop]="8"></i>
 						<neb-path-chooser
-							key="SEQUENCER_SAVE_PATH"
+							key="sequencer.savePath"
 							[directory]="true"
 							[(path)]="plan.savePath"
 							(pathChange)="savePlan()"
@@ -101,7 +101,7 @@
 								locale="en"
 								[minFractionDigits]="1"
 								(ngModelChange)="savePlan()"
-								scrollableNumber />
+								spinnableNumber />
 							<label>Dither (px)</label>
 						</p-floatLabel>
 					</div>
@@ -116,7 +116,7 @@
 								[(ngModel)]="plan.dither.afterExposures"
 								[step]="1"
 								(ngModelChange)="savePlan()"
-								scrollableNumber />
+								spinnableNumber />
 							<label>After exposures</label>
 						</p-floatLabel>
 					</div>
@@ -163,7 +163,7 @@
 								[(ngModel)]="plan.autoFocus.afterElapsedTime"
 								[step]="1"
 								(ngModelChange)="savePlan()"
-								scrollableNumber />
+								spinnableNumber />
 							<label>After elapsed time (s)</label>
 						</p-floatLabel>
 					</div>
@@ -183,7 +183,7 @@
 								[(ngModel)]="plan.autoFocus.afterExposures"
 								[step]="1"
 								(ngModelChange)="savePlan()"
-								scrollableNumber />
+								spinnableNumber />
 							<label>After exposures</label>
 						</p-floatLabel>
 					</div>
@@ -203,7 +203,7 @@
 								[(ngModel)]="plan.autoFocus.afterTemperatureChange"
 								[step]="1"
 								(ngModelChange)="savePlan()"
-								scrollableNumber />
+								spinnableNumber />
 							<label>After temperature change (°C)</label>
 						</p-floatLabel>
 					</div>
@@ -223,7 +223,7 @@
 								[(ngModel)]="plan.autoFocus.afterHFDIncrease"
 								[step]="1"
 								(ngModelChange)="savePlan()"
-								scrollableNumber />
+								spinnableNumber />
 							<label>After HFD increase (%)</label>
 						</p-floatLabel>
 					</div>

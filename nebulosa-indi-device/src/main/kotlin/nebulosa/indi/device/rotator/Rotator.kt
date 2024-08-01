@@ -1,8 +1,12 @@
 package nebulosa.indi.device.rotator
 
 import nebulosa.indi.device.Device
+import nebulosa.indi.device.DeviceType
 
 interface Rotator : Device {
+
+    override val type
+        get() = DeviceType.ROTATOR
 
     val moving: Boolean
 

@@ -1,4 +1,4 @@
-import { AfterContentInit, AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { AfterContentInit, AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
@@ -20,9 +20,10 @@ import {
 	CONSTELLATIONS,
 	CloseApproach,
 	Constellation,
+	DEFAULT_BODY_POSITION,
+	DEFAULT_LOCATION,
+	DEFAULT_SEARCH_FILTER,
 	DeepSkyObject,
-	EMPTY_BODY_POSITION,
-	EMPTY_SEARCH_FILTER,
 	Location,
 	MinorPlanet,
 	MinorPlanetSearchItem,
@@ -37,23 +38,27 @@ import {
 import { Mount } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
-Chart.register(zoomPlugin)
-
 @Component({
 	selector: 'neb-atlas',
 	templateUrl: './atlas.component.html',
 	styleUrls: ['./atlas.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, OnDestroy {
 	refreshingPosition = false
 	refreshingChart = false
 	tab = SkyAtlasTab.SUN
 
+	// TODO: juntar locations e dateTime num objeto
+	protected locations: Location[] = [structuredClone(DEFAULT_LOCATION)]
+	// TODO: location fica em Atlas preference
+	protected location = this.locations[0]
+
 	get refreshing() {
 		return this.refreshingPosition || this.refreshingChart
 	}
 
-	readonly bodyPosition = structuredClone(EMPTY_BODY_POSITION)
+	readonly bodyPosition = structuredClone(DEFAULT_BODY_POSITION)
 	moonIlluminated = 1
 	moonWaning = false
 
@@ -114,7 +119,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	skyObject?: DeepSkyObject
 	skyObjectItems: DeepSkyObject[] = []
 	skyObjectSearchText = ''
-	readonly skyObjectFilter = structuredClone(EMPTY_SEARCH_FILTER)
+	readonly skyObjectFilter = structuredClone(DEFAULT_SEARCH_FILTER)
 	showSkyObjectFilter = false
 	readonly constellationOptions: (Constellation | 'ALL')[] = ['ALL', ...CONSTELLATIONS]
 
@@ -133,8 +138,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	@ViewChild('deviceMenu')
 	private readonly deviceMenu!: DeviceListMenuComponent
 
-	@ViewChild('calendarPanel')
-	private readonly calendarPanel!: OverlayPanel
+	@ViewChild('dateTimeAndLocationPanel')
+	private readonly dateTimeAndLocationPanel!: OverlayPanel
 
 	@ViewChild('chart')
 	private readonly chart!: UIChart
@@ -394,8 +399,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	private refreshTimer?: Subscription
 	private refreshTabCount = 0
 
-	private location: Location
-
 	readonly settings: SettingsDialog = {
 		showDialog: false,
 	}
@@ -423,15 +426,15 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		})
 		app.topMenu.push({
 			icon: 'mdi mdi-calendar',
-			tooltip: 'Date & Time',
+			tooltip: 'Date Time and Location',
 			command: (e) => {
-				this.calendarPanel.toggle(e.originalEvent)
+				this.dateTimeAndLocationPanel.toggle(e.originalEvent)
 			},
 		})
 
-		electron.on('LOCATION.CHANGED', async (event) => {
+		electron.on('LOCATION.CHANGED', async () => {
 			await ngZone.run(() => {
-				this.location = event
+				this.loadLocations()
 				return this.refreshTab(true, true)
 			})
 		})
@@ -440,12 +443,15 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			await this.loadTabFromData(event)
 		})
 
-		this.location = this.preference.selectedLocation.get()
+		const settings = this.preference.settings.get()
+		this.location = settings.locations[settings.location]
 
 		// TODO: Refresh graph and twilight if hours past 12 (noon)
 	}
 
 	async ngOnInit() {
+		Chart.register(zoomPlugin)
+
 		this.loadPreference()
 		const types = await this.api.skyObjectTypes()
 		this.skyObjectFilter.types = ['ALL', ...types]
@@ -476,10 +482,6 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 	async ngAfterViewInit() {
 		await this.refreshTab()
-
-		this.calendarPanel.onOverlayClick = (e) => {
-			e.stopImmediatePropagation()
-		}
 	}
 
 	@HostListener('window:unload')
@@ -701,7 +703,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 					Object.assign(this.bodyPosition, bodyPosition)
 				} else {
 					this.name = undefined
-					Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
+					Object.assign(this.bodyPosition, DEFAULT_BODY_POSITION)
 				}
 			}
 			// Minor Planet.
@@ -719,7 +721,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 					Object.assign(this.bodyPosition, bodyPosition)
 				} else {
 					this.name = undefined
-					Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
+					Object.assign(this.bodyPosition, DEFAULT_BODY_POSITION)
 				}
 			}
 			// Sky Object.
@@ -732,7 +734,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 					Object.assign(this.bodyPosition, bodyPosition)
 				} else {
 					this.name = undefined
-					Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
+					Object.assign(this.bodyPosition, DEFAULT_BODY_POSITION)
 				}
 			}
 			// Satellite.
@@ -745,7 +747,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 					Object.assign(this.bodyPosition, bodyPosition)
 				} else {
 					this.name = undefined
-					Object.assign(this.bodyPosition, EMPTY_BODY_POSITION)
+					Object.assign(this.bodyPosition, DEFAULT_BODY_POSITION)
 				}
 			}
 
@@ -865,6 +867,12 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 	}
 
+	private loadLocations() {
+		const settings = this.preference.settings.get()
+		this.locations = settings.locations
+		this.location = this.locations.find((e) => e.id === this.location.id) ?? this.locations[settings.location]
+	}
+
 	private loadPreference() {
 		const preference = this.preference.skyAtlasPreference.get()
 
@@ -873,6 +881,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			const enabled = satellite?.enabled ?? AtlasComponent.DEFAULT_SATELLITE_FILTERS.includes(group)
 			this.satelliteSearchGroup.set(group, enabled)
 		}
+
+		this.loadLocations()
 	}
 
 	savePreference() {

@@ -4,7 +4,8 @@
 			<input
 				pInputText
 				class="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="rightAscension" />
+				[(ngModel)]="preference.rightAscension"
+				(ngModelChange)="savePreference()" />
 			<label>RA (J2000)</label>
 		</p-floatLabel>
 	</div>
@@ -13,7 +14,8 @@
 			<input
 				pInputText
 				class="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="declination" />
+				[(ngModel)]="preference.declination"
+				(ngModelChange)="savePreference()" />
 			<label>DEC (J2000)</label>
 		</p-floatLabel>
 	</div>
@@ -25,9 +27,10 @@
 				class="w-full"
 				[showButtons]="true"
 				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="width"
+				[(ngModel)]="preference.width"
+				(ngModelChange)="savePreference()"
 				locale="en"
-				scrollableNumber />
+				spinnableNumber />
 			<label>Width</label>
 		</p-floatLabel>
 	</div>
@@ -39,9 +42,10 @@
 				class="w-full"
 				[showButtons]="true"
 				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="height"
+				[(ngModel)]="preference.height"
+				(ngModelChange)="savePreference()"
 				locale="en"
-				scrollableNumber />
+				spinnableNumber />
 			<label>Height</label>
 		</p-floatLabel>
 	</div>
@@ -54,10 +58,11 @@
 				class="w-full"
 				[showButtons]="true"
 				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="fov"
+				[(ngModel)]="preference.fov"
+				(ngModelChange)="savePreference()"
 				locale="en"
 				[minFractionDigits]="1"
-				scrollableNumber />
+				spinnableNumber />
 			<label>FOV (°)</label>
 		</p-floatLabel>
 	</div>
@@ -70,10 +75,11 @@
 				class="w-full"
 				[showButtons]="true"
 				styleClass="p-inputtext-sm border-0 w-full"
-				[(ngModel)]="rotation"
+				[(ngModel)]="preference.rotation"
+				(ngModelChange)="savePreference()"
 				locale="en"
 				[minFractionDigits]="1"
-				scrollableNumber />
+				spinnableNumber />
 			<label>Rotation (°)</label>
 		</p-floatLabel>
 	</div>
@@ -81,7 +87,8 @@
 		<p-floatLabel class="w-full">
 			<p-dropdown
 				[options]="hipsSurveys"
-				[(ngModel)]="hipsSurvey"
+				[(ngModel)]="preference.hipsSurvey"
+				(ngModelChange)="savePreference()"
 				styleClass="border-0"
 				emptyMessage="No HiPS survey found"
 				[autoDisplayFirst]="false">
@@ -107,7 +114,7 @@
 	</div>
 	<div class="col-12 justify-content-center mt-2">
 		<p-button
-			[disabled]="loading"
+			[disabled]="!preference.hipsSurvey || loading"
 			icon="mdi mdi-download"
 			label="Load"
 			(onClick)="frame()"

@@ -20,7 +20,7 @@ export class SlideMenuComponent implements OnInit {
 	@Output()
 	readonly onBack = new EventEmitter<MenuItemCommandEvent>()
 
-	currentMenu!: SlideMenuItem[]
+	protected currentMenu!: SlideMenuItem[]
 
 	private readonly navigation: SlideMenuItem[][] = []
 

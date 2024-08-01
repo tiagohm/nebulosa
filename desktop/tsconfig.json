@@ -3,7 +3,7 @@
 	"compilerOptions": {
 		"strict": true,
 		"outDir": "./dist/out-tsc",
-		"module": "ES2022",
+		"module": "ESNext",
 		"sourceMap": true,
 		"declaration": false,
 		"moduleResolution": "node",
@@ -12,7 +12,7 @@
 		"resolveJsonModule": true,
 		"allowSyntheticDefaultImports": true,
 		"noUncheckedIndexedAccess": false,
-		"noUnusedLocals": true,
+		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"noImplicitReturns": true,
 		"noImplicitThis": true,

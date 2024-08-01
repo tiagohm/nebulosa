@@ -13,6 +13,7 @@ class CameraSerializer(private val capturesPath: Path) : StdSerializer<Camera>(C
 
     override fun serialize(value: Camera, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()
+        gen.writeStringField("type", value.type.name)
         gen.writeStringField("sender", value.sender.id)
         gen.writeStringField("id", value.id)
         gen.writeStringField("name", value.name)
@@ -78,6 +79,7 @@ class CameraSerializer(private val capturesPath: Path) : StdSerializer<Camera>(C
 
     private fun JsonGenerator.writeMainOrGuideHead(camera: Camera, fieldName: String) {
         writeObjectFieldStart(fieldName)
+        writeStringField("type", camera.type.name)
         writeStringField("id", camera.id)
         writeStringField("name", camera.name)
         writeStringField("sender", camera.sender.id)

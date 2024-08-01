@@ -11,7 +11,7 @@
 			</p-floatLabel>
 			<p-button
 				*ngIf="mount.connected"
-				[disabled]="!mount || slewing || parking"
+				[disabled]="mount.slewing || mount.parking"
 				(onClick)="connect()"
 				icon="mdi mdi-close"
 				size="small"
@@ -21,7 +21,7 @@
 				[text]="true" />
 			<p-button
 				*ngIf="!mount.connected"
-				[disabled]="!mount || slewing || parking"
+				[disabled]="mount.slewing || mount.parking"
 				(onClick)="connect()"
 				icon="mdi mdi-connection"
 				size="small"
@@ -44,7 +44,7 @@
 		<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1">
 			<i class="mdi mdi-information text-info"></i>
 			<span style="display: contents">
-				{{ parking ? 'parking' : parked ? 'parked' : slewing ? 'slewing' : tracking ? 'tracking' : 'idle' }}
+				{{ mount.parking ? 'parking' : mount.parked ? 'parked' : mount.slewing ? 'slewing' : tracking ? 'tracking' : 'idle' }}
 			</span>
 		</div>
 	</div>
@@ -55,7 +55,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					[value]="rightAscensionJ2000" />
+					[value]="currentComputedLocation.rightAscensionJ2000" />
 				<label>RA (J2000)</label>
 			</p-floatLabel>
 		</div>
@@ -65,7 +65,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					[value]="declinationJ2000" />
+					[value]="currentComputedLocation.declinationJ2000" />
 				<label>DEC (J2000)</label>
 			</p-floatLabel>
 		</div>
@@ -75,7 +75,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					[value]="rightAscension" />
+					[value]="mount.rightAscension" />
 				<label>RA</label>
 			</p-floatLabel>
 		</div>
@@ -85,7 +85,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					[value]="declination" />
+					[value]="mount.declination" />
 				<label>DEC</label>
 			</p-floatLabel>
 		</div>
@@ -95,7 +95,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					[value]="azimuth" />
+					[value]="currentComputedLocation.azimuth" />
 				<label>Azimuth</label>
 			</p-floatLabel>
 		</div>
@@ -105,7 +105,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					[value]="altitude" />
+					[value]="currentComputedLocation.altitude" />
 				<label>Altitude</label>
 			</p-floatLabel>
 		</div>
@@ -115,7 +115,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					[value]="lst" />
+					[value]="currentComputedLocation.lst" />
 				<label>LST</label>
 			</p-floatLabel>
 		</div>
@@ -125,7 +125,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					[value]="constellation ?? '-'" />
+					[value]="currentComputedLocation.constellation" />
 				<label>Constellation</label>
 			</p-floatLabel>
 		</div>
@@ -135,7 +135,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					value="{{ meridianAt }} (-{{ timeLeftToMeridianFlip }})" />
+					value="{{ currentComputedLocation.meridianAt }} (-{{ currentComputedLocation.timeLeftToMeridianFlip }})" />
 				<label>Meridian at</label>
 			</p-floatLabel>
 		</div>
@@ -145,7 +145,7 @@
 					pInputText
 					readonly
 					class="p-inputtext-sm border-0 w-full"
-					[value]="pierSide" />
+					[value]="currentComputedLocation.pierSide" />
 				<label>Pier</label>
 			</p-floatLabel>
 		</div>
@@ -162,9 +162,9 @@
 	<div class="grid mt-1">
 		<div class="col-4 flex flex-column justify-content-center">
 			<p-selectButton
-				[disabled]="!mount.connected || slewing || parking || parked"
+				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 				[options]="['J2000', 'JNOW']"
-				[(ngModel)]="targetCoordinateType"
+				[(ngModel)]="preference.targetCoordinateType"
 				styleClass="border-0 w-full"
 				(ngModelChange)="computeTargetCoordinates()" />
 		</div>
@@ -197,9 +197,9 @@
 				<input
 					pInputText
 					noDropdown
-					[disabled]="!mount.connected || slewing || parking || parked"
+					[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 					class="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="targetRightAscension"
+					[(ngModel)]="preference.targetRightAscension"
 					(ngModelChange)="computeTargetCoordinates()" />
 				<label>RA (h)</label>
 			</p-floatLabel>
@@ -209,9 +209,9 @@
 				<input
 					pInputText
 					noDropdown
-					[disabled]="!mount.connected || slewing || parking || parked"
+					[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 					class="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="targetDeclination"
+					[(ngModel)]="preference.targetDeclination"
 					(ngModelChange)="computeTargetCoordinates()" />
 				<label>DEC (°)</label>
 			</p-floatLabel>
@@ -219,7 +219,7 @@
 		<div class="col-4">
 			<p-splitButton
 				noDropdown
-				[disabled]="!mount.connected || slewing || parking || parked"
+				[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 				[label]="targetCoordinateCommand.label"
 				[icon]="targetCoordinateCommand.icon"
 				styleClass="w-full"
@@ -233,7 +233,7 @@
 				<div class="col-4">
 					<button
 						pButton
-						[disabled]="!mount.connected || (slewing && slewingDirection !== 'NW') || parking || parked"
+						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'NW') || mount.parking || mount.parked"
 						(mousedown)="moveTo('NW', true, $event)"
 						(mouseup)="moveTo('NW', false, $event)"
 						(mouseleave)="moveTo('NW', false, $event)"
@@ -243,7 +243,7 @@
 				<div class="col-4">
 					<button
 						pButton
-						[disabled]="!mount.connected || (slewing && slewingDirection !== 'N') || parking || parked"
+						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'N') || mount.parking || mount.parked"
 						(mousedown)="moveTo('N', true, $event)"
 						(mouseup)="moveTo('N', false, $event)"
 						(mouseleave)="moveTo('N', false, $event)"
@@ -253,7 +253,7 @@
 				<div class="col-4">
 					<button
 						pButton
-						[disabled]="!mount.connected || (slewing && slewingDirection !== 'NE') || parking || parked"
+						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'NE') || mount.parking || mount.parked"
 						(mousedown)="moveTo('NE', true, $event)"
 						(mouseup)="moveTo('NE', false, $event)"
 						(mouseleave)="moveTo('NE', false, $event)"
@@ -263,7 +263,7 @@
 				<div class="col-4">
 					<button
 						pButton
-						[disabled]="!mount.connected || (slewing && slewingDirection !== 'W') || parking || parked"
+						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'W') || mount.parking || mount.parked"
 						(mousedown)="moveTo('W', true, $event)"
 						(mouseup)="moveTo('W', false, $event)"
 						(mouseleave)="moveTo('W', false, $event)"
@@ -272,7 +272,7 @@
 				</div>
 				<div class="col-4">
 					<p-button
-						[disabled]="!mount.connected || parked"
+						[disabled]="!mount.connected || mount.parked"
 						icon="mdi mdi-close-circle"
 						[text]="true"
 						severity="danger"
@@ -282,7 +282,7 @@
 				<div class="col-4">
 					<button
 						pButton
-						[disabled]="!mount.connected || (slewing && slewingDirection !== 'E') || parking || parked"
+						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'E') || mount.parking || mount.parked"
 						(mousedown)="moveTo('E', true, $event)"
 						(mouseup)="moveTo('E', false, $event)"
 						(mouseleave)="moveTo('E', false, $event)"
@@ -292,7 +292,7 @@
 				<div class="col-4">
 					<button
 						pButton
-						[disabled]="!mount.connected || (slewing && slewingDirection !== 'SW') || parking || parked"
+						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'SW') || mount.parking || mount.parked"
 						(mousedown)="moveTo('SW', true, $event)"
 						(mouseup)="moveTo('SW', false, $event)"
 						(mouseleave)="moveTo('SW', false, $event)"
@@ -302,7 +302,7 @@
 				<div class="col-4">
 					<button
 						pButton
-						[disabled]="!mount.connected || (slewing && slewingDirection !== 'S') || parking || parked"
+						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'S') || mount.parking || mount.parked"
 						(mousedown)="moveTo('S', true, $event)"
 						(mouseup)="moveTo('S', false, $event)"
 						(mouseleave)="moveTo('S', false, $event)"
@@ -312,7 +312,7 @@
 				<div class="col-4">
 					<button
 						pButton
-						[disabled]="!mount.connected || (slewing && slewingDirection !== 'SE') || parking || parked"
+						[disabled]="!mount.connected || (mount.slewing && slewingDirection !== 'SE') || mount.parking || mount.parked"
 						(mousedown)="moveTo('SE', true, $event)"
 						(mouseup)="moveTo('SE', false, $event)"
 						(mouseleave)="moveTo('SE', false, $event)"
@@ -326,14 +326,14 @@
 				<div class="col-6 flex flex-column gap-2 justify-content-center align-items-center text-center">
 					<span class="text-gray-100">Tracking</span>
 					<p-inputSwitch
-						[disabled]="!mount.connected || slewing || parking || parked"
+						[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
 						[(ngModel)]="tracking"
 						(ngModelChange)="trackingToggled()" />
 				</div>
 				<div class="col-6 flex flex-row gap-2 justify-content-center align-items-center">
 					<p-button
-						*ngIf="!parked"
-						[disabled]="!mount.connected || !canPark || slewing || parking"
+						*ngIf="!mount.parked"
+						[disabled]="!mount.connected || !mount.canPark || mount.slewing || mount.parking"
 						icon="mdi mdi-stop"
 						(onClick)="park()"
 						pTooltip="Park"
@@ -342,8 +342,8 @@
 						[text]="true"
 						size="small" />
 					<p-button
-						*ngIf="parked"
-						[disabled]="!mount.connected || !canPark || slewing || parking"
+						*ngIf="mount.parked"
+						[disabled]="!mount.connected || !mount.canPark || mount.slewing || mount.parking"
 						icon="mdi mdi-play"
 						(onClick)="unpark()"
 						pTooltip="Unpark"
@@ -352,7 +352,7 @@
 						[text]="true"
 						size="small" />
 					<p-button
-						[disabled]="!mount.connected || !canHome || slewing || parking || parked"
+						[disabled]="!mount.connected || !mount.canHome || mount.slewing || mount.parking || mount.parked"
 						icon="mdi mdi-home"
 						(onClick)="home()"
 						pTooltip="Home"
@@ -364,8 +364,8 @@
 				<div class="col-6">
 					<p-floatLabel class="w-full">
 						<p-dropdown
-							[disabled]="!mount.connected || slewing || parking || parked"
-							[options]="trackModes"
+							[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
+							[options]="mount.trackModes"
 							[(ngModel)]="trackMode"
 							(ngModelChange)="trackModeChanged()"
 							[autoDisplayFirst]="false"
@@ -377,8 +377,8 @@
 				<div class="col-6">
 					<p-floatLabel class="w-full">
 						<p-dropdown
-							[disabled]="!mount.connected || slewing || parking || parked"
-							[options]="slewRates"
+							[disabled]="!mount.connected || mount.slewing || mount.parking || mount.parked"
+							[options]="mount.slewRates"
 							[(ngModel)]="slewRate"
 							(ngModelChange)="slewRateChanged()"
 							[autoDisplayFirst]="false"
@@ -430,7 +430,7 @@
 					[min]="1024"
 					[max]="65535"
 					placeholder="10001"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Port</label>
 			</p-floatLabel>
 		</div>

@@ -22,7 +22,7 @@ import { ROISelected } from '../types/image.types'
 import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
-import { FilterWheel, WheelRenamed } from '../types/wheel.types'
+import { Wheel, WheelRenamed } from '../types/wheel.types'
 
 export const IMAGE_FILE_FILTER: Electron.FileFilter[] = [
 	{ name: 'All', extensions: ['fits', 'fit', 'xisf'] },
@@ -49,9 +49,9 @@ interface EventMappedType {
 	'ROTATOR.UPDATED': DeviceMessageEvent<Rotator>
 	'ROTATOR.ATTACHED': DeviceMessageEvent<Rotator>
 	'ROTATOR.DETACHED': DeviceMessageEvent<Rotator>
-	'WHEEL.UPDATED': DeviceMessageEvent<FilterWheel>
-	'WHEEL.ATTACHED': DeviceMessageEvent<FilterWheel>
-	'WHEEL.DETACHED': DeviceMessageEvent<FilterWheel>
+	'WHEEL.UPDATED': DeviceMessageEvent<Wheel>
+	'WHEEL.ATTACHED': DeviceMessageEvent<Wheel>
+	'WHEEL.DETACHED': DeviceMessageEvent<Wheel>
 	'GUIDE_OUTPUT.UPDATED': DeviceMessageEvent<GuideOutput>
 	'GUIDE_OUTPUT.ATTACHED': DeviceMessageEvent<GuideOutput>
 	'GUIDE_OUTPUT.DETACHED': DeviceMessageEvent<GuideOutput>

@@ -8,14 +8,13 @@ import { ElectronService } from '../shared/services/electron.service'
 @Component({
 	selector: 'neb-root',
 	templateUrl: './app.component.html',
-	styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnDestroy {
-	pinned = false
 	readonly maximizable = !!window.preference.resizable
 	readonly modal = window.preference.modal ?? false
+	readonly topMenu: MenuItem[] = []
 	subTitle? = ''
-	topMenu: MenuItem[] = []
+	pinned = false
 	showTopBar = true
 
 	private readonly resizeObserver?: ResizeObserver

@@ -9,11 +9,10 @@ export interface SplitButtonClickEvent {
 @Component({
 	selector: 'neb-menu-bar',
 	templateUrl: './menu-bar.component.html',
-	styleUrls: ['./menu-bar.component.scss'],
 })
 export class MenuBarComponent {
 	@Input({ required: true })
-	readonly model!: MenuItem[]
+	protected readonly model!: MenuItem[]
 
 	@Output()
 	readonly onSplitButtonClick = new EventEmitter<SplitButtonClickEvent>()

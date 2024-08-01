@@ -11,7 +11,7 @@
 			</p-floatLabel>
 			<p-button
 				*ngIf="focuser.connected"
-				[disabled]="!focuser || moving"
+				[disabled]="!focuser || focuser.moving"
 				(onClick)="connect()"
 				icon="mdi mdi-close"
 				size="small"
@@ -21,7 +21,7 @@
 				[text]="true" />
 			<p-button
 				*ngIf="!focuser.connected"
-				[disabled]="!focuser || moving"
+				[disabled]="!focuser || focuser.moving"
 				(onClick)="connect()"
 				icon="mdi mdi-connection"
 				size="small"
@@ -33,7 +33,7 @@
 		<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center justify-content-between my-1 gap-1">
 			<div class="flex align-items-center gap-1">
 				<i class="mdi mdi-information text-info"></i>
-				<span style="display: contents">{{ moving ? 'moving' : 'idle' }}</span>
+				<span style="display: contents">{{ focuser.moving ? 'moving' : 'idle' }}</span>
 			</div>
 			<div
 				class="flex align-items-center gap-1"
@@ -51,13 +51,13 @@
 					styleClass="p-inputtext-sm border-0 max-w-full"
 					[ngModel]="focuser.position"
 					locale="en"
-					scrollableNumber />
-				<label>Position (max: {{ focuser.maxPosition }})</label>
+					spinnableNumber />
+				<label>Position (max: {{ focuser.maxPosition | number }})</label>
 			</p-floatLabel>
 		</div>
 		<div class="col-3 text-center justify-content-between gap-2">
 			<p-button
-				[disabled]="!focuser.connected || !focuser.canAbort || !moving"
+				[disabled]="!focuser.connected || !focuser.canAbort || !focuser.moving"
 				icon="mdi mdi-stop"
 				[text]="true"
 				severity="danger"
@@ -66,7 +66,7 @@
 				tooltipPosition="bottom"
 				(onClick)="abort()" />
 			<p-button
-				[disabled]="!focuser.connected || !focuser.canSync || moving"
+				[disabled]="!focuser.connected || !focuser.canSync || focuser.moving"
 				(onClick)="sync()"
 				icon="mdi mdi-sync"
 				[text]="true"
@@ -77,7 +77,7 @@
 		</div>
 		<div class="col-12 flex align-items-center gap-1">
 			<p-button
-				[disabled]="!focuser.connected || !focuser.canRelativeMove || moving || !stepsRelative"
+				[disabled]="!focuser.connected || !focuser.canRelativeMove || focuser.moving || !preference.stepsRelative"
 				(onClick)="moveIn()"
 				icon="mdi mdi-arrow-left-bold"
 				[text]="true"
@@ -91,14 +91,15 @@
 					[max]="focuser.maxPosition"
 					[showButtons]="true"
 					styleClass="p-inputtext-sm border-0"
-					[(ngModel)]="stepsRelative"
+					[(ngModel)]="preference.stepsRelative"
+					(ngModelChange)="savePreference()"
 					[allowEmpty]="false"
 					locale="en"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Relative</label>
 			</p-floatLabel>
 			<p-button
-				[disabled]="!focuser.connected || !focuser.canRelativeMove || moving || !stepsRelative"
+				[disabled]="!focuser.connected || !focuser.canRelativeMove || focuser.moving || !preference.stepsRelative"
 				(onClick)="moveOut()"
 				icon="mdi mdi-arrow-right-bold"
 				[text]="true"
@@ -106,22 +107,23 @@
 				pTooltip="Move Out"
 				tooltipPosition="bottom" />
 		</div>
-		<div class="col-12 flex align-items-center gap-1">
-			<p-floatLabel>
+		<div class="col-12 flex justify-content-end align-items-center gap-1">
+			<p-floatLabel class="w-full">
 				<p-inputNumber
 					[disabled]="!focuser.connected || !focuser.canAbsoluteMove"
 					[min]="0"
 					[max]="focuser.maxPosition"
 					[showButtons]="true"
 					styleClass="p-inputtext-sm border-0 max-w-full"
-					[(ngModel)]="stepsAbsolute"
+					[(ngModel)]="preference.stepsAbsolute"
+					(ngModelChange)="savePreference()"
 					[allowEmpty]="false"
 					locale="en"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Absolute</label>
 			</p-floatLabel>
 			<p-button
-				[disabled]="!focuser.connected || !focuser.canAbsoluteMove || moving || stepsAbsolute === focuser.position"
+				[disabled]="!focuser.connected || !focuser.canAbsoluteMove || focuser.moving || preference.stepsAbsolute === focuser.position"
 				(onClick)="moveTo()"
 				icon="mdi mdi-check"
 				[text]="true"

@@ -1,52 +1,41 @@
 import type { CameraStartCapture } from './camera.types'
 import type { Device } from './device.types'
 
-export type WheelDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD'
+export type WheelMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD'
 
-export interface FilterWheel extends Device {
+export interface Wheel extends Device {
 	count: number
 	position: number
 	moving: boolean
 	names: string[]
 }
 
-export const EMPTY_WHEEL: FilterWheel = {
-	sender: '',
-	id: '',
-	count: 0,
-	position: 0,
-	moving: false,
-	name: '',
-	connected: false,
-	names: [],
-}
-
 export interface WheelDialogInput {
-	mode: WheelDialogMode
-	wheel: FilterWheel
+	mode: WheelMode
+	wheel: Wheel
 	request: CameraStartCapture
 }
 
 export interface WheelPreference {
-	shutterPosition?: number
+	shutterPosition: number
 }
 
-export interface FilterSlot {
+export interface Filter {
 	position: number
 	name: string
 	dark: boolean
 }
 
 export interface WheelRenamed {
-	wheel: FilterWheel
-	filter: FilterSlot
+	wheel: Wheel
+	filter: Filter
 }
 
-export function makeFilterSlots(wheel: FilterWheel, filters: FilterSlot[], shutterPosition: number = 0) {
+export function makeFilter(wheel: Wheel, filters: Filter[], shutterPosition: number = 0) {
 	if (wheel.count <= 0) {
 		filters = []
 	} else if (wheel.count !== filters.length) {
-		filters = new Array<FilterSlot>(wheel.count)
+		filters = new Array<Filter>(wheel.count)
 	}
 
 	if (filters.length) {
@@ -66,6 +55,28 @@ export function makeFilterSlots(wheel: FilterWheel, filters: FilterSlot[], shutt
 	return filters
 }
 
-export function isFilterWheel(device?: Device): device is FilterWheel {
-	return !!device && 'count' in device
+export const DEFAULT_WHEEL: Wheel = {
+	type: 'WHEEL',
+	sender: '',
+	id: '',
+	count: 0,
+	position: 0,
+	moving: false,
+	name: '',
+	connected: false,
+	names: [],
+}
+
+export const DEFAULT_WHEEL_PREFERENCE: WheelPreference = {
+	shutterPosition: 0,
+}
+
+export function isFilterWheel(device?: Device): device is Wheel {
+	return !!device && device.type === 'WHEEL'
+}
+
+export function wheelPreferenceWithDefault(preference?: Partial<WheelPreference>, source: WheelPreference = DEFAULT_WHEEL_PREFERENCE) {
+	if (!preference) return structuredClone(source)
+	preference.shutterPosition ??= source.shutterPosition
+	return preference as WheelPreference
 }

@@ -8,7 +8,7 @@
 				[(device)]="camera"
 				(deviceChange)="cameraChanged()" />
 			<p-button
-				[disabled]="!camera.name || running"
+				[disabled]="!camera?.name || running"
 				icon="mdi mdi-cog"
 				(onClick)="showCameraDialog()"
 				size="small" />
@@ -45,11 +45,11 @@
 				class="absolute flex flex-row align-items-center gap-1"
 				style="right: 8px; top: -2px">
 				<p-tag
-					value="RA: {{ tppaRightAscension }}"
-					[severity]="tppaFailed ? 'danger' : 'info'" />
+					value="RA: {{ tppaResult.rightAscension }}"
+					[severity]="tppaResult.failed ? 'danger' : 'info'" />
 				<p-tag
-					value="DEC: {{ tppaDeclination }}"
-					[severity]="tppaFailed ? 'danger' : 'info'" />
+					value="DEC: {{ tppaResult.declination }}"
+					[severity]="tppaResult.failed ? 'danger' : 'info'" />
 			</div>
 		</div>
 	</div>
@@ -67,7 +67,7 @@
 									optionLabel="label"
 									optionValue="value"
 									[autoDisplayFirst]="false"
-									(ngModelChange)="plateSolverChanged()" />
+									(ngModelChange)="savePreference()" />
 								<label>Plate Solver</label>
 							</p-floatLabel>
 						</div>
@@ -80,7 +80,7 @@
 									[min]="1"
 									[max]="60"
 									(ngModelChange)="savePreference()"
-									scrollableNumber />
+									spinnableNumber />
 								<label>Step duration (s)</label>
 							</p-floatLabel>
 						</div>
@@ -100,8 +100,8 @@
 						<div class="col-4 align-items-center">
 							<p-floatLabel class="w-full">
 								<p-dropdown
-									[disabled]="!mount.connected"
-									[options]="mount.slewRates"
+									[disabled]="!mount?.connected"
+									[options]="mount?.slewRates"
 									[(ngModel)]="tppaRequest.stepSpeed"
 									styleClass="p-inputtext-sm border-0"
 									optionLabel="label"
@@ -129,17 +129,17 @@
 					<div class="grid mt-2">
 						<div class="col-4 flex flex-column align-items-center justify-content-center">
 							<span class="font-bold">Azimuth</span>
-							<span class="text-lg">{{ tppaAzimuthError }}</span>
-							<span class="text-md">{{ tppaAzimuthErrorDirection }}</span>
+							<span class="text-lg">{{ tppaResult.azimuthError }}</span>
+							<span class="text-md">{{ tppaResult.azimuthErrorDirection }}</span>
 						</div>
 						<div class="col-4 flex flex-column align-items-center justify-content-center">
 							<span class="font-bold">Altitude</span>
-							<span class="text-lg">{{ tppaAltitudeError }}</span>
-							<span class="text-md">{{ tppaAltitudeErrorDirection }}</span>
+							<span class="text-lg">{{ tppaResult.altitudeError }}</span>
+							<span class="text-md">{{ tppaResult.altitudeErrorDirection }}</span>
 						</div>
 						<div class="col-4 flex flex-column align-items-center justify-content-center">
 							<span class="font-bold">Total</span>
-							<span class="text-lg">{{ tppaTotalError }}</span>
+							<span class="text-lg">{{ tppaResult.totalError }}</span>
 						</div>
 					</div>
 					<div class="grid mt-2">
@@ -155,7 +155,7 @@
 									[text]="true" />
 							} @else if (!running) {
 								<p-button
-									[disabled]="!camera.connected || !mount.connected || mount.parked || mount.parking || mount.slewing || running"
+									[disabled]="!camera || !camera.connected || !mount || !mount.connected || mount.parked || mount.parking || mount.slewing || running"
 									label="Start"
 									(onClick)="tppaStart()"
 									icon="mdi mdi-play"
@@ -172,7 +172,7 @@
 								size="small"
 								[text]="true" />
 							<p-button
-								[disabled]="!camera.connected || !mount.connected || !running"
+								[disabled]="!camera || !camera.connected || !mount || !mount.connected || !running"
 								label="Abort"
 								(onClick)="tppaStop()"
 								icon="mdi mdi-stop"
@@ -180,7 +180,7 @@
 								size="small"
 								[text]="true" />
 							<p-button
-								[disabled]="!camera.connected"
+								[disabled]="!camera?.connected"
 								(onClick)="openCameraImage()"
 								icon="mdi mdi-image"
 								[text]="true"
@@ -197,33 +197,29 @@
 							<p-floatLabel>
 								<p-inputNumber
 									styleClass="p-inputtext-sm border-0 max-w-full"
-									[(ngModel)]="darvRequest.initialPause"
+									[(ngModel)]="darvRequest.capture.exposureDelay"
 									[showButtons]="true"
 									[min]="1"
 									[max]="60"
-									(ngModelChange)="initialPauseChanged()"
-									scrollableNumber />
+									(ngModelChange)="savePreference()"
+									spinnableNumber />
 								<label>Initial pause (s)</label>
 							</p-floatLabel>
 						</div>
 						<div class="col-4">
-							<p-floatLabel>
-								<p-inputNumber
-									styleClass="p-inputtext-sm border-0 max-w-full"
-									[(ngModel)]="darvRequest.exposureTime"
-									[showButtons]="true"
-									[min]="1"
-									[max]="600"
-									(ngModelChange)="driftForChanged()"
-									scrollableNumber />
-								<label>Drift for (s)</label>
-							</p-floatLabel>
+							<neb-exposure-time
+								[(exposureTime)]="darvRequest.capture.exposureTime"
+								(exposureTimeChange)="savePreference()"
+								[min]="1000000"
+								[max]="600000000"
+								[canExposureTimeUnit]="false"
+								label="Drift for" />
 						</div>
 						<div class="col-4">
 							<p-floatLabel class="w-full">
 								<p-dropdown
 									[options]="'HEMISPHERE' | dropdownOptions | enumDropdown"
-									[(ngModel)]="darvHemisphere"
+									[(ngModel)]="preference.darvHemisphere"
 									styleClass="p-inputtext-sm border-0"
 									optionsLabel="label"
 									optionsValue="value"
@@ -236,7 +232,7 @@
 					<div class="grid mt-2">
 						<div class="col-12 flex align-items-center justify-content-center gap-1">
 							<p-button
-								[disabled]="!camera.connected || !guideOutput.connected || running"
+								[disabled]="!camera || !camera.connected || !guideOutput || !guideOutput.connected || running"
 								label="Start"
 								(onClick)="darvStart()"
 								icon="mdi mdi-play"
@@ -244,7 +240,7 @@
 								size="small"
 								[text]="true" />
 							<p-button
-								[disabled]="!camera.connected || !guideOutput.connected || !running"
+								[disabled]="!camera || !camera.connected || !guideOutput || !guideOutput.connected || !running"
 								label="Abort"
 								(onClick)="darvStop()"
 								icon="mdi mdi-stop"
@@ -252,7 +248,7 @@
 								size="small"
 								[text]="true" />
 							<p-button
-								[disabled]="!camera.connected"
+								[disabled]="!camera?.connected"
 								(onClick)="openCameraImage()"
 								icon="mdi mdi-image"
 								[text]="true"

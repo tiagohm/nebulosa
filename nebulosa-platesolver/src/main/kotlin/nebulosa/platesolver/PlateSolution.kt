@@ -4,6 +4,7 @@ import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsKeyword
 import nebulosa.image.format.HeaderCard
 import nebulosa.image.format.ReadableHeader
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.wcs.computeCdMatrix
@@ -44,11 +45,11 @@ data class PlateSolution(
             val width = header.getIntOrNull(FitsKeyword.NAXIS1) ?: header.getInt("IMAGEW", 0)
             val height = header.getIntOrNull(FitsKeyword.NAXIS2) ?: header.getInt("IMAGEH", 0)
 
-            LOG.info(
-                "solution from {}: ORIE={}, SCALE={}, RA={}, DEC={}",
-                header, crota2.formatSignedDMS(), cdelt2.toArcsec,
-                crval1.formatHMS(), crval2.formatSignedDMS(),
-            )
+            LOG.debug {
+                "solution from %s: ORIE=%f, SCALE=%f, RA=%s, DEC=%s".format(
+                    header, crota2.formatSignedDMS(), cdelt2.toArcsec, crval1.formatHMS(), crval2.formatSignedDMS(),
+                )
+            }
 
             return PlateSolution(
                 true, crota2, cdelt2, crval1, crval2, abs(cdelt1 * width), abs(cdelt2 * height),

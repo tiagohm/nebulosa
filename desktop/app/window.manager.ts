@@ -1,12 +1,20 @@
 import { Client } from '@stomp/stompjs'
+import type { Point, Size } from 'electron'
 import { BrowserWindow, Notification, dialog, screen, shell } from 'electron'
+import Store from 'electron-store'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { join } from 'path'
 import type { MessageEvent } from '../src/shared/types/api.types'
-import type { CloseWindow, ConfirmationEvent, FullscreenWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, ResizeWindow, StoredWindowData, WindowCommand } from '../src/shared/types/app.types'
+import type { CloseWindow, ConfirmationEvent, FullscreenWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, ResizeWindow, WindowCommand } from '../src/shared/types/app.types'
 import type { Nullable } from '../src/shared/utils/types'
 import type { ParsedArgument } from './argument.parser'
-import type { LocalStorage } from './local.storage'
+
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+export interface WindowInfo {
+	[key: `window.${string}`]: (Size & Point) | undefined
+}
+
+const store = new Store<WindowInfo>({ name: 'nebulosa' })
 
 export class ApplicationWindow {
 	constructor(
@@ -77,7 +85,6 @@ export class WindowManager {
 
 	constructor(
 		public readonly args: ParsedArgument,
-		public readonly storage: LocalStorage<StoredWindowData>,
 		defaultAppIcon: string = 'nebulosa.png',
 	) {
 		this.appIcon = join(__dirname, args.serve ? `../src/assets/icons/${defaultAppIcon}` : `assets/icons/${defaultAppIcon}`)
@@ -108,12 +115,12 @@ export class WindowManager {
 		const computedHeight = preference.height ? Math.trunc(this.computeHeight(preference.height, computedWidth)) : 416
 
 		const screenSize = screen.getPrimaryDisplay().workAreaSize
-		const storedData = this.storage.get(`window.${open.id}`)
+		const data = store.get(`window.${open.id}`)
 		const resizable = preference.resizable
-		const width = resizable ? Math.max(minWidth, Math.min(storedData?.width ?? computedWidth, screenSize.width)) : computedWidth
-		const height = resizable ? Math.max(minHeight, Math.min(storedData?.height ?? computedHeight, screenSize.height)) : computedHeight
-		const x = Math.max(0, Math.min(storedData?.x ?? 0, screenSize.width - width))
-		const y = Math.max(0, Math.min(storedData?.y ?? 0, screenSize.height - height))
+		const width = resizable ? Math.max(minWidth, Math.min(data?.width ?? computedWidth, screenSize.width)) : computedWidth
+		const height = resizable ? Math.max(minHeight, Math.min(data?.height ?? computedHeight, screenSize.height)) : computedHeight
+		const x = Math.max(0, Math.min(data?.x ?? 0, screenSize.width - width))
+		const y = Math.max(0, Math.min(data?.y ?? 0, screenSize.height - height))
 
 		const browserWindow = new BrowserWindow({
 			title: 'Nebulosa',
@@ -129,6 +136,7 @@ export class WindowManager {
 			resizable: this.args.serve || resizable,
 			autoHideMenuBar: true,
 			icon: preference.icon ? join(__dirname, this.args.serve ? `../src/assets/icons/${preference.icon}.png` : `assets/icons/${preference.icon}.png`) : this.appIcon,
+			show: false,
 			webPreferences: {
 				nodeIntegration: true,
 				allowRunningInsecureContent: this.args.serve,
@@ -139,9 +147,13 @@ export class WindowManager {
 			},
 		})
 
-		if (!storedData) {
-			browserWindow.center()
-		}
+		browserWindow.on('ready-to-show', () => {
+			browserWindow.show()
+
+			if (!data) {
+				browserWindow.center()
+			}
+		})
 
 		if (this.args.serve) {
 			await browserWindow.loadURL(`http://localhost:4200/${open.path}?data=${encodedData}`)
@@ -193,8 +205,7 @@ export class WindowManager {
 	saveWindowData(window: ApplicationWindow) {
 		const [x, y] = window.browserWindow.getPosition()
 		const [width, height] = window.browserWindow.getSize()
-		this.storage.set(`window.${window.data.id}`, { x, y, width, height })
-		this.storage.save()
+		store.set(`window.${window.data.id}`, { x, y, width, height })
 	}
 
 	async createMainWindow(apiProcess?: ChildProcessWithoutNullStreams, port: number = this.port, host: string = this.host) {
@@ -254,9 +265,12 @@ export class WindowManager {
 
 			const url = new URL(join('file:', __dirname, 'assets', 'images', 'splash.png'))
 
+			browserWindow.on('ready-to-show', () => {
+				browserWindow.show()
+				browserWindow.center()
+			})
+
 			await browserWindow.loadURL(url.href)
-			browserWindow.show()
-			browserWindow.center()
 
 			return browserWindow
 		} else {

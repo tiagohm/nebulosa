@@ -1,5 +1,6 @@
 {
 	"name": "nebulosa",
+	"codename": "Ceres",
 	"version": "0.1.0",
 	"description": "The complete integrated solution for all of your astronomical imaging needs.",
 	"author": {
@@ -80,9 +81,6 @@
 		"typescript": "5.5.3",
 		"typescript-eslint": "7.16.1",
 		"wait-on": "7.2.0"
-	},
-	"overrides": {
-		"axios": "1.6.2"
 	},
 	"engines": {
 		"node": ">= 20.11.1"

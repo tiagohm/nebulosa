@@ -1,4 +1,4 @@
-import { AfterViewInit, Component } from '@angular/core'
+import { AfterViewInit, Component, ViewEncapsulation } from '@angular/core'
 import { dirname } from 'path'
 import { TreeDragDropService, TreeNode } from 'primeng/api'
 import { TreeNodeDropEvent } from 'primeng/tree'
@@ -24,6 +24,7 @@ export type TreeNodeData = { type: 'NAME'; data: string } | { type: 'GROUP'; dat
 	templateUrl: './calibration.component.html',
 	styleUrls: ['./calibration.component.scss'],
 	providers: [TreeDragDropService],
+	encapsulation: ViewEncapsulation.None,
 })
 export class CalibrationComponent implements AfterViewInit {
 	readonly frames: CalibrationNode[] = []

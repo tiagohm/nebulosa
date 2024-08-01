@@ -1,7 +1,7 @@
 <div class="grid p-4">
 	<div class="col-9">
 		<neb-path-chooser
-			key="STACKER_OUTPUT_DIRECTORY"
+			key="stacker.outputDirectory"
 			[directory]="true"
 			[disabled]="running"
 			[(path)]="request.outputDirectory"
@@ -109,7 +109,7 @@
 						[disabled]="!request.darkEnabled"
 						[directory]="false"
 						label="Dark File"
-						key="STACKER_DARK_PATH"
+						key="stacker.darkPath"
 						[(path)]="request.darkPath"
 						class="w-full"
 						(pathChange)="savePreference()" />
@@ -123,7 +123,7 @@
 						[disabled]="!request.flatEnabled"
 						[directory]="false"
 						label="Flat File"
-						key="STACKER_FLAT_PATH"
+						key="stacker.flatPath"
 						[(path)]="request.flatPath"
 						class="w-full"
 						(pathChange)="savePreference()" />
@@ -137,7 +137,7 @@
 						[disabled]="!request.biasEnabled"
 						[directory]="false"
 						label="Bias File"
-						key="STACKER_BIAS_PATH"
+						key="stacker.biasPath"
 						[(path)]="request.biasPath"
 						class="w-full"
 						(pathChange)="savePreference()" />

@@ -11,6 +11,7 @@ class GuideOutputSerializer : StdSerializer<GuideOutput>(GuideOutput::class.java
 
     override fun serialize(value: GuideOutput, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()
+        gen.writeStringField("type", value.type.name)
         gen.writeStringField("sender", value.sender.id)
         gen.writeStringField("id", value.id)
         gen.writeStringField("name", value.name)

@@ -4,8 +4,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { PrimeService } from '../../services/prime.service'
 
 @Component({
-	templateUrl: './confirm.dialog.html',
-	styleUrls: ['./confirm.dialog.scss'],
+	templateUrl: './confirm.dialog.html'
 })
 export class ConfirmDialog {
 	readonly header: string

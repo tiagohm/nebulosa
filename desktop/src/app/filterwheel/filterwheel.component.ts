@@ -6,12 +6,11 @@ import { Subject, Subscription, debounceTime } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { CameraStartCapture, EMPTY_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
+import { Tickable, Ticker } from '../../shared/services/ticker.service'
+import { CameraStartCapture, DEFAULT_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { EMPTY_WHEEL, FilterSlot, FilterWheel, WheelDialogInput, WheelDialogMode, WheelPreference, makeFilterSlots } from '../../shared/types/wheel.types'
-import { Undefinable } from '../../shared/utils/types'
+import { DEFAULT_WHEEL, DEFAULT_WHEEL_PREFERENCE, Filter, Wheel, WheelDialogInput, WheelMode, makeFilter } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -19,22 +18,23 @@ import { AppComponent } from '../app.component'
 	templateUrl: './filterwheel.component.html',
 	styleUrls: ['./filterwheel.component.scss'],
 })
-export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingable {
-	readonly wheel = structuredClone(EMPTY_WHEEL)
-	readonly request = structuredClone(EMPTY_CAMERA_START_CAPTURE)
+export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickable {
+	protected readonly wheel = structuredClone(DEFAULT_WHEEL)
+	protected readonly request = structuredClone(DEFAULT_CAMERA_START_CAPTURE)
+	protected readonly preference = structuredClone(DEFAULT_WHEEL_PREFERENCE)
 
-	focusers: Focuser[] = []
-	focuser?: Focuser
-	focusOffset = 0
-	focusOffsetMin = 0
-	focusOffsetMax = 0
+	protected focusers: Focuser[] = []
+	protected focuser?: Focuser
+	protected focuserOffset = 0
+	protected focuserMinPosition = 0
+	protected focuserMaxPosition = 0
 
-	moving = false
-	position = 0
-	filters: FilterSlot[] = []
-	filter?: FilterSlot
+	protected moving = false
+	protected position = 0
+	protected filters: Filter[] = []
+	protected filter?: Filter
 
-	mode: WheelDialogMode = 'CAPTURE'
+	protected mode: WheelMode = 'CAPTURE'
 
 	get canShowInfo() {
 		return this.mode === 'CAPTURE'
@@ -52,25 +52,25 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		return this.mode !== 'CAPTURE'
 	}
 
-	get currentFilter(): Undefinable<FilterSlot> {
+	get currentFilter(): Filter | undefined {
 		return this.filters[this.position - 1]
 	}
 
-	private readonly filterChangePublisher = new Subject<FilterSlot>()
+	private readonly filterChangePublisher = new Subject<Filter>()
 	private readonly filterChangeSubscription?: Subscription
 
 	constructor(
 		private readonly app: AppComponent,
 		private readonly api: ApiService,
-		private readonly electron: ElectronService,
-		private readonly preference: PreferenceService,
+		private readonly electronService: ElectronService,
+		private readonly preferenceService: PreferenceService,
 		private readonly route: ActivatedRoute,
-		private readonly pinger: Pinger,
+		private readonly ticker: Ticker,
 		ngZone: NgZone,
 	) {
 		app.title = 'Filter Wheel'
 
-		electron.on('WHEEL.UPDATED', (event) => {
+		electronService.on('WHEEL.UPDATED', (event) => {
 			if (event.device.id === this.wheel.id) {
 				ngZone.run(() => {
 					Object.assign(this.wheel, event.device)
@@ -79,15 +79,15 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 			}
 		})
 
-		electron.on('WHEEL.DETACHED', (event) => {
+		electronService.on('WHEEL.DETACHED', (event) => {
 			if (event.device.id === this.wheel.id) {
 				ngZone.run(() => {
-					Object.assign(this.wheel, EMPTY_WHEEL)
+					Object.assign(this.wheel, DEFAULT_WHEEL)
 				})
 			}
 		})
 
-		electron.on('FOCUSER.UPDATED', (event) => {
+		electronService.on('FOCUSER.UPDATED', (event) => {
 			if (event.device.id === this.focuser?.id) {
 				ngZone.run(() => {
 					if (this.focuser) {
@@ -97,7 +97,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 			}
 		})
 
-		electron.on('FOCUSER.DETACHED', (event) => {
+		electronService.on('FOCUSER.DETACHED', (event) => {
 			if (event.device.id === this.focuser?.id) {
 				ngZone.run(() => {
 					this.focuser = undefined
@@ -113,11 +113,9 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		})
 
 		this.filterChangeSubscription = this.filterChangePublisher.pipe(debounceTime(1500)).subscribe(async (filter) => {
-			this.savePreference()
-
 			const names = this.filters.map((e) => e.name)
 			await this.api.wheelSync(this.wheel, names)
-			await this.electron.send('WHEEL.RENAMED', { wheel: this.wheel, filter })
+			await this.electronService.send('WHEEL.RENAMED', { wheel: this.wheel, filter })
 		})
 
 		hotkeys('enter', (event) => {
@@ -172,18 +170,15 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 
 	async ngAfterContentInit() {
 		this.route.queryParams.subscribe(async (e) => {
-			const decodedData = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
+			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
 
 			if (this.app.modal) {
-				const request = decodedData as WheelDialogInput
-				Object.assign(this.request, request.request)
-				this.mode = request.mode
-				await this.wheelChanged(request.wheel)
+				await this.loadWheelStartCaptureOnDialogMode(data as WheelDialogInput)
 			} else {
-				await this.wheelChanged(decodedData as FilterWheel)
+				await this.wheelChanged(data as Wheel)
 			}
 
-			this.pinger.register(this, 30000)
+			this.ticker.register(this, 30000)
 		})
 
 		this.focusers = await this.api.focusers()
@@ -196,20 +191,28 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 
 	@HostListener('window:unload')
 	ngOnDestroy() {
-		this.pinger.unregister(this)
+		this.ticker.unregister(this)
 		this.filterChangeSubscription?.unsubscribe()
 	}
 
-	async ping() {
+	async tick() {
 		if (this.wheel.id) await this.api.wheelListen(this.wheel)
 		if (this.focuser?.id) await this.api.focuserListen(this.focuser)
 	}
 
-	async wheelChanged(wheel?: FilterWheel) {
+	private async loadWheelStartCaptureOnDialogMode(data?: WheelDialogInput) {
+		if (data) {
+			this.mode = data.mode
+			await this.wheelChanged(data.wheel)
+			Object.assign(this.request, data.request)
+		}
+	}
+
+	protected async wheelChanged(wheel?: Wheel) {
 		if (wheel?.id) {
 			wheel = await this.api.wheel(wheel.id)
 
-			await this.ping()
+			await this.tick()
 
 			Object.assign(this.wheel, wheel)
 
@@ -220,7 +223,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		this.app.subTitle = wheel?.name ?? ''
 	}
 
-	connect() {
+	protected connect() {
 		if (this.wheel.connected) {
 			return this.api.wheelDisconnect(this.wheel)
 		} else {
@@ -228,11 +231,11 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		}
 	}
 
-	filterChanged() {
+	protected filterChanged() {
 		this.updateFocusOffset()
 	}
 
-	async moveTo(filter: FilterSlot) {
+	protected async moveTo(filter: Filter) {
 		try {
 			if (this.currentFilter) {
 				this.moving = true
@@ -257,21 +260,21 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		}
 	}
 
-	async moveToSelectedFilter() {
+	protected async moveToSelectedFilter() {
 		if (this.filter) {
 			await this.moveTo(this.filter)
 		}
 	}
 
-	moveUp() {
+	protected moveUp() {
 		return this.moveToPosition(this.wheel.position - 1)
 	}
 
-	moveDown() {
+	protected moveDown() {
 		return this.moveToPosition(this.wheel.position + 1)
 	}
 
-	async moveToIndex(index: number) {
+	protected async moveToIndex(index: number) {
 		if (!this.moving) {
 			index =
 				index >= 0 && index < this.filters.length ? index
@@ -282,7 +285,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		}
 	}
 
-	async moveToPosition(position: number) {
+	protected async moveToPosition(position: number) {
 		if (!this.moving) {
 			position =
 				position >= 1 && position <= this.wheel.count ? position
@@ -298,40 +301,41 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		}
 	}
 
-	shutterToggled(filter: FilterSlot, event: CheckboxChangeEvent) {
+	protected shutterToggled(filter: Filter, event: CheckboxChangeEvent) {
 		this.filters.forEach((e) => (e.dark = !!event.checked && e === filter))
-		this.filterChangePublisher.next(structuredClone(filter))
+		this.preference.shutterPosition = this.filters.find((e) => e.dark)?.position ?? 0
+		this.savePreference()
 	}
 
-	filterNameChanged(filter: FilterSlot) {
+	protected filterNameChanged(filter: Filter) {
 		if (filter.name) {
 			this.filterChangePublisher.next(structuredClone(filter))
 		}
 	}
 
-	async focuserChanged() {
+	protected async focuserChanged() {
 		if (this.focuser) {
-			await this.ping()
+			await this.tick()
 
-			this.focusOffsetMax = this.focuser.maxPosition
-			this.focusOffsetMin = -this.focusOffsetMax
+			this.focuserMaxPosition = this.focuser.maxPosition
+			this.focuserMinPosition = -this.focuserMaxPosition
 			this.updateFocusOffset()
 		}
 	}
 
-	focusOffsetForFilter(filter: FilterSlot) {
-		return this.focuser ? this.preference.focusOffsets(this.wheel, this.focuser).get()[filter.position - 1] ?? 0 : 0
+	protected focusOffsetForFilter(filter: Filter) {
+		return this.focuser ? (this.preferenceService.focusOffsets(this.wheel, this.focuser).get()[filter.position - 1] ?? 0) : 0
 	}
 
 	private updateFocusOffset() {
-		this.focusOffset = this.filter ? this.focusOffsetForFilter(this.filter) : 0
+		this.focuserOffset = this.filter ? this.focusOffsetForFilter(this.filter) : 0
 	}
 
-	focusOffsetChanged() {
+	protected focusOffsetChanged() {
 		if (this.filter && this.focuser) {
-			const offsets = this.preference.focusOffsets(this.wheel, this.focuser).get()
-			offsets[this.filter.position - 1] = this.focusOffset
-			this.preference.focusOffsets(this.wheel, this.focuser).set(offsets)
+			const offsets = this.preferenceService.focusOffsets(this.wheel, this.focuser).get()
+			offsets[this.filter.position - 1] = this.focuserOffset
+			this.preferenceService.focusOffsets(this.wheel, this.focuser).set(offsets)
 		}
 	}
 
@@ -349,8 +353,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 
 		if (this.moving) return
 
-		const preference = this.preference.wheelPreference(this.wheel).get()
-		const filters = makeFilterSlots(this.wheel, this.filters, preference.shutterPosition)
+		const preference = this.preferenceService.wheel(this.wheel).get()
+		const filters = makeFilter(this.wheel, this.filters, preference.shutterPosition)
 
 		if (filters !== this.filters) {
 			this.filters = filters
@@ -362,23 +366,14 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 
 	private loadPreference() {
 		if (this.mode === 'CAPTURE' && this.wheel.name) {
-			const preference = this.preference.wheelPreference(this.wheel).get()
-			const shutterPosition = preference.shutterPosition ?? 0
-			this.filters.forEach((e) => (e.dark = e.position === shutterPosition))
+			Object.assign(this.preference, this.preferenceService.wheel(this.wheel).get())
+			this.filters = makeFilter(this.wheel, this.filters, this.preference.shutterPosition)
 		}
 	}
 
 	private savePreference() {
 		if (this.mode === 'CAPTURE' && this.wheel.connected) {
-			const dark = this.filters.find((e) => e.dark)
-
-			const preference: WheelPreference = {
-				shutterPosition: dark?.position ?? 0,
-			}
-
-			this.preference.wheelPreference(this.wheel).set(preference)
-
-			// TODO: this.api.wheelSync(this.wheel, preference.names!)
+			this.preferenceService.wheel(this.wheel).set(this.preference)
 		}
 	}
 
@@ -389,11 +384,11 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Pingab
 		}
 	}
 
-	apply() {
+	protected apply() {
 		return this.app.close(this.makeCameraStartCapture())
 	}
 
-	static async showAsDialog(window: BrowserWindowService, mode: WheelDialogMode, wheel: FilterWheel, request: CameraStartCapture) {
+	static async showAsDialog(window: BrowserWindowService, mode: WheelMode, wheel: Wheel, request: CameraStartCapture) {
 		const result = await window.openWheelDialog({ mode, wheel, request })
 
 		if (result) {

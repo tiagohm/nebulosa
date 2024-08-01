@@ -8,7 +8,7 @@ import { FormulaComponent } from './formula/formula.component'
 	templateUrl: './calculator.component.html',
 })
 export class CalculatorComponent {
-	readonly formulae: { component: Type<unknown>; formula: CalculatorFormula }[] = [
+	protected readonly formulae: { component: Type<unknown>; formula: CalculatorFormula }[] = [
 		{
 			component: FormulaComponent,
 			formula: {
@@ -211,11 +211,9 @@ export class CalculatorComponent {
 		},
 	]
 
-	formula = this.formulae[0]
+	protected formula = this.formulae[0]
 
 	constructor(app: AppComponent) {
 		app.title = 'Calculator'
 	}
-
-	formulaChanged() {}
 }

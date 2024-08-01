@@ -19,8 +19,8 @@ import { Camera } from '../../shared/types/camera.types'
 import {
 	AnnotationInfoDialog,
 	DEFAULT_FOV,
+	DEFAULT_IMAGE_SOLVED,
 	DetectedStar,
-	EMPTY_IMAGE_SOLVED,
 	FITSHeaderItem,
 	FOV,
 	IMAGE_STATISTICS_BIT_OPTIONS,
@@ -44,6 +44,8 @@ import {
 	StarDetectionDialog,
 } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
+import { PlateSolverRequest } from '../../shared/types/platesolver.types'
+import { StarDetectionRequest } from '../../shared/types/stardetector.types'
 import { CoordinateInterpolator, InterpolatedCoordinate } from '../../shared/utils/coordinate-interpolation'
 import { AppComponent } from '../app.component'
 
@@ -167,7 +169,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		radius: 4,
 		focalLength: 0,
 		pixelSize: 0,
-		solved: structuredClone(EMPTY_IMAGE_SOLVED),
+		solved: structuredClone(DEFAULT_IMAGE_SOLVED),
 	}
 
 	crossHair = false
@@ -824,7 +826,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.starDetection.visible = false
 		this.detectStarsMenuItem.checkable = false
 
-		Object.assign(this.solver.solved, EMPTY_IMAGE_SOLVED)
+		Object.assign(this.solver.solved, DEFAULT_IMAGE_SOLVED)
 
 		this.histogram?.update([])
 	}
@@ -846,13 +848,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		const path = this.imagePath
 
 		if (path) {
-			const options = this.preference.starDetectionRequest(this.starDetection.type).get()
-			options.minSNR = this.starDetection.minSNR
-			options.maxStars = this.starDetection.maxStars
+			const request: StarDetectionRequest = {
+				...this.preference.settings.get().starDetector[this.starDetection.type],
+				type: this.starDetection.type,
+				minSNR: this.starDetection.minSNR,
+				maxStars: this.starDetection.maxStars,
+			}
+
+			Object.assign(this.starDetection, this.preference.settings.get().starDetector[this.starDetection.type])
 
 			try {
 				this.starDetection.running = true
-				this.starDetection.stars = await this.api.detectStars(path, options)
+				this.starDetection.stars = await this.api.detectStars(path, request)
 			} finally {
 				this.starDetection.running = false
 			}
@@ -1173,10 +1180,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			this.solver.running = true
 
 			try {
-				const solver = this.preference.plateSolverRequest(this.solver.type).get()
-				solver.pixelSize = this.solver.pixelSize
-				solver.focalLength = this.solver.focalLength
-				const solved = await this.api.solverStart(solver, path, this.solver.blind, this.solver.centerRA, this.solver.centerDEC, this.solver.radius)
+				const request: PlateSolverRequest = {
+					...this.preference.settings.get().plateSolver[this.solver.type],
+					type: this.solver.type,
+					pixelSize: this.solver.pixelSize,
+					focalLength: this.solver.focalLength,
+				}
+
+				const solved = await this.api.solverStart(request, path, this.solver.blind, this.solver.centerRA, this.solver.centerDEC, this.solver.radius)
 
 				this.savePreference()
 				this.updateImageSolved(solved)
@@ -1197,7 +1208,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private updateImageSolved(solved?: ImageSolved) {
-		Object.assign(this.solver.solved, solved ?? EMPTY_IMAGE_SOLVED)
+		Object.assign(this.solver.solved, solved ?? DEFAULT_IMAGE_SOLVED)
 		this.annotationMenuItem.disabled = !this.solver.solved.solved
 		this.fovMenuItem.disabled = !this.solver.solved.solved
 		this.pointMountHereMenuItem.disabled = !this.solver.solved.solved
@@ -1249,12 +1260,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				filterKey: () => {
 					return true
 				},
-				beforeWheel: () => {
-					return false // e.target !== this.image.nativeElement && e.target !== this.roi.nativeElement
+				beforeWheel: (e) => {
+					return e.target !== this.image.nativeElement && e.target !== this.roi.nativeElement
 				},
 				beforeMouseDown: (e) => {
-					// return e.target !== this.image.nativeElement
-					return e.target === this.roi.nativeElement
+					return e.target !== this.image.nativeElement
 				},
 			})
 
@@ -1385,8 +1395,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.solver.focalLength = preference.solver?.focalLength ?? 0
 		this.solver.pixelSize = preference.solver?.pixelSize ?? 0
 		this.starDetection.type = preference.starDetection?.type ?? this.starDetection.type
-		this.starDetection.minSNR = preference.starDetection?.minSNR ?? this.preference.starDetectionRequest(this.starDetection.type).get().minSNR ?? this.starDetection.minSNR
-		this.starDetection.maxStars = preference.starDetection?.maxStars ?? this.preference.starDetectionRequest(this.starDetection.type).get().maxStars ?? this.starDetection.maxStars
 
 		this.fov.fovs = this.preference.imageFOVs.get()
 		this.fov.fovs.forEach((e) => {
@@ -1424,8 +1432,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			await action(cameras[0])
 			return true
 		} else {
-			this.deviceMenu.header = 'CAMERA'
-			const camera = await this.deviceMenu.show(cameras)
+			const camera = await this.deviceMenu.show(cameras, undefined, 'CAMERA')
 
 			if (camera && camera !== 'NONE' && camera.connected) {
 				await action(camera)
@@ -1447,8 +1454,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			await action(mounts[0])
 			return true
 		} else {
-			this.deviceMenu.header = 'MOUNT'
-			const mount = await this.deviceMenu.show(mounts)
+			const mount = await this.deviceMenu.show(mounts, undefined, 'MOUNT')
 
 			if (mount && mount !== 'NONE' && mount.connected) {
 				await action(mount)

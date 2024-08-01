@@ -1,4 +1,6 @@
 import { Component } from '@angular/core'
+import packageJson from '../../../package.json'
+import { DependencyItem, FLAT_ICON_URL, IconItem } from '../../shared/types/about.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -6,7 +8,58 @@ import { AppComponent } from '../app.component'
 	templateUrl: './about.component.html',
 })
 export class AboutComponent {
+	protected readonly codename = packageJson.codename
+	protected readonly version = packageJson.version
+	protected readonly description = packageJson.description
+	protected readonly icons: IconItem[] = []
+	protected readonly dependencies: DependencyItem[] = []
+
 	constructor(app: AppComponent) {
 		app.title = 'About'
+
+		this.mapDependencies()
+
+		this.icons.push({ link: `${FLAT_ICON_URL}/information_9195785`, name: 'Information', author: 'Anggara - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/sky_3982229`, name: 'Sky', author: 'Freepik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/target_3207593`, name: 'Target', author: 'Freepik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/camera-lens_5708327`, name: 'Camera', author: 'juicy_fish - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/telescope_4011463`, name: 'Telescope', author: 'Smashicons - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/observatory_2256076`, name: 'Observatory', author: 'Nikita Golubev - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/focus_3801224`, name: 'Focus', author: 'FetchLab - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/switch_404449`, name: 'Switch', author: 'Freepik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/image_4371206`, name: 'Image', author: 'Freepik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/image-processing_6062419`, name: 'Image processing', author: 'juicy_fish - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/star_740882`, name: 'Star', author: 'Vectors Market - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/rotate_3303063`, name: 'Rotate', author: 'Freepik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/rgb-print_7664547`, name: 'Color wheel', author: 'BomSymbols - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/cogwheel_3953226`, name: 'Settings', author: 'Freepik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/contrast_439842`, name: 'Sun', author: 'DinosoftLabs - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/full-moon_9689786`, name: 'Moon', author: 'vectorsmarket15 - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/jupiter_1086078`, name: 'Planet', author: 'monkik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/asteroid_1086068`, name: 'Asteroid', author: 'monkik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/satellite_1086093`, name: 'Satellite', author: 'monkik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/witch-hat_5606276`, name: 'Witch hat', author: 'Luvdat - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/picture_2659360`, name: 'Picture', author: 'Freepik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/calculator_7182540`, name: 'Calculator', author: 'Iconic Panda - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/target_10542035`, name: 'Target', author: 'Arkinasi - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/stack_3342239`, name: 'Stack', author: 'Pixel perfect - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/photo-filter_4892829`, name: 'Photo filter', author: 'Freepik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/blackhole_6704410`, name: 'Blackhole', author: 'Freepik - Flaticon' })
+	}
+
+	private mapDependencies() {
+		for (const [name, version] of Object.entries(packageJson.dependencies)) {
+			this.dependencies.push(this.mapDependency(name, version))
+		}
+
+		for (const [name, version] of Object.entries(packageJson.devDependencies)) {
+			this.dependencies.push(this.mapDependency(name, version))
+		}
+	}
+
+	private mapDependency(name: string, version: string) {
+		const link = `https://www.npmjs.com/package/${name}`
+		version = version.includes('#') ? version.split('#')[1] : version
+		return { name, version, link } as DependencyItem
 	}
 }

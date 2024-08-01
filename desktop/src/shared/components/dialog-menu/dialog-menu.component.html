@@ -10,9 +10,9 @@
 	(onHide)="hide()"
 	[style]="{ width: 'auto' }">
 	<span
-		*ngIf="header"
+		*ngIf="currentHeader"
 		class="text-sm font-bold uppercase">
-		{{ header }}
+		{{ currentHeader }}
 	</span>
 	<neb-slide-menu
 		*ngIf="visible"

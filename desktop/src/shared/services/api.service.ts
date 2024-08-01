@@ -10,7 +10,7 @@ import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
-import { ConnectionStatus, ConnectionType, Equipment } from '../types/home.types'
+import { ConnectionStatus, ConnectionType } from '../types/home.types'
 import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlType, SlewRate, TrackMode } from '../types/mount.types'
 import { PlateSolverRequest } from '../types/platesolver.types'
@@ -18,7 +18,7 @@ import { Rotator } from '../types/rotator.types'
 import { SequencePlan } from '../types/sequencer.types'
 import { AnalyzedTarget, StackingRequest } from '../types/stacker.types'
 import { StarDetectionRequest } from '../types/stardetector.types'
-import { FilterWheel } from '../types/wheel.types'
+import { Wheel } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 import { HttpService } from './http.service'
 
@@ -71,12 +71,6 @@ export class ApiService {
 		return this.http.get<boolean>(`cameras/${camera.id}/capturing`)
 	}
 
-	cameraSnoop(camera: Camera, equipment: Equipment) {
-		const { mount, wheel, focuser, rotator } = equipment
-		const query = this.http.query({ mount: mount?.id, wheel: wheel?.id, focuser: focuser?.id, rotator: rotator?.id })
-		return this.http.put<never>(`cameras/${camera.id}/snoop?${query}`)
-	}
-
 	cameraCooler(camera: Camera, enabled: boolean) {
 		return this.http.put<never>(`cameras/${camera.id}/cooler?enabled=${enabled}`)
 	}
@@ -85,8 +79,7 @@ export class ApiService {
 		return this.http.put<never>(`cameras/${camera.id}/temperature/setpoint?temperature=${temperature}`)
 	}
 
-	cameraStartCapture(camera: Camera, data: CameraStartCapture, equipment: Equipment) {
-		const { mount, wheel, focuser, rotator } = equipment
+	cameraStartCapture(camera: Camera, data: CameraStartCapture, mount?: Mount, wheel?: Wheel, focuser?: Focuser, rotator?: Rotator) {
 		const query = this.http.query({ mount: mount?.id, wheel: wheel?.id, focuser: focuser?.id, rotator: rotator?.id })
 		return this.http.put<never>(`cameras/${camera.id}/capture/start?${query}`, data)
 	}
@@ -249,30 +242,30 @@ export class ApiService {
 	// FILTER WHEEL
 
 	wheels() {
-		return this.http.get<FilterWheel[]>(`wheels`)
+		return this.http.get<Wheel[]>(`wheels`)
 	}
 
 	wheel(id: string) {
-		return this.http.get<FilterWheel>(`wheels/${id}`)
+		return this.http.get<Wheel>(`wheels/${id}`)
 	}
 
-	wheelConnect(wheel: FilterWheel) {
+	wheelConnect(wheel: Wheel) {
 		return this.http.put<never>(`wheels/${wheel.id}/connect`)
 	}
 
-	wheelDisconnect(wheel: FilterWheel) {
+	wheelDisconnect(wheel: Wheel) {
 		return this.http.put<never>(`wheels/${wheel.id}/disconnect`)
 	}
 
-	wheelMoveTo(wheel: FilterWheel, position: number) {
+	wheelMoveTo(wheel: Wheel, position: number) {
 		return this.http.put<never>(`wheels/${wheel.id}/move-to?position=${position}`)
 	}
 
-	wheelSync(wheel: FilterWheel, names: string[]) {
+	wheelSync(wheel: Wheel, names: string[]) {
 		return this.http.put<never>(`wheels/${wheel.id}/sync?names=${names.join(',')}`)
 	}
 
-	wheelListen(wheel: FilterWheel) {
+	wheelListen(wheel: Wheel) {
 		return this.http.put<never>(`wheels/${wheel.id}/listen`)
 	}
 
@@ -388,12 +381,8 @@ export class ApiService {
 		return this.http.put<never>(`guiding/dither?${query}`)
 	}
 
-	setGuidingSettle(settle: SettleInfo) {
+	guidingSettle(settle: SettleInfo) {
 		return this.http.put<never>(`guiding/settle`, settle)
-	}
-
-	getGuidingSettle() {
-		return this.http.get<SettleInfo>(`guiding/settle`)
 	}
 
 	guidingStop() {

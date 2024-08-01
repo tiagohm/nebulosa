@@ -19,7 +19,7 @@ export interface SearchFilter {
 	types: (SkyObjectType | 'ALL')[]
 }
 
-export const EMPTY_SEARCH_FILTER: SearchFilter = {
+export const DEFAULT_SEARCH_FILTER: SearchFilter = {
 	text: '',
 	rightAscension: '00h00m00s',
 	declination: `+000°00'00"`,
@@ -40,7 +40,7 @@ export interface SkyAtlasPreference {
 	fast: boolean
 }
 
-export const EMPTY_SKY_ATLAS_PREFERENCE: SkyAtlasPreference = {
+export const DEFAULT_SKY_ATLAS_PREFERENCE: SkyAtlasPreference = {
 	satellites: [],
 	fast: false,
 }
@@ -342,7 +342,7 @@ export interface BodyPosition extends EquatorialCoordinate, EquatorialCoordinate
 	leading: boolean
 }
 
-export const EMPTY_BODY_POSITION: BodyPosition = {
+export const DEFAULT_BODY_POSITION: BodyPosition = {
 	rightAscensionJ2000: '00h00m00s',
 	declinationJ2000: `+000°00'00"`,
 	rightAscension: '00h00m00s',
@@ -438,7 +438,7 @@ export interface ComputedLocation extends EquatorialCoordinate, EquatorialCoordi
 	pierSide: PierSide
 }
 
-export const EMPTY_COMPUTED_LOCATION: ComputedLocation = {
+export const DEFAULT_COMPUTED_LOCATION: ComputedLocation = {
 	constellation: 'AND',
 	meridianAt: '00:00',
 	timeLeftToMeridianFlip: '00:00',
@@ -525,7 +525,7 @@ export interface Location {
 	offsetInMinutes: number
 }
 
-export const EMPTY_LOCATION: Location = {
+export const DEFAULT_LOCATION: Location = {
 	id: 0,
 	name: 'Null Island',
 	latitude: 0,

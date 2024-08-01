@@ -1,22 +1,22 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
+import { Tickable, Ticker } from '../../shared/services/ticker.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureEvent, CameraStartCapture, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import { Camera, CameraCaptureEvent, CameraStartCapture, DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Mount } from '../../shared/types/mount.types'
 import { Rotator } from '../../shared/types/rotator.types'
-import { EMPTY_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
-import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, resetCameraCaptureNamingFormat } from '../../shared/types/settings.types'
-import { FilterWheel } from '../../shared/types/wheel.types'
+import { DEFAULT_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
+import { resetCameraCaptureNamingFormat } from '../../shared/types/settings.types'
+import { Wheel } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { Undefinable } from '../../shared/utils/types'
 import { AppComponent } from '../app.component'
@@ -29,22 +29,23 @@ export const SEQUENCER_SAVED_PATH_KEY = 'sequencer.savedPath'
 	selector: 'neb-sequencer',
 	templateUrl: './sequencer.component.html',
 	styleUrls: ['./sequencer.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
-export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable {
+export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable {
 	cameras: Camera[] = []
 	mounts: Mount[] = []
-	wheels: FilterWheel[] = []
+	wheels: Wheel[] = []
 	focusers: Focuser[] = []
 	rotators: Rotator[] = []
 
 	camera?: Camera
 	mount?: Mount
-	wheel?: FilterWheel
+	wheel?: Wheel
 	focuser?: Focuser
 	rotator?: Rotator
 
 	readonly captureModes: SequenceCaptureMode[] = ['FULLY', 'INTERLEAVED']
-	readonly plan = structuredClone(EMPTY_SEQUENCE_PLAN)
+	readonly plan = structuredClone(DEFAULT_SEQUENCE_PLAN)
 
 	private entryToApply?: CameraStartCapture
 	private entryToApplyCount: [number, number] = [0, 0]
@@ -129,7 +130,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		private readonly electron: ElectronService,
 		private readonly preference: PreferenceService,
 		private readonly prime: PrimeService,
-		private readonly pinger: Pinger,
+		private readonly ticker: Ticker,
 		ngZone: NgZone,
 	) {
 		app.title = 'Sequencer'
@@ -140,7 +141,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 			command: () => {
 				this.updateSavedPath()
 
-				Object.assign(this.plan, structuredClone(EMPTY_SEQUENCE_PLAN))
+				Object.assign(this.plan, structuredClone(DEFAULT_SEQUENCE_PLAN))
 				this.add()
 			},
 		})
@@ -253,7 +254,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	async ngAfterContentInit() {
-		this.pinger.register(this, 30000)
+		this.ticker.register(this, 30000)
 
 		this.cameras = (await this.api.cameras()).sort(deviceComparator)
 		this.mounts = (await this.api.mounts()).sort(deviceComparator)
@@ -268,10 +269,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 
 	@HostListener('window:unload')
 	ngOnDestroy() {
-		this.pinger.unregister(this)
+		this.ticker.unregister(this)
 	}
 
-	async ping() {
+	async tick() {
 		if (this.camera?.id) await this.api.cameraListen(this.camera)
 		if (this.mount?.id) await this.api.mountListen(this.mount)
 		if (this.focuser?.id) await this.api.focuserListen(this.focuser)
@@ -306,6 +307,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 			frameFormat: camera?.frameFormats[0],
 			autoSave: true,
 			autoSubFolderMode: 'OFF',
+			filterPosition: 0,
+			shutterPosition: 0,
+			focusOffset: 0,
 			dither: {
 				enabled: false,
 				amount: 0,
@@ -389,18 +393,17 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 		this.focuser = this.focusers.find((e) => e.id === this.plan.focuser) ?? this.focusers[0]
 		this.rotator = this.rotators.find((e) => e.id === this.plan.rotator) ?? this.rotators[0]
 
-		const cameraCaptureNamingFormatPreference = this.preference.cameraCaptureNamingFormatPreference.get()
-		this.plan.namingFormat.light ??= cameraCaptureNamingFormatPreference.light ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.light
-		this.plan.namingFormat.dark ??= cameraCaptureNamingFormatPreference.dark ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.dark
-		this.plan.namingFormat.flat ??= cameraCaptureNamingFormatPreference.flat ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.flat
-		this.plan.namingFormat.bias ??= cameraCaptureNamingFormatPreference.bias ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.bias
+		const settings = this.preference.settings.get()
+		this.plan.namingFormat.light ??= settings.namingFormat.light || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.light
+		this.plan.namingFormat.dark ??= settings.namingFormat.dark || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.dark
+		this.plan.namingFormat.flat ??= settings.namingFormat.flat || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.flat
+		this.plan.namingFormat.bias ??= settings.namingFormat.bias || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.bias
 
 		return this.plan.entries.length
 	}
 
 	resetCameraCaptureNamingFormat(type: FrameType) {
-		const namingFormatPreference = this.preference.cameraCaptureNamingFormatPreference.get()
-		resetCameraCaptureNamingFormat(type, this.plan.namingFormat, namingFormatPreference)
+		resetCameraCaptureNamingFormat(type, this.plan.namingFormat, this.preference.settings.get().namingFormat)
 		this.savePlan()
 	}
 
@@ -435,7 +438,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	async cameraChanged() {
-		await this.ping()
+		await this.tick()
 
 		this.updateEntriesFromCamera(this.camera)
 	}
@@ -449,19 +452,19 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Pingable
 	}
 
 	mountChanged() {
-		return this.ping()
+		return this.tick()
 	}
 
 	focuserChanged() {
-		return this.ping()
+		return this.tick()
 	}
 
 	wheelChanged() {
-		return this.ping()
+		return this.tick()
 	}
 
 	rotatorChanged() {
-		return this.ping()
+		return this.tick()
 	}
 
 	savePlan() {

@@ -57,5 +57,5 @@ export interface SlideMenuItem extends MenuItem {
 })
 export class MenuItemComponent {
 	@Input({ required: true })
-	readonly item!: MenuItem
+	protected readonly item!: MenuItem
 }

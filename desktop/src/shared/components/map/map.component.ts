@@ -7,20 +7,20 @@ import * as L from 'leaflet'
 	styleUrls: ['./map.component.scss'],
 })
 export class MapComponent implements AfterViewInit, OnChanges {
-	@ViewChild('map')
-	private readonly mapRef!: ElementRef<HTMLDivElement>
-
 	@Input()
-	latitude = 0
+	protected latitude = 0
 
 	@Output()
 	readonly latitudeChange = new EventEmitter<number>()
 
 	@Input()
-	longitude = 0
+	protected longitude = 0
 
 	@Output()
 	readonly longitudeChange = new EventEmitter<number>()
+
+	@ViewChild('map')
+	private readonly mapRef!: ElementRef<HTMLDivElement>
 
 	private map?: L.Map
 	private marker?: L.Marker

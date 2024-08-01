@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core'
+import { AfterContentInit, Component, EventEmitter, Input, Output } from '@angular/core'
 import { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem } from '../../../shared/types/device.types'
 
 @Component({
@@ -6,12 +6,12 @@ import { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem 
 	templateUrl: './indi-property.component.html',
 	styleUrls: ['./indi-property.component.scss'],
 })
-export class INDIPropertyComponent implements AfterContentInit, OnDestroy {
+export class INDIPropertyComponent implements AfterContentInit {
 	@Input({ required: true })
-	property!: INDIProperty
+	protected property!: INDIProperty
 
 	@Input()
-	disabled = false
+	protected disabled = false
 
 	@Output()
 	readonly onSend = new EventEmitter<INDISendProperty>()
@@ -23,8 +23,6 @@ export class INDIPropertyComponent implements AfterContentInit, OnDestroy {
 			}
 		}
 	}
-
-	ngOnDestroy() {}
 
 	sendSwitch(item: INDIPropertyItem<boolean>) {
 		const property: INDISendProperty = {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core'
+import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
 import { PrimeService } from '../../services/prime.service'
 import { isGuideHead } from '../../types/camera.types'
@@ -17,22 +17,26 @@ export interface DeviceConnectionCommandEvent {
 	selector: 'neb-device-list-menu',
 	templateUrl: './device-list-menu.component.html',
 	styleUrls: ['./device-list-menu.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceListMenuComponent {
 	@Input()
-	readonly model: SlideMenuItem[] = []
+	protected readonly model: SlideMenuItem[] = []
 
 	@Input()
-	readonly modelAtFirst: boolean = true
+	protected readonly modelAtFirst: boolean = true
 
 	@Input()
-	readonly disableIfDeviceIsNotConnected: boolean = true
+	protected readonly disableIfDeviceIsNotConnected: boolean = true
 
 	@Input()
-	header?: string
+	protected header?: string
 
 	@Input()
-	readonly hasNone: boolean = false
+	protected readonly hasNone: boolean = false
+
+	@Input()
+	protected readonly toolbarBuilder?: (device: Device) => MenuItem[]
 
 	@Output()
 	readonly deviceConnect = new EventEmitter<DeviceConnectionCommandEvent>()
@@ -45,8 +49,10 @@ export class DeviceListMenuComponent {
 
 	constructor(private readonly prime: PrimeService) {}
 
-	show<T extends Device>(devices: T[], selected?: NoInfer<T>) {
+	show<T extends Device>(devices: T[], selected?: NoInfer<T>, header?: string) {
 		const model: SlideMenuItem[] = []
+
+		if (header) this.header = header
 
 		return new Promise<Undefinable<T | 'NONE'>>((resolve) => {
 			if (devices.length <= 0) {
@@ -92,12 +98,15 @@ export class DeviceListMenuComponent {
 			}
 
 			for (const device of devices.sort(deviceComparator)) {
+				const toolbarMenu = this.toolbarBuilder?.(device) ?? []
+
 				model.push({
 					label: device.name,
 					selected: selected === device,
 					disabled: this.disableIfDeviceIsNotConnected && !device.connected,
 					slideMenu: [],
 					toolbarMenu: [
+						...toolbarMenu,
 						{
 							icon: 'mdi ' + (device.connected ? 'mdi-close' : 'mdi-connection'),
 							severity: device.connected ? 'danger' : 'info',
@@ -122,8 +131,7 @@ export class DeviceListMenuComponent {
 				populateWithModel()
 			}
 
-			this.menu.model = model
-			this.menu.show()
+			this.menu.show(model)
 		})
 	}
 

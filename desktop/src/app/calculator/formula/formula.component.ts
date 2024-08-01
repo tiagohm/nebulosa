@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input } from '@angular/core'
+import { Component, Input } from '@angular/core'
 import { CalculatorFormula } from '../../../shared/types/calculator.types'
 
 @Component({
@@ -6,11 +6,9 @@ import { CalculatorFormula } from '../../../shared/types/calculator.types'
 	templateUrl: './formula.component.html',
 	styleUrls: ['./formula.component.scss'],
 })
-export class FormulaComponent implements AfterViewInit {
+export class FormulaComponent {
 	@Input({ required: true })
-	readonly formula!: CalculatorFormula
-
-	ngAfterViewInit() {}
+	protected readonly formula!: CalculatorFormula
 
 	calculateFormula() {
 		const result = this.formula.calculate(...this.formula.operands.map((e) => e.value))

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core'
 import { CameraStartCapture } from '../../types/camera.types'
-import { FilterWheel } from '../../types/wheel.types'
+import { Wheel } from '../../types/wheel.types'
 
 @Component({
 	selector: 'neb-camera-info',
@@ -9,16 +9,16 @@ import { FilterWheel } from '../../types/wheel.types'
 })
 export class CameraInfoComponent {
 	@Input({ required: true })
-	readonly info!: CameraStartCapture
+	protected readonly info!: CameraStartCapture
 
 	@Input()
-	readonly wheel?: FilterWheel
+	protected readonly wheel?: Wheel
 
 	@Input()
-	readonly hasType: boolean = true
+	protected readonly hasType: boolean = true
 
 	@Input()
-	readonly hasExposure: boolean = true
+	protected readonly hasExposure: boolean = true
 
 	get hasFilter() {
 		return !!this.wheel && !!this.info.filterPosition && this.wheel.connected

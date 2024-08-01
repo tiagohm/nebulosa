@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { Listbox } from 'primeng/listbox'
@@ -12,31 +12,32 @@ import { AppComponent } from '../app.component'
 	selector: 'neb-indi',
 	templateUrl: './indi.component.html',
 	styleUrls: ['./indi.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class INDIComponent implements AfterViewInit, OnDestroy {
-	devices: Device[] = []
-	properties: INDIProperty[] = []
-	groups: MenuItem[] = []
+	protected devices: Device[] = []
+	protected properties: INDIProperty[] = []
+	protected groups: MenuItem[] = []
 
-	device?: Device
-	group = ''
-	showLog = false
-	messages: string[] = []
+	protected device?: Device
+	protected group = ''
+	protected showLog = false
+	protected messages: string[] = []
 
 	@ViewChild('listbox')
-	readonly messageListbox!: Listbox
+	protected readonly messageBox!: Listbox
 
 	constructor(
 		app: AppComponent,
 		private readonly route: ActivatedRoute,
 		private readonly api: ApiService,
-		electron: ElectronService,
+		electronService: ElectronService,
 		ngZone: NgZone,
 	) {
 		app.title = 'INDI'
 
-		electron.on('DEVICE.PROPERTY_CHANGED', (event) => {
-			if (this.device?.id === event.device.id) {
+		electronService.on('DEVICE.PROPERTY_CHANGED', (event) => {
+			if (event.device.id === this.device?.id) {
 				ngZone.run(() => {
 					if (event.property) {
 						this.addOrUpdateProperty(event.property)
@@ -46,8 +47,8 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 			}
 		})
 
-		electron.on('DEVICE.PROPERTY_DELETED', (event) => {
-			if (this.device?.id === event.device.id) {
+		electronService.on('DEVICE.PROPERTY_DELETED', (event) => {
+			if (event.device.id === this.device?.id) {
 				const index = this.properties.findIndex((e) => e.name === event.property?.name)
 
 				if (index >= 0) {
@@ -59,12 +60,12 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 			}
 		})
 
-		electron.on('DEVICE.MESSAGE_RECEIVED', (event) => {
-			if (this.device && event.device.id === this.device.id) {
+		electronService.on('DEVICE.MESSAGE_RECEIVED', (event) => {
+			if (event.device.id === this.device?.id) {
 				ngZone.run(() => {
 					if (event.message) {
 						this.messages.splice(0, 0, event.message)
-						this.messageListbox.cd.markForCheck()
+						this.messageBox.cd.markForCheck()
 					}
 				})
 			}

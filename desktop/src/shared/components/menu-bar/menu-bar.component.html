@@ -39,7 +39,10 @@
 			} @else {
 				<p-badge
 					*ngIf="item.badge"
-					[severity]="item.badgeSeverity ?? 'danger'" />
+					[severity]="item.badgeSeverity ?? 'danger'"
+					[value]="item.badge"
+					styleClass="absolute flex justify-content-center align-items-center top-0"
+					[style]="{ width: '14px', minWidth: '14px', height: '14px', minHeight: '14px', right: '-2px' }" />
 				<p-button
 					[text]="true"
 					[rounded]="true"

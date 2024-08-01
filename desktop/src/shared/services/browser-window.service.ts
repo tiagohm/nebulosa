@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core'
-import { FramingData } from '../../app/framing/framing.component'
 import { OpenWindow, WindowPreference } from '../types/app.types'
 import { SkyAtlasInput } from '../types/atlas.types'
 import { Camera, CameraDialogInput, CameraStartCapture } from '../types/camera.types'
 import { Device } from '../types/device.types'
 import { Focuser } from '../types/focuser.types'
+import { LoadFraming } from '../types/framing.types'
 import { ImageSource, OpenImage } from '../types/image.types'
 import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
-import { FilterWheel, WheelDialogInput } from '../types/wheel.types'
+import { Wheel, WheelDialogInput } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 import { ElectronService } from './electron.service'
 
@@ -32,7 +32,7 @@ export class BrowserWindowService {
 	}
 
 	openCamera(data: Camera, preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'camera', width: 400, height: 467 })
+		Object.assign(preference, { icon: 'camera', width: 400, height: 477 })
 		return this.openWindow({ preference, data, id: `camera.${data.name}`, path: 'camera' })
 	}
 
@@ -51,7 +51,7 @@ export class BrowserWindowService {
 		return this.openWindow({ preference, data, id: `focuser.${data.name}`, path: 'focuser' })
 	}
 
-	openWheel(data: FilterWheel, preference: WindowPreference = {}) {
+	openWheel(data: Wheel, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'filter-wheel', width: 280, height: 195 })
 		return this.openWindow({ preference, data, id: `wheel.${data.name}`, path: 'wheel' })
 	}
@@ -72,7 +72,7 @@ export class BrowserWindowService {
 	}
 
 	openGuider(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'guider', width: 440, height: 455 })
+		Object.assign(preference, { icon: 'guider', width: 380, height: 444 })
 		return this.openWindow({ preference, id: 'guider', path: 'guider' })
 	}
 
@@ -103,7 +103,7 @@ export class BrowserWindowService {
 		return this.openWindow({ preference, data, id: 'atlas', path: 'atlas' })
 	}
 
-	openFraming(data?: FramingData, preference: WindowPreference = {}) {
+	openFraming(data?: LoadFraming, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'framing', width: 280, height: 303 })
 		return this.openWindow({ preference, data, id: 'framing', path: 'framing' })
 	}
@@ -149,7 +149,7 @@ export class BrowserWindowService {
 	}
 
 	openAbout() {
-		const preference: WindowPreference = { icon: 'about', width: 430, height: 307, bringToFront: true }
+		const preference: WindowPreference = { icon: 'about', width: 430, height: 340, bringToFront: true }
 		return this.openWindow({ preference, id: 'about', path: 'about' })
 	}
 }

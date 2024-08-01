@@ -55,7 +55,7 @@ export interface ImageSolved extends EquatorialCoordinateJ2000 {
 	radius: number
 }
 
-export const EMPTY_IMAGE_SOLVED: ImageSolved = {
+export const DEFAULT_IMAGE_SOLVED: ImageSolved = {
 	solved: false,
 	orientation: 0,
 	scale: 0,
@@ -136,7 +136,7 @@ export interface ImagePreference {
 	starDetection?: StarDetectionImagePreference
 }
 
-export const EMPTY_IMAGE_PREFERENCE: ImagePreference = {
+export const DEFAULT_IMAGE_PREFERENCE: ImagePreference = {
 	solver: {
 		type: 'ASTAP',
 		radius: 4,

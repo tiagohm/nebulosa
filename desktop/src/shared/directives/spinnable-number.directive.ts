@@ -1,8 +1,8 @@
 import { Directive, Host, HostListener } from '@angular/core'
 import { InputNumber } from 'primeng/inputnumber'
 
-@Directive({ selector: '[scrollableNumber]' })
-export class ScrollableNumberDirective {
+@Directive({ selector: '[spinnableNumber]' })
+export class SpinnableNumberDirective {
 	constructor(@Host() private readonly inputNumber: InputNumber) {}
 
 	@HostListener('wheel', ['$event'])

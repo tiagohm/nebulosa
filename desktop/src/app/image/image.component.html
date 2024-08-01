@@ -226,7 +226,7 @@
 							[(ngModel)]="annotation.minorPlanetsMagLimit"
 							[minFractionDigits]="1"
 							locale="en"
-							scrollableNumber />
+							spinnableNumber />
 						<label>Mag. Limit</label>
 					</p-floatLabel>
 				</div>
@@ -455,7 +455,7 @@
 					styleClass="p-inputtext-sm border-0 w-full"
 					[showButtons]="true"
 					[(ngModel)]="solver.radius"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Radius (°)</label>
 			</p-floatLabel>
 		</div>
@@ -470,7 +470,7 @@
 						[(ngModel)]="solver.focalLength"
 						[allowEmpty]="false"
 						locale="en"
-						scrollableNumber />
+						spinnableNumber />
 					<label>Focal length (mm)</label>
 				</p-floatLabel>
 			</div>
@@ -485,7 +485,7 @@
 						[(ngModel)]="solver.pixelSize"
 						[allowEmpty]="false"
 						locale="en"
-						scrollableNumber />
+						spinnableNumber />
 					<label>Pixel size (µm)</label>
 				</p-floatLabel>
 			</div>
@@ -626,7 +626,7 @@
 						styleClass="p-inputtext-sm border-0 w-full"
 						[(ngModel)]="stretchShadow"
 						locale="en"
-						scrollableNumber />
+						spinnableNumber />
 					<label>Shadow</label>
 				</p-floatLabel>
 				<p-floatLabel>
@@ -637,7 +637,7 @@
 						styleClass="p-inputtext-sm border-0 w-full"
 						[(ngModel)]="stretchHighlight"
 						locale="en"
-						scrollableNumber />
+						spinnableNumber />
 					<label>Highlight</label>
 				</p-floatLabel>
 			</div>
@@ -660,7 +660,7 @@
 						styleClass="p-inputtext-sm border-0 w-full"
 						[(ngModel)]="stretchMidtone"
 						locale="en"
-						scrollableNumber />
+						spinnableNumber />
 					<label>Midtone</label>
 				</p-floatLabel>
 			</div>
@@ -742,7 +742,7 @@
 					[(ngModel)]="scnr.amount"
 					locale="en"
 					[allowEmpty]="false"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Amount</label>
 			</p-floatLabel>
 		</div>
@@ -935,7 +935,7 @@
 					[(ngModel)]="starDetection.minSNR"
 					locale="en"
 					[allowEmpty]="false"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Min SNR</label>
 			</p-floatLabel>
 		</div>
@@ -953,7 +953,7 @@
 					[(ngModel)]="starDetection.maxStars"
 					locale="en"
 					[allowEmpty]="false"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Max Stars</label>
 			</p-floatLabel>
 		</div>
@@ -1090,7 +1090,7 @@
 					styleClass="p-inputtext-sm border-0"
 					[showButtons]="true"
 					[(ngModel)]="fov.focalLength"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Focal Length (mm)</label>
 			</p-floatLabel>
 		</div>
@@ -1100,7 +1100,7 @@
 					styleClass="p-inputtext-sm border-0"
 					[showButtons]="true"
 					[(ngModel)]="fov.aperture"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Aperture (mm)</label>
 			</p-floatLabel>
 		</div>
@@ -1122,7 +1122,7 @@
 					[min]="1"
 					[max]="9999"
 					[(ngModel)]="fov.cameraSize.width"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Width</label>
 			</p-floatLabel>
 		</div>
@@ -1134,7 +1134,7 @@
 					[min]="1"
 					[max]="9999"
 					[(ngModel)]="fov.cameraSize.height"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Height</label>
 			</p-floatLabel>
 		</div>
@@ -1150,7 +1150,7 @@
 					[maxFractionDigits]="2"
 					[(ngModel)]="fov.pixelSize.width"
 					locale="en"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Width</label>
 			</p-floatLabel>
 		</div>
@@ -1166,7 +1166,7 @@
 					[maxFractionDigits]="2"
 					[(ngModel)]="fov.pixelSize.height"
 					locale="en"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Height</label>
 			</p-floatLabel>
 		</div>
@@ -1182,7 +1182,7 @@
 					[maxFractionDigits]="2"
 					[(ngModel)]="fov.barlowReducer"
 					locale="en"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Barlow/Reducer</label>
 			</p-floatLabel>
 		</div>
@@ -1194,7 +1194,7 @@
 					[min]="1"
 					[max]="5"
 					[(ngModel)]="fov.bin"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Bin</label>
 			</p-floatLabel>
 		</div>
@@ -1210,7 +1210,7 @@
 					[maxFractionDigits]="2"
 					[(ngModel)]="fov.rotation"
 					locale="en"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Rotation (°)</label>
 			</p-floatLabel>
 		</div> -->

@@ -89,14 +89,3 @@ export interface JsonFile<T = unknown> {
 }
 
 export interface SaveJson<T = unknown> extends OpenFile, JsonFile<T> {}
-
-export type StoredWindowDataKey = `window.${string}`
-
-export interface StoredWindowDataValue {
-	x: number
-	y: number
-	width: number
-	height: number
-}
-
-export type StoredWindowData = Record<StoredWindowDataKey, StoredWindowDataValue>

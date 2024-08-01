@@ -3,6 +3,7 @@ import { Hemisphere } from '../types/alignment.types'
 import { AutoFocusFittingMode, BacklashCompensationMode } from '../types/autofocus.type'
 import { ExposureMode, FrameType, LiveStackerType } from '../types/camera.types'
 import { GuideDirection, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
+import { ConnectionType } from '../types/home.types'
 import { Bitpix, ImageChannel, ImageFormat, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlType } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
@@ -34,6 +35,7 @@ export interface DropdownOptions {
 	STACKER: StackerType[]
 	SETTINGS_TAB: SettingsTabKey[]
 	STACKER_GROUP_TYPE: StackerGroupType[]
+	CONNECTION_TYPE: ConnectionType[]
 }
 
 @Pipe({ name: 'dropdownOptions' })
@@ -84,6 +86,8 @@ export class DropdownOptionsPipe implements PipeTransform {
 				return ['LOCATION', 'PLATE_SOLVER', 'STAR_DETECTOR', 'LIVE_STACKER', 'STACKER', 'CAPTURE_NAMING_FORMAT'] as DropdownOptions[K]
 			case 'STACKER_GROUP_TYPE':
 				return ['LUMINANCE', 'RED', 'GREEN', 'BLUE', 'MONO', 'RGB'] as DropdownOptions[K]
+			case 'CONNECTION_TYPE':
+				return ['INDI', 'ALPACA'] as DropdownOptions[K]
 		}
 
 		return []

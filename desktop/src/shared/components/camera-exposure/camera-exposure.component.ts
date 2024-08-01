@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core'
-import { CameraCaptureEvent, CameraCaptureState, EMPTY_CAMERA_CAPTURE_INFO, EMPTY_CAMERA_STEP_INFO } from '../../types/camera.types'
+import { CameraCaptureEvent, CameraCaptureState, DEFAULT_CAMERA_CAPTURE_INFO, DEFAULT_CAMERA_STEP_INFO } from '../../types/camera.types'
 
 @Component({
 	selector: 'neb-camera-exposure',
@@ -8,18 +8,22 @@ import { CameraCaptureEvent, CameraCaptureState, EMPTY_CAMERA_CAPTURE_INFO, EMPT
 })
 export class CameraExposureComponent {
 	@Input()
-	info?: string
+	protected info?: string
 
 	@Input()
-	showRemainingTime: boolean = true
+	protected showRemainingTime: boolean = true
 
 	@Input()
-	readonly step = structuredClone(EMPTY_CAMERA_STEP_INFO)
+	protected readonly step = structuredClone(DEFAULT_CAMERA_STEP_INFO)
 
 	@Input()
-	readonly capture = structuredClone(EMPTY_CAMERA_CAPTURE_INFO)
+	protected readonly capture = structuredClone(DEFAULT_CAMERA_CAPTURE_INFO)
 
-	state?: CameraCaptureState = 'IDLE'
+	protected state: CameraCaptureState = 'IDLE'
+
+	get currentState() {
+		return this.state
+	}
 
 	handleCameraCaptureEvent(event: CameraCaptureEvent, looping: boolean = false) {
 		this.capture.elapsedTime = event.captureElapsedTime
@@ -50,13 +54,13 @@ export class CameraExposureComponent {
 			this.state = event.state
 		}
 
-		return this.state !== undefined && this.state !== 'CAPTURE_FINISHED' && this.state !== 'IDLE'
+		return this.state !== 'CAPTURE_FINISHED' && this.state !== 'IDLE'
 	}
 
 	reset() {
 		this.state = 'IDLE'
 
-		Object.assign(this.step, EMPTY_CAMERA_STEP_INFO)
-		Object.assign(this.capture, EMPTY_CAMERA_CAPTURE_INFO)
+		Object.assign(this.step, DEFAULT_CAMERA_STEP_INFO)
+		Object.assign(this.capture, DEFAULT_CAMERA_CAPTURE_INFO)
 	}
 }

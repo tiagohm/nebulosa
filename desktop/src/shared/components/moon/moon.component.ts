@@ -6,20 +6,20 @@ import { AfterViewInit, Component, ElementRef, Input, OnChanges, ViewChild } fro
 	styleUrls: ['./moon.component.scss'],
 })
 export class MoonComponent implements AfterViewInit, OnChanges {
+	@Input()
+	protected height = 256
+
+	@Input()
+	protected width = 256
+
+	@Input()
+	protected illuminationRatio = 0
+
+	@Input()
+	protected waning = false
+
 	@ViewChild('moon')
 	private readonly moon?: ElementRef<HTMLCanvasElement>
-
-	@Input()
-	height = 256
-
-	@Input()
-	width = 256
-
-	@Input()
-	illuminationRatio = 0
-
-	@Input()
-	waning = false
 
 	ngAfterViewInit() {
 		this.draw()

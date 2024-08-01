@@ -169,7 +169,7 @@
 										[showButtons]="true"
 										inputStyleClass="p-inputtext-sm border-0 w-full"
 										[(ngModel)]="closeApproachDays"
-										scrollableNumber />
+										spinnableNumber />
 									<label>Days</label>
 								</p-floatLabel>
 								<p-floatLabel>
@@ -182,7 +182,7 @@
 										inputStyleClass="p-inputtext-sm border-0 w-full"
 										locale="en"
 										[(ngModel)]="closeApproachDistance"
-										scrollableNumber />
+										spinnableNumber />
 									<label>Distance (LD)</label>
 								</p-floatLabel>
 								<p-button
@@ -697,7 +697,7 @@
 					inputStyleClass="p-inputtext-sm border-0 w-full"
 					locale="en"
 					[(ngModel)]="skyObjectFilter.radius"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Radius (°)</label>
 			</p-floatLabel>
 		</div>
@@ -741,7 +741,7 @@
 					inputStyleClass="p-inputtext-sm border-0 w-full"
 					locale="en"
 					[(ngModel)]="skyObjectFilter.magnitude[0]"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Mag. min</label>
 			</p-floatLabel>
 		</div>
@@ -757,7 +757,7 @@
 					inputStyleClass="p-inputtext-sm border-0 w-full"
 					locale="en"
 					[(ngModel)]="skyObjectFilter.magnitude[1]"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Mag. max</label>
 			</p-floatLabel>
 		</div>
@@ -830,12 +830,12 @@
 </p-dialog>
 
 <p-overlayPanel
-	#calendarPanel
+	#dateTimeAndLocationPanel
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
 	appendTo="body">
 	<ng-template pTemplate="content">
 		<div class="grid">
-			<div class="col-8 flex-column gap-2">
+			<div class="col-7 flex-column gap-2">
 				<p-calendar
 					[disabled]="refreshing || !useManualDateTime"
 					[(ngModel)]="dateTime"
@@ -847,49 +847,56 @@
 					dateFormat="yy-mm-dd"
 					styleClass="w-full" />
 			</div>
-			<div class="col-4 flex-column gap-3 align-items-center justify-content-start gap-1">
+			<div class="col-5 flex-column gap-3 align-items-center justify-content-start gap-1">
 				<div class="flex flex-column justify-content-center align-items-center gap-1">
-					<span>Enable</span>
+					<span>Date Time</span>
 					<p-inputSwitch
 						[disabled]="refreshing"
 						[(ngModel)]="useManualDateTime"
 						(ngModelChange)="useManualDateTimeChanged()" />
 				</div>
-				<div class="flex flex-column align-items-center">
+				<div class="flex flex-column align-items-center gap-3">
 					<div class="flex align-items-center justify-content-center gap-2">
-						<div class="flex flex-column justify-content-center align-items-center gap-1">
-							<span>Hour</span>
+						<p-floatLabel class="w-full">
 							<p-inputNumber
 								[disabled]="refreshing || !useManualDateTime"
 								[(ngModel)]="dateTimeHour"
 								[showButtons]="true"
 								[min]="0"
 								[max]="23"
-								class="w-fit"
 								[format]="false"
 								[allowEmpty]="false"
 								(ngModelChange)="dateTimeChanged(false)"
 								styleClass="p-inputtext-sm border-0"
-								[style]="{ width: '54px' }"
-								scrollableNumber />
-						</div>
-						<div class="flex flex-column justify-content-center align-items-center gap-1">
-							<span>Minute</span>
+								spinnableNumber />
+							<label>Hour</label>
+						</p-floatLabel>
+						<p-floatLabel class="w-full">
 							<p-inputNumber
 								[disabled]="refreshing || !useManualDateTime"
 								[(ngModel)]="dateTimeMinute"
 								[showButtons]="true"
 								[min]="0"
 								[max]="59"
-								class="w-fit"
 								[format]="false"
 								[allowEmpty]="false"
 								(ngModelChange)="dateTimeChanged(false)"
 								styleClass="p-inputtext-sm border-0"
-								[style]="{ width: '54px' }"
-								scrollableNumber />
-						</div>
+								spinnableNumber />
+							<label>Minute</label>
+						</p-floatLabel>
 					</div>
+					<p-floatLabel class="w-full">
+						<p-dropdown
+							[options]="locations"
+							[ngModel]="location"
+							optionLabel="name"
+							dataKey="id"
+							styleClass="p-inputtext-sm border-0"
+							emptyMessage="No location found"
+							[autoDisplayFirst]="false" />
+						<label>Location</label>
+					</p-floatLabel>
 				</div>
 			</div>
 		</div>
@@ -900,4 +907,5 @@
 	#ephemerisMenu
 	[model]="ephemerisModel"
 	[header]="name" />
+
 <neb-device-list-menu #deviceMenu />
