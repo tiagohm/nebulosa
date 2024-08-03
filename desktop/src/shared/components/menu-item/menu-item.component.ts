@@ -44,6 +44,9 @@ export interface MenuItem {
 	command?: (event: MenuItemCommandEvent) => void
 	check?: (event: CheckboxChangeEvent) => void
 	toggle?: (event: InputSwitchChangeEvent) => void
+
+	styleClass?: string
+	iconClass?: string
 }
 
 export interface SlideMenuItem extends MenuItem {

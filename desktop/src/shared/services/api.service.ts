@@ -3,7 +3,7 @@ import moment from 'moment'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { Angle, BodyPosition, CloseApproach, ComputedLocation, Constellation, DeepSkyObject, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
 import { AutoFocusRequest } from '../types/autofocus.type'
-import { CalibrationFrame, CalibrationFrameGroup } from '../types/calibration.types'
+import { CalibrationFrame } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
 import { Device, INDIProperty, INDISendProperty } from '../types/device.types'
 import { FlatWizardRequest } from '../types/flat-wizard.types'
@@ -576,7 +576,7 @@ export class ApiService {
 	}
 
 	calibrationFrames(name: string) {
-		return this.http.get<CalibrationFrameGroup[]>(`calibration-frames/${name}`)
+		return this.http.get<CalibrationFrame[]>(`calibration-frames/${name}`)
 	}
 
 	uploadCalibrationFrame(name: string, path: string) {
@@ -584,9 +584,8 @@ export class ApiService {
 		return this.http.put<CalibrationFrame[]>(`calibration-frames/${name}?${query}`)
 	}
 
-	editCalibrationFrame(frame: CalibrationFrame) {
-		const query = this.http.query({ name: frame.name, enabled: frame.enabled })
-		return this.http.patch<CalibrationFrame>(`calibration-frames/${frame.id}?${query}`)
+	updateCalibrationFrame(frame: CalibrationFrame) {
+		return this.http.post<CalibrationFrame>('calibration-frames', frame)
 	}
 
 	deleteCalibrationFrame(frame: CalibrationFrame) {

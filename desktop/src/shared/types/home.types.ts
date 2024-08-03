@@ -1,6 +1,6 @@
 import type { DeviceType } from './device.types'
 
-export type HomeWindowType = DeviceType | 'GUIDER' | 'SKY_ATLAS' | 'ALIGNMENT' | 'SEQUENCER' | 'IMAGE' | 'FRAMING' | 'INDI' | 'SETTINGS' | 'CALCULATOR' | 'ABOUT' | 'FLAT_WIZARD' | 'AUTO_FOCUS' | 'STACKER'
+export type HomeWindowType = DeviceType | 'GUIDER' | 'SKY_ATLAS' | 'ALIGNMENT' | 'SEQUENCER' | 'IMAGE' | 'FRAMING' | 'INDI' | 'SETTINGS' | 'CALCULATOR' | 'ABOUT' | 'FLAT_WIZARD' | 'AUTO_FOCUS' | 'STACKER' | 'CALIBRATION'
 
 export type ConnectionType = 'INDI' | 'ALPACA'
 

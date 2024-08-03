@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 import { AlignmentPreference, alignmentPreferenceWithDefault, DEFAULT_ALIGNMENT_PREFERENCE } from '../types/alignment.types'
 import { DEFAULT_SKY_ATLAS_PREFERENCE, SkyAtlasPreference } from '../types/atlas.types'
 import { AutoFocusPreference, autoFocusPreferenceWithDefault, DEFAULT_AUTO_FOCUS_PREFERENCE } from '../types/autofocus.type'
-import { CalibrationPreference } from '../types/calibration.types'
+import { CalibrationPreference, calibrationPreferenceWithDefault, DEFAULT_CALIBRATION_PREFERENCE } from '../types/calibration.types'
 import { Camera, CameraPreference, cameraPreferenceWithDefault, DEFAULT_CAMERA_PREFERENCE } from '../types/camera.types'
 import { DEFAULT_FLAT_WIZARD_PREFERENCE, FlatWizardPreference, flatWizardPreferenceWithDefault } from '../types/flat-wizard.types'
 import { DEFAULT_FOCUSER_PREFERENCE, Focuser, FocuserPreference, focuserPreferenceWithDefault } from '../types/focuser.types'
@@ -86,7 +86,7 @@ export class PreferenceService {
 	readonly skyAtlasPreference = new PreferenceData<SkyAtlasPreference>(this.storage, 'atlas', () => structuredClone(DEFAULT_SKY_ATLAS_PREFERENCE))
 	readonly alignment = new PreferenceData<AlignmentPreference>(this.storage, 'alignment', () => structuredClone(DEFAULT_ALIGNMENT_PREFERENCE), alignmentPreferenceWithDefault)
 	readonly imageFOVs = new PreferenceData<FOV[]>(this.storage, 'image.fovs', () => [])
-	readonly calibrationPreference = new PreferenceData<CalibrationPreference>(this.storage, 'calibration', () => ({}) as CalibrationPreference)
+	readonly calibrationPreference = new PreferenceData<CalibrationPreference>(this.storage, 'calibration', () => structuredClone(DEFAULT_CALIBRATION_PREFERENCE), calibrationPreferenceWithDefault)
 	readonly sequencerPreference = new PreferenceData<SequencerPreference>(this.storage, 'sequencer', () => structuredClone(DEFAULT_SEQUENCER_PREFERENCE))
 	readonly stacker = new PreferenceData<StackerPreference>(this.storage, 'stacker', () => structuredClone(DEFAULT_STACKER_PREFERENCE), stackerPreferenceWithDefault)
 	readonly guider = new PreferenceData<GuiderPreference>(this.storage, 'guider', () => structuredClone(DEFAULT_GUIDER_PREFERENCE), guiderPreferenceWithDefault)

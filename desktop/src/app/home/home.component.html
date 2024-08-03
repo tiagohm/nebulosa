@@ -239,6 +239,15 @@
 		<div class="col-4 p-1">
 			<p-button
 				[text]="true"
+				(onClick)="open('CALIBRATION')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/calibration.png" />
+				<div class="mt-1 text-sm">Calibration</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
 				[disabled]="connection?.type !== 'INDI' || !connected || !hasINDI"
 				(onClick)="open('INDI')"
 				styleClass="min-w-full w-full px-1 py-2 flex-column">
@@ -350,8 +359,7 @@
 	#deviceMenu
 	[disableIfDeviceIsNotConnected]="false"
 	(deviceConnect)="deviceConnected($event)"
-	(deviceDisconnect)="deviceDisconnected($event)"
-	[toolbarBuilder]="deviceMenuToolbarBuilder" />
+	(deviceDisconnect)="deviceDisconnected($event)" />
 <neb-device-list-menu
 	#imageMenu
 	[model]="imageModel"

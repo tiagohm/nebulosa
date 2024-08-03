@@ -298,8 +298,12 @@ export class WindowManager {
 		return undefined
 	}
 
+	findWindowWith(command: WindowCommand, sender: Electron.WebContents) {
+		return this.findWindow(command.windowId) ?? this.findWindow(sender.id)
+	}
+
 	async handleFileOpen(event: Electron.IpcMainInvokeEvent, command: OpenFile) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window) {
 			const properties: Electron.OpenDialogOptions['properties'] = ['openFile']
@@ -321,7 +325,7 @@ export class WindowManager {
 	}
 
 	async handleFileSave(event: Electron.IpcMainInvokeEvent, command: OpenFile) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window) {
 			const ret = await dialog.showSaveDialog(window.browserWindow, {
@@ -337,7 +341,7 @@ export class WindowManager {
 	}
 
 	async handleDirectoryOpen(event: Electron.IpcMainInvokeEvent, command: OpenDirectory) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window) {
 			const ret = await dialog.showOpenDialog(window.browserWindow, {
@@ -353,7 +357,7 @@ export class WindowManager {
 
 	async handleWindowOpen(event: Electron.IpcMainInvokeEvent, command: OpenWindow) {
 		if (command.preference.modal) {
-			const parentWindow = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+			const parentWindow = this.findWindowWith(command, event.sender)
 			const appWindow = await this.createWindow(command, parentWindow?.browserWindow)
 
 			return new Promise<unknown>((resolve) => {
@@ -373,7 +377,7 @@ export class WindowManager {
 	}
 
 	handleWindowClose(event: Electron.IpcMainInvokeEvent, command: CloseWindow) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window) {
 			window.resolver?.(command.data)
@@ -386,7 +390,7 @@ export class WindowManager {
 	}
 
 	handleWindowResize(event: Electron.IpcMainInvokeEvent, command: ResizeWindow) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window && !window.data.preference.resizable && window.data.preference.autoResizable !== false) {
 			const [width] = window.browserWindow.getSize()
@@ -405,30 +409,30 @@ export class WindowManager {
 	}
 
 	handleWindowMinimize(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 		window?.browserWindow.minimize()
 		return !!window && window.browserWindow.isMinimized()
 	}
 
 	handleWindowMaximize(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 		return !!window && window.toggleMaximize()
 	}
 
 	handleWindowPin(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 		window?.browserWindow.setAlwaysOnTop(true)
 		return !!window && window.browserWindow.isAlwaysOnTop()
 	}
 
 	handleWindowUnpin(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 		window?.browserWindow.setAlwaysOnTop(false)
 		return !!window && window.browserWindow.isAlwaysOnTop()
 	}
 
 	handleWindowFullscreen(event: Electron.IpcMainInvokeEvent, command: FullscreenWindow) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window) {
 			if (command.enabled) window.browserWindow.setFullScreen(true)

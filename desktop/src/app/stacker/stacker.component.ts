@@ -1,4 +1,4 @@
-import { AfterViewInit, Component } from '@angular/core'
+import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
 import { dirname } from 'path'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -11,10 +11,12 @@ import { AppComponent } from '../app.component'
 	selector: 'neb-stacker',
 	templateUrl: './stacker.component.html',
 })
-export class StackerComponent implements AfterViewInit {
+export class StackerComponent implements AfterViewInit, OnDestroy {
 	protected running = false
 	protected readonly preference = structuredClone(DEFAULT_STACKER_PREFERENCE)
 	protected request = this.preference.request
+
+	private frameId = ''
 
 	get referenceTarget() {
 		return this.request.targets.find((e) => e.enabled && e.reference && e.type === 'LIGHT')
@@ -42,6 +44,11 @@ export class StackerComponent implements AfterViewInit {
 		this.loadPreference()
 
 		this.running = await this.api.stackerIsRunning()
+	}
+
+	@HostListener('window:unload')
+	ngOnDestroy() {
+		void this.closeFrameWindow()
 	}
 
 	protected async openImages() {
@@ -88,8 +95,8 @@ export class StackerComponent implements AfterViewInit {
 		}
 	}
 
-	protected openTargetImage(target: StackingTarget) {
-		return this.browserWindowService.openImage({ path: target.path, id: 'stacker', source: 'PATH' })
+	protected async openTargetImage(target: StackingTarget) {
+		this.frameId = await this.browserWindowService.openImage({ path: target.path, id: 'stacker', source: 'PATH' })
 	}
 
 	protected deleteTarget(target: StackingTarget) {
@@ -97,6 +104,12 @@ export class StackerComponent implements AfterViewInit {
 
 		if (index >= 0) {
 			this.request.targets.splice(index, 1)
+		}
+	}
+
+	private async closeFrameWindow() {
+		if (this.frameId) {
+			await this.electronService.closeWindow(undefined, this.frameId)
 		}
 	}
 

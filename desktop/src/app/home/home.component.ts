@@ -8,7 +8,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { Camera, isCamera, isGuideHead } from '../../shared/types/camera.types'
+import { Camera } from '../../shared/types/camera.types'
 import { Device } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { ConnectionDetails, DEFAULT_CONNECTION_DETAILS, DEFAULT_HOME_CONNECTION_DIALOG, DEFAULT_HOME_PREFERENCE, HomeWindowType } from '../../shared/types/home.types'
@@ -354,23 +354,6 @@ export class HomeComponent implements AfterContentInit {
 		return DeviceChooserComponent.handleDisconnectDevice(this.api, event.device, event.item)
 	}
 
-	protected readonly deviceMenuToolbarBuilder = (device: Device): MenuItem[] => {
-		if (isCamera(device) && !isGuideHead(device)) {
-			return [
-				{
-					icon: 'mdi mdi-wrench',
-					label: 'Calibration',
-					command: (e) => {
-						e.originalEvent?.stopImmediatePropagation()
-						return this.browserWindowService.openCalibration()
-					},
-				},
-			]
-		} else {
-			return []
-		}
-	}
-
 	private async openDevice<K extends keyof MappedDevice>(type: K) {
 		this.deviceModel.length = 0
 
@@ -474,6 +457,9 @@ export class HomeComponent implements AfterContentInit {
 				break
 			case 'CALCULATOR':
 				await this.browserWindowService.openCalculator()
+				break
+			case 'CALIBRATION':
+				await this.browserWindowService.openCalibration()
 				break
 			case 'ABOUT':
 				await this.browserWindowService.openAbout()

@@ -1,6 +1,6 @@
 import type { Point, Size } from 'electron'
 import type { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
-import type { Camera, CameraStartCapture } from './camera.types'
+import type { Camera, CameraStartCapture, FrameType } from './camera.types'
 import type { PlateSolverRequest } from './platesolver.types'
 import type { StarDetectionRequest } from './stardetector.types'
 
@@ -15,6 +15,18 @@ export type ImageFormat = 'FITS' | 'XISF' | 'PNG' | 'JPG'
 export type Bitpix = 'BYTE' | 'SHORT' | 'INTEGER' | 'LONG' | 'FLOAT' | 'DOUBLE'
 
 export type LiveStackingMode = 'NONE' | 'RAW' | 'STACKED'
+
+export interface Image {
+	type: FrameType
+	width: number
+	height: number
+	binX: number
+	binY: number
+	exposureTime: number
+	temperature?: number
+	gain: number
+	filter?: string
+}
 
 export interface FITSHeaderItem {
 	name: string

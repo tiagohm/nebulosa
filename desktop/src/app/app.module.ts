@@ -96,6 +96,7 @@ import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
 import { SettingsComponent } from './settings/settings.component'
 import { StackerComponent } from './stacker/stacker.component'
+import { PathPipe } from '../shared/pipes/path.pipe'
 
 @NgModule({
 	declarations: [
@@ -140,6 +141,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		MountComponent,
 		NoDropdownDirective,
 		PathChooserComponent,
+		PathPipe,
 		RotatorComponent,
 		SequencerComponent,
 		SettingsComponent,
