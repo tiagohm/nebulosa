@@ -359,9 +359,5 @@
 	#deviceMenu
 	[disableIfDeviceIsNotConnected]="false"
 	(deviceConnect)="deviceConnected($event)"
-	(deviceDisconnect)="deviceDisconnected($event)" />
-<neb-device-list-menu
-	#imageMenu
-	[model]="imageModel"
-	[disableIfDeviceIsNotConnected]="false"
-	header="Image" />
+	(deviceDisconnect)="deviceDisconnected($event)"
+	[toolbarBuilder]="deviceMenuToolbarBuilder" />

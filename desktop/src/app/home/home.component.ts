@@ -8,22 +8,14 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
-import { Camera } from '../../shared/types/camera.types'
-import { Device } from '../../shared/types/device.types'
-import { Focuser } from '../../shared/types/focuser.types'
+import { Camera, isCamera } from '../../shared/types/camera.types'
+import { Device, DeviceType } from '../../shared/types/device.types'
+import { Focuser, isFocuser } from '../../shared/types/focuser.types'
 import { ConnectionDetails, DEFAULT_CONNECTION_DETAILS, DEFAULT_HOME_CONNECTION_DIALOG, DEFAULT_HOME_PREFERENCE, HomeWindowType } from '../../shared/types/home.types'
-import { Mount } from '../../shared/types/mount.types'
-import { Rotator } from '../../shared/types/rotator.types'
-import { Wheel } from '../../shared/types/wheel.types'
+import { isMount, Mount } from '../../shared/types/mount.types'
+import { isRotator, Rotator } from '../../shared/types/rotator.types'
+import { isWheel, Wheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
-
-interface MappedDevice {
-	CAMERA: Camera
-	MOUNT: Mount
-	FOCUSER: Focuser
-	WHEEL: Wheel
-	ROTATOR: Rotator
-}
 
 function scrollPageOf(element: Element) {
 	return parseInt(element.getAttribute('scroll-page') ?? '0')
@@ -58,16 +50,13 @@ export class HomeComponent implements AfterContentInit {
 			label: 'Open new image',
 			slideMenu: [],
 			command: () => {
-				return this.openImage(true)
+				return this.openImage()
 			},
 		},
 	]
 
 	@ViewChild('deviceMenu')
 	private readonly deviceMenu!: DeviceListMenuComponent
-
-	@ViewChild('imageMenu')
-	private readonly imageMenu!: DeviceListMenuComponent
 
 	get connected() {
 		return !!this.connection && this.connection.connected
@@ -133,6 +122,22 @@ export class HomeComponent implements AfterContentInit {
 		return this.connection?.type === 'ALPACA' && this.hasDevices
 	}
 
+	protected readonly deviceMenuToolbarBuilder = (device: Device): MenuItem[] => {
+		if (isCamera(device)) {
+			return [
+				{
+					icon: 'mdi mdi-image',
+					label: 'View Image',
+					command: () => {
+						return this.browserWindowService.openCameraImage(device)
+					},
+				},
+			]
+		} else {
+			return []
+		}
+	}
+
 	constructor(
 		app: AppComponent,
 		private readonly electronService: ElectronService,
@@ -140,94 +145,89 @@ export class HomeComponent implements AfterContentInit {
 		private readonly api: ApiService,
 		private readonly primeService: PrimeService,
 		private readonly preferenceService: PreferenceService,
-		private readonly ngZone: NgZone,
+		ngZone: NgZone,
 	) {
 		app.title = 'Nebulosa'
 
-		this.startListening(
-			'CAMERA',
-			(device) => {
-				return this.cameras.push(device)
-			},
-			(device) => {
-				const found = this.cameras.findIndex((e) => e.id === device.id)
-				this.cameras.splice(found, 1)
-				return this.cameras.length
-			},
-			(device) => {
-				const found = this.cameras.find((e) => e.id === device.id)
-				if (!found) return
-				Object.assign(found, device)
-			},
-		)
+		electronService.on('CAMERA.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`CAMERA.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`CAMERA.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
 
-		this.startListening(
-			'MOUNT',
-			(device) => {
-				return this.mounts.push(device)
-			},
-			(device) => {
-				const found = this.mounts.findIndex((e) => e.id === device.id)
-				this.mounts.splice(found, 1)
-				return this.mounts.length
-			},
-			(device) => {
-				const found = this.mounts.find((e) => e.id === device.id)
-				if (!found) return
-				Object.assign(found, device)
-			},
-		)
+		electronService.on('MOUNT.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`MOUNT.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`MOUNT.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
 
-		this.startListening(
-			'FOCUSER',
-			(device) => {
-				return this.focusers.push(device)
-			},
-			(device) => {
-				const found = this.focusers.findIndex((e) => e.id === device.id)
-				this.focusers.splice(found, 1)
-				return this.focusers.length
-			},
-			(device) => {
-				const found = this.focusers.find((e) => e.id === device.id)
-				if (!found) return
-				Object.assign(found, device)
-			},
-		)
+		electronService.on('FOCUSER.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`FOCUSER.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`FOCUSER.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
 
-		this.startListening(
-			'WHEEL',
-			(device) => {
-				return this.wheels.push(device)
-			},
-			(device) => {
-				const found = this.wheels.findIndex((e) => e.id === device.id)
-				this.wheels.splice(found, 1)
-				return this.wheels.length
-			},
-			(device) => {
-				const found = this.wheels.find((e) => e.id === device.id)
-				if (!found) return
-				Object.assign(found, device)
-			},
-		)
+		electronService.on('WHEEL.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`WHEEL.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`WHEEL.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
 
-		this.startListening(
-			'ROTATOR',
-			(device) => {
-				return this.rotators.push(device)
-			},
-			(device) => {
-				const found = this.rotators.findIndex((e) => e.id === device.id)
-				this.rotators.splice(found, 1)
-				return this.rotators.length
-			},
-			(device) => {
-				const found = this.rotators.find((e) => e.id === device.id)
-				if (!found) return
-				Object.assign(found, device)
-			},
-		)
+		electronService.on('ROTATOR.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`ROTATOR.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`ROTATOR.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
 
 		electronService.on('CONNECTION.CLOSED', async (event) => {
 			if (this.connection?.id === event.id) {
@@ -252,24 +252,56 @@ export class HomeComponent implements AfterContentInit {
 		}
 	}
 
-	private startListening<K extends keyof MappedDevice>(type: K, onAdd: (device: MappedDevice[K]) => number, onRemove: (device: MappedDevice[K]) => number, onUpdate: (device: MappedDevice[K]) => void) {
-		this.electronService.on(`${type}.ATTACHED`, (event) => {
-			this.ngZone.run(() => {
-				onAdd(event.device as never)
-			})
-		})
+	private deviceAdded(device: Device) {
+		if (isCamera(device)) {
+			this.cameras.push(device)
+		} else if (isMount(device)) {
+			this.mounts.push(device)
+		} else if (isFocuser(device)) {
+			this.focusers.push(device)
+		} else if (isWheel(device)) {
+			this.wheels.push(device)
+		} else if (isRotator(device)) {
+			this.rotators.push(device)
+		}
+	}
 
-		this.electronService.on(`${type}.DETACHED`, (event) => {
-			this.ngZone.run(() => {
-				onRemove(event.device as never)
-			})
-		})
+	private deviceRemoved(device: Device) {
+		if (isCamera(device)) {
+			const found = this.cameras.findIndex((e) => e.id === device.id)
+			this.cameras.splice(found, 1)
+		} else if (isMount(device)) {
+			const found = this.mounts.findIndex((e) => e.id === device.id)
+			this.mounts.splice(found, 1)
+		} else if (isFocuser(device)) {
+			const found = this.focusers.findIndex((e) => e.id === device.id)
+			this.focusers.splice(found, 1)
+		} else if (isWheel(device)) {
+			const found = this.wheels.findIndex((e) => e.id === device.id)
+			this.wheels.splice(found, 1)
+		} else if (isRotator(device)) {
+			const found = this.rotators.findIndex((e) => e.id === device.id)
+			this.rotators.splice(found, 1)
+		}
+	}
 
-		this.electronService.on(`${type}.UPDATED`, (event) => {
-			this.ngZone.run(() => {
-				onUpdate(event.device as never)
-			})
-		})
+	private deviceUpdated(device: Device) {
+		if (isCamera(device)) {
+			const found = this.cameras.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isMount(device)) {
+			const found = this.mounts.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isFocuser(device)) {
+			const found = this.focusers.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isWheel(device)) {
+			const found = this.wheels.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isRotator(device)) {
+			const found = this.rotators.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		}
 	}
 
 	protected addConnection() {
@@ -354,7 +386,7 @@ export class HomeComponent implements AfterContentInit {
 		return DeviceChooserComponent.handleDisconnectDevice(this.api, event.device, event.item)
 	}
 
-	private async openDevice(type: keyof MappedDevice) {
+	private async openDevice(type: DeviceType) {
 		this.deviceModel.length = 0
 
 		const devices: Device[] =
@@ -362,19 +394,20 @@ export class HomeComponent implements AfterContentInit {
 			: type === 'MOUNT' ? this.mounts
 			: type === 'FOCUSER' ? this.focusers
 			: type === 'WHEEL' ? this.wheels
-			: this.rotators
+			: type === 'ROTATOR' ? this.rotators
+			: []
 
 		if (devices.length === 0) return
 
 		const device = await this.deviceMenu.show(devices, undefined, type)
 
 		if (device && device !== 'NONE') {
-			await this.openDeviceWindow(type, device as never)
+			await this.openDeviceWindow(device)
 		}
 	}
 
-	private async openDeviceWindow<K extends keyof MappedDevice>(type: K, device: MappedDevice[K]) {
-		switch (type) {
+	private async openDeviceWindow(device: Device) {
+		switch (device.type) {
 			case 'MOUNT':
 				await this.browserWindowService.openMount(device as Mount, { bringToFront: true })
 				break
@@ -393,22 +426,14 @@ export class HomeComponent implements AfterContentInit {
 		}
 	}
 
-	private async openImage(force: boolean = false) {
-		if (force || this.cameras.length === 0) {
-			const path = await this.electronService.openImage({ defaultPath: this.preference.imagePath })
+	private async openImage() {
+		const path = await this.electronService.openImage({ defaultPath: this.preference.imagePath })
 
-			if (path) {
-				this.preference.imagePath = dirname(path)
-				this.savePreference()
+		if (path) {
+			this.preference.imagePath = dirname(path)
+			this.savePreference()
 
-				await this.browserWindowService.openImage({ path, source: 'PATH' })
-			}
-		} else {
-			const camera = await this.imageMenu.show(this.cameras)
-
-			if (camera && camera !== 'NONE') {
-				await this.browserWindowService.openCameraImage(camera)
-			}
+			await this.browserWindowService.openImage({ path, source: 'PATH' })
 		}
 	}
 

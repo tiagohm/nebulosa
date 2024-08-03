@@ -71,7 +71,7 @@ export const DEFAULT_WHEEL_PREFERENCE: WheelPreference = {
 	shutterPosition: 0,
 }
 
-export function isFilterWheel(device?: Device): device is Wheel {
+export function isWheel(device?: Device): device is Wheel {
 	return !!device && device.type === 'WHEEL'
 }
 
