@@ -69,7 +69,7 @@ async function startApp() {
 
 					if (text) {
 						const regex = /server is started at port: (\d+)/i
-						const match = text.match(regex)
+						const match = regex.exec(text)
 
 						if (match) {
 							const port = parseInt(match[1])

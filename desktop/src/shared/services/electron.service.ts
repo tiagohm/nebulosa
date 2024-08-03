@@ -4,9 +4,9 @@ import { Injectable } from '@angular/core'
 // other than as TypeScript types, the resulting javascript file will
 // look as if you never imported the module at all.
 
-import * as childProcess from 'child_process'
-import { ipcRenderer, webFrame } from 'electron'
-import * as fs from 'fs'
+import type * as childProcess from 'child_process'
+import type { ipcRenderer, webFrame } from 'electron'
+import type * as fs from 'fs'
 import { DARVEvent, TPPAEvent } from '../types/alignment.types'
 import { DeviceMessageEvent } from '../types/api.types'
 import { CloseWindow, ConfirmationEvent, FullscreenWindow, JsonFile, NotificationEvent, OpenDirectory, OpenFile, ResizeWindow, SaveJson, WindowCommand } from '../types/app.types'

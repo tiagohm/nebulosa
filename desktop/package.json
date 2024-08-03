@@ -12,11 +12,12 @@
 	"main": "app/main.js",
 	"private": true,
 	"scripts": {
-		"postinstall": "electron-builder install-app-deps",
+		"postinstall": "electron-builder install-app-deps && npm run scripts",
 		"ng": "ng",
+		"scripts": "node --no-warnings scripts/nebulosa.mjs",
 		"start": "npm-run-all -p electron:serve ng:serve",
 		"ng:serve": "ng serve -c web --hmr",
-		"build": "npm run electron:serve-tsc && ng build --base-href ./",
+		"build": "npm run scripts && npm run electron:serve-tsc && ng build --base-href ./",
 		"build:dev": "npm run build -- -c dev",
 		"build:prod": "npm run build -- -c production",
 		"web:build": "npm run build -- -c web-production",
@@ -31,8 +32,7 @@
 		"lint": "npx eslint .",
 		"prettier:ts": "npx prettier '**/*.ts' --write",
 		"prettier:html": "npx prettier '**/*.html' --write",
-		"prettier:scss": "npx prettier '**/*.scss' --write",
-		"prettier:json": "npx prettier '**/*.json' --write"
+		"prettier:scss": "npx prettier '**/*.scss' --write"
 	},
 	"dependencies": {
 		"@angular/animations": "18.1.3",

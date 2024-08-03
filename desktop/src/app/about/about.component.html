@@ -38,11 +38,17 @@
 		<div style="height: 128px">
 			<p-tabView>
 				<p-tabPanel header="Disclaimer">
-					<p>This software is WIP, comes with absolutely no warranty and the copyright holder is not liable or responsible for anything.</p>
+					<p class="mt-2">This software is WIP, comes with absolutely no warranty and the copyright holder is not liable or responsible for anything.</p>
+				</p-tabPanel>
+				<p-tabPanel header="Build">
+					<div class="py-2 flex flex-column white-space-nowrap">
+						<span>COMMIT: {{ commit }}</span>
+						<span>DATE: {{ date }}</span>
+					</div>
 				</p-tabPanel>
 				<p-tabPanel header="Icons">
 					<div
-						class="w-full flex flex-column overflow-y-auto pt-1 gap-1"
+						class="w-full flex flex-column overflow-y-auto py-2 gap-1"
 						style="height: 100px">
 						@for (icon of icons; track $index) {
 							<a
@@ -55,7 +61,7 @@
 				</p-tabPanel>
 				<p-tabPanel header="Dependencies">
 					<div
-						class="w-full flex flex-column overflow-y-auto pt-1 gap-1"
+						class="w-full flex flex-column overflow-y-auto py-2 gap-1"
 						style="height: 100px">
 						@for (dep of dependencies; track $index) {
 							<a

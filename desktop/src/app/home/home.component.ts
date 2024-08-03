@@ -354,7 +354,7 @@ export class HomeComponent implements AfterContentInit {
 		return DeviceChooserComponent.handleDisconnectDevice(this.api, event.device, event.item)
 	}
 
-	private async openDevice<K extends keyof MappedDevice>(type: K) {
+	private async openDevice(type: keyof MappedDevice) {
 		this.deviceModel.length = 0
 
 		const devices: Device[] =
@@ -362,8 +362,7 @@ export class HomeComponent implements AfterContentInit {
 			: type === 'MOUNT' ? this.mounts
 			: type === 'FOCUSER' ? this.focusers
 			: type === 'WHEEL' ? this.wheels
-			: type === 'ROTATOR' ? this.rotators
-			: []
+			: this.rotators
 
 		if (devices.length === 0) return
 

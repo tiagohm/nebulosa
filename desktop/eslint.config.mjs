@@ -3,6 +3,9 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
 	{
+		ignores: ['**/*.mjs'],
+	},
+	{
 		files: ['**/*.ts'],
 		...eslint.configs.recommended,
 	},
@@ -33,6 +36,7 @@ export default tseslint.config(
 		rules: {
 			'no-unused-vars': 'off',
 			'no-loss-of-precision': 'off',
+			'no-extra-semi': 'warn',
 			'@typescript-eslint/no-unused-vars': 'warn',
 			'@typescript-eslint/no-loss-of-precision': 'off',
 			'@typescript-eslint/restrict-template-expressions': 'off',

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core'
-import packageJson from '../../../package.json'
+import nebulosa from '../../assets/data/nebulosa.json'
 import { DependencyItem, FLAT_ICON_URL, IconItem } from '../../shared/types/about.types'
 import { AppComponent } from '../app.component'
 
@@ -8,9 +8,11 @@ import { AppComponent } from '../app.component'
 	templateUrl: './about.component.html',
 })
 export class AboutComponent {
-	protected readonly codename = packageJson.codename
-	protected readonly version = packageJson.version
-	protected readonly description = packageJson.description
+	protected readonly codename = nebulosa.codename
+	protected readonly version = nebulosa.version
+	protected readonly description = nebulosa.description
+	protected readonly commit = nebulosa.build.commit
+	protected readonly date = nebulosa.build.date
 	protected readonly icons: IconItem[] = []
 	protected readonly dependencies: DependencyItem[] = []
 
@@ -48,18 +50,13 @@ export class AboutComponent {
 	}
 
 	private mapDependencies() {
-		for (const [name, version] of Object.entries(packageJson.dependencies)) {
-			this.dependencies.push(this.mapDependency(name, version))
-		}
-
-		for (const [name, version] of Object.entries(packageJson.devDependencies)) {
+		for (const { name, version } of nebulosa.dependencies) {
 			this.dependencies.push(this.mapDependency(name, version))
 		}
 	}
 
-	private mapDependency(name: string, version: string) {
+	private mapDependency(name: string, version: string): DependencyItem {
 		const link = `https://www.npmjs.com/package/${name}`
-		version = version.includes('#') ? version.split('#')[1] : version
-		return { name, version, link } as DependencyItem
+		return { name, version, link }
 	}
 }
