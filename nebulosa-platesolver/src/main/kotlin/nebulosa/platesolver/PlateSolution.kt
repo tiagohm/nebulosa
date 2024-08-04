@@ -46,7 +46,7 @@ data class PlateSolution(
             val height = header.getIntOrNull(FitsKeyword.NAXIS2) ?: header.getInt("IMAGEH", 0)
 
             LOG.debug {
-                "solution from %s: ORIE=%f, SCALE=%f, RA=%s, DEC=%s".format(
+                "solution from %s: ORIE=%s, SCALE=%f, RA=%s, DEC=%s".format(
                     header, crota2.formatSignedDMS(), cdelt2.toArcsec, crval1.formatHMS(), crval2.formatSignedDMS(),
                 )
             }

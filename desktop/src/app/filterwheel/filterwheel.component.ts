@@ -248,8 +248,6 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 				const offset = nextFocusOffset - currentFocusOffset
 
 				if (this.focuser && offset !== 0) {
-					console.info('moving focuser %d steps', offset)
-
 					if (offset < 0) await this.api.focuserMoveIn(this.focuser, -offset)
 					else await this.api.focuserMoveOut(this.focuser, offset)
 				}

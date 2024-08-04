@@ -97,7 +97,6 @@ export class WindowManager {
 
 		if (appWindow) {
 			if (open.data) {
-				console.info('window data changed. id=%s, data=%s', open.id, open.data)
 				appWindow.browserWindow.webContents.send('DATA.CHANGED', open.data)
 			}
 

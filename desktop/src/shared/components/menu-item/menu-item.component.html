@@ -12,7 +12,7 @@
 		<p-checkbox
 			[binary]="true"
 			[(ngModel)]="item.checked"
-			(onChange)="item.check?.($event)" />
+			(onChange)="item.check?.($event); $event.originalEvent?.stopImmediatePropagation()" />
 	}
 	@if (item.items?.length || item.slideMenu?.length) {
 		<i class="mdi mdi-menu-right mdi"></i>

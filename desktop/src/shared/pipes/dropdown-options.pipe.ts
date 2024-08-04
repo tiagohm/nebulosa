@@ -4,7 +4,7 @@ import { AutoFocusFittingMode, BacklashCompensationMode } from '../types/autofoc
 import { ExposureMode, FrameType, LiveStackerType } from '../types/camera.types'
 import { GuideDirection, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
 import { ConnectionType } from '../types/home.types'
-import { Bitpix, ImageChannel, ImageFormat, SCNRProtectionMethod } from '../types/image.types'
+import { Bitpix, IMAGE_STATISTICS_BIT_OPTIONS, ImageChannel, ImageFormat, ImageStatisticsBitOption, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlType } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
 import { SequenceCaptureMode } from '../types/sequencer.types'
@@ -36,6 +36,7 @@ export interface DropdownOptions {
 	SETTINGS_TAB: SettingsTabKey[]
 	STACKER_GROUP_TYPE: StackerGroupType[]
 	CONNECTION_TYPE: ConnectionType[]
+	IMAGE_STATISTICS_BIT_OPTIONS: ImageStatisticsBitOption[]
 }
 
 @Pipe({ name: 'dropdownOptions' })
@@ -88,6 +89,8 @@ export class DropdownOptionsPipe implements PipeTransform {
 				return ['LUMINANCE', 'RED', 'GREEN', 'BLUE', 'MONO', 'RGB'] as DropdownOptions[K]
 			case 'CONNECTION_TYPE':
 				return ['INDI', 'ALPACA'] as DropdownOptions[K]
+			case 'IMAGE_STATISTICS_BIT_OPTIONS':
+				return IMAGE_STATISTICS_BIT_OPTIONS as DropdownOptions[K]
 		}
 
 		return []

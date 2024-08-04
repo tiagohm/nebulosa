@@ -22,7 +22,7 @@
 						[binary]="true"
 						[disabled]="item.disabled ?? false"
 						[(ngModel)]="item.checked"
-						(onChange)="item.check?.($event)" />
+						(onChange)="item.check?.($event); $event.originalEvent?.stopImmediatePropagation()" />
 				</div>
 			} @else if (item.label && item.splitButtonMenu?.length) {
 				<p-splitButton

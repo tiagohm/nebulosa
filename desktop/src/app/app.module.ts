@@ -69,6 +69,7 @@ import { EnumDropdownPipe } from '../shared/pipes/enum-dropdown.pipe'
 import { EnumPipe } from '../shared/pipes/enum.pipe'
 import { EnvPipe } from '../shared/pipes/env.pipe'
 import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
+import { PathPipe } from '../shared/pipes/path.pipe'
 import { SkyObjectPipe } from '../shared/pipes/skyObject.pipe'
 import { WinPipe } from '../shared/pipes/win.pipe'
 import { AboutComponent } from './about/about.component'
@@ -88,6 +89,7 @@ import { FocuserComponent } from './focuser/focuser.component'
 import { FramingComponent } from './framing/framing.component'
 import { GuiderComponent } from './guider/guider.component'
 import { HomeComponent } from './home/home.component'
+import { CrossHairComponent } from './image/crosshair.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
@@ -96,7 +98,6 @@ import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
 import { SettingsComponent } from './settings/settings.component'
 import { StackerComponent } from './stacker/stacker.component'
-import { PathPipe } from '../shared/pipes/path.pipe'
 
 @NgModule({
 	declarations: [
@@ -112,6 +113,7 @@ import { PathPipe } from '../shared/pipes/path.pipe'
 		CameraInfoComponent,
 		CameraExposureComponent,
 		ConfirmDialog,
+		CrossHairComponent,
 		DeviceChooserComponent,
 		DeviceListMenuComponent,
 		DialogMenuComponent,

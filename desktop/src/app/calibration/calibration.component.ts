@@ -270,7 +270,6 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 		let index = this.selectedFrames.indexOf(frame)
 
 		if (index >= 0) {
-			console.log('selected frame removed', frame)
 			this.selectedFrames.splice(index, 1)
 			this.frameSelected()
 		}

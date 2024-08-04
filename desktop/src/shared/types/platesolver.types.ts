@@ -1,3 +1,5 @@
+import type { Angle } from './atlas.types'
+
 export type PlateSolverType = 'ASTROMETRY_NET' | 'ASTROMETRY_NET_ONLINE' | 'ASTAP' | 'SIRIL' | 'PIXINSIGHT'
 
 export interface PlateSolverSettings {
@@ -11,8 +13,12 @@ export interface PlateSolverSettings {
 
 export interface PlateSolverRequest extends PlateSolverSettings {
 	type: PlateSolverType
-	pixelSize?: number
-	focalLength?: number
+	blind: boolean
+	centerRA: Angle
+	centerDEC: Angle
+	radius: Angle
+	pixelSize: number
+	focalLength: number
 }
 
 export const NOVA_ASTROMETRY_NET_URL = 'https://nova.astrometry.net/'
@@ -29,6 +35,12 @@ export const DEFAULT_PLATE_SOLVER_SETTINGS: PlateSolverSettings = {
 export const DEFAULT_PLATE_SOLVER_REQUEST: PlateSolverRequest = {
 	...DEFAULT_PLATE_SOLVER_SETTINGS,
 	type: 'ASTAP',
+	blind: true,
+	centerRA: 0,
+	centerDEC: 0,
+	radius: 4,
+	focalLength: 0,
+	pixelSize: 0,
 }
 
 export function plateSolverSettingsWithDefault(settings?: Partial<PlateSolverSettings>, source: PlateSolverSettings = DEFAULT_PLATE_SOLVER_SETTINGS) {

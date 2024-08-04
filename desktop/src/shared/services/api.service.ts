@@ -11,7 +11,7 @@ import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
 import { ConnectionStatus, ConnectionType } from '../types/home.types'
-import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
+import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlType, SlewRate, TrackMode } from '../types/mount.types'
 import { PlateSolverRequest } from '../types/platesolver.types'
 import { Rotator } from '../types/rotator.types'
@@ -174,8 +174,8 @@ export class ApiService {
 		return this.http.get<ComputedLocation>(`mounts/${mount.id}/location/${type}`)
 	}
 
-	pointMountHere(mount: Mount, path: string, x: number, y: number) {
-		const query = this.http.query({ path, x, y })
+	pointMountHere(mount: Mount, path: string, point: ImageMousePosition) {
+		const query = this.http.query({ path, ...point })
 		return this.http.put<never>(`mounts/${mount.id}/point-here?${query}`)
 	}
 
@@ -536,9 +536,9 @@ export class ApiService {
 		return this.http.get<CloseApproach[]>(`sky-atlas/minor-planets/close-approaches?${query}`)
 	}
 
-	annotationsOfImage(path: string, starsAndDSOs: boolean = true, minorPlanets: boolean = false, minorPlanetMagLimit: number = 12.0, includeMinorPlanetsWithoutMagnitude: boolean = false, useSimbad: boolean = false) {
-		const query = this.http.query({ path, starsAndDSOs, minorPlanets, minorPlanetMagLimit, includeMinorPlanetsWithoutMagnitude, useSimbad, hasLocation: true })
-		return this.http.get<ImageAnnotation[]>(`image/annotations?${query}`)
+	annotationsOfImage(path: string, request: AnnotateImageRequest) {
+		const query = this.http.query({ path, hasLocation: true })
+		return this.http.put<ImageAnnotation[]>(`image/annotations?${query}`, request)
 	}
 
 	saveImageAs(path: string, save: ImageSaveDialog, camera?: Camera) {
@@ -663,8 +663,8 @@ export class ApiService {
 
 	// SOLVER
 
-	solverStart(solver: PlateSolverRequest, path: string, blind: boolean, centerRA: Angle, centerDEC: Angle, radius: Angle) {
-		const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
+	solverStart(solver: PlateSolverRequest, path: string) {
+		const query = this.http.query({ path })
 		return this.http.put<ImageSolved>(`plate-solver/start?${query}`, solver)
 	}
 

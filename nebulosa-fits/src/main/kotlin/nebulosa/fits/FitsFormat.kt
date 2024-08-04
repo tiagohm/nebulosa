@@ -71,11 +71,8 @@ data object FitsFormat : ImageFormat {
         val numberOfChannels = header.numberOfChannels
         val bitpix = header.bitpix
         val position = source.position
-        val rangeMin = header.getFloat(FitsKeyword.DATAMIN, 0f)
-        val rangeMax = header.getFloat(FitsKeyword.DATAMAX, 1f)
-        val range = rangeMin..rangeMax
 
-        val data = SeekableSourceImageData(source, position, width, height, numberOfChannels, bitpix, range)
+        val data = SeekableSourceImageData(source, position, width, height, numberOfChannels, bitpix)
         val skipBytes = computeRemainingBytesToSkip(data.totalSizeInBytes)
         if (skipBytes > 0L) source.seek(position + data.totalSizeInBytes + skipBytes)
 

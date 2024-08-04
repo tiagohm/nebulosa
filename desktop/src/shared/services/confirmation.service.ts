@@ -26,7 +26,6 @@ export class ConfirmationService {
 	}
 
 	async processConfirmationEvent(event: ConfirmationEvent) {
-		console.info('processing confirmation event', event)
 		const response = await this.prime.confirm(event.message)
 		await this.api.confirm(event.idempotencyKey, response === ConfirmEventType.ACCEPT)
 		this.unregister(event.idempotencyKey)

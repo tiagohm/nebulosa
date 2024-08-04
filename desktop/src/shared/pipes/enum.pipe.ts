@@ -5,7 +5,7 @@ import { AutoFocusFittingMode, AutoFocusState, BacklashCompensationMode } from '
 import { CameraCaptureState, ExposureMode, ExposureTimeUnit, FrameType, LiveStackerType } from '../types/camera.types'
 import { FlatWizardState } from '../types/flat-wizard.types'
 import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
-import { Bitpix, SCNRProtectionMethod } from '../types/image.types'
+import { Bitpix, ImageChannel, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlType } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
 import { SequenceCaptureMode, SequencerState } from '../types/sequencer.types'
@@ -44,6 +44,7 @@ export type EnumPipeKey =
 	| SettingsTabKey
 	| SequencerState
 	| ExposureTimeUnit
+	| ImageChannel
 	| 'ALL'
 
 @Pipe({ name: 'enum' })
@@ -206,6 +207,7 @@ export class EnumPipe implements PipeTransform {
 		GRAVITATIONALLY_LENSED_IMAGE_OF_A_GALAXY: 'Gravitationally Lensed Image of a Galaxy',
 		GRAVITATIONALLY_LENSED_IMAGE_OF_A_QUASAR: 'Gravitationally Lensed Image of a Quasar',
 		GRAVITATIONALLY_LENSED_IMAGE: 'Gravitationally Lensed Image',
+		GRAY: 'Gray',
 		GREEN: 'Green',
 		GROUP_OF_GALAXIES: 'Group of Galaxies',
 		GRU: 'Grus',

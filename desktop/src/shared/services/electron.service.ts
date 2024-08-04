@@ -126,8 +126,6 @@ export class ElectronService {
 	}
 
 	on<K extends keyof EventMappedType>(channel: K, listener: (arg: EventMappedType[K]) => void) {
-		console.info('listening to channel: %s', channel)
-
 		this.ipcRenderer.on(channel, (_, arg) => {
 			listener(arg)
 		})

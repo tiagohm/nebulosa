@@ -16,7 +16,7 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 	readonly exposureTimeChange = new EventEmitter<number>()
 
 	@Input()
-	protected readonly unit: ExposureTimeUnit = ExposureTimeUnit.MICROSECOND
+	protected readonly unit: ExposureTimeUnit = 'MICROSECOND'
 
 	@Output()
 	readonly unitChange = new EventEmitter<ExposureTimeUnit>()
@@ -52,25 +52,25 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 		{
 			label: 'Minute (m)',
 			command: () => {
-				this.exposureTimeUnitChanged(ExposureTimeUnit.MINUTE)
+				this.exposureTimeUnitChanged('MINUTE')
 			},
 		},
 		{
 			label: 'Second (s)',
 			command: () => {
-				this.exposureTimeUnitChanged(ExposureTimeUnit.SECOND)
+				this.exposureTimeUnitChanged('SECOND')
 			},
 		},
 		{
 			label: 'Millisecond (ms)',
 			command: () => {
-				this.exposureTimeUnitChanged(ExposureTimeUnit.MILLISECOND)
+				this.exposureTimeUnitChanged('MILLISECOND')
 			},
 		},
 		{
 			label: 'Microsecond (µs)',
 			command: () => {
-				this.exposureTimeUnitChanged(ExposureTimeUnit.MICROSECOND)
+				this.exposureTimeUnitChanged('MICROSECOND')
 			},
 		},
 	]
@@ -86,7 +86,7 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 					this.exposureTimeUnitChanged(change.currentValue)
 					break
 				case 'exposureTime':
-					this.exposureTimeChanged(change.currentValue, ExposureTimeUnit.MICROSECOND)
+					this.exposureTimeChanged(change.currentValue, 'MICROSECOND')
 					break
 				case 'min':
 				case 'max':
@@ -116,7 +116,7 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 
 	protected exposureTimeUnitWheeled(event: WheelEvent) {
 		if (event.deltaY) {
-			const units: ExposureTimeUnit[] = [ExposureTimeUnit.MINUTE, ExposureTimeUnit.SECOND, ExposureTimeUnit.MILLISECOND, ExposureTimeUnit.MICROSECOND]
+			const units: ExposureTimeUnit[] = ['MINUTE', 'SECOND', 'MILLISECOND', 'MICROSECOND']
 			const index = units.indexOf(this.unit)
 
 			if (index >= 0) {
@@ -157,10 +157,10 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 			return false
 		}
 
-		const factors = [
-			{ unit: ExposureTimeUnit.MINUTE, time: 60000000 },
-			{ unit: ExposureTimeUnit.SECOND, time: 1000000 },
-			{ unit: ExposureTimeUnit.MILLISECOND, time: 1000 },
+		const factors: { unit: ExposureTimeUnit; time: number }[] = [
+			{ unit: 'MINUTE', time: 60000000 },
+			{ unit: 'SECOND', time: 1000000 },
+			{ unit: 'MILLISECOND', time: 1000 },
 		]
 
 		for (const { unit, time } of factors) {
@@ -169,8 +169,7 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 
 				// exposureTime is multiple of time.
 				if (k === Math.floor(k)) {
-					console.log('exposure time normalized:', exposureTime, unit)
-					this.updateExposureTime(exposureTime, unit, ExposureTimeUnit.MICROSECOND)
+					this.updateExposureTime(exposureTime, unit, 'MICROSECOND')
 					return true
 				}
 			}
@@ -179,7 +178,7 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 		return false
 	}
 
-	static computeExposureTime(exposureTime: number, to: ExposureTimeUnit, from: ExposureTimeUnit = ExposureTimeUnit.MICROSECOND) {
+	static computeExposureTime(exposureTime: number, to: ExposureTimeUnit, from: ExposureTimeUnit = 'MICROSECOND') {
 		if (to === from) {
 			return exposureTime
 		}
@@ -192,13 +191,18 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 
 	static exposureUnitFactor(unit: ExposureTimeUnit) {
 		switch (unit) {
-			case ExposureTimeUnit.MINUTE:
+			case 'MINUTE':
+			case 'm' as ExposureTimeUnit:
 				return 1
-			case ExposureTimeUnit.SECOND:
+			case 'SECOND':
+			case 's' as ExposureTimeUnit:
 				return 60
-			case ExposureTimeUnit.MILLISECOND:
+			case 'MILLISECOND':
+			case 'ms' as ExposureTimeUnit:
 				return 60000
-			case ExposureTimeUnit.MICROSECOND:
+			case 'MICROSECOND':
+			case 'us' as ExposureTimeUnit:
+			case 'µs' as ExposureTimeUnit:
 				return 60000000
 			default:
 				return 0

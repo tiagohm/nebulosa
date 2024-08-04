@@ -22,12 +22,7 @@ export type LiveStackerType = 'SIRIL' | 'PIXINSIGHT'
 
 export type CameraCaptureState = 'IDLE' | 'CAPTURE_STARTED' | 'EXPOSURE_STARTED' | 'EXPOSURING' | 'WAITING' | 'SETTLING' | 'DITHERING' | 'STACKING' | 'PAUSING' | 'PAUSED' | 'EXPOSURE_FINISHED' | 'CAPTURE_FINISHED'
 
-export enum ExposureTimeUnit {
-	MINUTE = 'MINUTE',
-	SECOND = 'SECOND',
-	MILLISECOND = 'MILLISECOND',
-	MICROSECOND = 'MICROSECOND',
-}
+export type ExposureTimeUnit = 'MINUTE' | 'SECOND' | 'MILLISECOND' | 'MICROSECOND'
 
 export interface Camera extends GuideOutput, Thermometer {
 	readonly exposuring: boolean
@@ -323,7 +318,7 @@ export const DEFAULT_CAMERA_START_CAPTURE: CameraStartCapture = {
 export const DEFAULT_CAMERA_PREFERENCE: CameraPreference = {
 	request: DEFAULT_CAMERA_START_CAPTURE,
 	setpointTemperature: 0,
-	exposureTimeUnit: ExposureTimeUnit.MICROSECOND,
+	exposureTimeUnit: 'MICROSECOND',
 	exposureMode: 'SINGLE',
 	subFrame: false,
 }

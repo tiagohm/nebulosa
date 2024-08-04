@@ -15,7 +15,6 @@ export class ConfirmationInterceptor implements HttpInterceptor {
 			const idempotencyKey = req.headers.get(IdempotencyKeyInterceptor.HEADER_KEY)
 
 			if (idempotencyKey) {
-				console.info('registered confirmation:', req.method, req.urlWithParams, idempotencyKey)
 				this.confirmation.register(idempotencyKey)
 			}
 
@@ -24,7 +23,6 @@ export class ConfirmationInterceptor implements HttpInterceptor {
 			if (idempotencyKey) {
 				return res.pipe(
 					finalize(() => {
-						console.info('unregistered confirmation:', req.method, req.urlWithParams, idempotencyKey)
 						this.confirmation.unregister(idempotencyKey)
 					}),
 				)

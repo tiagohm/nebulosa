@@ -19,7 +19,6 @@ import {
 	CameraStartCapture,
 	DEFAULT_CAMERA,
 	DEFAULT_CAMERA_PREFERENCE,
-	ExposureTimeUnit,
 	FrameType,
 	updateCameraStartCaptureFromCamera,
 } from '../../shared/types/camera.types'
@@ -331,7 +330,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			this.preference.exposureMode = 'FIXED'
 			this.request.exposureAmount = 1
 		} else if (mode === 'DARV') {
-			this.preference.exposureTimeUnit = ExposureTimeUnit.SECOND
+			this.preference.exposureTimeUnit = 'SECOND'
 		}
 
 		this.ditherMenuItem.visible = this.hasDither

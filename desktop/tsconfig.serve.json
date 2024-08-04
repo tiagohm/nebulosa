@@ -2,11 +2,10 @@
 	"compilerOptions": {
 		"sourceMap": true,
 		"declaration": false,
-		"moduleResolution": "node",
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"resolveJsonModule": true,
-		"module": "CommonJS",
+		"module": "NodeNext",
 		"target": "ES2022",
 		"noFallthroughCasesInSwitch": true,
 		"esModuleInterop": true,

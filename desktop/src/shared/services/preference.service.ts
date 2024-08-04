@@ -9,7 +9,7 @@ import { DEFAULT_FOCUSER_PREFERENCE, Focuser, FocuserPreference, focuserPreferen
 import { DEFAULT_FRAMING_PREFERENCE, FramingPreference, framingPreferenceWithDefault } from '../types/framing.types'
 import { DEFAULT_GUIDER_PREFERENCE, GuiderPreference, guiderPreferenceWithDefault } from '../types/guider.types'
 import { DEFAULT_HOME_PREFERENCE, HomePreference, homePreferenceWithDefault } from '../types/home.types'
-import { DEFAULT_IMAGE_PREFERENCE, FOV, ImagePreference } from '../types/image.types'
+import { DEFAULT_IMAGE_PREFERENCE, ImagePreference, imagePreferenceWithDefault } from '../types/image.types'
 import { DEFAULT_MOUNT_PREFERENCE, Mount, MountPreference, mountPreferenceWithDefault } from '../types/mount.types'
 import { DEFAULT_ROTATOR_PREFERENCE, Rotator, RotatorPreference, rotatorPreferenceWithDefault } from '../types/rotator.types'
 import { DEFAULT_SEQUENCER_PREFERENCE, SequencerPreference } from '../types/sequencer.types'
@@ -82,10 +82,9 @@ export class PreferenceService {
 	}
 
 	readonly home = new PreferenceData<HomePreference>(this.storage, 'home', () => structuredClone(DEFAULT_HOME_PREFERENCE), homePreferenceWithDefault)
-	readonly imagePreference = new PreferenceData<ImagePreference>(this.storage, 'image', () => structuredClone(DEFAULT_IMAGE_PREFERENCE))
+	readonly imagePreference = new PreferenceData<ImagePreference>(this.storage, 'image', () => structuredClone(DEFAULT_IMAGE_PREFERENCE), imagePreferenceWithDefault)
 	readonly skyAtlasPreference = new PreferenceData<SkyAtlasPreference>(this.storage, 'atlas', () => structuredClone(DEFAULT_SKY_ATLAS_PREFERENCE))
 	readonly alignment = new PreferenceData<AlignmentPreference>(this.storage, 'alignment', () => structuredClone(DEFAULT_ALIGNMENT_PREFERENCE), alignmentPreferenceWithDefault)
-	readonly imageFOVs = new PreferenceData<FOV[]>(this.storage, 'image.fovs', () => [])
 	readonly calibrationPreference = new PreferenceData<CalibrationPreference>(this.storage, 'calibration', () => structuredClone(DEFAULT_CALIBRATION_PREFERENCE), calibrationPreferenceWithDefault)
 	readonly sequencerPreference = new PreferenceData<SequencerPreference>(this.storage, 'sequencer', () => structuredClone(DEFAULT_SEQUENCER_PREFERENCE))
 	readonly stacker = new PreferenceData<StackerPreference>(this.storage, 'stacker', () => structuredClone(DEFAULT_STACKER_PREFERENCE), stackerPreferenceWithDefault)

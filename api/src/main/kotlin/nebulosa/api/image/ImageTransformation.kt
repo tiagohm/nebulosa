@@ -12,6 +12,7 @@ data class ImageTransformation(
     @JvmField val mirrorVertical: Boolean = false,
     @JvmField val invert: Boolean = false,
     @JvmField val scnr: SCNR = SCNR.EMPTY,
+    @JvmField val useJPEG: Boolean = false,
 ) {
 
     data class SCNR(
@@ -28,9 +29,9 @@ data class ImageTransformation(
 
     data class Stretch(
         @JvmField val auto: Boolean = false,
-        @JvmField val shadow: Float = 0f,
-        @JvmField val highlight: Float = 0.5f,
-        @JvmField val midtone: Float = 1f,
+        @JvmField val shadow: Int = 0,
+        @JvmField val highlight: Int = 32768,
+        @JvmField val midtone: Int = 65536,
     ) {
 
         companion object {
