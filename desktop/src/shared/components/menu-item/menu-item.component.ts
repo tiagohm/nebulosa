@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { InputSwitchChangeEvent } from 'primeng/inputswitch'
-import { Severity, TooltipPosition } from '../../types/app.types'
+import { Severity, TooltipPosition } from '../../types/angular.types'
 
 export interface MenuItemCommandEvent {
 	originalEvent?: Event

@@ -237,4 +237,8 @@ export class ElectronService {
 	calibrationChanged() {
 		return this.send('CALIBRATION.CHANGED')
 	}
+
+	locationChanged(location: Location) {
+		return this.send('LOCATION.CHANGED', location)
+	}
 }

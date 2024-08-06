@@ -1,5 +1,7 @@
 import type { Device } from './device.types'
 
+export type ApiEventType = (typeof API_EVENT_TYPES)[number]
+
 export interface MessageEvent {
 	eventName: string
 }
@@ -53,5 +55,3 @@ export const API_EVENT_TYPES = [
 	// Auto Focus.
 	'AUTO_FOCUS.ELAPSED',
 ] as const
-
-export type ApiEventType = (typeof API_EVENT_TYPES)[number]

@@ -10,7 +10,7 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { ComputedLocation, DEFAULT_COMPUTED_LOCATION, SkyAtlasTab } from '../../shared/types/atlas.types'
+import { BodyTabType, ComputedLocation, DEFAULT_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
 import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, Mount, MountRemoteControlDialog, MountRemoteControlType, MoveDirectionType, SlewRate, TrackMode } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
@@ -52,7 +52,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 			command: () => {
 				return this.browserWindowService.openSkyAtlas(
 					{
-						tab: SkyAtlasTab.SKY_OBJECT,
+						tab: BodyTabType.SKY_OBJECT,
 						filter: { rightAscension: this.currentComputedLocation.rightAscensionJ2000, declination: this.currentComputedLocation.declinationJ2000 },
 					},
 					{ bringToFront: true },

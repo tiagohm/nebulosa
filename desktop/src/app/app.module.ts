@@ -49,6 +49,7 @@ import { DeviceChooserComponent } from '../shared/components/device-chooser/devi
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
+import { LocationComponent } from '../shared/components/location/location.dialog'
 import { MapComponent } from '../shared/components/map/map.component'
 import { MenuBarComponent } from '../shared/components/menu-bar/menu-bar.component'
 import { MenuItemComponent } from '../shared/components/menu-item/menu-item.component'
@@ -56,7 +57,6 @@ import { MoonComponent } from '../shared/components/moon/moon.component'
 import { PathChooserComponent } from '../shared/components/path-chooser/path-chooser.component'
 import { SlideMenuComponent } from '../shared/components/slide-menu/slide-menu.component'
 import { ConfirmDialog } from '../shared/dialogs/confirm/confirm.dialog'
-import { LocationDialog } from '../shared/dialogs/location/location.dialog'
 import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { SpinnableNumberDirective } from '../shared/directives/spinnable-number.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
@@ -135,7 +135,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		SpinnableNumberDirective,
 		INDIComponent,
 		INDIPropertyComponent,
-		LocationDialog,
+		LocationComponent,
 		MapComponent,
 		MenuBarComponent,
 		MenuItemComponent,

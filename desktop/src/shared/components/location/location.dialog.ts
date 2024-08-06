@@ -1,13 +1,13 @@
 import { AfterViewInit, Component, EventEmitter, Input, Optional, Output, ViewChild } from '@angular/core'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
-import { MapComponent } from '../../components/map/map.component'
 import { DEFAULT_LOCATION, Location } from '../../types/atlas.types'
+import { MapComponent } from '../map/map.component'
 
 @Component({
 	selector: 'neb-location',
 	templateUrl: './location.dialog.html',
 })
-export class LocationDialog implements AfterViewInit {
+export class LocationComponent implements AfterViewInit {
 	@ViewChild('map')
 	private readonly map!: MapComponent
 

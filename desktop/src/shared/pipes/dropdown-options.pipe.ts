@@ -1,5 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core'
 import { Hemisphere } from '../types/alignment.types'
+import { Constellation, CONSTELLATIONS, SATELLITE_GROUPS, SatelliteGroupType, SKY_OBJECT_TYPES, SkyObjectType } from '../types/atlas.types'
 import { AutoFocusFittingMode, BacklashCompensationMode } from '../types/autofocus.type'
 import { ExposureMode, FrameType, LiveStackerType } from '../types/camera.types'
 import { GuideDirection, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
@@ -36,7 +37,10 @@ export interface DropdownOptions {
 	SETTINGS_TAB: SettingsTabKey[]
 	STACKER_GROUP_TYPE: StackerGroupType[]
 	CONNECTION_TYPE: ConnectionType[]
-	IMAGE_STATISTICS_BIT_OPTIONS: ImageStatisticsBitOption[]
+	IMAGE_STATISTICS_BIT_OPTION: ImageStatisticsBitOption[]
+	SATELLITE_GROUP_TYPE: SatelliteGroupType[]
+	CONSTELLATION: Constellation[]
+	SKY_OBJECT_TYPE: SkyObjectType[]
 }
 
 @Pipe({ name: 'dropdownOptions' })
@@ -89,8 +93,14 @@ export class DropdownOptionsPipe implements PipeTransform {
 				return ['LUMINANCE', 'RED', 'GREEN', 'BLUE', 'MONO', 'RGB'] as DropdownOptions[K]
 			case 'CONNECTION_TYPE':
 				return ['INDI', 'ALPACA'] as DropdownOptions[K]
-			case 'IMAGE_STATISTICS_BIT_OPTIONS':
+			case 'IMAGE_STATISTICS_BIT_OPTION':
 				return IMAGE_STATISTICS_BIT_OPTIONS as DropdownOptions[K]
+			case 'SATELLITE_GROUP_TYPE':
+				return SATELLITE_GROUPS as unknown as DropdownOptions[K]
+			case 'CONSTELLATION':
+				return CONSTELLATIONS as unknown as DropdownOptions[K]
+			case 'SKY_OBJECT_TYPE':
+				return SKY_OBJECT_TYPES as unknown as DropdownOptions[K]
 		}
 
 		return []

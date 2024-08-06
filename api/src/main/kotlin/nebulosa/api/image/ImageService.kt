@@ -7,7 +7,7 @@ import nebulosa.api.atlas.SimbadEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
-import nebulosa.api.image.ImageAnnotatation.StarDSO
+import nebulosa.api.image.ImageAnnotation.StarDSO
 import nebulosa.fits.*
 import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Histogram
@@ -173,7 +173,7 @@ class ImageService(
     }
 
     @Synchronized
-    fun annotations(path: Path, request: AnnotateImageRequest, location: Location? = null): List<ImageAnnotatation> {
+    fun annotations(path: Path, request: AnnotateImageRequest, location: Location? = null): List<ImageAnnotation> {
         val (image, calibration) = imageBucket.open(path)
 
         if (image == null || calibration.isNullOrEmpty() || !calibration.solved) {
@@ -187,7 +187,7 @@ class ImageService(
             return emptyList()
         }
 
-        val annotations = Vector<ImageAnnotatation>(64)
+        val annotations = Vector<ImageAnnotation>(64)
         val tasks = ArrayList<CompletableFuture<*>>(2)
 
         val dateTime = image.header.observationDate ?: LocalDateTime.now()
@@ -219,8 +219,8 @@ class ImageService(
                         val declination = it[2].deg.takeIf(Angle::isFinite) ?: return@forEach
                         val (x, y) = wcs.skyToPix(rightAscension, declination)
                         val magnitude = it[6].replace(INVALID_MAG_CHARS, "").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-                        val minorPlanet = ImageAnnotatation.MinorPlanet(0L, it[0], rightAscension, declination, magnitude)
-                        val annotation = ImageAnnotatation(x, y, minorPlanet = minorPlanet)
+                        val minorPlanet = ImageAnnotation.MinorPlanet(0L, it[0], rightAscension, declination, magnitude)
+                        val annotation = ImageAnnotation(x, y, minorPlanet = minorPlanet)
                         annotations.add(annotation)
                         count++
                     }
@@ -254,8 +254,8 @@ class ImageService(
                     val astrometric = barycentric.observe(entry).equatorial()
 
                     val (x, y) = wcs.skyToPix(astrometric.longitude.normalized, astrometric.latitude)
-                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotatation(x, y, star = StarDSO(entry))
-                    else ImageAnnotatation(x, y, dso = StarDSO(entry))
+                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = StarDSO(entry))
+                    else ImageAnnotation(x, y, dso = StarDSO(entry))
                     annotations.add(annotation)
                     count++
                 }

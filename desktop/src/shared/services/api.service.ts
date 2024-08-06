@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
-import moment from 'moment'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
-import { Angle, BodyPosition, CloseApproach, ComputedLocation, Constellation, DeepSkyObject, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
+import { extractDate, extractDateTime } from '../types/angular.types'
+import { Angle, BodyPosition, CloseApproach, ComputedLocation, Constellation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
 import { AutoFocusRequest } from '../types/autofocus.type'
 import { CalibrationFrame } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
@@ -445,51 +445,51 @@ export class ApiService {
 
 	// SKY ATLAS
 
-	positionOfSun(dateTime: Date, fast: boolean = false) {
-		const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-		const query = this.http.query({ date, time, fast, hasLocation: true })
+	positionOfSun(dateTime: Date, location?: Location, fast: boolean = false) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<BodyPosition>(`sky-atlas/sun/position?${query}`)
 	}
 
-	altitudePointsOfSun(dateTime: Date, fast: boolean = false) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, fast, hasLocation: true })
+	altitudePointsOfSun(dateTime: Date, location?: Location, fast: boolean = false) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/sun/altitude-points?${query}`)
 	}
 
-	positionOfMoon(dateTime: Date, fast: boolean = false) {
-		const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-		const query = this.http.query({ date, time, fast, hasLocation: true })
+	positionOfMoon(dateTime: Date, location?: Location, fast: boolean = false) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<BodyPosition>(`sky-atlas/moon/position?${query}`)
 	}
 
-	altitudePointsOfMoon(dateTime: Date, fast: boolean = false) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, fast, hasLocation: true })
+	altitudePointsOfMoon(dateTime: Date, location?: Location, fast: boolean = false) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/moon/altitude-points?${query}`)
 	}
 
-	positionOfPlanet(code: string, dateTime: Date, fast: boolean = false) {
-		const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-		const query = this.http.query({ date, time, fast, hasLocation: true })
+	positionOfPlanet(code: string, dateTime: Date, location?: Location, fast: boolean = false) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<BodyPosition>(`sky-atlas/planets/${encodeURIComponent(code)}/position?${query}`)
 	}
 
-	altitudePointsOfPlanet(code: string, dateTime: Date, fast: boolean = false) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, fast, hasLocation: true })
+	altitudePointsOfPlanet(code: string, dateTime: Date, location?: Location, fast: boolean = false) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/planets/${encodeURIComponent(code)}/altitude-points?${query}`)
 	}
 
-	positionOfSkyObject(simbad: DeepSkyObject, dateTime: Date) {
-		const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-		const query = this.http.query({ date, time, hasLocation: true })
+	positionOfSkyObject(simbad: DeepSkyObject, dateTime: Date, location?: Location) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, hasLocation: location?.id || true })
 		return this.http.get<BodyPosition>(`sky-atlas/sky-objects/${simbad.id}/position?${query}`)
 	}
 
-	altitudePointsOfSkyObject(simbad: DeepSkyObject, dateTime: Date) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, hasLocation: true })
+	altitudePointsOfSkyObject(simbad: DeepSkyObject, dateTime: Date, location?: Location) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/sky-objects/${simbad.id}/altitude-points?${query}`)
 	}
 
@@ -502,15 +502,15 @@ export class ApiService {
 		return this.http.get<SkyObjectType[]>(`sky-atlas/sky-objects/types`)
 	}
 
-	positionOfSatellite(satellite: Satellite, dateTime: Date) {
-		const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-		const query = this.http.query({ date, time, hasLocation: true })
+	positionOfSatellite(satellite: Satellite, dateTime: Date, location?: Location) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, hasLocation: location?.id || true })
 		return this.http.get<BodyPosition>(`sky-atlas/satellites/${satellite.id}/position?${query}`)
 	}
 
-	altitudePointsOfSatellite(satellite: Satellite, dateTime: Date) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, hasLocation: true })
+	altitudePointsOfSatellite(satellite: Satellite, dateTime: Date, location?: Location) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/satellites/${satellite.id}/altitude-points?${query}`)
 	}
 
@@ -519,9 +519,9 @@ export class ApiService {
 		return this.http.get<Satellite[]>(`sky-atlas/satellites?${query}`)
 	}
 
-	twilight(dateTime: Date, fast: boolean = false) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, fast, hasLocation: true })
+	twilight(dateTime: Date, location?: Location, fast: boolean = false) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
 		return this.http.get<Twilight>(`sky-atlas/twilight?${query}`)
 	}
 
@@ -530,14 +530,14 @@ export class ApiService {
 		return this.http.get<MinorPlanet>(`sky-atlas/minor-planets?${query}`)
 	}
 
-	closeApproachesForMinorPlanets(days: number = 7, distance: number = 10, dateTime?: Date | string) {
-		const date = !dateTime || typeof dateTime === 'string' ? dateTime : moment(dateTime).format('YYYY-MM-DD')
+	closeApproachesOfMinorPlanets(days: number = 7, distance: number = 10, dateTime?: Date | string) {
+		const date = !dateTime || typeof dateTime === 'string' ? dateTime : extractDate(dateTime)
 		const query = this.http.query({ days, distance, date })
 		return this.http.get<CloseApproach[]>(`sky-atlas/minor-planets/close-approaches?${query}`)
 	}
 
-	annotationsOfImage(path: string, request: AnnotateImageRequest) {
-		const query = this.http.query({ path, hasLocation: true })
+	annotationsOfImage(path: string, request: AnnotateImageRequest, location?: Location) {
+		const query = this.http.query({ path, hasLocation: location?.id || true })
 		return this.http.put<ImageAnnotation[]>(`image/annotations?${query}`, request)
 	}
 

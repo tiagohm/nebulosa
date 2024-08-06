@@ -12,7 +12,7 @@ import nebulosa.skycatalog.DeepSkyObject
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 
-data class ImageAnnotatation(
+data class ImageAnnotation(
     override val x: Double,
     override val y: Double,
     @JvmField val star: StarDSO? = null,

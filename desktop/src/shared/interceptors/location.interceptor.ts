@@ -11,11 +11,29 @@ export class LocationInterceptor implements HttpInterceptor {
 
 	intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
 		if (req.urlWithParams.includes('hasLocation')) {
-			const { location, locations } = this.preference.settings.get()
+			const params = new URLSearchParams(req.urlWithParams)
+			const hasLocation = params.get('hasLocation')
 
-			req = req.clone({
-				headers: req.headers.set(LocationInterceptor.HEADER_KEY, JSON.stringify(locations[location])),
-			})
+			if (!hasLocation || hasLocation === 'true') {
+				const location = this.preference.settings.get().location
+
+				req = req.clone({
+					headers: req.headers.set(LocationInterceptor.HEADER_KEY, JSON.stringify(location)),
+				})
+			} else {
+				const id = parseInt(hasLocation)
+
+				if (id) {
+					const locations = this.preference.settings.get().locations
+					const location = locations.find((e) => e.id === id)
+
+					if (location) {
+						req = req.clone({
+							headers: req.headers.set(LocationInterceptor.HEADER_KEY, JSON.stringify(location)),
+						})
+					}
+				}
+			}
 		}
 
 		return next.handle(req)

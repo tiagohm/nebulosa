@@ -27,10 +27,6 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 	private readonly locationChangePublisher = new Subject<Location>()
 	private readonly locationChangeSubscription?: Subscription
 
-	get location() {
-		return this.preference.locations[this.preference.location] ?? DEFAULT_LOCATION
-	}
-
 	get plateSolver() {
 		return this.preference.plateSolver[this.plateSolverType]
 	}
@@ -55,7 +51,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 		app.title = 'Settings'
 
 		this.locationChangeSubscription = this.locationChangePublisher.pipe(debounceTime(2000)).subscribe((location) => {
-			return this.electronService.send('LOCATION.CHANGED', location)
+			return this.electronService.locationChanged(location)
 		})
 	}
 
@@ -71,32 +67,26 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 		const location = structuredClone(DEFAULT_LOCATION)
 		location.id = +new Date()
 		this.preference.locations.push(location)
-		this.preference.location = this.preference.locations.length - 1
-
-		this.locationChanged()
+		this.locationChanged(location)
 	}
 
 	protected deleteLocation() {
 		if (this.preference.locations.length > 1) {
-			const index = this.preference.locations.indexOf(this.location)
+			const index = this.preference.locations.findIndex((e) => e.id === this.preference.location.id)
 
 			if (index >= 0) {
 				this.preference.locations.splice(index, 1)
-				this.preference.location = 0
-
-				this.locationChanged()
+				this.locationChanged(this.preference.locations[0])
 			}
 		}
 	}
 
 	protected locationChanged(location?: Location) {
 		if (location) {
-			this.preference.location = this.preference.locations.indexOf(location)
+			this.preference.location = location
+			this.savePreference()
+			this.locationChangePublisher.next(location)
 		}
-
-		this.savePreference()
-
-		this.locationChangePublisher.next(this.location)
 	}
 
 	protected resetCameraCaptureNamingFormat(type: FrameType) {
@@ -106,6 +96,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 
 	private loadPreference() {
 		Object.assign(this.preference, this.preferenceService.settings.get())
+		this.preference.location = this.preference.locations.find((e) => e.id === this.preference.location.id) ?? this.preference.locations[0]
 	}
 
 	protected savePreference() {

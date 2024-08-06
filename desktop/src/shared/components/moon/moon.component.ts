@@ -37,17 +37,14 @@ export class MoonComponent implements AfterViewInit, OnChanges {
 
 		ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-		const offset = 32
-		const offset4 = offset / 4
-
-		const height = canvas.height - offset
-		const width = canvas.width - offset
+		const height = canvas.height
+		const width = canvas.width
 
 		canvas.style.backgroundImage = `url('assets/images/moon.png')`
-		canvas.style.backgroundSize = `${height + offset4 * 2 - 2}px`
+		canvas.style.backgroundSize = `${height - 2}px`
 
-		const cx = width / 2 + offset4
-		const cy = height / 2 + offset4
+		const cx = width / 2
+		const cy = height / 2
 
 		const pointsA: [number, number][] = []
 		const pointsB: [number, number][] = []
@@ -56,20 +53,20 @@ export class MoonComponent implements AfterViewInit, OnChanges {
 			const angle = ((a - 90) * Math.PI) / 180
 			let x1 = Math.ceil(Math.cos(angle) * cx)
 			const y1 = Math.ceil(Math.sin(angle) * cy)
-			const moonWidth = x1 * 2
-			let x2 = Math.floor(moonWidth * this.illuminationRatio)
+			const w = x1 * 2
+			let x2 = Math.floor(w * this.illuminationRatio)
 
 			if (this.waning) {
 				x1 = cx + x1
-				x2 = x1 - (moonWidth - x2)
+				x2 = x1 - (w - x2)
 			} else {
 				x1 = cx - x1
-				x2 = x1 + (moonWidth - x2)
+				x2 = x1 + (w - x2)
 			}
 
 			const y2 = cy + y1
-			const p1: [number, number] = [x1 + offset4, y2 + offset4]
-			const p2: [number, number] = [x2 + offset4, y2 + offset4]
+			const p1: [number, number] = [x1, y2]
+			const p2: [number, number] = [x2, y2]
 
 			pointsA.push(p1)
 			pointsB.push(p2)
@@ -78,7 +75,7 @@ export class MoonComponent implements AfterViewInit, OnChanges {
 		const newPoints = pointsA.concat(pointsB.reverse())
 		ctx.beginPath()
 
-		ctx.fillStyle = '#121212D8'
+		ctx.fillStyle = '#121212E8'
 		ctx.filter = 'blur(1px)'
 
 		let first = true

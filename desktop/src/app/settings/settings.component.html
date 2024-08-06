@@ -19,7 +19,7 @@
 				<p-floatLabel class="w-full">
 					<p-dropdown
 						[options]="preference.locations"
-						[ngModel]="location"
+						[ngModel]="preference.location"
 						(ngModelChange)="locationChanged($event)"
 						optionLabel="name"
 						dataKey="id"
@@ -28,7 +28,7 @@
 						[autoDisplayFirst]="false">
 						<ng-template pTemplate="selectedItem">
 							<div class="flex align-items-center gap-2">
-								<span>{{ location.name || '?' }}</span>
+								<span>{{ preference.location.name || '?' }}</span>
 							</div>
 						</ng-template>
 					</p-dropdown>
@@ -56,8 +56,8 @@
 			</div>
 			<div class="col-12">
 				<neb-location
-					[location]="location"
-					(locationChange)="locationChanged()" />
+					[location]="preference.location"
+					(locationChange)="locationChanged($event)" />
 			</div>
 		</div>
 	</div>

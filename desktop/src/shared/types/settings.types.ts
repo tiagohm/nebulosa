@@ -1,5 +1,5 @@
 import type { Location } from './atlas.types'
-import { DEFAULT_LOCATION } from './atlas.types'
+import { DEFAULT_LOCATION, locationWithDefault } from './atlas.types'
 import type { LiveStackerSettings, LiveStackerType } from './camera.types'
 import { cameraCaptureNamingFormatWithDefault, DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, DEFAULT_LIVE_STACKER_SETTINGS, liveStackerSettingsWithDefault, type CameraCaptureNamingFormat, type FrameType } from './camera.types'
 import { DEFAULT_PLATE_SOLVER_SETTINGS, plateSolverSettingsWithDefault, type PlateSolverSettings, type PlateSolverType } from './platesolver.types'
@@ -15,7 +15,7 @@ export interface SettingsPreference {
 	stacker: Record<StackerType, StackerSettings>
 	namingFormat: CameraCaptureNamingFormat
 	locations: Location[]
-	location: number // selected location index
+	location: Location
 }
 
 export const DEFAULT_SETTINGS_PREFERENCE: SettingsPreference = {
@@ -40,7 +40,7 @@ export const DEFAULT_SETTINGS_PREFERENCE: SettingsPreference = {
 	},
 	namingFormat: DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT,
 	locations: [DEFAULT_LOCATION],
-	location: 0,
+	location: DEFAULT_LOCATION,
 }
 
 export function settingsPreferenceWithDefault(preference?: Partial<SettingsPreference>, source: SettingsPreference = DEFAULT_SETTINGS_PREFERENCE) {
@@ -65,11 +65,10 @@ export function settingsPreferenceWithDefault(preference?: Partial<SettingsPrefe
 	}
 
 	preference.namingFormat = cameraCaptureNamingFormatWithDefault(preference.namingFormat, source.namingFormat)
-	preference.location ??= source.location
+	preference.location = locationWithDefault(preference.location, source.location)
 
 	if (!preference.locations?.length) {
 		preference.locations = structuredClone(source.locations)
-		preference.location = 0
 	}
 
 	return preference as SettingsPreference
