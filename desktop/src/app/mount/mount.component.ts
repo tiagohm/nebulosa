@@ -11,7 +11,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
 import { BodyTabType, ComputedLocation, DEFAULT_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
-import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, Mount, MountRemoteControlDialog, MountRemoteControlType, MoveDirectionType, SlewRate, TrackMode } from '../../shared/types/mount.types'
+import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, Mount, MountRemoteControlProtocol, MountSlewDirection, SlewRate, TrackMode } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -20,22 +20,22 @@ import { AppComponent } from '../app.component'
 })
 export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 	protected readonly mount = structuredClone(DEFAULT_MOUNT)
-
-	protected tracking = false
-	protected trackMode: TrackMode = 'SIDEREAL'
-	protected slewRate?: SlewRate
-	protected slewingDirection?: MoveDirectionType
-
+	protected readonly remoteControl = structuredClone(DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG)
 	protected readonly preference = structuredClone(DEFAULT_MOUNT_PREFERENCE)
-	protected currentComputedLocation = structuredClone(DEFAULT_COMPUTED_LOCATION)
-	protected targetComputedLocation = structuredClone(DEFAULT_COMPUTED_LOCATION)
+	protected readonly currentComputedLocation = structuredClone(DEFAULT_COMPUTED_LOCATION)
+	protected readonly targetComputedLocation = structuredClone(DEFAULT_COMPUTED_LOCATION)
 
 	private readonly computeCoordinatePublisher = new Subject<void>()
 	private readonly computeTargetCoordinatePublisher = new Subject<void>()
 	private readonly computeCoordinateSubscriptions: Subscription[] = []
 	private readonly moveToDirection = [false, false]
 
-	readonly ephemerisModel: SlideMenuItem[] = [
+	protected tracking = false
+	protected trackMode: TrackMode = 'SIDEREAL'
+	protected slewRate?: SlewRate
+	protected slewingDirection?: MountSlewDirection
+
+	protected readonly ephemerisModel: SlideMenuItem[] = [
 		{
 			icon: 'mdi mdi-image',
 			label: 'Frame',
@@ -61,7 +61,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 		},
 	]
 
-	readonly targetCoordinateModel: SlideMenuItem[] = [
+	protected readonly targetCoordinateModel: SlideMenuItem[] = [
 		{
 			icon: 'mdi mdi-telescope',
 			label: 'Go To',
@@ -203,14 +203,6 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 
 	protected targetCoordinateCommand = this.targetCoordinateModel[0]
 
-	protected readonly remoteControl: MountRemoteControlDialog = {
-		showDialog: false,
-		type: 'LX200',
-		host: '0.0.0.0',
-		port: 10001,
-		data: [],
-	}
-
 	constructor(
 		private readonly app: AppComponent,
 		private readonly api: ApiService,
@@ -299,8 +291,8 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 
 	ngAfterContentInit() {
 		this.route.queryParams.subscribe(async (e) => {
-			const mount = JSON.parse(decodeURIComponent(e['data'] as string)) as Mount
-			await this.mountChanged(mount)
+			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as Mount
+			await this.mountChanged(data)
 			this.ticker.register(this, 30000)
 		})
 	}
@@ -343,22 +335,22 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 	}
 
 	protected async showRemoteControlDialog() {
-		this.remoteControl.data = await this.api.mountRemoteControlList(this.mount)
+		this.remoteControl.controls = await this.api.mountRemoteControlList(this.mount)
 		this.remoteControl.showDialog = true
 	}
 
 	protected async startRemoteControl() {
 		try {
-			await this.api.mountRemoteControlStart(this.mount, this.remoteControl.type, this.remoteControl.host, this.remoteControl.port)
-			this.remoteControl.data = await this.api.mountRemoteControlList(this.mount)
+			await this.api.mountRemoteControlStart(this.mount, this.remoteControl.protocol, this.remoteControl.host, this.remoteControl.port)
+			this.remoteControl.controls = await this.api.mountRemoteControlList(this.mount)
 		} catch {
 			this.primeService.message('Failed to start remote control', 'error')
 		}
 	}
 
-	protected async stopRemoteControl(type: MountRemoteControlType) {
-		await this.api.mountRemoteControlStop(this.mount, type)
-		this.remoteControl.data = await this.api.mountRemoteControlList(this.mount)
+	protected async stopRemoteControl(protocol: MountRemoteControlProtocol) {
+		await this.api.mountRemoteControlStop(this.mount, protocol)
+		this.remoteControl.controls = await this.api.mountRemoteControlList(this.mount)
 	}
 
 	protected async goTo() {
@@ -389,7 +381,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 		}
 	}
 
-	protected moveTo(direction: MoveDirectionType, pressed: boolean, event?: MouseEvent) {
+	protected moveTo(direction: MountSlewDirection, pressed: boolean, event?: MouseEvent) {
 		if (!event || event.button === 0) {
 			this.slewingDirection = pressed ? direction : undefined
 
@@ -478,8 +470,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 	protected async computeTargetCoordinates() {
 		if (this.mount.connected) {
 			const { targetRightAscension, targetDeclination, targetCoordinateType } = this.preference
-			const computedLocation = await this.api.mountComputeLocation(this.mount, targetCoordinateType === 'J2000', targetRightAscension, targetDeclination, true, true, true)
-			this.targetComputedLocation = computedLocation
+			Object.assign(this.targetComputedLocation, await this.api.mountComputeLocation(this.mount, targetCoordinateType === 'J2000', targetRightAscension, targetDeclination, true, true, true))
 		}
 	}
 

@@ -46,8 +46,8 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Tickable {
 
 	ngAfterViewInit() {
 		this.route.queryParams.subscribe(async (e) => {
-			const rotator = JSON.parse(decodeURIComponent(e['data'] as string)) as Rotator
-			await this.rotatorChanged(rotator)
+			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as Rotator
+			await this.rotatorChanged(data)
 			this.ticker.register(this, 30000)
 		})
 	}

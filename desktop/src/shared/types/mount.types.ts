@@ -11,9 +11,13 @@ export type TrackMode = 'SIDEREAL' | ' LUNAR' | 'SOLAR' | 'KING' | 'CUSTOM'
 
 export type CelestialLocationType = 'ZENITH' | 'NORTH_POLE' | 'SOUTH_POLE' | 'GALACTIC_CENTER' | 'MERIDIAN_EQUATOR' | 'MERIDIAN_ECLIPTIC' | 'EQUATOR_ECLIPTIC'
 
-export type MountRemoteControlType = 'LX200' | 'STELLARIUM'
+export type MountRemoteControlProtocol = 'LX200' | 'STELLARIUM'
 
-export type MoveDirectionType = 'N' | 'S' | 'W' | 'E' | 'NW' | 'NE' | 'SW' | 'SE'
+export type CardinalDirection = 'N' | 'S' | 'W' | 'E'
+
+export type OrdinalDirection = 'NW' | 'NE' | 'SW' | 'SE'
+
+export type MountSlewDirection = CardinalDirection | OrdinalDirection
 
 export interface SlewRate {
 	name: string
@@ -43,7 +47,7 @@ export interface Mount extends EquatorialCoordinate, GPS, GuideOutput, Parkable 
 }
 
 export interface MountRemoteControl {
-	type: MountRemoteControlType
+	protocol: MountRemoteControlProtocol
 	mount: Mount
 	running: boolean
 	rightAscension: Angle
@@ -59,10 +63,10 @@ export interface MountRemoteControl {
 
 export interface MountRemoteControlDialog {
 	showDialog: boolean
-	type: MountRemoteControlType
+	protocol: MountRemoteControlProtocol
 	host: string
 	port: number
-	data: MountRemoteControl[]
+	controls: MountRemoteControl[]
 }
 
 export interface MountPreference {
@@ -103,6 +107,14 @@ export const DEFAULT_MOUNT: Mount = {
 	canPark: false,
 	parking: false,
 	parked: false,
+}
+
+export const DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG: MountRemoteControlDialog = {
+	showDialog: false,
+	protocol: 'LX200',
+	host: '0.0.0.0',
+	port: 10001,
+	controls: [],
 }
 
 export const DEFAULT_MOUNT_PREFERENCE: MountPreference = {

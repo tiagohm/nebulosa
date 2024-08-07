@@ -6,7 +6,7 @@ import { ExposureMode, FrameType, LiveStackerType } from '../types/camera.types'
 import { GuideDirection, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
 import { ConnectionType } from '../types/home.types'
 import { Bitpix, IMAGE_STATISTICS_BIT_OPTIONS, ImageChannel, ImageFormat, ImageStatisticsBitOption, SCNRProtectionMethod } from '../types/image.types'
-import { MountRemoteControlType } from '../types/mount.types'
+import { MountRemoteControlProtocol } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
 import { SequenceCaptureMode } from '../types/sequencer.types'
 import { SettingsTabKey } from '../types/settings.types'
@@ -23,7 +23,7 @@ export interface DropdownOptions {
 	IMAGE_FORMAT: ImageFormat[]
 	IMAGE_BITPIX: Bitpix[]
 	IMAGE_CHANNEL: ImageChannel[]
-	MOUNT_REMOTE_CONTROL_TYPE: MountRemoteControlType[]
+	MOUNT_REMOTE_CONTROL_PROTOCOL: MountRemoteControlProtocol[]
 	FRAME_TYPE: FrameType[]
 	EXPOSURE_MODE: ExposureMode[]
 	GUIDE_DIRECTION: GuideDirection[]
@@ -65,7 +65,7 @@ export class DropdownOptionsPipe implements PipeTransform {
 				return ['BYTE', 'SHORT', 'INTEGER', 'FLOAT', 'DOUBLE'] as DropdownOptions[K]
 			case 'IMAGE_CHANNEL':
 				return ['RED', 'GREEN', 'BLUE', 'GRAY'] as DropdownOptions[K]
-			case 'MOUNT_REMOTE_CONTROL_TYPE':
+			case 'MOUNT_REMOTE_CONTROL_PROTOCOL':
 				return ['LX200', 'STELLARIUM'] as DropdownOptions[K]
 			case 'FRAME_TYPE':
 				return ['LIGHT', 'DARK', 'FLAT', 'BIAS'] as DropdownOptions[K]

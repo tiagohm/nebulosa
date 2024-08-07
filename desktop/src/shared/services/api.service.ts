@@ -12,7 +12,7 @@ import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
 import { ConnectionStatus, ConnectionType } from '../types/home.types'
 import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
-import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlType, SlewRate, TrackMode } from '../types/mount.types'
+import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, SlewRate, TrackMode } from '../types/mount.types'
 import { PlateSolverRequest } from '../types/platesolver.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencePlan } from '../types/sequencer.types'
@@ -179,8 +179,8 @@ export class ApiService {
 		return this.http.put<never>(`mounts/${mount.id}/point-here?${query}`)
 	}
 
-	mountRemoteControlStart(mount: Mount, type: MountRemoteControlType, host: string, port: number) {
-		const query = this.http.query({ type, host, port })
+	mountRemoteControlStart(mount: Mount, protocol: MountRemoteControlProtocol, host: string, port: number) {
+		const query = this.http.query({ protocol, host, port })
 		return this.http.put<never>(`mounts/${mount.id}/remote-control/start?${query}`)
 	}
 
@@ -188,8 +188,8 @@ export class ApiService {
 		return this.http.get<MountRemoteControl[]>(`mounts/${mount.id}/remote-control`)
 	}
 
-	mountRemoteControlStop(mount: Mount, type: MountRemoteControlType) {
-		const query = this.http.query({ type })
+	mountRemoteControlStop(mount: Mount, protocol: MountRemoteControlProtocol) {
+		const query = this.http.query({ protocol })
 		return this.http.put<never>(`mounts/${mount.id}/remote-control/stop?${query}`)
 	}
 

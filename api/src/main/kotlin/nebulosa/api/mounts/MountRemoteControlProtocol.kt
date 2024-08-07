@@ -1,6 +1,6 @@
 package nebulosa.api.mounts
 
-enum class MountRemoteControlType {
+enum class MountRemoteControlProtocol {
     STELLARIUM,
     LX200,
 }

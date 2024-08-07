@@ -402,13 +402,13 @@
 		<div class="col-4">
 			<p-floatLabel class="w-full">
 				<p-dropdown
-					[options]="'MOUNT_REMOTE_CONTROL_TYPE' | dropdownOptions | enumDropdown"
+					[options]="'MOUNT_REMOTE_CONTROL_PROTOCOL' | dropdownOptions | enumDropdown"
 					optionsLabel="label"
 					optionsValue="value"
-					[(ngModel)]="remoteControl.type"
+					[(ngModel)]="remoteControl.protocol"
 					[autoDisplayFirst]="false"
 					styleClass="p-inputtext-sm border-0" />
-				<label>Type</label>
+				<label>Protocol</label>
 			</p-floatLabel>
 		</div>
 		<div class="col-5">
@@ -435,7 +435,7 @@
 			</p-floatLabel>
 		</div>
 		<div class="col-12 pt-0 justify-content-center flex align-items-center text-sm">
-			<span *ngIf="remoteControl.type === 'LX200'">
+			<span *ngIf="remoteControl.protocol === 'LX200'">
 				Use together with the
 				<a
 					target="_blank"
@@ -443,7 +443,7 @@
 					Stellarium Mobile Plus
 				</a>
 			</span>
-			<span *ngIf="remoteControl.type === 'STELLARIUM'">
+			<span *ngIf="remoteControl.protocol === 'STELLARIUM'">
 				Use together with the
 				<a
 					target="_blank"
@@ -461,7 +461,7 @@
 		</div>
 		<div class="col-12 mt-2">
 			<p-listbox
-				[options]="remoteControl.data"
+				[options]="remoteControl.controls"
 				[style]="{ width: '100%' }"
 				[listStyle]="{ 'max-height': '100px' }"
 				styleClass="border-0"

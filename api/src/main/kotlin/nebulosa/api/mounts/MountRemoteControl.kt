@@ -18,7 +18,7 @@ import java.io.Closeable
 import java.time.OffsetDateTime
 
 data class MountRemoteControl(
-    @JvmField val type: MountRemoteControlType,
+    @JvmField val protocol: MountRemoteControlProtocol,
     @field:JsonIgnore @JvmField val server: NettyServer,
     @JvmField val mount: Mount,
 ) : StellariumMountHandler, LX200MountHandler, DeviceEventHandler, Closeable {
@@ -28,8 +28,8 @@ data class MountRemoteControl(
     @JsonIgnore private val deviceProvider = mount.sender as? INDIDeviceProvider
 
     init {
-        if (server is StellariumProtocolServer) {
-            deviceProvider?.registerDeviceEventHandler(this)
+        if (server is StellariumProtocolServer && deviceProvider != null) {
+            deviceProvider.registerDeviceEventHandler(this)
             server.attachMountHandler(this)
         } else if (server is LX200ProtocolServer) {
             server.attachMountHandler(this)

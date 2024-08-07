@@ -6,7 +6,7 @@ import { CameraCaptureState, ExposureMode, ExposureTimeUnit, FrameType, LiveStac
 import { FlatWizardState } from '../types/flat-wizard.types'
 import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
 import { Bitpix, ImageChannel, SCNRProtectionMethod } from '../types/image.types'
-import { MountRemoteControlType } from '../types/mount.types'
+import { MountRemoteControlProtocol } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
 import { SequenceCaptureMode, SequencerState } from '../types/sequencer.types'
 import { SettingsTabKey } from '../types/settings.types'
@@ -36,7 +36,7 @@ export type EnumPipeKey =
 	| LiveStackerType
 	| GuiderPlotMode
 	| GuiderYAxisUnit
-	| MountRemoteControlType
+	| MountRemoteControlProtocol
 	| SequenceCaptureMode
 	| Bitpix
 	| StackerType
