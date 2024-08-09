@@ -161,7 +161,7 @@ data object XisfFormat : ImageFormat {
     }
 
     @JvmStatic
-    fun BufferedSource.readSignature() = readString(8L, Charsets.US_ASCII)
+    fun BufferedSource.readSignature() = if (request(8L)) readString(8L, Charsets.US_ASCII) else ""
 
     @JvmStatic
     internal fun Buffer.readPixel(format: SampleFormat, byteOrder: ByteOrder): Float {

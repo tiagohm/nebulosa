@@ -23,7 +23,7 @@ data object FitsFormat : ImageFormat {
     }
 
     @JvmStatic
-    fun BufferedSource.readSignature() = readString(6L, Charsets.US_ASCII)
+    fun BufferedSource.readSignature() = if (request(6L)) readString(6L, Charsets.US_ASCII) else ""
 
     fun isImageHdu(header: ReadableHeader) =
         header.getBoolean(FitsKeyword.SIMPLE) || header.getStringOrNull(FitsKeyword.XTENSION) == "IMAGE"

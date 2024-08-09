@@ -22,6 +22,7 @@ class XisfFormatTest : AbstractTest() {
     fun shouldBeXisfFormat() {
         NGC3344_COLOR_8_FITS.isXisf().shouldBeFalse()
         M82_COLOR_16_XISF.isXisf().shouldBeTrue()
+        tempPath("empty-", ".xisf").isXisf().shouldBeFalse()
     }
 
     @Test
