@@ -16,7 +16,7 @@ function padNumber(value: number) {
 }
 
 export function extractDate(date: Date) {
-	return `${date.getFullYear()}-${padNumber(date.getMonth())}-${padNumber(date.getDay())}`
+	return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())}`
 }
 
 export function extractTime(date: Date, hasSeconds: boolean = true) {

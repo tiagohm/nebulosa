@@ -8,7 +8,7 @@ import { ConnectionType } from '../types/home.types'
 import { Bitpix, IMAGE_STATISTICS_BIT_OPTIONS, ImageChannel, ImageFormat, ImageStatisticsBitOption, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlProtocol } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
-import { SequenceCaptureMode } from '../types/sequencer.types'
+import { SequencerCaptureMode } from '../types/sequencer.types'
 import { SettingsTabKey } from '../types/settings.types'
 import { StackerGroupType, StackerType } from '../types/stacker.types'
 import { StarDetectorType } from '../types/stardetector.types'
@@ -32,7 +32,7 @@ export interface DropdownOptions {
 	HEMISPHERE: Hemisphere[]
 	GUIDER_PLOT_MODE: GuiderPlotMode[]
 	GUIDER_Y_AXIS_UNIT: GuiderYAxisUnit[]
-	SEQUENCE_CAPTURE_MODE: SequenceCaptureMode[]
+	SEQUENCE_CAPTURE_MODE: SequencerCaptureMode[]
 	STACKER: StackerType[]
 	SETTINGS_TAB: SettingsTabKey[]
 	STACKER_GROUP_TYPE: StackerGroupType[]
@@ -41,6 +41,7 @@ export interface DropdownOptions {
 	SATELLITE_GROUP_TYPE: SatelliteGroupType[]
 	CONSTELLATION: Constellation[]
 	SKY_OBJECT_TYPE: SkyObjectType[]
+	SEQUENCER_CAPTURE_MODE: SequencerCaptureMode[]
 }
 
 @Pipe({ name: 'dropdownOptions' })
@@ -101,6 +102,8 @@ export class DropdownOptionsPipe implements PipeTransform {
 				return CONSTELLATIONS as unknown as DropdownOptions[K]
 			case 'SKY_OBJECT_TYPE':
 				return SKY_OBJECT_TYPES as unknown as DropdownOptions[K]
+			case 'SEQUENCER_CAPTURE_MODE':
+				return ['FULLY', 'INTERLEAVED'] as DropdownOptions[K]
 		}
 
 		return []

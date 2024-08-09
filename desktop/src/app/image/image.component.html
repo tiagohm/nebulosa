@@ -142,7 +142,7 @@
 				<div class="flex gap-2 align-items-center">
 					<span>Stars & DSOs</span>
 					<p-checkbox
-						[(ngModel)]="annotation.request.useStarsAndDSOs"
+						[(ngModel)]="annotation.request.starsAndDSOs"
 						(ngModelChange)="savePreference()"
 						(onChange)="$event.originalEvent?.stopImmediatePropagation()"
 						class="py-1"
@@ -152,7 +152,7 @@
 			<div class="grid mt-2">
 				<div class="col-12">
 					<p-checkbox
-						[disabled]="!annotation.request.useStarsAndDSOs"
+						[disabled]="!annotation.request.starsAndDSOs"
 						[(ngModel)]="annotation.request.useSimbad"
 						(ngModelChange)="savePreference()"
 						class="py-1"
@@ -176,8 +176,9 @@
 				<div class="flex gap-2 align-items-center">
 					<span>Minor Planets</span>
 					<p-checkbox
-						[(ngModel)]="annotation.request.useMinorPlanets"
+						[(ngModel)]="annotation.request.minorPlanets"
 						(ngModelChange)="savePreference()"
+						(onChange)="$event.originalEvent?.stopImmediatePropagation()"
 						class="py-1"
 						[binary]="true" />
 				</div>
@@ -186,7 +187,7 @@
 				<div class="col-5">
 					<p-floatLabel class="w-full">
 						<p-inputNumber
-							[disabled]="!annotation.request.useMinorPlanets"
+							[disabled]="!annotation.request.minorPlanets"
 							[min]="-10"
 							[max]="30"
 							[showButtons]="true"
@@ -202,14 +203,19 @@
 				</div>
 				<div class="col-7">
 					<p-checkbox
-						[disabled]="!annotation.request.useMinorPlanets"
+						[disabled]="!annotation.request.minorPlanets"
 						[(ngModel)]="annotation.request.includeMinorPlanetsWithoutMagnitude"
 						(ngModelChange)="savePreference()"
-						(onChange)="$event.originalEvent?.stopImmediatePropagation()"
 						class="py-1"
 						[binary]="true"
 						label="Include objects without magnitude" />
 				</div>
+				@if (annotation.request.minorPlanetsMagLimit >= 20 || annotation.request.includeMinorPlanetsWithoutMagnitude) {
+					<div class="col-12 pt-0 text-sm text-gray-300 justify-content-center">
+						<i class="mdi mdi-alert mdi-sm text-warning mr-1"></i>
+						Can take a long time
+					</div>
+				}
 				<div class="col-12 mt-2">
 					<p class="bg-black-alpha-30 border-round m-0 p-3 text-gray-400 text-sm">
 						Minor planets Annotation uses the

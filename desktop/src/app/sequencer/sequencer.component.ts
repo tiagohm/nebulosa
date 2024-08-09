@@ -1,8 +1,9 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
+import { dirname } from 'path'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
-import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -10,20 +11,17 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { PrimeService } from '../../shared/services/prime.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
 import { JsonFile } from '../../shared/types/app.types'
-import { Camera, CameraCaptureEvent, CameraStartCapture, DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import { Camera, cameraCaptureNamingFormatWithDefault, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Mount } from '../../shared/types/mount.types'
 import { Rotator } from '../../shared/types/rotator.types'
-import { DEFAULT_SEQUENCE_PLAN, SEQUENCE_ENTRY_PROPERTIES, SequenceCaptureMode, SequenceEntryProperty, SequencePlan, SequencerEvent } from '../../shared/types/sequencer.types'
+import { DEFAULT_SEQUENCE, DEFAULT_SEQUENCE_PROPERTY_DIALOG, DEFAULT_SEQUENCER_PLAN, DEFAULT_SEQUENCER_PREFERENCE, Sequence, SequenceProperty, SequencerEvent, SequencerPlan } from '../../shared/types/sequencer.types'
 import { resetCameraCaptureNamingFormat } from '../../shared/types/settings.types'
 import { Wheel } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
-import { Undefinable } from '../../shared/utils/types'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
-
-export const SEQUENCER_SAVED_PATH_KEY = 'sequencer.savedPath'
 
 @Component({
 	selector: 'neb-sequencer',
@@ -32,33 +30,27 @@ export const SEQUENCER_SAVED_PATH_KEY = 'sequencer.savedPath'
 	encapsulation: ViewEncapsulation.None,
 })
 export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable {
-	cameras: Camera[] = []
-	mounts: Mount[] = []
-	wheels: Wheel[] = []
-	focusers: Focuser[] = []
-	rotators: Rotator[] = []
+	protected cameras: Camera[] = []
+	protected mounts: Mount[] = []
+	protected wheels: Wheel[] = []
+	protected focusers: Focuser[] = []
+	protected rotators: Rotator[] = []
 
-	camera?: Camera
-	mount?: Mount
-	wheel?: Wheel
-	focuser?: Focuser
-	rotator?: Rotator
+	protected readonly property = structuredClone(DEFAULT_SEQUENCE_PROPERTY_DIALOG)
+	protected readonly preference = structuredClone(DEFAULT_SEQUENCER_PREFERENCE)
+	protected plan = this.preference.plan
+	protected event?: SequencerEvent
+	protected running = false
 
-	readonly captureModes: SequenceCaptureMode[] = ['FULLY', 'INTERLEAVED']
-	readonly plan = structuredClone(DEFAULT_SEQUENCE_PLAN)
-
-	private entryToApply?: CameraStartCapture
-	private entryToApplyCount: [number, number] = [0, 0]
-	readonly availableEntryPropertiesToApply = new Map<SequenceEntryProperty, boolean>()
-	showEntryPropertiesToApplyDialog = false
-	readonly entryMenuModel: SlideMenuItem[] = [
+	// NOTE: Remove the "plan.sequences.length <= 1" on layout if add more options
+	protected readonly sequenceModel: SlideMenuItem[] = [
 		{
 			icon: 'mdi mdi-content-copy',
 			label: 'Apply to all',
 			slideMenu: [],
 			command: () => {
-				this.entryToApplyCount = [-1000, 1000]
-				this.showEntryPropertiesToApplyDialog = true
+				this.property.count = [-1000, 1000]
+				this.property.showDialog = true
 			},
 		},
 		{
@@ -66,8 +58,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			label: 'Apply to all above',
 			slideMenu: [],
 			command: () => {
-				this.entryToApplyCount = [-1000, 0]
-				this.showEntryPropertiesToApplyDialog = true
+				this.property.count = [-1000, 0]
+				this.property.showDialog = true
 			},
 		},
 		{
@@ -75,8 +67,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			label: 'Apply to above',
 			slideMenu: [],
 			command: () => {
-				this.entryToApplyCount = [-1, 0]
-				this.showEntryPropertiesToApplyDialog = true
+				this.property.count = [-1, 0]
+				this.property.showDialog = true
 			},
 		},
 		{
@@ -84,8 +76,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			label: 'Apply to below',
 			slideMenu: [],
 			command: () => {
-				this.entryToApplyCount = [1, 0]
-				this.showEntryPropertiesToApplyDialog = true
+				this.property.count = [1, 0]
+				this.property.showDialog = true
 			},
 		},
 		{
@@ -93,104 +85,103 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			label: 'Apply to all below',
 			slideMenu: [],
 			command: () => {
-				this.entryToApplyCount = [1000, 0]
-				this.showEntryPropertiesToApplyDialog = true
+				this.property.count = [1000, 0]
+				this.property.showDialog = true
 			},
 		},
 	]
 
-	readonly sequenceEvents: CameraCaptureEvent[] = []
+	private readonly createNewMenuItem: MenuItem = {
+		icon: 'mdi mdi-plus',
+		label: 'Create new',
+		command: () => {
+			this.preference.loadPath = undefined
+			this.savePreference()
 
-	event?: SequencerEvent
-	running = false
+			this.app.subTitle = undefined
+			this.saveMenuItem.visible = false
+			this.saveMenuItem.disabled = true
+
+			if (!this.loadPlan(structuredClone(DEFAULT_SEQUENCER_PLAN))) {
+				this.add()
+			}
+		},
+	}
+
+	private readonly saveMenuItem: MenuItem = {
+		icon: 'mdi mdi-content-save',
+		label: 'Save',
+		visible: false,
+		command: () => this.savePlanToJson(false),
+	}
+
+	private readonly saveAsMenuItem: MenuItem = {
+		icon: 'mdi mdi-content-save-edit',
+		label: 'Save as',
+		command: () => this.savePlanToJson(true),
+	}
+
+	private readonly loadMenuItem: MenuItem = {
+		icon: 'mdi mdi-folder-open',
+		label: 'Load',
+		command: async () => {
+			const defaultPath = this.preference.loadPath ? dirname(this.preference.loadPath) : undefined
+			const file = await this.electronService.openJson<SequencerPlan>({ defaultPath })
+
+			if (file !== false) {
+				this.loadPlanFromJson(file)
+			}
+		},
+	}
 
 	@ViewChildren('cameraExposure')
 	private readonly cameraExposures!: QueryList<CameraExposureComponent>
 
 	get canStart() {
-		return !!this.camera && this.camera.connected && !!this.plan.entries.find((e) => e.enabled)
+		return !!this.plan.camera?.connected && !!this.plan.sequences.find((e) => e.enabled)
 	}
 
 	get pausingOrPaused() {
 		return this.event?.state === 'PAUSING' || this.event?.state === 'PAUSED'
 	}
 
-	get savedPath() {
-		return this.app.subTitle
-	}
-
-	set savedPath(value: Undefinable<string>) {
-		this.app.subTitle = value
-	}
-
 	constructor(
 		private readonly app: AppComponent,
 		private readonly api: ApiService,
-		private readonly browserWindow: BrowserWindowService,
-		private readonly electron: ElectronService,
-		private readonly preference: PreferenceService,
-		private readonly prime: PrimeService,
+		private readonly browserWindowService: BrowserWindowService,
+		private readonly electronService: ElectronService,
+		private readonly preferenceService: PreferenceService,
+		private readonly primeService: PrimeService,
 		private readonly ticker: Ticker,
 		ngZone: NgZone,
 	) {
 		app.title = 'Sequencer'
 
-		app.topMenu.push({
-			icon: 'mdi mdi-plus',
-			label: 'Create new',
-			command: () => {
-				this.updateSavedPath()
+		app.topMenu.push(this.createNewMenuItem)
+		app.topMenu.push(this.saveMenuItem)
+		app.topMenu.push(this.saveAsMenuItem)
+		app.topMenu.push(this.loadMenuItem)
 
-				Object.assign(this.plan, structuredClone(DEFAULT_SEQUENCE_PLAN))
-				this.add()
-			},
-		})
-		app.topMenu.push({
-			icon: 'mdi mdi-content-save',
-			label: 'Save',
-			command: async () => {
-				const file = await electron.saveJson({ path: this.savedPath, json: this.plan })
+		app.beforeClose = async () => {
+			if (!this.saveMenuItem.disabled) {
+				return !(await primeService.confirm('Are you sure you want to close the window? Please make sure to save before exiting to avoid losing any important changes.'))
+			} else {
+				return true
+			}
+		}
 
-				if (file !== false) {
-					this.afterSavedJsonFile(file)
-				}
-			},
-		})
-		app.topMenu.push({
-			icon: 'mdi mdi-content-save-edit',
-			label: 'Save as',
-			command: async () => {
-				const file = await electron.saveJson({ json: this.plan })
-
-				if (file !== false) {
-					this.afterSavedJsonFile(file)
-				}
-			},
-		})
-		app.topMenu.push({
-			icon: 'mdi mdi-folder-open',
-			label: 'Load',
-			command: async () => {
-				const file = await electron.openJson<SequencePlan>()
-
-				if (file !== false) {
-					this.loadSavedJsonFile(file)
-				}
-			},
-		})
-
-		electron.on('CAMERA.UPDATED', (event) => {
+		electronService.on('CAMERA.UPDATED', (event) => {
 			const camera = this.cameras.find((e) => e.id === event.device.id)
 
 			if (camera) {
 				ngZone.run(() => {
 					Object.assign(camera, event.device)
-					this.updateEntriesFromCamera(this.camera)
+					this.updateSequencesFromCamera(camera)
 				})
 			}
 		})
 
-		electron.on('MOUNT.UPDATED', (event) => {
+		electronService.on('MOUNT.UPDATED', (event) => {
 			const mount = this.mounts.find((e) => e.id === event.device.id)
 
 			if (mount) {
@@ -200,7 +191,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electron.on('WHEEL.UPDATED', (event) => {
+		electronService.on('WHEEL.UPDATED', (event) => {
 			const wheel = this.wheels.find((e) => e.id === event.device.id)
 
 			if (wheel) {
@@ -210,7 +201,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electron.on('FOCUSER.UPDATED', (event) => {
+		electronService.on('FOCUSER.UPDATED', (event) => {
 			const focuser = this.focusers.find((e) => e.id === event.device.id)
 
 			if (focuser) {
@@ -220,7 +211,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electron.on('ROTATOR.UPDATED', (event) => {
+		electronService.on('ROTATOR.UPDATED', (event) => {
 			const rotator = this.rotators.find((e) => e.id === event.device.id)
 
 			if (rotator) {
@@ -230,7 +221,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electron.on('SEQUENCER.ELAPSED', (event) => {
+		electronService.on('SEQUENCER.ELAPSED', (event) => {
 			ngZone.run(() => {
 				if (this.running !== event.remainingTime > 0) {
 					this.enableOrDisableTopbarMenu(event.remainingTime <= 0)
@@ -247,10 +238,6 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 				}
 			})
 		})
-
-		for (const p of SEQUENCE_ENTRY_PROPERTIES) {
-			this.availableEntryPropertiesToApply.set(p, true)
-		}
 	}
 
 	async ngAfterContentInit() {
@@ -262,9 +249,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.focusers = (await this.api.focusers()).sort(deviceComparator)
 		this.rotators = (await this.api.rotators()).sort(deviceComparator)
 
-		await this.loadSavedJsonFileFromPathOrAddDefault()
+		this.loadPreference()
 
-		// this.route.queryParams.subscribe(e => { })
+		await this.loadPlanFromPath()
 	}
 
 	@HostListener('window:unload')
@@ -273,141 +260,128 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 	}
 
 	async tick() {
-		if (this.camera?.id) await this.api.cameraListen(this.camera)
-		if (this.mount?.id) await this.api.mountListen(this.mount)
-		if (this.focuser?.id) await this.api.focuserListen(this.focuser)
-		if (this.wheel?.id) await this.api.wheelListen(this.wheel)
-		if (this.rotator?.id) await this.api.rotatorListen(this.rotator)
+		if (this.plan.camera?.id) await this.api.cameraListen(this.plan.camera)
+		if (this.plan.mount?.id) await this.api.mountListen(this.plan.mount)
+		if (this.plan.focuser?.id) await this.api.focuserListen(this.plan.focuser)
+		if (this.plan.wheel?.id) await this.api.wheelListen(this.plan.wheel)
+		if (this.plan.rotator?.id) await this.api.rotatorListen(this.plan.rotator)
 	}
 
 	private enableOrDisableTopbarMenu(enable: boolean) {
 		this.app.topMenu.forEach((e) => (e.disabled = !enable))
 	}
 
-	add() {
-		const camera = this.camera ?? (this.cameras[0] as Undefinable<Camera>)
-		// const wheel = this.wheel ?? this.wheels[0]
-		// const focuser = this.focuser ?? this.focusers[0]
-		// const rotator = this.rotator ?? this.rotators[0]
+	protected add() {
+		const camera = this.plan.camera
 
-		this.plan.entries.push({
-			enabled: true,
-			exposureTime: 1000000,
-			exposureAmount: 1,
-			exposureDelay: 0,
+		const sequence: Sequence = {
+			...structuredClone(DEFAULT_SEQUENCE),
 			x: camera?.minX ?? 0,
 			y: camera?.minY ?? 0,
 			width: camera?.maxWidth ?? 0,
 			height: camera?.maxHeight ?? 0,
-			frameType: 'LIGHT',
-			binX: 1,
-			binY: 1,
-			gain: 0,
-			offset: 0,
 			frameFormat: camera?.frameFormats[0],
-			autoSave: true,
-			autoSubFolderMode: 'OFF',
-			filterPosition: 0,
-			shutterPosition: 0,
-			focusOffset: 0,
-			dither: {
-				enabled: false,
-				amount: 0,
-				raOnly: false,
-				afterExposures: 0,
-			},
-			liveStacking: {
-				enabled: false,
-				type: 'SIRIL',
-				executablePath: '',
-				use32Bits: false,
-				slot: 1,
-			},
-			namingFormat: this.plan.namingFormat,
-		})
+		}
 
-		this.savePlan()
+		if (camera?.connected) {
+			updateCameraStartCaptureFromCamera(sequence, camera)
+		}
+
+		this.plan.sequences.push(sequence)
+
+		this.savePreference()
 	}
 
-	drop(event: CdkDragDrop<CameraStartCapture[]>) {
-		moveItemInArray(this.plan.entries, event.previousIndex, event.currentIndex)
-	}
-
-	private afterSavedJsonFile(file: JsonFile<SequencePlan>) {
-		if (file.path) {
-			this.updateSavedPath(file.path)
+	protected drop(event: CdkDragDrop<Sequence[]>) {
+		if (event.previousIndex !== event.currentIndex) {
+			moveItemInArray(this.plan.sequences, event.previousIndex, event.currentIndex)
+			this.savePreference()
 		}
 	}
 
-	private loadSavedJsonFile(file: JsonFile<SequencePlan>) {
-		if (this.loadPlan(file.json)) {
-			this.afterSavedJsonFile(file)
-		} else {
-			this.prime.message(`No entry found for the saved Sequence at: ${file.path}`, 'warn')
-
+	private loadPlanFromJson(file: JsonFile<SequencerPlan>) {
+		if (!this.loadPlan(file.json)) {
+			this.primeService.message(`No sequence found`, 'warn')
 			this.add()
 		}
+
+		this.preference.loadPath = file.path
+		this.savePreference()
+
+		this.app.subTitle = file.path
+		this.saveMenuItem.visible = !!file.path
+		this.saveMenuItem.disabled = true
 	}
 
-	private async loadSavedJsonFileFromPathOrAddDefault() {
-		const sequencerPreference = this.preference.sequencerPreference.get()
+	private async loadPlanFromPath() {
+		if (this.preference.loadPath) {
+			const file = await this.electronService.readJson<SequencerPlan>(this.preference.loadPath)
 
-		if (sequencerPreference.savedPath) {
-			const file = await this.electron.readJson<SequencePlan>(sequencerPreference.savedPath)
-
-			if (file !== false) {
-				this.loadSavedJsonFile(file)
+			if (file !== false && file.path) {
+				this.loadPlanFromJson(file)
 				return
 			}
 
-			this.prime.message(`Failed to load the saved Sequence at: ${sequencerPreference.savedPath}`, 'error')
+			this.primeService.message(`Failed to load the file`, 'error')
 
-			sequencerPreference.savedPath = undefined
-			this.preference.sequencerPreference.set(sequencerPreference)
+			this.preference.loadPath = undefined
+			this.savePreference()
 		}
 
-		if (!this.loadPlan()) {
+		this.saveMenuItem.visible = false
+
+		if (!this.loadPlan(this.plan)) {
 			this.add()
 		}
 	}
 
-	private updateSavedPath(savedPath?: string) {
-		this.savedPath = savedPath
-		const sequencerPreference = this.preference.sequencerPreference.get()
-		sequencerPreference.savedPath = savedPath
-		this.preference.sequencerPreference.set(sequencerPreference)
-	}
-
-	private loadPlan(plan?: SequencePlan) {
-		const sequencerPreference = this.preference.sequencerPreference.get()
-
-		plan ??= sequencerPreference.plan
-
+	private loadPlan(plan: SequencerPlan) {
 		if (this.plan !== plan) {
-			Object.assign(this.plan, structuredClone(plan))
+			Object.assign(this.plan, plan)
 		}
 
-		this.camera = this.cameras.find((e) => e.id === this.plan.camera) ?? this.cameras[0]
-		this.mount = this.mounts.find((e) => e.id === this.plan.mount) ?? this.mounts[0]
-		this.wheel = this.wheels.find((e) => e.id === this.plan.wheel) ?? this.wheels[0]
-		this.focuser = this.focusers.find((e) => e.id === this.plan.focuser) ?? this.focusers[0]
-		this.rotator = this.rotators.find((e) => e.id === this.plan.rotator) ?? this.rotators[0]
+		this.plan.camera = this.cameras.find((e) => e.id === plan.camera?.id)
+		this.plan.mount = this.mounts.find((e) => e.id === plan.mount?.id)
+		this.plan.wheel = this.wheels.find((e) => e.id === plan.wheel?.id)
+		this.plan.focuser = this.focusers.find((e) => e.id === plan.focuser?.id)
+		this.plan.rotator = this.rotators.find((e) => e.id === plan.rotator?.id)
 
-		const settings = this.preference.settings.get()
-		this.plan.namingFormat.light ??= settings.namingFormat.light || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.light
-		this.plan.namingFormat.dark ??= settings.namingFormat.dark || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.dark
-		this.plan.namingFormat.flat ??= settings.namingFormat.flat || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.flat
-		this.plan.namingFormat.bias ??= settings.namingFormat.bias || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.bias
+		const settings = this.preferenceService.settings.get()
+		cameraCaptureNamingFormatWithDefault(this.plan.namingFormat, settings.namingFormat)
 
-		return this.plan.entries.length
+		return this.plan.sequences.length
 	}
 
-	resetCameraCaptureNamingFormat(type: FrameType) {
-		resetCameraCaptureNamingFormat(type, this.plan.namingFormat, this.preference.settings.get().namingFormat)
-		this.savePlan()
+	private async savePlanToJson(createNew: boolean) {
+		const path = createNew ? undefined : this.preference.loadPath
+		const file = await this.electronService.saveJson({ json: this.plan, path })
+
+		if (file !== false) {
+			this.preference.loadPath = file.path
+			this.savePreference()
+
+			this.app.subTitle = file.path
+			this.saveMenuItem.disabled = true
+		}
 	}
 
-	toggleAutoSubFolder() {
+	protected resetCameraCaptureNamingFormat(type?: FrameType) {
+		const settings = this.preferenceService.settings.get()
+		const cameraNamingFormat = this.plan.camera?.id ? this.preferenceService.camera(this.plan.camera).get().request.namingFormat : settings.namingFormat
+
+		if (type) {
+			resetCameraCaptureNamingFormat(type, this.plan.namingFormat, cameraNamingFormat)
+		} else {
+			resetCameraCaptureNamingFormat('LIGHT', this.plan.namingFormat, cameraNamingFormat)
+			resetCameraCaptureNamingFormat('DARK', this.plan.namingFormat, cameraNamingFormat)
+			resetCameraCaptureNamingFormat('FLAT', this.plan.namingFormat, cameraNamingFormat)
+			resetCameraCaptureNamingFormat('BIAS', this.plan.namingFormat, cameraNamingFormat)
+		}
+
+		this.savePreference()
+	}
+
+	protected toggleAutoSubFolder() {
 		if (!this.running) {
 			switch (this.plan.autoSubFolderMode) {
 				case 'OFF':
@@ -421,175 +395,197 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 					break
 			}
 
-			this.savePlan()
+			this.savePreference()
 		}
 	}
 
-	async showCameraDialog(entry: CameraStartCapture) {
-		if (this.camera && (await CameraComponent.showAsDialog(this.browserWindow, 'SEQUENCER', this.camera, entry))) {
-			this.savePlan()
+	protected async showCameraDialog(sequence: Sequence) {
+		if (this.plan.camera && (await CameraComponent.showAsDialog(this.browserWindowService, 'SEQUENCER', this.plan.camera, sequence))) {
+			this.savePreference()
 		}
 	}
 
-	async showWheelDialog(entry: CameraStartCapture) {
-		if (this.wheel && (await FilterWheelComponent.showAsDialog(this.browserWindow, 'SEQUENCER', this.wheel, entry))) {
-			this.savePlan()
+	protected async showWheelDialog(sequence: Sequence) {
+		if (this.plan.wheel && (await FilterWheelComponent.showAsDialog(this.browserWindowService, 'SEQUENCER', this.plan.wheel, sequence))) {
+			this.savePreference()
 		}
 	}
 
-	async cameraChanged() {
-		await this.tick()
-
-		this.updateEntriesFromCamera(this.camera)
-	}
-
-	private updateEntriesFromCamera(camera?: Camera) {
+	private updateSequencesFromCamera(camera?: Camera) {
 		if (camera?.connected) {
-			for (const entry of this.plan.entries) {
-				updateCameraStartCaptureFromCamera(entry, camera)
+			for (const sequence of this.plan.sequences) {
+				updateCameraStartCaptureFromCamera(sequence, camera)
 			}
 		}
 	}
 
-	mountChanged() {
-		return this.tick()
-	}
-
-	focuserChanged() {
-		return this.tick()
-	}
-
-	wheelChanged() {
-		return this.tick()
-	}
-
-	rotatorChanged() {
-		return this.tick()
-	}
-
-	savePlan() {
-		const sequencerPreference = this.preference.sequencerPreference.get()
-		sequencerPreference.savedPath = this.savedPath
-		this.plan.camera = this.camera?.id
-		this.plan.mount = this.mount?.id
-		this.plan.wheel = this.wheel?.id
-		this.plan.focuser = this.focuser?.id
-		this.plan.rotator = this.rotator?.id
-		Object.assign(sequencerPreference.plan, this.plan)
-		this.preference.sequencerPreference.set(sequencerPreference)
-	}
-
-	showEntryMenu(entry: CameraStartCapture, dialogMenu: DialogMenuComponent) {
-		this.entryToApply = entry
-		const index = this.plan.entries.indexOf(entry)
-
-		this.entryMenuModel.forEach((e) => (e.visible = true))
-
-		if (index === 0 || this.plan.entries.length === 1) {
-			// Hides all above and above.
-			this.entryMenuModel[1].visible = false
-			this.entryMenuModel[2].visible = false
-		} else if (index === 1) {
-			// Hides all above.
-			this.entryMenuModel[1].visible = false
+	protected async cameraChanged() {
+		if (this.plan.camera) {
+			await this.api.cameraListen(this.plan.camera)
+			this.updateSequencesFromCamera(this.plan.camera)
 		}
 
-		if (index === this.plan.entries.length - 1 || this.plan.entries.length === 1) {
-			// Hides below and all below.
-			this.entryMenuModel[3].visible = false
-			this.entryMenuModel[4].visible = false
-		} else if (index === this.plan.entries.length - 2) {
-			// Hides all below.
-			this.entryMenuModel[4].visible = false
-		}
-
-		dialogMenu.show()
+		this.savePreference()
 	}
 
-	updateAllAvailableEntryPropertiesToApply(selected: boolean) {
-		for (const p of SEQUENCE_ENTRY_PROPERTIES) {
-			this.availableEntryPropertiesToApply.set(p, selected)
+	protected async mountChanged() {
+		if (this.plan.mount) {
+			await this.api.mountListen(this.plan.mount)
+		}
+
+		this.savePreference()
+	}
+
+	protected async focuserChanged() {
+		if (this.plan.focuser) {
+			await this.api.focuserListen(this.plan.focuser)
+		}
+
+		this.savePreference()
+	}
+
+	protected async wheelChanged() {
+		if (this.plan.wheel) {
+			await this.api.wheelListen(this.plan.wheel)
+		}
+
+		this.savePreference()
+	}
+
+	protected async rotatorChanged() {
+		if (this.plan.rotator) {
+			await this.api.rotatorListen(this.plan.rotator)
+		}
+
+		this.savePreference()
+	}
+
+	protected showSequenceMenu(sequence: Sequence, dialogMenu: DialogMenuComponent) {
+		this.property.sequence = sequence
+
+		const index = this.plan.sequences.indexOf(sequence)
+		const lastIndex = this.plan.sequences.length - 1
+
+		this.sequenceModel[1].visible = index >= 2 // ALL ABOBE
+		this.sequenceModel[2].visible = index >= 1 // ABOBE
+		this.sequenceModel[3].visible = index < lastIndex // BELOW
+		this.sequenceModel[4].visible = index < lastIndex - 1 // ALL BELOW
+		this.sequenceModel[0].visible = this.sequenceModel[2].visible && this.sequenceModel[3].visible
+
+		if (this.sequenceModel.find((e) => e.visible)) {
+			dialogMenu.show()
 		}
 	}
 
-	applyCameraStartCaptureToEntries() {
-		const source = this.entryToApply
+	protected selectSequenceProperty(selected: boolean) {
+		for (const [key] of Object.entries(this.property.properties)) {
+			this.property.properties[key as SequenceProperty] = selected
+		}
+	}
+
+	protected copySequencePropertyToSequencies() {
+		const source = this.property.sequence
+
 		if (!source) return
-		const index = this.plan.entries.indexOf(source)
 
-		for (let count of this.entryToApplyCount) {
+		const index = this.plan.sequences.indexOf(source)
+
+		for (const count of this.property.count) {
 			if (index < 0 || count === 0) continue
 
 			const below = Math.sign(count)
 
-			count = Math.abs(count)
-
-			for (let i = 1; i <= count; i++) {
+			for (let i = 1; i <= Math.abs(count); i++) {
 				const pos = index + i * below
 
-				if (pos >= 0 && pos < this.plan.entries.length) {
-					const dest = this.plan.entries[pos]
+				if (pos >= 0 && pos < this.plan.sequences.length) {
+					const dest = this.plan.sequences[pos]
 
-					if (!dest.enabled) continue
+					if (!dest.enabled || dest === source) continue
 
-					if (this.availableEntryPropertiesToApply.get('EXPOSURE_TIME')) dest.exposureTime = source.exposureTime
-					if (this.availableEntryPropertiesToApply.get('EXPOSURE_AMOUNT')) dest.exposureAmount = source.exposureAmount
-					if (this.availableEntryPropertiesToApply.get('EXPOSURE_DELAY')) dest.exposureDelay = source.exposureDelay
-					if (this.availableEntryPropertiesToApply.get('FRAME_TYPE')) dest.frameType = source.frameType
-					if (this.availableEntryPropertiesToApply.get('X')) dest.x = source.x
-					if (this.availableEntryPropertiesToApply.get('Y')) dest.y = source.y
-					if (this.availableEntryPropertiesToApply.get('WIDTH')) dest.width = source.width
-					if (this.availableEntryPropertiesToApply.get('HEIGHT')) dest.height = source.height
-					if (this.availableEntryPropertiesToApply.get('BIN')) dest.binX = source.binX
-					if (this.availableEntryPropertiesToApply.get('BIN')) dest.binY = source.binY
-					if (this.availableEntryPropertiesToApply.get('FRAME_FORMAT')) dest.frameFormat = source.frameFormat
-					if (this.availableEntryPropertiesToApply.get('GAIN')) dest.gain = source.gain
-					if (this.availableEntryPropertiesToApply.get('OFFSET')) dest.offset = source.offset
+					if (this.property.properties.EXPOSURE_TIME) dest.exposureTime = source.exposureTime
+					if (this.property.properties.EXPOSURE_AMOUNT) dest.exposureAmount = source.exposureAmount
+					if (this.property.properties.EXPOSURE_DELAY) dest.exposureDelay = source.exposureDelay
+					if (this.property.properties.FRAME_TYPE) dest.frameType = source.frameType
+					if (this.property.properties.X) dest.x = source.x
+					if (this.property.properties.Y) dest.y = source.y
+					if (this.property.properties.WIDTH) dest.width = source.width
+					if (this.property.properties.HEIGHT) dest.height = source.height
+					if (this.property.properties.BIN) dest.binX = source.binX
+					if (this.property.properties.BIN) dest.binY = source.binY
+					if (this.property.properties.FRAME_FORMAT) dest.frameFormat = source.frameFormat
+					if (this.property.properties.GAIN) dest.gain = source.gain
+					if (this.property.properties.OFFSET) dest.offset = source.offset
 				} else {
 					break
 				}
 			}
 		}
 
-		this.savePlan()
+		this.savePreference()
 
-		this.showEntryPropertiesToApplyDialog = false
+		this.property.showDialog = false
 	}
 
-	deleteEntry(entry: CameraStartCapture, index: number) {
-		if (entry === this.plan.entries[index]) {
-			this.plan.entries.splice(index, 1)
-			this.savePlan()
+	protected deleteSequence(sequence: Sequence, index: number) {
+		if (sequence === this.plan.sequences[index]) {
+			this.plan.sequences.splice(index, 1)
+			this.savePreference()
 		}
 	}
 
-	duplicateEntry(entry: CameraStartCapture, index: number) {
-		this.plan.entries.splice(index + 1, 0, structuredClone(entry))
-		this.savePlan()
+	protected duplicateSequence(sequence: Sequence, index: number) {
+		this.plan.sequences.splice(index + 1, 0, structuredClone(sequence))
+		this.savePreference()
 	}
 
-	async start() {
-		if (this.camera) {
+	protected filterRemoved(sequence: Sequence) {
+		sequence.filterPosition = 0
+		this.savePreference()
+	}
+
+	protected async start() {
+		if (this.plan.camera) {
 			for (let i = 0; i < this.cameraExposures.length; i++) {
 				this.cameraExposures.get(i)?.reset()
 			}
 
-			this.savePlan()
-
-			await this.browserWindow.openCameraImage(this.camera, 'SEQUENCER')
-			await this.api.sequencerStart(this.camera, this.plan)
+			await this.browserWindowService.openCameraImage(this.plan.camera, 'SEQUENCER')
+			await this.api.sequencerStart(this.plan.camera, this.plan)
 		}
 	}
 
-	pause() {
-		return this.api.sequencerPause(this.camera!)
+	protected async pause() {
+		if (this.plan.camera) {
+			await this.api.sequencerPause(this.plan.camera)
+		}
 	}
 
-	unpause() {
-		return this.api.sequencerUnpause(this.camera!)
+	protected async unpause() {
+		if (this.plan.camera) {
+			await this.api.sequencerUnpause(this.plan.camera)
+		}
 	}
 
-	stop() {
-		return this.api.sequencerStop(this.camera!)
+	protected async stop() {
+		if (this.plan.camera) {
+			await this.api.sequencerStop(this.plan.camera)
+		}
+	}
+
+	private loadPreference() {
+		Object.assign(this.preference, this.preferenceService.sequencerPreference.get())
+		this.plan = this.preference.plan
+		this.property.properties = this.preference.properties
+
+		this.loadPlan(this.plan)
+	}
+
+	protected savePreference() {
+		this.preferenceService.sequencerPreference.set(this.preference)
+
+		if (this.preference.loadPath) {
+			this.saveMenuItem.disabled = false
+		}
 	}
 }

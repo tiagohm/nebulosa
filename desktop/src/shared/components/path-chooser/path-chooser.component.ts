@@ -26,7 +26,7 @@ export class PathChooserComponent {
 	protected readonly directory!: boolean
 
 	@Input()
-	protected readonly path?: string
+	protected path?: string
 
 	@Output()
 	readonly pathChange = new EventEmitter<string>()
@@ -41,6 +41,7 @@ export class PathChooserComponent {
 		const path = await (this.directory ? this.electron.openDirectory({ defaultPath }) : this.electron.openFile({ defaultPath }))
 
 		if (path) {
+			this.path = path
 			this.pathChange.emit(path)
 			localStorage.setItem(key, path)
 		}

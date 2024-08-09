@@ -254,8 +254,8 @@ export interface ImageTransformation {
 }
 
 export interface AnnotateImageRequest {
-	useStarsAndDSOs: boolean
-	useMinorPlanets: boolean
+	starsAndDSOs: boolean
+	minorPlanets: boolean
 	minorPlanetsMagLimit: number
 	includeMinorPlanetsWithoutMagnitude: boolean
 	useSimbad: boolean
@@ -438,10 +438,10 @@ export const DEFAULT_STAR_DETECTOR_DIALOG: StarDetectorDialog = {
 }
 
 export const DEFAULT_ANNOTATE_IMAGE_REQUEST: AnnotateImageRequest = {
-	useStarsAndDSOs: true,
-	useMinorPlanets: false,
-	minorPlanetsMagLimit: 18.0,
-	includeMinorPlanetsWithoutMagnitude: true,
+	starsAndDSOs: true,
+	minorPlanets: false,
+	minorPlanetsMagLimit: 15.0,
+	includeMinorPlanetsWithoutMagnitude: false,
 	useSimbad: false,
 }
 
@@ -555,8 +555,8 @@ export function imageStretchWithDefault(stretch?: Partial<ImageStretch>, source:
 
 export function annotateImageRequestWithDefault(request?: Partial<AnnotateImageRequest>, source: AnnotateImageRequest = DEFAULT_ANNOTATE_IMAGE_REQUEST) {
 	if (!request) return structuredClone(source)
-	request.useStarsAndDSOs ??= source.useStarsAndDSOs
-	request.useMinorPlanets ??= source.useMinorPlanets
+	request.starsAndDSOs ??= source.starsAndDSOs
+	request.minorPlanets ??= source.minorPlanets
 	request.minorPlanetsMagLimit ??= source.minorPlanetsMagLimit
 	request.includeMinorPlanetsWithoutMagnitude ??= source.includeMinorPlanetsWithoutMagnitude
 	request.useSimbad ??= source.useSimbad

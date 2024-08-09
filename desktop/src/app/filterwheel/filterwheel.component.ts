@@ -351,13 +351,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 
 		if (this.moving) return
 
-		const preference = this.preferenceService.wheel(this.wheel).get()
-		const filters = makeFilter(this.wheel, this.filters, preference.shutterPosition)
-
-		if (filters !== this.filters) {
-			this.filters = filters
-			this.filter = filters[(this.filter?.position ?? this.position) - 1] ?? filters[0]
-		}
+		this.filters = makeFilter(this.wheel, this.filters, this.preference.shutterPosition)
+		this.filter = this.filters[(this.filter?.position ?? this.position) - 1] ?? this.filters[0]
 
 		this.updateFocusOffset()
 	}
@@ -365,7 +360,6 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 	private loadPreference() {
 		if (this.mode === 'CAPTURE' && this.wheel.name) {
 			Object.assign(this.preference, this.preferenceService.wheel(this.wheel).get())
-			this.filters = makeFilter(this.wheel, this.filters, this.preference.shutterPosition)
 		}
 	}
 

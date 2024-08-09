@@ -22,7 +22,7 @@ import {
 	FrameType,
 	updateCameraStartCaptureFromCamera,
 } from '../../shared/types/camera.types'
-import { Device } from '../../shared/types/device.types'
+import { Device, DeviceType } from '../../shared/types/device.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Mount } from '../../shared/types/mount.types'
 import { Rotator } from '../../shared/types/rotator.types'
@@ -182,6 +182,10 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 		return this.mode !== 'CAPTURE'
 	}
 
+	get currentWheelFilter() {
+		return this.preference.wheel?.names[this.preference.wheel.position - 1]
+	}
+
 	constructor(
 		private readonly app: AppComponent,
 		private readonly api: ApiService,
@@ -220,7 +224,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 		})
 
 		electronService.on('MOUNT.UPDATED', (event) => {
-			if (event.device.id === this.preference.mount?.id) {
+			if (this.mode === 'CAPTURE' && event.device.id === this.preference.mount?.id) {
 				ngZone.run(() => {
 					if (this.preference.mount) {
 						Object.assign(this.preference.mount, event.device)
@@ -229,8 +233,24 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
+		electronService.on('MOUNT.ATTACHED', () => {
+			if (this.mode === 'CAPTURE') {
+				void ngZone.run(() => {
+					return this.loadEquipment('MOUNT')
+				})
+			}
+		})
+
+		electronService.on('MOUNT.DETACHED', () => {
+			if (this.mode === 'CAPTURE') {
+				void ngZone.run(() => {
+					return this.loadEquipment('MOUNT')
+				})
+			}
+		})
+
 		electronService.on('WHEEL.UPDATED', (event) => {
-			if (event.device.id === this.preference.wheel?.id) {
+			if (this.mode === 'CAPTURE' && event.device.id === this.preference.wheel?.id) {
 				ngZone.run(() => {
 					if (this.preference.wheel) {
 						Object.assign(this.preference.wheel, event.device)
@@ -239,8 +259,24 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
+		electronService.on('WHEEL.ATTACHED', () => {
+			if (this.mode === 'CAPTURE') {
+				void ngZone.run(() => {
+					return this.loadEquipment('WHEEL')
+				})
+			}
+		})
+
+		electronService.on('WHEEL.DETACHED', () => {
+			if (this.mode === 'CAPTURE') {
+				void ngZone.run(() => {
+					return this.loadEquipment('WHEEL')
+				})
+			}
+		})
+
 		electronService.on('FOCUSER.UPDATED', (event) => {
-			if (event.device.id === this.preference.focuser?.id) {
+			if (this.mode === 'CAPTURE' && event.device.id === this.preference.focuser?.id) {
 				ngZone.run(() => {
 					if (this.preference.focuser) {
 						Object.assign(this.preference.focuser, event.device)
@@ -249,8 +285,24 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
+		electronService.on('FOCUSER.ATTACHED', () => {
+			if (this.mode === 'CAPTURE') {
+				void ngZone.run(() => {
+					return this.loadEquipment('FOCUSER')
+				})
+			}
+		})
+
+		electronService.on('FOCUSER.DETACHED', () => {
+			if (this.mode === 'CAPTURE') {
+				void ngZone.run(() => {
+					return this.loadEquipment('FOCUSER')
+				})
+			}
+		})
+
 		electronService.on('ROTATOR.UPDATED', (event) => {
-			if (event.device.id === this.preference.rotator?.id) {
+			if (this.mode === 'CAPTURE' && event.device.id === this.preference.rotator?.id) {
 				ngZone.run(() => {
 					if (this.preference.rotator) {
 						Object.assign(this.preference.rotator, event.device)
@@ -259,8 +311,24 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('CALIBRATION.CHANGED', async () => {
-			await ngZone.run(() => this.loadCalibrationGroups())
+		electronService.on('ROTATOR.ATTACHED', () => {
+			if (this.mode === 'CAPTURE') {
+				void ngZone.run(() => {
+					return this.loadEquipment('ROTATOR')
+				})
+			}
+		})
+
+		electronService.on('ROTATOR.DETACHED', () => {
+			if (this.mode === 'CAPTURE') {
+				void ngZone.run(() => {
+					return this.loadEquipment('ROTATOR')
+				})
+			}
+		})
+
+		electronService.on('CALIBRATION.CHANGED', () => {
+			void ngZone.run(() => this.loadCalibrationGroups())
 		})
 
 		electronService.on('ROI.SELECTED', (event) => {
@@ -359,15 +427,15 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 		this.updateSubTitle()
 	}
 
-	private async loadEquipment() {
-		const makeMenuItem = (selected: boolean, command: () => void, device?: Device) => {
+	private async loadEquipment(type?: DeviceType) {
+		const makeMenuItem = (selected: boolean, command: () => Promise<void> | void, device?: Device) => {
 			return {
 				icon: device ? 'mdi mdi-connection' : 'mdi mdi-close',
 				label: device?.name ?? 'None',
 				selected,
 				slideMenu: [],
-				command: (event: MenuItemCommandEvent) => {
-					command()
+				command: async (event: MenuItemCommandEvent) => {
+					await command()
 					this.savePreference()
 					event.parentItem?.slideMenu?.forEach((item) => (item.selected = item === event.item))
 				},
@@ -378,62 +446,102 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 
 		// MOUNT
 
-		const mounts = await this.api.mounts()
-		this.preference.mount = mounts.find((e) => e.name === this.preference.mount?.name)
+		if (!type || type === 'MOUNT') {
+			menu[0].slideMenu.length = 0
 
-		const makeMountItem = (mount?: Mount) => {
-			return makeMenuItem(this.preference.mount?.name === mount?.name, () => (this.preference.mount = mount), mount)
-		}
+			const mounts = await this.api.mounts()
+			this.preference.mount = mounts.find((e) => e.name === this.preference.mount?.name)
 
-		menu[0].slideMenu.push(makeMountItem())
+			const makeMountItem = (mount?: Mount) => {
+				return makeMenuItem(
+					this.preference.mount?.name === mount?.name,
+					async () => {
+						this.preference.mount = mount && (await this.api.mount(mount.id))
+					},
+					mount,
+				)
+			}
 
-		for (const mount of mounts) {
-			menu[0].slideMenu.push(makeMountItem(mount))
+			menu[0].slideMenu.push(makeMountItem())
+
+			for (const mount of mounts) {
+				menu[0].slideMenu.push(makeMountItem(mount))
+			}
 		}
 
 		// WHEEL
 
-		const wheels = await this.api.wheels()
-		this.preference.wheel = wheels.find((e) => e.name === this.preference.wheel?.name)
+		if (!type || type === 'WHEEL') {
+			menu[1].slideMenu.length = 0
 
-		const makeWheelItem = (wheel?: Wheel) => {
-			return makeMenuItem(this.preference.wheel?.name === wheel?.name, () => (this.preference.wheel = wheel), wheel)
-		}
+			const wheels = await this.api.wheels()
+			this.preference.wheel = wheels.find((e) => e.name === this.preference.wheel?.name)
 
-		menu[1].slideMenu.push(makeWheelItem())
+			const makeWheelItem = (wheel?: Wheel) => {
+				return makeMenuItem(
+					this.preference.wheel?.name === wheel?.name,
+					async () => {
+						this.preference.wheel = wheel && (await this.api.wheel(wheel.id))
+					},
+					wheel,
+				)
+			}
 
-		for (const wheel of wheels) {
-			menu[1].slideMenu.push(makeWheelItem(wheel))
+			menu[1].slideMenu.push(makeWheelItem())
+
+			for (const wheel of wheels) {
+				menu[1].slideMenu.push(makeWheelItem(wheel))
+			}
 		}
 
 		// FOCUSER
 
-		const focusers = await this.api.focusers()
-		this.preference.focuser = focusers.find((e) => e.name === this.preference.focuser?.name)
+		if (!type || type === 'FOCUSER') {
+			menu[2].slideMenu.length = 0
 
-		const makeFocuserItem = (focuser?: Focuser) => {
-			return makeMenuItem(this.preference.focuser?.name === focuser?.name, () => (this.preference.focuser = focuser), focuser)
-		}
+			const focusers = await this.api.focusers()
+			this.preference.focuser = focusers.find((e) => e.name === this.preference.focuser?.name)
 
-		menu[2].slideMenu.push(makeFocuserItem())
+			const makeFocuserItem = (focuser?: Focuser) => {
+				return makeMenuItem(
+					this.preference.focuser?.name === focuser?.name,
+					async () => {
+						this.preference.focuser = focuser && (await this.api.focuser(focuser.id))
+					},
+					focuser,
+				)
+			}
 
-		for (const focuser of focusers) {
-			menu[2].slideMenu.push(makeFocuserItem(focuser))
+			menu[2].slideMenu.push(makeFocuserItem())
+
+			for (const focuser of focusers) {
+				menu[2].slideMenu.push(makeFocuserItem(focuser))
+			}
 		}
 
 		// ROTATOR
 
-		const rotators = await this.api.rotators()
-		this.preference.rotator = rotators.find((e) => e.name === this.preference.rotator?.name)
+		if (!type || type === 'ROTATOR') {
+			menu[3].slideMenu.length = 0
 
-		const makeRotatorItem = (rotator?: Rotator) => {
-			return makeMenuItem(this.preference.rotator?.name === rotator?.name, () => (this.preference.rotator = rotator), rotator)
-		}
+			const rotators = await this.api.rotators()
+			this.preference.rotator = rotators.find((e) => e.name === this.preference.rotator?.name)
 
-		menu[3].slideMenu.push(makeRotatorItem())
+			const makeRotatorItem = (rotator?: Rotator) => {
+				return makeMenuItem(
+					this.preference.rotator?.name === rotator?.name,
+					async () => {
+						this.preference.rotator = rotator && (await this.api.rotator(rotator.id))
+					},
+					rotator,
+				)
+			}
 
-		for (const rotator of rotators) {
-			menu[3].slideMenu.push(makeRotatorItem(rotator))
+			menu[3].slideMenu.push(makeRotatorItem())
+
+			for (const rotator of rotators) {
+				menu[3].slideMenu.push(makeRotatorItem(rotator))
+			}
 		}
 	}
 

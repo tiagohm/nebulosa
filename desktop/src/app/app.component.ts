@@ -13,9 +13,11 @@ export class AppComponent implements OnDestroy {
 	readonly maximizable = !!window.preference.resizable
 	readonly modal = window.preference.modal ?? false
 	readonly topMenu: MenuItem[] = []
+
 	subTitle? = ''
 	pinned = false
 	showTopBar = true
+	beforeClose?: () => boolean | Promise<boolean>
 
 	private readonly resizeObserver?: ResizeObserver
 
@@ -83,7 +85,11 @@ export class AppComponent implements OnDestroy {
 		return this.electron.maximizeWindow()
 	}
 
-	close(data?: unknown) {
-		return this.electron.closeWindow(data)
+	async close(data?: unknown, force: boolean = false) {
+		if (!this.beforeClose || (await this.beforeClose()) || force) {
+			return await this.electron.closeWindow(data)
+		} else {
+			return undefined
+		}
 	}
 }

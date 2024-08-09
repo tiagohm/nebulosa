@@ -184,6 +184,7 @@
 				[canExposureTimeUnit]="canExposureTimeUnit"
 				[min]="camera.exposureMin"
 				[max]="camera.exposureMax"
+				[normalized]="mode !== 'CAPTURE'"
 				(exposureTimeChange)="savePreference()"
 				(unitChange)="savePreference()"
 				class="w-full" />
@@ -468,7 +469,7 @@
 			<p-tag
 				*ngIf="preference.wheel"
 				icon="mdi mdi-palette mdi-sm"
-				[value]="preference.wheel.name"
+				value="{{ preference.wheel.name }}: {{ currentWheelFilter }}"
 				[severity]="preference.wheel.connected ? 'success' : 'danger'"
 				styleClass="cursor-pointer text-xs"
 				(click)="openWheel(preference.wheel)" />

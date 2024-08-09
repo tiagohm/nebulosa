@@ -277,6 +277,8 @@ export const CAMERA_CAPTURE_NAMING_FORMAT_DARK = '[camera]_[type]_[width]_[heigh
 export const CAMERA_CAPTURE_NAMING_FORMAT_FLAT = '[camera]_[type]_[filter]_[width]_[height]_[bin]'
 export const CAMERA_CAPTURE_NAMING_FORMAT_BIAS = '[camera]_[type]_[width]_[height]_[bin]_[gain]'
 
+export const EMPTY_CAMERA_CAPTURE_NAMING_FORMAT: CameraCaptureNamingFormat = {}
+
 export const DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT: CameraCaptureNamingFormat = {
 	light: CAMERA_CAPTURE_NAMING_FORMAT_LIGHT,
 	dark: CAMERA_CAPTURE_NAMING_FORMAT_DARK,
@@ -372,6 +374,7 @@ export function updateCameraStartCaptureFromCamera(request: CameraStartCapture, 
 	if (camera.gainMax) request.gain = Math.max(camera.gainMin, Math.min(request.gain, camera.gainMax))
 	if (camera.offsetMax) request.offset = Math.max(camera.offsetMin, Math.min(request.offset, camera.offsetMax))
 	if (camera.frameFormats.length && (!request.frameFormat || !camera.frameFormats.includes(request.frameFormat))) request.frameFormat = camera.frameFormats[0]
+	if (camera.exposureMin > 1 && camera.exposureMax > camera.exposureMin) request.exposureTime = Math.max(camera.exposureMin, Math.min(request.exposureTime, camera.exposureMax))
 }
 
 export function cameraPreferenceWithDefault(preference?: Partial<CameraPreference>, source: CameraPreference = DEFAULT_CAMERA_PREFERENCE) {

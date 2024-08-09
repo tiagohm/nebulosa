@@ -81,7 +81,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 			}
 		})
 
-		this.devices = [...(await this.api.cameras()), ...(await this.api.mounts()), ...(await this.api.focusers()), ...(await this.api.wheels())].sort(deviceComparator)
+		this.devices = [...(await this.api.cameras()), ...(await this.api.mounts()), ...(await this.api.focusers()), ...(await this.api.wheels()), ...(await this.api.rotators())].sort(deviceComparator)
 
 		if (this.devices.length) {
 			this.device = this.devices[0]

@@ -77,16 +77,16 @@ export function settingsPreferenceWithDefault(preference?: Partial<SettingsPrefe
 export function resetCameraCaptureNamingFormat(type: FrameType, format: CameraCaptureNamingFormat, defaultValue?: CameraCaptureNamingFormat) {
 	switch (type) {
 		case 'LIGHT':
-			format.light = defaultValue?.light ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.light
+			format.light = defaultValue?.light || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.light
 			break
 		case 'DARK':
-			format.dark = defaultValue?.dark ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.dark
+			format.dark = defaultValue?.dark || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.dark
 			break
 		case 'FLAT':
-			format.flat = defaultValue?.flat ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.flat
+			format.flat = defaultValue?.flat || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.flat
 			break
 		case 'BIAS':
-			format.bias = defaultValue?.bias ?? DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.bias
+			format.bias = defaultValue?.bias || DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT.bias
 			break
 	}
 }

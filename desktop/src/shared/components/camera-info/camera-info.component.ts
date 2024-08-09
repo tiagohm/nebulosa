@@ -1,11 +1,11 @@
-import { Component, Input } from '@angular/core'
+import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core'
 import { CameraStartCapture } from '../../types/camera.types'
 import { Wheel } from '../../types/wheel.types'
 
 @Component({
 	selector: 'neb-camera-info',
 	templateUrl: './camera-info.component.html',
-	styleUrls: ['./camera-info.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class CameraInfoComponent {
 	@Input({ required: true })
@@ -19,6 +19,12 @@ export class CameraInfoComponent {
 
 	@Input()
 	protected readonly hasExposure: boolean = true
+
+	@Input()
+	protected readonly canRemoveFilter = false
+
+	@Output()
+	protected readonly filterRemoved = new EventEmitter<void>()
 
 	get hasFilter() {
 		return !!this.wheel && !!this.info.filterPosition && this.wheel.connected

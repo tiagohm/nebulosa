@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 data class SequencerTask(
     @JvmField val camera: Camera,
-    @JvmField val plan: SequencePlanRequest,
+    @JvmField val plan: SequencerPlanRequest,
     @JvmField val guider: Guider? = null,
     @JvmField val mount: Mount? = null,
     @JvmField val wheel: FilterWheel? = null,
@@ -45,7 +45,7 @@ data class SequencerTask(
     private val calibrationFrameProvider: CalibrationFrameProvider? = null,
 ) : AbstractTask<MessageEvent>(), Consumer<Any>, CameraEventAware, WheelEventAware, PauseListener {
 
-    private val usedEntries = plan.entries.filter { it.enabled }
+    private val sequences = plan.sequences.filter { it.enabled }
 
     private val initialDelayTask = DelayTask(plan.initialDelay)
 
@@ -63,7 +63,7 @@ data class SequencerTask(
     @Volatile private var progress = 0.0
 
     init {
-        require(usedEntries.isNotEmpty()) { "no entries found" }
+        require(sequences.isNotEmpty()) { "no entries found" }
 
         initialDelayTask.subscribe(this)
         tasks.add(initialDelayTask)
@@ -75,12 +75,12 @@ data class SequencerTask(
             namingFormat = plan.namingFormat,
         )
 
-        if (plan.captureMode == SequenceCaptureMode.FULLY || usedEntries.size == 1) {
-            for (i in usedEntries.indices) {
-                val request = mapRequest(usedEntries[i])
+        if (plan.captureMode == SequencerCaptureMode.FULLY || sequences.size == 1) {
+            for (i in sequences.indices) {
+                val request = mapRequest(sequences[i])
 
                 // ID.
-                tasks.add(SequencerIdTask(plan.entries.indexOfFirst { it === usedEntries[i] } + 1))
+                tasks.add(SequencerIdTask(plan.sequences.indexOfFirst { it === sequences[i] } + 1))
 
                 // FILTER WHEEL.
                 request.wheelMoveTask()?.also(tasks::add)
@@ -94,23 +94,22 @@ data class SequencerTask(
 
                 cameraCaptureTask.subscribe(this)
                 estimatedCaptureTime += cameraCaptureTask.estimatedCaptureTime
-                tasks.add(SequenceCaptureModeCameraCaptureTask(cameraCaptureTask, SequenceCaptureMode.FULLY, i))
+                tasks.add(SequenceCaptureModeCameraCaptureTask(cameraCaptureTask, SequencerCaptureMode.FULLY, i))
             }
         } else {
-            val sequenceIdTasks = usedEntries.map { req -> SequencerIdTask(plan.entries.indexOfFirst { it === req } + 1) }
-            val requests = usedEntries.map { mapRequest(it) }
-            val cameraCaptureTasks = requests
-                .mapIndexed { i, req ->
-                    val task = CameraCaptureTask(
-                        camera, req, guider,
-                        i > 0, executor, calibrationFrameProvider,
-                        mount, wheel, focuser, rotator
-                    )
+            val sequenceIdTasks = sequences.map { req -> SequencerIdTask(plan.sequences.indexOfFirst { it === req } + 1) }
+            val requests = sequences.map { mapRequest(it) }
+            val cameraCaptureTasks = requests.mapIndexed { i, req ->
+                val task = CameraCaptureTask(
+                    camera, req, guider,
+                    i > 0, executor, calibrationFrameProvider,
+                    mount, wheel, focuser, rotator
+                )
 
-                    SequenceCaptureModeCameraCaptureTask(task, SequenceCaptureMode.INTERLEAVED, i)
-                }
+                SequenceCaptureModeCameraCaptureTask(task, SequencerCaptureMode.INTERLEAVED, i)
+            }
             val wheelMoveTasks = requests.map { it.wheelMoveTask() }
-            val count = IntArray(requests.size) { usedEntries[it].exposureAmount }
+            val count = IntArray(requests.size) { sequences[it].exposureAmount }
 
             for ((cameraCaptureTask) in cameraCaptureTasks) {
                 cameraCaptureTask.subscribe(this)
@@ -118,14 +117,14 @@ data class SequencerTask(
             }
 
             while (count.sum() > 0) {
-                for (i in usedEntries.indices) {
+                for (i in sequences.indices) {
                     if (count[i] > 0) {
                         tasks.add(sequenceIdTasks[i])
                         wheelMoveTasks[i]?.also(tasks::add)
 
                         val task = cameraCaptureTasks[i]
 
-                        if (count[i] == usedEntries[i].exposureAmount) {
+                        if (count[i] == sequences[i].exposureAmount) {
                             tasks.add(InitializeCameraCaptureTask(task.task))
                         }
 
@@ -273,12 +272,12 @@ data class SequencerTask(
 
     private data class SequenceCaptureModeCameraCaptureTask(
         @JvmField val task: CameraCaptureTask,
-        @JvmField val mode: SequenceCaptureMode,
+        @JvmField val mode: SequencerCaptureMode,
         @JvmField val index: Int,
     ) : Task {
 
         override fun execute(cancellationToken: CancellationToken) {
-            if (mode == SequenceCaptureMode.FULLY) {
+            if (mode == SequencerCaptureMode.FULLY) {
                 task.initialize(cancellationToken)
                 task.executeInLoop(cancellationToken)
                 task.finalize(cancellationToken)

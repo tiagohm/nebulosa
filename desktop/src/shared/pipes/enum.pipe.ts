@@ -8,7 +8,7 @@ import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../
 import { Bitpix, ImageChannel, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlProtocol } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
-import { SequenceCaptureMode, SequencerState } from '../types/sequencer.types'
+import { SequencerCaptureMode, SequencerState } from '../types/sequencer.types'
 import { SettingsTabKey } from '../types/settings.types'
 import { StackerGroupType, StackerType } from '../types/stacker.types'
 import { StarDetectorType } from '../types/stardetector.types'
@@ -37,7 +37,7 @@ export type EnumPipeKey =
 	| GuiderPlotMode
 	| GuiderYAxisUnit
 	| MountRemoteControlProtocol
-	| SequenceCaptureMode
+	| SequencerCaptureMode
 	| Bitpix
 	| StackerType
 	| StackerGroupType

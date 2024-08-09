@@ -10,13 +10,13 @@ import { ExposureTimeUnit } from '../../shared/types/camera.types'
 })
 export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 	@Input({ required: true })
-	protected readonly exposureTime: number = 0
+	protected exposureTime: number = 0
 
 	@Output()
 	readonly exposureTimeChange = new EventEmitter<number>()
 
 	@Input()
-	protected readonly unit: ExposureTimeUnit = 'MICROSECOND'
+	protected unit: ExposureTimeUnit = 'MICROSECOND'
 
 	@Output()
 	readonly unitChange = new EventEmitter<ExposureTimeUnit>()
@@ -75,6 +75,8 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 		},
 	]
 
+	private exposureTimeInMicroseconds = 0
+
 	ngOnChanges(changes: SimpleChanges) {
 		for (const key in changes) {
 			const change = changes[key]
@@ -86,32 +88,33 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 					this.exposureTimeUnitChanged(change.currentValue)
 					break
 				case 'exposureTime':
-					this.exposureTimeChanged(change.currentValue, 'MICROSECOND')
+					this.exposureTimeChanged(change.currentValue, 'MICROSECOND', this.normalized && this.exposureTimeInMicroseconds !== change.currentValue)
 					break
 				case 'min':
 				case 'max':
 					this.exposureTimeMinMaxChanged()
+					break
+				case 'normalized':
+					this.normalize(this.exposureTime)
 					break
 			}
 		}
 	}
 
 	ngAfterViewInit() {
-		if (!this.normalize(this.exposureTime)) {
-			this.updateExposureTime(this.current.exposureTime, this.unit, this.unit)
-		}
+		this.updateExposureTime(this.current.exposureTime, this.unit, this.unit)
 	}
 
 	protected exposureTimeUnitChanged(value: ExposureTimeUnit) {
-		this.updateExposureTime(this.current.exposureTime, value, this.unit)
+		this.updateExposureTime(this.current.exposureTime, value, this.unit, false)
 	}
 
-	protected exposureTimeChanged(value: number, from: ExposureTimeUnit = this.unit) {
-		this.updateExposureTime(value, this.unit, from)
+	protected exposureTimeChanged(value: number, from: ExposureTimeUnit = this.unit, normalize: boolean = false) {
+		this.updateExposureTime(value, this.unit, from, normalize)
 	}
 
 	protected exposureTimeMinMaxChanged() {
-		this.updateExposureTime(this.current.exposureTime, this.unit, this.unit)
+		this.updateExposureTime(this.current.exposureTime, this.unit, this.unit, false)
 	}
 
 	protected exposureTimeUnitWheeled(event: WheelEvent) {
@@ -131,7 +134,7 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 		}
 	}
 
-	private updateExposureTime(value: number, unit: ExposureTimeUnit, from: ExposureTimeUnit) {
+	private updateExposureTime(value: number, unit: ExposureTimeUnit, from: ExposureTimeUnit, normalize: boolean = this.normalized) {
 		const a = ExposureTimeComponent.exposureUnitFactor(from)
 		const b = ExposureTimeComponent.exposureUnitFactor(unit)
 
@@ -143,11 +146,20 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 
 		const exposureTimeInMicroseconds = Math.trunc((this.current.exposureTime * 60000000) / b)
 
+		if (normalize) {
+			if (this.normalize(exposureTimeInMicroseconds)) {
+				return
+			}
+		}
+
 		if (this.exposureTime !== exposureTimeInMicroseconds) {
+			this.exposureTime = exposureTimeInMicroseconds
+			this.exposureTimeInMicroseconds = exposureTimeInMicroseconds
 			this.exposureTimeChange.emit(exposureTimeInMicroseconds)
 		}
 
 		if (this.unit !== unit) {
+			this.unit = unit
 			this.unitChange.emit(unit)
 		}
 	}
@@ -169,7 +181,7 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 
 				// exposureTime is multiple of time.
 				if (k === Math.floor(k)) {
-					this.updateExposureTime(exposureTime, unit, 'MICROSECOND')
+					this.updateExposureTime(exposureTime, unit, 'MICROSECOND', false)
 					return true
 				}
 			}

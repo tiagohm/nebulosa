@@ -15,7 +15,7 @@ import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera,
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, SlewRate, TrackMode } from '../types/mount.types'
 import { PlateSolverRequest } from '../types/platesolver.types'
 import { Rotator } from '../types/rotator.types'
-import { SequencePlan } from '../types/sequencer.types'
+import { SequencerPlan } from '../types/sequencer.types'
 import { AnalyzedTarget, StackingRequest } from '../types/stacker.types'
 import { StarDetectionRequest } from '../types/stardetector.types'
 import { Wheel } from '../types/wheel.types'
@@ -633,9 +633,9 @@ export class ApiService {
 
 	// SEQUENCER
 
-	sequencerStart(camera: Camera, plan: SequencePlan) {
-		const body: SequencePlan = { ...plan, mount: undefined, camera: undefined, wheel: undefined, focuser: undefined }
-		const query = this.http.query({ mount: plan.mount, focuser: plan.focuser, wheel: plan.wheel })
+	sequencerStart(camera: Camera, plan: SequencerPlan) {
+		const body: SequencerPlan = { ...plan, mount: undefined, camera: undefined, wheel: undefined, focuser: undefined, rotator: undefined }
+		const query = this.http.query({ mount: plan.mount?.id, focuser: plan.focuser?.id, wheel: plan.wheel?.id, rotator: plan.rotator?.id })
 		return this.http.put<never>(`sequencer/${camera.id}/start?${query}`, body)
 	}
 
