@@ -1,54 +1,44 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange, SimpleChanges } from '@angular/core'
+import { Component, EventEmitter, Input, Output } from '@angular/core'
 import { dirname } from 'path'
 import { ElectronService } from '../../services/electron.service'
-import { Undefinable } from '../../utils/types'
 
 @Component({
 	selector: 'neb-path-chooser',
 	templateUrl: './path-chooser.component.html',
-	styleUrls: ['./path-chooser.component.scss'],
 })
-export class PathChooserComponent implements OnChanges {
+export class PathChooserComponent {
 	@Input({ required: true })
-	readonly key!: string
+	protected readonly key!: string
 
 	@Input()
-	readonly label?: string
+	protected readonly label?: string
 
 	@Input()
-	readonly placeholder?: string
+	protected readonly placeholder?: string
 
 	@Input()
-	readonly disabled: boolean = false
+	protected readonly disabled: boolean = false
 
 	@Input()
-	readonly readonly: boolean = false
+	protected readonly readonly: boolean = false
 
 	@Input({ required: true })
-	readonly directory!: boolean
+	protected readonly directory!: boolean
 
 	@Input()
-	path?: string
+	protected path?: string
 
 	@Output()
 	readonly pathChange = new EventEmitter<string>()
 
-	constructor(private readonly electron: ElectronService) {}
+	constructor(private readonly electronService: ElectronService) {}
 
-	ngOnChanges(changes: SimpleChanges) {
-		const pathChanged = changes['path'] as Undefinable<SimpleChange>
-
-		if (pathChanged?.currentValue) {
-			this.path = pathChanged.currentValue as string
-		}
-	}
-
-	async choosePath() {
+	protected async choosePath() {
 		const key = `pathChooser.${this.key}.defaultPath`
-		const storedPath = localStorage.getItem(key)
-		const defaultPath = storedPath && !this.directory ? dirname(storedPath) : this.path
+		const lastPath = localStorage.getItem(key) || undefined
+		const defaultPath = lastPath && !this.directory ? dirname(lastPath) : lastPath
 
-		const path = await (this.directory ? this.electron.openDirectory({ defaultPath }) : this.electron.openFile({ defaultPath }))
+		const path = await (this.directory ? this.electronService.openDirectory({ defaultPath }) : this.electronService.openFile({ defaultPath }))
 
 		if (path) {
 			this.path = path

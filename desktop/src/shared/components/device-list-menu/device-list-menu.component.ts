@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core'
+import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
-import { PrimeService } from '../../services/prime.service'
+import { AngularService } from '../../services/angular.service'
 import { isGuideHead } from '../../types/camera.types'
 import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
@@ -17,22 +17,26 @@ export interface DeviceConnectionCommandEvent {
 	selector: 'neb-device-list-menu',
 	templateUrl: './device-list-menu.component.html',
 	styleUrls: ['./device-list-menu.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceListMenuComponent {
 	@Input()
-	readonly model: SlideMenuItem[] = []
+	protected readonly model: SlideMenuItem[] = []
 
 	@Input()
-	readonly modelAtFirst: boolean = true
+	protected readonly modelAtFirst: boolean = true
 
 	@Input()
-	readonly disableIfDeviceIsNotConnected: boolean = true
+	protected readonly disableIfDeviceIsNotConnected: boolean = true
 
 	@Input()
-	header?: string
+	protected header?: string
 
 	@Input()
-	readonly hasNone: boolean = false
+	protected readonly hasNone: boolean = false
+
+	@Input()
+	protected readonly toolbarBuilder?: (device: Device) => MenuItem[]
 
 	@Output()
 	readonly deviceConnect = new EventEmitter<DeviceConnectionCommandEvent>()
@@ -43,15 +47,17 @@ export class DeviceListMenuComponent {
 	@ViewChild('menu')
 	private readonly menu!: DialogMenuComponent
 
-	constructor(private readonly prime: PrimeService) {}
+	constructor(private readonly angularService: AngularService) {}
 
-	show<T extends Device>(devices: T[], selected?: NoInfer<T>) {
+	show<T extends Device>(devices: T[], selected?: NoInfer<T>, header?: string) {
 		const model: SlideMenuItem[] = []
+
+		if (header) this.header = header
 
 		return new Promise<Undefinable<T | 'NONE'>>((resolve) => {
 			if (devices.length <= 0) {
 				resolve(undefined)
-				this.prime.message('Please connect your equipment first!', 'warn')
+				this.angularService.message('Please connect your equipment first!', 'warn')
 				return
 			}
 
@@ -92,12 +98,15 @@ export class DeviceListMenuComponent {
 			}
 
 			for (const device of devices.sort(deviceComparator)) {
+				const toolbarMenu = this.toolbarBuilder?.(device) ?? []
+
 				model.push({
 					label: device.name,
 					selected: selected === device,
 					disabled: this.disableIfDeviceIsNotConnected && !device.connected,
 					slideMenu: [],
 					toolbarMenu: [
+						...toolbarMenu,
 						{
 							icon: 'mdi ' + (device.connected ? 'mdi-close' : 'mdi-connection'),
 							severity: device.connected ? 'danger' : 'info',
@@ -122,8 +131,7 @@ export class DeviceListMenuComponent {
 				populateWithModel()
 			}
 
-			this.menu.model = model
-			this.menu.show()
+			this.menu.show(model)
 		})
 	}
 

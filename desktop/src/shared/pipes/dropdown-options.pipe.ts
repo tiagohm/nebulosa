@@ -1,12 +1,14 @@
 import { Pipe, PipeTransform } from '@angular/core'
 import { Hemisphere } from '../types/alignment.types'
+import { Constellation, CONSTELLATIONS, SATELLITE_GROUPS, SatelliteGroupType, SKY_OBJECT_TYPES, SkyObjectType } from '../types/atlas.types'
 import { AutoFocusFittingMode, BacklashCompensationMode } from '../types/autofocus.type'
 import { ExposureMode, FrameType, LiveStackerType } from '../types/camera.types'
 import { GuideDirection, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
-import { Bitpix, ImageChannel, ImageFormat, SCNRProtectionMethod } from '../types/image.types'
-import { MountRemoteControlType } from '../types/mount.types'
+import { ConnectionType } from '../types/home.types'
+import { Bitpix, IMAGE_STATISTICS_BIT_OPTIONS, ImageChannel, ImageFormat, ImageStatisticsBitOption, SCNRProtectionMethod } from '../types/image.types'
+import { MountRemoteControlProtocol } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
-import { SequenceCaptureMode } from '../types/sequencer.types'
+import { SequencerCaptureMode } from '../types/sequencer.types'
 import { SettingsTabKey } from '../types/settings.types'
 import { StackerGroupType, StackerType } from '../types/stacker.types'
 import { StarDetectorType } from '../types/stardetector.types'
@@ -21,7 +23,7 @@ export interface DropdownOptions {
 	IMAGE_FORMAT: ImageFormat[]
 	IMAGE_BITPIX: Bitpix[]
 	IMAGE_CHANNEL: ImageChannel[]
-	MOUNT_REMOTE_CONTROL_TYPE: MountRemoteControlType[]
+	MOUNT_REMOTE_CONTROL_PROTOCOL: MountRemoteControlProtocol[]
 	FRAME_TYPE: FrameType[]
 	EXPOSURE_MODE: ExposureMode[]
 	GUIDE_DIRECTION: GuideDirection[]
@@ -30,10 +32,16 @@ export interface DropdownOptions {
 	HEMISPHERE: Hemisphere[]
 	GUIDER_PLOT_MODE: GuiderPlotMode[]
 	GUIDER_Y_AXIS_UNIT: GuiderYAxisUnit[]
-	SEQUENCE_CAPTURE_MODE: SequenceCaptureMode[]
+	SEQUENCE_CAPTURE_MODE: SequencerCaptureMode[]
 	STACKER: StackerType[]
 	SETTINGS_TAB: SettingsTabKey[]
 	STACKER_GROUP_TYPE: StackerGroupType[]
+	CONNECTION_TYPE: ConnectionType[]
+	IMAGE_STATISTICS_BIT_OPTION: ImageStatisticsBitOption[]
+	SATELLITE_GROUP_TYPE: SatelliteGroupType[]
+	CONSTELLATION: Constellation[]
+	SKY_OBJECT_TYPE: SkyObjectType[]
+	SEQUENCER_CAPTURE_MODE: SequencerCaptureMode[]
 }
 
 @Pipe({ name: 'dropdownOptions' })
@@ -58,7 +66,7 @@ export class DropdownOptionsPipe implements PipeTransform {
 				return ['BYTE', 'SHORT', 'INTEGER', 'FLOAT', 'DOUBLE'] as DropdownOptions[K]
 			case 'IMAGE_CHANNEL':
 				return ['RED', 'GREEN', 'BLUE', 'GRAY'] as DropdownOptions[K]
-			case 'MOUNT_REMOTE_CONTROL_TYPE':
+			case 'MOUNT_REMOTE_CONTROL_PROTOCOL':
 				return ['LX200', 'STELLARIUM'] as DropdownOptions[K]
 			case 'FRAME_TYPE':
 				return ['LIGHT', 'DARK', 'FLAT', 'BIAS'] as DropdownOptions[K]
@@ -84,6 +92,18 @@ export class DropdownOptionsPipe implements PipeTransform {
 				return ['LOCATION', 'PLATE_SOLVER', 'STAR_DETECTOR', 'LIVE_STACKER', 'STACKER', 'CAPTURE_NAMING_FORMAT'] as DropdownOptions[K]
 			case 'STACKER_GROUP_TYPE':
 				return ['LUMINANCE', 'RED', 'GREEN', 'BLUE', 'MONO', 'RGB'] as DropdownOptions[K]
+			case 'CONNECTION_TYPE':
+				return ['INDI', 'ALPACA'] as DropdownOptions[K]
+			case 'IMAGE_STATISTICS_BIT_OPTION':
+				return IMAGE_STATISTICS_BIT_OPTIONS as DropdownOptions[K]
+			case 'SATELLITE_GROUP_TYPE':
+				return SATELLITE_GROUPS as unknown as DropdownOptions[K]
+			case 'CONSTELLATION':
+				return CONSTELLATIONS as unknown as DropdownOptions[K]
+			case 'SKY_OBJECT_TYPE':
+				return SKY_OBJECT_TYPES as unknown as DropdownOptions[K]
+			case 'SEQUENCER_CAPTURE_MODE':
+				return ['FULLY', 'INTERLEAVED'] as DropdownOptions[K]
 		}
 
 		return []

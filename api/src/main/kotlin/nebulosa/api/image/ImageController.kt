@@ -38,17 +38,12 @@ class ImageController(
         imageService.saveImageAs(path, save, camera)
     }
 
-    @GetMapping("annotations")
+    @PutMapping("annotations")
     fun annotationsOfImage(
         @RequestParam path: Path,
-        @RequestParam(required = false, defaultValue = "true") starsAndDSOs: Boolean,
-        @RequestParam(required = false, defaultValue = "false") minorPlanets: Boolean,
-        @RequestParam(required = false, defaultValue = "12.0") minorPlanetMagLimit: Double,
-        @RequestParam(required = false, defaultValue = "false") includeMinorPlanetsWithoutMagnitude: Boolean,
-        @RequestParam(required = false, defaultValue = "false") useSimbad: Boolean,
+        @RequestBody request: AnnotateImageRequest,
         @LocationParam location: Location? = null,
-    ) = imageService
-        .annotations(path, starsAndDSOs, minorPlanets, minorPlanetMagLimit, includeMinorPlanetsWithoutMagnitude, useSimbad, location)
+    ) = imageService.annotations(path, request, location)
 
     @GetMapping("coordinate-interpolation")
     fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {

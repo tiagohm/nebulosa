@@ -1,263 +1,410 @@
-import { AfterViewInit, Component } from '@angular/core'
+import { AfterViewInit, Component, HostListener, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
 import { dirname } from 'path'
-import { TreeDragDropService, TreeNode } from 'primeng/api'
-import { TreeNodeDropEvent } from 'primeng/tree'
+import { Listbox } from 'primeng/listbox'
+import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { CalibrationFrame, CalibrationFrameGroup } from '../../shared/types/calibration.types'
+import { CalibrationFrame, DEFAULT_CALIBRATION_GROUP_DIALOG, DEFAULT_CALIBRATION_PREFERENCE } from '../../shared/types/calibration.types'
+import { textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
-
-export interface CalibrationNode extends TreeNode<TreeNodeData> {
-	key: string
-	label: string
-	data: TreeNodeData
-	children: CalibrationNode[]
-	parent?: CalibrationNode
-}
-
-export type TreeNodeData = { type: 'NAME'; data: string } | { type: 'GROUP'; data: CalibrationFrameGroup } | { type: 'FRAME'; data: CalibrationFrame }
 
 @Component({
 	selector: 'neb-calibration',
 	templateUrl: './calibration.component.html',
-	styleUrls: ['./calibration.component.scss'],
-	providers: [TreeDragDropService],
+	encapsulation: ViewEncapsulation.None,
 })
-export class CalibrationComponent implements AfterViewInit {
-	readonly frames: CalibrationNode[] = []
+export class CalibrationComponent implements AfterViewInit, OnDestroy {
+	protected readonly frames = new Map<string, CalibrationFrame[]>()
+	protected readonly preference = structuredClone(DEFAULT_CALIBRATION_PREFERENCE)
+	protected readonly groupDialog = structuredClone(DEFAULT_CALIBRATION_GROUP_DIALOG)
+	protected selectedFrames: CalibrationFrame[] = []
 
-	showNewGroupDialog = false
-	newGroupName = ''
-	newGroupDialogSave: () => void = () => {}
+	protected tab = 0
+	private frameId = ''
+
+	private readonly renameSelectedFramesMenuItem: MenuItem = {
+		icon: 'mdi mdi-pencil',
+		label: 'Rename Group',
+		badge: '0',
+		visible: false,
+		command: () => {
+			this.showEditGroupDialogForSelectedFrames()
+		},
+	}
+
+	private readonly deleteSelectedFramesMenuItem: MenuItem = {
+		icon: 'mdi mdi-delete',
+		severity: 'danger',
+		label: 'Delete',
+		badge: '0',
+		visible: false,
+		command: () => this.deleteSelectedFrames(),
+	}
+
+	protected activeGroup = ''
+	protected readonly groupModel: MenuItem[] = [
+		{
+			icon: 'mdi mdi-checkbox-marked',
+			label: 'Select All',
+			command: () => {
+				const frames = this.activeFrames
+
+				if (frames.length) {
+					const selectedFrames = new Set(this.selectedFrames)
+
+					for (const frame of frames) {
+						selectedFrames.add(frame)
+					}
+
+					this.selectedFrames = Array.from(selectedFrames)
+					this.frameSelected()
+				}
+			},
+		},
+		{
+			icon: 'mdi mdi-checkbox-blank-outline',
+			label: 'Unselect All',
+			command: () => {
+				const frames = this.activeFrames
+
+				if (frames.length) {
+					const selectedFrames = new Set(this.selectedFrames)
+
+					for (const frame of frames) {
+						selectedFrames.delete(frame)
+					}
+
+					this.selectedFrames = Array.from(selectedFrames)
+					this.frameSelected()
+				}
+			},
+		},
+		SEPARATOR_MENU_ITEM,
+		{
+			icon: 'mdi mdi-checkbox-marked',
+			label: 'Enable All',
+			command: async () => {
+				const frames = this.activeFrames
+
+				for (const frame of frames) {
+					if (!frame.enabled) {
+						await this.toggleFrame(frame, true)
+					}
+				}
+			},
+		},
+		{
+			icon: 'mdi mdi-checkbox-blank-outline',
+			label: 'Disable All',
+			command: async () => {
+				const frames = this.activeFrames
+
+				for (const frame of frames) {
+					if (frame.enabled) {
+						await this.toggleFrame(frame, false)
+					}
+				}
+			},
+		},
+		SEPARATOR_MENU_ITEM,
+		{
+			icon: 'mdi mdi-pencil',
+			label: 'Rename Group',
+			command: () => {
+				if (this.activeGroup && this.activeFrames.length) {
+					this.showEditGroupDialog(this.activeGroup)
+				}
+			},
+		},
+		{
+			icon: 'mdi mdi-delete',
+			label: 'Delete All',
+			iconClass: 'text-danger',
+			command: async () => {
+				if (this.activeGroup && this.activeFrames.length) {
+					await this.deleteFrameGroup(this.activeGroup)
+				}
+			},
+		},
+	]
+
+	@ViewChildren('frameListBox')
+	private readonly frameListBoxes!: QueryList<Listbox>
+
+	get groups() {
+		return Array.from(this.frames.keys()).sort(textComparator)
+	}
+
+	get activeFrames() {
+		return this.frames.get(this.activeGroup) ?? []
+	}
 
 	constructor(
 		app: AppComponent,
 		private readonly api: ApiService,
-		private readonly electron: ElectronService,
-		private readonly browserWindow: BrowserWindowService,
-		private readonly preference: PreferenceService,
+		private readonly electronService: ElectronService,
+		private readonly browserWindowService: BrowserWindowService,
+		private readonly preferenceService: PreferenceService,
 	) {
 		app.title = 'Calibration'
+
+		app.topMenu.push({
+			icon: 'mdi mdi-plus',
+			label: 'New Group',
+			command: () => {
+				this.showNewGroupDialog()
+			},
+		})
+
+		app.topMenu.push(this.renameSelectedFramesMenuItem)
+		app.topMenu.push(this.deleteSelectedFramesMenuItem)
 	}
 
-	async ngAfterViewInit() {
-		await this.load()
+	ngAfterViewInit() {
+		this.loadPreference()
+
+		return this.load()
 	}
 
-	private makeTreeNode(key: string, label: string, data: TreeNodeData, parent?: CalibrationNode): CalibrationNode {
-		const draggable = data.type === 'FRAME'
-		const droppable = data.type === 'NAME'
-		return { key, label, data, children: [], parent, draggable, droppable }
+	@HostListener('window:unload')
+	ngOnDestroy() {
+		void this.closeFrameWindow()
 	}
 
-	addGroup(name: string) {
-		const node = this.frames.find((e) => e.label === name) ?? this.makeTreeNode(`group-${name}`, name, { type: 'NAME', data: name })
+	protected frameSelected() {
+		const count = this.selectedFrames.length
+		const visible = count > 0
 
-		if (!this.frames.includes(node)) {
-			this.frames.push(node)
+		this.renameSelectedFramesMenuItem.visible = visible
+		this.deleteSelectedFramesMenuItem.visible = visible
+
+		if (visible) {
+			this.renameSelectedFramesMenuItem.badge = `${count}`
+			this.deleteSelectedFramesMenuItem.badge = `${count}`
 		}
-
-		return node
 	}
 
-	addFrameGroup(name: string | CalibrationNode, group: CalibrationFrameGroup) {
-		const parent = typeof name === 'string' ? this.frames.find((e) => e.label === name) : name
+	protected async openFilesToUpload(group: string) {
+		const paths = await this.electronService.openImages({ defaultPath: this.preference.filePath })
 
-		if (parent) {
-			const node = this.makeTreeNode(`frame-group-${group.id}`, `Frame`, { type: 'GROUP', data: group }, parent)
-			parent.children.push(node)
-			return node
-		}
+		if (paths && paths.length) {
+			this.preference.filePath = dirname(paths[0])
+			this.savePreference()
 
-		return undefined
-	}
-
-	addFrame(group: string | CalibrationNode, frame: CalibrationFrame) {
-		const parent = typeof group === 'string' ? this.frames.find((e) => e.label === group) : group
-
-		if (parent) {
-			const node = this.makeTreeNode(`frame-${frame.id}`, `Frame`, { type: 'FRAME', data: frame }, parent)
-			parent.children.push(node)
-			return node
-		}
-
-		return undefined
-	}
-
-	async openFileToUpload(node: CalibrationNode) {
-		if (node.data.type === 'NAME') {
-			const preference = this.preference.calibrationPreference.get()
-			const path = await this.electron.openImage({ defaultPath: preference.openPath })
-
-			if (path) {
-				preference.openPath = dirname(path)
-				this.preference.calibrationPreference.set(preference)
-				await this.upload(node, path)
+			for (const path of paths) {
+				await this.upload(group, path)
 			}
 		}
 	}
 
-	async openDirectoryToUpload(node: CalibrationNode) {
-		if (node.data.type === 'NAME') {
-			const preference = this.preference.calibrationPreference.get()
-			const path = await this.electron.openDirectory({ defaultPath: preference.openPath })
+	protected async openDirectoryToUpload(group: string) {
+		const path = await this.electronService.openDirectory({ defaultPath: this.preference.directoryPath })
 
-			if (path) {
-				preference.openPath = path
-				this.preference.calibrationPreference.set(preference)
-				await this.upload(node, path)
-			}
+		if (path) {
+			this.preference.directoryPath = path
+			this.savePreference()
+			await this.upload(group, path)
 		}
 	}
 
-	private async upload(node: CalibrationNode, path: string) {
-		if (node.data.type === 'NAME') {
-			const frames = await this.api.uploadCalibrationFrame(node.data.data, path)
+	private async upload(group: string, path: string) {
+		const frames = await this.api.uploadCalibrationFrame(group, path)
 
-			if (frames.length > 0) {
-				await this.electron.calibrationChanged()
-				await this.load()
+		if (frames.length > 0) {
+			await this.electronService.calibrationChanged()
+			await this.loadGroup(group)
+		}
+	}
+
+	private async loadGroup(group: string) {
+		const frames = await this.api.calibrationFrames(group)
+
+		for (let i = 0; i < this.selectedFrames.length; i++) {
+			for (const frame of frames) {
+				if (frame.id === this.selectedFrames[i].id) {
+					this.selectedFrames[i] = frame
+				}
 			}
+		}
+
+		this.frames.set(group, frames)
+	}
+
+	private loadDefaultGroupIfEmpty() {
+		if (!this.frames.size) {
+			this.frames.set('Group 1', [])
 		}
 	}
 
 	private async load() {
-		this.frames.length = 0
+		this.frames.clear()
 
-		const names = await this.api.calibrationGroups()
+		const groups = await this.api.calibrationGroups()
 
-		for (const name of names) {
-			const nameNode = this.addGroup(name)
+		for (const group of groups) {
+			await this.loadGroup(group)
+		}
 
-			const groups = await this.api.calibrationFrames(name)
+		this.loadDefaultGroupIfEmpty()
+	}
+
+	protected openImage(frame: CalibrationFrame) {
+		return this.browserWindowService.openImage({ path: frame.path, source: 'PATH' })
+	}
+
+	protected toggleFrame(frame: CalibrationFrame, enabled: boolean) {
+		frame.enabled = enabled
+		return this.api.updateCalibrationFrame(frame)
+	}
+
+	protected async openFrame(frame: CalibrationFrame) {
+		this.frameId = await this.browserWindowService.openImage({ path: frame.path, id: 'calibration', source: 'PATH' })
+	}
+
+	protected async deleteFrame(frame: CalibrationFrame, box?: Listbox) {
+		await this.api.deleteCalibrationFrame(frame)
+
+		let index = this.selectedFrames.indexOf(frame)
+
+		if (index >= 0) {
+			this.selectedFrames.splice(index, 1)
+			this.frameSelected()
+		}
+
+		const frames = this.frames.get(frame.group)
+
+		if (frames?.length) {
+			index = frames.indexOf(frame)
+
+			if (index >= 0) {
+				frames.splice(index, 1)
+				box?.cd.markForCheck()
+			}
+		}
+	}
+
+	private async deleteSelectedFrames() {
+		const groups = new Set<string>()
+		const frames = Array.from(this.selectedFrames)
+
+		for (const frame of frames) {
+			groups.add(frame.group)
+			await this.deleteFrame(frame)
+		}
+
+		this.markFrameListBoxesForCheck()
+	}
+
+	private async deleteFrameGroup(group: string) {
+		const frames = Array.from(this.frames.get(group) ?? [])
+
+		for (const frame of frames) {
+			await this.deleteFrame(frame)
+		}
+
+		this.markFrameListBoxesForCheck()
+	}
+
+	private showEditGroupDialogForSelectedFrames() {
+		this.groupDialog.save = async () => {
+			const groups = new Set<string>()
+
+			groups.add(this.groupDialog.group)
+
+			for (const frame of this.selectedFrames) {
+				if (this.groupDialog.group !== frame.group) {
+					groups.add(frame.group)
+					frame.group = this.groupDialog.group
+					await this.api.updateCalibrationFrame(frame)
+				}
+			}
+
+			this.groupDialog.showDialog = false
 
 			for (const group of groups) {
-				const frameGroupNode = this.addFrameGroup(nameNode, group)
+				await this.loadGroup(group)
+			}
 
-				if (frameGroupNode) {
-					for (const frame of group.frames) {
-						this.addFrame(frameGroupNode, frame)
+			await this.electronService.calibrationChanged()
+		}
+
+		this.groupDialog.group = ''
+		this.groupDialog.showDialog = true
+	}
+
+	private async closeFrameWindow() {
+		if (this.frameId) {
+			await this.electronService.closeWindow(undefined, this.frameId)
+		}
+	}
+
+	private showNewGroupDialog() {
+		this.groupDialog.save = () => {
+			if (this.groupDialog.group) {
+				this.frames.set(this.groupDialog.group, [])
+				this.groupDialog.showDialog = false
+			}
+		}
+
+		this.groupDialog.group = ''
+		this.groupDialog.showDialog = true
+	}
+
+	protected showEditGroupDialog(value: CalibrationFrame | string) {
+		if (typeof value === 'string') {
+			this.groupDialog.save = async () => {
+				const frames = this.frames.get(value)
+
+				if (frames?.length && this.groupDialog.group) {
+					for (const frame of frames) {
+						frame.group = this.groupDialog.group
+						await this.api.updateCalibrationFrame(frame)
 					}
+
+					await this.loadGroup(value)
+					await this.loadGroup(this.groupDialog.group)
+					await this.electronService.calibrationChanged()
 				}
+
+				this.groupDialog.showDialog = false
 			}
-		}
-	}
 
-	openImage(frame: CalibrationFrame) {
-		return this.browserWindow.openImage({ path: frame.path, source: 'PATH' })
-	}
-
-	async toggleCalibrationFrame(node: CalibrationNode, enabled: boolean) {
-		if (node.data.type === 'FRAME') {
-			await this.api.editCalibrationFrame(node.data.data)
-		}
-	}
-
-	async deleteFrame(node: CalibrationNode) {
-		const deleteFromParent = async () => {
-			if (node.parent) {
-				const idx = node.parent.children.indexOf(node)
-
-				if (idx >= 0) {
-					node.parent.children.splice(idx, 1)
-					console.info('frame deleted', node)
-				}
-
-				if (!node.parent.children.length) {
-					await this.deleteFrame(node.parent)
-				}
-			} else {
-				const idx = this.frames.indexOf(node)
-
-				if (idx >= 0) {
-					this.frames.splice(idx, 1)
-					console.info('frame deleted', node)
-					await this.electron.calibrationChanged()
-				}
-			}
-		}
-
-		if (node.data.type === 'FRAME') {
-			await this.api.deleteCalibrationFrame(node.data.data)
-			await deleteFromParent()
+			this.groupDialog.group = value
 		} else {
-			for (const frame of Array.from(node.children)) {
-				await this.deleteFrame(frame)
-			}
+			this.groupDialog.save = async () => {
+				const prevGroup = value.group
 
-			if (!node.children.length) {
-				await deleteFromParent()
-			}
-		}
-	}
-
-	private calibrationFrameFromNode(node: CalibrationNode) {
-		const frames: CalibrationFrame[] = []
-
-		function recursive(node: TreeNode<TreeNodeData>) {
-			if (node.data) {
-				if (node.data.type === 'NAME' || node.data.type === 'GROUP') {
-					if (node.children) {
-						for (const child of node.children) {
-							recursive(child)
-						}
-					}
-				} else {
-					frames.push(node.data.data)
-				}
-			}
-		}
-
-		recursive(node)
-
-		return frames
-	}
-
-	showNewGroupDialogForAdd() {
-		this.newGroupDialogSave = () => {
-			this.addGroup(this.newGroupName)
-			this.showNewGroupDialog = false
-		}
-
-		this.newGroupName = ''
-		this.showNewGroupDialog = true
-	}
-
-	showNewGroupDialogForEdit(node: CalibrationNode) {
-		if (node.data.type === 'NAME') {
-			this.newGroupDialogSave = async () => {
-				const frames = this.calibrationFrameFromNode(node)
-
-				for (const frame of frames) {
-					frame.name = this.newGroupName
-					await this.api.editCalibrationFrame(frame)
-					await this.electron.calibrationChanged()
+				if (this.groupDialog.group !== prevGroup) {
+					value.group = this.groupDialog.group
+					await this.api.updateCalibrationFrame(value)
+					await this.loadGroup(prevGroup)
+					await this.loadGroup(value.group)
+					await this.electronService.calibrationChanged()
 				}
 
-				this.showNewGroupDialog = false
-				await this.load()
+				this.groupDialog.showDialog = false
 			}
 
-			this.newGroupName = node.data.data
-			this.showNewGroupDialog = true
+			this.groupDialog.group = value.group
 		}
+
+		this.groupDialog.showDialog = true
 	}
 
-	editGroupName() {
-		this.showNewGroupDialog = false
+	private loadPreference() {
+		Object.assign(this.preference, this.preferenceService.calibrationPreference.get())
 	}
 
-	async frameDropped(event: TreeNodeDropEvent) {
-		const dragNode = event.dragNode as CalibrationNode
-		const dropNode = event.dropNode as CalibrationNode
+	protected savePreference() {
+		this.preferenceService.calibrationPreference.set(this.preference)
+	}
 
-		if (dragNode.data.type === 'FRAME' && dropNode.data.type === 'NAME' && dragNode.data.data.name !== dropNode.data.data) {
-			dragNode.data.data.name = dropNode.data.data
-			await this.api.editCalibrationFrame(dragNode.data.data)
-			await this.electron.calibrationChanged()
-			await this.load()
+	private markFrameListBoxesForCheck() {
+		for (const box of this.frameListBoxes) {
+			box.cd.markForCheck()
 		}
 	}
 }

@@ -1,11 +1,11 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core'
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, TemplateRef, ViewEncapsulation } from '@angular/core'
 import { Nullable } from '../../utils/types'
 import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.component'
 
 @Component({
 	selector: 'neb-slide-menu',
 	templateUrl: './slide-menu.component.html',
-	styleUrls: ['./slide-menu.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class SlideMenuComponent implements OnInit {
 	@Input({ required: true })
@@ -20,7 +20,7 @@ export class SlideMenuComponent implements OnInit {
 	@Output()
 	readonly onBack = new EventEmitter<MenuItemCommandEvent>()
 
-	currentMenu!: SlideMenuItem[]
+	protected currentMenu!: SlideMenuItem[]
 
 	private readonly navigation: SlideMenuItem[][] = []
 

@@ -2,9 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core'
 import { AstronomicalObject } from '../types/atlas.types'
 import { Undefinable } from '../utils/types'
 
-const SKY_OBJECT_PARTS = ['name', 'firstName'] as const
-
-export type SkyObjectPart = (typeof SKY_OBJECT_PARTS)[number]
+export type SkyObjectPart = 'name' | 'firstName'
 
 @Pipe({ name: 'skyObject' })
 export class SkyObjectPipe implements PipeTransform {
@@ -13,7 +11,7 @@ export class SkyObjectPipe implements PipeTransform {
 			case 'name':
 				return value?.name.replaceAll('|', ' · ')
 			case 'firstName':
-				return value?.name.split(/\[([^\]]+)\]/g).filter(Boolean)[0]
+				return value?.name.split(/\[([^\]]+)\]/g).find(Boolean)
 			default:
 				return `${value}`
 		}

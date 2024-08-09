@@ -13,7 +13,12 @@ export interface Rotator extends Device {
 	maxAngle: number
 }
 
-export const EMPTY_ROTATOR: Rotator = {
+export interface RotatorPreference {
+	angle: number
+}
+
+export const DEFAULT_ROTATOR: Rotator = {
+	type: 'ROTATOR',
 	sender: '',
 	id: '',
 	name: '',
@@ -30,10 +35,16 @@ export const EMPTY_ROTATOR: Rotator = {
 	connected: false,
 }
 
-export interface RotatorPreference {
-	angle?: number
+export const DEFAULT_ROTATOR_PREFERENCE: RotatorPreference = {
+	angle: 0,
 }
 
 export function isRotator(device?: Device): device is Rotator {
-	return !!device && 'angle' in device
+	return !!device && device.type === 'ROTATOR'
+}
+
+export function rotatorPreferenceWithDefault(preference?: Partial<RotatorPreference>, source: RotatorPreference = DEFAULT_ROTATOR_PREFERENCE) {
+	if (!preference) return structuredClone(source)
+	preference.angle ??= source.angle
+	return preference as RotatorPreference
 }

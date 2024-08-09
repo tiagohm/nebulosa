@@ -1,133 +1,106 @@
-import { Component, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
 import { debounceTime, Subject, Subscription } from 'rxjs'
-import { DropdownOptionsPipe } from '../../shared/pipes/dropdown-options.pipe'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
-import { FrameType, LiveStackerType, LiveStackingRequest } from '../../shared/types/camera.types'
-import { PlateSolverRequest, PlateSolverType } from '../../shared/types/platesolver.types'
-import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, resetCameraCaptureNamingFormat, SettingsTabKey } from '../../shared/types/settings.types'
-import { StackerType, StackingRequest } from '../../shared/types/stacker.types'
-import { StarDetectionRequest, StarDetectorType } from '../../shared/types/stardetector.types'
+import { DEFAULT_LOCATION, Location } from '../../shared/types/atlas.types'
+import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, FrameType, LiveStackerType } from '../../shared/types/camera.types'
+import { PlateSolverType } from '../../shared/types/platesolver.types'
+import { DEFAULT_SETTINGS_PREFERENCE, resetCameraCaptureNamingFormat, SettingsTabKey } from '../../shared/types/settings.types'
+import { StackerType } from '../../shared/types/stacker.types'
+import { StarDetectorType } from '../../shared/types/stardetector.types'
 import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-settings',
 	templateUrl: './settings.component.html',
 })
-export class SettingsComponent implements OnDestroy {
-	tab: SettingsTabKey = 'LOCATION'
-	readonly tabs: SettingsTabKey[] = ['LOCATION', 'PLATE_SOLVER', 'STAR_DETECTOR', 'LIVE_STACKER', 'STACKER', 'CAPTURE_NAMING_FORMAT']
+export class SettingsComponent implements AfterViewInit, OnDestroy {
+	protected tab: SettingsTabKey = 'LOCATION'
+	protected readonly tabs: SettingsTabKey[] = ['LOCATION', 'PLATE_SOLVER', 'STAR_DETECTOR', 'LIVE_STACKER', 'STACKER', 'CAPTURE_NAMING_FORMAT']
+	protected readonly preference = structuredClone(DEFAULT_SETTINGS_PREFERENCE)
 
-	readonly locations: Location[]
-	location: Location
-
-	plateSolverType: PlateSolverType = 'ASTAP'
-	readonly plateSolvers = new Map<PlateSolverType, PlateSolverRequest>()
-
-	starDetectorType: StarDetectorType = 'ASTAP'
-	readonly starDetectors = new Map<StarDetectorType, StarDetectionRequest>()
-
-	liveStackerType: LiveStackerType = 'SIRIL'
-	readonly liveStackers = new Map<LiveStackerType, LiveStackingRequest>()
-
-	stackerType: StackerType = 'PIXINSIGHT'
-	readonly stackers = new Map<StackerType, StackingRequest>()
-
-	readonly cameraCaptureNamingFormat = structuredClone(DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT)
+	protected plateSolverType: PlateSolverType = 'ASTAP'
+	protected starDetectorType: StarDetectorType = 'ASTAP'
+	protected liveStackerType: LiveStackerType = 'SIRIL'
+	protected stackerType: StackerType = 'PIXINSIGHT'
 
 	private readonly locationChangePublisher = new Subject<Location>()
 	private readonly locationChangeSubscription?: Subscription
 
+	get plateSolver() {
+		return this.preference.plateSolver[this.plateSolverType]
+	}
+
+	get starDetector() {
+		return this.preference.starDetector[this.starDetectorType]
+	}
+
+	get liveStacker() {
+		return this.preference.liveStacker[this.liveStackerType]
+	}
+
+	get stacker() {
+		return this.preference.stacker[this.stackerType]
+	}
+
 	constructor(
 		app: AppComponent,
-		private readonly preference: PreferenceService,
-		private readonly electron: ElectronService,
-		private readonly dropdownOptions: DropdownOptionsPipe,
+		private readonly preferenceService: PreferenceService,
+		private readonly electronService: ElectronService,
 	) {
 		app.title = 'Settings'
 
-		this.locations = preference.locations.get()
-		const selectedLocation = preference.selectedLocation.get(this.locations[0])
-		this.location = this.locations.find(e => e.id === selectedLocation.id) ?? this.locations[0]
-
-		for (const type of dropdownOptions.transform('PLATE_SOLVER')) {
-			this.plateSolvers.set(type, preference.plateSolverRequest(type).get())
-		}
-		for (const type of dropdownOptions.transform('STAR_DETECTOR')) {
-			this.starDetectors.set(type, preference.starDetectionRequest(type).get())
-		}
-		for (const type of dropdownOptions.transform('LIVE_STACKER')) {
-			this.liveStackers.set(type, preference.liveStackingRequest(type).get())
-		}
-		for (const type of dropdownOptions.transform('STACKER')) {
-			this.stackers.set(type, preference.stackingRequest(type).get())
-		}
-
-		Object.assign(this.cameraCaptureNamingFormat, preference.cameraCaptureNamingFormatPreference.get(this.cameraCaptureNamingFormat))
-
 		this.locationChangeSubscription = this.locationChangePublisher.pipe(debounceTime(2000)).subscribe((location) => {
-			return this.electron.send('LOCATION.CHANGED', location)
+			return this.electronService.locationChanged(location)
 		})
 	}
 
+	ngAfterViewInit() {
+		this.loadPreference()
+	}
+
+	@HostListener('window:unload')
 	ngOnDestroy() {
 		this.locationChangeSubscription?.unsubscribe()
 	}
 
-	addLocation() {
-		const location = structuredClone(EMPTY_LOCATION)
+	protected addLocation() {
+		const location = structuredClone(DEFAULT_LOCATION)
 		location.id = +new Date()
-		this.locations.push(location)
-		this.location = location
-		this.save()
-		this.locationChangePublisher.next(this.location)
+		this.preference.locations.push(location)
+		this.locationChanged(location)
 	}
 
-	deleteLocation() {
-		if (this.locations.length > 1) {
-			const index = this.locations.findIndex((e) => e.id === this.location.id)
+	protected deleteLocation() {
+		if (this.preference.locations.length > 1) {
+			const index = this.preference.locations.findIndex((e) => e.id === this.preference.location.id)
 
 			if (index >= 0) {
-				this.locations.splice(index, 1)
-				this.location = this.locations[0]!
-
-				this.save()
-				this.locationChangePublisher.next(this.location)
+				this.preference.locations.splice(index, 1)
+				this.locationChanged(this.preference.locations[0])
 			}
 		}
 	}
 
-	locationChanged() {
-		console.log(this.locations)
-		this.save()
-		this.locationChangePublisher.next(this.location)
+	protected locationChanged(location?: Location) {
+		if (location) {
+			this.preference.location = location
+			this.savePreference()
+			this.locationChangePublisher.next(location)
+		}
 	}
 
-	resetCameraCaptureNamingFormat(type: FrameType) {
-		resetCameraCaptureNamingFormat(type, this.cameraCaptureNamingFormat, DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT)
-		this.save()
+	protected resetCameraCaptureNamingFormat(type: FrameType) {
+		resetCameraCaptureNamingFormat(type, this.preference.namingFormat, DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT)
+		this.savePreference()
 	}
 
-	save() {
-		if (this.location.name) {
-			this.preference.locations.set(this.locations)
-			this.preference.selectedLocation.set(this.location)
-		}
+	private loadPreference() {
+		Object.assign(this.preference, this.preferenceService.settings.get())
+		this.preference.location = this.preference.locations.find((e) => e.id === this.preference.location.id) ?? this.preference.locations[0]
+	}
 
-		for (const type of this.dropdownOptions.transform('PLATE_SOLVER')) {
-			this.preference.plateSolverRequest(type).set(this.plateSolvers.get(type))
-		}
-		for (const type of this.dropdownOptions.transform('STAR_DETECTOR')) {
-			this.preference.starDetectionRequest(type).set(this.starDetectors.get(type))
-		}
-		for (const type of this.dropdownOptions.transform('LIVE_STACKER')) {
-			this.preference.liveStackingRequest(type).set(this.liveStackers.get(type))
-		}
-		for (const type of this.dropdownOptions.transform('STACKER')) {
-			this.preference.stackingRequest(type).set(this.stackers.get(type))
-		}
-
-		this.preference.cameraCaptureNamingFormatPreference.set(this.cameraCaptureNamingFormat)
+	protected savePreference() {
+		this.preferenceService.settings.set(this.preference)
 	}
 }

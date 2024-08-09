@@ -5,14 +5,14 @@ import { ConfirmDialog } from '../dialogs/confirm/confirm.dialog'
 import { Undefinable } from '../utils/types'
 
 @Injectable({ providedIn: 'root' })
-export class PrimeService {
+export class AngularService {
 	constructor(
-		private readonly dialog: DialogService,
-		private readonly messager: MessageService,
+		private readonly dialogService: DialogService,
+		private readonly messageService: MessageService,
 	) {}
 
 	open<T, R = T>(componentType: Type<unknown>, config: DynamicDialogConfig<T>) {
-		const ref = this.dialog.open(componentType, {
+		const ref = this.dialogService.open(componentType, {
 			...config,
 			duplicate: true,
 			draggable: config.draggable ?? true,
@@ -41,6 +41,6 @@ export class PrimeService {
 	}
 
 	message(text: string, severity: 'info' | 'warn' | 'error' | 'success' = 'success') {
-		this.messager.add({ severity, detail: text, life: 8500 })
+		this.messageService.add({ severity, detail: text, life: 8500 })
 	}
 }

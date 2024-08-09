@@ -1,6 +1,5 @@
 package nebulosa.api.guiding
 
-import nebulosa.guiding.Guider
 import org.hibernate.validator.constraints.Range
 
 data class SettleInfo(
@@ -12,9 +11,5 @@ data class SettleInfo(
     companion object {
 
         @JvmStatic val EMPTY = SettleInfo()
-
-        @JvmStatic
-        fun from(guider: Guider) =
-            SettleInfo(guider.settleAmount, guider.settleTime.toSeconds(), guider.settleTimeout.toSeconds())
     }
 }

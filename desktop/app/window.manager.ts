@@ -1,12 +1,20 @@
 import { Client } from '@stomp/stompjs'
+import type { Point, Size } from 'electron'
 import { BrowserWindow, Notification, dialog, screen, shell } from 'electron'
+import Store from 'electron-store'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { join } from 'path'
 import type { MessageEvent } from '../src/shared/types/api.types'
-import type { CloseWindow, ConfirmationEvent, FullscreenWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, ResizeWindow, StoredWindowData, WindowCommand } from '../src/shared/types/app.types'
+import type { CloseWindow, ConfirmationEvent, FullscreenWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, ResizeWindow, WindowCommand } from '../src/shared/types/app.types'
 import type { Nullable } from '../src/shared/utils/types'
 import type { ParsedArgument } from './argument.parser'
-import type { LocalStorage } from './local.storage'
+
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+export interface WindowInfo {
+	[key: `window.${string}`]: (Size & Point) | undefined
+}
+
+const store = new Store<WindowInfo>({ name: 'nebulosa' })
 
 export class ApplicationWindow {
 	constructor(
@@ -77,7 +85,6 @@ export class WindowManager {
 
 	constructor(
 		public readonly args: ParsedArgument,
-		public readonly storage: LocalStorage<StoredWindowData>,
 		defaultAppIcon: string = 'nebulosa.png',
 	) {
 		this.appIcon = join(__dirname, args.serve ? `../src/assets/icons/${defaultAppIcon}` : `assets/icons/${defaultAppIcon}`)
@@ -90,7 +97,6 @@ export class WindowManager {
 
 		if (appWindow) {
 			if (open.data) {
-				console.info('window data changed. id=%s, data=%s', open.id, open.data)
 				appWindow.browserWindow.webContents.send('DATA.CHANGED', open.data)
 			}
 
@@ -108,12 +114,12 @@ export class WindowManager {
 		const computedHeight = preference.height ? Math.trunc(this.computeHeight(preference.height, computedWidth)) : 416
 
 		const screenSize = screen.getPrimaryDisplay().workAreaSize
-		const storedData = this.storage.get(`window.${open.id}`)
+		const data = store.get(`window.${open.id}`)
 		const resizable = preference.resizable
-		const width = resizable ? Math.max(minWidth, Math.min(storedData?.width ?? computedWidth, screenSize.width)) : computedWidth
-		const height = resizable ? Math.max(minHeight, Math.min(storedData?.height ?? computedHeight, screenSize.height)) : computedHeight
-		const x = Math.max(0, Math.min(storedData?.x ?? 0, screenSize.width - width))
-		const y = Math.max(0, Math.min(storedData?.y ?? 0, screenSize.height - height))
+		const width = resizable ? Math.max(minWidth, Math.min(data?.width ?? computedWidth, screenSize.width)) : computedWidth
+		const height = resizable ? Math.max(minHeight, Math.min(data?.height ?? computedHeight, screenSize.height)) : computedHeight
+		const x = Math.max(0, Math.min(data?.x ?? 0, screenSize.width - width))
+		const y = Math.max(0, Math.min(data?.y ?? 0, screenSize.height - height))
 
 		const browserWindow = new BrowserWindow({
 			title: 'Nebulosa',
@@ -129,6 +135,7 @@ export class WindowManager {
 			resizable: this.args.serve || resizable,
 			autoHideMenuBar: true,
 			icon: preference.icon ? join(__dirname, this.args.serve ? `../src/assets/icons/${preference.icon}.png` : `assets/icons/${preference.icon}.png`) : this.appIcon,
+			show: false,
 			webPreferences: {
 				nodeIntegration: true,
 				allowRunningInsecureContent: this.args.serve,
@@ -139,9 +146,13 @@ export class WindowManager {
 			},
 		})
 
-		if (!storedData) {
-			browserWindow.center()
-		}
+		browserWindow.on('ready-to-show', () => {
+			browserWindow.show()
+
+			if (!data) {
+				browserWindow.center()
+			}
+		})
 
 		if (this.args.serve) {
 			await browserWindow.loadURL(`http://localhost:4200/${open.path}?data=${encodedData}`)
@@ -193,8 +204,7 @@ export class WindowManager {
 	saveWindowData(window: ApplicationWindow) {
 		const [x, y] = window.browserWindow.getPosition()
 		const [width, height] = window.browserWindow.getSize()
-		this.storage.set(`window.${window.data.id}`, { x, y, width, height })
-		this.storage.save()
+		store.set(`window.${window.data.id}`, { x, y, width, height })
 	}
 
 	async createMainWindow(apiProcess?: ChildProcessWithoutNullStreams, port: number = this.port, host: string = this.host) {
@@ -254,9 +264,12 @@ export class WindowManager {
 
 			const url = new URL(join('file:', __dirname, 'assets', 'images', 'splash.png'))
 
+			browserWindow.on('ready-to-show', () => {
+				browserWindow.show()
+				browserWindow.center()
+			})
+
 			await browserWindow.loadURL(url.href)
-			browserWindow.show()
-			browserWindow.center()
 
 			return browserWindow
 		} else {
@@ -284,8 +297,12 @@ export class WindowManager {
 		return undefined
 	}
 
+	findWindowWith(command: WindowCommand, sender: Electron.WebContents) {
+		return this.findWindow(command.windowId) ?? this.findWindow(sender.id)
+	}
+
 	async handleFileOpen(event: Electron.IpcMainInvokeEvent, command: OpenFile) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window) {
 			const properties: Electron.OpenDialogOptions['properties'] = ['openFile']
@@ -307,7 +324,7 @@ export class WindowManager {
 	}
 
 	async handleFileSave(event: Electron.IpcMainInvokeEvent, command: OpenFile) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window) {
 			const ret = await dialog.showSaveDialog(window.browserWindow, {
@@ -323,7 +340,7 @@ export class WindowManager {
 	}
 
 	async handleDirectoryOpen(event: Electron.IpcMainInvokeEvent, command: OpenDirectory) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window) {
 			const ret = await dialog.showOpenDialog(window.browserWindow, {
@@ -339,7 +356,7 @@ export class WindowManager {
 
 	async handleWindowOpen(event: Electron.IpcMainInvokeEvent, command: OpenWindow) {
 		if (command.preference.modal) {
-			const parentWindow = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+			const parentWindow = this.findWindowWith(command, event.sender)
 			const appWindow = await this.createWindow(command, parentWindow?.browserWindow)
 
 			return new Promise<unknown>((resolve) => {
@@ -359,7 +376,7 @@ export class WindowManager {
 	}
 
 	handleWindowClose(event: Electron.IpcMainInvokeEvent, command: CloseWindow) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window) {
 			window.resolver?.(command.data)
@@ -372,7 +389,7 @@ export class WindowManager {
 	}
 
 	handleWindowResize(event: Electron.IpcMainInvokeEvent, command: ResizeWindow) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window && !window.data.preference.resizable && window.data.preference.autoResizable !== false) {
 			const [width] = window.browserWindow.getSize()
@@ -391,30 +408,30 @@ export class WindowManager {
 	}
 
 	handleWindowMinimize(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 		window?.browserWindow.minimize()
 		return !!window && window.browserWindow.isMinimized()
 	}
 
 	handleWindowMaximize(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 		return !!window && window.toggleMaximize()
 	}
 
 	handleWindowPin(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 		window?.browserWindow.setAlwaysOnTop(true)
 		return !!window && window.browserWindow.isAlwaysOnTop()
 	}
 
 	handleWindowUnpin(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 		window?.browserWindow.setAlwaysOnTop(false)
 		return !!window && window.browserWindow.isAlwaysOnTop()
 	}
 
 	handleWindowFullscreen(event: Electron.IpcMainInvokeEvent, command: FullscreenWindow) {
-		const window = this.findWindow(command.windowId) ?? this.findWindow(event.sender.id)
+		const window = this.findWindowWith(command, event.sender)
 
 		if (window) {
 			if (command.enabled) window.browserWindow.setFullScreen(true)

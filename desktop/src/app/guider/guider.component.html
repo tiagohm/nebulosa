@@ -9,41 +9,47 @@
 						<p-floatLabel class="w-full">
 							<input
 								pInputText
-								[disabled]="connected"
+								[disabled]="guider.connected"
 								class="border-0 p-inputtext-sm w-full"
 								placeholder="localhost"
-								[(ngModel)]="host" />
+								[(ngModel)]="preference.host"
+								(ngModelChange)="savePreference()" />
 							<label>Host</label>
 						</p-floatLabel>
 					</div>
 					<div class="col-3 pr-0">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="connected"
+								[disabled]="guider.connected"
 								[showButtons]="true"
 								styleClass="border-0 p-inputtext-sm w-full"
 								placeholder="7624"
-								[(ngModel)]="port"
+								[(ngModel)]="preference.port"
+								(ngModelChange)="savePreference()"
 								[format]="false"
-								scrollableNumber />
+								spinnableNumber />
 							<label>Port</label>
 						</p-floatLabel>
 					</div>
 					<div class="col-2 text-center pr-0">
 						<p-button
-							*ngIf="connected"
+							*ngIf="guider.connected"
 							(onClick)="guidingConnect()"
 							icon="mdi mdi-close"
 							size="small"
 							severity="danger"
-							[text]="true" />
+							[text]="true"
+							pTooltip="Disconnect"
+							tooltipPosition="bottom" />
 						<p-button
-							*ngIf="!connected"
+							*ngIf="!guider.connected"
 							(onClick)="guidingConnect()"
 							icon="mdi mdi-connection"
 							size="small"
 							severity="info"
-							[text]="true" />
+							[text]="true"
+							pTooltip="Connect"
+							tooltipPosition="bottom" />
 					</div>
 					<div
 						class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"
@@ -52,23 +58,23 @@
 						<span
 							style="min-width: 44px"
 							class="text-left mr-2">
-							{{ guideState | enum | lowercase }}
+							{{ guider.state | enum | lowercase }}
 						</span>
-						<span class="text-left">{{ message }}</span>
+						<span class="text-left">{{ guider.message }}</span>
 					</div>
 					<div class="col-12 align-items-center">
 						<p-tabView class="relative">
 							<p-tabPanel
 								header="Chart"
 								leftIcon="mdi mdi-chart-bell-curve">
-								<div class="grid mt-3">
+								<div class="grid mt-2">
 									<div class="col-3">
 										<p-floatLabel>
 											<input
 												pInputText
 												readonly
 												class="p-inputtext-sm border-0 w-full"
-												value="{{ rmsRA.toFixed(2) + ' (' + (rmsRA * pixelScale).toFixed(2) + '&quot; )' }}" />
+												value="{{ chartInfo.rmsRA.toFixed(2) + ' (' + (chartInfo.rmsRA * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 											<label>RMS RA</label>
 										</p-floatLabel>
 									</div>
@@ -78,7 +84,7 @@
 												pInputText
 												readonly
 												class="p-inputtext-sm border-0 w-full"
-												value="{{ rmsDEC.toFixed(2) + ' (' + (rmsDEC * pixelScale).toFixed(2) + '&quot; )' }}" />
+												value="{{ chartInfo.rmsDEC.toFixed(2) + ' (' + (chartInfo.rmsDEC * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 											<label>RMS DEC</label>
 										</p-floatLabel>
 									</div>
@@ -88,7 +94,7 @@
 												pInputText
 												readonly
 												class="p-inputtext-sm border-0 w-full"
-												value="{{ rmsTotal.toFixed(2) + ' (' + (rmsTotal * pixelScale).toFixed(2) + '&quot; )' }}" />
+												value="{{ chartInfo.rmsTotal.toFixed(2) + ' (' + (chartInfo.rmsTotal * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 											<label>RMS Total</label>
 										</p-floatLabel>
 									</div>
@@ -98,7 +104,7 @@
 												pInputText
 												readonly
 												class="p-inputtext-sm border-0 w-full"
-												[value]="guideStep?.starMass ?? 0" />
+												[value]="guider.step?.starMass ?? 0" />
 											<label>Star mass</label>
 										</p-floatLabel>
 									</div>
@@ -108,7 +114,7 @@
 												pInputText
 												readonly
 												class="p-inputtext-sm border-0 w-full"
-												[value]="guideStep?.hfd ?? 0" />
+												[value]="guider.step?.hfd ?? 0" />
 											<label>HFD</label>
 										</p-floatLabel>
 									</div>
@@ -118,7 +124,7 @@
 												pInputText
 												readonly
 												class="p-inputtext-sm border-0 w-full"
-												[value]="guideStep?.snr ?? 0" />
+												[value]="guider.step?.snr ?? 0" />
 											<label>SNR</label>
 										</p-floatLabel>
 									</div>
@@ -126,7 +132,7 @@
 										<p-floatLabel class="w-full">
 											<p-dropdown
 												[options]="'GUIDER_PLOT_MODE' | dropdownOptions | enumDropdown"
-												[(ngModel)]="plotMode"
+												[(ngModel)]="preference.plotMode"
 												optionsLabel="label"
 												optionsValue="value"
 												(ngModelChange)="plotModeChanged()"
@@ -139,7 +145,7 @@
 										<p-floatLabel class="w-full">
 											<p-dropdown
 												[options]="'GUIDER_Y_AXIS_UNIT' | dropdownOptions | enumDropdown"
-												[(ngModel)]="yAxisUnit"
+												[(ngModel)]="preference.yAxisUnit"
 												optionsLabel="label"
 												optionsValue="value"
 												(ngModelChange)="yAxisUnitChanged()"
@@ -175,50 +181,50 @@
 								header="Settings"
 								leftIcon="mdi mdi-cog">
 								<div class="grid mt-3">
-									<div class="col-4">
-										<p-floatLabel>
+									<div class="col-6">
+										<p-floatLabel class="w-full">
 											<p-inputNumber
-												[disabled]="!connected || guiding"
+												[disabled]="guider.connected"
 												[showButtons]="true"
 												styleClass="border-0 p-inputtext-sm w-full"
 												locale="en"
 												[min]="1"
 												[max]="25"
-												[(ngModel)]="settleAmount"
-												(ngModelChange)="settleChanged()"
+												[(ngModel)]="preference.settle.amount"
+												(ngModelChange)="savePreference()"
 												[step]="0.1"
 												[minFractionDigits]="1"
-												scrollableNumber />
+												spinnableNumber />
 											<label>Settle tolerance (px)</label>
 										</p-floatLabel>
 									</div>
-									<div class="col-4">
-										<p-floatLabel>
+									<div class="col-6">
+										<p-floatLabel class="w-full">
 											<p-inputNumber
-												[disabled]="!connected || guiding"
+												[disabled]="guider.connected"
 												[showButtons]="true"
 												styleClass="border-0 p-inputtext-sm w-full"
 												[min]="1"
 												[max]="60"
-												[(ngModel)]="settleTime"
-												(ngModelChange)="settleChanged()"
+												[(ngModel)]="preference.settle.time"
+												(ngModelChange)="savePreference()"
 												[step]="1"
-												scrollableNumber />
+												spinnableNumber />
 											<label>Min settle time (s)</label>
 										</p-floatLabel>
 									</div>
-									<div class="col-4">
-										<p-floatLabel>
+									<div class="col-6">
+										<p-floatLabel class="w-full">
 											<p-inputNumber
-												[disabled]="!connected || guiding"
+												[disabled]="guider.connected"
 												[showButtons]="true"
 												styleClass="border-0 p-inputtext-sm w-full"
 												[min]="1"
 												[max]="60"
-												[(ngModel)]="settleTimeout"
-												(ngModelChange)="settleChanged()"
+												[(ngModel)]="preference.settle.timeout"
+												(ngModelChange)="savePreference()"
 												[step]="1"
-												scrollableNumber />
+												spinnableNumber />
 											<label>Settle timeout (s)</label>
 										</p-floatLabel>
 									</div>
@@ -231,7 +237,7 @@
 									<!-- <p-button [disabled]="!connected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
                                           icon="mdi mdi-play" severity="success" size="small" [text]="true" /> -->
 									<p-button
-										[disabled]="!connected"
+										[disabled]="!guider.connected"
 										label="Clear"
 										(onClick)="guidingClearHistory()"
 										icon="mdi mdi-broom"
@@ -239,7 +245,7 @@
 										size="small"
 										[text]="true" />
 									<p-button
-										[disabled]="!connected || !guiding"
+										[disabled]="!guider.connected || !guiding"
 										label="Stop"
 										(onClick)="guidingStop()"
 										icon="mdi mdi-stop"
@@ -268,15 +274,16 @@
 					<div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!guideOutputConnected || pulseGuiding"
-								[(ngModel)]="guideNorthDuration"
+								[disabled]="!pulse.connected || pulse.pulsing"
+								[(ngModel)]="preference.pulseDuration.north"
+								(ngModelChange)="savePreference()"
 								[step]="1"
 								[min]="1"
 								[max]="1800000"
 								locale="en"
 								styleClass="p-inputtext-sm border-0"
 								[showButtons]="true"
-								scrollableNumber />
+								spinnableNumber />
 							<label>North (ms)</label>
 						</p-floatLabel>
 					</div>
@@ -284,15 +291,16 @@
 					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!guideOutputConnected || pulseGuiding"
-								[(ngModel)]="guideWestDuration"
+								[disabled]="!pulse.connected || pulse.pulsing"
+								[(ngModel)]="preference.pulseDuration.west"
+								(ngModelChange)="savePreference()"
 								[step]="1"
 								[min]="1"
 								[max]="1800000"
 								locale="en"
 								styleClass="p-inputtext-sm border-0"
 								[showButtons]="true"
-								scrollableNumber />
+								spinnableNumber />
 							<label>West (ms)</label>
 						</p-floatLabel>
 					</div>
@@ -300,7 +308,7 @@
 						<div class="grid">
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!guideOutputConnected || pulseGuiding"
+									[disabled]="!pulse.connected || pulse.pulsing"
 									(onClick)="guidePulseStart('NORTH', 'WEST')"
 									icon="mdi mdi-lg mdi-arrow-top-left-thick"
 									[text]="true"
@@ -308,7 +316,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!guideOutputConnected || pulseGuiding"
+									[disabled]="!pulse.connected || pulse.pulsing"
 									(onClick)="guidePulseStart('NORTH')"
 									icon="mdi mdi-lg mdi-arrow-up-thick"
 									[text]="true"
@@ -316,7 +324,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!guideOutputConnected || pulseGuiding"
+									[disabled]="!pulse.connected || pulse.pulsing"
 									(onClick)="guidePulseStart('NORTH', 'EAST')"
 									icon="mdi mdi-lg mdi-arrow-top-right-thick"
 									[text]="true"
@@ -324,7 +332,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!guideOutputConnected || pulseGuiding"
+									[disabled]="!pulse.connected || pulse.pulsing"
 									(onClick)="guidePulseStart('WEST')"
 									icon="mdi mdi-lg mdi-arrow-left-thick"
 									[text]="true"
@@ -332,7 +340,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!guideOutputConnected || !pulseGuiding"
+									[disabled]="!pulse.connected || !pulse.pulsing"
 									(onClick)="guidePulseStop()"
 									icon="mdi mdi-lg mdi-close-circle"
 									[text]="true"
@@ -341,7 +349,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!guideOutputConnected || pulseGuiding"
+									[disabled]="!pulse.connected || pulse.pulsing"
 									(onClick)="guidePulseStart('EAST')"
 									icon="mdi mdi-lg mdi-arrow-right-thick"
 									[text]="true"
@@ -349,7 +357,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!guideOutputConnected || pulseGuiding"
+									[disabled]="!pulse.connected || pulse.pulsing"
 									(onClick)="guidePulseStart('SOUTH', 'WEST')"
 									icon="mdi mdi-lg mdi-arrow-bottom-left-thick"
 									[text]="true"
@@ -357,7 +365,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!guideOutputConnected || pulseGuiding"
+									[disabled]="!pulse.connected || pulse.pulsing"
 									(onClick)="guidePulseStart('SOUTH')"
 									icon="mdi mdi-lg mdi-arrow-down-thick"
 									[text]="true"
@@ -365,7 +373,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!guideOutputConnected || pulseGuiding"
+									[disabled]="!pulse.connected || pulse.pulsing"
 									(onClick)="guidePulseStart('SOUTH', 'EAST')"
 									icon="mdi mdi-lg mdi-arrow-bottom-right-thick"
 									[text]="true"
@@ -376,16 +384,17 @@
 					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!guideOutputConnected || pulseGuiding"
+								[disabled]="!pulse.connected || pulse.pulsing"
 								(onClick)="guidePulseStart('EAST')"
-								[(ngModel)]="guideEastDuration"
+								[(ngModel)]="preference.pulseDuration.east"
+								(ngModelChange)="savePreference()"
 								[step]="1"
 								[min]="1"
 								[max]="1800000"
 								locale="en"
 								styleClass="p-inputtext-sm border-0"
 								[showButtons]="true"
-								scrollableNumber />
+								spinnableNumber />
 							<label>East (ms)</label>
 						</p-floatLabel>
 					</div>
@@ -393,16 +402,17 @@
 					<div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!guideOutputConnected || pulseGuiding"
+								[disabled]="!pulse.connected || pulse.pulsing"
 								(onClick)="guidePulseStart('SOUTH')"
-								[(ngModel)]="guideSouthDuration"
+								[(ngModel)]="preference.pulseDuration.south"
+								(ngModelChange)="savePreference()"
 								[step]="1"
 								[min]="1"
 								[max]="1800000"
 								locale="en"
 								styleClass="p-inputtext-sm border-0"
 								[showButtons]="true"
-								scrollableNumber />
+								spinnableNumber />
 							<label>South (ms)</label>
 						</p-floatLabel>
 					</div>

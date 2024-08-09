@@ -43,6 +43,7 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
 import kotlin.io.path.outputStream
+import kotlin.math.roundToInt
 
 @Service
 class ImageService(
@@ -65,7 +66,7 @@ class ImageService(
     private data class TransformedImage(
         @JvmField val image: Image,
         @JvmField val statistics: Statistics.Data? = null,
-        @JvmField val strectchParams: ScreenTransformFunction.Parameters? = null,
+        @JvmField val stretchParameters: ScreenTransformFunction.Parameters? = null,
         @JvmField val instrument: Camera? = null,
     )
 
@@ -85,12 +86,16 @@ class ImageService(
         output: HttpServletResponse,
     ) {
         val (image, calibration) = imageBucket.open(path, transformation.debayer, force = transformation.force)
-        val (transformedImage, statistics, stretchParams, instrument) = image!!.transform(true, transformation, ImageOperation.OPEN, camera)
+        val (transformedImage, statistics, stretchParameters, instrument) = image!!.transform(true, transformation, ImageOperation.OPEN, camera)
 
         val info = ImageInfo(
             path,
             transformedImage.width, transformedImage.height, transformedImage.mono,
-            stretchParams!!.shadow, stretchParams.highlight, stretchParams.midtone,
+            transformation.stretch.copy(
+                shadow = (stretchParameters!!.shadow * 65536f).roundToInt(),
+                highlight = (stretchParameters.highlight * 65536f).roundToInt(),
+                midtone = (stretchParameters.midtone * 65536f).roundToInt(),
+            ),
             transformedImage.header.rightAscension.takeIf { it.isFinite() },
             transformedImage.header.declination.takeIf { it.isFinite() },
             calibration?.let(::ImageSolved),
@@ -98,10 +103,12 @@ class ImageService(
             transformedImage.header.bitpix, instrument, statistics,
         )
 
-        output.addHeader(IMAGE_INFO_HEADER, objectMapper.writeValueAsString(info))
-        output.contentType = "image/png"
+        val format = if (transformation.useJPEG) "jpeg" else "png"
 
-        ImageIO.write(transformedImage, "PNG", output.outputStream)
+        output.addHeader(IMAGE_INFO_HEADER, objectMapper.writeValueAsString(info))
+        output.contentType = "image/$format"
+
+        ImageIO.write(transformedImage, format, output.outputStream)
     }
 
     private fun Image.transform(
@@ -112,7 +119,7 @@ class ImageService(
 
         val (autoStretch, shadow, highlight, midtone) = transformation.stretch
         val scnrEnabled = transformation.scnr.channel != null
-        val manualStretch = shadow != 0f || highlight != 1f || midtone != 0.5f
+        val manualStretch = shadow != 0 || highlight != 65536 || midtone != 32768
 
         val shouldBeTransformed = enabled && (autoStretch || manualStretch
                 || transformation.mirrorHorizontal || transformation.mirrorVertical || transformation.invert
@@ -166,13 +173,7 @@ class ImageService(
     }
 
     @Synchronized
-    fun annotations(
-        path: Path,
-        starsAndDSOs: Boolean, minorPlanets: Boolean,
-        minorPlanetMagLimit: Double = 12.0, includeMinorPlanetsWithoutMagnitude: Boolean = false,
-        useSimbad: Boolean = false,
-        location: Location? = null,
-    ): List<ImageAnnotation> {
+    fun annotations(path: Path, request: AnnotateImageRequest, location: Location? = null): List<ImageAnnotation> {
         val (image, calibration) = imageBucket.open(path)
 
         if (image == null || calibration.isNullOrEmpty() || !calibration.solved) {
@@ -182,7 +183,7 @@ class ImageService(
         val wcs = try {
             WCS(calibration)
         } catch (e: WCSException) {
-            LOG.error("unable to generate annotations for image. path={}", path)
+            LOG.error("unable to generate annotations for image. path={}", path, e)
             return emptyList()
         }
 
@@ -191,7 +192,7 @@ class ImageService(
 
         val dateTime = image.header.observationDate ?: LocalDateTime.now()
 
-        if (minorPlanets) {
+        if (request.minorPlanets) {
             threadPoolTaskExecutor.submitCompletable {
                 val latitude = image.header.latitude ?: location?.latitude?.deg ?: 0.0
                 val longitude = image.header.longitude ?: location?.longitude?.deg ?: 0.0
@@ -204,7 +205,7 @@ class ImageService(
                 val identifiedBody = smallBodyDatabaseService.identify(
                     dateTime, latitude, longitude, 0.0,
                     calibration.rightAscension, calibration.declination, calibration.radius,
-                    minorPlanetMagLimit, !includeMinorPlanetsWithoutMagnitude,
+                    request.minorPlanetMagLimit, !request.includeMinorPlanetsWithoutMagnitude,
                 ).execute().body() ?: return@submitCompletable
 
                 val radiusInSeconds = calibration.radius.toArcsec
@@ -230,15 +231,15 @@ class ImageService(
                 .also(tasks::add)
         }
 
-        if (starsAndDSOs) {
+        if (request.starsAndDSOs) {
             threadPoolTaskExecutor.submitCompletable {
-                LOG.info("finding star/DSO annotations. dateTime={}, useSimbad={}, calibration={}", dateTime, useSimbad, calibration)
+                LOG.info("finding star/DSO annotations. dateTime={}, useSimbad={}, calibration={}", dateTime, request.useSimbad, calibration)
 
                 val rightAscension = calibration.rightAscension
                 val declination = calibration.declination
                 val radius = calibration.radius
 
-                val catalog = if (useSimbad) {
+                val catalog = if (request.useSimbad) {
                     simbadService.search(SimbadSearch.Builder().region(rightAscension, declination, radius).build())
                 } else {
                     simbadEntityRepository.search(null, null, rightAscension, declination, radius)
@@ -308,7 +309,7 @@ class ImageService(
         val wcs = try {
             WCS(calibration)
         } catch (e: WCSException) {
-            LOG.error("unable to generate annotations for image. path={}", path)
+            LOG.error("unable to generate annotations for image. path={}", path, e)
             return null
         }
 

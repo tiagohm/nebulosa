@@ -21,7 +21,7 @@
 				(ngModelChange)="locationChanged()"
 				[showButtons]="true"
 				[allowEmpty]="false"
-				scrollableNumber />
+				spinnableNumber />
 			<label>UTC Offset (min)</label>
 		</p-floatLabel>
 	</div>
@@ -37,7 +37,7 @@
 				(ngModelChange)="locationChanged()"
 				[showButtons]="true"
 				[allowEmpty]="false"
-				scrollableNumber />
+				spinnableNumber />
 			<label>Elevation (m)</label>
 		</p-floatLabel>
 	</div>
@@ -52,7 +52,7 @@
 				[(ngModel)]="location.latitude"
 				(ngModelChange)="locationChanged()"
 				[allowEmpty]="false"
-				scrollableNumber />
+				spinnableNumber />
 			<label>Latitude</label>
 		</p-floatLabel>
 	</div>
@@ -67,7 +67,7 @@
 				[(ngModel)]="location.longitude"
 				(ngModelChange)="locationChanged()"
 				[allowEmpty]="false"
-				scrollableNumber />
+				spinnableNumber />
 			<label>Longitude</label>
 		</p-floatLabel>
 	</div>

@@ -4,9 +4,9 @@ import { Injectable } from '@angular/core'
 // other than as TypeScript types, the resulting javascript file will
 // look as if you never imported the module at all.
 
-import * as childProcess from 'child_process'
-import { ipcRenderer, webFrame } from 'electron'
-import * as fs from 'fs'
+import type * as childProcess from 'child_process'
+import type { ipcRenderer, webFrame } from 'electron'
+import type * as fs from 'fs'
 import { DARVEvent, TPPAEvent } from '../types/alignment.types'
 import { DeviceMessageEvent } from '../types/api.types'
 import { CloseWindow, ConfirmationEvent, FullscreenWindow, JsonFile, NotificationEvent, OpenDirectory, OpenFile, ResizeWindow, SaveJson, WindowCommand } from '../types/app.types'
@@ -22,15 +22,22 @@ import { ROISelected } from '../types/image.types'
 import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
-import { FilterWheel, WheelRenamed } from '../types/wheel.types'
+import { Wheel, WheelRenamed } from '../types/wheel.types'
 
-export const IMAGE_FILE_FILTER: Electron.FileFilter[] = [
+export const OPEN_IMAGE_FILE_FILTER: Electron.FileFilter[] = [
 	{ name: 'All', extensions: ['fits', 'fit', 'xisf'] },
 	{ name: 'FITS', extensions: ['fits', 'fit'] },
 	{ name: 'XISF', extensions: ['xisf'] },
 ]
 
-interface EventMappedType {
+export const SAVE_IMAGE_FILE_FILTER: Electron.FileFilter[] = [
+	{ name: 'All', extensions: ['fits', 'fit', 'xisf', 'png', 'jpg', 'jpeg'] },
+	{ name: 'FITS', extensions: ['fits', 'fit'] },
+	{ name: 'XISF', extensions: ['xisf'] },
+	{ name: 'Image', extensions: ['png', 'jpg', 'jpeg'] },
+]
+
+export interface EventTypes {
 	NOTIFICATION: NotificationEvent
 	CONFIRMATION: ConfirmationEvent
 	'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
@@ -49,9 +56,9 @@ interface EventMappedType {
 	'ROTATOR.UPDATED': DeviceMessageEvent<Rotator>
 	'ROTATOR.ATTACHED': DeviceMessageEvent<Rotator>
 	'ROTATOR.DETACHED': DeviceMessageEvent<Rotator>
-	'WHEEL.UPDATED': DeviceMessageEvent<FilterWheel>
-	'WHEEL.ATTACHED': DeviceMessageEvent<FilterWheel>
-	'WHEEL.DETACHED': DeviceMessageEvent<FilterWheel>
+	'WHEEL.UPDATED': DeviceMessageEvent<Wheel>
+	'WHEEL.ATTACHED': DeviceMessageEvent<Wheel>
+	'WHEEL.DETACHED': DeviceMessageEvent<Wheel>
 	'GUIDE_OUTPUT.UPDATED': DeviceMessageEvent<GuideOutput>
 	'GUIDE_OUTPUT.ATTACHED': DeviceMessageEvent<GuideOutput>
 	'GUIDE_OUTPUT.DETACHED': DeviceMessageEvent<GuideOutput>
@@ -87,10 +94,10 @@ interface EventMappedType {
 
 @Injectable({ providedIn: 'root' })
 export class ElectronService {
-	ipcRenderer!: typeof ipcRenderer
-	webFrame!: typeof webFrame
-	childProcess!: typeof childProcess
-	fs!: typeof fs
+	readonly ipcRenderer!: typeof ipcRenderer
+	private readonly webFrame!: typeof webFrame
+	private readonly childProcess!: typeof childProcess
+	private readonly fs!: typeof fs
 
 	constructor() {
 		if (this.isElectron) {
@@ -121,13 +128,11 @@ export class ElectronService {
 		return !!(window && window.process?.type)
 	}
 
-	send<K extends keyof EventMappedType>(channel: K, data?: EventMappedType[K]) {
+	send<K extends keyof EventTypes>(channel: K, data?: EventTypes[K]) {
 		return this.ipcRenderer.invoke(channel, data)
 	}
 
-	on<K extends keyof EventMappedType>(channel: K, listener: (arg: EventMappedType[K]) => void) {
-		console.info('listening to channel: %s', channel)
-
+	on<K extends keyof EventTypes>(channel: K, listener: (arg: EventTypes[K]) => void) {
 		this.ipcRenderer.on(channel, (_, arg) => {
 			listener(arg)
 		})
@@ -149,7 +154,7 @@ export class ElectronService {
 		return this.openFile({
 			...data,
 			windowId: data?.windowId ?? window.id,
-			filters: IMAGE_FILE_FILTER,
+			filters: OPEN_IMAGE_FILE_FILTER,
 		})
 	}
 
@@ -157,7 +162,7 @@ export class ElectronService {
 		return this.openFiles({
 			...data,
 			windowId: data?.windowId ?? window.id,
-			filters: IMAGE_FILE_FILTER,
+			filters: OPEN_IMAGE_FILE_FILTER,
 		})
 	}
 
@@ -165,12 +170,7 @@ export class ElectronService {
 		return this.saveFile({
 			...data,
 			windowId: data?.windowId ?? window.id,
-			filters: [
-				{ name: 'All', extensions: ['fits', 'fit', 'xisf', 'png', 'jpg', 'jpeg'] },
-				{ name: 'FITS', extensions: ['fits', 'fit'] },
-				{ name: 'XISF', extensions: ['xisf'] },
-				{ name: 'Image', extensions: ['png', 'jpg', 'jpeg'] },
-			],
+			filters: SAVE_IMAGE_FILE_FILTER,
 		})
 	}
 
@@ -238,5 +238,9 @@ export class ElectronService {
 
 	calibrationChanged() {
 		return this.send('CALIBRATION.CHANGED')
+	}
+
+	locationChanged(location: Location) {
+		return this.send('LOCATION.CHANGED', location)
 	}
 }

@@ -7,7 +7,6 @@ import nebulosa.io.SeekableSource
 import nebulosa.log.loggerFor
 import okio.Buffer
 import okio.Sink
-import kotlin.math.max
 import kotlin.math.min
 
 @Suppress("NOTHING_TO_INLINE")
@@ -18,7 +17,6 @@ internal data class SeekableSourceImageData(
     override val height: Int,
     override val numberOfChannels: Int,
     private val bitpix: Bitpix,
-    private val range: ClosedFloatingPointRange<Float>,
 ) : ImageData {
 
     @JvmField internal val channelSizeInBytes = (numberOfPixels * bitpix.byteLength).toLong()
@@ -100,14 +98,12 @@ internal data class SeekableSourceImageData(
             }
 
             if (min < 0f || max > 1f) {
-                val rangeMin = min(range.start, min)
-                val rangeMax = max(range.endInclusive, max)
-                val rangeDelta = rangeMax - rangeMin
+                val rangeDelta = max - min
 
-                LOG.info("rescaling [{}, {}] to [0, 1]. channel={}, delta={}", rangeMin, rangeMax, channel, rangeDelta)
+                LOG.info("rescaling [{}, {}] to [0, 1]. channel={}, delta={}", min, max, channel, rangeDelta)
 
                 for (i in output.indices) {
-                    output[i] = (output[i] - rangeMin) / rangeDelta
+                    output[i] = (output[i] - min) / rangeDelta
                 }
             }
         }

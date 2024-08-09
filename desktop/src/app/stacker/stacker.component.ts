@@ -1,19 +1,22 @@
-import { AfterViewInit, Component } from '@angular/core'
+import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
 import { dirname } from 'path'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { EMPTY_STACKING_REQUEST, StackingRequest, StackingTarget } from '../../shared/types/stacker.types'
+import { DEFAULT_STACKER_PREFERENCE, StackingRequest, StackingTarget } from '../../shared/types/stacker.types'
 import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-stacker',
 	templateUrl: './stacker.component.html',
 })
-export class StackerComponent implements AfterViewInit {
-	running = false
-	readonly request = structuredClone(EMPTY_STACKING_REQUEST)
+export class StackerComponent implements AfterViewInit, OnDestroy {
+	protected running = false
+	protected readonly preference = structuredClone(DEFAULT_STACKER_PREFERENCE)
+	protected request = this.preference.request
+
+	private frameId = ''
 
 	get referenceTarget() {
 		return this.request.targets.find((e) => e.enabled && e.reference && e.type === 'LIGHT')
@@ -29,10 +32,10 @@ export class StackerComponent implements AfterViewInit {
 
 	constructor(
 		app: AppComponent,
-		private readonly electron: ElectronService,
+		private readonly electronService: ElectronService,
 		private readonly api: ApiService,
-		private readonly preference: PreferenceService,
-		private readonly browserWindow: BrowserWindowService,
+		private readonly preferenceService: PreferenceService,
+		private readonly browserWindowService: BrowserWindowService,
 	) {
 		app.title = 'Stacker'
 	}
@@ -43,12 +46,16 @@ export class StackerComponent implements AfterViewInit {
 		this.running = await this.api.stackerIsRunning()
 	}
 
-	async openImages() {
+	@HostListener('window:unload')
+	ngOnDestroy() {
+		void this.closeFrameWindow()
+	}
+
+	protected async openImages() {
 		try {
 			this.running = true
 
-			const stackerPreference = this.preference.stackerPreference.get()
-			const images = await this.electron.openImages({ defaultPath: stackerPreference.defaultPath })
+			const images = await this.electronService.openImages({ defaultPath: this.preference.defaultPath })
 
 			if (images && images.length) {
 				const targets: StackingTarget[] = [...this.request.targets]
@@ -70,15 +77,15 @@ export class StackerComponent implements AfterViewInit {
 
 				this.request.targets = targets
 
-				stackerPreference.defaultPath = dirname(images[0])
-				this.preference.stackerPreference.set(stackerPreference)
+				this.preference.defaultPath = dirname(images[0])
+				this.savePreference()
 			}
 		} finally {
 			this.running = false
 		}
 	}
 
-	referenceChanged(target: StackingTarget, enabled: boolean) {
+	protected referenceChanged(target: StackingTarget, enabled: boolean) {
 		if (enabled) {
 			for (const item of this.request.targets) {
 				if (item.reference && item !== target) {
@@ -88,11 +95,11 @@ export class StackerComponent implements AfterViewInit {
 		}
 	}
 
-	openTargetImage(target: StackingTarget) {
-		return this.browserWindow.openImage({ path: target.path, id: 'stacker', source: 'PATH' })
+	protected async openTargetImage(target: StackingTarget) {
+		this.frameId = await this.browserWindowService.openImage({ path: target.path, id: 'stacker', source: 'PATH' })
 	}
 
-	deleteTarget(target: StackingTarget) {
+	protected deleteTarget(target: StackingTarget) {
 		const index = this.request.targets.findIndex((e) => e === target)
 
 		if (index >= 0) {
@@ -100,14 +107,19 @@ export class StackerComponent implements AfterViewInit {
 		}
 	}
 
-	async startStacking() {
-		const stackingRequest = this.preference.stackingRequest(this.request.type).get()
-		this.request.executablePath = stackingRequest.executablePath
-		this.request.slot = stackingRequest.slot || 1
-		this.request.referencePath = this.referenceTarget!.path
+	private async closeFrameWindow() {
+		if (this.frameId) {
+			await this.electronService.closeWindow(undefined, this.frameId)
+		}
+	}
+
+	protected async startStacking() {
+		const settings = this.preferenceService.settings.get()
 
 		const request: StackingRequest = {
 			...this.request,
+			...settings.stacker[this.request.type],
+			referencePath: this.referenceTarget!.path,
 			targets: this.request.targets.filter((e) => e.enabled),
 		}
 
@@ -118,40 +130,23 @@ export class StackerComponent implements AfterViewInit {
 			const path = await this.api.stackerStart(request)
 
 			if (path) {
-				await this.browserWindow.openImage({ path, source: 'STACKER' })
+				await this.browserWindowService.openImage({ path, source: 'STACKER' })
 			}
 		} finally {
 			this.running = false
 		}
 	}
 
-	stopStacking() {
+	protected stopStacking() {
 		return this.api.stackerStop()
 	}
 
 	private loadPreference() {
-		const stackerPreference = this.preference.stackerPreference.get()
-
-		this.request.outputDirectory = stackerPreference.outputDirectory ?? ''
-		this.request.darkPath = stackerPreference.darkPath
-		this.request.darkEnabled = stackerPreference.darkEnabled ?? false
-		this.request.flatPath = stackerPreference.flatPath
-		this.request.flatEnabled = stackerPreference.flatEnabled ?? false
-		this.request.biasPath = stackerPreference.biasPath
-		this.request.biasEnabled = stackerPreference.biasEnabled ?? false
-		this.request.type = stackerPreference.type ?? 'PIXINSIGHT'
+		Object.assign(this.preference, this.preferenceService.stacker.get())
+		this.request = this.preference.request
 	}
 
-	savePreference() {
-		const stackerPreference = this.preference.stackerPreference.get()
-		stackerPreference.outputDirectory = this.request.outputDirectory
-		stackerPreference.darkPath = this.request.darkPath
-		stackerPreference.darkEnabled = this.request.darkEnabled
-		stackerPreference.flatPath = this.request.flatPath
-		stackerPreference.flatEnabled = this.request.flatEnabled
-		stackerPreference.biasPath = this.request.biasPath
-		stackerPreference.biasEnabled = this.request.biasEnabled
-		stackerPreference.type = this.request.type
-		this.preference.stackerPreference.set(stackerPreference)
+	protected savePreference() {
+		this.preferenceService.stacker.set(this.preference)
 	}
 }

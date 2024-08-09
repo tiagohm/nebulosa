@@ -11,7 +11,7 @@ data class MinorPlanet(
     @JvmField val neo: Boolean = false,
     @JvmField val orbitType: String = "",
     @JvmField val parameters: List<OrbitalPhysicalParameter> = emptyList(),
-    @JvmField val searchItems: List<SearchItem> = emptyList(),
+    @JvmField val list: List<SearchItem> = emptyList(),
 ) {
 
     data class OrbitalPhysicalParameter(
@@ -60,8 +60,8 @@ data class MinorPlanet(
                     body.body!!.pha, body.body!!.neo, body.body?.type?.name ?: "", items,
                 )
             } else if (body.list != null) {
-                val searchItems = body.list!!.map { SearchItem(it.name, it.pdes) }
-                return MinorPlanet(searchItems = searchItems)
+                val list = body.list!!.map { SearchItem(it.name, it.pdes) }
+                return MinorPlanet(list = list)
             } else {
                 return EMPTY
             }

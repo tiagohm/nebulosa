@@ -144,14 +144,14 @@
 			<p-floatLabel>
 				<p-inputNumber
 					[disabled]="!wheel.connected || moving || !focuser?.connected"
-					[(ngModel)]="focusOffset"
-					[min]="focusOffsetMin"
-					[max]="focusOffsetMax"
+					[(ngModel)]="focuserOffset"
+					[min]="focuserMinPosition"
+					[max]="focuserMaxPosition"
 					[showButtons]="true"
 					locale="en"
 					styleClass="border-0 w-full p-inputtext-sm"
 					(ngModelChange)="focusOffsetChanged()"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Focus offset</label>
 			</p-floatLabel>
 		</div>

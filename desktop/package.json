@@ -1,5 +1,6 @@
 {
 	"name": "nebulosa",
+	"codename": "Ceres",
 	"version": "0.1.0",
 	"description": "The complete integrated solution for all of your astronomical imaging needs.",
 	"author": {
@@ -11,11 +12,12 @@
 	"main": "app/main.js",
 	"private": true,
 	"scripts": {
-		"postinstall": "electron-builder install-app-deps",
+		"postinstall": "electron-builder install-app-deps && npm run scripts",
 		"ng": "ng",
+		"scripts": "node --no-warnings scripts/nebulosa.mjs",
 		"start": "npm-run-all -p electron:serve ng:serve",
 		"ng:serve": "ng serve -c web --hmr",
-		"build": "npm run electron:serve-tsc && ng build --base-href ./",
+		"build": "npm run scripts && npm run electron:serve-tsc && ng build --base-href ./",
 		"build:dev": "npm run build -- -c dev",
 		"build:prod": "npm run build -- -c production",
 		"web:build": "npm run build -- -c web-production",
@@ -30,8 +32,7 @@
 		"lint": "npx eslint .",
 		"prettier:ts": "npx prettier '**/*.ts' --write",
 		"prettier:html": "npx prettier '**/*.html' --write",
-		"prettier:scss": "npx prettier '**/*.scss' --write",
-		"prettier:json": "npx prettier '**/*.json' --write"
+		"prettier:scss": "npx prettier '**/*.scss' --write"
 	},
 	"dependencies": {
 		"@angular/animations": "18.1.3",
@@ -48,7 +49,6 @@
 		"chartjs-plugin-zoom": "2.0.1",
 		"hotkeys-js": "3.13.7",
 		"leaflet": "1.9.4",
-		"moment": "2.30.1",
 		"ngx-moveable": "0.50.0",
 		"nuid": "2.0.1-2",
 		"panzoom": "9.4.3",
@@ -80,9 +80,6 @@
 		"typescript": "5.5.4",
 		"typescript-eslint": "8.0.0",
 		"wait-on": "7.2.0"
-	},
-	"overrides": {
-		"axios": "1.6.2"
 	},
 	"engines": {
 		"node": ">= 20.11.1"

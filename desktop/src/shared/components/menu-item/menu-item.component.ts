@@ -1,7 +1,7 @@
-import { Component, Input } from '@angular/core'
+import { Component, Input, ViewEncapsulation } from '@angular/core'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { InputSwitchChangeEvent } from 'primeng/inputswitch'
-import { Severity, TooltipPosition } from '../../types/app.types'
+import { Severity, TooltipPosition } from '../../types/angular.types'
 
 export interface MenuItemCommandEvent {
 	originalEvent?: Event
@@ -44,6 +44,9 @@ export interface MenuItem {
 	command?: (event: MenuItemCommandEvent) => void
 	check?: (event: CheckboxChangeEvent) => void
 	toggle?: (event: InputSwitchChangeEvent) => void
+
+	styleClass?: string
+	iconClass?: string
 }
 
 export interface SlideMenuItem extends MenuItem {
@@ -53,9 +56,9 @@ export interface SlideMenuItem extends MenuItem {
 @Component({
 	selector: 'neb-menu-item',
 	templateUrl: './menu-item.component.html',
-	styleUrls: ['./menu-item.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class MenuItemComponent {
 	@Input({ required: true })
-	readonly item!: MenuItem
+	protected readonly item!: MenuItem
 }

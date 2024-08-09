@@ -18,7 +18,7 @@ class SequencerController(
     fun start(
         camera: Camera,
         mount: Mount?, wheel: FilterWheel?, focuser: Focuser?, rotator: Rotator?,
-        @RequestBody @Valid body: SequencePlanRequest,
+        @RequestBody @Valid body: SequencerPlanRequest,
     ) = sequencerService.start(camera, body, mount, wheel, focuser, rotator)
 
     @PutMapping("{camera}/stop")

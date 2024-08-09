@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core'
 import { Undefinable } from '../../utils/types'
 import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.component'
 
@@ -6,26 +6,30 @@ import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.comp
 	selector: 'neb-dialog-menu',
 	templateUrl: './dialog-menu.component.html',
 	styleUrls: ['./dialog-menu.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class DialogMenuComponent {
 	@Input()
-	visible = false
+	protected visible = false
 
 	@Output()
 	readonly visibleChange = new EventEmitter<boolean>()
 
 	@Input()
-	model: SlideMenuItem[] = []
+	protected model: SlideMenuItem[] = []
 
 	@Input()
-	header?: string
+	protected header?: string
 
 	@Input()
-	updateHeaderWithMenuLabel: boolean = true
+	protected updateHeaderWithMenuLabel: boolean = true
 
+	protected currentHeader = this.header
 	private readonly navigationHeader: Undefinable<string>[] = []
 
-	show() {
+	show(model?: SlideMenuItem[]) {
+		if (model?.length) this.model = model
+		this.currentHeader = this.header
 		this.visible = true
 		this.visibleChange.emit(true)
 	}
@@ -36,14 +40,14 @@ export class DialogMenuComponent {
 		this.visibleChange.emit(false)
 	}
 
-	next(event: MenuItemCommandEvent) {
+	protected next(event: MenuItemCommandEvent) {
 		if (!event.item?.slideMenu?.length) {
 			this.hide()
 		} else {
-			this.navigationHeader.push(this.header)
+			this.navigationHeader.push(this.currentHeader)
 
 			if (this.updateHeaderWithMenuLabel) {
-				this.header = event.item.label
+				this.currentHeader = event.item.label
 			}
 		}
 	}
@@ -53,7 +57,7 @@ export class DialogMenuComponent {
 			const header = this.navigationHeader.splice(this.navigationHeader.length - 1, 1)[0]
 
 			if (this.updateHeaderWithMenuLabel) {
-				this.header = header
+				this.currentHeader = header
 			}
 		}
 	}

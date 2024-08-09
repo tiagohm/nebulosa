@@ -18,9 +18,9 @@
 			<div class="col-12 gap-2">
 				<p-floatLabel class="w-full">
 					<p-dropdown
-						[options]="locations"
-						[(ngModel)]="location"
-						(ngModelChange)="locationChanged()"
+						[options]="preference.locations"
+						[ngModel]="preference.location"
+						(ngModelChange)="locationChanged($event)"
 						optionLabel="name"
 						dataKey="id"
 						styleClass="p-inputtext-sm border-0"
@@ -28,7 +28,7 @@
 						[autoDisplayFirst]="false">
 						<ng-template pTemplate="selectedItem">
 							<div class="flex align-items-center gap-2">
-								<span>{{ location.name || '?' }}</span>
+								<span>{{ preference.location.name || '?' }}</span>
 							</div>
 						</ng-template>
 					</p-dropdown>
@@ -44,7 +44,7 @@
 						tooltipPosition="bottom"
 						(onClick)="addLocation()" />
 					<p-button
-						[disabled]="locations.length <= 1"
+						[disabled]="preference.locations.length <= 1"
 						icon="mdi mdi-delete"
 						size="small"
 						severity="danger"
@@ -56,8 +56,8 @@
 			</div>
 			<div class="col-12">
 				<neb-location
-					[location]="location"
-					(locationChange)="locationChanged()" />
+					[location]="preference.location"
+					(locationChange)="locationChanged($event)" />
 			</div>
 		</div>
 	</div>
@@ -73,7 +73,6 @@
 						optionsValue="value"
 						[(ngModel)]="plateSolverType"
 						styleClass="p-inputtext-sm border-0"
-						(ngModelChange)="plateSolvers.get(plateSolverType)!.type = $event; save()"
 						[autoDisplayFirst]="false" />
 					<label>Solver</label>
 				</p-floatLabel>
@@ -82,12 +81,12 @@
 				class="col-12"
 				*ngIf="plateSolverType !== 'ASTROMETRY_NET_ONLINE'">
 				<neb-path-chooser
-					key="PLATE_SOLVER_EXECUTABLE_PATH"
+					key="platesolver.executablePath"
 					[directory]="false"
 					label="Executable path"
-					[path]="plateSolvers.get(plateSolverType)!.executablePath"
+					[(path)]="plateSolver.executablePath"
 					class="w-full"
-					(pathChange)="plateSolvers.get(plateSolverType)!.executablePath = $event; save()" />
+					(pathChange)="savePreference()" />
 			</div>
 			@if (plateSolverType === 'ASTROMETRY_NET_ONLINE') {
 				<div class="col-8">
@@ -95,8 +94,8 @@
 						<input
 							pInputText
 							class="p-inputtext-sm border-0 w-full"
-							[ngModel]="plateSolvers.get(plateSolverType)!.apiUrl"
-							(ngModelChange)="plateSolvers.get(plateSolverType)!.apiUrl = $event; save()" />
+							[(ngModel)]="plateSolver.apiUrl"
+							(ngModelChange)="savePreference()" />
 						<label>API URL</label>
 					</p-floatLabel>
 				</div>
@@ -105,8 +104,8 @@
 						<input
 							pInputText
 							class="p-inputtext-sm border-0 w-full"
-							[ngModel]="plateSolvers.get(plateSolverType)!.apiKey"
-							(ngModelChange)="plateSolvers.get(plateSolverType)!.apiKey = $event; save()" />
+							[(ngModel)]="plateSolver.apiKey"
+							(ngModelChange)="savePreference()" />
 						<label>API Key</label>
 					</p-floatLabel>
 				</div>
@@ -116,12 +115,12 @@
 					<p-floatLabel>
 						<p-inputNumber
 							styleClass="p-inputtext-sm border-0 w-full"
-							[ngModel]="plateSolvers.get(plateSolverType)!.downsampleFactor"
-							(ngModelChange)="plateSolvers.get(plateSolverType)!.downsampleFactor = $event; save()"
+							[(ngModel)]="plateSolver.downsampleFactor"
+							(ngModelChange)="savePreference()"
 							[showButtons]="true"
 							[min]="0"
 							[max]="4"
-							scrollableNumber />
+							spinnableNumber />
 						<label>Downsample factor</label>
 					</p-floatLabel>
 				</div>
@@ -129,12 +128,12 @@
 					<p-floatLabel>
 						<p-inputNumber
 							styleClass="p-inputtext-sm border-0 w-full"
-							[ngModel]="plateSolvers.get(plateSolverType)!.timeout"
-							(ngModelChange)="plateSolvers.get(plateSolverType)!.timeout = $event; save()"
+							[(ngModel)]="plateSolver.timeout"
+							(ngModelChange)="savePreference()"
 							[showButtons]="true"
 							[min]="0"
 							[max]="300"
-							scrollableNumber />
+							spinnableNumber />
 						<label>Timeout (s)</label>
 					</p-floatLabel>
 				</div>
@@ -149,10 +148,10 @@
 							[showButtons]="true"
 							class="w-full"
 							styleClass="p-inputtext-sm border-0 w-full"
-							[ngModel]="plateSolvers.get(plateSolverType)!.slot"
-							(ngModelChange)="plateSolvers.get(plateSolverType)!.slot = $event; save()"
+							[(ngModel)]="plateSolver.slot"
+							(ngModelChange)="savePreference()"
 							[allowEmpty]="false"
-							scrollableNumber />
+							spinnableNumber />
 						<label>Slot</label>
 					</p-floatLabel>
 				</div>
@@ -171,68 +170,29 @@
 						optionsValue="value"
 						[(ngModel)]="starDetectorType"
 						styleClass="p-inputtext-sm border-0"
-						(ngModelChange)="starDetectors.get(starDetectorType)!.type = $event; save()"
 						[autoDisplayFirst]="false" />
 					<label>Detector</label>
 				</p-floatLabel>
 			</div>
 			<div class="col-12">
 				<neb-path-chooser
-					key="STAR_DETECTION_EXECUTABLE_PATH"
+					key="starDetection.executablePath"
 					[directory]="false"
 					label="Executable path"
-					[path]="starDetectors.get(starDetectorType)!.executablePath"
+					[(path)]="starDetector.executablePath"
 					class="w-full"
-					(pathChange)="starDetectors.get(starDetectorType)!.executablePath = $event; save()" />
-			</div>
-			<div
-				class="col-4"
-				*ngIf="starDetectorType !== 'SIRIL'">
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="500"
-						[step]="1"
-						[showButtons]="true"
-						class="w-full"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[ngModel]="starDetectors.get(starDetectorType)!.minSNR"
-						(ngModelChange)="starDetectors.get(starDetectorType)!.minSNR = $event; save()"
-						locale="en"
-						[allowEmpty]="false"
-						scrollableNumber />
-					<label>Min SNR</label>
-				</p-floatLabel>
-			</div>
-			<div
-				class="col-4"
-				*ngIf="starDetectorType === 'SIRIL'">
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="2000"
-						[step]="1"
-						[showButtons]="true"
-						class="w-full"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[ngModel]="starDetectors.get(starDetectorType)!.maxStars"
-						(ngModelChange)="starDetectors.get(starDetectorType)!.maxStars = $event; save()"
-						locale="en"
-						[allowEmpty]="false"
-						scrollableNumber />
-					<label>Max stars</label>
-				</p-floatLabel>
+					(pathChange)="savePreference()" />
 			</div>
 			<div class="col-4">
 				<p-floatLabel>
 					<p-inputNumber
 						styleClass="p-inputtext-sm border-0 w-full"
-						[ngModel]="starDetectors.get(starDetectorType)!.timeout"
-						(ngModelChange)="starDetectors.get(starDetectorType)!.timeout = $event; save()"
+						[(ngModel)]="starDetector.timeout"
+						(ngModelChange)="savePreference()"
 						[showButtons]="true"
 						[min]="0"
 						[max]="300"
-						scrollableNumber />
+						spinnableNumber />
 					<label>Timeout (s)</label>
 				</p-floatLabel>
 			</div>
@@ -247,10 +207,10 @@
 						[showButtons]="true"
 						class="w-full"
 						styleClass="p-inputtext-sm border-0 w-full"
-						[ngModel]="starDetectors.get(starDetectorType)!.slot"
-						(ngModelChange)="starDetectors.get(starDetectorType)!.slot = $event; save()"
+						[(ngModel)]="starDetector.slot"
+						(ngModelChange)="savePreference()"
 						[allowEmpty]="false"
-						scrollableNumber />
+						spinnableNumber />
 					<label>Slot</label>
 				</p-floatLabel>
 			</div>
@@ -268,19 +228,18 @@
 						optionsValue="value"
 						[(ngModel)]="liveStackerType"
 						styleClass="p-inputtext-sm border-0"
-						(ngModelChange)="liveStackers.get(liveStackerType)!.type = $event; save()"
 						[autoDisplayFirst]="false" />
 					<label>Stacker</label>
 				</p-floatLabel>
 			</div>
 			<div class="col-12">
 				<neb-path-chooser
-					key="LIVE_STACKING_EXECUTABLE_PATH"
+					key="liveStacking.executablePath"
 					[directory]="false"
 					class="w-full"
-					[path]="liveStackers.get(liveStackerType)!.executablePath"
+					[(path)]="liveStacker.executablePath"
 					label="Executable path"
-					(pathChange)="liveStackers.get(liveStackerType)!.executablePath = $event; save()" />
+					(pathChange)="savePreference()" />
 			</div>
 			<div
 				class="col-4"
@@ -293,10 +252,10 @@
 						[showButtons]="true"
 						class="w-full"
 						styleClass="p-inputtext-sm border-0 w-full"
-						[ngModel]="liveStackers.get(liveStackerType)!.slot"
-						(ngModelChange)="liveStackers.get(liveStackerType)!.slot = $event; save()"
+						[(ngModel)]="liveStacker.slot"
+						(ngModelChange)="savePreference()"
 						[allowEmpty]="false"
-						scrollableNumber />
+						spinnableNumber />
 					<label>Slot</label>
 				</p-floatLabel>
 			</div>
@@ -314,19 +273,18 @@
 						optionsValue="value"
 						[(ngModel)]="stackerType"
 						styleClass="p-inputtext-sm border-0"
-						(ngModelChange)="stackers.get(stackerType)!.type = $event; save()"
 						[autoDisplayFirst]="false" />
 					<label>Stacker</label>
 				</p-floatLabel>
 			</div>
 			<div class="col-12">
 				<neb-path-chooser
-					key="STACKING_EXECUTABLE_PATH"
+					key="stacking.executablePath"
 					[directory]="false"
 					class="w-full"
-					[path]="stackers.get(stackerType)!.executablePath"
+					[(path)]="stacker.executablePath"
 					label="Executable path"
-					(pathChange)="stackers.get(stackerType)!.executablePath = $event; save()" />
+					(pathChange)="savePreference()" />
 			</div>
 			<div
 				class="col-4"
@@ -339,10 +297,10 @@
 						[showButtons]="true"
 						class="w-full"
 						styleClass="p-inputtext-sm border-0 w-full"
-						[ngModel]="stackers.get(stackerType)!.slot"
-						(ngModelChange)="stackers.get(stackerType)!.slot = $event; save()"
+						[(ngModel)]="stacker.slot"
+						(ngModelChange)="savePreference()"
 						[allowEmpty]="false"
-						scrollableNumber />
+						spinnableNumber />
 					<label>Slot</label>
 				</p-floatLabel>
 			</div>
@@ -357,8 +315,8 @@
 					<input
 						pInputText
 						class="p-inputtext-sm border-0"
-						[(ngModel)]="cameraCaptureNamingFormat.light"
-						(ngModelChange)="save()" />
+						[(ngModel)]="preference.namingFormat.light"
+						(ngModelChange)="savePreference()" />
 					<label>Light</label>
 				</p-floatLabel>
 				<p-button
@@ -373,8 +331,8 @@
 					<input
 						pInputText
 						class="p-inputtext-sm border-0"
-						[(ngModel)]="cameraCaptureNamingFormat.dark"
-						(ngModelChange)="save()" />
+						[(ngModel)]="preference.namingFormat.dark"
+						(ngModelChange)="savePreference()" />
 					<label>Dark</label>
 				</p-floatLabel>
 				<p-button
@@ -389,8 +347,8 @@
 					<input
 						pInputText
 						class="p-inputtext-sm border-0"
-						[(ngModel)]="cameraCaptureNamingFormat.flat"
-						(ngModelChange)="save()" />
+						[(ngModel)]="preference.namingFormat.flat"
+						(ngModelChange)="savePreference()" />
 					<label>Flat</label>
 				</p-floatLabel>
 				<p-button
@@ -405,8 +363,8 @@
 					<input
 						pInputText
 						class="p-inputtext-sm border-0"
-						[(ngModel)]="cameraCaptureNamingFormat.bias"
-						(ngModelChange)="save()" />
+						[(ngModel)]="preference.namingFormat.bias"
+						(ngModelChange)="savePreference()" />
 					<label>Bias</label>
 				</p-floatLabel>
 				<p-button

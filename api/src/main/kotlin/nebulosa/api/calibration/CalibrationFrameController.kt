@@ -1,7 +1,6 @@
 package nebulosa.api.calibration
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path
@@ -16,26 +15,24 @@ class CalibrationFrameController(
     @GetMapping
     fun groups() = calibrationFrameService.groups()
 
-    @GetMapping("{name}")
-    fun groupedCalibrationFrames(@PathVariable name: String): List<CalibrationFrameGroup> {
-        var id = 0
-        val groupedFrames = calibrationFrameService.groupedCalibrationFrames(name)
-        return groupedFrames.map { CalibrationFrameGroup(++id, name, it.key, it.value) }
+    @GetMapping("{group}")
+    fun frames(@PathVariable group: String): List<CalibrationFrameEntity> {
+        return calibrationFrameService.frames(group).sorted()
     }
 
-    @PutMapping("{name}")
-    fun upload(@PathVariable name: String, @RequestParam path: Path): List<CalibrationFrameEntity> {
-        return calibrationFrameService.upload(name, path)
+    @PutMapping("{group}")
+    fun upload(@PathVariable group: String, @RequestParam path: Path): List<CalibrationFrameEntity> {
+        return calibrationFrameService.upload(group, path)
     }
 
-    @PatchMapping("{frame}")
-    fun edit(
-        frame: CalibrationFrameEntity,
-        @Valid @NotBlank @RequestParam name: String, @RequestParam enabled: Boolean,
-    ) = calibrationFrameService.edit(frame, name, enabled)
+    @PostMapping
+    fun update(@RequestBody @Valid body: CalibrationFrameEntity): CalibrationFrameEntity {
+        require(body.id > 0L) { "invalid frame id" }
+        return calibrationFrameService.edit(body)
+    }
 
-    @DeleteMapping("{frame}")
-    fun delete(frame: CalibrationFrameEntity) {
-        calibrationFrameService.delete(frame)
+    @DeleteMapping("{id}")
+    fun delete(@PathVariable id: Long) {
+        calibrationFrameService.delete(id)
     }
 }

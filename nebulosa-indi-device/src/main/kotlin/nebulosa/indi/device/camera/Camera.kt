@@ -2,12 +2,16 @@ package nebulosa.indi.device.camera
 
 import nebulosa.image.algorithms.transformation.CfaPattern
 import nebulosa.image.format.HeaderCard
+import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.protocol.PropertyState
 import java.time.Duration
 
 interface Camera : GuideOutput, Thermometer {
+
+    override val type
+        get() = DeviceType.CAMERA
 
     val exposuring: Boolean
 

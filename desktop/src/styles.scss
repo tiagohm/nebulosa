@@ -249,8 +249,8 @@ i.mdi {
 
 .p-menuitem-link {
 	&.p-menuitem-selected {
-		background-color: $successButtonBg;
-		color: #212121 !important;
+		background-color: rgb(0 255 0 / 10%);
+		border-radius: 4px;
 	}
 }
 
@@ -318,6 +318,10 @@ p-tieredmenu *,
 	}
 }
 
+.p-listbox-header {
+	border-bottom: 0px;
+}
+
 .pixelated {
 	image-rendering: pixelated;
 }
@@ -332,6 +336,14 @@ p-tieredmenu *,
 
 .gap-1px {
 	gap: 1px;
+}
+
+.mb-1px {
+	margin-bottom: 1px;
+}
+
+.p-2-4 {
+	padding: 2px 4px;
 }
 
 .min-w-0 {
@@ -479,8 +491,8 @@ p-tieredmenu *,
 }
 
 ::-webkit-scrollbar {
-	width: 6px;
-	height: 6px;
+	width: 4px;
+	height: 4px;
 }
 
 ::-webkit-scrollbar-thumb {

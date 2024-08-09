@@ -54,7 +54,7 @@ class SequencerExecutor(
     }
 
     fun execute(
-        camera: Camera, request: SequencePlanRequest,
+        camera: Camera, request: SequencerPlanRequest,
         mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null, rotator: Rotator? = null,
     ) {
         check(camera.connected) { "${camera.name} Camera is not connected" }

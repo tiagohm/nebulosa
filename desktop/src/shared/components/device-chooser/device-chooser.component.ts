@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core'
+import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core'
 import { ApiService } from '../../services/api.service'
 import { Device } from '../../types/device.types'
 import { Undefinable } from '../../utils/types'
@@ -8,26 +8,26 @@ import { MenuItem } from '../menu-item/menu-item.component'
 @Component({
 	selector: 'neb-device-chooser',
 	templateUrl: './device-chooser.component.html',
-	styleUrls: ['./device-chooser.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceChooserComponent<T extends Device = Device> {
 	@Input({ required: true })
-	readonly title!: string
+	protected readonly title!: string
 
 	@Input()
-	readonly noDeviceMessage?: string
+	protected readonly noDeviceMessage?: string
 
 	@Input({ required: true })
-	readonly icon!: string
+	protected readonly icon!: string
 
 	@Input({ required: true })
-	readonly devices!: T[]
+	protected readonly devices!: T[]
 
 	@Input()
-	readonly hasNone: boolean = false
+	protected readonly hasNone: boolean = false
 
 	@Input()
-	device?: T
+	protected device?: T
 
 	@Output()
 	readonly deviceChange = new EventEmitter<T>()
@@ -67,48 +67,66 @@ export class DeviceChooserComponent<T extends Device = Device> {
 	}
 
 	static async handleConnectDevice(api: ApiService, device: Device, item: MenuItem) {
+		if (device.connected) return undefined
+
 		await api.indiDeviceConnect(device)
 
 		item.disabled = true
 
-		return new Promise<Undefinable<DeviceConnectionCommandEvent>>((resolve) => {
-			setTimeout(async () => {
+		return new Promise<DeviceConnectionCommandEvent | undefined>((resolve) => {
+			let counter = 0
+
+			const timer = setInterval(async () => {
 				Object.assign(device, await api.indiDevice(device))
 
 				if (device.connected) {
 					item.icon = 'mdi mdi-close'
 					item.severity = 'danger'
 					item.label = 'Disconnect'
+					clearInterval(timer)
 					resolve({ device, item })
-				} else {
+				} else if (counter >= 10) {
+					clearInterval(timer)
 					resolve(undefined)
+				} else {
+					counter++
+					return
 				}
 
 				item.disabled = false
-			}, 1000)
+			}, 1500)
 		})
 	}
 
 	static async handleDisconnectDevice(api: ApiService, device: Device, item: MenuItem) {
+		if (!device.connected) return undefined
+
 		await api.indiDeviceDisconnect(device)
 
 		item.disabled = true
 
 		return new Promise<Undefinable<DeviceConnectionCommandEvent>>((resolve) => {
-			setTimeout(async () => {
+			let counter = 0
+
+			const timer = setTimeout(async () => {
 				Object.assign(device, await api.indiDevice(device))
 
 				if (!device.connected) {
 					item.icon = 'mdi mdi-connection'
 					item.severity = 'info'
 					item.label = 'Connect'
+					clearInterval(timer)
 					resolve({ device, item })
-				} else {
+				} else if (counter >= 10) {
+					clearInterval(timer)
 					resolve(undefined)
+				} else {
+					counter++
+					return
 				}
 
 				item.disabled = false
-			}, 1000)
+			}, 1500)
 		})
 	}
 }

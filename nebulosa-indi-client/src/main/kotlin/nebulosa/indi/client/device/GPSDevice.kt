@@ -1,6 +1,7 @@
 package nebulosa.indi.client.device
 
 import nebulosa.indi.client.INDIClient
+import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.gps.GPSCoordinateChanged
 import nebulosa.indi.device.gps.GPSTimeChanged
@@ -16,6 +17,9 @@ internal open class GPSDevice(
     override val sender: INDIClient,
     override val name: String,
 ) : INDIDevice(), GPS {
+
+    override val type
+        get() = DeviceType.GPS
 
     @Volatile final override var hasGPS = true
     @Volatile final override var longitude = 0.0

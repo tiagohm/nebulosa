@@ -1,22 +1,32 @@
 package nebulosa.api.framing
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import nebulosa.fits.fits
 import nebulosa.hips2fits.FormatOutputType
 import nebulosa.hips2fits.Hips2FitsService
+import nebulosa.hips2fits.HipsSurvey
 import nebulosa.image.Image
 import nebulosa.io.transferAndCloseOutput
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.platesolver.PlateSolution
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.outputStream
 
 @Service
-class FramingService(private val hips2FitsService: Hips2FitsService) {
+class FramingService(
+    private val hips2FitsService: Hips2FitsService,
+    private val objectMapper: ObjectMapper,
+) {
 
-    val availableHipsSurveys by lazy { hips2FitsService.availableSurveys().execute().body()!!.sorted() }
+    @Value("classpath:HIPS_SURVEYS.json")
+    private lateinit var hipsSurveysResource: Resource
+
+    val availableHipsSurveys by lazy { hipsSurveysResource.inputStream.use { objectMapper.readValue(it, Array<HipsSurvey>::class.java) }.sorted() }
 
     @Synchronized
     fun frame(

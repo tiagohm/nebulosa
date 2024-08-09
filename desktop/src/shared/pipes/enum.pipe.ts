@@ -2,13 +2,13 @@ import { Pipe, PipeTransform } from '@angular/core'
 import { DARVState, Hemisphere, TPPAState } from '../types/alignment.types'
 import { Constellation, SatelliteGroupType, SkyObjectType } from '../types/atlas.types'
 import { AutoFocusFittingMode, AutoFocusState, BacklashCompensationMode } from '../types/autofocus.type'
-import { CameraCaptureState, ExposureMode, FrameType, LiveStackerType } from '../types/camera.types'
+import { CameraCaptureState, ExposureMode, ExposureTimeUnit, FrameType, LiveStackerType } from '../types/camera.types'
 import { FlatWizardState } from '../types/flat-wizard.types'
 import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
-import { Bitpix, SCNRProtectionMethod } from '../types/image.types'
-import { MountRemoteControlType } from '../types/mount.types'
+import { Bitpix, ImageChannel, SCNRProtectionMethod } from '../types/image.types'
+import { MountRemoteControlProtocol } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
-import { SequenceCaptureMode, SequencerState } from '../types/sequencer.types'
+import { SequencerCaptureMode, SequencerState } from '../types/sequencer.types'
 import { SettingsTabKey } from '../types/settings.types'
 import { StackerGroupType, StackerType } from '../types/stacker.types'
 import { StarDetectorType } from '../types/stardetector.types'
@@ -36,13 +36,15 @@ export type EnumPipeKey =
 	| LiveStackerType
 	| GuiderPlotMode
 	| GuiderYAxisUnit
-	| MountRemoteControlType
-	| SequenceCaptureMode
+	| MountRemoteControlProtocol
+	| SequencerCaptureMode
 	| Bitpix
 	| StackerType
 	| StackerGroupType
 	| SettingsTabKey
 	| SequencerState
+	| ExposureTimeUnit
+	| ImageChannel
 	| 'ALL'
 
 @Pipe({ name: 'enum' })
@@ -205,6 +207,7 @@ export class EnumPipe implements PipeTransform {
 		GRAVITATIONALLY_LENSED_IMAGE_OF_A_GALAXY: 'Gravitationally Lensed Image of a Galaxy',
 		GRAVITATIONALLY_LENSED_IMAGE_OF_A_QUASAR: 'Gravitationally Lensed Image of a Quasar',
 		GRAVITATIONALLY_LENSED_IMAGE: 'Gravitationally Lensed Image',
+		GRAY: 'Gray',
 		GREEN: 'Green',
 		GROUP_OF_GALAXIES: 'Group of Galaxies',
 		GRU: 'Grus',
@@ -271,11 +274,14 @@ export class EnumPipe implements PipeTransform {
 		MEN: 'Mensa',
 		METRIC_RADIO_SOURCE: 'Metric Radio Source',
 		MIC: 'Microscopium',
+		MICROSECOND: 'µs',
 		MICRO_LENSING_EVENT: '(Micro)Lensing Event',
 		MID_IR_SOURCE_3_TO_30_M: 'Mid-IR Source (3 to 30 µm)',
 		MILITARY: 'Miscellaneous Military',
+		MILLISECOND: 'ms',
 		MILLIMETRIC_RADIO_SOURCE: 'Millimetric Radio Source',
 		MINIMUM_NEUTRAL: 'Minimum Neutral',
+		MINUTE: 'm',
 		MIRA_VARIABLE: 'Mira Variable',
 		MOLECULAR_CLOUD: 'Molecular Cloud',
 		MOLNIYA: 'Molniya',
@@ -362,6 +368,7 @@ export class EnumPipe implements PipeTransform {
 		SCO: 'Scorpius',
 		SCT: 'Scutum',
 		SELECTED: 'Selected',
+		SECOND: 's',
 		SER: 'Serpens',
 		SES: 'SES',
 		SETTLING: 'Settling',
