@@ -1,10 +1,10 @@
 import { Component } from '@angular/core'
 import { ConfirmEventType, Confirmation } from 'primeng/api'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
-import { PrimeService } from '../../services/prime.service'
+import { AngularService } from '../../services/angular.service'
 
 @Component({
-	templateUrl: './confirm.dialog.html'
+	templateUrl: './confirm.dialog.html',
 })
 export class ConfirmDialog {
 	readonly header: string
@@ -26,8 +26,8 @@ export class ConfirmDialog {
 		this.dialogRef.close(ConfirmEventType.ACCEPT)
 	}
 
-	static async open(prime: PrimeService, message: string) {
+	static async open(service: AngularService, message: string) {
 		const data: Confirmation = { message }
-		return (await prime.open<Confirmation, ConfirmEventType>(ConfirmDialog, { header: 'Confirmation', data, style: { maxWidth: '320px' } })) ?? ConfirmEventType.CANCEL
+		return (await service.open<Confirmation, ConfirmEventType>(ConfirmDialog, { header: 'Confirmation', data, style: { maxWidth: '320px' } })) ?? ConfirmEventType.CANCEL
 	}
 }

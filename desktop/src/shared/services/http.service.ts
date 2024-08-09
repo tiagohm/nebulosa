@@ -7,11 +7,9 @@ export type QueryParamType = Nullable<string | number | boolean> | QueryParamTyp
 
 @Injectable({ providedIn: 'root' })
 export class HttpService {
-	constructor(private readonly http: HttpClient) {}
+	readonly baseUrl = `http://${window.apiHost}:${window.apiPort}`
 
-	get baseUrl() {
-		return `http://${window.apiHost}:${window.apiPort}`
-	}
+	constructor(private readonly http: HttpClient) {}
 
 	get<T>(path: string) {
 		return firstValueFrom(this.http.get<T>(`${this.baseUrl}/${path}`))

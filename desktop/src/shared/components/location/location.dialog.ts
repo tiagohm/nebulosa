@@ -9,7 +9,7 @@ import { MapComponent } from '../map/map.component'
 })
 export class LocationComponent implements AfterViewInit {
 	@ViewChild('map')
-	private readonly map!: MapComponent
+	private readonly map?: MapComponent
 
 	@Input()
 	readonly location!: Location
@@ -31,7 +31,7 @@ export class LocationComponent implements AfterViewInit {
 	}
 
 	ngAfterViewInit() {
-		this.map.refresh()
+		this.map?.refresh()
 	}
 
 	save() {

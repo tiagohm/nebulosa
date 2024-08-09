@@ -1,4 +1,4 @@
-import { Component, ElementRef, NgZone, OnDestroy } from '@angular/core'
+import { Component, ElementRef, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { APP_CONFIG } from '../environments/environment'
 import { MenuItem } from '../shared/components/menu-item/menu-item.component'
@@ -31,14 +31,14 @@ export class AppComponent implements OnDestroy {
 
 	constructor(
 		private readonly windowTitle: Title,
-		private readonly electron: ElectronService,
-		confirmation: ConfirmationService,
+		private readonly electronService: ElectronService,
+		confirmationService: ConfirmationService,
 		ngZone: NgZone,
 		hostElementRef: ElementRef<Element>,
 	) {
 		console.info('APP_CONFIG', APP_CONFIG)
 
-		if (electron.isElectron) {
+		if (electronService.isElectron) {
 			console.info('Run in electron', window.preference)
 		} else {
 			console.info('Run in browser', window.preference)
@@ -49,7 +49,7 @@ export class AppComponent implements OnDestroy {
 				const height = entries[0].target.clientHeight
 
 				if (height) {
-					void this.electron.resizeWindow(height)
+					void this.electronService.resizeWindow(height)
 				}
 			})
 
@@ -58,36 +58,37 @@ export class AppComponent implements OnDestroy {
 			this.resizeObserver = undefined
 		}
 
-		electron.on('CONFIRMATION', (event) => {
-			if (confirmation.has(event.idempotencyKey)) {
+		electronService.on('CONFIRMATION', (event) => {
+			if (confirmationService.has(event.idempotencyKey)) {
 				void ngZone.run(() => {
-					return confirmation.processConfirmationEvent(event)
+					return confirmationService.processConfirmationEvent(event)
 				})
 			}
 		})
 	}
 
+	@HostListener('window:unload')
 	ngOnDestroy() {
 		this.resizeObserver?.disconnect()
 	}
 
 	pin() {
 		this.pinned = !this.pinned
-		if (this.pinned) return this.electron.pinWindow()
-		else return this.electron.unpinWindow()
+		if (this.pinned) return this.electronService.pinWindow()
+		else return this.electronService.unpinWindow()
 	}
 
 	minimize() {
-		return this.electron.minimizeWindow()
+		return this.electronService.minimizeWindow()
 	}
 
 	maximize() {
-		return this.electron.maximizeWindow()
+		return this.electronService.maximizeWindow()
 	}
 
 	async close(data?: unknown, force: boolean = false) {
 		if (!this.beforeClose || (await this.beforeClose()) || force) {
-			return await this.electron.closeWindow(data)
+			return await this.electronService.closeWindow(data)
 		} else {
 			return undefined
 		}

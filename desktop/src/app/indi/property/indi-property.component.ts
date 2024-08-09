@@ -1,10 +1,11 @@
-import { AfterContentInit, Component, EventEmitter, Input, Output } from '@angular/core'
+import { AfterContentInit, Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core'
 import { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem } from '../../../shared/types/device.types'
 
 @Component({
 	selector: 'neb-indi-property',
 	templateUrl: './indi-property.component.html',
 	styleUrls: ['./indi-property.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class INDIPropertyComponent implements AfterContentInit {
 	@Input({ required: true })

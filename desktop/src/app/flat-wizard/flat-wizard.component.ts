@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
+import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
 import { Camera, DEFAULT_CAMERA, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { DEFAULT_FLAT_WIZARD_PREFERENCE } from '../../shared/types/flat-wizard.types'
@@ -48,7 +48,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 		private readonly api: ApiService,
 		electronService: ElectronService,
 		private readonly browserWindowService: BrowserWindowService,
-		private readonly primeService: PrimeService,
+		private readonly angularService: AngularService,
 		private readonly preferenceService: PreferenceService,
 		private readonly ticker: Ticker,
 		ngZone: NgZone,
@@ -62,10 +62,10 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 					this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
 				} else if (event.state === 'CAPTURED') {
 					this.running = false
-					this.primeService.message(`Flat frame captured`)
+					this.angularService.message('Flat frame captured')
 				} else if (event.state === 'FAILED') {
 					this.running = false
-					this.primeService.message(`Failed to find an optimal exposure time from given parameters`, 'error')
+					this.angularService.message('Failed to find an optimal exposure time from given parameters', 'error')
 				}
 			})
 		})

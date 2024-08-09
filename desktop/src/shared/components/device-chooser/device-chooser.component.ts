@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core'
+import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core'
 import { ApiService } from '../../services/api.service'
 import { Device } from '../../types/device.types'
 import { Undefinable } from '../../utils/types'
@@ -8,7 +8,7 @@ import { MenuItem } from '../menu-item/menu-item.component'
 @Component({
 	selector: 'neb-device-chooser',
 	templateUrl: './device-chooser.component.html',
-	styleUrls: ['./device-chooser.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceChooserComponent<T extends Device = Device> {
 	@Input({ required: true })

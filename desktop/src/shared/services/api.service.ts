@@ -24,11 +24,11 @@ import { HttpService } from './http.service'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-	constructor(private readonly http: HttpService) {}
-
 	get baseUrl() {
 		return this.http.baseUrl
 	}
+
+	constructor(private readonly http: HttpService) {}
 
 	// CONNECTION
 

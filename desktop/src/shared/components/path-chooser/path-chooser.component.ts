@@ -31,14 +31,14 @@ export class PathChooserComponent {
 	@Output()
 	readonly pathChange = new EventEmitter<string>()
 
-	constructor(private readonly electron: ElectronService) {}
+	constructor(private readonly electronService: ElectronService) {}
 
 	protected async choosePath() {
 		const key = `pathChooser.${this.key}.defaultPath`
 		const lastPath = localStorage.getItem(key) || undefined
 		const defaultPath = lastPath && !this.directory ? dirname(lastPath) : lastPath
 
-		const path = await (this.directory ? this.electron.openDirectory({ defaultPath }) : this.electron.openFile({ defaultPath }))
+		const path = await (this.directory ? this.electronService.openDirectory({ defaultPath }) : this.electronService.openFile({ defaultPath }))
 
 		if (path) {
 			this.path = path

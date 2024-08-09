@@ -1,9 +1,9 @@
-import { AfterViewInit, Component, ElementRef, Input, OnChanges, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, ViewChild, ViewEncapsulation } from '@angular/core'
 
 @Component({
 	selector: 'neb-moon',
 	templateUrl: './moon.component.html',
-	styleUrls: ['./moon.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class MoonComponent implements AfterViewInit, OnChanges {
 	@Input()

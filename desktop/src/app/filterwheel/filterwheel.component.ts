@@ -36,6 +36,9 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 
 	protected mode: WheelMode = 'CAPTURE'
 
+	private readonly filterPublisher = new Subject<Filter>()
+	private readonly filterSubscription?: Subscription
+
 	get canShowInfo() {
 		return this.mode === 'CAPTURE'
 	}
@@ -55,9 +58,6 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 	get currentFilter(): Filter | undefined {
 		return this.filters[this.position - 1]
 	}
-
-	private readonly filterChangePublisher = new Subject<Filter>()
-	private readonly filterChangeSubscription?: Subscription
 
 	constructor(
 		private readonly app: AppComponent,
@@ -112,7 +112,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			}
 		})
 
-		this.filterChangeSubscription = this.filterChangePublisher.pipe(debounceTime(1500)).subscribe(async (filter) => {
+		this.filterSubscription = this.filterPublisher.pipe(debounceTime(1500)).subscribe(async (filter) => {
 			const names = this.filters.map((e) => e.name)
 			await this.api.wheelSync(this.wheel, names)
 			await this.electronService.send('WHEEL.RENAMED', { wheel: this.wheel, filter })
@@ -173,7 +173,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
 
 			if (this.app.modal) {
-				await this.loadWheelStartCaptureOnDialogMode(data as WheelDialogInput)
+				await this.loadCameraStartCaptureForDialogMode(data as WheelDialogInput)
 			} else {
 				await this.wheelChanged(data as Wheel)
 			}
@@ -192,7 +192,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 	@HostListener('window:unload')
 	ngOnDestroy() {
 		this.ticker.unregister(this)
-		this.filterChangeSubscription?.unsubscribe()
+		this.filterSubscription?.unsubscribe()
 	}
 
 	async tick() {
@@ -200,7 +200,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 		if (this.focuser?.id) await this.api.focuserListen(this.focuser)
 	}
 
-	private async loadWheelStartCaptureOnDialogMode(data?: WheelDialogInput) {
+	private async loadCameraStartCaptureForDialogMode(data?: WheelDialogInput) {
 		if (data) {
 			this.mode = data.mode
 			await this.wheelChanged(data.wheel)
@@ -307,7 +307,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 
 	protected filterNameChanged(filter: Filter) {
 		if (filter.name) {
-			this.filterChangePublisher.next(structuredClone(filter))
+			this.filterPublisher.next(structuredClone(filter))
 		}
 	}
 
@@ -380,8 +380,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 		return this.app.close(this.makeCameraStartCapture())
 	}
 
-	static async showAsDialog(window: BrowserWindowService, mode: WheelMode, wheel: Wheel, request: CameraStartCapture) {
-		const result = await window.openWheelDialog({ mode, wheel, request })
+	static async showAsDialog(service: BrowserWindowService, mode: WheelMode, wheel: Wheel, request: CameraStartCapture) {
+		const result = await service.openWheelDialog({ mode, wheel, request })
 
 		if (result) {
 			Object.assign(request, result)

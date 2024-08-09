@@ -24,13 +24,20 @@ import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
 import { Wheel, WheelRenamed } from '../types/wheel.types'
 
-export const IMAGE_FILE_FILTER: Electron.FileFilter[] = [
+export const OPEN_IMAGE_FILE_FILTER: Electron.FileFilter[] = [
 	{ name: 'All', extensions: ['fits', 'fit', 'xisf'] },
 	{ name: 'FITS', extensions: ['fits', 'fit'] },
 	{ name: 'XISF', extensions: ['xisf'] },
 ]
 
-interface EventMappedType {
+export const SAVE_IMAGE_FILE_FILTER: Electron.FileFilter[] = [
+	{ name: 'All', extensions: ['fits', 'fit', 'xisf', 'png', 'jpg', 'jpeg'] },
+	{ name: 'FITS', extensions: ['fits', 'fit'] },
+	{ name: 'XISF', extensions: ['xisf'] },
+	{ name: 'Image', extensions: ['png', 'jpg', 'jpeg'] },
+]
+
+export interface EventTypes {
 	NOTIFICATION: NotificationEvent
 	CONFIRMATION: ConfirmationEvent
 	'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
@@ -87,10 +94,10 @@ interface EventMappedType {
 
 @Injectable({ providedIn: 'root' })
 export class ElectronService {
-	ipcRenderer!: typeof ipcRenderer
-	webFrame!: typeof webFrame
-	childProcess!: typeof childProcess
-	fs!: typeof fs
+	readonly ipcRenderer!: typeof ipcRenderer
+	private readonly webFrame!: typeof webFrame
+	private readonly childProcess!: typeof childProcess
+	private readonly fs!: typeof fs
 
 	constructor() {
 		if (this.isElectron) {
@@ -121,11 +128,11 @@ export class ElectronService {
 		return !!(window && window.process?.type)
 	}
 
-	send<K extends keyof EventMappedType>(channel: K, data?: EventMappedType[K]) {
+	send<K extends keyof EventTypes>(channel: K, data?: EventTypes[K]) {
 		return this.ipcRenderer.invoke(channel, data)
 	}
 
-	on<K extends keyof EventMappedType>(channel: K, listener: (arg: EventMappedType[K]) => void) {
+	on<K extends keyof EventTypes>(channel: K, listener: (arg: EventTypes[K]) => void) {
 		this.ipcRenderer.on(channel, (_, arg) => {
 			listener(arg)
 		})
@@ -147,7 +154,7 @@ export class ElectronService {
 		return this.openFile({
 			...data,
 			windowId: data?.windowId ?? window.id,
-			filters: IMAGE_FILE_FILTER,
+			filters: OPEN_IMAGE_FILE_FILTER,
 		})
 	}
 
@@ -155,7 +162,7 @@ export class ElectronService {
 		return this.openFiles({
 			...data,
 			windowId: data?.windowId ?? window.id,
-			filters: IMAGE_FILE_FILTER,
+			filters: OPEN_IMAGE_FILE_FILTER,
 		})
 	}
 
@@ -163,12 +170,7 @@ export class ElectronService {
 		return this.saveFile({
 			...data,
 			windowId: data?.windowId ?? window.id,
-			filters: [
-				{ name: 'All', extensions: ['fits', 'fit', 'xisf', 'png', 'jpg', 'jpeg'] },
-				{ name: 'FITS', extensions: ['fits', 'fit'] },
-				{ name: 'XISF', extensions: ['xisf'] },
-				{ name: 'Image', extensions: ['png', 'jpg', 'jpeg'] },
-			],
+			filters: SAVE_IMAGE_FILE_FILTER,
 		})
 	}
 

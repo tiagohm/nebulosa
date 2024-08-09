@@ -7,7 +7,7 @@ import { PreferenceService } from '../services/preference.service'
 export class LocationInterceptor implements HttpInterceptor {
 	static readonly HEADER_KEY = 'X-Location'
 
-	constructor(private readonly preference: PreferenceService) {}
+	constructor(private readonly preferenceService: PreferenceService) {}
 
 	intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
 		if (req.urlWithParams.includes('hasLocation')) {
@@ -15,7 +15,7 @@ export class LocationInterceptor implements HttpInterceptor {
 			const hasLocation = params.get('hasLocation')
 
 			if (!hasLocation || hasLocation === 'true') {
-				const location = this.preference.settings.get().location
+				const location = this.preferenceService.settings.get().location
 
 				req = req.clone({
 					headers: req.headers.set(LocationInterceptor.HEADER_KEY, JSON.stringify(location)),
@@ -24,7 +24,7 @@ export class LocationInterceptor implements HttpInterceptor {
 				const id = parseInt(hasLocation)
 
 				if (id) {
-					const locations = this.preference.settings.get().locations
+					const locations = this.preferenceService.settings.get().locations
 					const location = locations.find((e) => e.id === id)
 
 					if (location) {

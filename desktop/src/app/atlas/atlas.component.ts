@@ -9,12 +9,11 @@ import { timer } from 'rxjs'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { ONE_DECIMAL_PLACE_FORMATTER, TWO_DIGITS_FORMATTER } from '../../shared/constants'
-import { SkyObjectPipe } from '../../shared/pipes/skyObject.pipe'
+import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { extractDate, extractTime } from '../../shared/types/angular.types'
 import {
 	AltitudeDataPoint,
@@ -351,10 +350,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		private readonly api: ApiService,
 		private readonly browserWindowService: BrowserWindowService,
 		private readonly route: ActivatedRoute,
-		electron: ElectronService,
+		electronService: ElectronService,
 		private readonly preferenceService: PreferenceService,
-		private readonly skyObjectPipe: SkyObjectPipe,
-		private readonly primeService: PrimeService,
+		private readonly angularService: AngularService,
 		ngZone: NgZone,
 	) {
 		app.title = 'Sky Atlas'
@@ -367,7 +365,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			},
 		})
 
-		electron.on('LOCATION.CHANGED', (location) => {
+		electronService.on('LOCATION.CHANGED', (location) => {
 			ngZone.run(() => {
 				this.loadLocations()
 
@@ -377,11 +375,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			})
 		})
 
-		electron.on('DATA.CHANGED', async (event) => {
+		electronService.on('DATA.CHANGED', async (event) => {
 			await this.loadTabFromData(event)
 		})
-
-		// TODO: Refresh graph and twilight if hours past 12 (noon)
 	}
 
 	ngOnInit() {
@@ -487,7 +483,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			this.minorPlanet.closeApproach.result = await this.api.closeApproachesOfMinorPlanets(this.minorPlanet.closeApproach.days, this.minorPlanet.closeApproach.lunarDistance, this.dateTimeAndLocation.dateTime)
 
 			if (!this.minorPlanet.closeApproach.result.length) {
-				this.primeService.message('No close approaches found for the given days and lunar distance', 'warn')
+				this.angularService.message('No close approaches found for the given days and lunar distance', 'warn')
 			}
 		} finally {
 			this.refresh.position = false
@@ -504,7 +500,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 	protected async skyObjectChanged() {
 		if (this.skyObject.search.selected) {
-			this.skyObject.name = this.skyObjectPipe.transform(this.skyObject.search.selected, 'name') ?? '-'
+			this.skyObject.name = this.skyObject.search.selected.name
 			await this.refreshTab(false, true)
 		}
 	}
@@ -799,7 +795,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	}
 
 	private async executeMount(action: (mount: Mount) => void | Promise<void>) {
-		if (await this.primeService.confirm('Are you sure that you want to proceed?')) {
+		if (await this.angularService.confirm('Are you sure that you want to proceed?')) {
 			return false
 		}
 

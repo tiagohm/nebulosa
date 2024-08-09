@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core'
+import { Component, Input, ViewEncapsulation } from '@angular/core'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
 import { InputSwitchChangeEvent } from 'primeng/inputswitch'
 import { Severity, TooltipPosition } from '../../types/angular.types'
@@ -56,7 +56,7 @@ export interface SlideMenuItem extends MenuItem {
 @Component({
 	selector: 'neb-menu-item',
 	templateUrl: './menu-item.component.html',
-	styleUrls: ['./menu-item.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class MenuItemComponent {
 	@Input({ required: true })

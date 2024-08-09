@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
 import { debounceTime, Subject, Subscription } from 'rxjs'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
@@ -59,6 +59,7 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 		this.loadPreference()
 	}
 
+	@HostListener('window:unload')
 	ngOnDestroy() {
 		this.locationChangeSubscription?.unsubscribe()
 	}

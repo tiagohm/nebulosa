@@ -4,11 +4,11 @@ import hotkeys from 'hotkeys-js'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
 import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
+import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
 import { BodyTabType, ComputedLocation, DEFAULT_COMPUTED_LOCATION } from '../../shared/types/atlas.types'
 import { DEFAULT_MOUNT, DEFAULT_MOUNT_PREFERENCE, DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG, Mount, MountRemoteControlProtocol, MountSlewDirection, SlewRate, TrackMode } from '../../shared/types/mount.types'
@@ -210,7 +210,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 		electronService: ElectronService,
 		private readonly preferenceService: PreferenceService,
 		private readonly route: ActivatedRoute,
-		private readonly primeService: PrimeService,
+		private readonly angularService: AngularService,
 		private readonly ticker: Ticker,
 		ngZone: NgZone,
 	) {
@@ -344,7 +344,7 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 			await this.api.mountRemoteControlStart(this.mount, this.remoteControl.protocol, this.remoteControl.host, this.remoteControl.port)
 			this.remoteControl.controls = await this.api.mountRemoteControlList(this.mount)
 		} catch {
-			this.primeService.message('Failed to start remote control', 'error')
+			this.angularService.message('Failed to start remote control', 'error')
 		}
 	}
 

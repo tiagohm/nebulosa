@@ -287,11 +287,11 @@
 		<div class="fixed flex flex-column align-items-center justify-content-center indicators">
 			<span
 				class="indicator"
-				[class.selected]="currentPage === 0"
+				[class.selected]="page === 0"
 				(click)="scrollTo($event, 0)"></span>
 			<span
 				class="indicator"
-				[class.selected]="currentPage === 1"
+				[class.selected]="page === 1"
 				(click)="scrollTo($event, 1)"></span>
 		</div>
 	</div>

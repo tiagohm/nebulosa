@@ -3,11 +3,11 @@ import { dirname } from 'path'
 import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { Camera, isCamera } from '../../shared/types/camera.types'
 import { Device, DeviceType } from '../../shared/types/device.types'
 import { Focuser, isFocuser } from '../../shared/types/focuser.types'
@@ -40,7 +40,7 @@ export class HomeComponent implements AfterContentInit {
 	protected domes: Camera[] = []
 	protected switches: Camera[] = []
 
-	protected currentPage = 0
+	protected page = 0
 
 	protected readonly deviceModel: MenuItem[] = []
 
@@ -54,6 +54,22 @@ export class HomeComponent implements AfterContentInit {
 			},
 		},
 	]
+
+	protected readonly deviceMenuToolbarBuilder = (device: Device): MenuItem[] => {
+		if (isCamera(device)) {
+			return [
+				{
+					icon: 'mdi mdi-image',
+					label: 'View Image',
+					command: () => {
+						return this.browserWindowService.openCameraImage(device)
+					},
+				},
+			]
+		} else {
+			return []
+		}
+	}
 
 	@ViewChild('deviceMenu')
 	private readonly deviceMenu!: DeviceListMenuComponent
@@ -122,28 +138,12 @@ export class HomeComponent implements AfterContentInit {
 		return this.connection?.type === 'ALPACA' && this.hasDevices
 	}
 
-	protected readonly deviceMenuToolbarBuilder = (device: Device): MenuItem[] => {
-		if (isCamera(device)) {
-			return [
-				{
-					icon: 'mdi mdi-image',
-					label: 'View Image',
-					command: () => {
-						return this.browserWindowService.openCameraImage(device)
-					},
-				},
-			]
-		} else {
-			return []
-		}
-	}
-
 	constructor(
 		app: AppComponent,
 		private readonly electronService: ElectronService,
 		private readonly browserWindowService: BrowserWindowService,
 		private readonly api: ApiService,
-		private readonly primeService: PrimeService,
+		private readonly angularService: AngularService,
 		private readonly preferenceService: PreferenceService,
 		ngZone: NgZone,
 	) {
@@ -356,7 +356,7 @@ export class HomeComponent implements AfterContentInit {
 		} catch (e) {
 			console.error(e)
 
-			this.primeService.message('Connection failed', 'error')
+			this.angularService.message('Connection failed', 'error')
 		} finally {
 			await this.updateConnection()
 		}
@@ -555,13 +555,13 @@ export class HomeComponent implements AfterContentInit {
 			}
 		}
 
-		this.currentPage = page
+		this.page = page
 
 		event.stopImmediatePropagation()
 	}
 
 	protected scrollTo(event: Event, page: number) {
-		this.currentPage = page
+		this.page = page
 		this.scrollToPage(page)
 		event.stopImmediatePropagation()
 	}

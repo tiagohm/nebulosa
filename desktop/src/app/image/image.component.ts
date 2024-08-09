@@ -9,15 +9,16 @@ import { DeviceListMenuComponent } from '../../shared/components/device-list-men
 import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
 import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
+import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { EquatorialCoordinateJ2000 } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
 import {
 	AstronomicalObjectDialog,
+	DEFAULT_FOV,
 	DEFAULT_IMAGE_ANNOTATION_DIALOG,
 	DEFAULT_IMAGE_CALIBRATION,
 	DEFAULT_IMAGE_DATA,
@@ -391,7 +392,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		private readonly electronService: ElectronService,
 		private readonly browserWindowService: BrowserWindowService,
 		private readonly preferenceService: PreferenceService,
-		private readonly primeService: PrimeService,
+		private readonly angularService: AngularService,
 		ngZone: NgZone,
 	) {
 		app.title = 'Image'
@@ -441,7 +442,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			label: 'Settings',
 			command: () => {
 				this.settings.showDialog = true
-			}
+			},
 		})
 
 		electronService.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
@@ -1210,8 +1211,23 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	editFOV(fov: FOV) {
-		this.fov.selected = fov
+	private removeSelectedFOV() {
+		this.fov.selected = structuredClone(DEFAULT_FOV)
+	}
+
+	protected selectFOV(fov: FOV) {
+		if (this.fov.selected === fov) {
+			this.removeSelectedFOV()
+		} else {
+			this.fov.selected = fov
+		}
+	}
+
+	protected saveFOV(compute: boolean = true) {
+		// Edited.
+		if (this.fov.fovs.includes(this.fov.selected) && (!compute || this.computeFOV(this.fov.selected))) {
+			this.savePreference()
+		}
 	}
 
 	private computeFOV(fov: FOV) {
@@ -1252,12 +1268,16 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	deleteFOV(fov: FOV) {
+	protected deleteFOV(fov: FOV) {
 		const index = this.fov.fovs.indexOf(fov)
 
 		if (index >= 0) {
 			this.fov.fovs.splice(index, 1)
 			this.savePreference()
+
+			if (this.fov.selected === this.fov.fovs[index]) {
+				this.removeSelectedFOV()
+			}
 		}
 	}
 
@@ -1285,7 +1305,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private async executeCamera(action: (camera: Camera) => void | Promise<void>, showConfirmation: boolean = true) {
-		if (showConfirmation && (await this.primeService.confirm('Are you sure that you want to proceed?'))) {
+		if (showConfirmation && (await this.angularService.confirm('Are you sure that you want to proceed?'))) {
 			return false
 		}
 
@@ -1307,7 +1327,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private async executeMount(action: (mount: Mount) => void | Promise<void>, showConfirmation: boolean = true) {
-		if (showConfirmation && (await this.primeService.confirm('Are you sure that you want to proceed?'))) {
+		if (showConfirmation && (await this.angularService.confirm('Are you sure that you want to proceed?'))) {
 			return false
 		}
 

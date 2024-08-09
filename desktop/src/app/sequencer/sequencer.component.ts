@@ -4,11 +4,11 @@ import { dirname } from 'path'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
 import { JsonFile } from '../../shared/types/app.types'
 import { Camera, cameraCaptureNamingFormatWithDefault, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
@@ -151,7 +151,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		private readonly browserWindowService: BrowserWindowService,
 		private readonly electronService: ElectronService,
 		private readonly preferenceService: PreferenceService,
-		private readonly primeService: PrimeService,
+		private readonly angularService: AngularService,
 		private readonly ticker: Ticker,
 		ngZone: NgZone,
 	) {
@@ -164,7 +164,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 		app.beforeClose = async () => {
 			if (!this.saveMenuItem.disabled) {
-				return !(await primeService.confirm('Are you sure you want to close the window? Please make sure to save before exiting to avoid losing any important changes.'))
+				return !(await angularService.confirm('Are you sure you want to close the window? Please make sure to save before exiting to avoid losing any important changes.'))
 			} else {
 				return true
 			}
@@ -267,8 +267,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		if (this.plan.rotator?.id) await this.api.rotatorListen(this.plan.rotator)
 	}
 
-	private enableOrDisableTopbarMenu(enable: boolean) {
-		this.app.topMenu.forEach((e) => (e.disabled = !enable))
+	private enableOrDisableTopbarMenu(enabled: boolean) {
+		this.createNewMenuItem.disabled = !enabled
+		this.loadMenuItem.disabled = !enabled
 	}
 
 	protected add() {
@@ -301,7 +302,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 	private loadPlanFromJson(file: JsonFile<SequencerPlan>) {
 		if (!this.loadPlan(file.json)) {
-			this.primeService.message(`No sequence found`, 'warn')
+			this.angularService.message('No sequence found', 'warn')
 			this.add()
 		}
 
@@ -322,7 +323,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 				return
 			}
 
-			this.primeService.message(`Failed to load the file`, 'error')
+			this.angularService.message('Failed to load the file', 'error')
 
 			this.preference.loadPath = undefined
 			this.savePreference()

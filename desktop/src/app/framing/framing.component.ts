@@ -1,10 +1,10 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { PrimeService } from '../../shared/services/prime.service'
 import { DEFAULT_FRAMING_PREFERENCE, HipsSurvey, LoadFraming } from '../../shared/types/framing.types'
 import { AppComponent } from '../app.component'
 
@@ -15,7 +15,6 @@ import { AppComponent } from '../app.component'
 export class FramingComponent implements AfterViewInit, OnDestroy {
 	protected readonly preference = structuredClone(DEFAULT_FRAMING_PREFERENCE)
 	protected hipsSurveys: HipsSurvey[] = []
-
 	protected loading = false
 
 	private frameId = ''
@@ -27,7 +26,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 		private readonly browserWindowService: BrowserWindowService,
 		private readonly electronService: ElectronService,
 		private readonly preferenceService: PreferenceService,
-		private readonly primeService: PrimeService,
+		private readonly angularService: AngularService,
 		ngZone: NgZone,
 	) {
 		app.title = 'Framing'
@@ -87,7 +86,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 		} catch (e) {
 			console.error(e)
 
-			this.primeService.message('Failed to retrieve the image', 'error')
+			this.angularService.message('Failed to retrieve the image', 'error')
 		} finally {
 			this.loading = false
 		}

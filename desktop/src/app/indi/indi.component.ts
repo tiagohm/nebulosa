@@ -96,7 +96,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
-	async deviceChanged(device: Device) {
+	protected async deviceChanged(device: Device) {
 		if (this.device) {
 			await this.api.indiUnlisten(this.device)
 		}
@@ -108,7 +108,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		this.messages = await this.api.indiLog(device)
 	}
 
-	changeGroup(group: string) {
+	protected changeGroup(group: string) {
 		this.showLog = false
 		this.group = group
 	}

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
-import { PrimeService } from '../../services/prime.service'
+import { AngularService } from '../../services/angular.service'
 import { isGuideHead } from '../../types/camera.types'
 import { Device } from '../../types/device.types'
 import { deviceComparator } from '../../utils/comparators'
@@ -47,7 +47,7 @@ export class DeviceListMenuComponent {
 	@ViewChild('menu')
 	private readonly menu!: DialogMenuComponent
 
-	constructor(private readonly prime: PrimeService) {}
+	constructor(private readonly angularService: AngularService) {}
 
 	show<T extends Device>(devices: T[], selected?: NoInfer<T>, header?: string) {
 		const model: SlideMenuItem[] = []
@@ -57,7 +57,7 @@ export class DeviceListMenuComponent {
 		return new Promise<Undefinable<T | 'NONE'>>((resolve) => {
 			if (devices.length <= 0) {
 				resolve(undefined)
-				this.prime.message('Please connect your equipment first!', 'warn')
+				this.angularService.message('Please connect your equipment first!', 'warn')
 				return
 			}
 

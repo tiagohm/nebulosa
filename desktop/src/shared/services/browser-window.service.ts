@@ -14,16 +14,16 @@ import { ElectronService } from './electron.service'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
-	constructor(private readonly electron: ElectronService) {}
+	constructor(private readonly electronService: ElectronService) {}
 
 	openWindow(open: OpenWindow): Promise<boolean> {
 		open.preference.modal = false
-		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
+		return this.electronService.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}
 
 	openModal<R = unknown>(open: OpenWindow): Promise<Undefinable<R>> {
 		open.preference.modal = true
-		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
+		return this.electronService.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}
 
 	openMount(data: Mount, preference: WindowPreference = {}) {

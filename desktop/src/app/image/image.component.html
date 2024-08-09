@@ -1054,7 +1054,9 @@
 		<div class="col-2 align-items-center justify-content-center gap-2">
 			<p-colorPicker
 				[(ngModel)]="fov.selected.color"
+				(ngModelChange)="saveFOV(false)"
 				appendTo="body"
+				[autofocus]="false"
 				[style]="{ width: '23px', height: '23px' }" />
 		</div>
 		<div class="col-6 align-items-center justify-content-start gap-2">
@@ -1069,6 +1071,7 @@
 					styleClass="p-inputtext-sm border-0"
 					[showButtons]="true"
 					[(ngModel)]="fov.selected.focalLength"
+					(ngModelChange)="saveFOV()"
 					spinnableNumber />
 				<label>Focal Length (mm)</label>
 			</p-floatLabel>
@@ -1079,6 +1082,7 @@
 					styleClass="p-inputtext-sm border-0"
 					[showButtons]="true"
 					[(ngModel)]="fov.selected.aperture"
+					(ngModelChange)="saveFOV()"
 					spinnableNumber />
 				<label>Aperture (mm)</label>
 			</p-floatLabel>
@@ -1101,6 +1105,7 @@
 					[min]="1"
 					[max]="9999"
 					[(ngModel)]="fov.selected.cameraSize.width"
+					(ngModelChange)="saveFOV()"
 					spinnableNumber />
 				<label>Width</label>
 			</p-floatLabel>
@@ -1113,6 +1118,7 @@
 					[min]="1"
 					[max]="9999"
 					[(ngModel)]="fov.selected.cameraSize.height"
+					(ngModelChange)="saveFOV()"
 					spinnableNumber />
 				<label>Height</label>
 			</p-floatLabel>
@@ -1128,6 +1134,7 @@
 					[minFractionDigits]="0"
 					[maxFractionDigits]="2"
 					[(ngModel)]="fov.selected.pixelSize.width"
+					(ngModelChange)="saveFOV()"
 					locale="en"
 					spinnableNumber />
 				<label>Width</label>
@@ -1144,12 +1151,13 @@
 					[minFractionDigits]="0"
 					[maxFractionDigits]="2"
 					[(ngModel)]="fov.selected.pixelSize.height"
+					(ngModelChange)="saveFOV()"
 					locale="en"
 					spinnableNumber />
 				<label>Height</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-5">
+		<div class="col-4">
 			<p-floatLabel>
 				<p-inputNumber
 					styleClass="p-inputtext-sm border-0"
@@ -1160,6 +1168,7 @@
 					[minFractionDigits]="0"
 					[maxFractionDigits]="2"
 					[(ngModel)]="fov.selected.barlowReducer"
+					(ngModelChange)="saveFOV()"
 					locale="en"
 					spinnableNumber />
 				<label>Barlow/Reducer</label>
@@ -1173,6 +1182,7 @@
 					[min]="1"
 					[max]="5"
 					[(ngModel)]="fov.selected.bin"
+					(ngModelChange)="saveFOV()"
 					spinnableNumber />
 				<label>Bin</label>
 			</p-floatLabel>
@@ -1188,79 +1198,81 @@
 					[minFractionDigits]="0"
 					[maxFractionDigits]="2"
 					[(ngModel)]="fov.rotation"
+					(ngModelChange)="saveFOV(false)"
 					locale="en"
 					spinnableNumber />
 				<label>Rotation (°)</label>
 			</p-floatLabel>
 		</div> -->
-		<div class="col-12 flex align-items-center justify-content-center gap-2">
+		<div class="col-1 flex align-items-center justify-content-center gap-2">
 			<p-button
 				[disabled]="!canAddFOV"
 				[text]="true"
-				label="Create New"
 				icon="mdi mdi-plus"
 				severity="success"
 				size="small"
+				pTooltip="Add"
+				tooltipPosition="bottom"
 				(onClick)="addFOV()" />
 		</div>
 		<div
-			class="col-12 p-0 flex-column overflow-auto"
+			class="col-12 p-0 flex-column overflow-auto mt-2 gap-1"
 			*ngIf="fov.fovs.length"
-			style="max-height: 123px">
+			style="max-height: 112px">
 			@for (item of fov.fovs; track $index) {
 				<div
-					class="flex align-items-center gap-2 border-left-3 px-2"
-					[style.border-color]="item.color">
+					class="flex align-items-center gap-2 border-left-3 p-2 border-round cursor-pointer"
+					[class.bg-blue-900]="fov.selected === item"
+					[style.border-color]="item.color"
+					(click)="selectFOV(item)">
 					<div class="flex align-items-center justify-content-center">
 						<p-checkbox
 							[binary]="true"
-							[(ngModel)]="item.enabled" />
+							[(ngModel)]="item.enabled"
+							(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
 					</div>
-					<div class="flex align-items-center flex-wrap gap-1px row-gap-0">
+					<div class="flex align-items-center flex-wrap gap-1">
 						<p-tag
 							severity="info"
-							value="focal length: {{ item.focalLength }} mm" />
+							value="FL: {{ item.focalLength }} mm" />
 						<p-tag
 							severity="info"
-							value="aperture: {{ item.aperture }} mm" />
+							value="AP: {{ item.aperture }} mm" />
 						<p-tag
 							severity="info"
-							value="resolution: {{ item.cameraSize.width }}x{{ item.cameraSize.height }}" />
+							value="RES: {{ item.cameraSize.width }}x{{ item.cameraSize.height }}" />
 						<p-tag
 							severity="info"
-							value="pixel size: {{ item.pixelSize.width }}x{{ item.pixelSize.height }}" />
+							value="PS: {{ item.pixelSize.width }}x{{ item.pixelSize.height }} µm" />
 						<p-tag
 							severity="info"
-							value="multiplier: {{ item.barlowReducer }}" />
+							value="MULT: {{ item.barlowReducer.toFixed(2) }}x" />
 						<p-tag
 							severity="info"
-							value="bin: {{ item.bin }}" />
+							value="BIN: {{ item.bin }}" />
 						<p-tag
 							severity="info"
-							value="angle: {{ item.rotation }}°" />
+							value="ANGLE: {{ item.rotation }}°" />
 						@if (item.computed) {
 							<p-tag
 								severity="success"
-								value="focal ratio: {{ item.computed.focalRatio.toFixed(1) }}" />
+								value="F/{{ item.computed.focalRatio.toFixed(1) }}" />
 							<p-tag
 								severity="success"
-								value="scale: {{ item.computed.cameraResolution.width.toFixed(2) }}&quot;x{{ item.computed.cameraResolution.height.toFixed(2) }}&quot;" />
+								value="SCALE: {{ item.computed.cameraResolution.width.toFixed(2) }}&quot;x{{ item.computed.cameraResolution.height.toFixed(2) }}&quot;" />
 							<p-tag
 								severity="success"
-								value="fov: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
+								value="FOV: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
 						}
 					</div>
 					<div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
 						<p-button
 							[text]="true"
-							severity="info"
-							icon="mdi mdi-pencil"
-							(onClick)="editFOV(item)" />
-						<p-button
-							[text]="true"
 							severity="danger"
 							icon="mdi mdi-delete"
-							(onClick)="deleteFOV(item)" />
+							pTooltip="Remove"
+							tooltipPosition="bottom"
+							(onClick)="deleteFOV(item); $event.stopImmediatePropagation()" />
 					</div>
 				</div>
 			}

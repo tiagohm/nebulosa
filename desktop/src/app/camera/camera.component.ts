@@ -350,7 +350,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as unknown
 
 			if (this.app.modal) {
-				await this.loadCameraStartCaptureOnDialogMode(data as CameraDialogInput)
+				await this.loadCameraStartCaptureForDialogMode(data as CameraDialogInput)
 			} else {
 				await this.cameraChanged(data as Camera)
 			}
@@ -379,7 +379,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 		}
 	}
 
-	private async loadCameraStartCaptureOnDialogMode(data?: CameraDialogInput) {
+	private async loadCameraStartCaptureForDialogMode(data?: CameraDialogInput) {
 		if (data) {
 			this.mode = data.mode
 			await this.cameraChanged(data.camera)
@@ -756,8 +756,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 		}
 	}
 
-	static async showAsDialog(window: BrowserWindowService, mode: CameraMode, camera: Camera, request: CameraStartCapture) {
-		const result = await window.openCameraDialog({ mode, camera, request })
+	static async showAsDialog(service: BrowserWindowService, mode: CameraMode, camera: Camera, request: CameraStartCapture) {
+		const result = await service.openCameraDialog({ mode, camera, request })
 
 		if (result) {
 			Object.assign(request, result)
