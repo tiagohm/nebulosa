@@ -1,14 +1,13 @@
+import PixInsightScriptTest.Companion.RUNNER
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import nebulosa.math.*
 import nebulosa.pixinsight.platesolver.PixInsightPlateSolver
-import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.test.AbstractTest
 import nebulosa.test.NonGitHubOnly
 import nebulosa.test.download
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 import kotlin.math.roundToInt
 
 @NonGitHubOnly
@@ -32,10 +31,5 @@ class PixInsightPlateSolverTest : AbstractTest() {
         solution.height.toArcmin shouldBe (59.386 plusOrMinus 1e-3)
         solution.widthInPixels.roundToInt() shouldBeExactly 800
         solution.heightInPixels.roundToInt() shouldBeExactly 526
-    }
-
-    companion object {
-
-        @JvmStatic val RUNNER = PixInsightScriptRunner(Path.of("PixInsight"))
     }
 }

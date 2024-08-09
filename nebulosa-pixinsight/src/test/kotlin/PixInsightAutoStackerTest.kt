@@ -1,13 +1,12 @@
+import PixInsightScriptTest.Companion.RUNNER
 import PixInsightScriptTest.Companion.openAsImage
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import nebulosa.image.algorithms.transformation.AutoScreenTransformFunction
-import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.pixinsight.stacker.PixInsightAutoStacker
 import nebulosa.test.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 
 @NonGitHubOnly
 class PixInsightAutoStackerTest : AbstractTest() {
@@ -37,10 +36,5 @@ class PixInsightAutoStackerTest : AbstractTest() {
 
         outputPath.openAsImage().transform(AutoScreenTransformFunction)
             .save("pi-calibrated-auto-stacked").second shouldBe ""
-    }
-
-    companion object {
-
-        @JvmStatic private val RUNNER = PixInsightScriptRunner(Path.of("PixInsight"))
     }
 }

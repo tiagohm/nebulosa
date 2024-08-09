@@ -188,7 +188,7 @@ class PixInsightScriptTest : AbstractTest() {
 
     companion object {
 
-        @JvmStatic private val RUNNER = PixInsightScriptRunner(Path.of("PixInsight"))
+        @JvmStatic val RUNNER = PixInsightScriptRunner(Path.of("PixInsight"))
 
         @JvmStatic
         internal fun Path.openAsImage() = if (isFits()) fits().asImage()

@@ -9,7 +9,6 @@ import nebulosa.pixinsight.script.PixInsightStartup
 import nebulosa.pixinsight.stacker.PixInsightStacker
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.io.path.copyTo
 import kotlin.io.path.deleteIfExists
 
 data class PixInsightLiveStacker(
@@ -34,7 +33,7 @@ data class PixInsightLiveStacker(
     @Volatile private var stackCount = 0
 
     private val stacker = PixInsightStacker(runner, workingDirectory, slot)
-    private val referencePath = Path.of("$workingDirectory", "reference.fits")
+    private val referencePath = Path.of("$workingDirectory", "reference.xisf")
     private val calibratedPath = Path.of("$workingDirectory", "calibrated.xisf")
     private val alignedPath = Path.of("$workingDirectory", "aligned.xisf")
     private val stackedPath = Path.of("$workingDirectory", "stacked.fits")
@@ -46,7 +45,7 @@ data class PixInsightLiveStacker(
                 try {
                     check(PixInsightStartup(slot).use { it.runSync(runner).success })
                 } catch (e: Throwable) {
-                    throw IllegalStateException("unable to start PixInsight")
+                    throw IllegalStateException("unable to start PixInsight", e)
                 }
             }
 
@@ -81,8 +80,8 @@ data class PixInsightLiveStacker(
                     stackCount++
                 }
             } else {
-                targetPath.copyTo(referencePath, true)
-                targetPath.copyTo(stackedPath, true)
+                stacker.saveAs(targetPath, referencePath)
+                stacker.saveAs(targetPath, stackedPath)
                 LOG.info("live stacking started. target={}, reference={}, stacked={}", targetPath, referencePath, stackedPath)
                 stackCount = 1
             }
