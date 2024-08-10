@@ -710,7 +710,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 		if (data.path) {
 			this.clearOverlay()
-			await this.loadImage(true)
+			await this.loadImage(!!this.imageInfo)
 		}
 	}
 
