@@ -3,6 +3,7 @@ package nebulosa.api.beans.converters.time
 import nebulosa.api.beans.converters.annotation
 import nebulosa.api.beans.converters.hasAnnotation
 import nebulosa.api.beans.converters.parameter
+import nebulosa.time.SystemClock
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.support.WebDataBinderFactory
@@ -36,17 +37,17 @@ class DateAndTimeParamMethodArgumentResolver : HandlerMethodArgumentResolver {
 
         val date = dateValue
             ?.let { LocalDate.parse(it, DateTimeFormatter.ofPattern(dateAndTimeParam.datePattern)) }
-            ?: if (dateAndTimeParam.nullable) null else LocalDate.now()
+            ?: if (dateAndTimeParam.nullable) null else LocalDate.now(SystemClock)
 
         if (type === LocalDate::class.java) return date
 
         val time = timeValue
             ?.let { LocalTime.parse(it, DateTimeFormatter.ofPattern(dateAndTimeParam.timePattern)) }
-            ?: if (dateAndTimeParam.nullable) null else LocalTime.now()
+            ?: if (dateAndTimeParam.nullable) null else LocalTime.now(SystemClock)
 
         if (type === LocalTime::class.java) return time
 
-        return LocalDateTime.of(date ?: LocalDate.now(), time ?: LocalTime.now())
+        return LocalDateTime.of(date ?: LocalDate.now(SystemClock), time ?: LocalTime.now(SystemClock))
             .let { if (dateAndTimeParam.noSeconds) it.withSecond(0).withNano(0) else it }
     }
 }

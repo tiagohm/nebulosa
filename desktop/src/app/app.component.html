@@ -7,15 +7,12 @@
 		<div>{{ title }}</div>
 		<div class="text-xs text-gray-200 font-normal">{{ subTitle }}</div>
 	</span>
-
 	<neb-menu-bar
 		*ngIf="topMenu.length"
 		[model]="topMenu" />
-
 	<span
 		class="separator flex justify-content-center"
 		*ngIf="topMenu.length"></span>
-
 	<p-button
 		*ngIf="pinned && !modal"
 		[text]="true"

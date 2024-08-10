@@ -1,21 +1,19 @@
-import io.kotest.core.annotation.EnabledIf
-import io.kotest.core.spec.style.StringSpec
 import nebulosa.alpaca.discovery.AlpacaDiscoveryProtocol
 import nebulosa.alpaca.discovery.DiscoveryListener
-import nebulosa.test.NonGitHubOnlyCondition
+import nebulosa.test.NonGitHubOnly
+import org.junit.jupiter.api.Test
 import java.net.InetAddress
 import kotlin.concurrent.thread
 
-@EnabledIf(NonGitHubOnlyCondition::class)
-class AlpacaDiscoveryProtocolTest : StringSpec(), DiscoveryListener {
+@NonGitHubOnly
+class AlpacaDiscoveryProtocolTest : DiscoveryListener {
 
-    init {
-        "discovery" {
-            val discoverer = AlpacaDiscoveryProtocol()
-            discoverer.registerDiscoveryListener(this@AlpacaDiscoveryProtocolTest)
-            thread { Thread.sleep(10000); discoverer.close() }
-            discoverer.run()
-        }
+    @Test
+    fun discovery() {
+        val discoverer = AlpacaDiscoveryProtocol()
+        discoverer.registerDiscoveryListener(this@AlpacaDiscoveryProtocolTest)
+        thread { Thread.sleep(10000); discoverer.close() }
+        discoverer.run()
     }
 
     override fun onServerFound(address: InetAddress, port: Int) {

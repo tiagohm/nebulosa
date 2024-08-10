@@ -33,7 +33,7 @@
 	<div class="grid properties mt-2">
 		<div class="col-12 flex-column">
 			<div *ngFor="let property of properties">
-				<app-indi-property
+				<neb-indi-property
 					*ngIf="!showLog && property.group === group"
 					[property]="property"
 					(onSend)="send($event)" />

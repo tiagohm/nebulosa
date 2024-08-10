@@ -11,24 +11,24 @@ import org.springframework.stereotype.Component
 class CalibrationFrameRepository(@Qualifier("calibrationFrameBox") override val box: Box<CalibrationFrameEntity>) :
     BoxRepository<CalibrationFrameEntity>() {
 
-    fun groups() = box.all.map { it.name }.distinct()
+    fun groups() = box.all.map { it.group }.distinct()
 
-    fun findAll(name: String): List<CalibrationFrameEntity> {
-        return box.query(CalibrationFrameEntity_.name equal name)
+    fun findAll(group: String): List<CalibrationFrameEntity> {
+        return box.query(CalibrationFrameEntity_.group equal group)
             .build().use { it.find() }
     }
 
     @Synchronized
-    fun delete(name: String, path: String) {
-        val condition = and(CalibrationFrameEntity_.name equal name, CalibrationFrameEntity_.path equal path)
+    fun delete(group: String, path: String) {
+        val condition = and(CalibrationFrameEntity_.group equal group, CalibrationFrameEntity_.path equal path)
         return box.query(condition).build().use { it.remove() }
     }
 
-    fun darkFrames(name: String, width: Int, height: Int, bin: Int, exposureTime: Long, gain: Double): List<CalibrationFrameEntity> {
+    fun darkFrames(group: String, width: Int, height: Int, bin: Int, exposureTime: Long, gain: Double): List<CalibrationFrameEntity> {
         val condition = and(
             CalibrationFrameEntity_.type equal FrameType.DARK.ordinal,
             CalibrationFrameEntity_.enabled.isTrue,
-            CalibrationFrameEntity_.name equal name,
+            CalibrationFrameEntity_.group equal group,
             CalibrationFrameEntity_.width equal width,
             CalibrationFrameEntity_.height equal height,
             CalibrationFrameEntity_.binX equal bin,
@@ -40,11 +40,11 @@ class CalibrationFrameRepository(@Qualifier("calibrationFrameBox") override val 
         return box.query(condition).build().use { it.find() }
     }
 
-    fun biasFrames(name: String, width: Int, height: Int, bin: Int, gain: Double): List<CalibrationFrameEntity> {
+    fun biasFrames(group: String, width: Int, height: Int, bin: Int, gain: Double): List<CalibrationFrameEntity> {
         val condition = and(
             CalibrationFrameEntity_.type equal FrameType.BIAS.ordinal,
             CalibrationFrameEntity_.enabled.isTrue,
-            CalibrationFrameEntity_.name equal name,
+            CalibrationFrameEntity_.group equal group,
             CalibrationFrameEntity_.width equal width,
             CalibrationFrameEntity_.height equal height,
             CalibrationFrameEntity_.binX equal bin,
@@ -55,11 +55,11 @@ class CalibrationFrameRepository(@Qualifier("calibrationFrameBox") override val 
         return box.query(condition).build().use { it.find() }
     }
 
-    fun flatFrames(name: String, filter: String?, width: Int, height: Int, bin: Int): List<CalibrationFrameEntity> {
+    fun flatFrames(group: String, filter: String?, width: Int, height: Int, bin: Int): List<CalibrationFrameEntity> {
         val condition = and(
             CalibrationFrameEntity_.type equal FrameType.FLAT.ordinal,
             CalibrationFrameEntity_.enabled.isTrue,
-            CalibrationFrameEntity_.name equal name,
+            CalibrationFrameEntity_.group equal group,
             CalibrationFrameEntity_.width equal width,
             CalibrationFrameEntity_.height equal height,
             CalibrationFrameEntity_.binX equal bin,

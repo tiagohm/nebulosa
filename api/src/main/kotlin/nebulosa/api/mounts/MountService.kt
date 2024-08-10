@@ -20,6 +20,7 @@ import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.stellarium.protocol.StellariumProtocolServer
 import nebulosa.time.CurrentTime
+import nebulosa.time.SystemClock
 import nebulosa.wcs.WCS
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -92,7 +93,7 @@ class MountService(
      * @return true if mount can slew to [mountPosition] coordinates.
      */
     private fun verifyMountWillPointToSun(idempotencyKey: String, location: GeographicPosition, mountPosition: ICRF): Boolean {
-        val sunPosition = skyAtlasService.positionOfSun(location, LocalDateTime.now(), true)
+        val sunPosition = skyAtlasService.positionOfSun(location, LocalDateTime.now(SystemClock), true)
             .let { ICRF.equatorial(it.rightAscensionJ2000, it.declinationJ2000) }
 
         return if (sunPosition.separationFrom(mountPosition).toDegrees <= 1.0) {
@@ -262,7 +263,7 @@ class MountService(
         if (meridianAt) {
             computeTimeLeftToMeridianFlip(rightAscension, computeLST(mount).also { computedLocation.lst = it })
                 .also { computedLocation.timeLeftToMeridianFlip = it }
-                .also { computedLocation.meridianAt = LocalDateTime.now().plusSeconds((it.toHours * 3600.0).toLong()) }
+                .also { computedLocation.meridianAt = LocalDateTime.now(SystemClock).plusSeconds((it.toHours * 3600.0).toLong()) }
         }
 
         computedLocation.pierSide = PierSide.expectedPierSide(computedLocation.rightAscension, computedLocation.declination, computeLST(mount))
@@ -288,19 +289,19 @@ class MountService(
         }
     }
 
-    fun remoteControlStart(mount: Mount, type: MountRemoteControlType, host: String, port: Int) {
-        check(remoteControls.none { it.mount === mount && it.type == type }) { "$type ${mount.name} Remote Control is already running" }
+    fun remoteControlStart(mount: Mount, protocol: MountRemoteControlProtocol, host: String, port: Int) {
+        check(remoteControls.none { it.mount === mount && it.protocol == protocol }) { "$protocol ${mount.name} Remote Control is already running" }
 
-        val server = if (type == MountRemoteControlType.STELLARIUM) StellariumProtocolServer(host, port)
+        val server = if (protocol == MountRemoteControlProtocol.STELLARIUM) StellariumProtocolServer(host, port)
         else LX200ProtocolServer(host, port)
 
         server.run()
 
-        remoteControls.add(MountRemoteControl(type, server, mount))
+        remoteControls.add(MountRemoteControl(protocol, server, mount))
     }
 
-    fun remoteControlStop(mount: Mount, type: MountRemoteControlType) {
-        val remoteControl = remoteControls.find { it.mount === mount && it.type == type } ?: return
+    fun remoteControlStop(mount: Mount, type: MountRemoteControlProtocol) {
+        val remoteControl = remoteControls.find { it.mount === mount && it.protocol == type } ?: return
         remoteControl.use(remoteControls::remove)
     }
 

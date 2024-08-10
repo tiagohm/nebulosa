@@ -7,22 +7,22 @@ import * as L from 'leaflet'
 	styleUrls: ['./map.component.scss'],
 })
 export class MapComponent implements AfterViewInit, OnChanges {
-	@ViewChild('map')
-	private readonly mapRef!: ElementRef<HTMLDivElement>
-
 	@Input()
-	latitude = 0
+	protected latitude = 0
 
 	@Output()
 	readonly latitudeChange = new EventEmitter<number>()
 
 	@Input()
-	longitude = 0
+	protected longitude = 0
 
 	@Output()
 	readonly longitudeChange = new EventEmitter<number>()
 
-	private map!: L.Map
+	@ViewChild('map')
+	private readonly mapRef!: ElementRef<HTMLDivElement>
+
+	private map?: L.Map
 	private marker?: L.Marker
 
 	private readonly markerIcon = L.icon({
@@ -59,17 +59,21 @@ export class MapComponent implements AfterViewInit, OnChanges {
 	}
 
 	ngOnChanges() {
-		const coordinate: L.LatLngLiteral = { lat: this.latitude, lng: this.longitude }
-		this.map.setView(coordinate)
-		this.updateMarker(coordinate)
+		if (this.map) {
+			const coordinate: L.LatLngLiteral = { lat: this.latitude, lng: this.longitude }
+			this.map.setView(coordinate)
+			this.updateMarker(coordinate)
+		}
 	}
 
 	refresh() {
-		this.map.invalidateSize()
+		this.map?.invalidateSize()
 	}
 
 	private updateMarker(coordinate: L.LatLngExpression) {
-		this.marker?.remove()
-		this.marker = new L.Marker(coordinate, { icon: this.markerIcon }).addTo(this.map)
+		if (this.map) {
+			this.marker?.remove()
+			this.marker = new L.Marker(coordinate, { icon: this.markerIcon }).addTo(this.map)
+		}
 	}
 }

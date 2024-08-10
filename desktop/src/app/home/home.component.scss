@@ -1,27 +1,22 @@
-:host {
-	p-splitbutton ::ng-deep {
-		.p-splitbutton-menubutton {
-			width: 0rem;
-			padding: 4px;
-		}
-	}
+neb-home {
+	.buttons {
+		p-button {
+			display: contents;
 
-	.buttons p-button ::ng-deep {
-		display: contents;
+			> button {
+				min-height: 56px;
+				max-height: 56px;
+				display: flex;
 
-		> button {
-			min-height: 56px;
-			max-height: 56px;
-			display: flex;
-
-			img {
-				height: 32px;
+				img {
+					height: 32px;
+				}
 			}
-		}
 
-		&.p-disabled {
-			img {
-				filter: grayscale(1);
+			&.p-disabled {
+				img {
+					filter: grayscale(1);
+				}
 			}
 		}
 	}

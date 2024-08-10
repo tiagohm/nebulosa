@@ -22,7 +22,7 @@
 						[binary]="true"
 						[disabled]="item.disabled ?? false"
 						[(ngModel)]="item.checked"
-						(onChange)="item.check?.($event)" />
+						(onChange)="item.check?.($event); $event.originalEvent?.stopImmediatePropagation()" />
 				</div>
 			} @else if (item.label && item.splitButtonMenu?.length) {
 				<p-splitButton
@@ -39,7 +39,10 @@
 			} @else {
 				<p-badge
 					*ngIf="item.badge"
-					[severity]="item.badgeSeverity ?? 'danger'" />
+					[severity]="item.badgeSeverity ?? 'danger'"
+					[value]="item.badge"
+					styleClass="absolute flex justify-content-center align-items-center top-0"
+					[style]="{ width: '14px', minWidth: '14px', height: '14px', minHeight: '14px', right: '-2px' }" />
 				<p-button
 					[text]="true"
 					[rounded]="true"

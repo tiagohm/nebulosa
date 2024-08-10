@@ -42,6 +42,7 @@ function alignment() {
         const outputDirectory = input.outputDirectory
         const statusPath = input.statusPath
 
+        console.writeln("alignment started")
         console.writeln("referencePath=" + referencePath)
         console.writeln("targetPath=" + targetPath)
         console.writeln("outputDirectory=" + outputDirectory)
@@ -103,7 +104,7 @@ function alignment() {
         P.pixelInterpolation = StarAlignment.prototype.Auto
         P.clampingThreshold = 0.30
         P.outputDirectory = outputDirectory
-        P.outputExtension = ".fits"
+        P.outputExtension = ".xisf"
         P.outputPrefix = ""
         P.outputPostfix = "_a"
         P.maskPostfix = "_m"
@@ -146,7 +147,7 @@ function alignment() {
     } catch (e) {
         data.success = false
         data.errorMessage = e.message
-        console.writeln(data.errorMessage)
+        console.criticalln(data.errorMessage)
     } finally {
         File.writeTextFile(statusPath, "@" + JSON.stringify(data) + "#")
     }

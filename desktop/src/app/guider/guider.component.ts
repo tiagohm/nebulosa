@@ -1,71 +1,45 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
-import { Title } from '@angular/platform-browser'
-import { ChartData, ChartOptions } from 'chart.js'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { Chart, ChartData, ChartOptions } from 'chart.js'
+import zoomPlugin from 'chartjs-plugin-zoom'
 import { UIChart } from 'primeng/chart'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Pingable, Pinger } from '../../shared/services/pinger.service'
-import { GuideDirection, GuideOutput, GuideState, GuideStep, Guider, GuiderHistoryStep, GuiderPlotMode, GuiderYAxisUnit } from '../../shared/types/guider.types'
-
-export interface GuiderPreference {
-	settleAmount?: number
-	settleTime?: number
-	settleTimeout?: number
-}
+import { PreferenceService } from '../../shared/services/preference.service'
+import { Tickable, Ticker } from '../../shared/services/ticker.service'
+import { DEFAULT_GUIDER_CHART_INFO, DEFAULT_GUIDER_PHD2, DEFAULT_GUIDER_PREFERENCE, DEFAULT_GUIDER_PULSE, GuideDirection, GuideOutput, Guider, GuiderHistoryStep } from '../../shared/types/guider.types'
+import { AppComponent } from '../app.component'
 
 @Component({
-	selector: 'app-guider',
+	selector: 'neb-guider',
 	templateUrl: './guider.component.html',
-	styleUrls: ['./guider.component.scss'],
 })
-export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
-	guideOutputs: GuideOutput[] = []
-	guideOutput?: GuideOutput
-	guideOutputConnected = false
-	pulseGuiding = false
+export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickable {
+	protected guideOutputs: GuideOutput[] = []
+	protected guideOutput?: GuideOutput
 
-	guideNorthDuration = 1000
-	guideSouthDuration = 1000
-	guideWestDuration = 1000
-	guideEastDuration = 1000
+	protected readonly preference = structuredClone(DEFAULT_GUIDER_PREFERENCE)
+	protected readonly guider = structuredClone(DEFAULT_GUIDER_PHD2)
+	protected readonly pulse = structuredClone(DEFAULT_GUIDER_PULSE)
+	protected readonly chartInfo = structuredClone(DEFAULT_GUIDER_CHART_INFO)
 
-	connected = false
-	host = 'localhost'
-	port = 4400
-	guideState: GuideState = 'STOPPED'
-	guideStep?: GuideStep
-	message = ''
-
-	settleAmount = 1.5
-	settleTime = 10
-	settleTimeout = 30
-	readonly phdGuideHistory: GuiderHistoryStep[] = []
-	private phdDurationScale = 1.0
-
-	pixelScale = 1.0
-	rmsRA = 0.0
-	rmsDEC = 0.0
-	rmsTotal = 0.0
-
-	plotMode: GuiderPlotMode = 'RA/DEC'
-	yAxisUnit: GuiderYAxisUnit = 'ARCSEC'
+	private readonly guideHistory: GuiderHistoryStep[] = []
 
 	@ViewChild('chart')
 	private readonly chart!: UIChart
 
 	get stopped() {
-		return this.guideState === 'STOPPED'
+		return this.guider.state === 'STOPPED'
 	}
 
 	get looping() {
-		return this.guideState === 'LOOPING'
+		return this.guider.state === 'LOOPING'
 	}
 
 	get guiding() {
-		return this.guideState === 'GUIDING'
+		return this.guider.state === 'GUIDING'
 	}
 
-	readonly chartData: ChartData = {
+	protected readonly chartData: ChartData = {
 		labels: Array.from({ length: 100 }, (_, i) => `${i}`),
 		datasets: [
 			// RA.
@@ -103,7 +77,7 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 		],
 	}
 
-	readonly chartOptions: ChartOptions = {
+	protected readonly chartOptions: ChartOptions = {
 		responsive: true,
 		plugins: {
 			legend: {
@@ -123,10 +97,10 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 						// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 						const barType = context.dataset.type === 'bar'
 						const raType = context.datasetIndex === 0 || context.datasetIndex === 2
-						const scale = barType ? this.phdDurationScale : 1.0
+						const scale = barType ? this.chartInfo.durationScale : 1.0
 						const y = context.parsed.y * scale
 						const prefix = raType ? 'RA: ' : 'DEC: '
-						const lineSuffix = this.yAxisUnit === 'ARCSEC' ? '"' : 'px'
+						const lineSuffix = this.preference.yAxisUnit === 'ARCSEC' ? '"' : 'px'
 						const formattedY = prefix + (barType ? y.toFixed(0) + ' ms' : y.toFixed(2) + lineSuffix)
 						return formattedY
 					},
@@ -221,15 +195,16 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	constructor(
-		title: Title,
+		app: AppComponent,
 		private readonly api: ApiService,
-		private readonly pinger: Pinger,
-		electron: ElectronService,
+		private readonly ticker: Ticker,
+		private readonly preferenceService: PreferenceService,
+		electronService: ElectronService,
 		ngZone: NgZone,
 	) {
-		title.setTitle('Guider')
+		app.title = 'Guider'
 
-		electron.on('GUIDE_OUTPUT.UPDATED', (event) => {
+		electronService.on('GUIDE_OUTPUT.UPDATED', (event) => {
 			if (event.device.id === this.guideOutput?.id) {
 				ngZone.run(() => {
 					if (this.guideOutput) {
@@ -240,69 +215,67 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 			}
 		})
 
-		electron.on('GUIDE_OUTPUT.ATTACHED', (event) => {
+		electronService.on('GUIDE_OUTPUT.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.guideOutputs.push(event.device)
 			})
 		})
 
-		electron.on('GUIDE_OUTPUT.DETACHED', (event) => {
+		electronService.on('GUIDE_OUTPUT.DETACHED', (event) => {
 			ngZone.run(() => {
 				const index = this.guideOutputs.findIndex((e) => e.id === event.device.id)
 				if (index >= 0) this.guideOutputs.splice(index, 1)
 			})
 		})
 
-		electron.on('GUIDER.CONNECTED', () => {
+		electronService.on('GUIDER.CONNECTED', () => {
 			ngZone.run(() => {
-				this.connected = true
+				this.guider.connected = true
 			})
 		})
 
-		electron.on('GUIDER.DISCONNECTED', () => {
+		electronService.on('GUIDER.DISCONNECTED', () => {
 			ngZone.run(() => {
-				this.connected = false
+				this.guider.connected = false
 			})
 		})
 
-		electron.on('GUIDER.UPDATED', (event) => {
+		electronService.on('GUIDER.UPDATED', (event) => {
 			ngZone.run(() => {
 				this.processGuiderStatus(event.data)
 			})
 		})
 
-		electron.on('GUIDER.STEPPED', (event) => {
+		electronService.on('GUIDER.STEPPED', (event) => {
 			ngZone.run(() => {
-				if (this.phdGuideHistory.length >= 100) {
-					this.phdGuideHistory.splice(0, this.phdGuideHistory.length - 99)
+				if (this.guideHistory.length >= 100) {
+					this.guideHistory.splice(0, this.guideHistory.length - 99)
 				}
 
-				this.phdGuideHistory.push(event.data)
+				this.guideHistory.push(event.data)
 				this.updateGuideHistoryChart()
 
 				if (event.data.guideStep) {
-					this.guideStep = event.data.guideStep
+					this.guider.step = event.data.guideStep
 				} else {
 					// Dithering.
 				}
 			})
 		})
 
-		electron.on('GUIDER.MESSAGE_RECEIVED', (event) => {
+		electronService.on('GUIDER.MESSAGE_RECEIVED', (event) => {
 			ngZone.run(() => {
-				this.message = event.data
+				this.guider.message = event.data
 			})
 		})
 	}
 
+	ngOnInit() {
+		Chart.register(zoomPlugin)
+	}
+
 	async ngAfterViewInit() {
-		this.pinger.register(this, 30000)
-
-		const settle = await this.api.getGuidingSettle()
-
-		this.settleAmount = settle.amount
-		this.settleTime = settle.time
-		this.settleTimeout = settle.timeout
+		this.ticker.register(this, 30000)
 
 		this.guideOutputs = await this.api.guideOutputs()
 
@@ -310,46 +283,50 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 		this.processGuiderStatus(status)
 
 		const history = await this.api.guidingHistory()
-		this.phdGuideHistory.push(...history)
+		this.guideHistory.push(...history)
 		this.updateGuideHistoryChart()
+
+		this.loadPreference()
 	}
 
 	@HostListener('window:unload')
 	ngOnDestroy() {
-		this.pinger.unregister(this)
+		this.ticker.unregister(this)
 	}
 
-	async ping() {
+	async tick() {
 		if (this.guideOutput?.id) await this.api.guideOutputListen(this.guideOutput)
 	}
 
 	private processGuiderStatus(event: Guider) {
-		this.connected = event.connected
-		this.guideState = event.state
-		this.pixelScale = event.pixelScale
+		this.guider.connected = event.connected
+		this.guider.state = event.state
+		this.chartInfo.pixelScale = event.pixelScale
 	}
 
-	plotModeChanged() {
+	protected plotModeChanged() {
 		this.updateGuideHistoryChart()
+		this.savePreference()
 	}
 
-	yAxisUnitChanged() {
+	protected yAxisUnitChanged() {
 		this.updateGuideHistoryChart()
+		this.savePreference()
 	}
 
 	private updateGuideHistoryChart() {
-		if (this.phdGuideHistory.length > 0) {
-			const history = this.phdGuideHistory[this.phdGuideHistory.length - 1]
-			this.rmsTotal = history.rmsTotal
-			this.rmsDEC = history.rmsDEC
-			this.rmsRA = history.rmsRA
+		if (this.guideHistory.length > 0) {
+			const history = this.guideHistory[this.guideHistory.length - 1]
+			this.chartInfo.rmsTotal = history.rmsTotal
+			this.chartInfo.rmsDEC = history.rmsDEC
+			this.chartInfo.rmsRA = history.rmsRA
 		} else {
 			return
 		}
 
-		const startId = this.phdGuideHistory[0].id
-		const guideSteps = this.phdGuideHistory.filter((e) => e.guideStep !== undefined)
-		const scale = this.yAxisUnit === 'ARCSEC' ? this.pixelScale : 1.0
+		const startId = this.guideHistory[0].id
+		const guideSteps = this.guideHistory.filter((e) => e.guideStep !== undefined)
+		const scale = this.preference.yAxisUnit === 'ARCSEC' ? this.chartInfo.pixelScale : 1.0
 
 		let maxDuration = 0
 
@@ -358,9 +335,9 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 			maxDuration = Math.max(maxDuration, Math.abs(step.guideStep!.decDuration))
 		}
 
-		this.phdDurationScale = maxDuration / 16.0
+		this.chartInfo.durationScale = maxDuration / 16.0
 
-		if (this.plotMode === 'RA/DEC') {
+		if (this.preference.plotMode === 'RA/DEC') {
 			this.chartData.datasets[0].data = guideSteps.map((e) => [e.id - startId, -e.guideStep!.raDistance * scale])
 			this.chartData.datasets[1].data = guideSteps.map((e) => [e.id - startId, e.guideStep!.decDistance * scale])
 		} else {
@@ -369,18 +346,18 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 		}
 
 		const durationScale = (direction?: GuideDirection) => {
-			return !direction || direction === 'NORTH' || direction === 'WEST' ? this.phdDurationScale : -this.phdDurationScale
+			return !direction || direction === 'NORTH' || direction === 'WEST' ? this.chartInfo.durationScale : -this.chartInfo.durationScale
 		}
 
-		this.chartData.datasets[2].data = this.phdGuideHistory.map((e) => (e.guideStep?.raDuration ?? 0) / durationScale(e.guideStep?.raDirection))
-		this.chartData.datasets[3].data = this.phdGuideHistory.map((e) => (e.guideStep?.decDuration ?? 0) / durationScale(e.guideStep?.decDirection))
+		this.chartData.datasets[2].data = this.guideHistory.map((e) => (e.guideStep?.raDuration ?? 0) / durationScale(e.guideStep?.raDirection))
+		this.chartData.datasets[3].data = this.guideHistory.map((e) => (e.guideStep?.decDuration ?? 0) / durationScale(e.guideStep?.decDirection))
 
 		this.chart.refresh()
 	}
 
-	async guideOutputChanged() {
+	protected async guideOutputChanged() {
 		if (this.guideOutput?.id) {
-			await this.ping()
+			await this.tick()
 
 			const guideOutput = await this.api.guideOutput(this.guideOutput.id)
 			Object.assign(this.guideOutput, guideOutput)
@@ -389,28 +366,28 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 		}
 	}
 
-	async guidePulseStart(...directions: GuideDirection[]) {
+	protected async guidePulseStart(...directions: GuideDirection[]) {
 		if (this.guideOutput) {
 			for (const direction of directions) {
 				switch (direction) {
 					case 'NORTH':
-						await this.api.guideOutputPulse(this.guideOutput, direction, this.guideNorthDuration * 1000)
+						await this.api.guideOutputPulse(this.guideOutput, direction, this.preference.pulseDuration.north * 1000)
 						break
 					case 'SOUTH':
-						await this.api.guideOutputPulse(this.guideOutput, direction, this.guideSouthDuration * 1000)
+						await this.api.guideOutputPulse(this.guideOutput, direction, this.preference.pulseDuration.south * 1000)
 						break
 					case 'WEST':
-						await this.api.guideOutputPulse(this.guideOutput, direction, this.guideWestDuration * 1000)
+						await this.api.guideOutputPulse(this.guideOutput, direction, this.preference.pulseDuration.west * 1000)
 						break
 					case 'EAST':
-						await this.api.guideOutputPulse(this.guideOutput, direction, this.guideEastDuration * 1000)
+						await this.api.guideOutputPulse(this.guideOutput, direction, this.preference.pulseDuration.east * 1000)
 						break
 				}
 			}
 		}
 	}
 
-	async guidePulseStop() {
+	protected async guidePulseStop() {
 		if (this.guideOutput) {
 			await this.api.guideOutputPulse(this.guideOutput, 'NORTH', 0)
 			await this.api.guideOutputPulse(this.guideOutput, 'SOUTH', 0)
@@ -419,40 +396,41 @@ export class GuiderComponent implements AfterViewInit, OnDestroy, Pingable {
 		}
 	}
 
-	guidingConnect() {
-		if (this.connected) {
+	protected guidingConnect() {
+		if (this.guider.connected) {
 			return this.api.guidingDisconnect()
 		} else {
-			return this.api.guidingConnect(this.host, this.port)
+			return this.api.guidingConnect(this.preference.host, this.preference.port)
 		}
 	}
 
-	async guidingStart(event: MouseEvent) {
+	protected async guidingStart(event: MouseEvent) {
 		await this.api.guidingLoop(true)
+		await this.api.guidingSettle(this.preference.settle)
 		await this.api.guidingStart(event.shiftKey)
 	}
 
-	async settleChanged() {
-		await this.api.setGuidingSettle({
-			amount: this.settleAmount,
-			time: this.settleTime,
-			timeout: this.settleTimeout,
-		})
-	}
-
-	guidingClearHistory() {
-		this.phdGuideHistory.length = 0
+	protected guidingClearHistory() {
+		this.guideHistory.length = 0
 		return this.api.guidingClearHistory()
 	}
 
-	guidingStop() {
+	protected guidingStop() {
 		return this.api.guidingStop()
 	}
 
+	private loadPreference() {
+		Object.assign(this.preference, this.preferenceService.guider.get())
+	}
+
+	protected savePreference() {
+		this.preferenceService.guider.set(this.preference)
+	}
+
 	private update() {
-		if (this.guideOutput) {
-			this.guideOutputConnected = this.guideOutput.connected
-			this.pulseGuiding = this.guideOutput.pulseGuiding
+		if (this.guideOutput?.id) {
+			this.pulse.connected = this.guideOutput.connected
+			this.pulse.pulsing = this.guideOutput.pulseGuiding
 		}
 	}
 }

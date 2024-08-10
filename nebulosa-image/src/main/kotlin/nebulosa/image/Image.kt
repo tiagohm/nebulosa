@@ -222,6 +222,9 @@ class Image internal constructor(
     companion object {
 
         @JvmStatic
+        fun <T> T.asImage(debayer: Boolean = true) where T : ImageRepresentation, T : AutoCloseable = use { open(it, debayer) }
+
+        @JvmStatic
         internal fun colorModel(mono: Boolean): ColorModel {
             val space = ColorSpace.getInstance(if (mono) ColorSpace.CS_GRAY else ColorSpace.CS_sRGB)
             return ComponentColorModel(space, false, false, OPAQUE, DataBuffer.TYPE_BYTE)

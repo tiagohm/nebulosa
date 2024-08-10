@@ -17,12 +17,15 @@
 			<p-tag
 				class="flex"
 				styleClass="text-lg"
-				value="0.1.0" />
+				[value]="version" />
 			<p-tag
 				class="flex"
 				styleClass="text-lg"
-				value="Ceres"
+				[value]="codename"
 				severity="success" />
+		</p>
+		<p class="text-sm mt-0">
+			{{ description }}
 		</p>
 		<p class="text-sm text-gray-400 mt-0">
 			© 2022-2024 Tiago Melo
@@ -35,142 +38,38 @@
 		<div style="height: 128px">
 			<p-tabView>
 				<p-tabPanel header="Disclaimer">
-					<p>This software is WIP, comes with absolutely no warranty and the copyright holder is not liable or responsible for anything.</p>
+					<p class="mt-2">This software is WIP, comes with absolutely no warranty and the copyright holder is not liable or responsible for anything.</p>
+				</p-tabPanel>
+				<p-tabPanel header="Build">
+					<div class="py-2 flex flex-column white-space-nowrap">
+						<span>COMMIT: {{ commit }}</span>
+						<span>DATE: {{ date }}</span>
+					</div>
 				</p-tabPanel>
 				<p-tabPanel header="Icons">
 					<div
-						class="w-full flex flex-column overflow-y-auto"
-						style="height: 99px">
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/information_9195785">
-							Information icon by Anggara - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/sky_3982229">
-							Sky icon by Freepik - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/target_3207593">
-							Target icon by Freepik - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/camera-lens_5708327">
-							Camera icon by juicy_fish - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/telescope_4011463">
-							Telescope icon by Smashicons - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/observatory_2256076">
-							Observatory icon by Nikita Golubev - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/focus_3801224">
-							Focus icon by FetchLab - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/switch_404449">
-							Switch icon by Freepik - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/image_4371206">
-							Image icon by Freepik - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/image-processing_6062419">
-							Image processing icon by juicy_fish - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/star_740882">
-							Star icon by Vectors Market - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/rotate_3303063">
-							Rotate icon by Freepik - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/rgb-print_7664547">
-							Color wheel icon by BomSymbols - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/cogwheel_3953226">
-							Settings icon by Freepik - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/contrast_439842">
-							Sun icon by DinosoftLabs - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/full-moon_9689786">
-							Moon icon by vectorsmarket15 - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/jupiter_1086078">
-							Planet icon by monkik - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/asteroid_1086068">
-							Asteroid icon by monkik - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/satellite_1086093">
-							Satellite icon by monkik - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/witch-hat_5606276">
-							Witch hat icon by Luvdat - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/picture_2659360">
-							Picture icon by Freepik - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/magnifier_13113714">
-							Magnifier icon by Pop Vectors - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/calculator_7182540">
-							Calculator icon by Iconic Panda - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/target_10542035">
-							Target icon by Arkinasi - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://www.flaticon.com/free-icon/stack_3342239">
-							Stack icon by Pixel perfect - Flaticon
-						</a>
-						<a
-							target="_blank"
-							href="https://thenounproject.com/icon/random-dither-4259782/">
-							Random Dither icon by Arthur Shlain
-						</a>
+						class="w-full flex flex-column overflow-y-auto py-2 gap-1"
+						style="height: 100px">
+						@for (icon of icons; track $index) {
+							<a
+								target="_blank"
+								[attr.href]="icon.link">
+								{{ icon.name }} icon by {{ icon.author }}
+							</a>
+						}
+					</div>
+				</p-tabPanel>
+				<p-tabPanel header="Dependencies">
+					<div
+						class="w-full flex flex-column overflow-y-auto py-2 gap-1"
+						style="height: 100px">
+						@for (dep of dependencies; track $index) {
+							<a
+								target="_blank"
+								[attr.href]="dep.link">
+								{{ dep.name }} ({{ dep.version }})
+							</a>
+						}
 					</div>
 				</p-tabPanel>
 			</p-tabView>

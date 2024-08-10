@@ -1,56 +1,64 @@
 <div class="flex gap-2 align-items-center flex-wrap">
 	<div
 		*ngIf="hasType"
-		class="tag">
-		<span class="min-w-3rem">{{ info.frameType }}</span>
-		<label class="text-success">Type</label>
+		class="flex flex-column align-items-center">
+		<label class="text-success text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Type</label>
+		<span class="min-w-3rem text-center text-sm">{{ info.frameType }}</span>
 	</div>
 	<div
 		*ngIf="hasExposure && info.exposureTime"
-		class="tag">
-		<span class="min-w-4rem">{{ info.exposureAmount || '∞' }} / {{ info.exposureTime | exposureTime }}</span>
-		<label class="text-orange-300">Exposure</label>
+		class="flex flex-column align-items-center">
+		<label class="text-orange-300 text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Exposure</label>
+		<span class="min-w-4rem text-center text-sm">{{ info.exposureAmount || '∞' }} / {{ info.exposureTime | exposureTime }}</span>
 	</div>
 	<div
 		*ngIf="info.exposureDelay"
-		class="tag">
-		<span class="min-w-3rem">{{ info.exposureDelay * 1000000 | exposureTime }}</span>
-		<label class="text-info">Delay</label>
+		class="flex flex-column align-items-center">
+		<label class="text-info text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Delay</label>
+		<span class="min-w-3rem text-center text-sm">{{ info.exposureDelay * 1000000 | exposureTime }}</span>
 	</div>
 	<div
 		*ngIf="info.x !== undefined && info.y !== undefined && info.width && info.height"
-		class="tag">
-		<span class="min-w-5rem">{{ info.x }} {{ info.y }} {{ info.width }} {{ info.height }}</span>
-		<label class="text-yellow-300">ROI</label>
+		class="flex flex-column align-items-center">
+		<label class="text-yellow-300 text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">ROI</label>
+		<span class="min-w-5rem text-center text-sm">{{ info.x }} {{ info.y }} {{ info.width }} {{ info.height }}</span>
 	</div>
 	<div
 		*ngIf="info.binX && info.binY"
-		class="tag">
-		<span class="min-w-2rem">{{ info.binX }}x{{ info.binY }}</span>
-		<label class="text-cyan-300">Bin</label>
+		class="flex flex-column align-items-center">
+		<label class="text-cyan-300 text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Bin</label>
+		<span class="min-w-2rem text-center text-sm">{{ info.binX }}x{{ info.binY }}</span>
 	</div>
 	<div
 		*ngIf="info.gain"
-		class="tag">
-		<span class="min-w-3rem">{{ info.gain }}</span>
-		<label>Gain</label>
+		class="flex flex-column align-items-center">
+		<label class="text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Gain</label>
+		<span class="min-w-3rem text-center text-sm">{{ info.gain }}</span>
 	</div>
 	<div
 		*ngIf="info.offset"
-		class="tag">
-		<span class="min-w-3rem">{{ info.offset }}</span>
-		<label>Offset</label>
+		class="flex flex-column align-items-center">
+		<label class="text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Offset</label>
+		<span class="min-w-3rem text-center text-sm">{{ info.offset }}</span>
 	</div>
 	<div
 		*ngIf="info.frameFormat"
-		class="tag">
-		<span class="min-w-5rem">{{ info.frameFormat }}</span>
-		<label class="text-purple-300">Format</label>
+		class="flex flex-column align-items-center">
+		<label class="text-purple-300 text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Format</label>
+		<span class="min-w-5rem text-center text-sm">{{ info.frameFormat }}</span>
 	</div>
 	<div
 		*ngIf="hasFilter"
-		class="tag">
-		<span class="min-w-5rem">{{ filter }}</span>
-		<label class="text-teal-300">Filter</label>
+		class="flex flex-row gap-1 align-items-center">
+		<div class="flex flex-column align-items-center">
+			<label class="text-teal-300 text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Filter</label>
+			<span class="min-w-3rem text-center text-sm">{{ filter }}</span>
+		</div>
+		<i
+			*ngIf="canRemoveFilter"
+			class="mdi mdi-close cursor-pointer min-w-2rem min-h-2rem"
+			pTooltip="No Filter"
+			tooltipPosition="bottom"
+			(click)="filterRemoved.emit()"></i>
 	</div>
 </div>

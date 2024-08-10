@@ -2,10 +2,11 @@ package nebulosa.api.platesolver
 
 import nebulosa.api.image.ImageBucket
 import nebulosa.api.image.ImageSolved
-import nebulosa.math.Angle
+import nebulosa.common.concurrency.cancel.CancellationToken
 import okhttp3.OkHttpClient
 import org.springframework.stereotype.Service
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicReference
 
 @Service
 class PlateSolverService(
@@ -13,18 +14,23 @@ class PlateSolverService(
     private val httpClient: OkHttpClient,
 ) {
 
-    fun solveImage(
-        options: PlateSolverRequest, path: Path,
-        centerRA: Angle, centerDEC: Angle, radius: Angle,
-    ): ImageSolved {
-        val calibration = solve(options, path, centerRA, centerDEC, radius)
+    private val cancellationToken = AtomicReference<CancellationToken>()
+
+    fun solveImage(request: PlateSolverRequest, path: Path): ImageSolved {
+        val calibration = solve(request, path)
         imageBucket.put(path, calibration)
         return ImageSolved(calibration)
     }
 
     @Synchronized
-    fun solve(
-        options: PlateSolverRequest, path: Path,
-        centerRA: Angle = 0.0, centerDEC: Angle = 0.0, radius: Angle = 0.0,
-    ) = options.get(httpClient).solve(path, null, centerRA, centerDEC, radius, options.downsampleFactor, options.timeout)
+    fun solve(request: PlateSolverRequest, path: Path) = CancellationToken().use {
+        cancellationToken.set(it)
+        val solver = request.get(httpClient)
+        val radius = if (request.blind) 0.0 else request.radius
+        solver.solve(path, null, request.centerRA, request.centerDEC, radius, request.downsampleFactor, request.timeout, it)
+    }
+
+    fun stopSolver() {
+        cancellationToken.get()?.cancel()
+    }
 }

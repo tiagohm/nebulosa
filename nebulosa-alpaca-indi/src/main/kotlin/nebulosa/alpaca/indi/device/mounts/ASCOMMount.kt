@@ -13,6 +13,7 @@ import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
+import nebulosa.time.SystemClock
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.OffsetDateTime
@@ -53,7 +54,7 @@ data class ASCOMMount(
     @Volatile final override var longitude = 0.0
     @Volatile final override var latitude = 0.0
     @Volatile final override var elevation = 0.0
-    @Volatile final override var dateTime = OffsetDateTime.now()!!
+    @Volatile final override var dateTime = OffsetDateTime.now(SystemClock)!!
 
     override val snoopedDevices = emptyList<Device>()
 
@@ -269,7 +270,7 @@ data class ASCOMMount(
         longitude = 0.0
         latitude = 0.0
         elevation = 0.0
-        dateTime = OffsetDateTime.now()!!
+        dateTime = OffsetDateTime.now(SystemClock)!!
 
         axisRates.clear()
     }

@@ -56,11 +56,6 @@ class GuidingController(private val guidingService: GuidingService) {
         guidingService.settle(body)
     }
 
-    @GetMapping("settle")
-    fun settle(): SettleInfo {
-        return guidingService.settle()
-    }
-
     @PutMapping("dither")
     fun dither(
         @RequestParam amount: Double,

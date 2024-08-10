@@ -1,5 +1,4 @@
 import com.fasterxml.jackson.module.kotlin.jsonMapper
-import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.doubles.shouldBeExactly
@@ -15,97 +14,117 @@ import nebulosa.api.preference.PreferenceEntity
 import nebulosa.api.preference.PreferenceRepository
 import nebulosa.api.preference.PreferenceService
 import nebulosa.indi.device.camera.FrameType
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Test
 import java.util.*
 
-class PreferenceRepositoryTest : StringSpec() {
+class PreferenceRepositoryTest {
 
-    init {
-        val boxStore = MyObjectBox.builder()
+    @Test
+    fun boolean() {
+        SERVICE.contains("b").shouldBeFalse()
+        SERVICE.putBoolean("b", true)
+        SERVICE.contains("b").shouldBeTrue()
+        SERVICE.getBoolean("b").shouldNotBeNull().shouldBeTrue()
+        SERVICE.putBoolean("b", false)
+        SERVICE.getBoolean("b").shouldNotBeNull().shouldBeFalse()
+        SERVICE.delete("b")
+        SERVICE.contains("b").shouldBeFalse()
+        SERVICE.getBoolean("b").shouldBeNull()
+    }
+
+    @Test
+    fun int() {
+        SERVICE.contains("i").shouldBeFalse()
+        SERVICE.putInt("i", 22)
+        SERVICE.contains("i").shouldBeTrue()
+        SERVICE.getInt("i").shouldNotBeNull() shouldBeExactly 22
+        SERVICE.delete("i")
+        SERVICE.contains("i").shouldBeFalse()
+        SERVICE.getInt("i").shouldBeNull()
+    }
+
+    @Test
+    fun long() {
+        SERVICE.contains("l").shouldBeFalse()
+        SERVICE.putLong("l", 22L)
+        SERVICE.contains("l").shouldBeTrue()
+        SERVICE.getLong("l").shouldNotBeNull() shouldBeExactly 22L
+        SERVICE.delete("l")
+        SERVICE.contains("l").shouldBeFalse()
+        SERVICE.getLong("l").shouldBeNull()
+    }
+
+    @Test
+    fun double() {
+        SERVICE.contains("d").shouldBeFalse()
+        SERVICE.putDouble("d", 22.0)
+        SERVICE.contains("d").shouldBeTrue()
+        SERVICE.getDouble("d").shouldNotBeNull() shouldBeExactly 22.0
+        SERVICE.delete("d")
+        SERVICE.contains("d").shouldBeFalse()
+        SERVICE.getDouble("d").shouldBeNull()
+    }
+
+    @Test
+    fun text() {
+        SERVICE.contains("s").shouldBeFalse()
+        SERVICE.putText("s", "Texto")
+        SERVICE.contains("s").shouldBeTrue()
+        SERVICE.getText("s").shouldNotBeNull() shouldBe "Texto"
+        SERVICE.delete("s")
+        SERVICE.contains("s").shouldBeFalse()
+        SERVICE.getText("s").shouldBeNull()
+    }
+
+    @Test
+    fun enum() {
+        SERVICE.contains("e").shouldBeFalse()
+        SERVICE.putEnum("e", FrameType.DARK)
+        SERVICE.contains("e").shouldBeTrue()
+        SERVICE.getEnum<FrameType>("e").shouldNotBeNull() shouldBe FrameType.DARK
+        SERVICE.delete("e")
+        SERVICE.contains("e").shouldBeFalse()
+        SERVICE.getEnum<FrameType>("e").shouldBeNull()
+    }
+
+    @Test
+    fun json() {
+        SERVICE.contains("j").shouldBeFalse()
+        SERVICE.putJSON("j", Location(longitude = 123.456))
+        SERVICE.contains("j").shouldBeTrue()
+        SERVICE.getJSON<Location>("j").shouldNotBeNull() shouldBe Location(longitude = 123.456)
+        SERVICE.delete("j")
+        SERVICE.contains("j").shouldBeFalse()
+        SERVICE.getJSON<Location>("j").shouldBeNull()
+    }
+
+    @Test
+    fun clear() {
+        SERVICE.putLong("l", 22L)
+        SERVICE.putDouble("d", 22.0)
+        SERVICE.putText("s", "Texto")
+        SERVICE.putEnum("e", FrameType.DARK)
+        SERVICE.putJSON("j", Location(longitude = 123.456))
+        SERVICE.size shouldBeExactly 5
+        SERVICE.clear()
+        SERVICE.isEmpty().shouldBeTrue()
+    }
+
+    companion object {
+
+        @JvmStatic private val BOX_STORE = MyObjectBox.builder()
             .inMemory(UUID.randomUUID().toString())
             .build()
 
-        afterSpec {
-            boxStore.close()
+        @AfterAll
+        @JvmStatic
+        fun closeBoxStore() {
+            BOX_STORE.close()
         }
 
-        val box = boxStore.boxFor<PreferenceEntity>()
-        val repository = PreferenceRepository(box)
-        val service = PreferenceService(repository, jsonMapper { })
-
-        "boolean" {
-            service.contains("b").shouldBeFalse()
-            service.putBoolean("b", true)
-            service.contains("b").shouldBeTrue()
-            service.getBoolean("b").shouldNotBeNull().shouldBeTrue()
-            service.putBoolean("b", false)
-            service.getBoolean("b").shouldNotBeNull().shouldBeFalse()
-            service.delete("b")
-            service.contains("b").shouldBeFalse()
-            service.getBoolean("b").shouldBeNull()
-        }
-        "int" {
-            service.contains("i").shouldBeFalse()
-            service.putInt("i", 22)
-            service.contains("i").shouldBeTrue()
-            service.getInt("i").shouldNotBeNull() shouldBeExactly 22
-            service.delete("i")
-            service.contains("i").shouldBeFalse()
-            service.getInt("i").shouldBeNull()
-        }
-        "long" {
-            service.contains("l").shouldBeFalse()
-            service.putLong("l", 22L)
-            service.contains("l").shouldBeTrue()
-            service.getLong("l").shouldNotBeNull() shouldBeExactly 22L
-            service.delete("l")
-            service.contains("l").shouldBeFalse()
-            service.getLong("l").shouldBeNull()
-        }
-        "double" {
-            service.contains("d").shouldBeFalse()
-            service.putDouble("d", 22.0)
-            service.contains("d").shouldBeTrue()
-            service.getDouble("d").shouldNotBeNull() shouldBeExactly 22.0
-            service.delete("d")
-            service.contains("d").shouldBeFalse()
-            service.getDouble("d").shouldBeNull()
-        }
-        "text" {
-            service.contains("s").shouldBeFalse()
-            service.putText("s", "Texto")
-            service.contains("s").shouldBeTrue()
-            service.getText("s").shouldNotBeNull() shouldBe "Texto"
-            service.delete("s")
-            service.contains("s").shouldBeFalse()
-            service.getText("s").shouldBeNull()
-        }
-        "enum" {
-            service.contains("e").shouldBeFalse()
-            service.putEnum("e", FrameType.DARK)
-            service.contains("e").shouldBeTrue()
-            service.getEnum<FrameType>("e").shouldNotBeNull() shouldBe FrameType.DARK
-            service.delete("e")
-            service.contains("e").shouldBeFalse()
-            service.getEnum<FrameType>("e").shouldBeNull()
-        }
-        "json" {
-            service.contains("j").shouldBeFalse()
-            service.putJSON("j", Location(longitude = 123.456))
-            service.contains("j").shouldBeTrue()
-            service.getJSON<Location>("j").shouldNotBeNull() shouldBe Location(longitude = 123.456)
-            service.delete("j")
-            service.contains("j").shouldBeFalse()
-            service.getJSON<Location>("j").shouldBeNull()
-        }
-        "clear" {
-            service.putLong("l", 22L)
-            service.putDouble("d", 22.0)
-            service.putText("s", "Texto")
-            service.putEnum("e", FrameType.DARK)
-            service.putJSON("j", Location(longitude = 123.456))
-            service.size shouldBeExactly 5
-            service.clear()
-            service.isEmpty().shouldBeTrue()
-        }
+        @JvmStatic private val BOX = BOX_STORE.boxFor<PreferenceEntity>()
+        @JvmStatic private val REPOSITORY = PreferenceRepository(BOX)
+        @JvmStatic private val SERVICE = PreferenceService(REPOSITORY, jsonMapper { })
     }
 }

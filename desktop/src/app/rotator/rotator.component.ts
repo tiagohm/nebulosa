@@ -2,35 +2,31 @@ import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angu
 import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { EMPTY_ROTATOR, Rotator } from '../../shared/types/rotator.types'
+import { Tickable, Ticker } from '../../shared/services/ticker.service'
+import { DEFAULT_ROTATOR, DEFAULT_ROTATOR_PREFERENCE, Rotator } from '../../shared/types/rotator.types'
 import { AppComponent } from '../app.component'
 
 @Component({
-	selector: 'app-rotator',
+	selector: 'neb-rotator',
 	templateUrl: './rotator.component.html',
-	styleUrls: ['./rotator.component.scss'],
 })
-export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
-	readonly rotator = structuredClone(EMPTY_ROTATOR)
-
-	moving = false
-	reversed = false
-	angle = 0
+export class RotatorComponent implements AfterViewInit, OnDestroy, Tickable {
+	protected readonly rotator = structuredClone(DEFAULT_ROTATOR)
+	protected readonly preference = structuredClone(DEFAULT_ROTATOR_PREFERENCE)
 
 	constructor(
 		private readonly app: AppComponent,
 		private readonly api: ApiService,
-		electron: ElectronService,
-		private readonly preference: PreferenceService,
+		electronService: ElectronService,
+		private readonly preferenceService: PreferenceService,
 		private readonly route: ActivatedRoute,
-		private readonly pinger: Pinger,
+		private readonly ticker: Ticker,
 		ngZone: NgZone,
 	) {
 		app.title = 'Rotator'
 
-		electron.on('ROTATOR.UPDATED', (event) => {
+		electronService.on('ROTATOR.UPDATED', (event) => {
 			if (event.device.id === this.rotator.id) {
 				ngZone.run(() => {
 					Object.assign(this.rotator, event.device)
@@ -39,10 +35,10 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 			}
 		})
 
-		electron.on('ROTATOR.DETACHED', (event) => {
+		electronService.on('ROTATOR.DETACHED', (event) => {
 			if (event.device.id === this.rotator.id) {
 				ngZone.run(() => {
-					Object.assign(this.rotator, EMPTY_ROTATOR)
+					Object.assign(this.rotator, DEFAULT_ROTATOR)
 				})
 			}
 		})
@@ -50,25 +46,25 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	ngAfterViewInit() {
 		this.route.queryParams.subscribe(async (e) => {
-			const rotator = JSON.parse(decodeURIComponent(e['data'] as string)) as Rotator
-			await this.rotatorChanged(rotator)
-			this.pinger.register(this, 30000)
+			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as Rotator
+			await this.rotatorChanged(data)
+			this.ticker.register(this, 30000)
 		})
 	}
 
 	@HostListener('window:unload')
 	ngOnDestroy() {
-		this.pinger.unregister(this)
+		this.ticker.unregister(this)
 		void this.abort()
 	}
 
-	async ping() {
+	async tick() {
 		if (this.rotator.id) {
 			await this.api.rotatorListen(this.rotator)
 		}
 	}
 
-	async rotatorChanged(rotator?: Rotator) {
+	protected async rotatorChanged(rotator?: Rotator) {
 		if (rotator?.id) {
 			rotator = await this.api.rotator(rotator.id)
 			Object.assign(this.rotator, rotator)
@@ -80,7 +76,7 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 		this.app.subTitle = rotator?.name ?? ''
 	}
 
-	connect() {
+	protected connect() {
 		if (this.rotator.connected) {
 			return this.api.rotatorDisconnect(this.rotator)
 		} else {
@@ -88,52 +84,37 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Pingable {
 		}
 	}
 
-	reverse(enabled: boolean) {
+	protected reverse(enabled: boolean) {
 		return this.api.rotatorReverse(this.rotator, enabled)
 	}
 
-	async move() {
-		if (!this.moving) {
-			this.moving = true
-			await this.api.rotatorMove(this.rotator, this.angle)
-			this.savePreference()
-		}
+	protected move() {
+		return this.api.rotatorMove(this.rotator, this.preference.angle)
 	}
 
-	async sync() {
-		if (!this.moving) {
-			await this.api.rotatorSync(this.rotator, this.angle)
-			this.savePreference()
-		}
+	protected sync() {
+		return this.api.rotatorSync(this.rotator, this.preference.angle)
 	}
 
-	abort() {
+	protected abort() {
 		return this.api.rotatorAbort(this.rotator)
 	}
 
-	home() {
+	protected home() {
 		return this.api.rotatorHome(this.rotator)
 	}
 
-	private update() {
-		if (this.rotator.id) {
-			this.moving = this.rotator.moving
-			this.reversed = this.rotator.reversed
-		}
-	}
+	private update() {}
 
 	private loadPreference() {
 		if (this.rotator.id) {
-			const preference = this.preference.rotatorPreference(this.rotator).get()
-			this.angle = preference.angle ?? 0
+			Object.assign(this.preference, this.preferenceService.rotator(this.rotator).get())
 		}
 	}
 
-	private savePreference() {
+	protected savePreference() {
 		if (this.rotator.connected) {
-			const preference = this.preference.rotatorPreference(this.rotator).get()
-			preference.angle = this.angle
-			this.preference.rotatorPreference(this.rotator).set(preference)
+			this.preferenceService.rotator(this.rotator).set(this.preference)
 		}
 	}
 }

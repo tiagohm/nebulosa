@@ -6,6 +6,8 @@ import java.io.Closeable
 
 interface Device : INDIProtocolHandler, Closeable, Comparable<Device> {
 
+    val type: DeviceType
+
     val sender: MessageSender
 
     val id: String

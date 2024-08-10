@@ -2,23 +2,29 @@ import { Menu, app, ipcMain } from 'electron'
 import * as fs from 'fs'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { spawn } from 'node:child_process'
-import { join, resolve } from 'path'
+import { join } from 'path'
 import { WebSocket } from 'ws'
-import type { InternalEventType, JsonFile, StoredWindowData } from '../src/shared/types/app.types'
+import type { InternalEventType, JsonFile } from '../src/shared/types/app.types'
 import { ArgumentParser } from './argument.parser'
-import { LocalStorage } from './local.storage'
 import { WindowManager } from './window.manager'
 
 Object.assign(global, { WebSocket })
 
-app.commandLine.appendSwitch('disable-http-cache')
-
 const argParser = new ArgumentParser()
 const parsedArgs = argParser.parse(process.argv.slice(1))
-const configPath = resolve(app.getPath('userData'), 'config.json')
-const storage = new LocalStorage<StoredWindowData>(configPath)
+
+app.commandLine.appendSwitch('disable-http-cache')
+
+if (parsedArgs.apiMode) {
+	// https://github.com/electron/electron/issues/32760#issuecomment-2227575986
+	app.commandLine.appendSwitch('ignore-gpu-blacklist')
+	app.commandLine.appendSwitch('disable-gpu')
+	app.commandLine.appendSwitch('disable-gpu-compositing')
+	app.disableHardwareAcceleration()
+}
+
 const appIcon = join(__dirname, parsedArgs.serve ? `../src/assets/icons/nebulosa.png` : `assets/icons/nebulosa.png`)
-const windowManager = new WindowManager(parsedArgs, storage, appIcon)
+const windowManager = new WindowManager(parsedArgs, appIcon)
 let apiProcess: ChildProcessWithoutNullStreams | null
 
 process.on('beforeExit', () => {
@@ -63,7 +69,7 @@ async function startApp() {
 
 					if (text) {
 						const regex = /server is started at port: (\d+)/i
-						const match = text.match(regex)
+						const match = regex.exec(text)
 
 						if (match) {
 							const port = parseInt(match[1])

@@ -189,15 +189,15 @@ class MountController(
     @PutMapping("{mount}/remote-control/start")
     fun remoteControlStart(
         mount: Mount,
-        @RequestParam type: MountRemoteControlType,
+        @RequestParam protocol: MountRemoteControlProtocol,
         @RequestParam(required = false, defaultValue = "0.0.0.0") host: String,
         @RequestParam(required = false, defaultValue = "10001") @Valid @Positive port: Int,
     ) {
-        mountService.remoteControlStart(mount, type, host, port)
+        mountService.remoteControlStart(mount, protocol, host, port)
     }
 
     @PutMapping("{mount}/remote-control/stop")
-    fun remoteControlStart(mount: Mount, @RequestParam type: MountRemoteControlType) {
+    fun remoteControlStart(mount: Mount, @RequestParam type: MountRemoteControlProtocol) {
         mountService.remoteControlStop(mount, type)
     }
 

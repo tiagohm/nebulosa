@@ -5,4 +5,5 @@ enum class PlateSolverType {
     ASTROMETRY_NET,
     ASTROMETRY_NET_ONLINE,
     SIRIL,
+    PIXINSIGHT,
 }

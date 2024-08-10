@@ -1,7 +1,7 @@
 import type { Point } from 'electron'
-import type { CameraCaptureEvent, CameraStartCapture } from './camera.types'
-import type { StarDetectionRequest } from './settings.types'
-import { EMPTY_STAR_DETECTION_REQUEST } from './settings.types'
+import { cameraStartCaptureWithDefault, DEFAULT_CAMERA_START_CAPTURE, type CameraCaptureEvent, type CameraStartCapture } from './camera.types'
+import type { StarDetectionRequest } from './stardetector.types'
+import { DEFAULT_STAR_DETECTION_REQUEST, starDetectionRequestWithDefault } from './stardetector.types'
 
 export type AutoFocusState = 'IDLE' | 'MOVING' | 'EXPOSURING' | 'EXPOSURED' | 'ANALYSING' | 'ANALYSED' | 'CURVE_FITTED' | 'FAILED' | 'FINISHED'
 
@@ -26,20 +26,8 @@ export interface AutoFocusRequest {
 	starDetector: StarDetectionRequest
 }
 
-export type AutoFocusPreference = Omit<AutoFocusRequest, 'capture'>
-
-export const EMPTY_AUTO_FOCUS_PREFERENCE: AutoFocusPreference = {
-	fittingMode: 'HYPERBOLIC',
-	rSquaredThreshold: 0.5,
-	initialOffsetSteps: 4,
-	stepSize: 100,
-	totalNumberOfAttempts: 1,
-	backlashCompensation: {
-		mode: 'NONE',
-		backlashIn: 0,
-		backlashOut: 0,
-	},
-	starDetector: EMPTY_STAR_DETECTION_REQUEST,
+export interface AutoFocusPreference {
+	request: AutoFocusRequest
 }
 
 export interface Curve {
@@ -90,4 +78,56 @@ export interface AutoFocusEvent {
 	starHFD: number
 	chart?: AutoFocusChart
 	capture?: CameraCaptureEvent
+}
+
+export const DEFAULT_CAMERA_START_CAPTURE_AUTO_FOCUS: CameraStartCapture = {
+	...DEFAULT_CAMERA_START_CAPTURE,
+}
+
+export const DEFAULT_BACKLASH_COMPENSATION: BacklashCompensation = {
+	mode: 'NONE',
+	backlashIn: 0,
+	backlashOut: 0,
+}
+
+export const DEFAULT_AUTO_FOCUS_REQUEST: AutoFocusRequest = {
+	capture: DEFAULT_CAMERA_START_CAPTURE_AUTO_FOCUS,
+	fittingMode: 'HYPERBOLIC',
+	rSquaredThreshold: 0.5,
+	initialOffsetSteps: 4,
+	stepSize: 100,
+	totalNumberOfAttempts: 1,
+	backlashCompensation: DEFAULT_BACKLASH_COMPENSATION,
+	starDetector: DEFAULT_STAR_DETECTION_REQUEST,
+}
+
+export const DEFAULT_AUTO_FOCUS_PREFERENCE: AutoFocusPreference = {
+	request: DEFAULT_AUTO_FOCUS_REQUEST,
+}
+
+export function backlashCompensationWithDefault(compensation?: Partial<BacklashCompensation>, source: BacklashCompensation = DEFAULT_BACKLASH_COMPENSATION) {
+	if (!compensation) return structuredClone(source)
+	compensation.mode ||= source.mode
+	compensation.backlashIn ??= source.backlashIn
+	compensation.backlashOut ??= source.backlashOut
+	return compensation as BacklashCompensation
+}
+
+export function autoFocusRequestWithDefault(request?: Partial<AutoFocusRequest>, source: AutoFocusRequest = DEFAULT_AUTO_FOCUS_REQUEST) {
+	if (!request) return structuredClone(source)
+	request.capture = cameraStartCaptureWithDefault(request.capture, source.capture)
+	request.fittingMode ??= source.fittingMode
+	request.rSquaredThreshold ??= source.rSquaredThreshold
+	request.initialOffsetSteps ??= source.initialOffsetSteps
+	request.stepSize ??= source.stepSize
+	request.totalNumberOfAttempts ??= source.totalNumberOfAttempts
+	request.backlashCompensation = backlashCompensationWithDefault(request.backlashCompensation, source.backlashCompensation)
+	request.starDetector = starDetectionRequestWithDefault(request.starDetector, source.starDetector)
+	return request as AutoFocusRequest
+}
+
+export function autoFocusPreferenceWithDefault(preference?: Partial<AutoFocusPreference>, source: AutoFocusPreference = DEFAULT_AUTO_FOCUS_PREFERENCE) {
+	if (!preference) return structuredClone(source)
+	preference.request = autoFocusRequestWithDefault(preference.request, source.request)
+	return preference as AutoFocusPreference
 }

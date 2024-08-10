@@ -1,46 +1,39 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
+import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { PrimeService } from '../../shared/services/prime.service'
-import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
-import { FlatWizardRequest } from '../../shared/types/flat-wizard.types'
-import { EMPTY_WHEEL, FilterSlot, FilterWheel, makeFilterSlots } from '../../shared/types/wheel.types'
+import { Tickable, Ticker } from '../../shared/services/ticker.service'
+import { Camera, DEFAULT_CAMERA, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import { DEFAULT_FLAT_WIZARD_PREFERENCE } from '../../shared/types/flat-wizard.types'
+import { DEFAULT_WHEEL, Filter, Wheel, makeFilter } from '../../shared/types/wheel.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
-	selector: 'app-flat-wizard',
+	selector: 'neb-flat-wizard',
 	templateUrl: './flat-wizard.component.html',
-	styleUrls: ['./flat-wizard.component.scss'],
 })
-export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
-	cameras: Camera[] = []
-	camera = structuredClone(EMPTY_CAMERA)
+export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
+	protected cameras: Camera[] = []
+	protected camera?: Camera
 
-	wheels: FilterWheel[] = []
-	wheel = structuredClone(EMPTY_WHEEL)
+	protected wheels: Wheel[] = []
+	protected wheel?: Wheel
 
-	running = false
-	savedPath?: string
+	protected readonly preference = structuredClone(DEFAULT_FLAT_WIZARD_PREFERENCE)
+	protected request = this.preference.request
+
+	protected filters: Filter[] = []
+	protected selectedFilters: Filter[] = []
+
+	protected running = false
 
 	@ViewChild('cameraExposure')
 	private readonly cameraExposure!: CameraExposureComponent
-
-	filters: FilterSlot[] = []
-	selectedFilters: FilterSlot[] = []
-
-	readonly request: FlatWizardRequest = {
-		capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
-		exposureMin: 1,
-		exposureMax: 2000,
-		meanTarget: 32768,
-		meanTolerance: 10,
-	}
 
 	get meanTargetMin() {
 		return Math.floor(this.request.meanTarget - (this.request.meanTolerance * this.request.meanTarget) / 100)
@@ -53,55 +46,55 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 	constructor(
 		app: AppComponent,
 		private readonly api: ApiService,
-		electron: ElectronService,
-		private readonly browserWindow: BrowserWindowService,
-		private readonly prime: PrimeService,
-		private readonly preference: PreferenceService,
-		private readonly pinger: Pinger,
+		electronService: ElectronService,
+		private readonly browserWindowService: BrowserWindowService,
+		private readonly angularService: AngularService,
+		private readonly preferenceService: PreferenceService,
+		private readonly ticker: Ticker,
 		ngZone: NgZone,
 	) {
 		app.title = 'Flat Wizard'
 
-		electron.on('FLAT_WIZARD.ELAPSED', (event) => {
+		electronService.on('FLAT_WIZARD.ELAPSED', (event) => {
 			ngZone.run(() => {
-				if (event.state === 'EXPOSURING' && event.capture && event.capture.camera.id === this.camera.id) {
+				if (event.state === 'EXPOSURING' && event.capture && event.capture.camera.id === this.camera?.id) {
 					this.running = true
 					this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
 				} else if (event.state === 'CAPTURED') {
 					this.running = false
-					this.savedPath = event.savedPath
-					this.prime.message(`Flat frame captured`)
+					this.angularService.message('Flat frame captured')
 				} else if (event.state === 'FAILED') {
 					this.running = false
-					this.savedPath = undefined
-					this.prime.message(`Failed to find an optimal exposure time from given parameters`, 'error')
+					this.angularService.message('Failed to find an optimal exposure time from given parameters', 'error')
 				}
 			})
 		})
 
-		electron.on('CAMERA.UPDATED', async (event) => {
-			if (event.device.id === this.camera.id) {
-				await ngZone.run(() => {
-					Object.assign(this.camera, event.device)
-					return this.cameraChanged()
+		electronService.on('CAMERA.UPDATED', (event) => {
+			if (event.device.id === this.camera?.id) {
+				ngZone.run(() => {
+					if (this.camera) {
+						Object.assign(this.camera, event.device)
+						void this.cameraChanged()
+					}
 				})
 			}
 		})
 
-		electron.on('CAMERA.ATTACHED', (event) => {
+		electronService.on('CAMERA.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.cameras.push(event.device)
 				this.cameras.sort(deviceComparator)
 			})
 		})
 
-		electron.on('CAMERA.DETACHED', (event) => {
+		electronService.on('CAMERA.DETACHED', (event) => {
 			ngZone.run(() => {
 				const index = this.cameras.findIndex((e) => e.id === event.device.id)
 
 				if (index >= 0) {
 					if (this.cameras[index] === this.camera) {
-						Object.assign(this.camera, this.cameras[0] ?? EMPTY_CAMERA)
+						Object.assign(this.camera, this.cameras[0] ?? DEFAULT_CAMERA)
 					}
 
 					this.cameras.splice(index, 1)
@@ -109,41 +102,41 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 			})
 		})
 
-		electron.on('WHEEL.UPDATED', async (event) => {
-			if (event.device.id === this.wheel.id) {
-				await ngZone.run(() => {
-					Object.assign(this.wheel, event.device)
-					return this.wheelChanged()
+		electronService.on('WHEEL.UPDATED', (event) => {
+			if (event.device.id === this.wheel?.id) {
+				ngZone.run(() => {
+					if (this.wheel) {
+						Object.assign(this.wheel, event.device)
+						void this.wheelChanged()
+					}
 				})
 			}
 		})
 
-		electron.on('WHEEL.ATTACHED', (event) => {
+		electronService.on('WHEEL.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.wheels.push(event.device)
 				this.wheels.sort(deviceComparator)
 			})
 		})
 
-		electron.on('WHEEL.DETACHED', (event) => {
+		electronService.on('WHEEL.DETACHED', (event) => {
 			ngZone.run(() => {
 				const index = this.wheels.findIndex((e) => e.id === event.device.id)
 
 				if (index >= 0) {
 					if (this.wheels[index] === this.wheel) {
-						Object.assign(this.wheel, this.wheels[0] ?? EMPTY_WHEEL)
+						Object.assign(this.wheel, this.wheels[0] ?? DEFAULT_WHEEL)
 					}
 
 					this.wheels.splice(index, 1)
 				}
 			})
 		})
-
-		this.request.capture.frameType = 'FLAT'
 	}
 
 	async ngAfterViewInit() {
-		this.pinger.register(this, 30000)
+		this.ticker.register(this, 30000)
 
 		this.cameras = (await this.api.cameras()).sort(deviceComparator)
 		this.wheels = (await this.api.wheels()).sort(deviceComparator)
@@ -151,27 +144,26 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	@HostListener('window:unload')
 	ngOnDestroy() {
-		this.pinger.unregister(this)
+		this.ticker.unregister(this)
 		void this.stop()
 	}
 
-	async ping() {
-		if (this.camera.id) await this.api.cameraListen(this.camera)
-		if (this.wheel.id) await this.api.wheelListen(this.wheel)
+	async tick() {
+		if (this.camera?.id) await this.api.cameraListen(this.camera)
+		if (this.wheel?.id) await this.api.wheelListen(this.wheel)
 	}
 
-	async showCameraDialog() {
-		if (this.camera.id && (await CameraComponent.showAsDialog(this.browserWindow, 'FLAT_WIZARD', this.camera, this.request.capture))) {
-			this.preference.cameraStartCaptureForFlatWizard(this.camera).set(this.request.capture)
+	protected async showCameraDialog() {
+		if (this.camera?.id && (await CameraComponent.showAsDialog(this.browserWindowService, 'FLAT_WIZARD', this.camera, this.request.capture))) {
+			this.savePreference()
 		}
 	}
 
-	async cameraChanged() {
-		if (this.camera.id) {
-			await this.ping()
+	protected async cameraChanged() {
+		if (this.camera?.id) {
+			await this.tick()
 
-			const cameraPreference = this.preference.cameraPreference(this.camera).get()
-			this.request.capture = this.preference.cameraStartCaptureForFlatWizard(this.camera).get(cameraPreference)
+			this.loadPreference()
 			this.updateEntryFromCamera(this.camera)
 			this.request.capture.frameType = 'FLAT'
 		}
@@ -180,15 +172,16 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 	private updateEntryFromCamera(camera?: Camera) {
 		if (camera?.connected) {
 			updateCameraStartCaptureFromCamera(this.request.capture, camera)
+			this.savePreference()
 		}
 	}
 
-	async wheelChanged() {
-		if (this.wheel.id) {
-			await this.ping()
+	protected async wheelChanged() {
+		if (this.wheel?.id) {
+			await this.tick()
 
-			const preference = this.preference.wheelPreference(this.wheel).get()
-			const filters = makeFilterSlots(this.wheel, this.filters, preference.shutterPosition)
+			const shutterPosition = this.preferenceService.wheel(this.wheel).get().shutterPosition
+			const filters = makeFilter(this.wheel, this.filters, shutterPosition)
 
 			if (filters !== this.filters) {
 				this.filters = filters
@@ -197,20 +190,31 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Pingable {
 		}
 	}
 
-	async start() {
-		await this.browserWindow.openCameraImage(this.camera, 'FLAT_WIZARD')
-		// TODO: Iniciar para cada filtro selecionado. Usar os eventos para percorrer (se houver filtro).
-		// Se Falhar, interrompe todo o fluxo.
-		await this.api.flatWizardStart(this.camera, this.request)
+	protected async start() {
+		if (this.camera) {
+			await this.browserWindowService.openCameraImage(this.camera, 'FLAT_WIZARD')
+			// TODO: Iniciar para cada filtro selecionado. Usar os eventos para percorrer (se houver filtro).
+			// Se Falhar, interrompe todo o fluxo.
+			await this.api.flatWizardStart(this.camera, this.request)
+		}
 	}
 
-	stop() {
-		return this.api.flatWizardStop(this.camera)
+	protected async stop() {
+		if (this.camera) {
+			await this.api.flatWizardStop(this.camera)
+		}
 	}
 
-	savePreference() {
-		if (this.camera.id) {
-			this.preference.cameraStartCaptureForFlatWizard(this.camera).set(this.request.capture)
+	private loadPreference() {
+		if (this.camera?.id) {
+			Object.assign(this.preference, this.preferenceService.flatWizard(this.camera).get())
+			this.request = this.preference.request
+		}
+	}
+
+	protected savePreference() {
+		if (this.camera?.id) {
+			this.preferenceService.flatWizard(this.camera).set(this.preference)
 		}
 	}
 }

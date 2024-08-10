@@ -4,80 +4,98 @@ import nebulosa.fits.Bitpix
 import nebulosa.fits.bitpix
 import nebulosa.fits.fits
 import nebulosa.image.format.ImageHdu
-import nebulosa.test.AbstractFitsAndXisfTest
+import nebulosa.test.*
+import org.junit.jupiter.api.Test
 
-class FitsReadTest : AbstractFitsAndXisfTest() {
+class FitsReadTest {
 
-    init {
-        "mono:8-bit" {
-            val hdu = closeAfterEach(NGC3344_MONO_8_FITS.fits()).filterIsInstance<ImageHdu>().first()
-            hdu.width shouldBeExactly 256
-            hdu.height shouldBeExactly 256
-            hdu.numberOfChannels shouldBeExactly 1
-            hdu.header.bitpix shouldBe Bitpix.BYTE
-        }
-        "mono:16-bit" {
-            val hdu = closeAfterEach(NGC3344_MONO_16_FITS.fits()).filterIsInstance<ImageHdu>().first()
-            hdu.width shouldBeExactly 256
-            hdu.height shouldBeExactly 256
-            hdu.numberOfChannels shouldBeExactly 1
-            hdu.header.bitpix shouldBe Bitpix.SHORT
-        }
-        "mono:32-bit" {
-            val hdu = closeAfterEach(NGC3344_MONO_32_FITS.fits()).filterIsInstance<ImageHdu>().first()
-            hdu.width shouldBeExactly 256
-            hdu.height shouldBeExactly 256
-            hdu.numberOfChannels shouldBeExactly 1
-            hdu.header.bitpix shouldBe Bitpix.INTEGER
-        }
-        "mono:32-bit floating-point" {
-            val hdu = closeAfterEach(NGC3344_MONO_F32_FITS.fits()).filterIsInstance<ImageHdu>().first()
-            hdu.width shouldBeExactly 256
-            hdu.height shouldBeExactly 256
-            hdu.numberOfChannels shouldBeExactly 1
-            hdu.header.bitpix shouldBe Bitpix.FLOAT
-        }
-        "mono:64-bit floating-point" {
-            val hdu = closeAfterEach(NGC3344_MONO_F64_FITS.fits()).filterIsInstance<ImageHdu>().first()
-            hdu.width shouldBeExactly 256
-            hdu.height shouldBeExactly 256
-            hdu.numberOfChannels shouldBeExactly 1
-            hdu.header.bitpix shouldBe Bitpix.DOUBLE
-        }
-        "color:8-bit" {
-            val hdu = closeAfterEach(NGC3344_COLOR_8_FITS.fits()).filterIsInstance<ImageHdu>().first()
-            hdu.width shouldBeExactly 256
-            hdu.height shouldBeExactly 256
-            hdu.numberOfChannels shouldBeExactly 4
-            hdu.header.bitpix shouldBe Bitpix.BYTE
-        }
-        "color:16-bit" {
-            val hdu = closeAfterEach(NGC3344_COLOR_16_FITS.fits()).filterIsInstance<ImageHdu>().first()
-            hdu.width shouldBeExactly 256
-            hdu.height shouldBeExactly 256
-            hdu.numberOfChannels shouldBeExactly 4
-            hdu.header.bitpix shouldBe Bitpix.SHORT
-        }
-        "color:32-bit" {
-            val hdu = closeAfterEach(NGC3344_COLOR_32_FITS.fits()).filterIsInstance<ImageHdu>().first()
-            hdu.width shouldBeExactly 256
-            hdu.height shouldBeExactly 256
-            hdu.numberOfChannels shouldBeExactly 4
-            hdu.header.bitpix shouldBe Bitpix.INTEGER
-        }
-        "color:32-bit floating-point" {
-            val hdu = closeAfterEach(NGC3344_COLOR_F32_FITS.fits()).filterIsInstance<ImageHdu>().first()
-            hdu.width shouldBeExactly 256
-            hdu.height shouldBeExactly 256
-            hdu.numberOfChannels shouldBeExactly 4
-            hdu.header.bitpix shouldBe Bitpix.FLOAT
-        }
-        "color:64-bit floating-point" {
-            val hdu = closeAfterEach(NGC3344_COLOR_F64_FITS.fits()).filterIsInstance<ImageHdu>().first()
-            hdu.width shouldBeExactly 256
-            hdu.height shouldBeExactly 256
-            hdu.numberOfChannels shouldBeExactly 4
-            hdu.header.bitpix shouldBe Bitpix.DOUBLE
-        }
+    @Test
+    fun mono8Bit() {
+        val hdu = NGC3344_MONO_8_FITS.fits().use { it.filterIsInstance<ImageHdu>().first() }
+        hdu.width shouldBeExactly 256
+        hdu.height shouldBeExactly 256
+        hdu.numberOfChannels shouldBeExactly 1
+        hdu.header.bitpix shouldBe Bitpix.BYTE
+    }
+
+    @Test
+    fun mono16Bit() {
+        val hdu = NGC3344_MONO_16_FITS.fits().use { it.filterIsInstance<ImageHdu>().first() }
+        hdu.width shouldBeExactly 256
+        hdu.height shouldBeExactly 256
+        hdu.numberOfChannels shouldBeExactly 1
+        hdu.header.bitpix shouldBe Bitpix.SHORT
+    }
+
+    @Test
+    fun mono32Bit() {
+        val hdu = NGC3344_MONO_32_FITS.fits().use { it.filterIsInstance<ImageHdu>().first() }
+        hdu.width shouldBeExactly 256
+        hdu.height shouldBeExactly 256
+        hdu.numberOfChannels shouldBeExactly 1
+        hdu.header.bitpix shouldBe Bitpix.INTEGER
+    }
+
+    @Test
+    fun monoFloat32Bit() {
+        val hdu = NGC3344_MONO_F32_FITS.fits().use { it.filterIsInstance<ImageHdu>().first() }
+        hdu.width shouldBeExactly 256
+        hdu.height shouldBeExactly 256
+        hdu.numberOfChannels shouldBeExactly 1
+        hdu.header.bitpix shouldBe Bitpix.FLOAT
+    }
+
+    @Test
+    fun monoFloat64Bit() {
+        val hdu = NGC3344_MONO_F64_FITS.fits().use { it.filterIsInstance<ImageHdu>().first() }
+        hdu.width shouldBeExactly 256
+        hdu.height shouldBeExactly 256
+        hdu.numberOfChannels shouldBeExactly 1
+        hdu.header.bitpix shouldBe Bitpix.DOUBLE
+    }
+
+    @Test
+    fun color8Bit() {
+        val hdu = NGC3344_COLOR_8_FITS.fits().use { it.filterIsInstance<ImageHdu>().first() }
+        hdu.width shouldBeExactly 256
+        hdu.height shouldBeExactly 256
+        hdu.numberOfChannels shouldBeExactly 4
+        hdu.header.bitpix shouldBe Bitpix.BYTE
+    }
+
+    @Test
+    fun color16Bit() {
+        val hdu = NGC3344_COLOR_16_FITS.fits().use { it.filterIsInstance<ImageHdu>().first() }
+        hdu.width shouldBeExactly 256
+        hdu.height shouldBeExactly 256
+        hdu.numberOfChannels shouldBeExactly 4
+        hdu.header.bitpix shouldBe Bitpix.SHORT
+    }
+
+    @Test
+    fun color32Bit() {
+        val hdu = NGC3344_COLOR_32_FITS.fits().use { it.filterIsInstance<ImageHdu>().first() }
+        hdu.width shouldBeExactly 256
+        hdu.height shouldBeExactly 256
+        hdu.numberOfChannels shouldBeExactly 4
+        hdu.header.bitpix shouldBe Bitpix.INTEGER
+    }
+
+    @Test
+    fun colorFloat32Bit() {
+        val hdu = NGC3344_COLOR_F32_FITS.fits().use { it.filterIsInstance<ImageHdu>().first() }
+        hdu.width shouldBeExactly 256
+        hdu.height shouldBeExactly 256
+        hdu.numberOfChannels shouldBeExactly 4
+        hdu.header.bitpix shouldBe Bitpix.FLOAT
+    }
+
+    @Test
+    fun colorFloat64Bit() {
+        val hdu = NGC3344_COLOR_F64_FITS.fits().use { it.filterIsInstance<ImageHdu>().first() }
+        hdu.width shouldBeExactly 256
+        hdu.height shouldBeExactly 256
+        hdu.numberOfChannels shouldBeExactly 4
+        hdu.header.bitpix shouldBe Bitpix.DOUBLE
     }
 }

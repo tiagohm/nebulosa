@@ -18,7 +18,7 @@ class SequencerService(
 
     @Synchronized
     fun start(
-        camera: Camera, request: SequencePlanRequest,
+        camera: Camera, request: SequencerPlanRequest,
         mount: Mount?, wheel: FilterWheel?, focuser: Focuser?, rotator: Rotator?,
     ) {
         val savePath = request.savePath
@@ -26,6 +26,16 @@ class SequencerService(
             ?: Path.of("$sequencesPath", (System.currentTimeMillis() / 1000).toString())
 
         sequencerExecutor.execute(camera, request.copy(savePath = savePath), mount, wheel, focuser, rotator)
+    }
+
+    @Synchronized
+    fun pause(camera: Camera) {
+        sequencerExecutor.pause(camera)
+    }
+
+    @Synchronized
+    fun unpause(camera: Camera) {
+        sequencerExecutor.unpause(camera)
     }
 
     @Synchronized

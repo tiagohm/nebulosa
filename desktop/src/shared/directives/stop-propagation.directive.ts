@@ -3,13 +3,13 @@ import { Directive, HostListener, Input } from '@angular/core'
 @Directive({ selector: '[stopPropagation]' })
 export class StopPropagationDirective {
 	@Input('spEnabled')
-	readonly enabled: boolean = true
+	protected readonly enabled: boolean = true
 
 	@Input('spImmediate')
-	readonly immediate: boolean = true
+	protected readonly immediate: boolean = true
 
 	@Input('spPreventDefault')
-	readonly preventDefault: boolean = false
+	protected readonly preventDefault: boolean = false
 
 	@HostListener('click', ['$event'])
 	@HostListener('contextmenu', ['$event'])

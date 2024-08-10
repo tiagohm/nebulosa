@@ -3,20 +3,21 @@ package nebulosa.api.atlas
 import nebulosa.sbd.SmallBody
 
 data class MinorPlanet(
-    val found: Boolean = false,
-    val name: String = "",
-    val spkId: Int = -1,
-    val kind: SmallBody.BodyKind? = null,
-    val pha: Boolean = false, val neo: Boolean = false,
-    val orbitType: String = "",
-    val parameters: List<OrbitalPhysicalParameter> = emptyList(),
-    val searchItems: List<SearchItem> = emptyList(),
+    @JvmField val found: Boolean = false,
+    @JvmField val name: String = "",
+    @JvmField val spkId: Int = -1,
+    @JvmField val kind: SmallBody.BodyKind? = null,
+    @JvmField val pha: Boolean = false,
+    @JvmField val neo: Boolean = false,
+    @JvmField val orbitType: String = "",
+    @JvmField val parameters: List<OrbitalPhysicalParameter> = emptyList(),
+    @JvmField val list: List<SearchItem> = emptyList(),
 ) {
 
     data class OrbitalPhysicalParameter(
-        val name: String,
-        val description: String,
-        val value: String,
+        @JvmField val name: String,
+        @JvmField val description: String,
+        @JvmField val value: String,
     ) {
 
         constructor(param: SmallBody.OrbitElement) : this(
@@ -31,8 +32,8 @@ data class MinorPlanet(
     }
 
     data class SearchItem(
-        val name: String,
-        val pdes: String,
+        @JvmField val name: String,
+        @JvmField val pdes: String,
     )
 
     companion object {
@@ -59,8 +60,8 @@ data class MinorPlanet(
                     body.body!!.pha, body.body!!.neo, body.body?.type?.name ?: "", items,
                 )
             } else if (body.list != null) {
-                val searchItems = body.list!!.map { SearchItem(it.name, it.pdes) }
-                return MinorPlanet(searchItems = searchItems)
+                val list = body.list!!.map { SearchItem(it.name, it.pdes) }
+                return MinorPlanet(list = list)
             } else {
                 return EMPTY
             }

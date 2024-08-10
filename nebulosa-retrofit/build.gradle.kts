@@ -4,11 +4,11 @@ plugins {
 }
 
 dependencies {
+    api(project(":nebulosa-json"))
     api(libs.retrofit)
     api(libs.retrofit.jackson)
     api(libs.okhttp)
     api(libs.okhttp.logging)
-    api(libs.bundles.jackson)
     compileOnly(libs.csv)
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))

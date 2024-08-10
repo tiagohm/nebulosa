@@ -4,6 +4,6 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 
 data class INDISendPropertyItem(
-    @field:NotBlank val name: String = "",
-    @field:NotNull val value: Any = "",
+    @field:NotBlank @JvmField val name: String = "",
+    @field:NotNull @JvmField val value: Any = "",
 )

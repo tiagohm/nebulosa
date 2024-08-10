@@ -1,21 +1,22 @@
-import io.kotest.core.annotation.EnabledIf
-import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import nebulosa.alpaca.api.AlpacaService
-import nebulosa.test.NonGitHubOnlyCondition
+import nebulosa.test.NonGitHubOnly
+import org.junit.jupiter.api.Test
 
-@EnabledIf(NonGitHubOnlyCondition::class)
-class AlpacaServiceTest : StringSpec() {
+@NonGitHubOnly
+class AlpacaServiceTest {
 
-    init {
-        val client = AlpacaService("http://localhost:11111/")
+    @Test
+    fun management() {
+        val body = CLIENT.management.configuredDevices().execute().body().shouldNotBeNull()
 
-        "management" {
-            val body = client.management.configuredDevices().execute().body().shouldNotBeNull()
-
-            for (device in body.value) {
-                println(device)
-            }
+        for (device in body.value) {
+            println(device)
         }
+    }
+
+    companion object {
+
+        @JvmStatic val CLIENT = AlpacaService("http://localhost:11111/")
     }
 }

@@ -22,6 +22,7 @@ function abe() {
         const outputPath = input.outputPath
         const statusPath = input.statusPath
 
+        console.writeln("abe started")
         console.writeln("targetPath=" + targetPath)
         console.writeln("outputPath=" + outputPath)
         console.writeln("statusPath=" + statusPath)
@@ -65,7 +66,7 @@ function abe() {
     } catch (e) {
         data.success = false
         data.errorMessage = e.message
-        console.writeln(data.errorMessage)
+        console.criticalln(data.errorMessage)
     } finally {
         File.writeTextFile(statusPath, "@" + JSON.stringify(data) + "#")
     }

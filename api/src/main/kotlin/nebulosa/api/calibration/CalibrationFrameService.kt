@@ -6,8 +6,8 @@ import nebulosa.image.algorithms.transformation.correction.BiasSubtraction
 import nebulosa.image.algorithms.transformation.correction.DarkSubtraction
 import nebulosa.image.algorithms.transformation.correction.FlatCorrection
 import nebulosa.image.format.ImageHdu
-import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.FrameType
+import nebulosa.indi.device.camera.FrameType.Companion.frameType
 import nebulosa.log.loggerFor
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
@@ -28,11 +28,11 @@ class CalibrationFrameService(
     private val calibrationFrameRepository: CalibrationFrameRepository,
 ) : CalibrationFrameProvider {
 
-    fun calibrate(name: String, image: Image, createNew: Boolean = false): Image {
+    fun calibrate(group: String, image: Image, createNew: Boolean = false): Image {
         return synchronized(image) {
-            val darkFrame = findBestDarkFrames(name, image).firstOrNull()
-            val biasFrame = if (darkFrame == null) findBestBiasFrames(name, image).firstOrNull() else null
-            val flatFrame = findBestFlatFrames(name, image).firstOrNull()
+            val darkFrame = findBestDarkFrames(group, image).firstOrNull()
+            val biasFrame = if (darkFrame == null) findBestBiasFrames(group, image).firstOrNull() else null
+            val flatFrame = findBestFlatFrames(group, image).firstOrNull()
 
             val darkImage = darkFrame?.path?.fits()?.use(Image::open)
             val biasImage = biasFrame?.path?.fits()?.use(Image::open)
@@ -92,27 +92,28 @@ class CalibrationFrameService(
         }
     }
 
-    fun groups() = calibrationFrameRepository.groups()
-
-    fun groupedCalibrationFrames(name: String): Map<CalibrationGroupKey, List<CalibrationFrameEntity>> {
-        val frames = calibrationFrameRepository.findAll(name)
-        return frames.groupBy(CalibrationGroupKey::from)
+    fun groups(): List<String> {
+        return calibrationFrameRepository.groups()
     }
 
-    fun upload(name: String, path: Path): List<CalibrationFrameEntity> {
-        val files = if (path.isRegularFile() && path.isFits) listOf(path)
+    fun frames(group: String): List<CalibrationFrameEntity> {
+        return calibrationFrameRepository.findAll(group)
+    }
+
+    fun upload(group: String, path: Path): List<CalibrationFrameEntity> {
+        val files = if (path.isRegularFile()) listOf(path)
         else if (path.isDirectory()) path.listDirectoryEntries("*.{fits,fit,xisf}").filter { it.isRegularFile() }
         else return emptyList()
 
-        return upload(name, files)
+        return upload(group, files)
     }
 
     @Synchronized
-    fun upload(name: String, files: List<Path>): List<CalibrationFrameEntity> {
+    fun upload(group: String, files: List<Path>): List<CalibrationFrameEntity> {
         val frames = ArrayList<CalibrationFrameEntity>(files.size)
 
         for (file in files) {
-            calibrationFrameRepository.delete(name, "$file")
+            calibrationFrameRepository.delete(group, "$file")
 
             try {
                 val image = if (file.isFits()) file.fits()
@@ -125,12 +126,12 @@ class CalibrationFrameService(
                     val frameType = header.frameType?.takeIf { it != FrameType.LIGHT } ?: return@use
 
                     val exposureTime = if (frameType == FrameType.DARK) header.exposureTimeInMicroseconds else 0L
-                    val temperature = if (frameType == FrameType.DARK) header.temperature else 999.0
+                    val temperature = if (frameType == FrameType.DARK) header.temperature else INVALID_TEMPERATURE
                     val gain = if (frameType != FrameType.FLAT) header.gain else 0.0
                     val filter = if (frameType == FrameType.FLAT) header.filter else null
 
                     val frame = CalibrationFrameEntity(
-                        0L, frameType, name, filter,
+                        0L, frameType, group, filter,
                         exposureTime, temperature,
                         header.width, header.height, header.binX, header.binY,
                         gain, file,
@@ -147,23 +148,21 @@ class CalibrationFrameService(
         return frames
     }
 
-    fun edit(frame: CalibrationFrameEntity, name: String, enabled: Boolean): CalibrationFrameEntity {
-        frame.name = name
-        frame.enabled = enabled
+    fun edit(frame: CalibrationFrameEntity): CalibrationFrameEntity {
         return calibrationFrameRepository.save(frame)
     }
 
-    fun delete(frame: CalibrationFrameEntity) {
-        calibrationFrameRepository.delete(frame)
+    fun delete(id: Long) {
+        calibrationFrameRepository.delete(id)
     }
 
     override fun findBestDarkFrames(
-        name: String, temperature: Double, width: Int, height: Int,
+        group: String, temperature: Double, width: Int, height: Int,
         binX: Int, binY: Int, exposureTimeInMicroseconds: Long,
         gain: Double,
     ): List<CalibrationFrameEntity> {
         val frames = calibrationFrameRepository
-            .darkFrames(name, width, height, binX, exposureTimeInMicroseconds, gain)
+            .darkFrames(group, width, height, binX, exposureTimeInMicroseconds, gain)
 
         if (frames.isEmpty()) return emptyList()
 
@@ -175,62 +174,49 @@ class CalibrationFrameService(
         return groupedFrames.firstEntry().value
     }
 
-    fun findBestDarkFrames(name: String, image: Image): List<CalibrationFrameEntity> {
+    fun findBestDarkFrames(group: String, image: Image): List<CalibrationFrameEntity> {
         val header = image.header
         val temperature = header.temperature
         val binX = header.binX
         val exposureTime = header.exposureTimeInMicroseconds
 
-        return findBestDarkFrames(name, temperature, image.width, image.height, binX, binX, exposureTime, header.gain)
+        return findBestDarkFrames(group, temperature, image.width, image.height, binX, binX, exposureTime, header.gain)
     }
 
     override fun findBestFlatFrames(
-        name: String, width: Int, height: Int,
+        group: String, width: Int, height: Int,
         binX: Int, binY: Int, filter: String?
     ): List<CalibrationFrameEntity> {
         // TODO: Generate master from matched frames. (Subtract the master bias frame from each flat frame)
         return calibrationFrameRepository
-            .flatFrames(name, filter, width, height, binX)
+            .flatFrames(group, filter, width, height, binX)
     }
 
-    fun findBestFlatFrames(name: String, image: Image): List<CalibrationFrameEntity> {
+    fun findBestFlatFrames(group: String, image: Image): List<CalibrationFrameEntity> {
         val header = image.header
         val filter = header.filter
         val binX = header.binX
 
-        return findBestFlatFrames(name, image.width, image.height, binX, binX, filter)
+        return findBestFlatFrames(group, image.width, image.height, binX, binX, filter)
     }
 
     override fun findBestBiasFrames(
-        name: String, width: Int, height: Int,
+        group: String, width: Int, height: Int,
         binX: Int, binY: Int, gain: Double,
     ): List<CalibrationFrameEntity> {
         // TODO: Generate master from matched frames.
-        return calibrationFrameRepository
-            .biasFrames(name, width, height, binX, gain)
+        return calibrationFrameRepository.biasFrames(group, width, height, binX, gain)
     }
 
-    fun findBestBiasFrames(name: String, image: Image): List<CalibrationFrameEntity> {
+    fun findBestBiasFrames(group: String, image: Image): List<CalibrationFrameEntity> {
         val header = image.header
         val binX = header.binX
 
-        return findBestBiasFrames(name, image.width, image.height, binX, binX, image.header.gain)
+        return findBestBiasFrames(group, image.width, image.height, binX, binX, image.header.gain)
     }
 
     companion object {
 
         @JvmStatic private val LOG = loggerFor<CalibrationFrameService>()
-
-        @JvmStatic val ReadableHeader.frameType
-            get() = frame?.uppercase()?.let {
-                if ("LIGHT" in it) FrameType.LIGHT
-                else if ("DARK" in it) FrameType.DARK
-                else if ("FLAT" in it) FrameType.FLAT
-                else if ("BIAS" in it) FrameType.BIAS
-                else null
-            }
-
-        inline val Path.isFits
-            get() = "$this".let { it.endsWith(".fits") || it.endsWith(".fit") }
     }
 }

@@ -7,6 +7,7 @@ import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.deg
 import nebulosa.math.hours
+import nebulosa.time.SystemClock
 import java.time.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -16,9 +17,9 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
 
     @Volatile private var rightAscension = 0.0
     @Volatile private var declination = 0.0
-    @Volatile private var date = LocalDate.now()
-    @Volatile private var time = LocalTime.now()
-    @Volatile private var offset = ZoneId.systemDefault().rules.getOffset(Instant.now())
+    @Volatile private var date = LocalDate.now(SystemClock)
+    @Volatile private var time = LocalTime.now(SystemClock)
+    @Volatile private var offset = SystemClock.zone.rules.getOffset(Instant.now())
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {
         LOG.info("client connected. address={}", ctx.channel().remoteAddress())
@@ -54,9 +55,9 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
                 "#:GD#" -> ctx.writeAndFlush(LX200ProtocolMessage.DECPosition(server.declination))
                 "#:Gg#" -> ctx.writeAndFlush(LX200ProtocolMessage.Longitude(server.longitude))
                 "#:Gt#" -> ctx.writeAndFlush(LX200ProtocolMessage.Latitude(server.latitude))
-                "#:GC#" -> ctx.writeAndFlush(LX200ProtocolMessage.Date(LocalDate.now()))
-                "#:GL#" -> ctx.writeAndFlush(LX200ProtocolMessage.Time(LocalTime.now()))
-                "#:GG#" -> ctx.writeAndFlush(LX200ProtocolMessage.ZoneOffset(ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds / 3600.0))
+                "#:GC#" -> ctx.writeAndFlush(LX200ProtocolMessage.Date(LocalDate.now(SystemClock)))
+                "#:GL#" -> ctx.writeAndFlush(LX200ProtocolMessage.Time(LocalTime.now(SystemClock)))
+                "#:GG#" -> ctx.writeAndFlush(LX200ProtocolMessage.ZoneOffset(SystemClock.zone.rules.getOffset(Instant.now()).totalSeconds / 3600.0))
                 "#:GW#" -> ctx.writeAndFlush(LX200ProtocolMessage.Status("G", server.tracking, server.parked))
                 "#:CM#" -> {
                     ctx.writeAndFlush(LX200ProtocolMessage.Zero)
@@ -101,14 +102,14 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
                             ctx.writeAndFlush(LX200ProtocolMessage.Ok)
                             time = LocalTime.parse(command.substring(4, command.length - 1), LX200ProtocolEncoder.CALENDAR_TIME_FORMAT)
                             val localTime = OffsetDateTime.of(date, time, offset)
-                            val utcTime = localTime.minusSeconds(ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds.toLong())
+                            val utcTime = localTime.minusSeconds(SystemClock.zone.rules.getOffset(Instant.now()).totalSeconds.toLong())
                             server.time(utcTime)
                         }
                         command.startsWith("#:SC") -> {
                             ctx.writeAndFlush(LX200ProtocolMessage.Text("1Updating planetary data       #                              #"))
                             date = LocalDate.parse(command.substring(4, command.length - 1), LX200ProtocolEncoder.CALENDAR_DATE_FORMAT)
                             val localTime = OffsetDateTime.of(date, time, offset)
-                            val utcTime = localTime.minusSeconds(ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds.toLong())
+                            val utcTime = localTime.minusSeconds(SystemClock.zone.rules.getOffset(Instant.now()).totalSeconds.toLong())
                             server.time(utcTime)
                         }
                         command.startsWith("#:SG") -> {
@@ -116,7 +117,7 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
                             val offsetInHours = -command.substring(4, command.length - 1).toDouble()
                             offset = ZoneOffset.ofTotalSeconds((offsetInHours * 3600.0).toInt())
                             val localTime = OffsetDateTime.of(date, time, offset)
-                            val utcTime = localTime.minusSeconds(ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds.toLong())
+                            val utcTime = localTime.minusSeconds(SystemClock.zone.rules.getOffset(Instant.now()).totalSeconds.toLong())
                             server.time(utcTime)
                         }
                         command.startsWith("#:Sr") -> ctx.updateRA(command.substring(4))

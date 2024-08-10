@@ -23,7 +23,7 @@ data object FitsFormat : ImageFormat {
     }
 
     @JvmStatic
-    fun BufferedSource.readSignature() = readString(6L, Charsets.US_ASCII)
+    fun BufferedSource.readSignature() = if (request(6L)) readString(6L, Charsets.US_ASCII) else ""
 
     fun isImageHdu(header: ReadableHeader) =
         header.getBoolean(FitsKeyword.SIMPLE) || header.getStringOrNull(FitsKeyword.XTENSION) == "IMAGE"
@@ -71,11 +71,8 @@ data object FitsFormat : ImageFormat {
         val numberOfChannels = header.numberOfChannels
         val bitpix = header.bitpix
         val position = source.position
-        val rangeMin = header.getFloat(FitsKeyword.DATAMIN, 0f)
-        val rangeMax = header.getFloat(FitsKeyword.DATAMAX, 1f)
-        val range = rangeMin..rangeMax
 
-        val data = SeekableSourceImageData(source, position, width, height, numberOfChannels, bitpix, range)
+        val data = SeekableSourceImageData(source, position, width, height, numberOfChannels, bitpix)
         val skipBytes = computeRemainingBytesToSkip(data.totalSizeInBytes)
         if (skipBytes > 0L) source.seek(position + data.totalSizeInBytes + skipBytes)
 

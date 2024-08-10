@@ -14,7 +14,13 @@ export interface Focuser extends Device, Thermometer {
 	maxPosition: number
 }
 
-export const EMPTY_FOCUSER: Focuser = {
+export interface FocuserPreference {
+	stepsRelative: number
+	stepsAbsolute: number
+}
+
+export const DEFAULT_FOCUSER: Focuser = {
+	type: 'FOCUSER',
 	sender: '',
 	id: '',
 	moving: false,
@@ -33,11 +39,18 @@ export const EMPTY_FOCUSER: Focuser = {
 	temperature: 0,
 }
 
-export interface FocuserPreference {
-	stepsRelative?: number
-	stepsAbsolute?: number
+export const DEFAULT_FOCUSER_PREFERENCE: FocuserPreference = {
+	stepsRelative: 100,
+	stepsAbsolute: 0,
 }
 
 export function isFocuser(device?: Device): device is Focuser {
-	return !!device && 'maxPosition' in device
+	return !!device && device.type === 'FOCUSER'
+}
+
+export function focuserPreferenceWithDefault(preference?: Partial<FocuserPreference>, source: FocuserPreference = DEFAULT_FOCUSER_PREFERENCE) {
+	if (!preference) return structuredClone(source)
+	preference.stepsAbsolute ??= source.stepsAbsolute
+	preference.stepsAbsolute ??= source.stepsAbsolute
+	return preference as FocuserPreference
 }

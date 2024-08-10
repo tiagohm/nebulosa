@@ -1,51 +1,28 @@
+import type { Subscription } from 'rxjs'
+import type { Severity } from './angular.types'
 import type { PierSide } from './mount.types'
 
 export type Angle = string | number
 
-export interface PlanetTableItem {
-	name: string
-	type: string
-	code: string
-}
+export type Constellation = (typeof CONSTELLATIONS)[number]
 
-export interface SearchFilter {
-	text: string
-	rightAscension: Angle
-	declination: Angle
-	radius: number
-	constellation: Constellation | 'ALL'
-	magnitude: [number, number]
-	type: SkyObjectType | 'ALL'
-	types: (SkyObjectType | 'ALL')[]
-}
+export type ClassificationType = (typeof CLASSIFICATION_TYPES)[number]
 
-export const EMPTY_SEARCH_FILTER: SearchFilter = {
-	text: '',
-	rightAscension: '00h00m00s',
-	declination: `+000°00'00"`,
-	radius: 0,
-	constellation: 'ALL',
-	magnitude: [-30, 30],
-	type: 'ALL',
-	types: ['ALL'],
-}
+export type SkyObjectType = (typeof SKY_OBJECT_TYPES)[number]
 
-export interface SatelliteGroupFilterItem {
-	group: SatelliteGroupType
-	enabled: boolean
-}
+export type MinorPlanetKind = 'ASTEROID' | 'COMET'
 
-export interface SkyAtlasPreference {
-	satellites: SatelliteGroupFilterItem[]
-	fast: boolean
-}
+export type Star = DeepSkyObject & SpectralSkyObject
 
-export const EMPTY_SKY_ATLAS_PREFERENCE: SkyAtlasPreference = {
-	satellites: [],
-	fast: false,
-}
+export type SatelliteGroupType = (typeof SATELLITE_GROUPS)[number]
 
-export enum SkyAtlasTab {
+export type PlanetType = 'PLANET' | 'DWARF_PLANET' | 'MOON_OF_MARS' | 'MOON_OF_JUPITER' | 'MOON_OF_SATURN' | 'MOON_OF_URANUS' | 'MOON_OF_NEPTUNE' | 'MOON_OF_PLUTO' | 'ASTEROID'
+
+export type AltitudeDataPoint = [number, number]
+
+export type SatelliteSearchGroups = Record<SatelliteGroupType, boolean>
+
+export enum BodyTabType {
 	SUN,
 	MOON,
 	PLANET,
@@ -54,14 +31,467 @@ export enum SkyAtlasTab {
 	SATELLITE,
 }
 
-export interface SkyAtlasInput {
-	tab: SkyAtlasTab
-	filter?: Partial<Exclude<SearchFilter, 'types'>>
+export interface BodyTag {
+	label: string
+	severity: Severity
 }
 
-export interface SettingsDialog {
-	showDialog: boolean
+export interface BodyTab {
+	position: BodyPosition
+	name: string
+	tags: BodyTag[]
 }
+
+export interface SunTab extends BodyTab {
+	image: string
+}
+
+export type MoonTab = BodyTab
+
+export interface PlanetItem {
+	name: string
+	type: PlanetType
+	code: string
+}
+
+export interface PlanetTab extends BodyTab {
+	selected?: PlanetItem
+	readonly planets: PlanetItem[]
+}
+
+export interface OrbitalPhysicalParameter {
+	name: string
+	description: string
+	value: string
+}
+
+export interface MinorPlanetListItem {
+	name: string
+	pdes: string
+}
+
+export interface MinorPlanet {
+	found: boolean
+	name: string
+	spkId: number
+	kind?: MinorPlanetKind
+	pha: boolean
+	neo: boolean
+	orbitType: string
+	parameters: OrbitalPhysicalParameter[]
+	list: MinorPlanetListItem[]
+}
+
+export interface CloseApproach {
+	name: string
+	designation: string
+	dateTime: number
+	distance: number
+	absoluteMagnitude: number
+}
+
+export interface MinorPlanetTab extends BodyTab {
+	tab: number
+	search: {
+		text: string
+		result?: MinorPlanet
+	}
+	closeApproach: {
+		days: number
+		lunarDistance: number
+		result: CloseApproach[]
+		selected?: CloseApproach
+	}
+	list: {
+		items: MinorPlanetListItem[]
+		showDialog: boolean
+	}
+}
+
+export interface SkyObjectTab extends BodyTab {
+	search: SkyObjectSearchDialog & {
+		result: DeepSkyObject[]
+		selected?: DeepSkyObject
+	}
+}
+
+export interface SkyObjectSearchFilter {
+	text: string
+	rightAscension: Angle
+	declination: Angle
+	radius: number
+	constellation: Constellation | 'ALL'
+	magnitude: [number, number]
+	type: SkyObjectType | 'ALL'
+}
+
+export interface SkyObjectSearchDialog {
+	showDialog: boolean
+	filter: SkyObjectSearchFilter
+}
+
+export interface SatelliteSearchFilter {
+	text: string
+	groups: SatelliteSearchGroups
+}
+
+export interface SatelliteSearchDialog {
+	showDialog: boolean
+	filter: SatelliteSearchFilter
+}
+
+export interface Satellite {
+	id: number
+	name: string
+	tle: string
+	groups: SatelliteGroupType[]
+}
+
+export interface SatelliteTab extends BodyTab {
+	search: SatelliteSearchDialog & {
+		result: Satellite[]
+		selected?: Satellite
+	}
+}
+
+export interface BodyTabRefresh {
+	count: number
+	timer?: Subscription
+	position: boolean
+	chart: boolean
+}
+
+export interface DateTimeAndLocation {
+	manual: boolean
+	dateTime: Date
+	location: Location
+}
+
+export interface Location {
+	id: number
+	name: string
+	latitude: number
+	longitude: number
+	elevation: number
+	offsetInMinutes: number
+}
+
+export interface SkyAtlasPreference {
+	satellites: SatelliteSearchGroups
+	location: Location
+	fast: boolean
+}
+
+export interface SkyAtlasInput {
+	tab: BodyTabType
+	filter?: Partial<Exclude<SkyObjectSearchFilter, 'types'>>
+}
+
+export interface EquatorialCoordinate {
+	rightAscension: Angle
+	declination: Angle
+}
+
+export interface EquatorialCoordinateJ2000 {
+	rightAscensionJ2000: Angle
+	declinationJ2000: Angle
+}
+
+export interface HorizontalCoordinate {
+	azimuth: Angle
+	altitude: Angle
+}
+
+export interface BodyPosition extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
+	magnitude: number
+	constellation: Constellation
+	distance: number
+	distanceUnit: string
+	illuminated: number
+	elongation: number
+	leading: boolean
+}
+
+export interface Twilight {
+	civilDusk: number[]
+	nauticalDusk: number[]
+	astronomicalDusk: number[]
+	night: number[]
+	astronomicalDawn: number[]
+	nauticalDawn: number[]
+	civilDawn: number[]
+}
+
+export interface AstronomicalObject extends EquatorialCoordinateJ2000 {
+	id: number
+	name: string
+	magnitude: number
+}
+
+export interface SpectralSkyObject {
+	spType: string
+}
+
+export interface OrientedSkyObject {
+	majorAxis: number
+	minorAxis: number
+	orientation: number
+}
+
+export interface DeepSkyObject extends AstronomicalObject {
+	type: SkyObjectType
+	redshift: number
+	parallax: number
+	radialVelocity: number
+	distance: number
+	pmRA: number
+	pmDEC: number
+	constellation: Constellation
+}
+
+export interface ComputedLocation extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
+	constellation: Constellation
+	meridianAt: string
+	timeLeftToMeridianFlip: string
+	lst: string
+	pierSide: PierSide
+}
+
+export const DEFAULT_BODY_POSITION: BodyPosition = {
+	rightAscensionJ2000: '00h00m00s',
+	declinationJ2000: `+000°00'00"`,
+	rightAscension: '00h00m00s',
+	declination: `+000°00'00"`,
+	azimuth: `000°00'00"`,
+	altitude: `+00°00'00"`,
+	magnitude: 0,
+	constellation: 'AND',
+	distance: 0,
+	distanceUnit: 'ly',
+	illuminated: 0,
+	elongation: 0,
+	leading: false,
+}
+
+export const DEFAULT_SUN: SunTab = {
+	name: 'Sun',
+	position: DEFAULT_BODY_POSITION,
+	tags: [],
+	image: '',
+}
+
+export const DEFAULT_MOON: MoonTab = {
+	name: 'Moon',
+	position: DEFAULT_BODY_POSITION,
+	tags: [],
+}
+
+export const DEFAULT_PLANET_ITEMS: PlanetItem[] = [
+	{ name: 'Mercury', type: 'PLANET', code: '199' },
+	{ name: 'Venus', type: 'PLANET', code: '299' },
+	{ name: 'Mars', type: 'PLANET', code: '499' },
+	{ name: 'Jupiter', type: 'PLANET', code: '599' },
+	{ name: 'Saturn', type: 'PLANET', code: '699' },
+	{ name: 'Uranus', type: 'PLANET', code: '799' },
+	{ name: 'Neptune', type: 'PLANET', code: '899' },
+	{ name: 'Pluto', type: 'DWARF_PLANET', code: '999' },
+	{ name: 'Phobos', type: 'MOON_OF_MARS', code: '401' },
+	{ name: 'Deimos', type: 'MOON_OF_MARS', code: '402' },
+	{ name: 'Io', type: 'MOON_OF_JUPITER', code: '501' },
+	{ name: 'Europa', type: 'MOON_OF_JUPITER', code: '402' },
+	{ name: 'Ganymede', type: 'MOON_OF_JUPITER', code: '403' },
+	{ name: 'Callisto', type: 'MOON_OF_JUPITER', code: '504' },
+	{ name: 'Mimas', type: 'MOON_OF_SATURN', code: '601' },
+	{ name: 'Enceladus', type: 'MOON_OF_SATURN', code: '602' },
+	{ name: 'Tethys', type: 'MOON_OF_SATURN', code: '603' },
+	{ name: 'Dione', type: 'MOON_OF_SATURN', code: '604' },
+	{ name: 'Rhea', type: 'MOON_OF_SATURN', code: '605' },
+	{ name: 'Titan', type: 'MOON_OF_SATURN', code: '606' },
+	{ name: 'Hyperion', type: 'MOON_OF_SATURN', code: '607' },
+	{ name: 'Iapetus', type: 'MOON_OF_SATURN', code: '608' },
+	{ name: 'Ariel', type: 'MOON_OF_URANUS', code: '701' },
+	{ name: 'Umbriel', type: 'MOON_OF_URANUS', code: '702' },
+	{ name: 'Titania', type: 'MOON_OF_URANUS', code: '703' },
+	{ name: 'Oberon', type: 'MOON_OF_URANUS', code: '704' },
+	{ name: 'Miranda', type: 'MOON_OF_URANUS', code: '705' },
+	{ name: 'Triton', type: 'MOON_OF_NEPTUNE', code: '801' },
+	{ name: 'Charon', type: 'MOON_OF_PLUTO', code: '901' },
+	{ name: '1 Ceres', type: 'DWARF_PLANET', code: '1;' },
+	{ name: '90377 Sedna', type: 'DWARF_PLANET', code: '90377;' },
+	{ name: '136199 Eris', type: 'DWARF_PLANET', code: '136199;' },
+	{ name: '2 Pallas', type: 'ASTEROID', code: '2;' },
+	{ name: '3 Juno', type: 'ASTEROID', code: '3;' },
+	{ name: '4 Vesta', type: 'ASTEROID', code: '4;' },
+]
+
+export const DEFAULT_PLANET: PlanetTab = {
+	name: '',
+	position: DEFAULT_BODY_POSITION,
+	tags: [],
+	planets: DEFAULT_PLANET_ITEMS,
+}
+
+export const DEFAULT_MINOR_PLANET: MinorPlanetTab = {
+	tab: 0,
+	name: '',
+	position: DEFAULT_BODY_POSITION,
+	tags: [],
+	search: {
+		text: '',
+	},
+	closeApproach: {
+		days: 7,
+		lunarDistance: 10,
+		result: [],
+	},
+	list: {
+		showDialog: false,
+		items: [],
+	},
+}
+
+export const DEFAULT_SKY_OBJECT_SEARCH_FILTER: SkyObjectSearchFilter = {
+	text: '',
+	rightAscension: '00h00m00s',
+	declination: `+000°00'00"`,
+	radius: 0,
+	constellation: 'ALL',
+	magnitude: [-30, 30],
+	type: 'ALL',
+}
+
+export const DEFAULT_SKY_OBJECT_SEARCH_DIALOG: SkyObjectSearchDialog = {
+	showDialog: false,
+	filter: DEFAULT_SKY_OBJECT_SEARCH_FILTER,
+}
+
+export const DEFAULT_SKY_OBJECT: SkyObjectTab = {
+	name: '',
+	search: {
+		...DEFAULT_SKY_OBJECT_SEARCH_DIALOG,
+		result: [],
+	},
+	position: DEFAULT_BODY_POSITION,
+	tags: [],
+}
+
+export const DEFAULT_SATELLITE_SEARCH_GROUPS: SatelliteSearchGroups = {
+	ACTIVE: false,
+	AMATEUR: true,
+	ANALYST: false,
+	ARGOS: false,
+	BEIDOU: true,
+	COSMOS_1408_DEBRIS: false,
+	COSMOS_2251_DEBRIS: false,
+	CUBESAT: false,
+	DMC: false,
+	EDUCATION: false,
+	ENGINEERING: false,
+	FENGYUN_1C_DEBRIS: false,
+	GALILEO: true,
+	GEO: false,
+	GEODETIC: false,
+	GLO_OPS: true,
+	GLOBALSTAR: false,
+	GNSS: true,
+	GOES: false,
+	GORIZONT: false,
+	GPS_OPS: true,
+	INTELSAT: false,
+	IRIDIUM_33_DEBRIS: false,
+	IRIDIUM_NEXT: false,
+	IRIDIUM: false,
+	LAST_30_DAYS: false,
+	MILITARY: false,
+	MOLNIYA: false,
+	MUSSON: false,
+	NNSS: false,
+	NOAA: false,
+	ONEWEB: true,
+	ORBCOMM: false,
+	OTHER_COMM: false,
+	OTHER: false,
+	PLANET: false,
+	RADAR: false,
+	RADUGA: false,
+	RESOURCE: false,
+	SARSAT: false,
+	SATNOGS: false,
+	SBAS: false,
+	SCIENCE: true,
+	SES: false,
+	SPIRE: false,
+	STARLINK: true,
+	STATIONS: true,
+	SWARM: false,
+	TDRSS: false,
+	VISUAL: true,
+	WEATHER: false,
+	X_COMM: false,
+}
+
+export const DEFAULT_SATELLITE_SEARCH_FILTER: SatelliteSearchFilter = {
+	text: '',
+	groups: DEFAULT_SATELLITE_SEARCH_GROUPS,
+}
+
+export const DEFAULT_SATELLITE_SEARCH_DIALOG: SatelliteSearchDialog = {
+	showDialog: false,
+	filter: DEFAULT_SATELLITE_SEARCH_FILTER,
+}
+
+export const DEFAULT_SATELLITE: SatelliteTab = {
+	name: '',
+	search: {
+		...DEFAULT_SATELLITE_SEARCH_DIALOG,
+		result: [],
+	},
+	position: DEFAULT_BODY_POSITION,
+	tags: [],
+}
+
+export const DEFAULT_COMPUTED_LOCATION: ComputedLocation = {
+	constellation: 'AND',
+	meridianAt: '00:00',
+	timeLeftToMeridianFlip: '00:00',
+	lst: '00:00',
+	pierSide: 'NEITHER',
+	rightAscensionJ2000: '00h00m00s',
+	declinationJ2000: `+000°00'00"`,
+	rightAscension: '00h00m00s',
+	declination: `+000°00'00"`,
+	azimuth: `000°00'00"`,
+	altitude: `+00°00'00"`,
+}
+
+export const DEFAULT_LOCATION: Location = {
+	id: 0,
+	name: 'Null Island',
+	latitude: 0,
+	longitude: 0,
+	elevation: 0,
+	offsetInMinutes: 0,
+}
+
+export const DEFAULT_BODY_TAB_REFRESH: BodyTabRefresh = {
+	count: 0,
+	position: false,
+	chart: false,
+}
+
+export const DEFAULT_DATE_TIME_AND_LOCATION: DateTimeAndLocation = {
+	manual: false,
+	dateTime: new Date(),
+	location: DEFAULT_LOCATION,
+}
+
+export const DEFAULT_SKY_ATLAS_PREFERENCE: SkyAtlasPreference = {
+	satellites: DEFAULT_SATELLITE_SEARCH_GROUPS,
+	location: DEFAULT_DATE_TIME_AND_LOCATION.location,
+	fast: false,
+}
+
+export const CLASSIFICATION_TYPES = ['STAR', 'SET_OF_STARS', 'INTERSTELLAR_MEDIUM', 'GALAXY', 'SET_OF_GALAXIES', 'GRAVITATION', 'SPECTRAL', 'OTHER'] as const
 
 export const CONSTELLATIONS = [
 	'AND',
@@ -153,12 +583,6 @@ export const CONSTELLATIONS = [
 	'VOL',
 	'VUL',
 ] as const
-
-export type Constellation = (typeof CONSTELLATIONS)[number]
-
-export const CLASSIFICATION_TYPES = ['STAR', 'SET_OF_STARS', 'INTERSTELLAR_MEDIUM', 'GALAXY', 'SET_OF_GALAXIES', 'GRAVITATION', 'SPECTRAL', 'OTHER'] as const
-
-export type ClassificationType = (typeof CLASSIFICATION_TYPES)[number]
 
 export const SKY_OBJECT_TYPES = [
 	'ACTIVE_GALAXY_NUCLEUS',
@@ -315,143 +739,6 @@ export const SKY_OBJECT_TYPES = [
 	'YOUNG_STELLAR_OBJECT',
 ] as const
 
-export type SkyObjectType = (typeof SKY_OBJECT_TYPES)[number]
-
-export interface EquatorialCoordinate {
-	rightAscension: Angle
-	declination: Angle
-}
-
-export interface EquatorialCoordinateJ2000 {
-	rightAscensionJ2000: Angle
-	declinationJ2000: Angle
-}
-
-export interface HorizontalCoordinate {
-	azimuth: Angle
-	altitude: Angle
-}
-
-export interface BodyPosition extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
-	magnitude: number
-	constellation: Constellation
-	distance: number
-	distanceUnit: string
-	illuminated: number
-	elongation: number
-	leading: boolean
-}
-
-export const EMPTY_BODY_POSITION: BodyPosition = {
-	rightAscensionJ2000: '00h00m00s',
-	declinationJ2000: `+000°00'00"`,
-	rightAscension: '00h00m00s',
-	declination: `+000°00'00"`,
-	azimuth: `000°00'00"`,
-	altitude: `+00°00'00"`,
-	magnitude: 0,
-	constellation: 'AND',
-	distance: 0,
-	distanceUnit: 'ly',
-	illuminated: 0,
-	elongation: 0,
-	leading: false,
-}
-
-export interface Twilight {
-	civilDusk: number[]
-	nauticalDusk: number[]
-	astronomicalDusk: number[]
-	night: number[]
-	astronomicalDawn: number[]
-	nauticalDawn: number[]
-	civilDawn: number[]
-}
-
-export type MinorPlanetKind = 'ASTEROID' | 'COMET'
-
-export interface MinorPlanetSearchItem {
-	name: string
-	pdes: string
-}
-
-export interface MinorPlanet {
-	found: boolean
-	name: string
-	spkId: number
-	kind?: MinorPlanetKind
-	pha: boolean
-	neo: boolean
-	orbitType: string
-	parameters: OrbitalPhysicalParameter[]
-	searchItems: MinorPlanetSearchItem[]
-}
-
-export interface OrbitalPhysicalParameter {
-	name: string
-	description: string
-	value: string
-}
-
-export interface CloseApproach {
-	name: string
-	designation: string
-	dateTime: number
-	distance: number
-	absoluteMagnitude: number
-}
-
-export interface AstronomicalObject extends EquatorialCoordinateJ2000 {
-	id: number
-	name: string
-	magnitude: number
-}
-
-export interface SpectralSkyObject {
-	spType: string
-}
-
-export type Star = DeepSkyObject & SpectralSkyObject
-
-export interface OrientedSkyObject {
-	majorAxis: number
-	minorAxis: number
-	orientation: number
-}
-
-export interface DeepSkyObject extends AstronomicalObject {
-	type: SkyObjectType
-	redshift: number
-	parallax: number
-	radialVelocity: number
-	distance: number
-	pmRA: number
-	pmDEC: number
-	constellation: Constellation
-}
-
-export interface ComputedLocation extends EquatorialCoordinate, EquatorialCoordinateJ2000, HorizontalCoordinate {
-	constellation: Constellation
-	meridianAt: string
-	timeLeftToMeridianFlip: string
-	lst: string
-	pierSide: PierSide
-}
-
-export const EMPTY_COMPUTED_LOCATION: ComputedLocation = {
-	constellation: 'AND',
-	meridianAt: '00:00',
-	timeLeftToMeridianFlip: '00:00',
-	lst: '00:00',
-	pierSide: 'NEITHER',
-	rightAscensionJ2000: '00h00m00s',
-	declinationJ2000: `+000°00'00"`,
-	rightAscension: '00h00m00s',
-	declination: `+000°00'00"`,
-	azimuth: `000°00'00"`,
-	altitude: `+00°00'00"`,
-}
-
 export const SATELLITE_GROUPS = [
 	'LAST_30_DAYS',
 	'STATIONS',
@@ -507,29 +794,54 @@ export const SATELLITE_GROUPS = [
 	'OTHER',
 ] as const
 
-export type SatelliteGroupType = (typeof SATELLITE_GROUPS)[number]
-
-export interface Satellite {
-	id: number
-	name: string
-	tle: string
-	groups: SatelliteGroupType[]
+export function searchFilterWithDefault(filter?: Partial<SkyObjectSearchFilter>, source: SkyObjectSearchFilter = DEFAULT_SKY_OBJECT_SEARCH_FILTER) {
+	if (!filter) return structuredClone(source)
+	filter.rightAscension ??= source.rightAscension
+	filter.declination ??= source.declination
+	filter.radius ||= source.radius
+	filter.constellation ??= source.constellation
+	filter.magnitude ??= source.magnitude
+	filter.type ??= source.type
+	return filter as SkyObjectSearchFilter
 }
 
-export interface Location {
-	id: number
-	name: string
-	latitude: number
-	longitude: number
-	elevation: number
-	offsetInMinutes: number
+export function satelliteSearchGroupsWithDefault(groups?: Partial<SatelliteSearchGroups>, source: SatelliteSearchGroups = DEFAULT_SATELLITE_SEARCH_GROUPS) {
+	if (!groups) return structuredClone(source)
+
+	if ('ACTIVE' in groups) {
+		for (const entry of Object.entries(source)) {
+			const key = entry[0] as SatelliteGroupType
+			groups[key] ??= source[key]
+		}
+
+		return groups as SatelliteSearchGroups
+	} else {
+		return structuredClone(source)
+	}
 }
 
-export const EMPTY_LOCATION: Location = {
-	id: 0,
-	name: 'Null Island',
-	latitude: 0,
-	longitude: 0,
-	elevation: 0,
-	offsetInMinutes: 0,
+export function resetSatelliteSearchGroup(groups: SatelliteSearchGroups, source: SatelliteSearchGroups = DEFAULT_SATELLITE_SEARCH_GROUPS) {
+	for (const entry of Object.entries(source)) {
+		const key = entry[0] as SatelliteGroupType
+		groups[key] = source[key]
+	}
+}
+
+export function locationWithDefault(location?: Partial<Location>, source: Location = DEFAULT_LOCATION) {
+	if (!location) return structuredClone(source)
+	location.id ??= source.id
+	location.name ||= source.name
+	location.latitude ??= source.latitude
+	location.longitude ??= source.longitude
+	location.elevation ??= source.elevation
+	location.offsetInMinutes ??= source.offsetInMinutes
+	return location as Location
+}
+
+export function skyAtlasPreferenceWithDefault(preference?: Partial<SkyAtlasPreference>, source: SkyAtlasPreference = DEFAULT_SKY_ATLAS_PREFERENCE) {
+	if (!preference) return structuredClone(source)
+	preference.satellites = satelliteSearchGroupsWithDefault(preference.satellites, source.satellites)
+	preference.location = locationWithDefault(preference.location, source.location)
+	preference.fast ??= source.fast
+	return preference as SkyAtlasPreference
 }

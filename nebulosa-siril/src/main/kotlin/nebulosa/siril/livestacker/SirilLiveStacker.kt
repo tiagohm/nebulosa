@@ -14,8 +14,8 @@ import kotlin.io.path.name
 data class SirilLiveStacker(
     private val executablePath: Path,
     private val workingDirectory: Path,
-    private val dark: Path? = null,
-    private val flat: Path? = null,
+    private val darkPath: Path? = null,
+    private val flatPath: Path? = null,
     private val use32Bits: Boolean = false,
 ) : LiveStacker, CommandLineListener {
 
@@ -38,7 +38,7 @@ data class SirilLiveStacker(
 
             try {
                 check(commandLine.execute(Cd(workingDirectory))) { "failed to run cd command" }
-                check(commandLine.execute(StartLs(dark, flat, use32Bits))) { "failed to start livestacking" }
+                check(commandLine.execute(StartLs(darkPath, flatPath, use32Bits))) { "failed to start livestacking" }
             } catch (e: Throwable) {
                 commandLine.close()
                 throw e

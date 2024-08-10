@@ -1,62 +1,78 @@
-import { AfterContentInit, Component, NgZone, ViewChild } from '@angular/core'
+import { AfterContentInit, Component, NgZone, ViewChild, ViewEncapsulation } from '@angular/core'
 import { dirname } from 'path'
 import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { PrimeService } from '../../shared/services/prime.service'
-import { Camera } from '../../shared/types/camera.types'
-import { Device } from '../../shared/types/device.types'
-import { Focuser } from '../../shared/types/focuser.types'
-import { CONNECTION_TYPES, ConnectionDetails, EMPTY_CONNECTION_DETAILS, HomeWindowType } from '../../shared/types/home.types'
-import { Mount } from '../../shared/types/mount.types'
-import { Rotator } from '../../shared/types/rotator.types'
-import { FilterWheel } from '../../shared/types/wheel.types'
-import { Undefinable } from '../../shared/utils/types'
+import { Camera, isCamera } from '../../shared/types/camera.types'
+import { Device, DeviceType } from '../../shared/types/device.types'
+import { Focuser, isFocuser } from '../../shared/types/focuser.types'
+import { ConnectionDetails, DEFAULT_CONNECTION_DETAILS, DEFAULT_HOME_CONNECTION_DIALOG, DEFAULT_HOME_PREFERENCE, HomeWindowType } from '../../shared/types/home.types'
+import { isMount, Mount } from '../../shared/types/mount.types'
+import { isRotator, Rotator } from '../../shared/types/rotator.types'
+import { isWheel, Wheel } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
-
-interface MappedDevice {
-	CAMERA: Camera
-	MOUNT: Mount
-	FOCUSER: Focuser
-	WHEEL: FilterWheel
-	ROTATOR: Rotator
-}
 
 function scrollPageOf(element: Element) {
 	return parseInt(element.getAttribute('scroll-page') ?? '0')
 }
 
 @Component({
-	selector: 'app-home',
+	selector: 'neb-home',
 	templateUrl: './home.component.html',
 	styleUrls: ['./home.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class HomeComponent implements AfterContentInit {
+	protected readonly preference = structuredClone(DEFAULT_HOME_PREFERENCE)
+	protected connection?: ConnectionDetails
+	protected readonly connectionDialog = structuredClone(DEFAULT_HOME_CONNECTION_DIALOG)
+
+	protected cameras: Camera[] = []
+	protected mounts: Mount[] = []
+	protected focusers: Focuser[] = []
+	protected wheels: Wheel[] = []
+	protected rotators: Rotator[] = []
+	protected domes: Camera[] = []
+	protected switches: Camera[] = []
+
+	protected page = 0
+
+	protected readonly deviceModel: MenuItem[] = []
+
+	protected readonly imageModel: SlideMenuItem[] = [
+		{
+			icon: 'mdi mdi-image-plus',
+			label: 'Open new image',
+			slideMenu: [],
+			command: () => {
+				return this.openImage()
+			},
+		},
+	]
+
+	protected readonly deviceMenuToolbarBuilder = (device: Device): MenuItem[] => {
+		if (isCamera(device)) {
+			return [
+				{
+					icon: 'mdi mdi-image',
+					label: 'View Image',
+					command: () => {
+						return this.browserWindowService.openCameraImage(device)
+					},
+				},
+			]
+		} else {
+			return []
+		}
+	}
+
 	@ViewChild('deviceMenu')
 	private readonly deviceMenu!: DeviceListMenuComponent
-
-	@ViewChild('imageMenu')
-	private readonly imageMenu!: DeviceListMenuComponent
-
-	readonly connectionTypes = Array.from(CONNECTION_TYPES)
-	showConnectionDialog = false
-	connections: ConnectionDetails[] = []
-	connection?: ConnectionDetails
-	newConnection?: [ConnectionDetails, Undefinable<ConnectionDetails>]
-
-	cameras: Camera[] = []
-	mounts: Mount[] = []
-	focusers: Focuser[] = []
-	wheels: FilterWheel[] = []
-	rotators: Rotator[] = []
-	domes: Camera[] = []
-	switches: Camera[] = []
-
-	currentPage = 0
 
 	get connected() {
 		return !!this.connection && this.connection.connected
@@ -122,152 +138,109 @@ export class HomeComponent implements AfterContentInit {
 		return this.connection?.type === 'ALPACA' && this.hasDevices
 	}
 
-	readonly deviceModel: MenuItem[] = []
-
-	readonly imageModel: SlideMenuItem[] = [
-		{
-			icon: 'mdi mdi-image-plus',
-			label: 'Open new image',
-			slideMenu: [],
-			command: () => {
-				return this.openImage(true)
-			},
-		},
-	]
-
-	private startListening<K extends keyof MappedDevice>(type: K, onAdd: (device: MappedDevice[K]) => number, onRemove: (device: MappedDevice[K]) => number, onUpdate: (device: MappedDevice[K]) => void) {
-		this.electron.on(`${type}.ATTACHED`, (event) => {
-			this.ngZone.run(() => {
-				onAdd(event.device as never)
-			})
-		})
-
-		this.electron.on(`${type}.DETACHED`, (event) => {
-			this.ngZone.run(() => {
-				onRemove(event.device as never)
-			})
-		})
-
-		this.electron.on(`${type}.UPDATED`, (event) => {
-			this.ngZone.run(() => {
-				onUpdate(event.device as never)
-			})
-		})
-	}
-
 	constructor(
 		app: AppComponent,
-		private readonly electron: ElectronService,
-		private readonly browserWindow: BrowserWindowService,
+		private readonly electronService: ElectronService,
+		private readonly browserWindowService: BrowserWindowService,
 		private readonly api: ApiService,
-		private readonly prime: PrimeService,
-		private readonly preference: PreferenceService,
-		private readonly ngZone: NgZone,
+		private readonly angularService: AngularService,
+		private readonly preferenceService: PreferenceService,
+		ngZone: NgZone,
 	) {
 		app.title = 'Nebulosa'
 
-		this.startListening(
-			'CAMERA',
-			(device) => {
-				return this.cameras.push(device)
-			},
-			(device) => {
-				const found = this.cameras.findIndex((e) => e.id === device.id)
-				this.cameras.splice(found, 1)
-				return this.cameras.length
-			},
-			(device) => {
-				const found = this.cameras.find((e) => e.id === device.id)
-				if (!found) return
-				Object.assign(found, device)
-			},
-		)
+		electronService.on('CAMERA.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`CAMERA.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`CAMERA.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
 
-		this.startListening(
-			'MOUNT',
-			(device) => {
-				return this.mounts.push(device)
-			},
-			(device) => {
-				const found = this.mounts.findIndex((e) => e.id === device.id)
-				this.mounts.splice(found, 1)
-				return this.mounts.length
-			},
-			(device) => {
-				const found = this.mounts.find((e) => e.id === device.id)
-				if (!found) return
-				Object.assign(found, device)
-			},
-		)
+		electronService.on('MOUNT.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`MOUNT.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`MOUNT.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
 
-		this.startListening(
-			'FOCUSER',
-			(device) => {
-				return this.focusers.push(device)
-			},
-			(device) => {
-				const found = this.focusers.findIndex((e) => e.id === device.id)
-				this.focusers.splice(found, 1)
-				return this.focusers.length
-			},
-			(device) => {
-				const found = this.focusers.find((e) => e.id === device.id)
-				if (!found) return
-				Object.assign(found, device)
-			},
-		)
+		electronService.on('FOCUSER.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`FOCUSER.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`FOCUSER.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
 
-		this.startListening(
-			'WHEEL',
-			(device) => {
-				return this.wheels.push(device)
-			},
-			(device) => {
-				const found = this.wheels.findIndex((e) => e.id === device.id)
-				this.wheels.splice(found, 1)
-				return this.wheels.length
-			},
-			(device) => {
-				const found = this.wheels.find((e) => e.id === device.id)
-				if (!found) return
-				Object.assign(found, device)
-			},
-		)
+		electronService.on('WHEEL.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`WHEEL.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`WHEEL.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
 
-		this.startListening(
-			'ROTATOR',
-			(device) => {
-				return this.rotators.push(device)
-			},
-			(device) => {
-				const found = this.rotators.findIndex((e) => e.id === device.id)
-				this.rotators.splice(found, 1)
-				return this.rotators.length
-			},
-			(device) => {
-				const found = this.rotators.find((e) => e.id === device.id)
-				if (!found) return
-				Object.assign(found, device)
-			},
-		)
+		electronService.on('ROTATOR.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`ROTATOR.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`ROTATOR.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
 
-		electron.on('CONNECTION.CLOSED', async (event) => {
+		electronService.on('CONNECTION.CLOSED', async (event) => {
 			if (this.connection?.id === event.id) {
 				await ngZone.run(() => {
 					return this.updateConnection()
 				})
 			}
 		})
-
-		this.connections = preference.connections.get().sort((a, b) => (b.connectedAt ?? 0) - (a.connectedAt ?? 0))
-		this.connections.forEach((e) => {
-			e.id = undefined
-			e.connected = false
-		})
-		this.connection = this.connections[0]
 	}
 
 	async ngAfterContentInit() {
+		this.loadPreference()
+
 		await this.updateConnection()
 
 		if (this.connected) {
@@ -279,54 +252,103 @@ export class HomeComponent implements AfterContentInit {
 		}
 	}
 
-	addConnection() {
-		this.newConnection = [structuredClone(EMPTY_CONNECTION_DETAILS), undefined]
-		this.showConnectionDialog = true
+	private deviceAdded(device: Device) {
+		if (isCamera(device)) {
+			this.cameras.push(device)
+		} else if (isMount(device)) {
+			this.mounts.push(device)
+		} else if (isFocuser(device)) {
+			this.focusers.push(device)
+		} else if (isWheel(device)) {
+			this.wheels.push(device)
+		} else if (isRotator(device)) {
+			this.rotators.push(device)
+		}
 	}
 
-	editConnection(connection: ConnectionDetails, event: MouseEvent) {
-		this.newConnection = [structuredClone(connection), connection]
-		this.showConnectionDialog = true
+	private deviceRemoved(device: Device) {
+		if (isCamera(device)) {
+			const found = this.cameras.findIndex((e) => e.id === device.id)
+			this.cameras.splice(found, 1)
+		} else if (isMount(device)) {
+			const found = this.mounts.findIndex((e) => e.id === device.id)
+			this.mounts.splice(found, 1)
+		} else if (isFocuser(device)) {
+			const found = this.focusers.findIndex((e) => e.id === device.id)
+			this.focusers.splice(found, 1)
+		} else if (isWheel(device)) {
+			const found = this.wheels.findIndex((e) => e.id === device.id)
+			this.wheels.splice(found, 1)
+		} else if (isRotator(device)) {
+			const found = this.rotators.findIndex((e) => e.id === device.id)
+			this.rotators.splice(found, 1)
+		}
+	}
+
+	private deviceUpdated(device: Device) {
+		if (isCamera(device)) {
+			const found = this.cameras.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isMount(device)) {
+			const found = this.mounts.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isFocuser(device)) {
+			const found = this.focusers.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isWheel(device)) {
+			const found = this.wheels.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isRotator(device)) {
+			const found = this.rotators.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		}
+	}
+
+	protected addConnection() {
+		this.connectionDialog.edited = false
+		this.connectionDialog.connection = structuredClone(DEFAULT_CONNECTION_DETAILS)
+		this.connectionDialog.showDialog = true
+	}
+
+	protected editConnection(connection: ConnectionDetails, event: MouseEvent) {
+		this.connectionDialog.edited = true
+		this.connectionDialog.connection = connection
+		this.connectionDialog.showDialog = true
 		event.stopImmediatePropagation()
 	}
 
-	deleteConnection(connection: ConnectionDetails, event: MouseEvent) {
-		const index = this.connections.findIndex((e) => e === connection)
+	protected deleteConnection(connection: ConnectionDetails, event: MouseEvent) {
+		const index = this.preference.connections.findIndex((e) => e === connection)
 
 		if (index >= 0 && !connection.connected) {
-			this.connections.splice(index, 1)
+			this.preference.connections.splice(index, 1)
 
-			if (connection === this.connection) {
-				this.connection = this.connections[0]
+			if (!this.preference.connections.length) {
+				this.preference.connections.push(structuredClone(DEFAULT_CONNECTION_DETAILS))
 			}
 
-			this.preference.connections.set(this.connections)
+			if (connection === this.connection) {
+				this.connection = this.preference.connections[0]
+			}
+
+			this.savePreference()
 		}
 
 		event.stopImmediatePropagation()
 	}
 
-	saveConnection() {
-		if (this.newConnection) {
-			// Edit.
-			if (this.newConnection[1]) {
-				Object.assign(this.newConnection[1], this.newConnection[0])
-			}
-			// New.
-			else {
-				const newConnection = structuredClone(this.newConnection[0])
-				this.connections = [...this.connections, newConnection]
-				this.connection = newConnection
-			}
+	protected saveConnection() {
+		if (!this.connectionDialog.edited) {
+			this.connection = this.connectionDialog.connection
+			this.preference.connections.push(this.connection)
 		}
 
-		this.preference.connections.set(this.connections)
+		this.savePreference()
 
-		this.newConnection = undefined
-		this.showConnectionDialog = false
+		this.connectionDialog.showDialog = false
 	}
 
-	async connect() {
+	protected async connect() {
 		try {
 			if (this.connection && !this.connection.connected) {
 				this.connection.id = await this.api.connect(this.connection.host, this.connection.port, this.connection.type)
@@ -334,13 +356,13 @@ export class HomeComponent implements AfterContentInit {
 		} catch (e) {
 			console.error(e)
 
-			this.prime.message('Connection failed', 'error')
+			this.angularService.message('Connection failed', 'error')
 		} finally {
 			await this.updateConnection()
 		}
 	}
 
-	async disconnect() {
+	protected async disconnect() {
 		try {
 			if (this.connection?.id && this.connection.connected) {
 				await this.api.disconnect(this.connection.id)
@@ -364,7 +386,7 @@ export class HomeComponent implements AfterContentInit {
 		return DeviceChooserComponent.handleDisconnectDevice(this.api, event.device, event.item)
 	}
 
-	private async openDevice<K extends keyof MappedDevice>(type: K) {
+	private async openDevice(type: DeviceType) {
 		this.deviceModel.length = 0
 
 		const devices: Device[] =
@@ -377,54 +399,45 @@ export class HomeComponent implements AfterContentInit {
 
 		if (devices.length === 0) return
 
-		this.deviceMenu.header = type
-		const device = await this.deviceMenu.show(devices)
+		const device = await this.deviceMenu.show(devices, undefined, type)
 
 		if (device && device !== 'NONE') {
-			await this.openDeviceWindow(type, device as never)
+			await this.openDeviceWindow(device)
 		}
 	}
 
-	private async openDeviceWindow<K extends keyof MappedDevice>(type: K, device: MappedDevice[K]) {
-		switch (type) {
+	private async openDeviceWindow(device: Device) {
+		switch (device.type) {
 			case 'MOUNT':
-				await this.browserWindow.openMount(device as Mount, { bringToFront: true })
+				await this.browserWindowService.openMount(device as Mount, { bringToFront: true })
 				break
 			case 'CAMERA':
-				await this.browserWindow.openCamera(device as Camera, { bringToFront: true })
+				await this.browserWindowService.openCamera(device as Camera, { bringToFront: true })
 				break
 			case 'FOCUSER':
-				await this.browserWindow.openFocuser(device as Focuser, { bringToFront: true })
+				await this.browserWindowService.openFocuser(device as Focuser, { bringToFront: true })
 				break
 			case 'WHEEL':
-				await this.browserWindow.openWheel(device as FilterWheel, { bringToFront: true })
+				await this.browserWindowService.openWheel(device as Wheel, { bringToFront: true })
 				break
 			case 'ROTATOR':
-				await this.browserWindow.openRotator(device as Rotator, { bringToFront: true })
+				await this.browserWindowService.openRotator(device as Rotator, { bringToFront: true })
 				break
 		}
 	}
 
-	private async openImage(force: boolean = false) {
-		if (force || this.cameras.length === 0) {
-			const preference = this.preference.homePreference.get()
-			const path = await this.electron.openImage({ defaultPath: preference.imagePath })
+	private async openImage() {
+		const path = await this.electronService.openImage({ defaultPath: this.preference.imagePath })
 
-			if (path) {
-				preference.imagePath = dirname(path)
-				this.preference.homePreference.set(preference)
-				await this.browserWindow.openImage({ path, source: 'PATH' })
-			}
-		} else {
-			const camera = await this.imageMenu.show(this.cameras)
+		if (path) {
+			this.preference.imagePath = dirname(path)
+			this.savePreference()
 
-			if (camera && camera !== 'NONE') {
-				await this.browserWindow.openCameraImage(camera)
-			}
+			await this.browserWindowService.openImage({ path, source: 'PATH' })
 		}
 	}
 
-	async open(type: HomeWindowType) {
+	protected async open(type: HomeWindowType) {
 		switch (type) {
 			case 'MOUNT':
 			case 'CAMERA':
@@ -434,40 +447,46 @@ export class HomeComponent implements AfterContentInit {
 				await this.openDevice(type)
 				break
 			case 'GUIDER':
-				await this.browserWindow.openGuider({ bringToFront: true })
+				await this.browserWindowService.openGuider({ bringToFront: true })
 				break
 			case 'SKY_ATLAS':
-				await this.browserWindow.openSkyAtlas(undefined, { bringToFront: true })
+				await this.browserWindowService.openSkyAtlas(undefined, { bringToFront: true })
 				break
 			case 'FRAMING':
-				await this.browserWindow.openFraming(undefined, { bringToFront: true })
+				await this.browserWindowService.openFraming(undefined, { bringToFront: true })
 				break
 			case 'ALIGNMENT':
-				await this.browserWindow.openAlignment({ bringToFront: true })
+				await this.browserWindowService.openAlignment({ bringToFront: true })
 				break
 			case 'SEQUENCER':
-				await this.browserWindow.openSequencer({ bringToFront: true })
+				await this.browserWindowService.openSequencer({ bringToFront: true })
 				break
 			case 'AUTO_FOCUS':
-				await this.browserWindow.openAutoFocus({ bringToFront: true })
+				await this.browserWindowService.openAutoFocus({ bringToFront: true })
 				break
 			case 'FLAT_WIZARD':
-				await this.browserWindow.openFlatWizard({ bringToFront: true })
+				await this.browserWindowService.openFlatWizard({ bringToFront: true })
+				break
+			case 'STACKER':
+				await this.browserWindowService.openStacker({ bringToFront: true })
 				break
 			case 'INDI':
-				await this.browserWindow.openINDI(undefined, { bringToFront: true })
+				await this.browserWindowService.openINDI(undefined, { bringToFront: true })
 				break
 			case 'IMAGE':
 				await this.openImage()
 				break
 			case 'SETTINGS':
-				await this.browserWindow.openSettings()
+				await this.browserWindowService.openSettings()
 				break
 			case 'CALCULATOR':
-				await this.browserWindow.openCalculator()
+				await this.browserWindowService.openCalculator()
+				break
+			case 'CALIBRATION':
+				await this.browserWindowService.openCalibration()
 				break
 			case 'ABOUT':
-				await this.browserWindow.openAbout()
+				await this.browserWindowService.openAbout()
 				break
 		}
 	}
@@ -479,7 +498,7 @@ export class HomeComponent implements AfterContentInit {
 
 				if (status && !this.connection.connected) {
 					this.connection.connectedAt = Date.now()
-					this.preference.connections.set(this.connections)
+					this.savePreference()
 					this.connection.connected = true
 				} else if (!status) {
 					this.connection.connected = false
@@ -491,7 +510,7 @@ export class HomeComponent implements AfterContentInit {
 			const statuses = await this.api.connectionStatuses()
 
 			for (const status of statuses) {
-				for (const connection of this.connections) {
+				for (const connection of this.preference.connections) {
 					if (!connection.connected && (status.host === connection.host || status.ip === connection.host) && status.port === connection.port) {
 						connection.id = status.id
 						connection.type = status.type
@@ -518,7 +537,7 @@ export class HomeComponent implements AfterContentInit {
 		}
 	}
 
-	scrolled(event: Event) {
+	protected scrolled(event: Event) {
 		function isVisible(element: Element) {
 			const bound = element.getBoundingClientRect()
 
@@ -536,16 +555,18 @@ export class HomeComponent implements AfterContentInit {
 			}
 		}
 
-		this.currentPage = page
+		this.page = page
+
+		event.stopImmediatePropagation()
 	}
 
-	scrollTo(event: Event, page: number) {
-		this.currentPage = page
+	protected scrollTo(event: Event, page: number) {
+		this.page = page
 		this.scrollToPage(page)
 		event.stopImmediatePropagation()
 	}
 
-	scrollToPage(page: number) {
+	protected scrollToPage(page: number) {
 		const scrollChidren = document.getElementsByClassName('scroll-child')
 
 		for (let i = 0; i < scrollChidren.length; i++) {
@@ -556,5 +577,26 @@ export class HomeComponent implements AfterContentInit {
 				break
 			}
 		}
+	}
+
+	private loadPreference() {
+		Object.assign(this.preference, this.preferenceService.home.get())
+
+		this.preference.connections
+			.sort((a, b) => (b.connectedAt ?? 0) - (a.connectedAt ?? 0))
+			.forEach((e) => {
+				e.id = undefined
+				e.connected = false
+			})
+
+		if (!this.preference.connections.length) {
+			this.preference.connections.push(structuredClone(DEFAULT_CONNECTION_DETAILS))
+		}
+
+		this.connection = this.preference.connections[0]
+	}
+
+	protected savePreference() {
+		this.preferenceService.home.set(this.preference)
 	}
 }

@@ -13,7 +13,7 @@
 			<p-floatLabel class="w-full">
 				<p-dropdown
 					[disabled]="connected"
-					[options]="connections"
+					[options]="preference.connections"
 					[(ngModel)]="connection"
 					styleClass="border-0 p-inputtext-sm w-full"
 					[autoDisplayFirst]="false"
@@ -22,7 +22,7 @@
 						let-item
 						pTemplate="selectedItem">
 						<div class="flex flex-row justify-content-between gap-1">
-							<span>{{ item?.name }}</span>
+							<span>{{ connection?.name }}</span>
 						</div>
 					</ng-template>
 					<ng-template
@@ -31,7 +31,7 @@
 						<div class="flex flex-row align-items-center justify-content-between gap-1 text-xs">
 							<div class="flex flex-column gap-1">
 								<span class="font-bold text-lg">{{ item.name }}</span>
-								<span class="text-sm">{{ item.host }}:{{ item.port }}</span>
+								<span class="text-sm">{{ item.type }} | {{ item.host }}:{{ item.port }}</span>
 								<div class="flex flex-row align-items-center gap-1 text-xs">
 									<i class="mdi mdi-sm mdi-clock"></i>
 									<span>{{ (item.connectedAt | date: 'yyyy-MM-dd HH:mm:ss') ?? 'never' }}</span>
@@ -220,6 +220,15 @@
 		<div class="col-4 p-1">
 			<p-button
 				[text]="true"
+				(onClick)="open('STACKER')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/stack.png" />
+				<div class="mt-1 text-sm">Stacker</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
 				(onClick)="open('FLAT_WIZARD')"
 				[disabled]="!connected || !hasFlatWizard"
 				styleClass="min-w-full w-full px-1 py-2 flex-column">
@@ -230,7 +239,16 @@
 		<div class="col-4 p-1">
 			<p-button
 				[text]="true"
-				[disabled]="!connected || !hasINDI"
+				(onClick)="open('CALIBRATION')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/calibration.png" />
+				<div class="mt-1 text-sm">Calibration</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
+				[disabled]="connection?.type !== 'INDI' || !connected || !hasINDI"
 				(onClick)="open('INDI')"
 				styleClass="min-w-full w-full px-1 py-2 flex-column">
 				<img src="assets/icons/indi.png" />
@@ -269,11 +287,11 @@
 		<div class="fixed flex flex-column align-items-center justify-content-center indicators">
 			<span
 				class="indicator"
-				[class.selected]="currentPage === 0"
+				[class.selected]="page === 0"
 				(click)="scrollTo($event, 0)"></span>
 			<span
 				class="indicator"
-				[class.selected]="currentPage === 1"
+				[class.selected]="page === 1"
 				(click)="scrollTo($event, 1)"></span>
 		</div>
 	</div>
@@ -283,18 +301,16 @@
 	header="Connection"
 	[modal]="true"
 	[draggable]="false"
-	[(visible)]="showConnectionDialog"
+	[(visible)]="connectionDialog.showDialog"
 	[style]="{ width: '90vw' }">
-	<div
-		class="grid p-2"
-		*ngIf="newConnection">
+	<div class="grid p-2">
 		<div class="col-12">
 			<p-floatLabel class="w-full">
 				<input
 					pInputText
 					class="p-inputtext-sm border-0 w-full"
 					[maxLength]="32"
-					[(ngModel)]="newConnection[0].name" />
+					[(ngModel)]="connectionDialog.connection.name" />
 				<label>Name</label>
 			</p-floatLabel>
 		</div>
@@ -303,7 +319,7 @@
 				<input
 					pInputText
 					class="p-inputtext-sm border-0 w-full"
-					[(ngModel)]="newConnection[0].host" />
+					[(ngModel)]="connectionDialog.connection.host" />
 				<label>Host</label>
 			</p-floatLabel>
 		</div>
@@ -313,25 +329,24 @@
 					[showButtons]="true"
 					styleClass="border-0 p-inputtext-sm w-full"
 					placeholder="7624"
-					[(ngModel)]="newConnection[0].port"
+					[(ngModel)]="connectionDialog.connection.port"
 					[min]="80"
 					[max]="65535"
 					[format]="false"
-					scrollableNumber />
+					spinnableNumber />
 				<label>Port</label>
 			</p-floatLabel>
 		</div>
 		<div class="col-8">
 			<p-selectButton
-				[options]="connectionTypes"
-				[(ngModel)]="newConnection[0].type"
+				[options]="'CONNECTION_TYPE' | dropdownOptions"
+				[(ngModel)]="connectionDialog.connection.type"
 				styleClass="border-0 w-full" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
 		<p-button
-			*ngIf="newConnection"
-			[disabled]="!newConnection[0].name || !newConnection[0].host || !newConnection[0].port"
+			[disabled]="!connectionDialog.connection.name || !connectionDialog.connection.host || !connectionDialog.connection.port"
 			icon="mdi mdi-content-save"
 			label="Save"
 			(onClick)="saveConnection()"
@@ -344,9 +359,5 @@
 	#deviceMenu
 	[disableIfDeviceIsNotConnected]="false"
 	(deviceConnect)="deviceConnected($event)"
-	(deviceDisconnect)="deviceDisconnected($event)" />
-<neb-device-list-menu
-	#imageMenu
-	[model]="imageModel"
-	[disableIfDeviceIsNotConnected]="false"
-	header="Image" />
+	(deviceDisconnect)="deviceDisconnected($event)"
+	[toolbarBuilder]="deviceMenuToolbarBuilder" />

@@ -1,8 +1,9 @@
+import type { Severity } from './angular.types'
 import type { MessageEvent } from './api.types'
 
-export type Severity = 'success' | 'info' | 'warning' | 'danger'
+export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
 
-export type TooltipPosition = 'right' | 'left' | 'top' | 'bottom'
+export type SaveJson<T = unknown> = OpenFile & JsonFile<T>
 
 export interface NotificationEvent extends MessageEvent {
 	target?: string
@@ -15,28 +16,6 @@ export interface ConfirmationEvent extends MessageEvent {
 	message: string
 	idempotencyKey: string
 }
-
-export const INTERNAL_EVENT_TYPES = [
-	'DIRECTORY.OPEN',
-	'FILE.OPEN',
-	'FILE.SAVE',
-	'WINDOW.OPEN',
-	'WINDOW.CLOSE',
-	'WINDOW.PIN',
-	'WINDOW.UNPIN',
-	'WINDOW.MINIMIZE',
-	'WINDOW.MAXIMIZE',
-	'WINDOW.RESIZE',
-	'WHEEL.RENAMED',
-	'LOCATION.CHANGED',
-	'JSON.WRITE',
-	'JSON.READ',
-	'CALIBRATION.CHANGED',
-	'WINDOW.FULLSCREEN',
-	'ROI.SELECTED',
-] as const
-
-export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
 
 export interface WindowPreference {
 	modal?: boolean
@@ -80,6 +59,7 @@ export interface OpenDirectory extends WindowCommand {
 
 export interface OpenFile extends OpenDirectory {
 	filters?: Electron.FileFilter[]
+	multiple?: boolean
 }
 
 export interface JsonFile<T = unknown> {
@@ -87,15 +67,22 @@ export interface JsonFile<T = unknown> {
 	json: T
 }
 
-export interface SaveJson<T = unknown> extends OpenFile, JsonFile<T> {}
-
-export type StoredWindowDataKey = `window.${string}`
-
-export interface StoredWindowDataValue {
-	x: number
-	y: number
-	width: number
-	height: number
-}
-
-export type StoredWindowData = Record<StoredWindowDataKey, StoredWindowDataValue>
+export const INTERNAL_EVENT_TYPES = [
+	'DIRECTORY.OPEN',
+	'FILE.OPEN',
+	'FILE.SAVE',
+	'WINDOW.OPEN',
+	'WINDOW.CLOSE',
+	'WINDOW.PIN',
+	'WINDOW.UNPIN',
+	'WINDOW.MINIMIZE',
+	'WINDOW.MAXIMIZE',
+	'WINDOW.RESIZE',
+	'WHEEL.RENAMED',
+	'LOCATION.CHANGED',
+	'JSON.WRITE',
+	'JSON.READ',
+	'CALIBRATION.CHANGED',
+	'WINDOW.FULLSCREEN',
+	'ROI.SELECTED',
+] as const

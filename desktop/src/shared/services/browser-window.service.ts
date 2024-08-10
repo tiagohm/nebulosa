@@ -1,29 +1,29 @@
 import { Injectable } from '@angular/core'
-import { FramingData } from '../../app/framing/framing.component'
 import { OpenWindow, WindowPreference } from '../types/app.types'
 import { SkyAtlasInput } from '../types/atlas.types'
 import { Camera, CameraDialogInput, CameraStartCapture } from '../types/camera.types'
 import { Device } from '../types/device.types'
 import { Focuser } from '../types/focuser.types'
+import { LoadFraming } from '../types/framing.types'
 import { ImageSource, OpenImage } from '../types/image.types'
 import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
-import { FilterWheel, WheelDialogInput } from '../types/wheel.types'
+import { Wheel, WheelDialogInput } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 import { ElectronService } from './electron.service'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
-	constructor(private readonly electron: ElectronService) {}
+	constructor(private readonly electronService: ElectronService) {}
 
 	openWindow(open: OpenWindow): Promise<boolean> {
 		open.preference.modal = false
-		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
+		return this.electronService.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}
 
 	openModal<R = unknown>(open: OpenWindow): Promise<Undefinable<R>> {
 		open.preference.modal = true
-		return this.electron.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
+		return this.electronService.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}
 
 	openMount(data: Mount, preference: WindowPreference = {}) {
@@ -32,7 +32,7 @@ export class BrowserWindowService {
 	}
 
 	openCamera(data: Camera, preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'camera', width: 400, height: 467 })
+		Object.assign(preference, { icon: 'camera', width: 400, height: 477 })
 		return this.openWindow({ preference, data, id: `camera.${data.name}`, path: 'camera' })
 	}
 
@@ -51,7 +51,7 @@ export class BrowserWindowService {
 		return this.openWindow({ preference, data, id: `focuser.${data.name}`, path: 'focuser' })
 	}
 
-	openWheel(data: FilterWheel, preference: WindowPreference = {}) {
+	openWheel(data: Wheel, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'filter-wheel', width: 280, height: 195 })
 		return this.openWindow({ preference, data, id: `wheel.${data.name}`, path: 'wheel' })
 	}
@@ -72,7 +72,7 @@ export class BrowserWindowService {
 	}
 
 	openGuider(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'guider', width: 440, height: 455 })
+		Object.assign(preference, { icon: 'guider', width: 380, height: 444 })
 		return this.openWindow({ preference, id: 'guider', path: 'guider' })
 	}
 
@@ -103,7 +103,7 @@ export class BrowserWindowService {
 		return this.openWindow({ preference, data, id: 'atlas', path: 'atlas' })
 	}
 
-	openFraming(data?: FramingData, preference: WindowPreference = {}) {
+	openFraming(data?: LoadFraming, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'framing', width: 280, height: 303 })
 		return this.openWindow({ preference, data, id: 'framing', path: 'framing' })
 	}
@@ -129,7 +129,7 @@ export class BrowserWindowService {
 	}
 
 	openSettings(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'settings', width: 350, height: 450, autoResizable: false })
+		Object.assign(preference, { icon: 'settings', width: 320, height: 450, minHeight: 350 })
 		return this.openWindow({ preference, id: 'settings', path: 'settings' })
 	}
 
@@ -139,12 +139,17 @@ export class BrowserWindowService {
 	}
 
 	openCalibration(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'stack', width: 420, height: 400, minHeight: 400 })
+		Object.assign(preference, { icon: 'calibration', width: 370, height: 442, minHeight: 400 })
 		return this.openWindow({ preference, id: 'calibration', path: 'calibration' })
 	}
 
+	openStacker(preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'stack', width: 370, height: 460 })
+		return this.openWindow({ preference, id: 'stacker', path: 'stacker' })
+	}
+
 	openAbout() {
-		const preference: WindowPreference = { icon: 'about', width: 430, height: 307, bringToFront: true }
+		const preference: WindowPreference = { icon: 'about', width: 430, height: 340, bringToFront: true }
 		return this.openWindow({ preference, id: 'about', path: 'about' })
 	}
 }

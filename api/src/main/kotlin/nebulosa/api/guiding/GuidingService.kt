@@ -88,10 +88,6 @@ class GuidingService(
         preferenceService.putJSON("GUIDER.SETTLE_INFO", settle)
     }
 
-    fun settle(): SettleInfo {
-        return SettleInfo.from(guider)
-    }
-
     fun dither(amount: Double, raOnly: Boolean = false) {
         if (phd2Client.isOpen) {
             guider.dither(amount, raOnly)

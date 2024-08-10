@@ -1,9 +1,9 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core'
 
 @Component({
 	selector: 'neb-histogram',
 	templateUrl: './histogram.component.html',
-	styleUrls: ['./histogram.component.scss'],
+	encapsulation: ViewEncapsulation.None,
 })
 export class HistogramComponent implements AfterViewInit {
 	@ViewChild('canvas')

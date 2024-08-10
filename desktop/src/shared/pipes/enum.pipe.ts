@@ -2,13 +2,16 @@ import { Pipe, PipeTransform } from '@angular/core'
 import { DARVState, Hemisphere, TPPAState } from '../types/alignment.types'
 import { Constellation, SatelliteGroupType, SkyObjectType } from '../types/atlas.types'
 import { AutoFocusFittingMode, AutoFocusState, BacklashCompensationMode } from '../types/autofocus.type'
-import { CameraCaptureState, ExposureMode, FrameType, LiveStackerType } from '../types/camera.types'
+import { CameraCaptureState, ExposureMode, ExposureTimeUnit, FrameType, LiveStackerType } from '../types/camera.types'
 import { FlatWizardState } from '../types/flat-wizard.types'
 import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
-import { Bitpix, SCNRProtectionMethod } from '../types/image.types'
-import { MountRemoteControlType } from '../types/mount.types'
-import { SequenceCaptureMode } from '../types/sequencer.types'
-import { PlateSolverType, StarDetectorType } from '../types/settings.types'
+import { Bitpix, ImageChannel, SCNRProtectionMethod } from '../types/image.types'
+import { MountRemoteControlProtocol } from '../types/mount.types'
+import { PlateSolverType } from '../types/platesolver.types'
+import { SequencerCaptureMode, SequencerState } from '../types/sequencer.types'
+import { SettingsTabKey } from '../types/settings.types'
+import { StackerGroupType, StackerType } from '../types/stacker.types'
+import { StarDetectorType } from '../types/stardetector.types'
 import { Undefinable } from '../utils/types'
 
 export type EnumPipeKey =
@@ -33,14 +36,22 @@ export type EnumPipeKey =
 	| LiveStackerType
 	| GuiderPlotMode
 	| GuiderYAxisUnit
-	| MountRemoteControlType
-	| SequenceCaptureMode
+	| MountRemoteControlProtocol
+	| SequencerCaptureMode
 	| Bitpix
+	| StackerType
+	| StackerGroupType
+	| SettingsTabKey
+	| SequencerState
+	| ExposureTimeUnit
+	| ImageChannel
 	| 'ALL'
 
 @Pipe({ name: 'enum' })
 export class EnumPipe implements PipeTransform {
 	readonly enums: Record<EnumPipeKey, Undefinable<string>> = {
+		'DX/DY': 'dx/dy',
+		'RA/DEC': 'RA/DEC',
 		ABSOLUTE: 'Absolute',
 		ACTIVE_GALAXY_NUCLEUS: 'Active Galaxy Nucleus',
 		ACTIVE: 'Active',
@@ -57,10 +68,13 @@ export class EnumPipe implements PipeTransform {
 		AQL: 'Aquila',
 		AQR: 'Aquarius',
 		ARA: 'Ara',
+		ARCSEC: 'Arcsec',
 		ARGOS: 'ARGOS Data Collection System',
 		ARI: 'Aries',
 		ASSOCIATION_OF_STARS: 'Association of Stars',
 		ASTAP: 'Astap',
+		ASTROMETRY_NET_ONLINE: 'Astrometry.net (Online)',
+		ASTROMETRY_NET: 'Astrometry.net',
 		ASYMPTOTIC_GIANT_BRANCH_STAR: 'Asymptotic Giant Branch Star',
 		AUR: 'Auriga',
 		AVERAGE_NEUTRAL: 'Average Neutral',
@@ -76,16 +90,19 @@ export class EnumPipe implements PipeTransform {
 		BLUE_OBJECT: 'Blue Object',
 		BLUE_STRAGGLER: 'Blue Straggler',
 		BLUE_SUPERGIANT: 'Blue Supergiant',
+		BLUE: 'Blue',
 		BOO: 'Boötes',
 		BRIGHTEST_GALAXY_IN_A_CLUSTER_BCG: 'Brightest Galaxy in a Cluster (BCG)',
 		BROWN_DWARF: 'Brown Dwarf',
 		BUBBLE: 'Bubble',
 		BY_DRA_VARIABLE: 'BY Dra Variable',
+		BYTE: 'Byte',
 		CAE: 'Caelum',
 		CALIBRATING: 'Calibrating',
 		CAM: 'Camelopardalis',
 		CAP: 'Capricornus',
 		CAPTURE_FINISHED: undefined,
+		CAPTURE_NAMING_FORMAT: 'Capture Naming Format',
 		CAPTURE_STARTED: undefined,
 		CAPTURED: 'Captured',
 		CAR: 'Carina',
@@ -134,7 +151,9 @@ export class EnumPipe implements PipeTransform {
 		DMC: 'Disaster Monitoring',
 		DOR: 'Dorado',
 		DOUBLE_OR_MULTIPLE_STAR: 'Double or Multiple Star',
+		DOUBLE: 'Double',
 		DRA: 'Draco',
+		EAST: 'East',
 		ECLIPSING_BINARY: 'Eclipsing Binary',
 		EDUCATION: 'Education',
 		ELLIPSOIDAL_VARIABLE: 'Ellipsoidal Variable',
@@ -158,8 +177,10 @@ export class EnumPipe implements PipeTransform {
 		FINISHED: 'Finished',
 		FIXED: 'Fixed',
 		FLAT: 'Flat',
+		FLOAT: 'Float',
 		FOR: 'Fornax',
 		FORWARD: 'Forward',
+		FULLY: 'Fully',
 		GALAXY_IN_PAIR_OF_GALAXIES: 'Galaxy in Pair of Galaxies',
 		GALAXY_TOWARDS_A_CLUSTER_OF_GALAXIES: 'Galaxy towards a Cluster of Galaxies',
 		GALAXY_TOWARDS_A_GROUP_OF_GALAXIES: 'Galaxy towards a Group of Galaxies',
@@ -186,6 +207,8 @@ export class EnumPipe implements PipeTransform {
 		GRAVITATIONALLY_LENSED_IMAGE_OF_A_GALAXY: 'Gravitationally Lensed Image of a Galaxy',
 		GRAVITATIONALLY_LENSED_IMAGE_OF_A_QUASAR: 'Gravitationally Lensed Image of a Quasar',
 		GRAVITATIONALLY_LENSED_IMAGE: 'Gravitationally Lensed Image',
+		GRAY: 'Gray',
+		GREEN: 'Green',
 		GROUP_OF_GALAXIES: 'Group of Galaxies',
 		GRU: 'Grus',
 		GUIDING: 'Guiding',
@@ -209,8 +232,10 @@ export class EnumPipe implements PipeTransform {
 		IND: 'Indus',
 		INFRA_RED_SOURCE: 'Infra-Red Source',
 		INITIAL_PAUSE: 'Initial Pause',
+		INTEGER: 'Integer',
 		INTELSAT: 'Intelsat',
 		INTERACTING_GALAXIES: 'Interacting Galaxies',
+		INTERLEAVED: 'Interleaved',
 		INTERSTELLAR_FILAMENT: 'Interstellar Filament',
 		INTERSTELLAR_MEDIUM_OBJECT: 'Interstellar Medium Object',
 		INTERSTELLAR_SHELL: 'Interstellar Shell',
@@ -225,15 +250,20 @@ export class EnumPipe implements PipeTransform {
 		LIB: 'Libra',
 		LIGHT: 'Light',
 		LINER_TYPE_ACTIVE_GALAXY_NUCLEUS: 'LINER-type Active Galaxy Nucleus',
+		LIVE_STACKER: 'Live Stacker',
 		LMI: 'Leo Minor',
+		LOCATION: 'Location',
 		LONG_PERIOD_VARIABLE: 'Long-Period Variable',
+		LONG: 'Long',
 		LOOP: 'Loop',
 		LOOPING: 'Looping',
 		LOST_LOCK: 'Lost Lock',
 		LOW_MASS_STAR: 'Low-mass Star',
 		LOW_MASS_X_RAY_BINARY: 'Low Mass X-ray Binary',
 		LOW_SURFACE_BRIGHTNESS_GALAXY: 'Low Surface Brightness Galaxy',
+		LUMINANCE: 'Luminance',
 		LUP: 'Lupus',
+		LX200: 'LX200',
 		LYN: 'Lynx',
 		LYR: 'Lyra',
 		MAIN_SEQUENCE_STAR: 'Main Sequence Star',
@@ -244,15 +274,19 @@ export class EnumPipe implements PipeTransform {
 		MEN: 'Mensa',
 		METRIC_RADIO_SOURCE: 'Metric Radio Source',
 		MIC: 'Microscopium',
+		MICROSECOND: 'µs',
 		MICRO_LENSING_EVENT: '(Micro)Lensing Event',
 		MID_IR_SOURCE_3_TO_30_M: 'Mid-IR Source (3 to 30 µm)',
 		MILITARY: 'Miscellaneous Military',
+		MILLISECOND: 'ms',
 		MILLIMETRIC_RADIO_SOURCE: 'Millimetric Radio Source',
 		MINIMUM_NEUTRAL: 'Minimum Neutral',
+		MINUTE: 'm',
 		MIRA_VARIABLE: 'Mira Variable',
 		MOLECULAR_CLOUD: 'Molecular Cloud',
 		MOLNIYA: 'Molniya',
 		MON: 'Monoceros',
+		MONO: 'Mono',
 		MOVING_GROUP: 'Moving Group',
 		MOVING: 'Moving',
 		MUS: 'Musca',
@@ -264,6 +298,8 @@ export class EnumPipe implements PipeTransform {
 		NOAA: 'NOAA',
 		NONE: 'None',
 		NOR: 'Norma',
+		NORTH: 'North',
+		NORTHERN: 'Northern',
 		NOT_AN_OBJECT_ERROR_ARTEFACT: 'Not an Object (Error, Artefact, ...)',
 		OBJECT_OF_UNKNOWN_NATURE: 'Object of Unknown Nature',
 		OCT: 'Octans',
@@ -290,9 +326,11 @@ export class EnumPipe implements PipeTransform {
 		PER: 'Perseus',
 		PHE: 'Phoenix',
 		PIC: 'Pictor',
+		PIXEL: 'Pixel',
 		PIXINSIGHT: 'PixInsight',
 		PLANET: 'Planet',
 		PLANETARY_NEBULA: 'Planetary Nebula',
+		PLATE_SOLVER: 'Plate Solver',
 		POST_AGB_STAR: 'Post-AGB Star',
 		PROTO_CLUSTER_OF_GALAXIES: 'Proto Cluster of Galaxies',
 		PSA: 'Piscis Austrinus',
@@ -310,13 +348,16 @@ export class EnumPipe implements PipeTransform {
 		RADUGA: 'Raduga',
 		RED_GIANT_BRANCH_STAR: 'Red Giant Branch star',
 		RED_SUPERGIANT: 'Red Supergiant',
+		RED: 'Red',
 		REFLECTION_NEBULA: 'Reflection Nebula',
 		REGION_DEFINED_IN_THE_SKY: 'Region defined in the Sky',
 		RESOURCE: 'Earth Resources',
 		RET: 'Reticulum',
+		RGB: 'RGB',
 		ROTATING_VARIABLE: 'Rotating Variable',
 		RR_LYRAE_VARIABLE: 'RR Lyrae Variable',
 		RS_CVN_VARIABLE: 'RS CVn Variable',
+		RUNNING: 'Running',
 		RV_TAURI_VARIABLE: 'RV Tauri Variable',
 		S_STAR: 'S Star',
 		SARSAT: 'Search & Rescue (SARSAT)',
@@ -327,6 +368,7 @@ export class EnumPipe implements PipeTransform {
 		SCO: 'Scorpius',
 		SCT: 'Scutum',
 		SELECTED: 'Selected',
+		SECOND: 's',
 		SER: 'Serpens',
 		SES: 'SES',
 		SETTLING: 'Settling',
@@ -336,21 +378,27 @@ export class EnumPipe implements PipeTransform {
 		SEYFERT_GALAXY: 'Seyfert Galaxy',
 		SGE: 'Sagitta',
 		SGR: 'Sagittarius',
+		SHORT: 'Short',
 		SINGLE: 'Single',
 		SIRIL: 'Siril',
 		SLEWED: 'Slewed',
 		SLEWING: 'Slewing',
 		SOLVED: 'Solved',
 		SOLVING: 'Solving',
+		SOUTH: 'South',
+		SOUTHERN: 'Southern',
 		SPECTROSCOPIC_BINARY: 'Spectroscopic Binary',
 		SPIRE: 'Spire',
+		STACKER: 'Stacker',
 		STACKING: 'Stacking',
+		STAR_DETECTOR: 'Star Detector',
 		STAR_FORMING_REGION: 'Star Forming Region',
 		STAR: 'Star',
 		STARBURST_GALAXY: 'Starburst Galaxy',
 		STARLINK: 'Starlink',
 		STATIONS: 'Space Stations',
 		STELLAR_STREAM: 'Stellar Stream',
+		STELLARIUM: 'Stellarium',
 		STOPPED: 'Stopped',
 		SUB_MILLIMETRIC_SOURCE: 'Sub-Millimetric Source',
 		SUPERCLUSTER_OF_GALAXIES: 'Supercluster of Galaxies',
@@ -384,6 +432,7 @@ export class EnumPipe implements PipeTransform {
 		VUL: 'Vulpecula',
 		WAITING: 'Waiting',
 		WEATHER: 'Weather',
+		WEST: 'West',
 		WHITE_DWARF: 'White Dwarf',
 		WOLF_RAYET: 'Wolf-Rayet',
 		X_COMM: 'Experimental Comm',
@@ -391,28 +440,6 @@ export class EnumPipe implements PipeTransform {
 		X_RAY_SOURCE: 'X-ray Source',
 		YELLOW_SUPERGIANT: 'Yellow Supergiant',
 		YOUNG_STELLAR_OBJECT: 'Young Stellar Object',
-		ASTROMETRY_NET: 'Astrometry.net',
-		ASTROMETRY_NET_ONLINE: 'Astrometry.net (Online)',
-		NORTH: 'North',
-		NORTHERN: 'Northern',
-		SOUTH: 'South',
-		SOUTHERN: 'Southern',
-		WEST: 'West',
-		EAST: 'East',
-		'RA/DEC': 'RA/DEC',
-		'DX/DY': 'dx/dy',
-		ARCSEC: 'Arcsec',
-		PIXEL: 'Pixel',
-		LX200: 'LX200',
-		STELLARIUM: 'Stellarium',
-		FULLY: 'Fully',
-		INTERLEAVED: 'Interleaved',
-		BYTE: 'Byte',
-		SHORT: 'Short',
-		INTEGER: 'Integer',
-		LONG: 'Long',
-		FLOAT: 'Float',
-		DOUBLE: 'Double',
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents

@@ -1,7 +1,10 @@
 package nebulosa.curve.fitting
 
 import nebulosa.math.squared
-import kotlin.math.*
+import kotlin.math.asinh
+import kotlin.math.cosh
+import kotlin.math.round
+import kotlin.math.sqrt
 
 // https://bitbucket.org/Isbeorn/nina/src/master/NINA.Core.WPF/Utility/AutoFocus/HyperbolicFitting.cs
 

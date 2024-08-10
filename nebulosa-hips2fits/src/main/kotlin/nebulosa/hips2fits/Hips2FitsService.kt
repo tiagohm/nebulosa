@@ -35,6 +35,7 @@ class Hips2FitsService(
         coordSystem.name.lowercase(), rotation.toDegrees, format.name.lowercase(),
     )
 
+    // https://alasky.cds.unistra.fr/MocServer/query?get=record&fmt=json&expr=ID%3DCDS*%20%26%26%20hips_service_url*%3D*alasky*%20%26%26%20dataproduct_type%3Dimage%20%26%26%20moc_sky_fraction%20%3E%3D%200.99%20%26%26%20obs_regime%3DOptical%2CInfrared%2CUV%2CRadio%2CX-ray%2CGamma-ray
     fun availableSurveys() = service
         .availableSurveys("ID=CDS* && hips_service_url*=*alasky* && dataproduct_type=image && moc_sky_fraction >= 0.99 && obs_regime=Optical,Infrared,UV,Radio,X-ray,Gamma-ray")
 

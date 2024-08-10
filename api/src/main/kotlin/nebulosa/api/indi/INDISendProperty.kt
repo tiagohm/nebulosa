@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull
 import nebulosa.indi.protocol.PropertyType
 
 data class INDISendProperty(
-    @field:NotBlank val name: String = "",
-    @field:NotNull val type: PropertyType = PropertyType.SWITCH,
-    @field:NotEmpty @field:Valid val items: List<INDISendPropertyItem> = emptyList(),
+    @field:NotBlank @JvmField val name: String = "",
+    @field:NotNull @JvmField val type: PropertyType = PropertyType.SWITCH,
+    @field:NotEmpty @field:Valid @JvmField val items: List<INDISendPropertyItem> = emptyList(),
 )

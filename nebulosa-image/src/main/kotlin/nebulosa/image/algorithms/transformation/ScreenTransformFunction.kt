@@ -16,10 +16,12 @@ data class ScreenTransformFunction(
 ) : TransformAlgorithm {
 
     data class Parameters(
-        val midtone: Float = 0.5f,
-        val shadow: Float = 0f,
-        val highlight: Float = 1f,
+        @JvmField val midtone: Float = 0.5f,
+        @JvmField val shadow: Float = 0f,
+        @JvmField val highlight: Float = 1f,
     ) {
+
+        constructor(midtone: Int, shadow: Int, highlight: Int) : this(midtone / 65536f, shadow / 65536f, highlight / 65536f)
 
         companion object {
 

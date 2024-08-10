@@ -18,6 +18,8 @@ data class PixInsightScriptRunner(private val executablePath: Path) {
         script.startCommandLine(commandLine)
     }
 
+    fun abort(script: PixInsightScript<*>) = Unit
+
     companion object {
 
         @JvmStatic private val DEFAULT_ARGS = arrayOf("--automation-mode", "--no-startup-scripts")

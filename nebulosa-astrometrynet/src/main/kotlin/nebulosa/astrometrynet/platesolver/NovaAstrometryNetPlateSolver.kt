@@ -1,6 +1,7 @@
 package nebulosa.astrometrynet.platesolver
 
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
+import nebulosa.astrometrynet.nova.NovaAstrometryNetService.Companion.ANONYMOUS_API_KEY
 import nebulosa.astrometrynet.nova.Session
 import nebulosa.astrometrynet.nova.Upload
 import nebulosa.common.concurrency.cancel.CancellationToken
@@ -102,8 +103,6 @@ data class NovaAstrometryNetPlateSolver(
     }
 
     companion object {
-
-        const val ANONYMOUS_API_KEY = "XXXXXXXX"
 
         private const val SESSION_EXPIRATION_TIME = 1000L * 60 * 15
 

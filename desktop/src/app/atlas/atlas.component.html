@@ -17,12 +17,14 @@
 				</ng-template>
 				<div
 					class="relative grid flex flex-column align-items-center justify-content-center"
-					style="height: 235px">
+					[class.invisible]="!sun.image"
+					style="height: 225px">
 					<img
-						#imageOfSun
-						style="width: 215px" />
+						[src]="sun.image"
+						style="width: 223px" />
 					<a
-						class="text-sm absolute bottom-0"
+						class="text-sm absolute"
+						style="bottom: -8px"
 						target="_blank"
 						href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
 						<p-tag severity="success">SDO/HMI</p-tag>
@@ -43,12 +45,12 @@
 				</ng-template>
 				<div
 					class="grid flex align-items-center justify-content-center"
-					style="height: 235px">
+					style="height: 225px">
 					<neb-moon
-						[width]="215"
-						[height]="215"
-						[illuminationRatio]="moonIlluminated"
-						[waning]="moonWaning" />
+						[width]="200"
+						[height]="200"
+						[illuminationRatio]="moon.position.illuminated / 100"
+						[waning]="moon.position.leading" />
 				</div>
 			</p-tabPanel>
 			<p-tabPanel
@@ -65,9 +67,9 @@
 				</ng-template>
 				<div class="flex align-items-center justify-content-center px-1">
 					<p-table
-						[value]="planets"
+						[value]="planet.planets"
 						class="planet"
-						[(selection)]="planet"
+						[(selection)]="planet.selected"
 						(selectionChange)="planetChanged()"
 						selectionMode="single"
 						dataKey="code"
@@ -101,7 +103,7 @@
 						<img src="assets/icons/asteroid.png" />
 					</div>
 				</ng-template>
-				<p-tabView [(activeIndex)]="minorPlanetTab">
+				<p-tabView [(activeIndex)]="minorPlanet.tab">
 					<p-tabPanel header="Search">
 						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
 							<div class="flex w-full align-items-center px-4 gap-2">
@@ -109,13 +111,13 @@
 									<input
 										pInputText
 										class="p-inputtext-sm border-0 w-full"
-										[(ngModel)]="minorPlanetSearchText"
+										[(ngModel)]="minorPlanet.search.text"
 										pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
 										tooltipPosition="bottom" />
 									<label>Search</label>
 								</p-floatLabel>
 								<p-button
-									[disabled]="minorPlanetSearchText.length < 3 || refreshing"
+									[disabled]="minorPlanet.search.text.length < 3 || refreshing"
 									(onClick)="searchMinorPlanet()"
 									icon="mdi mdi-magnify"
 									severity="info"
@@ -135,7 +137,7 @@
 						</div>
 						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
 							<p-table
-								[value]="minorPlanet?.parameters ?? []"
+								[value]="minorPlanet.search.result?.parameters ?? []"
 								class="minorPlanet"
 								styleClass="p-datatable-sm p-datatable-striped">
 								<ng-template pTemplate="header">
@@ -168,8 +170,8 @@
 										[step]="1"
 										[showButtons]="true"
 										inputStyleClass="p-inputtext-sm border-0 w-full"
-										[(ngModel)]="closeApproachDays"
-										scrollableNumber />
+										[(ngModel)]="minorPlanet.closeApproach.days"
+										spinnableNumber />
 									<label>Days</label>
 								</p-floatLabel>
 								<p-floatLabel>
@@ -181,13 +183,13 @@
 										[showButtons]="true"
 										inputStyleClass="p-inputtext-sm border-0 w-full"
 										locale="en"
-										[(ngModel)]="closeApproachDistance"
-										scrollableNumber />
+										[(ngModel)]="minorPlanet.closeApproach.lunarDistance"
+										spinnableNumber />
 									<label>Distance (LD)</label>
 								</p-floatLabel>
 								<p-button
 									[disabled]="refreshing"
-									(onClick)="closeApproachesForMinorPlanets()"
+									(onClick)="closeApproachesOfMinorPlanets()"
 									icon="mdi mdi-magnify"
 									severity="info"
 									size="small"
@@ -206,11 +208,11 @@
 						</div>
 						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
 							<p-table
-								[value]="closeApproaches"
+								[value]="minorPlanet.closeApproach.result"
 								class="minorPlanet"
 								selectionMode="single"
 								styleClass="p-datatable-sm p-datatable-striped"
-								[(selection)]="closeApproach"
+								[(selection)]="minorPlanet.closeApproach.selected"
 								(selectionChange)="closeApproachChanged()"
 								dataKey="designation">
 								<ng-template pTemplate="header">
@@ -246,15 +248,15 @@
 				</p-tabView>
 			</p-tabPanel>
 			<p-tabPanel
-				header="Sky Objects"
+				header="Stars & DSOs"
 				[disabled]="refreshing"
 				headerStyleClass="main">
 				<ng-template pTemplate="header">
 					<div
 						class="p-3"
-						pTooltip="Sky Objects"
+						pTooltip="Stars & DSOs"
 						tooltipPosition="bottom">
-						<img src="assets/icons/magnifier.png" />
+						<img src="assets/icons/blackhole.png" />
 					</div>
 				</ng-template>
 				<div class="flex mt-2 align-items-center justify-content-center">
@@ -263,7 +265,7 @@
 							<input
 								pInputText
 								class="p-inputtext-sm border-0 w-full"
-								[(ngModel)]="skyObjectSearchText" />
+								[(ngModel)]="skyObject.search.filter.text" />
 							<label>Search</label>
 						</p-floatLabel>
 						<div class="flex flex-row gap-1">
@@ -278,7 +280,7 @@
 								tooltipPosition="bottom" />
 							<p-button
 								[disabled]="refreshing"
-								(onClick)="showSkyObjectFilterDialog()"
+								(onClick)="skyObject.search.showDialog = true"
 								icon="mdi mdi-filter"
 								size="small"
 								[text]="true"
@@ -289,10 +291,10 @@
 				</div>
 				<div class="flex align-items-center justify-content-center mt-2 px-1">
 					<p-table
-						[value]="skyObjectItems"
+						[value]="skyObject.search.result"
 						class="skyObject"
 						sortField="magnitude"
-						[(selection)]="skyObject"
+						[(selection)]="skyObject.search.selected"
 						(selectionChange)="skyObjectChanged()"
 						selectionMode="single"
 						dataKey="id"
@@ -361,7 +363,7 @@
 							<input
 								pInputText
 								class="p-inputtext-sm border-0 w-full"
-								[(ngModel)]="satelliteSearchText" />
+								[(ngModel)]="satellite.search.filter.text" />
 							<label>Search</label>
 						</p-floatLabel>
 						<div class="flex flex-row gap-1">
@@ -376,7 +378,7 @@
 								tooltipPosition="bottom" />
 							<p-button
 								[disabled]="refreshing"
-								(onClick)="showSatelliteFilterDialog = true"
+								(onClick)="satellite.search.showDialog = true"
 								icon="mdi mdi-filter"
 								size="small"
 								[text]="true"
@@ -387,7 +389,7 @@
 				</div>
 				<div class="flex align-items-center justify-content-center mt-2 px-1">
 					<p-table
-						[value]="satelliteItems"
+						[value]="satellite.search.result"
 						class="satellite"
 						sortField="name"
 						[(selection)]="satellite"
@@ -453,7 +455,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.rightAscensionJ2000" />
+									[value]="position.rightAscensionJ2000" />
 								<label>RA (J2000)</label>
 							</p-floatLabel>
 						</div>
@@ -463,7 +465,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.declinationJ2000" />
+									[value]="position.declinationJ2000" />
 								<label>DEC (J2000)</label>
 							</p-floatLabel>
 						</div>
@@ -473,7 +475,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.rightAscension" />
+									[value]="position.rightAscension" />
 								<label>RA</label>
 							</p-floatLabel>
 						</div>
@@ -483,7 +485,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.declination" />
+									[value]="position.declination" />
 								<label>DEC</label>
 							</p-floatLabel>
 						</div>
@@ -493,7 +495,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.azimuth" />
+									[value]="position.azimuth" />
 								<label>Azimuth</label>
 							</p-floatLabel>
 						</div>
@@ -503,7 +505,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.altitude" />
+									[value]="position.altitude" />
 								<label>Altitude</label>
 							</p-floatLabel>
 						</div>
@@ -513,7 +515,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.magnitude < 30 ? bodyPosition.magnitude.toFixed(2) : '-'" />
+									[value]="position.magnitude < 30 ? position.magnitude.toFixed(2) : '-'" />
 								<label>Magnitude</label>
 							</p-floatLabel>
 						</div>
@@ -523,7 +525,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.constellation" />
+									[value]="position.constellation" />
 								<label>Constellation</label>
 							</p-floatLabel>
 						</div>
@@ -533,8 +535,8 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.distance.toFixed(3)" />
-								<label>Distance ({{ bodyPosition.distanceUnit }})</label>
+									[value]="position.distance.toFixed(3)" />
+								<label>Distance ({{ position.distanceUnit }})</label>
 							</p-floatLabel>
 						</div>
 						<div class="col-3">
@@ -543,7 +545,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.illuminated.toFixed(3)" />
+									[value]="position.illuminated.toFixed(3)" />
 								<label>Illuminated (%)</label>
 							</p-floatLabel>
 						</div>
@@ -553,7 +555,7 @@
 									pInputText
 									readonly
 									class="p-inputtext-sm border-0 w-full"
-									[value]="bodyPosition.elongation.toFixed(3)" />
+									[value]="position.elongation.toFixed(3)" />
 								<label>Elongation (°)</label>
 							</p-floatLabel>
 						</div>
@@ -573,7 +575,7 @@
 				</div>
 				<div class="col-12 pt-0 flex justify-content-center">
 					<p-button
-						[disabled]="!name || refreshingPosition"
+						[disabled]="!body.name || refresh.position"
 						[text]="true"
 						severity="info"
 						(onClick)="mountSync()"
@@ -581,7 +583,7 @@
 						label="Sync"
 						size="small" />
 					<p-button
-						[disabled]="!name || refreshingPosition"
+						[disabled]="!body.name || refresh.position"
 						[text]="true"
 						severity="success"
 						(onClick)="mountGoTo()"
@@ -589,7 +591,7 @@
 						label="Go To"
 						size="small" />
 					<p-button
-						[disabled]="!name || refreshingPosition"
+						[disabled]="!body.name || refresh.position"
 						[text]="true"
 						severity="success"
 						(onClick)="mountSlew()"
@@ -597,7 +599,7 @@
 						label="Slew"
 						size="small" />
 					<p-button
-						[disabled]="!name || refreshingPosition"
+						[disabled]="!body.name || refresh.position"
 						[text]="true"
 						(onClick)="frame()"
 						icon="mdi mdi-image"
@@ -622,7 +624,7 @@
 		class="col-9 flex align-items-center justify-content-between absolute gap-2 overflow-hidden"
 		style="height: 32px; left: 95px; top: 2px; padding-right: 45px">
 		<p-button
-			[disabled]="!name || refreshing"
+			[disabled]="!body.name || refreshing"
 			[text]="true"
 			[rounded]="true"
 			icon="mdi mdi-md mdi-dots-vertical"
@@ -630,11 +632,11 @@
 		<span
 			class="flex w-full align-items-center gap-1 justify-content-center"
 			style="min-width: -webkit-fill-available">
-			<span class="text-overflow-scroll font-bold">{{ name ?? '' }}</span>
+			<span class="text-overflow-scroll font-bold">{{ body.name.replaceAll('|', ' · ') }}</span>
 			<p-tag
-				*ngFor="let tag of tags"
+				*ngFor="let tag of body.tags"
 				[severity]="tag.severity"
-				[value]="tag.title"
+				[value]="tag.label"
 				styleClass="white-space-nowrap" />
 		</span>
 	</div>
@@ -643,12 +645,12 @@
 <p-dialog
 	header="Minor Planets"
 	[modal]="true"
-	[(visible)]="showMinorPlanetChoiceDialog"
+	[(visible)]="minorPlanet.list.showDialog"
 	[style]="{ width: '80vw' }">
 	<div class="grid p-2">
 		<p-listbox
-			[options]="minorPlanetChoiceItems"
-			(onChange)="minorPlanetChoosen($event)"
+			[options]="minorPlanet.list.items"
+			(onChange)="minorPlanetSelected($event)"
 			[filter]="true"
 			optionLabel="name"
 			[listStyle]="{ 'max-height': '250px' }"
@@ -659,19 +661,17 @@
 <p-dialog
 	header="Filter"
 	[draggable]="false"
-	[(visible)]="showSkyObjectFilter"
+	[(visible)]="skyObject.search.showDialog"
 	[modal]="true"
 	[style]="{ width: '80vw' }">
-	<div
-		class="grid mt-2"
-		*ngIf="skyObjectFilter">
+	<div class="grid mt-2">
 		<div class="col-4">
 			<p-floatLabel>
 				<input
 					pInputText
-					[disabled]="skyObjectFilter.radius <= 0"
+					[disabled]="skyObject.search.filter.radius <= 0"
 					class="p-inputtext-sm border-0 w-full"
-					[value]="skyObjectFilter.rightAscension" />
+					[value]="skyObject.search.filter.rightAscension" />
 				<label>RA (h)</label>
 			</p-floatLabel>
 		</div>
@@ -679,9 +679,9 @@
 			<p-floatLabel>
 				<input
 					pInputText
-					[disabled]="skyObjectFilter.radius <= 0"
+					[disabled]="skyObject.search.filter.radius <= 0"
 					class="p-inputtext-sm border-0 w-full"
-					[value]="skyObjectFilter.declination" />
+					[value]="skyObject.search.filter.declination" />
 				<label>DEC (°)</label>
 			</p-floatLabel>
 		</div>
@@ -696,16 +696,17 @@
 					[showButtons]="true"
 					inputStyleClass="p-inputtext-sm border-0 w-full"
 					locale="en"
-					[(ngModel)]="skyObjectFilter.radius"
-					scrollableNumber />
+					[(ngModel)]="skyObject.search.filter.radius"
+					spinnableNumber />
 				<label>Radius (°)</label>
 			</p-floatLabel>
 		</div>
 		<div class="col-6">
 			<p-floatLabel class="w-full">
+				@let constellations = ['ALL'].concat('CONSTELLATION' | dropdownOptions);
 				<p-dropdown
-					[options]="constellationOptions | enumDropdown"
-					[(ngModel)]="skyObjectFilter.constellation"
+					[options]="constellations | enumDropdown"
+					[(ngModel)]="skyObject.search.filter.constellation"
 					[filter]="true"
 					appendTo="body"
 					optionLabel="label"
@@ -717,9 +718,10 @@
 		</div>
 		<div class="col-6">
 			<p-floatLabel class="w-full">
+				@let skyObjectTypes = ['ALL'].concat('SKY_OBJECT_TYPE' | dropdownOptions);
 				<p-dropdown
-					[options]="skyObjectFilter.types | enumDropdown"
-					[(ngModel)]="skyObjectFilter.type"
+					[options]="skyObjectTypes | enumDropdown"
+					[(ngModel)]="skyObject.search.filter.type"
 					appendTo="body"
 					[filter]="true"
 					optionLabel="label"
@@ -740,8 +742,8 @@
 					[showButtons]="true"
 					inputStyleClass="p-inputtext-sm border-0 w-full"
 					locale="en"
-					[(ngModel)]="skyObjectFilter.magnitude[0]"
-					scrollableNumber />
+					[(ngModel)]="skyObject.search.filter.magnitude[0]"
+					spinnableNumber />
 				<label>Mag. min</label>
 			</p-floatLabel>
 		</div>
@@ -756,8 +758,8 @@
 					[showButtons]="true"
 					inputStyleClass="p-inputtext-sm border-0 w-full"
 					locale="en"
-					[(ngModel)]="skyObjectFilter.magnitude[1]"
-					scrollableNumber />
+					[(ngModel)]="skyObject.search.filter.magnitude[1]"
+					spinnableNumber />
 				<label>Mag. max</label>
 			</p-floatLabel>
 		</div>
@@ -769,26 +771,28 @@
 			icon="mdi mdi-filter"
 			label="Filter"
 			size="small"
-			(onClick)="filterSkyObject()" />
+			(onClick)="searchSkyObject()" />
 	</ng-template>
 </p-dialog>
 
 <p-dialog
 	header="Satellite Filter"
 	[draggable]="false"
-	[(visible)]="showSatelliteFilterDialog"
+	[(visible)]="satellite.search.showDialog"
 	[modal]="true"
 	[style]="{ width: '80vw' }">
 	<div class="grid mt-2">
 		<div class="col-12 flex flex-column gap-1 align-items-start flex-wrap">
-			<ng-container *ngFor="let item of satelliteSearchGroup | keyvalue">
+			@let groups = 'SATELLITE_GROUP_TYPE' | dropdownOptions;
+
+			@for (group of groups; track $index) {
 				<p-checkbox
 					[binary]="true"
-					[ngModel]="satelliteSearchGroup.get(item.key)"
-					(ngModelChange)="satelliteSearchGroup.set(item.key, $event)"
-					[label]="item.key | enum"
+					[(ngModel)]="satellite.search.filter.groups[group]"
+					(ngModelChange)="savePreference()"
+					[label]="group | enum"
 					class="white-space-nowrap" />
-			</ng-container>
+			}
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
@@ -799,47 +803,27 @@
 			icon="mdi mdi-restore"
 			label="Reset"
 			size="small"
-			(onClick)="resetSatelliteFilter()" />
+			(onClick)="resetSatelliteSearchGroups()" />
 		<p-button
 			[disabled]="refreshing"
 			[text]="true"
 			icon="mdi mdi-filter"
 			label="Filter"
 			size="small"
-			(onClick)="filterSatellite()" />
-	</ng-template>
-</p-dialog>
-
-<p-dialog
-	header="Settings"
-	[draggable]="false"
-	[(visible)]="settings.showDialog"
-	[modal]="true"
-	[style]="{ width: '70vw' }">
-	<div class="grid mt-2">
-		<div class="col-12">
-		</div>
-	</div>
-	<ng-template pTemplate="footer">
-		<p-button
-			[text]="true"
-			icon="mdi mdi-check"
-			label="OK"
-			size="small"
-			(onClick)="settings.showDialog = false" />
+			(onClick)="searchSatellite()" />
 	</ng-template>
 </p-dialog>
 
 <p-overlayPanel
-	#calendarPanel
+	#dateTimeAndLocationPanel
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
 	appendTo="body">
 	<ng-template pTemplate="content">
 		<div class="grid">
-			<div class="col-8 flex-column gap-2">
+			<div class="col-7 flex-column gap-2">
 				<p-calendar
-					[disabled]="refreshing || !useManualDateTime"
-					[(ngModel)]="dateTime"
+					[disabled]="refreshing || !dateTimeAndLocation.manual"
+					[(ngModel)]="dateTimeAndLocation.dateTime"
 					(ngModelChange)="dateTimeChanged(true)"
 					[inline]="true"
 					[showIcon]="true"
@@ -848,49 +832,57 @@
 					dateFormat="yy-mm-dd"
 					styleClass="w-full" />
 			</div>
-			<div class="col-4 flex-column gap-3 align-items-center justify-content-start gap-1">
+			<div class="col-5 flex-column gap-3 align-items-center justify-content-start gap-1">
 				<div class="flex flex-column justify-content-center align-items-center gap-1">
-					<span>Enable</span>
+					<span>Date Time</span>
 					<p-inputSwitch
 						[disabled]="refreshing"
-						[(ngModel)]="useManualDateTime"
-						(ngModelChange)="useManualDateTimeChanged()" />
+						[(ngModel)]="dateTimeAndLocation.manual"
+						(ngModelChange)="manualDateTimeChanged()" />
 				</div>
-				<div class="flex flex-column align-items-center">
+				<div class="flex flex-column align-items-center gap-3">
 					<div class="flex align-items-center justify-content-center gap-2">
-						<div class="flex flex-column justify-content-center align-items-center gap-1">
-							<span>Hour</span>
+						<p-floatLabel class="w-full">
 							<p-inputNumber
-								[disabled]="refreshing || !useManualDateTime"
-								[(ngModel)]="dateTimeHour"
+								[disabled]="refreshing || !dateTimeAndLocation.manual"
+								[ngModel]="dateTimeAndLocation.dateTime.getHours()"
+								(ngModelChange)="dateTimeAndLocation.dateTime.setHours($event); dateTimeChanged(false)"
 								[showButtons]="true"
 								[min]="0"
 								[max]="23"
-								class="w-fit"
 								[format]="false"
 								[allowEmpty]="false"
-								(ngModelChange)="dateTimeChanged(false)"
 								styleClass="p-inputtext-sm border-0"
-								[style]="{ width: '54px' }"
-								scrollableNumber />
-						</div>
-						<div class="flex flex-column justify-content-center align-items-center gap-1">
-							<span>Minute</span>
+								spinnableNumber />
+							<label>Hour</label>
+						</p-floatLabel>
+						<p-floatLabel class="w-full">
 							<p-inputNumber
-								[disabled]="refreshing || !useManualDateTime"
-								[(ngModel)]="dateTimeMinute"
+								[disabled]="refreshing || !dateTimeAndLocation.manual"
+								[ngModel]="dateTimeAndLocation.dateTime.getMinutes()"
+								(ngModelChange)="dateTimeAndLocation.dateTime.setMinutes($event); dateTimeChanged(false)"
 								[showButtons]="true"
 								[min]="0"
 								[max]="59"
-								class="w-fit"
 								[format]="false"
 								[allowEmpty]="false"
-								(ngModelChange)="dateTimeChanged(false)"
 								styleClass="p-inputtext-sm border-0"
-								[style]="{ width: '54px' }"
-								scrollableNumber />
-						</div>
+								spinnableNumber />
+							<label>Minute</label>
+						</p-floatLabel>
 					</div>
+					<p-floatLabel class="w-full">
+						<p-dropdown
+							[options]="locations"
+							[(ngModel)]="dateTimeAndLocation.location"
+							(ngModelChange)="locationChanged()"
+							optionLabel="name"
+							dataKey="id"
+							styleClass="p-inputtext-sm border-0"
+							emptyMessage="No location found"
+							[autoDisplayFirst]="false" />
+						<label>Location</label>
+					</p-floatLabel>
 				</div>
 			</div>
 		</div>
@@ -900,5 +892,6 @@
 <neb-dialog-menu
 	#ephemerisMenu
 	[model]="ephemerisModel"
-	[header]="name" />
+	[header]="body.name" />
+
 <neb-device-list-menu #deviceMenu />

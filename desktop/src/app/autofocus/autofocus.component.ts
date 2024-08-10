@@ -6,47 +6,38 @@ import { CameraExposureComponent } from '../../shared/components/camera-exposure
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { AutoFocusChart, AutoFocusPreference, AutoFocusRequest, AutoFocusState, EMPTY_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
-import { Camera, EMPTY_CAMERA, EMPTY_CAMERA_START_CAPTURE, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
-import { EMPTY_FOCUSER, Focuser } from '../../shared/types/focuser.types'
+import { Tickable, Ticker } from '../../shared/services/ticker.service'
+import { AutoFocusChart, AutoFocusState, DEFAULT_AUTO_FOCUS_PREFERENCE } from '../../shared/types/autofocus.type'
+import { Camera, DEFAULT_CAMERA, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
+import { DEFAULT_FOCUSER, Focuser } from '../../shared/types/focuser.types'
 import { deviceComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 
 @Component({
-	selector: 'app-autofocus',
+	selector: 'neb-autofocus',
 	templateUrl: './autofocus.component.html',
-	styleUrls: ['./autofocus.component.scss'],
 })
-export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
-	cameras: Camera[] = []
-	camera = structuredClone(EMPTY_CAMERA)
+export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
+	protected cameras: Camera[] = []
+	protected camera?: Camera
 
-	focusers: Focuser[] = []
-	focuser = structuredClone(EMPTY_FOCUSER)
+	protected focusers: Focuser[] = []
+	protected focuser?: Focuser
 
-	running = false
-	status: AutoFocusState = 'IDLE'
-	starCount = 0
-	starHFD = 0
-	focusPoints: Point[] = []
+	protected running = false
+	protected status: AutoFocusState = 'IDLE'
+	protected starCount = 0
+	protected starHFD = 0
+	protected readonly focusPoints: Point[] = []
 
-	private stepSizeForScale = 0
+	protected readonly preference = structuredClone(DEFAULT_AUTO_FOCUS_PREFERENCE)
+	protected request = this.preference.request
 
-	readonly request: AutoFocusRequest = {
-		...structuredClone(EMPTY_AUTO_FOCUS_PREFERENCE),
-		capture: structuredClone(EMPTY_CAMERA_START_CAPTURE),
-	}
+	private stepSize = this.request.stepSize
 
-	@ViewChild('cameraExposure')
-	private readonly cameraExposure!: CameraExposureComponent
-
-	@ViewChild('chart')
-	private readonly chart!: UIChart
-
-	readonly chartOptions: ChartOptions = {
+	protected readonly chartOptions: ChartOptions = {
 		responsive: true,
 		plugins: {
 			legend: {
@@ -142,7 +133,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 		},
 	}
 
-	readonly chartData: ChartData = {
+	protected readonly chartData: ChartData = {
 		datasets: [
 			// TREND LINE (LEFT).
 			{
@@ -209,6 +200,12 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 		],
 	}
 
+	@ViewChild('cameraExposure')
+	private readonly cameraExposure!: CameraExposureComponent
+
+	@ViewChild('chart')
+	private readonly chart!: UIChart
+
 	private get trendLineLeftDataset() {
 		return this.chartData.datasets[0]
 	}
@@ -236,36 +233,38 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 	constructor(
 		app: AppComponent,
 		private readonly api: ApiService,
-		private readonly browserWindow: BrowserWindowService,
-		private readonly preference: PreferenceService,
-		private readonly pinger: Pinger,
-		electron: ElectronService,
+		private readonly browserWindowService: BrowserWindowService,
+		private readonly preferenceService: PreferenceService,
+		private readonly ticker: Ticker,
+		electronService: ElectronService,
 		ngZone: NgZone,
 	) {
 		app.title = 'Auto Focus'
 
-		electron.on('CAMERA.UPDATED', (event) => {
-			if (event.device.id === this.camera.id) {
+		electronService.on('CAMERA.UPDATED', (event) => {
+			if (event.device.id === this.camera?.id) {
 				ngZone.run(() => {
-					Object.assign(this.camera, event.device)
+					if (this.camera) {
+						Object.assign(this.camera, event.device)
+					}
 				})
 			}
 		})
 
-		electron.on('CAMERA.ATTACHED', (event) => {
+		electronService.on('CAMERA.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.cameras.push(event.device)
 				this.cameras.sort(deviceComparator)
 			})
 		})
 
-		electron.on('CAMERA.DETACHED', (event) => {
+		electronService.on('CAMERA.DETACHED', (event) => {
 			ngZone.run(() => {
 				const index = this.cameras.findIndex((e) => e.id === event.device.id)
 
 				if (index >= 0) {
 					if (this.cameras[index] === this.camera) {
-						Object.assign(this.camera, this.cameras[0] ?? EMPTY_CAMERA)
+						Object.assign(this.camera, this.cameras[0] ?? DEFAULT_CAMERA)
 					}
 
 					this.cameras.splice(index, 1)
@@ -273,28 +272,30 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 			})
 		})
 
-		electron.on('FOCUSER.UPDATED', (event) => {
-			if (event.device.id === this.focuser.id) {
+		electronService.on('FOCUSER.UPDATED', (event) => {
+			if (event.device.id === this.focuser?.id) {
 				ngZone.run(() => {
-					Object.assign(this.focuser, event.device)
+					if (this.focuser) {
+						Object.assign(this.focuser, event.device)
+					}
 				})
 			}
 		})
 
-		electron.on('FOCUSER.ATTACHED', (event) => {
+		electronService.on('FOCUSER.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.focusers.push(event.device)
 				this.focusers.sort(deviceComparator)
 			})
 		})
 
-		electron.on('FOCUSER.DETACHED', (event) => {
+		electronService.on('FOCUSER.DETACHED', (event) => {
 			ngZone.run(() => {
 				const index = this.focusers.findIndex((e) => e.id === event.device.id)
 
 				if (index >= 0) {
 					if (this.focusers[index] === this.focuser) {
-						Object.assign(this.focuser, this.focusers[0] ?? EMPTY_FOCUSER)
+						Object.assign(this.focuser, this.focusers[0] ?? DEFAULT_FOCUSER)
 					}
 
 					this.focusers.splice(index, 1)
@@ -302,7 +303,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 			})
 		})
 
-		electron.on('AUTO_FOCUS.ELAPSED', (event) => {
+		electronService.on('AUTO_FOCUS.ELAPSED', (event) => {
 			ngZone.run(() => {
 				this.status = event.state
 				this.running = event.state !== 'FAILED' && event.state !== 'FINISHED'
@@ -328,7 +329,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	async ngAfterViewInit() {
-		this.pinger.register(this, 30000)
+		this.ticker.register(this, 30000)
 
 		this.cameras = (await this.api.cameras()).sort(deviceComparator)
 		this.focusers = (await this.api.focusers()).sort(deviceComparator)
@@ -336,18 +337,18 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 
 	@HostListener('window:unload')
 	ngOnDestroy() {
-		this.pinger.unregister(this)
+		this.ticker.unregister(this)
 		void this.stop()
 	}
 
-	async ping() {
-		if (this.camera.id) await this.api.cameraListen(this.camera)
-		if (this.focuser.id) await this.api.focuserListen(this.focuser)
+	async tick() {
+		if (this.camera?.id) await this.api.cameraListen(this.camera)
+		if (this.focuser?.id) await this.api.focuserListen(this.focuser)
 	}
 
-	async cameraChanged() {
-		if (this.camera.id) {
-			await this.ping()
+	protected async cameraChanged() {
+		if (this.camera?.id) {
+			await this.tick()
 
 			const camera = await this.api.camera(this.camera.id)
 			Object.assign(this.camera, camera)
@@ -355,39 +356,45 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 		}
 	}
 
-	async focuserChanged() {
-		if (this.focuser.id) {
-			await this.ping()
+	protected async focuserChanged() {
+		if (this.focuser?.id) {
+			await this.tick()
 
 			const focuser = await this.api.focuser(this.focuser.id)
 			Object.assign(this.focuser, focuser)
 		}
 	}
 
-	async showCameraDialog() {
-		if (this.camera.id) {
-			if (await CameraComponent.showAsDialog(this.browserWindow, 'AUTO_FOCUS', this.camera, this.request.capture)) {
+	protected async showCameraDialog() {
+		if (this.camera?.id) {
+			if (await CameraComponent.showAsDialog(this.browserWindowService, 'AUTO_FOCUS', this.camera, this.request.capture)) {
 				this.savePreference()
 			}
 		}
 	}
 
-	async start() {
-		await this.openCameraImage()
+	protected async start() {
+		if (this.camera?.id && this.focuser?.id) {
+			await this.openCameraImage()
 
-		this.clearChart()
-		this.stepSizeForScale = this.request.stepSize
+			this.clearChart()
+			this.stepSize = this.request.stepSize
+			Object.assign(this.request.starDetector, this.preferenceService.settings.get().starDetector[this.request.starDetector.type])
 
-		this.request.starDetector = this.preference.starDetectionRequest('ASTAP').get()
-		return this.api.autoFocusStart(this.camera, this.focuser, this.request)
+			await this.api.autoFocusStart(this.camera, this.focuser, this.request)
+		}
 	}
 
-	stop() {
-		return this.api.autoFocusStop(this.camera)
+	protected async stop() {
+		if (this.camera?.id) {
+			await this.api.autoFocusStop(this.camera)
+		}
 	}
 
-	openCameraImage() {
-		return this.browserWindow.openCameraImage(this.camera, 'ALIGNMENT')
+	protected async openCameraImage() {
+		if (this.camera?.id) {
+			await this.browserWindowService.openCameraImage(this.camera, 'ALIGNMENT')
+		}
 	}
 
 	private updateChart(data: AutoFocusChart) {
@@ -420,8 +427,8 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 		}
 
 		const scales = this.chartOptions.scales!
-		scales['x']!.min = Math.max(0, data.minX - this.stepSizeForScale)
-		scales['x']!.max = data.maxX + this.stepSizeForScale
+		scales['x']!.min = Math.max(0, data.minX - this.stepSize)
+		scales['x']!.max = data.maxX + this.stepSize
 		scales['y']!.max = (data.maxY || 19) + 1
 
 		const zoom = this.chartOptions.plugins!.zoom!
@@ -433,7 +440,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	private clearChart() {
-		this.focusPoints = []
+		this.focusPoints.length = 0
 
 		for (const dataset of this.chartData.datasets) {
 			dataset.data = []
@@ -443,20 +450,9 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 	}
 
 	private loadPreference() {
-		const preference: Partial<AutoFocusPreference> = this.preference.autoFocusPreference.get()
-
-		this.request.fittingMode = preference.fittingMode ?? 'HYPERBOLIC'
-		this.request.initialOffsetSteps = preference.initialOffsetSteps ?? 4
-		this.request.rSquaredThreshold = preference.rSquaredThreshold ?? 0.5
-		this.request.stepSize = preference.stepSize ?? 100
-		this.request.totalNumberOfAttempts = preference.totalNumberOfAttempts ?? 1
-		this.request.backlashCompensation.mode = preference.backlashCompensation?.mode ?? 'NONE'
-		this.request.backlashCompensation.backlashIn = preference.backlashCompensation?.backlashIn ?? 0
-		this.request.backlashCompensation.backlashOut = preference.backlashCompensation?.backlashOut ?? 0
-
-		if (this.camera.id) {
-			const cameraPreference = this.preference.cameraPreference(this.camera).get()
-			Object.assign(this.request.capture, this.preference.cameraStartCaptureForAutoFocus(this.camera).get(cameraPreference))
+		if (this.camera?.id) {
+			Object.assign(this.preference, this.preferenceService.autoFocus(this.camera).get())
+			this.request = this.preference.request
 
 			if (this.camera.connected) {
 				updateCameraStartCaptureFromCamera(this.request.capture, this.camera)
@@ -464,13 +460,9 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Pingable {
 		}
 	}
 
-	savePreference() {
-		this.preference.cameraStartCaptureForAutoFocus(this.camera).set(this.request.capture)
-
-		const preference: AutoFocusPreference = {
-			...this.request,
+	protected savePreference() {
+		if (this.camera?.id) {
+			this.preferenceService.autoFocus(this.camera).set(this.preference)
 		}
-
-		this.preference.autoFocusPreference.set(preference)
 	}
 }

@@ -1,138 +1,106 @@
-import { Component } from '@angular/core'
-import { LocationDialog } from '../../shared/dialogs/location/location.dialog'
-import { DropdownOptionsPipe } from '../../shared/pipes/dropdown-options.pipe'
+import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
+import { debounceTime, Subject, Subscription } from 'rxjs'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { PrimeService } from '../../shared/services/prime.service'
-import { EMPTY_LOCATION, Location } from '../../shared/types/atlas.types'
-import { LiveStackerType, LiveStackingRequest } from '../../shared/types/camera.types'
-import { PlateSolverRequest, PlateSolverType, StarDetectionRequest, StarDetectorType } from '../../shared/types/settings.types'
+import { DEFAULT_LOCATION, Location } from '../../shared/types/atlas.types'
+import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, FrameType, LiveStackerType } from '../../shared/types/camera.types'
+import { PlateSolverType } from '../../shared/types/platesolver.types'
+import { DEFAULT_SETTINGS_PREFERENCE, resetCameraCaptureNamingFormat, SettingsTabKey } from '../../shared/types/settings.types'
+import { StackerType } from '../../shared/types/stacker.types'
+import { StarDetectorType } from '../../shared/types/stardetector.types'
 import { AppComponent } from '../app.component'
 
 @Component({
-	selector: 'app-settings',
+	selector: 'neb-settings',
 	templateUrl: './settings.component.html',
-	styleUrls: ['./settings.component.scss'],
 })
-export class SettingsComponent {
-	tab = 0
-	readonly tabs: { id: number; name: string }[] = [
-		{
-			id: 0,
-			name: 'Location',
-		},
-		{
-			id: 1,
-			name: 'Plate Solver',
-		},
-		{
-			id: 2,
-			name: 'Star Detection',
-		},
-		{
-			id: 3,
-			name: 'Live Stacking',
-		},
-	]
+export class SettingsComponent implements AfterViewInit, OnDestroy {
+	protected tab: SettingsTabKey = 'LOCATION'
+	protected readonly tabs: SettingsTabKey[] = ['LOCATION', 'PLATE_SOLVER', 'STAR_DETECTOR', 'LIVE_STACKER', 'STACKER', 'CAPTURE_NAMING_FORMAT']
+	protected readonly preference = structuredClone(DEFAULT_SETTINGS_PREFERENCE)
 
-	readonly locations: Location[]
-	location: Location
+	protected plateSolverType: PlateSolverType = 'ASTAP'
+	protected starDetectorType: StarDetectorType = 'ASTAP'
+	protected liveStackerType: LiveStackerType = 'SIRIL'
+	protected stackerType: StackerType = 'PIXINSIGHT'
 
-	plateSolverType: PlateSolverType = 'ASTAP'
-	readonly plateSolvers = new Map<PlateSolverType, PlateSolverRequest>()
+	private readonly locationChangePublisher = new Subject<Location>()
+	private readonly locationChangeSubscription?: Subscription
 
-	starDetectorType: StarDetectorType = 'ASTAP'
-	readonly starDetectors = new Map<StarDetectorType, StarDetectionRequest>()
+	get plateSolver() {
+		return this.preference.plateSolver[this.plateSolverType]
+	}
 
-	liveStackerType: LiveStackerType = 'SIRIL'
-	readonly liveStackers = new Map<LiveStackerType, LiveStackingRequest>()
+	get starDetector() {
+		return this.preference.starDetector[this.starDetectorType]
+	}
+
+	get liveStacker() {
+		return this.preference.liveStacker[this.liveStackerType]
+	}
+
+	get stacker() {
+		return this.preference.stacker[this.stackerType]
+	}
 
 	constructor(
 		app: AppComponent,
-		private readonly preference: PreferenceService,
-		private readonly electron: ElectronService,
-		private readonly prime: PrimeService,
-		private readonly dropdownOptions: DropdownOptionsPipe,
+		private readonly preferenceService: PreferenceService,
+		private readonly electronService: ElectronService,
 	) {
 		app.title = 'Settings'
 
-		this.locations = preference.locations.get()
-		this.location = preference.selectedLocation.get(this.locations[0])
-
-		for (const type of dropdownOptions.transform('PLATE_SOLVER')) {
-			this.plateSolvers.set(type, preference.plateSolverRequest(type).get())
-		}
-		for (const type of dropdownOptions.transform('STAR_DETECTOR')) {
-			this.starDetectors.set(type, preference.starDetectionRequest(type).get())
-		}
-		for (const type of dropdownOptions.transform('LIVE_STACKER')) {
-			this.liveStackers.set(type, preference.liveStackingRequest(type).get())
-		}
+		this.locationChangeSubscription = this.locationChangePublisher.pipe(debounceTime(2000)).subscribe((location) => {
+			return this.electronService.locationChanged(location)
+		})
 	}
 
-	addLocation() {
-		return this.showLocation(structuredClone(EMPTY_LOCATION))
+	ngAfterViewInit() {
+		this.loadPreference()
 	}
 
-	editLocation() {
-		return this.showLocation(this.location)
+	@HostListener('window:unload')
+	ngOnDestroy() {
+		this.locationChangeSubscription?.unsubscribe()
 	}
 
-	private async showLocation(location: Location) {
-		const result = await this.prime.open(LocationDialog, { header: 'Location', data: location })
+	protected addLocation() {
+		const location = structuredClone(DEFAULT_LOCATION)
+		location.id = +new Date()
+		this.preference.locations.push(location)
+		this.locationChanged(location)
+	}
 
-		if (result) {
-			const index = this.locations.findIndex((e) => e.id === result.id)
-
-			if (result.id === 0) {
-				result.id = Date.now()
-			}
+	protected deleteLocation() {
+		if (this.preference.locations.length > 1) {
+			const index = this.preference.locations.findIndex((e) => e.id === this.preference.location.id)
 
 			if (index >= 0) {
-				Object.assign(this.locations[index], result)
-				this.location = this.locations[index]
-			} else {
-				this.locations.push(result)
-				this.location = result
-			}
-
-			this.preference.locations.set(this.locations)
-			this.preference.selectedLocation.set(this.location)
-
-			await this.electron.send('LOCATION.CHANGED', this.location)
-		}
-	}
-
-	async deleteLocation() {
-		if (this.locations.length > 1) {
-			const index = this.locations.findIndex((e) => e.id === this.location.id)
-
-			if (index >= 0) {
-				this.locations.splice(index, 1)
-				this.location = this.locations[0]!
-
-				this.preference.locations.set(this.locations)
-				this.preference.selectedLocation.set(this.location)
-
-				await this.electron.send('LOCATION.CHANGED', this.location)
+				this.preference.locations.splice(index, 1)
+				this.locationChanged(this.preference.locations[0])
 			}
 		}
 	}
 
-	locationChanged() {
-		this.preference.selectedLocation.set(this.location)
-		return this.electron.send('LOCATION.CHANGED', this.location)
+	protected locationChanged(location?: Location) {
+		if (location) {
+			this.preference.location = location
+			this.savePreference()
+			this.locationChangePublisher.next(location)
+		}
 	}
 
-	save() {
-		for (const type of this.dropdownOptions.transform('PLATE_SOLVER')) {
-			this.preference.plateSolverRequest(type).set(this.plateSolvers.get(type))
-		}
-		for (const type of this.dropdownOptions.transform('STAR_DETECTOR')) {
-			this.preference.starDetectionRequest(type).set(this.starDetectors.get(type))
-		}
-		for (const type of this.dropdownOptions.transform('LIVE_STACKER')) {
-			this.preference.liveStackingRequest(type).set(this.liveStackers.get(type))
-		}
+	protected resetCameraCaptureNamingFormat(type: FrameType) {
+		resetCameraCaptureNamingFormat(type, this.preference.namingFormat, DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT)
+		this.savePreference()
+	}
+
+	private loadPreference() {
+		Object.assign(this.preference, this.preferenceService.settings.get())
+		this.preference.location = this.preference.locations.find((e) => e.id === this.preference.location.id) ?? this.preference.locations[0]
+	}
+
+	protected savePreference() {
+		this.preferenceService.settings.set(this.preference)
 	}
 }

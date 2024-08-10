@@ -6,11 +6,14 @@ plugins {
 dependencies {
     api(project(":nebulosa-common"))
     api(project(":nebulosa-math"))
+    api(project(":nebulosa-platesolver"))
     api(project(":nebulosa-stardetector"))
+    api(project(":nebulosa-stacker"))
     api(project(":nebulosa-livestacker"))
-    api(libs.bundles.jackson)
+    api(project(":nebulosa-json"))
     api(libs.apache.codec)
     implementation(project(":nebulosa-log"))
+    testImplementation(project(":nebulosa-image"))
     testImplementation(project(":nebulosa-test"))
 }
 

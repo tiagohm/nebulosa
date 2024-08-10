@@ -129,14 +129,17 @@ data class CommandLine internal constructor(
 
         override fun run() {
             try {
-                if (timeout > 0L) {
+                val exited = if (timeout > 0L) {
                     process.waitFor(timeout, TimeUnit.MILLISECONDS)
                 } else {
                     process.waitFor()
+                    true
                 }
 
-                inputReader?.waitFor()
-                errorReader?.waitFor()
+                if (exited) {
+                    inputReader?.waitFor()
+                    errorReader?.waitFor()
+                }
             } catch (ignored: InterruptedException) {
             } finally {
                 if (process.isAlive) {

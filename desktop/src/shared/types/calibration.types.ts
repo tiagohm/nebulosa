@@ -1,28 +1,33 @@
-import type { FrameType } from './camera.types'
+import type { Image } from './image.types'
 
-export interface CalibrationFrame {
+export interface CalibrationFrame extends Image {
 	id: number
-	type: FrameType
-	name: string
-	filter?: string
-	exposureTime: number
-	temperature: number
-	width: number
-	height: number
-	binX: number
-	binY: number
-	gain: number
+	group: string
 	path: string
 	enabled: boolean
 }
 
-export interface CalibrationFrameGroup {
-	id: number
-	name: string
-	key: Omit<CalibrationFrame, 'id' | 'name' | 'path' | 'enabled'>
-	frames: CalibrationFrame[]
+export interface CalibrationGroupDialog {
+	showDialog: boolean
+	group: string
+	save?: () => Promise<void> | void
 }
 
 export interface CalibrationPreference {
-	openPath?: string
+	filePath?: string
+	directoryPath?: string
+}
+
+export const DEFAULT_CALIBRATION_GROUP_DIALOG: CalibrationGroupDialog = {
+	showDialog: false,
+	group: '',
+}
+
+export const DEFAULT_CALIBRATION_PREFERENCE: CalibrationPreference = {}
+
+export function calibrationPreferenceWithDefault(preference?: Partial<CalibrationPreference>, source: CalibrationPreference = DEFAULT_CALIBRATION_PREFERENCE) {
+	if (!preference) return structuredClone(source)
+	preference.filePath ||= source.filePath
+	preference.directoryPath ||= source.directoryPath
+	return preference as CalibrationPreference
 }

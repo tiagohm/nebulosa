@@ -54,7 +54,7 @@ class SequencerExecutor(
     }
 
     fun execute(
-        camera: Camera, request: SequencePlanRequest,
+        camera: Camera, request: SequencerPlanRequest,
         mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null, rotator: Rotator? = null,
     ) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
@@ -80,6 +80,14 @@ class SequencerExecutor(
             whenComplete { _, _ -> jobs.remove(this) }
             start()
         }
+    }
+
+    fun pause(camera: Camera) {
+        jobs.find { it.task.camera === camera }?.pause()
+    }
+
+    fun unpause(camera: Camera) {
+        jobs.find { it.task.camera === camera }?.unpause()
     }
 
     fun stop(camera: Camera) {

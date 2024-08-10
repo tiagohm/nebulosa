@@ -1,32 +1,34 @@
 import { Injectable } from '@angular/core'
-import moment from 'moment'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
-import { Angle, BodyPosition, CloseApproach, ComputedLocation, Constellation, DeepSkyObject, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
+import { extractDate, extractDateTime } from '../types/angular.types'
+import { Angle, BodyPosition, CloseApproach, ComputedLocation, Constellation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
 import { AutoFocusRequest } from '../types/autofocus.type'
-import { CalibrationFrame, CalibrationFrameGroup } from '../types/calibration.types'
+import { CalibrationFrame } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
 import { Device, INDIProperty, INDISendProperty } from '../types/device.types'
 import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
-import { ConnectionStatus, ConnectionType, Equipment } from '../types/home.types'
-import { CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
-import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlType, SlewRate, TrackMode } from '../types/mount.types'
+import { ConnectionStatus, ConnectionType } from '../types/home.types'
+import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
+import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, SlewRate, TrackMode } from '../types/mount.types'
+import { PlateSolverRequest } from '../types/platesolver.types'
 import { Rotator } from '../types/rotator.types'
-import { SequencePlan } from '../types/sequencer.types'
-import { PlateSolverRequest, StarDetectionRequest } from '../types/settings.types'
-import { FilterWheel } from '../types/wheel.types'
+import { SequencerPlan } from '../types/sequencer.types'
+import { AnalyzedTarget, StackingRequest } from '../types/stacker.types'
+import { StarDetectionRequest } from '../types/stardetector.types'
+import { Wheel } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 import { HttpService } from './http.service'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-	constructor(private readonly http: HttpService) {}
-
 	get baseUrl() {
 		return this.http.baseUrl
 	}
+
+	constructor(private readonly http: HttpService) {}
 
 	// CONNECTION
 
@@ -69,12 +71,6 @@ export class ApiService {
 		return this.http.get<boolean>(`cameras/${camera.id}/capturing`)
 	}
 
-	cameraSnoop(camera: Camera, equipment: Equipment) {
-		const { mount, wheel, focuser, rotator } = equipment
-		const query = this.http.query({ mount: mount?.id, wheel: wheel?.id, focuser: focuser?.id, rotator: rotator?.id })
-		return this.http.put<never>(`cameras/${camera.id}/snoop?${query}`)
-	}
-
 	cameraCooler(camera: Camera, enabled: boolean) {
 		return this.http.put<never>(`cameras/${camera.id}/cooler?enabled=${enabled}`)
 	}
@@ -83,8 +79,7 @@ export class ApiService {
 		return this.http.put<never>(`cameras/${camera.id}/temperature/setpoint?temperature=${temperature}`)
 	}
 
-	cameraStartCapture(camera: Camera, data: CameraStartCapture, equipment: Equipment) {
-		const { mount, wheel, focuser, rotator } = equipment
+	cameraStartCapture(camera: Camera, data: CameraStartCapture, mount?: Mount, wheel?: Wheel, focuser?: Focuser, rotator?: Rotator) {
 		const query = this.http.query({ mount: mount?.id, wheel: wheel?.id, focuser: focuser?.id, rotator: rotator?.id })
 		return this.http.put<never>(`cameras/${camera.id}/capture/start?${query}`, data)
 	}
@@ -179,13 +174,13 @@ export class ApiService {
 		return this.http.get<ComputedLocation>(`mounts/${mount.id}/location/${type}`)
 	}
 
-	pointMountHere(mount: Mount, path: string, x: number, y: number) {
-		const query = this.http.query({ path, x, y })
+	pointMountHere(mount: Mount, path: string, point: ImageMousePosition) {
+		const query = this.http.query({ path, ...point })
 		return this.http.put<never>(`mounts/${mount.id}/point-here?${query}`)
 	}
 
-	mountRemoteControlStart(mount: Mount, type: MountRemoteControlType, host: string, port: number) {
-		const query = this.http.query({ type, host, port })
+	mountRemoteControlStart(mount: Mount, protocol: MountRemoteControlProtocol, host: string, port: number) {
+		const query = this.http.query({ protocol, host, port })
 		return this.http.put<never>(`mounts/${mount.id}/remote-control/start?${query}`)
 	}
 
@@ -193,8 +188,8 @@ export class ApiService {
 		return this.http.get<MountRemoteControl[]>(`mounts/${mount.id}/remote-control`)
 	}
 
-	mountRemoteControlStop(mount: Mount, type: MountRemoteControlType) {
-		const query = this.http.query({ type })
+	mountRemoteControlStop(mount: Mount, protocol: MountRemoteControlProtocol) {
+		const query = this.http.query({ protocol })
 		return this.http.put<never>(`mounts/${mount.id}/remote-control/stop?${query}`)
 	}
 
@@ -247,30 +242,30 @@ export class ApiService {
 	// FILTER WHEEL
 
 	wheels() {
-		return this.http.get<FilterWheel[]>(`wheels`)
+		return this.http.get<Wheel[]>(`wheels`)
 	}
 
 	wheel(id: string) {
-		return this.http.get<FilterWheel>(`wheels/${id}`)
+		return this.http.get<Wheel>(`wheels/${id}`)
 	}
 
-	wheelConnect(wheel: FilterWheel) {
+	wheelConnect(wheel: Wheel) {
 		return this.http.put<never>(`wheels/${wheel.id}/connect`)
 	}
 
-	wheelDisconnect(wheel: FilterWheel) {
+	wheelDisconnect(wheel: Wheel) {
 		return this.http.put<never>(`wheels/${wheel.id}/disconnect`)
 	}
 
-	wheelMoveTo(wheel: FilterWheel, position: number) {
+	wheelMoveTo(wheel: Wheel, position: number) {
 		return this.http.put<never>(`wheels/${wheel.id}/move-to?position=${position}`)
 	}
 
-	wheelSync(wheel: FilterWheel, names: string[]) {
+	wheelSync(wheel: Wheel, names: string[]) {
 		return this.http.put<never>(`wheels/${wheel.id}/sync?names=${names.join(',')}`)
 	}
 
-	wheelListen(wheel: FilterWheel) {
+	wheelListen(wheel: Wheel) {
 		return this.http.put<never>(`wheels/${wheel.id}/listen`)
 	}
 
@@ -386,12 +381,8 @@ export class ApiService {
 		return this.http.put<never>(`guiding/dither?${query}`)
 	}
 
-	setGuidingSettle(settle: SettleInfo) {
+	guidingSettle(settle: SettleInfo) {
 		return this.http.put<never>(`guiding/settle`, settle)
-	}
-
-	getGuidingSettle() {
-		return this.http.get<SettleInfo>(`guiding/settle`)
 	}
 
 	guidingStop() {
@@ -454,51 +445,51 @@ export class ApiService {
 
 	// SKY ATLAS
 
-	positionOfSun(dateTime: Date, fast: boolean = false) {
-		const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-		const query = this.http.query({ date, time, fast, hasLocation: true })
+	positionOfSun(dateTime: Date, location?: Location, fast: boolean = false) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<BodyPosition>(`sky-atlas/sun/position?${query}`)
 	}
 
-	altitudePointsOfSun(dateTime: Date, fast: boolean = false) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, fast, hasLocation: true })
+	altitudePointsOfSun(dateTime: Date, location?: Location, fast: boolean = false) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/sun/altitude-points?${query}`)
 	}
 
-	positionOfMoon(dateTime: Date, fast: boolean = false) {
-		const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-		const query = this.http.query({ date, time, fast, hasLocation: true })
+	positionOfMoon(dateTime: Date, location?: Location, fast: boolean = false) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<BodyPosition>(`sky-atlas/moon/position?${query}`)
 	}
 
-	altitudePointsOfMoon(dateTime: Date, fast: boolean = false) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, fast, hasLocation: true })
+	altitudePointsOfMoon(dateTime: Date, location?: Location, fast: boolean = false) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/moon/altitude-points?${query}`)
 	}
 
-	positionOfPlanet(code: string, dateTime: Date, fast: boolean = false) {
-		const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-		const query = this.http.query({ date, time, fast, hasLocation: true })
+	positionOfPlanet(code: string, dateTime: Date, location?: Location, fast: boolean = false) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<BodyPosition>(`sky-atlas/planets/${encodeURIComponent(code)}/position?${query}`)
 	}
 
-	altitudePointsOfPlanet(code: string, dateTime: Date, fast: boolean = false) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, fast, hasLocation: true })
+	altitudePointsOfPlanet(code: string, dateTime: Date, location?: Location, fast: boolean = false) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/planets/${encodeURIComponent(code)}/altitude-points?${query}`)
 	}
 
-	positionOfSkyObject(simbad: DeepSkyObject, dateTime: Date) {
-		const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-		const query = this.http.query({ date, time, hasLocation: true })
+	positionOfSkyObject(simbad: DeepSkyObject, dateTime: Date, location?: Location) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, hasLocation: location?.id || true })
 		return this.http.get<BodyPosition>(`sky-atlas/sky-objects/${simbad.id}/position?${query}`)
 	}
 
-	altitudePointsOfSkyObject(simbad: DeepSkyObject, dateTime: Date) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, hasLocation: true })
+	altitudePointsOfSkyObject(simbad: DeepSkyObject, dateTime: Date, location?: Location) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/sky-objects/${simbad.id}/altitude-points?${query}`)
 	}
 
@@ -511,15 +502,15 @@ export class ApiService {
 		return this.http.get<SkyObjectType[]>(`sky-atlas/sky-objects/types`)
 	}
 
-	positionOfSatellite(satellite: Satellite, dateTime: Date) {
-		const [date, time] = moment(dateTime).format('YYYY-MM-DD HH:mm').split(' ')
-		const query = this.http.query({ date, time, hasLocation: true })
+	positionOfSatellite(satellite: Satellite, dateTime: Date, location?: Location) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, hasLocation: location?.id || true })
 		return this.http.get<BodyPosition>(`sky-atlas/satellites/${satellite.id}/position?${query}`)
 	}
 
-	altitudePointsOfSatellite(satellite: Satellite, dateTime: Date) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, hasLocation: true })
+	altitudePointsOfSatellite(satellite: Satellite, dateTime: Date, location?: Location) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/satellites/${satellite.id}/altitude-points?${query}`)
 	}
 
@@ -528,9 +519,9 @@ export class ApiService {
 		return this.http.get<Satellite[]>(`sky-atlas/satellites?${query}`)
 	}
 
-	twilight(dateTime: Date, fast: boolean = false) {
-		const date = moment(dateTime).format('YYYY-MM-DD')
-		const query = this.http.query({ date, fast, hasLocation: true })
+	twilight(dateTime: Date, location?: Location, fast: boolean = false) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
 		return this.http.get<Twilight>(`sky-atlas/twilight?${query}`)
 	}
 
@@ -539,15 +530,15 @@ export class ApiService {
 		return this.http.get<MinorPlanet>(`sky-atlas/minor-planets?${query}`)
 	}
 
-	closeApproachesForMinorPlanets(days: number = 7, distance: number = 10, dateTime?: Date | string) {
-		const date = !dateTime || typeof dateTime === 'string' ? dateTime : moment(dateTime).format('YYYY-MM-DD')
+	closeApproachesOfMinorPlanets(days: number = 7, distance: number = 10, dateTime?: Date | string) {
+		const date = !dateTime || typeof dateTime === 'string' ? dateTime : extractDate(dateTime)
 		const query = this.http.query({ days, distance, date })
 		return this.http.get<CloseApproach[]>(`sky-atlas/minor-planets/close-approaches?${query}`)
 	}
 
-	annotationsOfImage(path: string, starsAndDSOs: boolean = true, minorPlanets: boolean = false, minorPlanetMagLimit: number = 12.0, includeMinorPlanetsWithoutMagnitude: boolean = false, useSimbad: boolean = false) {
-		const query = this.http.query({ path, starsAndDSOs, minorPlanets, minorPlanetMagLimit, includeMinorPlanetsWithoutMagnitude, useSimbad, hasLocation: true })
-		return this.http.get<ImageAnnotation[]>(`image/annotations?${query}`)
+	annotationsOfImage(path: string, request: AnnotateImageRequest, location?: Location) {
+		const query = this.http.query({ path, hasLocation: location?.id || true })
+		return this.http.put<ImageAnnotation[]>(`image/annotations?${query}`, request)
 	}
 
 	saveImageAs(path: string, save: ImageSaveDialog, camera?: Camera) {
@@ -585,7 +576,7 @@ export class ApiService {
 	}
 
 	calibrationFrames(name: string) {
-		return this.http.get<CalibrationFrameGroup[]>(`calibration-frames/${name}`)
+		return this.http.get<CalibrationFrame[]>(`calibration-frames/${name}`)
 	}
 
 	uploadCalibrationFrame(name: string, path: string) {
@@ -593,9 +584,8 @@ export class ApiService {
 		return this.http.put<CalibrationFrame[]>(`calibration-frames/${name}?${query}`)
 	}
 
-	editCalibrationFrame(frame: CalibrationFrame) {
-		const query = this.http.query({ name: frame.name, enabled: frame.enabled })
-		return this.http.patch<CalibrationFrame>(`calibration-frames/${frame.id}?${query}`)
+	updateCalibrationFrame(frame: CalibrationFrame) {
+		return this.http.post<CalibrationFrame>('calibration-frames', frame)
 	}
 
 	deleteCalibrationFrame(frame: CalibrationFrame) {
@@ -643,10 +633,18 @@ export class ApiService {
 
 	// SEQUENCER
 
-	sequencerStart(camera: Camera, plan: SequencePlan) {
-		const body: SequencePlan = { ...plan, mount: undefined, camera: undefined, wheel: undefined, focuser: undefined }
-		const query = this.http.query({ mount: plan.mount?.id, focuser: plan.focuser?.id, wheel: plan.wheel?.id })
+	sequencerStart(camera: Camera, plan: SequencerPlan) {
+		const body: SequencerPlan = { ...plan, mount: undefined, camera: undefined, wheel: undefined, focuser: undefined, rotator: undefined }
+		const query = this.http.query({ mount: plan.mount?.id, focuser: plan.focuser?.id, wheel: plan.wheel?.id, rotator: plan.rotator?.id })
 		return this.http.put<never>(`sequencer/${camera.id}/start?${query}`, body)
+	}
+
+	sequencerPause(camera: Camera) {
+		return this.http.put<never>(`sequencer/${camera.id}/pause`)
+	}
+
+	sequencerUnpause(camera: Camera) {
+		return this.http.put<never>(`sequencer/${camera.id}/unpause`)
 	}
 
 	sequencerStop(camera: Camera) {
@@ -665,9 +663,13 @@ export class ApiService {
 
 	// SOLVER
 
-	solveImage(solver: PlateSolverRequest, path: string, blind: boolean, centerRA: Angle, centerDEC: Angle, radius: Angle) {
-		const query = this.http.query({ path, blind, centerRA, centerDEC, radius })
-		return this.http.put<ImageSolved>(`plate-solver?${query}`, solver)
+	solverStart(solver: PlateSolverRequest, path: string) {
+		const query = this.http.query({ path })
+		return this.http.put<ImageSolved>(`plate-solver/start?${query}`, solver)
+	}
+
+	solverStop() {
+		return this.http.put<never>('plate-solver/stop')
 	}
 
 	// AUTO FOCUS
@@ -680,26 +682,22 @@ export class ApiService {
 		return this.http.put<never>(`auto-focus/${camera.id}/stop`)
 	}
 
-	// PREFERENCE
+	// STACKER
 
-	clearPreferences() {
-		return this.http.put<never>('preferences/clear')
+	stackerStart(request: StackingRequest) {
+		return this.http.put<string | null>('stacker/start', request)
 	}
 
-	deletePreference(key: string) {
-		return this.http.delete<never>(`preferences/${key}`)
+	stackerIsRunning() {
+		return this.http.get<boolean>('stacker/running')
 	}
 
-	getPreference<T>(key: string) {
-		return this.http.get<T>(`preferences/${key}`)
+	stackerStop() {
+		return this.http.put<never>('stacker/stop')
 	}
 
-	setPreference(key: string, data: unknown) {
-		return this.http.put<never>(`preferences/${key}`, { data })
-	}
-
-	hasPreference(key: string) {
-		return this.http.get<boolean>(`preferences/${key}/exists`)
+	stackerAnalyze(path: string) {
+		return this.http.put<AnalyzedTarget | null>(`stacker/analyze?path=${path}`)
 	}
 
 	// CONFIRMATION

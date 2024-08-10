@@ -1,20 +1,21 @@
-import io.kotest.core.annotation.EnabledIf
-import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import nebulosa.io.resource
 import nebulosa.skycatalog.hyg.HygDatabase
-import nebulosa.test.NonGitHubOnlyCondition
+import nebulosa.test.download
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+import kotlin.io.path.inputStream
 
-@EnabledIf(NonGitHubOnlyCondition::class)
-class HygDatabaseTest : StringSpec() {
+@Disabled
+class HygDatabaseTest {
 
-    init {
-        "load" {
-            val database = HygDatabase()
-            resource("hyg_v35.csv")!!.use(database::load)
-            database.size shouldBe 118002
-            database.withText("Alp Psc") shouldHaveSize 1
-        }
+    @Test
+    fun load() {
+        val database = HygDatabase()
+        // Typo at constellation name 119628 "Eco"
+        val hygCsv = download("https://github.com/astronexus/HYG-Database/raw/main/hyg/CURRENT/hygdata_v41.csv")
+        hygCsv.inputStream().use(database::load)
+        database.size shouldBe 118002
+        database.withText("Alp Psc") shouldHaveSize 1
     }
 }

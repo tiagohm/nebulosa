@@ -1,9 +1,13 @@
 package nebulosa.indi.device.focuser
 
 import nebulosa.indi.device.Device
+import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.thermometer.Thermometer
 
 interface Focuser : Device, Thermometer {
+
+    override val type
+        get() = DeviceType.FOCUSER
 
     val moving: Boolean
 

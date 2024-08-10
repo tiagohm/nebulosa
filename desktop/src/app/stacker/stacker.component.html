@@ -1,0 +1,183 @@
+<div class="grid p-4">
+	<div class="col-9">
+		<neb-path-chooser
+			key="stacker.outputDirectory"
+			[directory]="true"
+			[disabled]="running"
+			[(path)]="request.outputDirectory"
+			(pathChange)="savePreference()"
+			class="w-full"
+			label="Output Directory" />
+	</div>
+	<div class="col-3 justify-content-center">
+		<p-button
+			[text]="true"
+			[disabled]="running"
+			icon="mdi mdi-plus"
+			severity="success"
+			pTooltip="Add Files"
+			(onClick)="openImages()"
+			styleClass="p-button-sm"
+			tooltipPosition="bottom" />
+	</div>
+	<div class="col-12 mt-0">
+		<p-tabView>
+			<p-tabPanel
+				header="Files"
+				leftIcon="mdi mdi-file-multiple">
+				<p-listbox
+					[options]="request.targets"
+					styleClass="border-0"
+					[metaKeySelection]="false"
+					[style]="{ width: '100%', height: '296px' }"
+					[listStyle]="{ maxHeight: '296px', height: '296px' }"
+					emptyMessage="No frames">
+					<ng-template
+						let-item
+						pTemplate="item">
+						<div class="flex align-items-center justify-content-between gap-2 w-full">
+							<div class="flex flex-column justify-content-center gap-2 flex-1">
+								<div class="flex align-items-center gap-2 text-xs text-gray-400">
+									<span>{{ item.type }}</span>
+									<p-dropdown
+										[options]="'STACKER_GROUP_TYPE' | dropdownOptions | enumDropdown"
+										[(ngModel)]="item.group"
+										styleClass="border-0 p-inputtext-sm"
+										[autoDisplayFirst]="false"
+										appendTo="body" />
+									<div class="flex flex-column align-items-center justify-content-center gap-1">
+										<span class="text-xs">Reference</span>
+										<p-checkbox
+											[disabled]="item.type !== 'LIGHT'"
+											[binary]="true"
+											[(ngModel)]="item.reference"
+											(ngModelChange)="referenceChanged(item, $event)" />
+									</div>
+									<div class="flex flex-column align-items-center justify-content-center gap-1">
+										<span class="text-xs">Enabled</span>
+										<p-checkbox
+											[binary]="true"
+											[(ngModel)]="item.enabled" />
+									</div>
+								</div>
+								@if (item.analyzed) {
+									<div class="flex align-items-center justify-content-center gap-2 w-full text-xs text-gray-200">
+										<span>EXP: {{ item.analyzed.exposureTime | exposureTime }}</span>
+										<span>WIDTH: {{ item.analyzed.width }}</span>
+										<span>HEIGHT: {{ item.analyzed.height }}</span>
+										<span>BIN: {{ item.analyzed.binX }}x{{ item.analyzed.binY }}</span>
+										<span *ngIf="item.analyzed.gain">GAIN: {{ item.analyzed.gain }}</span>
+									</div>
+								}
+								<div class="flex align-items-center justify-content-center gap-2 w-full">
+									<span class="text-xs text-gray-200">{{ item.path }}</span>
+								</div>
+							</div>
+							<div class="flex flex-column justify-content-center align-items-center gap-2">
+								<p-button
+									(onClick)="openTargetImage(item)"
+									icon="mdi mdi-image"
+									[text]="true"
+									[rounded]="true"
+									pTooltip="View image"
+									tooltipPosition="bottom"
+									size="small" />
+								<p-button
+									[text]="true"
+									[rounded]="true"
+									icon="mdi mdi-delete"
+									severity="danger"
+									size="small"
+									pTooltip="Remove"
+									tooltipPosition="bottom"
+									styleClass="p-button-sm"
+									(onClick)="deleteTarget(item)" />
+							</div>
+						</div>
+					</ng-template>
+				</p-listbox>
+			</p-tabPanel>
+			<p-tabPanel
+				header="Calibration"
+				leftIcon="mdi mdi-wrench">
+				<div class="col-12 mt-2 align-items-center flex gap-2">
+					<p-checkbox
+						[binary]="true"
+						[(ngModel)]="request.darkEnabled"
+						(ngModelChange)="savePreference()" />
+					<neb-path-chooser
+						[disabled]="!request.darkEnabled"
+						[directory]="false"
+						label="Dark File"
+						key="stacker.darkPath"
+						[(path)]="request.darkPath"
+						class="w-full"
+						(pathChange)="savePreference()" />
+				</div>
+				<div class="col-12 align-items-center flex gap-2">
+					<p-checkbox
+						[binary]="true"
+						[(ngModel)]="request.flatEnabled"
+						(ngModelChange)="savePreference()" />
+					<neb-path-chooser
+						[disabled]="!request.flatEnabled"
+						[directory]="false"
+						label="Flat File"
+						key="stacker.flatPath"
+						[(path)]="request.flatPath"
+						class="w-full"
+						(pathChange)="savePreference()" />
+				</div>
+				<div class="col-12 align-items-center flex gap-2">
+					<p-checkbox
+						[binary]="true"
+						[(ngModel)]="request.biasEnabled"
+						(ngModelChange)="savePreference()" />
+					<neb-path-chooser
+						[disabled]="!request.biasEnabled"
+						[directory]="false"
+						label="Bias File"
+						key="stacker.biasPath"
+						[(path)]="request.biasPath"
+						class="w-full"
+						(pathChange)="savePreference()" />
+				</div>
+			</p-tabPanel>
+			<p-tabPanel
+				header="Settings"
+				leftIcon="mdi mdi-cog">
+				<div class="col-12 align-items-center mt-2">
+					<p-floatLabel class="w-full">
+						<p-dropdown
+							[options]="'STACKER' | dropdownOptions | enumDropdown"
+							optionsLabel="label"
+							optionsValue="value"
+							[(ngModel)]="request.type"
+							(ngModelChange)="savePreference()"
+							styleClass="p-inputtext-sm border-0"
+							[autoDisplayFirst]="false" />
+						<label>Stacker</label>
+					</p-floatLabel>
+				</div>
+			</p-tabPanel>
+		</p-tabView>
+	</div>
+	<div class="col-12 justify-content-center p-2">
+		<p-button
+			[disabled]="!canStart || running"
+			[text]="true"
+			icon="mdi mdi-play"
+			styleClass="p-button-sm"
+			severity="success"
+			label="Start"
+			(onClick)="startStacking()" />
+		<p-button
+			[disabled]="!canStart || !running"
+			[text]="true"
+			icon="mdi mdi-stop"
+			styleClass="p-button-sm"
+			severity="danger"
+			label="Stop"
+			(onClick)="stopStacking()" />
+	</div>
+</div>

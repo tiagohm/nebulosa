@@ -3,35 +3,31 @@ import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { Pingable, Pinger } from '../../shared/services/pinger.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { EMPTY_FOCUSER, Focuser } from '../../shared/types/focuser.types'
+import { Tickable, Ticker } from '../../shared/services/ticker.service'
+import { DEFAULT_FOCUSER, DEFAULT_FOCUSER_PREFERENCE, Focuser } from '../../shared/types/focuser.types'
 import { AppComponent } from '../app.component'
 
 @Component({
-	selector: 'app-focuser',
+	selector: 'neb-focuser',
 	templateUrl: './focuser.component.html',
-	styleUrls: ['./focuser.component.scss'],
 })
-export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
-	readonly focuser = structuredClone(EMPTY_FOCUSER)
-
-	moving = false
-	stepsRelative = 0
-	stepsAbsolute = 0
+export class FocuserComponent implements AfterViewInit, OnDestroy, Tickable {
+	protected readonly focuser = structuredClone(DEFAULT_FOCUSER)
+	protected readonly preference = structuredClone(DEFAULT_FOCUSER_PREFERENCE)
 
 	constructor(
 		private readonly app: AppComponent,
 		private readonly api: ApiService,
-		electron: ElectronService,
-		private readonly preference: PreferenceService,
+		electronService: ElectronService,
+		private readonly preferenceService: PreferenceService,
 		private readonly route: ActivatedRoute,
-		private readonly pinger: Pinger,
+		private readonly ticker: Ticker,
 		ngZone: NgZone,
 	) {
 		app.title = 'Focuser'
 
-		electron.on('FOCUSER.UPDATED', (event) => {
+		electronService.on('FOCUSER.UPDATED', (event) => {
 			if (event.device.id === this.focuser.id) {
 				ngZone.run(() => {
 					Object.assign(this.focuser, event.device)
@@ -40,10 +36,10 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 			}
 		})
 
-		electron.on('FOCUSER.DETACHED', (event) => {
+		electronService.on('FOCUSER.DETACHED', (event) => {
 			if (event.device.id === this.focuser.id) {
 				ngZone.run(() => {
-					Object.assign(this.focuser, EMPTY_FOCUSER)
+					Object.assign(this.focuser, DEFAULT_FOCUSER)
 				})
 			}
 		})
@@ -82,43 +78,47 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 		})
 		hotkeys('up', (event) => {
 			event.preventDefault()
-			this.stepsRelative = Math.min(this.focuser.maxPosition, this.stepsRelative + 1)
+			this.preference.stepsRelative = Math.min(this.focuser.maxPosition, this.preference.stepsRelative + 1)
+			this.savePreference()
 		})
 		hotkeys('down', (event) => {
 			event.preventDefault()
-			this.stepsRelative = Math.max(0, this.stepsRelative - 1)
+			this.preference.stepsRelative = Math.max(0, this.preference.stepsRelative - 1)
+			this.savePreference()
 		})
 		hotkeys('ctrl+up', (event) => {
 			event.preventDefault()
-			this.stepsAbsolute = Math.max(0, this.stepsAbsolute - 1)
+			this.preference.stepsAbsolute = Math.max(0, this.preference.stepsAbsolute - 1)
+			this.savePreference()
 		})
 		hotkeys('ctrl+down', (event) => {
 			event.preventDefault()
-			this.stepsAbsolute = Math.min(this.focuser.maxPosition, this.stepsAbsolute + 1)
+			this.preference.stepsAbsolute = Math.min(this.focuser.maxPosition, this.preference.stepsAbsolute + 1)
+			this.savePreference()
 		})
 	}
 
 	ngAfterViewInit() {
 		this.route.queryParams.subscribe(async (e) => {
-			const focuser = JSON.parse(decodeURIComponent(e['data'] as string)) as Focuser
-			await this.focuserChanged(focuser)
-			this.pinger.register(this, 30000)
+			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as Focuser
+			await this.focuserChanged(data)
+			this.ticker.register(this, 30000)
 		})
 	}
 
 	@HostListener('window:unload')
 	ngOnDestroy() {
-		this.pinger.unregister(this)
+		this.ticker.unregister(this)
 		void this.abort()
 	}
 
-	async ping() {
+	async tick() {
 		if (this.focuser.id) {
 			await this.api.focuserListen(this.focuser)
 		}
 	}
 
-	async focuserChanged(focuser?: Focuser) {
+	protected async focuserChanged(focuser?: Focuser) {
 		if (focuser?.id) {
 			focuser = await this.api.focuser(focuser.id)
 			Object.assign(this.focuser, focuser)
@@ -130,7 +130,7 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 		this.app.subTitle = focuser?.name ?? ''
 	}
 
-	connect() {
+	protected connect() {
 		if (this.focuser.connected) {
 			return this.api.focuserDisconnect(this.focuser)
 		} else {
@@ -138,61 +138,46 @@ export class FocuserComponent implements AfterViewInit, OnDestroy, Pingable {
 		}
 	}
 
-	async moveIn(stepSize: number = 1) {
-		if (!this.moving) {
-			this.moving = true
-			await this.api.focuserMoveIn(this.focuser, Math.trunc(this.stepsRelative * stepSize))
-			this.savePreference()
+	protected async moveIn(stepSize: number = 1) {
+		if (!this.focuser.moving && stepSize) {
+			await this.api.focuserMoveIn(this.focuser, Math.trunc(this.preference.stepsRelative * stepSize))
 		}
 	}
 
-	async moveOut(stepSize: number = 1) {
-		if (!this.moving) {
-			this.moving = true
-			await this.api.focuserMoveOut(this.focuser, Math.trunc(this.stepsRelative * stepSize))
-			this.savePreference()
+	protected async moveOut(stepSize: number = 1) {
+		if (!this.focuser.moving && stepSize) {
+			await this.api.focuserMoveOut(this.focuser, Math.trunc(this.preference.stepsRelative * stepSize))
 		}
 	}
 
-	async moveTo() {
-		if (!this.moving && this.stepsAbsolute !== this.focuser.position) {
-			this.moving = true
-			await this.api.focuserMoveTo(this.focuser, this.stepsAbsolute)
-			this.savePreference()
+	protected async moveTo() {
+		if (!this.focuser.moving && this.preference.stepsAbsolute !== this.focuser.position) {
+			await this.api.focuserMoveTo(this.focuser, this.preference.stepsAbsolute)
 		}
 	}
 
-	async sync() {
-		if (!this.moving) {
-			await this.api.focuserSync(this.focuser, this.stepsAbsolute)
-			this.savePreference()
+	protected async sync() {
+		if (!this.focuser.moving) {
+			await this.api.focuserSync(this.focuser, this.preference.stepsAbsolute)
 		}
 	}
 
-	abort() {
+	protected abort() {
 		return this.api.focuserAbort(this.focuser)
 	}
 
-	private update() {
-		if (this.focuser.id) {
-			this.moving = this.focuser.moving
-		}
-	}
+	private update() {}
 
 	private loadPreference() {
 		if (this.focuser.id) {
-			const preference = this.preference.focuserPreference(this.focuser).get()
-			this.stepsRelative = preference.stepsRelative ?? 100
-			this.stepsAbsolute = preference.stepsAbsolute ?? this.focuser.position
+			Object.assign(this.preference, this.preferenceService.focuser(this.focuser).get())
+			this.preference.stepsAbsolute = this.focuser.position
 		}
 	}
 
-	private savePreference() {
+	protected savePreference() {
 		if (this.focuser.connected) {
-			const preference = this.preference.focuserPreference(this.focuser).get()
-			preference.stepsAbsolute = this.stepsAbsolute
-			preference.stepsRelative = this.stepsRelative
-			this.preference.focuserPreference(this.focuser).set(preference)
+			this.preferenceService.focuser(this.focuser).set(this.preference)
 		}
 	}
 }

@@ -1,16 +1,15 @@
-import io.kotest.core.annotation.Ignored
-import io.kotest.core.spec.style.StringSpec
 import nebulosa.math.Vector3D
 import nebulosa.skycatalog.GeodesicGrid
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
-@Ignored
-class GeodesicGridTest : StringSpec(), GeodesicGrid.Traverser {
+@Disabled
+class GeodesicGridTest : GeodesicGrid.Traverser {
 
-    init {
-        "visit" {
-            val grid = GeodesicGrid(2)
-            grid.visitTriangles(2, this@GeodesicGridTest)
-        }
+    @Test
+    fun visit() {
+        val grid = GeodesicGrid(2)
+        grid.visitTriangles(2, this@GeodesicGridTest)
     }
 
     override fun traverse(level: Int, index: Int, c0: Vector3D, c1: Vector3D, c2: Vector3D) {

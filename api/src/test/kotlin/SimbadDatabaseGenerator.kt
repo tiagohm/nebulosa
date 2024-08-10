@@ -12,6 +12,7 @@ import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
 import nebulosa.skycatalog.stellarium.Nebula
+import nebulosa.test.concat
 import okhttp3.OkHttpClient
 import okio.sink
 import okio.source
@@ -214,7 +215,7 @@ object SimbadDatabaseGenerator {
         for ((_, entity) in entities) {
             if (writer == null || count > 10000) {
                 writer?.close()
-                writer = SimbadDatabaseWriter(Path.of("$SIMBAD_DATABASE_PATH", "simbad.%02d.dat".format(index++)).sink())
+                writer = SimbadDatabaseWriter(SIMBAD_DATABASE_PATH.concat("simbad.%02d.dat".format(index++)).sink())
                 count = 0
             }
 
