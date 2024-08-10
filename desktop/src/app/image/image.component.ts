@@ -689,7 +689,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private async loadImageFromOpenImage(data: OpenImage) {
-		Object.assign(this.imageData, data)
+		if (data.camera) this.imageData.camera = data.camera
+		if (data.path) this.imageData.path = data.path
+		this.imageData.source = data.source
+		if (data.title) this.imageData.title = data.title
+		if (data.capture) this.imageData.capture = data.capture
 
 		// Not clicked on menu item.
 		if (this.calibration.source === 'CAMERA' && this.transformation.calibrationGroup !== data.capture?.calibrationGroup) {
@@ -1138,7 +1142,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		const imageWrapper = image.parentElement
 
 		URL.revokeObjectURL(image.src)
-		console.log(image.src)
 
 		if (!this.zoom.panZoom && imageWrapper) {
 			const panZoom = createPanZoom(imageWrapper, {
