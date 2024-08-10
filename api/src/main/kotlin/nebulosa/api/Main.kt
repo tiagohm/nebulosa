@@ -1,6 +1,7 @@
 package nebulosa.api
 
 import com.sun.jna.Platform
+import nebulosa.time.SystemClock
 import org.springframework.boot.runApplication
 import java.nio.file.Path
 import java.time.LocalDate
@@ -26,7 +27,7 @@ fun initAppDirectory(): Path {
 
 private fun Path.clearLogIfPastDays(days: Long = 7L) {
     if (exists()) {
-        val pastDays = LocalDate.now().minusDays(days)
+        val pastDays = LocalDate.now(SystemClock).minusDays(days)
 
         for (entry in listDirectoryEntries("nebulosa-*.log")) {
             val logDate = entry.fileName.toString()

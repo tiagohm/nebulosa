@@ -20,6 +20,7 @@ import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
 import nebulosa.math.*
+import nebulosa.time.SystemClock
 import org.junit.jupiter.api.Test
 import java.time.*
 import java.util.*
@@ -355,7 +356,7 @@ class CameraCaptureNamingFormatterTest {
         override val longitude = 0.0
         override val latitude = 0.0
         override val elevation = 0.0
-        override val dateTime: OffsetDateTime = OffsetDateTime.now()
+        override val dateTime: OffsetDateTime = OffsetDateTime.now(SystemClock)
         override val canPark = true
         override val parking = false
         override val parked = false

@@ -19,6 +19,7 @@ import nebulosa.nova.position.Geoid
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
+import nebulosa.time.SystemClock
 import nebulosa.time.TimeZonedInSeconds
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -122,7 +123,7 @@ class SkyAtlasService(
         val nauticalDawn = doubleArrayOf(0.0, 0.0)
         val civilDawn = doubleArrayOf(0.0, 0.0)
 
-        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, LocalDateTime.of(date, LocalTime.now()), true)
+        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
         val (a) = findDiscrete(0.0, (ephemeris.size - 1).toDouble(), TwilightDiscreteFunction(ephemeris), 1.0)
 
         civilDusk[0] = a[0] / 60.0
@@ -147,12 +148,12 @@ class SkyAtlasService(
     }
 
     fun altitudePointsOfSun(location: GeographicCoordinate, date: LocalDate, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, LocalDateTime.of(date, LocalTime.now()), true)
+        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
     fun altitudePointsOfMoon(location: GeographicCoordinate, date: LocalDate, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(if (fast) FAST_MOON else MOON, location, LocalDateTime.of(date, LocalTime.now()), true)
+        val ephemeris = bodyEphemeris(if (fast) FAST_MOON else MOON, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
@@ -161,7 +162,7 @@ class SkyAtlasService(
         stepSize: Int, fast: Boolean = false
     ): List<DoubleArray> {
         val target: Any = VSOP87E.entries.takeIf { fast }?.find { "${it.target}" == code } ?: code
-        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now()), true)
+        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
@@ -169,12 +170,12 @@ class SkyAtlasService(
         val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id)
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found sky object: [$id]")
         cachedSimbadEntities[id] = target
-        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now()), true)
+        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
     fun altitudePointsOfSatellite(location: GeographicCoordinate, satellite: SatelliteEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now()), true)
+        val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 

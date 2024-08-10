@@ -172,7 +172,7 @@ class LibWCSTest {
 
         @JvmStatic
         private fun readHeaderFromFits(name: String): ReadableHeader {
-            return Path.of("src/test/resources/$name.fits").fits().use { it.first!!.header }
+            return Path.of("src/test/resources/$name.fits").fits().use { it.first().header }
         }
     }
 }

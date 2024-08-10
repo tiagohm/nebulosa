@@ -26,6 +26,7 @@ import nebulosa.simbad.SimbadService
 import nebulosa.skycatalog.ClassificationType
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
+import nebulosa.time.SystemClock
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
 import nebulosa.wcs.WCS
@@ -109,6 +110,8 @@ class ImageService(
         output.contentType = "image/$format"
 
         ImageIO.write(transformedImage, format, output.outputStream)
+
+        LOG.debug { "image opened. path=$path" }
     }
 
     private fun Image.transform(
@@ -190,7 +193,7 @@ class ImageService(
         val annotations = Vector<ImageAnnotation>(64)
         val tasks = ArrayList<CompletableFuture<*>>(2)
 
-        val dateTime = image.header.observationDate ?: LocalDateTime.now()
+        val dateTime = image.header.observationDate ?: LocalDateTime.now(SystemClock)
 
         if (request.minorPlanets) {
             threadPoolTaskExecutor.submitCompletable {

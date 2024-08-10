@@ -1,5 +1,6 @@
 package nebulosa.api.cameras
 
+import nebulosa.time.SystemClock
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -17,6 +18,7 @@ enum class AutoSubFolderMode {
     }
 
     fun pathFor(parentPath: Path, dateTime: LocalDateTime? = null): Path {
-        return if (this == OFF) parentPath else Path.of("$parentPath", directoryNameAt(dateTime ?: LocalDateTime.now()))
+        return if (this == OFF) parentPath
+        else Path.of("$parentPath", directoryNameAt(dateTime ?: LocalDateTime.now(SystemClock)))
     }
 }
