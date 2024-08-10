@@ -17,6 +17,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.createParentDirectories
+import kotlin.io.path.deleteIfExists
 import kotlin.io.path.moveTo
 import kotlin.io.path.outputStream
 
@@ -112,6 +113,7 @@ data class CameraExposureTask(
 
     override fun close() {
         onCancel(CancellationSource.Close)
+        outputPath.deleteIfExists()
         super.close()
     }
 
