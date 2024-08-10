@@ -36,6 +36,12 @@ updates:
       apache:
         patterns:
           - "org.apache*"
+      grpc:
+        patterns:
+          - "io.grpc*"
+      google:
+        patterns:
+          - "com.google*"
       junit:
         patterns:
           - "org.junit*"

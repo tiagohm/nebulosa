@@ -7,6 +7,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.10")
         classpath("org.jetbrains.kotlin:kotlin-allopen:2.0.10")
         classpath("io.objectbox:objectbox-gradle-plugin:4.0.1")
+        classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.4")
     }
 
     repositories {
