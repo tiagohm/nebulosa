@@ -704,10 +704,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 		if (data.source === 'FRAMING') {
 			this.disableAutoStretch()
-
-			if (this.transformation.stretch.auto) {
-				await this.resetStretch(false)
-			}
+			await this.resetStretch(false)
 		} else if (data.source === 'FLAT_WIZARD') {
 			this.disableCalibration(false)
 		}
