@@ -4,7 +4,6 @@ import nebulosa.image.Image
 import nebulosa.image.Image.Companion.forEach
 import nebulosa.image.algorithms.ComputationAlgorithm
 import nebulosa.image.format.ImageChannel
-import kotlin.math.max
 import kotlin.math.min
 
 data class Histogram(
@@ -17,11 +16,11 @@ data class Histogram(
     }
 
     override fun compute(source: Image): IntArray {
-        val data = IntArray(2 shl (bitLength - 1))
+        val data = IntArray(1 shl bitLength)
         val maxValue = data.size - 1
 
         source.forEach(channel) {
-            val value = max(0, min((it * maxValue).toInt(), maxValue))
+            val value = min((it * maxValue).toInt(), maxValue)
             data[value]++
         }
 
