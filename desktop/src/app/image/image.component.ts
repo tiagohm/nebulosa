@@ -858,6 +858,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.updateImageSolved(info.solved)
 
 		this.headers.headers = info.headers
+		this.statistics.statistics = info.statistics
 
 		this.retrieveInfoFromImageHeaders(info.headers)
 
