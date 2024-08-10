@@ -632,7 +632,7 @@
 		<span
 			class="flex w-full align-items-center gap-1 justify-content-center"
 			style="min-width: -webkit-fill-available">
-			<span class="text-overflow-scroll font-bold">{{ body.name }}</span>
+			<span class="text-overflow-scroll font-bold">{{ body.name.replaceAll('|', ' · ') }}</span>
 			<p-tag
 				*ngFor="let tag of body.tags"
 				[severity]="tag.severity"
