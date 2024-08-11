@@ -4,7 +4,6 @@ plugins {
 }
 
 dependencies {
-    api(libs.logback)
 }
 
 publishing {

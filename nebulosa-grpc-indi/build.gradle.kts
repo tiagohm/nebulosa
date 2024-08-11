@@ -4,6 +4,9 @@ plugins {
 }
 
 dependencies {
+    api(project(":nebulosa-grpc-client"))
+    api(project(":nebulosa-indi-device"))
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

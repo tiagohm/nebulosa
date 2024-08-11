@@ -1,16 +1,64 @@
 syntax = "proto3";
 
+package nebulosa;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
 option java_multiple_files = true;
 option java_package = "nebulosa.grpc";
 option java_outer_classname = "NebulosaProto";
 
-message BarkRequest {
+enum EventType {
+    NONE = 0;
+    MOUNT_ATTACHED = 1;
+    MOUNT_DETACHED = 2;
+    MOUNT_CONNECTION_CHANGED = 3;
+    MOUNT_EQUATORIAL_COORDINATE_CHANGED = 4;
 }
 
-message BarkResponse {
-    string message = 1;
+message Event {
+    EventType type = 1;
+    string device = 2;
 }
 
-service Dog {
-    rpc Bark(BarkRequest) returns (BarkResponse) {}
+message MountResponse {
+    string device = 1;
+}
+
+message MountListResponse {
+    repeated MountResponse mounts = 1;
+}
+
+message MountIsConnectedRequest {
+    string device = 1;
+}
+
+message MountIsConnectedResponse {
+    bool connected = 1;
+}
+
+message MountGetRightAscensionRequest {
+    string device = 1;
+}
+
+message MountGetRightAscensionResponse {
+    double rightAscension = 1;
+}
+
+message MountGetDeclinationRequest {
+    string device = 1;
+}
+
+message MountGetDeclinationResponse {
+    double declination = 1;
+}
+
+service Nebulosa {
+
+    rpc MountList(google.protobuf.Empty) returns (MountListResponse);
+    rpc MountIsConnected(MountIsConnectedRequest) returns (MountIsConnectedResponse);
+    rpc MountGetRightAscension(MountGetRightAscensionRequest) returns (MountGetRightAscensionResponse);
+    rpc MountGetDeclination(MountGetDeclinationRequest) returns (MountGetDeclinationResponse);
+    rpc Events(google.protobuf.Empty) returns (stream Event);
 }

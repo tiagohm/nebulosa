@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    api(libs.serial)
 }
 
 publishing {

@@ -4,8 +4,8 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.grpc.netty)
     implementation(project(":nebulosa-grpc"))
+    implementation(libs.grpc.netty)
     testImplementation(project(":nebulosa-test"))
 }
 

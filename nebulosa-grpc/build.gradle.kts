@@ -8,6 +8,7 @@ dependencies {
     api(libs.grpc.stub)
     api(libs.grpc.protobuf)
     api(libs.protobuf)
+    api(libs.kotlinx.coroutines)
     testImplementation(project(":nebulosa-test"))
 }
 

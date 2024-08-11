@@ -4,6 +4,8 @@ plugins {
 }
 
 dependencies {
+    api(project(":nebulosa-serial"))
+    testImplementation(project(":nebulosa-test"))
 }
 
 publishing {

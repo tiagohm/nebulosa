@@ -8,6 +8,6 @@ class NebulosaClientTest {
     @Test
     fun client() {
         val client = NebulosaClient()
-        client.bark()
+        client.ask()
     }
 }

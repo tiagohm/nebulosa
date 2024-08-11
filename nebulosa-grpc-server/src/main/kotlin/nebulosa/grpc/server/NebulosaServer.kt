@@ -11,12 +11,14 @@ data class NebulosaServer(
     private val executor: Executor? = null,
 ) : Runnable, AutoCloseable {
 
+    private val service = NebulosaService()
+
     constructor(host: String = "localhost", port: Int = 7654, executor: Executor? = null)
             : this(InetSocketAddress(host, port), executor)
 
     private val server = NettyServerBuilder.forAddress(address, InsecureServerCredentials.create())
         .executor(executor)
-        .addService(NebulosaService)
+        .addService(service)
         .build()
 
     override fun run() {
@@ -24,6 +26,7 @@ data class NebulosaServer(
     }
 
     override fun close() {
+        service.close()
         server.shutdownNow()
     }
 }
