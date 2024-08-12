@@ -38,7 +38,6 @@ import {
 	DetectedStar,
 	FOV,
 	ImageAnnotation,
-	imageFormatFromExtension,
 	ImageHeaderItem,
 	ImageHeadersDialog,
 	ImageInfo,
@@ -47,6 +46,7 @@ import {
 	ImageStretchDialog,
 	LiveStackingMode,
 	OpenImage,
+	imageFormatFromExtension,
 } from '../../shared/types/image.types'
 import { Mount } from '../../shared/types/mount.types'
 import { PlateSolverRequest } from '../../shared/types/platesolver.types'
@@ -509,9 +509,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			this.resetZoom(true)
 		})
 		hotkeys('f12', (event) => {
+			event.preventDefault()
+
 			if (this.app.showTopBar) {
-				event.preventDefault()
 				void this.enterFullscreen()
+			} else {
+				void this.exitFullscreen()
 			}
 		})
 		hotkeys('escape', (event) => {
