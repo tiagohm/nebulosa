@@ -121,8 +121,10 @@ export interface SkyObjectSearchFilter {
 	declination: Angle
 	radius: number
 	constellation: Constellation | 'ALL'
-	magnitude: [number, number]
+	magnitudeMin: number
+	magnitudeMax: number
 	type: SkyObjectType | 'ALL'
+	id: number
 }
 
 export interface SkyObjectSearchDialog {
@@ -133,6 +135,7 @@ export interface SkyObjectSearchDialog {
 export interface SatelliteSearchFilter {
 	text: string
 	groups: SatelliteSearchGroups
+	id: number
 }
 
 export interface SatelliteSearchDialog {
@@ -179,6 +182,7 @@ export interface Location {
 export interface SkyAtlasPreference {
 	satellites: SatelliteSearchGroups
 	location: Location
+	favorites: FavoritedSkyBody[]
 	fast: boolean
 }
 
@@ -255,6 +259,13 @@ export interface ComputedLocation extends EquatorialCoordinate, EquatorialCoordi
 	timeLeftToMeridianFlip: string
 	lst: string
 	pierSide: PierSide
+}
+
+export interface FavoritedSkyBody {
+	id: number
+	name: string
+	tab: BodyTabType
+	type: MinorPlanetKind | SkyObjectType | 'SATELLITE'
 }
 
 export const DEFAULT_BODY_POSITION: BodyPosition = {
@@ -356,8 +367,10 @@ export const DEFAULT_SKY_OBJECT_SEARCH_FILTER: SkyObjectSearchFilter = {
 	declination: `+000°00'00"`,
 	radius: 0,
 	constellation: 'ALL',
-	magnitude: [-30, 30],
+	magnitudeMin: -30,
+	magnitudeMax: 30,
 	type: 'ALL',
+	id: 0,
 }
 
 export const DEFAULT_SKY_OBJECT_SEARCH_DIALOG: SkyObjectSearchDialog = {
@@ -433,6 +446,7 @@ export const DEFAULT_SATELLITE_SEARCH_GROUPS: SatelliteSearchGroups = {
 export const DEFAULT_SATELLITE_SEARCH_FILTER: SatelliteSearchFilter = {
 	text: '',
 	groups: DEFAULT_SATELLITE_SEARCH_GROUPS,
+	id: 0,
 }
 
 export const DEFAULT_SATELLITE_SEARCH_DIALOG: SatelliteSearchDialog = {
@@ -488,6 +502,7 @@ export const DEFAULT_DATE_TIME_AND_LOCATION: DateTimeAndLocation = {
 export const DEFAULT_SKY_ATLAS_PREFERENCE: SkyAtlasPreference = {
 	satellites: DEFAULT_SATELLITE_SEARCH_GROUPS,
 	location: DEFAULT_DATE_TIME_AND_LOCATION.location,
+	favorites: [],
 	fast: false,
 }
 
@@ -794,14 +809,16 @@ export const SATELLITE_GROUPS = [
 	'OTHER',
 ] as const
 
-export function searchFilterWithDefault(filter?: Partial<SkyObjectSearchFilter>, source: SkyObjectSearchFilter = DEFAULT_SKY_OBJECT_SEARCH_FILTER) {
+export function skyObjectSearchFilterWithDefault(filter?: Partial<SkyObjectSearchFilter>, source: SkyObjectSearchFilter = DEFAULT_SKY_OBJECT_SEARCH_FILTER) {
 	if (!filter) return structuredClone(source)
 	filter.rightAscension ??= source.rightAscension
 	filter.declination ??= source.declination
 	filter.radius ||= source.radius
 	filter.constellation ??= source.constellation
-	filter.magnitude ??= source.magnitude
+	filter.magnitudeMin ??= source.magnitudeMin
+	filter.magnitudeMax ??= source.magnitudeMax
 	filter.type ??= source.type
+	filter.id ??= source.id
 	return filter as SkyObjectSearchFilter
 }
 
@@ -842,6 +859,7 @@ export function skyAtlasPreferenceWithDefault(preference?: Partial<SkyAtlasPrefe
 	if (!preference) return structuredClone(source)
 	preference.satellites = satelliteSearchGroupsWithDefault(preference.satellites, source.satellites)
 	preference.location = locationWithDefault(preference.location, source.location)
+	preference.favorites ??= source.favorites
 	preference.fast ??= source.fast
 	return preference as SkyAtlasPreference
 }

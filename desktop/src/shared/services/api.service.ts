@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { extractDate, extractDateTime } from '../types/angular.types'
-import { Angle, BodyPosition, CloseApproach, ComputedLocation, Constellation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectType, Twilight } from '../types/atlas.types'
+import { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
 import { AutoFocusRequest } from '../types/autofocus.type'
 import { CalibrationFrame } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
@@ -493,8 +493,10 @@ export class ApiService {
 		return this.http.get<[number, number][]>(`sky-atlas/sky-objects/${simbad.id}/altitude-points?${query}`)
 	}
 
-	searchSkyObject(text: string, rightAscension: Angle, declination: Angle, radius: Angle, constellation?: Constellation, magnitudeMin: number = -99, magnitudeMax: number = 99, type?: SkyObjectType) {
-		const query = this.http.query({ text, rightAscension, declination, radius, constellation, magnitudeMin, magnitudeMax, type })
+	searchSkyObject(filter: SkyObjectSearchFilter) {
+		const constellation = filter.constellation === 'ALL' ? undefined : filter.constellation
+		const type = filter.type === 'ALL' ? undefined : filter.type
+		const query = this.http.query({ ...filter, constellation, type })
 		return this.http.get<DeepSkyObject[]>(`sky-atlas/sky-objects?${query}`)
 	}
 
@@ -514,8 +516,8 @@ export class ApiService {
 		return this.http.get<[number, number][]>(`sky-atlas/satellites/${satellite.id}/altitude-points?${query}`)
 	}
 
-	searchSatellites(text: string = '', group: SatelliteGroupType[] = []) {
-		const query = this.http.query({ text, group })
+	searchSatellites(text: string = '', group: SatelliteGroupType[] = [], id: number = 0) {
+		const query = this.http.query({ text, group, id })
 		return this.http.get<Satellite[]>(`sky-atlas/satellites?${query}`)
 	}
 

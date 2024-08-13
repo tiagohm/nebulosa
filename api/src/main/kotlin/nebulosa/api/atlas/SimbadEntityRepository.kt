@@ -18,11 +18,12 @@ class SimbadEntityRepository(@Qualifier("simbadBox") override val box: Box<Simba
         name: String? = null, constellation: Constellation? = null,
         rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
         magnitudeMin: Double = SkyObject.MAGNITUDE_MIN, magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
-        type: SkyObjectType? = null,
+        type: SkyObjectType? = null, id: Long = 0L,
     ): List<SimbadEntity> {
         val useFilter = radius > 0.0 && radius.toDegrees in 0.1..90.0
 
         val condition = and(
+            if (id > 0L) SimbadEntity_.id.equal(id) else null,
             if (magnitudeMin in SkyObject.MAGNITUDE_RANGE) SimbadEntity_.magnitude.greaterOrEqual(magnitudeMin) else null,
             if (magnitudeMax in SkyObject.MAGNITUDE_RANGE) SimbadEntity_.magnitude.lessOrEqual(magnitudeMax) else null,
             if (type != null) SimbadEntity_.type equal type.ordinal else null,
