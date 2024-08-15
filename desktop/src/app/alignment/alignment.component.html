@@ -8,10 +8,13 @@
 				[(device)]="camera"
 				(deviceChange)="cameraChanged()" />
 			<p-button
+				[text]="true"
 				[disabled]="!camera?.name || running"
 				icon="mdi mdi-cog"
 				(onClick)="showCameraDialog()"
-				size="small" />
+				size="small"
+				pTooltip="Camera"
+				tooltipPosition="bottom" />
 			@if (tab === 0) {
 				<neb-device-chooser
 					title="MOUNT"

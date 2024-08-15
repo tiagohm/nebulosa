@@ -402,7 +402,7 @@ export function liveStackingRequestWithDefault(request?: Partial<LiveStackingReq
 	if (!request) return structuredClone(source)
 	liveStackerSettingsWithDefault(request, source)
 	request.enabled ??= source.enabled
-	request.type ??= source.type
+	request.type ||= source.type
 	request.use32Bits ??= source.use32Bits
 	return request as LiveStackingRequest
 }

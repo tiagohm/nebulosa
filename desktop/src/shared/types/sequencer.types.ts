@@ -25,7 +25,7 @@ export type SequencerCaptureMode = 'FULLY' | 'INTERLEAVED'
 
 export type SequencerState = 'IDLE' | 'PAUSING' | 'PAUSED' | 'RUNNING'
 
-export type SequenceProperty = 'EXPOSURE_TIME' | 'EXPOSURE_AMOUNT' | 'EXPOSURE_DELAY' | 'FRAME_TYPE' | 'X' | 'Y' | 'WIDTH' | 'HEIGHT' | 'BIN' | 'FRAME_FORMAT' | 'GAIN' | 'OFFSET'
+export type SequenceProperty = 'EXPOSURE_TIME' | 'EXPOSURE_AMOUNT' | 'EXPOSURE_DELAY' | 'FRAME_TYPE' | 'X' | 'Y' | 'WIDTH' | 'HEIGHT' | 'BIN' | 'FRAME_FORMAT' | 'GAIN' | 'OFFSET' | 'STACKER_GROUP_TYPE'
 
 export type SequenceProperties = Record<SequenceProperty, boolean>
 
@@ -130,6 +130,7 @@ export const DEFAULT_SEQUENCE_PROPERTIES: SequenceProperties = {
 	FRAME_FORMAT: true,
 	GAIN: true,
 	OFFSET: true,
+	STACKER_GROUP_TYPE: false,
 }
 
 export const DEFAULT_SEQUENCE_PROPERTY_DIALOG: SequencePropertyDialog = {

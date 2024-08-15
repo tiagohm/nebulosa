@@ -7,10 +7,13 @@
 			[(device)]="camera"
 			(deviceChange)="cameraChanged()" />
 		<p-button
+			[text]="true"
 			[disabled]="!camera?.name || running"
 			icon="mdi mdi-cog"
 			(onClick)="showCameraDialog()"
-			size="small" />
+			size="small"
+			pTooltip="Camera"
+			tooltipPosition="bottom" />
 		<neb-device-chooser
 			title="FOCUSER"
 			icon="mdi mdi-target"

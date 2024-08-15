@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core'
+import { DEFAULT_PATH_CHOOSER_PREFERENCE, PathChooserPreference } from '../components/path-chooser/path-chooser.component'
 import { AlignmentPreference, alignmentPreferenceWithDefault, DEFAULT_ALIGNMENT_PREFERENCE } from '../types/alignment.types'
 import { DEFAULT_SKY_ATLAS_PREFERENCE, SkyAtlasPreference, skyAtlasPreferenceWithDefault } from '../types/atlas.types'
 import { AutoFocusPreference, autoFocusPreferenceWithDefault, DEFAULT_AUTO_FOCUS_PREFERENCE } from '../types/autofocus.type'
@@ -91,4 +92,5 @@ export class PreferenceService {
 	readonly guider = new PreferenceData<GuiderPreference>(this.storage, 'guider', () => structuredClone(DEFAULT_GUIDER_PREFERENCE), guiderPreferenceWithDefault)
 	readonly framing = new PreferenceData<FramingPreference>(this.storage, 'framing', () => structuredClone(DEFAULT_FRAMING_PREFERENCE), framingPreferenceWithDefault)
 	readonly settings = new PreferenceData<SettingsPreference>(this.storage, 'settings', () => structuredClone(DEFAULT_SETTINGS_PREFERENCE), settingsPreferenceWithDefault)
+	readonly pathChooser = new PreferenceData<PathChooserPreference>(this.storage, 'pathChooser', () => structuredClone(DEFAULT_PATH_CHOOSER_PREFERENCE))
 }

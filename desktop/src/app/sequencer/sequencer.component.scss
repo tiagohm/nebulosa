@@ -20,4 +20,8 @@ neb-sequencer {
 	.mdi.mdi-progress-indicator:before {
 		font-size: 11px;
 	}
+
+	.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+		min-width: 48px;
+	}
 }
