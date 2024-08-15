@@ -590,6 +590,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 				this.cameraExposures.get(i)?.reset()
 			}
 
+			Object.assign(this.plan.liveStacking, this.preferenceService.settings.get().liveStacker[this.plan.liveStacking.type])
+
 			await this.browserWindowService.openCameraImage(this.plan.camera, 'SEQUENCER')
 			await this.api.sequencerStart(this.plan.camera, this.plan)
 		}

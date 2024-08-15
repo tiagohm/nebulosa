@@ -11,6 +11,12 @@ enum class StackerGroupType {
     MONO,
     RGB;
 
+    inline val isRGB
+        get() = this == RED || this == GREEN || this == BLUE
+
+    inline val isLRGB
+        get() = this == LUMINANCE || isRGB
+
     companion object {
 
         @JvmStatic

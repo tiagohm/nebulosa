@@ -15,15 +15,16 @@ import kotlin.io.path.extension
 
 class CameraLiveStackingManager(
     private val calibrationFrameProvider: CalibrationFrameProvider? = null,
+    private val minExposureAmount: Int = 2,
 ) {
 
     private val liveStackers = EnumMap<StackerGroupType, LiveStacker>(StackerGroupType::class.java)
 
     @Synchronized
-    private fun start(camera: Camera, request: CameraStartCaptureRequest): Boolean {
+    fun start(camera: Camera, request: CameraStartCaptureRequest): Boolean {
         if (request.stackerGroupType in liveStackers) {
             return true
-        } else if (request.liveStacking.enabled && (request.isLoop || request.exposureAmount > 1)) {
+        } else if (request.liveStacking.enabled && (request.isLoop || request.exposureAmount >= minExposureAmount)) {
             try {
                 with(request.liveStacking.processCalibrationGroup(camera, request).get()) {
                     start()
@@ -39,48 +40,51 @@ class CameraLiveStackingManager(
         return false
     }
 
-    fun stack(camera: Camera, request: CameraStartCaptureRequest, path: Path?): Path? {
+    @Synchronized
+    fun stack(request: CameraStartCaptureRequest, path: Path?): Path? {
         if (path == null) return null
 
-        val liveStacker = liveStackers[request.stackerGroupType] ?: return null
+        val stackerGroupType = request.stackerGroupType
+        val liveStacker = liveStackers[stackerGroupType] ?: return null
         val stacker = liveStacker.stacker
 
-        if (start(camera, request)) {
-            val stackedPath = liveStacker.add(path) ?: return null
+        var stackedPath = liveStacker.add(path)
 
-            if (stacker != null) {
-                val combinatedPath = Path.of("${path.parent}", "STACKED.fits")
-                val luminancePath = liveStackers[StackerGroupType.LUMINANCE]?.stackedPath
-                val redPath = liveStackers[StackerGroupType.RED]?.stackedPath
-                val greenPath = liveStackers[StackerGroupType.GREEN]?.stackedPath
-                val bluePath = liveStackers[StackerGroupType.BLUE]?.stackedPath
+        if (stacker != null && stackedPath != null) {
+            val combinedPath = Path.of("${path.parent}", "STACKED.fits")
+            val luminancePath = liveStackers[StackerGroupType.LUMINANCE]?.stackedPath
+            val redPath = liveStackers[StackerGroupType.RED]?.stackedPath
+            val greenPath = liveStackers[StackerGroupType.GREEN]?.stackedPath
+            val bluePath = liveStackers[StackerGroupType.BLUE]?.stackedPath
 
-                if (luminancePath != null || redPath != null || greenPath != null || bluePath != null) {
-                    if (stacker.combineLRGB(combinatedPath, luminancePath, redPath, greenPath, bluePath)) {
-                        return combinatedPath
-                    }
+            if (stackerGroupType.isLRGB && (luminancePath != null || redPath != null || greenPath != null || bluePath != null)) {
+                if (stacker.combineLRGB(combinedPath, luminancePath, redPath, greenPath, bluePath)) {
+                    stackedPath = combinedPath
                 }
-
-                if (request.stackerGroupType == StackerGroupType.MONO && luminancePath != null) {
-                    if (stacker.combineLuminance(combinatedPath, luminancePath, stackedPath, true)) {
-                        return combinatedPath
-                    }
+            } else if (stackerGroupType == StackerGroupType.MONO && luminancePath != null) {
+                if (stacker.combineLuminance(combinedPath, luminancePath, stackedPath, true)) {
+                    stackedPath = combinedPath
                 }
-
-                if (request.stackerGroupType == StackerGroupType.RGB && luminancePath != null) {
-                    if (stacker.combineLuminance(combinatedPath, luminancePath, stackedPath, false)) {
-                        return combinatedPath
-                    }
+            } else if (stackerGroupType == StackerGroupType.RGB && luminancePath != null) {
+                if (stacker.combineLuminance(combinedPath, luminancePath, stackedPath, false)) {
+                    stackedPath = combinedPath
                 }
             }
         }
 
-        val stackedPath = liveStacker.stackedPath ?: return null
-        return stackedPath.copyTo(Path.of("${path.parent}", "STACKED.${request.stackerGroupType}.${stackedPath.extension}"), true)
+        if (stackedPath == null) {
+            stackedPath = liveStacker.stackedPath
+        }
+
+        if (stackedPath != null) {
+            return stackedPath.copyTo(Path.of("${path.parent}", "STACKED.${stackerGroupType}.${stackedPath.extension}"), true)
+        }
+
+        return null
     }
 
     fun stop(request: CameraStartCaptureRequest) {
-        liveStackers.remove(request.stackerGroupType)?.stop()
+        liveStackers[request.stackerGroupType]?.stop()
     }
 
     private fun LiveStackingRequest.processCalibrationGroup(camera: Camera, request: CameraStartCaptureRequest): LiveStackingRequest {

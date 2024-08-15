@@ -76,7 +76,8 @@ data class SequencerTask(
             namingFormat = plan.namingFormat,
         )
 
-        val liveStackingManager = CameraLiveStackingManager(calibrationFrameProvider)
+        val minExposureAmount = if (sequences.size == 1) 2 else 1
+        val liveStackingManager = CameraLiveStackingManager(calibrationFrameProvider, minExposureAmount)
 
         if (plan.captureMode == SequencerCaptureMode.FULLY || sequences.size == 1) {
             for (i in sequences.indices) {

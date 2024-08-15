@@ -82,12 +82,12 @@ data class PixInsightLiveStacker(
                     stackCount++
                 }
             } else {
-                val stackedPath = Path.of("$workingDirectory", "stacked.fits")
-
-                if (stacker.saveAs(targetPath, referencePath) && stacker.saveAs(targetPath, stackedPath)) {
-                    LOG.info("live stacking started. target={}, reference={}, stacked={}", targetPath, referencePath, stackedPath)
-                    stackCount = 1
-                    this.stackedPath = stackedPath
+                with(Path.of("$workingDirectory", "stacked.fits")) {
+                    if (stacker.saveAs(targetPath, referencePath) && stacker.saveAs(targetPath, this)) {
+                        LOG.info("live stacking started. target={}, reference={}, stacked={}", targetPath, referencePath, this)
+                        stackCount = 1
+                        stackedPath = this
+                    }
                 }
             }
 
