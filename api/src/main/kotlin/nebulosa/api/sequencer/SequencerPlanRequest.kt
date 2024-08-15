@@ -6,6 +6,7 @@ import nebulosa.api.cameras.AutoSubFolderMode
 import nebulosa.api.cameras.CameraCaptureNamingFormat
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.guiding.DitherAfterExposureRequest
+import nebulosa.api.livestacker.LiveStackingRequest
 import org.hibernate.validator.constraints.time.DurationMax
 import org.hibernate.validator.constraints.time.DurationMin
 import org.springframework.boot.convert.DurationUnit
@@ -21,5 +22,6 @@ data class SequencerPlanRequest(
     @JvmField @field:NotEmpty val sequences: List<CameraStartCaptureRequest> = emptyList(),
     @JvmField @field:Valid val dither: DitherAfterExposureRequest = DitherAfterExposureRequest.DISABLED,
     @JvmField @field:Valid val autoFocus: AutoFocusAfterConditions = AutoFocusAfterConditions.DISABLED,
-    @JvmField val namingFormat: CameraCaptureNamingFormat = CameraCaptureNamingFormat.DEFAULT,
+    @JvmField @field:Valid val liveStacking: LiveStackingRequest = LiveStackingRequest.DISABLED,
+    @JvmField @field:Valid val namingFormat: CameraCaptureNamingFormat = CameraCaptureNamingFormat.DEFAULT,
 )

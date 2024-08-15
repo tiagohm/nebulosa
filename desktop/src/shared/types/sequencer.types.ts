@@ -1,11 +1,13 @@
-import type { Camera } from './camera.types'
+import type { Camera, LiveStackingRequest } from './camera.types'
 import {
 	cameraCaptureNamingFormatWithDefault,
 	DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT,
 	DEFAULT_CAMERA_START_CAPTURE,
 	DEFAULT_DITHER,
+	DEFAULT_LIVE_STACKING_REQUEST,
 	ditherWithDefault,
 	EMPTY_CAMERA_CAPTURE_NAMING_FORMAT,
+	liveStackingRequestWithDefault,
 	type AutoSubFolderMode,
 	type CameraCaptureEvent,
 	type CameraCaptureNamingFormat,
@@ -49,6 +51,7 @@ export interface SequencerPlan {
 	sequences: Sequence[]
 	dither: Dither
 	autoFocus: AutoFocusAfterConditions
+	liveStacking: LiveStackingRequest
 	namingFormat: CameraCaptureNamingFormat
 	camera?: Camera
 	mount?: Mount
@@ -109,6 +112,7 @@ export const DEFAULT_SEQUENCER_PLAN: SequencerPlan = {
 	autoSubFolderMode: 'OFF',
 	dither: DEFAULT_DITHER,
 	autoFocus: DEFAULT_AUTO_FOCUS_AFTER_CONDITIONS,
+	liveStacking: DEFAULT_LIVE_STACKING_REQUEST,
 	namingFormat: DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT,
 	sequences: [],
 }
@@ -175,6 +179,7 @@ export function sequencerPlanWithDefault(plan?: Partial<SequencerPlan>, source: 
 	plan.sequences ??= source.sequences
 	plan.dither = ditherWithDefault(plan.dither, source.dither)
 	plan.autoFocus = autoFocusAfterConditionsWithDefault(plan.autoFocus, source.autoFocus)
+	plan.liveStacking = liveStackingRequestWithDefault(plan.liveStacking, source.liveStacking)
 	plan.namingFormat = cameraCaptureNamingFormatWithDefault(plan.namingFormat, source.namingFormat)
 	return plan as SequencerPlan
 }

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
 import nebulosa.api.guiding.DitherAfterExposureRequest
 import nebulosa.api.livestacker.LiveStackingRequest
+import nebulosa.api.stacker.StackerGroupType
 import nebulosa.indi.device.camera.FrameType
 import org.hibernate.validator.constraints.Range
 import org.hibernate.validator.constraints.time.DurationMax
@@ -34,9 +35,12 @@ data class CameraStartCaptureRequest(
     @JvmField val autoSave: Boolean = false,
     @JvmField val savePath: Path? = null,
     @JvmField val autoSubFolderMode: AutoSubFolderMode = AutoSubFolderMode.OFF,
-    @field:Valid @JvmField val dither: DitherAfterExposureRequest = DitherAfterExposureRequest.DISABLED,
     @JvmField val calibrationGroup: String? = null,
+    // Dithering.
+    @field:Valid @JvmField val dither: DitherAfterExposureRequest = DitherAfterExposureRequest.DISABLED,
+    // Stacking.
     @JvmField val liveStacking: LiveStackingRequest = LiveStackingRequest.DISABLED,
+    @JvmField val stackerGroupType: StackerGroupType = StackerGroupType.MONO,
     // Filter Wheel.
     @JvmField val filterPosition: Int = 0,
     @JvmField val shutterPosition: Int = 0,

@@ -52,9 +52,10 @@ class CameraCaptureExecutor(
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(jobs.none { it.task.camera === camera }) { "${camera.name} Camera Capture is already in progress" }
 
+        val liveStackingManager = CameraLiveStackingManager(calibrationFrameService)
         val task = CameraCaptureTask(
             camera, request, guider, false, threadPoolTaskExecutor,
-            calibrationFrameService, mount, wheel, focuser, rotator
+            liveStackingManager, mount, wheel, focuser, rotator
         )
 
         task.subscribe(this)

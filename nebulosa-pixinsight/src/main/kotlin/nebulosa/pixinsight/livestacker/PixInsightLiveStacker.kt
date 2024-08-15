@@ -23,6 +23,13 @@ data class PixInsightLiveStacker(
 
     private val running = AtomicBoolean()
     private val stacking = AtomicBoolean()
+    private val referencePath = Path.of("$workingDirectory", "reference.xisf")
+    private val calibratedPath = Path.of("$workingDirectory", "calibrated.xisf")
+    private val alignedPath = Path.of("$workingDirectory", "aligned.xisf")
+
+    @Volatile private var stackCount = 0
+
+    override val stacker = PixInsightStacker(runner, workingDirectory, slot)
 
     override val isRunning
         get() = running.get()
@@ -30,13 +37,8 @@ data class PixInsightLiveStacker(
     override val isStacking
         get() = stacking.get()
 
-    @Volatile private var stackCount = 0
-
-    private val stacker = PixInsightStacker(runner, workingDirectory, slot)
-    private val referencePath = Path.of("$workingDirectory", "reference.xisf")
-    private val calibratedPath = Path.of("$workingDirectory", "calibrated.xisf")
-    private val alignedPath = Path.of("$workingDirectory", "aligned.xisf")
-    private val stackedPath = Path.of("$workingDirectory", "stacked.fits")
+    override var stackedPath: Path? = null
+        private set
 
     @Synchronized
     override fun start() {
@@ -73,17 +75,20 @@ data class PixInsightLiveStacker(
                     LOG.info("live stacking aligned. count={}, output={}", stackCount, alignedPath)
                     targetPath = alignedPath
 
-                    if (stacker.integrate(stackCount, stackedPath, targetPath, stackedPath)) {
+                    if (stacker.integrate(stackCount, stackedPath!!, targetPath, stackedPath!!)) {
                         LOG.info("live stacking finished. count={}, output={}", stackCount, stackedPath)
                     }
 
                     stackCount++
                 }
             } else {
-                stacker.saveAs(targetPath, referencePath)
-                stacker.saveAs(targetPath, stackedPath)
-                LOG.info("live stacking started. target={}, reference={}, stacked={}", targetPath, referencePath, stackedPath)
-                stackCount = 1
+                val stackedPath = Path.of("$workingDirectory", "stacked.fits")
+
+                if (stacker.saveAs(targetPath, referencePath) && stacker.saveAs(targetPath, stackedPath)) {
+                    LOG.info("live stacking started. target={}, reference={}, stacked={}", targetPath, referencePath, stackedPath)
+                    stackCount = 1
+                    this.stackedPath = stackedPath
+                }
             }
 
             stacking.set(false)
@@ -104,7 +109,7 @@ data class PixInsightLiveStacker(
         referencePath.deleteIfExists()
         calibratedPath.deleteIfExists()
         alignedPath.deleteIfExists()
-        stackedPath.deleteIfExists()
+        stackedPath?.deleteIfExists()
     }
 
     companion object {

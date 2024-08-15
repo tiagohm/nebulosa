@@ -72,8 +72,11 @@ data class SequencerTask(
             savePath = plan.savePath, autoSave = true,
             autoSubFolderMode = plan.autoSubFolderMode,
             dither = plan.dither,
+            liveStacking = plan.liveStacking,
             namingFormat = plan.namingFormat,
         )
+
+        val liveStackingManager = CameraLiveStackingManager(calibrationFrameProvider)
 
         if (plan.captureMode == SequencerCaptureMode.FULLY || sequences.size == 1) {
             for (i in sequences.indices) {
@@ -88,7 +91,7 @@ data class SequencerTask(
                 // CAPTURE.
                 val cameraCaptureTask = CameraCaptureTask(
                     camera, request, guider, false, executor,
-                    calibrationFrameProvider,
+                    liveStackingManager,
                     mount, wheel, focuser, rotator
                 )
 
@@ -102,7 +105,7 @@ data class SequencerTask(
             val cameraCaptureTasks = requests.mapIndexed { i, req ->
                 val task = CameraCaptureTask(
                     camera, req, guider,
-                    i > 0, executor, calibrationFrameProvider,
+                    i > 0, executor, liveStackingManager,
                     mount, wheel, focuser, rotator
                 )
 

@@ -15,14 +15,14 @@ data class PixInsightStacker(
         darkPath: Path?, flatPath: Path?, biasPath: Path?,
     ) = if (darkPath != null || flatPath != null || biasPath != null) {
         PixInsightCalibrate(slot, workingDirectory, targetPath, darkPath, flatPath, if (darkPath == null) biasPath else null)
-            .use { calibrate -> calibrate.runSync(runner).outputImage?.let { saveAs(it, outputPath) } ?: false }
+            .use { calibrate -> calibrate.runSync(runner).outputImage?.let { saveAs(it, outputPath) } == true }
     } else {
         false
     }
 
     override fun align(referencePath: Path, targetPath: Path, outputPath: Path): Boolean {
         return PixInsightAlign(slot, workingDirectory, referencePath, targetPath)
-            .use { align -> align.runSync(runner).outputImage?.let { saveAs(it, outputPath) } ?: false }
+            .use { align -> align.runSync(runner).outputImage?.let { saveAs(it, outputPath) } == true }
     }
 
     override fun integrate(stackCount: Int, stackedPath: Path, targetPath: Path, outputPath: Path): Boolean {

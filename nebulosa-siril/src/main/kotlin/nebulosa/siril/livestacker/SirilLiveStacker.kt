@@ -22,11 +22,16 @@ data class SirilLiveStacker(
     private val commandLine = SirilCommandLine(executablePath)
     private val waitForStacking = CountUpDownLatch()
 
+    override val stacker = null
+
     override val isRunning
         get() = commandLine.isRunning
 
     override val isStacking
         get() = !waitForStacking.get()
+
+    override var stackedPath: Path? = null
+        private set
 
     @Synchronized
     override fun start() {
@@ -48,11 +53,11 @@ data class SirilLiveStacker(
 
     @Synchronized
     override fun add(path: Path): Path? {
-        return if (commandLine.isRunning && commandLine.execute(LiveStack(path))) {
-            Path.of("$workingDirectory", "live_stack_00001.fit")
-        } else {
-            null
+        if (commandLine.isRunning && commandLine.execute(LiveStack(path))) {
+            stackedPath = Path.of("$workingDirectory", "live_stack_00001.fit")
         }
+
+        return stackedPath
     }
 
     @Synchronized

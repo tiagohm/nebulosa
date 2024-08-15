@@ -1,13 +1,17 @@
 package nebulosa.livestacker
 
-import java.io.Closeable
+import nebulosa.stacker.Stacker
 import java.nio.file.Path
 
-interface LiveStacker : Closeable {
+interface LiveStacker : AutoCloseable {
+
+    val stacker: Stacker?
 
     val isRunning: Boolean
 
     val isStacking: Boolean
+
+    val stackedPath: Path?
 
     fun start()
 
