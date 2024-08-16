@@ -58,6 +58,15 @@ class CameraLiveStackingManager(
             val bluePath = liveStackers[StackerGroupType.BLUE]?.stackedPath
 
             if (stackerGroupType.isLRGB && (luminancePath != null || redPath != null || greenPath != null || bluePath != null)) {
+                val referencePath = luminancePath ?: redPath ?: greenPath ?: bluePath
+
+                if (referencePath != null) {
+                    if (luminancePath != null) stacker.align(referencePath, luminancePath, luminancePath)
+                    if (redPath != null) stacker.align(referencePath, redPath, redPath)
+                    if (greenPath != null) stacker.align(referencePath, greenPath, greenPath)
+                    if (bluePath != null) stacker.align(referencePath, bluePath, bluePath)
+                }
+
                 if (stacker.combineLRGB(combinedPath, luminancePath, redPath, greenPath, bluePath)) {
                     stackedPath = combinedPath
                 }
