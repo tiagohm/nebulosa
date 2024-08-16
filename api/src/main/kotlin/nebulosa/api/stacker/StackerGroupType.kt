@@ -4,6 +4,7 @@ import nebulosa.fits.filter
 import nebulosa.image.format.ReadableHeader
 
 enum class StackerGroupType {
+    NONE,
     LUMINANCE,
     RED,
     GREEN,

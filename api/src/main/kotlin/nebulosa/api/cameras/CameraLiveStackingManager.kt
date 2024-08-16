@@ -24,7 +24,7 @@ class CameraLiveStackingManager(
     fun start(camera: Camera, request: CameraStartCaptureRequest): Boolean {
         if (request.stackerGroupType in liveStackers) {
             return true
-        } else if (request.liveStacking.enabled && (request.isLoop || request.exposureAmount >= minExposureAmount)) {
+        } else if (request.stackerGroupType != StackerGroupType.NONE && request.liveStacking.enabled && (request.isLoop || request.exposureAmount >= minExposureAmount)) {
             try {
                 with(request.liveStacking.processCalibrationGroup(camera, request).get()) {
                     start()
@@ -42,7 +42,7 @@ class CameraLiveStackingManager(
 
     @Synchronized
     fun stack(request: CameraStartCaptureRequest, path: Path?): Path? {
-        if (path == null) return null
+        if (path == null || request.stackerGroupType == StackerGroupType.NONE) return null
 
         val stackerGroupType = request.stackerGroupType
         val liveStacker = liveStackers[stackerGroupType] ?: return null

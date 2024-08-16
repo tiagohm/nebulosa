@@ -2,7 +2,7 @@ import type { FrameType } from './camera.types'
 
 export type StackerType = 'PIXINSIGHT'
 
-export type StackerGroupType = 'LUMINANCE' | 'RED' | 'GREEN' | 'BLUE' | 'MONO' | 'RGB'
+export type StackerGroupType = 'LUMINANCE' | 'RED' | 'GREEN' | 'BLUE' | 'MONO' | 'RGB' | 'NONE'
 
 export interface StackerSettings {
 	executablePath: string
