@@ -1,6 +1,7 @@
 package nebulosa.pixinsight.livestacker
 
 import nebulosa.livestacker.LiveStacker
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.pixinsight.script.PixInsightIsRunning
 import nebulosa.pixinsight.script.PixInsightScript
@@ -57,36 +58,47 @@ data class PixInsightLiveStacker(
     }
 
     @Synchronized
-    override fun add(path: Path): Path? {
+    override fun add(path: Path, referencePath: Path?): Path? {
         var targetPath = path
 
         return if (running.get()) {
             stacking.set(true)
 
             if (stacker.calibrate(targetPath, calibratedPath, darkPath, flatPath, biasPath)) {
-                LOG.info("live stacking calibrated. count={}, target={}, output={}", stackCount, targetPath, calibratedPath)
+                LOG.debug { "live stacking calibrated. count=$stackCount, target=$targetPath, output=$calibratedPath" }
                 targetPath = calibratedPath
             }
 
             // TODO: Debayer, Resample?
 
             if (stackCount > 0) {
-                if (stacker.align(referencePath, targetPath, alignedPath)) {
-                    LOG.info("live stacking aligned. count={}, target={}, output={}", stackCount, targetPath, alignedPath)
+                if (stacker.align(referencePath ?: this.referencePath, targetPath, alignedPath)) {
+                    LOG.debug { "live stacking aligned. count=$stackCount, target=$targetPath, output=$alignedPath" }
                     targetPath = alignedPath
 
                     if (stacker.integrate(stackCount, stackedPath!!, targetPath, stackedPath!!)) {
-                        LOG.info("live stacking finished. count={}, target={}, output={}", stackCount, targetPath, stackedPath)
+                        LOG.debug { "live stacking integrated. count=$stackCount, target=$targetPath, output=$stackedPath" }
                     }
 
                     stackCount++
                 }
             } else {
-                with(Path.of("$workingDirectory", "stacked.fits")) {
-                    if (stacker.saveAs(targetPath, referencePath) && stacker.saveAs(targetPath, this)) {
-                        LOG.info("live stacking started. target={}, reference={}, stacked={}", targetPath, referencePath, this)
-                        stackCount = 1
-                        stackedPath = this
+                var saved = if (referencePath != null) stacker.saveAs(referencePath, this.referencePath)
+                else stacker.saveAs(targetPath, this.referencePath)
+
+                if (saved) {
+                    with(Path.of("$workingDirectory", "stacked.fits")) {
+                        saved = if (referencePath != null) {
+                            stacker.align(referencePath, targetPath, alignedPath)
+                            stacker.saveAs(alignedPath, this)
+                        } else {
+                            stacker.saveAs(targetPath, this)
+                        }
+
+                        if (saved) {
+                            stackCount = 1
+                            stackedPath = this
+                        }
                     }
                 }
             }
@@ -106,6 +118,8 @@ data class PixInsightLiveStacker(
     }
 
     override fun close() {
+        stop()
+
         referencePath.deleteIfExists()
         calibratedPath.deleteIfExists()
         alignedPath.deleteIfExists()

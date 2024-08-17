@@ -21,8 +21,11 @@ import nebulosa.xisf.xisf
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.EnumMap
+import kotlin.io.path.copyTo
+import kotlin.io.path.deleteIfExists
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
+import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
 
 data class CameraLiveStackingManager(
@@ -31,6 +34,8 @@ data class CameraLiveStackingManager(
 
     private val liveStackers = EnumMap<StackerGroupType, LiveStacker>(StackerGroupType::class.java)
     private val workingDirectories = HashSet<Path>()
+
+    @Volatile private var referencePath: Path? = null
 
     @Synchronized
     fun start(request: CameraStartCaptureRequest, path: Path): Boolean {
@@ -63,9 +68,14 @@ data class CameraLiveStackingManager(
         val liveStacker = liveStackers[stackerGroupType] ?: return null
         val stacker = liveStacker.stacker
 
-        var stackedPath = liveStacker.add(path)
+        var stackedPath = liveStacker.add(path, referencePath)
 
         if (stacker != null && stackedPath != null) {
+            if (referencePath == null) {
+                referencePath = Files.createTempFile("clsmref-", ".${stackedPath.extension}")
+                stackedPath.copyTo(referencePath!!, true)
+            }
+
             val combinedPath = Path.of("${path.parent}", "STACKED.fits")
             val luminancePath = liveStackers[StackerGroupType.LUMINANCE]?.stackedPath
             val redPath = liveStackers[StackerGroupType.RED]?.stackedPath
@@ -73,16 +83,8 @@ data class CameraLiveStackingManager(
             val bluePath = liveStackers[StackerGroupType.BLUE]?.stackedPath
 
             if (stackerGroupType.isLRGB && (luminancePath != null || redPath != null || greenPath != null || bluePath != null)) {
-                val referencePath = luminancePath ?: redPath ?: greenPath ?: bluePath
-
-                if (referencePath != null) {
-                    if (redPath != null && redPath !== referencePath) stacker.align(referencePath, redPath, redPath)
-                    if (greenPath != null && greenPath !== referencePath) stacker.align(referencePath, greenPath, greenPath)
-                    if (bluePath != null && bluePath !== referencePath) stacker.align(referencePath, bluePath, bluePath)
-
-                    if (stacker.combineLRGB(combinedPath, luminancePath, redPath, greenPath, bluePath)) {
-                        stackedPath = combinedPath
-                    }
+                if (stacker.combineLRGB(combinedPath, luminancePath, redPath, greenPath, bluePath)) {
+                    stackedPath = combinedPath
                 }
             } else if (luminancePath != null) {
                 stacker.align(luminancePath, stackedPath, stackedPath)
@@ -106,6 +108,9 @@ data class CameraLiveStackingManager(
 
         workingDirectories.forEach { it.deleteRecursively() }
         workingDirectories.clear()
+
+        referencePath?.deleteIfExists()
+        referencePath = null
     }
 
     private fun LiveStackingRequest.processCalibrationGroup(request: CameraStartCaptureRequest, path: Path): LiveStackingRequest {
