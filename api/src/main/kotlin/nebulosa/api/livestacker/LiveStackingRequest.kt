@@ -16,6 +16,7 @@ data class LiveStackingRequest(
     @JvmField val biasPath: Path? = null,
     @JvmField val use32Bits: Boolean = false,
     @JvmField val slot: Int = 1,
+    @JvmField val useCalibrationGroup: Boolean = false,
 ) {
 
     fun get(workingDirectory: Path): LiveStacker {

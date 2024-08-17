@@ -267,7 +267,7 @@ data class CameraCaptureTask(
     private fun addFrameToLiveStacker(path: Path?): Path? {
         if (liveStackerManager == null) return null
 
-        return if (liveStackerManager.start(camera, request)) {
+        return if (path != null && liveStackerManager.start(request, path)) {
             sendEvent(CameraCaptureState.STACKING)
 
             try {

@@ -11,6 +11,7 @@ import { BrowserWindowService } from '../../shared/services/browser-window.servi
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
+import { DropdownItem } from '../../shared/types/angular.types'
 import { JsonFile } from '../../shared/types/app.types'
 import { Camera, cameraCaptureNamingFormatWithDefault, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
@@ -19,7 +20,7 @@ import { Rotator } from '../../shared/types/rotator.types'
 import { DEFAULT_SEQUENCE, DEFAULT_SEQUENCE_PROPERTY_DIALOG, DEFAULT_SEQUENCER_PLAN, DEFAULT_SEQUENCER_PREFERENCE, Sequence, SequenceProperty, SequencerEvent, SequencerPlan, sequencerPlanWithDefault } from '../../shared/types/sequencer.types'
 import { resetCameraCaptureNamingFormat } from '../../shared/types/settings.types'
 import { Wheel } from '../../shared/types/wheel.types'
-import { deviceComparator } from '../../shared/utils/comparators'
+import { deviceComparator, textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
@@ -39,6 +40,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 	protected readonly property = structuredClone(DEFAULT_SEQUENCE_PROPERTY_DIALOG)
 	protected readonly preference = structuredClone(DEFAULT_SEQUENCER_PREFERENCE)
+	protected readonly calibrationGroups: DropdownItem<string | undefined>[] = []
 	protected plan = this.preference.plan
 	protected event?: SequencerEvent
 	protected running = false
@@ -266,6 +268,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.wheels = (await this.api.wheels()).sort(deviceComparator)
 		this.focusers = (await this.api.focusers()).sort(deviceComparator)
 		this.rotators = (await this.api.rotators()).sort(deviceComparator)
+
+		const calibrationGroups = (await this.api.calibrationGroups()).sort(textComparator)
+		this.calibrationGroups.push({ label: 'None', value: undefined })
+		calibrationGroups.forEach((e) => this.calibrationGroups.push({ label: e, value: e }))
 
 		this.loadPreference()
 
@@ -541,7 +547,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 					if (this.property.properties.FRAME_FORMAT) dest.frameFormat = source.frameFormat
 					if (this.property.properties.GAIN) dest.gain = source.gain
 					if (this.property.properties.OFFSET) dest.offset = source.offset
-					if (this.plan.liveStacking.enabled && this.property.properties.STACKER_GROUP_TYPE) dest.stackerGroupType = source.stackerGroupType
+					if (this.plan.liveStacking.enabled && this.property.properties.STACKING_GROUP) dest.stackerGroupType = source.stackerGroupType
+					if (this.plan.liveStacking.useCalibrationGroup && this.property.properties.CALIBRATION_GROUP) dest.calibrationGroup = source.calibrationGroup
 				} else {
 					break
 				}
