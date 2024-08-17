@@ -23,6 +23,7 @@ import java.nio.file.Path
 import java.util.EnumMap
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
+import kotlin.io.path.isRegularFile
 
 data class CameraLiveStackingManager(
     private val calibrationFrameProvider: CalibrationFrameProvider? = null,
@@ -132,20 +133,17 @@ data class CameraLiveStackingManager(
                 calibrationGroup, temperature, binX, binY, width, height, exposureTime, gain, filter
             )
 
-            val newDarkPath = darkPath?.takeIf { it.exists() } ?: calibrationFrameProvider
+            val newDarkPath = (if (useCalibrationGroup) calibrationFrameProvider
                 .findBestDarkFrames(calibrationGroup, temperature, width, height, binX, binY, exposureTime, gain)
-                .firstOrNull()
-                ?.path
+                .firstOrNull()?.path else darkPath)?.takeIf { it.isCalibrationFrame }
 
-            val newFlatPath = flatPath?.takeIf { it.exists() } ?: calibrationFrameProvider
+            val newFlatPath = (if (useCalibrationGroup) calibrationFrameProvider
                 .findBestFlatFrames(calibrationGroup, width, height, binX, binY, filter)
-                .firstOrNull()
-                ?.path
+                .firstOrNull()?.path else flatPath)?.takeIf { it.isCalibrationFrame }
 
-            val newBiasPath = if (newDarkPath != null) null else biasPath?.takeIf { it.exists() } ?: calibrationFrameProvider
+            val newBiasPath = (if (newDarkPath != null) null else if (useCalibrationGroup) calibrationFrameProvider
                 .findBestBiasFrames(calibrationGroup, width, height, binX, binY)
-                .firstOrNull()
-                ?.path
+                .firstOrNull()?.path else biasPath)?.takeIf { it.isCalibrationFrame }
 
             LOG.info(
                 "live stacking will use calibration frames. group={}, dark={}, flat={}, bias={}",
@@ -161,5 +159,8 @@ data class CameraLiveStackingManager(
     companion object {
 
         @JvmStatic private val LOG = loggerFor<CameraLiveStackingManager>()
+
+        private inline val Path?.isCalibrationFrame
+            get() = this != null && exists() && isRegularFile() && (isFits() || isXisf())
     }
 }

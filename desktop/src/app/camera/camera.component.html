@@ -641,8 +641,16 @@
 				(ngModelChange)="savePreference()" />
 		</div>
 		<div class="col-12 align-items-center">
-			<neb-path-chooser
+			<p-checkbox
+				[binary]="true"
 				[disabled]="!liveStacking.request.enabled"
+				label="Use Camera's calibration group"
+				[(ngModel)]="liveStacking.request.useCalibrationGroup"
+				(ngModelChange)="savePreference()" />
+		</div>
+		<div class="col-12 align-items-center">
+			<neb-path-chooser
+				[disabled]="!liveStacking.request.enabled || liveStacking.request.useCalibrationGroup"
 				[directory]="false"
 				label="Dark File"
 				key="liveStackerDarkFile"
@@ -652,7 +660,7 @@
 		</div>
 		<div class="col-12 align-items-center">
 			<neb-path-chooser
-				[disabled]="!liveStacking.request.enabled"
+				[disabled]="!liveStacking.request.enabled || liveStacking.request.useCalibrationGroup"
 				[directory]="false"
 				label="Flat File"
 				key="liveStackerFlatFile"
@@ -662,7 +670,7 @@
 		</div>
 		<div class="col-12 align-items-center">
 			<neb-path-chooser
-				[disabled]="!liveStacking.request.enabled || liveStacking.request.type !== 'PIXINSIGHT'"
+				[disabled]="!liveStacking.request.enabled || liveStacking.request.type !== 'PIXINSIGHT' || liveStacking.request.useCalibrationGroup"
 				[directory]="false"
 				label="Bias File"
 				key="liveStackerDarkFile"

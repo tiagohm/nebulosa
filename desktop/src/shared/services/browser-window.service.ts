@@ -114,7 +114,7 @@ export class BrowserWindowService {
 	}
 
 	openSequencer(preference: WindowPreference = {}) {
-		Object.assign(preference, { icon: 'workflow', width: 628, height: 570, resizable: true, minWidth: 628, minHeight: 328 })
+		Object.assign(preference, { icon: 'workflow', width: 628, height: 467, resizable: true, minWidth: 628, minHeight: 328 })
 		return this.openWindow({ preference, id: 'sequencer', path: 'sequencer' })
 	}
 

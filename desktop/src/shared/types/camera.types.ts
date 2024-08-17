@@ -179,6 +179,7 @@ export interface LiveStackingRequest extends LiveStackerSettings {
 	flatPath?: string
 	biasPath?: string
 	use32Bits: boolean
+	useCalibrationGroup: boolean
 }
 
 export interface CameraDitherDialog {
@@ -270,8 +271,9 @@ export const DEFAULT_LIVE_STACKER_SETTINGS: LiveStackerSettings = {
 export const DEFAULT_LIVE_STACKING_REQUEST: LiveStackingRequest = {
 	...DEFAULT_LIVE_STACKER_SETTINGS,
 	enabled: false,
-	type: 'SIRIL',
+	type: 'PIXINSIGHT',
 	use32Bits: false,
+	useCalibrationGroup: false,
 }
 
 export const CAMERA_CAPTURE_NAMING_FORMAT_LIGHT = '[camera]_[type]_[year:2][month][day][hour][min][sec][ms]_[filter]_[width]_[height]_[exp]_[bin]_[gain]'
@@ -404,6 +406,7 @@ export function liveStackingRequestWithDefault(request?: Partial<LiveStackingReq
 	request.enabled ??= source.enabled
 	request.type ||= source.type
 	request.use32Bits ??= source.use32Bits
+	request.useCalibrationGroup ??= source.useCalibrationGroup
 	return request as LiveStackingRequest
 }
 

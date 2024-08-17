@@ -141,6 +141,17 @@
 										[autoDisplayFirst]="false"
 										(ngModelChange)="savePreference()"
 										appendTo="body" />
+									<p-dropdown
+										*ngIf="plan.liveStacking.enabled && plan.liveStacking.useCalibrationGroup"
+										[disabled]="sequence.stackerGroupType === 'NONE' || running"
+										[options]="calibrationGroups"
+										optionLabel="label"
+										optionValue="value"
+										[(ngModel)]="sequence.calibrationGroup"
+										styleClass="border-0 p-inputtext-sm"
+										[autoDisplayFirst]="false"
+										(ngModelChange)="savePreference()"
+										appendTo="body" />
 								</div>
 								<div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
 									<p-button
@@ -495,8 +506,8 @@
 				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
 					<p-floatLabel class="min-w-12rem">
 						<p-dropdown
-							[disabled]="!plan.liveStacking.enabled"
-							[options]="'LIVE_STACKER' | dropdownOptions | enumDropdown"
+							[disabled]="!plan.liveStacking.enabled || running"
+							[options]="['PIXINSIGHT'] | enumDropdown"
 							[(ngModel)]="plan.liveStacking.type"
 							optionsLabel="label"
 							optionsValue="value"
@@ -509,12 +520,18 @@
 					<div class="col-2 flex flex-column align-items-center justify-content-center text-center gap-2">
 						<span class="text-sm text-gray-100">32-bit (slower)</span>
 						<p-inputSwitch
-							[disabled]="!plan.liveStacking.enabled"
+							[disabled]="!plan.liveStacking.enabled || running"
 							[(ngModel)]="plan.liveStacking.use32Bits"
 							(ngModelChange)="savePreference()" />
 					</div>
+					<p-checkbox
+						[binary]="true"
+						[disabled]="!plan.liveStacking.enabled || running"
+						label="Use calibration group"
+						[(ngModel)]="plan.liveStacking.useCalibrationGroup"
+						(ngModelChange)="savePreference()" />
 					<neb-path-chooser
-						[disabled]="!plan.liveStacking.enabled"
+						[disabled]="!plan.liveStacking.enabled || plan.liveStacking.useCalibrationGroup || running"
 						[directory]="false"
 						label="Dark File"
 						key="liveStackerDarkFile"
@@ -522,7 +539,7 @@
 						class="min-w-22rem"
 						(pathChange)="savePreference()" />
 					<neb-path-chooser
-						[disabled]="!plan.liveStacking.enabled"
+						[disabled]="!plan.liveStacking.enabled || plan.liveStacking.useCalibrationGroup || running"
 						[directory]="false"
 						label="Flat File"
 						key="liveStackerFlatFile"
@@ -530,7 +547,7 @@
 						class="min-w-22rem"
 						(pathChange)="savePreference()" />
 					<neb-path-chooser
-						[disabled]="!plan.liveStacking.enabled || plan.liveStacking.type !== 'PIXINSIGHT'"
+						[disabled]="!plan.liveStacking.enabled || plan.liveStacking.type !== 'PIXINSIGHT' || plan.liveStacking.useCalibrationGroup || running"
 						[directory]="false"
 						label="Bias File"
 						key="liveStackerDarkFile"
@@ -680,13 +697,19 @@
 				label="Offset"
 				[(ngModel)]="property.properties.OFFSET" />
 		</div>
+		<div class="col-6">
+			<p-checkbox
+				[binary]="true"
+				label="Calibration Group"
+				[(ngModel)]="property.properties.CALIBRATION_GROUP" />
+		</div>
 		<div
 			*ngIf="plan.liveStacking.enabled"
 			class="col-6">
 			<p-checkbox
 				[binary]="true"
-				label="Live Stacking Group"
-				[(ngModel)]="property.properties.STACKER_GROUP_TYPE" />
+				label="Stacking Group"
+				[(ngModel)]="property.properties.STACKING_GROUP" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
