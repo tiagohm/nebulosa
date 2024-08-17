@@ -46,17 +46,15 @@ data class SequencerTask(
 ) : AbstractTask<MessageEvent>(), Consumer<Any>, CameraEventAware, WheelEventAware, PauseListener {
 
     private val sequences = plan.sequences.filter { it.enabled }
-
     private val initialDelayTask = DelayTask(plan.initialDelay)
-
     private val sequencerId = AtomicInteger()
     private val tasks = LinkedList<Task>()
     private val currentTask = AtomicReference<Task>()
     private val pausing = AtomicBoolean()
     private val paused = AtomicBoolean()
+    private val liveStackingManager = CameraLiveStackingManager(calibrationFrameProvider)
 
     @Volatile private var estimatedCaptureTime = initialDelayTask.duration
-
     @Volatile private var elapsedTime = Duration.ZERO
     @Volatile private var prevElapsedTime = Duration.ZERO
     @Volatile private var remainingTime = Duration.ZERO
@@ -75,9 +73,6 @@ data class SequencerTask(
             liveStacking = plan.liveStacking,
             namingFormat = plan.namingFormat,
         )
-
-        val minExposureAmount = if (sequences.size == 1) 2 else 1
-        val liveStackingManager = CameraLiveStackingManager(calibrationFrameProvider, minExposureAmount)
 
         if (plan.captureMode == SequencerCaptureMode.FULLY || sequences.size == 1) {
             for (i in sequences.indices) {
@@ -257,6 +252,7 @@ data class SequencerTask(
 
     override fun close() {
         tasks.forEach { it.close() }
+        liveStackingManager.close()
     }
 
     private inner class SequencerIdTask(private val id: Int) : Task {

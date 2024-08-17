@@ -64,7 +64,7 @@ data class PixInsightLiveStacker(
             stacking.set(true)
 
             if (stacker.calibrate(targetPath, calibratedPath, darkPath, flatPath, biasPath)) {
-                LOG.info("live stacking calibrated. count={}, output={}", stackCount, calibratedPath)
+                LOG.info("live stacking calibrated. count={}, target={}, output={}", stackCount, targetPath, calibratedPath)
                 targetPath = calibratedPath
             }
 
@@ -72,11 +72,11 @@ data class PixInsightLiveStacker(
 
             if (stackCount > 0) {
                 if (stacker.align(referencePath, targetPath, alignedPath)) {
-                    LOG.info("live stacking aligned. count={}, output={}", stackCount, alignedPath)
+                    LOG.info("live stacking aligned. count={}, target={}, output={}", stackCount, targetPath, alignedPath)
                     targetPath = alignedPath
 
                     if (stacker.integrate(stackCount, stackedPath!!, targetPath, stackedPath!!)) {
-                        LOG.info("live stacking finished. count={}, output={}", stackCount, stackedPath)
+                        LOG.info("live stacking finished. count={}, target={}, output={}", stackCount, targetPath, stackedPath)
                     }
 
                     stackCount++
@@ -95,7 +95,7 @@ data class PixInsightLiveStacker(
 
             stackedPath
         } else {
-            path
+            targetPath
         }
     }
 

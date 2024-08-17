@@ -3,6 +3,7 @@ package nebulosa.pixinsight.stacker
 import nebulosa.pixinsight.script.*
 import nebulosa.stacker.Stacker
 import java.nio.file.Path
+import kotlin.io.path.deleteIfExists
 
 data class PixInsightStacker(
     private val runner: PixInsightScriptRunner,
@@ -15,14 +16,14 @@ data class PixInsightStacker(
         darkPath: Path?, flatPath: Path?, biasPath: Path?,
     ) = if (darkPath != null || flatPath != null || biasPath != null) {
         PixInsightCalibrate(slot, workingDirectory, targetPath, darkPath, flatPath, if (darkPath == null) biasPath else null)
-            .use { calibrate -> calibrate.runSync(runner).outputImage?.let { saveAs(it, outputPath) } == true }
+            .use { calibrate -> calibrate.runSync(runner).outputImage.saveAsAndDeleteIfExists(outputPath) }
     } else {
         false
     }
 
     override fun align(referencePath: Path, targetPath: Path, outputPath: Path): Boolean {
         return PixInsightAlign(slot, workingDirectory, referencePath, targetPath)
-            .use { align -> align.runSync(runner).outputImage?.let { saveAs(it, outputPath) } == true }
+            .use { align -> align.runSync(runner).outputImage.saveAsAndDeleteIfExists(outputPath) }
     }
 
     override fun integrate(stackCount: Int, stackedPath: Path, targetPath: Path, outputPath: Path): Boolean {
@@ -51,5 +52,15 @@ data class PixInsightStacker(
     override fun saveAs(inputPath: Path, outputPath: Path): Boolean {
         return PixInsightFileFormatConversion(slot, inputPath, outputPath)
             .use { it.runSync(runner).outputImage != null }
+    }
+
+    private fun Path?.saveAsAndDeleteIfExists(outputPath: Path): Boolean {
+        return if (this == null) {
+            false
+        } else try {
+            saveAs(this, outputPath)
+        } finally {
+            deleteIfExists()
+        }
     }
 }

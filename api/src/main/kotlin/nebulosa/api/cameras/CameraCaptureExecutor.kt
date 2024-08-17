@@ -62,7 +62,7 @@ class CameraCaptureExecutor(
 
         with(CameraCaptureJob(task)) {
             jobs.add(this)
-            whenComplete { _, _ -> jobs.remove(this) }
+            whenComplete { _, _ -> { jobs.remove(this); liveStackingManager.close() } }
             start()
         }
     }

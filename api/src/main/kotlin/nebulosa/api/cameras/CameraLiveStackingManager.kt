@@ -7,26 +7,29 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.livestacker.LiveStacker
 import nebulosa.log.loggerFor
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.EnumMap
-import kotlin.io.path.copyTo
+import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
-import kotlin.io.path.extension
 
-class CameraLiveStackingManager(
+data class CameraLiveStackingManager(
     private val calibrationFrameProvider: CalibrationFrameProvider? = null,
-    private val minExposureAmount: Int = 2,
-) {
+) : AutoCloseable {
 
     private val liveStackers = EnumMap<StackerGroupType, LiveStacker>(StackerGroupType::class.java)
+    private val workingDirectories = HashSet<Path>()
 
     @Synchronized
     fun start(camera: Camera, request: CameraStartCaptureRequest): Boolean {
         if (request.stackerGroupType in liveStackers) {
             return true
-        } else if (request.stackerGroupType != StackerGroupType.NONE && request.liveStacking.enabled && (request.isLoop || request.exposureAmount >= minExposureAmount)) {
+        } else if (request.stackerGroupType != StackerGroupType.NONE && request.liveStacking.enabled) {
             try {
-                with(request.liveStacking.processCalibrationGroup(camera, request).get()) {
+                val workingDirectory = Files.createTempDirectory("ls-${request.stackerGroupType}-")
+                workingDirectories.add(workingDirectory)
+
+                with(request.liveStacking.processCalibrationGroup(camera, request).get(workingDirectory)) {
                     start()
                     liveStackers[request.stackerGroupType] = this
                 }
@@ -61,39 +64,36 @@ class CameraLiveStackingManager(
                 val referencePath = luminancePath ?: redPath ?: greenPath ?: bluePath
 
                 if (referencePath != null) {
-                    if (luminancePath != null) stacker.align(referencePath, luminancePath, luminancePath)
-                    if (redPath != null) stacker.align(referencePath, redPath, redPath)
-                    if (greenPath != null) stacker.align(referencePath, greenPath, greenPath)
-                    if (bluePath != null) stacker.align(referencePath, bluePath, bluePath)
-                }
+                    if (redPath != null && redPath !== referencePath) stacker.align(referencePath, redPath, redPath)
+                    if (greenPath != null && greenPath !== referencePath) stacker.align(referencePath, greenPath, greenPath)
+                    if (bluePath != null && bluePath !== referencePath) stacker.align(referencePath, bluePath, bluePath)
 
-                if (stacker.combineLRGB(combinedPath, luminancePath, redPath, greenPath, bluePath)) {
-                    stackedPath = combinedPath
+                    if (stacker.combineLRGB(combinedPath, luminancePath, redPath, greenPath, bluePath)) {
+                        stackedPath = combinedPath
+                    }
                 }
-            } else if (stackerGroupType == StackerGroupType.MONO && luminancePath != null) {
-                if (stacker.combineLuminance(combinedPath, luminancePath, stackedPath, true)) {
-                    stackedPath = combinedPath
-                }
-            } else if (stackerGroupType == StackerGroupType.RGB && luminancePath != null) {
-                if (stacker.combineLuminance(combinedPath, luminancePath, stackedPath, false)) {
+            } else if (luminancePath != null) {
+                stacker.align(luminancePath, stackedPath, stackedPath)
+
+                if (stacker.combineLuminance(combinedPath, luminancePath, stackedPath, stackerGroupType == StackerGroupType.MONO)) {
                     stackedPath = combinedPath
                 }
             }
         }
 
-        if (stackedPath == null) {
-            stackedPath = liveStacker.stackedPath
-        }
-
-        if (stackedPath != null) {
-            return stackedPath.copyTo(Path.of("${path.parent}", "STACKED.${stackerGroupType}.${stackedPath.extension}"), true)
-        }
-
-        return null
+        return stackedPath ?: liveStacker.stackedPath
     }
 
     fun stop(request: CameraStartCaptureRequest) {
         liveStackers[request.stackerGroupType]?.stop()
+    }
+
+    override fun close() {
+        liveStackers.values.forEach { it.close() }
+        liveStackers.clear()
+
+        workingDirectories.forEach { it.deleteRecursively() }
+        workingDirectories.clear()
     }
 
     private fun LiveStackingRequest.processCalibrationGroup(camera: Camera, request: CameraStartCaptureRequest): LiveStackingRequest {

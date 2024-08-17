@@ -128,7 +128,7 @@ data class CameraCaptureTask(
 
     override fun execute(cancellationToken: CancellationToken) {
         try {
-            initialize(cancellationToken, hasShutter = true, snoopDevices = true)
+            initialize(cancellationToken, hasShutter = true)
             executeInLoop(cancellationToken)
         } finally {
             finalize(cancellationToken)
@@ -269,7 +269,14 @@ data class CameraCaptureTask(
 
         return if (liveStackerManager.start(camera, request)) {
             sendEvent(CameraCaptureState.STACKING)
-            liveStackerManager.stack(request, path)
+
+            try {
+                liveStackerManager.stack(request, path)
+            } catch (_: Throwable) {
+                null
+            } finally {
+                sendEvent(CameraCaptureState.WAITING)
+            }
         } else {
             null
         }
