@@ -9,7 +9,7 @@ export interface PathChooserPreference {
 	liveStackerBiasFile?: string
 	liveStackerExecutableFile?: string
 	flatWizardSaveFile?: string
-	sequencerSaveFile?: string
+	sequencerOutputDirectory?: string
 	plateSolverExecutableFile?: string
 	starDetectorExecutableFile?: string
 	stackerExecutableFile?: string
