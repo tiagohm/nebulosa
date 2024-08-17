@@ -271,6 +271,12 @@ i.mdi {
 	.p-tabview-nav li .p-tabview-nav-link {
 		border-color: transparent !important;
 		min-height: 28px;
+		width: -webkit-fill-available;
+		height: 100%;
+
+		&:has(div.p-element) {
+			padding: 0px;
+		}
 	}
 }
 

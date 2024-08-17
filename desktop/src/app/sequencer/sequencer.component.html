@@ -1,140 +1,388 @@
 <div class="container pt-1 pb-3">
 	<div class="grid py-1 flex align-items-center">
-		<p-tabView class="w-full">
-			<p-tabPanel
-				header="Capture"
-				leftIcon="mdi mdi-camera-iris">
-				<div class="grid px-4 mt-3">
-					<div class="col-3">
-						<p-floatLabel>
-							<p-inputNumber
-								[disabled]="running"
-								[(ngModel)]="plan.initialDelay"
-								mode="decimal"
-								[showButtons]="true"
-								[step]="1"
-								[min]="0"
-								[max]="60"
-								locale="en"
-								styleClass="p-inputtext-sm border-0"
-								[allowEmpty]="false"
-								(ngModelChange)="savePreference()"
-								spinnableNumber />
-							<label>Initial Delay (s)</label>
-						</p-floatLabel>
+		<p-tabView
+			class="w-full"
+			[scrollable]="true">
+			<p-tabPanel>
+				<ng-template pTemplate="header">
+					<div
+						class="w-full flex align-items-center justify-content-center p-3"
+						pTooltip="Sequences"
+						tooltipPosition="bottom"
+						positionLeft="20">
+						<i class="mdi mdi-play"></i>
 					</div>
-					<div class="col-3">
-						<p-floatLabel class="w-full">
-							<p-dropdown
-								[disabled]="running"
-								[options]="'SEQUENCER_CAPTURE_MODE' | dropdownOptions"
-								[(ngModel)]="plan.captureMode"
-								[autoDisplayFirst]="false"
-								styleClass="w-100 p-inputtext-sm border-0"
-								emptyMessage="No mode found"
-								(ngModelChange)="savePreference()" />
-							<label>Mode</label>
-						</p-floatLabel>
+				</ng-template>
+				<div class="grid px-4 pt-3">
+					<div class="col-12 align-items-center justify-content-center flex-nowrap overflow-y-hidden gap-2">
+						<neb-device-chooser
+							title="CAMERA"
+							icon="mdi mdi-camera-iris"
+							[devices]="cameras"
+							[(device)]="plan.camera"
+							[hasNone]="true"
+							(deviceChange)="cameraChanged()" />
+						<neb-device-chooser
+							title="MOUNT"
+							icon="mdi mdi-telescope"
+							[devices]="mounts"
+							[(device)]="plan.mount"
+							[hasNone]="true"
+							(deviceChange)="mountChanged()" />
+						<neb-device-chooser
+							title="FILTER WHEEL"
+							icon="mdi mdi-palette"
+							[devices]="wheels"
+							[(device)]="plan.wheel"
+							[hasNone]="true"
+							(deviceChange)="wheelChanged()" />
+						<neb-device-chooser
+							title="FOCUSER"
+							icon="mdi mdi-image-filter-center-focus"
+							[devices]="focusers"
+							[(device)]="plan.focuser"
+							[hasNone]="true"
+							(deviceChange)="focuserChanged()" />
+						<neb-device-chooser
+							title="ROTATOR"
+							icon="mdi mdi-rotate-right"
+							[devices]="rotators"
+							[(device)]="plan.rotator"
+							[hasNone]="true"
+							(deviceChange)="rotatorChanged()" />
 					</div>
-					<div class="col-6 gap-2">
-						<i
-							*ngIf="plan.autoSubFolderMode === 'OFF'"
-							(click)="toggleAutoSubFolder()"
-							class="mdi mdi-folder-off text-gray-500 cursor-pointer"
-							pTooltip="Auto sub folder: OFF"
+				</div>
+				<div
+					class="flex absolute right-0 align-items-center justify-content-end mr-4"
+					style="top: 56px">
+					<ng-container *ngIf="event && running">
+						<span class="mr-2 text-sm">{{ event.state | enum }}</span>
+						<span
+							class="bg-warning border-round-left-md text-gray-900 line-height-3 text-sm text-center"
+							style="min-width: 48px">
+							<i class="mdi mdi-counter mdi-sm"></i>
+							{{ event.id }}
+						</span>
+						<span
+							class="bg-success text-gray-900 line-height-3 text-sm text-center"
+							style="min-width: 62px"
+							pTooltip="Elapsed time"
+							tooltipPosition="bottom">
+							<i class="mdi mdi-timer-sand-complete mdi-sm"></i>
+							{{ event.elapsedTime | exposureTime }}
+						</span>
+						<span
+							class="bg-success text-gray-900 line-height-3 text-sm text-center"
+							style="min-width: 62px"
+							pTooltip="Remaining time"
+							tooltipPosition="bottom">
+							<i class="mdi mdi-timer-sand mdi-sm"></i>
+							{{ event.remainingTime | exposureTime }}
+						</span>
+						<span
+							class="bg-success border-round-right-md text-gray-900 line-height-3 text-sm text-center"
+							style="min-width: 52px">
+							<i class="mdi mdi-percent mdi-sm"></i>
+							{{ event.progress * 100 | number: '1.1-1' }}
+						</span>
+					</ng-container>
+				</div>
+				<div
+					cdkDropList
+					[cdkDropListDisabled]="running"
+					(cdkDropListDropped)="drop($event)"
+					class="grid px-4 mt-1 flex align-items-center gap-0 overflow-y-auto"
+					style="max-height: calc(100vh - 200px)">
+					<p-card
+						cdkDrag
+						*ngFor="let sequence of plan.sequences; index as i"
+						class="lg:col-6 col-12"
+						styleClass="w-full pt-2">
+						<ng-template pTemplate="header">
+							<div class="grid">
+								<div
+									cdkDragHandle
+									class="cursor-move col-1 pb-1 align-items-center justify-content-center gap-2">
+									<span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
+								</div>
+								<div class="col pb-1 align-items-center gap-1">
+									<p-button
+										[disabled]="running || !plan.camera || !sequence.enabled"
+										icon="mdi mdi-camera-iris"
+										label="Camera"
+										[severity]="plan.camera?.connected ? 'success' : 'danger'"
+										styleClass="px-2"
+										[text]="true"
+										(onClick)="showCameraDialog(sequence)"
+										size="small" />
+									<p-button
+										[disabled]="running || !plan.wheel || !sequence.enabled"
+										icon="mdi mdi-palette"
+										label="Filter Wheel"
+										[severity]="plan.wheel?.connected ? 'success' : 'danger'"
+										styleClass="px-2"
+										[text]="true"
+										(onClick)="showWheelDialog(sequence)"
+										size="small" />
+									<!-- <p-button
+										[disabled]="running || !plan.focuser || !sequence.enabled"
+										icon="mdi mdi-image-filter-center-focus"
+										label="Focuser"
+										[severity]="plan.focuser?.connected ? 'success' : 'danger'"
+										styleClass="px-2"
+										(onClick)="showCameraDialog(sequence)"
+										size="small" /> -->
+									<p-dropdown
+										*ngIf="plan.liveStacking.enabled"
+										[disabled]="running"
+										[options]="'STACKER_GROUP_TYPE' | dropdownOptions | enumDropdown"
+										[(ngModel)]="sequence.stackerGroupType"
+										styleClass="border-0 p-inputtext-sm"
+										[autoDisplayFirst]="false"
+										(ngModelChange)="savePreference()"
+										appendTo="body" />
+								</div>
+								<div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
+									<p-button
+										[disabled]="plan.sequences.length <= 1 || running"
+										[text]="true"
+										[rounded]="true"
+										icon="mdi mdi-md mdi-dots-vertical"
+										(click)="showSequenceMenu(sequence, entryMenu)" />
+									<p-button
+										[disabled]="running || plan.sequences.length <= 1"
+										[text]="true"
+										[rounded]="true"
+										icon="mdi mdi-delete"
+										severity="danger"
+										size="small"
+										pTooltip="Delete"
+										tooltipPosition="bottom"
+										size="small"
+										(onClick)="deleteSequence(sequence, i)" />
+									<p-button
+										[disabled]="running"
+										[text]="true"
+										[rounded]="true"
+										icon="mdi mdi-content-duplicate"
+										severity="info"
+										size="small"
+										pTooltip="Duplicate"
+										tooltipPosition="bottom"
+										size="small"
+										(onClick)="duplicateSequence(sequence, i)" />
+									<p-checkbox
+										[binary]="true"
+										[disabled]="running"
+										[(ngModel)]="sequence.enabled"
+										(ngModelChange)="savePreference()" />
+								</div>
+							</div>
+						</ng-template>
+						<div class="grid">
+							<div class="col-12 pt-1 flex">
+								<neb-camera-info
+									[info]="sequence"
+									[wheel]="plan.wheel"
+									[canRemoveFilter]="sequence.enabled"
+									(filterRemoved)="filterRemoved(sequence)" />
+							</div>
+							<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm">
+								<neb-camera-exposure #cameraExposure />
+							</div>
+						</div>
+					</p-card>
+				</div>
+			</p-tabPanel>
+			<p-tabPanel>
+				<ng-template pTemplate="header">
+					<div
+						class="w-full flex align-items-center justify-content-center p-3"
+						pTooltip="Capture"
+						tooltipPosition="bottom">
+						<i class="mdi mdi-camera-iris"></i>
+					</div>
+				</ng-template>
+				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
+					<p-floatLabel class="max-w-10rem">
+						<p-inputNumber
+							[disabled]="running"
+							[(ngModel)]="plan.initialDelay"
+							mode="decimal"
+							[showButtons]="true"
+							[step]="1"
+							[min]="0"
+							[max]="60"
+							locale="en"
+							styleClass="p-inputtext-sm border-0"
+							[allowEmpty]="false"
+							(ngModelChange)="savePreference()"
+							spinnableNumber />
+						<label>Initial Delay (s)</label>
+					</p-floatLabel>
+					<p-floatLabel class="min-w-14rem">
+						<p-dropdown
+							[disabled]="running"
+							[options]="'SEQUENCER_CAPTURE_MODE' | dropdownOptions"
+							[(ngModel)]="plan.captureMode"
+							[autoDisplayFirst]="false"
+							styleClass="w-100 p-inputtext-sm border-0"
+							emptyMessage="No mode found"
+							(ngModelChange)="savePreference()"
+							appendTo="body" />
+						<label>Mode</label>
+					</p-floatLabel>
+					<div class="flex flex-row align-items-center gap-2">
+						<p-button
+							[text]="true"
+							[rounded]="true"
+							icon="mdi {{ plan.autoSubFolderMode === 'OFF' ? 'mdi-folder-off text-gray-500' : plan.autoSubFolderMode === 'NOON' ? 'mdi-weather-sunny text-yellow-600' : 'mdi-weather-night text-info' }}"
+							size="small"
+							pTooltip="{{ 'Auto sub folder: ' + plan.autoSubFolderMode }}"
 							tooltipPosition="bottom"
-							[positionTop]="8"></i>
-						<i
-							*ngIf="plan.autoSubFolderMode === 'NOON'"
-							(click)="toggleAutoSubFolder()"
-							class="mdi mdi-weather-sunny text-yellow-600 cursor-pointer"
-							pTooltip="Auto sub folder: NOON"
-							tooltipPosition="bottom"
-							[positionTop]="8"></i>
-						<i
-							*ngIf="plan.autoSubFolderMode === 'MIDNIGHT'"
-							(click)="toggleAutoSubFolder()"
-							class="mdi mdi-weather-night text-info cursor-pointer"
-							pTooltip="Auto sub folder: MIDNIGHT"
-							tooltipPosition="bottom"
-							[positionTop]="8"></i>
+							(onClick)="toggleAutoSubFolder()" />
 						<neb-path-chooser
-							key="sequencer.savePath"
+							key="sequencerOutputDirectory"
 							[directory]="true"
+							label="Output directory"
 							[(path)]="plan.savePath"
 							(pathChange)="savePreference()"
-							class="w-full" />
+							class="min-w-22rem" />
+					</div>
+					<div class="flex gap-1">
+						<p-floatLabel class="w-full min-w-22rem">
+							<input
+								pInputText
+								class="p-inputtext-sm border-0"
+								[(ngModel)]="plan.namingFormat.light"
+								(ngModelChange)="savePreference()" />
+							<label>Light</label>
+						</p-floatLabel>
+						<p-button
+							[text]="true"
+							icon="mdi mdi-restore"
+							(onClick)="resetCameraCaptureNamingFormat('LIGHT')"
+							pTooltip="Reset"
+							tooltipPosition="bottom" />
+					</div>
+					<div class="flex gap-1">
+						<p-floatLabel class="w-full min-w-22rem">
+							<input
+								pInputText
+								class="p-inputtext-sm border-0"
+								[(ngModel)]="plan.namingFormat.dark"
+								(ngModelChange)="savePreference()" />
+							<label>Dark</label>
+						</p-floatLabel>
+						<p-button
+							[text]="true"
+							icon="mdi mdi-restore"
+							(onClick)="resetCameraCaptureNamingFormat('DARK')"
+							pTooltip="Reset"
+							tooltipPosition="bottom" />
+					</div>
+					<div class="flex gap-1">
+						<p-floatLabel class="w-full min-w-22rem">
+							<input
+								pInputText
+								class="p-inputtext-sm border-0"
+								[(ngModel)]="plan.namingFormat.flat"
+								(ngModelChange)="savePreference()" />
+							<label>Flat</label>
+						</p-floatLabel>
+						<p-button
+							[text]="true"
+							icon="mdi mdi-restore"
+							(onClick)="resetCameraCaptureNamingFormat('FLAT')"
+							pTooltip="Reset"
+							tooltipPosition="bottom" />
+					</div>
+					<div class="flex gap-1">
+						<p-floatLabel class="w-full min-w-22rem">
+							<input
+								pInputText
+								class="p-inputtext-sm border-0"
+								[(ngModel)]="plan.namingFormat.bias"
+								(ngModelChange)="savePreference()" />
+							<label>Bias</label>
+						</p-floatLabel>
+						<p-button
+							[text]="true"
+							icon="mdi mdi-restore"
+							(onClick)="resetCameraCaptureNamingFormat('BIAS')"
+							pTooltip="Reset"
+							tooltipPosition="bottom" />
 					</div>
 				</div>
 			</p-tabPanel>
-			<p-tabPanel header="Dither">
+			<p-tabPanel>
 				<ng-template pTemplate="header">
-					<div class="flex gap-2 align-items-center">
+					<div
+						class="flex gap-2 align-items-center justify-content-center p-3"
+						pTooltip="Dither"
+						tooltipPosition="bottom">
 						<i class="mdi mdi-pulse"></i>
-						<span>Dither</span>
 						<p-checkbox
 							[binary]="true"
 							[disabled]="running"
 							[(ngModel)]="plan.dither.enabled"
-							(ngModelChange)="savePreference()" />
+							(ngModelChange)="savePreference()"
+							(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
 					</div>
 				</ng-template>
-				<div class="grid px-4 mt-3">
-					<div class="col-2 flex align-items-center">
-						<p-checkbox
-							[binary]="true"
+				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
+					<p-checkbox
+						[binary]="true"
+						[disabled]="running || !plan.dither.enabled"
+						label="RA only"
+						[(ngModel)]="plan.dither.raOnly"
+						(ngModelChange)="savePreference()" />
+					<p-floatLabel class="max-w-12rem">
+						<p-inputNumber
 							[disabled]="running || !plan.dither.enabled"
-							label="RA only"
-							[(ngModel)]="plan.dither.raOnly"
-							(ngModelChange)="savePreference()" />
-					</div>
-					<div class="col-3 align-items-center">
-						<p-floatLabel>
-							<p-inputNumber
-								[disabled]="running || !plan.dither.enabled"
-								[showButtons]="true"
-								styleClass="border-0 p-inputtext-sm w-full"
-								[min]="0.1"
-								[max]="60"
-								[(ngModel)]="plan.dither.amount"
-								[step]="0.1"
-								locale="en"
-								[minFractionDigits]="1"
-								(ngModelChange)="savePreference()"
-								spinnableNumber />
-							<label>Dither (px)</label>
-						</p-floatLabel>
-					</div>
-					<div class="col-3 align-items-center">
-						<p-floatLabel>
-							<p-inputNumber
-								[disabled]="running || !plan.dither.enabled"
-								[showButtons]="true"
-								styleClass="border-0 p-inputtext-sm w-full"
-								[min]="1"
-								[max]="1000"
-								[(ngModel)]="plan.dither.afterExposures"
-								[step]="1"
-								(ngModelChange)="savePreference()"
-								spinnableNumber />
-							<label>After exposures</label>
-						</p-floatLabel>
-					</div>
+							[showButtons]="true"
+							styleClass="border-0 p-inputtext-sm w-full"
+							[min]="0.1"
+							[max]="60"
+							[(ngModel)]="plan.dither.amount"
+							[step]="0.1"
+							locale="en"
+							[minFractionDigits]="1"
+							(ngModelChange)="savePreference()"
+							spinnableNumber />
+						<label>Dither (px)</label>
+					</p-floatLabel>
+					<p-floatLabel class="max-w-12rem">
+						<p-inputNumber
+							[disabled]="running || !plan.dither.enabled"
+							[showButtons]="true"
+							styleClass="border-0 p-inputtext-sm w-full"
+							[min]="1"
+							[max]="1000"
+							[(ngModel)]="plan.dither.afterExposures"
+							[step]="1"
+							(ngModelChange)="savePreference()"
+							spinnableNumber />
+						<label>After exposures</label>
+					</p-floatLabel>
 				</div>
 			</p-tabPanel>
-			<p-tabPanel header="Auto Focus">
+			<p-tabPanel>
 				<ng-template pTemplate="header">
-					<div class="flex gap-2 align-items-center">
+					<div
+						class="flex flex-shrink-0 gap-2 align-items-center justify-content-center p-3"
+						pTooltip="Auto Focus"
+						tooltipPosition="bottom">
 						<i class="mdi mdi-image-filter-center-focus"></i>
-						<span>Auto Focus</span>
 						<p-checkbox
 							[binary]="true"
 							[disabled]="running"
 							[(ngModel)]="plan.autoFocus.enabled"
-							(ngModelChange)="savePreference()" />
+							(ngModelChange)="savePreference()"
+							(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
 					</div>
 				</ng-template>
-				<div class="flex px-4 align-items-center gap-4 flex-wrap mt-3">
+				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
 					<p-checkbox
 						[binary]="true"
 						[disabled]="running || !plan.autoFocus.enabled"
@@ -191,26 +439,6 @@
 						<p-checkbox
 							[binary]="true"
 							[disabled]="running || !plan.autoFocus.enabled"
-							[(ngModel)]="plan.autoFocus.afterTemperatureChangeEnabled"
-							(ngModelChange)="savePreference()" />
-						<p-floatLabel class="max-w-15rem">
-							<p-inputNumber
-								[disabled]="running || !plan.autoFocus.afterTemperatureChangeEnabled || !plan.autoFocus.enabled"
-								[showButtons]="true"
-								styleClass="border-0 p-inputtext-sm w-full"
-								[min]="1"
-								[max]="10"
-								[(ngModel)]="plan.autoFocus.afterTemperatureChange"
-								[step]="1"
-								(ngModelChange)="savePreference()"
-								spinnableNumber />
-							<label>After temperature change (°C)</label>
-						</p-floatLabel>
-					</div>
-					<div class="flex align-items-center gap-1">
-						<p-checkbox
-							[binary]="true"
-							[disabled]="running || !plan.autoFocus.enabled"
 							[(ngModel)]="plan.autoFocus.afterHFDIncreaseEnabled"
 							(ngModelChange)="savePreference()" />
 						<p-floatLabel class="max-w-12rem">
@@ -227,298 +455,139 @@
 							<label>After HFD increase (%)</label>
 						</p-floatLabel>
 					</div>
+					<div class="flex align-items-center gap-1">
+						<p-checkbox
+							[binary]="true"
+							[disabled]="running || !plan.autoFocus.enabled"
+							[(ngModel)]="plan.autoFocus.afterTemperatureChangeEnabled"
+							(ngModelChange)="savePreference()" />
+						<p-floatLabel class="max-w-15rem">
+							<p-inputNumber
+								[disabled]="running || !plan.autoFocus.afterTemperatureChangeEnabled || !plan.autoFocus.enabled"
+								[showButtons]="true"
+								styleClass="border-0 p-inputtext-sm w-full"
+								[min]="1"
+								[max]="10"
+								[(ngModel)]="plan.autoFocus.afterTemperatureChange"
+								[step]="1"
+								(ngModelChange)="savePreference()"
+								spinnableNumber />
+							<label>After temperature change (°C)</label>
+						</p-floatLabel>
+					</div>
 				</div>
 			</p-tabPanel>
-			<p-tabPanel
-				header="Naming"
-				leftIcon="mdi mdi-rename">
-				<div class="flex px-4 align-items-center justify-content-center gap-2 flex-wrap mt-3">
-					<div class="flex gap-1">
-						<p-floatLabel class="w-full min-w-20rem">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0"
-								[(ngModel)]="plan.namingFormat.light"
-								(ngModelChange)="savePreference()" />
-							<label>Light</label>
-						</p-floatLabel>
-						<p-button
-							[text]="true"
-							icon="mdi mdi-restore"
-							(onClick)="resetCameraCaptureNamingFormat('LIGHT')"
-							pTooltip="Reset"
-							tooltipPosition="bottom" />
+			<p-tabPanel>
+				<ng-template pTemplate="header">
+					<div
+						class="flex gap-2 align-items-center justify-content-center p-3"
+						pTooltip="Live Stacking"
+						tooltipPosition="bottom">
+						<i class="mdi mdi-image-multiple"></i>
+						<p-checkbox
+							[binary]="true"
+							[disabled]="running"
+							[(ngModel)]="plan.liveStacking.enabled"
+							(ngModelChange)="savePreference()"
+							(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
 					</div>
-					<div class="flex gap-1">
-						<p-floatLabel class="w-full min-w-20rem">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0"
-								[(ngModel)]="plan.namingFormat.dark"
-								(ngModelChange)="savePreference()" />
-							<label>Dark</label>
-						</p-floatLabel>
-						<p-button
-							[text]="true"
-							icon="mdi mdi-restore"
-							(onClick)="resetCameraCaptureNamingFormat('DARK')"
-							pTooltip="Reset"
-							tooltipPosition="bottom" />
+				</ng-template>
+				<div class="align-content-start justify-content-center align-items-center flex flex-row flex-wrap gap-3 justify-content-start pt-3 px-4">
+					<p-floatLabel class="min-w-12rem">
+						<p-dropdown
+							[disabled]="!plan.liveStacking.enabled"
+							[options]="'LIVE_STACKER' | dropdownOptions | enumDropdown"
+							[(ngModel)]="plan.liveStacking.type"
+							optionsLabel="label"
+							optionsValue="value"
+							styleClass="p-inputtext-sm border-0"
+							(ngModelChange)="savePreference()"
+							[autoDisplayFirst]="false"
+							appendTo="body" />
+						<label>Live Stacker</label>
+					</p-floatLabel>
+					<div class="col-2 flex flex-column align-items-center justify-content-center text-center gap-2">
+						<span class="text-sm text-gray-100">32-bit (slower)</span>
+						<p-inputSwitch
+							[disabled]="!plan.liveStacking.enabled"
+							[(ngModel)]="plan.liveStacking.use32Bits"
+							(ngModelChange)="savePreference()" />
 					</div>
-					<div class="flex gap-1">
-						<p-floatLabel class="w-full min-w-20rem">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0"
-								[(ngModel)]="plan.namingFormat.flat"
-								(ngModelChange)="savePreference()" />
-							<label>Flat</label>
-						</p-floatLabel>
-						<p-button
-							[text]="true"
-							icon="mdi mdi-restore"
-							(onClick)="resetCameraCaptureNamingFormat('FLAT')"
-							pTooltip="Reset"
-							tooltipPosition="bottom" />
-					</div>
-					<div class="flex gap-1">
-						<p-floatLabel class="w-full min-w-20rem">
-							<input
-								pInputText
-								class="p-inputtext-sm border-0"
-								[(ngModel)]="plan.namingFormat.bias"
-								(ngModelChange)="savePreference()" />
-							<label>Bias</label>
-						</p-floatLabel>
-						<p-button
-							[text]="true"
-							icon="mdi mdi-restore"
-							(onClick)="resetCameraCaptureNamingFormat('BIAS')"
-							pTooltip="Reset"
-							tooltipPosition="bottom" />
-					</div>
+					<neb-path-chooser
+						[disabled]="!plan.liveStacking.enabled"
+						[directory]="false"
+						label="Dark File"
+						key="liveStackerDarkFile"
+						[(path)]="plan.liveStacking.darkPath"
+						class="min-w-22rem"
+						(pathChange)="savePreference()" />
+					<neb-path-chooser
+						[disabled]="!plan.liveStacking.enabled"
+						[directory]="false"
+						label="Flat File"
+						key="liveStackerFlatFile"
+						[(path)]="plan.liveStacking.flatPath"
+						class="min-w-22rem"
+						(pathChange)="savePreference()" />
+					<neb-path-chooser
+						[disabled]="!plan.liveStacking.enabled || plan.liveStacking.type !== 'PIXINSIGHT'"
+						[directory]="false"
+						label="Bias File"
+						key="liveStackerDarkFile"
+						[(path)]="plan.liveStacking.biasPath"
+						class="min-w-22rem"
+						(pathChange)="savePreference()" />
 				</div>
 			</p-tabPanel>
 		</p-tabView>
 	</div>
-	<div class="grid px-4">
-		<div class="col-12 align-items-center justify-content-center flex-wrap pt-4 gap-2">
-			<neb-device-chooser
-				title="CAMERA"
-				icon="mdi mdi-camera-iris"
-				[devices]="cameras"
-				[(device)]="plan.camera"
-				[hasNone]="true"
-				(deviceChange)="cameraChanged()" />
-			<neb-device-chooser
-				title="MOUNT"
-				icon="mdi mdi-telescope"
-				[devices]="mounts"
-				[(device)]="plan.mount"
-				[hasNone]="true"
-				(deviceChange)="mountChanged()" />
-			<neb-device-chooser
-				title="FILTER WHEEL"
-				icon="mdi mdi-palette"
-				[devices]="wheels"
-				[(device)]="plan.wheel"
-				[hasNone]="true"
-				(deviceChange)="wheelChanged()" />
-			<neb-device-chooser
-				title="FOCUSER"
-				icon="mdi mdi-image-filter-center-focus"
-				[devices]="focusers"
-				[(device)]="plan.focuser"
-				[hasNone]="true"
-				(deviceChange)="focuserChanged()" />
-			<neb-device-chooser
-				title="ROTATOR"
-				icon="mdi mdi-rotate-right"
-				[devices]="rotators"
-				[(device)]="plan.rotator"
-				[hasNone]="true"
-				(deviceChange)="rotatorChanged()" />
-		</div>
-	</div>
-	<div class="grid px-4 mt-0">
-		<div class="col-12 align-items-center justify-content-end">
-			<ng-container *ngIf="event && running">
-				<span class="mr-2 text-sm">{{ event.state | enum }}</span>
-				<span
-					class="bg-warning border-round-left-md text-gray-900 line-height-3 text-sm text-center"
-					style="min-width: 48px">
-					<i class="mdi mdi-counter mdi-sm"></i>
-					{{ event.id }}
-				</span>
-				<span
-					class="bg-success text-gray-900 line-height-3 text-sm text-center"
-					style="min-width: 62px"
-					pTooltip="Elapsed time"
-					tooltipPosition="bottom">
-					<i class="mdi mdi-timer-sand-complete mdi-sm"></i>
-					{{ event.elapsedTime | exposureTime }}
-				</span>
-				<span
-					class="bg-success text-gray-900 line-height-3 text-sm text-center"
-					style="min-width: 62px"
-					pTooltip="Remaining time"
-					tooltipPosition="bottom">
-					<i class="mdi mdi-timer-sand mdi-sm"></i>
-					{{ event.remainingTime | exposureTime }}
-				</span>
-				<span
-					class="bg-success border-round-right-md text-gray-900 line-height-3 text-sm text-center"
-					style="min-width: 52px">
-					<i class="mdi mdi-percent mdi-sm"></i>
-					{{ event.progress * 100 | number: '1.1-1' }}
-				</span>
-			</ng-container>
-		</div>
-	</div>
-	<div class="grid px-4 mt-1 flex align-items-center">
-		<p-scrollPanel
-			class="w-full"
-			[style]="{ width: '100%', height: 'calc(100vh - 250px)' }"
-			cdkDropList
-			(cdkDropListDropped)="drop($event)">
-			<div
-				*ngFor="let sequence of plan.sequences; index as i"
-				class="col-12"
-				cdkDrag>
-				<p-card>
-					<ng-template pTemplate="header">
-						<div class="grid">
-							<div class="col-1 pb-1 align-items-center justify-content-center gap-2">
-								<span class="font-bold text-xl ml-3">#{{ i + 1 }}</span>
-							</div>
-							<div class="col pb-1 align-items-center gap-1">
-								<p-button
-									[disabled]="running || !plan.camera || !sequence.enabled"
-									icon="mdi mdi-camera-iris"
-									label="Camera"
-									[severity]="plan.camera?.connected ? 'success' : 'danger'"
-									styleClass="px-2 py-1"
-									[text]="true"
-									(onClick)="showCameraDialog(sequence)"
-									size="small" />
-								<p-button
-									[disabled]="running || !plan.wheel || !sequence.enabled"
-									icon="mdi mdi-palette"
-									label="Filter Wheel"
-									[severity]="plan.wheel?.connected ? 'success' : 'danger'"
-									styleClass="px-2 py-1"
-									[text]="true"
-									(onClick)="showWheelDialog(sequence)"
-									size="small" />
-								<!-- <p-button [disabled]="running || !focuser || !sequence.enabled" icon="mdi mdi-image-filter-center-focus"
-                                          label="Focuser" [severity]="focuser?.connected ? 'success' : 'danger'" styleClass="px-2 py-1"
-                                          (onClick)="showCameraDialog(sequence)" size="small" /> -->
-							</div>
-							<div class="col pb-1 pr-4 align-items-center justify-content-end gap-2">
-								<p-button
-									[disabled]="plan.sequences.length <= 1 || running"
-									[text]="true"
-									[rounded]="true"
-									icon="mdi mdi-md mdi-dots-vertical"
-									(click)="showSequenceMenu(sequence, entryMenu)" />
-								<p-button
-									[disabled]="running || plan.sequences.length <= 1"
-									[text]="true"
-									[rounded]="true"
-									icon="mdi mdi-delete"
-									severity="danger"
-									size="small"
-									pTooltip="Delete"
-									tooltipPosition="bottom"
-									size="small"
-									(onClick)="deleteSequence(sequence, i)" />
-								<p-button
-									[disabled]="running"
-									[text]="true"
-									[rounded]="true"
-									icon="mdi mdi-content-duplicate"
-									severity="info"
-									size="small"
-									pTooltip="Duplicate"
-									tooltipPosition="bottom"
-									size="small"
-									(onClick)="duplicateSequence(sequence, i)" />
-								<p-checkbox
-									[binary]="true"
-									[disabled]="running"
-									[(ngModel)]="sequence.enabled"
-									(ngModelChange)="savePreference()" />
-							</div>
-						</div>
-					</ng-template>
-					<div class="grid">
-						<div class="col-12 pt-1 flex">
-							<neb-camera-info
-								[info]="sequence"
-								[wheel]="plan.wheel"
-								[canRemoveFilter]="sequence.enabled"
-								(filterRemoved)="filterRemoved(sequence)" />
-						</div>
-						<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm">
-							<neb-camera-exposure #cameraExposure />
-						</div>
-					</div>
-				</p-card>
-			</div>
-		</p-scrollPanel>
-	</div>
-	<div
-		class="fixed"
-		style="right: 16px; top: 54px">
-		<div class="grid">
-			<div class="col-12 flex align-items-center justify-content-center gap-1">
-				@if (pausingOrPaused) {
-					<p-button
-						[disabled]="event?.state === 'PAUSING'"
-						label="Unpause"
-						(onClick)="unpause()"
-						icon="mdi mdi-play"
-						severity="success"
-						size="small"
-						[text]="true" />
-				} @else if (!running) {
-					<p-button
-						[disabled]="!plan.sequences.length || !canStart || running"
-						label="Start"
-						(onClick)="start()"
-						icon="mdi mdi-play"
-						severity="success"
-						size="small"
-						[text]="true" />
-				}
+
+	<div class="fixed flex w-full justify-content-between align-items-center left-0 bottom-0 px-6 pb-3">
+		<div class="flex align-items-center justify-content-center flex-1 gap-1">
+			@if (pausingOrPaused) {
 				<p-button
-					*ngIf="canStart && running && !pausingOrPaused"
-					label="Pause"
-					(onClick)="pause()"
-					icon="mdi mdi-pause"
-					severity="info"
+					[disabled]="event?.state === 'PAUSING'"
+					label="Unpause"
+					(onClick)="unpause()"
+					icon="mdi mdi-play"
+					severity="success"
 					size="small"
 					[text]="true" />
+			} @else if (!running) {
 				<p-button
-					[disabled]="!plan.sequences.length || !canStart || !running"
-					label="Abort"
-					(onClick)="stop()"
-					icon="mdi mdi-stop"
-					severity="danger"
+					[disabled]="!plan.sequences.length || !canStart || running"
+					label="Start"
+					(onClick)="start()"
+					icon="mdi mdi-play"
+					severity="success"
 					size="small"
 					[text]="true" />
-			</div>
+			}
+			<p-button
+				*ngIf="canStart && running && !pausingOrPaused"
+				label="Pause"
+				(onClick)="pause()"
+				icon="mdi mdi-pause"
+				severity="info"
+				size="small"
+				[text]="true" />
+			<p-button
+				[disabled]="!plan.sequences.length || !canStart || !running"
+				label="Abort"
+				(onClick)="stop()"
+				icon="mdi mdi-stop"
+				severity="danger"
+				size="small"
+				[text]="true" />
 		</div>
+		<p-button
+			[disabled]="running || plan.sequences.length > 32"
+			[rounded]="true"
+			icon="mdi mdi-plus"
+			size="large"
+			severity="success"
+			(onClick)="add()" />
 	</div>
-	<p-button
-		[disabled]="running || plan.sequences.length > 32"
-		[rounded]="true"
-		icon="mdi mdi-plus"
-		size="large"
-		severity="success"
-		(onClick)="add()"
-		styleClass="fixed"
-		[style]="{ bottom: '16px', right: '16px' }" />
 </div>
 
 <p-dialog
@@ -610,6 +679,14 @@
 				[binary]="true"
 				label="Offset"
 				[(ngModel)]="property.properties.OFFSET" />
+		</div>
+		<div
+			*ngIf="plan.liveStacking.enabled"
+			class="col-6">
+			<p-checkbox
+				[binary]="true"
+				label="Live Stacking Group"
+				[(ngModel)]="property.properties.STACKER_GROUP_TYPE" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">

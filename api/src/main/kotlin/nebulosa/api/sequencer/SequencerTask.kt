@@ -46,17 +46,15 @@ data class SequencerTask(
 ) : AbstractTask<MessageEvent>(), Consumer<Any>, CameraEventAware, WheelEventAware, PauseListener {
 
     private val sequences = plan.sequences.filter { it.enabled }
-
     private val initialDelayTask = DelayTask(plan.initialDelay)
-
     private val sequencerId = AtomicInteger()
     private val tasks = LinkedList<Task>()
     private val currentTask = AtomicReference<Task>()
     private val pausing = AtomicBoolean()
     private val paused = AtomicBoolean()
+    private val liveStackingManager = CameraLiveStackingManager(calibrationFrameProvider)
 
     @Volatile private var estimatedCaptureTime = initialDelayTask.duration
-
     @Volatile private var elapsedTime = Duration.ZERO
     @Volatile private var prevElapsedTime = Duration.ZERO
     @Volatile private var remainingTime = Duration.ZERO
@@ -72,6 +70,7 @@ data class SequencerTask(
             savePath = plan.savePath, autoSave = true,
             autoSubFolderMode = plan.autoSubFolderMode,
             dither = plan.dither,
+            liveStacking = plan.liveStacking,
             namingFormat = plan.namingFormat,
         )
 
@@ -88,7 +87,7 @@ data class SequencerTask(
                 // CAPTURE.
                 val cameraCaptureTask = CameraCaptureTask(
                     camera, request, guider, false, executor,
-                    calibrationFrameProvider,
+                    liveStackingManager,
                     mount, wheel, focuser, rotator
                 )
 
@@ -102,7 +101,7 @@ data class SequencerTask(
             val cameraCaptureTasks = requests.mapIndexed { i, req ->
                 val task = CameraCaptureTask(
                     camera, req, guider,
-                    i > 0, executor, calibrationFrameProvider,
+                    i > 0, executor, liveStackingManager,
                     mount, wheel, focuser, rotator
                 )
 
@@ -253,6 +252,7 @@ data class SequencerTask(
 
     override fun close() {
         tasks.forEach { it.close() }
+        liveStackingManager.close()
     }
 
     private inner class SequencerIdTask(private val id: Int) : Task {

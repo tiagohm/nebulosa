@@ -81,7 +81,7 @@
 				class="col-12"
 				*ngIf="plateSolverType !== 'ASTROMETRY_NET_ONLINE'">
 				<neb-path-chooser
-					key="platesolver.executablePath"
+					key="plateSolverExecutableFile"
 					[directory]="false"
 					label="Executable path"
 					[(path)]="plateSolver.executablePath"
@@ -176,7 +176,7 @@
 			</div>
 			<div class="col-12">
 				<neb-path-chooser
-					key="starDetection.executablePath"
+					key="starDetectorExecutableFile"
 					[directory]="false"
 					label="Executable path"
 					[(path)]="starDetector.executablePath"
@@ -234,7 +234,7 @@
 			</div>
 			<div class="col-12">
 				<neb-path-chooser
-					key="liveStacking.executablePath"
+					key="liveStackerExecutableFile"
 					[directory]="false"
 					class="w-full"
 					[(path)]="liveStacker.executablePath"
@@ -279,7 +279,7 @@
 			</div>
 			<div class="col-12">
 				<neb-path-chooser
-					key="stacking.executablePath"
+					key="stackerExecutableFile"
 					[directory]="false"
 					class="w-full"
 					[(path)]="stacker.executablePath"
