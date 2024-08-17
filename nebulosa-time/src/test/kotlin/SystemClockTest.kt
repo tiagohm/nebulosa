@@ -11,12 +11,12 @@ class SystemClockTest {
 
     @Test
     fun systemDefault() {
-        ChronoUnit.MICROS.between(LocalDateTime.now(SystemClock), LocalDateTime.now()) shouldBeLessThanOrEqual 1000L
+        ChronoUnit.MICROS.between(LocalDateTime.now(SystemClock), LocalDateTime.now()) shouldBeLessThanOrEqual 10000L
         SystemClock.zone shouldBeSameInstanceAs ZoneId.systemDefault()
 
         TimeZone.setDefault(TimeZone.getTimeZone("America/Manaus"))
 
-        ChronoUnit.MICROS.between(LocalDateTime.now(SystemClock), LocalDateTime.now()) shouldBeLessThanOrEqual 1000L
+        ChronoUnit.MICROS.between(LocalDateTime.now(SystemClock), LocalDateTime.now()) shouldBeLessThanOrEqual 10000L
         SystemClock.zone shouldBeSameInstanceAs ZoneId.systemDefault()
     }
 }

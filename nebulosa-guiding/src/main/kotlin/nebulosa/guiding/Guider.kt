@@ -1,10 +1,9 @@
 package nebulosa.guiding
 
 import nebulosa.common.concurrency.cancel.CancellationToken
-import java.io.Closeable
 import java.time.Duration
 
-interface Guider : Closeable {
+interface Guider : AutoCloseable {
 
     val state: GuideState
 

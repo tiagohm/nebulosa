@@ -5,9 +5,8 @@ import nebulosa.io.read
 import nebulosa.io.readDoubleArray
 import nebulosa.io.source
 import okio.Buffer
-import java.io.Closeable
 
-class SourceDaf(private val source: SeekableSource) : Daf(), Closeable by source {
+class SourceDaf(private val source: SeekableSource) : Daf(), AutoCloseable by source {
 
     override fun read(start: Int, end: Int): DoubleArray {
         source.seek(8L * (start - 1))

@@ -2,10 +2,9 @@ package nebulosa.nasa.pck
 
 import nebulosa.nasa.daf.Daf
 import nebulosa.nasa.daf.Summary
-import java.io.Closeable
 import java.io.IOException
 
-class Pck(private val daf: Daf) : Closeable by daf {
+data class Pck(private val daf: Daf) : AutoCloseable by daf {
 
     init {
         daf.read()

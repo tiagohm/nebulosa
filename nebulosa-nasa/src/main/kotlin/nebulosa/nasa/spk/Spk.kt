@@ -2,7 +2,6 @@ package nebulosa.nasa.spk
 
 import nebulosa.nasa.daf.Daf
 import nebulosa.nasa.daf.Summary
-import java.io.Closeable
 import java.io.IOException
 
 /**
@@ -11,7 +10,7 @@ import java.io.IOException
  * @see <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html">SPK Reference</a>
  * @see <a href="https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/">SPK Files</a>
  */
-class Spk(val daf: Daf) : Closeable, Collection<SpkSegment> {
+data class Spk(val daf: Daf) : AutoCloseable, Collection<SpkSegment> {
 
     init {
         daf.read()

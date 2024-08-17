@@ -1,14 +1,13 @@
 package nebulosa.common.concurrency.cancel
 
 import nebulosa.common.concurrency.latch.Pauser
-import java.io.Closeable
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 class CancellationToken private constructor(private val completable: CompletableFuture<CancellationSource>?) :
-    Pauser(), Closeable, Future<CancellationSource> {
+    Pauser(), AutoCloseable, Future<CancellationSource> {
 
     constructor() : this(CompletableFuture<CancellationSource>())
 

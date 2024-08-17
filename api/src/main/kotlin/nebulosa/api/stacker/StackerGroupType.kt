@@ -4,12 +4,19 @@ import nebulosa.fits.filter
 import nebulosa.image.format.ReadableHeader
 
 enum class StackerGroupType {
+    NONE,
     LUMINANCE,
     RED,
     GREEN,
     BLUE,
     MONO,
     RGB;
+
+    inline val isRGB
+        get() = this == RED || this == GREEN || this == BLUE
+
+    inline val isLRGB
+        get() = this == LUMINANCE || isRGB
 
     companion object {
 

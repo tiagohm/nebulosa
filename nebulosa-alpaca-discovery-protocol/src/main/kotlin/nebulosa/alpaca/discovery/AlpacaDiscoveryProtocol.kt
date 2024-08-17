@@ -1,7 +1,6 @@
 package nebulosa.alpaca.discovery
 
 import nebulosa.log.loggerFor
-import java.io.Closeable
 import java.io.IOException
 import java.net.*
 
@@ -12,7 +11,7 @@ import java.net.*
  * @see <a href="https://ascom-standards.org/api/?urls.primaryName=ASCOM%20Alpaca%20Management%20API">ASCOM Alpaca Management API</a>
  * @see <a href="https://ascom-standards.org/api/?urls.primaryName=ASCOM%20Alpaca%20Device%20API">ASCOM Alpaca Device API</a>
  */
-class AlpacaDiscoveryProtocol : Runnable, Closeable {
+class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
 
     @Volatile private var running = false
 

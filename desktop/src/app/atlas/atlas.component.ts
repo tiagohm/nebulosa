@@ -28,13 +28,15 @@ import {
 	DEFAULT_SATELLITE,
 	DEFAULT_SKY_ATLAS_PREFERENCE,
 	DEFAULT_SKY_OBJECT,
+	DEFAULT_SKY_OBJECT_SEARCH_FILTER,
 	DEFAULT_SUN,
+	FavoritedSkyBody,
 	Location,
 	MinorPlanetListItem,
 	SATELLITE_GROUPS,
 	SkyAtlasInput,
 	resetSatelliteSearchGroup,
-	searchFilterWithDefault,
+	skyObjectSearchFilterWithDefault,
 } from '../../shared/types/atlas.types'
 import { Mount } from '../../shared/types/mount.types'
 import { AppComponent } from '../app.component'
@@ -315,6 +317,9 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	@ViewChild('dateTimeAndLocationPanel')
 	private readonly dateTimeAndLocationPanel!: OverlayPanel
 
+	@ViewChild('favoritesPanel')
+	private readonly favoritesPanel!: OverlayPanel
+
 	@ViewChild('chart')
 	private readonly chart!: UIChart
 
@@ -345,6 +350,20 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		return this.refresh.position || this.refresh.chart
 	}
 
+	get canFavorite() {
+		return this.tab === BodyTabType.MINOR_PLANET || this.tab === BodyTabType.SKY_OBJECT || this.tab === BodyTabType.SATELLITE
+	}
+
+	get favorited() {
+		const id =
+			this.tab === BodyTabType.MINOR_PLANET ? this.minorPlanet.search.result?.spkId
+			: this.tab === BodyTabType.SKY_OBJECT ? this.skyObject.search.selected?.id
+			: this.tab === BodyTabType.SATELLITE ? this.satellite.search.selected?.id
+			: undefined
+
+		return this.preference.favorites.find((e) => e.tab === this.tab && e.id === id)
+	}
+
 	constructor(
 		private readonly app: AppComponent,
 		private readonly api: ApiService,
@@ -356,6 +375,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		ngZone: NgZone,
 	) {
 		app.title = 'Sky Atlas'
+
+		app.topMenu.push({
+			icon: 'mdi mdi-bookmark',
+			tooltip: 'Favorites',
+			command: (e) => {
+				this.favoritesPanel.toggle(e.originalEvent)
+			},
+		})
 
 		app.topMenu.push({
 			icon: 'mdi mdi-calendar',
@@ -423,7 +450,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			this.tab = data.tab
 
 			if (this.tab === BodyTabType.SKY_OBJECT) {
-				this.skyObject.search.filter = searchFilterWithDefault(data.filter, this.skyObject.search.filter)
+				this.skyObject.search.filter = skyObjectSearchFilterWithDefault(data.filter, this.skyObject.search.filter)
 
 				await this.tabChanged()
 				await this.searchSkyObject()
@@ -500,7 +527,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 	protected async skyObjectChanged() {
 		if (this.skyObject.search.selected) {
-			this.skyObject.name = this.skyObject.search.selected.name
+			this.skyObject.name = this.skyObject.search.selected.name.replaceAll('|', ' · ')
 			await this.refreshTab(false, true)
 		}
 	}
@@ -513,14 +540,10 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	}
 
 	protected async searchSkyObject() {
-		const constellation = this.skyObject.search.filter.constellation === 'ALL' ? undefined : this.skyObject.search.filter.constellation
-		const type = this.skyObject.search.filter.type === 'ALL' ? undefined : this.skyObject.search.filter.type
-
 		this.refresh.position = true
 
 		try {
-			const { text, rightAscension, declination, radius, magnitude } = this.skyObject.search.filter
-			this.skyObject.search.result = await this.api.searchSkyObject(text, rightAscension, declination, radius, constellation, magnitude[0], magnitude[1], type)
+			this.skyObject.search.result = await this.api.searchSkyObject(this.skyObject.search.filter)
 		} finally {
 			this.skyObject.search.showDialog = false
 			this.refresh.position = false
@@ -532,7 +555,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 		try {
 			const groups = SATELLITE_GROUPS.filter((e) => this.satellite.search.filter.groups[e])
-			this.satellite.search.result = await this.api.searchSatellites(this.satellite.search.filter.text, groups)
+			this.satellite.search.result = await this.api.searchSatellites(this.satellite.search.filter.text, groups, this.satellite.search.filter.id)
 		} finally {
 			this.satellite.search.showDialog = false
 			this.refresh.position = false
@@ -542,6 +565,64 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	protected resetSatelliteSearchGroups() {
 		resetSatelliteSearchGroup(this.satellite.search.filter.groups)
 		this.savePreference()
+	}
+
+	protected favorite() {
+		const favorites = this.preference.favorites
+		const minorPlanet = this.minorPlanet.search.result
+		const skyObject = this.skyObject.search.selected
+		const satellite = this.satellite.search.selected
+
+		const index =
+			this.tab === BodyTabType.MINOR_PLANET && !!minorPlanet?.spkId ? favorites.findIndex((e) => e.tab === this.tab && e.id === minorPlanet.spkId)
+			: this.tab === BodyTabType.SKY_OBJECT && !!skyObject?.id ? favorites.findIndex((e) => e.tab === this.tab && e.id === skyObject.id)
+			: this.tab === BodyTabType.SATELLITE && !!satellite?.id ? favorites.findIndex((e) => e.tab === this.tab && e.id === satellite.id)
+			: undefined
+
+		if (index !== undefined && index >= 0) {
+			favorites.splice(index, 1)
+		} else if (this.tab === BodyTabType.MINOR_PLANET && minorPlanet) {
+			favorites.push({ id: minorPlanet.spkId, name: this.body.name, tab: this.tab, type: minorPlanet.kind ?? 'ASTEROID' })
+		} else if (this.tab === BodyTabType.SKY_OBJECT && skyObject) {
+			favorites.push({ id: skyObject.id, name: this.body.name, tab: this.tab, type: skyObject.type })
+		} else if (this.tab === BodyTabType.SATELLITE && satellite) {
+			favorites.push({ id: satellite.id, name: this.body.name, tab: this.tab, type: 'SATELLITE' })
+		}
+
+		this.savePreference()
+	}
+
+	protected deleteFavorite(favorited: FavoritedSkyBody) {
+		const index = this.preference.favorites.indexOf(favorited)
+
+		if (index >= 0) {
+			this.preference.favorites.splice(index, 1)
+			this.savePreference()
+		}
+	}
+
+	protected async selectFavorite(favorited: FavoritedSkyBody) {
+		this.tab = favorited.tab
+
+		if (favorited.tab === BodyTabType.MINOR_PLANET) {
+			this.minorPlanet.search.text = `${favorited.id}`
+			await this.searchMinorPlanet()
+		} else if (favorited.tab === BodyTabType.SKY_OBJECT) {
+			const filter = { ...DEFAULT_SKY_OBJECT_SEARCH_FILTER, id: favorited.id }
+			const body = await this.api.searchSkyObject(filter)
+
+			if (body.length === 1) {
+				this.skyObject.search.selected = body[0]
+				await this.skyObjectChanged()
+			}
+		} else if (favorited.tab === BodyTabType.SATELLITE) {
+			const satellite = await this.api.searchSatellites('', [], favorited.id)
+
+			if (satellite.length === 1) {
+				this.satellite.search.selected = satellite[0]
+				await this.satelliteChanged()
+			}
+		}
 	}
 
 	protected async dateTimeChanged(dateChanged: boolean) {

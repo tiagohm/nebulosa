@@ -91,7 +91,7 @@ export class DropdownOptionsPipe implements PipeTransform {
 			case 'SETTINGS_TAB':
 				return ['LOCATION', 'PLATE_SOLVER', 'STAR_DETECTOR', 'LIVE_STACKER', 'STACKER', 'CAPTURE_NAMING_FORMAT'] as DropdownOptions[K]
 			case 'STACKER_GROUP_TYPE':
-				return ['LUMINANCE', 'RED', 'GREEN', 'BLUE', 'MONO', 'RGB'] as DropdownOptions[K]
+				return ['LUMINANCE', 'RED', 'GREEN', 'BLUE', 'MONO', 'RGB', 'NONE'] as DropdownOptions[K]
 			case 'CONNECTION_TYPE':
 				return ['INDI', 'ALPACA'] as DropdownOptions[K]
 			case 'IMAGE_STATISTICS_BIT_OPTION':

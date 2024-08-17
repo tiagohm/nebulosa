@@ -3,6 +3,7 @@ package nebulosa.api.stacker
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.fits.fits
 import nebulosa.fits.isFits
+import nebulosa.image.format.ImageHdu
 import nebulosa.stacker.AutoStacker
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
@@ -108,6 +109,6 @@ class StackerService {
         else if (path.isXisf()) path.xisf()
         else return null
 
-        return image.use { it.firstOrNull()?.header }?.let(::AnalyzedTarget)
+        return image.use { it.firstOrNull { it is ImageHdu }?.header }?.let(::AnalyzedTarget)
     }
 }

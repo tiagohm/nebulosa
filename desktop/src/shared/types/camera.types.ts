@@ -6,6 +6,7 @@ import type { Focuser } from './focuser.types'
 import type { GuideOutput } from './guider.types'
 import type { Mount } from './mount.types'
 import type { Rotator } from './rotator.types'
+import type { StackerGroupType } from './stacker.types'
 import type { Wheel } from './wheel.types'
 
 export type CameraMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD' | 'TPPA' | 'DARV' | 'AUTO_FOCUS'
@@ -113,6 +114,7 @@ export interface CameraStartCapture {
 	focusOffset: number
 	calibrationGroup?: string
 	liveStacking: LiveStackingRequest
+	stackerGroupType: StackerGroupType
 	namingFormat: CameraCaptureNamingFormat
 }
 
@@ -177,6 +179,7 @@ export interface LiveStackingRequest extends LiveStackerSettings {
 	flatPath?: string
 	biasPath?: string
 	use32Bits: boolean
+	useCalibrationGroup: boolean
 }
 
 export interface CameraDitherDialog {
@@ -268,8 +271,9 @@ export const DEFAULT_LIVE_STACKER_SETTINGS: LiveStackerSettings = {
 export const DEFAULT_LIVE_STACKING_REQUEST: LiveStackingRequest = {
 	...DEFAULT_LIVE_STACKER_SETTINGS,
 	enabled: false,
-	type: 'SIRIL',
+	type: 'PIXINSIGHT',
 	use32Bits: false,
+	useCalibrationGroup: false,
 }
 
 export const CAMERA_CAPTURE_NAMING_FORMAT_LIGHT = '[camera]_[type]_[year:2][month][day][hour][min][sec][ms]_[filter]_[width]_[height]_[exp]_[bin]_[gain]'
@@ -314,6 +318,7 @@ export const DEFAULT_CAMERA_START_CAPTURE: CameraStartCapture = {
 	focusOffset: 0,
 	dither: DEFAULT_DITHER,
 	liveStacking: DEFAULT_LIVE_STACKING_REQUEST,
+	stackerGroupType: 'MONO',
 	namingFormat: {},
 }
 
@@ -354,6 +359,7 @@ export function cameraStartCaptureWithDefault(request?: Partial<CameraStartCaptu
 	request.shutterPosition ??= source.shutterPosition
 	request.focusOffset ??= source.focusOffset
 	request.calibrationGroup ||= source.calibrationGroup
+	request.stackerGroupType ||= source.stackerGroupType
 	request.dither = ditherWithDefault(request.dither, source.dither)
 	request.liveStacking = liveStackingRequestWithDefault(request.liveStacking, source.liveStacking)
 	request.namingFormat = cameraCaptureNamingFormatWithDefault(request.namingFormat, source.namingFormat)
@@ -398,8 +404,9 @@ export function liveStackingRequestWithDefault(request?: Partial<LiveStackingReq
 	if (!request) return structuredClone(source)
 	liveStackerSettingsWithDefault(request, source)
 	request.enabled ??= source.enabled
-	request.type ??= source.type
+	request.type ||= source.type
 	request.use32Bits ??= source.use32Bits
+	request.useCalibrationGroup ??= source.useCalibrationGroup
 	return request as LiveStackingRequest
 }
 

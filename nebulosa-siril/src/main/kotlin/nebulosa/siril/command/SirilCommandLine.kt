@@ -6,10 +6,9 @@ import nebulosa.common.exec.CommandLineListener
 import nebulosa.common.exec.commandLine
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
-import java.io.Closeable
 import java.nio.file.Path
 
-data class SirilCommandLine(private val executablePath: Path) : Runnable, CancellationListener, Closeable {
+data class SirilCommandLine(private val executablePath: Path) : Runnable, CancellationListener, AutoCloseable {
 
     private val commandLine = commandLine {
         executablePath(executablePath)

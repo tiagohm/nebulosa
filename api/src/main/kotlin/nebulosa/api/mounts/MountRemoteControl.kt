@@ -14,14 +14,13 @@ import nebulosa.netty.NettyServer
 import nebulosa.stellarium.protocol.StellariumMountHandler
 import nebulosa.stellarium.protocol.StellariumMountHandlerAdapter
 import nebulosa.stellarium.protocol.StellariumProtocolServer
-import java.io.Closeable
 import java.time.OffsetDateTime
 
 data class MountRemoteControl(
     @JvmField val protocol: MountRemoteControlProtocol,
     @field:JsonIgnore @JvmField val server: NettyServer,
     @JvmField val mount: Mount,
-) : StellariumMountHandler, LX200MountHandler, DeviceEventHandler, Closeable {
+) : StellariumMountHandler, LX200MountHandler, DeviceEventHandler, AutoCloseable {
 
     @JsonIgnore private val stellariumAdapter = StellariumMountHandlerAdapter(mount)
     @JsonIgnore private val lx200Adapter = LX200MountHandlerAdapter(mount)

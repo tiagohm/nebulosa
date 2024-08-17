@@ -7,9 +7,8 @@ import okio.BufferedSink
 import okio.Sink
 import okio.buffer
 import okio.gzip
-import java.io.Closeable
 
-class SimbadDatabaseWriter(sink: Sink) : Closeable {
+class SimbadDatabaseWriter(sink: Sink) : AutoCloseable {
 
     private val buffer = if (sink is BufferedSink) sink else sink.gzip().buffer()
 

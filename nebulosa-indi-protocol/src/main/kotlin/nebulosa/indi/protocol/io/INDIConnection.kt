@@ -1,9 +1,8 @@
 package nebulosa.indi.protocol.io
 
 import nebulosa.indi.protocol.INDIProtocol
-import java.io.Closeable
 
-interface INDIConnection : INDIInputStream, INDIOutputStream, Closeable {
+interface INDIConnection : INDIInputStream, INDIOutputStream, AutoCloseable {
 
     val input: INDIInputStream
 

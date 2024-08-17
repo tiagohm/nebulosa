@@ -4,7 +4,8 @@ plugins {
 }
 
 dependencies {
-    api(libs.logback)
+    api(project(":nebulosa-stacker"))
+    implementation(project(":nebulosa-log"))
 }
 
 publishing {

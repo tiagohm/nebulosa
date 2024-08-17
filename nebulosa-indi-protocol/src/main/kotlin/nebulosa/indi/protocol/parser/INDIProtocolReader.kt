@@ -1,12 +1,11 @@
 package nebulosa.indi.protocol.parser
 
 import nebulosa.log.loggerFor
-import java.io.Closeable
 
 class INDIProtocolReader(
     private val parser: INDIProtocolParser,
     priority: Int = NORM_PRIORITY,
-) : Thread("INDI Protocol Reader"), Closeable {
+) : Thread("INDI Protocol Reader"), AutoCloseable {
 
     private val listeners = LinkedHashSet<CloseConnectionListener>(1)
 

@@ -4,21 +4,23 @@ import { dirname } from 'path'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
+import { DropdownItem } from '../../shared/types/angular.types'
 import { JsonFile } from '../../shared/types/app.types'
 import { Camera, cameraCaptureNamingFormatWithDefault, FrameType, updateCameraStartCaptureFromCamera } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
 import { Mount } from '../../shared/types/mount.types'
 import { Rotator } from '../../shared/types/rotator.types'
-import { DEFAULT_SEQUENCE, DEFAULT_SEQUENCE_PROPERTY_DIALOG, DEFAULT_SEQUENCER_PLAN, DEFAULT_SEQUENCER_PREFERENCE, Sequence, SequenceProperty, SequencerEvent, SequencerPlan } from '../../shared/types/sequencer.types'
+import { DEFAULT_SEQUENCE, DEFAULT_SEQUENCE_PROPERTY_DIALOG, DEFAULT_SEQUENCER_PLAN, DEFAULT_SEQUENCER_PREFERENCE, Sequence, SequenceProperty, SequencerEvent, SequencerPlan, sequencerPlanWithDefault } from '../../shared/types/sequencer.types'
 import { resetCameraCaptureNamingFormat } from '../../shared/types/settings.types'
 import { Wheel } from '../../shared/types/wheel.types'
-import { deviceComparator } from '../../shared/utils/comparators'
+import { deviceComparator, textComparator } from '../../shared/utils/comparators'
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
@@ -38,6 +40,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 	protected readonly property = structuredClone(DEFAULT_SEQUENCE_PROPERTY_DIALOG)
 	protected readonly preference = structuredClone(DEFAULT_SEQUENCER_PREFERENCE)
+	protected readonly calibrationGroups: DropdownItem<string | undefined>[] = []
 	protected plan = this.preference.plan
 	protected event?: SequencerEvent
 	protected running = false
@@ -87,6 +90,23 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			command: () => {
 				this.property.count = [1000, 0]
 				this.property.showDialog = true
+			},
+		},
+		SEPARATOR_MENU_ITEM,
+		{
+			icon: 'mdi mdi-arrow-up-bold',
+			label: 'Move to top',
+			slideMenu: [],
+			command: () => {
+				this.moveSequenceTo('TOP')
+			},
+		},
+		{
+			icon: 'mdi mdi-arrow-down-bold',
+			label: 'Move to bottom',
+			slideMenu: [],
+			command: () => {
+				this.moveSequenceTo('BOTTOM')
 			},
 		},
 	]
@@ -163,7 +183,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		app.topMenu.push(this.loadMenuItem)
 
 		app.beforeClose = async () => {
-			if (!this.saveMenuItem.disabled) {
+			if (this.app.subTitle && !this.saveMenuItem.disabled) {
 				return !(await angularService.confirm('Are you sure you want to close the window? Please make sure to save before exiting to avoid losing any important changes.'))
 			} else {
 				return true
@@ -248,6 +268,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.wheels = (await this.api.wheels()).sort(deviceComparator)
 		this.focusers = (await this.api.focusers()).sort(deviceComparator)
 		this.rotators = (await this.api.rotators()).sort(deviceComparator)
+
+		const calibrationGroups = (await this.api.calibrationGroups()).sort(textComparator)
+		this.calibrationGroups.push({ label: 'None', value: undefined })
+		calibrationGroups.forEach((e) => this.calibrationGroups.push({ label: e, value: e }))
 
 		this.loadPreference()
 
@@ -348,7 +372,10 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.plan.rotator = this.rotators.find((e) => e.id === plan.rotator?.id)
 
 		const settings = this.preferenceService.settings.get()
-		cameraCaptureNamingFormatWithDefault(this.plan.namingFormat, settings.namingFormat)
+		this.plan.namingFormat = cameraCaptureNamingFormatWithDefault(this.plan.namingFormat, settings.namingFormat)
+		sequencerPlanWithDefault(this.plan)
+
+		this.updateSequencesFromCamera(this.plan.camera)
 
 		return this.plan.sequences.length
 	}
@@ -473,6 +500,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.sequenceModel[4].visible = index < lastIndex - 1 // ALL BELOW
 		this.sequenceModel[0].visible = this.sequenceModel[2].visible && this.sequenceModel[3].visible
 
+		this.sequenceModel[6].visible = this.sequenceModel[2].visible
+		this.sequenceModel[7].visible = this.sequenceModel[3].visible
+
 		if (this.sequenceModel.find((e) => e.visible)) {
 			dialogMenu.show()
 		}
@@ -517,6 +547,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 					if (this.property.properties.FRAME_FORMAT) dest.frameFormat = source.frameFormat
 					if (this.property.properties.GAIN) dest.gain = source.gain
 					if (this.property.properties.OFFSET) dest.offset = source.offset
+					if (this.plan.liveStacking.enabled && this.property.properties.STACKING_GROUP) dest.stackerGroupType = source.stackerGroupType
+					if (this.plan.liveStacking.useCalibrationGroup && this.property.properties.CALIBRATION_GROUP) dest.calibrationGroup = source.calibrationGroup
 				} else {
 					break
 				}
@@ -526,6 +558,20 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.savePreference()
 
 		this.property.showDialog = false
+	}
+
+	protected moveSequenceTo(direction: 'TOP' | 'BOTTOM') {
+		const index = this.property.sequence ? this.plan.sequences.indexOf(this.property.sequence) : -1
+
+		if (index >= 0 && this.plan.sequences.length > 1) {
+			if (direction === 'TOP') {
+				moveItemInArray(this.plan.sequences, index, 0)
+			} else {
+				moveItemInArray(this.plan.sequences, index, this.plan.sequences.length - 1)
+			}
+
+			this.savePreference()
+		}
 	}
 
 	protected deleteSequence(sequence: Sequence, index: number) {
@@ -550,6 +596,8 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			for (let i = 0; i < this.cameraExposures.length; i++) {
 				this.cameraExposures.get(i)?.reset()
 			}
+
+			Object.assign(this.plan.liveStacking, this.preferenceService.settings.get().liveStacker[this.plan.liveStacking.type])
 
 			await this.browserWindowService.openCameraImage(this.plan.camera, 'SEQUENCER')
 			await this.api.sequencerStart(this.plan.camera, this.plan)

@@ -1,10 +1,9 @@
 package nebulosa.common.concurrency.latch
 
-import java.io.Closeable
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
-open class Pauser : Pauseable, Closeable {
+open class Pauser : Pauseable, AutoCloseable {
 
     private val latch = CountUpDownLatch()
     private val listeners = LinkedHashSet<PauseListener>()

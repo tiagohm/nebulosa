@@ -2,9 +2,8 @@ package nebulosa.indi.device
 
 import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.parser.INDIProtocolHandler
-import java.io.Closeable
 
-interface Device : INDIProtocolHandler, Closeable, Comparable<Device> {
+interface Device : INDIProtocolHandler, AutoCloseable, Comparable<Device> {
 
     val type: DeviceType
 

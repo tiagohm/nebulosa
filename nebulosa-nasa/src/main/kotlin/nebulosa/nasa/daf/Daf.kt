@@ -3,10 +3,9 @@ package nebulosa.nasa.daf
 import nebulosa.io.*
 import okio.Buffer
 import okio.BufferedSource
-import java.io.Closeable
 import java.io.IOException
 
-abstract class Daf : Closeable {
+abstract class Daf : AutoCloseable {
 
     lateinit var record: FileRecord
         private set

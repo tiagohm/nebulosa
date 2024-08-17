@@ -10,9 +10,8 @@ import okio.BufferedSource
 import okio.Source
 import okio.buffer
 import okio.gzip
-import java.io.Closeable
 
-class SimbadDatabaseReader(source: Source) : Iterator<SimbadEntity>, Closeable {
+class SimbadDatabaseReader(source: Source) : Iterator<SimbadEntity>, AutoCloseable {
 
     private val buffer = if (source is BufferedSource) source else source.gzip().buffer()
 

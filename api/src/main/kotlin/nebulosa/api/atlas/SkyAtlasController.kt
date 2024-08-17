@@ -110,9 +110,10 @@ class SkyAtlasController(
         @RequestParam(required = false, defaultValue = "-99.0") magnitudeMin: Double,
         @RequestParam(required = false, defaultValue = "99.0") magnitudeMax: Double,
         @RequestParam(required = false) type: SkyObjectType?,
+        @RequestParam(required = false, defaultValue = "0") id: Long,
     ) = skyAtlasService.searchSkyObject(
         text, rightAscension.hours, declination.deg, radius.deg,
-        constellation, magnitudeMin, magnitudeMax, type,
+        constellation, magnitudeMin, magnitudeMax, type, id,
     )
 
     @GetMapping("sky-objects/types")
@@ -137,7 +138,8 @@ class SkyAtlasController(
     fun searchSatellites(
         @RequestParam(required = false, defaultValue = "") text: String,
         @RequestParam(name = "group", required = false) groups: List<SatelliteGroupType>?,
-    ) = skyAtlasService.searchSatellites(text, groups ?: emptyList())
+        @RequestParam(required = false, defaultValue = "0") id: Long,
+    ) = skyAtlasService.searchSatellites(text, groups ?: emptyList(), id)
 
     @GetMapping("twilight")
     fun twilight(

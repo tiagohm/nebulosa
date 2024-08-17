@@ -392,7 +392,7 @@
 						[value]="satellite.search.result"
 						class="satellite"
 						sortField="name"
-						[(selection)]="satellite"
+						[(selection)]="satellite.search.selected"
 						(selectionChange)="satelliteChanged()"
 						selectionMode="single"
 						dataKey="id"
@@ -621,18 +621,27 @@
 		</p-tabPanel>
 	</p-tabView>
 	<div
-		class="col-9 flex align-items-center justify-content-between absolute gap-2 overflow-hidden"
-		style="height: 32px; left: 95px; top: 2px; padding-right: 45px">
+		class="col-9 flex align-items-center justify-content-between absolute gap-1 overflow-hidden"
+		style="height: 32px; left: 95px; top: 2px; padding-right: 70px">
 		<p-button
 			[disabled]="!body.name || refreshing"
 			[text]="true"
 			[rounded]="true"
 			icon="mdi mdi-md mdi-dots-vertical"
 			(click)="ephemerisMenu.show()" />
+		@if (body.name && canFavorite) {
+			<p-button
+				[text]="true"
+				[rounded]="true"
+				icon="{{ favorited ? 'mdi mdi-star' : 'mdi mdi-star-outline' }}"
+				pTooltip="{{ favorited ? 'Unfavorite' : 'Favorite' }}"
+				tooltipPosition="bottom"
+				(onClick)="favorite()" />
+		}
 		<span
 			class="flex w-full align-items-center gap-1 justify-content-center"
 			style="min-width: -webkit-fill-available">
-			<span class="text-overflow-scroll font-bold">{{ body.name.replaceAll('|', ' · ') }}</span>
+			<span class="text-overflow-scroll font-bold">{{ body.name }}</span>
 			<p-tag
 				*ngFor="let tag of body.tags"
 				[severity]="tag.severity"
@@ -742,7 +751,7 @@
 					[showButtons]="true"
 					inputStyleClass="p-inputtext-sm border-0 w-full"
 					locale="en"
-					[(ngModel)]="skyObject.search.filter.magnitude[0]"
+					[(ngModel)]="skyObject.search.filter.magnitudeMin"
 					spinnableNumber />
 				<label>Mag. min</label>
 			</p-floatLabel>
@@ -758,7 +767,7 @@
 					[showButtons]="true"
 					inputStyleClass="p-inputtext-sm border-0 w-full"
 					locale="en"
-					[(ngModel)]="skyObject.search.filter.magnitude[1]"
+					[(ngModel)]="skyObject.search.filter.magnitudeMax"
 					spinnableNumber />
 				<label>Mag. max</label>
 			</p-floatLabel>
@@ -885,6 +894,48 @@
 					</p-floatLabel>
 				</div>
 			</div>
+		</div>
+	</ng-template>
+</p-overlayPanel>
+
+<p-overlayPanel
+	#favoritesPanel
+	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
+	appendTo="body">
+	<ng-template pTemplate="content">
+		<div class="grid">
+			<p-listbox
+				[options]="preference.favorites"
+				[ngModel]="favorited"
+				(ngModelChange)="selectFavorite($event); favoritesPanel.hide()"
+				class="w-full"
+				styleClass="border-0 w-full"
+				[metaKeySelection]="false"
+				[filter]="true"
+				[filterFields]="['name']"
+				[style]="{ width: '100%', height: '240px' }"
+				[listStyle]="{ maxHeight: '188px', height: '188px' }"
+				emptyMessage="No favorites">
+				<ng-template
+					let-item
+					pTemplate="item">
+					<div class="flex align-items-center justify-content-between gap-1 w-full">
+						<span class="text-sm">
+							<span class="font-bold">{{ item.type | enum }}</span>
+							<span class="ml-1">{{ item.name }}</span>
+						</span>
+						<p-button
+							[text]="true"
+							[rounded]="true"
+							icon="mdi mdi-delete"
+							severity="danger"
+							size="small"
+							pTooltip="Remove"
+							tooltipPosition="bottom"
+							(onClick)="deleteFavorite(item); $event.stopImmediatePropagation()" />
+					</div>
+				</ng-template>
+			</p-listbox>
 		</div>
 	</ng-template>
 </p-overlayPanel>

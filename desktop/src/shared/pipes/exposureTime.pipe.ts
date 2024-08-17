@@ -37,8 +37,9 @@ const secondFormatter = formatter(TWO_DIGITS_FORMATTER, 's')
 
 function format(value: number, factors: [number, number], formatters: [UnitFormatter, UnitFormatter]) {
 	const a = value / factors[0]
-	const b = (a - Math.trunc(a)) * factors[1]
-	return `${formatters[0](a)}${formatters[1](b)}`
+	const ta = Math.trunc(a)
+	const b = Math.trunc((a - ta) * factors[1])
+	return `${formatters[0](ta)}${formatters[1](b)}`
 }
 
 function hours(value: number) {

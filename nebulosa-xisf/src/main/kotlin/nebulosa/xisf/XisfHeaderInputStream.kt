@@ -9,11 +9,10 @@ import nebulosa.io.ByteOrder
 import nebulosa.xisf.XisfMonolithicFileHeader.*
 import nebulosa.xml.attribute
 import okio.ByteString.Companion.decodeBase64
-import java.io.Closeable
 import java.io.InputStream
 import javax.xml.stream.XMLStreamConstants
 
-class XisfHeaderInputStream(source: InputStream) : Closeable {
+class XisfHeaderInputStream(source: InputStream) : AutoCloseable {
 
     private val reader = XML_INPUT_FACTORY.createXMLStreamReader(source)
 

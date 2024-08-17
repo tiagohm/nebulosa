@@ -5,9 +5,7 @@ import nebulosa.livestacker.LiveStacker
 import nebulosa.pixinsight.livestacker.PixInsightLiveStacker
 import nebulosa.pixinsight.script.startPixInsight
 import nebulosa.siril.livestacker.SirilLiveStacker
-import java.nio.file.Files
 import java.nio.file.Path
-import java.util.function.Supplier
 
 data class LiveStackingRequest(
     @JvmField val enabled: Boolean = false,
@@ -18,11 +16,10 @@ data class LiveStackingRequest(
     @JvmField val biasPath: Path? = null,
     @JvmField val use32Bits: Boolean = false,
     @JvmField val slot: Int = 1,
-) : Supplier<LiveStacker> {
+    @JvmField val useCalibrationGroup: Boolean = false,
+) {
 
-    override fun get(): LiveStacker {
-        val workingDirectory = Files.createTempDirectory("ls-")
-
+    fun get(workingDirectory: Path): LiveStacker {
         return when (type) {
             LiveStackerType.SIRIL -> SirilLiveStacker(executablePath!!, workingDirectory, darkPath, flatPath, use32Bits)
             LiveStackerType.PIXINSIGHT -> {

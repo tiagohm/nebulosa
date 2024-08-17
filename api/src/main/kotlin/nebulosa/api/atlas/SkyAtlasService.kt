@@ -110,8 +110,8 @@ class SkyAtlasService(
         }
     }
 
-    fun searchSatellites(text: String, groups: List<SatelliteGroupType>): List<SatelliteEntity> {
-        return satelliteRepository.search(text.ifBlank { null }, groups)
+    fun searchSatellites(text: String = "", groups: List<SatelliteGroupType> = emptyList(), id: Long = 0L): List<SatelliteEntity> {
+        return satelliteRepository.search(text.ifBlank { null }, groups, id)
     }
 
     fun twilight(location: GeographicCoordinate, date: LocalDate, fast: Boolean = false): Twilight {
@@ -205,8 +205,8 @@ class SkyAtlasService(
         rightAscension: Angle = 0.0, declination: Angle = 0.0, radius: Angle = 0.0,
         constellation: Constellation? = null,
         magnitudeMin: Double = SkyObject.MAGNITUDE_MIN, magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
-        type: SkyObjectType? = null,
-    ) = simbadEntityRepository.search(text, constellation, rightAscension, declination, radius, magnitudeMin, magnitudeMax, type)
+        type: SkyObjectType? = null, id: Long = 0L,
+    ) = simbadEntityRepository.search(text, constellation, rightAscension, declination, radius, magnitudeMin, magnitudeMax, type, id)
 
     @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
     fun refreshImageOfSun() {
