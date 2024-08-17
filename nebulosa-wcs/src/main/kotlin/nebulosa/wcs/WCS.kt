@@ -8,9 +8,8 @@ import nebulosa.image.format.ReadableHeader
 import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.math.toDegrees
-import java.io.Closeable
 
-class WCS(header: ReadableHeader) : Closeable {
+class WCS(header: ReadableHeader) : AutoCloseable {
 
     private val wcs: Pointer
 

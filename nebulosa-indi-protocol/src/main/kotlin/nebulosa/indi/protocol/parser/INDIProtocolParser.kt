@@ -1,9 +1,8 @@
 package nebulosa.indi.protocol.parser
 
 import nebulosa.indi.protocol.io.INDIInputStream
-import java.io.Closeable
 
-interface INDIProtocolParser : INDIProtocolHandler, Closeable {
+interface INDIProtocolParser : INDIProtocolHandler, AutoCloseable {
 
     val input: INDIInputStream?
 

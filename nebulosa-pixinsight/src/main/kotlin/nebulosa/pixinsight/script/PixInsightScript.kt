@@ -1,10 +1,9 @@
 package nebulosa.pixinsight.script
 
 import nebulosa.common.exec.CommandLine
-import java.io.Closeable
 import java.util.concurrent.Future
 
-sealed interface PixInsightScript<T : PixInsightScript.Output> : Future<T>, Closeable {
+sealed interface PixInsightScript<T : PixInsightScript.Output> : Future<T>, AutoCloseable {
 
     val slot: Int
 

@@ -8,10 +8,9 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import nebulosa.log.loggerFor
-import java.io.Closeable
 import java.util.concurrent.atomic.AtomicReference
 
-abstract class NettyServer : Runnable, Closeable {
+abstract class NettyServer : Runnable, AutoCloseable {
 
     protected val channel = AtomicReference<ChannelFuture>()
 

@@ -8,9 +8,8 @@ import nebulosa.indi.device.guide.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.device.thermometer.Thermometer
-import java.io.Closeable
 
-interface INDIDeviceProvider : MessageSender, Closeable {
+interface INDIDeviceProvider : MessageSender, AutoCloseable {
 
     fun registerDeviceEventHandler(handler: DeviceEventHandler): Boolean
 

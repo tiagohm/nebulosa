@@ -6,7 +6,6 @@ import nebulosa.fits.height
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarPoint
-import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -19,7 +18,7 @@ import kotlin.io.path.deleteIfExists
 data class FindStar(
     @JvmField val path: Path,
     @JvmField val maxStars: Int = 0,
-) : SirilCommand<List<FindStar.Star>>, CommandLineListener, Closeable {
+) : SirilCommand<List<FindStar.Star>>, CommandLineListener, AutoCloseable {
 
     data class Star(
         override val x: Double,

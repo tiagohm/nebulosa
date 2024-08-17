@@ -21,7 +21,6 @@ import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ServerErrorException
-import java.io.Closeable
 
 @Service
 class ConnectionService(
@@ -29,7 +28,7 @@ class ConnectionService(
     private val connectionEventHub: ConnectionEventHub,
     private val alpacaHttpClient: OkHttpClient,
     private val messageService: MessageService,
-) : Closeable {
+) : AutoCloseable {
 
     private val providers = linkedMapOf<String, INDIDeviceProvider>()
 

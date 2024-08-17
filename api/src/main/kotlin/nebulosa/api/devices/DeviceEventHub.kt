@@ -4,11 +4,10 @@ import io.reactivex.rxjava3.subjects.PublishSubject
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.log.loggerFor
-import java.io.Closeable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(eventName: String) : Closeable {
+abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(eventName: String) : AutoCloseable {
 
     private val throttler = PublishSubject.create<E>()
     private val listenable = ConcurrentHashMap<D, Long>(2)
