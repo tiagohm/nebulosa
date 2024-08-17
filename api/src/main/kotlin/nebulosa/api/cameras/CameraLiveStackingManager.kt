@@ -3,10 +3,21 @@ package nebulosa.api.cameras
 import nebulosa.api.calibration.CalibrationFrameProvider
 import nebulosa.api.livestacker.LiveStackingRequest
 import nebulosa.api.stacker.StackerGroupType
-import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.fits.binX
+import nebulosa.fits.binY
+import nebulosa.fits.exposureTimeInMicroseconds
+import nebulosa.fits.filter
+import nebulosa.fits.fits
+import nebulosa.fits.gain
+import nebulosa.fits.height
+import nebulosa.fits.isFits
+import nebulosa.fits.temperature
+import nebulosa.fits.width
+import nebulosa.image.format.ImageHdu
 import nebulosa.livestacker.LiveStacker
 import nebulosa.log.loggerFor
+import nebulosa.xisf.isXisf
+import nebulosa.xisf.xisf
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.EnumMap
@@ -21,7 +32,7 @@ data class CameraLiveStackingManager(
     private val workingDirectories = HashSet<Path>()
 
     @Synchronized
-    fun start(camera: Camera, request: CameraStartCaptureRequest): Boolean {
+    fun start(request: CameraStartCaptureRequest, path: Path): Boolean {
         if (request.stackerGroupType in liveStackers) {
             return true
         } else if (request.stackerGroupType != StackerGroupType.NONE && request.liveStacking.enabled) {
@@ -29,7 +40,7 @@ data class CameraLiveStackingManager(
                 val workingDirectory = Files.createTempDirectory("ls-${request.stackerGroupType}-")
                 workingDirectories.add(workingDirectory)
 
-                with(request.liveStacking.processCalibrationGroup(camera, request).get(workingDirectory)) {
+                with(request.liveStacking.processCalibrationGroup(request, path).get(workingDirectory)) {
                     start()
                     liveStackers[request.stackerGroupType] = this
                 }
@@ -96,21 +107,25 @@ data class CameraLiveStackingManager(
         workingDirectories.clear()
     }
 
-    private fun LiveStackingRequest.processCalibrationGroup(camera: Camera, request: CameraStartCaptureRequest): LiveStackingRequest {
+    private fun LiveStackingRequest.processCalibrationGroup(request: CameraStartCaptureRequest, path: Path): LiveStackingRequest {
         return if (calibrationFrameProvider != null && enabled &&
             !request.calibrationGroup.isNullOrBlank() && (darkPath == null || flatPath == null || biasPath == null)
         ) {
-            val calibrationGroup = request.calibrationGroup
-            val temperature = camera.temperature
-            val binX = request.binX
-            val binY = request.binY
-            val width = request.width / binX
-            val height = request.height / binY
-            val exposureTime = request.exposureTime.toNanos() / 1000
-            val gain = request.gain.toDouble()
+            val image = if (path.isFits()) path.fits()
+            else if (path.isXisf()) path.xisf()
+            else return this
 
-            val wheel = camera.snoopedDevices.firstOrNull { it is FilterWheel } as? FilterWheel
-            val filter = wheel?.let { it.names.getOrNull(it.position - 1) }
+            val hdu = image.use { it.firstOrNull { it is ImageHdu } } ?: return this
+            val header = hdu.header
+            val temperature = header.temperature
+            val binX = header.binX
+            val binY = header.binY
+            val width = header.width
+            val height = header.height
+            val exposureTime = header.exposureTimeInMicroseconds
+            val gain = header.gain
+            val filter = header.filter
+            val calibrationGroup = request.calibrationGroup
 
             LOG.info(
                 "find calibration frames for live stacking. group={}, temperature={}, binX={}, binY={}. width={}, height={}, exposureTime={}, gain={}, filter={}",
