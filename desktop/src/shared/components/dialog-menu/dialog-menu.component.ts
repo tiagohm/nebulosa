@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core'
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core'
 import { Undefinable } from '../../utils/types'
 import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.component'
 
@@ -8,7 +8,7 @@ import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.comp
 	styleUrls: ['./dialog-menu.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
-export class DialogMenuComponent {
+export class DialogMenuComponent implements OnChanges {
 	@Input()
 	protected visible = false
 
@@ -26,6 +26,14 @@ export class DialogMenuComponent {
 
 	protected currentHeader = this.header
 	private readonly navigationHeader: Undefinable<string>[] = []
+
+	ngOnChanges(changes: SimpleChanges) {
+		for (const key in changes) {
+			if (key === 'header') {
+				this.currentHeader = changes[key].currentValue as string
+			}
+		}
+	}
 
 	show(model?: SlideMenuItem[]) {
 		if (model?.length) this.model = model
