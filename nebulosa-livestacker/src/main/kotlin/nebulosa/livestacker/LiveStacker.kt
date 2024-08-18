@@ -15,7 +15,7 @@ interface LiveStacker : AutoCloseable {
 
     fun start()
 
-    fun add(path: Path): Path?
+    fun add(path: Path, referencePath: Path? = null): Path?
 
     fun stop()
 }

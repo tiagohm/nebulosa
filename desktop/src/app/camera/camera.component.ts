@@ -645,19 +645,19 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 	}
 
 	protected openMount(mount: Mount) {
-		return this.browserWindowService.openMount(mount)
+		return this.browserWindowService.openMount(mount, { bringToFront: true })
 	}
 
 	protected openFocuser(focuser: Focuser) {
-		return this.browserWindowService.openFocuser(focuser)
+		return this.browserWindowService.openFocuser(focuser, { bringToFront: true })
 	}
 
 	protected openWheel(wheel: Wheel) {
-		return this.browserWindowService.openWheel(wheel)
+		return this.browserWindowService.openWheel(wheel, { bringToFront: true })
 	}
 
 	protected openRotator(rotator: Rotator) {
-		return this.browserWindowService.openRotator(rotator)
+		return this.browserWindowService.openRotator(rotator, { bringToFront: true })
 	}
 
 	protected openCameraImage() {
