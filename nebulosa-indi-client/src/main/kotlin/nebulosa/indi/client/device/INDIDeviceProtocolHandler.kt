@@ -88,72 +88,78 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
         if (message is DefTextVector) {
             when (message.name) {
                 "DRIVER_INFO" -> {
-                    val executable = message.elements.first { it.name == "DRIVER_EXEC" }.value
-
+                    val interfaceType = message["DRIVER_INTERFACE"]?.value?.toIntOrNull() ?: 0
+                    val executable = message["DRIVER_EXEC"]?.value ?: ""
                     var registered = false
 
-                    if (executable in Camera.DRIVERS) {
+                    if (DeviceInterfaceType.isCamera(interfaceType)) {
                         registered = true
 
                         with(newCamera(message, executable)) {
                             if (registerCamera(this)) {
+                                handleMessage(message)
                                 takeMessageFromReorderingQueue(this)
                             }
                         }
                     }
 
-                    if (executable in Mount.DRIVERS) {
+                    if (DeviceInterfaceType.isMount(interfaceType)) {
                         registered = true
 
                         with(newMount(message, executable)) {
                             if (registerMount(this)) {
+                                handleMessage(message)
                                 takeMessageFromReorderingQueue(this)
                             }
                         }
                     }
 
-                    if (executable in FilterWheel.DRIVERS) {
+                    if (DeviceInterfaceType.isFilterWheel(interfaceType)) {
                         registered = true
 
                         with(newFilterWheel(message)) {
                             if (registerFilterWheel(this)) {
+                                handleMessage(message)
                                 takeMessageFromReorderingQueue(this)
                             }
                         }
                     }
 
-                    if (executable in Focuser.DRIVERS) {
+                    if (DeviceInterfaceType.isFocuser(interfaceType)) {
                         registered = true
 
                         with(newFocuser(message)) {
                             if (registerFocuser(this)) {
+                                handleMessage(message)
                                 takeMessageFromReorderingQueue(this)
                             }
                         }
                     }
 
-                    if (executable in Rotator.DRIVERS) {
+                    if (DeviceInterfaceType.isRotator(interfaceType)) {
                         registered = true
 
                         with(newRotator(message)) {
                             if (registerRotator(this)) {
+                                handleMessage(message)
                                 takeMessageFromReorderingQueue(this)
                             }
                         }
                     }
 
-                    if (executable in GPS.DRIVERS) {
+                    if (DeviceInterfaceType.isGPS(interfaceType)) {
                         registered = true
 
                         with(newGPS(message)) {
                             if (registerGPS(this)) {
+                                handleMessage(message)
                                 takeMessageFromReorderingQueue(this)
                             }
                         }
                     }
 
                     if (!registered) {
-                        LOG.warn("device is not registered: {}", message.device)
+                        LOG.warn("device is not registered. name={}, interface={}, executable={}", message.device, interfaceType, executable)
                         notRegisteredDevices.add(message.device)
                     }
 

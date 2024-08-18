@@ -39,26 +39,4 @@ interface Rotator : Device {
     fun reverseRotator(enable: Boolean)
 
     fun abortRotator()
-
-    companion object {
-
-        // grep -rl --include \*.h "public INDI::Rotator" .
-        @JvmStatic val DRIVERS = setOf(
-            "indi_deepskydad_fr1",
-            "indi_esattoarco_focus",
-            "indi_falcon_rotator",
-            "indi_gemini_focus",
-            "indi_integra_focus",
-            "indi_lx200generic",
-            "indi_nframe_rotator",
-            "indi_nightcrawler_focus",
-            "indi_nstep_rotator",
-            "indi_pyxis_rotator",
-            "indi_seletek_rotator",
-            "indi_simulator_rotator",
-            "indi_wanderer_lite_rotator",
-            "indi_wanderer_rotator_lite_v2",
-            "indi_wanderer_rotator_mini",
-        )
-    }
 }

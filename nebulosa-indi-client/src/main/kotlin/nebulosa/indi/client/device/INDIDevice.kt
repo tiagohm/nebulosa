@@ -39,7 +39,7 @@ internal abstract class INDIDevice : Device {
             is SwitchVector<*> -> {
                 when (message.name) {
                     "CONNECTION" -> {
-                        val connected = message["CONNECT"]?.value ?: false
+                        val connected = message["CONNECT"]?.value == true
 
                         if (connected != this.connected) {
                             if (connected) {

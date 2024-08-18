@@ -27,11 +27,5 @@ interface GPS : GeographicCoordinate, TimeStampedWithOffset, Device {
         fun formatTime(dateTime: LocalDateTime): String {
             return dateTime.format(UTC_TIME_FORMAT_1)
         }
-
-        @JvmStatic val DRIVERS = setOf(
-            "indi_gpsd",
-            "indi_gpsnmea",
-            "indi_simulator_gps",
-        )
     }
 }
