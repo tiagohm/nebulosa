@@ -30,7 +30,7 @@ export class DeviceChooserComponent<T extends Device = Device> {
 	protected device?: T
 
 	@Input()
-	protected disabled?: boolean
+	protected readonly disabled?: boolean
 
 	@Output()
 	readonly deviceChange = new EventEmitter<T>()

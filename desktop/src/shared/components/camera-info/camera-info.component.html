@@ -55,7 +55,7 @@
 			<span class="min-w-3rem text-center text-sm">{{ filter }}</span>
 		</div>
 		<i
-			*ngIf="canRemoveFilter"
+			*ngIf="canRemoveFilter && !disabled"
 			class="mdi mdi-close cursor-pointer min-w-2rem min-h-2rem"
 			pTooltip="No Filter"
 			tooltipPosition="bottom"

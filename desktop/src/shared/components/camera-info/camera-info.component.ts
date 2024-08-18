@@ -26,6 +26,9 @@ export class CameraInfoComponent {
 	@Output()
 	protected readonly filterRemoved = new EventEmitter<void>()
 
+	@Input()
+	protected readonly disabled?: boolean = false
+
 	get hasFilter() {
 		return !!this.wheel && !!this.info.filterPosition && this.wheel.connected
 	}
