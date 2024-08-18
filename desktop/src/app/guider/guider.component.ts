@@ -6,7 +6,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { DEFAULT_GUIDER_CHART_INFO, DEFAULT_GUIDER_PHD2, DEFAULT_GUIDER_PREFERENCE, DEFAULT_GUIDER_PULSE, GuideDirection, GuideOutput, Guider, GuiderHistoryStep } from '../../shared/types/guider.types'
+import { DEFAULT_GUIDER_CHART_INFO, DEFAULT_GUIDER_PHD2, DEFAULT_GUIDER_PREFERENCE, GuideDirection, GuideOutput, Guider, GuiderHistoryStep } from '../../shared/types/guider.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -19,7 +19,6 @@ export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickab
 
 	protected readonly preference = structuredClone(DEFAULT_GUIDER_PREFERENCE)
 	protected readonly guider = structuredClone(DEFAULT_GUIDER_PHD2)
-	protected readonly pulse = structuredClone(DEFAULT_GUIDER_PULSE)
 	protected readonly chartInfo = structuredClone(DEFAULT_GUIDER_CHART_INFO)
 
 	private readonly guideHistory: GuiderHistoryStep[] = []
@@ -209,7 +208,6 @@ export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickab
 				ngZone.run(() => {
 					if (this.guideOutput) {
 						Object.assign(this.guideOutput, event.device)
-						this.update()
 					}
 				})
 			}
@@ -361,8 +359,6 @@ export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickab
 
 			const guideOutput = await this.api.guideOutput(this.guideOutput.id)
 			Object.assign(this.guideOutput, guideOutput)
-
-			this.update()
 		}
 	}
 
@@ -425,12 +421,5 @@ export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickab
 
 	protected savePreference() {
 		this.preferenceService.guider.set(this.preference)
-	}
-
-	private update() {
-		if (this.guideOutput?.id) {
-			this.pulse.connected = this.guideOutput.connected
-			this.pulse.pulsing = this.guideOutput.pulseGuiding
-		}
 	}
 }

@@ -94,11 +94,6 @@ export interface GuiderPHD2 {
 	message: string
 }
 
-export interface GuiderPulse {
-	connected: boolean
-	pulsing: boolean
-}
-
 export interface GuiderChartInfo {
 	pixelScale: number
 	rmsRA: number
@@ -134,11 +129,6 @@ export const DEFAULT_GUIDER_PHD2: GuiderPHD2 = {
 	connected: false,
 	state: 'STOPPED',
 	message: '',
-}
-
-export const DEFAULT_GUIDER_PULSE: GuiderPulse = {
-	connected: false,
-	pulsing: false,
 }
 
 export const DEFAULT_GUIDER_PREFERENCE: GuiderPreference = {
@@ -199,4 +189,8 @@ export function guiderPreferenceWithDefault(preference?: Partial<GuiderPreferenc
 	preference.settle = settleWithDefault(preference.settle, source.settle)
 	preference.pulseDuration = pulseDurationWithDefault(preference.pulseDuration, source.pulseDuration)
 	return preference as GuiderPreference
+}
+
+export function isGuideOuptut(device?: Device): device is GuideOutput {
+	return !!device && device.type === 'GUIDE_OUTPUT'
 }

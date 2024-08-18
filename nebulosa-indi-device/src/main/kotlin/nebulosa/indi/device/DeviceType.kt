@@ -8,5 +8,6 @@ enum class DeviceType(@JvmField val code: String) {
     ROTATOR("ROT"),
     GPS("GPS"),
     DOME("DOM"),
-    SWITCH("SWT")
+    SWITCH("SWT"),
+    GUIDE_OUTPUT("GDT"),
 }

@@ -268,13 +268,14 @@
 							icon="mdi mdi-target"
 							[devices]="guideOutputs"
 							[(device)]="guideOutput"
-							(deviceChange)="guideOutputChanged()" />
+							(deviceChange)="guideOutputChanged()"
+							[disabled]="guideOutput?.pulseGuiding" />
 					</div>
 					<div class="col-4"></div>
 					<div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!pulse.connected || pulse.pulsing"
+								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
 								[(ngModel)]="preference.pulseDuration.north"
 								(ngModelChange)="savePreference()"
 								[step]="1"
@@ -291,7 +292,7 @@
 					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!pulse.connected || pulse.pulsing"
+								[disabled]="!guideOutput ||!guideOutput.connected || guideOutput.pulseGuiding"
 								[(ngModel)]="preference.pulseDuration.west"
 								(ngModelChange)="savePreference()"
 								[step]="1"
@@ -308,7 +309,7 @@
 						<div class="grid">
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!pulse.connected || pulse.pulsing"
+									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('NORTH', 'WEST')"
 									icon="mdi mdi-lg mdi-arrow-top-left-thick"
 									[text]="true"
@@ -316,7 +317,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!pulse.connected || pulse.pulsing"
+									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('NORTH')"
 									icon="mdi mdi-lg mdi-arrow-up-thick"
 									[text]="true"
@@ -324,7 +325,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!pulse.connected || pulse.pulsing"
+									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('NORTH', 'EAST')"
 									icon="mdi mdi-lg mdi-arrow-top-right-thick"
 									[text]="true"
@@ -332,7 +333,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!pulse.connected || pulse.pulsing"
+									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('WEST')"
 									icon="mdi mdi-lg mdi-arrow-left-thick"
 									[text]="true"
@@ -340,7 +341,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!pulse.connected || !pulse.pulsing"
+									[disabled]="!guideOutput?.connected || !guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStop()"
 									icon="mdi mdi-lg mdi-close-circle"
 									[text]="true"
@@ -349,7 +350,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!pulse.connected || pulse.pulsing"
+									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('EAST')"
 									icon="mdi mdi-lg mdi-arrow-right-thick"
 									[text]="true"
@@ -357,7 +358,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!pulse.connected || pulse.pulsing"
+									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('SOUTH', 'WEST')"
 									icon="mdi mdi-lg mdi-arrow-bottom-left-thick"
 									[text]="true"
@@ -365,7 +366,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!pulse.connected || pulse.pulsing"
+									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('SOUTH')"
 									icon="mdi mdi-lg mdi-arrow-down-thick"
 									[text]="true"
@@ -373,7 +374,7 @@
 							</div>
 							<div class="col-4 flex align-items-center justify-content-center">
 								<p-button
-									[disabled]="!pulse.connected || pulse.pulsing"
+									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('SOUTH', 'EAST')"
 									icon="mdi mdi-lg mdi-arrow-bottom-right-thick"
 									[text]="true"
@@ -384,7 +385,7 @@
 					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!pulse.connected || pulse.pulsing"
+								[disabled]="!guideOutput ||!guideOutput.connected || guideOutput.pulseGuiding"
 								(onClick)="guidePulseStart('EAST')"
 								[(ngModel)]="preference.pulseDuration.east"
 								(ngModelChange)="savePreference()"
@@ -402,7 +403,7 @@
 					<div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!pulse.connected || pulse.pulsing"
+								[disabled]="!guideOutput ||!guideOutput.connected || guideOutput.pulseGuiding"
 								(onClick)="guidePulseStart('SOUTH')"
 								[(ngModel)]="preference.pulseDuration.south"
 								(ngModelChange)="savePreference()"

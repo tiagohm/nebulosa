@@ -1,4 +1,4 @@
-package nebulosa.indi.client.device.rotators
+package nebulosa.indi.client.device.rotator
 
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice

@@ -13,9 +13,9 @@ import nebulosa.indi.device.focuser.FocuserDetached
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.gps.GPSAttached
 import nebulosa.indi.device.gps.GPSDetached
-import nebulosa.indi.device.guide.GuideOutput
-import nebulosa.indi.device.guide.GuideOutputAttached
-import nebulosa.indi.device.guide.GuideOutputDetached
+import nebulosa.indi.device.guider.GuideOutput
+import nebulosa.indi.device.guider.GuideOutputAttached
+import nebulosa.indi.device.guider.GuideOutputDetached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
@@ -44,9 +44,9 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
 
     override fun unregisterDeviceEventHandler(handler: DeviceEventHandler) = handlers.remove(handler)
 
-    fun fireOnEventReceived(event: DeviceEvent<*>) = handlers.forEach { it.onEventReceived(event) }
+    override fun fireOnEventReceived(event: DeviceEvent<*>) = handlers.forEach { it.onEventReceived(event) }
 
-    fun fireOnConnectionClosed() = handlers.forEach { it.onConnectionClosed() }
+    override fun fireOnConnectionClosed() = handlers.forEach { it.onConnectionClosed() }
 
     override fun device(id: String): Collection<Device> {
         val devices = HashSet<Device>(2)
@@ -235,6 +235,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         focusers().onEach(Device::close).onEach(::unregisterFocuser)
         rotators().onEach(Device::close).onEach(::unregisterRotator)
         gps().onEach(Device::close).onEach(::unregisterGPS)
+        guideOutputs().onEach(Device::close).onEach(::unregisterGuideOutput)
 
         cameras.clear()
         mounts.clear()

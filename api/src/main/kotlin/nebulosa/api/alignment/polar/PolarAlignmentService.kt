@@ -7,7 +7,7 @@ import nebulosa.api.alignment.polar.tppa.TPPAEvent
 import nebulosa.api.alignment.polar.tppa.TPPAExecutor
 import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
 import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import org.springframework.stereotype.Service
 

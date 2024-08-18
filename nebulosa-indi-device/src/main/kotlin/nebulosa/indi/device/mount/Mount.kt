@@ -3,7 +3,7 @@ package nebulosa.indi.device.mount
 import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.Parkable
 import nebulosa.indi.device.gps.GPS
-import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.math.Angle
 import nebulosa.math.Distance
 import java.time.OffsetDateTime

@@ -3,7 +3,7 @@ package nebulosa.api.guiding
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
-import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guider.GuideOutput
 import org.springframework.stereotype.Component
 
 @Component

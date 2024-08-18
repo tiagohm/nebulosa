@@ -16,7 +16,7 @@ import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
-import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import nebulosa.log.loggerFor
 import java.nio.file.Files

@@ -1,4 +1,4 @@
-package nebulosa.indi.client.device.wheels
+package nebulosa.indi.client.device.wheel
 
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice

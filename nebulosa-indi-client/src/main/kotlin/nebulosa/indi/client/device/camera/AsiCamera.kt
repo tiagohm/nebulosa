@@ -1,10 +1,10 @@
-package nebulosa.indi.client.device.cameras
+package nebulosa.indi.client.device.camera
 
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
 
-internal class SVBonyCamera(
+internal class AsiCamera(
     provider: INDIClient,
     name: String,
 ) : INDICamera(provider, name) {

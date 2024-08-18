@@ -1,4 +1,4 @@
-package nebulosa.indi.client.device.focusers
+package nebulosa.indi.client.device.focuser
 
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice

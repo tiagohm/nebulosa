@@ -11,6 +11,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { Camera, isCamera } from '../../shared/types/camera.types'
 import { Device, DeviceType } from '../../shared/types/device.types'
 import { Focuser, isFocuser } from '../../shared/types/focuser.types'
+import { GuideOutput, isGuideOuptut } from '../../shared/types/guider.types'
 import { ConnectionDetails, DEFAULT_CONNECTION_DETAILS, DEFAULT_HOME_CONNECTION_DIALOG, DEFAULT_HOME_PREFERENCE, HomeWindowType } from '../../shared/types/home.types'
 import { isMount, Mount } from '../../shared/types/mount.types'
 import { isRotator, Rotator } from '../../shared/types/rotator.types'
@@ -39,6 +40,7 @@ export class HomeComponent implements AfterContentInit {
 	protected rotators: Rotator[] = []
 	protected domes: Camera[] = []
 	protected switches: Camera[] = []
+	protected guideOutputs: GuideOutput[] = []
 
 	protected page = 0
 
@@ -106,8 +108,12 @@ export class HomeComponent implements AfterContentInit {
 		return this.rotators.length > 0
 	}
 
+	get hasGuideOutput() {
+		return this.guideOutputs.length > 0
+	}
+
 	get hasGuider() {
-		return this.hasCamera && this.hasMount
+		return (this.hasCamera && this.hasMount) || this.hasGuideOutput
 	}
 
 	get hasAlignment() {
@@ -127,7 +133,7 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	get hasDevices() {
-		return this.hasCamera || this.hasMount || this.hasFocuser || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch
+		return this.hasCamera || this.hasMount || this.hasFocuser || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch || this.hasGuideOutput
 	}
 
 	get hasINDI() {
@@ -229,6 +235,22 @@ export class HomeComponent implements AfterContentInit {
 			})
 		})
 
+		electronService.on('GUIDE_OUTPUT.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`GUIDE_OUTPUT.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`GUIDE_OUTPUT.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
+
 		electronService.on('CONNECTION.CLOSED', async (event) => {
 			if (this.connection?.id === event.id) {
 				await ngZone.run(() => {
@@ -263,6 +285,8 @@ export class HomeComponent implements AfterContentInit {
 			this.wheels.push(device)
 		} else if (isRotator(device)) {
 			this.rotators.push(device)
+		} else if (isGuideOuptut(device)) {
+			this.guideOutputs.push(device)
 		}
 	}
 
@@ -282,6 +306,9 @@ export class HomeComponent implements AfterContentInit {
 		} else if (isRotator(device)) {
 			const found = this.rotators.findIndex((e) => e.id === device.id)
 			this.rotators.splice(found, 1)
+		} else if (isGuideOuptut(device)) {
+			const found = this.guideOutputs.findIndex((e) => e.id === device.id)
+			this.rotators.splice(found, 1)
 		}
 	}
 
@@ -300,6 +327,9 @@ export class HomeComponent implements AfterContentInit {
 			found && Object.assign(found, device)
 		} else if (isRotator(device)) {
 			const found = this.rotators.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isGuideOuptut(device)) {
+			const found = this.guideOutputs.find((e) => e.id === device.id)
 			found && Object.assign(found, device)
 		}
 	}

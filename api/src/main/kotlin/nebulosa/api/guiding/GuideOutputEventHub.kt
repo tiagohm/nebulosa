@@ -5,9 +5,9 @@ import nebulosa.api.devices.DeviceEventHub
 import nebulosa.api.message.MessageService
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.PropertyChangedEvent
-import nebulosa.indi.device.guide.GuideOutput
-import nebulosa.indi.device.guide.GuideOutputAttached
-import nebulosa.indi.device.guide.GuideOutputDetached
+import nebulosa.indi.device.guider.GuideOutput
+import nebulosa.indi.device.guider.GuideOutputAttached
+import nebulosa.indi.device.guider.GuideOutputDetached
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.stereotype.Component

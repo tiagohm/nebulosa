@@ -8,7 +8,7 @@ import nebulosa.common.concurrency.cancel.CancellationListener
 import nebulosa.common.concurrency.cancel.CancellationSource
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.guiding.GuideDirection
-import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.log.loggerFor
 import java.time.Duration
 

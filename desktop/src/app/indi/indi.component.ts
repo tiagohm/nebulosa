@@ -86,6 +86,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		const wheels = await this.api.wheels()
 		const focusers = await this.api.focusers()
 		const rotators = await this.api.rotators()
+		const guideOutputs = await this.api.guideOutputs()
 		const devices: Device[] = []
 
 		devices.push(...cameras.filter((a) => !devices.find((b) => a.name === b.name)))
@@ -93,6 +94,7 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 		devices.push(...wheels.filter((a) => !devices.find((b) => a.name === b.name)))
 		devices.push(...focusers.filter((a) => !devices.find((b) => a.name === b.name)))
 		devices.push(...rotators.filter((a) => !devices.find((b) => a.name === b.name)))
+		devices.push(...guideOutputs.filter((a) => !devices.find((b) => a.name === b.name)))
 
 		this.devices = devices.sort(deviceComparator)
 

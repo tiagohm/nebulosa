@@ -2,22 +2,24 @@ package nebulosa.indi.client
 
 import nebulosa.indi.client.connection.INDIProccessConnection
 import nebulosa.indi.client.connection.INDISocketConnection
-import nebulosa.indi.client.device.GPSDevice
 import nebulosa.indi.client.device.INDIDeviceProtocolHandler
-import nebulosa.indi.client.device.cameras.AsiCamera
-import nebulosa.indi.client.device.cameras.INDICamera
-import nebulosa.indi.client.device.cameras.SVBonyCamera
-import nebulosa.indi.client.device.cameras.SimCamera
-import nebulosa.indi.client.device.focusers.INDIFocuser
-import nebulosa.indi.client.device.mounts.INDIMount
-import nebulosa.indi.client.device.rotators.INDIRotator
-import nebulosa.indi.client.device.wheels.INDIFilterWheel
+import nebulosa.indi.client.device.auxiliary.INDIGPS
+import nebulosa.indi.client.device.auxiliary.INDIGuideOutput
+import nebulosa.indi.client.device.camera.AsiCamera
+import nebulosa.indi.client.device.camera.INDICamera
+import nebulosa.indi.client.device.camera.SVBonyCamera
+import nebulosa.indi.client.device.camera.SimCamera
+import nebulosa.indi.client.device.focuser.INDIFocuser
+import nebulosa.indi.client.device.mount.INDIMount
+import nebulosa.indi.client.device.rotator.INDIRotator
+import nebulosa.indi.client.device.wheel.INDIFilterWheel
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
+import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.GetProperties
@@ -67,7 +69,11 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun newGPS(name: String, executable: String): GPS {
-        return GPSDevice(this, name)
+        return INDIGPS(this, name)
+    }
+
+    override fun newGuideOutput(name: String, executable: String): GuideOutput {
+        return INDIGuideOutput(this, name)
     }
 
     override fun start() {

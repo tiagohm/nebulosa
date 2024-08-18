@@ -1,4 +1,4 @@
-package nebulosa.indi.client.device.cameras
+package nebulosa.indi.client.device.camera
 
 import nebulosa.fits.FitsHeaderCard
 import nebulosa.image.algorithms.transformation.CfaPattern
@@ -10,7 +10,7 @@ import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.camera.Camera.Companion.NANO_TO_SECONDS
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
-import nebulosa.indi.device.guide.GuideOutputPulsingChanged
+import nebulosa.indi.device.guider.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.*
