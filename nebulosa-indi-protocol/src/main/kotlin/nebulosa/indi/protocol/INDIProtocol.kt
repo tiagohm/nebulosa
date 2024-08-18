@@ -9,46 +9,18 @@ import java.io.PrintStream
  *
  * @see <a href="http://www.clearskyinstitute.com/INDI/INDI.pdf">Protocol</a>
  */
-sealed class INDIProtocol : HasName {
+sealed interface INDIProtocol : HasName, HasDevice, XMLOutput {
 
-    var device = ""
+    var message: String
 
-    override var name = ""
-
-    var message = ""
-
-    var timestamp = ""
-
-    abstract fun writeTo(stream: PrintStream)
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is INDIProtocol) return false
-
-        if (device != other.device) return false
-        if (name != other.name) return false
-        if (message != other.message) return false
-        return timestamp == other.timestamp
-    }
-
-    override fun hashCode(): Int {
-        var result = device.hashCode()
-        result = 31 * result + name.hashCode()
-        result = 31 * result + message.hashCode()
-        result = 31 * result + timestamp.hashCode()
-        return result
-    }
+    var timestamp: String
 
     companion object {
 
         const val DEFAULT_PORT = 7624
 
-        private const val QUOTE = "\""
-
-        @JvmStatic
         internal fun PrintStream.writeXML(
-            name: String,
-            value: Any?,
+            name: String, value: Any?,
             vararg attributes: Any?,
         ) {
             print("<")
@@ -61,9 +33,9 @@ sealed class INDIProtocol : HasName {
                 if (attrName.isNotEmpty() && attrValue.isNotEmpty()) {
                     print(" ")
                     print(attrName)
-                    print("=$QUOTE")
+                    print("=\"")
                     print(attrValue)
-                    print(QUOTE)
+                    print("\"")
                 }
             }
 
@@ -73,7 +45,7 @@ sealed class INDIProtocol : HasName {
                 when (value) {
                     is Iterable<*> -> {
                         for (message in value) {
-                            if (message is INDIProtocol) message.writeTo(this)
+                            if (message is XMLOutput) message.writeTo(this)
                             else if (message != null) print(message)
                         }
                     }

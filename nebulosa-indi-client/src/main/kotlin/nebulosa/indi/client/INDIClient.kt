@@ -46,28 +46,28 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     override val input
         get() = connection.input
 
-    override fun newCamera(message: INDIProtocol, executable: String): Camera {
-        return CAMERAS[executable]?.create(this, message.device) ?: INDICamera(this, message.device)
+    override fun newCamera(name: String, executable: String): Camera {
+        return CAMERAS[executable]?.create(this, name) ?: INDICamera(this, name)
     }
 
-    override fun newMount(message: INDIProtocol, executable: String): Mount {
-        return INDIMount(this, message.device)
+    override fun newMount(name: String, executable: String): Mount {
+        return INDIMount(this, name)
     }
 
-    override fun newFocuser(message: INDIProtocol): Focuser {
-        return INDIFocuser(this, message.device)
+    override fun newFocuser(name: String, executable: String): Focuser {
+        return INDIFocuser(this, name)
     }
 
-    override fun newFilterWheel(message: INDIProtocol): FilterWheel {
-        return INDIFilterWheel(this, message.device)
+    override fun newFilterWheel(name: String, executable: String): FilterWheel {
+        return INDIFilterWheel(this, name)
     }
 
-    override fun newRotator(message: INDIProtocol): Rotator {
-        return INDIRotator(this, message.device)
+    override fun newRotator(name: String, executable: String): Rotator {
+        return INDIRotator(this, name)
     }
 
-    override fun newGPS(message: INDIProtocol): GPS {
-        return GPSDevice(this, message.device)
+    override fun newGPS(name: String, executable: String): GPS {
+        return GPSDevice(this, name)
     }
 
     override fun start() {

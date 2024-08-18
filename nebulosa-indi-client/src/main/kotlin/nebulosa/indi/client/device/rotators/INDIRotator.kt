@@ -5,6 +5,7 @@ import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.rotator.*
 import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.Vector.Companion.isBusy
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indirotatorinterface.cpp
 
@@ -68,15 +69,15 @@ internal open class INDIRotator(
             is SetNumberVector -> {
                 when (message.name) {
                     "ABS_ROTATOR_ANGLE" -> {
-                        val angle = message["ANGLE"] ?: return
+                        val value = message["ANGLE"]?.value ?: return
 
                         if (moving != message.isBusy) {
                             this.moving = message.isBusy
                             sender.fireOnEventReceived(RotatorMovingChanged(this))
                         }
 
-                        if (angle.value != this.angle) {
-                            this.angle = angle.value
+                        if (value != angle) {
+                            angle = value
                             sender.fireOnEventReceived(RotatorAngleChanged(this))
                         }
                     }

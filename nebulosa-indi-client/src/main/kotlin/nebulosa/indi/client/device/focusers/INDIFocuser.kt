@@ -5,6 +5,7 @@ import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.focuser.*
 import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.Vector.Companion.isBusy
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indifocuser.cpp
 

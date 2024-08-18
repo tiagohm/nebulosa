@@ -1,14 +1,14 @@
 package nebulosa.indi.protocol
 
+import nebulosa.indi.protocol.INDIProtocol.Companion.writeXML
 import java.io.PrintStream
 
-class OneBLOB : OneElement<String>(), BLOBElement {
-
-    var format = ""
-
-    var size = ""
-
-    override var value = ""
+data class OneBLOB(
+    override var name: String = "",
+    override var value: String = "",
+    var format: String = "",
+    var size: String = "",
+) : OneElement<String>, BLOBElement {
 
     override fun writeTo(stream: PrintStream) = stream.writeXML(
         "oneBLOB", value,
@@ -16,23 +16,5 @@ class OneBLOB : OneElement<String>(), BLOBElement {
         "format", format,
         "size", size,
     )
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is OneBLOB) return false
-        if (!super.equals(other)) return false
-
-        if (format != other.format) return false
-        if (size != other.size) return false
-        return value == other.value
-    }
-
-    override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + format.hashCode()
-        result = 31 * result + size.hashCode()
-        result = 31 * result + value.hashCode()
-        return result
-    }
 }
 

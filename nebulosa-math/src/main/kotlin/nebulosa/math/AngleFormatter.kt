@@ -87,13 +87,13 @@ data class AngleFormatter internal constructor(
 
     class Builder internal constructor(formatter: AngleFormatter?) {
 
-        internal var isHours = formatter?.isHours ?: false
+        internal var isHours = formatter?.isHours == true
         internal var hoursFormat = formatter?.hoursFormat ?: "%02d"
         internal var degreesFormat = formatter?.degreesFormat ?: "%03d"
         internal var minutesFormat = formatter?.minutesFormat ?: "%02d"
         internal var secondsFormat = formatter?.secondsFormat ?: ""
-        internal var hasSign = formatter?.hasSign ?: true
-        internal var hasSeconds = formatter?.hasSeconds ?: true
+        internal var hasSign = formatter?.hasSign != false
+        internal var hasSeconds = formatter?.hasSeconds != false
         internal var secondsDecimalPlaces = formatter?.secondsDecimalPlaces ?: 1
         internal val separators = formatter?.separators?.toMutableList() ?: arrayListOf()
         internal var locale = formatter?.locale ?: Locale.ROOT

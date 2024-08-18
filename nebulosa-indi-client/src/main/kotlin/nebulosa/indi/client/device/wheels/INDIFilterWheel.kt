@@ -4,6 +4,7 @@ import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.filterwheel.*
 import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.Vector.Companion.isBusy
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indifilterwheel.cpp
 

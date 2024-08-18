@@ -1,6 +1,6 @@
 package nebulosa.indi.protocol
 
-interface HasMinMax<T : Comparable<T>> : ClosedRange<T> {
+sealed interface HasMinMax<T : Comparable<T>> : ClosedRange<T> {
 
     val min: T
 

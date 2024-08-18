@@ -81,7 +81,20 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 			}
 		})
 
-		this.devices = [...(await this.api.cameras()), ...(await this.api.mounts()), ...(await this.api.focusers()), ...(await this.api.wheels()), ...(await this.api.rotators())].sort(deviceComparator)
+		const cameras = await this.api.cameras()
+		const mounts = await this.api.mounts()
+		const wheels = await this.api.wheels()
+		const focusers = await this.api.focusers()
+		const rotators = await this.api.rotators()
+		const devices: Device[] = []
+
+		devices.push(...cameras.filter((a) => !devices.find((b) => a.name === b.name)))
+		devices.push(...mounts.filter((a) => !devices.find((b) => a.name === b.name)))
+		devices.push(...wheels.filter((a) => !devices.find((b) => a.name === b.name)))
+		devices.push(...focusers.filter((a) => !devices.find((b) => a.name === b.name)))
+		devices.push(...rotators.filter((a) => !devices.find((b) => a.name === b.name)))
+
+		this.devices = devices.sort(deviceComparator)
 
 		if (this.devices.length) {
 			this.device = this.devices[0]

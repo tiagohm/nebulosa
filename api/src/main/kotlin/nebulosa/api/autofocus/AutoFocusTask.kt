@@ -325,9 +325,9 @@ data class AutoFocusTask(
         LOG.info("validating calculated focus position. threshold={}", threshold)
 
         if (threshold > 0.0) {
-            fun isTrendLineBad() = trendLineCurve?.let { it.left.rSquared < threshold || it.right.rSquared < threshold } ?: true
-            fun isParabolicBad() = parabolicCurve?.let { it.rSquared < threshold } ?: true
-            fun isHyperbolicBad() = hyperbolicCurve?.let { it.rSquared < threshold } ?: true
+            fun isTrendLineBad() = trendLineCurve?.let { it.left.rSquared < threshold || it.right.rSquared < threshold } != false
+            fun isParabolicBad() = parabolicCurve?.let { it.rSquared < threshold } != false
+            fun isHyperbolicBad() = hyperbolicCurve?.let { it.rSquared < threshold } != false
 
             val isBad = when (request.fittingMode) {
                 AutoFocusFittingMode.TRENDLINES -> isTrendLineBad()

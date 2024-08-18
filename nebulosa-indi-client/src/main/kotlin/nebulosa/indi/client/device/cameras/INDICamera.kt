@@ -14,6 +14,8 @@ import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.DefVector.Companion.isNotReadOnly
+import nebulosa.indi.protocol.Vector.Companion.isBusy
 import nebulosa.io.Base64InputStream
 import nebulosa.log.loggerFor
 import java.time.Duration
@@ -91,7 +93,7 @@ internal open class INDICamera(
                             sender.fireOnEventReceived(CameraCoolerControlChanged(this))
                         }
 
-                        cooler = message["COOLER_ON"]?.value ?: false
+                        cooler = message["COOLER_ON"]?.value == true
                         sender.fireOnEventReceived(CameraCoolerChanged(this))
                     }
                     "CCD_CAPTURE_FORMAT" -> {

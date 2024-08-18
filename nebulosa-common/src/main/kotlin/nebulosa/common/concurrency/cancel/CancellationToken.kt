@@ -68,7 +68,7 @@ class CancellationToken private constructor(private val completable: Completable
     }
 
     override fun isDone(): Boolean {
-        return completable?.isDone ?: true
+        return completable?.isDone != false
     }
 
     override fun get(): CancellationSource {

@@ -1,12 +1,12 @@
 package nebulosa.indi.device
 
-enum class DeviceType {
-    CAMERA,
-    MOUNT,
-    WHEEL,
-    FOCUSER,
-    ROTATOR,
-    GPS,
-    DOME,
-    SWITCH
+enum class DeviceType(@JvmField val code: String) {
+    CAMERA("CAM"),
+    MOUNT("MNT"),
+    WHEEL("WHL"),
+    FOCUSER("FOC"),
+    ROTATOR("ROT"),
+    GPS("GPS"),
+    DOME("DOM"),
+    SWITCH("SWT")
 }

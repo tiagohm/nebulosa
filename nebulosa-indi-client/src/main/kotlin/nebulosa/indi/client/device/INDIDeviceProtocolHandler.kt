@@ -10,10 +10,10 @@ import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
-import nebulosa.indi.protocol.DefTextVector
 import nebulosa.indi.protocol.DelProperty
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.Message
+import nebulosa.indi.protocol.TextVector
 import nebulosa.indi.protocol.parser.CloseConnectionListener
 import nebulosa.indi.protocol.parser.INDIProtocolParser
 import nebulosa.indi.protocol.parser.INDIProtocolReader
@@ -31,17 +31,77 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
     override val isClosed
         get() = protocolReader == null || !protocolReader!!.isRunning
 
-    protected abstract fun newCamera(message: INDIProtocol, executable: String): Camera
+    protected abstract fun newCamera(name: String, executable: String): Camera
 
-    protected abstract fun newMount(message: INDIProtocol, executable: String): Mount
+    protected abstract fun newMount(name: String, executable: String): Mount
 
-    protected abstract fun newFocuser(message: INDIProtocol): Focuser
+    protected abstract fun newFocuser(name: String, executable: String): Focuser
 
-    protected abstract fun newFilterWheel(message: INDIProtocol): FilterWheel
+    protected abstract fun newFilterWheel(name: String, executable: String): FilterWheel
 
-    protected abstract fun newRotator(message: INDIProtocol): Rotator
+    protected abstract fun newRotator(name: String, executable: String): Rotator
 
-    protected abstract fun newGPS(message: INDIProtocol): GPS
+    protected abstract fun newGPS(name: String, executable: String): GPS
+
+    private fun registerCamera(message: TextVector<*>): Camera? {
+        val executable = message["DRIVER_EXEC"]?.value
+
+        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && camera(message.name) == null) {
+            newCamera(message.device, executable).also(::registerCamera)
+        } else {
+            null
+        }
+    }
+
+    private fun registerMount(message: TextVector<*>): Mount? {
+        val executable = message["DRIVER_EXEC"]?.value
+
+        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && mount(message.name) == null) {
+            newMount(message.device, executable).also(::registerMount)
+        } else {
+            null
+        }
+    }
+
+    private fun registerFocuser(message: TextVector<*>): Focuser? {
+        val executable = message["DRIVER_EXEC"]?.value
+
+        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && focuser(message.name) == null) {
+            newFocuser(message.device, executable).also(::registerFocuser)
+        } else {
+            null
+        }
+    }
+
+    private fun registerRotator(message: TextVector<*>): Rotator? {
+        val executable = message["DRIVER_EXEC"]?.value
+
+        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && rotator(message.name) == null) {
+            newRotator(message.device, executable).also(::registerRotator)
+        } else {
+            null
+        }
+    }
+
+    private fun registerFilterWheel(message: TextVector<*>): FilterWheel? {
+        val executable = message["DRIVER_EXEC"]?.value
+
+        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && wheel(message.name) == null) {
+            newFilterWheel(message.device, executable).also(::registerFilterWheel)
+        } else {
+            null
+        }
+    }
+
+    private fun registerGPS(message: TextVector<*>): GPS? {
+        val executable = message["DRIVER_EXEC"]?.value
+
+        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && gps(message.name) == null) {
+            newGPS(message.device, executable).also(::registerGPS)
+        } else {
+            null
+        }
+    }
 
     open fun start() {
         if (protocolReader == null) {
@@ -85,81 +145,62 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
     override fun handleMessage(message: INDIProtocol) {
         if (message.device in notRegisteredDevices) return
 
-        if (message is DefTextVector) {
+        if (message is TextVector<*>) {
             when (message.name) {
                 "DRIVER_INFO" -> {
                     val interfaceType = message["DRIVER_INTERFACE"]?.value?.toIntOrNull() ?: 0
-                    val executable = message["DRIVER_EXEC"]?.value ?: ""
                     var registered = false
 
                     if (DeviceInterfaceType.isCamera(interfaceType)) {
-                        registered = true
-
-                        with(newCamera(message, executable)) {
-                            if (registerCamera(this)) {
-                                handleMessage(message)
-                                takeMessageFromReorderingQueue(this)
-                            }
+                        registerCamera(message)?.also {
+                            registered = true
+                            it.handleMessage(message)
+                            takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isMount(interfaceType)) {
-                        registered = true
-
-                        with(newMount(message, executable)) {
-                            if (registerMount(this)) {
-                                handleMessage(message)
-                                takeMessageFromReorderingQueue(this)
-                            }
+                        registerMount(message)?.also {
+                            registered = true
+                            it.handleMessage(message)
+                            takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isFilterWheel(interfaceType)) {
-                        registered = true
-
-                        with(newFilterWheel(message)) {
-                            if (registerFilterWheel(this)) {
-                                handleMessage(message)
-                                takeMessageFromReorderingQueue(this)
-                            }
+                        registerFilterWheel(message)?.also {
+                            registered = true
+                            it.handleMessage(message)
+                            takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isFocuser(interfaceType)) {
-                        registered = true
-
-                        with(newFocuser(message)) {
-                            if (registerFocuser(this)) {
-                                handleMessage(message)
-                                takeMessageFromReorderingQueue(this)
-                            }
+                        registerFocuser(message)?.also {
+                            registered = true
+                            it.handleMessage(message)
+                            takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isRotator(interfaceType)) {
-                        registered = true
-
-                        with(newRotator(message)) {
-                            if (registerRotator(this)) {
-                                handleMessage(message)
-                                takeMessageFromReorderingQueue(this)
-                            }
+                        registerRotator(message)?.also {
+                            registered = true
+                            it.handleMessage(message)
+                            takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isGPS(interfaceType)) {
-                        registered = true
-
-                        with(newGPS(message)) {
-                            if (registerGPS(this)) {
-                                handleMessage(message)
-                                takeMessageFromReorderingQueue(this)
-                            }
+                        registerGPS(message)?.also {
+                            registered = true
+                            it.handleMessage(message)
+                            takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (!registered) {
-                        LOG.warn("device is not registered. name={}, interface={}, executable={}", message.device, interfaceType, executable)
+                        LOG.warn("device is not registered. name={}, interface={}", message.device, interfaceType)
                         notRegisteredDevices.add(message.device)
                     }
 
@@ -172,11 +213,11 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
             is Message -> {
                 val device = device(message.device)
 
-                if (device == null) {
+                if (device.isEmpty()) {
                     val text = "[%s]: %s\n".format(message.timestamp, message.message)
                     fireOnEventReceived(DeviceMessageReceived(null, text))
                 } else if (message.name.isNotEmpty()) {
-                    device.handleMessage(message)
+                    device.forEach { it.handleMessage(message) }
                 }
 
                 LOG.debug { "message received: $message" }
@@ -185,17 +226,17 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
             }
             is DelProperty -> {
                 if (message.name.isEmpty() && message.device.isNotEmpty()) {
-                    val device = device(message.device)
+                    for (device in device(message.device)) {
+                        device.close()
 
-                    device?.close()
-
-                    when (device) {
-                        is Camera -> unregisterCamera(device)
-                        is Mount -> unregisterMount(device)
-                        is FilterWheel -> unregisterFilterWheel(device)
-                        is Focuser -> unregisterFocuser(device)
-                        is Rotator -> unregisterRotator(device)
-                        is GPS -> unregisterGPS(device)
+                        when (device) {
+                            is Camera -> unregisterCamera(device)
+                            is Mount -> unregisterMount(device)
+                            is FilterWheel -> unregisterFilterWheel(device)
+                            is Focuser -> unregisterFocuser(device)
+                            is Rotator -> unregisterRotator(device)
+                            is GPS -> unregisterGPS(device)
+                        }
                     }
 
                     return
@@ -211,8 +252,8 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
 
         val device = device(message.device)
 
-        if (device != null) {
-            device.handleMessage(message)
+        if (device.isNotEmpty()) {
+            device.forEach { it.handleMessage(message) }
 
             messageReorderingQueue.remove(message)
 

@@ -8,7 +8,8 @@ import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
 import nebulosa.indi.protocol.*
-import nebulosa.log.loggerFor
+import nebulosa.indi.protocol.DefVector.Companion.isNotReadOnly
+import nebulosa.indi.protocol.Vector.Companion.isBusy
 import nebulosa.math.*
 import nebulosa.nova.position.ICRF
 import java.time.Duration
@@ -345,9 +346,4 @@ internal open class INDIMount(
             " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
             " declination=$declination, canPulseGuide=$canPulseGuide," +
             " pulseGuiding=$pulseGuiding)"
-
-    companion object {
-
-        @JvmStatic private val LOG = loggerFor<INDIMount>()
-    }
 }

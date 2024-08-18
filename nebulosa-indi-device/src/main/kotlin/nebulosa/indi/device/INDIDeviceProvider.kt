@@ -15,8 +15,7 @@ interface INDIDeviceProvider : MessageSender, AutoCloseable {
 
     fun unregisterDeviceEventHandler(handler: DeviceEventHandler): Boolean
 
-    fun device(id: String) = camera(id) ?: mount(id) ?: focuser(id) ?: wheel(id)
-    ?: rotator(id) ?: gps(id) ?: guideOutput(id) ?: thermometer(id)
+    fun device(id: String): Collection<Device>
 
     fun cameras(): Collection<Camera>
 

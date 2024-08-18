@@ -1,10 +1,21 @@
 package nebulosa.indi.protocol
 
+import nebulosa.indi.protocol.INDIProtocol.Companion.writeXML
 import java.io.PrintStream
 
-class DefSwitchVector : DefVector<DefSwitch>(), SwitchVector<DefSwitch> {
-
-    var rule = SwitchRule.ANY_OF_MANY
+data class DefSwitchVector(
+    override var device: String = "",
+    override var name: String = "",
+    override var label: String = name,
+    override var group: String = "",
+    override var state: PropertyState = PropertyState.IDLE,
+    override var perm: PropertyPermission = PropertyPermission.RW,
+    var rule: SwitchRule = SwitchRule.ANY_OF_MANY,
+    override var timeout: Double = 0.0,
+    override val elements: MutableList<DefSwitch> = ArrayList(0),
+    override var message: String = "",
+    override var timestamp: String = "",
+) : DefVector<DefSwitch>, SwitchVector<DefSwitch> {
 
     override fun writeTo(stream: PrintStream) = stream.writeXML(
         "defSwitchVector", elements,
@@ -19,18 +30,4 @@ class DefSwitchVector : DefVector<DefSwitch>(), SwitchVector<DefSwitch> {
         "timestamp", timestamp,
         "message", message,
     )
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is DefSwitchVector) return false
-        if (!super.equals(other)) return false
-
-        return rule == other.rule
-    }
-
-    override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + rule.hashCode()
-        return result
-    }
 }
