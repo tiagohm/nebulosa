@@ -374,9 +374,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 	}
 
 	async tick() {
-		if (this.camera.id) {
-			await this.api.cameraListen(this.camera)
-		}
+		if (this.camera.id) await this.api.cameraListen(this.camera)
+		if (this.preference.wheel?.id) await this.api.wheelListen(this.preference.wheel)
+		if (this.preference.focuser?.id) await this.api.focuserListen(this.preference.focuser)
+		if (this.preference.mount?.id) await this.api.mountListen(this.preference.mount)
+		if (this.preference.rotator?.id) await this.api.rotatorListen(this.preference.rotator)
 	}
 
 	private async loadCameraStartCaptureForDialogMode(data?: CameraDialogInput) {
@@ -543,6 +545,8 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 				menu[3].slideMenu.push(makeRotatorItem(rotator))
 			}
 		}
+
+		await this.tick()
 	}
 
 	private async loadCalibrationGroups() {

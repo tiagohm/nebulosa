@@ -1,7 +1,6 @@
 package nebulosa.indi.client.device
 
 import nebulosa.indi.client.INDIClient
-import nebulosa.indi.client.device.cameras.INDICamera
 import nebulosa.indi.device.*
 import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.Vector
@@ -15,7 +14,7 @@ internal abstract class INDIDevice : Device {
     override val properties = linkedMapOf<String, PropertyVector<*, *>>()
     override val messages = LinkedList<String>()
 
-    override val id by lazy { name.encodeUtf8().md5().hex() }
+    override val id by lazy { type.code + "." + name.encodeUtf8().md5().hex() }
 
     @Volatile override var connected = false
         protected set
@@ -39,7 +38,7 @@ internal abstract class INDIDevice : Device {
             is SwitchVector<*> -> {
                 when (message.name) {
                     "CONNECTION" -> {
-                        val connected = message["CONNECT"]?.value ?: false
+                        val connected = message["CONNECT"]?.value == true
 
                         if (connected != this.connected) {
                             if (connected) {
@@ -195,21 +194,5 @@ internal abstract class INDIDevice : Device {
 
     override fun disconnect() {
         sendNewSwitch("CONNECTION", "DISCONNECT" to true)
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is INDICamera) return false
-
-        if (sender != other.sender) return false
-        if (name != other.name) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = sender.hashCode()
-        result = 31 * result + name.hashCode()
-        return result
     }
 }

@@ -11,9 +11,11 @@ import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
-import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.gps.GPS
+import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
+import nebulosa.indi.device.thermometer.Thermometer
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.support.WebDataBinderFactory
@@ -37,7 +39,9 @@ class DeviceOrEntityParamMethodArgumentResolver(
         Focuser::class.java to { connectionService.focuser(it) },
         FilterWheel::class.java to { connectionService.wheel(it) },
         Rotator::class.java to { connectionService.rotator(it) },
+        GPS::class.java to { connectionService.gps(it) },
         GuideOutput::class.java to { connectionService.guideOutput(it) },
+        Thermometer::class.java to { connectionService.thermometer(it) },
     )
 
     override fun supportsParameter(parameter: MethodParameter): Boolean {

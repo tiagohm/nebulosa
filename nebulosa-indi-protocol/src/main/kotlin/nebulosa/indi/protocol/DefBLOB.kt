@@ -1,8 +1,12 @@
 package nebulosa.indi.protocol
 
+import nebulosa.indi.protocol.INDIProtocol.Companion.writeXML
 import java.io.PrintStream
 
-class DefBLOB : DefElement<String>(), BLOBElement {
+data class DefBLOB(
+    override var name: String = "",
+    override var label: String = name,
+) : DefElement<String>, BLOBElement {
 
     override var value = ""
 
@@ -11,17 +15,4 @@ class DefBLOB : DefElement<String>(), BLOBElement {
         "name", name,
         "label", label,
     )
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is DefBLOB) return false
-        if (!super.equals(other)) return false
-        return value == other.value
-    }
-
-    override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + value.hashCode()
-        return result
-    }
 }

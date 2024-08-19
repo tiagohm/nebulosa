@@ -1,14 +1,15 @@
-package nebulosa.indi.client.device.mounts
+package nebulosa.indi.client.device.mount
 
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice
+import nebulosa.indi.client.device.handler.INDIGuideOutputHandler
 import nebulosa.indi.device.firstOnSwitch
 import nebulosa.indi.device.firstOnSwitchOrNull
 import nebulosa.indi.device.gps.GPS
-import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
 import nebulosa.indi.protocol.*
-import nebulosa.log.loggerFor
+import nebulosa.indi.protocol.DefVector.Companion.isNotReadOnly
+import nebulosa.indi.protocol.Vector.Companion.isBusy
 import nebulosa.math.*
 import nebulosa.nova.position.ICRF
 import java.time.Duration
@@ -31,7 +32,6 @@ internal open class INDIMount(
     @Volatile final override var canGoTo = false
     @Volatile final override var canPark = false
     @Volatile final override var canHome = false
-        protected set
     @Volatile final override var slewRates = emptyList<SlewRate>()
     @Volatile final override var slewRate: SlewRate? = null
     @Volatile final override var mountType = MountType.EQ_GEM // TODO: Ver os telescópios possui tipos.
@@ -43,8 +43,13 @@ internal open class INDIMount(
     @Volatile final override var rightAscension = 0.0
     @Volatile final override var declination = 0.0
 
-    @Volatile final override var canPulseGuide = false
-    @Volatile final override var pulseGuiding = false
+    private val guideOutput = INDIGuideOutputHandler(this)
+
+    final override val canPulseGuide
+        get() = guideOutput.canPulseGuide
+
+    final override val pulseGuiding
+        get() = guideOutput.pulseGuiding
 
     @Volatile final override var hasGPS = false
     @Volatile final override var longitude = 0.0
@@ -155,23 +160,6 @@ internal open class INDIMount(
 
                         sender.fireOnEventReceived(MountEquatorialCoordinatesChanged(this))
                     }
-                    "TELESCOPE_TIMED_GUIDE_NS",
-                    "TELESCOPE_TIMED_GUIDE_WE" -> {
-                        if (!canPulseGuide && message is DefNumberVector) {
-                            canPulseGuide = true
-
-                            sender.registerGuideOutput(this)
-                        }
-
-                        if (canPulseGuide) {
-                            val prevIsPulseGuiding = pulseGuiding
-                            pulseGuiding = message.isBusy
-
-                            if (pulseGuiding != prevIsPulseGuiding) {
-                                sender.fireOnEventReceived(GuideOutputPulsingChanged(this))
-                            }
-                        }
-                    }
                     "GEOGRAPHIC_COORD" -> {
                         latitude = message["LAT"]!!.value.deg
                         longitude = message["LONG"]!!.value.deg
@@ -195,6 +183,8 @@ internal open class INDIMount(
             }
             else -> Unit
         }
+
+        guideOutput.handleMessage(message)
 
         super.handleMessage(message)
     }
@@ -270,27 +260,19 @@ internal open class INDIMount(
     }
 
     override fun guideNorth(duration: Duration) {
-        if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toMillis().toDouble(), "TIMED_GUIDE_S" to 0.0)
-        }
+        guideOutput.guideNorth(duration)
     }
 
     override fun guideSouth(duration: Duration) {
-        if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toMillis().toDouble(), "TIMED_GUIDE_N" to 0.0)
-        }
+        guideOutput.guideSouth(duration)
     }
 
     override fun guideEast(duration: Duration) {
-        if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toMillis().toDouble(), "TIMED_GUIDE_W" to 0.0)
-        }
+        guideOutput.guideEast(duration)
     }
 
     override fun guideWest(duration: Duration) {
-        if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toMillis().toDouble(), "TIMED_GUIDE_E" to 0.0)
-        }
+        guideOutput.guideWest(duration)
     }
 
     override fun moveNorth(enabled: Boolean) {
@@ -326,11 +308,6 @@ internal open class INDIMount(
     }
 
     override fun close() {
-        if (canPulseGuide) {
-            canPulseGuide = false
-            sender.unregisterGuideOutput(this)
-        }
-
         if (hasGPS) {
             hasGPS = false
             sender.unregisterGPS(this)
@@ -345,9 +322,4 @@ internal open class INDIMount(
             " guideRateNS=$guideRateNS, rightAscension=$rightAscension," +
             " declination=$declination, canPulseGuide=$canPulseGuide," +
             " pulseGuiding=$pulseGuiding)"
-
-    companion object {
-
-        @JvmStatic private val LOG = loggerFor<INDIMount>()
-    }
 }

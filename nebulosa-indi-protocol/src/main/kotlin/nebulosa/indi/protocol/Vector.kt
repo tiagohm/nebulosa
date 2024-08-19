@@ -1,8 +1,8 @@
 package nebulosa.indi.protocol
 
-sealed interface Vector<E : Element<*>> : List<E> {
+sealed interface Vector<E : Element<*>> : INDIProtocol, List<E> {
 
-    val state: PropertyState
+    var state: PropertyState
 
     val type: PropertyType
 
@@ -35,15 +35,18 @@ sealed interface Vector<E : Element<*>> : List<E> {
 
     override fun subList(fromIndex: Int, toIndex: Int) = elements.subList(fromIndex, toIndex)
 
-    val isIdle
-        get() = state == PropertyState.IDLE
+    companion object {
 
-    val isBusy
-        get() = state == PropertyState.BUSY
+        inline val Vector<*>.isIdle
+            get() = state == PropertyState.IDLE
 
-    val isAlert
-        get() = state == PropertyState.ALERT
+        inline val Vector<*>.isBusy
+            get() = state == PropertyState.BUSY
 
-    val isOk
-        get() = state == PropertyState.OK
+        inline val Vector<*>.isAlert
+            get() = state == PropertyState.ALERT
+
+        inline val Vector<*>.isOk
+            get() = state == PropertyState.OK
+    }
 }

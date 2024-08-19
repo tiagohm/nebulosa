@@ -1,6 +1,6 @@
 package nebulosa.indi.protocol
 
-interface HasText : CharSequence {
+sealed interface HasText : CharSequence {
 
     val text: String
 

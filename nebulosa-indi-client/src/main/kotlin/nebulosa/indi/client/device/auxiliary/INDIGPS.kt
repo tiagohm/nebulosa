@@ -1,6 +1,7 @@
-package nebulosa.indi.client.device
+package nebulosa.indi.client.device.auxiliary
 
 import nebulosa.indi.client.INDIClient
+import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.gps.GPSCoordinateChanged
@@ -13,7 +14,7 @@ import nebulosa.math.m
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-internal open class GPSDevice(
+internal open class INDIGPS(
     override val sender: INDIClient,
     override val name: String,
 ) : INDIDevice(), GPS {

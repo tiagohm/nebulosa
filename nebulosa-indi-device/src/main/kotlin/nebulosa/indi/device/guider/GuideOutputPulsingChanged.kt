@@ -1,4 +1,4 @@
-package nebulosa.indi.device.guide
+package nebulosa.indi.device.guider
 
 import nebulosa.indi.device.PropertyChangedEvent
 

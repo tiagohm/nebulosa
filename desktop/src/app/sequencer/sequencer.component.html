@@ -196,7 +196,8 @@
 									[info]="sequence"
 									[wheel]="plan.wheel"
 									[canRemoveFilter]="sequence.enabled"
-									(filterRemoved)="filterRemoved(sequence)" />
+									(filterRemoved)="filterRemoved(sequence)"
+									[disabled]="running" />
 							</div>
 							<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm">
 								<neb-camera-exposure #cameraExposure />
@@ -247,6 +248,7 @@
 						<p-button
 							[text]="true"
 							[rounded]="true"
+							[disabled]="running"
 							icon="mdi {{ plan.autoSubFolderMode === 'OFF' ? 'mdi-folder-off text-gray-500' : plan.autoSubFolderMode === 'NOON' ? 'mdi-weather-sunny text-yellow-600' : 'mdi-weather-night text-info' }}"
 							size="small"
 							pTooltip="{{ 'Auto sub folder: ' + plan.autoSubFolderMode }}"
@@ -258,13 +260,15 @@
 							label="Output directory"
 							[(path)]="plan.savePath"
 							(pathChange)="savePreference()"
-							class="min-w-22rem" />
+							class="min-w-22rem"
+							[disabled]="running" />
 					</div>
 					<div class="flex gap-1">
 						<p-floatLabel class="w-full min-w-22rem">
 							<input
 								pInputText
 								class="p-inputtext-sm border-0"
+								[disabled]="running"
 								[(ngModel)]="plan.namingFormat.light"
 								(ngModelChange)="savePreference()" />
 							<label>Light</label>
@@ -281,6 +285,7 @@
 							<input
 								pInputText
 								class="p-inputtext-sm border-0"
+								[disabled]="running"
 								[(ngModel)]="plan.namingFormat.dark"
 								(ngModelChange)="savePreference()" />
 							<label>Dark</label>
@@ -297,6 +302,7 @@
 							<input
 								pInputText
 								class="p-inputtext-sm border-0"
+								[disabled]="running"
 								[(ngModel)]="plan.namingFormat.flat"
 								(ngModelChange)="savePreference()" />
 							<label>Flat</label>
@@ -313,6 +319,7 @@
 							<input
 								pInputText
 								class="p-inputtext-sm border-0"
+								[disabled]="running"
 								[(ngModel)]="plan.namingFormat.bias"
 								(ngModelChange)="savePreference()" />
 							<label>Bias</label>

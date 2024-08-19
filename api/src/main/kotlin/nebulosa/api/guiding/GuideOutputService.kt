@@ -1,7 +1,7 @@
 package nebulosa.api.guiding
 
 import nebulosa.guiding.GuideDirection
-import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guider.GuideOutput
 import org.springframework.stereotype.Service
 import java.time.Duration
 

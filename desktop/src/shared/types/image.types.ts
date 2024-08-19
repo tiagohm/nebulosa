@@ -144,6 +144,7 @@ export interface ImageData {
 	title?: string
 	capture?: CameraStartCapture
 	exposureCount: number
+	filter?: string
 }
 
 export interface FOV {

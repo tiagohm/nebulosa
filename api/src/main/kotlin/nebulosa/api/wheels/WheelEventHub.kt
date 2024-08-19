@@ -3,6 +3,7 @@ package nebulosa.api.wheels
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.devices.DeviceEventHub
 import nebulosa.api.message.MessageService
+import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelAttached
@@ -16,14 +17,16 @@ import org.springframework.stereotype.Component
 @Subscriber
 class WheelEventHub(
     private val messageService: MessageService,
-) : DeviceEventHub<FilterWheel, FilterWheelEvent>("WHEEL"), WheelEventAware {
+) : DeviceEventHub<FilterWheel, FilterWheelEvent>(DeviceType.WHEEL), WheelEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleFilterWheelEvent(event: FilterWheelEvent) {
-        when (event) {
-            is PropertyChangedEvent -> onNext(event)
-            is FilterWheelAttached -> onAttached(event.device)
-            is FilterWheelDetached -> onDetached(event.device)
+        if (event.device.type == DeviceType.WHEEL) {
+            when (event) {
+                is PropertyChangedEvent -> onNext(event)
+                is FilterWheelAttached -> onAttached(event.device)
+                is FilterWheelDetached -> onDetached(event.device)
+            }
         }
     }
 

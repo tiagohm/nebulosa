@@ -13,9 +13,9 @@ import nebulosa.indi.device.focuser.FocuserDetached
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.gps.GPSAttached
 import nebulosa.indi.device.gps.GPSDetached
-import nebulosa.indi.device.guide.GuideOutput
-import nebulosa.indi.device.guide.GuideOutputAttached
-import nebulosa.indi.device.guide.GuideOutputDetached
+import nebulosa.indi.device.guider.GuideOutput
+import nebulosa.indi.device.guider.GuideOutputAttached
+import nebulosa.indi.device.guider.GuideOutputDetached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
@@ -44,51 +44,66 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
 
     override fun unregisterDeviceEventHandler(handler: DeviceEventHandler) = handlers.remove(handler)
 
-    fun fireOnEventReceived(event: DeviceEvent<*>) = handlers.forEach { it.onEventReceived(event) }
+    override fun fireOnEventReceived(event: DeviceEvent<*>) = handlers.forEach { it.onEventReceived(event) }
 
-    fun fireOnConnectionClosed() = handlers.forEach { it.onConnectionClosed() }
+    override fun fireOnConnectionClosed() = handlers.forEach { it.onConnectionClosed() }
 
-    override fun cameras() = cameras.values
+    override fun device(id: String): Collection<Device> {
+        val devices = HashSet<Device>(2)
+        camera(id)?.also(devices::add)
+        mount(id)?.also(devices::add)
+        focuser(id)?.also(devices::add)
+        wheel(id)?.also(devices::add)
+        rotator(id)?.also(devices::add)
+        gps(id)?.also(devices::add)
+        guideOutput(id)?.also(devices::add)
+        thermometer(id)?.also(devices::add)
+        return devices
+    }
 
-    override fun camera(id: String) = cameras[id] ?: cameras.values.find { it.name == id }
+    override fun cameras() = cameras.values.toSet()
 
-    override fun mounts() = mounts.values
+    override fun camera(id: String) = cameras[id]
 
-    override fun mount(id: String) = mounts[id] ?: mounts.values.find { it.name == id }
+    override fun mounts() = mounts.values.toSet()
 
-    override fun focusers() = focusers.values
+    override fun mount(id: String) = mounts[id]
 
-    override fun focuser(id: String) = focusers[id] ?: focusers.values.find { it.name == id }
+    override fun focusers() = focusers.values.toSet()
 
-    override fun wheels() = wheels.values
+    override fun focuser(id: String) = focusers[id]
 
-    override fun wheel(id: String) = wheels[id] ?: wheels.values.find { it.name == id }
+    override fun wheels() = wheels.values.toSet()
 
-    override fun rotators() = rotators.values
+    override fun wheel(id: String) = wheels[id]
 
-    override fun rotator(id: String) = rotators[id] ?: rotators.values.find { it.name == id }
+    override fun rotators() = rotators.values.toSet()
 
-    override fun gps() = gps.values
+    override fun rotator(id: String) = rotators[id]
 
-    override fun gps(id: String) = gps[id] ?: gps.values.find { it.name == id }
+    override fun gps() = gps.values.toSet()
 
-    override fun guideOutputs() = guideOutputs.values
+    override fun gps(id: String) = gps[id]
 
-    override fun guideOutput(id: String) = guideOutputs[id] ?: guideOutputs.values.find { it.name == id }
+    override fun guideOutputs() = guideOutputs.values.toSet()
 
-    override fun thermometers() = thermometers.values
+    override fun guideOutput(id: String) = guideOutputs[id]
 
-    override fun thermometer(id: String) = thermometers[id] ?: thermometers.values.find { it.name == id }
+    override fun thermometers() = thermometers.values.toSet()
+
+    override fun thermometer(id: String) = thermometers[id]
 
     fun registerCamera(device: Camera): Boolean {
         if (device.id in cameras) return false
         cameras[device.id] = device
+        cameras[device.name] = device
         fireOnEventReceived(CameraAttached(device))
         LOG.info("camera attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterCamera(device: Camera) {
+        cameras.remove(device.name)
         fireOnEventReceived(CameraDetached(cameras.remove(device.id) ?: return))
         LOG.info("camera detached: {} ({})", device.name, device.id)
     }
@@ -96,12 +111,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     fun registerMount(device: Mount): Boolean {
         if (device.id in mounts) return false
         mounts[device.id] = device
+        mounts[device.name] = device
         fireOnEventReceived(MountAttached(device))
         LOG.info("mount attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterMount(device: Mount) {
+        mounts.remove(device.name)
         fireOnEventReceived(MountDetached(mounts.remove(device.id) ?: return))
         LOG.info("mount detached: {} ({})", device.name, device.id)
     }
@@ -109,12 +126,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     fun registerFocuser(device: Focuser): Boolean {
         if (device.id in focusers) return false
         focusers[device.id] = device
+        focusers[device.name] = device
         fireOnEventReceived(FocuserAttached(device))
         LOG.info("focuser attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterFocuser(device: Focuser) {
+        focusers.remove(device.name)
         fireOnEventReceived(FocuserDetached(focusers.remove(device.id) ?: return))
         LOG.info("focuser detached: {} ({})", device.name, device.id)
     }
@@ -122,12 +141,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     fun registerRotator(device: Rotator): Boolean {
         if (device.id in rotators) return false
         rotators[device.id] = device
+        rotators[device.name] = device
         fireOnEventReceived(RotatorAttached(device))
         LOG.info("rotator attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterRotator(device: Rotator) {
+        rotators.remove(device.name)
         fireOnEventReceived(RotatorDetached(rotators.remove(device.id) ?: return))
         LOG.info("rotator detached: {} ({})", device.name, device.id)
     }
@@ -135,12 +156,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     fun registerFilterWheel(device: FilterWheel): Boolean {
         if (device.id in wheels) return false
         wheels[device.id] = device
+        wheels[device.name] = device
         fireOnEventReceived(FilterWheelAttached(device))
         LOG.info("filter wheel attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterFilterWheel(device: FilterWheel) {
+        wheels.remove(device.name)
         fireOnEventReceived(FilterWheelDetached(wheels.remove(device.id) ?: return))
         LOG.info("filter wheel detached: {} ({})", device.name, device.id)
     }
@@ -148,12 +171,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     fun registerGPS(device: GPS): Boolean {
         if (device.id in gps) return false
         gps[device.id] = device
+        gps[device.name] = device
         fireOnEventReceived(GPSAttached(device))
         LOG.info("gps attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterGPS(device: GPS) {
+        gps.remove(device.name)
         fireOnEventReceived(GPSDetached(gps.remove(device.id) ?: return))
         LOG.info("gps detached: {} ({})", device.name, device.id)
     }
@@ -161,12 +186,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     fun registerGuideHead(device: GuideHead): Boolean {
         if (device.id in cameras) return false
         cameras[device.id] = device
+        cameras[device.name] = device
         fireOnEventReceived(CameraAttached(device))
         LOG.info("guide head attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterGuiderHead(device: GuideHead) {
+        cameras.remove(device.name)
         fireOnEventReceived(CameraDetached(cameras.remove(device.id) ?: return))
         LOG.info("guide head detached: {} ({})", device.name, device.id)
     }
@@ -174,12 +201,14 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     fun registerGuideOutput(device: GuideOutput): Boolean {
         if (device.id in guideOutputs) return false
         guideOutputs[device.id] = device
+        guideOutputs[device.name] = device
         fireOnEventReceived(GuideOutputAttached(device))
         LOG.info("guide output attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterGuideOutput(device: GuideOutput) {
+        guideOutputs.remove(device.name)
         fireOnEventReceived(GuideOutputDetached(guideOutputs.remove(device.id) ?: return))
         LOG.info("guide output detached: {} ({})", device.name, device.id)
     }
@@ -187,23 +216,26 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     fun registerThermometer(device: Thermometer): Boolean {
         if (device.id in thermometers) return false
         thermometers[device.id] = device
+        thermometers[device.name] = device
         fireOnEventReceived(ThermometerAttached(device))
         LOG.info("thermometer attached: {} ({})", device.name, device.id)
         return true
     }
 
     fun unregisterThermometer(device: Thermometer) {
+        thermometers.remove(device.name)
         fireOnEventReceived(ThermometerDetached(thermometers.remove(device.id) ?: return))
         LOG.info("thermometer detached: {} ({})", device.name, device.id)
     }
 
     override fun close() {
-        cameras().toList().onEach(Device::close).onEach(::unregisterCamera)
-        mounts().toList().onEach(Device::close).onEach(::unregisterMount)
-        wheels().toList().onEach(Device::close).onEach(::unregisterFilterWheel)
-        focusers().toList().onEach(Device::close).onEach(::unregisterFocuser)
-        rotators().toList().onEach(Device::close).onEach(::unregisterRotator)
-        gps().toList().onEach(Device::close).onEach(::unregisterGPS)
+        cameras().onEach(Device::close).onEach(::unregisterCamera)
+        mounts().onEach(Device::close).onEach(::unregisterMount)
+        wheels().onEach(Device::close).onEach(::unregisterFilterWheel)
+        focusers().onEach(Device::close).onEach(::unregisterFocuser)
+        rotators().onEach(Device::close).onEach(::unregisterRotator)
+        gps().onEach(Device::close).onEach(::unregisterGPS)
+        guideOutputs().onEach(Device::close).onEach(::unregisterGuideOutput)
 
         cameras.clear()
         mounts.clear()

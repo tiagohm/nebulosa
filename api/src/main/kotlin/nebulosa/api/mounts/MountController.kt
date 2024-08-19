@@ -197,8 +197,8 @@ class MountController(
     }
 
     @PutMapping("{mount}/remote-control/stop")
-    fun remoteControlStart(mount: Mount, @RequestParam type: MountRemoteControlProtocol) {
-        mountService.remoteControlStop(mount, type)
+    fun remoteControlStart(mount: Mount, @RequestParam protocol: MountRemoteControlProtocol) {
+        mountService.remoteControlStop(mount, protocol)
     }
 
     @GetMapping("{mount}/remote-control")

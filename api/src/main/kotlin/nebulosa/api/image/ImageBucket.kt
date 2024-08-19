@@ -39,7 +39,7 @@ class ImageBucket : AutoCloseable {
 
     @Synchronized
     fun open(
-        path: Path, debayer: Boolean = this[path]?.debayer ?: true,
+        path: Path, debayer: Boolean = this[path]?.debayer != false,
         solution: PlateSolution? = null, force: Boolean = false
     ): OpenedImage {
         val openedImage = this[path]

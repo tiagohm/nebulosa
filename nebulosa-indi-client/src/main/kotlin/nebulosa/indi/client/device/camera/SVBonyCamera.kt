@@ -1,10 +1,10 @@
-package nebulosa.indi.client.device.cameras
+package nebulosa.indi.client.device.camera
 
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
 
-internal class SimCamera(
+internal class SVBonyCamera(
     provider: INDIClient,
     name: String,
 ) : INDICamera(provider, name) {
@@ -13,11 +13,13 @@ internal class SimCamera(
         when (message) {
             is NumberVector<*> -> {
                 when (message.name) {
-                    "CCD_GAIN" -> {
-                        processGain(message, message["GAIN"]!!)
-                    }
-                    "CCD_OFFSET" -> {
-                        processOffset(message, message["OFFSET"]!!)
+                    "CCD_CONTROLS" -> {
+                        if ("Gain" in message) {
+                            processGain(message, message["Gain"]!!)
+                        }
+                        if ("Offset" in message) {
+                            processOffset(message, message["Offset"]!!)
+                        }
                     }
                 }
             }
@@ -28,10 +30,10 @@ internal class SimCamera(
     }
 
     override fun gain(value: Int) {
-        sendNewNumber("CCD_GAIN", "GAIN" to value.toDouble())
+        sendNewNumber("CCD_CONTROLS", "Gain" to value.toDouble())
     }
 
     override fun offset(value: Int) {
-        sendNewNumber("CCD_OFFSET", "OFFSET" to value.toDouble())
+        sendNewNumber("CCD_CONTROLS", "Offset" to value.toDouble())
     }
 }

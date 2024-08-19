@@ -1,3 +1,5 @@
 package nebulosa.indi.device.gps
 
-data class GPSAttached(override val device: GPS) : GPSEvent<GPS>
+import nebulosa.indi.device.DeviceAttached
+
+data class GPSAttached(override val device: GPS) : GPSEvent<GPS>, DeviceAttached<GPS>

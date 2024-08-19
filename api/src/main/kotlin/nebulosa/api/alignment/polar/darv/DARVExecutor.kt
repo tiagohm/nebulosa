@@ -7,7 +7,7 @@ import nebulosa.api.message.MessageEvent
 import nebulosa.api.message.MessageService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
-import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guider.GuideOutput
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor

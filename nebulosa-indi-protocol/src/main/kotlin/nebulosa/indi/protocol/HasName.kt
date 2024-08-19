@@ -1,6 +1,6 @@
 package nebulosa.indi.protocol
 
-interface HasName {
+sealed interface HasName {
 
-    val name: String
+    var name: String
 }

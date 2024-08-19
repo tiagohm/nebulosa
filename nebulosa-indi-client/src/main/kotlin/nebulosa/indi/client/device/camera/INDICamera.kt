@@ -1,19 +1,20 @@
-package nebulosa.indi.client.device.cameras
+package nebulosa.indi.client.device.camera
 
 import nebulosa.fits.FitsHeaderCard
 import nebulosa.image.algorithms.transformation.CfaPattern
 import nebulosa.image.format.HeaderCard
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.INDIDevice
+import nebulosa.indi.client.device.handler.INDIGuideOutputHandler
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.*
 import nebulosa.indi.device.camera.Camera.Companion.NANO_TO_SECONDS
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
-import nebulosa.indi.device.guide.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.DefVector.Companion.isNotReadOnly
 import nebulosa.io.Base64InputStream
 import nebulosa.log.loggerFor
 import java.time.Duration
@@ -72,8 +73,13 @@ internal open class INDICamera(
     @Volatile final override var hasThermometer = false
     @Volatile final override var temperature = 0.0
 
-    @Volatile final override var canPulseGuide = false
-    @Volatile final override var pulseGuiding = false
+    private val guideOutput = INDIGuideOutputHandler(this)
+
+    final override val canPulseGuide
+        get() = guideOutput.canPulseGuide
+
+    final override val pulseGuiding
+        get() = guideOutput.pulseGuiding
 
     final override var guideHead: GuideHeadCamera? = null
         private set
@@ -91,7 +97,7 @@ internal open class INDICamera(
                             sender.fireOnEventReceived(CameraCoolerControlChanged(this))
                         }
 
-                        cooler = message["COOLER_ON"]?.value ?: false
+                        cooler = message["COOLER_ON"]?.value == true
                         sender.fireOnEventReceived(CameraCoolerChanged(this))
                     }
                     "CCD_CAPTURE_FORMAT" -> {
@@ -235,25 +241,6 @@ internal open class INDICamera(
                             sender.fireOnEventReceived(CameraBinChanged(this))
                         }
                     }
-                    "TELESCOPE_TIMED_GUIDE_NS",
-                    "TELESCOPE_TIMED_GUIDE_WE" -> {
-                        if (!isGuideHead) {
-                            if (!canPulseGuide && message is DefNumberVector) {
-                                canPulseGuide = true
-
-                                sender.registerGuideOutput(this)
-                            } else {
-                                val prevIsPulseGuiding = pulseGuiding
-                                pulseGuiding = message.isBusy
-
-                                if (pulseGuiding != prevIsPulseGuiding) {
-                                    sender.fireOnEventReceived(GuideOutputPulsingChanged(this))
-                                }
-                            }
-
-                            return
-                        }
-                    }
                 }
             }
             is DefBLOBVector -> {
@@ -286,6 +273,7 @@ internal open class INDICamera(
             else -> Unit
         }
 
+        guideOutput.handleMessage(message)
         super.handleMessage(message)
         guideHead?.handleMessage(message)
     }
@@ -357,27 +345,19 @@ internal open class INDICamera(
     }
 
     override fun guideNorth(duration: Duration) {
-        if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_N" to duration.toNanos() / 1000.0, "TIMED_GUIDE_S" to 0.0)
-        }
+        guideOutput.guideNorth(duration)
     }
 
     override fun guideSouth(duration: Duration) {
-        if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_NS", "TIMED_GUIDE_S" to duration.toNanos() / 1000.0, "TIMED_GUIDE_N" to 0.0)
-        }
+        guideOutput.guideSouth(duration)
     }
 
     override fun guideEast(duration: Duration) {
-        if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_E" to duration.toNanos() / 1000.0, "TIMED_GUIDE_W" to 0.0)
-        }
+        guideOutput.guideEast(duration)
     }
 
     override fun guideWest(duration: Duration) {
-        if (canPulseGuide) {
-            sendNewNumber("TELESCOPE_TIMED_GUIDE_WE", "TIMED_GUIDE_W" to duration.toNanos() / 1000.0, "TIMED_GUIDE_E" to 0.0)
-        }
+        guideOutput.guideWest(duration)
     }
 
     override fun snoop(devices: Iterable<Device?>) {
@@ -408,11 +388,6 @@ internal open class INDICamera(
         if (hasThermometer) {
             hasThermometer = false
             sender.unregisterThermometer(this)
-        }
-
-        if (canPulseGuide) {
-            canPulseGuide = false
-            sender.unregisterGuideOutput(this)
         }
 
         if (guideHead != null) {

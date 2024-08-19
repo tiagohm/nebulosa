@@ -29,6 +29,9 @@ export class DeviceChooserComponent<T extends Device = Device> {
 	@Input()
 	protected device?: T
 
+	@Input()
+	protected readonly disabled?: boolean
+
 	@Output()
 	readonly deviceChange = new EventEmitter<T>()
 

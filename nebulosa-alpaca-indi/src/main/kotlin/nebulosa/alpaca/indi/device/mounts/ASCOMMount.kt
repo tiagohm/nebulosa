@@ -5,7 +5,7 @@ import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.constants.DEG2RAD
 import nebulosa.indi.device.Device
-import nebulosa.indi.device.guide.GuideOutputPulsingChanged
+import nebulosa.indi.device.guider.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
 import nebulosa.indi.device.mount.PierSide
 import nebulosa.indi.protocol.INDIProtocol

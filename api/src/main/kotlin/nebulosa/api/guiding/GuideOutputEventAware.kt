@@ -1,9 +1,8 @@
 package nebulosa.api.guiding
 
-import nebulosa.indi.device.DeviceEvent
-import nebulosa.indi.device.guide.GuideOutput
+import nebulosa.indi.device.guider.GuideOutputEvent
 
 fun interface GuideOutputEventAware {
 
-    fun handleGuideOutputEvent(event: DeviceEvent<GuideOutput>)
+    fun handleGuideOutputEvent(event: GuideOutputEvent<*>)
 }
