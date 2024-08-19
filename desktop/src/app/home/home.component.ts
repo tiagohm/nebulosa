@@ -271,6 +271,7 @@ export class HomeComponent implements AfterContentInit {
 			this.focusers = await this.api.focusers()
 			this.wheels = await this.api.wheels()
 			this.rotators = await this.api.rotators()
+			this.guideOutputs = await this.api.guideOutputs()
 		}
 	}
 
@@ -308,7 +309,7 @@ export class HomeComponent implements AfterContentInit {
 			this.rotators.splice(found, 1)
 		} else if (isGuideOuptut(device)) {
 			const found = this.guideOutputs.findIndex((e) => e.id === device.id)
-			this.rotators.splice(found, 1)
+			this.guideOutputs.splice(found, 1)
 		}
 	}
 

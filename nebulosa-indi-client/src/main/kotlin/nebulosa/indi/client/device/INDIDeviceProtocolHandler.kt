@@ -109,7 +109,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
     private fun registerGuideOutput(message: TextVector<*>): GuideOutput? {
         val executable = message["DRIVER_EXEC"]?.value
 
-        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && guideOutput(message.name) == null) {
+        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && guideOutput(message.device) == null) {
             newGuideOutput(message.device, executable).also(::registerGuideOutput)
         } else {
             null

@@ -3,6 +3,7 @@ package nebulosa.api.focusers
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.devices.DeviceEventHub
 import nebulosa.api.message.MessageService
+import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserAttached
@@ -16,14 +17,16 @@ import org.springframework.stereotype.Component
 @Subscriber
 class FocuserEventHub(
     private val messageService: MessageService,
-) : DeviceEventHub<Focuser, FocuserEvent>("FOCUSER"), FocuserEventAware {
+) : DeviceEventHub<Focuser, FocuserEvent>(DeviceType.FOCUSER), FocuserEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleFocuserEvent(event: FocuserEvent) {
-        when (event) {
+        if (event.device.type == DeviceType.FOCUSER) {
+            when (event) {
             is PropertyChangedEvent -> onNext(event)
             is FocuserAttached -> onAttached(event.device)
             is FocuserDetached -> onDetached(event.device)
+            }
         }
     }
 

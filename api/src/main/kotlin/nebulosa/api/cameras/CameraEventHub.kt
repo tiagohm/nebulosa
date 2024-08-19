@@ -3,6 +3,7 @@ package nebulosa.api.cameras
 import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.devices.DeviceEventHub
 import nebulosa.api.message.MessageService
+import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
@@ -16,14 +17,16 @@ import org.springframework.stereotype.Component
 @Subscriber
 class CameraEventHub(
     private val messageService: MessageService,
-) : DeviceEventHub<Camera, CameraEvent>("CAMERA"), CameraEventAware {
+) : DeviceEventHub<Camera, CameraEvent>(DeviceType.CAMERA), CameraEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleCameraEvent(event: CameraEvent) {
-        when (event) {
+        if (event.device.type == DeviceType.CAMERA) {
+            when (event) {
             is PropertyChangedEvent -> onNext(event)
             is CameraAttached -> onAttached(event.device)
             is CameraDetached -> onDetached(event.device)
+            }
         }
     }
 

@@ -4,18 +4,19 @@ import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.subjects.PublishSubject
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.DeviceType
 import nebulosa.log.loggerFor
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(eventName: String) : Consumer<E>, AutoCloseable {
+abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(private val deviceType: DeviceType) : Consumer<E>, AutoCloseable {
 
     private val throttlers = HashMap<D, Throttler>()
     private val listenable = ConcurrentHashMap<D, Long>(2)
 
-    private val updateEventName = "$eventName.UPDATED"
-    private val attachedEventName = "$eventName.ATTACHED"
-    private val detachedEventName = "$eventName.DETACHED"
+    private val updateEventName = "$deviceType.UPDATED"
+    private val attachedEventName = "$deviceType.ATTACHED"
+    private val detachedEventName = "$deviceType.DETACHED"
 
     abstract fun sendMessage(eventName: String, device: D)
 
