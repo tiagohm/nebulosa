@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core'
-import { CalculatorFormula } from '../../../shared/types/calculator.types'
+import type { CalculatorFormula } from '../../../shared/types/calculator.types'
 
 @Component({
 	selector: 'neb-formula',

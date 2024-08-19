@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, EventEmitter, Input, Optional, Output, ViewChild } from '@angular/core'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
-import { DEFAULT_LOCATION, Location } from '../../types/atlas.types'
+import type { Location } from '../../types/atlas.types'
+import { DEFAULT_LOCATION } from '../../types/atlas.types'
 import { MapComponent } from '../map/map.component'
 
 @Component({

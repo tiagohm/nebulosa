@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core'
-import { CameraStartCapture } from '../../types/camera.types'
-import { Wheel } from '../../types/wheel.types'
+import type { CameraStartCapture } from '../../types/camera.types'
+import type { Wheel } from '../../types/wheel.types'
 
 @Component({
 	selector: 'neb-camera-info',

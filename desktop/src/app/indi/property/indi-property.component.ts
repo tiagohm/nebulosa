@@ -1,5 +1,5 @@
 import { AfterContentInit, Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core'
-import { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem } from '../../../shared/types/device.types'
+import type { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendPropertyItem } from '../../../shared/types/device.types'
 
 @Component({
 	selector: 'neb-indi-property',
