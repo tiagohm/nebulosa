@@ -820,23 +820,31 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			await this.loadImageFromPath(path)
 		}
 
-		let extraInfo = ''
+		this.updateSubTitle()
+	}
 
-		if (this.imageData.exposureCount) {
-			extraInfo += ` · ${this.imageData.exposureCount}`
-		}
+	private updateSubTitle() {
+		let text = ''
 
 		if (this.imageData.title) {
-			this.app.subTitle = this.imageData.title
+			text = this.imageData.title
 		} else if (this.imageData.camera) {
-			this.app.subTitle = this.imageData.camera.name
+			text = this.imageData.camera.name
 		} else if (this.imageData.path) {
-			this.app.subTitle = basename(this.imageData.path)
+			text = basename(this.imageData.path)
 		} else {
-			this.app.subTitle = ''
+			return
 		}
 
-		this.app.subTitle += extraInfo
+		if (this.imageData.exposureCount) {
+			text += ` · ${this.imageData.exposureCount}`
+		}
+
+		if (this.imageData.filter) {
+			text += ` · ${this.imageData.filter}`
+		}
+
+		this.app.subTitle = text
 	}
 
 	private async loadImageFromPath(path: string) {
@@ -879,11 +887,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private retrieveInfoFromImageHeaders(headers: ImageHeaderItem[]) {
+		this.imageData.filter = undefined
+
 		for (const item of headers) {
 			if (item.name === 'FOCALLEN') {
 				this.solver.request.focalLength = parseFloat(item.value)
 			} else if (item.name === 'XPIXSZ') {
 				this.solver.request.pixelSize = parseFloat(item.value)
+			} else if (item.name === 'FILTER') {
+				this.imageData.filter = item.value
 			}
 		}
 	}
