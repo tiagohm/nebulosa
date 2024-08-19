@@ -9,9 +9,9 @@ import nebulosa.log.loggerFor
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(private val deviceType: DeviceType) : Consumer<E>, AutoCloseable {
+abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(deviceType: DeviceType) : Consumer<E>, AutoCloseable {
 
-    private val throttlers = HashMap<D, Throttler>()
+    private val throttlers = HashMap<D, Throttler>(4)
     private val listenable = ConcurrentHashMap<D, Long>(2)
 
     private val updateEventName = "$deviceType.UPDATED"
@@ -36,13 +36,18 @@ abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(private val device
         sendUpdate(device)
     }
 
-    fun onDeviceDetached(device: D) {
-        throttlers.remove(device)?.onComplete()
+    open fun onDeviceDetached(device: D) {
+        synchronized(throttlers) {
+            throttlers.remove(device)?.onComplete()
+        }
     }
 
-    protected fun onNext(event: E) {
+    protected open fun onNext(event: E) {
         val device = event.device ?: return
-        throttlers.getOrPut(device, ::Throttler).onNext(event)
+
+        synchronized(throttlers) {
+            throttlers.getOrPut(device, ::Throttler).onNext(event)
+        }
     }
 
     fun listen(device: D): Boolean {
