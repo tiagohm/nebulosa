@@ -6,7 +6,7 @@ import { DEFAULT_PLATE_SOLVER_SETTINGS, plateSolverSettingsWithDefault, type Pla
 import { DEFAULT_STACKER_SETTINGS, stackerSettingsWithDefault, type StackerSettings, type StackerType } from './stacker.types'
 import { DEFAULT_STAR_DETECTOR_SETTINGS, starDetectorSettingsWithDefault, type StarDetectorSettings, type StarDetectorType } from './stardetector.types'
 
-export type SettingsTabKey = 'LOCATION' | 'PLATE_SOLVER' | 'STAR_DETECTOR' | 'LIVE_STACKER' | 'STACKER' | 'CAPTURE_NAMING_FORMAT'
+export type SettingsTab = 'LOCATION' | 'PLATE_SOLVER' | 'STAR_DETECTOR' | 'LIVE_STACKER' | 'STACKER' | 'CAPTURE_NAMING_FORMAT'
 
 export interface SettingsPreference {
 	plateSolver: Record<PlateSolverType, PlateSolverSettings>

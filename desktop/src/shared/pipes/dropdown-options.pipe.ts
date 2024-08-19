@@ -9,7 +9,6 @@ import { Bitpix, IMAGE_STATISTICS_BIT_OPTIONS, ImageChannel, ImageFormat, ImageS
 import { MountRemoteControlProtocol } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
 import { SequencerCaptureMode } from '../types/sequencer.types'
-import { SettingsTabKey } from '../types/settings.types'
 import { StackerGroupType, StackerType } from '../types/stacker.types'
 import { StarDetectorType } from '../types/stardetector.types'
 
@@ -34,7 +33,6 @@ export interface DropdownOptions {
 	GUIDER_Y_AXIS_UNIT: GuiderYAxisUnit[]
 	SEQUENCE_CAPTURE_MODE: SequencerCaptureMode[]
 	STACKER: StackerType[]
-	SETTINGS_TAB: SettingsTabKey[]
 	STACKER_GROUP_TYPE: StackerGroupType[]
 	CONNECTION_TYPE: ConnectionType[]
 	IMAGE_STATISTICS_BIT_OPTION: ImageStatisticsBitOption[]
@@ -88,8 +86,6 @@ export class DropdownOptionsPipe implements PipeTransform {
 				return ['FULLY', 'INTERLEAVED'] as DropdownOptions[K]
 			case 'STACKER':
 				return ['PIXINSIGHT'] as DropdownOptions[K]
-			case 'SETTINGS_TAB':
-				return ['LOCATION', 'PLATE_SOLVER', 'STAR_DETECTOR', 'LIVE_STACKER', 'STACKER', 'CAPTURE_NAMING_FORMAT'] as DropdownOptions[K]
 			case 'STACKER_GROUP_TYPE':
 				return ['LUMINANCE', 'RED', 'GREEN', 'BLUE', 'MONO', 'RGB', 'NONE'] as DropdownOptions[K]
 			case 'CONNECTION_TYPE':
