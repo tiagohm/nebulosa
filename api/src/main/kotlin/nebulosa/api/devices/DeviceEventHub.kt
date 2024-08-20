@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(deviceType: DeviceType) : Consumer<E>, AutoCloseable {
 
-    private val throttlers = HashMap<D, Throttler>(4)
+    private val throttlers = ConcurrentHashMap<D, Throttler>(4)
     private val listenable = ConcurrentHashMap<D, Long>(2)
 
     private val updateEventName = "$deviceType.UPDATED"
@@ -25,29 +25,22 @@ abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(deviceType: Device
     }
 
     open fun onAttached(device: D) {
+        throttlers.computeIfAbsent(device) { Throttler() }
         sendMessage(attachedEventName, device)
     }
 
     open fun onDetached(device: D) {
         sendMessage(detachedEventName, device)
+        throttlers.remove(device)?.onComplete()
     }
 
     open fun onConnectionChanged(device: D) {
         sendUpdate(device)
     }
 
-    open fun onDeviceDetached(device: D) {
-        synchronized(throttlers) {
-            throttlers.remove(device)?.onComplete()
-        }
-    }
-
     protected open fun onNext(event: E) {
         val device = event.device ?: return
-
-        synchronized(throttlers) {
-            throttlers.getOrPut(device, ::Throttler).onNext(event)
-        }
+        throttlers[device]?.onNext(event)
     }
 
     fun listen(device: D): Boolean {

@@ -7,7 +7,6 @@ import nebulosa.api.mounts.MountEventHub
 import nebulosa.api.rotators.RotatorEventHub
 import nebulosa.api.wheels.WheelEventHub
 import nebulosa.indi.device.DeviceConnectionEvent
-import nebulosa.indi.device.DeviceDetached
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.camera.Camera
@@ -38,13 +37,6 @@ class ConnectionEventHub(
             if (device is FilterWheel) wheelEventHub.onConnectionChanged(device)
             if (device is Rotator) rotatorEventHub.onConnectionChanged(device)
             if (device is GuideOutput) guideOutputEventHub.onConnectionChanged(device)
-        } else if (event is DeviceDetached<*>) {
-            if (device is Camera) cameraEventHub.onDeviceDetached(device)
-            if (device is Mount) mountEventHub.onDeviceDetached(device)
-            if (device is Focuser) focuserEventHub.onDeviceDetached(device)
-            if (device is FilterWheel) wheelEventHub.onDeviceDetached(device)
-            if (device is Rotator) rotatorEventHub.onDeviceDetached(device)
-            if (device is GuideOutput) guideOutputEventHub.onDeviceDetached(device)
         }
     }
 }

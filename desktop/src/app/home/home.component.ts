@@ -1,5 +1,6 @@
 import { AfterContentInit, Component, NgZone, ViewChild, ViewEncapsulation } from '@angular/core'
 import { dirname } from 'path'
+import nebulosa from '../../assets/data/nebulosa.json'
 import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
@@ -43,6 +44,7 @@ export class HomeComponent implements AfterContentInit {
 	protected guideOutputs: GuideOutput[] = []
 
 	protected page = 0
+	protected newVersion?: string
 
 	protected readonly deviceModel: MenuItem[] = []
 
@@ -272,6 +274,22 @@ export class HomeComponent implements AfterContentInit {
 			this.wheels = await this.api.wheels()
 			this.rotators = await this.api.rotators()
 			this.guideOutputs = await this.api.guideOutputs()
+		}
+
+		void this.checkForNewVersion()
+	}
+
+	private async checkForNewVersion() {
+		if (this.preferenceService.settings.get().checkVersion) {
+			try {
+				const release = await this.api.latestRelease()
+
+				if (release?.version && nebulosa.version !== release.version) {
+					this.newVersion = release.name
+				}
+			} catch {
+				console.error('failed to check for new version')
+			}
 		}
 	}
 

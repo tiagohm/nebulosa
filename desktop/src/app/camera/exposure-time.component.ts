@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core'
 import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
-import { ExposureTimeUnit } from '../../shared/types/camera.types'
+import type { ExposureTimeUnit } from '../../shared/types/camera.types'
 
 @Component({
 	selector: 'neb-exposure-time',

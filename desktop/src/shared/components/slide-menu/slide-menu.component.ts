@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, TemplateRef, ViewEncapsulation } from '@angular/core'
-import { Nullable } from '../../utils/types'
+import type { Nullable } from '../../utils/types'
 import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.component'
 
 @Component({

@@ -19,7 +19,6 @@ class PreferenceRepository(@Qualifier("preferenceBox") override val box: Box<Pre
             .build().use { it.findUnique() }
     }
 
-    @Synchronized
     fun deleteByKey(key: String) {
         return box.query(PreferenceEntity_.key equal key)
             .build().use { it.remove() }

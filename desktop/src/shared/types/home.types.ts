@@ -32,6 +32,13 @@ export interface HomeConnectionDialog {
 	edited: boolean
 }
 
+export interface LatestRelease {
+	version: string
+	name: string
+	draft: boolean
+	preRelease: boolean
+}
+
 export const DEFAULT_CONNECTION_HOST: string = 'localhost'
 export const DEFAULT_CONNECTION_PORT: number = 7624
 

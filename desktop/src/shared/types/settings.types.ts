@@ -6,9 +6,10 @@ import { DEFAULT_PLATE_SOLVER_SETTINGS, plateSolverSettingsWithDefault, type Pla
 import { DEFAULT_STACKER_SETTINGS, stackerSettingsWithDefault, type StackerSettings, type StackerType } from './stacker.types'
 import { DEFAULT_STAR_DETECTOR_SETTINGS, starDetectorSettingsWithDefault, type StarDetectorSettings, type StarDetectorType } from './stardetector.types'
 
-export type SettingsTabKey = 'LOCATION' | 'PLATE_SOLVER' | 'STAR_DETECTOR' | 'LIVE_STACKER' | 'STACKER' | 'CAPTURE_NAMING_FORMAT'
+export type SettingsTab = 'GENERAL' | 'LOCATION' | 'PLATE_SOLVER' | 'STAR_DETECTOR' | 'LIVE_STACKER' | 'STACKER' | 'CAPTURE_NAMING_FORMAT'
 
 export interface SettingsPreference {
+	checkVersion: boolean
 	plateSolver: Record<PlateSolverType, PlateSolverSettings>
 	starDetector: Record<StarDetectorType, StarDetectorSettings>
 	liveStacker: Record<LiveStackerType, LiveStackerSettings>
@@ -19,6 +20,7 @@ export interface SettingsPreference {
 }
 
 export const DEFAULT_SETTINGS_PREFERENCE: SettingsPreference = {
+	checkVersion: true,
 	plateSolver: {
 		ASTROMETRY_NET: structuredClone(DEFAULT_PLATE_SOLVER_SETTINGS),
 		ASTROMETRY_NET_ONLINE: structuredClone(DEFAULT_PLATE_SOLVER_SETTINGS),
@@ -46,6 +48,7 @@ export const DEFAULT_SETTINGS_PREFERENCE: SettingsPreference = {
 export function settingsPreferenceWithDefault(preference?: Partial<SettingsPreference>, source: SettingsPreference = DEFAULT_SETTINGS_PREFERENCE) {
 	if (!preference) return structuredClone(source)
 
+	preference.checkVersion ??= source.checkVersion
 	preference.plateSolver ??= structuredClone(source.plateSolver)
 	preference.starDetector ??= structuredClone(source.starDetector)
 	preference.liveStacker ??= structuredClone(source.liveStacker)

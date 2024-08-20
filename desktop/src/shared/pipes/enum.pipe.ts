@@ -9,7 +9,6 @@ import { Bitpix, ImageChannel, SCNRProtectionMethod } from '../types/image.types
 import { MountRemoteControlProtocol } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
 import { SequencerCaptureMode, SequencerState } from '../types/sequencer.types'
-import { SettingsTabKey } from '../types/settings.types'
 import { StackerGroupType, StackerType } from '../types/stacker.types'
 import { StarDetectorType } from '../types/stardetector.types'
 import { Undefinable } from '../utils/types'
@@ -41,7 +40,6 @@ export type EnumPipeKey =
 	| Bitpix
 	| StackerType
 	| StackerGroupType
-	| SettingsTabKey
 	| SequencerState
 	| ExposureTimeUnit
 	| ImageChannel
@@ -102,7 +100,6 @@ export class EnumPipe implements PipeTransform {
 		CAM: 'Camelopardalis',
 		CAP: 'Capricornus',
 		CAPTURE_FINISHED: undefined,
-		CAPTURE_NAMING_FORMAT: 'Capture Naming Format',
 		CAPTURE_STARTED: undefined,
 		CAPTURED: 'Captured',
 		CAR: 'Carina',
@@ -250,9 +247,7 @@ export class EnumPipe implements PipeTransform {
 		LIB: 'Libra',
 		LIGHT: 'Light',
 		LINER_TYPE_ACTIVE_GALAXY_NUCLEUS: 'LINER-type Active Galaxy Nucleus',
-		LIVE_STACKER: 'Live Stacker',
 		LMI: 'Leo Minor',
-		LOCATION: 'Location',
 		LONG_PERIOD_VARIABLE: 'Long-Period Variable',
 		LONG: 'Long',
 		LOOP: 'Loop',
@@ -330,7 +325,6 @@ export class EnumPipe implements PipeTransform {
 		PIXINSIGHT: 'PixInsight',
 		PLANET: 'Planet',
 		PLANETARY_NEBULA: 'Planetary Nebula',
-		PLATE_SOLVER: 'Plate Solver',
 		POST_AGB_STAR: 'Post-AGB Star',
 		PROTO_CLUSTER_OF_GALAXIES: 'Proto Cluster of Galaxies',
 		PSA: 'Piscis Austrinus',
@@ -389,9 +383,7 @@ export class EnumPipe implements PipeTransform {
 		SOUTHERN: 'Southern',
 		SPECTROSCOPIC_BINARY: 'Spectroscopic Binary',
 		SPIRE: 'Spire',
-		STACKER: 'Stacker',
 		STACKING: 'Stacking',
-		STAR_DETECTOR: 'Star Detector',
 		STAR_FORMING_REGION: 'Star Forming Region',
 		STAR: 'Star',
 		STARBURST_GALAXY: 'Starburst Galaxy',

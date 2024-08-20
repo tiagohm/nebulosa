@@ -1,15 +1,16 @@
-<div class="grid px-3 py-2 relative">
-	<div class="col-12 mb-2 mt-3">
-		<p-floatLabel class="w-full">
-			<p-dropdown
-				[options]="'SETTINGS_TAB' | dropdownOptions | enumDropdown"
-				[(ngModel)]="tab"
-				optionLabel="label"
-				optionValue="value"
-				styleClass="p-inputtext-sm border-0"
-				[autoDisplayFirst]="false" />
-			<label>Settings</label>
-		</p-floatLabel>
+<div class="grid px-3 pb-2 pt-3 relative">
+	<div
+		class="col-12"
+		*ngIf="tab === 'GENERAL'">
+		<div class="grid">
+			<div class="col-12">
+				<p-checkbox
+					[binary]="true"
+					label="Check for new version on startup"
+					[(ngModel)]="preference.checkVersion"
+					(ngModelChange)="savePreference()" />
+			</div>
+		</div>
 	</div>
 	<div
 		class="col-12"
@@ -377,3 +378,15 @@
 		</div>
 	</div>
 </div>
+
+<p-sidebar
+	[(visible)]="showMenu"
+	[fullScreen]="true"
+	appendTo="body"
+	[modal]="false"
+	[dismissible]="true"
+	styleClass="bg-black-alpha-70">
+	<p-menu
+		[model]="menuModel"
+		styleClass="w-full border-0 px-2" />
+</p-sidebar>
