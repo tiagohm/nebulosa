@@ -10,7 +10,7 @@ import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
-import { ConnectionStatus, ConnectionType, LatestRelease } from '../types/home.types'
+import { ConnectionStatus, ConnectionType, GitHubRelease } from '../types/home.types'
 import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, SlewRate, TrackMode } from '../types/mount.types'
 import { PlateSolverRequest } from '../types/platesolver.types'
@@ -711,7 +711,8 @@ export class ApiService {
 
 	// SYSTEM
 
-	latestRelease() {
-		return this.http.get<LatestRelease | undefined>('system/latest-release')
+	async latestRelease() {
+		const response = await fetch('https://api.github.com/repos/tiagohm/nebulosa/releases/latest')
+		return (await response.json()) as GitHubRelease
 	}
 }
