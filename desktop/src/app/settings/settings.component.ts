@@ -30,6 +30,13 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 
 	protected readonly menuModel: MenuItem[] = [
 		{
+			icon: 'mdi mdi-cog',
+			label: 'General',
+			command: (e) => {
+				this.showTab('GENERAL', e.item?.label)
+			},
+		},
+		{
 			icon: 'mdi mdi-map-marker',
 			label: 'Location',
 			command: (e) => {

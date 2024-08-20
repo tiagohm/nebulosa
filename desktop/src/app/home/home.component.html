@@ -75,6 +75,27 @@
 				pTooltip="Disconnect"
 				tooltipPosition="bottom" />
 		</div>
+		<div
+			*ngIf="newVersion"
+			class="col-12 py-0">
+			<div class="m-0 p-message p-message-info w-full flex align-items-center justify-content-between px-2">
+				<div class="flex align-items-center">
+					<span class="p-message-summary">New version:</span>
+					<span class="p-message-detail">{{ newVersion }}</span>
+				</div>
+				<a
+					target="_blank"
+					href="https://github.com/tiagohm/nebulosa/releases/latest">
+					<p-button
+						icon="mdi mdi-download"
+						[text]="true"
+						label="Download"
+						size="small"
+						severity="info"
+						styleClass="py-1 text-blue-900" />
+				</a>
+			</div>
+		</div>
 	</div>
 	<div
 		class="buttons grid my-2 overflow-y-auto relative"
