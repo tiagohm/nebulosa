@@ -46,7 +46,9 @@ export interface SunTab extends BodyTab {
 	image: string
 }
 
-export type MoonTab = BodyTab
+export interface MoonTab extends BodyTab {
+	phase?: MoonPhase
+}
 
 export interface PlanetItem {
 	name: string
@@ -224,6 +226,19 @@ export interface Twilight {
 	astronomicalDawn: number[]
 	nauticalDawn: number[]
 	civilDawn: number[]
+}
+
+export interface MoonPhase {
+	phase: number
+	obscuration: number
+	age: number
+	diameter: number
+	distance: number
+	subSolarLon: number
+	subSolarLat: number
+	subEarthLon: number
+	subEarthLat: number
+	posAngle: number
 }
 
 export interface AstronomicalObject extends EquatorialCoordinateJ2000 {

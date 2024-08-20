@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { extractDate, extractDateTime } from '../types/angular.types'
-import { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
+import { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, Location, MinorPlanet, MoonPhase, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
 import { AutoFocusRequest } from '../types/autofocus.type'
 import { CalibrationFrame } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
@@ -537,6 +537,14 @@ export class ApiService {
 		const query = this.http.query({ days, distance, date })
 		return this.http.get<CloseApproach[]>(`sky-atlas/minor-planets/close-approaches?${query}`)
 	}
+
+	moonPhase(dateTime: Date, location?: Location) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, hasLocation: location?.id || true })
+		return this.http.get<MoonPhase | undefined>(`sky-atlas/moon/phase?${query}`)
+	}
+
+	// IMAGE
 
 	annotationsOfImage(path: string, request: AnnotateImageRequest, location?: Location) {
 		const query = this.http.query({ path, hasLocation: location?.id || true })

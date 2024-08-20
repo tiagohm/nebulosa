@@ -44,13 +44,47 @@
 					</div>
 				</ng-template>
 				<div
-					class="grid flex align-items-center justify-content-center"
+					class="grid flex align-items-center justify-content-center relative"
 					style="height: 225px">
 					<neb-moon
 						[width]="200"
 						[height]="200"
 						[illuminationRatio]="moon.position.illuminated / 100"
 						[waning]="moon.position.leading" />
+					<div
+						*ngIf="moon.phase"
+						class="absolute text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
+						<div class="flex flex-column gap-2">
+							<div class="flex flex-column">
+								<span class="font-bold">Diameter</span>
+								<span>{{ moon.phase.diameter }} arcsec</span>
+							</div>
+							<div class="flex flex-column">
+								<span class="font-bold">Age</span>
+								<span>{{ moon.phase.age }} d</span>
+							</div>
+							<div class="flex flex-column">
+								<span class="font-bold">Sub-Solar Lon / Lat</span>
+								<span>{{ moon.phase.subSolarLon }}° / {{ moon.phase.subSolarLat }}°</span>
+							</div>
+							<div class="flex flex-column">
+								<span class="font-bold">Sub-Earth Lon / Lat</span>
+								<span>{{ moon.phase.subEarthLon }}° / {{ moon.phase.subEarthLat }}°</span>
+							</div>
+							<div class="flex flex-column">
+								<span class="font-bold">Position Angle</span>
+								<span>{{ moon.phase.posAngle }}°</span>
+							</div>
+							<div class="mt-2 text-xs">
+								<a
+									target="_blank"
+									href="https://svs.gsfc.nasa.gov/5187/">
+									NASA/SVS
+								</a>
+							</div>
+						</div>
+						<div class="flex flex-column"></div>
+					</div>
 				</div>
 			</p-tabPanel>
 			<p-tabPanel

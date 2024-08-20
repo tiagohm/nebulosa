@@ -689,6 +689,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			}
 			// Moon.
 			else if (this.tab === BodyTabType.MOON) {
+				this.moon.phase = await this.api.moonPhase(dateTime)
 				const position = await this.api.positionOfMoon(dateTime, location)
 				Object.assign(this.moon.position, position)
 			}

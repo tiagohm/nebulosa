@@ -1,5 +1,6 @@
 package nebulosa.api.atlas
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
@@ -33,8 +34,11 @@ import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
+import kotlin.math.abs
 import kotlin.math.hypot
 
 @Service
@@ -46,12 +50,15 @@ class SkyAtlasService(
     private val satelliteRepository: SatelliteRepository,
     private val simbadEntityRepository: SimbadEntityRepository,
     private val httpClient: OkHttpClient,
+    private val objectMapper: ObjectMapper,
 ) {
 
     private val positions = HashMap<GeographicCoordinate, GeographicPosition>()
     private val cachedSimbadEntities = HashMap<Long, SimbadEntity>()
     private val targetLocks = HashMap<Any, Any>()
+
     @Volatile private var sunImage = ByteArray(0)
+    @Volatile private var moonPhase: Pair<LocalDateTime, MoonPhase>? = null
 
     val objectTypes: Collection<SkyObjectType> by lazy { simbadEntityRepository.findAll().map { it.type }.toSortedSet() }
 
@@ -225,14 +232,38 @@ class SkyAtlasService(
         sunImage = bytes.toByteArray()
     }
 
+    fun moonPhase(location: GeographicCoordinate, dateTime: LocalDateTime): MoonPhase? {
+        val now = LocalDateTime.now(SystemClock)
+
+        if (moonPhase == null || abs(ChronoUnit.HOURS.between(moonPhase!!.first, now)) >= 1) {
+            val request = Request.Builder()
+                .url(MOON_PHASE_URL.format(dateTime.minusMinutes(location.offsetInMinutes().toLong()).format(MOON_PHASE_DATE_TIME_FORMAT)))
+                .build()
+
+            val body = try {
+                httpClient.newCall(request).execute()
+                    .body?.byteStream()
+                    ?.use { objectMapper.readValue(it, MoonPhase::class.java) }
+            } catch (_: Throwable) {
+                null
+            }
+
+            moonPhase = now.withMinute(0).withSecond(0).withNano(0) to (body ?: return null)
+        }
+
+        return moonPhase?.second
+    }
+
     companion object {
 
         private const val SUN_IMAGE_URL = "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_256_HMIIC.jpg"
+        private const val MOON_PHASE_URL = "https://svs.gsfc.nasa.gov/api/dialamoon/%s"
 
         private const val SUN = "10"
         private const val MOON = "301"
 
         @JvmStatic private val FAST_MOON = VSOP87E.EARTH + ELPMPP02
+        @JvmStatic private val MOON_PHASE_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00")
 
         @JvmStatic
         private fun GeographicCoordinate.geographicPosition() = when (this) {
@@ -250,13 +281,6 @@ class SkyAtlasService(
         private fun GeographicCoordinate.offsetInMinutes() = when (this) {
             is Location -> offsetInMinutes
             else -> offsetInSeconds() / 60
-        }
-
-        @JvmStatic
-        private fun Double.clampMagnitude(): Double {
-            return if (this in SkyObject.MAGNITUDE_RANGE) this
-            else if (this < SkyObject.MAGNITUDE_MIN) SkyObject.MAGNITUDE_MIN
-            else SkyObject.MAGNITUDE_MAX
         }
 
         @JvmStatic
