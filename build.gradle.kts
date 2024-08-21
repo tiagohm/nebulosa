@@ -6,7 +6,7 @@ buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.10")
         classpath("org.jetbrains.kotlin:kotlin-allopen:2.0.10")
-        classpath("io.objectbox:objectbox-gradle-plugin:4.0.1")
+        classpath("io.objectbox:objectbox-gradle-plugin:4.0.2")
     }
 
     repositories {
