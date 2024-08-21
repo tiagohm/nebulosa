@@ -631,10 +631,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private async closeImage() {
-		const path = this.imagePath
-
-		if (path) {
-			await this.api.closeImage(path)
+		if (this.imageData.path) {
+			await this.api.closeImage(this.imageData.path)
+		}
+		if (this.liveStacking.path) {
+			await this.api.closeImage(this.liveStacking.path)
 		}
 	}
 
