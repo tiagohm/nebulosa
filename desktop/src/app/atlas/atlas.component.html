@@ -58,6 +58,7 @@
 							<div class="flex flex-column">
 								<span class="font-bold">Diameter</span>
 								<span>{{ moon.phase.diameter }} arcsec</span>
+								<span>{{ (moon.phase.diameter / 60).toFixed(2) }} arcmin</span>
 							</div>
 							<div class="flex flex-column">
 								<span class="font-bold">Age</span>
@@ -161,7 +162,6 @@
 							<span
 								class="text-xs absolute text-gray-500"
 								style="top: -30px; right: 64px">
-								Powered by
 								<a
 									target="_blank"
 									href="https://ssd-api.jpl.nasa.gov/doc/sbdb.html">
@@ -232,7 +232,6 @@
 							<span
 								class="text-xs absolute text-gray-500"
 								style="top: -30px; right: 46px">
-								Powered by
 								<a
 									target="_blank"
 									href="https://ssd-api.jpl.nasa.gov/doc/cad.html">
@@ -598,14 +597,11 @@
 				<div
 					[class.invisible]="tab === 4"
 					class="col-12 justify-content-center pt-0">
-					<span class="text-xs text-gray-500">
-						Ephemeris provided by
-						<a
-							target="_blank"
-							href="https://ssd.jpl.nasa.gov/horizons/">
-							JPL Horizons
-						</a>
-					</span>
+					<a
+						target="_blank"
+						href="https://ssd.jpl.nasa.gov/horizons/">
+						JPL Horizons
+					</a>
 				</div>
 				<div class="col-12 pt-0 flex justify-content-center">
 					<p-button
