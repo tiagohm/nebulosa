@@ -44,13 +44,48 @@
 					</div>
 				</ng-template>
 				<div
-					class="grid flex align-items-center justify-content-center"
+					class="grid flex align-items-center justify-content-center relative"
 					style="height: 225px">
 					<neb-moon
 						[width]="200"
 						[height]="200"
 						[illuminationRatio]="moon.position.illuminated / 100"
 						[waning]="moon.position.leading" />
+					<div
+						*ngIf="moon.phase"
+						class="absolute text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
+						<div class="flex flex-column gap-2">
+							<div class="flex flex-column">
+								<span class="font-bold">Diameter</span>
+								<span>{{ moon.phase.diameter }} arcsec</span>
+								<span>{{ (moon.phase.diameter / 60).toFixed(2) }} arcmin</span>
+							</div>
+							<div class="flex flex-column">
+								<span class="font-bold">Age</span>
+								<span>{{ moon.phase.age }} d</span>
+							</div>
+							<div class="flex flex-column">
+								<span class="font-bold">Sub-Solar Lon / Lat</span>
+								<span>{{ moon.phase.subSolarLon }}° / {{ moon.phase.subSolarLat }}°</span>
+							</div>
+							<div class="flex flex-column">
+								<span class="font-bold">Sub-Earth Lon / Lat</span>
+								<span>{{ moon.phase.subEarthLon }}° / {{ moon.phase.subEarthLat }}°</span>
+							</div>
+							<div class="flex flex-column">
+								<span class="font-bold">Position Angle</span>
+								<span>{{ moon.phase.posAngle }}°</span>
+							</div>
+							<div class="mt-2 text-xs">
+								<a
+									target="_blank"
+									href="https://svs.gsfc.nasa.gov/5187/">
+									NASA/SVS
+								</a>
+							</div>
+						</div>
+						<div class="flex flex-column"></div>
+					</div>
 				</div>
 			</p-tabPanel>
 			<p-tabPanel
@@ -127,7 +162,6 @@
 							<span
 								class="text-xs absolute text-gray-500"
 								style="top: -30px; right: 64px">
-								Powered by
 								<a
 									target="_blank"
 									href="https://ssd-api.jpl.nasa.gov/doc/sbdb.html">
@@ -198,7 +232,6 @@
 							<span
 								class="text-xs absolute text-gray-500"
 								style="top: -30px; right: 46px">
-								Powered by
 								<a
 									target="_blank"
 									href="https://ssd-api.jpl.nasa.gov/doc/cad.html">
@@ -564,14 +597,11 @@
 				<div
 					[class.invisible]="tab === 4"
 					class="col-12 justify-content-center pt-0">
-					<span class="text-xs text-gray-500">
-						Ephemeris provided by
-						<a
-							target="_blank"
-							href="https://ssd.jpl.nasa.gov/horizons/">
-							JPL Horizons
-						</a>
-					</span>
+					<a
+						target="_blank"
+						href="https://ssd.jpl.nasa.gov/horizons/">
+						JPL Horizons
+					</a>
 				</div>
 				<div class="col-12 pt-0 flex justify-content-center">
 					<p-button

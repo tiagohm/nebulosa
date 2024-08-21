@@ -284,7 +284,7 @@ export class HomeComponent implements AfterContentInit {
 			try {
 				const release = await this.api.latestRelease()
 
-				if (release?.version && nebulosa.version !== release.version) {
+				if (release.tag_name && nebulosa.version !== release.tag_name) {
 					this.newVersion = release.name
 				}
 			} catch {

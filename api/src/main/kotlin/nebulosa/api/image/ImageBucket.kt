@@ -92,7 +92,7 @@ class ImageBucket : AutoCloseable {
 
         synchronized(this) {
             for ((path, image) in bucket) {
-                if (currentTime - image.openedAt >= IMAGES_MAX_TIME) {
+                if (image.image != null && currentTime - image.openedAt >= IMAGES_MAX_TIME) {
                     image.image = null
                     LOG.info("image at {} has been disposed", path)
                 }

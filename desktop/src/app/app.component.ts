@@ -46,14 +46,15 @@ export class AppComponent implements OnDestroy {
 
 		if (!window.preference.resizable && window.preference.autoResizable !== false) {
 			this.resizeObserver = new ResizeObserver((entries) => {
-				const height = entries[0].target.clientHeight
-
-				if (height) {
-					void this.electronService.resizeWindow(height)
-				}
+				this.resizeWindowFromElement(entries[0].target)
 			})
 
 			this.resizeObserver.observe(hostElementRef.nativeElement)
+
+			setTimeout(() => {
+				const root = document.getElementsByTagName('neb-root')[0]
+				this.resizeWindowFromElement(root)
+			}, 1000)
 		} else {
 			this.resizeObserver = undefined
 		}
@@ -70,6 +71,14 @@ export class AppComponent implements OnDestroy {
 	@HostListener('window:unload')
 	ngOnDestroy() {
 		this.resizeObserver?.disconnect()
+	}
+
+	private resizeWindowFromElement(element: Element) {
+		const height = element.clientHeight
+
+		if (height) {
+			void this.electronService.resizeWindow(height)
+		}
 	}
 
 	pin() {

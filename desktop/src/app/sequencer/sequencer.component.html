@@ -55,7 +55,7 @@
 				<div
 					class="flex absolute right-0 align-items-center justify-content-end mr-4"
 					style="top: 56px">
-					<ng-container *ngIf="event && running">
+					@if (event && running) {
 						<span class="mr-2 text-sm">{{ event.state | enum }}</span>
 						<span
 							class="bg-warning border-round-left-md text-gray-900 line-height-3 text-sm text-center"
@@ -85,7 +85,20 @@
 							<i class="mdi mdi-percent mdi-sm"></i>
 							{{ event.progress * 100 | number: '1.1-1' }}
 						</span>
-					</ng-container>
+					} @else {
+						<span
+							class="bg-warning border-round-left-md text-gray-900 line-height-3 text-sm text-center"
+							style="min-width: 48px">
+							<i class="mdi mdi-counter mdi-sm"></i>
+							{{ exposureTotal.frames }}
+						</span>
+						<span
+							class="bg-success border-round-right-md text-gray-900 line-height-3 text-sm text-center"
+							style="min-width: 62px">
+							<i class="mdi mdi-timer mdi-sm"></i>
+							{{ exposureTotal.time | exposureTime }}
+						</span>
+					}
 				</div>
 				<div
 					cdkDropList

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { extractDate, extractDateTime } from '../types/angular.types'
-import { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, Location, MinorPlanet, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
+import { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, Location, MinorPlanet, MoonPhase, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
 import { AutoFocusRequest } from '../types/autofocus.type'
 import { CalibrationFrame } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
@@ -10,7 +10,7 @@ import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
-import { ConnectionStatus, ConnectionType, LatestRelease } from '../types/home.types'
+import { ConnectionStatus, ConnectionType, GitHubRelease } from '../types/home.types'
 import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, SlewRate, TrackMode } from '../types/mount.types'
 import { PlateSolverRequest } from '../types/platesolver.types'
@@ -538,6 +538,14 @@ export class ApiService {
 		return this.http.get<CloseApproach[]>(`sky-atlas/minor-planets/close-approaches?${query}`)
 	}
 
+	moonPhase(dateTime: Date, location?: Location) {
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, hasLocation: location?.id || true })
+		return this.http.get<MoonPhase | undefined>(`sky-atlas/moon/phase?${query}`)
+	}
+
+	// IMAGE
+
 	annotationsOfImage(path: string, request: AnnotateImageRequest, location?: Location) {
 		const query = this.http.query({ path, hasLocation: location?.id || true })
 		return this.http.put<ImageAnnotation[]>(`image/annotations?${query}`, request)
@@ -711,7 +719,8 @@ export class ApiService {
 
 	// SYSTEM
 
-	latestRelease() {
-		return this.http.get<LatestRelease | undefined>('system/latest-release')
+	async latestRelease() {
+		const response = await fetch('https://api.github.com/repos/tiagohm/nebulosa/releases/latest')
+		return (await response.json()) as GitHubRelease
 	}
 }

@@ -165,6 +165,20 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		return this.event?.state === 'PAUSING' || this.event?.state === 'PAUSED'
 	}
 
+	get exposureTotal() {
+		let time = 0
+		let frames = 0
+
+		for (const sequence of this.plan.sequences) {
+			if (sequence.enabled) {
+				time += sequence.exposureTime * sequence.exposureAmount
+				frames += sequence.exposureAmount
+			}
+		}
+
+		return { time, frames }
+	}
+
 	constructor(
 		private readonly app: AppComponent,
 		private readonly api: ApiService,

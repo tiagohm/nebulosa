@@ -456,6 +456,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 						await this.changeLiveStackingMode('NONE')
 					}
 
+					await this.closeImage()
+
 					this.imageData.path = event.savedPath
 					this.imageData.capture = event.capture
 					this.imageData.exposureCount = event.exposureCount
@@ -463,7 +465,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 					this.clearOverlay()
 
-					await this.loadImage(true)
+					await this.loadImage()
 				})
 			}
 		})
@@ -631,14 +633,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private async closeImage() {
-		const path = this.imagePath
-
-		if (path) {
-			await this.api.closeImage(path)
+		if (this.imageData.path) {
+			await this.api.closeImage(this.imageData.path)
+		}
+		if (this.liveStacking.path) {
+			await this.api.closeImage(this.liveStacking.path)
 		}
 	}
 
-	private changeLiveStackingMode(mode: LiveStackingMode) {
+	private async changeLiveStackingMode(mode: LiveStackingMode) {
 		this.liveStacking.mode = mode
 
 		if (this.liveStacking.mode !== 'NONE') {
@@ -648,7 +651,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.liveStackingMenuItem.visible = this.liveStacking.mode !== 'NONE'
 		this.liveStackingMenuItem.label = mode
 
-		return this.loadImage(true)
+		await this.closeImage()
+		await this.loadImage()
 	}
 
 	protected roiDrag(event: OnDrag) {
@@ -692,6 +696,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private async loadImageFromOpenImage(data: OpenImage) {
+		if (this.imageInfo) {
+			await this.closeImage()
+		}
+
 		if (data.camera) this.imageData.camera = data.camera
 		if (data.path) this.imageData.path = data.path
 		this.imageData.source = data.source
@@ -714,7 +722,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 		if (data.path) {
 			this.clearOverlay()
-			await this.loadImage(!!this.imageInfo)
+			await this.loadImage()
 		}
 	}
 
@@ -809,11 +817,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		ctx?.drawImage(this.image.nativeElement, star.x - 8, star.y - 8, 16, 16, 0, 0, canvas.width, canvas.height)
 	}
 
-	private async loadImage(force: boolean = false) {
-		if (force) {
-			await this.closeImage()
-		}
-
+	private async loadImage() {
 		const path = this.imagePath
 
 		if (path) {

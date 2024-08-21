@@ -32,8 +32,8 @@ export interface HomeConnectionDialog {
 	edited: boolean
 }
 
-export interface LatestRelease {
-	version: string
+export interface GitHubRelease {
+	tag_name: string
 	name: string
 	draft: boolean
 	preRelease: boolean
