@@ -64,6 +64,14 @@ updates:
     commit-message:
       prefix: "[desktop]"
 
+  - package-ecosystem: "npm"
+    directory: "/docs"
+    schedule:
+      interval: "monthly"
+    target-branch: "dev"
+    commit-message:
+      prefix: "[docs]"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
