@@ -1,0 +1,47 @@
+---
+title: Nebulosa
+description: The complete integrated solution for all of your astronomical imaging needs.
+template: splash
+hero:
+  tagline: The complete integrated solution for all of your astronomical imaging needs.
+  image:
+    file: ../../../../desktop/src/assets/icons/nebulosa-256.png
+  actions:
+    - text: Download
+      link: /guides/example/
+      icon: down-caret
+    - text: View on GitHub
+      link: https://github.com/tiagohm/nebulosa
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Features
+
+<CardGrid stagger>
+	<Card title="Camera">
+		* INDI/ASCOM compatible CCD and CMOS cameras.
+        * Cooler/dew heater control.
+        * Flexible exposure time control.
+        * Automatic preview after every exposure.
+        * Auto image calibration.
+	</Card>
+	<Card title="Mount">
+		* INDI/ASCOM compatible mounts.
+        * Remote connection via Stellarium [desktop](https://stellarium.org) or [mobile](https://play.google.com/store/apps/details?id=com.noctuasoftware.stellarium_plus) applications.
+	</Card>
+	<Card title="Filter Wheel">
+		* INDI/ASCOM compatible filter wheels.
+        * Choose a filter as shutter for dark frames.
+        * Custom focus offset.
+	</Card>
+	<Card title="Focuser">
+		* INDI/ASCOM compatible focusers.
+        * Relative and absolute step controls.
+	</Card>
+	<Card title="Rotator">
+		* INDI/ASCOM compatible rotators.
+	</Card>
+</CardGrid>
