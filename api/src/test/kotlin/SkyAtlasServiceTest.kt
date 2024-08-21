@@ -1,6 +1,8 @@
 import SatelliteEntityRepositoryTest.Companion.ISS_TLE
 import SatelliteEntityRepositoryTest.Companion.save
 import SimbadEntityRepositoryTest.Companion.save
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.module.kotlin.jsonMapper
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.collections.shouldHaveSize
@@ -158,6 +160,11 @@ class SkyAtlasServiceTest {
         @JvmStatic private val SATELLITE_BOX = BOX_STORE.boxFor<SatelliteEntity>()
         @JvmStatic private val SIMBAD_BOX = BOX_STORE.boxFor<SimbadEntity>()
 
+        @JvmStatic private val OBJECT_MAPPER = jsonMapper {
+            disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            disable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+        }
+
         @JvmStatic private val SIMBAD_ENTITY_REPOSITORY = SimbadEntityRepository(SIMBAD_BOX).apply {
             save("Sirius", SkyObjectType.STAR, Constellation.CMA, -1.45, "06 45 06".hours, "-16 43 33".deg)
             save("75 Tucanae", SkyObjectType.GLOBULAR_CLUSTER, Constellation.TUC, 6.58, "01 03 12".hours, "-70 50 39".deg)
@@ -169,7 +176,7 @@ class SkyAtlasServiceTest {
 
         @JvmStatic private val SERVICE = SkyAtlasService(
             HORIZONS_EPHEMERIS_PROVIDER, BODY_EPHEMERIS_PROVIDER, SMALL_BODY_DATABASE_SERVICE,
-            SATELLITE_REPOSITORY, SIMBAD_ENTITY_REPOSITORY, HTTP_CLIENT
+            SATELLITE_REPOSITORY, SIMBAD_ENTITY_REPOSITORY, HTTP_CLIENT, OBJECT_MAPPER
         )
 
         @JvmStatic private val LOCATION = Location("-19.846616".deg, "-43.96872".deg, 852.0.m, -180)
