@@ -3,31 +3,13 @@ import { dirname } from 'path'
 import { ElectronService } from '../../services/electron.service'
 import { PreferenceService } from '../../services/preference.service'
 
-export interface PathChooserPreference {
-	liveStackerDarkFile?: string
-	liveStackerFlatFile?: string
-	liveStackerBiasFile?: string
-	liveStackerExecutableFile?: string
-	flatWizardSaveFile?: string
-	sequencerOutputDirectory?: string
-	plateSolverExecutableFile?: string
-	starDetectorExecutableFile?: string
-	stackerExecutableFile?: string
-	stackerOutputDirectory?: string
-	stackerDarkFile?: string
-	stackerFlatFile?: string
-	stackerBiasFile?: string
-}
-
-export const DEFAULT_PATH_CHOOSER_PREFERENCE: PathChooserPreference = {}
-
 @Component({
 	selector: 'neb-path-chooser',
 	templateUrl: './path-chooser.component.html',
 })
 export class PathChooserComponent {
 	@Input({ required: true })
-	protected readonly key!: keyof PathChooserPreference
+	protected readonly key!: string
 
 	@Input()
 	protected readonly label?: string
@@ -42,7 +24,10 @@ export class PathChooserComponent {
 	protected readonly readonly: boolean = false
 
 	@Input({ required: true })
-	protected readonly directory!: boolean
+	protected readonly directory: boolean = false
+
+	@Input()
+	protected readonly save: boolean = false
 
 	@Input()
 	protected path?: string
@@ -60,7 +45,9 @@ export class PathChooserComponent {
 		const lastPath = preference[this.key] || undefined
 		const defaultPath = lastPath && !this.directory ? dirname(lastPath) : lastPath
 
-		const path = await (this.directory ? this.electronService.openDirectory({ defaultPath }) : this.electronService.openFile({ defaultPath }))
+		const path = await (this.directory ? this.electronService.openDirectory({ defaultPath })
+		: this.save ? this.electronService.saveFile({ defaultPath })
+		: this.electronService.openFile({ defaultPath }))
 
 		if (path) {
 			this.path = path

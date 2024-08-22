@@ -26,14 +26,14 @@ class HorizonsService(
 
     fun observer(
         command: String,
-        longitude: Angle, latitude: Angle, elevation: Distance = 0.0,
+        site: ObservingSite,
         startTime: LocalDateTime, endTime: LocalDateTime = startTime.plusDays(1L),
         stepSizeInMinutes: Int = 1,
         apparent: ApparentRefractionCorrection = ApparentRefractionCorrection.AIRLESS,
         extraPrecision: Boolean = false,
         vararg quantities: HorizonsQuantity = HorizonsQuantity.ENTRIES,
     ) = service.observer(
-        wrap(command), wrap("${longitude.toDegrees},${latitude.toDegrees},${elevation.toKilometers}"),
+        wrap(command), wrap(site.center), wrap(site.coord),
         wrap(startTime), wrap(endTime), wrap("${stepSizeInMinutes}m"),
         wrap(quantities.map { it.code }.toSortedSet().joinToString(",")),
         wrap(apparent), wrap(if (extraPrecision) "YES" else "NO"),

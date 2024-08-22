@@ -452,8 +452,8 @@ export class ApiService {
 	}
 
 	altitudePointsOfSun(dateTime: Date, location?: Location, fast: boolean = false) {
-		const date = extractDate(dateTime)
-		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/sun/altitude-points?${query}`)
 	}
 
@@ -464,8 +464,8 @@ export class ApiService {
 	}
 
 	altitudePointsOfMoon(dateTime: Date, location?: Location, fast: boolean = false) {
-		const date = extractDate(dateTime)
-		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/moon/altitude-points?${query}`)
 	}
 
@@ -476,8 +476,8 @@ export class ApiService {
 	}
 
 	altitudePointsOfPlanet(code: string, dateTime: Date, location?: Location, fast: boolean = false) {
-		const date = extractDate(dateTime)
-		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/planets/${encodeURIComponent(code)}/altitude-points?${query}`)
 	}
 
@@ -488,8 +488,8 @@ export class ApiService {
 	}
 
 	altitudePointsOfSkyObject(simbad: DeepSkyObject, dateTime: Date, location?: Location) {
-		const date = extractDate(dateTime)
-		const query = this.http.query({ date, hasLocation: location?.id || true })
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/sky-objects/${simbad.id}/altitude-points?${query}`)
 	}
 
@@ -511,8 +511,8 @@ export class ApiService {
 	}
 
 	altitudePointsOfSatellite(satellite: Satellite, dateTime: Date, location?: Location) {
-		const date = extractDate(dateTime)
-		const query = this.http.query({ date, hasLocation: location?.id || true })
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, hasLocation: location?.id || true })
 		return this.http.get<[number, number][]>(`sky-atlas/satellites/${satellite.id}/altitude-points?${query}`)
 	}
 

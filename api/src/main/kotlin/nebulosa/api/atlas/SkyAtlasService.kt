@@ -7,6 +7,7 @@ import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.math.Angle
+import nebulosa.math.evenlySpacedNumbers
 import nebulosa.math.toLightYears
 import nebulosa.math.toMas
 import nebulosa.nova.almanac.findDiscrete
@@ -51,11 +52,13 @@ class SkyAtlasService(
     private val simbadEntityRepository: SimbadEntityRepository,
     private val httpClient: OkHttpClient,
     private val objectMapper: ObjectMapper,
+    private val moonPhaseFinder: MoonPhaseFinder,
 ) {
 
     private val positions = HashMap<GeographicCoordinate, GeographicPosition>()
     private val cachedSimbadEntities = HashMap<Long, SimbadEntity>()
     private val targetLocks = HashMap<Any, Any>()
+    private val cachedMoonPhases = HashMap<LocalDate, List<MoonPhaseDateTime>>()
 
     @Volatile private var sunImage = ByteArray(0)
     @Volatile private var moonPhase: Pair<LocalDateTime, MoonPhase>? = null
@@ -121,7 +124,7 @@ class SkyAtlasService(
         return satelliteRepository.search(text.ifBlank { null }, groups, id)
     }
 
-    fun twilight(location: GeographicCoordinate, date: LocalDate, fast: Boolean = false): Twilight {
+    fun twilight(location: GeographicCoordinate, dateTime: LocalDateTime, fast: Boolean = false): Twilight {
         val civilDusk = doubleArrayOf(0.0, 0.0)
         val nauticalDusk = doubleArrayOf(0.0, 0.0)
         val astronomicalDusk = doubleArrayOf(0.0, 0.0)
@@ -130,23 +133,24 @@ class SkyAtlasService(
         val nauticalDawn = doubleArrayOf(0.0, 0.0)
         val civilDawn = doubleArrayOf(0.0, 0.0)
 
-        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
-        val (a) = findDiscrete(0.0, (ephemeris.size - 1).toDouble(), TwilightDiscreteFunction(ephemeris), 1.0)
+        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, dateTime, true)
+        val range = evenlySpacedNumbers(0.0, (ephemeris.size - 1).toDouble(), ephemeris.size)
+        val result = findDiscrete(range, TwilightDiscreteFunction(ephemeris), 1.0)
 
-        civilDusk[0] = a[0] / 60.0
-        civilDusk[1] = a[1] / 60.0
-        nauticalDusk[0] = a[1] / 60.0
-        nauticalDusk[1] = a[2] / 60.0
-        astronomicalDusk[0] = a[2] / 60.0
-        astronomicalDusk[1] = a[3] / 60.0
-        night[0] = a[3] / 60.0
-        night[1] = a[4] / 60.0
-        astronomicalDawn[0] = a[4] / 60.0
-        astronomicalDawn[1] = a[5] / 60.0
-        nauticalDawn[0] = a[5] / 60.0
-        nauticalDawn[1] = a[6] / 60.0
-        civilDawn[0] = a[6] / 60.0
-        civilDawn[1] = a[7] / 60.0
+        civilDusk[0] = result.x(0) / 60.0
+        civilDusk[1] = result.x(1) / 60.0
+        nauticalDusk[0] = result.x(1) / 60.0
+        nauticalDusk[1] = result.x(2) / 60.0
+        astronomicalDusk[0] = result.x(2) / 60.0
+        astronomicalDusk[1] = result.x(3) / 60.0
+        night[0] = result.x(3) / 60.0
+        night[1] = result.x(4) / 60.0
+        astronomicalDawn[0] = result.x(4) / 60.0
+        astronomicalDawn[1] = result.x(5) / 60.0
+        nauticalDawn[0] = result.x(5) / 60.0
+        nauticalDawn[1] = result.x(6) / 60.0
+        civilDawn[0] = result.x(6) / 60.0
+        civilDawn[1] = result.x(7) / 60.0
 
         return Twilight(
             civilDusk, nauticalDusk, astronomicalDusk, night,
@@ -154,35 +158,35 @@ class SkyAtlasService(
         )
     }
 
-    fun altitudePointsOfSun(location: GeographicCoordinate, date: LocalDate, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
+    fun altitudePointsOfSun(location: GeographicCoordinate, dateTime: LocalDateTime, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
+        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfMoon(location: GeographicCoordinate, date: LocalDate, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(if (fast) FAST_MOON else MOON, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
+    fun altitudePointsOfMoon(location: GeographicCoordinate, dateTime: LocalDateTime, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
+        val ephemeris = bodyEphemeris(if (fast) FAST_MOON else MOON, location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
     fun altitudePointsOfPlanet(
-        location: GeographicCoordinate, code: String, date: LocalDate,
+        location: GeographicCoordinate, code: String, dateTime: LocalDateTime,
         stepSize: Int, fast: Boolean = false
     ): List<DoubleArray> {
         val target: Any = VSOP87E.entries.takeIf { fast }?.find { "${it.target}" == code } ?: code
-        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
+        val ephemeris = bodyEphemeris(target, location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfSkyObject(location: GeographicCoordinate, id: Long, date: LocalDate, stepSize: Int): List<DoubleArray> {
+    fun altitudePointsOfSkyObject(location: GeographicCoordinate, id: Long, dateTime: LocalDateTime, stepSize: Int): List<DoubleArray> {
         val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id)
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found sky object: [$id]")
         cachedSimbadEntities[id] = target
-        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
+        val ephemeris = bodyEphemeris(target, location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfSatellite(location: GeographicCoordinate, satellite: SatelliteEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
+    fun altitudePointsOfSatellite(location: GeographicCoordinate, satellite: SatelliteEntity, dateTime: LocalDateTime, stepSize: Int): List<DoubleArray> {
+        val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
@@ -232,10 +236,9 @@ class SkyAtlasService(
         sunImage = bytes.toByteArray()
     }
 
-    fun moonPhase(location: GeographicCoordinate, dateTime: LocalDateTime): MoonPhase? {
-        val now = LocalDateTime.now(SystemClock)
-
-        if (moonPhase == null || abs(ChronoUnit.HOURS.between(moonPhase!!.first, now)) >= 1) {
+    @Synchronized
+    fun moonPhase(location: GeographicCoordinate, dateTime: LocalDateTime): Map<String, Any?>? {
+        if (moonPhase == null || abs(ChronoUnit.HOURS.between(moonPhase!!.first, dateTime)) >= 1) {
             val request = Request.Builder()
                 .url(MOON_PHASE_URL.format(dateTime.minusMinutes(location.offsetInMinutes().toLong()).format(MOON_PHASE_DATE_TIME_FORMAT)))
                 .build()
@@ -248,10 +251,21 @@ class SkyAtlasService(
                 null
             }
 
-            moonPhase = now.withMinute(0).withSecond(0).withNano(0) to (body ?: return null)
+            moonPhase = dateTime.withMinute(0).withSecond(0).withNano(0) to (body ?: return null)
         }
 
-        return moonPhase?.second
+        val date = dateTime.toLocalDate().withDayOfMonth(1)
+        val phases = if (date in cachedMoonPhases) {
+            cachedMoonPhases[date]!!
+        } else {
+            val offsetInMinutes = location.offsetInMinutes().toLong()
+            moonPhaseFinder.find(date, offsetInMinutes).also { cachedMoonPhases[date] = it }
+        }
+
+        return mapOf(
+            "current" to moonPhase?.second,
+            "phases" to phases,
+        )
     }
 
     companion object {

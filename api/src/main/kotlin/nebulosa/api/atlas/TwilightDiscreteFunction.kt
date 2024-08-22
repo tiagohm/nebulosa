@@ -8,9 +8,7 @@ data class TwilightDiscreteFunction(private val ephemeris: List<HorizonsElement>
 
     private val cached = DoubleArray(ephemeris.size) { Double.NaN }
 
-    override val stepSize = 1.0
-
-    override fun compute(x: Double): Int {
+    override fun invoke(x: Double): Int {
         val index = x.toInt()
 
         val altitude = if (cached[index].isNaN()) ephemeris[index].asDouble(HorizonsQuantity.APPARENT_ALT)

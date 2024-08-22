@@ -22,6 +22,8 @@ export type AltitudeDataPoint = [number, number]
 
 export type SatelliteSearchGroups = Record<SatelliteGroupType, boolean>
 
+export type MoonPhaseName = 'NEW_MOON' | 'FIRST_QUARTER' | 'FULL_MOON' | 'LAST_QUARTER'
+
 export enum BodyTabType {
 	SUN,
 	MOON,
@@ -228,17 +230,25 @@ export interface Twilight {
 	civilDawn: number[]
 }
 
+export interface MoonPhaseDateTime {
+	dateTime: number
+	name: MoonPhaseName
+}
+
 export interface MoonPhase {
-	phase: number
-	obscuration: number
-	age: number
-	diameter: number
-	distance: number
-	subSolarLon: number
-	subSolarLat: number
-	subEarthLon: number
-	subEarthLat: number
-	posAngle: number
+	current: {
+		phase: number
+		obscuration: number
+		age: number
+		diameter: number
+		distance: number
+		subSolarLon: number
+		subSolarLat: number
+		subEarthLon: number
+		subEarthLat: number
+		posAngle: number
+	}
+	phases: MoonPhaseDateTime[]
 }
 
 export interface AstronomicalObject extends EquatorialCoordinateJ2000 {

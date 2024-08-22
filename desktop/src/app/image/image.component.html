@@ -110,7 +110,7 @@
 <div
 	*ngIf="imageROI.show"
 	class="roi-coordinates fixed flex flex-row align-items-center gap-2">
-	<span>X: {{ imageROI.x.toFixed(0) }} Y: {{ imageROI.y.toFixed(0) }} W: {{ imageROI.width.toFixed(0) }} H: {{ imageROI.height.toFixed(0) }}</span>
+	<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
 	<p-button
 		[text]="true"
 		(onClick)="roiForCamera()"
@@ -1376,14 +1376,13 @@
 	class="pointer-events-none">
 	<div class="grid mt-2">
 		<div class="col-12">
-			<p-floatLabel class="w-full">
-				<input
-					pInputText
-					readonly
-					[value]="saveAs.path"
-					class="border-0 p-inputtext-sm" />
-				<label>Path</label>
-			</p-floatLabel>
+			<neb-path-chooser
+				key="imageSaveAs"
+				[directory]="false"
+				[save]="true"
+				[(path)]="saveAs.path"
+				(pathChange)="pathChangedForSaveAs()"
+				class="w-full" />
 		</div>
 		<div class="col-12 flex align-items-center justify-content-center">
 			<p-selectButton
@@ -1393,6 +1392,79 @@
 				[(ngModel)]="saveAs.format"
 				[multiple]="false" />
 		</div>
+		@if (imageInfo) {
+			<div class="col-2">
+				<p-button
+					[disabled]="!imageROI.show"
+					[text]="true"
+					icon="mdi mdi-artboard"
+					size="small"
+					pTooltip="ROI Size"
+					tooltipPosition="bottom"
+					(onClick)="useROIAreaForSaveAs()" />
+			</div>
+			<div class="col-5">
+				<p-floatLabel class="w-full">
+					<p-inputNumber
+						[min]="0"
+						[max]="imageInfo.width"
+						[showButtons]="true"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[(ngModel)]="saveAs.subFrame.x"
+						locale="en"
+						spinnableNumber />
+					<label>X</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-5">
+				<p-floatLabel class="w-full">
+					<p-inputNumber
+						[min]="0"
+						[max]="imageInfo.height"
+						[showButtons]="true"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[(ngModel)]="saveAs.subFrame.y"
+						locale="en"
+						spinnableNumber />
+					<label>Y</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-2">
+				<p-button
+					[text]="true"
+					icon="mdi mdi-restore"
+					size="small"
+					pTooltip="Image Size"
+					tooltipPosition="bottom"
+					(onClick)="useImageAreaForSaveAs()" />
+			</div>
+			<div class="col-5">
+				<p-floatLabel class="w-full">
+					<p-inputNumber
+						[min]="0"
+						[max]="imageInfo.width"
+						[showButtons]="true"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[(ngModel)]="saveAs.subFrame.width"
+						locale="en"
+						spinnableNumber />
+					<label>Width</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-5">
+				<p-floatLabel class="w-full">
+					<p-inputNumber
+						[min]="0"
+						[max]="imageInfo.height"
+						[showButtons]="true"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[(ngModel)]="saveAs.subFrame.height"
+						locale="en"
+						spinnableNumber />
+					<label>Height</label>
+				</p-floatLabel>
+			</div>
+		}
 		<div class="col-7 align-items-center justify-content-center">
 			<p-floatLabel class="w-full">
 				<p-dropdown
@@ -1416,6 +1488,7 @@
 	</div>
 	<ng-template pTemplate="footer">
 		<p-button
+			[disabled]="!saveAs.path"
 			icon="mdi mdi-content-save"
 			label="Save"
 			(onClick)="saveImageAs()"

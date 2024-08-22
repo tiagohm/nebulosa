@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core'
 import { DARVState, Hemisphere, TPPAState } from '../types/alignment.types'
-import { Constellation, SatelliteGroupType, SkyObjectType } from '../types/atlas.types'
+import { Constellation, MoonPhaseName, SatelliteGroupType, SkyObjectType } from '../types/atlas.types'
 import { AutoFocusFittingMode, AutoFocusState, BacklashCompensationMode } from '../types/autofocus.type'
 import { CameraCaptureState, ExposureMode, ExposureTimeUnit, FrameType, LiveStackerType } from '../types/camera.types'
 import { FlatWizardState } from '../types/flat-wizard.types'
@@ -43,6 +43,7 @@ export type EnumPipeKey =
 	| SequencerState
 	| ExposureTimeUnit
 	| ImageChannel
+	| MoonPhaseName
 	| 'ALL'
 
 @Pipe({ name: 'enum' })
@@ -172,11 +173,13 @@ export class EnumPipe implements PipeTransform {
 		FAR_IR_SOURCE_30_M: 'Far-IR source (λ >= 30 µm)',
 		FENGYUN_1C_DEBRIS: 'Chinese ASAT Test Debris (FENGYUN 1C)',
 		FINISHED: 'Finished',
+		FIRST_QUARTER: 'First Quarter',
 		FIXED: 'Fixed',
 		FLAT: 'Flat',
 		FLOAT: 'Float',
 		FOR: 'Fornax',
 		FORWARD: 'Forward',
+		FULL_MOON: 'Full Moon',
 		FULLY: 'Fully',
 		GALAXY_IN_PAIR_OF_GALAXIES: 'Galaxy in Pair of Galaxies',
 		GALAXY_TOWARDS_A_CLUSTER_OF_GALAXIES: 'Galaxy towards a Cluster of Galaxies',
@@ -242,6 +245,7 @@ export class EnumPipe implements PipeTransform {
 		IRREGULAR_VARIABLE: 'Irregular Variable',
 		LAC: 'Lacerta',
 		LAST_30_DAYS: `Last 30 Days' Launches`,
+		LAST_QUARTER: 'Last Quarter',
 		LEO: 'Leo',
 		LEP: 'Lepus',
 		LIB: 'Libra',
@@ -269,12 +273,12 @@ export class EnumPipe implements PipeTransform {
 		MEN: 'Mensa',
 		METRIC_RADIO_SOURCE: 'Metric Radio Source',
 		MIC: 'Microscopium',
-		MICROSECOND: 'µs',
 		MICRO_LENSING_EVENT: '(Micro)Lensing Event',
+		MICROSECOND: 'µs',
 		MID_IR_SOURCE_3_TO_30_M: 'Mid-IR Source (3 to 30 µm)',
 		MILITARY: 'Miscellaneous Military',
-		MILLISECOND: 'ms',
 		MILLIMETRIC_RADIO_SOURCE: 'Millimetric Radio Source',
+		MILLISECOND: 'ms',
 		MINIMUM_NEUTRAL: 'Minimum Neutral',
 		MINUTE: 'm',
 		MIRA_VARIABLE: 'Mira Variable',
@@ -289,6 +293,7 @@ export class EnumPipe implements PipeTransform {
 		NEAR_IR_SOURCE_3_M: 'Near-IR Source (λ < 3 µm)',
 		NEBULA: 'Nebula',
 		NEUTRON_STAR: 'Neutron Star',
+		NEW_MOON: 'New Moon',
 		NNSS: 'Navy Navigation Satellite System (NNSS)',
 		NOAA: 'NOAA',
 		NONE: 'None',
@@ -361,8 +366,8 @@ export class EnumPipe implements PipeTransform {
 		SCL: 'Sculptor',
 		SCO: 'Scorpius',
 		SCT: 'Scutum',
-		SELECTED: 'Selected',
 		SECOND: 's',
+		SELECTED: 'Selected',
 		SER: 'Serpens',
 		SES: 'SES',
 		SETTLING: 'Settling',

@@ -53,28 +53,28 @@
 						[waning]="moon.position.leading" />
 					<div
 						*ngIf="moon.phase"
-						class="absolute text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
+						class="absolute w-full text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
 						<div class="flex flex-column gap-2">
 							<div class="flex flex-column">
 								<span class="font-bold">Diameter</span>
-								<span>{{ moon.phase.diameter }} arcsec</span>
-								<span>{{ (moon.phase.diameter / 60).toFixed(2) }} arcmin</span>
+								<span>{{ moon.phase.current.diameter }} arcsec</span>
+								<span>{{ (moon.phase.current.diameter / 60).toFixed(2) }} arcmin</span>
 							</div>
 							<div class="flex flex-column">
 								<span class="font-bold">Age</span>
-								<span>{{ moon.phase.age }} d</span>
+								<span>{{ moon.phase.current.age }} d</span>
 							</div>
 							<div class="flex flex-column">
 								<span class="font-bold">Sub-Solar Lon / Lat</span>
-								<span>{{ moon.phase.subSolarLon }}° / {{ moon.phase.subSolarLat }}°</span>
+								<span>{{ moon.phase.current.subSolarLon }}° / {{ moon.phase.current.subSolarLat }}°</span>
 							</div>
 							<div class="flex flex-column">
 								<span class="font-bold">Sub-Earth Lon / Lat</span>
-								<span>{{ moon.phase.subEarthLon }}° / {{ moon.phase.subEarthLat }}°</span>
+								<span>{{ moon.phase.current.subEarthLon }}° / {{ moon.phase.current.subEarthLat }}°</span>
 							</div>
 							<div class="flex flex-column">
 								<span class="font-bold">Position Angle</span>
-								<span>{{ moon.phase.posAngle }}°</span>
+								<span>{{ moon.phase.current.posAngle }}°</span>
 							</div>
 							<div class="mt-2 text-xs">
 								<a
@@ -84,7 +84,18 @@
 								</a>
 							</div>
 						</div>
-						<div class="flex flex-column"></div>
+						<div class="flex flex-column gap-2">
+							@for (phase of moon.phase.phases; track $index) {
+								<div class="flex flex-column gap-1">
+									<span class="font-bold flex align-items-center gap-1 text-sm">
+										@let phaseIcon = phase.name === 'NEW_MOON' ? 'new' : phase.name === 'FIRST_QUARTER' ? 'first-quarter' : phase.name === 'FULL_MOON' ? 'full' : 'last-quarter';
+										<i class="mdi mdi-moon-{{ phaseIcon }}"></i>
+										{{ phase.name | enum | uppercase }}
+									</span>
+									<span class="pl-4">{{ phase.dateTime | date: 'dd HH:mm' }}</span>
+								</div>
+							}
+						</div>
 					</div>
 				</div>
 			</p-tabPanel>
@@ -862,8 +873,8 @@
 			<div class="col-7 flex-column gap-2">
 				<p-calendar
 					[disabled]="refreshing || !dateTimeAndLocation.manual"
-					[(ngModel)]="dateTimeAndLocation.dateTime"
-					(ngModelChange)="dateTimeChanged(true)"
+					[ngModel]="dateTimeAndLocation.dateTime"
+					(ngModelChange)="dateTimeChanged(true, $event)"
 					[inline]="true"
 					[showIcon]="true"
 					[showWeek]="true"

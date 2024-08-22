@@ -97,6 +97,16 @@ enum class HorizonsQuantity(
     CONSTELLATION(29, 1, "Cnst"),
 
     /**
+     * Observer-centered IAU76/80 ecliptic-of-date longitude and latitude of
+     * the target centers' apparent position with light-time, gravitational
+     * deflection of light, stellar aberration, and optional atmospheric
+     * refraction correction.  For non-Earth sites, the Earth ecliptic at
+     * reference-frame standard epoch is used (J2000 or B1950).
+     */
+    OBSERVER_ECLIPTIC_LONGITUDE(31, 1, "ObsEcLon"),
+    OBSERVER_ECLIPTIC_LATITUDE(31, 1, "ObsEcLat"),
+
+    /**
      * Local Apparent SOLAR Time at observing site.
      */
     LOCAL_APPARENT_SOLAR_TIME(34, 1, "L_Ap_SOL_Time"),
