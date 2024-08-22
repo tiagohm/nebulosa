@@ -1,4 +1,4 @@
-import type { Point, Size } from 'electron'
+import type { Point, Rectangle, Size } from 'electron'
 import type { PanZoom } from 'panzoom'
 import type { CoordinateInterpolator, InterpolatedCoordinate } from '../utils/coordinate-interpolation'
 import type { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
@@ -161,7 +161,7 @@ export interface FOV {
 		cameraResolution: Size
 		focalRatio: number
 		fieldSize: Size
-		svg: Size & Point
+		svg: Rectangle
 	}
 }
 
@@ -229,8 +229,9 @@ export interface ImageFOVDialog {
 	telescope?: FOVTelescope
 }
 
-export interface ImageROI extends Size, Point {
+export interface ImageROI {
 	show: boolean
+	area: Rectangle
 }
 
 export interface ImageSaveDialog {
@@ -240,6 +241,7 @@ export interface ImageSaveDialog {
 	shouldBeTransformed: boolean
 	transformation: ImageTransformation
 	path: string
+	subFrame: Rectangle
 }
 
 export interface ImageTransformation {
@@ -321,6 +323,13 @@ export interface ImageZoom {
 export interface ImageSettingsDialog {
 	showDialog: boolean
 	preference: ImagePreference
+}
+
+export const EMPTY_RECTANGLE: Rectangle = {
+	x: 0,
+	y: 0,
+	width: 0,
+	height: 0,
 }
 
 export const DEFAULT_IMAGE_SOLVED: ImageSolved = {
@@ -456,10 +465,12 @@ export const DEFAULT_IMAGE_ANNOTATION_DIALOG: ImageAnnotationDialog = {
 
 export const DEFAULT_IMAGE_ROI: ImageROI = {
 	show: false,
-	x: 0,
-	y: 0,
-	width: 0,
-	height: 0,
+	area: {
+		x: 0,
+		y: 0,
+		width: 128,
+		height: 128,
+	},
 }
 
 export const DEFAULT_IMAGE_SAVE_DIALOG: ImageSaveDialog = {
@@ -469,6 +480,7 @@ export const DEFAULT_IMAGE_SAVE_DIALOG: ImageSaveDialog = {
 	path: '',
 	shouldBeTransformed: true,
 	transformation: DEFAULT_IMAGE_TRANSFORMATION,
+	subFrame: EMPTY_RECTANGLE,
 }
 
 export const DEFAULT_IMAGE_STATISTICS: ImageStatistics = {

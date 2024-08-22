@@ -109,6 +109,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				this.saveAs.format = imageFormatFromExtension(extension)
 				this.saveAs.bitpix = this.imageInfo?.bitpix ?? 'BYTE'
 				this.saveAs.path = path
+				this.saveAs.subFrame.width ||= this.imageInfo?.width ?? 0
+				this.saveAs.subFrame.height ||= this.imageInfo?.height ?? 0
 
 				this.preference.savePath = dirname(path)
 				this.savePreference()
@@ -660,8 +662,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		target.style.transform = transform
 
 		const rect = this.moveable.getRect()
-		this.imageROI.x = Math.trunc(rect.left)
-		this.imageROI.y = Math.trunc(rect.top)
+		this.imageROI.area.x = Math.trunc(rect.left)
+		this.imageROI.area.y = Math.trunc(rect.top)
 	}
 
 	protected roiResize(event: OnResize) {
@@ -671,12 +673,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		const rect = this.moveable.getRect()
 
 		target.style.width = `${width}px`
-		this.imageROI.x = Math.trunc(rect.left)
-		this.imageROI.width = Math.trunc(width)
+		this.imageROI.area.x = Math.trunc(rect.left)
+		this.imageROI.area.width = Math.trunc(width)
 
 		target.style.height = `${height}px`
-		this.imageROI.y = Math.trunc(rect.top)
-		this.imageROI.height = Math.trunc(height)
+		this.imageROI.area.y = Math.trunc(rect.top)
+		this.imageROI.area.height = Math.trunc(height)
 	}
 
 	protected roiRotate(event: OnRotate) {
@@ -686,10 +688,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	protected roiForCamera() {
 		return this.executeCamera((camera) => {
-			const x = Math.max(0, Math.min(camera.x + this.imageROI.x, camera.maxX))
-			const y = Math.max(0, Math.min(camera.y + this.imageROI.y, camera.maxY))
-			const width = Math.max(0, Math.min(camera.binX * this.imageROI.width, camera.maxWidth))
-			const height = Math.max(0, Math.min(camera.binY * this.imageROI.height, camera.maxHeight))
+			const x = Math.max(0, Math.min(camera.x + this.imageROI.area.x, camera.maxX))
+			const y = Math.max(0, Math.min(camera.y + this.imageROI.area.y, camera.maxY))
+			const width = Math.max(0, Math.min(camera.binX * this.imageROI.area.width, camera.maxWidth))
+			const height = Math.max(0, Math.min(camera.binY * this.imageROI.area.height, camera.maxHeight))
 
 			return this.electronService.send('ROI.SELECTED', { camera, x, y, width, height })
 		}, false)
@@ -923,6 +925,17 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			this.mouseCoordinate.x = x
 			this.mouseCoordinate.y = y
 		}
+	}
+
+	protected useROIAreaForSaveAs() {
+		Object.assign(this.saveAs.subFrame, this.imageROI.area)
+	}
+
+	protected useImageAreaForSaveAs() {
+		this.saveAs.subFrame.x = 0
+		this.saveAs.subFrame.y = 0
+		this.saveAs.subFrame.width = this.imageInfo?.width ?? 0
+		this.saveAs.subFrame.height = this.imageInfo?.height ?? 0
 	}
 
 	protected async saveImageAs() {

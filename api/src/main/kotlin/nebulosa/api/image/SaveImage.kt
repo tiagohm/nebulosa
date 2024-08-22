@@ -9,4 +9,5 @@ data class SaveImage(
     @JvmField val shouldBeTransformed: Boolean = true,
     @JvmField val transformation: ImageTransformation = ImageTransformation.EMPTY,
     @JvmField val path: Path? = null,
+    @JvmField val subFrame: ROI = ROI.EMPTY,
 )

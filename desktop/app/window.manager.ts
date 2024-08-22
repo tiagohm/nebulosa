@@ -1,5 +1,5 @@
 import { Client } from '@stomp/stompjs'
-import type { Point, Size } from 'electron'
+import type { Rectangle } from 'electron'
 import { BrowserWindow, Notification, dialog, screen, shell } from 'electron'
 import Store from 'electron-store'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
@@ -11,7 +11,7 @@ import type { ParsedArgument } from './argument.parser'
 
 // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 export interface WindowInfo {
-	[key: `window.${string}`]: (Size & Point) | undefined
+	[key: `window.${string}`]: Rectangle | undefined
 }
 
 const store = new Store<WindowInfo>({ name: 'nebulosa' })

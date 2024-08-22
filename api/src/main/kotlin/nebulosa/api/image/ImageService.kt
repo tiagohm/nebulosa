@@ -276,10 +276,17 @@ class ImageService(
     }
 
     fun saveImageAs(path: Path, save: SaveImage, camera: Camera?) {
-        val (image) = imageBucket.open(path).image?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
+        require(save.path != null)
+
+        var (image) = imageBucket.open(path).image?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found")
 
-        require(save.path != null)
+        var (x, y, width, height) = save.subFrame.constrained(image.width, image.height)
+
+        if (width > 0 && height > 0 && (x > 0 || y > 0 || width != image.width || height != image.height)) {
+            LOG.debug { "image subframed. x=$x, y=$y, width=$width, height=$height" }
+            image = image.transform(SubFrame(x, y, width, height))
+        }
 
         val modifier = ImageModifier
             .bitpix(save.bitpix)
