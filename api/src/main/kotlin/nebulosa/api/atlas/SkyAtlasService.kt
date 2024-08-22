@@ -238,9 +238,7 @@ class SkyAtlasService(
 
     @Synchronized
     fun moonPhase(location: GeographicCoordinate, dateTime: LocalDateTime): Map<String, Any?>? {
-        val now = LocalDateTime.now(SystemClock)
-
-        if (moonPhase == null || abs(ChronoUnit.HOURS.between(moonPhase!!.first, now)) >= 1) {
+        if (moonPhase == null || abs(ChronoUnit.HOURS.between(moonPhase!!.first, dateTime)) >= 1) {
             val request = Request.Builder()
                 .url(MOON_PHASE_URL.format(dateTime.minusMinutes(location.offsetInMinutes().toLong()).format(MOON_PHASE_DATE_TIME_FORMAT)))
                 .build()
@@ -253,7 +251,7 @@ class SkyAtlasService(
                 null
             }
 
-            moonPhase = now.withMinute(0).withSecond(0).withNano(0) to (body ?: return null)
+            moonPhase = dateTime.withMinute(0).withSecond(0).withNano(0) to (body ?: return null)
         }
 
         val date = dateTime.toLocalDate().withDayOfMonth(1)
