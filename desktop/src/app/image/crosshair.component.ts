@@ -42,7 +42,7 @@ import { Component, ViewEncapsulation } from '@angular/core'
 		</svg>
 	`,
 	styles: `
-		:host {
+		neb-crosshair {
 			width: 100%;
 			height: 100%;
 			pointer-events: none;
