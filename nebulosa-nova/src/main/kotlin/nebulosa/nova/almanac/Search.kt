@@ -7,15 +7,54 @@ import nebulosa.math.evenlySpacedNumbers
  * Computes the n-th discrete difference along the list and
  * returns indices that are non-zero.
  */
-private fun IntArray.computeDiffAndReduceToIndices(): IntArray {
-    val res = ArrayList<Int>(size - 1)
+fun IntArray.computeDiffAndReduceToIndices(): IntArray {
+    var count = 0
 
     for (i in 0 until size - 1) {
         val diff = this[i + 1] - this[i]
-        if (diff != 0) res.add(i)
+        if (diff != 0) count++
     }
 
-    return IntArray(res.size) { res[it] }
+    val res = IntArray(count)
+    count = 0
+
+    for (i in 0 until size - 1) {
+        val diff = this[i + 1] - this[i]
+        if (diff != 0) res[count++] = i
+    }
+
+    return res
+}
+
+private val EMPTY_X = DoubleArray(0)
+private val EMPTY_Y = IntArray(0)
+
+data class DiscreteResult(
+    private val x: DoubleArray = EMPTY_X,
+    private val y: IntArray = EMPTY_Y,
+) {
+
+    init {
+        require(x.size == y.size)
+    }
+
+    val size
+        get() = x.size
+
+    fun x(index: Int) = x[index]
+
+    fun y(index: Int) = y[index]
+
+    override fun toString() = buildString {
+        append("DiscreteResult(")
+        repeat(size) { append("[${x[it]} | ${y[it]}]") }
+        append(")")
+    }
+
+    companion object {
+
+        @JvmStatic val EMPTY = DiscreteResult()
+    }
 }
 
 /**
@@ -25,31 +64,30 @@ private fun IntArray.computeDiffAndReduceToIndices(): IntArray {
  * transits, and the seasons.
  */
 fun findDiscrete(
-    start: Double, end: Double,
+    range: DoubleArray,
     action: DiscreteFunction,
     epsilon: Double = 0.001 / DAYSEC,
-): Pair<DoubleArray, IntArray> {
-    val num = 8
-
-    require(start < end) { "your start time $start is later than your end time $end" }
-
-    var times = evenlySpacedNumbers(start, end, ((end - start) / action.stepSize).toInt() + 2)
+): DiscreteResult {
+    var x = range
 
     while (true) {
-        val y = IntArray(times.size) { action.compute(times[it]) }
+        val y = IntArray(x.size) { action(x[it]) }
         val indices = y.computeDiffAndReduceToIndices()
 
-        if (indices.isEmpty()) return DoubleArray(0) to IntArray(0)
+        if (indices.isEmpty()) return DiscreteResult.EMPTY
 
-        val starts = DoubleArray(indices.size) { times[indices[it]] }
-        val ends = DoubleArray(indices.size) { times[indices[it] + 1] }
+        val starts = DoubleArray(indices.size) { x[indices[it]] }
+        val ends = DoubleArray(indices.size) { x[indices[it] + 1] }
 
         if (ends[0] - starts[0] > epsilon) {
-            val size = indices.size * num
-            if (size != times.size) times = DoubleArray(size)
-            for (i in indices.indices) evenlySpacedNumbers(starts[i], ends[i], num).copyInto(times, i * num)
+            val size = indices.size * 8
+            if (size != x.size) x = DoubleArray(size)
+
+            for (i in indices.indices) {
+                evenlySpacedNumbers(starts[i], ends[i], 8).copyInto(x, i * 8)
+            }
         } else {
-            return ends to IntArray(indices.size) { y[indices[it] + 1] }
+            return DiscreteResult(ends, IntArray(indices.size) { y[indices[it] + 1] })
         }
     }
 }

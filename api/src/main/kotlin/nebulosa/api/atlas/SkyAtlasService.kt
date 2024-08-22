@@ -7,6 +7,7 @@ import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.math.Angle
+import nebulosa.math.evenlySpacedNumbers
 import nebulosa.math.toLightYears
 import nebulosa.math.toMas
 import nebulosa.nova.almanac.findDiscrete
@@ -51,6 +52,7 @@ class SkyAtlasService(
     private val simbadEntityRepository: SimbadEntityRepository,
     private val httpClient: OkHttpClient,
     private val objectMapper: ObjectMapper,
+    private val moonPhaseFinder: MoonPhaseFinder,
 ) {
 
     private val positions = HashMap<GeographicCoordinate, GeographicPosition>()
@@ -131,22 +133,23 @@ class SkyAtlasService(
         val civilDawn = doubleArrayOf(0.0, 0.0)
 
         val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
-        val (a) = findDiscrete(0.0, (ephemeris.size - 1).toDouble(), TwilightDiscreteFunction(ephemeris), 1.0)
+        val range = evenlySpacedNumbers(0.0, (ephemeris.size - 1).toDouble(), ephemeris.size)
+        val result = findDiscrete(range, TwilightDiscreteFunction(ephemeris), 1.0)
 
-        civilDusk[0] = a[0] / 60.0
-        civilDusk[1] = a[1] / 60.0
-        nauticalDusk[0] = a[1] / 60.0
-        nauticalDusk[1] = a[2] / 60.0
-        astronomicalDusk[0] = a[2] / 60.0
-        astronomicalDusk[1] = a[3] / 60.0
-        night[0] = a[3] / 60.0
-        night[1] = a[4] / 60.0
-        astronomicalDawn[0] = a[4] / 60.0
-        astronomicalDawn[1] = a[5] / 60.0
-        nauticalDawn[0] = a[5] / 60.0
-        nauticalDawn[1] = a[6] / 60.0
-        civilDawn[0] = a[6] / 60.0
-        civilDawn[1] = a[7] / 60.0
+        civilDusk[0] = result.x(0) / 60.0
+        civilDusk[1] = result.x(1) / 60.0
+        nauticalDusk[0] = result.x(1) / 60.0
+        nauticalDusk[1] = result.x(2) / 60.0
+        astronomicalDusk[0] = result.x(2) / 60.0
+        astronomicalDusk[1] = result.x(3) / 60.0
+        night[0] = result.x(3) / 60.0
+        night[1] = result.x(4) / 60.0
+        astronomicalDawn[0] = result.x(4) / 60.0
+        astronomicalDawn[1] = result.x(5) / 60.0
+        nauticalDawn[0] = result.x(5) / 60.0
+        nauticalDawn[1] = result.x(6) / 60.0
+        civilDawn[0] = result.x(6) / 60.0
+        civilDawn[1] = result.x(7) / 60.0
 
         return Twilight(
             civilDusk, nauticalDusk, astronomicalDusk, night,
@@ -250,6 +253,9 @@ class SkyAtlasService(
 
             moonPhase = now.withMinute(0).withSecond(0).withNano(0) to (body ?: return null)
         }
+
+        val offsetInMinutes = location.offsetInMinutes().toLong()
+        moonPhaseFinder.find(dateTime.toLocalDate(), location.longitude, location.latitude, location.elevation, offsetInMinutes)
 
         return moonPhase?.second
     }

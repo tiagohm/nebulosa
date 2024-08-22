@@ -24,6 +24,7 @@ import nebulosa.test.HTTP_CLIENT
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
@@ -140,6 +141,92 @@ class SkyAtlasServiceTest {
         phas.shouldHaveAtLeastSize(2).map { it.name }.shouldContainAll("(2017 MB3)", "(2024 LH)")
     }
 
+    @Test
+    fun findMoonPhases() {
+        // Moon Phases.
+        // https://www.timeanddate.com/moon/phases/
+        // https://aa.usno.navy.mil/calculated/moon/phases?date=2024-08-01&nump=50&format=p&submit=Get+Data
+        val phases = MOON_PHASE_FINDER.find(LocalDate.of(2024, 8, 21))
+
+        phases shouldHaveSize 4
+
+        phases[0].dateTime.toString() shouldBe "2024-08-04T11:13"
+        phases[0].name shouldBe MoonPhaseName.NEW_MOON
+
+        phases[1].dateTime.toString() shouldBe "2024-08-12T15:18"
+        phases[1].name shouldBe MoonPhaseName.FIRST_QUARTER
+
+        phases[2].dateTime.toString() shouldBe "2024-08-19T18:25"
+        phases[2].name shouldBe MoonPhaseName.FULL_MOON
+
+        phases[3].dateTime.toString() shouldBe "2024-08-26T09:25"
+        phases[3].name shouldBe MoonPhaseName.LAST_QUARTER
+    }
+
+    @Test
+    fun findMoonPhasesWithTwoNewMoons() {
+        val phases = MOON_PHASE_FINDER.find(LocalDate.of(2024, 12, 1))
+
+        phases shouldHaveSize 5
+
+        phases[0].dateTime.toString() shouldBe "2024-12-01T06:21"
+        phases[0].name shouldBe MoonPhaseName.NEW_MOON
+
+        phases[1].dateTime.toString() shouldBe "2024-12-08T15:26"
+        phases[1].name shouldBe MoonPhaseName.FIRST_QUARTER
+
+        phases[2].dateTime.toString() shouldBe "2024-12-15T09:01"
+        phases[2].name shouldBe MoonPhaseName.FULL_MOON
+
+        phases[3].dateTime.toString() shouldBe "2024-12-22T22:18"
+        phases[3].name shouldBe MoonPhaseName.LAST_QUARTER
+
+        phases[4].dateTime.toString() shouldBe "2024-12-30T22:26"
+        phases[4].name shouldBe MoonPhaseName.NEW_MOON
+    }
+
+    @Test
+    fun findMoonPhasesWithBlueMoon() {
+        // https://aa.usno.navy.mil/calculated/moon/phases?date=2023-08-01&nump=50&format=p&submit=Get+Data
+        val phases = MOON_PHASE_FINDER.find(LocalDate.of(2023, 8, 1))
+
+        phases shouldHaveSize 5
+
+        phases[0].dateTime.toString() shouldBe "2023-08-01T18:31"
+        phases[0].name shouldBe MoonPhaseName.FULL_MOON
+
+        phases[1].dateTime.toString() shouldBe "2023-08-08T10:28"
+        phases[1].name shouldBe MoonPhaseName.LAST_QUARTER
+
+        phases[2].dateTime.toString() shouldBe "2023-08-16T09:38"
+        phases[2].name shouldBe MoonPhaseName.NEW_MOON
+
+        phases[3].dateTime.toString() shouldBe "2023-08-24T09:57"
+        phases[3].name shouldBe MoonPhaseName.FIRST_QUARTER
+
+        phases[4].dateTime.toString() shouldBe "2023-08-31T01:35"
+        phases[4].name shouldBe MoonPhaseName.FULL_MOON
+    }
+
+    @Test
+    fun findMoonPhasesForPrecisionObservations() {
+        val phases = MOON_PHASE_FINDER.find(LocalDate.of(2024, 8, 21), (-45.899).deg, (-23.219).deg, 890.0.m, -180L)
+
+        phases shouldHaveSize 4
+
+        phases[0].dateTime.toString() shouldBe "2024-08-04T09:45"
+        phases[0].name shouldBe MoonPhaseName.NEW_MOON
+
+        phases[1].dateTime.toString() shouldBe "2024-08-12T13:51"
+        phases[1].name shouldBe MoonPhaseName.FIRST_QUARTER
+
+        phases[2].dateTime.toString() shouldBe "2024-08-19T17:17"
+        phases[2].name shouldBe MoonPhaseName.FULL_MOON
+
+        phases[3].dateTime.toString() shouldBe "2024-08-26T09:28"
+        phases[3].name shouldBe MoonPhaseName.LAST_QUARTER
+    }
+
     companion object {
 
         @JvmStatic private val BOX_STORE = MyObjectBox.builder()
@@ -159,6 +246,7 @@ class SkyAtlasServiceTest {
         @JvmStatic private val SMALL_BODY_DATABASE_SERVICE = SmallBodyDatabaseService()
         @JvmStatic private val SATELLITE_BOX = BOX_STORE.boxFor<SatelliteEntity>()
         @JvmStatic private val SIMBAD_BOX = BOX_STORE.boxFor<SimbadEntity>()
+        @JvmStatic private val MOON_PHASE_FINDER = MoonPhaseFinder(HORIZONS_SERVICE)
 
         @JvmStatic private val OBJECT_MAPPER = jsonMapper {
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -176,7 +264,7 @@ class SkyAtlasServiceTest {
 
         @JvmStatic private val SERVICE = SkyAtlasService(
             HORIZONS_EPHEMERIS_PROVIDER, BODY_EPHEMERIS_PROVIDER, SMALL_BODY_DATABASE_SERVICE,
-            SATELLITE_REPOSITORY, SIMBAD_ENTITY_REPOSITORY, HTTP_CLIENT, OBJECT_MAPPER
+            SATELLITE_REPOSITORY, SIMBAD_ENTITY_REPOSITORY, HTTP_CLIENT, OBJECT_MAPPER, MOON_PHASE_FINDER,
         )
 
         @JvmStatic private val LOCATION = Location("-19.846616".deg, "-43.96872".deg, 852.0.m, -180)

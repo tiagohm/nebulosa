@@ -1,8 +1,6 @@
 package nebulosa.nova.almanac
 
-interface DiscreteFunction {
+fun interface DiscreteFunction {
 
-    val stepSize: Double
-
-    fun compute(x: Double): Int
+    operator fun invoke(x: Double): Int
 }

@@ -4,6 +4,7 @@ import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
 import nebulosa.horizons.HorizonsService
 import nebulosa.horizons.NonUniqueObjectException
+import nebulosa.horizons.ObservingSite
 import nebulosa.log.loggerFor
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.sbd.SmallBody
@@ -61,7 +62,7 @@ class HorizonsEphemerisProvider(private val horizonsService: HorizonsService) : 
                         horizonsService
                             .observer(
                                 target,
-                                position.longitude, position.latitude, position.elevation,
+                                ObservingSite.Geographic(position.longitude, position.latitude, position.elevation),
                                 startTime, endTime,
                                 extraPrecision = true,
                                 quantities = QUANTITIES,
@@ -72,7 +73,7 @@ class HorizonsEphemerisProvider(private val horizonsService: HorizonsService) : 
                         horizonsService
                             .observer(
                                 "$target;CAP;NOFRAG".replace(";;", ";"),
-                                position.longitude, position.latitude, position.elevation,
+                                ObservingSite.Geographic(position.longitude, position.latitude, position.elevation),
                                 startTime, endTime,
                                 extraPrecision = true,
                                 quantities = QUANTITIES,
