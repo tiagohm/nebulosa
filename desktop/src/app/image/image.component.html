@@ -1376,14 +1376,13 @@
 	class="pointer-events-none">
 	<div class="grid mt-2">
 		<div class="col-12">
-			<p-floatLabel class="w-full">
-				<input
-					pInputText
-					readonly
-					[value]="saveAs.path"
-					class="border-0 p-inputtext-sm" />
-				<label>Path</label>
-			</p-floatLabel>
+			<neb-path-chooser
+				key="imageSaveAs"
+				[directory]="false"
+				[save]="true"
+				[(path)]="saveAs.path"
+				(pathChange)="pathChangedForSaveAs()"
+				class="w-full" />
 		</div>
 		<div class="col-12 flex align-items-center justify-content-center">
 			<p-selectButton
@@ -1489,6 +1488,7 @@
 	</div>
 	<ng-template pTemplate="footer">
 		<p-button
+			[disabled]="!saveAs.path"
 			icon="mdi mdi-content-save"
 			label="Save"
 			(onClick)="saveImageAs()"

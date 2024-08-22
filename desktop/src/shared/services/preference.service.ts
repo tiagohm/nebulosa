@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core'
-import { DEFAULT_PATH_CHOOSER_PREFERENCE, PathChooserPreference } from '../components/path-chooser/path-chooser.component'
 import { AlignmentPreference, alignmentPreferenceWithDefault, DEFAULT_ALIGNMENT_PREFERENCE } from '../types/alignment.types'
 import { DEFAULT_SKY_ATLAS_PREFERENCE, SkyAtlasPreference, skyAtlasPreferenceWithDefault } from '../types/atlas.types'
 import { AutoFocusPreference, autoFocusPreferenceWithDefault, DEFAULT_AUTO_FOCUS_PREFERENCE } from '../types/autofocus.type'
@@ -58,51 +57,55 @@ export class PreferenceService {
 	readonly guider: PreferenceData<GuiderPreference>
 	readonly framing: PreferenceData<FramingPreference>
 	readonly settings: PreferenceData<SettingsPreference>
-	readonly pathChooser: PreferenceData<PathChooserPreference>
+	readonly pathChooser: PreferenceData<Record<string, string | undefined>>
 
 	constructor(private readonly storage: LocalStorageService) {
-		this.home = new PreferenceData<HomePreference>(storage, 'home', () => structuredClone(DEFAULT_HOME_PREFERENCE), homePreferenceWithDefault)
-		this.imagePreference = new PreferenceData<ImagePreference>(storage, 'image', () => structuredClone(DEFAULT_IMAGE_PREFERENCE), imagePreferenceWithDefault)
-		this.skyAtlasPreference = new PreferenceData<SkyAtlasPreference>(storage, 'atlas', () => structuredClone(DEFAULT_SKY_ATLAS_PREFERENCE), skyAtlasPreferenceWithDefault)
-		this.alignment = new PreferenceData<AlignmentPreference>(storage, 'alignment', () => structuredClone(DEFAULT_ALIGNMENT_PREFERENCE), alignmentPreferenceWithDefault)
-		this.calibrationPreference = new PreferenceData<CalibrationPreference>(storage, 'calibration', () => structuredClone(DEFAULT_CALIBRATION_PREFERENCE), calibrationPreferenceWithDefault)
-		this.sequencerPreference = new PreferenceData<SequencerPreference>(storage, 'sequencer', () => structuredClone(DEFAULT_SEQUENCER_PREFERENCE), sequencerPreferenceWithDefault)
-		this.stacker = new PreferenceData<StackerPreference>(storage, 'stacker', () => structuredClone(DEFAULT_STACKER_PREFERENCE), stackerPreferenceWithDefault)
-		this.guider = new PreferenceData<GuiderPreference>(storage, 'guider', () => structuredClone(DEFAULT_GUIDER_PREFERENCE), guiderPreferenceWithDefault)
-		this.framing = new PreferenceData<FramingPreference>(storage, 'framing', () => structuredClone(DEFAULT_FRAMING_PREFERENCE), framingPreferenceWithDefault)
-		this.settings = new PreferenceData<SettingsPreference>(storage, 'settings', () => structuredClone(DEFAULT_SETTINGS_PREFERENCE), settingsPreferenceWithDefault)
-		this.pathChooser = new PreferenceData<PathChooserPreference>(storage, 'pathChooser', () => structuredClone(DEFAULT_PATH_CHOOSER_PREFERENCE))
+		this.home = this.create<HomePreference>('home', () => structuredClone(DEFAULT_HOME_PREFERENCE), homePreferenceWithDefault)
+		this.imagePreference = this.create<ImagePreference>('image', () => structuredClone(DEFAULT_IMAGE_PREFERENCE), imagePreferenceWithDefault)
+		this.skyAtlasPreference = this.create<SkyAtlasPreference>('atlas', () => structuredClone(DEFAULT_SKY_ATLAS_PREFERENCE), skyAtlasPreferenceWithDefault)
+		this.alignment = this.create<AlignmentPreference>('alignment', () => structuredClone(DEFAULT_ALIGNMENT_PREFERENCE), alignmentPreferenceWithDefault)
+		this.calibrationPreference = this.create<CalibrationPreference>('calibration', () => structuredClone(DEFAULT_CALIBRATION_PREFERENCE), calibrationPreferenceWithDefault)
+		this.sequencerPreference = this.create<SequencerPreference>('sequencer', () => structuredClone(DEFAULT_SEQUENCER_PREFERENCE), sequencerPreferenceWithDefault)
+		this.stacker = this.create<StackerPreference>('stacker', () => structuredClone(DEFAULT_STACKER_PREFERENCE), stackerPreferenceWithDefault)
+		this.guider = this.create<GuiderPreference>('guider', () => structuredClone(DEFAULT_GUIDER_PREFERENCE), guiderPreferenceWithDefault)
+		this.framing = this.create<FramingPreference>('framing', () => structuredClone(DEFAULT_FRAMING_PREFERENCE), framingPreferenceWithDefault)
+		this.settings = this.create<SettingsPreference>('settings', () => structuredClone(DEFAULT_SETTINGS_PREFERENCE), settingsPreferenceWithDefault)
+		this.pathChooser = this.create<Record<string, string | undefined>>('pathChooser', () => ({} as Record<string, string | undefined>))
+	}
+
+	create<T>(key: string, defaultValue: T | (() => T), withDefault?: (value: T) => T) {
+		return new PreferenceData<T>(this.storage, key, defaultValue, withDefault)
 	}
 
 	wheel(wheel: Wheel) {
-		return new PreferenceData<WheelPreference>(this.storage, `wheel.${wheel.name}`, () => structuredClone(DEFAULT_WHEEL_PREFERENCE), wheelPreferenceWithDefault)
+		return this.create<WheelPreference>(`wheel.${wheel.name}`, () => structuredClone(DEFAULT_WHEEL_PREFERENCE), wheelPreferenceWithDefault)
 	}
 
 	camera(camera: Camera) {
-		return new PreferenceData<CameraPreference>(this.storage, `camera.${camera.name}`, () => structuredClone(DEFAULT_CAMERA_PREFERENCE), cameraPreferenceWithDefault)
+		return this.create<CameraPreference>(`camera.${camera.name}`, () => structuredClone(DEFAULT_CAMERA_PREFERENCE), cameraPreferenceWithDefault)
 	}
 
 	mount(mount: Mount) {
-		return new PreferenceData<MountPreference>(this.storage, `mount.${mount.name}`, () => structuredClone(DEFAULT_MOUNT_PREFERENCE), mountPreferenceWithDefault)
+		return this.create<MountPreference>(`mount.${mount.name}`, () => structuredClone(DEFAULT_MOUNT_PREFERENCE), mountPreferenceWithDefault)
 	}
 
 	focusOffsets(wheel: Wheel, focuser: Focuser) {
-		return new PreferenceData<number[]>(this.storage, `focusOffsets.${wheel.name}.${focuser.name}`, () => new Array<number>(wheel.count).fill(0))
+		return this.create<number[]>(`focusOffsets.${wheel.name}.${focuser.name}`, () => new Array<number>(wheel.count).fill(0))
 	}
 
 	focuser(focuser: Focuser) {
-		return new PreferenceData<FocuserPreference>(this.storage, `focuser.${focuser.name}`, () => structuredClone(DEFAULT_FOCUSER_PREFERENCE), focuserPreferenceWithDefault)
+		return this.create<FocuserPreference>(`focuser.${focuser.name}`, () => structuredClone(DEFAULT_FOCUSER_PREFERENCE), focuserPreferenceWithDefault)
 	}
 
 	rotator(rotator: Rotator) {
-		return new PreferenceData<RotatorPreference>(this.storage, `rotator.${rotator.name}`, () => structuredClone(DEFAULT_ROTATOR_PREFERENCE), rotatorPreferenceWithDefault)
+		return this.create<RotatorPreference>(`rotator.${rotator.name}`, () => structuredClone(DEFAULT_ROTATOR_PREFERENCE), rotatorPreferenceWithDefault)
 	}
 
 	flatWizard(camera: Camera) {
-		return new PreferenceData<FlatWizardPreference>(this.storage, `flatWizard.${camera.name}`, () => structuredClone(DEFAULT_FLAT_WIZARD_PREFERENCE), flatWizardPreferenceWithDefault)
+		return this.create<FlatWizardPreference>(`flatWizard.${camera.name}`, () => structuredClone(DEFAULT_FLAT_WIZARD_PREFERENCE), flatWizardPreferenceWithDefault)
 	}
 
 	autoFocus(camera: Camera) {
-		return new PreferenceData<AutoFocusPreference>(this.storage, `autoFocus.${camera.name}`, () => structuredClone(DEFAULT_AUTO_FOCUS_PREFERENCE), autoFocusPreferenceWithDefault)
+		return this.create<AutoFocusPreference>(`autoFocus.${camera.name}`, () => structuredClone(DEFAULT_AUTO_FOCUS_PREFERENCE), autoFocusPreferenceWithDefault)
 	}
 }

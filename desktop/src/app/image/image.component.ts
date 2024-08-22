@@ -101,22 +101,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	private readonly saveAsMenuItem: MenuItem = {
 		label: 'Save as...',
 		icon: 'mdi mdi-content-save',
-		command: async () => {
-			const path = await this.electronService.saveImage({ defaultPath: this.preference.savePath })
-
-			if (path) {
-				const extension = extname(path).toLowerCase()
-				this.saveAs.format = imageFormatFromExtension(extension)
-				this.saveAs.bitpix = this.imageInfo?.bitpix ?? 'BYTE'
-				this.saveAs.path = path
-				this.saveAs.subFrame.width ||= this.imageInfo?.width ?? 0
-				this.saveAs.subFrame.height ||= this.imageInfo?.height ?? 0
-
-				this.preference.savePath = dirname(path)
-				this.savePreference()
-
-				this.saveAs.showDialog = true
-			}
+		command: () => {
+			this.saveAs.subFrame.width ||= this.imageInfo?.width ?? 0
+			this.saveAs.subFrame.height ||= this.imageInfo?.height ?? 0
+			this.saveAs.showDialog = true
 		},
 	}
 
@@ -924,6 +912,17 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			Object.assign(this.mouseCoordinate, this.mouseCoordinate.interpolator.interpolateAsText(x, y, true, true, false))
 			this.mouseCoordinate.x = x
 			this.mouseCoordinate.y = y
+		}
+	}
+
+	protected pathChangedForSaveAs() {
+		if (this.saveAs.path) {
+			const extension = extname(this.saveAs.path).toLowerCase()
+			this.saveAs.format = imageFormatFromExtension(extension)
+			this.saveAs.bitpix = this.imageInfo?.bitpix ?? 'BYTE'
+
+			this.preference.savePath = dirname(this.saveAs.path)
+			this.savePreference()
 		}
 	}
 
