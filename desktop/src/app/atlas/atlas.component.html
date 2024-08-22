@@ -873,8 +873,8 @@
 			<div class="col-7 flex-column gap-2">
 				<p-calendar
 					[disabled]="refreshing || !dateTimeAndLocation.manual"
-					[(ngModel)]="dateTimeAndLocation.dateTime"
-					(ngModelChange)="dateTimeChanged(true)"
+					[ngModel]="dateTimeAndLocation.dateTime"
+					(ngModelChange)="dateTimeChanged(true, $event)"
 					[inline]="true"
 					[showIcon]="true"
 					[showWeek]="true"

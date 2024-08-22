@@ -625,7 +625,13 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 	}
 
-	protected async dateTimeChanged(dateChanged: boolean) {
+	protected async dateTimeChanged(dateChanged: boolean, date?: Date) {
+		if (date) {
+			this.dateTimeAndLocation.dateTime.setFullYear(date.getFullYear())
+			this.dateTimeAndLocation.dateTime.setMonth(date.getMonth())
+			this.dateTimeAndLocation.dateTime.setDate(date.getDate())
+		}
+
 		this.savePreference()
 		await this.refreshTab(dateChanged, true)
 	}
@@ -689,7 +695,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			}
 			// Moon.
 			else if (this.tab === BodyTabType.MOON) {
-				void this.api.moonPhase(dateTime).then((res) => this.moon.phase = res)
+				void this.api.moonPhase(dateTime).then((res) => (this.moon.phase = res))
 				const position = await this.api.positionOfMoon(dateTime, location)
 				Object.assign(this.moon.position, position)
 			}

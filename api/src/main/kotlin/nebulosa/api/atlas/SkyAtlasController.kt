@@ -38,10 +38,10 @@ class SkyAtlasController(
     @GetMapping("sun/altitude-points")
     fun altitudePointsOfSun(
         @LocationParam location: Location,
-        @DateAndTimeParam date: LocalDate,
+        @DateAndTimeParam dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
         @RequestParam(required = false, defaultValue = "false") fast: Boolean,
-    ) = skyAtlasService.altitudePointsOfSun(location, date, stepSize, fast)
+    ) = skyAtlasService.altitudePointsOfSun(location, dateTime, stepSize, fast)
 
     @GetMapping("moon/position")
     fun positionOfMoon(
@@ -53,10 +53,10 @@ class SkyAtlasController(
     @GetMapping("moon/altitude-points")
     fun altitudePointsOfMoon(
         @LocationParam location: Location,
-        @DateAndTimeParam date: LocalDate,
+        @DateAndTimeParam dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
         @RequestParam(required = false, defaultValue = "false") fast: Boolean,
-    ) = skyAtlasService.altitudePointsOfMoon(location, date, stepSize, fast)
+    ) = skyAtlasService.altitudePointsOfMoon(location, dateTime, stepSize, fast)
 
     @GetMapping("planets/{code}/position")
     fun positionOfPlanet(
@@ -70,10 +70,10 @@ class SkyAtlasController(
     fun altitudePointsOfPlanet(
         @PathVariable code: String,
         @LocationParam location: Location,
-        @DateAndTimeParam date: LocalDate,
+        @DateAndTimeParam dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
         @RequestParam(required = false, defaultValue = "false") fast: Boolean,
-    ) = skyAtlasService.altitudePointsOfPlanet(location, code, date, stepSize, fast)
+    ) = skyAtlasService.altitudePointsOfPlanet(location, code, dateTime, stepSize, fast)
 
     @GetMapping("minor-planets")
     fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String) = skyAtlasService.searchMinorPlanet(text)
@@ -96,9 +96,9 @@ class SkyAtlasController(
     fun altitudePointsOfSkyObject(
         @PathVariable id: Long,
         @LocationParam location: Location,
-        @DateAndTimeParam date: LocalDate,
+        @DateAndTimeParam dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfSkyObject(location, id, date, stepSize)
+    ) = skyAtlasService.altitudePointsOfSkyObject(location, id, dateTime, stepSize)
 
     @GetMapping("sky-objects")
     fun searchSkyObject(
@@ -130,9 +130,9 @@ class SkyAtlasController(
     fun altitudePointsOfSatellite(
         satellite: SatelliteEntity,
         @LocationParam location: Location,
-        @DateAndTimeParam date: LocalDate,
+        @DateAndTimeParam dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfSatellite(location, satellite, date, stepSize)
+    ) = skyAtlasService.altitudePointsOfSatellite(location, satellite, dateTime, stepSize)
 
     @GetMapping("satellites")
     fun searchSatellites(
@@ -144,9 +144,9 @@ class SkyAtlasController(
     @GetMapping("twilight")
     fun twilight(
         @LocationParam location: Location,
-        @DateAndTimeParam date: LocalDate,
+        @DateAndTimeParam dateTime: LocalDateTime,
         @RequestParam(required = false, defaultValue = "false") fast: Boolean,
-    ) = skyAtlasService.twilight(location, date, fast)
+    ) = skyAtlasService.twilight(location, dateTime, fast)
 
     @GetMapping("moon/phase")
     fun moonPhase(

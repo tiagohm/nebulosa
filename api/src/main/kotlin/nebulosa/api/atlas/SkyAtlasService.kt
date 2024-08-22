@@ -124,7 +124,7 @@ class SkyAtlasService(
         return satelliteRepository.search(text.ifBlank { null }, groups, id)
     }
 
-    fun twilight(location: GeographicCoordinate, date: LocalDate, fast: Boolean = false): Twilight {
+    fun twilight(location: GeographicCoordinate, dateTime: LocalDateTime, fast: Boolean = false): Twilight {
         val civilDusk = doubleArrayOf(0.0, 0.0)
         val nauticalDusk = doubleArrayOf(0.0, 0.0)
         val astronomicalDusk = doubleArrayOf(0.0, 0.0)
@@ -133,7 +133,7 @@ class SkyAtlasService(
         val nauticalDawn = doubleArrayOf(0.0, 0.0)
         val civilDawn = doubleArrayOf(0.0, 0.0)
 
-        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
+        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, dateTime, true)
         val range = evenlySpacedNumbers(0.0, (ephemeris.size - 1).toDouble(), ephemeris.size)
         val result = findDiscrete(range, TwilightDiscreteFunction(ephemeris), 1.0)
 
@@ -158,35 +158,35 @@ class SkyAtlasService(
         )
     }
 
-    fun altitudePointsOfSun(location: GeographicCoordinate, date: LocalDate, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
+    fun altitudePointsOfSun(location: GeographicCoordinate, dateTime: LocalDateTime, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
+        val ephemeris = bodyEphemeris(if (fast) VSOP87E.SUN else SUN, location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfMoon(location: GeographicCoordinate, date: LocalDate, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
-        val ephemeris = bodyEphemeris(if (fast) FAST_MOON else MOON, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
+    fun altitudePointsOfMoon(location: GeographicCoordinate, dateTime: LocalDateTime, stepSize: Int, fast: Boolean = false): List<DoubleArray> {
+        val ephemeris = bodyEphemeris(if (fast) FAST_MOON else MOON, location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
     fun altitudePointsOfPlanet(
-        location: GeographicCoordinate, code: String, date: LocalDate,
+        location: GeographicCoordinate, code: String, dateTime: LocalDateTime,
         stepSize: Int, fast: Boolean = false
     ): List<DoubleArray> {
         val target: Any = VSOP87E.entries.takeIf { fast }?.find { "${it.target}" == code } ?: code
-        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
+        val ephemeris = bodyEphemeris(target, location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfSkyObject(location: GeographicCoordinate, id: Long, date: LocalDate, stepSize: Int): List<DoubleArray> {
+    fun altitudePointsOfSkyObject(location: GeographicCoordinate, id: Long, dateTime: LocalDateTime, stepSize: Int): List<DoubleArray> {
         val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id)
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found sky object: [$id]")
         cachedSimbadEntities[id] = target
-        val ephemeris = bodyEphemeris(target, location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
+        val ephemeris = bodyEphemeris(target, location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfSatellite(location: GeographicCoordinate, satellite: SatelliteEntity, date: LocalDate, stepSize: Int): List<DoubleArray> {
-        val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, LocalDateTime.of(date, LocalTime.now(SystemClock)), true)
+    fun altitudePointsOfSatellite(location: GeographicCoordinate, satellite: SatelliteEntity, dateTime: LocalDateTime, stepSize: Int): List<DoubleArray> {
+        val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
