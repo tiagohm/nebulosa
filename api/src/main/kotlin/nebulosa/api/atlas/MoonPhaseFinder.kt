@@ -34,13 +34,13 @@ class MoonPhaseFinder(private val horizonsService: HorizonsService) {
     private fun find(date: LocalDate, site: ObservingSite, offsetInMinutes: Long = 0L): List<MoonPhaseDateTime> {
         val startTime = LocalDateTime.of(date.withDayOfMonth(1), LocalTime.MIN).minusMinutes(offsetInMinutes)
         val endTime = LocalDateTime.of(date.with(TemporalAdjusters.lastDayOfMonth()), LocalTime.MAX).minusMinutes(offsetInMinutes)
-        return compute(60, startTime, endTime, site)
+        return compute(60, startTime, endTime, site, offsetInMinutes)
     }
 
     private fun compute(
         stepSizeInMinutes: Int,
         startTime: LocalDateTime, endTime: LocalDateTime,
-        site: ObservingSite,
+        site: ObservingSite, offsetInMinutes: Long,
     ): List<MoonPhaseDateTime> {
         val sun = horizonsService.observer(
             "10", site,
@@ -62,7 +62,7 @@ class MoonPhaseFinder(private val horizonsService: HorizonsService) {
         val indices = phases.computeDiffAndReduceToIndices()
 
         if (stepSizeInMinutes == 1) {
-            return indices.map { MoonPhaseDateTime(moon[it].dateTime, MoonPhaseName.entries[phases[it + 1]]) }
+            return indices.map { MoonPhaseDateTime(moon[it].dateTime.plusMinutes(offsetInMinutes), MoonPhaseName.entries[phases[it + 1]]) }
         } else {
             val res = ArrayList<MoonPhaseDateTime>(5)
 
@@ -70,7 +70,7 @@ class MoonPhaseFinder(private val horizonsService: HorizonsService) {
                 val dateTime = moon[i].dateTime
                 val a = dateTime.minusMinutes(stepSizeInMinutes.toLong())
                 val b = dateTime.plusMinutes(stepSizeInMinutes.toLong())
-                res.addAll(compute(1, a, b, site))
+                res.addAll(compute(1, a, b, site, offsetInMinutes))
             }
 
             return res

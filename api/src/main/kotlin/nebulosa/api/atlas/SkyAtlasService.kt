@@ -58,6 +58,7 @@ class SkyAtlasService(
     private val positions = HashMap<GeographicCoordinate, GeographicPosition>()
     private val cachedSimbadEntities = HashMap<Long, SimbadEntity>()
     private val targetLocks = HashMap<Any, Any>()
+    private val cachedMoonPhases = HashMap<LocalDate, List<MoonPhaseDateTime>>()
 
     @Volatile private var sunImage = ByteArray(0)
     @Volatile private var moonPhase: Pair<LocalDateTime, MoonPhase>? = null
@@ -235,7 +236,8 @@ class SkyAtlasService(
         sunImage = bytes.toByteArray()
     }
 
-    fun moonPhase(location: GeographicCoordinate, dateTime: LocalDateTime): MoonPhase? {
+    @Synchronized
+    fun moonPhase(location: GeographicCoordinate, dateTime: LocalDateTime): Map<String, Any?>? {
         val now = LocalDateTime.now(SystemClock)
 
         if (moonPhase == null || abs(ChronoUnit.HOURS.between(moonPhase!!.first, now)) >= 1) {
@@ -254,10 +256,18 @@ class SkyAtlasService(
             moonPhase = now.withMinute(0).withSecond(0).withNano(0) to (body ?: return null)
         }
 
-        val offsetInMinutes = location.offsetInMinutes().toLong()
-        moonPhaseFinder.find(dateTime.toLocalDate(), location.longitude, location.latitude, location.elevation, offsetInMinutes)
+        val date = dateTime.toLocalDate().withDayOfMonth(1)
+        val phases = if (date in cachedMoonPhases) {
+            cachedMoonPhases[date]!!
+        } else {
+            val offsetInMinutes = location.offsetInMinutes().toLong()
+            moonPhaseFinder.find(date, offsetInMinutes).also { cachedMoonPhases[date] = it }
+        }
 
-        return moonPhase?.second
+        return mapOf(
+            "current" to moonPhase?.second,
+            "phases" to phases,
+        )
     }
 
     companion object {
