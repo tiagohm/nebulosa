@@ -11,6 +11,7 @@ import nebulosa.math.evenlySpacedNumbers
 import nebulosa.math.toLightYears
 import nebulosa.math.toMas
 import nebulosa.nova.almanac.findDiscrete
+import nebulosa.nova.almanac.lunation
 import nebulosa.nova.astrometry.Body
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.nova.astrometry.ELPMPP02
@@ -21,7 +22,7 @@ import nebulosa.nova.position.Geoid
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
-import nebulosa.time.SystemClock
+import nebulosa.time.TimeYMDHMS
 import nebulosa.time.TimeZonedInSeconds
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -34,7 +35,6 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
@@ -253,6 +253,8 @@ class SkyAtlasService(
 
             moonPhase = dateTime.withMinute(0).withSecond(0).withNano(0) to (body ?: return null)
         }
+
+        moonPhase?.second?.lunation = TimeYMDHMS(dateTime).lunation()
 
         val date = dateTime.toLocalDate().withDayOfMonth(1)
         val phases = if (date in cachedMoonPhases) {

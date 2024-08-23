@@ -247,6 +247,7 @@ export interface MoonPhase {
 		subEarthLon: number
 		subEarthLat: number
 		posAngle: number
+		lunation: number
 	}
 	phases: MoonPhaseDateTime[]
 }
