@@ -4,6 +4,15 @@ export type StackerType = 'PIXINSIGHT'
 
 export type StackerGroupType = 'LUMINANCE' | 'RED' | 'GREEN' | 'BLUE' | 'MONO' | 'RGB' | 'NONE'
 
+export type StackerState = 'IDLE' | 'CALIBRATING' | 'ALIGNING' | 'INTEGRATING'
+
+export interface StackerEvent {
+	state: StackerState
+	type: StackerGroupType
+	stackCount: number
+	numberOfTargets: number
+}
+
 export interface StackerSettings {
 	executablePath: string
 	slot: number
@@ -46,6 +55,13 @@ export interface AnalyzedTarget {
 export interface StackerPreference {
 	request: StackingRequest
 	defaultPath?: string
+}
+
+export const DEFAULT_STACKER_EVENT: StackerEvent = {
+	state: 'IDLE',
+	type: 'LUMINANCE',
+	stackCount: 0,
+	numberOfTargets: 0,
 }
 
 export const DEFAULT_STACKER_SETTINGS: StackerSettings = {

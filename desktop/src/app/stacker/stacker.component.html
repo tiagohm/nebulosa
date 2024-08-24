@@ -20,14 +20,34 @@
 			styleClass="p-button-sm"
 			tooltipPosition="bottom" />
 	</div>
-	<div class="col-12 mt-0">
+	@if (running && event.state !== 'IDLE') {
+		<div class="col-12">
+			<div class="flex align-items-center justify-content-end">
+				<span
+					class="bg-warning border-round-left-md text-gray-900 line-height-3 text-sm text-center px-2"
+					style="min-width: 48px">
+					<i class="mdi mdi-counter mdi-sm"></i>
+					{{ event.stackCount }} / {{ event.numberOfTargets }}
+				</span>
+				<span
+					class="bg-success border-round-right-md text-gray-900 line-height-3 text-sm text-center px-2"
+					style="min-width: 81px">
+					<i class="mdi mdi-image mdi-sm"></i>
+					{{ event.type }}: {{ event.state | enum | lowercase }}
+				</span>
+			</div>
+		</div>
+	}
+	<div class="relative col-12 mt-0">
 		<p-tabView>
 			<p-tabPanel
 				header="Files"
 				leftIcon="mdi mdi-file-multiple">
 				<p-listbox
 					[options]="request.targets"
+					[(ngModel)]="selected"
 					styleClass="border-0"
+					[multiple]="true"
 					[metaKeySelection]="false"
 					[style]="{ width: '100%', height: '296px' }"
 					[listStyle]="{ maxHeight: '296px', height: '296px' }"
@@ -42,6 +62,7 @@
 									<p-dropdown
 										[options]="'STACKER_GROUP_TYPE' | dropdownOptions | enumDropdown"
 										[(ngModel)]="item.group"
+										(onClick)="$event.stopImmediatePropagation()"
 										styleClass="border-0 p-inputtext-sm"
 										[autoDisplayFirst]="false"
 										appendTo="body" />
@@ -51,13 +72,15 @@
 											[disabled]="item.type !== 'LIGHT'"
 											[binary]="true"
 											[(ngModel)]="item.reference"
-											(ngModelChange)="referenceChanged(item, $event)" />
+											(ngModelChange)="referenceChanged(item, $event)"
+											(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
 									</div>
 									<div class="flex flex-column align-items-center justify-content-center gap-1">
 										<span class="text-xs">Enabled</span>
 										<p-checkbox
 											[binary]="true"
-											[(ngModel)]="item.enabled" />
+											[(ngModel)]="item.enabled"
+											(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
 									</div>
 								</div>
 								@if (item.analyzed) {
@@ -75,13 +98,13 @@
 							</div>
 							<div class="flex flex-column justify-content-center align-items-center gap-2">
 								<p-button
-									(onClick)="openTargetImage(item)"
 									icon="mdi mdi-image"
 									[text]="true"
 									[rounded]="true"
 									pTooltip="View image"
 									tooltipPosition="bottom"
-									size="small" />
+									size="small"
+									(onClick)="openTargetImage(item); $event.stopImmediatePropagation()" />
 								<p-button
 									[text]="true"
 									[rounded]="true"
@@ -91,7 +114,7 @@
 									pTooltip="Remove"
 									tooltipPosition="bottom"
 									styleClass="p-button-sm"
-									(onClick)="deleteTarget(item)" />
+									(onClick)="deleteTarget(item); savePreference(); $event.stopImmediatePropagation()" />
 							</div>
 						</div>
 					</ng-template>
@@ -154,13 +177,26 @@
 							optionsValue="value"
 							[(ngModel)]="request.type"
 							(ngModelChange)="savePreference()"
-							styleClass="p-inputtext-sm border-0"
+							styleClass="p-inputtext-sm border-0 max-w-12rem"
 							[autoDisplayFirst]="false" />
 						<label>Stacker</label>
 					</p-floatLabel>
 				</div>
 			</p-tabPanel>
 		</p-tabView>
+		<div class="absolute right-0 top-0 pr-3 pt-1 flex align-items-center justify-content-end gap-2">
+			<p-menu
+				#menu
+				[model]="menuModel"
+				[popup]="true"
+				appendTo="body" />
+			<p-button
+				icon="mdi mdi-dots-vertical"
+				[text]="true"
+				[rounded]="true"
+				size="small"
+				(onClick)="menu.toggle($event)" />
+		</div>
 	</div>
 	<div class="col-12 justify-content-center p-2">
 		<p-button

@@ -22,6 +22,7 @@ import { ROISelected } from '../types/image.types'
 import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
+import { StackerEvent } from '../types/stacker.types'
 import { Wheel, WheelRenamed } from '../types/wheel.types'
 
 export const OPEN_IMAGE_FILE_FILTER: Electron.FileFilter[] = [
@@ -90,6 +91,7 @@ export interface EventTypes {
 	'WHEEL.RENAMED': WheelRenamed
 	'ROI.SELECTED': ROISelected
 	'AUTO_FOCUS.ELAPSED': AutoFocusEvent
+	'STACKER.ELAPSED': StackerEvent
 }
 
 @Injectable({ providedIn: 'root' })

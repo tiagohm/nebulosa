@@ -9,7 +9,7 @@ import { Bitpix, ImageChannel, SCNRProtectionMethod } from '../types/image.types
 import { MountRemoteControlProtocol } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
 import { SequencerCaptureMode, SequencerState } from '../types/sequencer.types'
-import { StackerGroupType, StackerType } from '../types/stacker.types'
+import { StackerGroupType, StackerState, StackerType } from '../types/stacker.types'
 import { StarDetectorType } from '../types/stardetector.types'
 import { Undefinable } from '../utils/types'
 
@@ -44,6 +44,7 @@ export type EnumPipeKey =
 	| ExposureTimeUnit
 	| ImageChannel
 	| MoonPhaseName
+	| StackerState
 	| 'ALL'
 
 @Pipe({ name: 'enum' })
@@ -55,6 +56,7 @@ export class EnumPipe implements PipeTransform {
 		ACTIVE_GALAXY_NUCLEUS: 'Active Galaxy Nucleus',
 		ACTIVE: 'Active',
 		ADDITIVE_MASK: 'Additive Mask',
+		ALIGNING: 'ALIGNING',
 		ALL: 'All',
 		ALPHA2_CVN_VARIABLE: 'alpha2 CVn Variable',
 		AMATEUR: 'Amateur Radio',
@@ -233,6 +235,7 @@ export class EnumPipe implements PipeTransform {
 		INFRA_RED_SOURCE: 'Infra-Red Source',
 		INITIAL_PAUSE: 'Initial Pause',
 		INTEGER: 'Integer',
+		INTEGRATING: 'INTEGRATING',
 		INTELSAT: 'Intelsat',
 		INTERACTING_GALAXIES: 'Interacting Galaxies',
 		INTERLEAVED: 'Interleaved',

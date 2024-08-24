@@ -1,6 +1,7 @@
 package nebulosa.api.stacker
 
 import nebulosa.fits.filter
+import nebulosa.fits.naxis
 import nebulosa.image.format.ReadableHeader
 
 enum class StackerGroupType {
@@ -26,6 +27,7 @@ enum class StackerGroupType {
             else if (it.contains("GREEN", true) || it.equals("G", true)) GREEN
             else if (it.contains("BLUE", true) || it.equals("B", true)) BLUE
             else if (it.contains("LUMINANCE", true) || it.equals("L", true)) LUMINANCE
+            else if (header.naxis >= 3) RGB
             else MONO
         } ?: MONO
     }

@@ -1,10 +1,12 @@
 package nebulosa.api.stacker
 
+import nebulosa.api.message.MessageService
 import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.fits.fits
 import nebulosa.fits.isFits
 import nebulosa.image.format.ImageHdu
 import nebulosa.stacker.AutoStacker
+import nebulosa.stacker.AutoStackerListener
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
 import org.springframework.stereotype.Service
@@ -14,8 +16,9 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 
 @Service
-class StackerService {
+class StackerService(private val messageService: MessageService) {
 
+    @Synchronized
     fun stack(request: StackingRequest, cancellationToken: CancellationToken = CancellationToken.NONE): Path? {
         require(request.outputDirectory != null && request.outputDirectory.exists() && request.outputDirectory.isDirectory())
 
@@ -31,54 +34,76 @@ class StackerService {
         // Combined LRGB
         return if (red.size + green.size + blue.size >= 1) {
             val stacker = request.get()
+            val autoStackerMessageHandler = AutoStackerMessageHandler(luminance, red, green, blue)
 
-            cancellationToken.listen { stacker.stop() }
+            try {
+                stacker.registerAutoStackerListener(autoStackerMessageHandler)
 
-            val stackedLuminancePath = luminance.stack(request, stacker, name, StackerGroupType.LUMINANCE, cancellationToken)
-            val stackedRedPath = red.stack(request, stacker, name, StackerGroupType.RED, cancellationToken)
-            val stackedGreenPath = green.stack(request, stacker, name, StackerGroupType.GREEN, cancellationToken)
-            val stackedBluePath = blue.stack(request, stacker, name, StackerGroupType.BLUE, cancellationToken)
+                val stackedLuminancePath = luminance.stack(request, stacker, name, StackerGroupType.LUMINANCE, cancellationToken)
+                val stackedRedPath = red.stack(request, stacker, name, StackerGroupType.RED, cancellationToken)
+                val stackedGreenPath = green.stack(request, stacker, name, StackerGroupType.GREEN, cancellationToken)
+                val stackedBluePath = blue.stack(request, stacker, name, StackerGroupType.BLUE, cancellationToken)
 
-            if (cancellationToken.isCancelled) {
-                null
-            } else {
-                val combinedPath = Path.of("${request.outputDirectory}", "$name.LRGB.fits")
-                stacker.combineLRGB(combinedPath, stackedLuminancePath, stackedRedPath, stackedGreenPath, stackedBluePath)
-                combinedPath
+                if (cancellationToken.isCancelled) {
+                    null
+                } else {
+                    val combinedPath = Path.of("${request.outputDirectory}", "$name.LRGB.fits")
+                    stacker.combineLRGB(combinedPath, stackedLuminancePath, stackedRedPath, stackedGreenPath, stackedBluePath)
+                    combinedPath
+                }
+            } finally {
+                messageService.sendMessage(StackerEvent.IDLE)
+                stacker.unregisterAutoStackerListener(autoStackerMessageHandler)
             }
         }
         // LRGB
         else if (rgb.isNotEmpty()) {
             val stacker = request.get()
+            val autoStackerMessageHandler = AutoStackerMessageHandler(luminance, rgb = rgb)
 
-            val stackedLuminancePath = luminance.stack(request, stacker, name, StackerGroupType.LUMINANCE, cancellationToken)
-            val stackedRGBPath = rgb.stack(request, stacker, name, StackerGroupType.RGB, cancellationToken)
+            try {
+                stacker.registerAutoStackerListener(autoStackerMessageHandler)
 
-            if (cancellationToken.isCancelled) {
-                null
-            } else if (stackedLuminancePath != null && stackedRGBPath != null) {
-                val combinedPath = Path.of("${request.outputDirectory}", "$name.LRGB.fits")
-                stacker.combineLuminance(combinedPath, stackedLuminancePath, stackedRGBPath, false)
-                combinedPath
-            } else {
-                stackedLuminancePath ?: stackedRGBPath
+                val stackedLuminancePath = luminance.stack(request, stacker, name, StackerGroupType.LUMINANCE, cancellationToken)
+                val stackedRGBPath = rgb.stack(request, stacker, name, StackerGroupType.RGB, cancellationToken)
+
+                if (cancellationToken.isCancelled) {
+                    null
+                } else if (stackedLuminancePath != null && stackedRGBPath != null) {
+                    val combinedPath = Path.of("${request.outputDirectory}", "$name.LRGB.fits")
+                    stacker.combineLuminance(combinedPath, stackedLuminancePath, stackedRGBPath, false)
+                    combinedPath
+                } else {
+                    stackedLuminancePath ?: stackedRGBPath
+                }
+            } finally {
+                messageService.sendMessage(StackerEvent.IDLE)
+                stacker.unregisterAutoStackerListener(autoStackerMessageHandler)
             }
         }
         // MONO
         else if (mono.isNotEmpty() || luminance.isNotEmpty()) {
             val stacker = request.get()
+            val autoStackerMessageHandler = AutoStackerMessageHandler(luminance, mono = mono)
 
-            val stackedLuminancePath = luminance.stack(request, stacker, name, StackerGroupType.LUMINANCE, cancellationToken)
-            val stackedMonoPath = mono.stack(request, stacker, name, StackerGroupType.MONO, cancellationToken)
+            try {
+                stacker.registerAutoStackerListener(autoStackerMessageHandler)
 
-            if (cancellationToken.isCancelled) {
-                null
-            } else if (stackedLuminancePath != null && stackedMonoPath != null) {
-                val combinedPath = Path.of("${request.outputDirectory}", "$name.LRGB.fits")
-                stacker.combineLuminance(combinedPath, stackedLuminancePath, stackedMonoPath, true)
-                combinedPath
-            } else {
-                stackedLuminancePath ?: stackedMonoPath
+                val stackedLuminancePath = luminance.stack(request, stacker, name, StackerGroupType.LUMINANCE, cancellationToken)
+                val stackedMonoPath = mono.stack(request, stacker, name, StackerGroupType.MONO, cancellationToken)
+
+                if (cancellationToken.isCancelled) {
+                    null
+                } else if (stackedLuminancePath != null && stackedMonoPath != null) {
+                    val combinedPath = Path.of("${request.outputDirectory}", "$name.LRGB.fits")
+                    stacker.combineLuminance(combinedPath, stackedLuminancePath, stackedMonoPath, true)
+                    combinedPath
+                } else {
+                    stackedLuminancePath ?: stackedMonoPath
+                }
+            } finally {
+                messageService.sendMessage(StackerEvent.IDLE)
+                stacker.unregisterAutoStackerListener(autoStackerMessageHandler)
             }
         } else {
             null
@@ -93,7 +118,7 @@ class StackerService {
             null
         } else if (size > 1) {
             val outputPath = Path.of("${request.outputDirectory}", "$name.$group.fits")
-            if (stacker.stack(map { it.path!! }, outputPath, request.referencePath!!)) outputPath else null
+            if (stacker.stack(map { it.path!! }, outputPath, request.referencePath!!, cancellationToken)) outputPath else null
         } else if (isNotEmpty()) {
             val outputPath = Path.of("${request.outputDirectory}", "$name.$group.fits")
             if (stacker.align(request.referencePath!!, this[0].path!!, outputPath)) outputPath else null
@@ -110,5 +135,42 @@ class StackerService {
         else return null
 
         return image.use { it.firstOrNull { it is ImageHdu }?.header }?.let(::AnalyzedTarget)
+    }
+
+    private inner class AutoStackerMessageHandler(
+        private val luminance: Collection<StackingTarget> = emptyList(),
+        private val red: Collection<StackingTarget> = emptyList(),
+        private val green: Collection<StackingTarget> = emptyList(),
+        private val blue: Collection<StackingTarget> = emptyList(),
+        private val mono: Collection<StackingTarget> = emptyList(),
+        private val rgb: Collection<StackingTarget> = emptyList(),
+    ) : AutoStackerListener {
+
+        private val numberOfTargets = luminance.size + red.size + green.size + blue.size + mono.size + rgb.size
+
+        override fun onCalibrated(stackCount: Int, path: Path, calibratedPath: Path) {
+            sendNotification(StackerState.CALIBRATING, path, stackCount)
+        }
+
+        override fun onAligned(stackCount: Int, path: Path, alignedPath: Path) {
+            sendNotification(StackerState.ALIGNING, path, stackCount)
+        }
+
+        override fun onIntegrated(stackCount: Int, path: Path, alignedPath: Path) {
+            sendNotification(StackerState.INTEGRATING, path, stackCount)
+        }
+
+        fun sendNotification(state: StackerState, path: Path, stackCount: Int) {
+            val type = if (luminance.any { it.path === path }) StackerGroupType.LUMINANCE
+            else if (red.any { it.path === path }) StackerGroupType.RED
+            else if (green.any { it.path === path }) StackerGroupType.GREEN
+            else if (blue.any { it.path === path }) StackerGroupType.BLUE
+            else if (mono.any { it.path === path }) StackerGroupType.MONO
+            else if (rgb.any { it.path === path }) StackerGroupType.RGB
+            else return
+
+            val message = StackerEvent(state, type, stackCount + 1, numberOfTargets)
+            messageService.sendMessage(message)
+        }
     }
 }
