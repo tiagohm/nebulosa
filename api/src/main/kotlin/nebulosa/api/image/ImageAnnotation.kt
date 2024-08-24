@@ -49,5 +49,6 @@ data class ImageAnnotation(
         @field:JsonSerialize(using = DeclinationSerializer::class) override val declinationJ2000: Angle = 0.0,
         override val magnitude: Double = SkyObject.UNKNOWN_MAGNITUDE,
         @JvmField val constellation: Constellation = Constellation.find(ICRF.equatorial(rightAscensionJ2000, declinationJ2000)),
+        @JvmField val type: String = "MINOR_PLANET",
     ) : SkyObject
 }

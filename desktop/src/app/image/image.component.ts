@@ -14,7 +14,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { EquatorialCoordinateJ2000 } from '../../shared/types/atlas.types'
+import { EquatorialCoordinateJ2000, filterAstronomicalObject } from '../../shared/types/atlas.types'
 import { Camera } from '../../shared/types/camera.types'
 import {
 	AstronomicalObjectDialog,
@@ -718,6 +718,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	private clearOverlay() {
 		this.annotation.data = []
+		this.annotation.filtered = []
 		this.annotation.visible = false
 		this.annotationMenuItem.checkable = false
 
@@ -953,10 +954,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			try {
 				this.annotation.running = true
 				this.annotation.data = await this.api.annotationsOfImage(path, this.annotation.request)
+				this.annotation.filtered = this.annotation.data
 				this.annotation.visible = this.annotation.data.length > 0
 				this.annotationMenuItem.checkable = this.annotation.visible
 				this.annotationMenuItem.checked = this.annotation.visible
-				this.annotation.showDialog = false
+				// this.annotation.showDialog = false
 			} finally {
 				this.annotation.running = false
 			}
@@ -966,6 +968,26 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	protected showAnnotationInfo(annotation: ImageAnnotation) {
 		this.astronomicalObject.info = annotation.star ?? annotation.dso ?? annotation.minorPlanet
 		this.astronomicalObject.showDialog = true
+	}
+
+	protected searchAnnotations() {
+		const search = this.annotation.search.toUpperCase()
+
+		if (search) {
+			this.annotation.filtered = this.annotation.data.filter((e) => filterAstronomicalObject((e.star ?? e.dso ?? e.minorPlanet)!, search))
+		} else {
+			this.annotation.filtered = this.annotation.data
+		}
+	}
+
+	protected annotationSelected(selected?: ImageAnnotation) {
+		this.annotation.selected = selected
+
+		if (selected && this.zoom.panZoom) {
+			const { scale } = this.zoom.panZoom.getTransform()
+			const { clientWidth: pw, clientHeight: ph } = this.image.nativeElement.parentElement!.parentElement!
+			this.zoom.panZoom.smoothMoveTo(pw / 2 - selected.x * scale, (ph + 42) / 2 - selected.y * scale)
+		}
 	}
 
 	private disableAutoStretch() {

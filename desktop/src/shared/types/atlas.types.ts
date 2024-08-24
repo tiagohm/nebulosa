@@ -889,3 +889,7 @@ export function skyAtlasPreferenceWithDefault(preference?: Partial<SkyAtlasPrefe
 	preference.fast ??= source.fast
 	return preference as SkyAtlasPreference
 }
+
+export function filterAstronomicalObject(o: AstronomicalObject & { type?: SkyObjectType; constellation?: Constellation }, text: string) {
+	return o.name.toUpperCase().includes(text) || (!!o.type && o.type.includes(text)) || (!!o.constellation && o.constellation === text)
+}
