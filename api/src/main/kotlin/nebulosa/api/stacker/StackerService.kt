@@ -16,7 +16,7 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 
 @Service
-class StackerService(private val messageService: MessageService) {
+class StackerService(private val messageService: MessageService?) {
 
     @Synchronized
     fun stack(request: StackingRequest, cancellationToken: CancellationToken = CancellationToken.NONE): Path? {
@@ -52,7 +52,7 @@ class StackerService(private val messageService: MessageService) {
                     combinedPath
                 }
             } finally {
-                messageService.sendMessage(StackerEvent.IDLE)
+                messageService?.sendMessage(StackerEvent.IDLE)
                 stacker.unregisterAutoStackerListener(autoStackerMessageHandler)
             }
         }
@@ -77,7 +77,7 @@ class StackerService(private val messageService: MessageService) {
                     stackedLuminancePath ?: stackedRGBPath
                 }
             } finally {
-                messageService.sendMessage(StackerEvent.IDLE)
+                messageService?.sendMessage(StackerEvent.IDLE)
                 stacker.unregisterAutoStackerListener(autoStackerMessageHandler)
             }
         }
@@ -102,7 +102,7 @@ class StackerService(private val messageService: MessageService) {
                     stackedLuminancePath ?: stackedMonoPath
                 }
             } finally {
-                messageService.sendMessage(StackerEvent.IDLE)
+                messageService?.sendMessage(StackerEvent.IDLE)
                 stacker.unregisterAutoStackerListener(autoStackerMessageHandler)
             }
         } else {
@@ -148,19 +148,13 @@ class StackerService(private val messageService: MessageService) {
 
         private val numberOfTargets = luminance.size + red.size + green.size + blue.size + mono.size + rgb.size
 
-        override fun onCalibrated(stackCount: Int, path: Path, calibratedPath: Path) {
-            sendNotification(StackerState.CALIBRATING, path, stackCount)
-        }
+        override fun onCalibrationStarted(stackCount: Int, path: Path) = sendNotification(StackerState.CALIBRATING, path, stackCount)
 
-        override fun onAligned(stackCount: Int, path: Path, alignedPath: Path) {
-            sendNotification(StackerState.ALIGNING, path, stackCount)
-        }
+        override fun onAlignStarted(stackCount: Int, path: Path) = sendNotification(StackerState.ALIGNING, path, stackCount)
 
-        override fun onIntegrated(stackCount: Int, path: Path, alignedPath: Path) {
-            sendNotification(StackerState.INTEGRATING, path, stackCount)
-        }
+        override fun onIntegrationStarted(stackCount: Int, path: Path) = sendNotification(StackerState.INTEGRATING, path, stackCount)
 
-        fun sendNotification(state: StackerState, path: Path, stackCount: Int) {
+        private fun sendNotification(state: StackerState, path: Path, stackCount: Int) {
             val type = if (luminance.any { it.path === path }) StackerGroupType.LUMINANCE
             else if (red.any { it.path === path }) StackerGroupType.RED
             else if (green.any { it.path === path }) StackerGroupType.GREEN
@@ -169,8 +163,7 @@ class StackerService(private val messageService: MessageService) {
             else if (rgb.any { it.path === path }) StackerGroupType.RGB
             else return
 
-            val message = StackerEvent(state, type, stackCount + 1, numberOfTargets)
-            messageService.sendMessage(message)
+            messageService?.sendMessage(StackerEvent(state, type, stackCount + 1, numberOfTargets))
         }
     }
 }

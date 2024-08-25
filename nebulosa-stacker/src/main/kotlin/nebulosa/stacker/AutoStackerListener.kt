@@ -4,9 +4,15 @@ import java.nio.file.Path
 
 interface AutoStackerListener {
 
-    fun onCalibrated(stackCount: Int, path: Path, calibratedPath: Path)
+    fun onCalibrationStarted(stackCount: Int, path: Path) = Unit
 
-    fun onAligned(stackCount: Int, path: Path, alignedPath: Path)
+    fun onAlignStarted(stackCount: Int, path: Path) = Unit
 
-    fun onIntegrated(stackCount: Int, path: Path, alignedPath: Path)
+    fun onIntegrationStarted(stackCount: Int, path: Path) = Unit
+
+    fun onCalibrationFinished(stackCount: Int, path: Path, calibratedPath: Path) = Unit
+
+    fun onAlignFinished(stackCount: Int, path: Path, alignedPath: Path) = Unit
+
+    fun onIntegrationFinished(stackCount: Int, path: Path, alignedPath: Path) = Unit
 }
