@@ -5,6 +5,7 @@ import nebulosa.indi.device.Device
 import nebulosa.indi.device.DeviceMessageReceived
 import nebulosa.indi.device.MessageSender
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.dustcap.DustCap
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
@@ -45,6 +46,8 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
     protected abstract fun newGPS(name: String, executable: String): GPS
 
     protected abstract fun newGuideOutput(name: String, executable: String): GuideOutput
+
+    protected abstract fun newDustCap(name: String, executable: String): DustCap
 
     private fun registerCamera(message: TextVector<*>): Camera? {
         val executable = message["DRIVER_EXEC"]?.value
@@ -111,6 +114,16 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
 
         return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && guideOutput(message.device) == null) {
             newGuideOutput(message.device, executable).also(::registerGuideOutput)
+        } else {
+            null
+        }
+    }
+
+    private fun registerDustCap(message: TextVector<*>): DustCap? {
+        val executable = message["DRIVER_EXEC"]?.value
+
+        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && dustCap(message.device) == null) {
+            newDustCap(message.device, executable).also(::registerDustCap)
         } else {
             null
         }
@@ -220,6 +233,14 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                         }
                     }
 
+                    if (DeviceInterfaceType.isDustCap(interfaceType)) {
+                        registerDustCap(message)?.also {
+                            registered = true
+                            it.handleMessage(message)
+                            takeMessageFromReorderingQueue(it)
+                        }
+                    }
+
                     if (!registered) {
                         LOG.warn("device is not registered. name={}, interface={}", message.device, interfaceType)
                         notRegisteredDevices.add(message.device)
@@ -258,6 +279,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                             is Rotator -> unregisterRotator(device)
                             is GPS -> unregisterGPS(device)
                             is GuideOutput -> unregisterGuideOutput(device)
+                            is DustCap -> unregisterDustCap(device)
                         }
                     }
 
