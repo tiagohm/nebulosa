@@ -862,7 +862,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	}
 
 	private loadPreference() {
-		Object.assign(this.preference, this.preferenceService.skyAtlasPreference.get())
+		Object.assign(this.preference, this.preferenceService.skyAtlas.get())
 		this.satellite.search.filter.groups = this.preference.satellites
 		this.dateTimeAndLocation.location = this.preference.location
 
@@ -871,7 +871,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 	protected savePreference() {
 		this.preference.location = this.dateTimeAndLocation.location
-		this.preferenceService.skyAtlasPreference.set(this.preference)
+		this.preferenceService.skyAtlas.set(this.preference)
 	}
 
 	private static removePointsBelowZero(points: AltitudeDataPoint[]) {

@@ -40,7 +40,7 @@ class StackerServiceTest {
 
         const val BASE_DIR = "/home/tiagohm/Imagens/Astrophotos/Light/Algieba/2024-05-13"
 
-        @JvmStatic private val SERVICE = StackerService()
+        @JvmStatic private val SERVICE = StackerService(null)
 
         @JvmStatic private val PATHS = listOf(
             Path.of("$BASE_DIR/20240513.213424625-LIGHT.fits"),

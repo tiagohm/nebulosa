@@ -395,11 +395,11 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private loadPreference() {
-		Object.assign(this.preference, this.preferenceService.calibrationPreference.get())
+		Object.assign(this.preference, this.preferenceService.calibration.get())
 	}
 
 	protected savePreference() {
-		this.preferenceService.calibrationPreference.set(this.preference)
+		this.preferenceService.calibration.set(this.preference)
 	}
 
 	private markFrameListBoxesForCheck() {

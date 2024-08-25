@@ -113,9 +113,9 @@ export class BrowserWindowService {
 		return this.openWindow({ preference, id: 'alignment', path: 'alignment' })
 	}
 
-	openSequencer(preference: WindowPreference = {}) {
+	openSequencer(camera: Camera, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'workflow', width: 628, height: 467, resizable: true, minWidth: 628, minHeight: 328 })
-		return this.openWindow({ preference, id: 'sequencer', path: 'sequencer' })
+		return this.openWindow({ preference, data: camera, id: `sequencer.${camera.name}`, path: 'sequencer' })
 	}
 
 	openAutoFocus(preference: WindowPreference = {}) {

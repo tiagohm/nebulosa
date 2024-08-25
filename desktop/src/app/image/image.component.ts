@@ -1336,7 +1336,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private loadPreference() {
-		Object.assign(this.preference, this.preferenceService.imagePreference.get())
+		Object.assign(this.preference, this.preferenceService.image.get())
 		this.solver.request = this.preference.solver
 		this.starDetector.request = this.preference.starDetector
 		this.settings.preference = this.preference
@@ -1355,7 +1355,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	protected savePreference() {
-		this.preferenceService.imagePreference.set(this.preference)
+		this.preferenceService.image.set(this.preference)
 	}
 
 	private async executeCamera(action: (camera: Camera) => void | Promise<void>, showConfirmation: boolean = true) {

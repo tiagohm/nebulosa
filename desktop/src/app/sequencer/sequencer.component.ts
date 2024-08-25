@@ -1,5 +1,6 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
+import { ActivatedRoute } from '@angular/router'
 import { dirname } from 'path'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
@@ -44,6 +45,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 	protected plan = this.preference.plan
 	protected event?: SequencerEvent
 	protected running = false
+	protected path?: string
 
 	// NOTE: Remove the "plan.sequences.length <= 1" on layout if add more options
 	protected readonly sequenceModel: SlideMenuItem[] = [
@@ -118,7 +120,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			this.preference.loadPath = undefined
 			this.savePreference()
 
-			this.app.subTitle = undefined
+			this.path = undefined
+			this.updateSubTitle()
+
 			this.saveMenuItem.visible = false
 			this.saveMenuItem.disabled = true
 
@@ -187,6 +191,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		private readonly preferenceService: PreferenceService,
 		private readonly angularService: AngularService,
 		private readonly ticker: Ticker,
+		private readonly route: ActivatedRoute,
 		ngZone: NgZone,
 	) {
 		app.title = 'Sequencer'
@@ -197,7 +202,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		app.topMenu.push(this.loadMenuItem)
 
 		app.beforeClose = async () => {
-			if (this.app.subTitle && !this.saveMenuItem.disabled) {
+			if (this.path && !this.saveMenuItem.disabled) {
 				return !(await angularService.confirm('Are you sure you want to close the window? Please make sure to save before exiting to avoid losing any important changes.'))
 			} else {
 				return true
@@ -287,9 +292,15 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.calibrationGroups.push({ label: 'None', value: undefined })
 		calibrationGroups.forEach((e) => this.calibrationGroups.push({ label: e, value: e }))
 
-		this.loadPreference()
-
-		await this.loadPlanFromPath()
+		this.route.queryParams.subscribe(async (e) => {
+			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as Camera
+			this.plan.camera = this.cameras.find((e) => e.id === data.id)
+			this.updateSubTitle()
+			this.loadPreference()
+			await this.loadPlanFromPath()
+			await this.cameraChanged()
+			console.log(data, this.plan.camera)
+		})
 	}
 
 	@HostListener('window:unload')
@@ -303,6 +314,19 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		if (this.plan.focuser?.id) await this.api.focuserListen(this.plan.focuser)
 		if (this.plan.wheel?.id) await this.api.wheelListen(this.plan.wheel)
 		if (this.plan.rotator?.id) await this.api.rotatorListen(this.plan.rotator)
+	}
+
+	private updateSubTitle() {
+		let title = ''
+
+		if (this.plan.camera) {
+			title = this.plan.camera.name
+		}
+		if (this.path) {
+			title += ` · ${this.path}`
+		}
+
+		this.app.subTitle = title
 	}
 
 	private enableOrDisableTopbarMenu(enabled: boolean) {
@@ -347,7 +371,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.preference.loadPath = file.path
 		this.savePreference()
 
-		this.app.subTitle = file.path
+		this.path = file.path
+		this.updateSubTitle()
+
 		this.saveMenuItem.visible = !!file.path
 		this.saveMenuItem.disabled = true
 	}
@@ -375,11 +401,13 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 	}
 
 	private loadPlan(plan: SequencerPlan) {
+		const camera = this.plan.camera
+
 		if (this.plan !== plan) {
 			Object.assign(this.plan, plan)
 		}
 
-		this.plan.camera = this.cameras.find((e) => e.id === plan.camera?.id)
+		this.plan.camera = camera // this.cameras.find((e) => e.id === plan.camera?.id)
 		this.plan.mount = this.mounts.find((e) => e.id === plan.mount?.id)
 		this.plan.wheel = this.wheels.find((e) => e.id === plan.wheel?.id)
 		this.plan.focuser = this.focusers.find((e) => e.id === plan.focuser?.id)
@@ -402,7 +430,9 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			this.preference.loadPath = file.path
 			this.savePreference()
 
-			this.app.subTitle = file.path
+			this.path = file.path
+			this.updateSubTitle()
+
 			this.saveMenuItem.disabled = true
 		}
 	}
@@ -637,18 +667,24 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 	}
 
 	private loadPreference() {
-		Object.assign(this.preference, this.preferenceService.sequencerPreference.get())
-		this.plan = this.preference.plan
-		this.property.properties = this.preference.properties
+		if (this.plan.camera) {
+			Object.assign(this.preference, this.preferenceService.sequencer(this.plan.camera).get())
+			const camera = this.plan.camera
+			this.plan = this.preference.plan
+			this.plan.camera = camera
+			this.property.properties = this.preference.properties
 
-		this.loadPlan(this.plan)
+			this.loadPlan(this.plan)
+		}
 	}
 
 	protected savePreference() {
-		this.preferenceService.sequencerPreference.set(this.preference)
+		if (this.plan.camera) {
+			this.preferenceService.sequencer(this.plan.camera).set(this.preference)
 
-		if (this.preference.loadPath) {
-			this.saveMenuItem.disabled = false
+			if (this.preference.loadPath) {
+				this.saveMenuItem.disabled = false
+			}
 		}
 	}
 }

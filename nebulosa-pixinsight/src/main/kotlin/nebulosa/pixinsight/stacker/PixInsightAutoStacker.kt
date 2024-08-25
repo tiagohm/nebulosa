@@ -43,33 +43,44 @@ data class PixInsightAutoStacker(
 
                 if (cancellationToken.isCancelled) return false
 
-                listeners.forEach { it.onCalibrated(stackCount, path, calibratedPath) }
+                listeners.forEach { it.onCalibrationStarted(stackCount, path) }
 
                 if (calibrate(targetPath, calibratedPath, darkPath, flatPath, biasPath)) {
+                    listeners.forEach { it.onCalibrationFinished(stackCount, path, calibratedPath) }
                     targetPath = calibratedPath
                 }
 
                 if (cancellationToken.isCancelled) return false
 
                 if (stackCount > 0) {
-                    listeners.forEach { it.onAligned(stackCount, path, alignedPath) }
+                    listeners.forEach { it.onAlignStarted(stackCount, path) }
 
                     if (align(referencePath, targetPath, alignedPath)) {
+                        listeners.forEach { it.onAlignFinished(stackCount, path, alignedPath) }
+
                         if (cancellationToken.isCancelled) return false
-                        listeners.forEach { it.onIntegrated(stackCount, path, outputPath) }
+
+                        listeners.forEach { it.onIntegrationStarted(stackCount, path) }
                         integrate(stackCount, outputPath, alignedPath, outputPath)
+                        listeners.forEach { it.onIntegrationFinished(stackCount, path, outputPath) }
                         stackCount++
                     }
                 } else {
                     if (referencePath != path) {
-                        listeners.forEach { it.onAligned(stackCount, path, alignedPath) }
+                        listeners.forEach { it.onAlignStarted(stackCount, path) }
 
                         if (align(referencePath, targetPath, alignedPath)) {
+                            listeners.forEach { it.onAlignFinished(stackCount, path, alignedPath) }
+
                             if (cancellationToken.isCancelled) return false
+
                             saveAs(alignedPath, outputPath)
+
                             if (cancellationToken.isCancelled) return false
-                            listeners.forEach { it.onIntegrated(0, path, outputPath) }
+
+                            listeners.forEach { it.onIntegrationStarted(0, path) }
                             integrate(0, outputPath, alignedPath, outputPath)
+                            listeners.forEach { it.onIntegrationFinished(0, path, outputPath) }
                         } else {
                             saveAs(targetPath, outputPath)
                         }
