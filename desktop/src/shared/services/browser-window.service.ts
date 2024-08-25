@@ -86,7 +86,7 @@ export class BrowserWindowService {
 	}
 
 	async openImage(data: OpenImage) {
-		const hash = data.id || btoa(data.path)
+		const hash = data.id || `${btoa(data.path)}!`
 		const id = `image.${hash}`
 		const preference: WindowPreference = { icon: 'image', width: '50%', height: `0.9w`, resizable: true, autoResizable: false }
 		await this.openWindow({ preference, data, id, path: 'image' })
