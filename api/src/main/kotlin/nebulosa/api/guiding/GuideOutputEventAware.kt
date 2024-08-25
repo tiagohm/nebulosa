@@ -4,5 +4,5 @@ import nebulosa.indi.device.guider.GuideOutputEvent
 
 fun interface GuideOutputEventAware {
 
-    fun handleGuideOutputEvent(event: GuideOutputEvent<*>)
+    fun handleGuideOutputEvent(event: GuideOutputEvent)
 }

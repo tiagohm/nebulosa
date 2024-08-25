@@ -17,10 +17,10 @@ import org.springframework.stereotype.Component
 @Subscriber
 class GuideOutputEventHub(
     private val messageService: MessageService,
-) : DeviceEventHub<GuideOutput, GuideOutputEvent<*>>(DeviceType.GUIDE_OUTPUT), GuideOutputEventAware {
+) : DeviceEventHub<GuideOutput, GuideOutputEvent>(DeviceType.GUIDE_OUTPUT), GuideOutputEventAware {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
-    override fun handleGuideOutputEvent(event: GuideOutputEvent<*>) {
+    override fun handleGuideOutputEvent(event: GuideOutputEvent) {
         if (event.device.type == DeviceType.GUIDE_OUTPUT) {
             when (event) {
                 is PropertyChangedEvent -> if (event.device.canPulseGuide) onNext(event)
