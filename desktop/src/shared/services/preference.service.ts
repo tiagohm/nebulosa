@@ -48,11 +48,10 @@ export class PreferenceData<T> {
 @Injectable({ providedIn: 'root' })
 export class PreferenceService {
 	readonly home: PreferenceData<HomePreference>
-	readonly imagePreference: PreferenceData<ImagePreference>
-	readonly skyAtlasPreference: PreferenceData<SkyAtlasPreference>
+	readonly image: PreferenceData<ImagePreference>
+	readonly skyAtlas: PreferenceData<SkyAtlasPreference>
 	readonly alignment: PreferenceData<AlignmentPreference>
-	readonly calibrationPreference: PreferenceData<CalibrationPreference>
-	readonly sequencerPreference: PreferenceData<SequencerPreference>
+	readonly calibration: PreferenceData<CalibrationPreference>
 	readonly stacker: PreferenceData<StackerPreference>
 	readonly guider: PreferenceData<GuiderPreference>
 	readonly framing: PreferenceData<FramingPreference>
@@ -61,16 +60,15 @@ export class PreferenceService {
 
 	constructor(private readonly storage: LocalStorageService) {
 		this.home = this.create<HomePreference>('home', () => structuredClone(DEFAULT_HOME_PREFERENCE), homePreferenceWithDefault)
-		this.imagePreference = this.create<ImagePreference>('image', () => structuredClone(DEFAULT_IMAGE_PREFERENCE), imagePreferenceWithDefault)
-		this.skyAtlasPreference = this.create<SkyAtlasPreference>('atlas', () => structuredClone(DEFAULT_SKY_ATLAS_PREFERENCE), skyAtlasPreferenceWithDefault)
+		this.image = this.create<ImagePreference>('image', () => structuredClone(DEFAULT_IMAGE_PREFERENCE), imagePreferenceWithDefault)
+		this.skyAtlas = this.create<SkyAtlasPreference>('atlas', () => structuredClone(DEFAULT_SKY_ATLAS_PREFERENCE), skyAtlasPreferenceWithDefault)
 		this.alignment = this.create<AlignmentPreference>('alignment', () => structuredClone(DEFAULT_ALIGNMENT_PREFERENCE), alignmentPreferenceWithDefault)
-		this.calibrationPreference = this.create<CalibrationPreference>('calibration', () => structuredClone(DEFAULT_CALIBRATION_PREFERENCE), calibrationPreferenceWithDefault)
-		this.sequencerPreference = this.create<SequencerPreference>('sequencer', () => structuredClone(DEFAULT_SEQUENCER_PREFERENCE), sequencerPreferenceWithDefault)
+		this.calibration = this.create<CalibrationPreference>('calibration', () => structuredClone(DEFAULT_CALIBRATION_PREFERENCE), calibrationPreferenceWithDefault)
 		this.stacker = this.create<StackerPreference>('stacker', () => structuredClone(DEFAULT_STACKER_PREFERENCE), stackerPreferenceWithDefault)
 		this.guider = this.create<GuiderPreference>('guider', () => structuredClone(DEFAULT_GUIDER_PREFERENCE), guiderPreferenceWithDefault)
 		this.framing = this.create<FramingPreference>('framing', () => structuredClone(DEFAULT_FRAMING_PREFERENCE), framingPreferenceWithDefault)
 		this.settings = this.create<SettingsPreference>('settings', () => structuredClone(DEFAULT_SETTINGS_PREFERENCE), settingsPreferenceWithDefault)
-		this.pathChooser = this.create<Record<string, string | undefined>>('pathChooser', () => ({} as Record<string, string | undefined>))
+		this.pathChooser = this.create<Record<string, string | undefined>>('pathChooser', () => ({}) as Record<string, string | undefined>)
 	}
 
 	create<T>(key: string, defaultValue: T | (() => T), withDefault?: (value: T) => T) {
@@ -107,5 +105,9 @@ export class PreferenceService {
 
 	autoFocus(camera: Camera) {
 		return this.create<AutoFocusPreference>(`autoFocus.${camera.name}`, () => structuredClone(DEFAULT_AUTO_FOCUS_PREFERENCE), autoFocusPreferenceWithDefault)
+	}
+
+	sequencer(camera: Camera) {
+		return this.create<SequencerPreference>(`sequencer.${camera.name}`, () => structuredClone(DEFAULT_SEQUENCER_PREFERENCE), sequencerPreferenceWithDefault)
 	}
 }

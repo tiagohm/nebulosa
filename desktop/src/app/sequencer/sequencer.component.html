@@ -16,13 +16,6 @@
 				<div class="grid px-4 pt-3">
 					<div class="col-12 align-items-center justify-content-center flex-nowrap overflow-y-hidden gap-2">
 						<neb-device-chooser
-							title="CAMERA"
-							icon="mdi mdi-camera-iris"
-							[devices]="cameras"
-							[(device)]="plan.camera"
-							[hasNone]="true"
-							(deviceChange)="cameraChanged()" />
-						<neb-device-chooser
 							title="MOUNT"
 							icon="mdi mdi-telescope"
 							[devices]="mounts"

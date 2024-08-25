@@ -507,9 +507,15 @@ export class HomeComponent implements AfterContentInit {
 			case 'ALIGNMENT':
 				await this.browserWindowService.openAlignment({ bringToFront: true })
 				break
-			case 'SEQUENCER':
-				await this.browserWindowService.openSequencer({ bringToFront: true })
+			case 'SEQUENCER': {
+				const device = await this.deviceMenu.show(this.cameras, undefined, 'CAMERA')
+
+				if (device && device !== 'NONE') {
+					await this.browserWindowService.openSequencer(device, { bringToFront: true })
+				}
+
 				break
+			}
 			case 'AUTO_FOCUS':
 				await this.browserWindowService.openAutoFocus({ bringToFront: true })
 				break
