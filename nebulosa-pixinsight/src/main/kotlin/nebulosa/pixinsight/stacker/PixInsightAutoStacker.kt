@@ -4,9 +4,9 @@ import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.pixinsight.script.PixInsightScript
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.stacker.AutoStacker
+import nebulosa.stacker.AutoStackerListener
 import java.nio.file.Path
 import java.util.concurrent.CancellationException
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.io.path.deleteIfExists
 
 data class PixInsightAutoStacker(
@@ -18,12 +18,19 @@ data class PixInsightAutoStacker(
     private val slot: Int = PixInsightScript.UNSPECIFIED_SLOT,
 ) : AutoStacker {
 
-    private val cancellationToken = AtomicReference<CancellationToken>()
     private val stacker = PixInsightStacker(runner, workingDirectory, slot)
+    private val listeners = HashSet<AutoStackerListener>()
 
-    override fun stack(paths: Collection<Path>, outputPath: Path, referencePath: Path): Boolean {
-        if (paths.isEmpty()) return false
-        if (!cancellationToken.compareAndSet(null, CancellationToken())) return false
+    override fun registerAutoStackerListener(listener: AutoStackerListener) {
+        listeners.add(listener)
+    }
+
+    override fun unregisterAutoStackerListener(listener: AutoStackerListener) {
+        listeners.remove(listener)
+    }
+
+    override fun stack(targetPaths: Collection<Path>, outputPath: Path, referencePath: Path, cancellationToken: CancellationToken): Boolean {
+        if (targetPaths.isEmpty()) return false
 
         val calibratedPath = Path.of("$workingDirectory", "calibrated.xisf")
         val alignedPath = Path.of("$workingDirectory", "aligned.xisf")
@@ -31,32 +38,37 @@ data class PixInsightAutoStacker(
         try {
             var stackCount = 0
 
-            val realPaths = paths.map { it.toRealPath() }
-            val referenceRealPath = referencePath.toRealPath()
+            for (path in targetPaths) {
+                var targetPath = path
 
-            realPaths.forEach {
-                var targetPath = it
+                if (cancellationToken.isCancelled) return false
 
-                cancellationToken.get().throwIfCancelled()
+                listeners.forEach { it.onCalibrated(stackCount, path, calibratedPath) }
 
                 if (calibrate(targetPath, calibratedPath, darkPath, flatPath, biasPath)) {
                     targetPath = calibratedPath
                 }
 
-                cancellationToken.get().throwIfCancelled()
+                if (cancellationToken.isCancelled) return false
 
                 if (stackCount > 0) {
-                    if (align(referenceRealPath, targetPath, alignedPath)) {
-                        cancellationToken.get().throwIfCancelled()
+                    listeners.forEach { it.onAligned(stackCount, path, alignedPath) }
+
+                    if (align(referencePath, targetPath, alignedPath)) {
+                        if (cancellationToken.isCancelled) return false
+                        listeners.forEach { it.onIntegrated(stackCount, path, outputPath) }
                         integrate(stackCount, outputPath, alignedPath, outputPath)
                         stackCount++
                     }
                 } else {
-                    if (referenceRealPath != it) {
-                        if (align(referenceRealPath, targetPath, alignedPath)) {
-                            cancellationToken.get().throwIfCancelled()
+                    if (referencePath != path) {
+                        listeners.forEach { it.onAligned(stackCount, path, alignedPath) }
+
+                        if (align(referencePath, targetPath, alignedPath)) {
+                            if (cancellationToken.isCancelled) return false
                             saveAs(alignedPath, outputPath)
-                            cancellationToken.get().throwIfCancelled()
+                            if (cancellationToken.isCancelled) return false
+                            listeners.forEach { it.onIntegrated(0, path, outputPath) }
                             integrate(0, outputPath, alignedPath, outputPath)
                         } else {
                             saveAs(targetPath, outputPath)
@@ -68,15 +80,13 @@ data class PixInsightAutoStacker(
                     stackCount = 1
                 }
 
-                cancellationToken.get().throwIfCancelled()
+                if (cancellationToken.isCancelled) return false
             }
-        } catch (e: CancellationException) {
+        } catch (_: CancellationException) {
             return false
         } finally {
             calibratedPath.deleteIfExists()
             alignedPath.deleteIfExists()
-
-            cancellationToken.getAndSet(null)
         }
 
         return true
@@ -104,9 +114,5 @@ data class PixInsightAutoStacker(
 
     override fun saveAs(inputPath: Path, outputPath: Path): Boolean {
         return stacker.saveAs(inputPath, outputPath)
-    }
-
-    override fun stop() {
-        cancellationToken.get()?.cancel()
     }
 }

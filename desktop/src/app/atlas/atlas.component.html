@@ -65,6 +65,10 @@
 								<span>{{ moon.phase.current.age }} d</span>
 							</div>
 							<div class="flex flex-column">
+								<span class="font-bold">Lunation</span>
+								<span>{{ moon.phase.current.lunation }}</span>
+							</div>
+							<div class="flex flex-column">
 								<span class="font-bold">Sub-Solar Lon / Lat</span>
 								<span>{{ moon.phase.current.subSolarLon }}° / {{ moon.phase.current.subSolarLat }}°</span>
 							</div>
@@ -607,7 +611,7 @@
 				</div>
 				<div
 					[class.invisible]="tab === 4"
-					class="col-12 justify-content-center pt-0">
+					class="col-12 justify-content-center pt-0 text-xs">
 					<a
 						target="_blank"
 						href="https://ssd.jpl.nasa.gov/horizons/">

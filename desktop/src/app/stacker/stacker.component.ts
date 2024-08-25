@@ -1,10 +1,12 @@
-import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { dirname } from 'path'
+import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
+import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { DEFAULT_STACKER_PREFERENCE, StackingRequest, StackingTarget } from '../../shared/types/stacker.types'
+import { DEFAULT_STACKER_EVENT, DEFAULT_STACKER_PREFERENCE, StackingRequest, StackingTarget } from '../../shared/types/stacker.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -15,8 +17,54 @@ export class StackerComponent implements AfterViewInit, OnDestroy {
 	protected running = false
 	protected readonly preference = structuredClone(DEFAULT_STACKER_PREFERENCE)
 	protected request = this.preference.request
+	protected readonly event = structuredClone(DEFAULT_STACKER_EVENT)
+	protected selected: StackingTarget[] = []
 
 	private frameId = ''
+
+	protected readonly menuModel: MenuItem[] = [
+		{
+			icon: 'mdi mdi-checkbox-marked',
+			label: 'Select All',
+			command: () => {
+				this.selected = this.request.targets
+			},
+		},
+		{
+			icon: 'mdi mdi-checkbox-blank-outline',
+			label: 'Unselect All',
+			command: () => {
+				this.selected = []
+			},
+		},
+		{
+			icon: 'mdi mdi-delete',
+			label: 'Delete',
+			iconClass: 'text-danger',
+			command: () => {
+				if (this.selected.length) {
+					for (let i = 0; i < this.selected.length; i++) {
+						const target = this.selected[i]
+						this.deleteTarget(target)
+						this.selected.splice(i--, 1)
+					}
+
+					this.savePreference()
+				}
+			},
+		},
+		SEPARATOR_MENU_ITEM,
+		{
+			icon: 'mdi mdi-delete',
+			label: 'Delete All',
+			iconClass: 'text-danger',
+			command: () => {
+				this.request.targets = []
+				this.savePreference()
+				this.selected = []
+			},
+		},
+	]
 
 	get referenceTarget() {
 		return this.request.targets.find((e) => e.enabled && e.reference && e.type === 'LIGHT')
@@ -32,18 +80,29 @@ export class StackerComponent implements AfterViewInit, OnDestroy {
 
 	constructor(
 		app: AppComponent,
+		ngZone: NgZone,
 		private readonly electronService: ElectronService,
 		private readonly api: ApiService,
 		private readonly preferenceService: PreferenceService,
 		private readonly browserWindowService: BrowserWindowService,
 	) {
 		app.title = 'Stacker'
+
+		electronService.on('STACKER.ELAPSED', (event) => {
+			ngZone.run(() => {
+				Object.assign(this.event, event)
+			})
+		})
 	}
 
 	async ngAfterViewInit() {
 		this.loadPreference()
 
 		this.running = await this.api.stackerIsRunning()
+
+		if (!this.running) {
+			await this.reanalyze()
+		}
 	}
 
 	@HostListener('window:unload')
@@ -139,6 +198,26 @@ export class StackerComponent implements AfterViewInit, OnDestroy {
 
 	protected stopStacking() {
 		return this.api.stackerStop()
+	}
+
+	private async reanalyze() {
+		const targets: StackingTarget[] = []
+
+		for (const target of this.request.targets) {
+			const analyzed = await this.api.stackerAnalyze(target.path)
+
+			if (analyzed && analyzed.type === 'LIGHT') {
+				targets.push({
+					...target,
+					analyzed,
+					type: analyzed.type,
+					group: analyzed.group,
+				})
+			}
+		}
+
+		this.request.targets = targets
+		this.savePreference()
 	}
 
 	private loadPreference() {

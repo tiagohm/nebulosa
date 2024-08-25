@@ -202,9 +202,11 @@ export class WindowManager {
 	}
 
 	saveWindowData(window: ApplicationWindow) {
-		const [x, y] = window.browserWindow.getPosition()
-		const [width, height] = window.browserWindow.getSize()
-		store.set(`window.${window.data.id}`, { x, y, width, height })
+		if (!window.data.id.endsWith('!')) {
+			const [x, y] = window.browserWindow.getPosition()
+			const [width, height] = window.browserWindow.getSize()
+			store.set(`window.${window.data.id}`, { x, y, width, height })
+		}
 	}
 
 	async createMainWindow(apiProcess?: ChildProcessWithoutNullStreams, port: number = this.port, host: string = this.host) {

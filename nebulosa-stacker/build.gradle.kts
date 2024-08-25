@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    api(project(":nebulosa-common"))
     implementation(project(":nebulosa-log"))
 }
 

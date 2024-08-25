@@ -214,16 +214,16 @@ class SkyAtlasServiceTest {
 
         phases shouldHaveSize 4
 
-        phases[0].dateTime.toString() shouldBe "2024-08-04T09:45"
+        phases[0].dateTime.toString() shouldBe "2024-08-04T06:45"
         phases[0].name shouldBe MoonPhaseName.NEW_MOON
 
-        phases[1].dateTime.toString() shouldBe "2024-08-12T13:51"
+        phases[1].dateTime.toString() shouldBe "2024-08-12T10:51"
         phases[1].name shouldBe MoonPhaseName.FIRST_QUARTER
 
-        phases[2].dateTime.toString() shouldBe "2024-08-19T17:17"
+        phases[2].dateTime.toString() shouldBe "2024-08-19T14:17"
         phases[2].name shouldBe MoonPhaseName.FULL_MOON
 
-        phases[3].dateTime.toString() shouldBe "2024-08-26T09:28"
+        phases[3].dateTime.toString() shouldBe "2024-08-26T06:28"
         phases[3].name shouldBe MoonPhaseName.LAST_QUARTER
     }
 

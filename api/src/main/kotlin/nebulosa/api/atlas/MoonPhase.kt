@@ -14,6 +14,7 @@ data class MoonPhase(
     @field:JsonAlias("subearth_lon") @JvmField val subEarthLon: Double = 0.0,
     @field:JsonAlias("subearth_lat") @JvmField val subEarthLat: Double = 0.0,
     @field:JsonAlias("posangle") @JvmField val posAngle: Double = 0.0,
+    @JvmField var lunation: Int = 0,
 ) {
 
     companion object {

@@ -132,10 +132,10 @@
 
 <p-dialog
 	header="Annotation"
-	[draggable]="false"
+	[draggable]="true"
 	[(visible)]="annotation.showDialog"
 	[modal]="false"
-	[style]="{ width: 'min-content', minWidth: '338px' }">
+	[style]="{ width: '375px' }">
 	<p-tabView>
 		<p-tabPanel header="Stars & DSOs">
 			<ng-template pTemplate="header">
@@ -160,8 +160,7 @@
 						label="Search on SIMBAD Database Service" />
 				</div>
 				<div class="col-12 mt-2">
-					<p class="bg-black-alpha-30 border-round m-0 p-3 text-gray-400 text-sm">
-						Stars and DSOs Annotation uses the
+					<p class="w-full m-0 p-3 text-gray-400 text-xs text-center">
 						<a
 							target="_blank"
 							href="https://simbad.cds.unistra.fr/simbad/">
@@ -217,8 +216,7 @@
 					</div>
 				}
 				<div class="col-12 mt-2">
-					<p class="bg-black-alpha-30 border-round m-0 p-3 text-gray-400 text-sm">
-						Minor planets Annotation uses the
+					<p class="w-full m-0 p-3 text-gray-400 text-xs text-center">
 						<a
 							target="_blank"
 							href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">
@@ -228,10 +226,50 @@
 				</div>
 			</div>
 		</p-tabPanel>
+		<p-tabPanel [disabled]="!annotation.data.length">
+			<ng-template pTemplate="header">
+				<div class="flex gap-2 align-items-center">
+					<span>Objects</span>
+					<p-badge
+						severity="success"
+						[value]="annotation.data.length" />
+				</div>
+			</ng-template>
+			<div class="mt-1 flex flex-column align-items-center justify-content-center gap-2">
+				<p-floatLabel class="w-full">
+					<input
+						pInputText
+						class="p-inputtext-sm border-0 w-full"
+						[(ngModel)]="annotation.search"
+						(ngModelChange)="searchAnnotations()"
+						tooltipPosition="bottom" />
+					<label>Search</label>
+				</p-floatLabel>
+				<p-scroller
+					[items]="annotation.filtered"
+					[itemSize]="36"
+					scrollHeight="180px"
+					class="w-full"
+					[style]="{ width: '100%', height: '180px' }">
+					<ng-template
+						pTemplate="item"
+						let-item>
+						<div
+							class="cursor-pointer hover:surface-hover border-round flex flex-column align-items-start justfiy-content-center p-2 gap-1"
+							[class.surface-card]="annotation.selected === item"
+							style="height: 36px"
+							(click)="annotationSelected(item)">
+							<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
+							<span class="text-xs overflow-hidden">{{ item.star ?? item.dso ?? item.minorPlanet | skyObject: 'name' }}</span>
+						</div>
+					</ng-template>
+				</p-scroller>
+			</div>
+		</p-tabPanel>
 	</p-tabView>
 	<ng-template pTemplate="footer">
 		<p-button
-			[disabled]="annotation.running"
+			[disabled]="annotation.running || (!annotation.request.starsAndDSOs && !annotation.request.minorPlanets)"
 			icon="mdi mdi-check"
 			label="Annotate"
 			(onClick)="annotateImage()"

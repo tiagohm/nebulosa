@@ -9,6 +9,7 @@ import nebulosa.horizons.HorizonsQuantity
 import nebulosa.horizons.HorizonsService
 import nebulosa.horizons.NoMatchesFoundException
 import nebulosa.horizons.NonUniqueObjectException
+import nebulosa.horizons.ObservingSite
 import nebulosa.io.source
 import nebulosa.math.deg
 import nebulosa.math.km
@@ -26,7 +27,7 @@ class HorizonsServiceTest {
         command: String,
         startDate: LocalDateTime = LocalDateTime.of(2022, 12, 25, 22, 0, 0),
     ) = SERVICE.observer(
-        command, 138.73119026648095.deg, 35.36276754848444.deg, 3776.m,
+        command, ObservingSite.Geographic(138.73119026648095.deg, 35.36276754848444.deg, 3776.m),
         startDate, startDate.plusDays(1L), extraPrecision = true,
     ).execute().body().shouldNotBeNull().also { it.shouldNotBeEmpty() }
 

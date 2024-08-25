@@ -1,7 +1,7 @@
 import type { Point, Rectangle, Size } from 'electron'
 import type { PanZoom } from 'panzoom'
 import type { CoordinateInterpolator, InterpolatedCoordinate } from '../utils/coordinate-interpolation'
-import type { Angle, AstronomicalObject, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
+import type { Angle, AstronomicalObject, Constellation, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
 import type { Camera, CameraStartCapture, FrameType } from './camera.types'
 import { DEFAULT_PLATE_SOLVER_REQUEST, plateSolverRequestWithDefault, type PlateSolverRequest } from './platesolver.types'
 import { DEFAULT_STAR_DETECTION_REQUEST, starDetectionRequestWithDefault, type StarDetectionRequest } from './stardetector.types'
@@ -70,7 +70,7 @@ export interface ImageAnnotation {
 	y: number
 	star?: Star
 	dso?: DeepSkyObject
-	minorPlanet?: AstronomicalObject
+	minorPlanet?: AstronomicalObject & { constellation: Constellation }
 }
 
 export interface ImageSolved extends EquatorialCoordinateJ2000 {
@@ -270,6 +270,9 @@ export interface ImageAnnotationDialog {
 	visible: boolean
 	request: AnnotateImageRequest
 	data: ImageAnnotation[]
+	selected?: ImageAnnotation
+	search: string
+	filtered: ImageAnnotation[]
 }
 
 export interface ROISelected {
@@ -461,6 +464,8 @@ export const DEFAULT_IMAGE_ANNOTATION_DIALOG: ImageAnnotationDialog = {
 	visible: false,
 	data: [],
 	request: DEFAULT_ANNOTATE_IMAGE_REQUEST,
+	search: '',
+	filtered: [],
 }
 
 export const DEFAULT_IMAGE_ROI: ImageROI = {

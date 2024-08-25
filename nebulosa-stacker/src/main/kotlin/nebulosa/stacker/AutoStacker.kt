@@ -1,10 +1,16 @@
 package nebulosa.stacker
 
+import nebulosa.common.concurrency.cancel.CancellationToken
 import java.nio.file.Path
 
 interface AutoStacker : Stacker {
 
-    fun stack(paths: Collection<Path>, outputPath: Path, referencePath: Path = paths.first()): Boolean
+    fun registerAutoStackerListener(listener: AutoStackerListener)
 
-    fun stop()
+    fun unregisterAutoStackerListener(listener: AutoStackerListener)
+
+    fun stack(
+        targetPaths: Collection<Path>, outputPath: Path, referencePath: Path = targetPaths.first(),
+        cancellationToken: CancellationToken = CancellationToken.NONE
+    ): Boolean
 }
