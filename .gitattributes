@@ -21,3 +21,4 @@
 *.dll           binary
 *.so            binary
 *.zip           binary
+*.bmp           binary
