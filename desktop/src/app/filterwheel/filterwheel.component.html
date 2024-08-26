@@ -1,14 +1,7 @@
 <div class="container px-4 py-3">
 	<div class="grid flex align-items-center">
 		<div class="col-12 align-items-center gap-2">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					[value]="wheel.name"
-					class="p-inputtext-sm border-0 w-full" />
-				<label>Filter Wheel</label>
-			</p-floatLabel>
+			<neb-device-name [device]="wheel" />
 			<p-button
 				*ngIf="wheel.connected"
 				[disabled]="!wheel || moving"

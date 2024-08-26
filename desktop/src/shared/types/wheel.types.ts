@@ -58,6 +58,8 @@ export function makeFilter(wheel: Wheel, filters: Filter[], shutterPosition: num
 export const DEFAULT_WHEEL: Wheel = {
 	type: 'WHEEL',
 	sender: '',
+	driverName: '',
+	driverVersion: '',
 	id: '',
 	count: 0,
 	position: 0,

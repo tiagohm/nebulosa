@@ -2,7 +2,7 @@ package nebulosa.indi.device.guider
 
 import nebulosa.indi.device.DeviceEvent
 
-interface GuideOutputEvent<T : GuideOutput> : DeviceEvent<T> {
+interface GuideOutputEvent : DeviceEvent<GuideOutput> {
 
-    override val device: T
+    override val device: GuideOutput
 }

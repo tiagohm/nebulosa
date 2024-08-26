@@ -79,6 +79,8 @@ export interface MountPreference {
 export const DEFAULT_MOUNT: Mount = {
 	type: 'MOUNT',
 	sender: '',
+	driverName: '',
+	driverVersion: '',
 	id: '',
 	slewing: false,
 	tracking: false,

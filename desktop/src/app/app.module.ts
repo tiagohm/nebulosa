@@ -48,6 +48,7 @@ import { CameraExposureComponent } from '../shared/components/camera-exposure/ca
 import { CameraInfoComponent } from '../shared/components/camera-info/camera-info.component'
 import { DeviceChooserComponent } from '../shared/components/device-chooser/device-chooser.component'
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
+import { DeviceNameComponent } from '../shared/components/device-name/device-name.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
 import { LocationComponent } from '../shared/components/location/location.dialog'
@@ -117,6 +118,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		CrossHairComponent,
 		DeviceChooserComponent,
 		DeviceListMenuComponent,
+		DeviceNameComponent,
 		DialogMenuComponent,
 		DropdownOptionsPipe,
 		EnumPipe,

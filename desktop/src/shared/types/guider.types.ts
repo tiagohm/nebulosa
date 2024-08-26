@@ -105,6 +105,8 @@ export interface GuiderChartInfo {
 export const DEFAULT_GUIDE_OUTPUT: GuideOutput = {
 	type: 'CAMERA',
 	sender: '',
+	driverName: '',
+	driverVersion: '',
 	id: '',
 	canPulseGuide: false,
 	pulseGuiding: false,
