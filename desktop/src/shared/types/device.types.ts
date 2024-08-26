@@ -15,6 +15,8 @@ export interface Device {
 	readonly sender: string
 	readonly id: string
 	readonly name: string
+	readonly driverName: string
+	readonly driverVersion: string
 	connected: boolean
 }
 

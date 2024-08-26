@@ -200,6 +200,8 @@ export interface CameraNamingFormatDialog {
 export const DEFAULT_CAMERA: Camera = {
 	type: 'CAMERA',
 	sender: '',
+	driverName: '',
+	driverVersion: '',
 	id: '',
 	exposuring: false,
 	hasCoolerControl: false,

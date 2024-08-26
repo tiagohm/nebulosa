@@ -1,14 +1,7 @@
 <div class="container px-4 pt-2 pb-1">
 	<div class="grid py-1 flex align-items-center">
 		<div class="col-8 align-items-center gap-2">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					[value]="camera.name"
-					class="p-inputtext-sm border-0 w-full" />
-				<label>Camera</label>
-			</p-floatLabel>
+			<neb-device-name [device]="camera" />
 			<p-button
 				*ngIf="!camera || camera.connected"
 				[disabled]="!camera || running"

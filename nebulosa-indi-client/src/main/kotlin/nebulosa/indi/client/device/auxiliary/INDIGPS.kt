@@ -1,6 +1,7 @@
 package nebulosa.indi.client.device.auxiliary
 
 import nebulosa.indi.client.INDIClient
+import nebulosa.indi.client.device.DriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.gps.GPS
@@ -15,8 +16,8 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 internal open class INDIGPS(
-    override val sender: INDIClient,
-    override val name: String,
+    final override val sender: INDIClient,
+    final override val driverInfo: DriverInfo,
 ) : INDIDevice(), GPS {
 
     override val type

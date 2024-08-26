@@ -1,14 +1,7 @@
 <div class="container px-4 py-3">
 	<div class="grid flex align-items-center">
 		<div class="col-12 align-items-center gap-2">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					[value]="focuser.name"
-					class="p-inputtext-sm border-0 w-full" />
-				<label>Focuser</label>
-			</p-floatLabel>
+			<neb-device-name [device]="focuser" />
 			<p-button
 				*ngIf="focuser.connected"
 				[disabled]="!focuser || focuser.moving"

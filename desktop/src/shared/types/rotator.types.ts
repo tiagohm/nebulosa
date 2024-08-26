@@ -20,6 +20,8 @@ export interface RotatorPreference {
 export const DEFAULT_ROTATOR: Rotator = {
 	type: 'ROTATOR',
 	sender: '',
+	driverName: '',
+	driverVersion: '',
 	id: '',
 	name: '',
 	moving: false,

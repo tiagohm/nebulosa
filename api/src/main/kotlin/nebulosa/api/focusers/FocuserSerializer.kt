@@ -13,6 +13,8 @@ class FocuserSerializer : StdSerializer<Focuser>(Focuser::class.java) {
         gen.writeStartObject()
         gen.writeStringField("type", value.type.name)
         gen.writeStringField("sender", value.sender.id)
+        gen.writeStringField("driverName", value.driverName)
+        gen.writeStringField("driverVersion", value.driverVersion)
         gen.writeStringField("id", value.id)
         gen.writeStringField("name", value.name)
         gen.writeBooleanField("connected", value.connected)

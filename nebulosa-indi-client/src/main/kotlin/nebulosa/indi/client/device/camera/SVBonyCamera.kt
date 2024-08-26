@@ -1,13 +1,11 @@
 package nebulosa.indi.client.device.camera
 
 import nebulosa.indi.client.INDIClient
+import nebulosa.indi.client.device.DriverInfo
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.NumberVector
 
-internal class SVBonyCamera(
-    provider: INDIClient,
-    name: String,
-) : INDICamera(provider, name) {
+internal class SVBonyCamera(provider: INDIClient, driverInfo: DriverInfo) : INDICamera(provider, driverInfo) {
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

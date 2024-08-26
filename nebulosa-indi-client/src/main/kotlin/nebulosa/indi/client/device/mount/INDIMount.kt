@@ -1,6 +1,7 @@
 package nebulosa.indi.client.device.mount
 
 import nebulosa.indi.client.INDIClient
+import nebulosa.indi.client.device.DriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.client.device.handler.INDIGuideOutputHandler
 import nebulosa.indi.device.firstOnSwitch
@@ -19,8 +20,8 @@ import java.time.ZoneOffset
 // https://github.com/indilib/indi/blob/master/libs/indibase/inditelescope.cpp
 
 internal open class INDIMount(
-    override val sender: INDIClient,
-    override val name: String,
+    final override val sender: INDIClient,
+    final override val driverInfo: DriverInfo,
 ) : INDIDevice(), Mount {
 
     @Volatile final override var slewing = false
