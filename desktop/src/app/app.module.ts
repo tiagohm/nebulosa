@@ -25,6 +25,7 @@ import { InplaceModule } from 'primeng/inplace'
 import { InputNumberModule } from 'primeng/inputnumber'
 import { InputSwitchModule } from 'primeng/inputswitch'
 import { InputTextModule } from 'primeng/inputtext'
+import { KnobModule } from 'primeng/knob'
 import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
 import { MessageModule } from 'primeng/message'
@@ -95,6 +96,7 @@ import { CrossHairComponent } from './image/crosshair.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
+import { LightBoxComponent } from './lightbox/lightbox.component'
 import { MountComponent } from './mount/mount.component'
 import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
@@ -138,6 +140,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		SpinnableNumberDirective,
 		INDIComponent,
 		INDIPropertyComponent,
+		LightBoxComponent,
 		LocationComponent,
 		MapComponent,
 		MenuBarComponent,
@@ -181,6 +184,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		InputNumberModule,
 		InputSwitchModule,
 		InputTextModule,
+		KnobModule,
 		ListboxModule,
 		MenuModule,
 		MessageModule,

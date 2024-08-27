@@ -21,7 +21,7 @@ class LightBoxEventHub(
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleLightBoxEvent(event: LightBoxEvent) {
-        if (event.device.type == DeviceType.ROTATOR) {
+        if (event.device.type == DeviceType.LIGHT_BOX) {
             when (event) {
                 is PropertyChangedEvent -> onNext(event)
                 is LightBoxAttached -> onAttached(event.device)

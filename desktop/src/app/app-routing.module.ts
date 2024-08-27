@@ -16,6 +16,7 @@ import { GuiderComponent } from './guider/guider.component'
 import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
+import { LightBoxComponent } from './lightbox/lightbox.component'
 import { MountComponent } from './mount/mount.component'
 import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
@@ -51,6 +52,10 @@ const routes: Routes = [
 	{
 		path: 'rotator',
 		component: RotatorComponent,
+	},
+	{
+		path: 'light-box',
+		component: LightBoxComponent,
 	},
 	{
 		path: 'guider',

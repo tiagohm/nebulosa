@@ -4,7 +4,7 @@ import nebulosa.indi.device.lightbox.LightBox
 import org.springframework.stereotype.Service
 
 @Service
-class LightBoxService {
+class LightBoxService(private val lightBoxEventHub: LightBoxEventHub) {
 
     fun connect(lightBox: LightBox) {
         lightBox.connect()
@@ -24,5 +24,9 @@ class LightBoxService {
 
     fun brightness(lightBox: LightBox, intensity: Double) {
         lightBox.brightness(intensity)
+    }
+
+    fun listen(lightBox: LightBox) {
+        lightBoxEventHub.listen(lightBox)
     }
 }

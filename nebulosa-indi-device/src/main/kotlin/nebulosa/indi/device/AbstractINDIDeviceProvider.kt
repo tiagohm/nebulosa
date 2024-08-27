@@ -61,6 +61,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         rotator(id)?.also(devices::add)
         gps(id)?.also(devices::add)
         guideOutput(id)?.also(devices::add)
+        lightBox(id)?.also(devices::add)
         thermometer(id)?.also(devices::add)
         return devices
     }
@@ -259,6 +260,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         rotators().onEach(Device::close).onEach(::unregisterRotator)
         gps().onEach(Device::close).onEach(::unregisterGPS)
         guideOutputs().onEach(Device::close).onEach(::unregisterGuideOutput)
+        lightBoxes().onEach(Device::close).onEach(::unregisterLightBox)
 
         cameras.clear()
         mounts.clear()
@@ -267,6 +269,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         rotators.clear()
         gps.clear()
         guideOutputs.clear()
+        lightBoxes.clear()
         thermometers.clear()
 
         handlers.clear()

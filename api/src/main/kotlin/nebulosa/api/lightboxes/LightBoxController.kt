@@ -53,4 +53,9 @@ class LightBoxController(
     fun brightness(lightBox: LightBox, @RequestParam @Valid @PositiveOrZero intensity: Double) {
         lightBoxService.brightness(lightBox, intensity)
     }
+
+    @PutMapping("{lightBox}/listen")
+    fun listen(lightBox: LightBox) {
+        lightBoxService.listen(lightBox)
+    }
 }
