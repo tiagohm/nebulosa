@@ -1,6 +1,7 @@
 package nebulosa.indi.client.device.wheel
 
 import nebulosa.indi.client.INDIClient
+import nebulosa.indi.client.device.DriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.filterwheel.*
 import nebulosa.indi.protocol.*
@@ -9,8 +10,8 @@ import nebulosa.indi.protocol.Vector.Companion.isBusy
 // https://github.com/indilib/indi/blob/master/libs/indibase/indifilterwheel.cpp
 
 internal open class INDIFilterWheel(
-    override val sender: INDIClient,
-    override val name: String,
+    final override val sender: INDIClient,
+    final override val driverInfo: DriverInfo,
 ) : INDIDevice(), FilterWheel {
 
     @Volatile final override var count = 0

@@ -11,15 +11,24 @@ internal abstract class INDIDevice : Device {
 
     abstract override val sender: INDIClient
 
-    override val properties = linkedMapOf<String, PropertyVector<*, *>>()
-    override val messages = LinkedList<String>()
+    abstract val driverInfo: DriverInfo
 
-    override val id by lazy { type.code + "." + name.encodeUtf8().md5().hex() }
+    final override val properties = linkedMapOf<String, PropertyVector<*, *>>()
+    final override val messages = LinkedList<String>()
+    final override val id by lazy { type.code + "." + name.encodeUtf8().md5().hex() }
+    final override val snoopedDevices = ArrayList<Device>(4)
+
+    override val name
+        get() = driverInfo.name
 
     @Volatile override var connected = false
         protected set
 
-    override val snoopedDevices = ArrayList<Device>(4)
+    final override val driverName
+        get() = driverInfo.executable
+
+    final override val driverVersion
+        get() = driverInfo.version
 
     private fun addMessageAndFireEvent(text: String) {
         synchronized(messages) {
@@ -193,6 +202,8 @@ internal abstract class INDIDevice : Device {
     }
 
     override fun disconnect() {
-        sendNewSwitch("CONNECTION", "DISCONNECT" to true)
+        if (connected) {
+            sendNewSwitch("CONNECTION", "DISCONNECT" to true)
+        }
     }
 }

@@ -1,8 +1,7 @@
 package nebulosa.api.mounts
 
 import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.SerializerProvider
-import com.fasterxml.jackson.databind.ser.std.StdSerializer
+import nebulosa.api.devices.DeviceSerializer
 import nebulosa.indi.device.mount.Mount
 import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
@@ -12,42 +11,35 @@ import org.springframework.stereotype.Component
 import java.time.ZoneOffset
 
 @Component
-class MountSerializer : StdSerializer<Mount>(Mount::class.java) {
+class MountSerializer : DeviceSerializer<Mount>(Mount::class.java) {
 
-    override fun serialize(value: Mount, gen: JsonGenerator, provider: SerializerProvider) {
-        gen.writeStartObject()
-        gen.writeStringField("type", value.type.name)
-        gen.writeStringField("sender", value.sender.id)
-        gen.writeStringField("id", value.id)
-        gen.writeStringField("name", value.name)
-        gen.writeBooleanField("connected", value.connected)
-        gen.writeBooleanField("slewing", value.slewing)
-        gen.writeBooleanField("tracking", value.tracking)
-        gen.writeBooleanField("canAbort", value.canAbort)
-        gen.writeBooleanField("canSync", value.canSync)
-        gen.writeBooleanField("canGoTo", value.canGoTo)
-        gen.writeBooleanField("canHome", value.canHome)
-        gen.writeObjectField("slewRates", value.slewRates)
-        gen.writeObjectField("slewRate", value.slewRate)
-        gen.writeStringField("mountType", value.mountType.name)
-        gen.writeObjectField("trackModes", value.trackModes)
-        gen.writeStringField("trackMode", value.trackMode.name)
-        gen.writeStringField("pierSide", value.pierSide.name)
-        gen.writeNumberField("guideRateWE", value.guideRateWE)
-        gen.writeNumberField("guideRateNS", value.guideRateNS)
-        gen.writeStringField("rightAscension", value.rightAscension.formatHMS())
-        gen.writeStringField("declination", value.declination.formatSignedDMS())
-        gen.writeBooleanField("canPulseGuide", value.canPulseGuide)
-        gen.writeBooleanField("pulseGuiding", value.pulseGuiding)
-        gen.writeBooleanField("canPark", value.canPark)
-        gen.writeBooleanField("parking", value.parking)
-        gen.writeBooleanField("parked", value.parked)
-        gen.writeBooleanField("hasGPS", value.hasGPS)
-        gen.writeNumberField("longitude", value.longitude.toDegrees)
-        gen.writeNumberField("latitude", value.latitude.toDegrees)
-        gen.writeNumberField("elevation", value.elevation.toMeters)
-        gen.writeNumberField("dateTime", value.dateTime.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli())
-        gen.writeNumberField("offsetInMinutes", value.dateTime.offset.totalSeconds / 60)
-        gen.writeEndObject()
+    override fun JsonGenerator.serialize(value: Mount) {
+        writeBooleanField("slewing", value.slewing)
+        writeBooleanField("tracking", value.tracking)
+        writeBooleanField("canAbort", value.canAbort)
+        writeBooleanField("canSync", value.canSync)
+        writeBooleanField("canGoTo", value.canGoTo)
+        writeBooleanField("canHome", value.canHome)
+        writeObjectField("slewRates", value.slewRates)
+        writeObjectField("slewRate", value.slewRate)
+        writeStringField("mountType", value.mountType.name)
+        writeObjectField("trackModes", value.trackModes)
+        writeStringField("trackMode", value.trackMode.name)
+        writeStringField("pierSide", value.pierSide.name)
+        writeNumberField("guideRateWE", value.guideRateWE)
+        writeNumberField("guideRateNS", value.guideRateNS)
+        writeStringField("rightAscension", value.rightAscension.formatHMS())
+        writeStringField("declination", value.declination.formatSignedDMS())
+        writeBooleanField("canPulseGuide", value.canPulseGuide)
+        writeBooleanField("pulseGuiding", value.pulseGuiding)
+        writeBooleanField("canPark", value.canPark)
+        writeBooleanField("parking", value.parking)
+        writeBooleanField("parked", value.parked)
+        writeBooleanField("hasGPS", value.hasGPS)
+        writeNumberField("longitude", value.longitude.toDegrees)
+        writeNumberField("latitude", value.latitude.toDegrees)
+        writeNumberField("elevation", value.elevation.toMeters)
+        writeNumberField("dateTime", value.dateTime.toLocalDateTime().toInstant(ZoneOffset.UTC).toEpochMilli())
+        writeNumberField("offsetInMinutes", value.dateTime.offset.totalSeconds / 60)
     }
 }

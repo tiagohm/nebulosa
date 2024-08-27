@@ -22,6 +22,8 @@ export interface FocuserPreference {
 export const DEFAULT_FOCUSER: Focuser = {
 	type: 'FOCUSER',
 	sender: '',
+	driverName: '',
+	driverVersion: '',
 	id: '',
 	moving: false,
 	position: 0,

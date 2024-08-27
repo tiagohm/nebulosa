@@ -2,6 +2,7 @@ package nebulosa.indi.client
 
 import nebulosa.indi.client.connection.INDIProccessConnection
 import nebulosa.indi.client.connection.INDISocketConnection
+import nebulosa.indi.client.device.DriverInfo
 import nebulosa.indi.client.device.INDIDeviceProtocolHandler
 import nebulosa.indi.client.device.auxiliary.INDIGPS
 import nebulosa.indi.client.device.auxiliary.INDIGuideOutput
@@ -11,6 +12,7 @@ import nebulosa.indi.client.device.camera.SVBonyCamera
 import nebulosa.indi.client.device.camera.SimCamera
 import nebulosa.indi.client.device.dustcap.INDIDustCap
 import nebulosa.indi.client.device.focuser.INDIFocuser
+import nebulosa.indi.client.device.lightbox.INDILightBox
 import nebulosa.indi.client.device.mount.INDIMount
 import nebulosa.indi.client.device.rotator.INDIRotator
 import nebulosa.indi.client.device.wheel.INDIFilterWheel
@@ -22,6 +24,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guider.GuideOutput
+import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.GetProperties
@@ -50,36 +53,40 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     override val input
         get() = connection.input
 
-    override fun newCamera(name: String, executable: String): Camera {
-        return CAMERAS[executable]?.create(this, name) ?: INDICamera(this, name)
+    override fun newCamera(driverInfo: DriverInfo): Camera {
+        return CAMERAS[driverInfo.executable]?.create(this, driverInfo) ?: INDICamera(this, driverInfo)
     }
 
-    override fun newMount(name: String, executable: String): Mount {
-        return INDIMount(this, name)
+    override fun newMount(driverInfo: DriverInfo): Mount {
+        return INDIMount(this, driverInfo)
     }
 
-    override fun newFocuser(name: String, executable: String): Focuser {
-        return INDIFocuser(this, name)
+    override fun newFocuser(driverInfo: DriverInfo): Focuser {
+        return INDIFocuser(this, driverInfo)
     }
 
-    override fun newFilterWheel(name: String, executable: String): FilterWheel {
-        return INDIFilterWheel(this, name)
+    override fun newFilterWheel(driverInfo: DriverInfo): FilterWheel {
+        return INDIFilterWheel(this, driverInfo)
     }
 
-    override fun newRotator(name: String, executable: String): Rotator {
-        return INDIRotator(this, name)
+    override fun newRotator(driverInfo: DriverInfo): Rotator {
+        return INDIRotator(this, driverInfo)
     }
 
-    override fun newGPS(name: String, executable: String): GPS {
-        return INDIGPS(this, name)
+    override fun newGPS(driverInfo: DriverInfo): GPS {
+        return INDIGPS(this, driverInfo)
     }
 
-    override fun newGuideOutput(name: String, executable: String): GuideOutput {
-        return INDIGuideOutput(this, name)
+    override fun newGuideOutput(driverInfo: DriverInfo): GuideOutput {
+        return INDIGuideOutput(this, driverInfo)
     }
 
-    override fun newDustCap(name: String, executable: String): DustCap {
-        return INDIDustCap(this, name)
+    override fun newLightBox(driverInfo: DriverInfo): LightBox {
+        return INDILightBox(this, driverInfo)
+    }
+
+    override fun newDustCap(driverInfo: DriverInfo): DustCap {
+        return INDIDustCap(this, driverInfo)
     }
 
     override fun start() {
@@ -115,9 +122,9 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
         )
 
         @JvmStatic
-        private fun <T : Device> Class<out T>.create(handler: INDIClient, name: String): T {
-            return getConstructor(INDIClient::class.java, String::class.java)
-                .newInstance(handler, name)
+        private fun <T : Device> Class<out T>.create(handler: INDIClient, driverInfo: DriverInfo): T {
+            return getConstructor(INDIClient::class.java, DriverInfo::class.java)
+                .newInstance(handler, driverInfo)
         }
     }
 }

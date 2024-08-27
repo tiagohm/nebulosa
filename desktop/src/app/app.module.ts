@@ -25,6 +25,7 @@ import { InplaceModule } from 'primeng/inplace'
 import { InputNumberModule } from 'primeng/inputnumber'
 import { InputSwitchModule } from 'primeng/inputswitch'
 import { InputTextModule } from 'primeng/inputtext'
+import { KnobModule } from 'primeng/knob'
 import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
 import { MessageModule } from 'primeng/message'
@@ -48,6 +49,7 @@ import { CameraExposureComponent } from '../shared/components/camera-exposure/ca
 import { CameraInfoComponent } from '../shared/components/camera-info/camera-info.component'
 import { DeviceChooserComponent } from '../shared/components/device-chooser/device-chooser.component'
 import { DeviceListMenuComponent } from '../shared/components/device-list-menu/device-list-menu.component'
+import { DeviceNameComponent } from '../shared/components/device-name/device-name.component'
 import { DialogMenuComponent } from '../shared/components/dialog-menu/dialog-menu.component'
 import { HistogramComponent } from '../shared/components/histogram/histogram.component'
 import { LocationComponent } from '../shared/components/location/location.dialog'
@@ -94,6 +96,7 @@ import { CrossHairComponent } from './image/crosshair.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
 import { INDIPropertyComponent } from './indi/property/indi-property.component'
+import { LightBoxComponent } from './lightbox/lightbox.component'
 import { MountComponent } from './mount/mount.component'
 import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
@@ -117,6 +120,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		CrossHairComponent,
 		DeviceChooserComponent,
 		DeviceListMenuComponent,
+		DeviceNameComponent,
 		DialogMenuComponent,
 		DropdownOptionsPipe,
 		EnumPipe,
@@ -136,6 +140,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		SpinnableNumberDirective,
 		INDIComponent,
 		INDIPropertyComponent,
+		LightBoxComponent,
 		LocationComponent,
 		MapComponent,
 		MenuBarComponent,
@@ -179,6 +184,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		InputNumberModule,
 		InputSwitchModule,
 		InputTextModule,
+		KnobModule,
 		ListboxModule,
 		MenuModule,
 		MessageModule,

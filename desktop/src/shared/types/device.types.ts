@@ -8,13 +8,15 @@ export type INDIPropertyType = 'NUMBER' | 'SWITCH' | 'TEXT'
 
 export type SwitchRule = 'ONE_OF_MANY' | 'AT_MOST_ONE' | 'ANY_OF_MANY'
 
-export type DeviceType = 'CAMERA' | 'MOUNT' | 'WHEEL' | 'FOCUSER' | 'ROTATOR' | 'GPS' | 'DOME' | 'SWITCH' | 'GUIDE_OUTPUT'
+export type DeviceType = 'CAMERA' | 'MOUNT' | 'WHEEL' | 'FOCUSER' | 'ROTATOR' | 'GPS' | 'DOME' | 'SWITCH' | 'GUIDE_OUTPUT' | 'LIGHT_BOX'
 
 export interface Device {
 	readonly type: DeviceType
 	readonly sender: string
 	readonly id: string
 	readonly name: string
+	readonly driverName: string
+	readonly driverVersion: string
 	connected: boolean
 }
 

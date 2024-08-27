@@ -10,5 +10,6 @@ enum class DeviceType(@JvmField val code: String) {
     DOME("DOM"),
     SWITCH("SWT"),
     GUIDE_OUTPUT("GDT"),
+    LIGHT_BOX("LBX"),
     DUST_CAP("DCP"),
 }

@@ -184,6 +184,16 @@
 		<div class="col-4 p-1">
 			<p-button
 				[text]="true"
+				[disabled]="!connected || !hasLightBox"
+				(onClick)="open('LIGHT_BOX')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/light.png" />
+				<div class="mt-1 text-sm">Light Box</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
 				(onClick)="open('SKY_ATLAS')"
 				styleClass="min-w-full w-full px-1 py-2 flex-column">
 				<img src="assets/icons/atlas.png" />

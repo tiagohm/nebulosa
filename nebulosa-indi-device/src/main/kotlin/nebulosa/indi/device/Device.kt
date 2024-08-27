@@ -21,6 +21,12 @@ interface Device : INDIProtocolHandler, AutoCloseable, Comparable<Device> {
 
     val snoopedDevices: List<Device>
 
+    val driverName: String
+        get() = ""
+
+    val driverVersion: String
+        get() = ""
+
     fun connect()
 
     fun disconnect()
@@ -30,15 +36,15 @@ interface Device : INDIProtocolHandler, AutoCloseable, Comparable<Device> {
     }
 
     fun ask() {
-        sendMessageToServer(GetProperties().also { it.device = name })
+        sendMessageToServer(GetProperties(name))
     }
 
     fun enableBlob() {
-        sendMessageToServer(EnableBLOB().also { it.device = name })
+        sendMessageToServer(EnableBLOB(name))
     }
 
     fun disableBlob() {
-        sendMessageToServer(EnableBLOB().also { it.value = BLOBEnable.NEVER; it.device = name })
+        sendMessageToServer(EnableBLOB(name, value = BLOBEnable.NEVER))
     }
 
     fun snoop(devices: Iterable<Device?>)

@@ -10,6 +10,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guider.GuideOutput
+import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.DelProperty
@@ -33,97 +34,91 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
     override val isClosed
         get() = protocolReader == null || !protocolReader!!.isRunning
 
-    protected abstract fun newCamera(name: String, executable: String): Camera
+    protected abstract fun newCamera(driverInfo: DriverInfo): Camera
 
-    protected abstract fun newMount(name: String, executable: String): Mount
+    protected abstract fun newMount(driverInfo: DriverInfo): Mount
 
-    protected abstract fun newFocuser(name: String, executable: String): Focuser
+    protected abstract fun newFocuser(driverInfo: DriverInfo): Focuser
 
-    protected abstract fun newFilterWheel(name: String, executable: String): FilterWheel
+    protected abstract fun newFilterWheel(driverInfo: DriverInfo): FilterWheel
 
-    protected abstract fun newRotator(name: String, executable: String): Rotator
+    protected abstract fun newRotator(driverInfo: DriverInfo): Rotator
 
-    protected abstract fun newGPS(name: String, executable: String): GPS
+    protected abstract fun newGPS(driverInfo: DriverInfo): GPS
 
-    protected abstract fun newGuideOutput(name: String, executable: String): GuideOutput
+    protected abstract fun newGuideOutput(driverInfo: DriverInfo): GuideOutput
 
-    protected abstract fun newDustCap(name: String, executable: String): DustCap
+    protected abstract fun newLightBox(driverInfo: DriverInfo): LightBox
 
-    private fun registerCamera(message: TextVector<*>): Camera? {
-        val executable = message["DRIVER_EXEC"]?.value
+    protected abstract fun newDustCap(driverInfo: DriverInfo): DustCap
 
-        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && camera(message.name) == null) {
-            newCamera(message.device, executable).also(::registerCamera)
+    private fun registerCamera(driverInfo: DriverInfo): Camera? {
+        return if (camera(driverInfo.name) == null) {
+            newCamera(driverInfo).also(::registerCamera)
         } else {
             null
         }
     }
 
-    private fun registerMount(message: TextVector<*>): Mount? {
-        val executable = message["DRIVER_EXEC"]?.value
-
-        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && mount(message.name) == null) {
-            newMount(message.device, executable).also(::registerMount)
+    private fun registerMount(driverInfo: DriverInfo): Mount? {
+        return if (mount(driverInfo.name) == null) {
+            newMount(driverInfo).also(::registerMount)
         } else {
             null
         }
     }
 
-    private fun registerFocuser(message: TextVector<*>): Focuser? {
-        val executable = message["DRIVER_EXEC"]?.value
-
-        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && focuser(message.name) == null) {
-            newFocuser(message.device, executable).also(::registerFocuser)
+    private fun registerFocuser(driverInfo: DriverInfo): Focuser? {
+        return if (focuser(driverInfo.name) == null) {
+            newFocuser(driverInfo).also(::registerFocuser)
         } else {
             null
         }
     }
 
-    private fun registerRotator(message: TextVector<*>): Rotator? {
-        val executable = message["DRIVER_EXEC"]?.value
-
-        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && rotator(message.name) == null) {
-            newRotator(message.device, executable).also(::registerRotator)
+    private fun registerRotator(driverInfo: DriverInfo): Rotator? {
+        return if (rotator(driverInfo.name) == null) {
+            newRotator(driverInfo).also(::registerRotator)
         } else {
             null
         }
     }
 
-    private fun registerFilterWheel(message: TextVector<*>): FilterWheel? {
-        val executable = message["DRIVER_EXEC"]?.value
-
-        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && wheel(message.name) == null) {
-            newFilterWheel(message.device, executable).also(::registerFilterWheel)
+    private fun registerFilterWheel(driverInfo: DriverInfo): FilterWheel? {
+        return if (wheel(driverInfo.name) == null) {
+            newFilterWheel(driverInfo).also(::registerFilterWheel)
         } else {
             null
         }
     }
 
-    private fun registerGPS(message: TextVector<*>): GPS? {
-        val executable = message["DRIVER_EXEC"]?.value
-
-        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && gps(message.name) == null) {
-            newGPS(message.device, executable).also(::registerGPS)
+    private fun registerGPS(driverInfo: DriverInfo): GPS? {
+        return if (gps(driverInfo.name) == null) {
+            newGPS(driverInfo).also(::registerGPS)
         } else {
             null
         }
     }
 
-    private fun registerGuideOutput(message: TextVector<*>): GuideOutput? {
-        val executable = message["DRIVER_EXEC"]?.value
-
-        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && guideOutput(message.device) == null) {
-            newGuideOutput(message.device, executable).also(::registerGuideOutput)
+    private fun registerGuideOutput(driverInfo: DriverInfo): GuideOutput? {
+        return if (guideOutput(driverInfo.name) == null) {
+            newGuideOutput(driverInfo).also(::registerGuideOutput)
         } else {
             null
         }
     }
 
-    private fun registerDustCap(message: TextVector<*>): DustCap? {
-        val executable = message["DRIVER_EXEC"]?.value
+    private fun registerLightBox(driverInfo: DriverInfo): LightBox? {
+        return if (lightBox(driverInfo.name) == null) {
+            newLightBox(driverInfo).also(::registerLightBox)
+        } else {
+            null
+        }
+    }
 
-        return if (!executable.isNullOrEmpty() && message.device.isNotEmpty() && dustCap(message.device) == null) {
-            newDustCap(message.device, executable).also(::registerDustCap)
+    private fun registerDustCap(driverInfo: DriverInfo): DustCap? {
+        return if (dustCap(driverInfo.name) == null) {
+            newDustCap(driverInfo).also(::registerDustCap)
         } else {
             null
         }
@@ -174,68 +169,87 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
         if (message is TextVector<*>) {
             when (message.name) {
                 "DRIVER_INFO" -> {
-                    val interfaceType = message["DRIVER_INTERFACE"]?.value?.toIntOrNull() ?: 0
+                    val driverInfo = DriverInfo.from(message) ?: return
+
+                    val interfaceType = driverInfo.interfaceType
                     var registered = false
 
                     if (DeviceInterfaceType.isCamera(interfaceType)) {
-                        registerCamera(message)?.also {
-                            registered = true
+                        registered = true
+
+                        registerCamera(driverInfo)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isMount(interfaceType)) {
-                        registerMount(message)?.also {
-                            registered = true
+                        registered = true
+
+                        registerMount(driverInfo)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isFilterWheel(interfaceType)) {
-                        registerFilterWheel(message)?.also {
-                            registered = true
+                        registered = true
+
+                        registerFilterWheel(driverInfo)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isFocuser(interfaceType)) {
-                        registerFocuser(message)?.also {
-                            registered = true
+                        registered = true
+
+                        registerFocuser(driverInfo)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isRotator(interfaceType)) {
-                        registerRotator(message)?.also {
-                            registered = true
+                        registered = true
+
+                        registerRotator(driverInfo)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isGPS(interfaceType)) {
-                        registerGPS(message)?.also {
-                            registered = true
+                        registered = true
+
+                        registerGPS(driverInfo)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isGuider(interfaceType)) {
-                        registerGuideOutput(message)?.also {
-                            registered = true
+                        registered = true
+
+                        registerGuideOutput(driverInfo)?.also {
+                            it.handleMessage(message)
+                            takeMessageFromReorderingQueue(it)
+                        }
+                    }
+
+                    if (DeviceInterfaceType.isLightBox(interfaceType)) {
+                        registered = true
+
+                        registerLightBox(driverInfo)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isDustCap(interfaceType)) {
-                        registerDustCap(message)?.also {
-                            registered = true
+                        registered = true
+
+                        registerDustCap(driverInfo)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
@@ -279,6 +293,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                             is Rotator -> unregisterRotator(device)
                             is GPS -> unregisterGPS(device)
                             is GuideOutput -> unregisterGuideOutput(device)
+                            is LightBox -> unregisterLightBox(device)
                             is DustCap -> unregisterDustCap(device)
                         }
                     }

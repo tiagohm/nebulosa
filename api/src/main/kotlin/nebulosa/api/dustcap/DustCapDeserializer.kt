@@ -1,7 +1,7 @@
 package nebulosa.api.dustcap
 
-import nebulosa.api.beans.converters.device.DeviceDeserializer
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.indi.device.dustcap.DustCap
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
