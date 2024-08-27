@@ -202,6 +202,8 @@ internal abstract class INDIDevice : Device {
     }
 
     override fun disconnect() {
-        sendNewSwitch("CONNECTION", "DISCONNECT" to true)
+        if (connected) {
+            sendNewSwitch("CONNECTION", "DISCONNECT" to true)
+        }
     }
 }

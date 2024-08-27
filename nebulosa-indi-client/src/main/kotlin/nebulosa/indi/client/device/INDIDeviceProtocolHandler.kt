@@ -9,6 +9,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guider.GuideOutput
+import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.DelProperty
@@ -45,6 +46,8 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
     protected abstract fun newGPS(driverInfo: DriverInfo): GPS
 
     protected abstract fun newGuideOutput(driverInfo: DriverInfo): GuideOutput
+
+    protected abstract fun newLightBox(driverInfo: DriverInfo): LightBox
 
     private fun registerCamera(driverInfo: DriverInfo): Camera? {
         return if (camera(driverInfo.name) == null) {
@@ -102,6 +105,14 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
         }
     }
 
+    private fun registerLightBox(driverInfo: DriverInfo): LightBox? {
+        return if (lightBox(driverInfo.name) == null) {
+            newLightBox(driverInfo).also(::registerLightBox)
+        } else {
+            null
+        }
+    }
+
     open fun start() {
         if (protocolReader == null) {
             protocolReader = INDIProtocolReader(this, Thread.MIN_PRIORITY)
@@ -153,56 +164,72 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     var registered = false
 
                     if (DeviceInterfaceType.isCamera(interfaceType)) {
+                        registered = true
+
                         registerCamera(driverInfo)?.also {
-                            registered = true
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isMount(interfaceType)) {
+                        registered = true
+
                         registerMount(driverInfo)?.also {
-                            registered = true
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isFilterWheel(interfaceType)) {
+                        registered = true
+
                         registerFilterWheel(driverInfo)?.also {
-                            registered = true
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isFocuser(interfaceType)) {
+                        registered = true
+
                         registerFocuser(driverInfo)?.also {
-                            registered = true
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isRotator(interfaceType)) {
+                        registered = true
+
                         registerRotator(driverInfo)?.also {
-                            registered = true
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isGPS(interfaceType)) {
+                        registered = true
+
                         registerGPS(driverInfo)?.also {
-                            registered = true
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
                     }
 
                     if (DeviceInterfaceType.isGuider(interfaceType)) {
+                        registered = true
+
                         registerGuideOutput(driverInfo)?.also {
-                            registered = true
+                            it.handleMessage(message)
+                            takeMessageFromReorderingQueue(it)
+                        }
+                    }
+
+                    if (DeviceInterfaceType.isLightBox(interfaceType)) {
+                        registered = true
+
+                        registerLightBox(driverInfo)?.also {
                             it.handleMessage(message)
                             takeMessageFromReorderingQueue(it)
                         }
@@ -246,6 +273,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                             is Rotator -> unregisterRotator(device)
                             is GPS -> unregisterGPS(device)
                             is GuideOutput -> unregisterGuideOutput(device)
+                            is LightBox -> unregisterLightBox(device)
                         }
                     }
 

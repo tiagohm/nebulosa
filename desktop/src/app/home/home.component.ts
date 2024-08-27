@@ -14,6 +14,7 @@ import { Device, DeviceType } from '../../shared/types/device.types'
 import { Focuser, isFocuser } from '../../shared/types/focuser.types'
 import { GuideOutput, isGuideOuptut } from '../../shared/types/guider.types'
 import { ConnectionDetails, DEFAULT_CONNECTION_DETAILS, DEFAULT_HOME_CONNECTION_DIALOG, DEFAULT_HOME_PREFERENCE, HomeWindowType } from '../../shared/types/home.types'
+import { isLightBox, LightBox } from '../../shared/types/lightbox.types'
 import { isMount, Mount } from '../../shared/types/mount.types'
 import { isRotator, Rotator } from '../../shared/types/rotator.types'
 import { isWheel, Wheel } from '../../shared/types/wheel.types'
@@ -42,6 +43,7 @@ export class HomeComponent implements AfterContentInit {
 	protected domes: Camera[] = []
 	protected switches: Camera[] = []
 	protected guideOutputs: GuideOutput[] = []
+	protected lightBoxes: LightBox[] = []
 
 	protected page = 0
 	protected newVersion?: string
@@ -114,6 +116,10 @@ export class HomeComponent implements AfterContentInit {
 		return this.guideOutputs.length > 0
 	}
 
+	get hasLightBox() {
+		return this.lightBoxes.length > 0
+	}
+
 	get hasGuider() {
 		return (this.hasCamera && this.hasMount) || this.hasGuideOutput
 	}
@@ -135,7 +141,7 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	get hasDevices() {
-		return this.hasCamera || this.hasMount || this.hasFocuser || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch || this.hasGuideOutput
+		return this.hasCamera || this.hasMount || this.hasFocuser || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch || this.hasGuideOutput || this.hasLightBox
 	}
 
 	get hasINDI() {
@@ -253,6 +259,22 @@ export class HomeComponent implements AfterContentInit {
 			})
 		})
 
+		electronService.on('LIGHT_BOX.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`LIGHT_BOX.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`LIGHT_BOX.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
+
 		electronService.on('CONNECTION.CLOSED', async (event) => {
 			if (this.connection?.id === event.id) {
 				await ngZone.run(() => {
@@ -274,6 +296,7 @@ export class HomeComponent implements AfterContentInit {
 			this.wheels = await this.api.wheels()
 			this.rotators = await this.api.rotators()
 			this.guideOutputs = await this.api.guideOutputs()
+			this.lightBoxes = await this.api.lightBoxes()
 		}
 
 		void this.checkForNewVersion()
@@ -306,6 +329,8 @@ export class HomeComponent implements AfterContentInit {
 			this.rotators.push(device)
 		} else if (isGuideOuptut(device)) {
 			this.guideOutputs.push(device)
+		} else if (isLightBox(device)) {
+			this.lightBoxes.push(device)
 		}
 	}
 
@@ -328,6 +353,9 @@ export class HomeComponent implements AfterContentInit {
 		} else if (isGuideOuptut(device)) {
 			const found = this.guideOutputs.findIndex((e) => e.id === device.id)
 			this.guideOutputs.splice(found, 1)
+		} else if (isLightBox(device)) {
+			const found = this.lightBoxes.findIndex((e) => e.id === device.id)
+			this.lightBoxes.splice(found, 1)
 		}
 	}
 
@@ -349,6 +377,9 @@ export class HomeComponent implements AfterContentInit {
 			found && Object.assign(found, device)
 		} else if (isGuideOuptut(device)) {
 			const found = this.guideOutputs.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isLightBox(device)) {
+			const found = this.lightBoxes.find((e) => e.id === device.id)
 			found && Object.assign(found, device)
 		}
 	}
@@ -423,10 +454,6 @@ export class HomeComponent implements AfterContentInit {
 		}
 	}
 
-	protected findDeviceById(id: string) {
-		return this.cameras.find((e) => e.id === id) ?? this.mounts.find((e) => e.id === id) ?? this.wheels.find((e) => e.id === id) ?? this.focusers.find((e) => e.id === id) ?? this.rotators.find((e) => e.id === id)
-	}
-
 	protected deviceConnected(event: DeviceConnectionCommandEvent) {
 		return DeviceChooserComponent.handleConnectDevice(this.api, event.device, event.item)
 	}
@@ -444,6 +471,7 @@ export class HomeComponent implements AfterContentInit {
 			: type === 'FOCUSER' ? this.focusers
 			: type === 'WHEEL' ? this.wheels
 			: type === 'ROTATOR' ? this.rotators
+			: type === 'LIGHT_BOX' ? this.lightBoxes
 			: []
 
 		if (devices.length === 0) return
@@ -472,6 +500,9 @@ export class HomeComponent implements AfterContentInit {
 			case 'ROTATOR':
 				await this.browserWindowService.openRotator(device as Rotator, { bringToFront: true })
 				break
+			case 'LIGHT_BOX':
+				await this.browserWindowService.openLightBox(device as LightBox, { bringToFront: true })
+				break
 		}
 	}
 
@@ -493,6 +524,7 @@ export class HomeComponent implements AfterContentInit {
 			case 'FOCUSER':
 			case 'WHEEL':
 			case 'ROTATOR':
+			case 'LIGHT_BOX':
 				await this.openDevice(type)
 				break
 			case 'GUIDER':
@@ -588,6 +620,8 @@ export class HomeComponent implements AfterContentInit {
 			this.wheels = []
 			this.domes = []
 			this.rotators = []
+			this.lightBoxes = []
+			this.guideOutputs = []
 			this.switches = []
 		}
 	}

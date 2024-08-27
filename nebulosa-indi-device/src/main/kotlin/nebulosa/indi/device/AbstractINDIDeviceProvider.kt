@@ -16,6 +16,9 @@ import nebulosa.indi.device.gps.GPSDetached
 import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.indi.device.guider.GuideOutputAttached
 import nebulosa.indi.device.guider.GuideOutputDetached
+import nebulosa.indi.device.lightbox.LightBox
+import nebulosa.indi.device.lightbox.LightBoxAttached
+import nebulosa.indi.device.lightbox.LightBoxDetached
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountAttached
 import nebulosa.indi.device.mount.MountDetached
@@ -38,6 +41,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     private val rotators = HashMap<String, Rotator>(2)
     private val gps = HashMap<String, GPS>(2)
     private val guideOutputs = HashMap<String, GuideOutput>(2)
+    private val lightBoxes = HashMap<String, LightBox>(2)
     private val thermometers = HashMap<String, Thermometer>(2)
 
     override fun registerDeviceEventHandler(handler: DeviceEventHandler) = handlers.add(handler)
@@ -57,6 +61,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         rotator(id)?.also(devices::add)
         gps(id)?.also(devices::add)
         guideOutput(id)?.also(devices::add)
+        lightBox(id)?.also(devices::add)
         thermometer(id)?.also(devices::add)
         return devices
     }
@@ -88,6 +93,10 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     override fun guideOutputs() = guideOutputs.values.toSet()
 
     override fun guideOutput(id: String) = guideOutputs[id]
+
+    override fun lightBoxes() = lightBoxes.values.toSet()
+
+    override fun lightBox(id: String) = lightBoxes[id]
 
     override fun thermometers() = thermometers.values.toSet()
 
@@ -213,6 +222,21 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         LOG.info("guide output detached: {} ({})", device.name, device.id)
     }
 
+    fun registerLightBox(device: LightBox): Boolean {
+        if (device.id in lightBoxes) return false
+        lightBoxes[device.id] = device
+        lightBoxes[device.name] = device
+        fireOnEventReceived(LightBoxAttached(device))
+        LOG.info("light box attached: {} ({})", device.name, device.id)
+        return true
+    }
+
+    fun unregisterLightBox(device: LightBox) {
+        lightBoxes.remove(device.name)
+        fireOnEventReceived(LightBoxDetached(lightBoxes.remove(device.id) ?: return))
+        LOG.info("light box detached: {} ({})", device.name, device.id)
+    }
+
     fun registerThermometer(device: Thermometer): Boolean {
         if (device.id in thermometers) return false
         thermometers[device.id] = device
@@ -236,6 +260,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         rotators().onEach(Device::close).onEach(::unregisterRotator)
         gps().onEach(Device::close).onEach(::unregisterGPS)
         guideOutputs().onEach(Device::close).onEach(::unregisterGuideOutput)
+        lightBoxes().onEach(Device::close).onEach(::unregisterLightBox)
 
         cameras.clear()
         mounts.clear()
@@ -244,6 +269,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         rotators.clear()
         gps.clear()
         guideOutputs.clear()
+        lightBoxes.clear()
         thermometers.clear()
 
         handlers.clear()

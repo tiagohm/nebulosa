@@ -1,6 +1,6 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.beans.converters.device.DeviceDeserializer
+import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.camera.Camera
 import org.springframework.beans.factory.annotation.Autowired
