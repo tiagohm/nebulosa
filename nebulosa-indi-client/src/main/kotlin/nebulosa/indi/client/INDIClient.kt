@@ -11,6 +11,7 @@ import nebulosa.indi.client.device.camera.INDICamera
 import nebulosa.indi.client.device.camera.SVBonyCamera
 import nebulosa.indi.client.device.camera.SimCamera
 import nebulosa.indi.client.device.focuser.INDIFocuser
+import nebulosa.indi.client.device.lightbox.INDILightBox
 import nebulosa.indi.client.device.mount.INDIMount
 import nebulosa.indi.client.device.rotator.INDIRotator
 import nebulosa.indi.client.device.wheel.INDIFilterWheel
@@ -21,6 +22,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guider.GuideOutput
+import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.GetProperties
@@ -75,6 +77,10 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
 
     override fun newGuideOutput(driverInfo: DriverInfo): GuideOutput {
         return INDIGuideOutput(this, driverInfo)
+    }
+
+    override fun newLightBox(driverInfo: DriverInfo): LightBox {
+        return INDILightBox(this, driverInfo)
     }
 
     override fun start() {
