@@ -1,6 +1,6 @@
 package nebulosa.api.wheels
 
-import nebulosa.api.beans.converters.device.DeviceDeserializer
+import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.filterwheel.FilterWheel
 import org.springframework.beans.factory.annotation.Autowired
