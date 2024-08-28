@@ -194,6 +194,16 @@
 		<div class="col-4 p-1">
 			<p-button
 				[text]="true"
+				[disabled]="!connected || !hasDustCap"
+				(onClick)="open('DUST_CAP')"
+				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				<img src="assets/icons/lid.png" />
+				<div class="mt-1 text-sm">Dust Cap</div>
+			</p-button>
+		</div>
+		<div class="col-4 p-1">
+			<p-button
+				[text]="true"
 				(onClick)="open('SKY_ATLAS')"
 				styleClass="min-w-full w-full px-1 py-2 flex-column">
 				<img src="assets/icons/atlas.png" />

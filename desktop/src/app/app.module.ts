@@ -86,6 +86,7 @@ import { FormulaComponent } from './calculator/formula/formula.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
 import { ExposureTimeComponent } from './camera/exposure-time.component'
+import { DustCapComponent } from './dustcap/dustcap.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FlatWizardComponent } from './flat-wizard/flat-wizard.component'
 import { FocuserComponent } from './focuser/focuser.component'
@@ -123,6 +124,7 @@ import { StackerComponent } from './stacker/stacker.component'
 		DeviceNameComponent,
 		DialogMenuComponent,
 		DropdownOptionsPipe,
+		DustCapComponent,
 		EnumPipe,
 		EnumDropdownPipe,
 		EnvPipe,

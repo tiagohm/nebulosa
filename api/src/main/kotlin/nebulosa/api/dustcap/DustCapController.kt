@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("dust-cap")
+@RequestMapping("dust-caps")
 class DustCapController(
     private val connectionService: ConnectionService,
     private val dustCapService: DustCapService,
@@ -42,5 +42,10 @@ class DustCapController(
     @PutMapping("{dustCap}/unpark")
     fun unpark(dustCap: DustCap) {
         dustCapService.unpark(dustCap)
+    }
+
+    @PutMapping("{dustCap}/listen")
+    fun listen(dustCap: DustCap) {
+        dustCapService.listen(dustCap)
     }
 }
