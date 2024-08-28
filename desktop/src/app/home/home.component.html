@@ -175,12 +175,44 @@
 		<div class="col-4 p-1">
 			<p-button
 				[text]="true"
-				[disabled]="!connected || !hasSwitch"
+				[disabled]="!connected || !hasAuxiliary"
+				(onClick)="toggleAuxiliary()"
 				styleClass="min-w-full w-full px-1 py-2 flex-column">
-				<img src="assets/icons/switch.png" />
-				<div class="mt-1 text-sm">Switch</div>
+				<img src="assets/icons/toolkit.png" />
+				<div class="mt-1 text-sm">Auxiliary</div>
 			</p-button>
 		</div>
+		@if (preference.showAuxiliary && hasAuxiliary) {
+			<div class="col-4 p-1">
+				<p-button
+					[text]="true"
+					[disabled]="!connected || !hasSwitch"
+					styleClass="min-w-full w-full px-1 py-2 flex-column">
+					<img src="assets/icons/switch.png" />
+					<div class="mt-1 text-sm">Switch</div>
+				</p-button>
+			</div>
+			<div class="col-4 p-1">
+				<p-button
+					[text]="true"
+					[disabled]="!connected || !hasLightBox"
+					(onClick)="open('LIGHT_BOX')"
+					styleClass="min-w-full w-full px-1 py-2 flex-column">
+					<img src="assets/icons/light.png" />
+					<div class="mt-1 text-sm">Light Box</div>
+				</p-button>
+			</div>
+			<div class="col-4 p-1">
+				<p-button
+					[text]="true"
+					[disabled]="!connected || !hasDustCap"
+					(onClick)="open('DUST_CAP')"
+					styleClass="min-w-full w-full px-1 py-2 flex-column">
+					<img src="assets/icons/lid.png" />
+					<div class="mt-1 text-sm">Dust Cap</div>
+				</p-button>
+			</div>
+		}
 		<div class="col-4 p-1">
 			<p-button
 				[text]="true"

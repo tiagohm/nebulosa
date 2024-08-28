@@ -8,6 +8,7 @@ import { AutoFocusComponent } from './autofocus/autofocus.component'
 import { CalculatorComponent } from './calculator/calculator.component'
 import { CalibrationComponent } from './calibration/calibration.component'
 import { CameraComponent } from './camera/camera.component'
+import { DustCapComponent } from './dustcap/dustcap.component'
 import { FilterWheelComponent } from './filterwheel/filterwheel.component'
 import { FlatWizardComponent } from './flat-wizard/flat-wizard.component'
 import { FocuserComponent } from './focuser/focuser.component'
@@ -16,6 +17,7 @@ import { GuiderComponent } from './guider/guider.component'
 import { HomeComponent } from './home/home.component'
 import { ImageComponent } from './image/image.component'
 import { INDIComponent } from './indi/indi.component'
+import { LightBoxComponent } from './lightbox/lightbox.component'
 import { MountComponent } from './mount/mount.component'
 import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
@@ -51,6 +53,14 @@ const routes: Routes = [
 	{
 		path: 'rotator',
 		component: RotatorComponent,
+	},
+	{
+		path: 'light-box',
+		component: LightBoxComponent,
+	},
+	{
+		path: 'dust-cap',
+		component: DustCapComponent,
 	},
 	{
 		path: 'guider',

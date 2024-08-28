@@ -3,6 +3,7 @@ import { DARVState, Hemisphere, TPPAState } from '../types/alignment.types'
 import { Constellation, MoonPhaseName, SatelliteGroupType, SkyObjectType } from '../types/atlas.types'
 import { AutoFocusFittingMode, AutoFocusState, BacklashCompensationMode } from '../types/autofocus.type'
 import { CameraCaptureState, ExposureMode, ExposureTimeUnit, FrameType, LiveStackerType } from '../types/camera.types'
+import { DeviceType } from '../types/device.types'
 import { FlatWizardState } from '../types/flat-wizard.types'
 import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
 import { Bitpix, ImageChannel, SCNRProtectionMethod } from '../types/image.types'
@@ -45,11 +46,12 @@ export type EnumPipeKey =
 	| ImageChannel
 	| MoonPhaseName
 	| StackerState
+	| DeviceType
 	| 'ALL'
 
 @Pipe({ name: 'enum' })
 export class EnumPipe implements PipeTransform {
-	readonly enums: Record<EnumPipeKey, Undefinable<string>> = {
+	private readonly enums: Record<EnumPipeKey, Undefinable<string>> = {
 		'DX/DY': 'dx/dy',
 		'RA/DEC': 'RA/DEC',
 		ABSOLUTE: 'Absolute',
@@ -101,6 +103,7 @@ export class EnumPipe implements PipeTransform {
 		CAE: 'Caelum',
 		CALIBRATING: 'Calibrating',
 		CAM: 'Camelopardalis',
+		CAMERA: 'Camera',
 		CAP: 'Capricornus',
 		CAPTURE_FINISHED: undefined,
 		CAPTURE_STARTED: undefined,
@@ -149,10 +152,12 @@ export class EnumPipe implements PipeTransform {
 		DENSE_CORE: 'Dense Core',
 		DITHERING: 'Dithering',
 		DMC: 'Disaster Monitoring',
+		DOME: 'Dome',
 		DOR: 'Dorado',
 		DOUBLE_OR_MULTIPLE_STAR: 'Double or Multiple Star',
 		DOUBLE: 'Double',
 		DRA: 'Draco',
+		DUST_CAP: 'Dust Cap',
 		EAST: 'East',
 		ECLIPSING_BINARY: 'Eclipsing Binary',
 		EDUCATION: 'Education',
@@ -179,6 +184,7 @@ export class EnumPipe implements PipeTransform {
 		FIXED: 'Fixed',
 		FLAT: 'Flat',
 		FLOAT: 'Float',
+		FOCUSER: 'Focuser',
 		FOR: 'Fornax',
 		FORWARD: 'Forward',
 		FULL_MOON: 'Full Moon',
@@ -202,6 +208,7 @@ export class EnumPipe implements PipeTransform {
 		GOES: 'GOES',
 		GORIZONT: 'Gorizont',
 		GPS_OPS: 'GPS Operational',
+		GPS: 'GPS',
 		GRAVITATIONAL_LENS_SYSTEM_LENS_IMAGES: 'Gravitational Lens System (lens+images)',
 		GRAVITATIONAL_LENS: 'Gravitational Lens',
 		GRAVITATIONAL_SOURCE: 'Gravitational Source',
@@ -213,6 +220,7 @@ export class EnumPipe implements PipeTransform {
 		GREEN: 'Green',
 		GROUP_OF_GALAXIES: 'Group of Galaxies',
 		GRU: 'Grus',
+		GUIDE_OUTPUT: 'Guide Output',
 		GUIDING: 'Guiding',
 		HER: 'Hercules',
 		HERBIG_AE_BE_STAR: 'Herbig Ae/Be Star',
@@ -252,6 +260,7 @@ export class EnumPipe implements PipeTransform {
 		LEO: 'Leo',
 		LEP: 'Lepus',
 		LIB: 'Libra',
+		LIGHT_BOX: 'Light Box',
 		LIGHT: 'Light',
 		LINER_TYPE_ACTIVE_GALAXY_NUCLEUS: 'LINER-type Active Galaxy Nucleus',
 		LMI: 'Leo Minor',
@@ -289,6 +298,7 @@ export class EnumPipe implements PipeTransform {
 		MOLNIYA: 'Molniya',
 		MON: 'Monoceros',
 		MONO: 'Mono',
+		MOUNT: 'Mount',
 		MOVING_GROUP: 'Moving Group',
 		MOVING: 'Moving',
 		MUS: 'Musca',
@@ -357,6 +367,7 @@ export class EnumPipe implements PipeTransform {
 		RET: 'Reticulum',
 		RGB: 'RGB',
 		ROTATING_VARIABLE: 'Rotating Variable',
+		ROTATOR: 'Rotator',
 		RR_LYRAE_VARIABLE: 'RR Lyrae Variable',
 		RS_CVN_VARIABLE: 'RS CVn Variable',
 		RUNNING: 'Running',
@@ -405,6 +416,7 @@ export class EnumPipe implements PipeTransform {
 		SUPERNOVA_REMNANT: 'SuperNova Remnant',
 		SUPERNOVA: 'SuperNova',
 		SWARM: 'Swarm',
+		SWITCH: 'Switch',
 		SX_PHE_VARIABLE: 'SX Phe Variable',
 		SYMBIOTIC_STAR: 'Symbiotic Star',
 		T_TAURI_STAR: 'T Tauri Star',
@@ -433,6 +445,7 @@ export class EnumPipe implements PipeTransform {
 		WAITING: 'Waiting',
 		WEATHER: 'Weather',
 		WEST: 'West',
+		WHEEL: 'Filter Wheel',
 		WHITE_DWARF: 'White Dwarf',
 		WOLF_RAYET: 'Wolf-Rayet',
 		X_COMM: 'Experimental Comm',

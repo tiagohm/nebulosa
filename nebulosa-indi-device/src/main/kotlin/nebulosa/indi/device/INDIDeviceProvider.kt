@@ -1,10 +1,12 @@
 package nebulosa.indi.device
 
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.dustcap.DustCap
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guider.GuideOutput
+import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.device.thermometer.Thermometer
@@ -48,6 +50,14 @@ interface INDIDeviceProvider : MessageSender, AutoCloseable {
     fun guideOutputs(): Collection<GuideOutput>
 
     fun guideOutput(id: String): GuideOutput?
+
+    fun lightBoxes(): Collection<LightBox>
+
+    fun lightBox(id: String): LightBox?
+
+    fun dustCaps(): Collection<DustCap>
+
+    fun dustCap(id: String): DustCap?
 
     fun thermometers(): Collection<Thermometer>
 

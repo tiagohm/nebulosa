@@ -24,6 +24,7 @@ export interface ConnectionClosed {
 export interface HomePreference {
 	connections: ConnectionDetails[]
 	imagePath?: string
+	showAuxiliary: boolean
 }
 
 export interface HomeConnectionDialog {
@@ -52,6 +53,7 @@ export const DEFAULT_CONNECTION_DETAILS: ConnectionDetails = {
 
 export const DEFAULT_HOME_PREFERENCE: HomePreference = {
 	connections: [],
+	showAuxiliary: false,
 }
 
 export const DEFAULT_HOME_CONNECTION_DIALOG: HomeConnectionDialog = {

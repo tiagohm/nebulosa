@@ -370,10 +370,10 @@ class MultiStarGuider : InternalGuider {
             if (avgDistanceCnt < 10) {
                 // Initialize smoothed running avg with mean of first 10 pts.
                 avgDistanceLong += (distance - avgDistanceLong) / avgDistanceCnt
-                avgDistanceLongRA += (distance - avgDistanceLongRA) / avgDistanceCnt
+                avgDistanceLongRA += (distanceRA - avgDistanceLongRA) / avgDistanceCnt
             } else {
                 avgDistanceLong += 0.045f * (distance - avgDistanceLong)
-                avgDistanceLongRA += 0.045f * (distance - avgDistanceLongRA)
+                avgDistanceLongRA += 0.045f * (distanceRA - avgDistanceLongRA)
             }
         } else {
             // Not yet guiding, reinitialize average distance.

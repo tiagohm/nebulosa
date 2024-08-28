@@ -11,9 +11,11 @@ import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
 import { Camera, isCamera } from '../../shared/types/camera.types'
 import { Device, DeviceType } from '../../shared/types/device.types'
+import { DustCap, isDustCap } from '../../shared/types/dustcap.types'
 import { Focuser, isFocuser } from '../../shared/types/focuser.types'
 import { GuideOutput, isGuideOuptut } from '../../shared/types/guider.types'
 import { ConnectionDetails, DEFAULT_CONNECTION_DETAILS, DEFAULT_HOME_CONNECTION_DIALOG, DEFAULT_HOME_PREFERENCE, HomeWindowType } from '../../shared/types/home.types'
+import { isLightBox, LightBox } from '../../shared/types/lightbox.types'
 import { isMount, Mount } from '../../shared/types/mount.types'
 import { isRotator, Rotator } from '../../shared/types/rotator.types'
 import { isWheel, Wheel } from '../../shared/types/wheel.types'
@@ -42,6 +44,8 @@ export class HomeComponent implements AfterContentInit {
 	protected domes: Camera[] = []
 	protected switches: Camera[] = []
 	protected guideOutputs: GuideOutput[] = []
+	protected lightBoxes: LightBox[] = []
+	protected dustCaps: DustCap[] = []
 
 	protected page = 0
 	protected newVersion?: string
@@ -102,16 +106,28 @@ export class HomeComponent implements AfterContentInit {
 		return this.domes.length > 0
 	}
 
-	get hasSwitch() {
-		return this.switches.length > 0
-	}
-
 	get hasRotator() {
 		return this.rotators.length > 0
 	}
 
 	get hasGuideOutput() {
 		return this.guideOutputs.length > 0
+	}
+
+	get hasSwitch() {
+		return this.switches.length > 0
+	}
+
+	get hasLightBox() {
+		return this.lightBoxes.length > 0
+	}
+
+	get hasDustCap() {
+		return this.dustCaps.length > 0
+	}
+
+	get hasAuxiliary() {
+		return this.hasSwitch || this.hasLightBox || this.hasDustCap
 	}
 
 	get hasGuider() {
@@ -135,7 +151,7 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	get hasDevices() {
-		return this.hasCamera || this.hasMount || this.hasFocuser || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch || this.hasGuideOutput
+		return this.hasCamera || this.hasMount || this.hasFocuser || this.hasWheel || this.hasDome || this.hasRotator || this.hasSwitch || this.hasGuideOutput || this.hasLightBox || this.hasDustCap
 	}
 
 	get hasINDI() {
@@ -253,6 +269,38 @@ export class HomeComponent implements AfterContentInit {
 			})
 		})
 
+		electronService.on('LIGHT_BOX.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`LIGHT_BOX.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`LIGHT_BOX.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
+
+		electronService.on('DUST_CAP.ATTACHED', (event) => {
+			ngZone.run(() => {
+				this.deviceAdded(event.device)
+			})
+		})
+		electronService.on(`DUST_CAP.DETACHED`, (event) => {
+			ngZone.run(() => {
+				this.deviceRemoved(event.device)
+			})
+		})
+		electronService.on(`DUST_CAP.UPDATED`, (event) => {
+			ngZone.run(() => {
+				this.deviceUpdated(event.device)
+			})
+		})
+
 		electronService.on('CONNECTION.CLOSED', async (event) => {
 			if (this.connection?.id === event.id) {
 				await ngZone.run(() => {
@@ -274,6 +322,8 @@ export class HomeComponent implements AfterContentInit {
 			this.wheels = await this.api.wheels()
 			this.rotators = await this.api.rotators()
 			this.guideOutputs = await this.api.guideOutputs()
+			this.lightBoxes = await this.api.lightBoxes()
+			this.dustCaps = await this.api.dustCaps()
 		}
 
 		void this.checkForNewVersion()
@@ -306,6 +356,10 @@ export class HomeComponent implements AfterContentInit {
 			this.rotators.push(device)
 		} else if (isGuideOuptut(device)) {
 			this.guideOutputs.push(device)
+		} else if (isLightBox(device)) {
+			this.lightBoxes.push(device)
+		} else if (isDustCap(device)) {
+			this.dustCaps.push(device)
 		}
 	}
 
@@ -328,6 +382,12 @@ export class HomeComponent implements AfterContentInit {
 		} else if (isGuideOuptut(device)) {
 			const found = this.guideOutputs.findIndex((e) => e.id === device.id)
 			this.guideOutputs.splice(found, 1)
+		} else if (isLightBox(device)) {
+			const found = this.lightBoxes.findIndex((e) => e.id === device.id)
+			this.lightBoxes.splice(found, 1)
+		} else if (isDustCap(device)) {
+			const found = this.dustCaps.findIndex((e) => e.id === device.id)
+			this.dustCaps.splice(found, 1)
 		}
 	}
 
@@ -349,6 +409,12 @@ export class HomeComponent implements AfterContentInit {
 			found && Object.assign(found, device)
 		} else if (isGuideOuptut(device)) {
 			const found = this.guideOutputs.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isLightBox(device)) {
+			const found = this.lightBoxes.find((e) => e.id === device.id)
+			found && Object.assign(found, device)
+		} else if (isDustCap(device)) {
+			const found = this.dustCaps.find((e) => e.id === device.id)
 			found && Object.assign(found, device)
 		}
 	}
@@ -423,16 +489,17 @@ export class HomeComponent implements AfterContentInit {
 		}
 	}
 
-	protected findDeviceById(id: string) {
-		return this.cameras.find((e) => e.id === id) ?? this.mounts.find((e) => e.id === id) ?? this.wheels.find((e) => e.id === id) ?? this.focusers.find((e) => e.id === id) ?? this.rotators.find((e) => e.id === id)
-	}
-
 	protected deviceConnected(event: DeviceConnectionCommandEvent) {
 		return DeviceChooserComponent.handleConnectDevice(this.api, event.device, event.item)
 	}
 
 	protected deviceDisconnected(event: DeviceConnectionCommandEvent) {
 		return DeviceChooserComponent.handleDisconnectDevice(this.api, event.device, event.item)
+	}
+
+	protected toggleAuxiliary() {
+		this.preference.showAuxiliary = !this.preference.showAuxiliary
+		this.savePreference()
 	}
 
 	private async openDevice(type: DeviceType) {
@@ -444,6 +511,8 @@ export class HomeComponent implements AfterContentInit {
 			: type === 'FOCUSER' ? this.focusers
 			: type === 'WHEEL' ? this.wheels
 			: type === 'ROTATOR' ? this.rotators
+			: type === 'LIGHT_BOX' ? this.lightBoxes
+			: type === 'DUST_CAP' ? this.dustCaps
 			: []
 
 		if (devices.length === 0) return
@@ -456,22 +525,20 @@ export class HomeComponent implements AfterContentInit {
 	}
 
 	private async openDeviceWindow(device: Device) {
-		switch (device.type) {
-			case 'MOUNT':
-				await this.browserWindowService.openMount(device as Mount, { bringToFront: true })
-				break
-			case 'CAMERA':
-				await this.browserWindowService.openCamera(device as Camera, { bringToFront: true })
-				break
-			case 'FOCUSER':
-				await this.browserWindowService.openFocuser(device as Focuser, { bringToFront: true })
-				break
-			case 'WHEEL':
-				await this.browserWindowService.openWheel(device as Wheel, { bringToFront: true })
-				break
-			case 'ROTATOR':
-				await this.browserWindowService.openRotator(device as Rotator, { bringToFront: true })
-				break
+		if (isMount(device)) {
+			await this.browserWindowService.openMount(device, { bringToFront: true })
+		} else if (isCamera(device)) {
+			await this.browserWindowService.openCamera(device, { bringToFront: true })
+		} else if (isFocuser(device)) {
+			await this.browserWindowService.openFocuser(device, { bringToFront: true })
+		} else if (isWheel(device)) {
+			await this.browserWindowService.openWheel(device, { bringToFront: true })
+		} else if (isRotator(device)) {
+			await this.browserWindowService.openRotator(device, { bringToFront: true })
+		} else if (isLightBox(device)) {
+			await this.browserWindowService.openLightBox(device, { bringToFront: true })
+		} else if (isDustCap(device)) {
+			await this.browserWindowService.openDustCap(device, { bringToFront: true })
 		}
 	}
 
@@ -493,6 +560,8 @@ export class HomeComponent implements AfterContentInit {
 			case 'FOCUSER':
 			case 'WHEEL':
 			case 'ROTATOR':
+			case 'LIGHT_BOX':
+			case 'DUST_CAP':
 				await this.openDevice(type)
 				break
 			case 'GUIDER':
@@ -588,6 +657,9 @@ export class HomeComponent implements AfterContentInit {
 			this.wheels = []
 			this.domes = []
 			this.rotators = []
+			this.lightBoxes = []
+			this.dustCaps = []
+			this.guideOutputs = []
 			this.switches = []
 		}
 	}

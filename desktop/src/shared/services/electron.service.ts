@@ -14,11 +14,13 @@ import { Location } from '../types/atlas.types'
 import { AutoFocusEvent } from '../types/autofocus.type'
 import { Camera, CameraCaptureEvent } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
+import { DustCap } from '../types/dustcap.types'
 import { FlatWizardEvent } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
 import { ConnectionClosed } from '../types/home.types'
 import { ROISelected } from '../types/image.types'
+import { LightBox } from '../types/lightbox.types'
 import { Mount } from '../types/mount.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerEvent } from '../types/sequencer.types'
@@ -38,7 +40,7 @@ export const SAVE_IMAGE_FILE_FILTER: Electron.FileFilter[] = [
 	{ name: 'Image', extensions: ['png', 'jpg', 'jpeg'] },
 ]
 
-export interface EventTypes {
+export interface EventMap {
 	NOTIFICATION: NotificationEvent
 	CONFIRMATION: ConfirmationEvent
 	'DEVICE.PROPERTY_CHANGED': INDIMessageEvent
@@ -63,6 +65,12 @@ export interface EventTypes {
 	'GUIDE_OUTPUT.UPDATED': DeviceMessageEvent<GuideOutput>
 	'GUIDE_OUTPUT.ATTACHED': DeviceMessageEvent<GuideOutput>
 	'GUIDE_OUTPUT.DETACHED': DeviceMessageEvent<GuideOutput>
+	'LIGHT_BOX.UPDATED': DeviceMessageEvent<LightBox>
+	'LIGHT_BOX.ATTACHED': DeviceMessageEvent<LightBox>
+	'LIGHT_BOX.DETACHED': DeviceMessageEvent<LightBox>
+	'DUST_CAP.UPDATED': DeviceMessageEvent<DustCap>
+	'DUST_CAP.ATTACHED': DeviceMessageEvent<DustCap>
+	'DUST_CAP.DETACHED': DeviceMessageEvent<DustCap>
 	'GUIDER.CONNECTED': GuiderMessageEvent<undefined>
 	'GUIDER.DISCONNECTED': GuiderMessageEvent<undefined>
 	'GUIDER.UPDATED': GuiderMessageEvent<Guider>
@@ -130,11 +138,11 @@ export class ElectronService {
 		return !!(window && window.process?.type)
 	}
 
-	send<K extends keyof EventTypes>(channel: K, data?: EventTypes[K]) {
+	send<K extends keyof EventMap>(channel: K, data?: EventMap[K]) {
 		return this.ipcRenderer.invoke(channel, data)
 	}
 
-	on<K extends keyof EventTypes>(channel: K, listener: (arg: EventTypes[K]) => void) {
+	on<K extends keyof EventMap>(channel: K, listener: (arg: EventMap[K]) => void) {
 		this.ipcRenderer.on(channel, (_, arg) => {
 			listener(arg)
 		})

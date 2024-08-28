@@ -1,35 +1,25 @@
 package nebulosa.api.focusers
 
 import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.SerializerProvider
-import com.fasterxml.jackson.databind.ser.std.StdSerializer
+import nebulosa.api.devices.DeviceSerializer
 import nebulosa.indi.device.focuser.Focuser
 import org.springframework.stereotype.Component
 
 @Component
-class FocuserSerializer : StdSerializer<Focuser>(Focuser::class.java) {
+class FocuserSerializer : DeviceSerializer<Focuser>(Focuser::class.java) {
 
-    override fun serialize(value: Focuser, gen: JsonGenerator, provider: SerializerProvider) {
-        gen.writeStartObject()
-        gen.writeStringField("type", value.type.name)
-        gen.writeStringField("sender", value.sender.id)
-        gen.writeStringField("driverName", value.driverName)
-        gen.writeStringField("driverVersion", value.driverVersion)
-        gen.writeStringField("id", value.id)
-        gen.writeStringField("name", value.name)
-        gen.writeBooleanField("connected", value.connected)
-        gen.writeBooleanField("moving", value.moving)
-        gen.writeNumberField("position", value.position)
-        gen.writeBooleanField("canAbsoluteMove", value.canAbsoluteMove)
-        gen.writeBooleanField("canRelativeMove", value.canRelativeMove)
-        gen.writeBooleanField("canAbort", value.canAbort)
-        gen.writeBooleanField("canReverse", value.canReverse)
-        gen.writeBooleanField("reversed", value.reversed)
-        gen.writeBooleanField("canSync", value.canSync)
-        gen.writeBooleanField("hasBacklash", value.hasBacklash)
-        gen.writeNumberField("maxPosition", value.maxPosition)
-        gen.writeBooleanField("hasThermometer", value.hasThermometer)
-        gen.writeNumberField("temperature", value.temperature)
-        gen.writeEndObject()
+    override fun JsonGenerator.serialize(value: Focuser) {
+        writeBooleanField("moving", value.moving)
+        writeNumberField("position", value.position)
+        writeBooleanField("canAbsoluteMove", value.canAbsoluteMove)
+        writeBooleanField("canRelativeMove", value.canRelativeMove)
+        writeBooleanField("canAbort", value.canAbort)
+        writeBooleanField("canReverse", value.canReverse)
+        writeBooleanField("reversed", value.reversed)
+        writeBooleanField("canSync", value.canSync)
+        writeBooleanField("hasBacklash", value.hasBacklash)
+        writeNumberField("maxPosition", value.maxPosition)
+        writeBooleanField("hasThermometer", value.hasThermometer)
+        writeNumberField("temperature", value.temperature)
     }
 }

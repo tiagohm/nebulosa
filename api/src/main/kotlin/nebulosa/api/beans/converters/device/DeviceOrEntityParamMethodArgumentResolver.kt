@@ -9,10 +9,12 @@ import nebulosa.api.calibration.CalibrationFrameRepository
 import nebulosa.api.connection.ConnectionService
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.dustcap.DustCap
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
 import nebulosa.indi.device.guider.GuideOutput
+import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.device.thermometer.Thermometer
@@ -41,6 +43,8 @@ class DeviceOrEntityParamMethodArgumentResolver(
         Rotator::class.java to { connectionService.rotator(it) },
         GPS::class.java to { connectionService.gps(it) },
         GuideOutput::class.java to { connectionService.guideOutput(it) },
+        LightBox::class.java to { connectionService.lightBox(it) },
+        DustCap::class.java to { connectionService.dustCap(it) },
         Thermometer::class.java to { connectionService.thermometer(it) },
     )
 

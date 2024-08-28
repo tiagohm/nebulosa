@@ -6,12 +6,14 @@ import { AutoFocusRequest } from '../types/autofocus.type'
 import { CalibrationFrame } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
 import { Device, INDIProperty, INDISendProperty } from '../types/device.types'
+import { DustCap } from '../types/dustcap.types'
 import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
 import { ConnectionStatus, ConnectionType, GitHubRelease } from '../types/home.types'
 import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
+import { LightBox } from '../types/lightbox.types'
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, SlewRate, TrackMode } from '../types/mount.types'
 import { PlateSolverRequest } from '../types/platesolver.types'
 import { Rotator } from '../types/rotator.types'
@@ -336,6 +338,71 @@ export class ApiService {
 
 	guideOutputListen(guideOutput: GuideOutput) {
 		return this.http.put<never>(`guide-outputs/${guideOutput.id}/listen`)
+	}
+
+	// LIGHT BOX
+
+	lightBoxes() {
+		return this.http.get<LightBox[]>(`light-boxes`)
+	}
+
+	lightBox(id: string) {
+		return this.http.get<LightBox>(`light-boxes/${id}`)
+	}
+
+	lightBoxConnect(lightBox: LightBox) {
+		return this.http.put<never>(`light-boxes/${lightBox.id}/connect`)
+	}
+
+	lightBoxDisconnect(lightBox: LightBox) {
+		return this.http.put<never>(`light-boxes/${lightBox.id}/disconnect`)
+	}
+
+	lightBoxEnable(lightBox: LightBox) {
+		return this.http.put<never>(`light-boxes/${lightBox.id}/enable`)
+	}
+
+	lightBoxDisable(lightBox: LightBox) {
+		return this.http.put<never>(`light-boxes/${lightBox.id}/disable`)
+	}
+
+	lightBoxBrightness(lightBox: LightBox, intensity: number) {
+		const query = this.http.query({ intensity })
+		return this.http.put<never>(`light-boxes/${lightBox.id}/brightness?${query}`)
+	}
+
+	lightBoxListen(lightBox: LightBox) {
+		return this.http.put<never>(`light-boxes/${lightBox.id}/listen`)
+	}
+
+	// DUST CAP
+
+	dustCaps() {
+		return this.http.get<DustCap[]>(`dust-caps`)
+	}
+
+	dustCap(id: string) {
+		return this.http.get<DustCap>(`dust-caps/${id}`)
+	}
+
+	dustCapConnect(dustCap: DustCap) {
+		return this.http.put<never>(`dust-caps/${dustCap.id}/connect`)
+	}
+
+	dustCapDisconnect(dustCap: DustCap) {
+		return this.http.put<never>(`dust-caps/${dustCap.id}/disconnect`)
+	}
+
+	dustCapPark(dustCap: DustCap) {
+		return this.http.put<never>(`dust-caps/${dustCap.id}/park`)
+	}
+
+	dustCapUnpark(dustCap: DustCap) {
+		return this.http.put<never>(`dust-caps/${dustCap.id}/unpark`)
+	}
+
+	dustCapListen(dustCap: DustCap) {
+		return this.http.put<never>(`dust-caps/${dustCap.id}/listen`)
 	}
 
 	// GUIDING

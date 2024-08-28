@@ -47,6 +47,9 @@ export class AboutComponent {
 		this.icons.push({ link: `${FLAT_ICON_URL}/stack_3342239`, name: 'Stack', author: 'Pixel perfect - Flaticon' })
 		this.icons.push({ link: `${FLAT_ICON_URL}/blackhole_6704410`, name: 'Blackhole', author: 'Freepik - Flaticon' })
 		this.icons.push({ link: `${FLAT_ICON_URL}/calibration_2364169`, name: 'Calibration', author: 'Freepik - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/idea_3351801`, name: 'Bulb', author: 'Good Ware - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/lid_7558659`, name: 'Lid', author: 'Nikita Golubev - Flaticon' })
+		this.icons.push({ link: `${FLAT_ICON_URL}/toolkit_4229807`, name: 'Toolkit', author: 'Freepik - Flaticon' })
 	}
 
 	private mapDependencies() {
