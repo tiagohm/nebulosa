@@ -106,10 +106,6 @@ export class HomeComponent implements AfterContentInit {
 		return this.domes.length > 0
 	}
 
-	get hasSwitch() {
-		return this.switches.length > 0
-	}
-
 	get hasRotator() {
 		return this.rotators.length > 0
 	}
@@ -118,12 +114,20 @@ export class HomeComponent implements AfterContentInit {
 		return this.guideOutputs.length > 0
 	}
 
+	get hasSwitch() {
+		return this.switches.length > 0
+	}
+
 	get hasLightBox() {
 		return this.lightBoxes.length > 0
 	}
 
 	get hasDustCap() {
 		return this.dustCaps.length > 0
+	}
+
+	get hasAuxiliary() {
+		return this.hasSwitch || this.hasLightBox || this.hasDustCap
 	}
 
 	get hasGuider() {
@@ -491,6 +495,11 @@ export class HomeComponent implements AfterContentInit {
 
 	protected deviceDisconnected(event: DeviceConnectionCommandEvent) {
 		return DeviceChooserComponent.handleDisconnectDevice(this.api, event.device, event.item)
+	}
+
+	protected toggleAuxiliary() {
+		this.preference.showAuxiliary = !this.preference.showAuxiliary
+		this.savePreference()
 	}
 
 	private async openDevice(type: DeviceType) {
