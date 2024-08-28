@@ -10,7 +10,6 @@ import { DEFAULT_FRAMING_PREFERENCE, FramingPreference, framingPreferenceWithDef
 import { DEFAULT_GUIDER_PREFERENCE, GuiderPreference, guiderPreferenceWithDefault } from '../types/guider.types'
 import { DEFAULT_HOME_PREFERENCE, HomePreference, homePreferenceWithDefault } from '../types/home.types'
 import { DEFAULT_IMAGE_PREFERENCE, ImagePreference, imagePreferenceWithDefault } from '../types/image.types'
-import { DEFAULT_LIGHT_BOX_PREFERENCE, LightBox, LightBoxPreference, lightBoxPreferenceWithDefault } from '../types/lightbox.types'
 import { DEFAULT_MOUNT_PREFERENCE, Mount, MountPreference, mountPreferenceWithDefault } from '../types/mount.types'
 import { DEFAULT_ROTATOR_PREFERENCE, Rotator, RotatorPreference, rotatorPreferenceWithDefault } from '../types/rotator.types'
 import { DEFAULT_SEQUENCER_PREFERENCE, SequencerPreference, sequencerPreferenceWithDefault } from '../types/sequencer.types'
@@ -98,10 +97,6 @@ export class PreferenceService {
 
 	rotator(rotator: Rotator) {
 		return this.create<RotatorPreference>(`rotator.${rotator.name}`, () => structuredClone(DEFAULT_ROTATOR_PREFERENCE), rotatorPreferenceWithDefault)
-	}
-
-	lightBox(lightBox: LightBox) {
-		return this.create<LightBoxPreference>(`lightBox.${lightBox.name}`, () => structuredClone(DEFAULT_LIGHT_BOX_PREFERENCE), lightBoxPreferenceWithDefault)
 	}
 
 	flatWizard(camera: Camera) {

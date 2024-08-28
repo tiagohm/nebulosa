@@ -4,6 +4,9 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraAttached
 import nebulosa.indi.device.camera.CameraDetached
 import nebulosa.indi.device.camera.GuideHead
+import nebulosa.indi.device.dustcap.DustCap
+import nebulosa.indi.device.dustcap.DustCapAttached
+import nebulosa.indi.device.dustcap.DustCapDetached
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelAttached
 import nebulosa.indi.device.filterwheel.FilterWheelDetached
@@ -42,6 +45,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     private val gps = HashMap<String, GPS>(2)
     private val guideOutputs = HashMap<String, GuideOutput>(2)
     private val lightBoxes = HashMap<String, LightBox>(2)
+    private val dustCaps = HashMap<String, DustCap>(2)
     private val thermometers = HashMap<String, Thermometer>(2)
 
     override fun registerDeviceEventHandler(handler: DeviceEventHandler) = handlers.add(handler)
@@ -62,6 +66,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         gps(id)?.also(devices::add)
         guideOutput(id)?.also(devices::add)
         lightBox(id)?.also(devices::add)
+        dustCap(id)?.also(devices::add)
         thermometer(id)?.also(devices::add)
         return devices
     }
@@ -97,6 +102,10 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
     override fun lightBoxes() = lightBoxes.values.toSet()
 
     override fun lightBox(id: String) = lightBoxes[id]
+
+    override fun dustCaps() = dustCaps.values.toSet()
+
+    override fun dustCap(id: String) = dustCaps[id]
 
     override fun thermometers() = thermometers.values.toSet()
 
@@ -237,6 +246,21 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         LOG.info("light box detached: {} ({})", device.name, device.id)
     }
 
+    fun registerDustCap(device: DustCap): Boolean {
+        if (device.id in dustCaps) return false
+        dustCaps[device.id] = device
+        dustCaps[device.name] = device
+        fireOnEventReceived(DustCapAttached(device))
+        LOG.info("dust cap attached: {} ({})", device.name, device.id)
+        return true
+    }
+
+    fun unregisterDustCap(device: DustCap) {
+        dustCaps.remove(device.name)
+        fireOnEventReceived(DustCapDetached(dustCaps.remove(device.id) ?: return))
+        LOG.info("dust cap detached: {} ({})", device.name, device.id)
+    }
+
     fun registerThermometer(device: Thermometer): Boolean {
         if (device.id in thermometers) return false
         thermometers[device.id] = device
@@ -261,6 +285,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         gps().onEach(Device::close).onEach(::unregisterGPS)
         guideOutputs().onEach(Device::close).onEach(::unregisterGuideOutput)
         lightBoxes().onEach(Device::close).onEach(::unregisterLightBox)
+        dustCaps().onEach(Device::close).onEach(::unregisterDustCap)
 
         cameras.clear()
         mounts.clear()
@@ -270,6 +295,7 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
         gps.clear()
         guideOutputs.clear()
         lightBoxes.clear()
+        dustCaps.clear()
         thermometers.clear()
 
         handlers.clear()

@@ -14,6 +14,7 @@ import { Location } from '../types/atlas.types'
 import { AutoFocusEvent } from '../types/autofocus.type'
 import { Camera, CameraCaptureEvent } from '../types/camera.types'
 import { INDIMessageEvent } from '../types/device.types'
+import { DustCap } from '../types/dustcap.types'
 import { FlatWizardEvent } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { GuideOutput, Guider, GuiderHistoryStep, GuiderMessageEvent } from '../types/guider.types'
@@ -67,6 +68,9 @@ export interface EventMap {
 	'LIGHT_BOX.UPDATED': DeviceMessageEvent<LightBox>
 	'LIGHT_BOX.ATTACHED': DeviceMessageEvent<LightBox>
 	'LIGHT_BOX.DETACHED': DeviceMessageEvent<LightBox>
+	'DUST_CAP.UPDATED': DeviceMessageEvent<DustCap>
+	'DUST_CAP.ATTACHED': DeviceMessageEvent<DustCap>
+	'DUST_CAP.DETACHED': DeviceMessageEvent<DustCap>
 	'GUIDER.CONNECTED': GuiderMessageEvent<undefined>
 	'GUIDER.DISCONNECTED': GuiderMessageEvent<undefined>
 	'GUIDER.UPDATED': GuiderMessageEvent<Guider>

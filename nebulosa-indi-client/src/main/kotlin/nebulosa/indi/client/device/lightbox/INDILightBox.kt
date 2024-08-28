@@ -72,4 +72,7 @@ internal open class INDILightBox(
     }
 
     override fun close() = Unit
+
+    override fun toString() = "LightBox(name=$name, connected=$connected, enabled=$enabled," +
+            " intensityMin=$intensityMin, intensityMax=$intensityMax, intensity=$intensity)"
 }

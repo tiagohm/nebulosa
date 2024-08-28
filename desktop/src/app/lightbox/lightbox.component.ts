@@ -3,9 +3,8 @@ import { ActivatedRoute } from '@angular/router'
 import { debounceTime, Subject, Subscription } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
-import { PreferenceService } from '../../shared/services/preference.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
-import { DEFAULT_LIGHT_BOX, DEFAULT_LIGHT_BOX_PREFERENCE, LightBox } from '../../shared/types/lightbox.types'
+import { DEFAULT_LIGHT_BOX, LightBox } from '../../shared/types/lightbox.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -14,7 +13,6 @@ import { AppComponent } from '../app.component'
 })
 export class LightBoxComponent implements AfterViewInit, OnDestroy, Tickable {
 	protected readonly lightBox = structuredClone(DEFAULT_LIGHT_BOX)
-	protected readonly preference = structuredClone(DEFAULT_LIGHT_BOX_PREFERENCE)
 
 	private readonly brightnessPublisher = new Subject<number>()
 	private readonly brightnessSubscription?: Subscription
@@ -23,7 +21,6 @@ export class LightBoxComponent implements AfterViewInit, OnDestroy, Tickable {
 		private readonly app: AppComponent,
 		private readonly api: ApiService,
 		electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
 		private readonly route: ActivatedRoute,
 		private readonly ticker: Ticker,
 		ngZone: NgZone,
@@ -34,7 +31,6 @@ export class LightBoxComponent implements AfterViewInit, OnDestroy, Tickable {
 			if (event.device.id === this.lightBox.id) {
 				ngZone.run(() => {
 					Object.assign(this.lightBox, event.device)
-					this.update()
 				})
 			}
 		})
@@ -76,9 +72,6 @@ export class LightBoxComponent implements AfterViewInit, OnDestroy, Tickable {
 		if (lightBox?.id) {
 			lightBox = await this.api.lightBox(lightBox.id)
 			Object.assign(this.lightBox, lightBox)
-
-			this.loadPreference()
-			this.update()
 		}
 
 		this.app.subTitle = lightBox?.name ?? ''
@@ -92,28 +85,12 @@ export class LightBoxComponent implements AfterViewInit, OnDestroy, Tickable {
 		}
 	}
 
-	protected toggleEnable(enabled: boolean) {
-		if (enabled) return this.api.lightBoxEnable(this.lightBox)
-		else return this.api.lightBoxDisable(this.lightBox)
+	protected toggleEnable() {
+		if (this.lightBox.enabled) return this.api.lightBoxDisable(this.lightBox)
+		else return this.api.lightBoxEnable(this.lightBox)
 	}
 
 	protected intensityChanged(intensity: number) {
 		this.brightnessPublisher.next(intensity)
-		this.preference.intensity = intensity
-		this.savePreference()
-	}
-
-	private update() {}
-
-	private loadPreference() {
-		if (this.lightBox.id) {
-			Object.assign(this.preference, this.preferenceService.lightBox(this.lightBox).get())
-		}
-	}
-
-	protected savePreference() {
-		if (this.lightBox.connected) {
-			this.preferenceService.lightBox(this.lightBox).set(this.preference)
-		}
 	}
 }

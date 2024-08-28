@@ -157,6 +157,7 @@ export class EnumPipe implements PipeTransform {
 		DOUBLE_OR_MULTIPLE_STAR: 'Double or Multiple Star',
 		DOUBLE: 'Double',
 		DRA: 'Draco',
+		DUST_CAP: 'Dust Cap',
 		EAST: 'East',
 		ECLIPSING_BINARY: 'Eclipsing Binary',
 		EDUCATION: 'Education',

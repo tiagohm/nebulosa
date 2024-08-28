@@ -6,6 +6,7 @@ import { AutoFocusRequest } from '../types/autofocus.type'
 import { CalibrationFrame } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
 import { Device, INDIProperty, INDISendProperty } from '../types/device.types'
+import { DustCap } from '../types/dustcap.types'
 import { FlatWizardRequest } from '../types/flat-wizard.types'
 import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
@@ -372,6 +373,36 @@ export class ApiService {
 
 	lightBoxListen(lightBox: LightBox) {
 		return this.http.put<never>(`light-boxes/${lightBox.id}/listen`)
+	}
+
+	// DUST CAP
+
+	dustCaps() {
+		return this.http.get<DustCap[]>(`dust-caps`)
+	}
+
+	dustCap(id: string) {
+		return this.http.get<DustCap>(`dust-caps/${id}`)
+	}
+
+	dustCapConnect(dustCap: DustCap) {
+		return this.http.put<never>(`dust-caps/${dustCap.id}/connect`)
+	}
+
+	dustCapDisconnect(dustCap: DustCap) {
+		return this.http.put<never>(`dust-caps/${dustCap.id}/disconnect`)
+	}
+
+	dustCapPark(dustCap: DustCap) {
+		return this.http.put<never>(`dust-caps/${dustCap.id}/park`)
+	}
+
+	dustCapUnpark(dustCap: DustCap) {
+		return this.http.put<never>(`dust-caps/${dustCap.id}/unpark`)
+	}
+
+	dustCapListen(dustCap: DustCap) {
+		return this.http.put<never>(`dust-caps/${dustCap.id}/listen`)
 	}
 
 	// GUIDING

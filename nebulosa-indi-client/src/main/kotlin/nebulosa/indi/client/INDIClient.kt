@@ -10,6 +10,7 @@ import nebulosa.indi.client.device.camera.AsiCamera
 import nebulosa.indi.client.device.camera.INDICamera
 import nebulosa.indi.client.device.camera.SVBonyCamera
 import nebulosa.indi.client.device.camera.SimCamera
+import nebulosa.indi.client.device.dustcap.INDIDustCap
 import nebulosa.indi.client.device.focuser.INDIFocuser
 import nebulosa.indi.client.device.lightbox.INDILightBox
 import nebulosa.indi.client.device.mount.INDIMount
@@ -18,6 +19,7 @@ import nebulosa.indi.client.device.wheel.INDIFilterWheel
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.dustcap.DustCap
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
@@ -81,6 +83,10 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
 
     override fun newLightBox(driverInfo: DriverInfo): LightBox {
         return INDILightBox(this, driverInfo)
+    }
+
+    override fun newDustCap(driverInfo: DriverInfo): DustCap {
+        return INDIDustCap(this, driverInfo)
     }
 
     override fun start() {

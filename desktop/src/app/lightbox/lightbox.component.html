@@ -28,8 +28,8 @@
 				<span class="text-xs text-gray-100">Enabled</span>
 				<p-inputSwitch
 					[disabled]="!lightBox.connected"
-					(onChange)="toggleEnable($event.checked)"
-					[(ngModel)]="lightBox.enabled" />
+					[ngModel]="lightBox.enabled"
+					(ngModelChange)="toggleEnable()" />
 			</div>
 		</div>
 		<div class="col-8 flex align-items-center justify-content-center">

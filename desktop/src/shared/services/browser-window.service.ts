@@ -3,6 +3,7 @@ import { OpenWindow, WindowPreference } from '../types/app.types'
 import { SkyAtlasInput } from '../types/atlas.types'
 import { Camera, CameraDialogInput, CameraStartCapture } from '../types/camera.types'
 import { Device } from '../types/device.types'
+import { DustCap } from '../types/dustcap.types'
 import { Focuser } from '../types/focuser.types'
 import { LoadFraming } from '../types/framing.types'
 import { ImageSource, OpenImage } from '../types/image.types'
@@ -65,6 +66,11 @@ export class BrowserWindowService {
 	openLightBox(data: LightBox, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'light', width: 290, height: 216 })
 		return this.openWindow({ preference, data, id: `lightbox.${data.name}`, path: 'light-box' })
+	}
+
+	openDustCap(data: DustCap, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'lid', width: 290, height: 169 })
+		return this.openWindow({ preference, data, id: `dustcap.${data.name}`, path: 'dust-cap' })
 	}
 
 	openWheelDialog(data: WheelDialogInput, preference: WindowPreference = {}) {

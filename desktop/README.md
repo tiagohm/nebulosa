@@ -26,6 +26,14 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](rotator.png)
 
+## Light Box
+
+![](light-box.png)
+
+## Dust Cap
+
+![](dust-cap.png)
+
 ## Guider
 
 ![](guider.png)

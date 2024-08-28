@@ -8,6 +8,7 @@ import nebulosa.indi.device.Device
 import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.dustcap.DustCap
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.gps.GPS
@@ -139,6 +140,10 @@ class ConnectionService(
         return providers[id]?.lightBoxes() ?: emptyList()
     }
 
+    fun dustCaps(id: String): Collection<DustCap> {
+        return providers[id]?.dustCaps() ?: emptyList()
+    }
+
     fun thermometers(id: String): Collection<Thermometer> {
         return providers[id]?.thermometers() ?: emptyList()
     }
@@ -173,6 +178,10 @@ class ConnectionService(
 
     fun lightBoxes(): List<LightBox> {
         return providers.values.flatMap { it.lightBoxes() }
+    }
+
+    fun dustCaps(): List<DustCap> {
+        return providers.values.flatMap { it.dustCaps() }
     }
 
     fun thermometers(): List<Thermometer> {
@@ -211,6 +220,10 @@ class ConnectionService(
         return providers[id]?.lightBox(name)
     }
 
+    fun dustCap(id: String, name: String): DustCap? {
+        return providers[id]?.dustCap(name)
+    }
+
     fun thermometer(id: String, name: String): Thermometer? {
         return providers[id]?.thermometer(name)
     }
@@ -247,6 +260,10 @@ class ConnectionService(
         return providers.firstNotNullOfOrNull { it.value.lightBox(name) }
     }
 
+    fun dustCap(name: String): DustCap? {
+        return providers.firstNotNullOfOrNull { it.value.dustCap(name) }
+    }
+
     fun thermometer(name: String): Thermometer? {
         return providers.firstNotNullOfOrNull { it.value.thermometer(name) }
     }
@@ -259,6 +276,7 @@ class ConnectionService(
             ?: rotator(name)
             ?: guideOutput(name)
             ?: lightBox(name)
+            ?: dustCap(name)
             ?: gps(name)
             ?: thermometer(name)
     }
