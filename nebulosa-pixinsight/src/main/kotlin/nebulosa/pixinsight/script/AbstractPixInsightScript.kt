@@ -2,10 +2,10 @@ package nebulosa.pixinsight.script
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
-import nebulosa.common.exec.CommandLine
-import nebulosa.common.exec.CommandLineListener
 import nebulosa.json.PathModule
 import nebulosa.log.loggerFor
+import nebulosa.util.exec.CommandLine
+import nebulosa.util.exec.CommandLineListener
 import org.apache.commons.codec.binary.Hex
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture

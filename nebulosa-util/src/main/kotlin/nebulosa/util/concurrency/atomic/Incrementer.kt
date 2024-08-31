@@ -1,6 +1,6 @@
-package nebulosa.common.concurrency.atomic
+package nebulosa.util.concurrency.atomic
 
-import nebulosa.common.Resettable
+import nebulosa.util.Resettable
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Supplier
 

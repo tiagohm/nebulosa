@@ -1,9 +1,9 @@
 package nebulosa.api.focusers
 
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationToken
 
 /**
  * This decorator will wrap an absolute backlash [compensation] model around the [focuser].

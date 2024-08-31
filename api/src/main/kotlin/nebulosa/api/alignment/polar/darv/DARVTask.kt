@@ -11,7 +11,6 @@ import nebulosa.api.tasks.SplitTask
 import nebulosa.api.tasks.Task
 import nebulosa.api.tasks.delay.DelayEvent
 import nebulosa.api.tasks.delay.DelayTask
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
@@ -19,6 +18,7 @@ import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.indi.device.mount.Mount
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.nio.file.Files
 import java.time.Duration
 import java.util.concurrent.Executor

@@ -1,7 +1,7 @@
 package nebulosa.api.guiding
 
-import nebulosa.common.concurrency.atomic.Incrementer
 import nebulosa.guiding.GuideStep
+import nebulosa.util.concurrency.atomic.Incrementer
 import java.util.*
 
 class GuideStepHistory private constructor(private val data: LinkedList<HistoryStep>) : List<HistoryStep> by data {

@@ -2,10 +2,10 @@ package nebulosa.astap.stardetector
 
 import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
-import nebulosa.common.exec.commandLine
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
+import nebulosa.util.exec.commandLine
 import java.io.InputStreamReader
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists

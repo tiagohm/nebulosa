@@ -3,7 +3,6 @@ package nebulosa.api.wizard.flat
 import nebulosa.api.cameras.*
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.tasks.AbstractTask
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.fits.fits
 import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Statistics
@@ -11,6 +10,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.nio.file.Path
 import java.time.Duration
 

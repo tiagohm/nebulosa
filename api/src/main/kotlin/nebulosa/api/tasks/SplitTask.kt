@@ -1,6 +1,6 @@
 package nebulosa.api.tasks
 
-import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.ForkJoinPool

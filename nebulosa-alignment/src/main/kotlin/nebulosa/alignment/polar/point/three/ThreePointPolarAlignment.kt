@@ -1,14 +1,14 @@
 package nebulosa.alignment.polar.point.three
 
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignmentResult.*
-import nebulosa.common.Resettable
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.constants.DEG2RAD
 import nebulosa.math.Angle
 import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
 import nebulosa.platesolver.PlateSolverException
 import nebulosa.time.UTC
+import nebulosa.util.Resettable
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.nio.file.Path
 
 /**

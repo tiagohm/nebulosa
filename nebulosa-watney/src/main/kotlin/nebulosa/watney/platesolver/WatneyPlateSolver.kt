@@ -1,6 +1,5 @@
 package nebulosa.watney.platesolver
 
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.erfa.SphericalCoordinate
 import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsKeyword
@@ -17,6 +16,7 @@ import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import nebulosa.watney.platesolver.math.equatorialToStandardCoordinates
 import nebulosa.watney.platesolver.math.lerp
 import nebulosa.watney.platesolver.math.solveLeastSquares

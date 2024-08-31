@@ -1,14 +1,14 @@
 package nebulosa.api.focusers
 
-import nebulosa.common.concurrency.cancel.CancellationListener
-import nebulosa.common.concurrency.cancel.CancellationSource
-import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.indi.device.focuser.FocuserMoveFailed
 import nebulosa.indi.device.focuser.FocuserMovingChanged
 import nebulosa.indi.device.focuser.FocuserPositionChanged
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationListener
+import nebulosa.util.concurrency.cancellation.CancellationSource
+import nebulosa.util.concurrency.cancellation.CancellationToken
+import nebulosa.util.concurrency.latch.CountUpDownLatch
 
 abstract class AbstractFocuserMoveTask : FocuserMoveTask, CancellationListener {
 

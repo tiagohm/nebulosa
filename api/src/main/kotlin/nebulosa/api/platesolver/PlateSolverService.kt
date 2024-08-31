@@ -2,7 +2,7 @@ package nebulosa.api.platesolver
 
 import nebulosa.api.image.ImageBucket
 import nebulosa.api.image.ImageSolved
-import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import okhttp3.OkHttpClient
 import org.springframework.stereotype.Service
 import java.nio.file.Path

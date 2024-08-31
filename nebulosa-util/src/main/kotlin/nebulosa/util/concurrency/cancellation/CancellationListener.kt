@@ -1,4 +1,4 @@
-package nebulosa.common.concurrency.cancel
+package nebulosa.util.concurrency.cancellation
 
 fun interface CancellationListener {
 

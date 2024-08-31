@@ -1,13 +1,13 @@
 package nebulosa.api.wheels
 
 import nebulosa.api.tasks.Task
-import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import nebulosa.indi.device.filterwheel.FilterWheelMoveFailed
 import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationToken
+import nebulosa.util.concurrency.latch.CountUpDownLatch
 
 data class WheelMoveTask(
     @JvmField val wheel: FilterWheel,

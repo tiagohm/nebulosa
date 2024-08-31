@@ -1,8 +1,8 @@
 package nebulosa.api.tasks.delay
 
 import nebulosa.api.tasks.AbstractTask
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.time.Duration
 
 data class DelayTask(

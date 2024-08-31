@@ -1,4 +1,4 @@
-package nebulosa.common.concurrency.latch
+package nebulosa.util.concurrency.latch
 
 import java.time.Duration
 import java.util.concurrent.TimeUnit

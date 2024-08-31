@@ -1,7 +1,7 @@
 package nebulosa.api.tasks
 
-import nebulosa.common.Resettable
-import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.util.Resettable
+import nebulosa.util.concurrency.cancellation.CancellationToken
 
 interface Task : Resettable, AutoCloseable {
 

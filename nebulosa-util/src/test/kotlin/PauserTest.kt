@@ -1,6 +1,6 @@
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
-import nebulosa.common.concurrency.latch.Pauser
+import nebulosa.util.concurrency.latch.Pauser
 import org.junit.jupiter.api.Test
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread

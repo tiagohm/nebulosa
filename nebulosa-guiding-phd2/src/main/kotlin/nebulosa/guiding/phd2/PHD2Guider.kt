@@ -1,7 +1,5 @@
 package nebulosa.guiding.phd2
 
-import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.guiding.*
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
@@ -11,6 +9,8 @@ import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.*
 import nebulosa.phd2.client.events.*
+import nebulosa.util.concurrency.cancellation.CancellationToken
+import nebulosa.util.concurrency.latch.CountUpDownLatch
 
 class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
 

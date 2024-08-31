@@ -7,7 +7,6 @@ import nebulosa.api.focusers.BacklashCompensationMode
 import nebulosa.api.focusers.FocuserEventAware
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.tasks.AbstractTask
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.curve.fitting.CurvePoint
 import nebulosa.curve.fitting.CurvePoint.Companion.midPoint
 import nebulosa.curve.fitting.HyperbolicFitting
@@ -21,6 +20,7 @@ import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import java.nio.file.Files
 import java.nio.file.Path

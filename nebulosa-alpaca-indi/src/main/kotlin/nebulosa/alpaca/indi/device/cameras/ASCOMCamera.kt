@@ -3,7 +3,6 @@ package nebulosa.alpaca.indi.device.cameras
 import nebulosa.alpaca.api.*
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
-import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.fits.Bitpix
 import nebulosa.fits.Fits
 import nebulosa.fits.FitsHeader
@@ -28,6 +27,7 @@ import nebulosa.math.normalized
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
+import nebulosa.util.concurrency.latch.CountUpDownLatch
 import okio.buffer
 import okio.source
 import java.nio.ByteBuffer

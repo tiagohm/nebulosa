@@ -5,8 +5,8 @@ plugins {
 
 dependencies {
     api(project(":nebulosa-math"))
-    api(project(":nebulosa-common"))
     api(project(":nebulosa-indi-device"))
+    api(project(":nebulosa-util"))
     testImplementation(project(":nebulosa-test"))
 }
 

@@ -1,6 +1,6 @@
-package nebulosa.common.concurrency.cancel
+package nebulosa.util.concurrency.cancellation
 
-import nebulosa.common.concurrency.latch.Pauser
+import nebulosa.util.concurrency.latch.Pauser
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future

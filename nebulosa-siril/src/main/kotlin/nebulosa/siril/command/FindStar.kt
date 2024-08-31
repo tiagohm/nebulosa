@@ -1,11 +1,11 @@
 package nebulosa.siril.command
 
-import nebulosa.common.concurrency.latch.CountUpDownLatch
-import nebulosa.common.exec.CommandLineListener
 import nebulosa.fits.height
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarPoint
+import nebulosa.util.concurrency.latch.CountUpDownLatch
+import nebulosa.util.exec.CommandLineListener
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit

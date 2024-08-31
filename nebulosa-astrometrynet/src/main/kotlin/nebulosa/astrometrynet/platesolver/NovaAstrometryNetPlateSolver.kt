@@ -4,7 +4,6 @@ import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService.Companion.ANONYMOUS_API_KEY
 import nebulosa.astrometrynet.nova.Session
 import nebulosa.astrometrynet.nova.Upload
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.fits.FitsHeader
 import nebulosa.image.Image
 import nebulosa.log.loggerFor
@@ -13,6 +12,7 @@ import nebulosa.math.toDegrees
 import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
 import nebulosa.platesolver.PlateSolverException
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.nio.file.Path
 import java.time.Duration
 

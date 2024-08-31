@@ -1,6 +1,6 @@
 package nebulosa.guiding
 
-import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.time.Duration
 
 interface Guider : AutoCloseable {

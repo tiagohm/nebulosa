@@ -12,7 +12,6 @@ import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.database.MyObjectBox
 import nebulosa.api.preference.PreferenceEntity
-import nebulosa.common.concurrency.DaemonThreadFactory
 import nebulosa.guiding.Guider
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
@@ -23,6 +22,7 @@ import nebulosa.log.loggerFor
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
+import nebulosa.util.concurrency.DaemonThreadFactory
 import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient

@@ -4,9 +4,9 @@ plugins {
 }
 
 dependencies {
-    api(project(":nebulosa-common"))
     api(project(":nebulosa-platesolver"))
     api(project(":nebulosa-stardetector"))
+    api(project(":nebulosa-util"))
     api(libs.csv)
     api(libs.oshi)
     implementation(project(":nebulosa-log"))

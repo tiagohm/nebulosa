@@ -1,10 +1,10 @@
 package nebulosa.pixinsight.stacker
 
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.pixinsight.script.PixInsightScript
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.stacker.AutoStacker
 import nebulosa.stacker.AutoStackerListener
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.nio.file.Path
 import java.util.concurrent.CancellationException
 import kotlin.io.path.deleteIfExists

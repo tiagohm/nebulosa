@@ -1,15 +1,15 @@
 package nebulosa.api.cameras
 
 import nebulosa.api.tasks.AbstractTask
-import nebulosa.common.concurrency.cancel.CancellationListener
-import nebulosa.common.concurrency.cancel.CancellationSource
-import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.fits.fits
 import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationListener
+import nebulosa.util.concurrency.cancellation.CancellationSource
+import nebulosa.util.concurrency.cancellation.CancellationToken
+import nebulosa.util.concurrency.latch.CountUpDownLatch
 import okio.sink
 import java.nio.file.Files
 import java.nio.file.Path

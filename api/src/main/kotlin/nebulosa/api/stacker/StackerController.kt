@@ -1,7 +1,7 @@
 package nebulosa.api.stacker
 
 import jakarta.validation.Valid
-import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.nio.file.Path

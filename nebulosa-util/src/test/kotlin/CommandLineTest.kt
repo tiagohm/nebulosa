@@ -4,9 +4,9 @@ import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.ints.shouldNotBeExactly
 import io.kotest.matchers.longs.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.longs.shouldBeLessThan
-import nebulosa.common.exec.CommandLineListener
-import nebulosa.common.exec.commandLine
 import nebulosa.test.LinuxOnly
+import nebulosa.util.exec.CommandLineListener
+import nebulosa.util.exec.commandLine
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.time.Duration

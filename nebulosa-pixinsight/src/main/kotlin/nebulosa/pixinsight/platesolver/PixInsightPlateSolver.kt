@@ -1,7 +1,5 @@
 package nebulosa.pixinsight.platesolver
 
-import nebulosa.common.concurrency.cancel.CancellationListener
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.image.Image
 import nebulosa.math.Angle
 import nebulosa.math.deg
@@ -11,6 +9,8 @@ import nebulosa.pixinsight.script.PixInsightScript
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
+import nebulosa.util.concurrency.cancellation.CancellationListener
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.nio.file.Path
 import java.time.Duration
 

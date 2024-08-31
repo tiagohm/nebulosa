@@ -4,11 +4,11 @@ import nebulosa.alpaca.api.AlpacaDeviceService
 import nebulosa.alpaca.api.AlpacaResponse
 import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.indi.client.AlpacaClient
-import nebulosa.common.Resettable
-import nebulosa.common.time.Stopwatch
 import nebulosa.indi.device.*
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import nebulosa.util.Resettable
+import nebulosa.util.time.Stopwatch
 import retrofit2.Call
 import retrofit2.HttpException
 import java.time.LocalDateTime

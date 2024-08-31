@@ -1,6 +1,6 @@
 package nebulosa.time
 
-import nebulosa.common.time.Stopwatch
+import nebulosa.util.time.Stopwatch
 
 data object CurrentTime : InstantOfTime() {
 

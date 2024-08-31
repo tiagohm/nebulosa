@@ -1,12 +1,12 @@
 package nebulosa.api.stacker
 
 import nebulosa.api.message.MessageService
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.fits.fits
 import nebulosa.fits.isFits
 import nebulosa.image.format.ImageHdu
 import nebulosa.stacker.AutoStacker
 import nebulosa.stacker.AutoStackerListener
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
 import org.springframework.stereotype.Service

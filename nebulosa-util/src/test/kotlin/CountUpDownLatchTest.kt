@@ -2,7 +2,7 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.longs.shouldBeGreaterThanOrEqual
-import nebulosa.common.concurrency.latch.CountUpDownLatch
+import nebulosa.util.concurrency.latch.CountUpDownLatch
 import org.junit.jupiter.api.Test
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread

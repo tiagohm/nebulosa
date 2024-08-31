@@ -1,7 +1,7 @@
-package nebulosa.common.concurrency.latch
+package nebulosa.util.concurrency.latch
 
-import nebulosa.common.concurrency.cancel.CancellationListener
-import nebulosa.common.concurrency.cancel.CancellationSource
+import nebulosa.util.concurrency.cancellation.CancellationListener
+import nebulosa.util.concurrency.cancellation.CancellationSource
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean

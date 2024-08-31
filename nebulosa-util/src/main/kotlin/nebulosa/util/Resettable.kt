@@ -1,4 +1,4 @@
-package nebulosa.common
+package nebulosa.util
 
 fun interface Resettable {
 

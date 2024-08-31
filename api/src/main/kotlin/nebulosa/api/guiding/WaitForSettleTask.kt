@@ -1,9 +1,9 @@
 package nebulosa.api.guiding
 
 import nebulosa.api.tasks.Task
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.guiding.Guider
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationToken
 
 data class WaitForSettleTask(
     @JvmField val guider: Guider?,

@@ -1,12 +1,12 @@
 package nebulosa.siril.command
 
-import nebulosa.common.concurrency.latch.CountUpDownLatch
-import nebulosa.common.exec.CommandLineListener
 import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsHeaderCard
 import nebulosa.image.format.Header
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.latch.CountUpDownLatch
+import nebulosa.util.exec.CommandLineListener
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 

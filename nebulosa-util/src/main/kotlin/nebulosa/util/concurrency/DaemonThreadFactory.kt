@@ -1,4 +1,4 @@
-package nebulosa.common.concurrency
+package nebulosa.util.concurrency
 
 import java.util.concurrent.ThreadFactory
 

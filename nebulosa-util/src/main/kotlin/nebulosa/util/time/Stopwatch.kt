@@ -1,6 +1,6 @@
-package nebulosa.common.time
+package nebulosa.util.time
 
-import nebulosa.common.Resettable
+import nebulosa.util.Resettable
 import java.time.Duration
 
 /**

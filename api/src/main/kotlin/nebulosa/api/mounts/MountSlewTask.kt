@@ -2,10 +2,6 @@ package nebulosa.api.mounts
 
 import nebulosa.api.tasks.Task
 import nebulosa.api.tasks.delay.DelayTask
-import nebulosa.common.concurrency.cancel.CancellationListener
-import nebulosa.common.concurrency.cancel.CancellationSource
-import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountEvent
 import nebulosa.indi.device.mount.MountSlewFailed
@@ -14,6 +10,10 @@ import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
+import nebulosa.util.concurrency.cancellation.CancellationListener
+import nebulosa.util.concurrency.cancellation.CancellationSource
+import nebulosa.util.concurrency.cancellation.CancellationToken
+import nebulosa.util.concurrency.latch.CountUpDownLatch
 import java.time.Duration
 
 data class MountSlewTask(

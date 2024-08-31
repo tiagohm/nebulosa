@@ -1,6 +1,6 @@
 package nebulosa.pixinsight.script
 
-import nebulosa.common.exec.CommandLine
+import nebulosa.util.exec.CommandLine
 import java.util.concurrent.Future
 
 sealed interface PixInsightScript<T : PixInsightScript.Output> : Future<T>, AutoCloseable {
