@@ -27,7 +27,7 @@ dependencyResolutionManagement {
             library("netty-codec", "io.netty:netty-codec:4.1.112.Final")
             library("xml", "com.fasterxml:aalto-xml:1.3.3")
             library("csv", "de.siegmar:fastcsv:3.2.0")
-            library("apache-lang3", "org.apache.commons:commons-lang3:3.16.0")
+            library("apache-lang3", "org.apache.commons:commons-lang3:3.17.0")
             library("apache-codec", "commons-codec:commons-codec:1.17.1")
             library("apache-collections", "org.apache.commons:commons-collections4:4.4")
             library("apache-math", "org.apache.commons:commons-math3:3.6.1")
