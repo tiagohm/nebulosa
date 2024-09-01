@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":nebulosa-horizons"))
     implementation(project(":nebulosa-image"))
     implementation(project(":nebulosa-indi-client"))
+    implementation(project(":nebulosa-job-manager"))
     implementation(project(":nebulosa-log"))
     implementation(project(":nebulosa-lx200-protocol"))
     implementation(project(":nebulosa-nova"))

@@ -6,7 +6,6 @@ import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.indi.device.thermometer.Thermometer
 import nebulosa.indi.protocol.PropertyState
-import java.time.Duration
 
 interface Camera : GuideOutput, Thermometer {
 
@@ -35,13 +34,13 @@ interface Camera : GuideOutput, Thermometer {
 
     val cfaType: CfaPattern
 
-    val exposureMin: Duration
+    val exposureMin: Long
 
-    val exposureMax: Duration
+    val exposureMax: Long
 
     val exposureState: PropertyState
 
-    val exposureTime: Duration
+    val exposureTime: Long
 
     val hasCooler: Boolean
 
@@ -119,14 +118,9 @@ interface Camera : GuideOutput, Thermometer {
 
     fun offset(value: Int)
 
-    fun startCapture(exposureTime: Duration)
+    fun startCapture(exposureTime: Long)
 
     fun abortCapture()
 
     fun fitsKeywords(vararg cards: HeaderCard)
-
-    companion object {
-
-        const val NANO_TO_SECONDS = 1_000_000_000.0
-    }
 }

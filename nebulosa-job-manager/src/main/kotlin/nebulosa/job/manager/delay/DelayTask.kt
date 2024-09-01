@@ -4,8 +4,11 @@ import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import java.time.Duration
 
 data class DelayTask(@JvmField val durationInMilliseconds: Long) : Task {
+
+    constructor(duration: Duration) : this(duration.toMillis())
 
     override fun execute(job: Job) {
         var remainingTime = durationInMilliseconds
