@@ -57,7 +57,7 @@
 		"primeng": "17.18.9",
 		"primeng-sass-theme": "github:primefaces/primeng-sass-theme#17.18.3",
 		"rxjs": "7.8.1",
-		"tslib": "2.6.3",
+		"tslib": "2.7.0",
 		"zone.js": "0.14.10"
 	},
 	"devDependencies": {
