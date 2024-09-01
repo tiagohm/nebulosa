@@ -1,78 +1,58 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.tasks.AbstractTask
 import nebulosa.fits.fits
 import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
+import nebulosa.job.manager.Job
+import nebulosa.job.manager.Task
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
-import nebulosa.util.concurrency.cancellation.CancellationListener
 import nebulosa.util.concurrency.cancellation.CancellationSource
-import nebulosa.util.concurrency.cancellation.CancellationToken
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 import okio.sink
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.moveTo
 import kotlin.io.path.outputStream
+import kotlin.math.min
 
 data class CameraExposureTask(
     @JvmField val camera: Camera,
     @JvmField val request: CameraStartCaptureRequest,
-) : AbstractTask<CameraExposureEvent>(), CancellationListener, CameraEventAware {
+) : Task, CameraEventAware {
 
     private val latch = CountUpDownLatch()
     private val aborted = AtomicBoolean()
 
-    @Volatile private var elapsedTime = Duration.ZERO
-    @Volatile private var remainingTime = Duration.ZERO
-    @Volatile private var progress = 0.0
-    @Volatile private var savedPath: Path? = null
-
     private val outputPath = Files.createTempFile(camera.name, ".fits")
     private val formatter = CameraCaptureNamingFormatter(camera)
+    private val cameraEventHandler = AtomicReference<CameraEventHandler>()
+
+    @JvmField val exposureTimeInMicroseconds = request.exposureTime.toNanos() / 1000L
 
     val isAborted
         get() = aborted.get()
 
     override fun handleCameraEvent(event: CameraEvent) {
-        if (event.device === camera) {
-            when (event) {
-                is CameraFrameCaptured -> {
-                    save(event)
-                }
-                is CameraExposureAborted,
-                is CameraExposureFailed,
-                is CameraDetached -> {
-                    aborted.set(true)
-                    latch.reset()
-                }
-                is CameraExposureProgressChanged -> {
-                    val exposureTime = request.exposureTime
-                    // minOf fix possible bug on SVBony exposure time?
-                    remainingTime = minOf(event.device.exposureTime, request.exposureTime)
-                    elapsedTime = exposureTime - remainingTime
-                    progress = elapsedTime.toNanos().toDouble() / exposureTime.toNanos()
-                    sendEvent(CameraExposureState.ELAPSED)
-                }
-            }
-        }
+        cameraEventHandler.get()?.handleCameraEvent(event)
     }
 
-    override fun execute(cancellationToken: CancellationToken) {
+    override fun execute(job: Job) {
         if (camera.connected && !aborted.get()) {
-            LOG.info("Camera Exposure started. camera={}, request={}", camera, request)
+            LOG.debug { "Camera Exposure started. camera=$camera, request=$request" }
 
-            cancellationToken.waitForPause()
+            cameraEventHandler.set(CameraEventHandler(job))
 
+            job.waitForPause()
             latch.countUp()
 
-            sendEvent(CameraExposureState.STARTED)
+            job.accept(CameraExposureStarted(job, this))
 
             with(camera) {
                 enableBlob()
@@ -89,35 +69,21 @@ data class CameraExposureTask(
                 startCapture(request.exposureTime)
             }
 
-            try {
-                cancellationToken.listen(this)
-                latch.await()
-            } finally {
-                cancellationToken.unlisten(this)
-            }
+            latch.await()
 
-            LOG.info("Camera Exposure finished. aborted={}, camera={}, request={}", aborted.get(), camera, request)
+            LOG.debug { "Camera Exposure finished. aborted={}, camera=$camera, request=$request" }
         } else {
             LOG.warn("camera not connected or aborted. aborted={}, camera={}, request={}", aborted.get(), camera, request)
         }
+
+        outputPath.deleteIfExists()
     }
 
     override fun onCancel(source: CancellationSource) {
         camera.abortCapture()
     }
 
-    override fun reset() {
-        aborted.set(false)
-        latch.reset()
-    }
-
-    override fun close() {
-        onCancel(CancellationSource.Close)
-        outputPath.deleteIfExists()
-        super.close()
-    }
-
-    private fun save(event: CameraFrameCaptured) {
+    private fun save(event: CameraFrameCaptured, job: Job) {
         try {
             val header = if (event.stream != null) {
                 event.stream!!.transferAndClose(outputPath.outputStream())
@@ -134,20 +100,14 @@ data class CameraExposureTask(
                 LOG.info("saving FITS image at {}", this)
                 createParentDirectories()
                 outputPath.moveTo(this, true)
-                savedPath = this
+                job.accept(CameraExposureFinished(job, this@CameraExposureTask, this))
             }
-
-            sendEvent(CameraExposureState.FINISHED)
         } catch (e: Throwable) {
             LOG.error("failed to save FITS image", e)
             aborted.set(true)
         } finally {
             latch.countDown()
         }
-    }
-
-    private fun sendEvent(state: CameraExposureState) {
-        onNext(CameraExposureEvent(this, state, elapsedTime, remainingTime, progress, savedPath))
     }
 
     private fun CameraStartCaptureRequest.makeSavePath(
@@ -164,6 +124,32 @@ data class CameraExposureTask(
             Path.of("$savePath", "$fileName.fits")
         } else {
             Path.of("$savePath", "${formatter.camera.name}.fits")
+        }
+    }
+
+    private inner class CameraEventHandler(private val job: Job) : CameraEventAware {
+
+        override fun handleCameraEvent(event: CameraEvent) {
+            if (event.device === camera) {
+                when (event) {
+                    is CameraFrameCaptured -> {
+                        save(event, job)
+                    }
+                    is CameraExposureAborted,
+                    is CameraExposureFailed,
+                    is CameraDetached -> {
+                        aborted.set(true)
+                        latch.reset()
+                    }
+                    is CameraExposureProgressChanged -> {
+                        // minOf fix possible bug on SVBony exposure time?
+                        val remainingTime = min(event.device.exposureTime.toNanos(), request.exposureTime.toNanos()) / 1000L
+                        val elapsedTime = exposureTimeInMicroseconds - remainingTime
+                        val progress = elapsedTime.toDouble() / exposureTimeInMicroseconds
+                        job.accept(CameraExposureElapsed(job, this@CameraExposureTask, elapsedTime, remainingTime, progress))
+                    }
+                }
+            }
         }
     }
 

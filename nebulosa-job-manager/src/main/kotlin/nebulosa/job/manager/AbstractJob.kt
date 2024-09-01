@@ -1,9 +1,13 @@
 package nebulosa.job.manager
 
+import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.cancellation.CancellationListener
 import nebulosa.util.concurrency.cancellation.CancellationSource
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 import nebulosa.util.concurrency.latch.PauseListener
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
+import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -56,12 +60,12 @@ abstract class AbstractJob : Job, CancellationListener, PauseListener {
 
     protected open fun canPause(task: Task) = true
 
-    override fun onCancel(source: CancellationSource) {
+    final override fun onCancel(source: CancellationSource) {
         cancelled.set(true)
         currentTask?.onCancel(source)
     }
 
-    override fun onPause(paused: Boolean) {
+    final override fun onPause(paused: Boolean) {
         if (paused) {
             pauseLatch.countUp()
         } else {
@@ -89,6 +93,7 @@ abstract class AbstractJob : Job, CancellationListener, PauseListener {
                     taskCount++
                     task.execute(this)
                 } catch (e: Throwable) {
+                    LOG.error("task execution failed", e)
                     exception = e
                 }
 
@@ -119,6 +124,22 @@ abstract class AbstractJob : Job, CancellationListener, PauseListener {
 
             current.set(null)
         }
+    }
+
+    override fun stop() {
+        onCancel(CancellationSource.Cancel(true))
+    }
+
+    override fun pause() {
+        onPause(true)
+    }
+
+    override fun unpause() {
+        onPause(false)
+    }
+
+    fun runAsync(executor: Executor = EXECUTOR): CompletableFuture<Void> {
+        return CompletableFuture.runAsync(this, executor)
     }
 
     final override fun waitForPause() {
@@ -471,5 +492,11 @@ abstract class AbstractJob : Job, CancellationListener, PauseListener {
                 return n.item
             }
         }
+    }
+
+    companion object {
+
+        @JvmStatic private val EXECUTOR = ForkJoinPool.commonPool()
+        @JvmStatic private val LOG = loggerFor<AbstractJob>()
     }
 }

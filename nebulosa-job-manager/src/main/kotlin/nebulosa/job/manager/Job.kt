@@ -1,9 +1,11 @@
 package nebulosa.job.manager
 
+import nebulosa.util.Stoppable
+import nebulosa.util.concurrency.latch.Pauseable
 import java.util.Deque
 import java.util.function.Consumer
 
-interface Job : Deque<Task>, Runnable, Consumer<Any> {
+interface Job : Deque<Task>, Runnable, Pauseable, Stoppable, Consumer<Any> {
 
     val loopCount: Int
 
@@ -12,8 +14,6 @@ interface Job : Deque<Task>, Runnable, Consumer<Any> {
     val isRunning: Boolean
 
     val isCancelled: Boolean
-
-    val isPaused: Boolean
 
     val currentTask: Task?
 

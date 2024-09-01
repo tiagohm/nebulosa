@@ -13,7 +13,6 @@ import nebulosa.image.format.FloatImageData
 import nebulosa.image.format.HeaderCard
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.*
-import nebulosa.indi.device.camera.Camera.Companion.NANO_TO_SECONDS
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.guider.GuideOutputPulsingChanged
@@ -58,10 +57,10 @@ data class ASCOMCamera(
     @Volatile final override var cfaOffsetX = 0
     @Volatile final override var cfaOffsetY = 0
     @Volatile final override var cfaType = CfaPattern.RGGB
-    @Volatile final override var exposureMin: Duration = Duration.ZERO
-    @Volatile final override var exposureMax: Duration = Duration.ZERO
+    @Volatile final override var exposureMin = 0L
+    @Volatile final override var exposureMax = 0L
     @Volatile final override var exposureState = PropertyState.IDLE
-    @Volatile final override var exposureTime: Duration = Duration.ZERO
+    @Volatile final override var exposureTime = 0L
     @Volatile final override var hasCooler = false
     @Volatile final override var canSetTemperature = false
     @Volatile final override var canSubFrame = true
@@ -157,11 +156,11 @@ data class ASCOMCamera(
         service.offset(device.number, value).doRequest()
     }
 
-    override fun startCapture(exposureTime: Duration) {
+    override fun startCapture(exposureTime: Long) {
         if (!exposuring) {
             this.exposureTime = exposureTime
 
-            service.startExposure(device.number, exposureTime.toNanos() / NANO_TO_SECONDS, frameType == FrameType.LIGHT).doRequest {
+            service.startExposure(device.number, exposureTime.toDouble() / MICROS_TO_SECONDS, frameType == FrameType.LIGHT).doRequest {
                 imageReadyWaiter.captureStarted(exposureTime)
             }
         }
@@ -242,10 +241,10 @@ data class ASCOMCamera(
         cfaOffsetX = 0
         cfaOffsetY = 0
         cfaType = CfaPattern.RGGB
-        exposureMin = Duration.ZERO
-        exposureMax = Duration.ZERO
+        exposureMin = 0L
+        exposureMax = 0L
         exposureState = PropertyState.IDLE
-        exposureTime = Duration.ZERO
+        exposureTime = 0L
         hasCooler = false
         canSetTemperature = false
         canSubFrame = true
@@ -356,9 +355,8 @@ data class ASCOMCamera(
 
             if (exposuring) {
                 service.percentCompleted(device.number).doRequest {
-                    val exposureTimeInNanoseconds = imageReadyWaiter.exposureTime.toNanos()
-                    val progressedExposureTime = (exposureTimeInNanoseconds * it.value) / 100
-                    exposureTime = Duration.ofNanos(exposureTimeInNanoseconds - progressedExposureTime)
+                    val progressedExposureTime = (imageReadyWaiter.exposureTime * it.value) / 100
+                    this.exposureTime = imageReadyWaiter.exposureTime - progressedExposureTime
 
                     sender.fireOnEventReceived(CameraExposureProgressChanged(this))
                 }
@@ -536,8 +534,8 @@ data class ASCOMCamera(
     private fun processExposureMinMax() {
         service.exposureMin(device.number).doRequest { min ->
             service.exposureMax(device.number).doRequest { max ->
-                exposureMin = Duration.ofNanos((min.value * NANO_TO_SECONDS).toLong())
-                exposureMax = Duration.ofNanos((max.value * NANO_TO_SECONDS).toLong())
+                exposureMin = (min.value * MICROS_TO_SECONDS).toLong()
+                exposureMax = (max.value * MICROS_TO_SECONDS).toLong()
 
                 sender.fireOnEventReceived(CameraExposureMinMaxChanged(this))
             }
@@ -601,7 +599,7 @@ data class ASCOMCamera(
         }
     }
 
-    private fun readImage(exposureTime: Duration) {
+    private fun readImage(exposureTime: Long) {
         service.imageArray(device.number).execute().body()?.use { body ->
             val stream = body.byteStream()
             val metadata = ImageMetadata.from(stream.readNBytes(44))
@@ -646,7 +644,7 @@ data class ASCOMCamera(
             if (numberOfChannels == 3) header.add(FitsKeyword.NAXIS3, numberOfChannels)
             header.add(FitsKeyword.EXTEND, true)
             header.add(FitsKeyword.INSTRUME, name)
-            val exposureTimeInSeconds = exposureTime.toNanos() / NANO_TO_SECONDS
+            val exposureTimeInSeconds = exposureTime.toDouble() / MICROS_TO_SECONDS
             header.add(FitsKeyword.EXPTIME, exposureTimeInSeconds)
             header.add(FitsKeyword.EXPOSURE, exposureTimeInSeconds)
             if (hasThermometer) header.add(FitsKeyword.CCD_TEMP, temperature)
@@ -753,13 +751,13 @@ data class ASCOMCamera(
         private val latch = CountUpDownLatch(1)
         private val aborted = AtomicBoolean()
 
-        @Volatile @JvmField var exposureTime: Duration = Duration.ZERO
+        @Volatile @JvmField var exposureTime = 0L
 
         init {
             isDaemon = true
         }
 
-        fun captureStarted(exposureTime: Duration) {
+        fun captureStarted(exposureTime: Long) {
             this.exposureTime = exposureTime
             aborted.set(false)
             latch.reset()
@@ -815,6 +813,8 @@ data class ASCOMCamera(
     }
 
     companion object {
+
+        private const val MICROS_TO_SECONDS = 1_000_000L
 
         @JvmStatic private val LOG = loggerFor<ASCOMCamera>()
         @JvmStatic private val DATE_OBS_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")

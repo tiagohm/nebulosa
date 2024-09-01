@@ -1,25 +1,22 @@
 package nebulosa.api.cameras
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import nebulosa.api.message.MessageEvent
 import nebulosa.indi.device.camera.Camera
 import java.nio.file.Path
-import java.time.Duration
 
 data class CameraCaptureEvent(
-    @JvmField @field:JsonIgnore val task: CameraCaptureTask,
-    @JvmField val camera: Camera = task.camera,
-    @JvmField val state: CameraCaptureState = CameraCaptureState.IDLE,
-    @JvmField val exposureAmount: Int = 0,
-    @JvmField val exposureCount: Int = 0,
-    @JvmField val captureRemainingTime: Duration = Duration.ZERO,
-    @JvmField val captureElapsedTime: Duration = Duration.ZERO,
-    @JvmField val captureProgress: Double = 0.0,
-    @JvmField val stepRemainingTime: Duration = Duration.ZERO,
-    @JvmField val stepElapsedTime: Duration = Duration.ZERO,
-    @JvmField val stepProgress: Double = 0.0,
-    @JvmField val savedPath: Path? = null,
-    @JvmField val liveStackedPath: Path? = null,
+    @JvmField val camera: Camera,
+    @JvmField var state: CameraCaptureState = CameraCaptureState.IDLE,
+    @JvmField var exposureAmount: Int = 0,
+    @JvmField var exposureCount: Int = 0,
+    @JvmField var captureRemainingTime: Long = 0L,
+    @JvmField var captureElapsedTime: Long = 0L,
+    @JvmField var captureProgress: Double = 0.0,
+    @JvmField var stepRemainingTime: Long = 0L,
+    @JvmField var stepElapsedTime: Long = 0L,
+    @JvmField var stepProgress: Double = 0.0,
+    @JvmField var savedPath: Path? = null,
+    @JvmField var liveStackedPath: Path? = null,
     @JvmField val capture: CameraStartCaptureRequest? = null,
 ) : MessageEvent {
 
