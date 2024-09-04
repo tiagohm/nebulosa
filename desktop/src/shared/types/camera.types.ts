@@ -131,7 +131,6 @@ export interface CameraCaptureEvent extends MessageEvent {
 	savedPath?: string
 	liveStackedPath?: string
 	state: CameraCaptureState
-	capture?: CameraStartCapture
 }
 
 export interface CameraDialogInput {

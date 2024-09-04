@@ -9,7 +9,6 @@ import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.*
 import nebulosa.phd2.client.events.*
-import nebulosa.util.concurrency.cancellation.CancellationToken
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 
 class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
@@ -234,16 +233,14 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         }
     }
 
-    override fun waitForSettle(cancellationToken: CancellationToken) {
+    override fun waitForSettle() {
         try {
-            cancellationToken.listen(settling)
             settling.await(settleTimeout)
         } catch (_: InterruptedException) {
             LOG.warn("PHD2 did not send SettleDone message in expected time")
         } catch (e: Throwable) {
             LOG.warn("an error occurrs while waiting for settle done", e)
         } finally {
-            cancellationToken.unlisten(settling)
             settling.reset()
         }
     }

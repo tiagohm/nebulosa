@@ -6,8 +6,6 @@ import nebulosa.api.cameras.*
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.tasks.AbstractTask
 import nebulosa.api.tasks.Task
-import nebulosa.api.tasks.delay.DelayEvent
-import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.api.wheels.WheelEventAware
 import nebulosa.api.wheels.WheelMoveTask
 import nebulosa.guiding.Guider

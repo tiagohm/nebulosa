@@ -449,7 +449,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 					await this.closeImage()
 
 					this.imageData.path = event.savedPath
-					this.imageData.capture = event.capture
 					this.imageData.exposureCount = event.exposureCount
 					this.liveStacking.path = event.liveStackedPath
 

@@ -19,7 +19,6 @@ data class CameraCaptureEvent(
     @JvmField var stepProgress: Double = 0.0,
     @JvmField var savedPath: Path? = null,
     @JvmField var liveStackedPath: Path? = null,
-    @JvmField val capture: CameraStartCaptureRequest? = null,
 ) : MessageEvent {
 
     override val eventName = "CAMERA.CAPTURE_ELAPSED"
@@ -45,6 +44,14 @@ data class CameraCaptureEvent(
     fun handleCameraExposureElapsed(event: CameraExposureElapsed) {
         handleTimedTaskEvent(event)
         state = CameraCaptureState.EXPOSURING
+    }
+
+    fun handleCameraExposureEvent(event: CameraExposureEvent) {
+        when (event) {
+            is CameraExposureElapsed -> handleCameraExposureElapsed(event)
+            is CameraExposureFinished -> handleCameraExposureFinished(event)
+            is CameraExposureStarted -> handleCameraExposureStarted(event)
+        }
     }
 
     fun handleCameraDelayEvent(event: DelayEvent, newState: CameraCaptureState = CameraCaptureState.WAITING) {

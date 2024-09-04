@@ -3,7 +3,7 @@ package nebulosa.api.alignment.polar.tppa
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment
 import nebulosa.job.manager.Task
 
-data class TPPAAlignmentTask(
+data class TPPATask(
     @JvmField val job: TPPAJob,
     @JvmField val alignment: ThreePointPolarAlignment,
 ) : Task {

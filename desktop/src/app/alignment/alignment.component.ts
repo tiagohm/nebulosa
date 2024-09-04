@@ -178,7 +178,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 						this.tppaResult.failed = true
 					}
 
-					if (event.capture && event.capture.state !== 'CAPTURE_FINISHED') {
+					if (event.capture.state !== 'CAPTURE_FINISHED') {
 						this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
 					}
 				})

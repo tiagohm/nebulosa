@@ -1,6 +1,5 @@
 package nebulosa.guiding
 
-import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.time.Duration
 
 interface Guider : AutoCloseable {
@@ -35,7 +34,7 @@ interface Guider : AutoCloseable {
 
     fun dither(amount: Double, raOnly: Boolean = false)
 
-    fun waitForSettle(cancellationToken: CancellationToken = CancellationToken.NONE)
+    fun waitForSettle()
 
     companion object {
 
