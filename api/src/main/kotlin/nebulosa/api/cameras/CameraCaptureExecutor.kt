@@ -18,6 +18,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executor
 
 @Component
 @Subscriber
@@ -26,18 +27,18 @@ class CameraCaptureExecutor(
     private val guider: Guider,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val calibrationFrameService: CalibrationFrameService,
-) : Consumer<CameraCaptureEvent>, CameraEventAware, WheelEventAware {
+) : Consumer<CameraCaptureEvent>, CameraEventAware, WheelEventAware, Executor by threadPoolTaskExecutor {
 
     private val jobs = ConcurrentHashMap.newKeySet<CameraCaptureJob>(2)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleCameraEvent(event: CameraEvent) {
-        jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
+        jobs.find { it.camera === event.device }?.handleCameraEvent(event)
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleFilterWheelEvent(event: FilterWheelEvent) {
-        jobs.find { it.task.wheel === event.device }?.handleFilterWheelEvent(event)
+        jobs.find { it.wheel === event.device }?.handleFilterWheelEvent(event)
     }
 
     override fun accept(event: CameraCaptureEvent) {
@@ -50,36 +51,30 @@ class CameraCaptureExecutor(
         mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null, rotator: Rotator? = null
     ) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
-        check(jobs.none { it.task.camera === camera }) { "${camera.name} Camera Capture is already in progress" }
+        check(jobs.none { it.camera === camera }) { "${camera.name} Camera Capture is already in progress" }
 
         val liveStackingManager = CameraLiveStackingManager(calibrationFrameService)
-        val task = CameraCaptureTask(
-            camera, request, guider, false, threadPoolTaskExecutor,
-            liveStackingManager, mount, wheel, focuser, rotator
-        )
 
-        task.subscribe(this)
-
-        with(CameraCaptureJob(task)) {
+        with(CameraCaptureJob(this, camera, request, guider, liveStackingManager, mount, wheel, focuser, rotator)) {
+            val completable = runAsync(threadPoolTaskExecutor)
             jobs.add(this)
-            whenComplete { _, _ -> jobs.remove(this); liveStackingManager.close() }
-            start()
+            completable.whenComplete { _, _ -> jobs.remove(this); liveStackingManager.close() }
         }
     }
 
     fun pause(camera: Camera) {
-        jobs.find { it.task.camera === camera }?.pause()
+        jobs.find { it.camera === camera }?.pause()
     }
 
     fun unpause(camera: Camera) {
-        jobs.find { it.task.camera === camera }?.unpause()
+        jobs.find { it.camera === camera }?.unpause()
     }
 
     fun stop(camera: Camera) {
-        jobs.find { it.task.camera === camera }?.stop()
+        jobs.find { it.camera === camera }?.stop()
     }
 
     fun status(camera: Camera): CameraCaptureEvent? {
-        return jobs.find { it.task.camera === camera }?.task?.get()
+        return jobs.find { it.camera === camera }?.status
     }
 }

@@ -7,7 +7,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 class CancellationToken private constructor(private val completable: CompletableFuture<CancellationSource>?) :
-    Pauser(), AutoCloseable, Future<CancellationSource> {
+    Pauser(), Cancellable, Future<CancellationSource>, AutoCloseable {
 
     constructor() : this(CompletableFuture<CancellationSource>())
 
@@ -48,16 +48,12 @@ class CancellationToken private constructor(private val completable: Completable
         listeners.clear()
     }
 
-    fun cancel() {
-        cancel(true)
-    }
-
     override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
         return cancel(CancellationSource.Cancel(mayInterruptIfRunning))
     }
 
     @Synchronized
-    fun cancel(source: CancellationSource): Boolean {
+    override fun cancel(source: CancellationSource): Boolean {
         unpause()
         completable?.complete(source) ?: return false
         return true
@@ -80,7 +76,9 @@ class CancellationToken private constructor(private val completable: Completable
     }
 
     fun throwIfCancelled() {
-        if (isCancelled) throw CancellationException()
+        if (isCancelled) {
+            throw CancellationException()
+        }
     }
 
     override fun close() {

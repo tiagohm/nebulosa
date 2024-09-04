@@ -1,5 +1,6 @@
 package nebulosa.api.alignment.polar.tppa
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import nebulosa.api.beans.converters.angle.DeclinationSerializer
 import nebulosa.api.beans.converters.angle.RightAscensionSerializer
@@ -18,7 +19,7 @@ data class TPPAEvent(
     @JvmField @JsonSerialize(using = DeclinationSerializer::class) var totalError: Angle = 0.0,
     @JvmField var azimuthErrorDirection: String = "",
     @JvmField var altitudeErrorDirection: String = "",
-    @JvmField val capture: CameraCaptureEvent = CameraCaptureEvent(camera),
+    @JvmField @field:JsonIgnoreProperties("camera") val capture: CameraCaptureEvent = CameraCaptureEvent(camera),
     @JvmField var pausing: Boolean = false,
 ) : MessageEvent {
 

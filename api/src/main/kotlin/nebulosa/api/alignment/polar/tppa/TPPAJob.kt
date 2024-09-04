@@ -58,7 +58,7 @@ data class TPPAJob(
     private val alignment = ThreePointPolarAlignment(solver, longitude, latitude)
     private val cameraExposureTask = CameraExposureTask(this, camera, cameraRequest)
     private val settleDelayTask = DelayTask(this, SETTLE_TIME)
-    private val alignmentTask = TPPAAlignmentTask(this, alignment)
+    private val tppaTask = TPPATask(this, alignment)
     private val mountTrackTask = MountTrackTask(this, mount, true)
     private val mountMoveTask = MountMoveTask(this, mount, mountMoveRequest)
     private val mountMoveState = BooleanArray(3)
@@ -74,7 +74,7 @@ data class TPPAJob(
         add(mountMoveTask)
         add(settleDelayTask)
         add(cameraExposureTask)
-        add(alignmentTask)
+        add(tppaTask)
     }
 
     override fun handleCameraEvent(event: CameraEvent) {
@@ -107,7 +107,7 @@ data class TPPAJob(
             status.capture.savedPath = null
             status.state = TPPAState.EXPOSURING
             tppaExecutor.accept(status)
-        } else if (task === alignmentTask) {
+        } else if (task === tppaTask) {
             status.state = TPPAState.SOLVING
             tppaExecutor.accept(status)
         }

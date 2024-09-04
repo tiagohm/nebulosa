@@ -3,10 +3,7 @@ package nebulosa.api.alignment.polar.darv
 import nebulosa.api.cameras.AutoSubFolderMode
 import nebulosa.api.cameras.CameraCaptureState
 import nebulosa.api.cameras.CameraEventAware
-import nebulosa.api.cameras.CameraExposureElapsed
 import nebulosa.api.cameras.CameraExposureEvent
-import nebulosa.api.cameras.CameraExposureFinished
-import nebulosa.api.cameras.CameraExposureStarted
 import nebulosa.api.cameras.CameraExposureTask
 import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.guiding.GuidePulseTask
@@ -69,12 +66,7 @@ data class DARVJob(
                 status.capture.handleCameraDelayEvent(event, CameraCaptureState.EXPOSURING)
             }
             is CameraExposureEvent -> {
-                when (event) {
-                    is CameraExposureStarted -> status.capture.handleCameraExposureStarted(event)
-                    is CameraExposureFinished -> status.capture.handleCameraExposureFinished(event)
-                    is CameraExposureElapsed -> status.capture.handleCameraExposureElapsed(event)
-                }
-
+                status.capture.handleCameraExposureEvent(event)
                 status.capture.captureRemainingTime = status.capture.stepRemainingTime
                 status.capture.captureElapsedTime = status.capture.stepElapsedTime
                 status.capture.captureProgress = status.capture.stepProgress

@@ -27,7 +27,7 @@ export interface DARVEvent extends MessageEvent {
 	camera: Camera
 	state: DARVState
 	direction?: GuideDirection
-	capture: CameraCaptureEvent
+	capture: Omit<CameraCaptureEvent, 'camera'>
 }
 
 export interface TPPAStart {
@@ -62,7 +62,7 @@ export interface TPPAEvent extends MessageEvent {
 	totalError: Angle
 	azimuthErrorDirection: string
 	altitudeErrorDirection: string
-	capture?: CameraCaptureEvent
+	capture: Omit<CameraCaptureEvent, 'camera'>
 }
 
 export interface DARVResult {

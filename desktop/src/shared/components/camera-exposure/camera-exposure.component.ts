@@ -25,7 +25,7 @@ export class CameraExposureComponent {
 		return this.state
 	}
 
-	handleCameraCaptureEvent(event: CameraCaptureEvent, looping: boolean = false) {
+	handleCameraCaptureEvent(event: Omit<CameraCaptureEvent, 'camera'>, looping: boolean = false) {
 		this.capture.elapsedTime = event.captureElapsedTime
 		this.capture.remainingTime = event.captureRemainingTime
 		this.capture.progress = event.captureProgress
