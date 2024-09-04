@@ -1,9 +1,11 @@
 package nebulosa.api.focusers
 
 import nebulosa.indi.device.focuser.Focuser
+import nebulosa.job.manager.Job
 import kotlin.math.abs
 
 data class FocuserMoveRelativeTask(
+    override val job: Job,
     override val focuser: Focuser,
     @JvmField val offset: Int,
 ) : AbstractFocuserMoveTask() {

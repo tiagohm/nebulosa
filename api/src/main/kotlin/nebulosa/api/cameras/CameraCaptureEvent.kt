@@ -2,6 +2,8 @@ package nebulosa.api.cameras
 
 import nebulosa.api.message.MessageEvent
 import nebulosa.indi.device.camera.Camera
+import nebulosa.job.manager.TimedTaskEvent
+import nebulosa.job.manager.delay.DelayEvent
 import java.nio.file.Path
 
 data class CameraCaptureEvent(
@@ -21,4 +23,32 @@ data class CameraCaptureEvent(
 ) : MessageEvent {
 
     override val eventName = "CAMERA.CAPTURE_ELAPSED"
+
+    private fun handleTimedTaskEvent(event: TimedTaskEvent) {
+        stepRemainingTime = event.remainingTime
+        stepElapsedTime = event.elapsedTime
+        stepProgress = event.progress
+    }
+
+    fun handleCameraExposureStarted(event: CameraExposureStarted) {
+        handleTimedTaskEvent(event)
+        state = CameraCaptureState.EXPOSURE_STARTED
+        exposureCount++
+    }
+
+    fun handleCameraExposureFinished(event: CameraExposureFinished) {
+        handleTimedTaskEvent(event)
+        state = CameraCaptureState.EXPOSURE_FINISHED
+        savedPath = event.savedPath
+    }
+
+    fun handleCameraExposureElapsed(event: CameraExposureElapsed) {
+        handleTimedTaskEvent(event)
+        state = CameraCaptureState.EXPOSURING
+    }
+
+    fun handleCameraDelayEvent(event: DelayEvent, newState: CameraCaptureState = CameraCaptureState.WAITING) {
+        handleTimedTaskEvent(event)
+        state = newState
+    }
 }

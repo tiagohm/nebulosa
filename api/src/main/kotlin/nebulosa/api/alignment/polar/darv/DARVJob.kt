@@ -1,7 +1,9 @@
 package nebulosa.api.alignment.polar.darv
 
 import nebulosa.api.cameras.AutoSubFolderMode
+import nebulosa.api.cameras.CameraCaptureState
 import nebulosa.api.cameras.CameraEventAware
+import nebulosa.api.cameras.CameraExposureElapsed
 import nebulosa.api.cameras.CameraExposureEvent
 import nebulosa.api.cameras.CameraExposureFinished
 import nebulosa.api.cameras.CameraExposureStarted
@@ -13,7 +15,6 @@ import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.job.manager.AbstractJob
-import nebulosa.job.manager.Job
 import nebulosa.job.manager.SplitTask
 import nebulosa.job.manager.Task
 import nebulosa.job.manager.delay.DelayEvent
@@ -39,14 +40,17 @@ data class DARVJob(
     private val direction = if (request.reversed) request.direction.reversed else request.direction
     private val guidePulseDuration = request.capture.exposureTime.dividedBy(2L)
 
-    private val cameraExposureTask = CameraExposureTask(camera, cameraExposureRequest)
-    private val delayTask = DelayTask(request.capture.exposureDelay)
-    private val forwardGuidePulseTask = GuidePulseTask(guideOutput, GuidePulseRequest(direction, guidePulseDuration))
-    private val backwardGuidePulseTask = GuidePulseTask(guideOutput, GuidePulseRequest(direction.reversed, guidePulseDuration))
+    private val cameraExposureTask = CameraExposureTask(this, camera, cameraExposureRequest)
+    private val delayTask = DelayTask(this, request.capture.exposureDelay)
+    private val forwardGuidePulseTask = GuidePulseTask(this, guideOutput, GuidePulseRequest(direction, guidePulseDuration))
+    private val backwardGuidePulseTask = GuidePulseTask(this, guideOutput, GuidePulseRequest(direction.reversed, guidePulseDuration))
     private val delayAndGuidePulseTask = DelayAndGuidePulseTask()
     private val task = SplitTask(listOf(cameraExposureTask, delayAndGuidePulseTask), darvExecutor)
 
     @JvmField val status = DARVEvent(camera)
+
+    inline val savedPath
+        get() = status.capture.savedPath
 
     init {
         status.capture.exposureAmount = 1
@@ -62,26 +66,22 @@ data class DARVJob(
                 else if (event.task === forwardGuidePulseTask.delayTask) DARVState.FORWARD
                 else DARVState.BACKWARD
 
-                with(status.capture) {
-                    stepElapsedTime = event.elapsedTime
-                    stepRemainingTime = event.remainingTime
-                    stepProgress = event.progress
-                }
+                status.capture.handleCameraDelayEvent(event, CameraCaptureState.EXPOSURING)
             }
             is CameraExposureEvent -> {
-                with(status.capture) {
-                    captureRemainingTime = event.remainingTime
-                    captureElapsedTime = event.elapsedTime
-                    captureProgress = event.progress
+                when (event) {
+                    is CameraExposureStarted -> status.capture.handleCameraExposureStarted(event)
+                    is CameraExposureFinished -> status.capture.handleCameraExposureFinished(event)
+                    is CameraExposureElapsed -> status.capture.handleCameraExposureElapsed(event)
                 }
 
-                if (event is CameraExposureStarted) {
-                    status.capture.exposureCount++
-                } else if (event is CameraExposureFinished) {
-                    status.capture.savedPath = event.savedPath
-                    darvExecutor.accept(status.capture)
-                }
+                status.capture.captureRemainingTime = status.capture.stepRemainingTime
+                status.capture.captureElapsedTime = status.capture.stepElapsedTime
+                status.capture.captureProgress = status.capture.stepProgress
+
+                darvExecutor.accept(status.capture)
             }
+            else -> return
         }
 
         darvExecutor.accept(status)
@@ -101,14 +101,14 @@ data class DARVJob(
 
     private inner class DelayAndGuidePulseTask : Task {
 
-        override fun execute(job: Job) {
-            delayTask.execute(job)
+        override fun run() {
+            delayTask.run()
 
             status.direction = forwardGuidePulseTask.request.direction
-            forwardGuidePulseTask.execute(job)
+            forwardGuidePulseTask.run()
 
             status.direction = backwardGuidePulseTask.request.direction
-            backwardGuidePulseTask.execute(job)
+            backwardGuidePulseTask.run()
         }
     }
 

@@ -11,7 +11,7 @@ import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-abstract class AbstractJob : Job, CancellationListener, PauseListener {
+abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
 
     @Volatile private var head: TaskNode? = null
     @Volatile private var tail: TaskNode? = null
@@ -56,16 +56,16 @@ abstract class AbstractJob : Job, CancellationListener, PauseListener {
 
     protected open fun isLoop() = false
 
-    protected open fun canNext(current: Task, next: Task?) = true
+    protected open fun canRun(prev: Task?, current: Task) = true
 
     protected open fun canPause(task: Task) = true
 
-    final override fun onCancel(source: CancellationSource) {
+    override fun onCancel(source: CancellationSource) {
         cancelled.set(true)
         currentTask?.onCancel(source)
     }
 
-    final override fun onPause(paused: Boolean) {
+    override fun onPause(paused: Boolean) {
         if (paused) {
             pauseLatch.countUp()
         } else {
@@ -81,36 +81,37 @@ abstract class AbstractJob : Job, CancellationListener, PauseListener {
 
             beforeStart()
 
+            var prev: TaskNode? = null
+
             while (current.get() != null && isRunning && !isCancelled) {
                 val (task, _, next) = current.get()
 
                 checkIfPaused(task)
-                beforeTask(task)
 
-                var exception: Throwable? = null
+                if (canRun(prev?.item, task)) {
+                    beforeTask(task)
 
-                try {
-                    taskCount++
-                    task.execute(this)
-                } catch (e: Throwable) {
-                    LOG.error("task execution failed", e)
-                    exception = e
-                }
+                    var exception: Throwable? = null
 
-                if (!afterTask(task, exception) || isCancelled) {
-                    break
-                }
-
-                checkIfPaused(task)
-
-                if (next != null) {
-                    var n = next
-
-                    while (n != null && !canNext(task, n.item)) {
-                        n = next.next
+                    try {
+                        taskCount++
+                        task.run()
+                    } catch (e: Throwable) {
+                        LOG.error("task execution failed", e)
+                        exception = e
                     }
 
-                    current.set(n)
+                    if (!afterTask(task, exception) || isCancelled) {
+                        break
+                    }
+
+                    checkIfPaused(task)
+
+                    prev = current.get()
+                }
+
+                if (next != null) {
+                    current.set(next)
                 } else if (isLoop()) {
                     loopCount++
                     current.set(head)
@@ -124,18 +125,6 @@ abstract class AbstractJob : Job, CancellationListener, PauseListener {
 
             current.set(null)
         }
-    }
-
-    override fun stop() {
-        onCancel(CancellationSource.Cancel(true))
-    }
-
-    override fun pause() {
-        onPause(true)
-    }
-
-    override fun unpause() {
-        onPause(false)
     }
 
     fun runAsync(executor: Executor = EXECUTOR): CompletableFuture<Void> {

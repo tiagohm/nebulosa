@@ -13,6 +13,4 @@ sealed interface ThreePointPolarAlignmentResult {
     ) : ThreePointPolarAlignmentResult
 
     data class NoPlateSolution(@JvmField val exception: PlateSolverException?) : ThreePointPolarAlignmentResult
-
-    data object Cancelled : ThreePointPolarAlignmentResult
 }

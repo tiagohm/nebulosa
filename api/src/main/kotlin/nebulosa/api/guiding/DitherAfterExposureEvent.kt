@@ -1,10 +1,12 @@
 package nebulosa.api.guiding
 
-import java.time.Duration
+import nebulosa.job.manager.TaskEvent
 
-data class DitherAfterExposureEvent(
-    @JvmField val task: DitherAfterExposureTask,
-    @JvmField val state: DitherAfterExposureState = DitherAfterExposureState.IDLE,
-    @JvmField val dx: Double = 0.0, @JvmField val dy: Double = 0.0,
-    @JvmField val elapsedTime: Duration = Duration.ZERO,
-)
+sealed interface DitherAfterExposureEvent : TaskEvent {
+
+    override val task: DitherAfterExposureTask
+
+    val dx: Double
+
+    val dy: Double
+}

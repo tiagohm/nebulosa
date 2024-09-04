@@ -56,19 +56,13 @@ data class ThreePointPolarAlignment(
         compensateRefraction: Boolean = false,
         cancellationToken: CancellationToken = CancellationToken.NONE,
     ): ThreePointPolarAlignmentResult {
-        if (cancellationToken.isCancelled) {
-            return Cancelled
-        }
-
         val solution = try {
             solver.solve(path, null, rightAscension, declination, radius, cancellationToken = cancellationToken)
         } catch (e: PlateSolverException) {
             return NoPlateSolution(e)
         }
 
-        if (cancellationToken.isCancelled) {
-            return Cancelled
-        } else if (!solution.solved) {
+        if (!solution.solved) {
             return NoPlateSolution(null)
         } else {
             val time = UTC.now()

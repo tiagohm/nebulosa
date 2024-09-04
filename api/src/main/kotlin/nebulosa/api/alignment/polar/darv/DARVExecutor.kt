@@ -44,7 +44,7 @@ class DARVExecutor(
         check(jobs.none { it.guideOutput === guideOutput }) { "${camera.name} DARV Job is already in progress" }
 
         with(DARVJob(this, camera, guideOutput, request)) {
-            val completable = runAsync(this@DARVExecutor)
+            val completable = runAsync(threadPoolTaskExecutor)
             jobs.add(this)
             completable.whenComplete { _, _ -> jobs.remove(this) }
         }

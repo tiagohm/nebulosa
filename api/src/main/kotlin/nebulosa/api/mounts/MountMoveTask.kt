@@ -1,64 +1,51 @@
 package nebulosa.api.mounts
 
-import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.tasks.AbstractTask
-import nebulosa.api.tasks.delay.DelayEvent
-import nebulosa.api.tasks.delay.DelayTask
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.Mount
+import nebulosa.job.manager.Job
+import nebulosa.job.manager.Task
+import nebulosa.job.manager.delay.DelayTask
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
-import nebulosa.util.concurrency.cancellation.CancellationListener
+import nebulosa.util.Startable
+import nebulosa.util.Stoppable
 import nebulosa.util.concurrency.cancellation.CancellationSource
-import nebulosa.util.concurrency.cancellation.CancellationToken
 
 data class MountMoveTask(
+    @JvmField val job: Job,
     @JvmField val mount: Mount,
     @JvmField val request: MountMoveRequest,
-) : AbstractTask<MountMoveEvent>(), CancellationListener, Consumer<DelayEvent> {
+) : Task, Startable, Stoppable {
 
-    private val delayTask = DelayTask(request.duration)
+    @JvmField val delayTask = DelayTask(job, request.duration)
 
-    init {
-        delayTask.subscribe(this)
-    }
+    override fun run() {
+        if (!job.isCancelled && delayTask.durationInMilliseconds > 0) {
+            LOG.debug { "Mount Move started. mount=$mount, request=$request" }
 
-    override fun execute(cancellationToken: CancellationToken) {
-        if (!cancellationToken.isCancelled && request.duration.toMillis() > 0) {
             mount.slewRates.takeIf { !request.speed.isNullOrBlank() }
                 ?.find { it.name == request.speed }
                 ?.also { mount.slewRate(it) }
 
-            mount.move(request.direction, true)
+            start()
+            delayTask.run()
+            stop()
 
-            LOG.info("Mount Move started. mount={}, request={}", mount, request)
-
-            try {
-                cancellationToken.listen(this)
-                delayTask.execute(cancellationToken)
-            } finally {
-                stop()
-                cancellationToken.unlisten(this)
-            }
-
-            LOG.info("Mount Move finished. mount={}, request={}", mount, request)
+            LOG.debug { "Mount Move finished. mount=$mount, request=$request" }
         }
     }
 
     override fun onCancel(source: CancellationSource) {
+        delayTask.onCancel(source)
         stop()
     }
 
-    fun stop() {
+    override fun start() {
+        mount.move(request.direction, true)
+    }
+
+    override fun stop() {
         mount.move(request.direction, false)
-    }
-
-    override fun accept(event: DelayEvent) {
-        onNext(MountMoveEvent(this, event.remainingTime, event.progress))
-    }
-
-    override fun close() {
-        delayTask.close()
-        super.close()
     }
 
     companion object {

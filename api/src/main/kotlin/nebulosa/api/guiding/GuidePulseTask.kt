@@ -11,6 +11,7 @@ import nebulosa.util.concurrency.cancellation.CancellationSource
 import java.time.Duration
 
 data class GuidePulseTask(
+    @JvmField val job: Job,
     @JvmField val guideOutput: GuideOutput,
     @JvmField val request: GuidePulseRequest,
 ) : Task {
@@ -18,12 +19,12 @@ data class GuidePulseTask(
     private val direction = request.direction
     private val duration = request.duration.toMillis()
 
-    @JvmField val delayTask = DelayTask(duration)
+    @JvmField val delayTask = DelayTask(job, duration)
 
-    override fun execute(job: Job) {
+    override fun run() {
         if (!job.isCancelled && guideOutput.pulseGuide(request.duration, request.direction)) {
             LOG.debug { "Guide Pulse started. guideOutput=$guideOutput, duration=$duration ms, direction=$direction" }
-            delayTask.execute(job)
+            delayTask.run()
             LOG.debug { "Guide Pulse finished. guideOutput=$guideOutput, duration=$duration ms, direction=$direction" }
         }
     }
