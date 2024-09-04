@@ -27,7 +27,7 @@ class CancellationTokenTest {
         token.listen { source = it }
         token.cancel()
         token.get() shouldBe source
-        source shouldBe CancellationSource.Cancel(true)
+        source shouldBe CancellationSource.DEFAULT
         token.isCancelled.shouldBeTrue()
         token.isDone.shouldBeTrue()
     }
@@ -50,7 +50,7 @@ class CancellationTokenTest {
         val token = CancellationToken()
         token.cancel()
         token.listen { source = it }
-        token.get() shouldBe CancellationSource.Cancel(true)
+        token.get() shouldBe CancellationSource.DEFAULT
         source shouldBe CancellationSource.Listen
         token.isCancelled.shouldBeTrue()
         token.isDone.shouldBeTrue()

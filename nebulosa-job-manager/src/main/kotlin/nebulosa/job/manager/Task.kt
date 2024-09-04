@@ -4,9 +4,7 @@ import nebulosa.util.concurrency.cancellation.CancellationListener
 import nebulosa.util.concurrency.cancellation.CancellationSource
 import nebulosa.util.concurrency.latch.PauseListener
 
-fun interface Task : CancellationListener, PauseListener {
-
-    fun execute(job: Job)
+fun interface Task : CancellationListener, PauseListener, Runnable {
 
     override fun onCancel(source: CancellationSource) = Unit
 

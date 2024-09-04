@@ -11,6 +11,7 @@ import nebulosa.indi.device.mount.Mount
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
@@ -19,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap
 class TPPAExecutor(
     private val messageService: MessageService,
     private val httpClient: OkHttpClient,
+    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
 ) : Consumer<MessageEvent>, CameraEventAware {
 
     private val jobs = ConcurrentHashMap.newKeySet<TPPAJob>(1)
@@ -29,40 +31,38 @@ class TPPAExecutor(
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleCameraEvent(event: CameraEvent) {
-        jobs.find { it.task.camera === event.device }?.handleCameraEvent(event)
+        jobs.find { it.camera === event.device }?.handleCameraEvent(event)
     }
 
     @Synchronized
     fun execute(camera: Camera, mount: Mount, request: TPPAStartRequest) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(mount.connected) { "${mount.name} Mount is not connected" }
-        check(jobs.none { it.task.camera === camera }) { "${camera.name} TPPA Job is already in progress" }
-        check(jobs.none { it.task.mount === mount }) { "${camera.name} TPPA Job is already in progress" }
+        check(jobs.none { it.camera === camera }) { "${camera.name} TPPA Job is already in progress" }
+        check(jobs.none { it.mount === mount }) { "${camera.name} TPPA Job is already in progress" }
 
         val solver = request.plateSolver.get(httpClient)
-        val task = TPPATask(camera, solver, request, mount)
-        task.subscribe(this)
 
-        with(TPPAJob(task)) {
+        with(TPPAJob(this, camera, solver, request, mount)) {
+            val completable = runAsync(threadPoolTaskExecutor)
             jobs.add(this)
-            whenComplete { _, _ -> jobs.remove(this) }
-            start()
+            completable.whenComplete { _, _ -> jobs.remove(this) }
         }
     }
 
     fun stop(camera: Camera) {
-        jobs.find { it.task.camera === camera }?.stop()
+        jobs.find { it.camera === camera }?.stop()
     }
 
     fun pause(camera: Camera) {
-        jobs.find { it.task.camera === camera }?.pause()
+        jobs.find { it.camera === camera }?.pause()
     }
 
     fun unpause(camera: Camera) {
-        jobs.find { it.task.camera === camera }?.unpause()
+        jobs.find { it.camera === camera }?.unpause()
     }
 
     fun status(camera: Camera): TPPAEvent? {
-        return jobs.find { it.task.camera === camera }?.task?.get() as? TPPAEvent
+        return jobs.find { it.camera === camera }?.status
     }
 }

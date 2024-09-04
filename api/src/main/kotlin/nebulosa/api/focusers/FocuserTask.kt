@@ -1,9 +1,9 @@
 package nebulosa.api.focusers
 
-import nebulosa.api.tasks.Task
 import nebulosa.indi.device.focuser.Focuser
+import nebulosa.job.manager.Task
 
-interface FocuserMoveTask : Task, FocuserEventAware {
+sealed interface FocuserTask : Task, FocuserEventAware {
 
     val focuser: Focuser
 }

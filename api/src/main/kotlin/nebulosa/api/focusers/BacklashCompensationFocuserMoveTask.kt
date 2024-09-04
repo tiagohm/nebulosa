@@ -2,19 +2,20 @@ package nebulosa.api.focusers
 
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserEvent
+import nebulosa.job.manager.Job
 import nebulosa.log.loggerFor
-import nebulosa.util.concurrency.cancellation.CancellationToken
 
 /**
- * This decorator will wrap an absolute backlash [compensation] model around the [focuser].
+ * This task will wrap an absolute backlash [compensation] model around the [focuser].
  * On each move an absolute backlash compensation value will be applied, if the focuser changes its moving direction
  * The returned position will then accommodate for this backlash and simulating the position without backlash.
  */
 data class BacklashCompensationFocuserMoveTask(
+    @JvmField val job: Job,
     override val focuser: Focuser,
-    @JvmField @Volatile var position: Int,
+    @JvmField val position: Int,
     @JvmField val compensation: BacklashCompensation,
-) : FocuserMoveTask {
+) : FocuserTask {
 
     enum class OvershootDirection {
         NONE,
@@ -25,7 +26,7 @@ data class BacklashCompensationFocuserMoveTask(
     @Volatile private var offset = 0
     @Volatile private var lastDirection = OvershootDirection.NONE
 
-    private val task = FocuserMoveAbsoluteTask(focuser, 0)
+    private val task = FocuserMoveAbsoluteTask(job, focuser, 0)
 
     /**
      * Returns the adjusted position based on the amount of backlash compensation.
@@ -37,8 +38,8 @@ data class BacklashCompensationFocuserMoveTask(
         task.handleFocuserEvent(event)
     }
 
-    override fun execute(cancellationToken: CancellationToken) {
-        if (!cancellationToken.isCancelled && focuser.connected && !focuser.moving) {
+    override fun run() {
+        if (!job.isCancelled && focuser.connected && !focuser.moving) {
             val startPosition = focuser.position
 
             val newPosition = when (compensation.mode) {
@@ -69,7 +70,7 @@ data class BacklashCompensationFocuserMoveTask(
                             LOG.warn("overshooting position is above maximum ${focuser.maxPosition}, skipping overshoot")
                         } else {
                             LOG.info("overshooting from $startPosition to overshoot position $overshoot using a compensation of $backlashCompensation")
-                            moveFocuser(overshoot, cancellationToken)
+                            moveFocuser(overshoot)
                             LOG.info("moving back to position $position")
                         }
                     }
@@ -83,27 +84,16 @@ data class BacklashCompensationFocuserMoveTask(
 
             LOG.info("moving to position {} using {} backlash compensation", newPosition, compensation.mode)
 
-            moveFocuser(newPosition, cancellationToken)
+            moveFocuser(newPosition)
         }
     }
 
-    private fun moveFocuser(position: Int, cancellationToken: CancellationToken) {
+    private fun moveFocuser(position: Int) {
         if (position > 0 && position <= focuser.maxPosition) {
             lastDirection = determineMovingDirection(focuser.position, position)
             task.position = position
-            task.execute(cancellationToken)
+            task.run()
         }
-    }
-
-    override fun reset() {
-        task.reset()
-
-        offset = 0
-        lastDirection = OvershootDirection.NONE
-    }
-
-    override fun close() {
-        task.close()
     }
 
     private fun determineMovingDirection(prevPosition: Int, newPosition: Int): OvershootDirection {

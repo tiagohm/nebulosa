@@ -1,15 +1,9 @@
 package nebulosa.api.cameras
 
-import nebulosa.job.manager.TaskEvent
+import nebulosa.job.manager.TimedTaskEvent
 import java.nio.file.Path
 
-sealed interface CameraExposureEvent : TaskEvent {
-
-    val elapsedTime: Long
-
-    val remainingTime: Long
-
-    val progress: Double
+sealed interface CameraExposureEvent : TimedTaskEvent {
 
     val savedPath: Path?
 }

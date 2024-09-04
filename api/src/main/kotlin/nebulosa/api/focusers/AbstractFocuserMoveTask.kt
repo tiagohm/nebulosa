@@ -4,13 +4,16 @@ import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.indi.device.focuser.FocuserMoveFailed
 import nebulosa.indi.device.focuser.FocuserMovingChanged
 import nebulosa.indi.device.focuser.FocuserPositionChanged
+import nebulosa.job.manager.Job
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.cancellation.CancellationListener
 import nebulosa.util.concurrency.cancellation.CancellationSource
-import nebulosa.util.concurrency.cancellation.CancellationToken
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 
-abstract class AbstractFocuserMoveTask : FocuserMoveTask, CancellationListener {
+sealed class AbstractFocuserMoveTask : FocuserTask, CancellationListener {
+
+    abstract val job: Job
 
     @JvmField protected val latch = CountUpDownLatch()
 
@@ -30,19 +33,14 @@ abstract class AbstractFocuserMoveTask : FocuserMoveTask, CancellationListener {
 
     protected abstract fun move()
 
-    override fun execute(cancellationToken: CancellationToken) {
-        if (!cancellationToken.isCancelled && focuser.connected && !focuser.moving && canMove()) {
-            try {
-                cancellationToken.listen(this)
-                LOG.info("Focuser move started. focuser={}", focuser)
-                latch.countUp()
-                move()
-                latch.await()
-            } finally {
-                moving = false
-                cancellationToken.unlisten(this)
-                LOG.info("Focuser move finished. focuser={}", focuser)
-            }
+    override fun run() {
+        if (!job.isCancelled && focuser.connected && !focuser.moving && canMove()) {
+            LOG.debug { "Focuser move started. focuser=$focuser" }
+            latch.countUp()
+            move()
+            latch.await()
+            moving = false
+            LOG.debug { "Focuser move finished. focuser=$focuser" }
         }
     }
 

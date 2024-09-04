@@ -10,15 +10,16 @@ import nebulosa.math.Angle
 
 data class TPPAEvent(
     @JvmField val camera: Camera,
-    @JvmField val state: TPPAState = TPPAState.IDLE,
-    @JvmField @field:JsonSerialize(using = RightAscensionSerializer::class) val rightAscension: Angle = 0.0,
-    @JvmField @field:JsonSerialize(using = DeclinationSerializer::class) val declination: Angle = 0.0,
-    @JvmField @field:JsonSerialize(using = DeclinationSerializer::class) val azimuthError: Angle = 0.0,
-    @JvmField @field:JsonSerialize(using = DeclinationSerializer::class) val altitudeError: Angle = 0.0,
-    @JvmField @JsonSerialize(using = DeclinationSerializer::class) val totalError: Angle = 0.0,
-    @JvmField val azimuthErrorDirection: String = "",
-    @JvmField val altitudeErrorDirection: String = "",
-    @JvmField val capture: CameraCaptureEvent? = null,
+    @JvmField var state: TPPAState = TPPAState.IDLE,
+    @JvmField @field:JsonSerialize(using = RightAscensionSerializer::class) var rightAscension: Angle = 0.0,
+    @JvmField @field:JsonSerialize(using = DeclinationSerializer::class) var declination: Angle = 0.0,
+    @JvmField @field:JsonSerialize(using = DeclinationSerializer::class) var azimuthError: Angle = 0.0,
+    @JvmField @field:JsonSerialize(using = DeclinationSerializer::class) var altitudeError: Angle = 0.0,
+    @JvmField @JsonSerialize(using = DeclinationSerializer::class) var totalError: Angle = 0.0,
+    @JvmField var azimuthErrorDirection: String = "",
+    @JvmField var altitudeErrorDirection: String = "",
+    @JvmField val capture: CameraCaptureEvent = CameraCaptureEvent(camera),
+    @JvmField var pausing: Boolean = false,
 ) : MessageEvent {
 
     override val eventName = "TPPA.ELAPSED"

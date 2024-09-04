@@ -1,15 +1,18 @@
 package nebulosa.api.wheels
 
-import nebulosa.api.tasks.Task
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import nebulosa.indi.device.filterwheel.FilterWheelMoveFailed
 import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
+import nebulosa.job.manager.Job
+import nebulosa.job.manager.Task
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
-import nebulosa.util.concurrency.cancellation.CancellationToken
+import nebulosa.util.concurrency.cancellation.CancellationSource
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 
 data class WheelMoveTask(
+    @JvmField val job: Job,
     @JvmField val wheel: FilterWheel,
     @JvmField val position: Int,
 ) : Task, WheelEventAware {
@@ -29,24 +32,24 @@ data class WheelMoveTask(
         }
     }
 
-    override fun execute(cancellationToken: CancellationToken) {
+    override fun run() {
         if (wheel.connected && position in 1..wheel.count && wheel.position != position) {
+            LOG.debug { "Wheel Move started. wheel=$wheel, position=$position" }
+
             initialPosition = wheel.position
 
-            LOG.info("Filter Wheel Move started. wheel={}, position={}", wheel, position)
+            latch.countUp()
+            wheel.moveTo(position)
+            latch.await()
 
-            try {
-                cancellationToken.listen(latch)
-                latch.countUp()
-                wheel.moveTo(position)
-                latch.await()
-            } finally {
-                cancellationToken.unlisten(latch)
-                LOG.info("Filter Wheel Move finished. wheel={}, position={}", wheel, position)
-            }
+            LOG.debug { "Wheel Move finished. wheel=$wheel, position=$position" }
         } else {
             LOG.warn("filter wheel not connected or invalid position. position={}, wheel={}", position, wheel)
         }
+    }
+
+    override fun onCancel(source: CancellationSource) {
+        latch.onCancel(source)
     }
 
     companion object {

@@ -11,4 +11,9 @@ interface CancellationSource {
     data object Close : CancellationSource
 
     data class Exceptionally(val exception: Throwable) : CancellationSource
+
+    companion object {
+
+        @JvmStatic val DEFAULT = Cancel(true)
+    }
 }
