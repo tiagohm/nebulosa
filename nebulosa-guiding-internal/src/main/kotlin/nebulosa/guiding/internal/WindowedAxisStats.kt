@@ -19,7 +19,7 @@ internal class WindowedAxisStats(private val autoWindowSize: Int = 0) : AxisStat
     fun removeOldestEntry() {
         if (count <= 0) return
 
-        val target = guidingEntries.first
+        val target = guidingEntries.first()
         val value = target.starPos
         val deltaTime = target.deltaTime
 
@@ -41,7 +41,7 @@ internal class WindowedAxisStats(private val autoWindowSize: Int = 0) : AxisStat
     }
 
     private fun adjustMinMaxValues() {
-        val target = guidingEntries.first
+        val target = guidingEntries.first()
         var recalNeeded = false
         var prev = target.starPos
 
