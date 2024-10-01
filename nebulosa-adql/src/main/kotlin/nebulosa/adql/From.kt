@@ -2,7 +2,7 @@ package nebulosa.adql
 
 import adql.query.from.ADQLTable
 
-data class From internal constructor(override val table: ADQLTable) : Table {
+data class From(override val table: ADQLTable) : Table {
 
     constructor(table: String) : this(ADQLTable(table))
 

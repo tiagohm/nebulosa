@@ -2,7 +2,7 @@ package nebulosa.adql
 
 import adql.query.operand.ADQLColumn
 
-data class Column internal constructor(override val operand: ADQLColumn) : Operand<ADQLColumn> {
+data class Column(override val operand: ADQLColumn) : Operand<ADQLColumn> {
 
     constructor(columnRef: String) : this(ADQLColumn(columnRef))
 

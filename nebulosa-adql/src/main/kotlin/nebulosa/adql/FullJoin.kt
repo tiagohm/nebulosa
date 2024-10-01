@@ -5,7 +5,7 @@ import adql.query.from.ADQLJoin
 import adql.query.from.OuterJoin
 import adql.query.from.OuterJoin as ADQLOuterJoin
 
-data class FullJoin internal constructor(override val table: ADQLJoin) : Table {
+data class FullJoin(override val table: ADQLJoin) : Table {
 
     constructor(left: Table, right: Table) : this(ADQLOuterJoin(left.table, right.table, OuterJoin.OuterType.FULL))
 

@@ -4,7 +4,7 @@ import adql.query.constraint.ADQLConstraint
 import adql.query.constraint.Comparison
 import adql.query.constraint.ComparisonOperator
 
-data class LessOrEqual internal constructor(override val constraint: ADQLConstraint) : WhereConstraint {
+data class LessOrEqual(override val constraint: ADQLConstraint) : WhereConstraint {
 
     constructor(left: Operand<*>, right: Operand<*>) : this(Comparison(left.operand, ComparisonOperator.LESS_OR_EQUAL, right.operand))
 

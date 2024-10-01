@@ -16,7 +16,7 @@ inline fun commandLine(action: CommandLine.Builder.() -> Unit): CommandLine {
     return CommandLine.Builder().also(action).get()
 }
 
-data class CommandLine internal constructor(
+class CommandLine internal constructor(
     private val builder: ProcessBuilder,
     private val listeners: LinkedHashSet<CommandLineListener>,
 ) : CompletableFuture<Int>(), CancellationListener {

@@ -5,7 +5,7 @@ import adql.query.operand.function.geometry.CircleFunction
 import nebulosa.math.Angle
 import nebulosa.math.toDegrees
 
-data class Circle internal constructor(override val operand: CircleFunction) : Region {
+data class Circle(override val operand: CircleFunction) : Region {
 
     constructor(x: Operand<*>, y: Operand<*>, radius: Operand<*>) : this(CircleFunction(StringConstant("ICRS"), x.operand, y.operand, radius.operand))
 
