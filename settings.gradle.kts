@@ -35,8 +35,8 @@ dependencyResolutionManagement {
             library("oshi", "com.github.oshi:oshi-core:6.6.3")
             library("jna", "net.java.dev.jna:jna:5.14.0")
             library("kotest", "io.kotest:kotest-assertions-core:5.9.1")
-            library("junit-api", "org.junit.jupiter:junit-jupiter-api:5.11.0")
-            library("junit-engine", "org.junit.jupiter:junit-jupiter-engine:5.11.0")
+            library("junit-api", "org.junit.jupiter:junit-jupiter-api:5.11.1")
+            library("junit-engine", "org.junit.jupiter:junit-jupiter-engine:5.11.1")
             bundle("netty", listOf("netty-transport", "netty-codec"))
             bundle("jackson", listOf("jackson-core", "jackson-jsr310", "jackson-kt"))
         }
