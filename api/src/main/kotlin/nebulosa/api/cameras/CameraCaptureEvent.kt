@@ -1,5 +1,6 @@
 package nebulosa.api.cameras
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import nebulosa.api.message.MessageEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.job.manager.TimedTaskEvent
@@ -23,7 +24,10 @@ data class CameraCaptureEvent(
 
     override val eventName = "CAMERA.CAPTURE_ELAPSED"
 
-    private fun handleTimedTaskEvent(event: TimedTaskEvent) {
+    @Volatile @field:JsonIgnore private var captureStartElapsedTime = 0L
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun handleTimedTaskEvent(event: TimedTaskEvent) {
         stepRemainingTime = event.remainingTime
         stepElapsedTime = event.elapsedTime
         stepProgress = event.progress
@@ -32,18 +36,41 @@ data class CameraCaptureEvent(
     fun handleCameraExposureStarted(event: CameraExposureStarted) {
         handleTimedTaskEvent(event)
         state = CameraCaptureState.EXPOSURE_STARTED
+        captureStartElapsedTime = captureElapsedTime
         exposureCount++
     }
 
     fun handleCameraExposureFinished(event: CameraExposureFinished) {
         handleTimedTaskEvent(event)
         state = CameraCaptureState.EXPOSURE_FINISHED
+        captureElapsedTime = captureStartElapsedTime + event.elapsedTime
         savedPath = event.savedPath
     }
 
     fun handleCameraExposureElapsed(event: CameraExposureElapsed) {
         handleTimedTaskEvent(event)
         state = CameraCaptureState.EXPOSURING
+        captureElapsedTime = captureStartElapsedTime + event.elapsedTime
+    }
+
+    fun handleCameraCaptureStarted(estimatedCaptureTime: Long = 0L) {
+        state = CameraCaptureState.CAPTURE_STARTED
+        captureRemainingTime = estimatedCaptureTime
+        captureElapsedTime = 0L
+        captureProgress = 0.0
+    }
+
+    fun handleCameraCaptureFinished() {
+        state = CameraCaptureState.CAPTURE_FINISHED
+        captureRemainingTime = 0L
+        captureProgress = 1.0
+    }
+
+    fun handleCameraDelayEvent(event: DelayEvent, newState: CameraCaptureState = CameraCaptureState.WAITING) {
+        handleTimedTaskEvent(event)
+        captureElapsedTime += event.waitTime
+        captureRemainingTime -= event.waitTime
+        state = newState
     }
 
     fun handleCameraExposureEvent(event: CameraExposureEvent) {
@@ -52,10 +79,9 @@ data class CameraCaptureEvent(
             is CameraExposureFinished -> handleCameraExposureFinished(event)
             is CameraExposureStarted -> handleCameraExposureStarted(event)
         }
-    }
 
-    fun handleCameraDelayEvent(event: DelayEvent, newState: CameraCaptureState = CameraCaptureState.WAITING) {
-        handleTimedTaskEvent(event)
-        state = newState
+        if (captureRemainingTime > 0L) {
+            captureProgress = captureElapsedTime.toDouble() / (captureElapsedTime + captureRemainingTime)
+        }
     }
 }

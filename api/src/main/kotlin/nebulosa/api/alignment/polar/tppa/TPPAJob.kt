@@ -3,12 +3,11 @@ package nebulosa.api.alignment.polar.tppa
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignmentResult
 import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraCaptureState
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.cameras.CameraExposureEvent
 import nebulosa.api.cameras.CameraExposureFinished
-import nebulosa.api.cameras.CameraExposureStarted
 import nebulosa.api.cameras.CameraExposureTask
+import nebulosa.api.message.MessageEvent
 import nebulosa.api.mounts.MountEventAware
 import nebulosa.api.mounts.MountMoveRequest
 import nebulosa.api.mounts.MountMoveTask
@@ -102,25 +101,27 @@ data class TPPAJob(
     override fun beforeTask(task: Task) {
         if (task === mountMoveTask) {
             status.state = TPPAState.SLEWING
-            tppaExecutor.accept(status)
+            status.send()
         } else if (task === cameraExposureTask) {
             status.capture.savedPath = null
             status.state = TPPAState.EXPOSURING
-            tppaExecutor.accept(status)
+            status.send()
         } else if (task === tppaTask) {
             status.state = TPPAState.SOLVING
-            tppaExecutor.accept(status)
+            status.send()
         }
     }
 
     override fun afterTask(task: Task, exception: Throwable?): Boolean {
-        if (task === mountMoveTask) {
-            status.rightAscension = task.mount.rightAscension
-            status.declination = task.mount.declination
-            status.state = TPPAState.SLEWED
-            tppaExecutor.accept(status)
-        } else if (task === cameraExposureTask) {
-            return status.capture.savedPath != null
+        if (exception == null) {
+            if (task === mountMoveTask) {
+                status.rightAscension = task.mount.rightAscension
+                status.declination = task.mount.declination
+                status.state = TPPAState.SLEWED
+                status.send()
+            } else if (task === cameraExposureTask) {
+                return status.capture.savedPath != null
+            }
         }
 
         return super.afterTask(task, exception)
@@ -129,7 +130,7 @@ data class TPPAJob(
     override fun onPause(paused: Boolean) {
         if (paused) {
             status.pausing = true
-            tppaExecutor.accept(status)
+            status.send()
         }
 
         super.onPause(paused)
@@ -138,7 +139,7 @@ data class TPPAJob(
     override fun beforePause(task: Task) {
         status.pausing = false
         status.state = TPPAState.PAUSED
-        tppaExecutor.accept(status)
+        status.send()
     }
 
     override fun accept(event: Any) {
@@ -146,21 +147,18 @@ data class TPPAJob(
 
         when (event) {
             is CameraExposureEvent -> {
-                if (event is CameraExposureStarted) {
-                    status.capture.state = CameraCaptureState.EXPOSURE_STARTED
-                    status.capture.exposureCount++
-                } else if (event is CameraExposureFinished) {
-                    status.capture.state = CameraCaptureState.EXPOSURE_FINISHED
-                    status.capture.savedPath = event.savedPath
-                    tppaExecutor.accept(status.capture)
+                status.capture.handleCameraExposureEvent(event)
+
+                if (event is CameraExposureFinished) {
+                    status.capture.send()
                 }
 
-                tppaExecutor.accept(status)
+                status.send()
             }
             is DelayEvent -> {
                 if (event.task === settleDelayTask) {
                     status.state = TPPAState.SETTLING
-                    tppaExecutor.accept(status)
+                    status.send()
                 }
             }
             is ThreePointPolarAlignmentResult.NeedMoreMeasurement -> {
@@ -168,13 +166,13 @@ data class TPPAJob(
                 status.rightAscension = event.rightAscension
                 status.declination = event.declination
                 status.state = TPPAState.SOLVED
-                tppaExecutor.accept(status)
+                status.send()
             }
             is ThreePointPolarAlignmentResult.NoPlateSolution -> {
                 noSolutionAttempts++
                 status.state = TPPAState.FAILED
 
-                tppaExecutor.accept(status)
+                status.send()
 
                 if (noSolutionAttempts >= MAX_ATTEMPTS) {
                     LOG.error("exhausted all attempts to plate solve")
@@ -205,7 +203,7 @@ data class TPPAJob(
                 LOG.debug { "TPPA aligned. azimuthError=${status.azimuthError.formatSignedDMS()}, altitudeError=${status.altitudeError.formatSignedDMS()}" }
 
                 status.state = TPPAState.COMPUTED
-                tppaExecutor.accept(status)
+                status.send()
             }
         }
     }
@@ -229,7 +227,12 @@ data class TPPAJob(
         }
 
         status.state = TPPAState.FINISHED
-        tppaExecutor.accept(status)
+        status.send()
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun MessageEvent.send() {
+        tppaExecutor.accept(this)
     }
 
     companion object {

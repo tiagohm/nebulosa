@@ -7,6 +7,7 @@ import nebulosa.api.cameras.CameraExposureEvent
 import nebulosa.api.cameras.CameraExposureTask
 import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.guiding.GuidePulseTask
+import nebulosa.api.message.MessageEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
@@ -71,12 +72,12 @@ data class DARVJob(
                 status.capture.captureElapsedTime = status.capture.stepElapsedTime
                 status.capture.captureProgress = status.capture.stepProgress
 
-                darvExecutor.accept(status.capture)
+                status.capture.send()
             }
             else -> return
         }
 
-        darvExecutor.accept(status)
+        status.send()
     }
 
     override fun handleCameraEvent(event: CameraEvent) {
@@ -89,6 +90,11 @@ data class DARVJob(
 
     override fun afterFinish() {
         LOG.debug { "DARV finished. camera=$camera, guideOutput=$guideOutput, request=$request" }
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun MessageEvent.send() {
+        darvExecutor.accept(this)
     }
 
     private inner class DelayAndGuidePulseTask : Task {

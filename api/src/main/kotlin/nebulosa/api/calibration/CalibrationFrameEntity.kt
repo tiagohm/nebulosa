@@ -47,7 +47,6 @@ data class CalibrationFrameEntity(
         else if (temperature < other.temperature) -1
         else if (filter != null && other.filter != null) filter!!.compareTo(other.filter!!)
         else if (filter == null) -1
-        else if (other.filter == null) 1
-        else 0
+        else 1
     }
 }

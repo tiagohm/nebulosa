@@ -43,14 +43,11 @@ data class CameraCaptureJob(
     private val shutterWheelMoveTask = if (wheel != null && request.shutterPosition > 0) WheelMoveTask(this, wheel, request.shutterPosition) else null
 
     @JvmField val status = CameraCaptureEvent(camera)
-    @JvmField val estimatedCaptureTime =
-        (request.exposureTime.toNanos() * request.exposureAmount + request.exposureDelay.toNanos() * (request.exposureAmount - 1)) / 1000L
-
-    @Volatile private var startCaptureElapsedTime = 0L
 
     init {
         status.exposureAmount = request.exposureAmount
 
+        shutterWheelMoveTask?.also(::add)
         add(delayTask)
         add(delayAndWaitForSettleSplitTask)
         add(cameraExposureTask)
@@ -70,23 +67,16 @@ data class CameraCaptureJob(
 
         camera.snoop(listOf(mount, wheel, focuser, rotator))
 
-        status.state = CameraCaptureState.CAPTURE_STARTED
-        status.captureRemainingTime = estimatedCaptureTime
-        status.captureElapsedTime = 0L
-        status.captureProgress = 0.0
-        cameraCaptureExecutor.accept(status)
+        val estimatedCaptureTime =
+            (request.exposureTime.toNanos() * request.exposureAmount + request.exposureDelay.toNanos() * (request.exposureAmount - 1)) / 1000L
 
-        if (request.frameType == FrameType.DARK) {
-            shutterWheelMoveTask?.run()
-        }
+        status.handleCameraCaptureStarted(estimatedCaptureTime)
+        status.send()
     }
 
     override fun afterFinish() {
-        status.state = CameraCaptureState.CAPTURE_FINISHED
-        status.captureRemainingTime = 0L
-        status.captureElapsedTime = estimatedCaptureTime
-        status.captureProgress = 1.0
-        cameraCaptureExecutor.accept(status)
+        status.handleCameraCaptureFinished()
+        status.send()
 
         liveStackerManager?.stop(request)
 
@@ -106,6 +96,8 @@ data class CameraCaptureJob(
             return status.exposureCount == 0
         } else if (current === delayAndWaitForSettleSplitTask) {
             return status.exposureCount > 0
+        } else if (current === shutterWheelMoveTask) {
+            return request.frameType == FrameType.DARK
         }
 
         return super.canRun(prev, current)
@@ -116,32 +108,21 @@ data class CameraCaptureJob(
             is DelayEvent -> {
                 if (event.task === delayTask) {
                     status.handleCameraDelayEvent(event)
-                    status.captureElapsedTime += event.waitTime
-                    status.captureRemainingTime -= event.waitTime
+                    status.send()
                 }
             }
             is CameraExposureEvent -> {
                 status.handleCameraExposureEvent(event)
 
-                if (event is CameraExposureStarted) {
-                    startCaptureElapsedTime = status.captureElapsedTime
-                } else {
-                    status.captureElapsedTime = startCaptureElapsedTime + event.elapsedTime
-
-                    if (event is CameraExposureFinished) {
-                        status.liveStackedPath = addFrameToLiveStacker(status.savedPath)
-                    }
+                if (event is CameraExposureFinished) {
+                    status.liveStackedPath = addFrameToLiveStacker(status.savedPath)
                 }
 
-                if (estimatedCaptureTime > 0L) {
-                    status.captureProgress = (estimatedCaptureTime - status.captureRemainingTime) / estimatedCaptureTime.toDouble()
-                }
-
-                cameraCaptureExecutor.accept(status)
+                status.send()
             }
             is DitherAfterExposureEvent -> {
                 status.state = CameraCaptureState.DITHERING
-                cameraCaptureExecutor.accept(status)
+                status.send()
             }
         }
     }
@@ -150,7 +131,7 @@ data class CameraCaptureJob(
         return if (path != null && liveStackerManager?.start(request, path) == true) {
             try {
                 status.state = CameraCaptureState.STACKING
-                cameraCaptureExecutor.accept(status)
+                status.send()
 
                 liveStackerManager.stack(request, path)
             } catch (_: Throwable) {
@@ -159,6 +140,11 @@ data class CameraCaptureJob(
         } else {
             null
         }
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun CameraCaptureEvent.send() {
+        cameraCaptureExecutor.accept(this)
     }
 
     companion object {
