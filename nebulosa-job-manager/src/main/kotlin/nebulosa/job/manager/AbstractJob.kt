@@ -75,6 +75,35 @@ abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
         currentTask?.onPause(paused)
     }
 
+    override fun runTask(task: Task, prev: Task?): TaskExecutionState {
+        checkIfPaused(task)
+
+        return if (isCancelled) {
+            TaskExecutionState.BREAK
+        } else if (canRun(prev, task)) {
+            beforeTask(task)
+
+            var exception: Throwable? = null
+
+            try {
+                taskCount++
+                task.run()
+            } catch (e: Throwable) {
+                LOG.error("task execution failed", e)
+                exception = e
+            }
+
+            if (!afterTask(task, exception) || isCancelled) {
+                TaskExecutionState.BREAK
+            } else {
+                checkIfPaused(task)
+                TaskExecutionState.OK
+            }
+        } else {
+            TaskExecutionState.CONTINUE
+        }
+    }
+
     final override fun run() {
         if (current.compareAndSet(null, requireNotNull(head))) {
             running.set(true)
@@ -85,29 +114,12 @@ abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
 
             while (current.get() != null && isRunning && !isCancelled) {
                 val (task, _, next) = current.get()
+                val state = runTask(task, prev?.item)
 
-                checkIfPaused(task)
-
-                if (canRun(prev?.item, task)) {
-                    beforeTask(task)
-
-                    var exception: Throwable? = null
-
-                    try {
-                        taskCount++
-                        task.run()
-                    } catch (e: Throwable) {
-                        LOG.error("task execution failed", e)
-                        exception = e
-                    }
-
-                    if (!afterTask(task, exception) || isCancelled) {
-                        break
-                    }
-
-                    checkIfPaused(task)
-
+                if (state == TaskExecutionState.OK) {
                     prev = current.get()
+                } else if (state == TaskExecutionState.BREAK) {
+                    break
                 }
 
                 if (next != null) {

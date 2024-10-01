@@ -27,7 +27,6 @@ data class CameraExposureTask(
 ) : Task, CameraEventAware {
 
     private val latch = CountUpDownLatch()
-
     private val outputPath = Files.createTempFile(camera.name, ".fits")
     private val formatter = CameraCaptureNamingFormatter(camera)
 
