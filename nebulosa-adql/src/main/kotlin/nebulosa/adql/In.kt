@@ -5,7 +5,7 @@ import adql.query.constraint.ADQLConstraint
 import adql.query.operand.ADQLOperand
 import adql.query.constraint.In as ADQLIn
 
-data class In internal constructor(override val constraint: ADQLConstraint) : WhereConstraint {
+data class In(override val constraint: ADQLConstraint) : WhereConstraint {
 
     constructor(operand: Operand<*>, values: Array<out Operand<*>>) : this(ADQLIn(operand.operand, values.list()))
 

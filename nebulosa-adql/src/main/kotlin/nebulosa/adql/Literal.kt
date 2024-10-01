@@ -5,7 +5,7 @@ import adql.query.operand.NegativeOperand
 import adql.query.operand.NumericConstant
 import adql.query.operand.StringConstant
 
-data class Literal internal constructor(override val operand: ADQLOperand) : Operand<ADQLOperand> {
+data class Literal(override val operand: ADQLOperand) : Operand<ADQLOperand> {
 
     constructor(value: String) : this(StringConstant(value))
 

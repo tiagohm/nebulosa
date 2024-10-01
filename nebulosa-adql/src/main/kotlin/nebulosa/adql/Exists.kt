@@ -4,7 +4,7 @@ import adql.query.constraint.ADQLConstraint
 import adql.query.constraint.Exists
 import adql.query.constraint.NotConstraint
 
-data class Exists internal constructor(override val constraint: ADQLConstraint) : WhereConstraint {
+data class Exists(override val constraint: ADQLConstraint) : WhereConstraint {
 
     constructor(query: Query) : this(Exists(query.query))
 

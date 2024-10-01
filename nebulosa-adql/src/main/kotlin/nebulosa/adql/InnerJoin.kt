@@ -4,7 +4,7 @@ import adql.query.ClauseConstraints
 import adql.query.from.ADQLJoin
 import adql.query.from.InnerJoin as ADQLInnerJoin
 
-data class InnerJoin internal constructor(override val table: ADQLJoin) : Table {
+data class InnerJoin(override val table: ADQLJoin) : Table {
 
     constructor(left: Table, right: Table) : this(ADQLInnerJoin(left.table, right.table))
 
