@@ -7,6 +7,7 @@ import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import nebulosa.util.Resettable
 import nebulosa.util.concurrency.cancellation.CancellationSource
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 
@@ -14,7 +15,7 @@ data class DitherAfterExposureTask(
     @JvmField val job: Job,
     @JvmField val guider: Guider?,
     @JvmField val request: DitherAfterExposureRequest,
-) : Task, GuiderListener {
+) : Task, GuiderListener, Resettable {
 
     private val ditherLatch = CountUpDownLatch()
 
@@ -43,6 +44,10 @@ data class DitherAfterExposureTask(
 
     override fun onCancel(source: CancellationSource) {
         ditherLatch.onCancel(source)
+    }
+
+    override fun reset() {
+        ditherLatch.reset()
     }
 
     companion object {

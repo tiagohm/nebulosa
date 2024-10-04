@@ -1,5 +1,6 @@
 package nebulosa.api.autofocus
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import nebulosa.api.cameras.CameraCaptureEvent
 import nebulosa.api.message.MessageEvent
 import nebulosa.curve.fitting.CurvePoint
@@ -14,7 +15,7 @@ data class AutoFocusEvent(
     @JvmField val starCount: Int = 0,
     @JvmField val starHFD: Double = 0.0,
     @JvmField val chart: Chart? = null,
-    @JvmField val capture: CameraCaptureEvent? = null,
+    @JvmField @field:JsonIgnoreProperties("camera") val capture: CameraCaptureEvent? = null,
 ) : MessageEvent {
 
     data class Chart(

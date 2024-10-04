@@ -19,7 +19,7 @@ data class CameraStartCaptureRequest(
     @JvmField val enabled: Boolean = true,
     // Capture.
     @field:DurationMin(nanos = 1000L) @field:DurationMax(minutes = 60L) @JvmField val exposureTime: Duration = Duration.ZERO,
-    @field:Range(min = 0L, max = 1000L) @JvmField val exposureAmount: Int = 1, // 0 = looping
+    @field:Range(min = 0L, max = MAX_EXPOSURE_AMOUNT.toLong()) @JvmField val exposureAmount: Int = 1, // 0 = looping
     @field:DurationUnit(ChronoUnit.SECONDS) @field:DurationMin(nanos = 0L) @field:DurationMax(seconds = 60L)
     @JvmField val exposureDelay: Duration = Duration.ZERO,
     @field:PositiveOrZero @JvmField val x: Int = 0,
@@ -54,6 +54,8 @@ data class CameraStartCaptureRequest(
         get() = exposureAmount <= 0
 
     companion object {
+
+        const val MAX_EXPOSURE_AMOUNT = 10000
 
         @JvmStatic val EMPTY = CameraStartCaptureRequest()
     }
