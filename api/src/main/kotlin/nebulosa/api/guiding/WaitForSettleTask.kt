@@ -15,7 +15,7 @@ data class WaitForSettleTask(
         if (guider != null && guider.isSettling && !job.isCancelled) {
             LOG.debug { "Wait For Settle started" }
             job.accept(WaitForSettleStarted(job, this))
-            guider.waitForSettle(cancellationToken)
+            guider.waitForSettle()
             job.accept(WaitForSettleFinished(job, this))
             LOG.debug { "Wait For Settle finished" }
         }

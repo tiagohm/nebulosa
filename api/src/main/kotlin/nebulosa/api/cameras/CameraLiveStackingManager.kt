@@ -3,16 +3,7 @@ package nebulosa.api.cameras
 import nebulosa.api.calibration.CalibrationFrameProvider
 import nebulosa.api.livestacker.LiveStackingRequest
 import nebulosa.api.stacker.StackerGroupType
-import nebulosa.fits.binX
-import nebulosa.fits.binY
-import nebulosa.fits.exposureTimeInMicroseconds
-import nebulosa.fits.filter
-import nebulosa.fits.fits
-import nebulosa.fits.gain
-import nebulosa.fits.height
-import nebulosa.fits.isFits
-import nebulosa.fits.temperature
-import nebulosa.fits.width
+import nebulosa.fits.*
 import nebulosa.image.format.ImageHdu
 import nebulosa.livestacker.LiveStacker
 import nebulosa.log.loggerFor
@@ -20,13 +11,8 @@ import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.EnumMap
-import kotlin.io.path.copyTo
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.exists
-import kotlin.io.path.extension
-import kotlin.io.path.isRegularFile
+import java.util.*
+import kotlin.io.path.*
 
 data class CameraLiveStackingManager(
     private val calibrationFrameProvider: CalibrationFrameProvider? = null,
@@ -121,7 +107,7 @@ data class CameraLiveStackingManager(
             else if (path.isXisf()) path.xisf()
             else return this
 
-            val hdu = image.use { it.firstOrNull { it is ImageHdu } } ?: return this
+            val hdu = image.use { it.firstOrNull { h -> h is ImageHdu } } ?: return this
             val header = hdu.header
             val temperature = header.temperature
             val binX = header.binX
