@@ -7,15 +7,17 @@ import nebulosa.curve.fitting.CurvePoint
 import nebulosa.curve.fitting.HyperbolicFitting
 import nebulosa.curve.fitting.QuadraticFitting
 import nebulosa.curve.fitting.TrendLineFitting
+import nebulosa.indi.device.camera.Camera
 
 data class AutoFocusEvent(
-    @JvmField val state: AutoFocusState = AutoFocusState.IDLE,
-    @JvmField val focusPoint: CurvePoint? = null,
-    @JvmField val determinedFocusPoint: CurvePoint? = null,
-    @JvmField val starCount: Int = 0,
-    @JvmField val starHFD: Double = 0.0,
-    @JvmField val chart: Chart? = null,
-    @JvmField @field:JsonIgnoreProperties("camera") val capture: CameraCaptureEvent? = null,
+    @JvmField val camera: Camera,
+    @JvmField var state: AutoFocusState = AutoFocusState.IDLE,
+    @JvmField var focusPoint: CurvePoint? = null,
+    @JvmField var determinedFocusPoint: CurvePoint? = null,
+    @JvmField var starCount: Int = 0,
+    @JvmField var starHFD: Double = 0.0,
+    @JvmField var chart: Chart? = null,
+    @JvmField @field:JsonIgnoreProperties("camera") val capture: CameraCaptureEvent = CameraCaptureEvent(camera),
 ) : MessageEvent {
 
     data class Chart(
