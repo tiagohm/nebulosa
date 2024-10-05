@@ -8,27 +8,25 @@ import java.time.Duration
 
 data class DelayTask(
     @JvmField val job: Job,
-    @JvmField val durationInMilliseconds: Long,
+    @JvmField val duration: Long,
 ) : Task {
 
     constructor(job: Job, duration: Duration) : this(job, duration.toMillis())
 
     override fun run() {
-        var remainingTime = durationInMilliseconds
+        var remainingTime = duration
 
         if (!job.isCancelled && remainingTime > 0L) {
-            LOG.debug { "Delay started. duration=$durationInMilliseconds ms" }
+            LOG.debug { "Delay started. duration=$duration ms" }
 
             job.accept(DelayStarted(job, this))
 
             while (!job.isCancelled && remainingTime > 0L) {
-                job.waitForPause()
-
                 val waitTime = minOf(remainingTime, DELAY_INTERVAL)
 
                 if (waitTime > 0L) {
-                    val progress = (durationInMilliseconds - remainingTime) / durationInMilliseconds.toDouble()
-                    job.accept(DelayElapsed(job, this, remainingTime, durationInMilliseconds - remainingTime, waitTime, progress))
+                    val progress = (duration - remainingTime) / duration.toDouble()
+                    job.accept(DelayElapsed(job, this, remainingTime * 1000L, (duration - remainingTime) * 1000L, waitTime * 1000L, progress))
 
                     Thread.sleep(waitTime)
 
@@ -38,7 +36,7 @@ data class DelayTask(
 
             job.accept(DelayFinished(job, this))
 
-            LOG.debug { "Delay finished. duration=$durationInMilliseconds ms" }
+            LOG.debug { "Delay finished. duration=$duration ms" }
         }
     }
 
