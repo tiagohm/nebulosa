@@ -13,7 +13,7 @@ import nebulosa.log.loggerFor
 data class BacklashCompensationFocuserMoveTask(
     @JvmField val job: Job,
     override val focuser: Focuser,
-    @JvmField val position: Int,
+    @JvmField var position: Int,
     @JvmField val compensation: BacklashCompensation,
 ) : FocuserTask {
 

@@ -263,10 +263,10 @@ class CameraCaptureNamingFormatterTest {
         override val cfaOffsetX = 0
         override val cfaOffsetY = 0
         override val cfaType = CfaPattern.RGGB
-        override val exposureMin: Duration = Duration.ofNanos(1000)
-        override val exposureMax: Duration = Duration.ofMinutes(10)
+        override val exposureMin = 1L
+        override val exposureMax = 1000000L * 60 * 10
         override val exposureState = PropertyState.IDLE
-        override val exposureTime: Duration = Duration.ofSeconds(1)
+        override val exposureTime = 1000000L
         override val hasCooler = true
         override val canSetTemperature = true
         override val canSubFrame = true
@@ -319,7 +319,7 @@ class CameraCaptureNamingFormatterTest {
 
         override fun offset(value: Int) = Unit
 
-        override fun startCapture(exposureTime: Duration) = Unit
+        override fun startCapture(exposureTime: Long) = Unit
 
         override fun abortCapture() = Unit
 

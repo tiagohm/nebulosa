@@ -249,8 +249,8 @@ abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
         return false
     }
 
-    final override fun add(e: Task): Boolean {
-        addLast(e)
+    final override fun add(element: Task): Boolean {
+        addLast(element)
         return true
     }
 
@@ -258,17 +258,17 @@ abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
         return add(e)
     }
 
-    final override fun remove(): Task? {
+    final override fun remove(): Task {
         return removeFirst()
     }
 
-    final override fun remove(o: Task?): Boolean {
-        if (o == null) return false
+    final override fun remove(element: Task?): Boolean {
+        if (element == null) return false
 
         var node = head
 
         while (node != null) {
-            if (node.item == o) {
+            if (node.item == element) {
                 remove(node)
                 return true
             }
@@ -291,10 +291,10 @@ abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
         return peekFirst()
     }
 
-    final override fun addAll(c: Collection<Task?>): Boolean {
+    final override fun addAll(elements: Collection<Task?>): Boolean {
         var added = false
 
-        for (item in c) {
+        for (item in elements) {
             added = added || (item != null && add(item))
         }
 
@@ -305,17 +305,17 @@ abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
         addFirst(e)
     }
 
-    final override fun pop(): Task? {
+    final override fun pop(): Task {
         return removeFirst()
     }
 
-    final override fun contains(o: Task?): Boolean {
-        if (o == null) return false
+    final override fun contains(element: Task?): Boolean {
+        if (element == null) return false
 
         var node = head
 
         while (node != null) {
-            if (node.item == o) {
+            if (node.item == element) {
                 return true
             }
 
@@ -376,7 +376,6 @@ abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
         return removed
     }
 
-    @Suppress("ReplaceSizeZeroCheckWithIsEmpty")
     final override fun isEmpty(): Boolean {
         return size == 0
     }
