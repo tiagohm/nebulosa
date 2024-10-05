@@ -25,6 +25,7 @@ data class CameraCaptureEvent(
     override val eventName = "CAMERA.CAPTURE_ELAPSED"
 
     @Volatile @field:JsonIgnore private var captureStartElapsedTime = 0L
+    @Volatile @field:JsonIgnore private var captureStartRemainingTime = 0L
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun handleTimedTaskEvent(event: TimedTaskEvent) {
@@ -37,6 +38,7 @@ data class CameraCaptureEvent(
         handleTimedTaskEvent(event)
         state = CameraCaptureState.EXPOSURE_STARTED
         captureStartElapsedTime = captureElapsedTime
+        captureStartRemainingTime = captureRemainingTime
         exposureCount++
     }
 
@@ -44,6 +46,7 @@ data class CameraCaptureEvent(
         handleTimedTaskEvent(event)
         state = CameraCaptureState.EXPOSURE_FINISHED
         captureElapsedTime = captureStartElapsedTime + event.elapsedTime
+        captureRemainingTime = captureStartRemainingTime - event.elapsedTime
         savedPath = event.savedPath
     }
 
@@ -51,6 +54,7 @@ data class CameraCaptureEvent(
         handleTimedTaskEvent(event)
         state = CameraCaptureState.EXPOSURING
         captureElapsedTime = captureStartElapsedTime + event.elapsedTime
+        captureRemainingTime = captureStartRemainingTime - event.elapsedTime
     }
 
     fun handleCameraCaptureStarted(estimatedCaptureTime: Long = 0L) {
@@ -66,11 +70,19 @@ data class CameraCaptureEvent(
         captureProgress = 1.0
     }
 
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun computeCaptureProgress() {
+        if (captureRemainingTime > 0L) {
+            captureProgress = captureElapsedTime.toDouble() / (captureElapsedTime + captureRemainingTime)
+        }
+    }
+
     fun handleCameraDelayEvent(event: DelayEvent, newState: CameraCaptureState = CameraCaptureState.WAITING) {
         handleTimedTaskEvent(event)
         captureElapsedTime += event.waitTime
         captureRemainingTime -= event.waitTime
         state = newState
+        computeCaptureProgress()
     }
 
     fun handleCameraExposureEvent(event: CameraExposureEvent) {
@@ -80,8 +92,6 @@ data class CameraCaptureEvent(
             is CameraExposureStarted -> handleCameraExposureStarted(event)
         }
 
-        if (captureRemainingTime > 0L) {
-            captureProgress = captureElapsedTime.toDouble() / (captureElapsedTime + captureRemainingTime)
-        }
+        computeCaptureProgress()
     }
 }

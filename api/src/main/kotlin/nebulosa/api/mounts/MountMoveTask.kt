@@ -20,7 +20,7 @@ data class MountMoveTask(
     @JvmField val delayTask = DelayTask(job, request.duration)
 
     override fun run() {
-        if (!job.isCancelled && delayTask.durationInMilliseconds > 0) {
+        if (!job.isCancelled && delayTask.duration > 0) {
             LOG.debug { "Mount Move started. mount=$mount, request=$request" }
 
             mount.slewRates.takeIf { !request.speed.isNullOrBlank() }

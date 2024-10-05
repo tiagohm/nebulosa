@@ -47,7 +47,7 @@ data class SequencerJob(
     private val waitForSettleTask = WaitForSettleTask(this, guider)
     private val liveStackingManager = CameraLiveStackingManager(calibrationFrameProvider)
 
-    @Volatile private var estimatedCaptureTime = initialDelayTask.durationInMilliseconds * 1000L
+    @Volatile private var estimatedCaptureTime = initialDelayTask.duration * 1000L
     @Volatile private var captureStartElapsedTime = 0L
 
     @JvmField val status = SequencerEvent(camera)
@@ -85,7 +85,7 @@ data class SequencerJob(
                     first = false
 
                     estimatedCaptureTime += cameraCaptureTask.exposureTimeInMicroseconds
-                    estimatedCaptureTime += delayTask.durationInMilliseconds * 1000L
+                    estimatedCaptureTime += delayTask.duration * 1000L
                 }
 
                 // DITHER.
@@ -116,7 +116,7 @@ data class SequencerJob(
                             add(delayAndWaitForSettleSplitTasks[i])
                         }
 
-                        estimatedCaptureTime += delayTasks[i].durationInMilliseconds * 1000L
+                        estimatedCaptureTime += delayTasks[i].duration * 1000L
 
                         // CAPTURE.
                         add(cameraExposureTasks[i])

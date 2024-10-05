@@ -48,7 +48,6 @@ data class CameraCaptureJob(
         status.exposureAmount = request.exposureAmount
 
         shutterWheelMoveTask?.also(::add)
-        add(delayTask)
         add(delayAndWaitForSettleSplitTask)
         add(cameraExposureTask)
         add(ditherAfterExposureTask)
@@ -60,6 +59,20 @@ data class CameraCaptureJob(
 
     override fun handleFilterWheelEvent(event: FilterWheelEvent) {
         shutterWheelMoveTask?.handleFilterWheelEvent(event)
+    }
+
+    override fun onPause(paused: Boolean) {
+        if (paused) {
+            status.state = CameraCaptureState.PAUSING
+            status.send()
+        }
+
+        super.onPause(paused)
+    }
+
+    override fun beforePause(task: Task) {
+        status.state = CameraCaptureState.PAUSED
+        status.send()
     }
 
     override fun beforeStart() {
@@ -84,7 +97,7 @@ data class CameraCaptureJob(
     }
 
     override fun isLoop(): Boolean {
-        return request.isLoop
+        return request.isLoop || status.exposureCount < request.exposureAmount
     }
 
     override fun canRun(prev: Task?, current: Task): Boolean {
@@ -92,8 +105,6 @@ data class CameraCaptureJob(
             return !isCancelled && guider != null
                     && status.exposureCount >= 1 && request.dither.afterExposures > 0
                     && status.exposureCount % request.dither.afterExposures == 0
-        } else if (current === delayTask) {
-            return status.exposureCount == 0
         } else if (current === delayAndWaitForSettleSplitTask) {
             return status.exposureCount > 0
         } else if (current === shutterWheelMoveTask) {
@@ -104,10 +115,13 @@ data class CameraCaptureJob(
     }
 
     override fun accept(event: Any) {
+        val pausing = status.state == CameraCaptureState.PAUSING
+
         when (event) {
             is DelayEvent -> {
                 if (event.task === delayTask) {
                     status.handleCameraDelayEvent(event)
+                    if (pausing) status.state = CameraCaptureState.PAUSING
                     status.send()
                 }
             }
@@ -116,6 +130,14 @@ data class CameraCaptureJob(
 
                 if (event is CameraExposureFinished) {
                     status.liveStackedPath = addFrameToLiveStacker(status.savedPath)
+
+                    if (pausing) {
+                        status.copy().send()
+                    }
+                }
+
+                if (pausing) {
+                    status.state = CameraCaptureState.PAUSING
                 }
 
                 status.send()

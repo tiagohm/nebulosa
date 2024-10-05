@@ -58,7 +58,6 @@ data class CameraExposureTask(
         if (camera.connected) {
             LOG.debug { "Camera Exposure started. camera=$camera, request=$request" }
 
-            job.waitForPause()
             latch.countUp()
 
             job.accept(CameraExposureStarted(job, this))
@@ -75,7 +74,7 @@ data class CameraExposureTask(
                 bin(request.binX, request.binY)
                 gain(request.gain)
                 offset(request.offset)
-                startCapture(request.exposureTime.toMillis())
+                startCapture(request.exposureTime.toNanos() / 1000L)
             }
 
             latch.await()

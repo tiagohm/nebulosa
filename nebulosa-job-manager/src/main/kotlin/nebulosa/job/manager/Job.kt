@@ -17,7 +17,5 @@ interface Job : Deque<Task>, Runnable, Pauseable, Stoppable, Consumer<Any> {
 
     val currentTask: Task?
 
-    fun waitForPause()
-
     fun runTask(task: Task, prev: Task?): TaskExecutionState
 }

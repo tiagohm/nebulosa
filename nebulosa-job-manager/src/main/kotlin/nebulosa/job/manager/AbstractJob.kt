@@ -143,14 +143,10 @@ abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
         return CompletableFuture.runAsync(this, executor)
     }
 
-    final override fun waitForPause() {
-        pauseLatch.await()
-    }
-
     private fun checkIfPaused(task: Task) {
         if (isPaused && canPause(task)) {
             beforePause(task)
-            waitForPause()
+            pauseLatch.await()
             afterPause(task)
         }
     }
