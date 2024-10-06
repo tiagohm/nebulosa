@@ -1,10 +1,6 @@
 package nebulosa.api.alignment.polar.darv
 
-import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraCaptureState
-import nebulosa.api.cameras.CameraEventAware
-import nebulosa.api.cameras.CameraExposureEvent
-import nebulosa.api.cameras.CameraExposureTask
+import nebulosa.api.cameras.*
 import nebulosa.api.guiding.GuidePulseRequest
 import nebulosa.api.guiding.GuidePulseTask
 import nebulosa.api.message.MessageEvent
@@ -17,7 +13,6 @@ import nebulosa.job.manager.SplitTask
 import nebulosa.job.manager.Task
 import nebulosa.job.manager.delay.DelayEvent
 import nebulosa.job.manager.delay.DelayTask
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import java.nio.file.Files
 import java.time.Duration
@@ -29,16 +24,18 @@ data class DARVJob(
     @JvmField val request: DARVStartRequest,
 ) : AbstractJob(), CameraEventAware {
 
-    @JvmField val cameraExposureRequest = request.capture.copy(
+    @JvmField val cameraRequest = request.capture.copy(
+        exposureAmount = 1,
         exposureTime = request.capture.exposureTime + request.capture.exposureDelay,
-        savePath = CAPTURE_SAVE_PATH, exposureAmount = 1, exposureDelay = Duration.ZERO,
-        frameType = FrameType.LIGHT, autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF
+        savePath = CAPTURE_SAVE_PATH, exposureDelay = Duration.ZERO,
+        frameType = FrameType.LIGHT, autoSave = false,
+        autoSubFolderMode = AutoSubFolderMode.OFF
     )
 
     private val direction = if (request.reversed) request.direction.reversed else request.direction
     private val guidePulseDuration = request.capture.exposureTime.dividedBy(2L)
 
-    private val cameraExposureTask = CameraExposureTask(this, camera, cameraExposureRequest)
+    private val cameraExposureTask = CameraExposureTask(this, camera, cameraRequest)
     private val delayTask = DelayTask(this, request.capture.exposureDelay)
     private val forwardGuidePulseTask = GuidePulseTask(this, guideOutput, GuidePulseRequest(direction, guidePulseDuration))
     private val backwardGuidePulseTask = GuidePulseTask(this, guideOutput, GuidePulseRequest(direction.reversed, guidePulseDuration))
@@ -56,7 +53,10 @@ data class DARVJob(
         add(task)
     }
 
-    @Synchronized
+    override fun handleCameraEvent(event: CameraEvent) {
+        cameraExposureTask.handleCameraEvent(event)
+    }
+
     override fun accept(event: Any) {
         when (event) {
             is DelayEvent -> {
@@ -68,11 +68,10 @@ data class DARVJob(
             }
             is CameraExposureEvent -> {
                 status.capture.handleCameraExposureEvent(event)
-                status.capture.captureRemainingTime = status.capture.stepRemainingTime
-                status.capture.captureElapsedTime = status.capture.stepElapsedTime
-                status.capture.captureProgress = status.capture.stepProgress
 
-                status.capture.send()
+                if (event is CameraExposureFinished) {
+                    status.capture.send()
+                }
             }
             else -> return
         }
@@ -80,16 +79,18 @@ data class DARVJob(
         status.send()
     }
 
-    override fun handleCameraEvent(event: CameraEvent) {
-        cameraExposureTask.handleCameraEvent(event)
-    }
-
     override fun beforeStart() {
-        LOG.debug { "DARV started. camera=$camera, guideOutput=$guideOutput, request=$request" }
+        LOG.debug("DARV started. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
+
+        status.capture.handleCameraCaptureStarted(cameraExposureTask.exposureTimeInMicroseconds)
     }
 
     override fun afterFinish() {
-        LOG.debug { "DARV finished. camera=$camera, guideOutput=$guideOutput, request=$request" }
+        status.capture.handleCameraCaptureFinished()
+        status.state = DARVState.IDLE
+        status.send()
+
+        LOG.debug("DARV finished. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
     }
 
     @Suppress("NOTHING_TO_INLINE")
