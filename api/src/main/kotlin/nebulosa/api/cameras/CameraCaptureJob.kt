@@ -42,11 +42,9 @@ data class CameraCaptureJob(
     private val ditherAfterExposureTask = DitherAfterExposureTask(this, guider, request.dither)
     private val shutterWheelMoveTask = if (wheel != null && request.shutterPosition > 0) WheelMoveTask(this, wheel, request.shutterPosition) else null
 
-    @JvmField val status = CameraCaptureEvent(camera)
+    @JvmField val status = CameraCaptureEvent(camera, exposureAmount = request.exposureAmount)
 
     init {
-        status.exposureAmount = request.exposureAmount
-
         shutterWheelMoveTask?.also(::add)
         add(delayAndWaitForSettleSplitTask)
         add(cameraExposureTask)

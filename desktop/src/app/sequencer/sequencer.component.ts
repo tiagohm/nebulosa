@@ -262,12 +262,12 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 		electronService.on('SEQUENCER.ELAPSED', (event) => {
 			ngZone.run(() => {
-				if (this.running !== event.remainingTime > 0) {
-					this.enableOrDisableTopbarMenu(event.remainingTime <= 0)
+				if (this.running !== (event.state !== 'IDLE')) {
+					this.enableOrDisableTopbarMenu(this.running)
 				}
 
 				this.event = event
-				this.running = event.remainingTime > 0
+				this.running = event.state !== 'IDLE'
 
 				const captureEvent = event.capture
 

@@ -12,7 +12,7 @@ data class SequencerEvent(
     @JvmField var remainingTime: Long = 0L,
     @JvmField var progress: Double = 0.0,
     @JvmField var state: SequencerState = SequencerState.IDLE,
-    @JvmField @field:JsonIgnoreProperties("camera") val capture: CameraCaptureEvent = CameraCaptureEvent(camera),
+    @JvmField @field:JsonIgnoreProperties("camera") var capture: CameraCaptureEvent = CameraCaptureEvent(camera),
 ) : MessageEvent {
 
     override val eventName = "SEQUENCER.ELAPSED"
