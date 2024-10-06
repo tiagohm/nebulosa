@@ -6,7 +6,6 @@ import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
 import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.cancellation.CancellationSource
 import nebulosa.util.concurrency.latch.CountUpDownLatch
@@ -39,9 +38,10 @@ data class CameraExposureTask(
                     save(event)
                 }
                 is CameraExposureAborted,
-                is CameraExposureFailed,
+                is nebulosa.indi.device.camera.CameraExposureFailed,
                 is CameraDetached -> {
                     latch.reset()
+                    job.accept(CameraExposureFailed(job, this))
                 }
                 is CameraExposureProgressChanged -> {
                     // "min" fix possible bug on SVBony exposure time?
@@ -56,7 +56,7 @@ data class CameraExposureTask(
 
     override fun run() {
         if (camera.connected) {
-            LOG.debug { "Camera Exposure started. camera=$camera, request=$request" }
+            LOG.debug("Camera Exposure started. camera={}, request={}", camera, request)
 
             latch.countUp()
 
@@ -79,7 +79,7 @@ data class CameraExposureTask(
 
             latch.await()
 
-            LOG.debug { "Camera Exposure finished. camera=$camera, request=$request" }
+            LOG.debug("Camera Exposure finished. camera={}, request={}", camera, request)
         } else {
             LOG.warn("camera not connected. camera={}, request={}", camera, request)
         }

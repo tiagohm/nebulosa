@@ -1,10 +1,6 @@
 package nebulosa.api.wizard.flat
 
-import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraEventAware
-import nebulosa.api.cameras.CameraExposureEvent
-import nebulosa.api.cameras.CameraExposureFinished
-import nebulosa.api.cameras.CameraExposureTask
+import nebulosa.api.cameras.*
 import nebulosa.api.message.MessageEvent
 import nebulosa.fits.fits
 import nebulosa.image.Image
@@ -14,11 +10,10 @@ import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.job.manager.AbstractJob
 import nebulosa.job.manager.Task
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.latch.CountUpDownLatch
 import java.nio.file.Path
 import java.time.Duration
-import kotlin.use
 
 data class FlatWizardJob(
     @JvmField val flatWizardExecutor: FlatWizardExecutor,
@@ -34,20 +29,22 @@ data class FlatWizardJob(
 
     @JvmField val status = FlatWizardEvent(camera)
 
-    @Volatile private var cameraRequest = request.capture.copy(
-        exposureTime = Duration.ZERO, frameType = FrameType.FLAT,
-        autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF,
+    @Volatile private var cameraExposureTask = CameraExposureTask(
+        this, camera, request.capture.copy(
+            exposureTime = Duration.ofNanos((exposureMin + exposureMax) / 2),
+            frameType = FrameType.FLAT,
+            autoSave = false, autoSubFolderMode = AutoSubFolderMode.OFF,
+        )
     )
 
-    @Volatile private var cameraExposureTask = CameraExposureTask(this, camera, cameraRequest)
+    private val waitToComputeOptimalExposureTime = CountUpDownLatch()
 
     inline val savedPath
         get() = status.capture.savedPath
 
     init {
-        status.capture.exposureAmount = 0
-
         add(cameraExposureTask)
+        status.exposureTime = cameraExposureTask.request.exposureTime.toNanos() / 1000L
     }
 
     override fun handleCameraEvent(event: CameraEvent) {
@@ -62,8 +59,14 @@ data class FlatWizardJob(
                 if (event is CameraExposureFinished) {
                     status.capture.send()
 
-                    status.state = FlatWizardState.CAPTURED
-                    computeOptimalExposureTime(event.savedPath)
+                    if (!computeOptimalExposureTime(event.savedPath)) {
+                        val exposureTimeInNanos = (exposureMax + exposureMin) / 2L
+                        val request = cameraExposureTask.request.copy(exposureTime = Duration.ofNanos(exposureTimeInNanos))
+                        status.exposureTime = exposureTimeInNanos / 1000L
+                        add(CameraExposureTask(this, camera, request).also { cameraExposureTask = it })
+                    }
+
+                    waitToComputeOptimalExposureTime.reset()
                 }
 
                 status.send()
@@ -71,48 +74,59 @@ data class FlatWizardJob(
         }
     }
 
-    private fun computeOptimalExposureTime(savedPath: Path) {
+    private fun computeOptimalExposureTime(savedPath: Path): Boolean {
         val image = savedPath.fits().use { Image.open(it, false) }
         val statistics = STATISTICS.compute(image)
 
-        LOG.debug { "flat frame computed. statistics=$statistics" }
+        LOG.debug("flat frame computed. statistics={}", statistics)
 
         if (statistics.mean in meanRange) {
-            LOG.debug { "found an optimal exposure time. exposureTime=${status.exposureTime}, path=$savedPath" }
-            status.state = FlatWizardState.IDLE
-            return stop()
+            LOG.debug("found an optimal exposure time. exposureTime={}, path={}", status.exposureTime, savedPath)
+            status.state = FlatWizardState.CAPTURED
+            status.capture.state = CameraCaptureState.IDLE
+            return true
         } else if (statistics.mean < meanRange.start) {
-            exposureMin = status.exposureTime
-            LOG.debug { "captured frame is below mean range. exposureTime=${status.exposureTime}, path=$savedPath" }
+            exposureMin = cameraExposureTask.request.exposureTime.toNanos()
+            LOG.debug("captured frame is below mean range. exposureTime={}, path={}", exposureMin, savedPath)
         } else {
-            exposureMax = status.exposureTime
-            LOG.debug { "captured frame is above mean range. exposureTime=${status.exposureTime}, path=$savedPath" }
+            exposureMax = cameraExposureTask.request.exposureTime.toNanos()
+            LOG.debug("captured frame is above mean range. exposureTime={}, path={}", exposureMax, savedPath)
         }
 
         val delta = exposureMax - exposureMin
 
         // 10ms
-        if (delta < 10000000) {
+        if (delta < MIN_DELTA_TIME) {
             LOG.warn("Failed to find an optimal exposure time. exposureMin={}, exposureMax={}", exposureMin, exposureMax)
             status.state = FlatWizardState.FAILED
-            return stop()
+            status.capture.state = CameraCaptureState.IDLE
+            return true
         }
-    }
 
-    override fun beforeTask(task: Task) {
-        if (task === cameraExposureTask) {
-            val exposureTimeInNanos = (exposureMax + exposureMin) / 2L
-            cameraRequest = cameraRequest.copy(exposureTime = Duration.ofNanos(exposureTimeInNanos))
-            status.exposureTime = exposureTimeInNanos / 1000L
-        }
+        return false
     }
 
     override fun beforeStart() {
-        LOG.debug { "Flat Wizard started. camera=$camera, request=$request" }
+        LOG.debug("Flat Wizard started. camera={}, request={}", camera, request)
+
+        status.state = FlatWizardState.EXPOSURING
+        status.send()
+    }
+
+    override fun beforeTask(task: Task) {
+        waitToComputeOptimalExposureTime.countUp()
+    }
+
+    override fun afterTask(task: Task, exception: Throwable?): Boolean {
+        if (exception == null) {
+            waitToComputeOptimalExposureTime.await()
+        }
+
+        return super.afterTask(task, exception)
     }
 
     override fun afterFinish() {
-        LOG.debug { "Flat Wizard finished. camera=$camera, request=$request, exposureTime=${status.exposureTime} µs" }
+        LOG.debug("Flat Wizard finished. camera={}, request={}, exposureTime={} µs", camera, request, status.exposureTime)
     }
 
     @Suppress("NOTHING_TO_INLINE")
@@ -121,6 +135,8 @@ data class FlatWizardJob(
     }
 
     companion object {
+
+        private const val MIN_DELTA_TIME = 10000000 // 10ms
 
         @JvmStatic private val LOG = loggerFor<FlatWizardJob>()
         @JvmStatic private val STATISTICS = Statistics(noMedian = true, noDeviation = true)

@@ -91,6 +91,7 @@ data class CameraCaptureEvent(
             is CameraExposureElapsed -> handleCameraExposureElapsed(event)
             is CameraExposureFinished -> handleCameraExposureFinished(event)
             is CameraExposureStarted -> handleCameraExposureStarted(event)
+            is CameraExposureFailed -> handleTimedTaskEvent(event)
         }
 
         computeCaptureProgress()

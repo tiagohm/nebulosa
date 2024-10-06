@@ -67,8 +67,6 @@ data class TPPAJob(
         get() = status.capture.savedPath
 
     init {
-        status.capture.exposureAmount = 0
-
         add(mountTrackTask)
         add(mountMoveTask)
         add(settleDelayTask)
