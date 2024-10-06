@@ -227,6 +227,10 @@ data class SequencerJob(
             is CameraExposureEvent -> {
                 status.capture.handleCameraExposureEvent(event)
 
+                if (event is CameraExposureFailed) {
+                    return stop()
+                }
+
                 if (event is CameraExposureStarted) {
                     captureStartElapsedTime = status.elapsedTime
                 } else {

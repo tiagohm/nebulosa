@@ -61,11 +61,12 @@ export interface SequencerPlan {
 }
 
 export interface SequencerEvent extends MessageEvent {
+	camera: Camera
 	id: number
 	elapsedTime: number
 	remainingTime: number
 	progress: number
-	capture?: CameraCaptureEvent
+	capture?: Omit<CameraCaptureEvent, 'camera'>
 	state: SequencerState
 }
 
