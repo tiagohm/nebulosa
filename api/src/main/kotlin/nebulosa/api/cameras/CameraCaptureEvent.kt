@@ -47,6 +47,7 @@ data class CameraCaptureEvent(
         state = CameraCaptureState.EXPOSURE_FINISHED
         captureElapsedTime = captureStartElapsedTime + event.elapsedTime
         captureRemainingTime = captureStartRemainingTime - event.elapsedTime
+        computeCaptureProgress()
         savedPath = event.savedPath
     }
 
@@ -72,7 +73,7 @@ data class CameraCaptureEvent(
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun computeCaptureProgress() {
-        if (captureRemainingTime > 0L) {
+        if (captureElapsedTime > 0L) {
             captureProgress = captureElapsedTime.toDouble() / (captureElapsedTime + captureRemainingTime)
         }
     }

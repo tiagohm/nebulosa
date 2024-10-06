@@ -46,6 +46,8 @@ data class SequencerJob(
     private val initialDelayTask = DelayTask(this, plan.initialDelay)
     private val waitForSettleTask = WaitForSettleTask(this, guider)
     private val liveStackingManager = CameraLiveStackingManager(calibrationFrameProvider)
+    private val cameraCaptureEvents =
+        Array(plan.sequences.size + 1) { CameraCaptureEvent(camera, exposureAmount = plan.sequences.getOrNull(it - 1)?.exposureAmount ?: 0) }
 
     @Volatile private var estimatedCaptureTime = initialDelayTask.duration * 1000L
     @Volatile private var captureStartElapsedTime = 0L
@@ -63,8 +65,10 @@ data class SequencerJob(
             for (i in sequences.indices) {
                 val request = sequences[i].map()
 
-                // ID.
-                add(SequencerIdTask(plan.sequences.indexOfFirst { it === sequences[i] } + 1))
+                val id = plan.sequences.indexOfFirst { it === sequences[i] } + 1
+
+                // SEQUENCE ID.
+                add(SequencerIdTask(id))
 
                 // FILTER WHEEL.
                 request.wheelMoveTask()?.also(::add)
@@ -72,20 +76,19 @@ data class SequencerJob(
                 // DELAY.
                 val delayTask = DelayTask(this, request.exposureDelay)
 
-
                 // CAPTURE.
                 val cameraCaptureTask = CameraExposureTask(this, camera, request)
 
                 repeat(request.exposureAmount) {
                     if (!first) {
                         add(SplitTask(listOf(delayTask, waitForSettleTask), sequencerExecutor))
+                        cameraCaptureEvents[id].captureRemainingTime += delayTask.duration * 1000L
                     }
 
                     add(cameraCaptureTask)
                     first = false
 
-                    estimatedCaptureTime += cameraCaptureTask.exposureTimeInMicroseconds
-                    estimatedCaptureTime += delayTask.duration * 1000L
+                    cameraCaptureEvents[id].captureRemainingTime += cameraCaptureTask.exposureTimeInMicroseconds
                 }
 
                 // DITHER.
@@ -105,7 +108,9 @@ data class SequencerJob(
             while (count.sum() > 0) {
                 for (i in count.indices) {
                     if (count[i] > 0) {
-                        // ID.
+                        val id = sequenceIdTasks[i].id
+
+                        // SEQUENCE ID.
                         add(sequenceIdTasks[i])
 
                         // FILTER WHEEL.
@@ -114,13 +119,12 @@ data class SequencerJob(
                         // DELAY.
                         if (!first) {
                             add(delayAndWaitForSettleSplitTasks[i])
+                            cameraCaptureEvents[id].captureRemainingTime += delayTasks[i].duration * 1000L
                         }
-
-                        estimatedCaptureTime += delayTasks[i].duration * 1000L
 
                         // CAPTURE.
                         add(cameraExposureTasks[i])
-                        estimatedCaptureTime += cameraExposureTasks[i].exposureTimeInMicroseconds
+                        cameraCaptureEvents[id].captureRemainingTime += cameraExposureTasks[i].exposureTimeInMicroseconds
 
                         // DITHER.
                         add(ditherAfterExposureTask[i])
@@ -131,6 +135,8 @@ data class SequencerJob(
                 }
             }
         }
+
+        estimatedCaptureTime += cameraCaptureEvents.sumOf { it.captureRemainingTime }
     }
 
     override fun handleCameraEvent(event: CameraEvent) {
@@ -215,6 +221,7 @@ data class SequencerJob(
             is DelayEvent -> {
                 status.capture.handleCameraDelayEvent(event)
                 status.elapsedTime += event.waitTime
+                status.computeRemainingTimeAndProgress()
                 status.send()
             }
             is CameraExposureEvent -> {
@@ -226,13 +233,16 @@ data class SequencerJob(
                     status.elapsedTime = captureStartElapsedTime + event.elapsedTime
 
                     if (event is CameraExposureFinished) {
+                        if (status.capture.captureRemainingTime <= 0L) {
+                            status.capture.state = CameraCaptureState.IDLE
+                        }
+
                         status.capture.liveStackedPath = addFrameToLiveStacker(event.task.request, status.capture.savedPath)
                         status.capture.send()
                     }
                 }
 
-                status.remainingTime = if (estimatedCaptureTime > status.elapsedTime) estimatedCaptureTime - status.elapsedTime else 0L
-                if (status.elapsedTime > 0L) status.progress = status.elapsedTime.toDouble() / (status.elapsedTime + status.remainingTime)
+                status.computeRemainingTimeAndProgress()
                 status.send()
             }
             is DitherAfterExposureEvent -> {
@@ -243,10 +253,28 @@ data class SequencerJob(
     }
 
     override fun beforeStart() {
-        LOG.debug { "Sequencer started. camera=$camera, mount=$mount, wheel=$wheel, focuser=$focuser, rotator=$rotator, plan=$plan" }
+        LOG.debug("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan)
 
         status.state = SequencerState.RUNNING
         status.send()
+    }
+
+    override fun beforeTask(task: Task) {
+        if (task === initialDelayTask && initialDelayTask.duration > 0L) {
+            status.state = SequencerState.WAITING
+        }
+    }
+
+    override fun afterTask(task: Task, exception: Throwable?): Boolean {
+        if (exception == null) {
+            if (task is SequencerIdTask) {
+                status.capture = cameraCaptureEvents[task.id]
+            } else if (task === initialDelayTask) {
+                status.state = SequencerState.RUNNING
+            }
+        }
+
+        return super.afterTask(task, exception)
     }
 
     override fun afterFinish() {
@@ -255,7 +283,13 @@ data class SequencerJob(
         status.state = SequencerState.IDLE
         status.send()
 
-        LOG.debug { "Sequencer finished. camera=$camera, mount=$mount, wheel=$wheel, focuser=$focuser, rotator=$rotator, plan=$plan" }
+        LOG.debug("Sequencer finished. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan)
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun SequencerEvent.computeRemainingTimeAndProgress() {
+        remainingTime = if (estimatedCaptureTime > elapsedTime) estimatedCaptureTime - elapsedTime else 0L
+        progress = elapsedTime.toDouble() / estimatedCaptureTime
     }
 
     @Suppress("NOTHING_TO_INLINE")
@@ -263,7 +297,7 @@ data class SequencerJob(
         sequencerExecutor.accept(this)
     }
 
-    private inner class SequencerIdTask(private val id: Int) : Task {
+    private inner class SequencerIdTask(@JvmField val id: Int) : Task {
 
         override fun run() {
             LOG.debug { "Sequence in execution. id=$id" }
