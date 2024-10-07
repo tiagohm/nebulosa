@@ -1,43 +1,36 @@
 package nebulosa.api.message
 
 import nebulosa.log.loggerFor
-import org.springframework.context.event.EventListener
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor
-import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
-import org.springframework.web.socket.messaging.SessionDisconnectEvent
-import org.springframework.web.socket.messaging.SessionSubscribeEvent
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Service
-class MessageService(
-    private val simpleMessageTemplate: SimpMessagingTemplate,
-) {
+class MessageService {
 
     private val connected = AtomicBoolean()
     private val messageQueue = LinkedBlockingQueue<MessageEvent>()
 
-    @EventListener
-    private fun handleSessionSubscribe(event: SessionSubscribeEvent) {
-        val destination = SimpMessageHeaderAccessor.wrap(event.message).destination ?: return
+//    @EventListener
+//    private fun handleSessionSubscribe(event: SessionSubscribeEvent) {
+//        val destination = SimpMessageHeaderAccessor.wrap(event.message).destination ?: return
+//
+//        if (destination == DESTINATION && connected.compareAndSet(false, true)) {
+//            while (messageQueue.isNotEmpty()) {
+//                sendMessage(messageQueue.take())
+//            }
+//        }
+//    }
 
-        if (destination == DESTINATION && connected.compareAndSet(false, true)) {
-            while (messageQueue.isNotEmpty()) {
-                sendMessage(messageQueue.take())
-            }
-        }
-    }
-
-    @EventListener
-    private fun handleSessionDisconnect(event: SessionDisconnectEvent) {
-        connected.set(false)
-    }
+//    @EventListener
+//    private fun handleSessionDisconnect(event: SessionDisconnectEvent) {
+//        connected.set(false)
+//    }
 
     fun sendMessage(event: MessageEvent) {
         if (connected.get()) {
             LOG.debug("sending message. event={}", event)
-            simpleMessageTemplate.convertAndSend(DESTINATION, event)
+            // simpleMessageTemplate.convertAndSend(DESTINATION, event)
         } else if (event is QueueableEvent) {
             LOG.debug("queueing message. event={}", event)
             messageQueue.offer(event)

@@ -1,28 +1,28 @@
 package nebulosa.api
 
+import com.github.rvesse.airline.SingleCommand
 import com.sun.jna.Platform
+import nebulosa.api.inject.koin
 import nebulosa.time.SystemClock
-import org.springframework.boot.runApplication
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 import java.nio.file.Path
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.swing.filechooser.FileSystemView
-import kotlin.io.path.createDirectories
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.exists
-import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.*
 
 fun initAppDirectory(): Path {
     val appPath = when {
-        Platform.isLinux() -> Path.of(System.getProperty("user.home"), ".nebulosa")
-        Platform.isWindows() -> Path.of(FileSystemView.getFileSystemView().defaultDirectory.path, "Nebulosa")
+        Platform.isLinux() -> Path(System.getProperty("user.home"), ".nebulosa")
+        Platform.isWindows() -> Path(FileSystemView.getFileSystemView().defaultDirectory.path, "Nebulosa")
         else -> throw IllegalStateException("unsupported operating system")
     }
 
-    appPath.createDirectories()
-    System.setProperty("app.dir", "$appPath")
     return appPath
+        .createDirectories()
+        .also { System.setProperty("app.dir", "$it") }
 }
 
 private fun Path.clearLogIfPastDays(days: Long = 7L) {
@@ -44,14 +44,23 @@ private fun Path.clearLogIfPastDays(days: Long = 7L) {
 }
 
 fun main(args: Array<String>) {
-    with(initAppDirectory()) {
-        Path.of("$this", "logs").createDirectories().clearLogIfPastDays()
-        Path.of("$this", "data").createDirectories().also { System.setProperty("DATA_PATH", "$it") }
-    }
+    val appDir = initAppDirectory()
+
+    koin.modules(module {
+        single(named("appDir")) { appDir }
+        single(named("logsDir")) { Path("$appDir", "logs").createDirectories().clearLogIfPastDays() }
+        single(named("dataDir")) { Path("$appDir", "data").createDirectories() }
+    })
 
     // Sets default locale to en_US.
     Locale.setDefault(Locale.ENGLISH)
 
-    // Run the Spring Boot application.
-    runApplication<Nebulosa>(*args)
+    val parser = SingleCommand.singleCommand(Nebulosa::class.java)
+    val nebulosa = parser.parse(*args)
+
+    koin.modules(module {
+        single { nebulosa }
+    })
+
+    nebulosa.run()
 }
