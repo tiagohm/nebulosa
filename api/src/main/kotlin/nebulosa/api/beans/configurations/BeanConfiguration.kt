@@ -109,10 +109,10 @@ class BeanConfiguration {
     @Bean
     fun alpacaHttpClient(connectionPool: ConnectionPool) = OkHttpClient.Builder()
         .connectionPool(connectionPool)
-        .readTimeout(60L, TimeUnit.SECONDS)
-        .writeTimeout(60L, TimeUnit.SECONDS)
-        .connectTimeout(60L, TimeUnit.SECONDS)
-        .callTimeout(60L, TimeUnit.SECONDS)
+        .readTimeout(90L, TimeUnit.SECONDS)
+        .writeTimeout(90L, TimeUnit.SECONDS)
+        .connectTimeout(90L, TimeUnit.SECONDS)
+        .callTimeout(90L, TimeUnit.SECONDS)
         .build()
 
     @Bean

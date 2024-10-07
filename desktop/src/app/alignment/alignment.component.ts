@@ -274,7 +274,6 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 			this.method = 'DARV'
 			this.darvRequest.direction = direction
 			this.darvRequest.reversed = this.preference.darvHemisphere === 'SOUTHERN'
-			Object.assign(this.tppaRequest.plateSolver, this.preferenceService.settings.get().plateSolver[this.tppaRequest.plateSolver.type])
 
 			await this.openCameraImage()
 			await this.api.darvStart(this.camera, this.guideOutput, this.darvRequest)
@@ -290,6 +289,7 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 	protected async tppaStart() {
 		if (this.camera?.id && this.mount?.id) {
 			this.method = 'TPPA'
+			Object.assign(this.tppaRequest.plateSolver, this.preferenceService.settings.get().plateSolver[this.tppaRequest.plateSolver.type])
 
 			await this.openCameraImage()
 			await this.api.tppaStart(this.camera, this.mount, this.tppaRequest)

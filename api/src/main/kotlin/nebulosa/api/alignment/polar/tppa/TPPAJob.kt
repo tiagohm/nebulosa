@@ -2,11 +2,7 @@ package nebulosa.api.alignment.polar.tppa
 
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignmentResult
-import nebulosa.api.cameras.AutoSubFolderMode
-import nebulosa.api.cameras.CameraEventAware
-import nebulosa.api.cameras.CameraExposureEvent
-import nebulosa.api.cameras.CameraExposureFinished
-import nebulosa.api.cameras.CameraExposureTask
+import nebulosa.api.cameras.*
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.mounts.MountEventAware
 import nebulosa.api.mounts.MountMoveRequest
@@ -20,8 +16,8 @@ import nebulosa.indi.device.mount.MountEvent
 import nebulosa.job.manager.AbstractJob
 import nebulosa.job.manager.Task
 import nebulosa.job.manager.delay.DelayEvent
+import nebulosa.job.manager.delay.DelayStarted
 import nebulosa.job.manager.delay.DelayTask
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.formatSignedDMS
@@ -127,7 +123,7 @@ data class TPPAJob(
 
     override fun onPause(paused: Boolean) {
         if (paused) {
-            status.pausing = true
+            status.state = TPPAState.PAUSING
             status.send()
         }
 
@@ -135,16 +131,17 @@ data class TPPAJob(
     }
 
     override fun beforePause(task: Task) {
-        status.pausing = false
         status.state = TPPAState.PAUSED
         status.send()
     }
 
     override fun accept(event: Any) {
-        status.capture.captureElapsedTime = stopwatch.elapsedMicroseconds
-
         when (event) {
             is CameraExposureEvent -> {
+                if (event is CameraExposureStarted) {
+                    status.capture.captureElapsedTime = stopwatch.elapsedMicroseconds
+                }
+
                 status.capture.handleCameraExposureEvent(event)
 
                 if (event is CameraExposureFinished) {
@@ -154,10 +151,19 @@ data class TPPAJob(
                 status.send()
             }
             is DelayEvent -> {
+                if (event is DelayStarted) {
+                    status.capture.captureElapsedTime = stopwatch.elapsedMicroseconds
+                }
+
+                status.capture.handleCameraDelayEvent(event)
+
                 if (event.task === settleDelayTask) {
                     status.state = TPPAState.SETTLING
-                    status.send()
+                } else if (event.task === mountMoveTask.delayTask) {
+                    status.state = TPPAState.SLEWING
                 }
+
+                status.send()
             }
             is ThreePointPolarAlignmentResult.NeedMoreMeasurement -> {
                 noSolutionAttempts = 0
@@ -198,7 +204,10 @@ data class TPPAJob(
                     else -> ""
                 }
 
-                LOG.debug { "TPPA aligned. azimuthError=${status.azimuthError.formatSignedDMS()}, altitudeError=${status.altitudeError.formatSignedDMS()}" }
+                LOG.debug(
+                    "TPPA aligned. azimuthError={}, altitudeError={}",
+                    status.azimuthError.formatSignedDMS(), status.altitudeError.formatSignedDMS()
+                )
 
                 status.state = TPPAState.COMPUTED
                 status.send()
@@ -207,7 +216,7 @@ data class TPPAJob(
     }
 
     override fun beforeStart() {
-        LOG.debug { "TPPA started. longitude=$longitude, latitude=$latitude, camera=$camera, mount=$mount, request=$request" }
+        LOG.debug("TPPA started. longitude={}, latitude={}, camera={}, mount={}, request={}", longitude, latitude, camera, mount, request)
 
         status.rightAscension = mount.rightAscension
         status.declination = mount.declination
@@ -216,7 +225,7 @@ data class TPPAJob(
     }
 
     override fun afterFinish() {
-        LOG.debug { "TPPA finished. camera=$camera, mount=$mount, request=$request" }
+        LOG.debug("TPPA finished. camera={}, mount={}, request={}", camera, mount, request)
 
         stopwatch.stop()
 

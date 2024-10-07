@@ -5,9 +5,11 @@ import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.message.MessageService
+import nebulosa.api.mounts.MountEventAware
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.MountEvent
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -21,7 +23,7 @@ class TPPAExecutor(
     private val messageService: MessageService,
     private val httpClient: OkHttpClient,
     private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
-) : Consumer<MessageEvent>, CameraEventAware {
+) : Consumer<MessageEvent>, CameraEventAware, MountEventAware {
 
     private val jobs = ConcurrentHashMap.newKeySet<TPPAJob>(1)
 
@@ -32,6 +34,11 @@ class TPPAExecutor(
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleCameraEvent(event: CameraEvent) {
         jobs.find { it.camera === event.device }?.handleCameraEvent(event)
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    override fun handleMountEvent(event: MountEvent) {
+        jobs.find { it.mount === event.device }?.handleMountEvent(event)
     }
 
     @Synchronized

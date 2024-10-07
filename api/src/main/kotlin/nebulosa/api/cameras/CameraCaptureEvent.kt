@@ -73,7 +73,7 @@ data class CameraCaptureEvent(
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun computeCaptureProgress() {
-        if (captureElapsedTime > 0L) {
+        if (captureElapsedTime > 0L && captureRemainingTime >= 0L) {
             captureProgress = captureElapsedTime.toDouble() / (captureElapsedTime + captureRemainingTime)
         }
     }

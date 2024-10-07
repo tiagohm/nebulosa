@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jsonMapper
 import nebulosa.json.PathModule
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
@@ -21,7 +21,7 @@ abstract class RetrofitService(
     mapper: ObjectMapper? = null,
 ) {
 
-    protected val jsonMapper: ObjectMapper by lazy { mapper ?: DEFAULT_MAPPER.copy() }
+    protected val objectMapper: ObjectMapper by lazy { mapper ?: DEFAULT_MAPPER.also(::withJsonMapper).build() }
 
     protected open val converterFactory: Iterable<Converter.Factory>
         get() = emptyList()
@@ -29,23 +29,22 @@ abstract class RetrofitService(
     protected open val callAdaptorFactory: CallAdapter.Factory?
         get() = null
 
-    protected open fun withOkHttpClientBuilder(builder: OkHttpClient.Builder) = Unit
+    protected open fun withOkHttpClient(builder: OkHttpClient.Builder) = Unit
 
-    protected open fun withObjectMapper(mapper: ObjectMapper) = Unit
+    protected open fun withJsonMapper(mapper: JsonMapper.Builder) = Unit
 
     protected open val retrofit by lazy {
         val builder = Retrofit.Builder()
         builder.baseUrl(url.trim().let { if (it.endsWith("/")) it else "$it/" })
         builder.addConverterFactory(RawAsStringConverterFactory)
         builder.addConverterFactory(RawAsByteArrayConverterFactory)
-        builder.addConverterFactory(EnumToStringConverterFactory(jsonMapper))
+        builder.addConverterFactory(EnumToStringConverterFactory(objectMapper))
         converterFactory.forEach { builder.addConverterFactory(it) }
-        withObjectMapper(jsonMapper)
-        builder.addConverterFactory(JacksonConverterFactory.create(jsonMapper))
+        builder.addConverterFactory(JacksonConverterFactory.create(objectMapper))
         callAdaptorFactory?.also(builder::addCallAdapterFactory)
 
         with((httpClient ?: HTTP_CLIENT).newBuilder()) {
-            withOkHttpClientBuilder(this)
+            withOkHttpClient(this)
             builder.client(build())
         }
 
@@ -64,9 +63,9 @@ abstract class RetrofitService(
             .callTimeout(60L, TimeUnit.SECONDS)
             .build()
 
-        @JvmStatic private val DEFAULT_MAPPER = jsonMapper {
+        @JvmStatic private val DEFAULT_MAPPER = JsonMapper.builder().apply {
+            addModule(JavaTimeModule()) // Why needs to be registered first? Fix "java.time.LocalDateTime not supported by default"
             addModule(PathModule())
-            addModule(JavaTimeModule())
             enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             serializationInclusion(JsonInclude.Include.NON_NULL)
