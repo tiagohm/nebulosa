@@ -49,7 +49,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    annotationProcessor("org.springframework:spring-context-indexer:6.1.12")
+    annotationProcessor("org.springframework:spring-context-indexer:6.1.13")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation(project(":nebulosa-astrobin-api"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
