@@ -13,6 +13,7 @@ import nebulosa.indi.protocol.DefVector.Companion.isNotReadOnly
 import nebulosa.indi.protocol.Vector.Companion.isBusy
 import nebulosa.math.*
 import nebulosa.nova.position.ICRF
+import nebulosa.time.SystemClock
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -56,7 +57,7 @@ internal open class INDIMount(
     @Volatile final override var longitude = 0.0
     @Volatile final override var latitude = 0.0
     @Volatile final override var elevation = 0.0
-    @Volatile final override var dateTime = OffsetDateTime.now()!!
+    @Volatile final override var dateTime = OffsetDateTime.now(SystemClock)!!
 
     override fun handleMessage(message: INDIProtocol) {
         when (message) {

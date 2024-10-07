@@ -56,7 +56,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="grid">
+	<div class="grid relative">
 		<div class="col-12">
 			<p-tabView [(activeIndex)]="tab">
 				<p-tabPanel header="TPPA">
@@ -262,19 +262,46 @@
 								[text]="true" />
 						</div>
 					</div>
-					<div class="grid mt-1">
-						<div class="col-12 flex-column justify-content-center text-sm overflow-y-auto max-h-8rem p-0">
-							<span>1. Locate a star near the south meridian and close to declination 0.</span>
-							<span>2. Start DARV and wait for routine to complete.</span>
-							<span>3. If you see V shaped track, adjust the Azimuth and repeat the step 2 till you get a line.</span>
-							<span>4. Locate a star in the eastern or western horizon and close to declination 0.</span>
-							<span>5. Start DARV and wait for routine to complete.</span>
-							<span>6. If you see V shaped track, adjust the Altitude and repeat the step 5 till you get a line.</span>
-							<span>7. Increase the drift time and repeat the step 1 to refine the alignment.</span>
-						</div>
-					</div>
 				</p-tabPanel>
 			</p-tabView>
 		</div>
+		<p-button
+			[text]="true"
+			severity="info"
+			icon="mdi mdi-information"
+			styleClass="absolute"
+			[style]="{ right: '8px', top: '5px' }"
+			(onClick)="tab === 0 ? tppaInfo.toggle($event) : darvInfo.toggle($event)" />
+
+		<p-overlayPanel
+			#tppaInfo
+			[focusOnShow]="false"
+			appendTo="body"
+			[style]="{ maxWidth: '91vw' }">
+			<div class="grid text-sm">
+				<div class="col-12 flex-column justify-content-center px-0">
+					<span>1. Choose step duration and speed so that the step size is at least 30 arcmin.</span>
+					<span>2. Start TPPA and wait for the azimuth/altitude errors to be displayed.</span>
+					<span>3. Repeatedly adjust the Azimuth/Altitude until their values get close to 0.</span>
+				</div>
+			</div>
+		</p-overlayPanel>
+		<p-overlayPanel
+			#darvInfo
+			[focusOnShow]="false"
+			appendTo="body"
+			[style]="{ maxWidth: '91vw' }">
+			<div class="grid text-sm">
+				<div class="col-12 flex-column justify-content-center px-0">
+					<span>1. Locate a star near the south meridian and close to declination 0.</span>
+					<span>2. Start DARV and wait for routine to complete.</span>
+					<span>3. If you see V shaped track, adjust the Azimuth and repeat the step 2 till you get a line.</span>
+					<span>4. Locate a star in the eastern or western horizon and close to declination 0.</span>
+					<span>5. Start DARV and wait for routine to complete.</span>
+					<span>6. If you see V shaped track, adjust the Altitude and repeat the step 5 till you get a line.</span>
+					<span>7. Increase the drift time and repeat the step 1 to refine the alignment.</span>
+				</div>
+			</div>
+		</p-overlayPanel>
 	</div>
 </div>

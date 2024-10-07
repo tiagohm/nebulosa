@@ -425,7 +425,7 @@ data class ASCOMMount(
 
     private fun processDateTime() {
         service.utcDate(device.number).doRequest {
-            dateTime = it.value.atOffset(ZoneOffset.UTC)
+            dateTime = it.value
             sender.fireOnEventReceived(MountTimeChanged(this))
         }
     }

@@ -20,7 +20,6 @@ data class TPPAEvent(
     @JvmField var azimuthErrorDirection: String = "",
     @JvmField var altitudeErrorDirection: String = "",
     @JvmField @field:JsonIgnoreProperties("camera") val capture: CameraCaptureEvent = CameraCaptureEvent(camera),
-    @JvmField var pausing: Boolean = false,
 ) : MessageEvent {
 
     override val eventName = "TPPA.ELAPSED"
