@@ -39,6 +39,8 @@ import nebulosa.api.image.ImageService
 import nebulosa.api.lightboxes.LightBoxController
 import nebulosa.api.lightboxes.LightBoxEventHub
 import nebulosa.api.lightboxes.LightBoxService
+import nebulosa.api.livestacker.LiveStackingController
+import nebulosa.api.livestacker.LiveStackingService
 import nebulosa.api.message.MessageService
 import nebulosa.api.mounts.MountEventHub
 import nebulosa.api.platesolver.PlateSolverController
@@ -277,6 +279,7 @@ fun servicesModule() = module {
     single { StarDetectionService() }
     single { AutoFocusExecutor(get(), get(), get()) }
     single { AutoFocusService(get()) }
+    single { LiveStackingService() }
 }
 
 // CONTROLLERS
@@ -296,6 +299,7 @@ fun controllersModule() = module(true) {
     single { FlatWizardController(get(), get(), get()) }
     single { StarDetectionController(get(), get()) }
     single { AutoFocusController(get(), get(), get()) }
+    single { LiveStackingController(get(), get(), get()) }
 }
 
 // APP
