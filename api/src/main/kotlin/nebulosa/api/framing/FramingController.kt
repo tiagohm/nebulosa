@@ -1,33 +1,38 @@
 package nebulosa.api.framing
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.Max
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Positive
+import io.javalin.Javalin
+import io.javalin.http.Context
 import nebulosa.api.image.ImageService
+import nebulosa.api.javalin.*
 import nebulosa.math.deg
 import nebulosa.math.hours
-import org.hibernate.validator.constraints.Range
-import org.springframework.web.bind.annotation.*
 
-@RestController
-@RequestMapping("framing")
 class FramingController(
+    app: Javalin,
     private val imageService: ImageService,
     private val framingService: FramingService,
 ) {
 
-    @GetMapping("hips-surveys")
-    fun hipsSurveys() = framingService.availableHipsSurveys
+    init {
+        app.get("framing/hips-surveys", ::hipsSurveys)
+        app.put("framing", ::frame)
+    }
 
-    @PutMapping
-    fun frame(
-        @RequestParam @Valid @NotBlank rightAscension: String,
-        @RequestParam @Valid @NotBlank declination: String,
-        @RequestParam(required = false, defaultValue = "1280") @Valid @Range(min = 1, max = 7680) width: Int,
-        @RequestParam(required = false, defaultValue = "720") @Valid @Range(min = 1, max = 4320) height: Int,
-        @RequestParam(required = false, defaultValue = "1.0") @Valid @Positive @Max(90) fov: Double,
-        @RequestParam(required = false, defaultValue = "0.0") rotation: Double,
-        @RequestParam(required = false, defaultValue = "CDS/P/DSS2/COLOR") hipsSurvey: String,
-    ) = imageService.frame(rightAscension.hours, declination.deg, width, height, fov.deg, rotation.deg, hipsSurvey)
+    private fun hipsSurveys(ctx: Context) {
+        ctx.json(framingService.availableHipsSurveys)
+    }
+
+    private fun frame(ctx: Context) {
+        val rightAscension = ctx.queryParamAsString("rightAscension").notBlank().get()
+        val declination = ctx.queryParamAsString("declination").notBlank().get()
+        val width = ctx.queryParamAsInt("width").range(1..7680).getOrDefault(1280)
+        val height = ctx.queryParamAsInt("height").range(1..4320).getOrDefault(720)
+        val fov = ctx.queryParamAsDouble("fov").range(0.0..90.0).getOrDefault(1.0)
+        val rotation = ctx.queryParamAsDouble("fov").getOrDefault(0.0)
+        val hipsSurvey = ctx.queryParamAsString("hipsSurvey").getOrDefault("CDS/P/DSS2/COLOR")
+
+        imageService
+            .frame(rightAscension.hours, declination.deg, width, height, fov.deg, rotation.deg, hipsSurvey)
+            .also(ctx::json)
+    }
 }

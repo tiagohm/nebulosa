@@ -29,6 +29,7 @@ import nebulosa.api.dustcap.DustCapService
 import nebulosa.api.focusers.FocuserController
 import nebulosa.api.focusers.FocuserEventHub
 import nebulosa.api.focusers.FocuserService
+import nebulosa.api.framing.FramingController
 import nebulosa.api.framing.FramingService
 import nebulosa.api.guiding.GuideOutputController
 import nebulosa.api.guiding.GuideOutputEventHub
@@ -283,6 +284,7 @@ fun servicesModule() = module {
     single { AutoFocusService(get()) }
     single { LiveStackingService() }
     single { StackerService(get()) }
+    single { FramingService(get(), get()) }
 }
 
 // CONTROLLERS
@@ -304,6 +306,7 @@ fun controllersModule() = module(true) {
     single { AutoFocusController(get(), get(), get()) }
     single { LiveStackingController(get(), get(), get()) }
     single { StackerController(get(), get()) }
+    single { FramingController(get(), get(), get()) }
 }
 
 // APP
