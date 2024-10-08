@@ -45,6 +45,8 @@ import nebulosa.api.preference.PreferenceRepository
 import nebulosa.api.rotators.RotatorController
 import nebulosa.api.rotators.RotatorEventHub
 import nebulosa.api.rotators.RotatorService
+import nebulosa.api.stardetector.StarDetectionController
+import nebulosa.api.stardetector.StarDetectionService
 import nebulosa.api.wheels.WheelController
 import nebulosa.api.wheels.WheelEventHub
 import nebulosa.api.wheels.WheelService
@@ -269,6 +271,7 @@ fun servicesModule() = module {
     single { PlateSolverService(get(), get(Named.defaultHttpClient)) }
     single { FlatWizardExecutor(get(), get(), get()) }
     single { FlatWizardService(get(Named.capturesDir), get()) }
+    single { StarDetectionService() }
 }
 
 // CONTROLLERS
@@ -286,6 +289,7 @@ fun controllersModule() = module(true) {
     single { ImageController(get(), get(), get()) }
     single { PlateSolverController(get(), get()) }
     single { FlatWizardController(get(), get(), get()) }
+    single { StarDetectionController(get(), get()) }
 }
 
 // APP
