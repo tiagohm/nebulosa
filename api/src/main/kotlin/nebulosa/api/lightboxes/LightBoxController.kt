@@ -23,47 +23,47 @@ class LightBoxController(
         app.put("light-boxes/{id}/listen", ::listen)
     }
 
-    fun lightBoxes(ctx: Context) {
+    private fun lightBoxes(ctx: Context) {
         ctx.json(connectionService.lightBoxes().sorted())
     }
 
-    fun lightBox(ctx: Context) {
+    private fun lightBox(ctx: Context) {
         val id = ctx.pathParam("id")
         connectionService.lightBox(id)?.also(ctx::json)
     }
 
-    fun connect(ctx: Context) {
+    private fun connect(ctx: Context) {
         val id = ctx.pathParam("id")
         val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.connect(lightBox)
     }
 
-    fun disconnect(ctx: Context) {
+    private fun disconnect(ctx: Context) {
         val id = ctx.pathParam("id")
         val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.disconnect(lightBox)
     }
 
-    fun enable(ctx: Context) {
+    private fun enable(ctx: Context) {
         val id = ctx.pathParam("id")
         val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.enable(lightBox)
     }
 
-    fun disable(ctx: Context) {
+    private fun disable(ctx: Context) {
         val id = ctx.pathParam("id")
         val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.disable(lightBox)
     }
 
-    fun brightness(ctx: Context) {
+    private fun brightness(ctx: Context) {
         val id = ctx.pathParam("id")
         val lightBox = connectionService.lightBox(id) ?: return
         val intensity = ctx.queryParamAsDouble("intensity").positiveOrZero().get()
         lightBoxService.brightness(lightBox, intensity)
     }
 
-    fun listen(ctx: Context) {
+    private fun listen(ctx: Context) {
         val id = ctx.pathParam("id")
         val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.listen(lightBox)

@@ -3,9 +3,7 @@ package nebulosa.api.guiding
 import com.fasterxml.jackson.core.JsonGenerator
 import nebulosa.api.devices.DeviceSerializer
 import nebulosa.indi.device.guider.GuideOutput
-import org.springframework.stereotype.Component
 
-@Component
 class GuideOutputSerializer : DeviceSerializer<GuideOutput>(GuideOutput::class.java) {
 
     override fun JsonGenerator.serialize(value: GuideOutput) {

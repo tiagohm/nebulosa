@@ -1,16 +1,12 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.indi.device.guider.GuideOutput
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Lazy
-import org.springframework.stereotype.Component
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
-@Component
-class GuideOutputDeserializer : DeviceDeserializer<GuideOutput>(GuideOutput::class.java) {
+class GuideOutputDeserializer : DeviceDeserializer<GuideOutput>(GuideOutput::class.java), KoinComponent {
 
-    @Autowired @Lazy private lateinit var connectionService: ConnectionService
-
-    override fun deviceFor(name: String) = connectionService.guideOutput(name)
+    override fun deviceFor(name: String) = get<ConnectionService>().guideOutput(name)
 }

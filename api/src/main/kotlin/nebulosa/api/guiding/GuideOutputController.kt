@@ -1,51 +1,67 @@
 package nebulosa.api.guiding
 
+import io.javalin.Javalin
+import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.javalin.notBlank
+import nebulosa.api.javalin.queryParamAsLong
+import nebulosa.api.javalin.queryParamAsString
+import nebulosa.api.javalin.range
 import nebulosa.guiding.GuideDirection
-import nebulosa.indi.device.guider.GuideOutput
-import org.hibernate.validator.constraints.time.DurationMax
-import org.hibernate.validator.constraints.time.DurationMin
-import org.springframework.web.bind.annotation.*
 import java.time.Duration
 
-@RestController
-@RequestMapping("guide-outputs")
 class GuideOutputController(
+    app: Javalin,
     private val connectionService: ConnectionService,
     private val guideOutputService: GuideOutputService,
 ) {
 
-    @GetMapping
-    fun guideOutputs(): List<GuideOutput> {
-        return connectionService.guideOutputs().sorted()
+    init {
+        app.get("guide-outputs", ::guideOutputs)
+        app.get("guide-outputs/{id}", ::guideOutput)
+        app.put("guide-outputs/{id}/connect", ::connect)
+        app.put("guide-outputs/{id}/disconnect", ::disconnect)
+        app.put("guide-outputs/{id}/pulse", ::pulse)
+        app.put("guide-outputs/{id}/listen", ::listen)
     }
 
-    @GetMapping("{guideOutput}")
-    fun guideOutput(guideOutput: GuideOutput): GuideOutput {
-        return guideOutput
+    private fun guideOutputs(ctx: Context) {
+        ctx.json(connectionService.guideOutputs().sorted())
     }
 
-    @PutMapping("{guideOutput}/connect")
-    fun connect(guideOutput: GuideOutput) {
+    private fun guideOutput(ctx: Context) {
+        val id = ctx.pathParam("id")
+        connectionService.guideOutput(id)?.also(ctx::json)
+    }
+
+    private fun connect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val guideOutput = connectionService.guideOutput(id) ?: return
         guideOutputService.connect(guideOutput)
     }
 
-    @PutMapping("{guideOutput}/disconnect")
-    fun disconnect(guideOutput: GuideOutput) {
+    private fun disconnect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val guideOutput = connectionService.guideOutput(id) ?: return
         guideOutputService.disconnect(guideOutput)
     }
 
-    @PutMapping("{guideOutput}/pulse")
-    fun pulse(
-        guideOutput: GuideOutput,
-        @RequestParam direction: GuideDirection,
-        @RequestParam @DurationMin(nanos = 0L) @DurationMax(minutes = 30L) duration: Duration,
-    ) {
+    private fun pulse(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val guideOutput = connectionService.guideOutput(id) ?: return
+        val direction = ctx.queryParamAsString("direction").notBlank().get().let(GuideDirection::valueOf)
+        val duration = ctx.queryParamAsLong("duration").range(PULSE_DURATION_RANGE).get().times(1000L).let(Duration::ofNanos)
         guideOutputService.pulse(guideOutput, direction, duration)
     }
 
-    @PutMapping("{guideOutput}/listen")
-    fun listen(guideOutput: GuideOutput) {
+    private fun listen(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val guideOutput = connectionService.guideOutput(id) ?: return
         guideOutputService.listen(guideOutput)
+    }
+
+    companion object {
+
+        private val PULSE_DURATION_RANGE = 0L..1800000000L
     }
 }

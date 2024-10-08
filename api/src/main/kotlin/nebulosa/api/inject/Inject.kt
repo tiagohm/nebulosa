@@ -24,7 +24,9 @@ import nebulosa.api.dustcap.DustCapService
 import nebulosa.api.focusers.FocuserController
 import nebulosa.api.focusers.FocuserEventHub
 import nebulosa.api.focusers.FocuserService
+import nebulosa.api.guiding.GuideOutputController
 import nebulosa.api.guiding.GuideOutputEventHub
+import nebulosa.api.guiding.GuideOutputService
 import nebulosa.api.lightboxes.LightBoxController
 import nebulosa.api.lightboxes.LightBoxEventHub
 import nebulosa.api.lightboxes.LightBoxService
@@ -246,6 +248,7 @@ fun servicesModule() = module {
     single { RotatorService(get()) }
     single { FocuserService(get()) }
     single { WheelService(get()) }
+    single { GuideOutputService(get()) }
     single { LightBoxService(get()) }
     single { DustCapService(get()) }
 }
@@ -258,6 +261,7 @@ fun controllersModule() = module(true) {
     single { RotatorController(get(), get(), get()) }
     single { FocuserController(get(), get(), get()) }
     single { WheelController(get(), get(), get()) }
+    single { GuideOutputController(get(), get(), get()) }
     single { LightBoxController(get(), get(), get()) }
     single { DustCapController(get(), get(), get()) }
 }

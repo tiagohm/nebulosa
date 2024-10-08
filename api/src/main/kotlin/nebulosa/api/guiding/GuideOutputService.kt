@@ -2,10 +2,8 @@ package nebulosa.api.guiding
 
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.guider.GuideOutput
-import org.springframework.stereotype.Service
 import java.time.Duration
 
-@Service
 class GuideOutputService(private val guideOutputEventHub: GuideOutputEventHub) {
 
     fun connect(guideOutput: GuideOutput) {

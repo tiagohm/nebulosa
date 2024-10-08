@@ -7,6 +7,8 @@ import nebulosa.api.dustcap.DustCapDeserializer
 import nebulosa.api.dustcap.DustCapSerializer
 import nebulosa.api.focusers.FocuserDeserializer
 import nebulosa.api.focusers.FocuserSerializer
+import nebulosa.api.guiding.GuideOutputDeserializer
+import nebulosa.api.guiding.GuideOutputSerializer
 import nebulosa.api.lightboxes.LightBoxDeserializer
 import nebulosa.api.lightboxes.LightBoxSerializer
 import nebulosa.api.rotators.RotatorDeserializer
@@ -16,6 +18,7 @@ import nebulosa.api.wheels.WheelSerializer
 import nebulosa.indi.device.dustcap.DustCap
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.rotator.Rotator
 
@@ -28,6 +31,7 @@ class DeviceModule : SimpleModule() {
         serializers.addSerializer(RotatorSerializer())
         serializers.addSerializer(FocuserSerializer())
         serializers.addSerializer(WheelSerializer())
+        serializers.addSerializer(GuideOutputSerializer())
         serializers.addSerializer(LightBoxSerializer())
         serializers.addSerializer(DustCapSerializer())
         context.addSerializers(serializers)
@@ -36,6 +40,7 @@ class DeviceModule : SimpleModule() {
         deserializers.addDeserializer(Rotator::class.java, RotatorDeserializer())
         deserializers.addDeserializer(Focuser::class.java, FocuserDeserializer())
         deserializers.addDeserializer(FilterWheel::class.java, WheelDeserializer())
+        deserializers.addDeserializer(GuideOutput::class.java, GuideOutputDeserializer())
         deserializers.addDeserializer(LightBox::class.java, LightBoxDeserializer())
         deserializers.addDeserializer(DustCap::class.java, DustCapDeserializer())
         context.addDeserializers(deserializers)
