@@ -48,6 +48,9 @@ import nebulosa.api.rotators.RotatorService
 import nebulosa.api.wheels.WheelController
 import nebulosa.api.wheels.WheelEventHub
 import nebulosa.api.wheels.WheelService
+import nebulosa.api.wizard.flat.FlatWizardController
+import nebulosa.api.wizard.flat.FlatWizardExecutor
+import nebulosa.api.wizard.flat.FlatWizardService
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
@@ -264,6 +267,8 @@ fun servicesModule() = module {
     single { FramingService(get(), get()) }
     single { ImageService(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     single { PlateSolverService(get(), get(Named.defaultHttpClient)) }
+    single { FlatWizardExecutor(get(), get(), get()) }
+    single { FlatWizardService(get(Named.capturesDir), get()) }
 }
 
 // CONTROLLERS
@@ -280,6 +285,7 @@ fun controllersModule() = module(true) {
     single { CalibrationFrameController(get(), get()) }
     single { ImageController(get(), get(), get()) }
     single { PlateSolverController(get(), get()) }
+    single { FlatWizardController(get(), get(), get()) }
 }
 
 // APP
