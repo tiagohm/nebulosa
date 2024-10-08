@@ -41,7 +41,7 @@ class Nebulosa : Runnable, AutoCloseable {
         koinApp.modules(appModule(app))
         koinApp.modules(objectMapperModule(OBJECT_MAPPER))
         koinApp.modules(servicesModule())
-        koinApp.modules(controllerModule())
+        koinApp.modules(controllersModule())
         startKoin(koinApp)
 
         LOG.info("server is started at port: {}", app.port())

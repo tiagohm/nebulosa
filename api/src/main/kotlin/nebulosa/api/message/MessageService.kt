@@ -21,8 +21,6 @@ class MessageService(app: Javalin) : Consumer<WsConfig> {
 
     override fun accept(ws: WsConfig) {
         ws.onConnect {
-            // TODO: How to check the destination?
-
             if (connected.compareAndSet(null, it.session)) {
                 LOG.info("web socket session accepted. address={}", it.session.remoteAddress)
 
@@ -62,8 +60,6 @@ class MessageService(app: Javalin) : Consumer<WsConfig> {
     }
 
     companion object {
-
-        const val DESTINATION = "NEBULOSA.EVENT"
 
         @JvmStatic private val LOG = loggerFor<MessageService>()
     }

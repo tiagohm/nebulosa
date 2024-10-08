@@ -9,6 +9,8 @@ import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.cameras.CameraEventHub
+import nebulosa.api.confirmation.ConfirmationController
+import nebulosa.api.confirmation.ConfirmationService
 import nebulosa.api.connection.ConnectionController
 import nebulosa.api.connection.ConnectionEventHub
 import nebulosa.api.connection.ConnectionService
@@ -216,12 +218,14 @@ fun servicesModule() = module {
     single(createdAtStart = true) { MessageService(get()) }
     includes(deviceEventHubModule())
     single(createdAtStart = true) { ConnectionService(get(), get(Named.alpacaHttpClient), get(), get()) }
+    single { ConfirmationService(get()) }
 }
 
 // CONTROLLERS
 
-fun controllerModule() = module(true) {
+fun controllersModule() = module(true) {
     single { ConnectionController(get(), get()) }
+    single { ConfirmationController(get(), get()) }
 }
 
 // APP

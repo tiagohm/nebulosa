@@ -2,8 +2,9 @@ package nebulosa.api.connection
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import io.javalin.http.queryParamAsClass
-import io.javalin.validation.Check
+import nebulosa.api.javalin.queryParamAsInt
+import nebulosa.api.javalin.queryParamAsString
+import nebulosa.api.javalin.range
 
 class ConnectionController(
     app: Javalin,
@@ -18,31 +19,29 @@ class ConnectionController(
     }
 
     private fun connect(ctx: Context) {
-        val host = ctx.queryParamAsClass<String>("host").get()
-        val port = ctx.queryParamAsClass<Int>("port").check(PortRangeCheck, "invalid port range").get()
-        val type = ctx.queryParamAsClass<String>("type").getOrDefault("INDI").let(ConnectionType::valueOf)
+        val host = ctx.queryParamAsString("host").get()
+        val port = ctx.queryParamAsInt("port").range(PORT_RANGE).get()
+        val type = ctx.queryParamAsString("type").getOrDefault("INDI").let(ConnectionType::valueOf)
 
         connectionService.connect(host, port, type)
     }
 
-    fun disconnect(ctx: Context) {
+    private fun disconnect(ctx: Context) {
         val id = ctx.pathParam("id")
         connectionService.disconnect(id)
     }
 
-    fun statuses(ctx: Context) {
+    private fun statuses(ctx: Context) {
         ctx.json(connectionService.connectionStatuses())
     }
 
-    fun status(ctx: Context) {
+    private fun status(ctx: Context) {
         val id = ctx.pathParam("id")
         connectionService.connectionStatus(id)?.also(ctx::json)
     }
 
-    private object PortRangeCheck : Check<Int> {
+    companion object {
 
-        override fun invoke(port: Int): Boolean {
-            return port in 1..65535
-        }
+        private val PORT_RANGE = 1..65535
     }
 }
