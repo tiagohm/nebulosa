@@ -16,7 +16,7 @@ class StarDetectionController(
         app.put("star-detection", ::detectStars)
     }
 
-    fun detectStars(ctx: Context) {
+    private fun detectStars(ctx: Context) {
         val path = ctx.queryParamAsPath("path").exists().get()
         val body = ctx.bodyValidator<StarDetectionRequest>().validate().get()
         ctx.json(starDetectionService.detectStars(path, body))

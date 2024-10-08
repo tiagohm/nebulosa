@@ -9,6 +9,9 @@ import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SatelliteRepository
 import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.atlas.SimbadEntityRepository
+import nebulosa.api.autofocus.AutoFocusController
+import nebulosa.api.autofocus.AutoFocusExecutor
+import nebulosa.api.autofocus.AutoFocusService
 import nebulosa.api.calibration.CalibrationFrameController
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.calibration.CalibrationFrameRepository
@@ -272,6 +275,8 @@ fun servicesModule() = module {
     single { FlatWizardExecutor(get(), get(), get()) }
     single { FlatWizardService(get(Named.capturesDir), get()) }
     single { StarDetectionService() }
+    single { AutoFocusExecutor(get(), get(), get()) }
+    single { AutoFocusService(get()) }
 }
 
 // CONTROLLERS
@@ -290,6 +295,7 @@ fun controllersModule() = module(true) {
     single { PlateSolverController(get(), get()) }
     single { FlatWizardController(get(), get(), get()) }
     single { StarDetectionController(get(), get()) }
+    single { AutoFocusController(get(), get(), get()) }
 }
 
 // APP
