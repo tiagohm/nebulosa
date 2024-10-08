@@ -1,11 +1,11 @@
 package nebulosa.api.wizard.flat
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import nebulosa.api.beans.converters.time.DurationUnit
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import org.hibernate.validator.constraints.Range
 import org.hibernate.validator.constraints.time.DurationMax
 import org.hibernate.validator.constraints.time.DurationMin
-import org.springframework.boot.convert.DurationUnit
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 

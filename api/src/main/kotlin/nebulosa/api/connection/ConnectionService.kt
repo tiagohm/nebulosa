@@ -1,5 +1,6 @@
 package nebulosa.api.connection
 
+import io.javalin.http.InternalServerErrorResponse
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.api.message.MessageService
 import nebulosa.indi.client.INDIClient
@@ -20,7 +21,6 @@ import nebulosa.log.error
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
-import org.springframework.web.server.ServerErrorException
 import kotlin.collections.set
 
 class ConnectionService(
@@ -80,8 +80,7 @@ class ConnectionService(
             return provider.id
         } catch (e: Throwable) {
             LOG.error(e)
-
-            throw ServerErrorException("Connection Failed", e)
+            throw InternalServerErrorResponse("Connection Failed")
         }
     }
 

@@ -1,6 +1,7 @@
 package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.javalin.http.NotFoundResponse
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.Location
 import nebulosa.api.atlas.SimbadEntityRepository
@@ -33,8 +34,6 @@ import nebulosa.wcs.WCS
 import nebulosa.wcs.WCSException
 import nebulosa.xisf.XisfFormat
 import okio.sink
-import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 import java.net.URI
 import java.nio.file.Path
 import java.time.LocalDateTime
@@ -279,7 +278,7 @@ class ImageService(
         require(save.path != null)
 
         var (image) = imageBucket.open(path).image?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
-            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found")
+            ?: throw NotFoundResponse("Image not found")
 
         val (x, y, width, height) = save.subFrame.constrained(image.width, image.height)
 

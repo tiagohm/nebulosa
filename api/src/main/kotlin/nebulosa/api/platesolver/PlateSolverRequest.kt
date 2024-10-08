@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import nebulosa.api.beans.converters.angle.DeclinationDeserializer
 import nebulosa.api.beans.converters.angle.DegreesDeserializer
 import nebulosa.api.beans.converters.angle.RightAscensionDeserializer
+import nebulosa.api.beans.converters.time.DurationUnit
 import nebulosa.astap.platesolver.AstapPlateSolver
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.platesolver.LocalAstrometryNetPlateSolver
@@ -15,7 +16,6 @@ import nebulosa.siril.platesolver.SirilPlateSolver
 import okhttp3.OkHttpClient
 import org.hibernate.validator.constraints.time.DurationMax
 import org.hibernate.validator.constraints.time.DurationMin
-import org.springframework.boot.convert.DurationUnit
 import java.nio.file.Path
 import java.time.Duration
 import java.time.temporal.ChronoUnit

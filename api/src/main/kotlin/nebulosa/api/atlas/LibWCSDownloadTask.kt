@@ -7,21 +7,23 @@ import nebulosa.log.loggerFor
 import nebulosa.wcs.LibWCS
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
 import java.nio.file.Path
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
 import kotlin.io.path.outputStream
 
-@Component
 class LibWCSDownloadTask(
+    private val libsPath: Path,
     private val httpClient: OkHttpClient,
     private val preferenceService: PreferenceService,
-    private val libsPath: Path,
+    scheduledExecutorService: ScheduledExecutorService,
 ) : Runnable {
 
-    @Scheduled(fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
+    init {
+        scheduledExecutorService.schedule(this, 5L, TimeUnit.SECONDS)
+    }
+
     override fun run() {
         var request = Request.Builder().get().url(VERSION_URL).build()
 

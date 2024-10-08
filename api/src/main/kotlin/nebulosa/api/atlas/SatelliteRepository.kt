@@ -3,11 +3,8 @@ package nebulosa.api.atlas
 import io.objectbox.Box
 import io.objectbox.query.QueryBuilder.StringOrder.CASE_SENSITIVE
 import nebulosa.api.repositories.BoxRepository
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.stereotype.Component
 
-@Component
-class SatelliteRepository(@Qualifier("satelliteBox") override val box: Box<SatelliteEntity>) : BoxRepository<SatelliteEntity>() {
+class SatelliteRepository(override val box: Box<SatelliteEntity>) : BoxRepository<SatelliteEntity>() {
 
     fun search(text: String? = null, groups: Iterable<SatelliteGroupType> = emptyList(), id: Long = 0L): List<SatelliteEntity> {
         val condition = and(

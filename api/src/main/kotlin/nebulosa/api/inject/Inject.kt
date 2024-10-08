@@ -19,7 +19,10 @@ import nebulosa.api.calibration.CalibrationFrameController
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.calibration.CalibrationFrameRepository
 import nebulosa.api.calibration.CalibrationFrameService
+import nebulosa.api.cameras.CameraCaptureExecutor
+import nebulosa.api.cameras.CameraController
 import nebulosa.api.cameras.CameraEventHub
+import nebulosa.api.cameras.CameraService
 import nebulosa.api.confirmation.ConfirmationController
 import nebulosa.api.confirmation.ConfirmationService
 import nebulosa.api.connection.ConnectionController
@@ -92,10 +95,7 @@ import org.koin.dsl.module
 import java.nio.file.Path
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.SynchronousQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 import kotlin.io.path.*
 
 val koinApp = koinApplication {
@@ -163,6 +163,7 @@ fun coreModule() = module {
     val numberOfCores = Runtime.getRuntime().availableProcessors()
 
     single<ExecutorService> { ThreadPoolExecutor(numberOfCores, 32, 60L, TimeUnit.SECONDS, SynchronousQueue(), DaemonThreadFactory) }
+    single<ScheduledExecutorService> { Executors.newScheduledThreadPool(numberOfCores, DaemonThreadFactory) }
 }
 
 // HTTP
@@ -269,6 +270,13 @@ fun eventHandlerModule() = module(true) {
     single { INDIEventHandler(get(), get()) }
 }
 
+fun tasksModule() = module(true) {
+    single { IERSUpdateTask(get(Named.dataDir), get(Named.defaultHttpClient), get(), get()) }
+    single { SkyAtlasUpdateTask(get(Named.defaultHttpClient), get(), get(), get(), get()) }
+    single { SatelliteUpdateTask(get(Named.defaultHttpClient), get(), get(), get(), get()) }
+    single { LibWCSDownloadTask(get(Named.libsDir), get(Named.defaultHttpClient), get(), get()) }
+}
+
 fun servicesModule() = module {
     single { HorizonsService(httpClient = get(Named.defaultHttpClient)) }
     single { SimbadService(httpClient = get(Named.defaultHttpClient)) }
@@ -284,7 +292,7 @@ fun servicesModule() = module {
     single { GuideOutputService(get()) }
     single { LightBoxService(get()) }
     single { DustCapService(get()) }
-    single { ImageBucket() }
+    single { ImageBucket(get()) }
     single { CalibrationFrameService(get()) }
     single { FramingService(get(), get()) }
     single { ImageService(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
@@ -308,8 +316,11 @@ fun servicesModule() = module {
     single { MoonPhaseFinder(get()) }
     single { HorizonsEphemerisProvider(get()) }
     single { BodyEphemerisProvider(get()) }
-    single { SkyAtlasService(get(), get(), get(), get(), get(), get(Named.defaultHttpClient), get(), get()) }
+    single { SkyAtlasService(get(), get(), get(), get(), get(), get(Named.defaultHttpClient), get(), get(), get()) }
     single { MountService(get(), get(), get(), get(), get()) }
+    single { CameraCaptureExecutor(get(), get(), get(), get(), get()) }
+    single { CameraService(get(Named.capturesDir), get(), get()) }
+    includes(tasksModule())
 }
 
 // CONTROLLERS
@@ -338,6 +349,7 @@ fun controllersModule() = module(true) {
     single { SequencerController(get(), get(), get()) }
     single { SkyAtlasController(get(), get(), get()) }
     single { MountController(get(), get(), get()) }
+    single { CameraController(get(), get(), get()) }
 }
 
 // APP

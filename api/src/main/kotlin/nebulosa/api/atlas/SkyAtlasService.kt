@@ -1,6 +1,7 @@
 package nebulosa.api.atlas
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.javalin.http.NotFoundResponse
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
@@ -26,18 +27,15 @@ import nebulosa.time.TimeYMDHMS
 import nebulosa.time.TimeZonedInSeconds
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.springframework.http.HttpStatus
-import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.web.server.ResponseStatusException
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
-import kotlin.concurrent.timer
 import kotlin.math.abs
 import kotlin.math.hypot
 
@@ -50,6 +48,7 @@ class SkyAtlasService(
     private val httpClient: OkHttpClient,
     private val objectMapper: ObjectMapper,
     private val moonPhaseFinder: MoonPhaseFinder,
+    scheduledExecutorService: ScheduledExecutorService,
 ) {
 
     private val positions = HashMap<GeographicCoordinate, GeographicPosition>()
@@ -60,9 +59,8 @@ class SkyAtlasService(
     @Volatile private var sunImage = ByteArray(0)
     @Volatile private var moonPhase: Pair<LocalDateTime, MoonPhase>? = null
 
-    @Suppress("unused")
-    private val timer = timer("Sun Image Refresher", true, period = 15L * 60 * 1000) {
-        refreshImageOfSun()
+    init {
+        scheduledExecutorService.scheduleAtFixedRate(::refreshImageOfSun, 0L, 15L, TimeUnit.MINUTES)
     }
 
     val objectTypes: Collection<SkyObjectType> by lazy { simbadEntityRepository.findAll().map { it.type }.toSortedSet() }
@@ -86,8 +84,7 @@ class SkyAtlasService(
     }
 
     fun positionOfSkyObject(location: GeographicCoordinate, id: Long, dateTime: LocalDateTime): BodyPosition {
-        val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id)
-        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found sky object: [$id]")
+        val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id) ?: throw NotFoundResponse("Cannot found sky object: [$id]")
         cachedSimbadEntities[id] = target
         val distance = SkyObject.distanceFor(target.parallax.toMas)
         return positionOfBody(target, location, dateTime)!!
@@ -180,8 +177,7 @@ class SkyAtlasService(
     }
 
     fun altitudePointsOfSkyObject(location: GeographicCoordinate, id: Long, dateTime: LocalDateTime, stepSize: Int): List<DoubleArray> {
-        val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id)
-        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot found sky object: [$id]")
+        val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id) ?: throw NotFoundResponse("Cannot found sky object: [$id]")
         cachedSimbadEntities[id] = target
         val ephemeris = bodyEphemeris(target, location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
@@ -226,7 +222,6 @@ class SkyAtlasService(
         type: SkyObjectType? = null, id: Long = 0L,
     ) = simbadEntityRepository.search(text, constellation, rightAscension, declination, radius, magnitudeMin, magnitudeMax, type, id)
 
-    @Scheduled(fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
     fun refreshImageOfSun() {
         val request = Request.Builder()
             .url(SUN_IMAGE_URL)

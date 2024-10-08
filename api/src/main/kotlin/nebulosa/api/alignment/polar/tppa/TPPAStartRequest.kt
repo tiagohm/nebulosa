@@ -3,11 +3,11 @@ package nebulosa.api.alignment.polar.tppa
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
+import nebulosa.api.beans.converters.time.DurationUnit
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.platesolver.PlateSolverRequest
 import nebulosa.guiding.GuideDirection
 import org.hibernate.validator.constraints.time.DurationMin
-import org.springframework.boot.convert.DurationUnit
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 

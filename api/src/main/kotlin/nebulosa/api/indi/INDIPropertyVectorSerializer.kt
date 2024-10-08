@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import nebulosa.indi.device.PropertyVector
 import nebulosa.indi.device.SwitchPropertyVector
-import org.springframework.stereotype.Component
 
-@Component
 class INDIPropertyVectorSerializer : StdSerializer<PropertyVector<*, *>>(PropertyVector::class.java) {
 
     override fun serialize(value: PropertyVector<*, *>, gen: JsonGenerator, provider: SerializerProvider) {

@@ -3,6 +3,7 @@ package nebulosa.api.cameras
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
+import nebulosa.api.beans.converters.time.DurationUnit
 import nebulosa.api.guiding.DitherAfterExposureRequest
 import nebulosa.api.livestacker.LiveStackingRequest
 import nebulosa.api.stacker.StackerGroupType
@@ -10,7 +11,6 @@ import nebulosa.indi.device.camera.FrameType
 import org.hibernate.validator.constraints.Range
 import org.hibernate.validator.constraints.time.DurationMax
 import org.hibernate.validator.constraints.time.DurationMin
-import org.springframework.boot.convert.DurationUnit
 import java.nio.file.Path
 import java.time.Duration
 import java.time.temporal.ChronoUnit

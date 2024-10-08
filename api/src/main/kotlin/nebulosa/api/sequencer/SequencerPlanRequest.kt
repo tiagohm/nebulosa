@@ -2,6 +2,7 @@ package nebulosa.api.sequencer
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotEmpty
+import nebulosa.api.beans.converters.time.DurationUnit
 import nebulosa.api.cameras.AutoSubFolderMode
 import nebulosa.api.cameras.CameraCaptureNamingFormat
 import nebulosa.api.cameras.CameraStartCaptureRequest
@@ -9,7 +10,6 @@ import nebulosa.api.guiding.DitherAfterExposureRequest
 import nebulosa.api.livestacker.LiveStackingRequest
 import org.hibernate.validator.constraints.time.DurationMax
 import org.hibernate.validator.constraints.time.DurationMin
-import org.springframework.boot.convert.DurationUnit
 import java.nio.file.Path
 import java.time.Duration
 import java.time.temporal.ChronoUnit
