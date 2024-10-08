@@ -8,7 +8,6 @@ import jakarta.validation.Validation
 import nebulosa.log.loggerFor
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator
 
-
 inline fun <T> BodyValidator<T>.validate() = check(BodyValidatorCheck, "invalid body")
 
 @PublishedApi

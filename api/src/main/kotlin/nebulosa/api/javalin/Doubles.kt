@@ -13,12 +13,12 @@ inline fun Context.queryParamAsDouble(key: String) = queryParamAsClass<Double>(k
 inline fun Context.formParamAsDouble(key: String) = formParamAsClass<Double>(key)
 inline fun Context.headerAsDouble(key: String) = headerAsClass<Double>(key)
 
-inline fun Validator<Double>.min(min: Double) = check(DoubleMinCheck(min), "should be greater or equal to $min")
-inline fun Validator<Double>.max(max: Double) = check(DoubleMaxCheck(max), "should be less or equal to $max")
-inline fun Validator<Double>.range(range: DoubleRange) = check(DoubleRangeCheck(range), "should be between ${range.start} and ${range.endInclusive}")
+inline fun Validator<Double>.min(min: Double) = check(DoubleMinCheck(min), "must be greater or equal to $min")
+inline fun Validator<Double>.max(max: Double) = check(DoubleMaxCheck(max), "must be less or equal to $max")
+inline fun Validator<Double>.range(range: DoubleRange) = check(DoubleRangeCheck(range), "must be between ${range.start} and ${range.endInclusive}")
 inline fun Validator<Double>.range(min: Double, max: Double) = range(min..max)
-inline fun Validator<Double>.positive() = check(DoublePositiveCheck, "should be greater than 0")
-inline fun Validator<Double>.positiveOrZero() = check(DoublePositiveOrZeroCheck, "should be greater or equal to 0")
+inline fun Validator<Double>.positive() = check(DoublePositiveCheck, "must be greater than 0")
+inline fun Validator<Double>.positiveOrZero() = check(DoublePositiveOrZeroCheck, "must be greater or equal to 0")
 
 @PublishedApi
 internal data class DoubleMinCheck(private val min: Double) : Check<Double> {

@@ -3,13 +3,8 @@ package nebulosa.api.image
 import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
-import io.javalin.http.headerAsClass
-import nebulosa.api.atlas.Location
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.exists
-import nebulosa.api.javalin.queryParamAsInt
-import nebulosa.api.javalin.queryParamAsPath
-import nebulosa.api.javalin.range
+import nebulosa.api.javalin.*
 import java.io.ByteArrayInputStream
 
 class ImageController(
@@ -50,7 +45,7 @@ class ImageController(
     private fun annotations(ctx: Context) {
         val path = ctx.queryParamAsPath("path").exists().get()
         val request = ctx.bodyAsClass<AnnotateImageRequest>()
-        val location = ctx.headerAsClass<Location>("X-Location").allowNullable().get()
+        val location = ctx.locationOrNull()
         imageService.annotations(path, request, location)
     }
 

@@ -9,14 +9,12 @@ import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.math.deg
 import nebulosa.nova.almanac.computeDiffAndReduceToIndices
-import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.temporal.TemporalAdjusters
 import kotlin.math.floor
 
-@Component
 class MoonPhaseFinder(private val horizonsService: HorizonsService) {
 
     fun find(

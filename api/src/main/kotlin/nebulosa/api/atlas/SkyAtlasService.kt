@@ -27,9 +27,7 @@ import nebulosa.time.TimeZonedInSeconds
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpStatus
-import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -39,11 +37,10 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
+import kotlin.concurrent.timer
 import kotlin.math.abs
 import kotlin.math.hypot
 
-@Service
-@EnableScheduling
 class SkyAtlasService(
     private val horizonsEphemerisProvider: HorizonsEphemerisProvider,
     private val bodyEphemerisProvider: BodyEphemerisProvider,
@@ -62,6 +59,11 @@ class SkyAtlasService(
 
     @Volatile private var sunImage = ByteArray(0)
     @Volatile private var moonPhase: Pair<LocalDateTime, MoonPhase>? = null
+
+    @Suppress("unused")
+    private val timer = timer("Sun Image Refresher", true, period = 15L * 60 * 1000) {
+        refreshImageOfSun()
+    }
 
     val objectTypes: Collection<SkyObjectType> by lazy { simbadEntityRepository.findAll().map { it.type }.toSortedSet() }
 
@@ -185,7 +187,12 @@ class SkyAtlasService(
         return altitudePointsOfBody(ephemeris, stepSize)
     }
 
-    fun altitudePointsOfSatellite(location: GeographicCoordinate, satellite: SatelliteEntity, dateTime: LocalDateTime, stepSize: Int): List<DoubleArray> {
+    fun altitudePointsOfSatellite(
+        location: GeographicCoordinate,
+        satellite: SatelliteEntity,
+        dateTime: LocalDateTime,
+        stepSize: Int
+    ): List<DoubleArray> {
         val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }

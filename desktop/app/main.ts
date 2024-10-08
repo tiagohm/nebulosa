@@ -31,10 +31,10 @@ process.on('beforeExit', () => {
 
 function createApiProcess(port: number = parsedArgs.port) {
 	const apiJar = join(process.resourcesPath, 'api.jar')
-	const apiProcess = spawn('java', ['-jar', apiJar, `--server.port=${port}`])
+	const apiProcess = spawn('java', ['-jar', apiJar, `--port=${port}`])
 
 	apiProcess.on('close', (code) => {
-		console.warn(`server process exited with code: ${code}`)
+		console.warn(`api process exited with code: ${code}`)
 		process.exit(code ?? 0)
 	})
 

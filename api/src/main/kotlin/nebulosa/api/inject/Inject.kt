@@ -9,10 +9,9 @@ import nebulosa.api.alignment.polar.PolarAlignmentController
 import nebulosa.api.alignment.polar.PolarAlignmentService
 import nebulosa.api.alignment.polar.darv.DARVExecutor
 import nebulosa.api.alignment.polar.tppa.TPPAExecutor
-import nebulosa.api.atlas.SatelliteEntity
-import nebulosa.api.atlas.SatelliteRepository
-import nebulosa.api.atlas.SimbadEntity
-import nebulosa.api.atlas.SimbadEntityRepository
+import nebulosa.api.atlas.*
+import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
+import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
 import nebulosa.api.autofocus.AutoFocusController
 import nebulosa.api.autofocus.AutoFocusExecutor
 import nebulosa.api.autofocus.AutoFocusService
@@ -304,6 +303,10 @@ fun servicesModule() = module {
     single { GuidingService(get(), get(), get(), get()) }
     single { SequencerExecutor(get(), get(), get(), get(), get()) }
     single { SequencerService(get(Named.sequencesDir), get()) }
+    single { MoonPhaseFinder(get()) }
+    single { HorizonsEphemerisProvider(get()) }
+    single { BodyEphemerisProvider(get()) }
+    single { SkyAtlasService(get(), get(), get(), get(), get(), get(Named.defaultHttpClient), get(), get()) }
 }
 
 // CONTROLLERS
@@ -330,6 +333,7 @@ fun controllersModule() = module(true) {
     single { PolarAlignmentController(get(), get(), get()) }
     single { GuidingController(get(), get()) }
     single { SequencerController(get(), get(), get()) }
+    single { SkyAtlasController(get(), get(), get()) }
 }
 
 // APP

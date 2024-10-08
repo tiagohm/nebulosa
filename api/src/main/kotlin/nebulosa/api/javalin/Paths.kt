@@ -17,7 +17,7 @@ fun Context.headerAsPath(key: String) = appData(ValidationKey).validator(key, Pa
 inline fun Validator<Path>.exists() = check(PathExistsCheck, "does not exists")
 
 @PublishedApi
-internal data object PathExistsCheck : Check<Path?> {
+internal data object PathExistsCheck : Check<Path> {
 
-    override fun invoke(p: Path?) = p == null || p.exists()
+    override fun invoke(p: Path) = p.exists()
 }
