@@ -50,6 +50,8 @@ import nebulosa.api.preference.PreferenceRepository
 import nebulosa.api.rotators.RotatorController
 import nebulosa.api.rotators.RotatorEventHub
 import nebulosa.api.rotators.RotatorService
+import nebulosa.api.stacker.StackerController
+import nebulosa.api.stacker.StackerService
 import nebulosa.api.stardetector.StarDetectionController
 import nebulosa.api.stardetector.StarDetectionService
 import nebulosa.api.wheels.WheelController
@@ -280,6 +282,7 @@ fun servicesModule() = module {
     single { AutoFocusExecutor(get(), get(), get()) }
     single { AutoFocusService(get()) }
     single { LiveStackingService() }
+    single { StackerService(get()) }
 }
 
 // CONTROLLERS
@@ -300,6 +303,7 @@ fun controllersModule() = module(true) {
     single { StarDetectionController(get(), get()) }
     single { AutoFocusController(get(), get(), get()) }
     single { LiveStackingController(get(), get(), get()) }
+    single { StackerController(get(), get()) }
 }
 
 // APP
