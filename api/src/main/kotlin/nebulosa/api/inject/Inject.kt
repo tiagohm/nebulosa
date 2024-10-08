@@ -26,10 +26,13 @@ import nebulosa.api.dustcap.DustCapService
 import nebulosa.api.focusers.FocuserController
 import nebulosa.api.focusers.FocuserEventHub
 import nebulosa.api.focusers.FocuserService
+import nebulosa.api.framing.FramingService
 import nebulosa.api.guiding.GuideOutputController
 import nebulosa.api.guiding.GuideOutputEventHub
 import nebulosa.api.guiding.GuideOutputService
 import nebulosa.api.image.ImageBucket
+import nebulosa.api.image.ImageController
+import nebulosa.api.image.ImageService
 import nebulosa.api.lightboxes.LightBoxController
 import nebulosa.api.lightboxes.LightBoxEventHub
 import nebulosa.api.lightboxes.LightBoxService
@@ -258,6 +261,8 @@ fun servicesModule() = module {
     single { DustCapService(get()) }
     single { ImageBucket() }
     single { CalibrationFrameService(get()) }
+    single { FramingService(get(), get()) }
+    single { ImageService(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     single { PlateSolverService(get(), get(Named.defaultHttpClient)) }
 }
 
@@ -273,6 +278,7 @@ fun controllersModule() = module(true) {
     single { LightBoxController(get(), get(), get()) }
     single { DustCapController(get(), get(), get()) }
     single { CalibrationFrameController(get(), get()) }
+    single { ImageController(get(), get(), get()) }
     single { PlateSolverController(get(), get()) }
 }
 

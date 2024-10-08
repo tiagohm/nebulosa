@@ -7,6 +7,7 @@ import com.github.rvesse.airline.annotations.Command
 import com.github.rvesse.airline.annotations.Option
 import io.javalin.Javalin
 import io.javalin.json.JavalinJackson
+import nebulosa.api.atlas.Location
 import nebulosa.api.beans.modules.DeviceModule
 import nebulosa.api.inject.*
 import nebulosa.json.PathModule
@@ -33,6 +34,7 @@ class Nebulosa : Runnable, AutoCloseable {
             config.jsonMapper(JavalinJackson(OBJECT_MAPPER))
             // VALIDATOR
             config.validation.register(Path::class.java, Path::of)
+            config.validation.register(Location::class.java) { if (it.isBlank()) null else OBJECT_MAPPER.readValue(it, Location::class.java) }
             // CORS
             config.bundledPlugins.enableCors { cors ->
                 cors.addRule {

@@ -32,9 +32,9 @@ data class PlateSolverRequest(
     @JvmField val timeout: Duration = Duration.ZERO,
     @JvmField val slot: Int = 1,
     @JvmField val blind: Boolean = true,
-    @JsonDeserialize(using = RightAscensionDeserializer::class) @JvmField val centerRA: Angle = 0.0,
-    @JsonDeserialize(using = DeclinationDeserializer::class) @JvmField val centerDEC: Angle = 0.0,
-    @JsonDeserialize(using = DegreesDeserializer::class) @JvmField val radius: Angle = if (blind) 0.0 else 4.0,
+    @field:JsonDeserialize(using = RightAscensionDeserializer::class) @JvmField val centerRA: Angle = 0.0,
+    @field:JsonDeserialize(using = DeclinationDeserializer::class) @JvmField val centerDEC: Angle = 0.0,
+    @field:JsonDeserialize(using = DegreesDeserializer::class) @JvmField val radius: Angle = if (blind) 0.0 else 4.0,
 ) {
 
     fun get(httpClient: OkHttpClient? = null) = with(this) {
