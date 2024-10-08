@@ -19,7 +19,9 @@ import nebulosa.api.connection.ConnectionEventHub
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.database.MyObjectBox
 import nebulosa.api.dustcap.DustCapEventHub
+import nebulosa.api.focusers.FocuserController
 import nebulosa.api.focusers.FocuserEventHub
+import nebulosa.api.focusers.FocuserService
 import nebulosa.api.guiding.GuideOutputEventHub
 import nebulosa.api.lightboxes.LightBoxEventHub
 import nebulosa.api.message.MessageService
@@ -236,6 +238,7 @@ fun servicesModule() = module {
     single(createdAtStart = true) { ConnectionService(get(), get(Named.alpacaHttpClient), get(), get()) }
     single { ConfirmationService(get()) }
     single { RotatorService(get()) }
+    single { FocuserService(get()) }
 }
 
 // CONTROLLERS
@@ -244,6 +247,7 @@ fun controllersModule() = module(true) {
     single { ConnectionController(get(), get()) }
     single { ConfirmationController(get(), get()) }
     single { RotatorController(get(), get(), get()) }
+    single { FocuserController(get(), get(), get()) }
 }
 
 // APP

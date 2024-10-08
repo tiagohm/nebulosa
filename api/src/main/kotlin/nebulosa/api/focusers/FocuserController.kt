@@ -1,77 +1,89 @@
 package nebulosa.api.focusers
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.PositiveOrZero
+import io.javalin.Javalin
+import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.indi.device.focuser.Focuser
-import org.springframework.web.bind.annotation.*
+import nebulosa.api.javalin.positiveOrZero
+import nebulosa.api.javalin.queryParamAsInt
 
-@RestController
-@RequestMapping("focusers")
 class FocuserController(
+    app: Javalin,
     private val connectionService: ConnectionService,
     private val focuserService: FocuserService,
 ) {
 
-    @GetMapping
-    fun focusers(): List<Focuser> {
-        return connectionService.focusers().sorted()
+    init {
+        app.get("focusers", ::focusers)
+        app.get("focusers/{id}", ::focuser)
+        app.put("focusers/{id}/connect", ::connect)
+        app.put("focusers/{id}/disconnect", ::disconnect)
+        app.put("focusers/{id}/move-in", ::moveIn)
+        app.put("focusers/{id}/move-out", ::moveOut)
+        app.put("focusers/{id}/move-to", ::moveTo)
+        app.put("focusers/{id}/abort", ::abort)
+        app.put("focusers/{id}/sync", ::sync)
+        app.put("focusers/{id}/listen", ::listen)
     }
 
-    @GetMapping("{focuser}")
-    fun focuser(focuser: Focuser): Focuser {
-        return focuser
+    private fun focusers(ctx: Context) {
+        ctx.json(connectionService.focusers().sorted())
     }
 
-    @PutMapping("{focuser}/connect")
-    fun connect(focuser: Focuser) {
+    private fun focuser(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val focuser = connectionService.focuser(id) ?: return
+        ctx.json(focuser)
+    }
+
+    private fun connect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val focuser = connectionService.focuser(id) ?: return
         focuserService.connect(focuser)
     }
 
-    @PutMapping("{focuser}/disconnect")
-    fun disconnect(focuser: Focuser) {
+    private fun disconnect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val focuser = connectionService.focuser(id) ?: return
         focuserService.disconnect(focuser)
     }
 
-    @PutMapping("{focuser}/move-in")
-    fun moveIn(
-        focuser: Focuser,
-        @RequestParam @Valid @PositiveOrZero steps: Int,
-    ) {
+    private fun moveIn(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val focuser = connectionService.focuser(id) ?: return
+        val steps = ctx.queryParamAsInt("steps").positiveOrZero().get()
         focuserService.moveIn(focuser, steps)
     }
 
-    @PutMapping("{focuser}/move-out")
-    fun moveOut(
-        focuser: Focuser,
-        @RequestParam @Valid @PositiveOrZero steps: Int,
-    ) {
+    private fun moveOut(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val focuser = connectionService.focuser(id) ?: return
+        val steps = ctx.queryParamAsInt("steps").positiveOrZero().get()
         focuserService.moveOut(focuser, steps)
     }
 
-    @PutMapping("{focuser}/move-to")
-    fun moveTo(
-        focuser: Focuser,
-        @RequestParam @Valid @PositiveOrZero steps: Int,
-    ) {
+    private fun moveTo(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val focuser = connectionService.focuser(id) ?: return
+        val steps = ctx.queryParamAsInt("steps").positiveOrZero().get()
         focuserService.moveTo(focuser, steps)
     }
 
-    @PutMapping("{focuser}/abort")
-    fun abort(focuser: Focuser) {
+    private fun abort(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val focuser = connectionService.focuser(id) ?: return
         focuserService.abort(focuser)
     }
 
-    @PutMapping("{focuser}/sync")
-    fun sync(
-        focuser: Focuser,
-        @RequestParam @Valid @PositiveOrZero steps: Int,
-    ) {
+    private fun sync(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val focuser = connectionService.focuser(id) ?: return
+        val steps = ctx.queryParamAsInt("steps").positiveOrZero().get()
         focuserService.sync(focuser, steps)
     }
 
-    @PutMapping("{focuser}/listen")
-    fun listen(focuser: Focuser) {
+    private fun listen(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val focuser = connectionService.focuser(id) ?: return
         focuserService.listen(focuser)
     }
 }
