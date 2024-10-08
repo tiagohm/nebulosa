@@ -1,43 +1,52 @@
 package nebulosa.api.sequencer
 
-import jakarta.validation.Valid
-import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.filterwheel.FilterWheel
-import nebulosa.indi.device.focuser.Focuser
-import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.rotator.Rotator
-import org.springframework.web.bind.annotation.*
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.bodyValidator
+import nebulosa.api.connection.ConnectionService
+import nebulosa.api.javalin.validate
 
-@RestController
-@RequestMapping("sequencer")
 class SequencerController(
+    app: Javalin,
     private val sequencerService: SequencerService,
+    private val connectionService: ConnectionService,
 ) {
 
-    @PutMapping("{camera}/start")
-    fun start(
-        camera: Camera,
-        mount: Mount?, wheel: FilterWheel?, focuser: Focuser?, rotator: Rotator?,
-        @RequestBody @Valid body: SequencerPlanRequest,
-    ) = sequencerService.start(camera, body, mount, wheel, focuser, rotator)
+    init {
+        app.put("sequencer/{camera}/start", ::start)
+        app.put("sequencer/{camera}/stop", ::stop)
+        app.put("sequencer/{camera}/pause", ::pause)
+        app.put("sequencer/{camera}/unpause", ::unpause)
+        app.get("sequencer/{camera}/status", ::status)
+    }
 
-    @PutMapping("{camera}/stop")
-    fun stop(camera: Camera) {
+    private fun start(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera"))!!
+        val mount = ctx.queryParam("mount")?.let(connectionService::mount)
+        val wheel = ctx.queryParam("wheel")?.let(connectionService::wheel)
+        val focuser = ctx.queryParam("focuser")?.let(connectionService::focuser)
+        val rotator = ctx.queryParam("rotator")?.let(connectionService::rotator)
+        val body = ctx.bodyValidator<SequencerPlanRequest>().validate().get()
+        sequencerService.start(camera, body, mount, wheel, focuser, rotator)
+    }
+
+    fun stop(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")) ?: return
         sequencerService.stop(camera)
     }
 
-    @PutMapping("{camera}/pause")
-    fun pause(camera: Camera) {
+    fun pause(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")) ?: return
         sequencerService.pause(camera)
     }
 
-    @PutMapping("{camera}/unpause")
-    fun unpause(camera: Camera) {
+    fun unpause(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")) ?: return
         sequencerService.unpause(camera)
     }
 
-    @GetMapping("{camera}/status")
-    fun status(camera: Camera): SequencerEvent? {
-        return sequencerService.status(camera)
+    fun status(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera"))!!
+        sequencerService.status(camera)?.also(ctx::json)
     }
 }

@@ -57,6 +57,9 @@ import nebulosa.api.preference.PreferenceService
 import nebulosa.api.rotators.RotatorController
 import nebulosa.api.rotators.RotatorEventHub
 import nebulosa.api.rotators.RotatorService
+import nebulosa.api.sequencer.SequencerController
+import nebulosa.api.sequencer.SequencerExecutor
+import nebulosa.api.sequencer.SequencerService
 import nebulosa.api.stacker.StackerController
 import nebulosa.api.stacker.StackerService
 import nebulosa.api.stardetector.StarDetectionController
@@ -299,6 +302,8 @@ fun servicesModule() = module {
     single { PolarAlignmentService(get(), get()) }
     single { PreferenceService(get(), get()) }
     single { GuidingService(get(), get(), get(), get()) }
+    single { SequencerExecutor(get(), get(), get(), get(), get()) }
+    single { SequencerService(get(Named.sequencesDir), get()) }
 }
 
 // CONTROLLERS
@@ -324,6 +329,7 @@ fun controllersModule() = module(true) {
     single { INDIController(get(), get(), get()) }
     single { PolarAlignmentController(get(), get(), get()) }
     single { GuidingController(get(), get()) }
+    single { SequencerController(get(), get(), get()) }
 }
 
 // APP
