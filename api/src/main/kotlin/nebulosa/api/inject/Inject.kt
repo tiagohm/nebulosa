@@ -31,7 +31,9 @@ import nebulosa.api.preference.PreferenceRepository
 import nebulosa.api.rotators.RotatorController
 import nebulosa.api.rotators.RotatorEventHub
 import nebulosa.api.rotators.RotatorService
+import nebulosa.api.wheels.WheelController
 import nebulosa.api.wheels.WheelEventHub
+import nebulosa.api.wheels.WheelService
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
@@ -239,6 +241,7 @@ fun servicesModule() = module {
     single { ConfirmationService(get()) }
     single { RotatorService(get()) }
     single { FocuserService(get()) }
+    single { WheelService(get()) }
 }
 
 // CONTROLLERS
@@ -248,6 +251,7 @@ fun controllersModule() = module(true) {
     single { ConfirmationController(get(), get()) }
     single { RotatorController(get(), get(), get()) }
     single { FocuserController(get(), get(), get()) }
+    single { WheelController(get(), get(), get()) }
 }
 
 // APP

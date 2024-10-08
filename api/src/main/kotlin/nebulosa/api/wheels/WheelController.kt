@@ -1,57 +1,67 @@
 package nebulosa.api.wheels
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotEmpty
-import jakarta.validation.constraints.PositiveOrZero
+import io.javalin.Javalin
+import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.indi.device.filterwheel.FilterWheel
-import org.springframework.web.bind.annotation.*
+import nebulosa.api.javalin.notBlank
+import nebulosa.api.javalin.positiveOrZero
+import nebulosa.api.javalin.queryParamAsInt
+import nebulosa.api.javalin.queryParamAsString
 
-@RestController
-@RequestMapping("wheels")
 class WheelController(
+    app: Javalin,
     private val connectionService: ConnectionService,
     private val wheelService: WheelService,
 ) {
 
-    @GetMapping
-    fun wheels(): List<FilterWheel> {
-        return connectionService.wheels().sorted()
+    init {
+        app.get("wheels", ::wheels)
+        app.get("wheels/{id}", ::wheel)
+        app.put("wheels/{id}/connect", ::connect)
+        app.put("wheels/{id}/disconnect", ::disconnect)
+        app.put("wheels/{id}/move-to", ::moveTo)
+        app.put("wheels/{id}/sync", ::sync)
+        app.put("wheels/{id}/listen", ::listen)
     }
 
-    @GetMapping("{wheel}")
-    fun wheel(wheel: FilterWheel): FilterWheel {
-        return wheel
+    private fun wheels(ctx: Context) {
+        ctx.json(connectionService.wheels().sorted())
     }
 
-    @PutMapping("{wheel}/connect")
-    fun connect(wheel: FilterWheel) {
+    private fun wheel(ctx: Context) {
+        val id = ctx.pathParam("id")
+        connectionService.wheel(id)?.also(ctx::json)
+    }
+
+    private fun connect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val wheel = connectionService.wheel(id) ?: return
         wheelService.connect(wheel)
     }
 
-    @PutMapping("{wheel}/disconnect")
-    fun disconnect(wheel: FilterWheel) {
+    private fun disconnect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val wheel = connectionService.wheel(id) ?: return
         wheelService.disconnect(wheel)
     }
 
-    @PutMapping("{wheel}/move-to")
-    fun moveTo(
-        wheel: FilterWheel,
-        @RequestParam @Valid @PositiveOrZero position: Int,
-    ) {
+    private fun moveTo(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val wheel = connectionService.wheel(id) ?: return
+        val position = ctx.queryParamAsInt("position").positiveOrZero().get()
         wheelService.moveTo(wheel, position)
     }
 
-    @PutMapping("{wheel}/sync")
-    fun sync(
-        wheel: FilterWheel,
-        @RequestParam @Valid @NotEmpty names: String,
-    ) {
+    private fun sync(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val wheel = connectionService.wheel(id) ?: return
+        val names = ctx.queryParamAsString("names").notBlank().get()
         wheelService.sync(wheel, names.split(","))
     }
 
-    @PutMapping("{wheel}/listen")
-    fun listen(wheel: FilterWheel) {
+    private fun listen(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val wheel = connectionService.wheel(id) ?: return
         wheelService.listen(wheel)
     }
 }
