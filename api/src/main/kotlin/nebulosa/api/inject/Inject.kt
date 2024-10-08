@@ -6,8 +6,11 @@ import io.objectbox.BoxStore
 import io.objectbox.kotlin.boxFor
 import nebulosa.api.APP_DIR_KEY
 import nebulosa.api.atlas.SatelliteEntity
+import nebulosa.api.atlas.SatelliteRepository
 import nebulosa.api.atlas.SimbadEntity
+import nebulosa.api.atlas.SimbadEntityRepository
 import nebulosa.api.calibration.CalibrationFrameEntity
+import nebulosa.api.calibration.CalibrationFrameRepository
 import nebulosa.api.cameras.CameraEventHub
 import nebulosa.api.confirmation.ConfirmationController
 import nebulosa.api.confirmation.ConfirmationService
@@ -22,7 +25,10 @@ import nebulosa.api.lightboxes.LightBoxEventHub
 import nebulosa.api.message.MessageService
 import nebulosa.api.mounts.MountEventHub
 import nebulosa.api.preference.PreferenceEntity
+import nebulosa.api.preference.PreferenceRepository
+import nebulosa.api.rotators.RotatorController
 import nebulosa.api.rotators.RotatorEventHub
+import nebulosa.api.rotators.RotatorService
 import nebulosa.api.wheels.WheelEventHub
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
@@ -56,6 +62,7 @@ val koinApp = koinApplication {
     modules(httpModule())
     modules(eventBusModule())
     modules(boxStoreModule())
+    modules(repositoriesModule())
     modules(phd2Module())
 }
 
@@ -196,6 +203,15 @@ fun phd2Module() = module {
     single { PHD2Guider(get()) }
 }
 
+// REPOSITORIES
+
+fun repositoriesModule() = module {
+    single { CalibrationFrameRepository(get(Named.calibrationFrameBox)) }
+    single { PreferenceRepository(get(Named.preferenceBox)) }
+    single { SatelliteRepository(get(Named.satelliteBox)) }
+    single { SimbadEntityRepository(get(Named.simbadBox)) }
+}
+
 // SERVICES
 
 fun deviceEventHubModule() = module(true) {
@@ -219,6 +235,7 @@ fun servicesModule() = module {
     includes(deviceEventHubModule())
     single(createdAtStart = true) { ConnectionService(get(), get(Named.alpacaHttpClient), get(), get()) }
     single { ConfirmationService(get()) }
+    single { RotatorService(get()) }
 }
 
 // CONTROLLERS
@@ -226,6 +243,7 @@ fun servicesModule() = module {
 fun controllersModule() = module(true) {
     single { ConnectionController(get(), get()) }
     single { ConfirmationController(get(), get()) }
+    single { RotatorController(get(), get(), get()) }
 }
 
 // APP

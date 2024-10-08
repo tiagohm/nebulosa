@@ -1,74 +1,93 @@
 package nebulosa.api.rotators
 
-import jakarta.validation.Valid
+import io.javalin.Javalin
+import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.indi.device.rotator.Rotator
-import org.hibernate.validator.constraints.Range
-import org.springframework.web.bind.annotation.*
+import nebulosa.api.javalin.queryParamAsBoolean
+import nebulosa.api.javalin.queryParamAsDouble
+import nebulosa.api.javalin.range
 
-@RestController
-@RequestMapping("rotators")
 class RotatorController(
+    app: Javalin,
     private val connectionService: ConnectionService,
     private val rotatorService: RotatorService,
 ) {
 
-    @GetMapping
-    fun rotators(): List<Rotator> {
-        return connectionService.rotators().sorted()
+    init {
+        app.get("rotators", ::rotators)
+        app.get("rotators/{id}", ::rotator)
+        app.put("rotators/{id}/connect", ::connect)
+        app.put("rotators/{id}/disconnect", ::disconnect)
+        app.put("rotators/{id}/reverse", ::reverse)
+        app.put("rotators/{id}/move", ::move)
+        app.put("rotators/{id}/abort", ::abort)
+        app.put("rotators/{id}/home", ::home)
+        app.put("rotators/{id}/sync", ::sync)
+        app.put("rotators/{id}/listen", ::listen)
     }
 
-    @GetMapping("{rotator}")
-    fun rotator(rotator: Rotator): Rotator {
-        return rotator
+    private fun rotators(ctx: Context) {
+        ctx.json(connectionService.rotators().sorted())
     }
 
-    @PutMapping("{rotator}/connect")
-    fun connect(rotator: Rotator) {
+    private fun rotator(ctx: Context) {
+        val id = ctx.pathParam("id")
+        connectionService.rotator(id)?.also(ctx::json)
+    }
+
+    private fun connect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val rotator = connectionService.rotator(id) ?: return
         rotatorService.connect(rotator)
     }
 
-    @PutMapping("{rotator}/disconnect")
-    fun disconnect(rotator: Rotator) {
+    private fun disconnect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val rotator = connectionService.rotator(id) ?: return
         rotatorService.disconnect(rotator)
     }
 
-    @PutMapping("{rotator}/reverse")
-    fun reverse(
-        rotator: Rotator,
-        @RequestParam enabled: Boolean,
-    ) {
+    private fun reverse(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val rotator = connectionService.rotator(id) ?: return
+        val enabled = ctx.queryParamAsBoolean("enabled").get()
         rotatorService.reverse(rotator, enabled)
     }
 
-    @PutMapping("{rotator}/move")
-    fun move(
-        rotator: Rotator,
-        @RequestParam @Valid @Range(min = 0, max = 360) angle: Double,
-    ) {
+    private fun move(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val rotator = connectionService.rotator(id) ?: return
+        val angle = ctx.queryParamAsDouble("angle").range(ANGLE_RANGE).get()
         rotatorService.move(rotator, angle)
     }
 
-    @PutMapping("{rotator}/abort")
-    fun abort(rotator: Rotator) {
+    private fun abort(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val rotator = connectionService.rotator(id) ?: return
         rotatorService.abort(rotator)
     }
 
-    @PutMapping("{rotator}/home")
-    fun home(rotator: Rotator) {
+    private fun home(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val rotator = connectionService.rotator(id) ?: return
         rotatorService.home(rotator)
     }
 
-    @PutMapping("{rotator}/sync")
-    fun sync(
-        rotator: Rotator,
-        @RequestParam @Valid @Range(min = 0, max = 360) angle: Double,
-    ) {
+    private fun sync(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val rotator = connectionService.rotator(id) ?: return
+        val angle = ctx.queryParamAsDouble("angle").range(ANGLE_RANGE).get()
         rotatorService.sync(rotator, angle)
     }
 
-    @PutMapping("{rotator}/listen")
-    fun listen(rotator: Rotator) {
+    private fun listen(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val rotator = connectionService.rotator(id) ?: return
         rotatorService.listen(rotator)
+    }
+
+    companion object {
+
+        private val ANGLE_RANGE = 0.0..360.0
     }
 }
