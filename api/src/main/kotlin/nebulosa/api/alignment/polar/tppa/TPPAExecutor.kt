@@ -1,7 +1,6 @@
 package nebulosa.api.alignment.polar.tppa
 
 import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.message.MessageService
@@ -13,16 +12,13 @@ import nebulosa.indi.device.mount.MountEvent
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
-import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutorService
 
-@Component
-@Subscriber
 class TPPAExecutor(
     private val messageService: MessageService,
     private val httpClient: OkHttpClient,
-    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
+    private val executorService: ExecutorService,
 ) : Consumer<MessageEvent>, CameraEventAware, MountEventAware {
 
     private val jobs = ConcurrentHashMap.newKeySet<TPPAJob>(1)
@@ -51,7 +47,7 @@ class TPPAExecutor(
         val solver = request.plateSolver.get(httpClient)
 
         with(TPPAJob(this, camera, solver, request, mount)) {
-            val completable = runAsync(threadPoolTaskExecutor)
+            val completable = runAsync(executorService)
             jobs.add(this)
             completable.whenComplete { _, _ -> jobs.remove(this) }
         }

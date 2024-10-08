@@ -5,6 +5,10 @@ import io.javalin.Javalin
 import io.objectbox.BoxStore
 import io.objectbox.kotlin.boxFor
 import nebulosa.api.APP_DIR_KEY
+import nebulosa.api.alignment.polar.PolarAlignmentController
+import nebulosa.api.alignment.polar.PolarAlignmentService
+import nebulosa.api.alignment.polar.darv.DARVExecutor
+import nebulosa.api.alignment.polar.tppa.TPPAExecutor
 import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SatelliteRepository
 import nebulosa.api.atlas.SimbadEntity
@@ -290,6 +294,9 @@ fun servicesModule() = module {
     single { StackerService(get()) }
     single { FramingService(get(), get()) }
     single { INDIService(get()) }
+    single { DARVExecutor(get(), get()) }
+    single { TPPAExecutor(get(), get(Named.defaultHttpClient), get()) }
+    single { PolarAlignmentService(get(), get()) }
 }
 
 // CONTROLLERS
@@ -313,6 +320,7 @@ fun controllersModule() = module(true) {
     single { StackerController(get(), get()) }
     single { FramingController(get(), get(), get()) }
     single { INDIController(get(), get(), get()) }
+    single { PolarAlignmentController(get(), get(), get()) }
 }
 
 // APP
