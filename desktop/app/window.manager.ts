@@ -209,17 +209,16 @@ export class WindowManager {
 		}
 	}
 
-	async createMainWindow(apiProcess?: ChildProcessWithoutNullStreams, port: number = this.port, host: string = this.host) {
-		this.port = port
-		this.host = host
-
-		const open: OpenWindow = { id: 'home', path: 'home', preference: {} }
-		const appWindow = await this.createWindow(open)
-
+	private createWebSocket(host: string, port: number, appWindow: ApplicationWindow) {
 		const webSocket = new WebSocket(`ws://${host}:${port}/ws`)
+
+		const reconnect = () => {
+			setTimeout(() => this.createWebSocket(host, port, appWindow), 2000)
+		}
 
 		webSocket.on('open', () => {
 			console.info('Web Socket connected')
+			appWindow.webSocket = webSocket
 		})
 
 		webSocket.on('message', (data: Buffer) => {
@@ -237,14 +236,26 @@ export class WindowManager {
 		})
 
 		webSocket.on('close', (code, reason) => {
-			console.warn('Web Socket closed', code, reason)
+			console.warn('Web Socket closed', code, reason.toString())
+			reconnect()
 		})
 
-		webSocket.on('error', (e) => {
-			console.error('Web Socket error', e)
+		webSocket.on('error', () => {
+			console.error('Web Socket error')
 		})
 
-		appWindow.webSocket = webSocket
+		return webSocket
+	}
+
+	async createMainWindow(apiProcess?: ChildProcessWithoutNullStreams, port: number = this.port, host: string = this.host) {
+		this.port = port
+		this.host = host
+
+		const open: OpenWindow = { id: 'home', path: 'home', preference: {} }
+		const appWindow = await this.createWindow(open)
+
+		this.createWebSocket(host, port, appWindow)
+
 		appWindow.apiProcess = apiProcess
 	}
 
