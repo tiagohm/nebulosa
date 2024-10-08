@@ -8,12 +8,10 @@ import nebulosa.guiding.GuideState
 import nebulosa.guiding.Guider
 import nebulosa.guiding.GuiderListener
 import nebulosa.phd2.client.PHD2Client
-import org.springframework.stereotype.Service
 import java.time.Duration
 import kotlin.math.max
 import kotlin.math.min
 
-@Service
 class GuidingService(
     private val preferenceService: PreferenceService,
     private val messageService: MessageService,

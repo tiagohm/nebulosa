@@ -413,7 +413,7 @@ export class ApiService {
 	}
 
 	guidingDisconnect() {
-		return this.http.delete<never>(`guiding/disconnect`)
+		return this.http.put<never>(`guiding/disconnect`)
 	}
 
 	guidingStatus() {

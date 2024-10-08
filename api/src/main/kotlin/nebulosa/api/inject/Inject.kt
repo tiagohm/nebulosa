@@ -35,9 +35,7 @@ import nebulosa.api.focusers.FocuserEventHub
 import nebulosa.api.focusers.FocuserService
 import nebulosa.api.framing.FramingController
 import nebulosa.api.framing.FramingService
-import nebulosa.api.guiding.GuideOutputController
-import nebulosa.api.guiding.GuideOutputEventHub
-import nebulosa.api.guiding.GuideOutputService
+import nebulosa.api.guiding.*
 import nebulosa.api.image.ImageBucket
 import nebulosa.api.image.ImageController
 import nebulosa.api.image.ImageService
@@ -55,6 +53,7 @@ import nebulosa.api.platesolver.PlateSolverController
 import nebulosa.api.platesolver.PlateSolverService
 import nebulosa.api.preference.PreferenceEntity
 import nebulosa.api.preference.PreferenceRepository
+import nebulosa.api.preference.PreferenceService
 import nebulosa.api.rotators.RotatorController
 import nebulosa.api.rotators.RotatorEventHub
 import nebulosa.api.rotators.RotatorService
@@ -68,6 +67,7 @@ import nebulosa.api.wheels.WheelService
 import nebulosa.api.wizard.flat.FlatWizardController
 import nebulosa.api.wizard.flat.FlatWizardExecutor
 import nebulosa.api.wizard.flat.FlatWizardService
+import nebulosa.guiding.Guider
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
@@ -238,7 +238,7 @@ fun objectMapperModule(mapper: ObjectMapper) = module {
 
 fun phd2Module() = module {
     single { PHD2Client() }
-    single { PHD2Guider(get()) }
+    single<Guider> { PHD2Guider(get()) }
 }
 
 // REPOSITORIES
@@ -297,6 +297,8 @@ fun servicesModule() = module {
     single { DARVExecutor(get(), get()) }
     single { TPPAExecutor(get(), get(Named.defaultHttpClient), get()) }
     single { PolarAlignmentService(get(), get()) }
+    single { PreferenceService(get(), get()) }
+    single { GuidingService(get(), get(), get(), get()) }
 }
 
 // CONTROLLERS
@@ -321,6 +323,7 @@ fun controllersModule() = module(true) {
     single { FramingController(get(), get(), get()) }
     single { INDIController(get(), get(), get()) }
     single { PolarAlignmentController(get(), get(), get()) }
+    single { GuidingController(get(), get()) }
 }
 
 // APP
