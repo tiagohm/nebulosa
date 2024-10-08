@@ -1,61 +1,71 @@
 package nebulosa.api.lightboxes
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.PositiveOrZero
+import io.javalin.Javalin
+import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.indi.device.lightbox.LightBox
-import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import nebulosa.api.javalin.positiveOrZero
+import nebulosa.api.javalin.queryParamAsDouble
 
-@Validated
-@RestController
-@RequestMapping("light-boxes")
 class LightBoxController(
+    app: Javalin,
     private val connectionService: ConnectionService,
     private val lightBoxService: LightBoxService,
 ) {
 
-    @GetMapping
-    fun lightBoxes(): List<LightBox> {
-        return connectionService.lightBoxes().sorted()
+    init {
+        app.get("light-boxes", ::lightBoxes)
+        app.get("light-boxes/{id}", ::lightBox)
+        app.put("light-boxes/{id}/connect", ::connect)
+        app.put("light-boxes/{id}/disconnect", ::disconnect)
+        app.put("light-boxes/{id}/enable", ::enable)
+        app.put("light-boxes/{id}/disable", ::disable)
+        app.put("light-boxes/{id}/brightness", ::brightness)
+        app.put("light-boxes/{id}/listen", ::listen)
     }
 
-    @GetMapping("{lightBox}")
-    fun lightBox(lightBox: LightBox): LightBox {
-        return lightBox
+    fun lightBoxes(ctx: Context) {
+        ctx.json(connectionService.lightBoxes().sorted())
     }
 
-    @PutMapping("{lightBox}/connect")
-    fun connect(lightBox: LightBox) {
+    fun lightBox(ctx: Context) {
+        val id = ctx.pathParam("id")
+        connectionService.lightBox(id)?.also(ctx::json)
+    }
+
+    fun connect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.connect(lightBox)
     }
 
-    @PutMapping("{lightBox}/disconnect")
-    fun disconnect(lightBox: LightBox) {
+    fun disconnect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.disconnect(lightBox)
     }
 
-    @PutMapping("{lightBox}/enable")
-    fun enable(lightBox: LightBox) {
+    fun enable(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.enable(lightBox)
     }
 
-    @PutMapping("{lightBox}/disable")
-    fun disable(lightBox: LightBox) {
+    fun disable(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.disable(lightBox)
     }
 
-    @PutMapping("{lightBox}/brightness")
-    fun brightness(lightBox: LightBox, @RequestParam @Valid @PositiveOrZero intensity: Double) {
+    fun brightness(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val lightBox = connectionService.lightBox(id) ?: return
+        val intensity = ctx.queryParamAsDouble("intensity").positiveOrZero().get()
         lightBoxService.brightness(lightBox, intensity)
     }
 
-    @PutMapping("{lightBox}/listen")
-    fun listen(lightBox: LightBox) {
+    fun listen(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.listen(lightBox)
     }
 }

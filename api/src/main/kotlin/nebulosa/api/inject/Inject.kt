@@ -23,7 +23,9 @@ import nebulosa.api.focusers.FocuserController
 import nebulosa.api.focusers.FocuserEventHub
 import nebulosa.api.focusers.FocuserService
 import nebulosa.api.guiding.GuideOutputEventHub
+import nebulosa.api.lightboxes.LightBoxController
 import nebulosa.api.lightboxes.LightBoxEventHub
+import nebulosa.api.lightboxes.LightBoxService
 import nebulosa.api.message.MessageService
 import nebulosa.api.mounts.MountEventHub
 import nebulosa.api.preference.PreferenceEntity
@@ -242,6 +244,7 @@ fun servicesModule() = module {
     single { RotatorService(get()) }
     single { FocuserService(get()) }
     single { WheelService(get()) }
+    single { LightBoxService(get()) }
 }
 
 // CONTROLLERS
@@ -252,6 +255,7 @@ fun controllersModule() = module(true) {
     single { RotatorController(get(), get(), get()) }
     single { FocuserController(get(), get(), get()) }
     single { WheelController(get(), get(), get()) }
+    single { LightBoxController(get(), get(), get()) }
 }
 
 // APP

@@ -1,9 +1,7 @@
 package nebulosa.api.wheels
 
 import nebulosa.indi.device.filterwheel.FilterWheel
-import org.springframework.stereotype.Service
 
-@Service
 class WheelService(private val wheelEventHub: WheelEventHub) {
 
     fun connect(wheel: FilterWheel) {

@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.module.SimpleSerializers
 import nebulosa.api.focusers.FocuserDeserializer
 import nebulosa.api.focusers.FocuserSerializer
+import nebulosa.api.lightboxes.LightBoxDeserializer
+import nebulosa.api.lightboxes.LightBoxSerializer
 import nebulosa.api.rotators.RotatorDeserializer
 import nebulosa.api.rotators.RotatorSerializer
 import nebulosa.api.wheels.WheelDeserializer
 import nebulosa.api.wheels.WheelSerializer
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.rotator.Rotator
 
 class DeviceModule : SimpleModule() {
@@ -22,12 +25,14 @@ class DeviceModule : SimpleModule() {
         serializers.addSerializer(RotatorSerializer())
         serializers.addSerializer(FocuserSerializer())
         serializers.addSerializer(WheelSerializer())
+        serializers.addSerializer(LightBoxSerializer())
         context.addSerializers(serializers)
 
         val deserializers = SimpleDeserializers()
         deserializers.addDeserializer(Rotator::class.java, RotatorDeserializer())
         deserializers.addDeserializer(Focuser::class.java, FocuserDeserializer())
         deserializers.addDeserializer(FilterWheel::class.java, WheelDeserializer())
+        deserializers.addDeserializer(LightBox::class.java, LightBoxDeserializer())
         context.addDeserializers(deserializers)
     }
 }
