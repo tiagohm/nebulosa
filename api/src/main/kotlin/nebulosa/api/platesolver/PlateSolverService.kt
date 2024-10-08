@@ -4,11 +4,9 @@ import nebulosa.api.image.ImageBucket
 import nebulosa.api.image.ImageSolved
 import nebulosa.util.concurrency.cancellation.CancellationToken
 import okhttp3.OkHttpClient
-import org.springframework.stereotype.Service
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicReference
 
-@Service
 class PlateSolverService(
     private val imageBucket: ImageBucket,
     private val httpClient: OkHttpClient,

@@ -27,11 +27,14 @@ import nebulosa.api.focusers.FocuserService
 import nebulosa.api.guiding.GuideOutputController
 import nebulosa.api.guiding.GuideOutputEventHub
 import nebulosa.api.guiding.GuideOutputService
+import nebulosa.api.image.ImageBucket
 import nebulosa.api.lightboxes.LightBoxController
 import nebulosa.api.lightboxes.LightBoxEventHub
 import nebulosa.api.lightboxes.LightBoxService
 import nebulosa.api.message.MessageService
 import nebulosa.api.mounts.MountEventHub
+import nebulosa.api.platesolver.PlateSolverController
+import nebulosa.api.platesolver.PlateSolverService
 import nebulosa.api.preference.PreferenceEntity
 import nebulosa.api.preference.PreferenceRepository
 import nebulosa.api.rotators.RotatorController
@@ -251,6 +254,8 @@ fun servicesModule() = module {
     single { GuideOutputService(get()) }
     single { LightBoxService(get()) }
     single { DustCapService(get()) }
+    single { ImageBucket() }
+    single { PlateSolverService(get(), get(Named.defaultHttpClient)) }
 }
 
 // CONTROLLERS
@@ -264,6 +269,7 @@ fun controllersModule() = module(true) {
     single { GuideOutputController(get(), get(), get()) }
     single { LightBoxController(get(), get(), get()) }
     single { DustCapController(get(), get(), get()) }
+    single { PlateSolverController(get(), get()) }
 }
 
 // APP

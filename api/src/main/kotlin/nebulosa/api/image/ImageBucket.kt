@@ -5,14 +5,12 @@ import nebulosa.image.Image
 import nebulosa.log.loggerFor
 import nebulosa.platesolver.PlateSolution
 import nebulosa.xisf.xisf
-import org.springframework.stereotype.Component
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.timer
 import kotlin.io.path.extension
 
-@Component
 class ImageBucket : AutoCloseable {
 
     data class OpenedImage(

@@ -12,6 +12,7 @@ import nebulosa.api.inject.*
 import nebulosa.json.PathModule
 import nebulosa.log.loggerFor
 import org.koin.core.context.startKoin
+import java.nio.file.Path
 
 @Command(name = "nebulosa")
 class Nebulosa : Runnable, AutoCloseable {
@@ -30,6 +31,8 @@ class Nebulosa : Runnable, AutoCloseable {
             config.showJavalinBanner = false
             // JACKSON
             config.jsonMapper(JavalinJackson(OBJECT_MAPPER))
+            // VALIDATOR
+            config.validation.register(Path::class.java, Path::of)
             // CORS
             config.bundledPlugins.enableCors { cors ->
                 cors.addRule {
