@@ -1,9 +1,7 @@
 package nebulosa.api.dustcap
 
 import nebulosa.indi.device.dustcap.DustCap
-import org.springframework.stereotype.Service
 
-@Service
 class DustCapService(private val dustCapEventHub: DustCapEventHub) {
 
     fun connect(dustCap: DustCap) {

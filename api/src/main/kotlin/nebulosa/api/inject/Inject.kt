@@ -18,7 +18,9 @@ import nebulosa.api.connection.ConnectionController
 import nebulosa.api.connection.ConnectionEventHub
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.database.MyObjectBox
+import nebulosa.api.dustcap.DustCapController
 import nebulosa.api.dustcap.DustCapEventHub
+import nebulosa.api.dustcap.DustCapService
 import nebulosa.api.focusers.FocuserController
 import nebulosa.api.focusers.FocuserEventHub
 import nebulosa.api.focusers.FocuserService
@@ -245,6 +247,7 @@ fun servicesModule() = module {
     single { FocuserService(get()) }
     single { WheelService(get()) }
     single { LightBoxService(get()) }
+    single { DustCapService(get()) }
 }
 
 // CONTROLLERS
@@ -256,6 +259,7 @@ fun controllersModule() = module(true) {
     single { FocuserController(get(), get(), get()) }
     single { WheelController(get(), get(), get()) }
     single { LightBoxController(get(), get(), get()) }
+    single { DustCapController(get(), get(), get()) }
 }
 
 // APP
