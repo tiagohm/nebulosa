@@ -1,6 +1,5 @@
 package nebulosa.api.alignment.polar.darv
 
-import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.message.MessageService
@@ -12,6 +11,7 @@ import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
 
 /**
  * @see <a href="https://www.cloudynights.com/articles/cat/articles/darv-drift-alignment-by-robert-vice-r2760">Reference</a>

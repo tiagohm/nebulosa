@@ -1,6 +1,5 @@
 package nebulosa.api.cameras
 
-import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.message.MessageService
 import nebulosa.api.wheels.WheelEventAware
@@ -18,6 +17,7 @@ import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
 
 class CameraCaptureExecutor(
     private val messageService: MessageService,

@@ -1,6 +1,5 @@
 package nebulosa.api.autofocus
 
-import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.focusers.FocuserEventAware
 import nebulosa.api.message.MessageEvent
@@ -14,6 +13,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
 
 class AutoFocusExecutor(
     private val messageService: MessageService,

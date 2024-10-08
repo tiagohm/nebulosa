@@ -1,6 +1,5 @@
 package nebulosa.api.wizard.flat
 
-import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.message.MessageService
@@ -11,6 +10,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
 
 class FlatWizardExecutor(
     private val messageService: MessageService,

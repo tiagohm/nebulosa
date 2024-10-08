@@ -1,6 +1,5 @@
 package nebulosa.api.sequencer
 
-import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.focusers.FocuserEventAware
@@ -24,6 +23,7 @@ import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
 
 class SequencerExecutor(
     private val messageService: MessageService,

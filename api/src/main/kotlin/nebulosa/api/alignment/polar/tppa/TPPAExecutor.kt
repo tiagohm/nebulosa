@@ -1,6 +1,5 @@
 package nebulosa.api.alignment.polar.tppa
 
-import io.reactivex.rxjava3.functions.Consumer
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.message.MessageService
@@ -14,6 +13,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
 
 class TPPAExecutor(
     private val messageService: MessageService,
