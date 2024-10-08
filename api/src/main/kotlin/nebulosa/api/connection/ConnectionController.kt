@@ -1,37 +1,48 @@
 package nebulosa.api.connection
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
-import org.hibernate.validator.constraints.Range
-import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.*
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.queryParamAsClass
+import io.javalin.validation.Check
 
-@Validated
-@RestController
-@RequestMapping("connection")
 class ConnectionController(
+    app: Javalin,
     private val connectionService: ConnectionService,
 ) {
 
-    @PutMapping
-    fun connect(
-        @RequestParam @Valid @NotBlank host: String,
-        @RequestParam @Valid @Range(min = 1, max = 65535) port: Int,
-        @RequestParam(required = false, defaultValue = "INDI") type: ConnectionType,
-    ) = connectionService.connect(host, port, type)
+    init {
+        app.get("connection", ::statuses)
+        app.get("connection/{id}", ::status)
+        app.put("connection", ::connect)
+        app.delete("connection/{id}", ::disconnect)
+    }
 
-    @DeleteMapping("{id}")
-    fun disconnect(@PathVariable id: String) {
+    private fun connect(ctx: Context) {
+        val host = ctx.queryParamAsClass<String>("host").get()
+        val port = ctx.queryParamAsClass<Int>("port").check(PortRangeCheck, "invalid port range").get()
+        val type = ctx.queryParamAsClass<String>("type").getOrDefault("INDI").let(ConnectionType::valueOf)
+
+        connectionService.connect(host, port, type)
+    }
+
+    fun disconnect(ctx: Context) {
+        val id = ctx.pathParam("id")
         connectionService.disconnect(id)
     }
 
-    @GetMapping
-    fun connectionStatuses(): List<ConnectionStatus> {
-        return connectionService.connectionStatuses()
+    fun statuses(ctx: Context) {
+        ctx.json(connectionService.connectionStatuses())
     }
 
-    @GetMapping("{id}")
-    fun connectionStatus(@PathVariable id: String): ConnectionStatus? {
-        return connectionService.connectionStatus(id)
+    fun status(ctx: Context) {
+        val id = ctx.pathParam("id")
+        connectionService.connectionStatus(id)?.also(ctx::json)
+    }
+
+    private object PortRangeCheck : Check<Int> {
+
+        override fun invoke(port: Int): Boolean {
+            return port in 1..65535
+        }
     }
 }

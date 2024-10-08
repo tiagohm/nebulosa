@@ -1,10 +1,16 @@
 package nebulosa.api
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.github.rvesse.airline.annotations.Command
 import com.github.rvesse.airline.annotations.Option
 import io.javalin.Javalin
-import io.javalin.config.JavalinConfig
+import io.javalin.json.JavalinJackson
+import nebulosa.api.inject.*
+import nebulosa.json.PathModule
 import nebulosa.log.loggerFor
+import org.koin.core.context.startKoin
 
 @Command(name = "nebulosa")
 class Nebulosa : Runnable, AutoCloseable {
@@ -18,10 +24,25 @@ class Nebulosa : Runnable, AutoCloseable {
     private lateinit var app: Javalin
 
     override fun run() {
-        // Run the application.
-        app = Javalin
-            .create { it.config() }
-            .start(host, port)
+        // Run the server.
+        app = Javalin.create { config ->
+            config.showJavalinBanner = false
+            // JACKSON
+            config.jsonMapper(JavalinJackson(OBJECT_MAPPER))
+            // CORS
+            config.bundledPlugins.enableCors { cors ->
+                cors.addRule {
+                    it.anyHost()
+                    it.exposeHeader("X-Image-Info")
+                }
+            }
+        }.start(host, port)
+
+        koinApp.modules(appModule(app))
+        koinApp.modules(objectMapperModule(OBJECT_MAPPER))
+        koinApp.modules(servicesModule())
+        koinApp.modules(controllerModule())
+        startKoin(koinApp)
 
         LOG.info("server is started at port: {}", app.port())
     }
@@ -34,8 +55,11 @@ class Nebulosa : Runnable, AutoCloseable {
 
         @JvmStatic private val LOG = loggerFor<Nebulosa>()
 
-        private fun JavalinConfig.config() {
-            showJavalinBanner = false
+        @JvmStatic private val OBJECT_MAPPER = jsonMapper {
+            addModule(JavaTimeModule())
+            addModule(PathModule())
+            disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
         }
     }
 }

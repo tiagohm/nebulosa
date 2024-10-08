@@ -3,12 +3,9 @@ import * as fs from 'fs'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { spawn } from 'node:child_process'
 import { join } from 'path'
-import { WebSocket } from 'ws'
 import type { InternalEventType, JsonFile } from '../src/shared/types/app.types'
 import { ArgumentParser } from './argument.parser'
 import { WindowManager } from './window.manager'
-
-Object.assign(global, { WebSocket })
 
 const argParser = new ArgumentParser()
 const parsedArgs = argParser.parse(process.argv.slice(1))
