@@ -1,160 +1,177 @@
 package nebulosa.api.mounts
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Positive
-import jakarta.validation.constraints.PositiveOrZero
-import nebulosa.api.beans.converters.angle.AngleParam
-import nebulosa.api.beans.converters.time.DateAndTimeParam
+import io.javalin.Javalin
+import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.javalin.*
 import nebulosa.guiding.GuideDirection
-import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.TrackMode
-import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.math.m
-import org.hibernate.validator.constraints.Range
-import org.springframework.web.bind.annotation.*
-import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-@RestController
-@RequestMapping("mounts")
 class MountController(
+    app: Javalin,
     private val connectionService: ConnectionService,
     private val mountService: MountService,
 ) {
 
-    @GetMapping
-    fun mounts(): List<Mount> {
-        return connectionService.mounts().sorted()
+    init {
+        app.get("mounts", ::mounts)
+        app.get("mount/{id}", ::mount)
+        app.put("mount/{id}/connect", ::connect)
+        app.put("mount/{id}/disconnect", ::disconnect)
+        app.put("mount/{id}/tracking", ::tracking)
+        app.put("mount/{id}/sync", ::sync)
+        app.put("mount/{id}/slew", ::slew)
+        app.put("mount/{id}/goto", ::goTo)
+        app.put("mount/{id}/home", ::home)
+        app.put("mount/{id}/abort", ::abort)
+        app.put("mount/{id}/track-mode", ::trackMode)
+        app.put("mount/{id}/slew-rate", ::slewRate)
+        app.put("mount/{id}/move", ::move)
+        app.put("mount/{id}/park", ::park)
+        app.put("mount/{id}/unpark", ::unpark)
+        app.put("mount/{id}/coordinates", ::coordinates)
+        app.put("mount/{id}/datetime", ::dateTime)
+        app.get("mount/{id}/location", ::location)
+        app.get("mount/{id}/location/{type}", ::celestialLocation)
+        app.put("mount/{id}/point-here", ::pointMountHere)
+        app.get("mount/{id}/remote-control", ::remoteControlList)
+        app.put("mount/{id}/remote-control/start", ::remoteControlStart)
+        app.put("mount/{id}/remote-control/stop", ::remoteControlStop)
+        app.put("mount/{id}/listen", ::listen)
     }
 
-    @GetMapping("{mount}")
-    fun mount(mount: Mount): Mount {
-        return mount
+    private fun mounts(ctx: Context) {
+        ctx.json(connectionService.mounts().sorted())
     }
 
-    @PutMapping("{mount}/connect")
-    fun connect(mount: Mount) {
+    private fun mount(ctx: Context) {
+        val id = ctx.pathParam("id")
+        connectionService.mount(id)?.also(ctx::json)
+    }
+
+    private fun connect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
         mountService.connect(mount)
     }
 
-    @PutMapping("{mount}/disconnect")
-    fun disconnect(mount: Mount) {
+    private fun disconnect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
         mountService.disconnect(mount)
     }
 
-    @PutMapping("{mount}/tracking")
-    fun tracking(
-        mount: Mount,
-        @RequestParam enabled: Boolean,
-    ) {
+    private fun tracking(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val enabled = ctx.queryParamAsBoolean("enabled").get()
         mountService.tracking(mount, enabled)
     }
 
-    @PutMapping("{mount}/sync")
-    fun sync(
-        mount: Mount,
-        @RequestParam @Valid @NotBlank rightAscension: String,
-        @RequestParam @Valid @NotBlank declination: String,
-        @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
-    ) {
+    private fun sync(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val rightAscension = ctx.queryParamAsString("rightAscension").notBlank().get()
+        val declination = ctx.queryParamAsString("declination").notBlank().get()
+        val j2000 = ctx.queryParamAsBoolean("j2000").getOrDefault(false)
         mountService.sync(mount, rightAscension.hours, declination.deg, j2000)
     }
 
-    @PutMapping("{mount}/slew")
-    fun slew(
-        mount: Mount,
-        @RequestParam @Valid @NotBlank rightAscension: String,
-        @RequestParam @Valid @NotBlank declination: String,
-        @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
-        @RequestHeader("X-Idempotency-Key") idempotencyKey: String?,
-    ) {
+    private fun slew(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val rightAscension = ctx.queryParamAsString("rightAscension").notBlank().get()
+        val declination = ctx.queryParamAsString("declination").notBlank().get()
+        val j2000 = ctx.queryParamAsBoolean("j2000").getOrDefault(false)
+        val idempotencyKey = ctx.idempotencyKey()
         mountService.slewTo(mount, rightAscension.hours, declination.deg, j2000, idempotencyKey)
     }
 
-    @PutMapping("{mount}/goto")
-    fun goTo(
-        mount: Mount,
-        @RequestParam @Valid @NotBlank rightAscension: String,
-        @RequestParam @Valid @NotBlank declination: String,
-        @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
-        @RequestHeader("X-Idempotency-Key") idempotencyKey: String?,
-    ) {
+    private fun goTo(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val rightAscension = ctx.queryParamAsString("rightAscension").notBlank().get()
+        val declination = ctx.queryParamAsString("declination").notBlank().get()
+        val j2000 = ctx.queryParamAsBoolean("j2000").getOrDefault(false)
+        val idempotencyKey = ctx.idempotencyKey()
         mountService.goTo(mount, rightAscension.hours, declination.deg, j2000, idempotencyKey)
     }
 
-    @PutMapping("{mount}/home")
-    fun home(mount: Mount) {
+    private fun home(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
         mountService.home(mount)
     }
 
-    @PutMapping("{mount}/abort")
-    fun abort(mount: Mount) {
+    private fun abort(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
         mountService.abort(mount)
     }
 
-    @PutMapping("{mount}/track-mode")
-    fun trackMode(
-        mount: Mount,
-        @RequestParam mode: TrackMode,
-    ) {
+    private fun trackMode(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val mode = ctx.queryParamAsString("mode").notBlank().get().let(TrackMode::valueOf)
         mountService.trackMode(mount, mode)
     }
 
-    @PutMapping("{mount}/slew-rate")
-    fun slewRate(
-        mount: Mount,
-        @RequestParam @Valid @NotBlank rate: String,
-    ) {
+    private fun slewRate(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val rate = ctx.queryParamAsString("mode").notBlank().get()
         mountService.slewRate(mount, mount.slewRates.first { it.name == rate })
     }
 
-    @PutMapping("{mount}/move")
-    fun move(
-        mount: Mount,
-        @RequestParam direction: GuideDirection,
-        @RequestParam enabled: Boolean,
-    ) {
+    private fun move(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val direction = ctx.queryParamAsString("direction").notBlank().get().let(GuideDirection::valueOf)
+        val enabled = ctx.queryParamAsBoolean("enabled").get()
         mountService.move(mount, direction, enabled)
     }
 
-    @PutMapping("{mount}/park")
-    fun park(mount: Mount) {
+    private fun park(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
         mountService.park(mount)
     }
 
-    @PutMapping("{mount}/unpark")
-    fun unpark(mount: Mount) {
+    private fun unpark(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
         mountService.unpark(mount)
     }
 
-    @PutMapping("{mount}/coordinates")
-    fun coordinates(
-        mount: Mount,
-        @RequestParam @Valid @NotBlank longitude: String,
-        @RequestParam @Valid @NotBlank latitude: String,
-        @RequestParam(required = false, defaultValue = "0.0") elevation: Double,
-    ) {
+    private fun coordinates(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val longitude = ctx.queryParamAsString("longitude").notBlank().get()
+        val latitude = ctx.queryParamAsString("latitude").notBlank().get()
+        val elevation = ctx.queryParamAsDouble("elevation").getOrDefault(0.0)
         mountService.coordinates(mount, longitude.deg, latitude.deg, elevation.m)
     }
 
-    @PutMapping("{mount}/datetime")
-    fun dateTime(
-        mount: Mount,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam @Valid @Range(min = -720, max = 720) offsetInMinutes: Int,
-    ) {
+    private fun dateTime(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        val offsetInMinutes = ctx.queryParamAsInt("offsetInMinutes").range(-720..720).get()
         mountService.dateTime(mount, OffsetDateTime.of(dateTime, ZoneOffset.ofTotalSeconds(offsetInMinutes * 60)))
     }
 
-    @GetMapping("{mount}/location/{type}")
-    fun celestialLocation(mount: Mount, @PathVariable type: CelestialLocationType): ComputedLocation {
-        return when (type) {
+    private fun celestialLocation(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val type = ctx.pathParamAsString("type").notBlank().get().let(CelestialLocationType::valueOf)
+
+        val location = when (type) {
             CelestialLocationType.ZENITH -> mountService.computeZenithLocation(mount)
             CelestialLocationType.NORTH_POLE -> mountService.computeNorthCelestialPoleLocation(mount)
             CelestialLocationType.SOUTH_POLE -> mountService.computeSouthCelestialPoleLocation(mount)
@@ -163,51 +180,56 @@ class MountController(
             CelestialLocationType.MERIDIAN_ECLIPTIC -> mountService.computeMeridianEclipticLocation(mount)
             CelestialLocationType.EQUATOR_ECLIPTIC -> mountService.computeEquatorEclipticLocation(mount)
         }
+
+        ctx.json(location)
     }
 
-    @GetMapping("{mount}/location")
-    fun location(
-        mount: Mount,
-        @AngleParam(isHours = true) rightAscension: Angle,
-        @AngleParam declination: Angle,
-        @RequestParam(required = false, defaultValue = "false") j2000: Boolean,
-        @RequestParam(required = false, defaultValue = "true") equatorial: Boolean,
-        @RequestParam(required = false, defaultValue = "true") horizontal: Boolean,
-        @RequestParam(required = false, defaultValue = "true") meridianAt: Boolean,
-    ) = mountService.computeLocation(mount, rightAscension, declination, j2000, equatorial, horizontal, meridianAt)
+    private fun location(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val rightAscension = ctx.queryParamAsString("rightAscension").notBlank().get()
+        val declination = ctx.queryParamAsString("declination").notBlank().get()
+        val j2000 = ctx.queryParamAsBoolean("j2000").getOrDefault(false)
+        val equatorial = ctx.queryParamAsBoolean("equatorial").getOrDefault(true)
+        val horizontal = ctx.queryParamAsBoolean("horizontal").getOrDefault(true)
+        val meridianAt = ctx.queryParamAsBoolean("meridianAt").getOrDefault(true)
+        ctx.json(mountService.computeLocation(mount, rightAscension.hours, declination.deg, j2000, equatorial, horizontal, meridianAt))
+    }
 
-    @PutMapping("{mount}/point-here")
-    fun pointMountHere(
-        mount: Mount,
-        @RequestParam path: Path,
-        @RequestParam @Valid @PositiveOrZero x: Double,
-        @RequestParam @Valid @PositiveOrZero y: Double,
-    ) {
+    private fun pointMountHere(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val path = ctx.queryParamAsPath("path").exists().get()
+        val x = ctx.queryParamAsDouble("x").positiveOrZero().get()
+        val y = ctx.queryParamAsDouble("y").positiveOrZero().get()
         mountService.pointMountHere(mount, path, x, y)
     }
 
-    @PutMapping("{mount}/remote-control/start")
-    fun remoteControlStart(
-        mount: Mount,
-        @RequestParam protocol: MountRemoteControlProtocol,
-        @RequestParam(required = false, defaultValue = "0.0.0.0") host: String,
-        @RequestParam(required = false, defaultValue = "10001") @Valid @Positive port: Int,
-    ) {
+    private fun remoteControlStart(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val protocol = ctx.queryParamAsString("procotol").notBlank().get().let(MountRemoteControlProtocol::valueOf)
+        val host = ctx.queryParamAsString("host").getOrDefault("0.0.0.0")
+        val port = ctx.queryParamAsInt("port").positive().getOrDefault(10001)
         mountService.remoteControlStart(mount, protocol, host, port)
     }
 
-    @PutMapping("{mount}/remote-control/stop")
-    fun remoteControlStart(mount: Mount, @RequestParam protocol: MountRemoteControlProtocol) {
+    private fun remoteControlStop(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        val protocol = ctx.queryParamAsString("procotol").notBlank().get().let(MountRemoteControlProtocol::valueOf)
         mountService.remoteControlStop(mount, protocol)
     }
 
-    @GetMapping("{mount}/remote-control")
-    fun remoteControlList(mount: Mount): List<MountRemoteControl> {
-        return mountService.remoteControlList(mount)
+    private fun remoteControlList(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
+        ctx.json(mountService.remoteControlList(mount))
     }
 
-    @PutMapping("{mount}/listen")
-    fun listen(mount: Mount) {
+    private fun listen(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val mount = connectionService.mount(id) ?: return
         mountService.listen(mount)
     }
 }

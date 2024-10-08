@@ -11,6 +11,8 @@ import nebulosa.api.guiding.GuideOutputDeserializer
 import nebulosa.api.guiding.GuideOutputSerializer
 import nebulosa.api.lightboxes.LightBoxDeserializer
 import nebulosa.api.lightboxes.LightBoxSerializer
+import nebulosa.api.mounts.MountDeserializer
+import nebulosa.api.mounts.MountSerializer
 import nebulosa.api.rotators.RotatorDeserializer
 import nebulosa.api.rotators.RotatorSerializer
 import nebulosa.api.wheels.WheelDeserializer
@@ -20,6 +22,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.indi.device.lightbox.LightBox
+import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 
 class DeviceModule : SimpleModule() {
@@ -28,6 +31,7 @@ class DeviceModule : SimpleModule() {
         super.setupModule(context)
 
         val serializers = SimpleSerializers()
+        serializers.addSerializer(MountSerializer())
         serializers.addSerializer(RotatorSerializer())
         serializers.addSerializer(FocuserSerializer())
         serializers.addSerializer(WheelSerializer())
@@ -37,6 +41,7 @@ class DeviceModule : SimpleModule() {
         context.addSerializers(serializers)
 
         val deserializers = SimpleDeserializers()
+        deserializers.addDeserializer(Mount::class.java, MountDeserializer())
         deserializers.addDeserializer(Rotator::class.java, RotatorDeserializer())
         deserializers.addDeserializer(Focuser::class.java, FocuserDeserializer())
         deserializers.addDeserializer(FilterWheel::class.java, WheelDeserializer())

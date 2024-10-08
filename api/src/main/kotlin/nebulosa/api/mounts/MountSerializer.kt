@@ -7,10 +7,8 @@ import nebulosa.math.formatHMS
 import nebulosa.math.formatSignedDMS
 import nebulosa.math.toDegrees
 import nebulosa.math.toMeters
-import org.springframework.stereotype.Component
 import java.time.ZoneOffset
 
-@Component
 class MountSerializer : DeviceSerializer<Mount>(Mount::class.java) {
 
     override fun JsonGenerator.serialize(value: Mount) {

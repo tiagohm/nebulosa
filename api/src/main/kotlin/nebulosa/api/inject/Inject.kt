@@ -47,7 +47,9 @@ import nebulosa.api.lightboxes.LightBoxService
 import nebulosa.api.livestacker.LiveStackingController
 import nebulosa.api.livestacker.LiveStackingService
 import nebulosa.api.message.MessageService
+import nebulosa.api.mounts.MountController
 import nebulosa.api.mounts.MountEventHub
+import nebulosa.api.mounts.MountService
 import nebulosa.api.platesolver.PlateSolverController
 import nebulosa.api.platesolver.PlateSolverService
 import nebulosa.api.preference.PreferenceEntity
@@ -307,6 +309,7 @@ fun servicesModule() = module {
     single { HorizonsEphemerisProvider(get()) }
     single { BodyEphemerisProvider(get()) }
     single { SkyAtlasService(get(), get(), get(), get(), get(), get(Named.defaultHttpClient), get(), get()) }
+    single { MountService(get(), get(), get(), get(), get()) }
 }
 
 // CONTROLLERS
@@ -334,6 +337,7 @@ fun controllersModule() = module(true) {
     single { GuidingController(get(), get()) }
     single { SequencerController(get(), get(), get()) }
     single { SkyAtlasController(get(), get(), get()) }
+    single { MountController(get(), get(), get()) }
 }
 
 // APP
