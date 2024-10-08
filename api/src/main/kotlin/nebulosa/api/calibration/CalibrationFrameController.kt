@@ -1,38 +1,48 @@
 package nebulosa.api.calibration
 
-import jakarta.validation.Valid
-import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.*
-import java.nio.file.Path
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.bodyAsClass
+import nebulosa.api.javalin.exists
+import nebulosa.api.javalin.pathParamAsLong
+import nebulosa.api.javalin.queryParamAsPath
 
-@Validated
-@RestController
-@RequestMapping("calibration-frames")
 class CalibrationFrameController(
+    app: Javalin,
     private val calibrationFrameService: CalibrationFrameService,
 ) {
 
-    @GetMapping
-    fun groups() = calibrationFrameService.groups()
-
-    @GetMapping("{group}")
-    fun frames(@PathVariable group: String): List<CalibrationFrameEntity> {
-        return calibrationFrameService.frames(group).sorted()
+    init {
+        app.get("calibration-frames", ::groups)
+        app.get("calibration-frames/{group}", ::frames)
+        app.put("calibration-frames/{group}", ::upload)
+        app.post("calibration-frames/{id}", ::update)
+        app.delete("calibration-frames/{id}", ::delete)
     }
 
-    @PutMapping("{group}")
-    fun upload(@PathVariable group: String, @RequestParam path: Path): List<CalibrationFrameEntity> {
-        return calibrationFrameService.upload(group, path)
+    private fun groups(ctx: Context) {
+        ctx.json(calibrationFrameService.groups())
     }
 
-    @PostMapping
-    fun update(@RequestBody @Valid body: CalibrationFrameEntity): CalibrationFrameEntity {
+    private fun frames(ctx: Context) {
+        val group = ctx.pathParam("group")
+        ctx.json(calibrationFrameService.frames(group).sorted())
+    }
+
+    private fun upload(ctx: Context) {
+        val group = ctx.pathParam("group")
+        val path = ctx.queryParamAsPath("path").exists().get()
+        calibrationFrameService.upload(group, path)
+    }
+
+    private fun update(ctx: Context) {
+        val body = ctx.bodyAsClass<CalibrationFrameEntity>()
         require(body.id > 0L) { "invalid frame id" }
-        return calibrationFrameService.edit(body)
+        ctx.json(calibrationFrameService.edit(body))
     }
 
-    @DeleteMapping("{id}")
-    fun delete(@PathVariable id: Long) {
+    private fun delete(ctx: Context) {
+        val id = ctx.pathParamAsLong("id").get()
         calibrationFrameService.delete(id)
     }
 }

@@ -9,8 +9,10 @@ import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SatelliteRepository
 import nebulosa.api.atlas.SimbadEntity
 import nebulosa.api.atlas.SimbadEntityRepository
+import nebulosa.api.calibration.CalibrationFrameController
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.calibration.CalibrationFrameRepository
+import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.cameras.CameraEventHub
 import nebulosa.api.confirmation.ConfirmationController
 import nebulosa.api.confirmation.ConfirmationService
@@ -255,6 +257,7 @@ fun servicesModule() = module {
     single { LightBoxService(get()) }
     single { DustCapService(get()) }
     single { ImageBucket() }
+    single { CalibrationFrameService(get()) }
     single { PlateSolverService(get(), get(Named.defaultHttpClient)) }
 }
 
@@ -269,6 +272,7 @@ fun controllersModule() = module(true) {
     single { GuideOutputController(get(), get(), get()) }
     single { LightBoxController(get(), get(), get()) }
     single { DustCapController(get(), get(), get()) }
+    single { CalibrationFrameController(get(), get()) }
     single { PlateSolverController(get(), get()) }
 }
 
