@@ -37,6 +37,9 @@ import nebulosa.api.guiding.GuideOutputService
 import nebulosa.api.image.ImageBucket
 import nebulosa.api.image.ImageController
 import nebulosa.api.image.ImageService
+import nebulosa.api.indi.INDIController
+import nebulosa.api.indi.INDIEventHandler
+import nebulosa.api.indi.INDIService
 import nebulosa.api.lightboxes.LightBoxController
 import nebulosa.api.lightboxes.LightBoxEventHub
 import nebulosa.api.lightboxes.LightBoxService
@@ -245,7 +248,7 @@ fun repositoriesModule() = module {
 
 // SERVICES
 
-fun deviceEventHubModule() = module(true) {
+fun eventHandlerModule() = module(true) {
     single { CameraEventHub(get(), get()) }
     single { MountEventHub(get(), get()) }
     single { FocuserEventHub(get(), get()) }
@@ -255,6 +258,7 @@ fun deviceEventHubModule() = module(true) {
     single { LightBoxEventHub(get(), get()) }
     single { DustCapEventHub(get(), get()) }
     single { ConnectionEventHub(get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { INDIEventHandler(get(), get()) }
 }
 
 fun servicesModule() = module {
@@ -263,7 +267,7 @@ fun servicesModule() = module {
     single { SmallBodyDatabaseService(httpClient = get(Named.defaultHttpClient)) }
     single { Hips2FitsService(httpClient = get(Named.defaultHttpClient)) }
     single(createdAtStart = true) { MessageService(get()) }
-    includes(deviceEventHubModule())
+    includes(eventHandlerModule())
     single(createdAtStart = true) { ConnectionService(get(), get(Named.alpacaHttpClient), get(), get()) }
     single { ConfirmationService(get()) }
     single { RotatorService(get()) }
@@ -285,6 +289,7 @@ fun servicesModule() = module {
     single { LiveStackingService() }
     single { StackerService(get()) }
     single { FramingService(get(), get()) }
+    single { INDIService(get()) }
 }
 
 // CONTROLLERS
@@ -307,6 +312,7 @@ fun controllersModule() = module(true) {
     single { LiveStackingController(get(), get(), get()) }
     single { StackerController(get(), get()) }
     single { FramingController(get(), get(), get()) }
+    single { INDIController(get(), get(), get()) }
 }
 
 // APP
