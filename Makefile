@@ -1,23 +1,17 @@
-.PHONY: api desktop bootRun build install
+.PHONY: api desktop build install
 
 ifeq ($(OS),Windows_NT)
 api:
-	gradlew.bat api:bootJar
+	gradlew.bat api:shadowJar
 
 desktop:
 	cd desktop && npm run electron:build
-
-bootRun:
-	gradlew.bat api:bootRun --args='--server.port=7000'
 else
 api:
-	./gradlew api:bootJar
+	./gradlew api:shadowJar
 
 desktop:
 	cd desktop && npm run electron:build:deb
-
-bootRun:
-	./gradlew api:bootRun --args='--server.port=7000'
 
 install:
 	sudo dpkg -i desktop/release/nebulosa_0.1.0_amd64.deb

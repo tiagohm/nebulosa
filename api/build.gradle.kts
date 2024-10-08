@@ -1,11 +1,10 @@
-import org.springframework.boot.gradle.tasks.bundling.BootJar
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("jvm")
-    id("org.springframework.boot") version "3.3.3"
-    kotlin("plugin.spring")
     kotlin("kapt")
     id("io.objectbox")
+    id("com.gradleup.shadow")
 }
 
 dependencies {
@@ -42,24 +41,19 @@ dependencies {
     implementation(libs.koin)
     implementation(libs.airline)
 
-    // ### REMOVER ###
-    implementation("org.springframework.boot:spring-boot-starter:3.2.10")
-    implementation("org.springframework.boot:spring-boot-starter-web:3.2.10") {
-        exclude(module = "spring-boot-starter-tomcat")
-    }
-    // ### REMOVER ###
-
     testImplementation(project(":nebulosa-astrobin-api"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))
 }
 
-tasks.withType<BootJar> {
-    archiveFileName = "api.jar"
-    destinationDirectory = file("$rootDir/desktop")
+tasks.withType<ShadowJar> {
+    isZip64 = true
+
+    archiveFileName.set("api.jar")
+    destinationDirectory.set(file("../desktop"))
 
     manifest {
-        attributes["Start-Class"] = "nebulosa.api.MainKt"
+        attributes["Main-Class"] = "nebulosa.api.MainKt"
     }
 }
 

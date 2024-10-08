@@ -1,6 +1,5 @@
 package nebulosa.api.guiding
 
-import jakarta.annotation.PreDestroy
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
 import nebulosa.guiding.GuideStar
@@ -40,7 +39,6 @@ class GuidingService(
         messageService.sendMessage(GuiderMessageEvent(GUIDER_CONNECTED))
     }
 
-    @PreDestroy
     @Synchronized
     fun disconnect() {
         runCatching { guider.close() }
