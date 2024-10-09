@@ -11,6 +11,7 @@ import nebulosa.indi.device.camera.FrameType
 import nebulosa.job.manager.AbstractJob
 import nebulosa.job.manager.Task
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationSource
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 import java.nio.file.Path
 import java.time.Duration
@@ -49,6 +50,11 @@ data class FlatWizardJob(
 
     override fun handleCameraEvent(event: CameraEvent) {
         cameraExposureTask.handleCameraEvent(event)
+    }
+
+    override fun onCancel(source: CancellationSource) {
+        waitToComputeOptimalExposureTime.reset()
+        super.onCancel(source)
     }
 
     override fun accept(event: Any) {
@@ -126,6 +132,12 @@ data class FlatWizardJob(
     }
 
     override fun afterFinish() {
+        if (status.state == FlatWizardState.EXPOSURING) {
+            status.state = FlatWizardState.IDLE
+            status.capture.state = CameraCaptureState.IDLE
+            status.send()
+        }
+
         LOG.debug("Flat Wizard finished. camera={}, request={}, exposureTime={} µs", camera, request, status.exposureTime)
     }
 

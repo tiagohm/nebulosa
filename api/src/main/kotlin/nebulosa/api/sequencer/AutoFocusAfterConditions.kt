@@ -1,26 +1,33 @@
 package nebulosa.api.sequencer
 
-import jakarta.validation.constraints.PositiveOrZero
-import org.hibernate.validator.constraints.time.DurationMax
-import org.hibernate.validator.constraints.time.DurationMin
-import org.springframework.boot.convert.DurationUnit
+import nebulosa.api.beans.converters.time.DurationUnit
+import nebulosa.api.javalin.Validatable
+import nebulosa.api.javalin.max
+import nebulosa.api.javalin.positiveOrZero
 import java.time.Duration
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.TimeUnit
 
 data class AutoFocusAfterConditions(
     @JvmField val enabled: Boolean = false,
     @JvmField val onStart: Boolean = false,
     @JvmField val onFilterChange: Boolean = false,
-    @field:DurationMin(seconds = 0) @field:DurationMax(hours = 8) @field:DurationUnit(ChronoUnit.SECONDS)
-    @JvmField val afterElapsedTime: Duration = Duration.ZERO,
-    @field:PositiveOrZero @JvmField val afterExposures: Int = 0,
-    @field:PositiveOrZero @JvmField val afterTemperatureChange: Double = 0.0,
-    @field:PositiveOrZero @JvmField val afterHFDIncrease: Double = 0.0,
+    @field:DurationUnit(ChronoUnit.SECONDS) @JvmField val afterElapsedTime: Duration = Duration.ZERO,
+    @JvmField val afterExposures: Int = 0,
+    @JvmField val afterTemperatureChange: Double = 0.0,
+    @JvmField val afterHFDIncrease: Double = 0.0,
     @JvmField val afterElapsedTimeEnabled: Boolean = false,
     @JvmField val afterExposuresEnabled: Boolean = false,
     @JvmField val afterTemperatureChangeEnabled: Boolean = false,
     @JvmField val afterHFDIncreaseEnabled: Boolean = false,
-) {
+) : Validatable {
+
+    override fun validate() {
+        afterElapsedTime.positiveOrZero().max(24L, TimeUnit.HOURS)
+        afterExposures.positiveOrZero()
+        afterTemperatureChange.positiveOrZero()
+        afterHFDIncrease.positiveOrZero()
+    }
 
     companion object {
 

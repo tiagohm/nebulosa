@@ -6,19 +6,21 @@ import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.source
-import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-@Component
 class SkyAtlasUpdateTask(
     private val httpClient: OkHttpClient,
     private val simbadEntityRepository: SimbadEntityRepository,
     private val preferenceService: PreferenceService,
     private val messageService: MessageService,
+    scheduledExecutorService: ScheduledExecutorService,
 ) : Runnable {
 
-    @Scheduled(fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
+    init {
+        scheduledExecutorService.schedule(this, 0L, TimeUnit.SECONDS)
+    }
+
     override fun run() {
         var request = Request.Builder().get().url(VERSION_URL).build()
 

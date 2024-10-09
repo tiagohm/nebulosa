@@ -9,13 +9,11 @@ import nebulosa.stacker.AutoStackerListener
 import nebulosa.util.concurrency.cancellation.CancellationToken
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
-import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 
-@Service
 class StackerService(private val messageService: MessageService?) {
 
     @Synchronized

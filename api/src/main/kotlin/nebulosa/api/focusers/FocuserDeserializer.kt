@@ -1,16 +1,12 @@
 package nebulosa.api.focusers
 
-import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.indi.device.focuser.Focuser
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Lazy
-import org.springframework.stereotype.Component
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
-@Component
-class FocuserDeserializer : DeviceDeserializer<Focuser>(Focuser::class.java) {
+class FocuserDeserializer : DeviceDeserializer<Focuser>(Focuser::class.java), KoinComponent {
 
-    @Autowired @Lazy private lateinit var connectionService: ConnectionService
-
-    override fun deviceFor(name: String) = connectionService.focuser(name)
+    override fun deviceFor(name: String) = get<ConnectionService>().focuser(name)
 }

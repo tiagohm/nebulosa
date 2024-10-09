@@ -1,18 +1,25 @@
 package nebulosa.api.stardetector
 
-import jakarta.validation.Valid
-import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.*
-import java.nio.file.Path
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.bodyAsClass
+import nebulosa.api.javalin.exists
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.path
+import nebulosa.api.javalin.valid
 
-@Validated
-@RestController
-@RequestMapping("star-detection")
-class StarDetectionController(private val starDetectionService: StarDetectionService) {
+class StarDetectionController(
+    app: Javalin,
+    private val starDetectionService: StarDetectionService,
+) {
 
-    @PutMapping
-    fun detectStars(
-        @RequestParam path: Path,
-        @RequestBody @Valid body: StarDetectionRequest
-    ) = starDetectionService.detectStars(path, body)
+    init {
+        app.put("star-detection", ::detectStars)
+    }
+
+    private fun detectStars(ctx: Context) {
+        val path = ctx.queryParam("path").notNull().path().exists()
+        val body = ctx.bodyAsClass<StarDetectionRequest>().valid()
+        ctx.json(starDetectionService.detectStars(path, body))
+    }
 }

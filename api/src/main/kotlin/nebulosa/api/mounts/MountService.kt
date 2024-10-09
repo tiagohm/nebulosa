@@ -1,7 +1,6 @@
 package nebulosa.api.mounts
 
 import nebulosa.api.atlas.SkyAtlasService
-import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.confirmation.ConfirmationService
 import nebulosa.api.image.ImageBucket
 import nebulosa.constants.PI
@@ -22,26 +21,29 @@ import nebulosa.stellarium.protocol.StellariumProtocolServer
 import nebulosa.time.CurrentTime
 import nebulosa.time.SystemClock
 import nebulosa.wcs.WCS
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.springframework.stereotype.Service
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-@Service
-@Subscriber
 class MountService(
     private val imageBucket: ImageBucket,
     private val mountEventHub: MountEventHub,
     private val skyAtlasService: SkyAtlasService,
     private val confirmationService: ConfirmationService,
+    eventBus: EventBus,
 ) {
 
     private val sites = ConcurrentHashMap<Mount, GeographicPosition>(2)
     private val remoteControls = ArrayList<MountRemoteControl>(2)
+
+    init {
+        eventBus.register(this)
+    }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onMountGeographicCoordinateChanged(event: MountGeographicCoordinateChanged) {

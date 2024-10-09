@@ -1,7 +1,5 @@
 package nebulosa.api.cameras
 
-import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.message.MessageService
 import nebulosa.api.wheels.WheelEventAware
@@ -13,23 +11,27 @@ import nebulosa.indi.device.filterwheel.FilterWheelEvent
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
-import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
 
-@Component
-@Subscriber
 class CameraCaptureExecutor(
     private val messageService: MessageService,
-    private val guider: Guider,
-    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
     private val calibrationFrameService: CalibrationFrameService,
-) : Consumer<CameraCaptureEvent>, CameraEventAware, WheelEventAware, Executor by threadPoolTaskExecutor {
+    private val guider: Guider,
+    private val executorService: ExecutorService,
+    eventBus: EventBus,
+) : Consumer<CameraCaptureEvent>, CameraEventAware, WheelEventAware, Executor by executorService {
 
     private val jobs = ConcurrentHashMap.newKeySet<CameraCaptureJob>(2)
+
+    init {
+        eventBus.register(this)
+    }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleCameraEvent(event: CameraEvent) {
@@ -56,7 +58,7 @@ class CameraCaptureExecutor(
         val liveStackingManager = CameraLiveStackingManager(calibrationFrameService)
 
         with(CameraCaptureJob(this, camera, request, guider, liveStackingManager, mount, wheel, focuser, rotator)) {
-            val completable = runAsync(threadPoolTaskExecutor)
+            val completable = runAsync(executorService)
             jobs.add(this)
             completable.whenComplete { _, _ -> jobs.remove(this); liveStackingManager.close() }
         }

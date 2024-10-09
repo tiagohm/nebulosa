@@ -1,13 +1,22 @@
 package nebulosa.api.confirmation
 
-import org.springframework.web.bind.annotation.*
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.pathParamAsClass
+import nebulosa.api.javalin.notNull
 
-@RestController
-@RequestMapping("confirmation")
-class ConfirmationController(private val confirmationService: ConfirmationService) {
+class ConfirmationController(
+    app: Javalin,
+    private val confirmationService: ConfirmationService
+) {
 
-    @PutMapping("{idempotencyKey}")
-    fun confirm(@PathVariable idempotencyKey: String, @RequestParam accepted: Boolean) {
+    init {
+        app.put("confirmation/{idempotencyKey}", ::confirm)
+    }
+
+    private fun confirm(ctx: Context) {
+        val idempotencyKey = ctx.pathParamAsClass<String>("idempotencyKey").get()
+        val accepted = ctx.queryParam("accepted").notNull().toBoolean()
         confirmationService.confirm(idempotencyKey, accepted)
     }
 }

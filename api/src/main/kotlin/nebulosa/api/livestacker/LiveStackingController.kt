@@ -1,27 +1,40 @@
 package nebulosa.api.livestacker
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
-import nebulosa.indi.device.camera.Camera
-import org.springframework.web.bind.annotation.*
-import java.nio.file.Path
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.bodyAsClass
+import nebulosa.api.connection.ConnectionService
+import nebulosa.api.javalin.exists
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.path
+import nebulosa.api.javalin.valid
 
-@RestController
-@RequestMapping("live-stacking")
-class LiveStackingController(private val liveStackingService: LiveStackingService) {
+class LiveStackingController(
+    app: Javalin,
+    private val liveStackingService: LiveStackingService,
+    private val connectionService: ConnectionService,
+) {
 
-    @PutMapping("{camera}/start")
-    fun start(camera: Camera, @RequestBody body: LiveStackingRequest) {
+    init {
+        app.put("live-stacking/{camera}/start", ::start)
+        app.put("live-stacking/{camera}/add", ::add)
+        app.put("live-stacking/{camera}/stop", ::stop)
+    }
+
+    private fun start(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
+        val body = ctx.bodyAsClass<LiveStackingRequest>().valid()
         liveStackingService.start(camera, body)
     }
 
-    @PutMapping("{camera}/add")
-    fun add(camera: Camera, @RequestParam @Valid @NotBlank path: Path): Path? {
-        return liveStackingService.add(camera, path)
+    private fun add(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
+        val path = ctx.queryParam("path").notNull().path().exists()
+        liveStackingService.add(camera, path)?.also(ctx::json)
     }
 
-    @PutMapping("{camera}/stop")
-    fun stop(camera: Camera) {
+    private fun stop(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
         liveStackingService.stop(camera)
     }
 }

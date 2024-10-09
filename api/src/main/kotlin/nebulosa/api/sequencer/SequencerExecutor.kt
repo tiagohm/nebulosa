@@ -1,7 +1,5 @@
 package nebulosa.api.sequencer
 
-import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.focusers.FocuserEventAware
@@ -19,23 +17,27 @@ import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.device.rotator.RotatorEvent
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
-import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
 
-@Component
-@Subscriber
 class SequencerExecutor(
     private val messageService: MessageService,
     private val guider: Guider,
-    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
+    private val executorService: ExecutorService,
     private val calibrationFrameService: CalibrationFrameService,
-) : Consumer<MessageEvent>, CameraEventAware, WheelEventAware, FocuserEventAware, RotatorEventAware, Executor by threadPoolTaskExecutor {
+    eventBus: EventBus,
+) : Consumer<MessageEvent>, CameraEventAware, WheelEventAware, FocuserEventAware, RotatorEventAware, Executor by executorService {
 
     private val jobs = ConcurrentHashMap.newKeySet<SequencerJob>(1)
+
+    init {
+        eventBus.register(this)
+    }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun handleCameraEvent(event: CameraEvent) {
@@ -81,7 +83,7 @@ class SequencerExecutor(
         }
 
         with(SequencerJob(this, camera, request, guider, mount, wheel, focuser, rotator, calibrationFrameService)) {
-            val completable = runAsync(threadPoolTaskExecutor)
+            val completable = runAsync(executorService)
             jobs.add(this)
             completable.whenComplete { _, _ -> jobs.remove(this) }
         }

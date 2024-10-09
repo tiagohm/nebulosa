@@ -4,11 +4,8 @@ import io.objectbox.Box
 import io.objectbox.kotlin.equal
 import nebulosa.api.repositories.BoxRepository
 import nebulosa.indi.device.camera.FrameType
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.stereotype.Component
 
-@Component
-class CalibrationFrameRepository(@Qualifier("calibrationFrameBox") override val box: Box<CalibrationFrameEntity>) :
+class CalibrationFrameRepository(override val box: Box<CalibrationFrameEntity>) :
     BoxRepository<CalibrationFrameEntity>() {
 
     fun groups() = box.all.map { it.group }.distinct()

@@ -1,6 +1,5 @@
 package nebulosa.api.guiding
 
-import jakarta.annotation.PreDestroy
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
 import nebulosa.guiding.GuideStar
@@ -8,12 +7,10 @@ import nebulosa.guiding.GuideState
 import nebulosa.guiding.Guider
 import nebulosa.guiding.GuiderListener
 import nebulosa.phd2.client.PHD2Client
-import org.springframework.stereotype.Service
 import java.time.Duration
 import kotlin.math.max
 import kotlin.math.min
 
-@Service
 class GuidingService(
     private val preferenceService: PreferenceService,
     private val messageService: MessageService,
@@ -42,7 +39,6 @@ class GuidingService(
         messageService.sendMessage(GuiderMessageEvent(GUIDER_CONNECTED))
     }
 
-    @PreDestroy
     @Synchronized
     fun disconnect() {
         runCatching { guider.close() }

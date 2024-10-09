@@ -8,11 +8,8 @@ import nebulosa.math.toDegrees
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.stereotype.Component
 
-@Component
-class SimbadEntityRepository(@Qualifier("simbadBox") override val box: Box<SimbadEntity>) : BoxRepository<SimbadEntity>() {
+class SimbadEntityRepository(override val box: Box<SimbadEntity>) : BoxRepository<SimbadEntity>() {
 
     fun search(
         name: String? = null, constellation: Constellation? = null,

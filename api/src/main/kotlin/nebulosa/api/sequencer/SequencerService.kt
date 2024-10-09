@@ -5,12 +5,10 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
-import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 
-@Service
 class SequencerService(
     private val sequencesPath: Path,
     private val sequencerExecutor: SequencerExecutor,

@@ -1,16 +1,12 @@
 package nebulosa.api.rotators
 
-import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.indi.device.rotator.Rotator
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Lazy
-import org.springframework.stereotype.Component
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
-@Component
-class RotatorDeserializer : DeviceDeserializer<Rotator>(Rotator::class.java) {
+class RotatorDeserializer : DeviceDeserializer<Rotator>(Rotator::class.java), KoinComponent {
 
-    @Autowired @Lazy private lateinit var connectionService: ConnectionService
-
-    override fun deviceFor(name: String) = connectionService.rotator(name)
+    override fun deviceFor(name: String) = get<ConnectionService>().rotator(name)
 }

@@ -2,13 +2,11 @@ package nebulosa.api.livestacker
 
 import nebulosa.indi.device.camera.Camera
 import nebulosa.livestacker.LiveStacker
-import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.deleteRecursively
 
-@Service
 class LiveStackingService {
 
     private val liveStackers = ConcurrentHashMap<Camera, Pair<LiveStacker, Path>>(2)

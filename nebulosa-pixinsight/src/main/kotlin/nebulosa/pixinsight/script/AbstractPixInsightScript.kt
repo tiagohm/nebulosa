@@ -28,13 +28,13 @@ abstract class AbstractPixInsightScript<T : PixInsightScript.Output> : PixInsigh
     final override fun startCommandLine(commandLine: CommandLine) {
         commandLine.whenComplete { exitCode, exception ->
             try {
-                LOG.info("{} script finished. done={}, exitCode={}", this::class.simpleName, isDone, exitCode, exception)
+                LOG.debug("{} script finished. done={}, exitCode={}", this::class.simpleName, isDone, exitCode, exception)
 
                 waitOnComplete()
 
                 if (isDone) return@whenComplete
                 else if (exception != null) completeExceptionally(exception)
-                else complete(processOnComplete(exitCode).also { LOG.info("{} script processed. output={}", this::class.simpleName, it) })
+                else complete(processOnComplete(exitCode).also { LOG.debug("{} script processed. output={}", this::class.simpleName, it) })
             } catch (e: Throwable) {
                 LOG.error("{} finished with fatal exception. message={}", this::class.simpleName, e.message)
                 completeExceptionally(e)

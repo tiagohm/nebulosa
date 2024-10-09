@@ -3,9 +3,7 @@ package nebulosa.api.rotators
 import com.fasterxml.jackson.core.JsonGenerator
 import nebulosa.api.devices.DeviceSerializer
 import nebulosa.indi.device.rotator.Rotator
-import org.springframework.stereotype.Component
 
-@Component
 class RotatorSerializer : DeviceSerializer<Rotator>(Rotator::class.java) {
 
     override fun JsonGenerator.serialize(value: Rotator) {

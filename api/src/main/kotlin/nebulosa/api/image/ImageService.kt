@@ -1,6 +1,7 @@
 package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.javalin.http.NotFoundResponse
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.Location
 import nebulosa.api.atlas.SimbadEntityRepository
@@ -33,20 +34,16 @@ import nebulosa.wcs.WCS
 import nebulosa.wcs.WCSException
 import nebulosa.xisf.XisfFormat
 import okio.sink
-import org.springframework.http.HttpStatus
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
-import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 import java.net.URI
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
 import javax.imageio.ImageIO
 import kotlin.io.path.outputStream
 import kotlin.math.roundToInt
 
-@Service
 class ImageService(
     private val objectMapper: ObjectMapper,
     private val framingService: FramingService,
@@ -55,7 +52,7 @@ class ImageService(
     private val simbadEntityRepository: SimbadEntityRepository,
     private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
-    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
+    private val executorService: ExecutorService,
     private val connectionService: ConnectionService,
 ) {
 
@@ -196,7 +193,7 @@ class ImageService(
         val dateTime = image.header.observationDate ?: LocalDateTime.now(SystemClock)
 
         if (request.minorPlanets) {
-            threadPoolTaskExecutor.submitCompletable {
+            CompletableFuture.runAsync({
                 val latitude = image.header.latitude ?: location?.latitude?.deg ?: 0.0
                 val longitude = image.header.longitude ?: location?.longitude?.deg ?: 0.0
 
@@ -209,7 +206,7 @@ class ImageService(
                     dateTime, latitude, longitude, 0.0,
                     calibration.rightAscension, calibration.declination, calibration.radius,
                     request.minorPlanetMagLimit, !request.includeMinorPlanetsWithoutMagnitude,
-                ).execute().body() ?: return@submitCompletable
+                ).execute().body() ?: return@runAsync
 
                 val radiusInSeconds = calibration.radius.toArcsec
                 var count = 0
@@ -221,21 +218,25 @@ class ImageService(
                         val rightAscension = it[1].hours.takeIf(Angle::isFinite) ?: return@forEach
                         val declination = it[2].deg.takeIf(Angle::isFinite) ?: return@forEach
                         val (x, y) = wcs.skyToPix(rightAscension, declination)
-                        val magnitude = it[6].replace(INVALID_MAG_CHARS, "").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-                        val minorPlanet = ImageAnnotation.MinorPlanet(0L, it[0], rightAscension, declination, magnitude)
-                        val annotation = ImageAnnotation(x, y, minorPlanet = minorPlanet)
-                        annotations.add(annotation)
-                        count++
+
+                        if (x >= 0 && y >= 0 && x < image.width && y < image.height) {
+                            val magnitude = it[6].replace(INVALID_MAG_CHARS, "").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+                            val minorPlanet = ImageAnnotation.MinorPlanet(0L, it[0], rightAscension, declination, magnitude)
+                            val annotation = ImageAnnotation(x, y, minorPlanet = minorPlanet)
+                            annotations.add(annotation)
+                            count++
+                        }
                     }
                 }
 
                 LOG.info("found {} minor planets", count)
-            }.whenComplete { _, e -> e?.printStackTrace() }
+            }, executorService)
+                .whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
         }
 
         if (request.starsAndDSOs) {
-            threadPoolTaskExecutor.submitCompletable {
+            CompletableFuture.runAsync({
                 LOG.info("finding star/DSO annotations. dateTime={}, useSimbad={}, calibration={}", dateTime, request.useSimbad, calibration)
 
                 val rightAscension = calibration.rightAscension
@@ -257,14 +258,18 @@ class ImageService(
                     val astrometric = barycentric.observe(entry).equatorial()
 
                     val (x, y) = wcs.skyToPix(astrometric.longitude.normalized, astrometric.latitude)
-                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = StarDSO(entry))
-                    else ImageAnnotation(x, y, dso = StarDSO(entry))
-                    annotations.add(annotation)
-                    count++
+
+                    if (x >= 0 && y >= 0 && x < image.width && y < image.height) {
+                        val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = StarDSO(entry))
+                        else ImageAnnotation(x, y, dso = StarDSO(entry))
+                        annotations.add(annotation)
+                        count++
+                    }
                 }
 
                 LOG.info("found {} stars/DSOs", count)
-            }.whenComplete { _, e -> e?.printStackTrace() }
+            }, executorService)
+                .whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
         }
 
@@ -275,13 +280,13 @@ class ImageService(
         return annotations
     }
 
-    fun saveImageAs(path: Path, save: SaveImage, camera: Camera?) {
+    fun saveImageAs(path: Path, save: SaveImage) {
         require(save.path != null)
 
         var (image) = imageBucket.open(path).image?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
-            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found")
+            ?: throw NotFoundResponse("Image not found")
 
-        var (x, y, width, height) = save.subFrame.constrained(image.width, image.height)
+        val (x, y, width, height) = save.subFrame.constrained(image.width, image.height)
 
         if (width > 0 && height > 0 && (x > 0 || y > 0 || width != image.width || height != image.height)) {
             LOG.debug { "image subframed. x=$x, y=$y, width=$width, height=$height" }

@@ -1,13 +1,19 @@
 package nebulosa.api.indi
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotEmpty
-import jakarta.validation.constraints.NotNull
+import nebulosa.api.javalin.Validatable
+import nebulosa.api.javalin.notBlank
+import nebulosa.api.javalin.notEmpty
 import nebulosa.indi.protocol.PropertyType
 
 data class INDISendProperty(
-    @field:NotBlank @JvmField val name: String = "",
-    @field:NotNull @JvmField val type: PropertyType = PropertyType.SWITCH,
-    @field:NotEmpty @field:Valid @JvmField val items: List<INDISendPropertyItem> = emptyList(),
-)
+    @JvmField val name: String = "",
+    @JvmField val type: PropertyType = PropertyType.SWITCH,
+    @JvmField val items: List<INDISendPropertyItem> = emptyList(),
+) : Validatable {
+
+
+    override fun validate() {
+        name.notBlank()
+        items.notEmpty().onEach { it.validate() }
+    }
+}

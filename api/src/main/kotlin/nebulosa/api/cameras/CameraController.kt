@@ -1,89 +1,119 @@
 package nebulosa.api.cameras
 
-import jakarta.validation.Valid
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
-import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.filterwheel.FilterWheel
-import nebulosa.indi.device.focuser.Focuser
-import nebulosa.indi.device.mount.Mount
-import nebulosa.indi.device.rotator.Rotator
-import org.hibernate.validator.constraints.Range
-import org.springframework.web.bind.annotation.*
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.range
+import nebulosa.api.javalin.valid
 
-@RestController
-@RequestMapping("cameras")
 class CameraController(
+    app: Javalin,
     private val connectionService: ConnectionService,
     private val cameraService: CameraService,
 ) {
 
-    @GetMapping
-    fun cameras(): List<Camera> {
-        return connectionService.cameras().sorted()
+    init {
+        app.get("cameras", ::cameras)
+        app.get("cameras/{id}", ::camera)
+        app.put("cameras/{id}/connect", ::connect)
+        app.put("cameras/{id}/disconnect", ::disconnect)
+        app.put("cameras/{id}/snoop", ::snoop)
+        app.put("cameras/{id}/cooler", ::cooler)
+        app.put("cameras/{id}/temperature/setpoint", ::setpointTemperature)
+        app.put("cameras/{id}/capture/start", ::startCapture)
+        app.put("cameras/{id}/capture/pause", ::pauseCapture)
+        app.put("cameras/{id}/capture/unpause", ::unpauseCapture)
+        app.put("cameras/{id}/capture/abort", ::abortCapture)
+        app.get("cameras/{id}/capture/status", ::captureStatus)
+        app.put("cameras/{id}/listen", ::listen)
     }
 
-    @GetMapping("{camera}")
-    fun camera(camera: Camera): Camera {
-        return camera
+    private fun cameras(ctx: Context) {
+        ctx.json(connectionService.cameras().sorted())
     }
 
-    @PutMapping("{camera}/connect")
-    fun connect(camera: Camera) {
+    private fun camera(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id)!!
+        ctx.json(camera)
+    }
+
+    private fun connect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id) ?: return
         cameraService.connect(camera)
     }
 
-    @PutMapping("{camera}/disconnect")
-    fun disconnect(camera: Camera) {
+    private fun disconnect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id) ?: return
         cameraService.disconnect(camera)
     }
 
-    @PutMapping("{camera}/snoop")
-    fun snoop(
-        camera: Camera,
-        mount: Mount?, wheel: FilterWheel?, focuser: Focuser?, rotator: Rotator?
-    ) = cameraService.snoop(camera, mount, wheel, focuser, rotator)
+    private fun snoop(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id) ?: return
+        val mount = ctx.queryParam("mount")?.let(connectionService::mount)
+        val wheel = ctx.queryParam("wheel")?.let(connectionService::wheel)
+        val focuser = ctx.queryParam("focuser")?.let(connectionService::focuser)
+        val rotator = ctx.queryParam("rotator")?.let(connectionService::rotator)
+        cameraService.snoop(camera, mount, wheel, focuser, rotator)
+    }
 
-    @PutMapping("{camera}/cooler")
-    fun cooler(
-        camera: Camera,
-        @RequestParam enabled: Boolean,
-    ) = cameraService.cooler(camera, enabled)
+    private fun cooler(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id) ?: return
+        val enabled = ctx.queryParam("enabled").notNull().toBoolean()
+        cameraService.cooler(camera, enabled)
+    }
 
-    @PutMapping("{camera}/temperature/setpoint")
-    fun setpointTemperature(
-        camera: Camera,
-        @RequestParam @Valid @Range(min = -50, max = 50) temperature: Double,
-    ) = cameraService.setpointTemperature(camera, temperature)
+    private fun setpointTemperature(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id) ?: return
+        val temperature = ctx.queryParam("temperature").notNull().toDouble().range(-50.0, 50.0)
+        cameraService.setpointTemperature(camera, temperature)
+    }
 
-    @PutMapping("{camera}/capture/start")
-    fun startCapture(
-        camera: Camera,
-        mount: Mount?, wheel: FilterWheel?, focuser: Focuser?, rotator: Rotator?,
-        @RequestBody body: CameraStartCaptureRequest,
-    ) = cameraService.startCapture(camera, body, mount, wheel, focuser, rotator)
+    private fun startCapture(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id) ?: return
+        val mount = ctx.queryParam("mount")?.let(connectionService::mount)
+        val wheel = ctx.queryParam("wheel")?.let(connectionService::wheel)
+        val focuser = ctx.queryParam("focuser")?.let(connectionService::focuser)
+        val rotator = ctx.queryParam("rotator")?.let(connectionService::rotator)
+        val body = ctx.bodyAsClass<CameraStartCaptureRequest>().valid()
+        cameraService.startCapture(camera, body, mount, wheel, focuser, rotator)
+    }
 
-    @PutMapping("{camera}/capture/pause")
-    fun pauseCapture(camera: Camera) {
+    private fun pauseCapture(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id) ?: return
         cameraService.pauseCapture(camera)
     }
 
-    @PutMapping("{camera}/capture/unpause")
-    fun unpauseCapture(camera: Camera) {
+    private fun unpauseCapture(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id) ?: return
         cameraService.unpauseCapture(camera)
     }
 
-    @PutMapping("{camera}/capture/abort")
-    fun abortCapture(camera: Camera) {
+    private fun abortCapture(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id) ?: return
         cameraService.abortCapture(camera)
     }
 
-    @GetMapping("{camera}/capture/status")
-    fun captureStatus(camera: Camera): CameraCaptureEvent? {
-        return cameraService.captureStatus(camera)
+    private fun captureStatus(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id) ?: return
+        cameraService.captureStatus(camera)?.also(ctx::json)
     }
 
-    @PutMapping("{camera}/listen")
-    fun listen(camera: Camera) {
+    private fun listen(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val camera = connectionService.camera(id) ?: return
         cameraService.listen(camera)
     }
 }

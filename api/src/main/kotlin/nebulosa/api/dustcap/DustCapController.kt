@@ -1,51 +1,61 @@
 package nebulosa.api.dustcap
 
+import io.javalin.Javalin
+import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.indi.device.dustcap.DustCap
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
 
-@RestController
-@RequestMapping("dust-caps")
 class DustCapController(
+    app: Javalin,
     private val connectionService: ConnectionService,
     private val dustCapService: DustCapService,
 ) {
 
-    @GetMapping
-    fun dustCaps(): List<DustCap> {
-        return connectionService.dustCaps().sorted()
+    init {
+        app.get("dust-caps", ::dustCaps)
+        app.get("dust-caps/{id}", ::dustCap)
+        app.put("dust-caps/{id}/connect", ::connect)
+        app.put("dust-caps/{id}/disconnect", ::disconnect)
+        app.put("dust-caps/{id}/park", ::park)
+        app.put("dust-caps/{id}/unpark", ::unpark)
+        app.put("dust-caps/{id}/listen", ::listen)
     }
 
-    @GetMapping("{dustCap}")
-    fun dustCap(dustCap: DustCap): DustCap {
-        return dustCap
+    private fun dustCaps(ctx: Context) {
+        ctx.json(connectionService.dustCaps().sorted())
     }
 
-    @PutMapping("{dustCap}/connect")
-    fun connect(dustCap: DustCap) {
+    private fun dustCap(ctx: Context) {
+        val id = ctx.pathParam("id")
+        connectionService.dustCap(id)?.also(ctx::json)
+    }
+
+    private fun connect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val dustCap = connectionService.dustCap(id) ?: return
         dustCapService.connect(dustCap)
     }
 
-    @PutMapping("{dustCap}/disconnect")
-    fun disconnect(dustCap: DustCap) {
+    private fun disconnect(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val dustCap = connectionService.dustCap(id) ?: return
         dustCapService.disconnect(dustCap)
     }
 
-    @PutMapping("{dustCap}/park")
-    fun park(dustCap: DustCap) {
+    private fun park(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val dustCap = connectionService.dustCap(id) ?: return
         dustCapService.park(dustCap)
     }
 
-    @PutMapping("{dustCap}/unpark")
-    fun unpark(dustCap: DustCap) {
+    private fun unpark(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val dustCap = connectionService.dustCap(id) ?: return
         dustCapService.unpark(dustCap)
     }
 
-    @PutMapping("{dustCap}/listen")
-    fun listen(dustCap: DustCap) {
+    private fun listen(ctx: Context) {
+        val id = ctx.pathParam("id")
+        val dustCap = connectionService.dustCap(id) ?: return
         dustCapService.listen(dustCap)
     }
 }

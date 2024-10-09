@@ -233,6 +233,7 @@ data class TPPAJob(
             mount.tracking(false)
         }
 
+        status.capture.handleCameraCaptureFinished()
         status.state = TPPAState.FINISHED
         status.send()
     }

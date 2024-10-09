@@ -3,9 +3,7 @@ package nebulosa.api.lightboxes
 import com.fasterxml.jackson.core.JsonGenerator
 import nebulosa.api.devices.DeviceSerializer
 import nebulosa.indi.device.lightbox.LightBox
-import org.springframework.stereotype.Component
 
-@Component
 class LightBoxSerializer : DeviceSerializer<LightBox>(LightBox::class.java) {
 
     override fun JsonGenerator.serialize(value: LightBox) {

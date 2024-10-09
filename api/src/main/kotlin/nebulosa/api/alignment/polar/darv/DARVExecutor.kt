@@ -1,31 +1,33 @@
 package nebulosa.api.alignment.polar.darv
 
-import io.reactivex.rxjava3.functions.Consumer
-import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.cameras.CameraEventAware
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.message.MessageService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.guider.GuideOutput
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
-import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
 
 /**
  * @see <a href="https://www.cloudynights.com/articles/cat/articles/darv-drift-alignment-by-robert-vice-r2760">Reference</a>
  */
-@Component
-@Subscriber
 class DARVExecutor(
     private val messageService: MessageService,
-    private val threadPoolTaskExecutor: ThreadPoolTaskExecutor,
-) : Consumer<MessageEvent>, CameraEventAware, Executor by threadPoolTaskExecutor {
+    private val executorService: ExecutorService,
+    eventBus: EventBus,
+) : Consumer<MessageEvent>, CameraEventAware, Executor by executorService {
 
     private val jobs = ConcurrentHashMap.newKeySet<DARVJob>(1)
+
+    init {
+        eventBus.register(this)
+    }
 
     override fun accept(event: MessageEvent) {
         messageService.sendMessage(event)
@@ -44,7 +46,7 @@ class DARVExecutor(
         check(jobs.none { it.guideOutput === guideOutput }) { "${camera.name} DARV Job is already in progress" }
 
         with(DARVJob(this, camera, guideOutput, request)) {
-            val completable = runAsync(threadPoolTaskExecutor)
+            val completable = runAsync(executorService)
             jobs.add(this)
             completable.whenComplete { _, _ -> jobs.remove(this) }
         }

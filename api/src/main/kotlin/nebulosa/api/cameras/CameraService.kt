@@ -6,12 +6,10 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
-import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 
-@Service
 class CameraService(
     private val capturesPath: Path,
     private val cameraCaptureExecutor: CameraCaptureExecutor,

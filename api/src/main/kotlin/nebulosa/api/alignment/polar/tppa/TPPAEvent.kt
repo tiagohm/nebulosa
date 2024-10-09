@@ -16,7 +16,7 @@ data class TPPAEvent(
     @JvmField @field:JsonSerialize(using = DeclinationSerializer::class) var declination: Angle = 0.0,
     @JvmField @field:JsonSerialize(using = DeclinationSerializer::class) var azimuthError: Angle = 0.0,
     @JvmField @field:JsonSerialize(using = DeclinationSerializer::class) var altitudeError: Angle = 0.0,
-    @JvmField @JsonSerialize(using = DeclinationSerializer::class) var totalError: Angle = 0.0,
+    @JvmField @field:JsonSerialize(using = DeclinationSerializer::class) var totalError: Angle = 0.0,
     @JvmField var azimuthErrorDirection: String = "",
     @JvmField var altitudeErrorDirection: String = "",
     @JvmField @field:JsonIgnoreProperties("camera") val capture: CameraCaptureEvent = CameraCaptureEvent(camera),

@@ -1,21 +1,23 @@
 package nebulosa.api.indi
 
-import nebulosa.api.beans.annotations.Subscriber
 import nebulosa.api.message.MessageService
 import nebulosa.indi.device.*
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.springframework.stereotype.Component
 import java.util.*
 
-@Component
-@Subscriber
 class INDIEventHandler(
     private val messageService: MessageService,
+    eventBus: EventBus,
 ) {
 
     private val canSendEvents = HashSet<Device>(8)
     private val messages = LinkedList<String>()
+
+    init {
+        eventBus.register(this)
+    }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     fun onDeviceEvent(event: DeviceEvent<*>) {

@@ -13,7 +13,7 @@ data class PixInsightScriptRunner(private val executablePath: Path) {
             DEFAULT_ARGS.forEach(::putArg)
         }
 
-        LOG.info("running {} script: {}", script::class.simpleName, commandLine.command)
+        LOG.debug("running {} script: {}", script::class.simpleName, commandLine.command)
 
         script.startCommandLine(commandLine)
     }

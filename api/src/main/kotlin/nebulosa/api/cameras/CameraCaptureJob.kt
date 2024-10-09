@@ -130,7 +130,7 @@ data class CameraCaptureJob(
                     status.liveStackedPath = addFrameToLiveStacker(status.savedPath)
 
                     if (pausing) {
-                        status.copy().send()
+                        status.send()
                     }
                 }
 
@@ -150,8 +150,10 @@ data class CameraCaptureJob(
     private fun addFrameToLiveStacker(path: Path?): Path? {
         return if (path != null && liveStackerManager?.start(request, path) == true) {
             try {
+                val state = status.state
                 status.state = CameraCaptureState.STACKING
                 status.send()
+                status.state = state
 
                 liveStackerManager.stack(request, path)
             } catch (_: Throwable) {

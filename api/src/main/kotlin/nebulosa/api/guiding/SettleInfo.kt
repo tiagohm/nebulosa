@@ -1,12 +1,19 @@
 package nebulosa.api.guiding
 
-import org.hibernate.validator.constraints.Range
+import nebulosa.api.javalin.Validatable
+import nebulosa.api.javalin.range
 
 data class SettleInfo(
-    @Range(min = 1, max = 25) @JvmField val amount: Double = 1.5,
-    @Range(min = 1, max = 60) @JvmField val time: Long = 10,
-    @Range(min = 1, max = 60) @JvmField val timeout: Long = 30,
-) {
+    @JvmField val amount: Double = 1.5,
+    @JvmField val time: Long = 10,
+    @JvmField val timeout: Long = 30,
+) : Validatable {
+
+    override fun validate() {
+        amount.range(1.0, 25.0)
+        time.range(1L, 60L)
+        timeout.range(1L, 60L)
+    }
 
     companion object {
 

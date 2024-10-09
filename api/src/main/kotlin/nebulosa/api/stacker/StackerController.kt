@@ -1,46 +1,52 @@
 package nebulosa.api.stacker
 
-import jakarta.validation.Valid
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.bodyAsClass
+import nebulosa.api.javalin.exists
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.path
+import nebulosa.api.javalin.valid
 import nebulosa.util.concurrency.cancellation.CancellationToken
-import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.*
-import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicReference
 
-@Validated
-@RestController
-@RequestMapping("stacker")
 class StackerController(
+    app: Javalin,
     private val stackerService: StackerService,
 ) {
 
     private val cancellationToken = AtomicReference<CancellationToken>()
 
-    @PutMapping("start")
-    fun start(@RequestBody @Valid body: StackingRequest): Path? {
-        return if (cancellationToken.compareAndSet(null, CancellationToken())) {
+    init {
+        app.put("stacker/start", ::start)
+        app.get("stacker/running", ::isRunning)
+        app.put("stacker/stop", ::stop)
+        app.put("stacker/analyze", ::analyze)
+    }
+
+    private fun start(ctx: Context) {
+        val body = ctx.bodyAsClass<StackingRequest>().valid()
+
+        if (cancellationToken.compareAndSet(null, CancellationToken())) {
             try {
-                stackerService.stack(body, cancellationToken.get())
+                stackerService.stack(body, cancellationToken.get())?.also(ctx::json)
             } finally {
                 cancellationToken.getAndSet(null)?.unlistenAll()
             }
-        } else {
-            null
         }
     }
 
-    @GetMapping("running")
-    fun isRunning(): Boolean {
-        return cancellationToken.get() != null
+    private fun isRunning(ctx: Context) {
+        ctx.json(cancellationToken.get() != null)
     }
 
-    @PutMapping("stop")
-    fun stop() {
+    @Suppress("UNUSED_PARAMETER")
+    private fun stop(ctx: Context) {
         cancellationToken.get()?.cancel()
     }
 
-    @PutMapping("analyze")
-    fun analyze(@RequestParam path: Path): AnalyzedTarget? {
-        return stackerService.analyze(path)
+    private fun analyze(ctx: Context) {
+        val path = ctx.queryParam("path").notNull().path().exists()
+        stackerService.analyze(path)?.also(ctx::json)
     }
 }
