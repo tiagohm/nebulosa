@@ -1,6 +1,7 @@
 package nebulosa.api
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.github.rvesse.airline.annotations.Command
@@ -16,6 +17,7 @@ import org.koin.core.context.startKoin
 import java.nio.file.Path
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.concurrent.ConcurrentHashMap
 
 @Command(name = "nebulosa")
 class Nebulosa : Runnable, AutoCloseable {
@@ -63,8 +65,11 @@ class Nebulosa : Runnable, AutoCloseable {
 
     private data object LocationConverter : (String) -> Location? {
 
+        private val CACHED_LOCATION = ConcurrentHashMap<String, Location>(4)
+
         override fun invoke(value: String): Location? {
-            return if (value.isBlank()) null else OBJECT_MAPPER.readValue(value, Location::class.java)
+            return if (value.isBlank()) null
+            else CACHED_LOCATION.computeIfAbsent(value) { OBJECT_MAPPER.readValue(value, Location::class.java) }
         }
     }
 
@@ -92,6 +97,7 @@ class Nebulosa : Runnable, AutoCloseable {
             addModule(DeviceModule())
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+            disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         }
     }
 }

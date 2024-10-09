@@ -20,7 +20,7 @@ class PlateSolverController(
     private fun start(ctx: Context) {
         val path = ctx.queryParamAsPath("path").exists().get()
         val solver = ctx.bodyValidator<PlateSolverRequest>().validate().get()
-        plateSolverService.solveImage(solver, path)
+        ctx.json(plateSolverService.solveImage(solver, path))
     }
 
     @Suppress("UNUSED_PARAMETER")

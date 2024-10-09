@@ -28,7 +28,7 @@ class SkyAtlasController(
         app.get("sky-atlas/planets/{code}/position", ::positionOfPlanet)
         app.get("sky-atlas/planets/{code}/altitude-points", ::altitudePointsOfPlanet)
         app.get("sky-atlas/minor-planets", ::searchMinorPlanet)
-        app.get("sky-atlas/close-approaches", ::closeApproachesForMinorPlanets)
+        app.get("sky-atlas/minor-planets/close-approaches", ::closeApproachesForMinorPlanets)
         app.get("sky-atlas/sky-objects", ::searchSkyObject)
         app.get("sky-atlas/sky-objects/types", ::skyObjectTypes)
         app.get("sky-atlas/sky-objects/{id}/position", ::positionOfSkyObject)
@@ -72,12 +72,12 @@ class SkyAtlasController(
         ctx.json(skyAtlasService.altitudePointsOfMoon(location, dateTime, stepSize, fast))
     }
 
-    private fun positionOfPlanet(ctx: Context): BodyPosition {
+    private fun positionOfPlanet(ctx: Context) {
         val code = ctx.pathParam("code")
         val location = ctx.location()
         val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
         val fast = ctx.queryParamAsBoolean("fast").getOrDefault(false)
-        return skyAtlasService.positionOfPlanet(location, code, dateTime, fast)
+        ctx.json(skyAtlasService.positionOfPlanet(location, code, dateTime, fast))
     }
 
     private fun altitudePointsOfPlanet(ctx: Context) {
@@ -89,9 +89,9 @@ class SkyAtlasController(
         ctx.json(skyAtlasService.altitudePointsOfPlanet(location, code, dateTime, stepSize, fast))
     }
 
-    private fun searchMinorPlanet(ctx: Context): MinorPlanet {
+    private fun searchMinorPlanet(ctx: Context) {
         val text = ctx.queryParamAsString("text").notBlank().get()
-        return skyAtlasService.searchMinorPlanet(text)
+        ctx.json(skyAtlasService.searchMinorPlanet(text))
     }
 
     private fun closeApproachesForMinorPlanets(ctx: Context) {
@@ -116,7 +116,7 @@ class SkyAtlasController(
         ctx.json(skyAtlasService.altitudePointsOfSkyObject(location, id, dateTime, stepSize))
     }
 
-    private fun searchSkyObject(ctx: Context): List<SimbadEntity> {
+    private fun searchSkyObject(ctx: Context) {
         val text = ctx.queryParamAsString("text").getOrDefault("")
         val rightAscension = ctx.queryParamAsString("rightAscension").getOrDefault("")
         val declination = ctx.queryParamAsString("declination").getOrDefault("")
@@ -127,10 +127,12 @@ class SkyAtlasController(
         val type = ctx.queryParamAsString("type").allowNullable().get()?.let(SkyObjectType::valueOf)
         val id = ctx.queryParamAsLong("id").getOrDefault(0L)
 
-        return skyAtlasService.searchSkyObject(
+        val result = skyAtlasService.searchSkyObject(
             text, rightAscension.hours, declination.deg, radius.deg,
             constellation, magnitudeMin, magnitudeMax, type, id,
         )
+
+        ctx.json(result)
     }
 
     private fun skyObjectTypes(ctx: Context) {

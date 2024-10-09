@@ -21,29 +21,29 @@ class MountController(
 
     init {
         app.get("mounts", ::mounts)
-        app.get("mount/{id}", ::mount)
-        app.put("mount/{id}/connect", ::connect)
-        app.put("mount/{id}/disconnect", ::disconnect)
-        app.put("mount/{id}/tracking", ::tracking)
-        app.put("mount/{id}/sync", ::sync)
-        app.put("mount/{id}/slew", ::slew)
-        app.put("mount/{id}/goto", ::goTo)
-        app.put("mount/{id}/home", ::home)
-        app.put("mount/{id}/abort", ::abort)
-        app.put("mount/{id}/track-mode", ::trackMode)
-        app.put("mount/{id}/slew-rate", ::slewRate)
-        app.put("mount/{id}/move", ::move)
-        app.put("mount/{id}/park", ::park)
-        app.put("mount/{id}/unpark", ::unpark)
-        app.put("mount/{id}/coordinates", ::coordinates)
-        app.put("mount/{id}/datetime", ::dateTime)
-        app.get("mount/{id}/location", ::location)
-        app.get("mount/{id}/location/{type}", ::celestialLocation)
-        app.put("mount/{id}/point-here", ::pointMountHere)
-        app.get("mount/{id}/remote-control", ::remoteControlList)
-        app.put("mount/{id}/remote-control/start", ::remoteControlStart)
-        app.put("mount/{id}/remote-control/stop", ::remoteControlStop)
-        app.put("mount/{id}/listen", ::listen)
+        app.get("mounts/{id}", ::mount)
+        app.put("mounts/{id}/connect", ::connect)
+        app.put("mounts/{id}/disconnect", ::disconnect)
+        app.put("mounts/{id}/tracking", ::tracking)
+        app.put("mounts/{id}/sync", ::sync)
+        app.put("mounts/{id}/slew", ::slew)
+        app.put("mounts/{id}/goto", ::goTo)
+        app.put("mounts/{id}/home", ::home)
+        app.put("mounts/{id}/abort", ::abort)
+        app.put("mounts/{id}/track-mode", ::trackMode)
+        app.put("mounts/{id}/slew-rate", ::slewRate)
+        app.put("mounts/{id}/move", ::move)
+        app.put("mounts/{id}/park", ::park)
+        app.put("mounts/{id}/unpark", ::unpark)
+        app.put("mounts/{id}/coordinates", ::coordinates)
+        app.put("mounts/{id}/datetime", ::dateTime)
+        app.get("mounts/{id}/location", ::location)
+        app.get("mounts/{id}/location/{type}", ::celestialLocation)
+        app.put("mounts/{id}/point-here", ::pointMountHere)
+        app.get("mounts/{id}/remote-control", ::remoteControlList)
+        app.put("mounts/{id}/remote-control/start", ::remoteControlStart)
+        app.put("mounts/{id}/remote-control/stop", ::remoteControlStop)
+        app.put("mounts/{id}/listen", ::listen)
     }
 
     private fun mounts(ctx: Context) {
@@ -125,7 +125,7 @@ class MountController(
     private fun slewRate(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val rate = ctx.queryParamAsString("mode").notBlank().get()
+        val rate = ctx.queryParamAsString("rate").notBlank().get()
         mountService.slewRate(mount, mount.slewRates.first { it.name == rate })
     }
 
@@ -208,7 +208,7 @@ class MountController(
     private fun remoteControlStart(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val protocol = ctx.queryParamAsString("procotol").notBlank().get().let(MountRemoteControlProtocol::valueOf)
+        val protocol = ctx.queryParamAsString("protocol").notBlank().get().let(MountRemoteControlProtocol::valueOf)
         val host = ctx.queryParamAsString("host").getOrDefault("0.0.0.0")
         val port = ctx.queryParamAsInt("port").positive().getOrDefault(10001)
         mountService.remoteControlStart(mount, protocol, host, port)
@@ -217,7 +217,7 @@ class MountController(
     private fun remoteControlStop(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val protocol = ctx.queryParamAsString("procotol").notBlank().get().let(MountRemoteControlProtocol::valueOf)
+        val protocol = ctx.queryParamAsString("protocol").notBlank().get().let(MountRemoteControlProtocol::valueOf)
         mountService.remoteControlStop(mount, protocol)
     }
 

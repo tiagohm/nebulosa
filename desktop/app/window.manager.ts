@@ -209,16 +209,16 @@ export class WindowManager {
 		}
 	}
 
-	private createWebSocket(host: string, port: number, appWindow: ApplicationWindow) {
+	private createWebSocket(host: string, port: number, connected: (webSocket: WebSocket) => void) {
 		const webSocket = new WebSocket(`ws://${host}:${port}/ws`)
 
 		const reconnect = () => {
-			setTimeout(() => this.createWebSocket(host, port, appWindow), 2000)
+			setTimeout(() => this.createWebSocket(host, port, connected), 2000)
 		}
 
 		webSocket.on('open', () => {
 			console.info('Web Socket connected')
-			appWindow.webSocket = webSocket
+			connected(webSocket)
 		})
 
 		webSocket.on('message', (data: Buffer) => {
@@ -254,7 +254,7 @@ export class WindowManager {
 		const open: OpenWindow = { id: 'home', path: 'home', preference: {} }
 		const appWindow = await this.createWindow(open)
 
-		this.createWebSocket(host, port, appWindow)
+		this.createWebSocket(host, port, (webSocket) => (appWindow.webSocket = webSocket))
 
 		appWindow.apiProcess = apiProcess
 	}

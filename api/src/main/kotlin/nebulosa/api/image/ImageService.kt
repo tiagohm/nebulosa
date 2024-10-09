@@ -218,11 +218,14 @@ class ImageService(
                         val rightAscension = it[1].hours.takeIf(Angle::isFinite) ?: return@forEach
                         val declination = it[2].deg.takeIf(Angle::isFinite) ?: return@forEach
                         val (x, y) = wcs.skyToPix(rightAscension, declination)
-                        val magnitude = it[6].replace(INVALID_MAG_CHARS, "").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-                        val minorPlanet = ImageAnnotation.MinorPlanet(0L, it[0], rightAscension, declination, magnitude)
-                        val annotation = ImageAnnotation(x, y, minorPlanet = minorPlanet)
-                        annotations.add(annotation)
-                        count++
+
+                        if (x >= 0 && y >= 0 && x < image.width && y < image.height) {
+                            val magnitude = it[6].replace(INVALID_MAG_CHARS, "").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
+                            val minorPlanet = ImageAnnotation.MinorPlanet(0L, it[0], rightAscension, declination, magnitude)
+                            val annotation = ImageAnnotation(x, y, minorPlanet = minorPlanet)
+                            annotations.add(annotation)
+                            count++
+                        }
                     }
                 }
 
@@ -255,10 +258,13 @@ class ImageService(
                     val astrometric = barycentric.observe(entry).equatorial()
 
                     val (x, y) = wcs.skyToPix(astrometric.longitude.normalized, astrometric.latitude)
-                    val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = StarDSO(entry))
-                    else ImageAnnotation(x, y, dso = StarDSO(entry))
-                    annotations.add(annotation)
-                    count++
+
+                    if (x >= 0 && y >= 0 && x < image.width && y < image.height) {
+                        val annotation = if (entry.type.classification == ClassificationType.STAR) ImageAnnotation(x, y, star = StarDSO(entry))
+                        else ImageAnnotation(x, y, dso = StarDSO(entry))
+                        annotations.add(annotation)
+                        count++
+                    }
                 }
 
                 LOG.info("found {} stars/DSOs", count)

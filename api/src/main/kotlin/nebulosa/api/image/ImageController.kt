@@ -46,7 +46,7 @@ class ImageController(
         val path = ctx.queryParamAsPath("path").exists().get()
         val request = ctx.bodyAsClass<AnnotateImageRequest>()
         val location = ctx.locationOrNull()
-        imageService.annotations(path, request, location)
+        ctx.json(imageService.annotations(path, request, location))
     }
 
     private fun coordinateInterpolation(ctx: Context) {
@@ -57,7 +57,7 @@ class ImageController(
     private fun histogram(ctx: Context) {
         val path = ctx.queryParamAsPath("path").exists().get()
         val bitLength = ctx.queryParamAsInt("bitLength").range(8..16).getOrDefault(16)
-        imageService.histogram(path, bitLength)
+        ctx.json(imageService.histogram(path, bitLength))
     }
 
     private fun fovCameras(ctx: Context) {
