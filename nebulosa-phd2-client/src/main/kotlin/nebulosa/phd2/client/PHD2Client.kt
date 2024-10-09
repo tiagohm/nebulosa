@@ -70,9 +70,9 @@ class PHD2Client : NettyClient() {
 
         @JvmStatic private val LOG = loggerFor<PHD2Client>()
 
-        @JvmStatic private val MODULE = kotlinModule().also {
-            it.addDeserializer(GuideState::class.java, GuideStateDeserializer)
-            it.addSerializer(GuideStateSerializer)
+        @JvmStatic private val MODULE = with(kotlinModule()) {
+            addDeserializer(GuideState::class.java, GuideStateDeserializer)
+            addSerializer(GuideStateSerializer)
         }
 
         @JvmStatic private val JSON_MAPPER = jsonMapper {

@@ -132,7 +132,7 @@ class StackerService(private val messageService: MessageService?) {
         else if (path.isXisf()) path.xisf()
         else return null
 
-        return image.use { it.firstOrNull { it is ImageHdu }?.header }?.let(::AnalyzedTarget)
+        return image.use { it.firstOrNull { hdu -> hdu is ImageHdu }?.header }?.let(::AnalyzedTarget)
     }
 
     private inner class AutoStackerMessageHandler(

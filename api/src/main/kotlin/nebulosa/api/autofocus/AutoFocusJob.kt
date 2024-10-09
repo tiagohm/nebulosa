@@ -179,8 +179,8 @@ data class AutoFocusJob(
             }
 
             val predictedFocusPoint = status.determinedFocusPoint ?: determineFinalFocusPoint()
-            val (minX, minY) = if (focusPoints.isEmpty()) CurvePoint.ZERO else focusPoints[0]
-            val (maxX, maxY) = if (focusPoints.isEmpty()) CurvePoint.ZERO else focusPoints[focusPoints.lastIndex]
+            val (minX, minY) = if (isEmpty()) CurvePoint.ZERO else first()
+            val (maxX, maxY) = if (isEmpty()) CurvePoint.ZERO else last()
             status.chart = AutoFocusEvent.Chart(predictedFocusPoint, minX, minY, maxX, maxY, trendLineCurve, parabolicCurve, hyperbolicCurve)
 
             status.state = AutoFocusState.CURVE_FITTED
@@ -191,7 +191,7 @@ data class AutoFocusJob(
 
     private fun determineFinalFocusPoint(): CurvePoint? {
         return when (request.fittingMode) {
-            AutoFocusFittingMode.TRENDLINES -> trendLineCurve!!.intersection
+            AutoFocusFittingMode.TRENDLINES -> trendLineCurve?.intersection
             AutoFocusFittingMode.PARABOLIC -> parabolicCurve?.minimum
             AutoFocusFittingMode.TREND_PARABOLIC -> parabolicCurve?.minimum?.midPoint(trendLineCurve!!.intersection)
             AutoFocusFittingMode.HYPERBOLIC -> hyperbolicCurve?.minimum

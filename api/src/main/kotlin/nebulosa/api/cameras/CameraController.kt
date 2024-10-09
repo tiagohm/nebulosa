@@ -36,7 +36,7 @@ class CameraController(
 
     private fun camera(ctx: Context) {
         val id = ctx.pathParam("id")
-        val camera = connectionService.camera(id)!!
+        val camera = connectionService.camera(id).notNull()
         ctx.json(camera)
     }
 

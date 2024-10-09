@@ -4,6 +4,7 @@ import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.javalin.notNull
 import nebulosa.api.javalin.valid
 
 class SequencerController(
@@ -21,7 +22,7 @@ class SequencerController(
     }
 
     private fun start(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera"))!!
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
         val mount = ctx.queryParam("mount")?.let(connectionService::mount)
         val wheel = ctx.queryParam("wheel")?.let(connectionService::wheel)
         val focuser = ctx.queryParam("focuser")?.let(connectionService::focuser)
@@ -46,7 +47,7 @@ class SequencerController(
     }
 
     fun status(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera"))!!
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
         sequencerService.status(camera)?.also(ctx::json)
     }
 }

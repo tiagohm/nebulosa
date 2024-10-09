@@ -90,8 +90,8 @@ internal abstract class INDIDevice : Device {
                     is DefNumberVector -> {
                         val properties = LinkedHashMap<String, NumberProperty>()
 
-                        for (e in message) {
-                            val property = NumberProperty(e.name, e.label, e.value)
+                        for ((name, label, value) in message) {
+                            val property = NumberProperty(name, label, value)
                             properties[property.name] = property
                         }
 
@@ -105,8 +105,8 @@ internal abstract class INDIDevice : Device {
                     is DefSwitchVector -> {
                         val properties = LinkedHashMap<String, SwitchProperty>()
 
-                        for (e in message) {
-                            val property = SwitchProperty(e.name, e.label, e.value)
+                        for ((name, label, value) in message) {
+                            val property = SwitchProperty(name, label, value)
                             properties[property.name] = property
                         }
 
@@ -120,8 +120,8 @@ internal abstract class INDIDevice : Device {
                     is DefTextVector -> {
                         val properties = LinkedHashMap<String, TextProperty>()
 
-                        for (e in message) {
-                            val property = TextProperty(e.name, e.label, e.value)
+                        for ((name, label, value) in message) {
+                            val property = TextProperty(name, label, value)
                             properties[property.name] = property
                         }
 
@@ -147,9 +147,9 @@ internal abstract class INDIDevice : Device {
 
                         vector.state = message.state
 
-                        for (e in message) {
-                            val property = vector[e.name] ?: continue
-                            property.value = e.value
+                        for ((name, value) in message) {
+                            val property = vector[name] ?: continue
+                            property.value = value
                         }
 
                         vector
@@ -159,9 +159,9 @@ internal abstract class INDIDevice : Device {
 
                         vector.state = message.state
 
-                        for (e in message) {
-                            val property = vector[e.name] ?: continue
-                            property.value = e.value
+                        for ((name, value) in message) {
+                            val property = vector[name] ?: continue
+                            property.value = value
                         }
 
                         vector
@@ -171,9 +171,9 @@ internal abstract class INDIDevice : Device {
 
                         vector.state = message.state
 
-                        for (e in message) {
-                            val property = vector[e.name] ?: continue
-                            property.value = e.value
+                        for ((name, value) in message) {
+                            val property = vector[name] ?: continue
+                            property.value = value
                         }
 
                         vector
