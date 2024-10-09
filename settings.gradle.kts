@@ -35,7 +35,6 @@ dependencyResolutionManagement {
             library("oshi", "com.github.oshi:oshi-core:6.6.5")
             library("jna", "net.java.dev.jna:jna:5.15.0")
             library("javalin", "io.javalin:javalin:6.3.0")
-            library("validator", "org.hibernate.validator:hibernate-validator:9.0.0.Beta3")
             library("koin", "io.insert-koin:koin-core:4.0.0")
             library("airline", "com.github.rvesse:airline:3.0.0")
             library("kotest", "io.kotest:kotest-assertions-core:5.9.1")

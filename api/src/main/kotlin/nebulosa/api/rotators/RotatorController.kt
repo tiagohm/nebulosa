@@ -3,8 +3,7 @@ package nebulosa.api.rotators
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.queryParamAsBoolean
-import nebulosa.api.javalin.queryParamAsDouble
+import nebulosa.api.javalin.notNull
 import nebulosa.api.javalin.range
 
 class RotatorController(
@@ -50,14 +49,14 @@ class RotatorController(
     private fun reverse(ctx: Context) {
         val id = ctx.pathParam("id")
         val rotator = connectionService.rotator(id) ?: return
-        val enabled = ctx.queryParamAsBoolean("enabled").get()
+        val enabled = ctx.queryParam("enabled").notNull().toBoolean()
         rotatorService.reverse(rotator, enabled)
     }
 
     private fun move(ctx: Context) {
         val id = ctx.pathParam("id")
         val rotator = connectionService.rotator(id) ?: return
-        val angle = ctx.queryParamAsDouble("angle").range(ANGLE_RANGE).get()
+        val angle = ctx.queryParam("angle").notNull().toDouble().range(0.0, 360.0)
         rotatorService.move(rotator, angle)
     }
 
@@ -76,7 +75,7 @@ class RotatorController(
     private fun sync(ctx: Context) {
         val id = ctx.pathParam("id")
         val rotator = connectionService.rotator(id) ?: return
-        val angle = ctx.queryParamAsDouble("angle").range(ANGLE_RANGE).get()
+        val angle = ctx.queryParam("angle").notNull().toDouble().range(0.0, 360.0)
         rotatorService.sync(rotator, angle)
     }
 
@@ -84,10 +83,5 @@ class RotatorController(
         val id = ctx.pathParam("id")
         val rotator = connectionService.rotator(id) ?: return
         rotatorService.listen(rotator)
-    }
-
-    companion object {
-
-        private val ANGLE_RANGE = 0.0..360.0
     }
 }

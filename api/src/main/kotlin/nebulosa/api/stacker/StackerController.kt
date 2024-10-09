@@ -2,10 +2,11 @@ package nebulosa.api.stacker
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import io.javalin.http.bodyValidator
+import io.javalin.http.bodyAsClass
 import nebulosa.api.javalin.exists
-import nebulosa.api.javalin.queryParamAsPath
-import nebulosa.api.javalin.validate
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.path
+import nebulosa.api.javalin.valid
 import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.util.concurrent.atomic.AtomicReference
 
@@ -24,7 +25,7 @@ class StackerController(
     }
 
     private fun start(ctx: Context) {
-        val body = ctx.bodyValidator<StackingRequest>().validate().get()
+        val body = ctx.bodyAsClass<StackingRequest>().valid()
 
         if (cancellationToken.compareAndSet(null, CancellationToken())) {
             try {
@@ -45,7 +46,7 @@ class StackerController(
     }
 
     private fun analyze(ctx: Context) {
-        val path = ctx.queryParamAsPath("path").exists().get()
+        val path = ctx.queryParam("path").notNull().path().exists()
         stackerService.analyze(path)?.also(ctx::json)
     }
 }

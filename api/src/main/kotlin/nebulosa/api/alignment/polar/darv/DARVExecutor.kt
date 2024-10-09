@@ -6,6 +6,7 @@ import nebulosa.api.message.MessageService
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.guider.GuideOutput
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.ConcurrentHashMap
@@ -19,9 +20,14 @@ import java.util.function.Consumer
 class DARVExecutor(
     private val messageService: MessageService,
     private val executorService: ExecutorService,
+    eventBus: EventBus,
 ) : Consumer<MessageEvent>, CameraEventAware, Executor by executorService {
 
     private val jobs = ConcurrentHashMap.newKeySet<DARVJob>(1)
+
+    init {
+        eventBus.register(this)
+    }
 
     override fun accept(event: MessageEvent) {
         messageService.sendMessage(event)

@@ -2,9 +2,9 @@ package nebulosa.api.wizard.flat
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import io.javalin.http.bodyValidator
+import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.validate
+import nebulosa.api.javalin.valid
 
 class FlatWizardController(
     app: Javalin,
@@ -20,7 +20,7 @@ class FlatWizardController(
 
     private fun start(ctx: Context) {
         val camera = connectionService.camera(ctx.pathParam("camera"))!!
-        val body = ctx.bodyValidator<FlatWizardRequest>().validate().get()
+        val body = ctx.bodyAsClass<FlatWizardRequest>().valid()
         flatWizardService.start(camera, body)
     }
 

@@ -3,8 +3,8 @@ package nebulosa.api.lightboxes
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.javalin.notNull
 import nebulosa.api.javalin.positiveOrZero
-import nebulosa.api.javalin.queryParamAsDouble
 
 class LightBoxController(
     app: Javalin,
@@ -59,7 +59,7 @@ class LightBoxController(
     private fun brightness(ctx: Context) {
         val id = ctx.pathParam("id")
         val lightBox = connectionService.lightBox(id) ?: return
-        val intensity = ctx.queryParamAsDouble("intensity").positiveOrZero().get()
+        val intensity = ctx.queryParam("intensity").notNull().toDouble().positiveOrZero()
         lightBoxService.brightness(lightBox, intensity)
     }
 

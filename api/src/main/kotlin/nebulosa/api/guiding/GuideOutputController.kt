@@ -4,8 +4,7 @@ import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.javalin.notBlank
-import nebulosa.api.javalin.queryParamAsLong
-import nebulosa.api.javalin.queryParamAsString
+import nebulosa.api.javalin.notNull
 import nebulosa.api.javalin.range
 import nebulosa.guiding.GuideDirection
 import java.time.Duration
@@ -49,8 +48,8 @@ class GuideOutputController(
     private fun pulse(ctx: Context) {
         val id = ctx.pathParam("id")
         val guideOutput = connectionService.guideOutput(id) ?: return
-        val direction = ctx.queryParamAsString("direction").notBlank().get().let(GuideDirection::valueOf)
-        val duration = ctx.queryParamAsLong("duration").range(PULSE_DURATION_RANGE).get().times(1000L).let(Duration::ofNanos)
+        val direction = ctx.queryParam("direction").notNull().notBlank().let(GuideDirection::valueOf)
+        val duration = ctx.queryParam("duration").notNull().toLong().range(0L, 1800000000L).times(1000L).let(Duration::ofNanos)
         guideOutputService.pulse(guideOutput, direction, duration)
     }
 

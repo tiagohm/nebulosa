@@ -2,10 +2,11 @@ package nebulosa.api.platesolver
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import io.javalin.http.bodyValidator
+import io.javalin.http.bodyAsClass
 import nebulosa.api.javalin.exists
-import nebulosa.api.javalin.queryParamAsPath
-import nebulosa.api.javalin.validate
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.path
+import nebulosa.api.javalin.valid
 
 class PlateSolverController(
     app: Javalin,
@@ -18,8 +19,8 @@ class PlateSolverController(
     }
 
     private fun start(ctx: Context) {
-        val path = ctx.queryParamAsPath("path").exists().get()
-        val solver = ctx.bodyValidator<PlateSolverRequest>().validate().get()
+        val path = ctx.queryParam("path")?.path().notNull().exists()
+        val solver = ctx.bodyAsClass<PlateSolverRequest>().valid()
         ctx.json(plateSolverService.solveImage(solver, path))
     }
 

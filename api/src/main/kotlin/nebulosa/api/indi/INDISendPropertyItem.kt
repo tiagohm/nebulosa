@@ -1,9 +1,14 @@
 package nebulosa.api.indi
 
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
+import nebulosa.api.javalin.Validatable
+import nebulosa.api.javalin.notBlank
 
 data class INDISendPropertyItem(
-    @field:NotBlank @JvmField val name: String = "",
-    @field:NotNull @JvmField val value: Any = "",
-)
+    @JvmField val name: String = "",
+    @JvmField val value: Any = "",
+) : Validatable {
+
+    override fun validate() {
+        name.notBlank()
+    }
+}

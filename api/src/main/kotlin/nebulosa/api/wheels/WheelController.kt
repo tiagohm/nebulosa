@@ -4,9 +4,8 @@ import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.javalin.notBlank
+import nebulosa.api.javalin.notNull
 import nebulosa.api.javalin.positiveOrZero
-import nebulosa.api.javalin.queryParamAsInt
-import nebulosa.api.javalin.queryParamAsString
 
 class WheelController(
     app: Javalin,
@@ -48,14 +47,14 @@ class WheelController(
     private fun moveTo(ctx: Context) {
         val id = ctx.pathParam("id")
         val wheel = connectionService.wheel(id) ?: return
-        val position = ctx.queryParamAsInt("position").positiveOrZero().get()
+        val position = ctx.queryParam("position").notNull().toInt().positiveOrZero()
         wheelService.moveTo(wheel, position)
     }
 
     private fun sync(ctx: Context) {
         val id = ctx.pathParam("id")
         val wheel = connectionService.wheel(id) ?: return
-        val names = ctx.queryParamAsString("names").notBlank().get()
+        val names = ctx.queryParam("names").notNull().notBlank()
         wheelService.sync(wheel, names.split(","))
     }
 

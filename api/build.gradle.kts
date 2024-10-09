@@ -37,7 +37,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.oshi)
     implementation(libs.javalin)
-    implementation(libs.validator)
     implementation(libs.koin)
     implementation(libs.airline)
 

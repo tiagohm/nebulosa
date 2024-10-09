@@ -7,6 +7,9 @@ import io.objectbox.annotation.Index
 import nebulosa.api.beans.converters.database.FrameTypePropertyConverter
 import nebulosa.api.beans.converters.database.PathPropertyConverter
 import nebulosa.api.database.BoxEntity
+import nebulosa.api.javalin.Validatable
+import nebulosa.api.javalin.positive
+import nebulosa.api.javalin.positiveOrZero
 import nebulosa.fits.INVALID_TEMPERATURE
 import nebulosa.indi.device.camera.FrameType
 import java.nio.file.Path
@@ -26,7 +29,17 @@ data class CalibrationFrameEntity(
     @JvmField var gain: Double = 0.0,
     @JvmField @Convert(converter = PathPropertyConverter::class, dbType = String::class) var path: Path? = null,
     @JvmField var enabled: Boolean = true,
-) : BoxEntity, Comparable<CalibrationFrameEntity> {
+) : BoxEntity, Comparable<CalibrationFrameEntity>, Validatable {
+
+    override fun validate() {
+        id.positive()
+        exposureTime.positive()
+        width.positive()
+        height.positive()
+        binX.positive()
+        binY.positive()
+        gain.positiveOrZero()
+    }
 
     override fun compareTo(other: CalibrationFrameEntity): Int {
         return if (type.ordinal > other.type.ordinal) 1

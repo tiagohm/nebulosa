@@ -63,8 +63,6 @@ data class DARVJob(
                 status.state = if (event.task === delayTask) DARVState.INITIAL_PAUSE
                 else if (event.task === forwardGuidePulseTask.delayTask) DARVState.FORWARD
                 else DARVState.BACKWARD
-
-                status.capture.handleCameraDelayEvent(event, CameraCaptureState.EXPOSURING)
             }
             is CameraExposureEvent -> {
                 status.capture.handleCameraExposureEvent(event)

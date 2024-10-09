@@ -2,9 +2,9 @@ package nebulosa.api.sequencer
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import io.javalin.http.bodyValidator
+import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.validate
+import nebulosa.api.javalin.valid
 
 class SequencerController(
     app: Javalin,
@@ -26,7 +26,7 @@ class SequencerController(
         val wheel = ctx.queryParam("wheel")?.let(connectionService::wheel)
         val focuser = ctx.queryParam("focuser")?.let(connectionService::focuser)
         val rotator = ctx.queryParam("rotator")?.let(connectionService::rotator)
-        val body = ctx.bodyValidator<SequencerPlanRequest>().validate().get()
+        val body = ctx.bodyAsClass<SequencerPlanRequest>().valid()
         sequencerService.start(camera, body, mount, wheel, focuser, rotator)
     }
 

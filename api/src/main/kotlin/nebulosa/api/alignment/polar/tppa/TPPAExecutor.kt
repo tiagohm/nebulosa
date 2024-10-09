@@ -8,7 +8,7 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.mount.MountEvent
-import okhttp3.OkHttpClient
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.ConcurrentHashMap
@@ -17,11 +17,15 @@ import java.util.function.Consumer
 
 class TPPAExecutor(
     private val messageService: MessageService,
-    private val httpClient: OkHttpClient,
     private val executorService: ExecutorService,
+    eventBus: EventBus,
 ) : Consumer<MessageEvent>, CameraEventAware, MountEventAware {
 
     private val jobs = ConcurrentHashMap.newKeySet<TPPAJob>(1)
+
+    init {
+        eventBus.register(this)
+    }
 
     override fun accept(event: MessageEvent) {
         messageService.sendMessage(event)
@@ -44,7 +48,7 @@ class TPPAExecutor(
         check(jobs.none { it.camera === camera }) { "${camera.name} TPPA Job is already in progress" }
         check(jobs.none { it.mount === mount }) { "${camera.name} TPPA Job is already in progress" }
 
-        val solver = request.plateSolver.get(httpClient)
+        val solver = request.plateSolver.get()
 
         with(TPPAJob(this, camera, solver, request, mount)) {
             val completable = runAsync(executorService)

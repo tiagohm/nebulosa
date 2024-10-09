@@ -25,38 +25,38 @@ class ImageController(
     }
 
     private fun openImage(ctx: Context) {
-        val path = ctx.queryParamAsPath("path").exists().get()
+        val path = ctx.queryParam("path").notNull().path().exists()
         val camera = ctx.queryParam("camera")?.ifBlank { null }?.let(connectionService::camera)
         val transformation = ctx.bodyAsClass<ImageTransformation>()
         imageService.openImage(path, camera, transformation, ctx.res())
     }
 
     private fun closeImage(ctx: Context) {
-        val path = ctx.queryParamAsPath("path").exists().get()
+        val path = ctx.queryParam("path").notNull().path()
         return imageService.closeImage(path)
     }
 
     private fun saveImageAs(ctx: Context) {
-        val path = ctx.queryParamAsPath("path").exists().get()
+        val path = ctx.queryParam("path").notNull().path()
         val save = ctx.bodyAsClass<SaveImage>()
         imageService.saveImageAs(path, save)
     }
 
     private fun annotations(ctx: Context) {
-        val path = ctx.queryParamAsPath("path").exists().get()
+        val path = ctx.queryParam("path").notNull().path().exists()
         val request = ctx.bodyAsClass<AnnotateImageRequest>()
-        val location = ctx.locationOrNull()
+        val location = ctx.location()
         ctx.json(imageService.annotations(path, request, location))
     }
 
     private fun coordinateInterpolation(ctx: Context) {
-        val path = ctx.queryParamAsPath("path").exists().get()
+        val path = ctx.queryParam("path").notNull().path().exists()
         imageService.coordinateInterpolation(path)?.also(ctx::json)
     }
 
     private fun histogram(ctx: Context) {
-        val path = ctx.queryParamAsPath("path").exists().get()
-        val bitLength = ctx.queryParamAsInt("bitLength").range(8..16).getOrDefault(16)
+        val path = ctx.queryParam("path").notNull().path().exists()
+        val bitLength = ctx.queryParam("bitLength")?.toInt()?.range(8, 16) ?: 16
         ctx.json(imageService.histogram(path, bitLength))
     }
 

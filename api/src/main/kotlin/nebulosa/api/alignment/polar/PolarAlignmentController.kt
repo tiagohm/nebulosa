@@ -2,11 +2,12 @@ package nebulosa.api.alignment.polar
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import io.javalin.http.bodyValidator
+import io.javalin.http.bodyAsClass
 import nebulosa.api.alignment.polar.darv.DARVStartRequest
 import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.validate
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.valid
 
 class PolarAlignmentController(
     app: Javalin,
@@ -26,9 +27,9 @@ class PolarAlignmentController(
     }
 
     private fun darvStart(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera"))!!
-        val guideOutput = connectionService.guideOutput(ctx.pathParam("guideOutput"))!!
-        val body = ctx.bodyValidator<DARVStartRequest>().validate().get()
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
+        val guideOutput = connectionService.guideOutput(ctx.pathParam("guideOutput")).notNull()
+        val body = ctx.bodyAsClass<DARVStartRequest>().valid()
         polarAlignmentService.darvStart(camera, guideOutput, body)
     }
 
@@ -38,14 +39,14 @@ class PolarAlignmentController(
     }
 
     private fun darvStatus(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera"))!!
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
         polarAlignmentService.darvStatus(camera)?.also(ctx::json)
     }
 
     private fun tppaStart(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera"))!!
-        val mount = connectionService.mount(ctx.pathParam("mount"))!!
-        val body = ctx.bodyValidator<TPPAStartRequest>().validate().get()
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
+        val mount = connectionService.mount(ctx.pathParam("mount")).notNull()
+        val body = ctx.bodyAsClass<TPPAStartRequest>().valid()
         polarAlignmentService.tppaStart(camera, mount, body)
     }
 
@@ -65,7 +66,7 @@ class PolarAlignmentController(
     }
 
     private fun tppaStatus(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera"))!!
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
         polarAlignmentService.tppaStatus(camera)?.also(ctx::json)
     }
 }

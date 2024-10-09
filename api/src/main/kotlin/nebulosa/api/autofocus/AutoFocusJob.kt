@@ -184,7 +184,7 @@ data class AutoFocusJob(
             status.chart = AutoFocusEvent.Chart(predictedFocusPoint, minX, minY, maxX, maxY, trendLineCurve, parabolicCurve, hyperbolicCurve)
 
             status.state = AutoFocusState.CURVE_FITTED
-            status.copy().send() // TODO: Verificar se é necessário o copy por setar null abaixo.
+            status.send()
             status.chart = null
         }
     }

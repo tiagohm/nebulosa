@@ -3,7 +3,9 @@ package nebulosa.api.framing
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.image.ImageService
-import nebulosa.api.javalin.*
+import nebulosa.api.javalin.notBlank
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.range
 import nebulosa.math.deg
 import nebulosa.math.hours
 
@@ -23,13 +25,13 @@ class FramingController(
     }
 
     private fun frame(ctx: Context) {
-        val rightAscension = ctx.queryParamAsString("rightAscension").notBlank().get()
-        val declination = ctx.queryParamAsString("declination").notBlank().get()
-        val width = ctx.queryParamAsInt("width").range(1..7680).getOrDefault(1280)
-        val height = ctx.queryParamAsInt("height").range(1..4320).getOrDefault(720)
-        val fov = ctx.queryParamAsDouble("fov").range(0.0..90.0).getOrDefault(1.0)
-        val rotation = ctx.queryParamAsDouble("fov").getOrDefault(0.0)
-        val hipsSurvey = ctx.queryParamAsString("hipsSurvey").getOrDefault("CDS/P/DSS2/COLOR")
+        val rightAscension = ctx.queryParam("rightAscension").notNull().notBlank()
+        val declination = ctx.queryParam("declination").notNull().notBlank()
+        val width = ctx.queryParam("width")?.toInt()?.range(1, 7680) ?: 1280
+        val height = ctx.queryParam("height")?.toInt()?.range(1, 4320) ?: 720
+        val fov = ctx.queryParam("fov")?.toDouble()?.range(0.0, 90.0) ?: 1.0
+        val rotation = ctx.queryParam("rotation")?.toDouble() ?: 0.0
+        val hipsSurvey = ctx.queryParam("hipsSurvey") ?: "CDS/P/DSS2/COLOR"
 
         imageService
             .frame(rightAscension.hours, declination.deg, width, height, fov.deg, rotation.deg, hipsSurvey)

@@ -2,8 +2,9 @@ package nebulosa.api.guiding
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import io.javalin.http.bodyValidator
-import nebulosa.api.javalin.*
+import io.javalin.http.bodyAsClass
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.valid
 import kotlin.math.min
 
 class GuidingController(
@@ -26,8 +27,8 @@ class GuidingController(
     }
 
     private fun connect(ctx: Context) {
-        val host = ctx.queryParamAsString("host").getOrDefault("localhost")
-        val port = ctx.queryParamAsInt("port").getOrDefault(4400)
+        val host = ctx.queryParam("host")?.ifBlank { null } ?: "localhost"
+        val port = ctx.queryParam("port")?.toInt() ?: 4400
         guidingService.connect(host, port)
     }
 
@@ -41,7 +42,7 @@ class GuidingController(
     }
 
     private fun history(ctx: Context) {
-        val maxLength = min(100, ctx.queryParamAsInt("maxLength").getOrDefault(100))
+        val maxLength = min(100, ctx.queryParam("maxLength")?.toInt() ?: 100)
         ctx.json(guidingService.history(maxLength))
     }
 
@@ -56,23 +57,23 @@ class GuidingController(
     }
 
     private fun loop(ctx: Context) {
-        val autoSelectGuideStar = ctx.queryParamAsBoolean("autoSelectGuideStar").getOrDefault(true)
+        val autoSelectGuideStar = ctx.queryParam("autoSelectGuideStar")?.toBoolean() ?: true
         guidingService.loop(autoSelectGuideStar)
     }
 
     private fun start(ctx: Context) {
-        val forceCalibration = ctx.queryParamAsBoolean("forceCalibration").getOrDefault(false)
+        val forceCalibration = ctx.queryParam("forceCalibration")?.toBoolean() ?: false
         guidingService.start(forceCalibration)
     }
 
     private fun settle(ctx: Context) {
-        val body = ctx.bodyValidator<SettleInfo>().validate().get()
+        val body = ctx.bodyAsClass<SettleInfo>().valid()
         guidingService.settle(body)
     }
 
     private fun dither(ctx: Context) {
-        val amount = ctx.queryParamAsDouble("amount").get()
-        val raOnly = ctx.queryParamAsBoolean("raOnly").getOrDefault(false)
+        val amount = ctx.queryParam("amount").notNull().toDouble()
+        val raOnly = ctx.queryParam("raOnly")?.toBoolean() ?: false
         return guidingService.dither(amount, raOnly)
     }
 

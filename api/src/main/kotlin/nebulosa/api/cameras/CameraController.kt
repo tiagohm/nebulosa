@@ -2,12 +2,11 @@ package nebulosa.api.cameras
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import io.javalin.http.bodyValidator
+import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.queryParamAsBoolean
-import nebulosa.api.javalin.queryParamAsDouble
+import nebulosa.api.javalin.notNull
 import nebulosa.api.javalin.range
-import nebulosa.api.javalin.validate
+import nebulosa.api.javalin.valid
 
 class CameraController(
     app: Javalin,
@@ -66,14 +65,14 @@ class CameraController(
     private fun cooler(ctx: Context) {
         val id = ctx.pathParam("id")
         val camera = connectionService.camera(id) ?: return
-        val enabled = ctx.queryParamAsBoolean("enabled").get()
+        val enabled = ctx.queryParam("enabled").notNull().toBoolean()
         cameraService.cooler(camera, enabled)
     }
 
     private fun setpointTemperature(ctx: Context) {
         val id = ctx.pathParam("id")
         val camera = connectionService.camera(id) ?: return
-        val temperature = ctx.queryParamAsDouble("temperature").range(TEMPERATURE_RANGE).get()
+        val temperature = ctx.queryParam("temperature").notNull().toDouble().range(-50.0, 50.0)
         cameraService.setpointTemperature(camera, temperature)
     }
 
@@ -84,7 +83,7 @@ class CameraController(
         val wheel = ctx.queryParam("wheel")?.let(connectionService::wheel)
         val focuser = ctx.queryParam("focuser")?.let(connectionService::focuser)
         val rotator = ctx.queryParam("rotator")?.let(connectionService::rotator)
-        val body = ctx.bodyValidator<CameraStartCaptureRequest>().validate().get()
+        val body = ctx.bodyAsClass<CameraStartCaptureRequest>().valid()
         cameraService.startCapture(camera, body, mount, wheel, focuser, rotator)
     }
 
@@ -116,10 +115,5 @@ class CameraController(
         val id = ctx.pathParam("id")
         val camera = connectionService.camera(id) ?: return
         cameraService.listen(camera)
-    }
-
-    companion object {
-
-        private val TEMPERATURE_RANGE = -50.0..50.0
     }
 }

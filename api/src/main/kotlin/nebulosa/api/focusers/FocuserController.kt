@@ -3,8 +3,8 @@ package nebulosa.api.focusers
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.javalin.notNull
 import nebulosa.api.javalin.positiveOrZero
-import nebulosa.api.javalin.queryParamAsInt
 
 class FocuserController(
     app: Javalin,
@@ -50,21 +50,21 @@ class FocuserController(
     private fun moveIn(ctx: Context) {
         val id = ctx.pathParam("id")
         val focuser = connectionService.focuser(id) ?: return
-        val steps = ctx.queryParamAsInt("steps").positiveOrZero().get()
+        val steps = ctx.queryParam("steps").notNull().toInt().positiveOrZero()
         focuserService.moveIn(focuser, steps)
     }
 
     private fun moveOut(ctx: Context) {
         val id = ctx.pathParam("id")
         val focuser = connectionService.focuser(id) ?: return
-        val steps = ctx.queryParamAsInt("steps").positiveOrZero().get()
+        val steps = ctx.queryParam("steps").notNull().toInt().positiveOrZero()
         focuserService.moveOut(focuser, steps)
     }
 
     private fun moveTo(ctx: Context) {
         val id = ctx.pathParam("id")
         val focuser = connectionService.focuser(id) ?: return
-        val steps = ctx.queryParamAsInt("steps").positiveOrZero().get()
+        val steps = ctx.queryParam("steps").notNull().toInt().positiveOrZero()
         focuserService.moveTo(focuser, steps)
     }
 
@@ -77,7 +77,7 @@ class FocuserController(
     private fun sync(ctx: Context) {
         val id = ctx.pathParam("id")
         val focuser = connectionService.focuser(id) ?: return
-        val steps = ctx.queryParamAsInt("steps").positiveOrZero().get()
+        val steps = ctx.queryParam("steps").notNull().toInt().positiveOrZero()
         focuserService.sync(focuser, steps)
     }
 

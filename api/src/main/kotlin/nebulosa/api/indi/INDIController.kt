@@ -2,9 +2,10 @@ package nebulosa.api.indi
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import io.javalin.http.bodyValidator
+import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.validate
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.valid
 
 class INDIController(
     app: Javalin,
@@ -25,7 +26,7 @@ class INDIController(
     }
 
     private fun device(ctx: Context) {
-        val device = connectionService.device(ctx.pathParam("device"))!!
+        val device = connectionService.device(ctx.pathParam("device")).notNull()
         ctx.json(device)
     }
 
@@ -40,18 +41,18 @@ class INDIController(
     }
 
     private fun properties(ctx: Context) {
-        val device = connectionService.device(ctx.pathParam("device"))!!
+        val device = connectionService.device(ctx.pathParam("device")).notNull()
         ctx.json(indiService.properties(device))
     }
 
     private fun sendProperty(ctx: Context) {
         val device = connectionService.device(ctx.pathParam("device")) ?: return
-        val body = ctx.bodyValidator<INDISendProperty>().validate().get()
+        val body = ctx.bodyAsClass<INDISendProperty>().valid()
         indiService.sendProperty(device, body)
     }
 
     private fun deviceLog(ctx: Context) {
-        val device = connectionService.device(ctx.pathParam("device"))!!
+        val device = connectionService.device(ctx.pathParam("device")).notNull()
         ctx.json(synchronized(device.messages) { device.messages })
     }
 

@@ -2,8 +2,8 @@ package nebulosa.api.connection
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import nebulosa.api.javalin.queryParamAsInt
-import nebulosa.api.javalin.queryParamAsString
+import nebulosa.api.javalin.notBlank
+import nebulosa.api.javalin.notNull
 import nebulosa.api.javalin.range
 
 class ConnectionController(
@@ -19,9 +19,9 @@ class ConnectionController(
     }
 
     private fun connect(ctx: Context) {
-        val host = ctx.queryParamAsString("host").get()
-        val port = ctx.queryParamAsInt("port").range(PORT_RANGE).get()
-        val type = ctx.queryParamAsString("type").getOrDefault("INDI").let(ConnectionType::valueOf)
+        val host = ctx.queryParam("host").notNull().notBlank()
+        val port = ctx.queryParam("port").notNull().toInt().range(1, 65535)
+        val type = ctx.queryParam("type").notNull().let(ConnectionType::valueOf)
 
         connectionService.connect(host, port, type)
     }
@@ -38,10 +38,5 @@ class ConnectionController(
     private fun status(ctx: Context) {
         val id = ctx.pathParam("id")
         connectionService.connectionStatus(id)?.also(ctx::json)
-    }
-
-    companion object {
-
-        private val PORT_RANGE = 1..65535
     }
 }

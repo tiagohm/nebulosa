@@ -1,5 +1,7 @@
 package nebulosa.api.stardetector
 
+import nebulosa.api.javalin.Validatable
+import nebulosa.api.javalin.positiveOrZero
 import nebulosa.astap.stardetector.AstapStarDetector
 import nebulosa.pixinsight.script.startPixInsight
 import nebulosa.pixinsight.stardetector.PixInsightStarDetector
@@ -16,7 +18,14 @@ data class StarDetectionRequest(
     @JvmField val minSNR: Double = 0.0,
     @JvmField val maxStars: Int = 0,
     @JvmField val slot: Int = 1,
-) : Supplier<StarDetector<Path>> {
+) : Supplier<StarDetector<Path>>, Validatable {
+
+    override fun validate() {
+        timeout.positiveOrZero()
+        minSNR.positiveOrZero()
+        maxStars.positiveOrZero()
+        slot.positiveOrZero()
+    }
 
     override fun get() = when (type) {
         StarDetectorType.ASTAP -> AstapStarDetector(executablePath!!, minSNR)

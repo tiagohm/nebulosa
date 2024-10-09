@@ -296,7 +296,7 @@ fun servicesModule() = module {
     single { CalibrationFrameService(get()) }
     single { FramingService(get(), get()) }
     single { ImageService(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    single { PlateSolverService(get(), get(Named.defaultHttpClient)) }
+    single { PlateSolverService(get()) }
     single { FlatWizardExecutor(get(), get(), get()) }
     single { FlatWizardService(get(Named.capturesDir), get()) }
     single { StarDetectionService() }
@@ -306,8 +306,8 @@ fun servicesModule() = module {
     single { StackerService(get()) }
     single { FramingService(get(), get()) }
     single { INDIService(get()) }
-    single { DARVExecutor(get(), get()) }
-    single { TPPAExecutor(get(), get(Named.defaultHttpClient), get()) }
+    single { DARVExecutor(get(), get(), get()) }
+    single { TPPAExecutor(get(), get(), get()) }
     single { PolarAlignmentService(get(), get()) }
     single { PreferenceService(get(), get()) }
     single { GuidingService(get(), get(), get(), get()) }
