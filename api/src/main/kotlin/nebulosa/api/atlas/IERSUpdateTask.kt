@@ -52,19 +52,19 @@ class IERSUpdateTask(
                 .use { it.headers.getDate(Header.LAST_MODIFIED) }
 
             if (modifiedAt != null && "$modifiedAt" == preferenceService.getText(key)) {
-                LOG.info("$url is up to date. modifiedAt={}", modifiedAt)
+                LOG.info("{} is up to date. modifiedAt={}", url, modifiedAt)
                 return
             }
 
             request = request.newBuilder().get().build()
 
-            LOG.info("downloading $url")
+            LOG.debug("downloading {}", url)
 
             httpClient.newCall(request).execute().use {
                 it.body!!.byteStream().transferAndClose(outputStream())
                 modifiedAt = it.headers.getDate(Header.LAST_MODIFIED)
                 preferenceService.putText(key, "$modifiedAt")
-                LOG.info("$url downloaded. modifiedAt={}", modifiedAt)
+                LOG.debug("{} downloaded. modifiedAt={}", url, modifiedAt)
             }
         } catch (e: Throwable) {
             LOG.error("failed to download finals2000A.all", e)

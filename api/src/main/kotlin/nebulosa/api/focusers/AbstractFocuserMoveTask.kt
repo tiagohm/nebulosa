@@ -5,7 +5,6 @@ import nebulosa.indi.device.focuser.FocuserMoveFailed
 import nebulosa.indi.device.focuser.FocuserMovingChanged
 import nebulosa.indi.device.focuser.FocuserPositionChanged
 import nebulosa.job.manager.Job
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.cancellation.CancellationListener
 import nebulosa.util.concurrency.cancellation.CancellationSource
@@ -22,8 +21,8 @@ sealed class AbstractFocuserMoveTask : FocuserTask, CancellationListener {
     override fun handleFocuserEvent(event: FocuserEvent) {
         if (event.device === focuser) {
             when (event) {
-                is FocuserMovingChanged -> if (event.device.moving) moving = true else latch.reset()
-                is FocuserPositionChanged -> if (moving && !event.device.moving) latch.reset()
+                is FocuserMovingChanged -> if (event.device.moving) moving = true else if (moving) latch.reset()
+                // is FocuserPositionChanged -> if (moving && !event.device.moving) latch.reset()
                 is FocuserMoveFailed -> latch.reset()
             }
         }
@@ -35,12 +34,12 @@ sealed class AbstractFocuserMoveTask : FocuserTask, CancellationListener {
 
     override fun run() {
         if (!job.isCancelled && focuser.connected && !focuser.moving && canMove()) {
-            LOG.debug { "Focuser move started. focuser=$focuser" }
+            LOG.debug("Focuser move started. focuser={}", focuser)
             latch.countUp()
             move()
             latch.await()
             moving = false
-            LOG.debug { "Focuser move finished. focuser=$focuser" }
+            LOG.debug("Focuser move finished. focuser={}", focuser)
         }
     }
 

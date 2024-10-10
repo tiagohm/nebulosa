@@ -22,7 +22,6 @@ export interface AutoFocusRequest {
 	backlashCompensation: BacklashCompensation
 	initialOffsetSteps: number
 	stepSize: number
-	totalNumberOfAttempts: number
 	starDetector: StarDetectionRequest
 }
 
@@ -96,7 +95,6 @@ export const DEFAULT_AUTO_FOCUS_REQUEST: AutoFocusRequest = {
 	rSquaredThreshold: 0.5,
 	initialOffsetSteps: 4,
 	stepSize: 100,
-	totalNumberOfAttempts: 1,
 	backlashCompensation: DEFAULT_BACKLASH_COMPENSATION,
 	starDetector: DEFAULT_STAR_DETECTION_REQUEST,
 }
@@ -120,7 +118,6 @@ export function autoFocusRequestWithDefault(request?: Partial<AutoFocusRequest>,
 	request.rSquaredThreshold ??= source.rSquaredThreshold
 	request.initialOffsetSteps ??= source.initialOffsetSteps
 	request.stepSize ??= source.stepSize
-	request.totalNumberOfAttempts ??= source.totalNumberOfAttempts
 	request.backlashCompensation = backlashCompensationWithDefault(request.backlashCompensation, source.backlashCompensation)
 	request.starDetector = starDetectionRequestWithDefault(request.starDetector, source.starDetector)
 	return request as AutoFocusRequest

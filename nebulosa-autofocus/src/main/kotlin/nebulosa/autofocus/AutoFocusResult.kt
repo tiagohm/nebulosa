@@ -27,5 +27,5 @@ sealed interface AutoFocusResult {
     /**
      * Auto Focus finished with success.
      */
-    data class Completed(@JvmField val point: CurvePoint) : AutoFocusResult
+    data class Completed(@JvmField val determinedFocusPoint: CurvePoint) : AutoFocusResult
 }

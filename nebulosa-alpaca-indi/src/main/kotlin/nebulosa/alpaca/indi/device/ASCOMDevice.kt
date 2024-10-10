@@ -109,10 +109,10 @@ abstract class ASCOMDevice : Device, Resettable {
                 body
             }
         } catch (e: HttpException) {
-            LOG.error("unexpected response. device=$name", e)
+            LOG.error("unexpected response. device={}", name, e)
         } catch (e: Throwable) {
             sender.fireOnConnectionClosed()
-            LOG.error("unexpected error. device=$name", e)
+            LOG.error("unexpected error. device={}", name, e)
         }
 
         return null

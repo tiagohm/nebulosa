@@ -102,7 +102,7 @@ class AutoFocusTest : AbstractTest() {
                     AutoFocusResult.Determinate -> continue
                     is AutoFocusResult.MoveFocuser -> focusPosition = if (result.relative) focusPosition + result.position else result.position
                     AutoFocusResult.TakeExposure -> autoFocus.add(STAR_FOCUS_LIST[focusPosition / 100])
-                    is AutoFocusResult.Completed -> focusPoint = result.point
+                    is AutoFocusResult.Completed -> focusPoint = result.determinedFocusPoint
                     is AutoFocusResult.Failed -> break
                 }
 

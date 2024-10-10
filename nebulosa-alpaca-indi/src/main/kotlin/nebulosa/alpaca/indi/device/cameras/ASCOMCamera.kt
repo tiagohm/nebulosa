@@ -608,7 +608,7 @@ data class ASCOMCamera(
                 LOG.error("failed to read image. device={}, error={}", name, metadata.errorNumber)
                 return
             } else {
-                LOG.info("image read. metadata={}", metadata)
+                LOG.debug("image read. metadata={}", metadata)
             }
 
             val width = metadata.dimension1

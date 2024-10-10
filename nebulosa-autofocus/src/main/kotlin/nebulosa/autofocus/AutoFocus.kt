@@ -10,6 +10,7 @@ import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.roundToInt
 
 data class AutoFocus(
@@ -45,6 +46,7 @@ data class AutoFocus(
     private val measurements = ArrayList<MeasuredStars>(exposureAmount)
     private val maximumFocusPoints = exposureAmount * initialOffsetSteps * 10
     private val focusPoints = ArrayList<CurvePoint>(maximumFocusPoints)
+    private val listeners = ConcurrentHashMap.newKeySet<AutoFocusListener>(1)
 
     @Volatile private var subState = SubState.IDLE
     @Volatile private var prevState = State.IDLE
@@ -72,6 +74,14 @@ data class AutoFocus(
 
     private val isDataPointsEnough
         get() = trendLineCurve != null && (rightCount + focusPoints.count { it.x > trendLineCurve!!.minimum.x && it.y == 0.0 } >= initialOffsetSteps && leftCount + focusPoints.count { it.x < trendLineCurve!!.minimum.x && it.y == 0.0 } >= initialOffsetSteps)
+
+    fun registerAutoFocusListener(listener: AutoFocusListener) {
+        listeners.add(listener)
+    }
+
+    fun unregisterAutoFocusListener(listener: AutoFocusListener) {
+        listeners.remove(listener)
+    }
 
     fun add(path: Path) {
         if (exposureCount > 0) {
@@ -166,7 +176,7 @@ data class AutoFocus(
                 if (trendLineCurve!!.left.points.size < initialOffsetSteps
                     && focusPoints.count { it.x < trendLineCurve!!.minimum.x && it.y == 0.0 } < initialOffsetSteps
                 ) {
-                    LOG.info("more data points needed to the left of the minimum")
+                    LOG.debug("more data points needed to the left of the minimum")
 
                     state = State.MORE_POINTS_TO_THE_LEFT
 
@@ -184,7 +194,7 @@ data class AutoFocus(
                     && focusPoints.count { it.x > trendLineCurve!!.minimum.x && it.y == 0.0 } < initialOffsetSteps
                 ) {
                     // Now we can go to the right, if necessary.
-                    LOG.info("more data points needed to the right of the minimum")
+                    LOG.debug("more data points needed to the right of the minimum")
 
                     state = State.MORE_POINTS_TO_THE_RIGHT
 
@@ -250,13 +260,13 @@ data class AutoFocus(
 
                 if (maximumFocusPoints < focusPoints.size) {
                     // Break out when the maximum limit of focus points is reached
-                    LOG.error("failed to complete. Maximum number of focus points exceeded ($maximumFocusPoints).")
+                    LOG.error("failed to complete. Maximum number of focus points exceeded ({}).", maximumFocusPoints)
                     return AutoFocusResult.Failed(initialFocusPosition)
                 }
 
                 if (focusPosition <= 0 || focusPosition >= focusMaxPosition) {
                     // Break out when the focuser hits the min/max position. It can't continue from there.
-                    LOG.error("failed to complete. position reached {}", focusMaxPosition)
+                    LOG.error("failed to complete. position reached to min/max")
                     return AutoFocusResult.Failed(initialFocusPosition)
                 }
 
@@ -312,6 +322,7 @@ data class AutoFocus(
         val measurement = detectedStars.measureDetectedStars()
         LOG.debug("HFD measured. hfd={}, stdDev={}", measurement.hfd, measurement.stdDev)
         measurements.add(measurement)
+        listeners.forEach { it.onStarDetected(detectedStars.size, measurement.hfd, measurement.stdDev, false) }
         return measurement
     }
 
@@ -321,7 +332,9 @@ data class AutoFocus(
         val descriptiveStatistics = DescriptiveStatistics(measurements.size)
         measurements.forEach { descriptiveStatistics.addValue(it.hfd) }
         val stdDev = descriptiveStatistics.standardDeviation
-        return MeasuredStars(descriptiveStatistics.mean, if (stdDev > 0.0) stdDev else 1.0)
+        val starCount = measurements.sumOf { it.count } / measurements.size
+        listeners.forEach { it.onStarDetected(starCount, descriptiveStatistics.mean, stdDev, true) }
+        return MeasuredStars(starCount, descriptiveStatistics.mean, if (stdDev > 0.0) stdDev else 1.0)
     }
 
     private fun computeCurvePoint(): CurvePoint? {
@@ -356,9 +369,8 @@ data class AutoFocus(
             val predictedFocusPoint = determinedFocusPoint ?: determineFinalFocusPoint()
             val (minX, minY) = if (isEmpty()) CurvePoint.ZERO else first()
             val (maxX, maxY) = if (isEmpty()) CurvePoint.ZERO else last()
-            // status.chart = AutoFocusEvent.Chart(predictedFocusPoint, minX, minY, maxX, maxY, trendLineCurve, parabolicCurve, hyperbolicCurve)
 
-            // status.state = AutoFocusState.CURVE_FITTED
+            listeners.forEach { it.onCurveFitted(predictedFocusPoint, minX, minY, maxX, maxY, trendLineCurve, parabolicCurve, hyperbolicCurve) }
         }
     }
 
@@ -373,7 +385,7 @@ data class AutoFocus(
     }
 
     private fun validateCalculatedFocusPosition(focusPoint: CurvePoint): Boolean {
-        LOG.info("validating calculated focus position. threshold={}", rSquaredThreshold)
+        LOG.debug("validating calculated focus position. threshold={}, x={}, y={}", rSquaredThreshold, focusPoint.x, focusPoint.y)
 
         if (rSquaredThreshold > 0.0) {
             fun isTrendLineBad() = trendLineCurve?.let { it.left.rSquared < rSquaredThreshold || it.right.rSquared < rSquaredThreshold } != false
@@ -414,7 +426,7 @@ data class AutoFocus(
             val descriptiveStatistics = DescriptiveStatistics(size)
             forEach { descriptiveStatistics.addValue(it.hfd) }
             val stdDev = descriptiveStatistics.standardDeviation
-            return MeasuredStars(descriptiveStatistics.mean, if (stdDev > 0.0) stdDev else 1.0)
+            return MeasuredStars(size, descriptiveStatistics.mean, if (stdDev > 0.0) stdDev else 1.0)
         }
     }
 }

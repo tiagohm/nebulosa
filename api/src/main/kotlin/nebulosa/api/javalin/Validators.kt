@@ -71,9 +71,4 @@ inline fun <T> Collection<T>.minSize(min: Int) = validate(size >= min) { "size m
 
 // BODY
 
-fun interface Validatable {
-
-    fun validate()
-}
-
-inline fun <T : Validatable> T.valid() = apply { validate() }
+inline fun <T : Validatable> T.valid() = apply(Validatable::validate)
