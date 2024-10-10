@@ -209,7 +209,7 @@ class INDIXmlInputStream(source: InputStream) : INDIInputStream {
     private fun parseDefSwitch(): DefSwitch {
         val defSwitch = DefSwitch()
         defSwitch.parseDefElement()
-        defSwitch.value = reader.elementText.trim().equals("On", true)
+        defSwitch.value = reader.elementText.contains("On", true)
         return defSwitch
     }
 

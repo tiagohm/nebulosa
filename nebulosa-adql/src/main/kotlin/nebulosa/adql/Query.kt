@@ -2,7 +2,7 @@ package nebulosa.adql
 
 import adql.query.ADQLQuery
 
-data class Query internal constructor(@JvmField internal val query: ADQLQuery) : CharSequence {
+data class Query(@JvmField internal val query: ADQLQuery) : CharSequence {
 
     private val queryText: String by lazy(query::toADQL)
 

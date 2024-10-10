@@ -23,7 +23,7 @@ export type Sequence = CameraStartCapture
 
 export type SequencerCaptureMode = 'FULLY' | 'INTERLEAVED'
 
-export type SequencerState = 'IDLE' | 'PAUSING' | 'PAUSED' | 'RUNNING'
+export type SequencerState = 'IDLE' | 'WAITING' | 'PAUSING' | 'PAUSED' | 'RUNNING'
 
 export type SequenceProperty = 'EXPOSURE_TIME' | 'EXPOSURE_AMOUNT' | 'EXPOSURE_DELAY' | 'FRAME_TYPE' | 'X' | 'Y' | 'WIDTH' | 'HEIGHT' | 'BIN' | 'FRAME_FORMAT' | 'GAIN' | 'OFFSET' | 'STACKING_GROUP' | 'CALIBRATION_GROUP'
 
@@ -61,11 +61,12 @@ export interface SequencerPlan {
 }
 
 export interface SequencerEvent extends MessageEvent {
+	camera: Camera
 	id: number
 	elapsedTime: number
 	remainingTime: number
 	progress: number
-	capture?: CameraCaptureEvent
+	capture?: Omit<CameraCaptureEvent, 'camera'>
 	state: SequencerState
 }
 

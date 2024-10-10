@@ -1,10 +1,10 @@
 package nebulosa.api.connection
 
+import io.javalin.http.InternalServerErrorResponse
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.api.message.MessageService
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.connection.INDISocketConnection
-import nebulosa.indi.device.Device
 import nebulosa.indi.device.DeviceEventHandler
 import nebulosa.indi.device.INDIDeviceProvider
 import nebulosa.indi.device.camera.Camera
@@ -21,14 +21,12 @@ import nebulosa.log.error
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
-import org.springframework.stereotype.Service
-import org.springframework.web.server.ServerErrorException
+import kotlin.collections.set
 
-@Service
 class ConnectionService(
     private val eventBus: EventBus,
-    private val connectionEventHub: ConnectionEventHub,
     private val alpacaHttpClient: OkHttpClient,
+    private val connectionEventHub: ConnectionEventHub,
     private val messageService: MessageService,
 ) : AutoCloseable {
 
@@ -82,8 +80,7 @@ class ConnectionService(
             return provider.id
         } catch (e: Throwable) {
             LOG.error(e)
-
-            throw ServerErrorException("Connection Failed", e)
+            throw InternalServerErrorResponse("Connection Failed")
         }
     }
 
@@ -268,18 +265,16 @@ class ConnectionService(
         return providers.firstNotNullOfOrNull { it.value.thermometer(name) }
     }
 
-    fun device(name: String): Device? {
-        return camera(name)
-            ?: mount(name)
-            ?: focuser(name)
-            ?: wheel(name)
-            ?: rotator(name)
-            ?: guideOutput(name)
-            ?: lightBox(name)
-            ?: dustCap(name)
-            ?: gps(name)
-            ?: thermometer(name)
-    }
+    fun device(name: String) = camera(name)
+        ?: mount(name)
+        ?: focuser(name)
+        ?: wheel(name)
+        ?: rotator(name)
+        ?: guideOutput(name)
+        ?: lightBox(name)
+        ?: dustCap(name)
+        ?: gps(name)
+        ?: thermometer(name)
 
     companion object {
 

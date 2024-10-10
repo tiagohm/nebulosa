@@ -16,7 +16,7 @@ class SmallBodyDatabaseService(
 
     private val service by lazy { retrofit.create<SmallBodyDatabase>() }
 
-    override fun withOkHttpClientBuilder(builder: OkHttpClient.Builder) {
+    override fun withOkHttpClient(builder: OkHttpClient.Builder) {
         builder.readTimeout(5L, TimeUnit.MINUTES)
             .writeTimeout(5L, TimeUnit.MINUTES)
             .connectTimeout(5L, TimeUnit.MINUTES)

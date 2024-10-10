@@ -1,37 +1,42 @@
 package nebulosa.api.connection
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
-import org.hibernate.validator.constraints.Range
-import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.*
+import io.javalin.Javalin
+import io.javalin.http.Context
+import nebulosa.api.javalin.notBlank
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.range
 
-@Validated
-@RestController
-@RequestMapping("connection")
 class ConnectionController(
+    app: Javalin,
     private val connectionService: ConnectionService,
 ) {
 
-    @PutMapping
-    fun connect(
-        @RequestParam @Valid @NotBlank host: String,
-        @RequestParam @Valid @Range(min = 1, max = 65535) port: Int,
-        @RequestParam(required = false, defaultValue = "INDI") type: ConnectionType,
-    ) = connectionService.connect(host, port, type)
+    init {
+        app.get("connection", ::statuses)
+        app.get("connection/{id}", ::status)
+        app.put("connection", ::connect)
+        app.delete("connection/{id}", ::disconnect)
+    }
 
-    @DeleteMapping("{id}")
-    fun disconnect(@PathVariable id: String) {
+    private fun connect(ctx: Context) {
+        val host = ctx.queryParam("host").notNull().notBlank()
+        val port = ctx.queryParam("port").notNull().toInt().range(1, 65535)
+        val type = ctx.queryParam("type").notNull().let(ConnectionType::valueOf)
+
+        connectionService.connect(host, port, type)
+    }
+
+    private fun disconnect(ctx: Context) {
+        val id = ctx.pathParam("id")
         connectionService.disconnect(id)
     }
 
-    @GetMapping
-    fun connectionStatuses(): List<ConnectionStatus> {
-        return connectionService.connectionStatuses()
+    private fun statuses(ctx: Context) {
+        ctx.json(connectionService.connectionStatuses())
     }
 
-    @GetMapping("{id}")
-    fun connectionStatus(@PathVariable id: String): ConnectionStatus? {
-        return connectionService.connectionStatus(id)
+    private fun status(ctx: Context) {
+        val id = ctx.pathParam("id")
+        connectionService.connectionStatus(id)?.also(ctx::json)
     }
 }

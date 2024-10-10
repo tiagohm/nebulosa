@@ -3,9 +3,7 @@ package nebulosa.api.focusers
 import com.fasterxml.jackson.core.JsonGenerator
 import nebulosa.api.devices.DeviceSerializer
 import nebulosa.indi.device.focuser.Focuser
-import org.springframework.stereotype.Component
 
-@Component
 class FocuserSerializer : DeviceSerializer<Focuser>(Focuser::class.java) {
 
     override fun JsonGenerator.serialize(value: Focuser) {

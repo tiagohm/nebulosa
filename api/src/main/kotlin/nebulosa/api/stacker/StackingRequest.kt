@@ -1,8 +1,8 @@
 package nebulosa.api.stacker
 
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Size
+import nebulosa.api.javalin.Validatable
+import nebulosa.api.javalin.minSize
+import nebulosa.api.javalin.notNull
 import nebulosa.pixinsight.script.startPixInsight
 import nebulosa.pixinsight.stacker.PixInsightAutoStacker
 import nebulosa.stacker.AutoStacker
@@ -13,9 +13,9 @@ import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
 data class StackingRequest(
-    @JvmField @field:NotNull val outputDirectory: Path? = null,
+    @JvmField val outputDirectory: Path? = null,
     @JvmField val type: StackerType = StackerType.PIXINSIGHT,
-    @JvmField @field:NotNull val executablePath: Path? = null,
+    @JvmField val executablePath: Path? = null,
     @JvmField val darkPath: Path? = null,
     @JvmField val darkEnabled: Boolean = false,
     @JvmField val flatPath: Path? = null,
@@ -24,9 +24,16 @@ data class StackingRequest(
     @JvmField val biasEnabled: Boolean = false,
     @JvmField val use32Bits: Boolean = false,
     @JvmField val slot: Int = 1,
-    @JvmField @field:NotNull val referencePath: Path? = null,
-    @JvmField @field:Size(min = 2) @field:Valid val targets: List<StackingTarget> = emptyList(),
-) : Supplier<AutoStacker> {
+    @JvmField val referencePath: Path? = null,
+    @JvmField val targets: List<StackingTarget> = emptyList(),
+) : Supplier<AutoStacker>, Validatable {
+
+    override fun validate() {
+        outputDirectory.notNull().exists()
+        executablePath.notNull()
+        referencePath.notNull().exists()
+        targets.minSize(2).onEach { it.validate() }
+    }
 
     override fun get(): AutoStacker {
         val workingDirectory = Files.createTempDirectory("as-")

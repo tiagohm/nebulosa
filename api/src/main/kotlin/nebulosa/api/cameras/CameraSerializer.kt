@@ -2,13 +2,16 @@ package nebulosa.api.cameras
 
 import com.fasterxml.jackson.core.JsonGenerator
 import nebulosa.api.devices.DeviceSerializer
+import nebulosa.api.inject.Named
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.GuideHead
-import org.springframework.stereotype.Component
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.nio.file.Path
 
-@Component
-class CameraSerializer(private val capturesPath: Path) : DeviceSerializer<Camera>(Camera::class.java) {
+class CameraSerializer : DeviceSerializer<Camera>(Camera::class.java), KoinComponent {
+
+    private val capturesDir by inject<Path>(Named.capturesDir)
 
     override fun JsonGenerator.serialize(value: Camera) {
         writeBooleanField("exposuring", value.exposuring)
@@ -22,10 +25,10 @@ class CameraSerializer(private val capturesPath: Path) : DeviceSerializer<Camera
         writeNumberField("cfaOffsetX", value.cfaOffsetX)
         writeNumberField("cfaOffsetY", value.cfaOffsetY)
         writeStringField("cfaType", value.cfaType.name)
-        writeNumberField("exposureMin", value.exposureMin.toNanos() / 1000L)
-        writeNumberField("exposureMax", value.exposureMax.toNanos() / 1000L)
+        writeNumberField("exposureMin", value.exposureMin)
+        writeNumberField("exposureMax", value.exposureMax)
         writeStringField("exposureState", value.exposureState.name)
-        writeNumberField("exposureTime", value.exposureTime.toNanos() / 1000L)
+        writeNumberField("exposureTime", value.exposureTime)
         writeBooleanField("hasCooler", value.hasCooler)
         writeBooleanField("canSetTemperature", value.canSetTemperature)
         writeBooleanField("canSubFrame", value.canSubFrame)
@@ -59,7 +62,7 @@ class CameraSerializer(private val capturesPath: Path) : DeviceSerializer<Camera
         writeBooleanField("pulseGuiding", value.pulseGuiding)
         writeBooleanField("hasThermometer", value.hasThermometer)
         writeNumberField("temperature", value.temperature)
-        writeObjectField("capturesPath", Path.of("$capturesPath", value.name))
+        writeObjectField("capturesPath", Path.of("$capturesDir", value.name))
 
         if (value is GuideHead) {
             writeMainOrGuideHead(value.main, "main")

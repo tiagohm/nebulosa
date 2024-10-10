@@ -1,6 +1,6 @@
 package nebulosa.stacker
 
-import nebulosa.common.concurrency.cancel.CancellationToken
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.nio.file.Path
 
 interface AutoStacker : Stacker {

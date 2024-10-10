@@ -1,16 +1,18 @@
 package nebulosa.api.sequencer
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import nebulosa.api.cameras.CameraCaptureEvent
 import nebulosa.api.message.MessageEvent
-import java.time.Duration
+import nebulosa.indi.device.camera.Camera
 
 data class SequencerEvent(
-    @JvmField val id: Int = 0,
-    @JvmField val elapsedTime: Duration = Duration.ZERO,
-    @JvmField val remainingTime: Duration = Duration.ZERO,
-    @JvmField val progress: Double = 0.0,
-    @JvmField val capture: CameraCaptureEvent? = null,
-    @JvmField val state: SequencerState = SequencerState.IDLE,
+    @JvmField val camera: Camera,
+    @JvmField var id: Int = 0,
+    @JvmField var elapsedTime: Long = 0L,
+    @JvmField var remainingTime: Long = 0L,
+    @JvmField var progress: Double = 0.0,
+    @JvmField var state: SequencerState = SequencerState.IDLE,
+    @JvmField @field:JsonIgnoreProperties("camera") var capture: CameraCaptureEvent = CameraCaptureEvent(camera),
 ) : MessageEvent {
 
     override val eventName = "SEQUENCER.ELAPSED"

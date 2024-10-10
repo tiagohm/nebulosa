@@ -1,9 +1,9 @@
-import { Client } from '@stomp/stompjs'
 import type { Rectangle } from 'electron'
 import { BrowserWindow, Notification, dialog, screen, shell } from 'electron'
 import Store from 'electron-store'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { join } from 'path'
+import { WebSocket } from 'ws'
 import type { MessageEvent } from '../src/shared/types/api.types'
 import type { CloseWindow, ConfirmationEvent, FullscreenWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, ResizeWindow, WindowCommand } from '../src/shared/types/app.types'
 import type { Nullable } from '../src/shared/utils/types'
@@ -21,7 +21,7 @@ export class ApplicationWindow {
 		public readonly browserWindow: BrowserWindow,
 		public readonly data: OpenWindow,
 		public readonly parentWindow?: BrowserWindow,
-		public webSocket?: Client,
+		public webSocket?: WebSocket,
 		public apiProcess?: ChildProcessWithoutNullStreams,
 		public resolver?: (data: unknown) => void,
 	) {}
@@ -209,6 +209,44 @@ export class WindowManager {
 		}
 	}
 
+	private createWebSocket(host: string, port: number, connected: (webSocket: WebSocket) => void) {
+		const webSocket = new WebSocket(`ws://${host}:${port}/ws`)
+
+		const reconnect = () => {
+			setTimeout(() => this.createWebSocket(host, port, connected), 2000)
+		}
+
+		webSocket.on('open', () => {
+			console.info('Web Socket connected')
+			connected(webSocket)
+		})
+
+		webSocket.on('message', (data: Buffer) => {
+			const event = JSON.parse(data.toString()) as MessageEvent
+
+			if (isNotificationEvent(event)) {
+				this.showNotification(event)
+			} else if (isConfirmationEvent(event)) {
+				this.showConfirmation(event)
+			} else if (event.eventName) {
+				this.dispatchEvent(event)
+			} else {
+				console.warn('invalid message event', event)
+			}
+		})
+
+		webSocket.on('close', (code, reason) => {
+			console.warn('Web Socket closed', code, reason.toString())
+			reconnect()
+		})
+
+		webSocket.on('error', () => {
+			console.error('Web Socket error')
+		})
+
+		return webSocket
+	}
+
 	async createMainWindow(apiProcess?: ChildProcessWithoutNullStreams, port: number = this.port, host: string = this.host) {
 		this.port = port
 		this.host = host
@@ -216,39 +254,8 @@ export class WindowManager {
 		const open: OpenWindow = { id: 'home', path: 'home', preference: {} }
 		const appWindow = await this.createWindow(open)
 
-		const webSocket = new Client({
-			brokerURL: `ws://${host}:${port}/ws`,
-			onConnect: () => {
-				webSocket.subscribe('NEBULOSA.EVENT', (message) => {
-					const event = JSON.parse(message.body) as MessageEvent
+		this.createWebSocket(host, port, (webSocket) => (appWindow.webSocket = webSocket))
 
-					if (isNotificationEvent(event)) {
-						this.showNotification(event)
-					} else if (isConfirmationEvent(event)) {
-						this.showConfirmation(event)
-					} else if (event.eventName) {
-						this.dispatchEvent(event)
-					} else {
-						console.warn('invalid message event', event)
-					}
-				})
-
-				console.info('Web Socket connected')
-			},
-			onDisconnect: () => {
-				console.warn('Web Socket disconnected')
-			},
-			onWebSocketClose: () => {
-				console.warn('Web Socket closed')
-			},
-			onWebSocketError: () => {
-				console.error('Web Socket error')
-			},
-		})
-
-		webSocket.activate()
-
-		appWindow.webSocket = webSocket
 		appWindow.apiProcess = apiProcess
 	}
 

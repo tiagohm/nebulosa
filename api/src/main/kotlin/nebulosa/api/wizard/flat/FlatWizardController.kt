@@ -1,27 +1,37 @@
 package nebulosa.api.wizard.flat
 
-import jakarta.validation.Valid
-import nebulosa.indi.device.camera.Camera
-import org.springframework.web.bind.annotation.*
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.bodyAsClass
+import nebulosa.api.connection.ConnectionService
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.valid
 
-@RestController
-@RequestMapping("flat-wizard")
 class FlatWizardController(
+    app: Javalin,
     private val flatWizardService: FlatWizardService,
+    private val connectionService: ConnectionService,
 ) {
 
-    @PutMapping("{camera}/start")
-    fun start(camera: Camera, @RequestBody @Valid body: FlatWizardRequest) {
+    init {
+        app.put("flat-wizard/{camera}/start", ::start)
+        app.put("flat-wizard/{camera}/stop", ::stop)
+        app.get("flat-wizard/{camera}/status", ::status)
+    }
+
+    private fun start(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
+        val body = ctx.bodyAsClass<FlatWizardRequest>().valid()
         flatWizardService.start(camera, body)
     }
 
-    @PutMapping("{camera}/stop")
-    fun stop(camera: Camera) {
+    private fun stop(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
         flatWizardService.stop(camera)
     }
 
-    @GetMapping("{camera}/status")
-    fun status(camera: Camera): FlatWizardEvent? {
-        return flatWizardService.status(camera)
+    private fun status(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
+        flatWizardService.status(camera)?.also(ctx::json)
     }
 }

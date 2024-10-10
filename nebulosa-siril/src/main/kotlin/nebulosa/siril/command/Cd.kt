@@ -1,8 +1,8 @@
 package nebulosa.siril.command
 
-import nebulosa.common.concurrency.latch.CountUpDownLatch
-import nebulosa.common.exec.CommandLineListener
 import nebulosa.siril.command.SirilCommand.Companion.SCRIPT_EXECUTION_FAILED
+import nebulosa.util.concurrency.latch.CountUpDownLatch
+import nebulosa.util.exec.CommandLineListener
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean

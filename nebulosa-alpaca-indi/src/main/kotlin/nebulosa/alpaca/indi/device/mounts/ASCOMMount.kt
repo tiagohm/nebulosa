@@ -270,7 +270,7 @@ data class ASCOMMount(
         longitude = 0.0
         latitude = 0.0
         elevation = 0.0
-        dateTime = OffsetDateTime.now(SystemClock)!!
+        dateTime = OffsetDateTime.now(SystemClock)
 
         axisRates.clear()
     }
@@ -425,7 +425,7 @@ data class ASCOMMount(
 
     private fun processDateTime() {
         service.utcDate(device.number).doRequest {
-            dateTime = it.value.atOffset(ZoneOffset.UTC)
+            dateTime = it.value
             sender.fireOnEventReceived(MountTimeChanged(this))
         }
     }

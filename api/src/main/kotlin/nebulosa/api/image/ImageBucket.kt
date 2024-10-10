@@ -5,15 +5,13 @@ import nebulosa.image.Image
 import nebulosa.log.loggerFor
 import nebulosa.platesolver.PlateSolution
 import nebulosa.xisf.xisf
-import org.springframework.stereotype.Component
 import java.nio.file.Path
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.concurrent.timer
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.extension
 
-@Component
-class ImageBucket : AutoCloseable {
+class ImageBucket(scheduledExecutorService: ScheduledExecutorService) {
 
     data class OpenedImage(
         @JvmField var image: Image? = null,
@@ -23,7 +21,10 @@ class ImageBucket : AutoCloseable {
     )
 
     private val bucket = ConcurrentHashMap<Path, OpenedImage>(8)
-    private val timer = timer("Image Bucket Timer", true, IMAGES_MAX_TIME, IMAGES_MAX_TIME, ::deleteUnusedImages)
+
+    init {
+        scheduledExecutorService.scheduleAtFixedRate(::deleteUnusedImages, IMAGE_TIMEOUT, IMAGE_TIMEOUT, TimeUnit.MILLISECONDS)
+    }
 
     @Synchronized
     fun put(path: Path, image: Image, solution: PlateSolution? = null, debayer: Boolean = true): OpenedImage {
@@ -82,17 +83,12 @@ class ImageBucket : AutoCloseable {
         return bucket.any { it.value.solution === solution }
     }
 
-    override fun close() {
-        timer.cancel()
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    private fun deleteUnusedImages(task: TimerTask) {
+    private fun deleteUnusedImages() {
         val currentTime = System.currentTimeMillis()
 
         synchronized(this) {
             for ((path, image) in bucket) {
-                if (image.image != null && currentTime - image.openedAt >= IMAGES_MAX_TIME) {
+                if (image.image != null && currentTime - image.openedAt >= IMAGE_TIMEOUT) {
                     image.image = null
                     LOG.info("image at {} has been disposed", path)
                 }
@@ -102,7 +98,7 @@ class ImageBucket : AutoCloseable {
 
     companion object {
 
-        private const val IMAGES_MAX_TIME = 1000 * 60 * 5L // 5 min
+        private const val IMAGE_TIMEOUT = 1000 * 60 * 5L // 5 min
 
         @JvmStatic private val LOG = loggerFor<ImageBucket>()
     }

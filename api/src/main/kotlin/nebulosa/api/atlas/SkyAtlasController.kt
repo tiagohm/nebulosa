@@ -1,156 +1,176 @@
 package nebulosa.api.atlas
 
-import jakarta.servlet.http.HttpServletResponse
-import jakarta.validation.Valid
-import jakarta.validation.constraints.Min
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Positive
-import nebulosa.api.beans.converters.location.LocationParam
-import nebulosa.api.beans.converters.time.DateAndTimeParam
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.queryParamsAsClass
+import nebulosa.api.javalin.*
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.nova.astrometry.Constellation
+import nebulosa.skycatalog.SkyObject
 import nebulosa.skycatalog.SkyObjectType
-import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.*
-import java.time.LocalDate
 import java.time.LocalDateTime
 
-@Validated
-@RestController
-@RequestMapping("sky-atlas")
 class SkyAtlasController(
+    app: Javalin,
     private val skyAtlasService: SkyAtlasService,
+    private val satelliteRepository: SatelliteRepository,
 ) {
 
-    @GetMapping("sun/image")
-    fun imageOfSun(response: HttpServletResponse) {
-        skyAtlasService.imageOfSun(response)
+    init {
+        app.get("sky-atlas/sun/image", ::imageOfSun)
+        app.get("sky-atlas/sun/position", ::positionOfSun)
+        app.get("sky-atlas/sun/altitude-points", ::altitudePointsOfSun)
+        app.get("sky-atlas/moon/position", ::positionOfMoon)
+        app.get("sky-atlas/moon/altitude-points", ::altitudePointsOfMoon)
+        app.get("sky-atlas/moon/phase", ::moonPhase)
+        app.get("sky-atlas/twilight", ::twilight)
+        app.get("sky-atlas/planets/{code}/position", ::positionOfPlanet)
+        app.get("sky-atlas/planets/{code}/altitude-points", ::altitudePointsOfPlanet)
+        app.get("sky-atlas/minor-planets", ::searchMinorPlanet)
+        app.get("sky-atlas/minor-planets/close-approaches", ::closeApproachesForMinorPlanets)
+        app.get("sky-atlas/sky-objects", ::searchSkyObject)
+        app.get("sky-atlas/sky-objects/types", ::skyObjectTypes)
+        app.get("sky-atlas/sky-objects/{id}/position", ::positionOfSkyObject)
+        app.get("sky-atlas/sky-objects/{id}/altitude-points", ::altitudePointsOfSkyObject)
+        app.get("sky-atlas/satellites/", ::searchSatellites)
+        app.get("sky-atlas/satellites/{id}/position", ::positionOfSatellite)
+        app.get("sky-atlas/satellites/{id}/altitude-points", ::altitudePointsOfSatellite)
     }
 
-    @GetMapping("sun/position")
-    fun positionOfSun(
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
-    ) = skyAtlasService.positionOfSun(location, dateTime, fast)
+    private fun imageOfSun(ctx: Context) {
+        skyAtlasService.imageOfSun(ctx.res())
+    }
 
-    @GetMapping("sun/altitude-points")
-    fun altitudePointsOfSun(
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
-        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
-    ) = skyAtlasService.altitudePointsOfSun(location, dateTime, stepSize, fast)
+    private fun positionOfSun(ctx: Context) {
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        val fast = ctx.queryParam("fast")?.toBoolean() ?: false
+        ctx.json(skyAtlasService.positionOfSun(location, dateTime, fast))
+    }
 
-    @GetMapping("moon/position")
-    fun positionOfMoon(
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
-    ) = skyAtlasService.positionOfMoon(location, dateTime, fast)
+    private fun altitudePointsOfSun(ctx: Context) {
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        val stepSize = ctx.queryParam("stepSize")?.toInt()?.min(1) ?: 1
+        val fast = ctx.queryParam("fast")?.toBoolean() ?: false
+        ctx.json(skyAtlasService.altitudePointsOfSun(location, dateTime, stepSize, fast))
+    }
 
-    @GetMapping("moon/altitude-points")
-    fun altitudePointsOfMoon(
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
-        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
-    ) = skyAtlasService.altitudePointsOfMoon(location, dateTime, stepSize, fast)
+    private fun positionOfMoon(ctx: Context) {
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        val fast = ctx.queryParam("fast")?.toBoolean() ?: false
+        ctx.json(skyAtlasService.positionOfMoon(location, dateTime, fast))
+    }
 
-    @GetMapping("planets/{code}/position")
-    fun positionOfPlanet(
-        @PathVariable code: String,
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
-    ) = skyAtlasService.positionOfPlanet(location, code, dateTime, fast)
+    private fun altitudePointsOfMoon(ctx: Context) {
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        val stepSize = ctx.queryParam("stepSize")?.toInt()?.min(1) ?: 1
+        val fast = ctx.queryParam("fast")?.toBoolean() ?: false
+        ctx.json(skyAtlasService.altitudePointsOfMoon(location, dateTime, stepSize, fast))
+    }
 
-    @GetMapping("planets/{code}/altitude-points")
-    fun altitudePointsOfPlanet(
-        @PathVariable code: String,
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
-        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
-    ) = skyAtlasService.altitudePointsOfPlanet(location, code, dateTime, stepSize, fast)
+    private fun positionOfPlanet(ctx: Context) {
+        val code = ctx.pathParam("code")
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        val fast = ctx.queryParam("fast")?.toBoolean() ?: false
+        ctx.json(skyAtlasService.positionOfPlanet(location, code, dateTime, fast))
+    }
 
-    @GetMapping("minor-planets")
-    fun searchMinorPlanet(@RequestParam @Valid @NotBlank text: String) = skyAtlasService.searchMinorPlanet(text)
+    private fun altitudePointsOfPlanet(ctx: Context) {
+        val code = ctx.pathParam("code")
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        val stepSize = ctx.queryParam("stepSize")?.toInt()?.min(1) ?: 1
+        val fast = ctx.queryParam("fast")?.toBoolean() ?: false
+        ctx.json(skyAtlasService.altitudePointsOfPlanet(location, code, dateTime, stepSize, fast))
+    }
 
-    @GetMapping("minor-planets/close-approaches")
-    fun closeApproachesForMinorPlanets(
-        @RequestParam(required = false, defaultValue = "7") @Valid @Positive days: Long,
-        @RequestParam(required = false, defaultValue = "10") @Valid @Positive distance: Double,
-        @DateAndTimeParam(nullable = true) dateTime: LocalDate?,
-    ) = skyAtlasService.closeApproachesForMinorPlanets(days, distance, dateTime)
+    private fun searchMinorPlanet(ctx: Context) {
+        val text = ctx.queryParam("text").notNull().notBlank()
+        ctx.json(skyAtlasService.searchMinorPlanet(text))
+    }
 
-    @GetMapping("sky-objects/{id}/position")
-    fun positionOfSkyObject(
-        @PathVariable id: Long,
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-    ) = skyAtlasService.positionOfSkyObject(location, id, dateTime)
+    private fun closeApproachesForMinorPlanets(ctx: Context) {
+        val days = ctx.queryParam("days")?.toLong()?.positive() ?: 7L
+        val distance = ctx.queryParam("distance")?.toDouble()?.positive() ?: 10.0
+        val date = ctx.localDateOrNull()
+        ctx.json(skyAtlasService.closeApproachesForMinorPlanets(days, distance, date))
+    }
 
-    @GetMapping("sky-objects/{id}/altitude-points")
-    fun altitudePointsOfSkyObject(
-        @PathVariable id: Long,
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfSkyObject(location, id, dateTime, stepSize)
+    private fun positionOfSkyObject(ctx: Context) {
+        val id = ctx.pathParam("id").toLong().positive()
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        ctx.json(skyAtlasService.positionOfSkyObject(location, id, dateTime))
+    }
 
-    @GetMapping("sky-objects")
-    fun searchSkyObject(
-        @RequestParam(required = false, defaultValue = "") text: String,
-        @RequestParam(required = false, defaultValue = "") rightAscension: String,
-        @RequestParam(required = false, defaultValue = "") declination: String,
-        @RequestParam(required = false, defaultValue = "0.0") radius: Double,
-        @RequestParam(required = false) constellation: Constellation?,
-        @RequestParam(required = false, defaultValue = "-99.0") magnitudeMin: Double,
-        @RequestParam(required = false, defaultValue = "99.0") magnitudeMax: Double,
-        @RequestParam(required = false) type: SkyObjectType?,
-        @RequestParam(required = false, defaultValue = "0") id: Long,
-    ) = skyAtlasService.searchSkyObject(
-        text, rightAscension.hours, declination.deg, radius.deg,
-        constellation, magnitudeMin, magnitudeMax, type, id,
-    )
+    private fun altitudePointsOfSkyObject(ctx: Context) {
+        val id = ctx.pathParam("id").toLong().positive()
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        val stepSize = ctx.queryParam("stepSize")?.toInt()?.min(1) ?: 1
+        ctx.json(skyAtlasService.altitudePointsOfSkyObject(location, id, dateTime, stepSize))
+    }
 
-    @GetMapping("sky-objects/types")
-    fun skyObjectTypes() = skyAtlasService.objectTypes
+    private fun searchSkyObject(ctx: Context) {
+        val text = ctx.queryParam("text") ?: ""
+        val rightAscension = ctx.queryParam("rightAscension") ?: ""
+        val declination = ctx.queryParam("declination") ?: ""
+        val radius = ctx.queryParam("radius")?.toDouble() ?: 0.0
+        val constellation = ctx.queryParam("constellation")?.let(Constellation::valueOf)
+        val magnitudeMin = ctx.queryParam("magnitudeMin")?.toDouble() ?: SkyObject.MAGNITUDE_MIN
+        val magnitudeMax = ctx.queryParam("magnitudeMax")?.toDouble() ?: SkyObject.MAGNITUDE_MAX
+        val type = ctx.queryParam("type")?.let(SkyObjectType::valueOf)
+        val id = ctx.queryParam("id")?.toLong() ?: 0L
 
-    @GetMapping("satellites/{satellite}/position")
-    fun positionOfSatellite(
-        satellite: SatelliteEntity,
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-    ) = skyAtlasService.positionOfSatellite(location, satellite, dateTime)
+        val result = skyAtlasService.searchSkyObject(
+            text, rightAscension.hours, declination.deg, radius.deg,
+            constellation, magnitudeMin, magnitudeMax, type, id,
+        )
 
-    @GetMapping("satellites/{satellite}/altitude-points")
-    fun altitudePointsOfSatellite(
-        satellite: SatelliteEntity,
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) stepSize: Int,
-    ) = skyAtlasService.altitudePointsOfSatellite(location, satellite, dateTime, stepSize)
+        ctx.json(result)
+    }
 
-    @GetMapping("satellites")
-    fun searchSatellites(
-        @RequestParam(required = false, defaultValue = "") text: String,
-        @RequestParam(name = "group", required = false) groups: List<SatelliteGroupType>?,
-        @RequestParam(required = false, defaultValue = "0") id: Long,
-    ) = skyAtlasService.searchSatellites(text, groups ?: emptyList(), id)
+    private fun skyObjectTypes(ctx: Context) {
+        ctx.json(skyAtlasService.objectTypes)
+    }
 
-    @GetMapping("twilight")
-    fun twilight(
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-        @RequestParam(required = false, defaultValue = "false") fast: Boolean,
-    ) = skyAtlasService.twilight(location, dateTime, fast)
+    private fun positionOfSatellite(ctx: Context) {
+        val satellite = satelliteRepository.find(ctx.pathParam("id").toLong().positive()) ?: return
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        ctx.json(skyAtlasService.positionOfSatellite(location, satellite, dateTime))
+    }
 
-    @GetMapping("moon/phase")
-    fun moonPhase(
-        @LocationParam location: Location,
-        @DateAndTimeParam dateTime: LocalDateTime,
-    ) = skyAtlasService.moonPhase(location, dateTime)
+    private fun altitudePointsOfSatellite(ctx: Context) {
+        val satellite = satelliteRepository.find(ctx.pathParam("id").toLong().positive()) ?: return
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        val stepSize = ctx.queryParam("stepSize")?.toInt()?.min(1) ?: 1
+        ctx.json(skyAtlasService.altitudePointsOfSatellite(location, satellite, dateTime, stepSize))
+    }
+
+    private fun searchSatellites(ctx: Context) {
+        val text = ctx.queryParam("text") ?: ""
+        val id = ctx.queryParam("id")?.toLong() ?: 0L
+        val groups = ctx.queryParamsAsClass<String>("groups").allowNullable().get()?.map(SatelliteGroupType::valueOf)
+        ctx.json(skyAtlasService.searchSatellites(text, groups ?: emptyList(), id))
+    }
+
+    private fun twilight(ctx: Context) {
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        val fast = ctx.queryParam("fast")?.toBoolean() ?: false
+        ctx.json(skyAtlasService.twilight(location, dateTime, fast))
+    }
+
+    private fun moonPhase(ctx: Context) {
+        val location = ctx.location().notNull()
+        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        skyAtlasService.moonPhase(location, dateTime)?.also(ctx::json)
+    }
 }

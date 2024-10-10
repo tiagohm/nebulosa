@@ -2,10 +2,10 @@ package nebulosa.astap.stardetector
 
 import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
-import nebulosa.common.exec.commandLine
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
+import nebulosa.util.exec.commandLine
 import java.io.InputStreamReader
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
@@ -38,7 +38,7 @@ data class AstapStarDetector(
 
         try {
             cmd.start()
-            LOG.info("astap exited. code={}", cmd.get())
+            LOG.debug("astap exited. code={}", cmd.get())
         } catch (e: Throwable) {
             LOG.error("astap failed", e)
             return emptyList()

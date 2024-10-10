@@ -75,7 +75,7 @@ internal open class AxisStats {
         get() = guidingEntries.size
 
     val lastEntry
-        get() = if (count > 0) guidingEntries.last!! else StarDisplacement.ZERO
+        get() = if (count > 0) guidingEntries.last() else StarDisplacement.ZERO
 
     /**
      * Adds a guiding info element of relative time,

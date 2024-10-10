@@ -1,70 +1,72 @@
 package nebulosa.api.image
 
-import jakarta.servlet.http.HttpServletResponse
-import jakarta.validation.Valid
-import nebulosa.api.atlas.Location
-import nebulosa.api.beans.converters.location.LocationParam
-import nebulosa.indi.device.camera.Camera
-import org.hibernate.validator.constraints.Range
-import org.springframework.http.HttpHeaders
-import org.springframework.web.bind.annotation.*
-import java.nio.file.Path
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.bodyAsClass
+import nebulosa.api.connection.ConnectionService
+import nebulosa.api.javalin.*
+import java.io.ByteArrayInputStream
 
-@RestController
-@RequestMapping("image")
 class ImageController(
+    app: Javalin,
     private val imageService: ImageService,
+    private val connectionService: ConnectionService,
 ) {
 
-    @PostMapping
-    fun openImage(
-        @RequestParam path: Path,
-        camera: Camera?,
-        @RequestBody transformation: ImageTransformation,
-        output: HttpServletResponse,
-    ) = imageService.openImage(path, camera, transformation, output)
+    init {
+        app.post("image", ::openImage)
+        app.delete("image", ::closeImage)
+        app.put("image/save-as", ::saveImageAs)
+        app.put("image/annotations", ::annotations)
+        app.get("image/coordinate-interpolation", ::coordinateInterpolation)
+        app.get("image/histogram", ::histogram)
+        app.get("image/fov-cameras", ::fovCameras)
+        app.get("image/fov-telescopes", ::fovTelescopes)
+    }
 
-    @DeleteMapping
-    fun closeImage(@RequestParam path: Path) {
+    private fun openImage(ctx: Context) {
+        val path = ctx.queryParam("path").notNull().path().exists()
+        val camera = ctx.queryParam("camera")?.ifBlank { null }?.let(connectionService::camera)
+        val transformation = ctx.bodyAsClass<ImageTransformation>()
+        imageService.openImage(path, camera, transformation, ctx.res())
+    }
+
+    private fun closeImage(ctx: Context) {
+        val path = ctx.queryParam("path").notNull().path()
         return imageService.closeImage(path)
     }
 
-    @PutMapping("save-as")
-    fun saveImageAs(
-        @RequestParam path: Path,
-        camera: Camera?,
-        @RequestBody save: SaveImage
-    ) {
-        imageService.saveImageAs(path, save, camera)
+    private fun saveImageAs(ctx: Context) {
+        val path = ctx.queryParam("path").notNull().path()
+        val save = ctx.bodyAsClass<SaveImage>()
+        imageService.saveImageAs(path, save)
     }
 
-    @PutMapping("annotations")
-    fun annotationsOfImage(
-        @RequestParam path: Path,
-        @RequestBody request: AnnotateImageRequest,
-        @LocationParam location: Location? = null,
-    ) = imageService.annotations(path, request, location)
-
-    @GetMapping("coordinate-interpolation")
-    fun coordinateInterpolation(@RequestParam path: Path): CoordinateInterpolation? {
-        return imageService.coordinateInterpolation(path)
+    private fun annotations(ctx: Context) {
+        val path = ctx.queryParam("path").notNull().path().exists()
+        val request = ctx.bodyAsClass<AnnotateImageRequest>()
+        val location = ctx.location()
+        ctx.json(imageService.annotations(path, request, location))
     }
 
-    @GetMapping("histogram")
-    fun histogram(
-        @RequestParam path: Path,
-        @RequestParam(required = false, defaultValue = "16") @Valid @Range(min = 8, max = 16) bitLength: Int,
-    ) = imageService.histogram(path, bitLength)
-
-    @GetMapping("fov-cameras")
-    fun fovCameras(response: HttpServletResponse) {
-        response.addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-        return response.outputStream.write(imageService.fovCameras)
+    private fun coordinateInterpolation(ctx: Context) {
+        val path = ctx.queryParam("path").notNull().path().exists()
+        imageService.coordinateInterpolation(path)?.also(ctx::json)
     }
 
-    @GetMapping("fov-telescopes")
-    fun fovTelescopes(response: HttpServletResponse) {
-        response.addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-        return response.outputStream.write(imageService.fovTelescopes)
+    private fun histogram(ctx: Context) {
+        val path = ctx.queryParam("path").notNull().path().exists()
+        val bitLength = ctx.queryParam("bitLength")?.toInt()?.range(8, 16) ?: 16
+        ctx.json(imageService.histogram(path, bitLength))
+    }
+
+    private fun fovCameras(ctx: Context) {
+        val bytes = imageService.fovCameras
+        ctx.writeSeekableStream(ByteArrayInputStream(bytes), "application/json", bytes.size.toLong())
+    }
+
+    private fun fovTelescopes(ctx: Context) {
+        val bytes = imageService.fovTelescopes
+        ctx.writeSeekableStream(ByteArrayInputStream(bytes), "application/json", bytes.size.toLong())
     }
 }

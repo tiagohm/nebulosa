@@ -99,19 +99,6 @@
 							<label>Initial Offset Steps ({{ request.initialOffsetSteps * request.stepSize }})</label>
 						</p-floatLabel>
 					</div>
-					<div class="col-3 align-items-center">
-						<p-floatLabel>
-							<p-inputNumber
-								styleClass="p-inputtext-sm border-0 max-w-full"
-								[(ngModel)]="request.totalNumberOfAttempts"
-								[showButtons]="true"
-								[min]="1"
-								[max]="10"
-								(ngModelChange)="savePreference()"
-								spinnableNumber />
-							<label>Attempts</label>
-						</p-floatLabel>
-					</div>
 					<div class="col-5 align-items-center">
 						<p-floatLabel class="w-full">
 							<p-dropdown
@@ -144,7 +131,7 @@
 								styleClass="p-inputtext-sm border-0 max-w-full"
 								[(ngModel)]="request.rSquaredThreshold"
 								[showButtons]="true"
-								[min]="0.1"
+								[min]="0"
 								[max]="1"
 								[step]="0.1"
 								(ngModelChange)="savePreference()"

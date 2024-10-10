@@ -1,17 +1,11 @@
 package nebulosa.api.atlas.ephemeris
 
-import nebulosa.horizons.HorizonsElement
-import nebulosa.horizons.HorizonsQuantity
-import nebulosa.horizons.HorizonsService
-import nebulosa.horizons.NonUniqueObjectException
-import nebulosa.horizons.ObservingSite
+import nebulosa.horizons.*
 import nebulosa.log.loggerFor
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.sbd.SmallBody
-import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
-@Service
 class HorizonsEphemerisProvider(private val horizonsService: HorizonsService) : CachedEphemerisProvider<Any>() {
 
     override fun compute(

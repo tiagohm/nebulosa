@@ -4,9 +4,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.10")
-        classpath("org.jetbrains.kotlin:kotlin-allopen:2.0.10")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.20")
         classpath("io.objectbox:objectbox-gradle-plugin:4.0.2")
+        classpath("com.gradleup.shadow:shadow-gradle-plugin:8.3.3")
     }
 
     repositories {

@@ -1,7 +1,7 @@
 package nebulosa.pixinsight.script
 
-import nebulosa.common.exec.commandLine
 import nebulosa.log.loggerFor
+import nebulosa.util.exec.commandLine
 import java.nio.file.Path
 
 data class PixInsightScriptRunner(private val executablePath: Path) {
@@ -13,7 +13,7 @@ data class PixInsightScriptRunner(private val executablePath: Path) {
             DEFAULT_ARGS.forEach(::putArg)
         }
 
-        LOG.info("running {} script: {}", script::class.simpleName, commandLine.command)
+        LOG.debug("running {} script: {}", script::class.simpleName, commandLine.command)
 
         script.startCommandLine(commandLine)
     }

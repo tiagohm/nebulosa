@@ -5,20 +5,22 @@ import nebulosa.api.preference.PreferenceService
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-@Component
 class SatelliteUpdateTask(
     private val httpClient: OkHttpClient,
-    private val preferenceService: PreferenceService,
     private val satelliteRepository: SatelliteRepository,
+    private val preferenceService: PreferenceService,
     private val messageService: MessageService,
+    scheduledExecutorService: ScheduledExecutorService,
 ) : Runnable {
 
-    @Scheduled(fixedDelay = UPDATE_INTERVAL, timeUnit = TimeUnit.MILLISECONDS)
+    init {
+        scheduledExecutorService.schedule(this, 10L, TimeUnit.SECONDS)
+    }
+
     override fun run() {
         checkIsOutOfDateAndUpdate()
     }

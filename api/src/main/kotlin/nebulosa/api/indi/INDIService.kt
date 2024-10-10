@@ -3,12 +3,8 @@ package nebulosa.api.indi
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.PropertyVector
 import nebulosa.indi.protocol.PropertyType
-import org.springframework.stereotype.Service
 
-@Service("indiService")
-class INDIService(
-    private val indiEventHandler: INDIEventHandler,
-) {
+class INDIService(private val indiEventHandler: INDIEventHandler) {
 
     fun registerDeviceToSendMessage(device: Device) {
         indiEventHandler.registerDevice(device)

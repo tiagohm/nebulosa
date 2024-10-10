@@ -1,57 +1,34 @@
 package nebulosa.api
 
+import com.github.rvesse.airline.SingleCommand
 import com.sun.jna.Platform
-import nebulosa.time.SystemClock
-import org.springframework.boot.runApplication
 import java.nio.file.Path
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.swing.filechooser.FileSystemView
+import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.exists
-import kotlin.io.path.listDirectoryEntries
+
+const val APP_DIR_KEY = "app.dir"
 
 fun initAppDirectory(): Path {
     val appPath = when {
-        Platform.isLinux() -> Path.of(System.getProperty("user.home"), ".nebulosa")
-        Platform.isWindows() -> Path.of(FileSystemView.getFileSystemView().defaultDirectory.path, "Nebulosa")
+        Platform.isLinux() -> Path(System.getProperty("user.home"), ".nebulosa")
+        Platform.isWindows() -> Path(FileSystemView.getFileSystemView().defaultDirectory.path, "Nebulosa")
         else -> throw IllegalStateException("unsupported operating system")
     }
 
-    appPath.createDirectories()
-    System.setProperty("app.dir", "$appPath")
     return appPath
-}
-
-private fun Path.clearLogIfPastDays(days: Long = 7L) {
-    if (exists()) {
-        val pastDays = LocalDate.now(SystemClock).minusDays(days)
-
-        for (entry in listDirectoryEntries("nebulosa-*.log")) {
-            val logDate = entry.fileName.toString()
-                .replace("nebulosa-", "")
-                .replace(".log", "")
-                .let { runCatching { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }.getOrNull() }
-                ?: continue
-
-            if (pastDays.isAfter(logDate)) {
-                entry.deleteIfExists()
-            }
-        }
-    }
+        .createDirectories()
+        .also { System.setProperty(APP_DIR_KEY, "$it") }
 }
 
 fun main(args: Array<String>) {
-    with(initAppDirectory()) {
-        Path.of("$this", "logs").createDirectories().clearLogIfPastDays()
-        Path.of("$this", "data").createDirectories().also { System.setProperty("DATA_PATH", "$it") }
-    }
+    initAppDirectory()
 
     // Sets default locale to en_US.
     Locale.setDefault(Locale.ENGLISH)
 
-    // Run the Spring Boot application.
-    runApplication<Nebulosa>(*args)
+    val parser = SingleCommand.singleCommand(Nebulosa::class.java)
+    val nebulosa = parser.parse(*args)
+    nebulosa.run()
 }

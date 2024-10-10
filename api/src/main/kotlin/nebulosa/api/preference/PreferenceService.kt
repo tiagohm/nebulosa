@@ -1,9 +1,7 @@
 package nebulosa.api.preference
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.stereotype.Service
 
-@Service
 class PreferenceService(
     private val preferenceRepository: PreferenceRepository,
     private val objectMapper: ObjectMapper,
@@ -17,13 +15,13 @@ class PreferenceService(
 
     fun <T> getJSON(key: String, type: Class<out T>): T? = this[key]?.value?.let { objectMapper.readValue(it, type) }
 
-    final inline fun <reified T> getJSON(key: String) = getJSON(key, T::class.java)
+    inline fun <reified T> getJSON(key: String) = getJSON(key, T::class.java)
 
     fun getBoolean(key: String) = getJSON(key, Boolean::class.java)
 
     fun getText(key: String) = getJSON(key, String::class.java)
 
-    final inline fun <reified T : Enum<T>> getEnum(key: String) = getText(key)?.takeIf { it.isNotBlank() }?.let { enumValueOf<T>(it) }
+    inline fun <reified T : Enum<T>> getEnum(key: String) = getText(key)?.takeIf { it.isNotBlank() }?.let { enumValueOf<T>(it) }
 
     fun getInt(key: String) = getJSON(key, Int::class.java)
 

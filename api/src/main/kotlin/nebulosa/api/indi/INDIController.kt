@@ -1,63 +1,74 @@
 package nebulosa.api.indi
 
-import jakarta.validation.Valid
-import nebulosa.indi.device.Device
-import nebulosa.indi.device.PropertyVector
-import org.springframework.web.bind.annotation.*
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.bodyAsClass
+import nebulosa.api.connection.ConnectionService
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.valid
 
-@RestController
-@RequestMapping("indi")
 class INDIController(
+    app: Javalin,
     private val indiService: INDIService,
+    private val connectionService: ConnectionService,
 ) {
 
-    @GetMapping("{device}")
-    fun device(device: Device): Device {
-        return device
+    init {
+        app.get("indi/{device}", ::device)
+        app.put("indi/{device}/connect", ::connect)
+        app.put("indi/{device}/disconnect", ::disconnect)
+        app.get("indi/{device}/properties", ::properties)
+        app.put("indi/{device}/send", ::sendProperty)
+        app.get("indi/{device}/log", ::deviceLog)
+        app.put("indi/{device}/listen", ::listen)
+        app.put("indi/{device}/unlisten", ::unlisten)
+        app.get("indi/log", ::log)
     }
 
-    @PutMapping("{device}/connect")
-    fun connect(device: Device) {
+    private fun device(ctx: Context) {
+        val device = connectionService.device(ctx.pathParam("device")).notNull()
+        ctx.json(device)
+    }
+
+    private fun connect(ctx: Context) {
+        val device = connectionService.device(ctx.pathParam("device")) ?: return
         indiService.connect(device)
     }
 
-    @PutMapping("{device}/disconnect")
-    fun disconnect(device: Device) {
+    private fun disconnect(ctx: Context) {
+        val device = connectionService.device(ctx.pathParam("device")) ?: return
         indiService.disconnect(device)
     }
 
-    @GetMapping("{device}/properties")
-    fun properties(device: Device): Collection<PropertyVector<*, *>> {
-        return indiService.properties(device)
+    private fun properties(ctx: Context) {
+        val device = connectionService.device(ctx.pathParam("device")).notNull()
+        ctx.json(indiService.properties(device))
     }
 
-    @PutMapping("{device}/send")
-    fun sendProperty(
-        device: Device,
-        @RequestBody @Valid body: INDISendProperty,
-    ) {
-        return indiService.sendProperty(device, body)
+    private fun sendProperty(ctx: Context) {
+        val device = connectionService.device(ctx.pathParam("device")) ?: return
+        val body = ctx.bodyAsClass<INDISendProperty>().valid()
+        indiService.sendProperty(device, body)
     }
 
-    @GetMapping("{device}/log")
-    fun log(device: Device): List<String> {
-        return synchronized(device.messages) { device.messages }
+    private fun deviceLog(ctx: Context) {
+        val device = connectionService.device(ctx.pathParam("device")).notNull()
+        ctx.json(synchronized(device.messages) { device.messages })
     }
 
-    @GetMapping("log")
-    fun log(): List<String> {
-        return indiService.messages()
+    private fun log(ctx: Context) {
+        ctx.json(indiService.messages())
     }
 
     @Synchronized
-    @PutMapping("{device}/listen")
-    fun listen(device: Device) {
+    private fun listen(ctx: Context) {
+        val device = connectionService.device(ctx.pathParam("device")) ?: return
         indiService.registerDeviceToSendMessage(device)
     }
 
     @Synchronized
-    @PutMapping("{device}/unlisten")
-    fun unlisten(device: Device) {
+    private fun unlisten(ctx: Context) {
+        val device = connectionService.device(ctx.pathParam("device")) ?: return
         indiService.unregisterDeviceToSendMessage(device)
     }
 }

@@ -21,7 +21,7 @@ abstract class RetrofitService(
     mapper: ObjectMapper? = null,
 ) {
 
-    protected val jsonMapper: ObjectMapper by lazy { mapper ?: DEFAULT_MAPPER.copy() }
+    protected val objectMapper by lazy { mapper ?: DEFAULT_MAPPER }
 
     protected open val converterFactory: Iterable<Converter.Factory>
         get() = emptyList()
@@ -29,23 +29,20 @@ abstract class RetrofitService(
     protected open val callAdaptorFactory: CallAdapter.Factory?
         get() = null
 
-    protected open fun withOkHttpClientBuilder(builder: OkHttpClient.Builder) = Unit
-
-    protected open fun withObjectMapper(mapper: ObjectMapper) = Unit
+    protected open fun withOkHttpClient(builder: OkHttpClient.Builder) = Unit
 
     protected open val retrofit by lazy {
         val builder = Retrofit.Builder()
         builder.baseUrl(url.trim().let { if (it.endsWith("/")) it else "$it/" })
         builder.addConverterFactory(RawAsStringConverterFactory)
         builder.addConverterFactory(RawAsByteArrayConverterFactory)
-        builder.addConverterFactory(EnumToStringConverterFactory(jsonMapper))
+        builder.addConverterFactory(EnumToStringConverterFactory(objectMapper))
         converterFactory.forEach { builder.addConverterFactory(it) }
-        withObjectMapper(jsonMapper)
-        builder.addConverterFactory(JacksonConverterFactory.create(jsonMapper))
+        builder.addConverterFactory(JacksonConverterFactory.create(objectMapper))
         callAdaptorFactory?.also(builder::addCallAdapterFactory)
 
         with((httpClient ?: HTTP_CLIENT).newBuilder()) {
-            withOkHttpClientBuilder(this)
+            withOkHttpClient(this)
             builder.client(build())
         }
 

@@ -5,7 +5,7 @@ import adql.query.operand.function.geometry.BoxFunction
 import nebulosa.math.Angle
 import nebulosa.math.toDegrees
 
-data class Box internal constructor(override val operand: BoxFunction) : Region {
+data class Box(override val operand: BoxFunction) : Region {
 
     constructor(x: Operand<*>, y: Operand<*>, width: Operand<*>, height: Operand<*>)
             : this(BoxFunction(StringConstant("ICRS"), x.operand, y.operand, width.operand, height.operand))

@@ -1,7 +1,5 @@
 package nebulosa.guiding.phd2
 
-import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.guiding.*
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
@@ -11,6 +9,7 @@ import nebulosa.phd2.client.PHD2Client
 import nebulosa.phd2.client.PHD2EventListener
 import nebulosa.phd2.client.commands.*
 import nebulosa.phd2.client.events.*
+import nebulosa.util.concurrency.latch.CountUpDownLatch
 
 class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
 
@@ -193,7 +192,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         repeat(5) {
             try {
                 return client.sendCommandSync(GetLockPosition, 5)
-            } catch (ignored: Throwable) {
+            } catch (_: Throwable) {
                 Thread.sleep(5000)
             }
         }
@@ -208,7 +207,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
             client.sendCommandSync(command)
             refreshShiftLockParams()
             true
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             false
         }
     }
@@ -234,16 +233,14 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         }
     }
 
-    override fun waitForSettle(cancellationToken: CancellationToken) {
+    override fun waitForSettle() {
         try {
-            cancellationToken.listen(settling)
             settling.await(settleTimeout)
-        } catch (e: InterruptedException) {
+        } catch (_: InterruptedException) {
             LOG.warn("PHD2 did not send SettleDone message in expected time")
         } catch (e: Throwable) {
             LOG.warn("an error occurrs while waiting for settle done", e)
         } finally {
-            cancellationToken.unlisten(settling)
             settling.reset()
         }
     }

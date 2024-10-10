@@ -9,7 +9,6 @@ import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.client.device.handler.INDIGuideOutputHandler
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.camera.*
-import nebulosa.indi.device.camera.Camera.Companion.NANO_TO_SECONDS
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.mount.Mount
@@ -38,10 +37,10 @@ internal open class INDICamera(
     @Volatile final override var cfaOffsetX = 0
     @Volatile final override var cfaOffsetY = 0
     @Volatile final override var cfaType = CfaPattern.RGGB
-    @Volatile final override var exposureMin: Duration = Duration.ZERO
-    @Volatile final override var exposureMax: Duration = Duration.ZERO
+    @Volatile final override var exposureMin = 0L
+    @Volatile final override var exposureMax = 0L
     @Volatile final override var exposureState = PropertyState.IDLE
-    @Volatile final override var exposureTime: Duration = Duration.ZERO
+    @Volatile final override var exposureTime = 0L
     @Volatile final override var hasCooler = false
     @Volatile final override var canSetTemperature = false
     @Volatile final override var canSubFrame = false
@@ -143,8 +142,9 @@ internal open class INDICamera(
                             val element = message[if (isGuider) "GUIDER_EXPOSURE_VALUE" else "CCD_EXPOSURE_VALUE"]!!
 
                             if (element is DefNumber) {
-                                exposureMin = Duration.ofNanos((element.min * NANO_TO_SECONDS).toLong())
-                                exposureMax = Duration.ofNanos((element.max * NANO_TO_SECONDS).toLong())
+                                exposureMin = (element.min * MICROS_TO_SECONDS).toLong()
+                                exposureMax = (element.max * MICROS_TO_SECONDS).toLong()
+
                                 sender.fireOnEventReceived(CameraExposureMinMaxChanged(this))
                             }
 
@@ -152,7 +152,7 @@ internal open class INDICamera(
                             exposureState = message.state
 
                             if (exposureState == PropertyState.BUSY || exposureState == PropertyState.OK) {
-                                exposureTime = Duration.ofNanos((element.value * NANO_TO_SECONDS).toLong())
+                                exposureTime = (element.value * MICROS_TO_SECONDS).toLong()
 
                                 sender.fireOnEventReceived(CameraExposureProgressChanged(this))
                             }
@@ -321,7 +321,7 @@ internal open class INDICamera(
 
     override fun offset(value: Int) = Unit
 
-    override fun startCapture(exposureTime: Duration) {
+    override fun startCapture(exposureTime: Long) {
         sendNewSwitch("CCD_TRANSFER_FORMAT", "FORMAT_FITS" to true)
 
         if (exposureState != PropertyState.IDLE) {
@@ -329,7 +329,7 @@ internal open class INDICamera(
             sender.fireOnEventReceived(CameraExposureStateChanged(this))
         }
 
-        val exposureInSeconds = exposureTime.toNanos() / NANO_TO_SECONDS
+        val exposureInSeconds = exposureTime.toDouble() / MICROS_TO_SECONDS
 
         if (this is GuideHead) {
             sendNewNumber("GUIDER_EXPOSURE", "GUIDER_EXPOSURE_VALUE" to exposureInSeconds)
@@ -495,7 +495,8 @@ internal open class INDICamera(
 
     companion object {
 
-        const val GUIDE_HEAD_SUFFIX = "(Guide Head)"
+        private const val GUIDE_HEAD_SUFFIX = "(Guide Head)"
+        private const val MICROS_TO_SECONDS = 1_000_000L
 
         @JvmStatic private val COMPRESSION_FORMATS = arrayOf(".fz", ".gz")
         @JvmStatic private val LOG = loggerFor<INDICamera>()

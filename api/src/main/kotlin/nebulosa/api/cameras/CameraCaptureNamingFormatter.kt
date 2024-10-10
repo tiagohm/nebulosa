@@ -1,6 +1,5 @@
 package nebulosa.api.cameras
 
-import nebulosa.common.concurrency.atomic.Incrementer
 import nebulosa.fits.*
 import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.Camera
@@ -12,6 +11,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.math.AngleFormatter
 import nebulosa.math.format
+import nebulosa.util.concurrency.atomic.Incrementer
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalTime

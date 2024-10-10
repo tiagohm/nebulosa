@@ -1,7 +1,5 @@
 package nebulosa.astap.platesolver
 
-import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.exec.commandLine
 import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsKeyword
 import nebulosa.image.Image
@@ -13,6 +11,8 @@ import nebulosa.math.toHours
 import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
 import nebulosa.platesolver.PlateSolverException
+import nebulosa.util.concurrency.cancellation.CancellationToken
+import nebulosa.util.exec.commandLine
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths

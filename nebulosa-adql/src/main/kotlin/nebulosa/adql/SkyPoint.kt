@@ -5,7 +5,7 @@ import adql.query.operand.function.geometry.PointFunction
 import nebulosa.math.Angle
 import nebulosa.math.toDegrees
 
-data class SkyPoint internal constructor(override val operand: PointFunction) : Region {
+data class SkyPoint(override val operand: PointFunction) : Region {
 
     constructor(x: Operand<*>, y: Operand<*>) : this(PointFunction(StringConstant("ICRS"), x.operand, y.operand))
 

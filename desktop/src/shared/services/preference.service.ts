@@ -103,8 +103,8 @@ export class PreferenceService {
 		return this.create<FlatWizardPreference>(`flatWizard.${camera.name}`, () => structuredClone(DEFAULT_FLAT_WIZARD_PREFERENCE), flatWizardPreferenceWithDefault)
 	}
 
-	autoFocus(camera: Camera) {
-		return this.create<AutoFocusPreference>(`autoFocus.${camera.name}`, () => structuredClone(DEFAULT_AUTO_FOCUS_PREFERENCE), autoFocusPreferenceWithDefault)
+	autoFocus(camera: Camera, focuser: Focuser) {
+		return this.create<AutoFocusPreference>(`autoFocus.${camera.name}.${focuser.name}`, () => structuredClone(DEFAULT_AUTO_FOCUS_PREFERENCE), autoFocusPreferenceWithDefault)
 	}
 
 	sequencer(camera: Camera) {

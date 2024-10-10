@@ -4,11 +4,11 @@ import nebulosa.alpaca.api.AlpacaDeviceService
 import nebulosa.alpaca.api.AlpacaResponse
 import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.indi.client.AlpacaClient
-import nebulosa.common.Resettable
-import nebulosa.common.time.Stopwatch
 import nebulosa.indi.device.*
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import nebulosa.time.SystemClock
+import nebulosa.util.Resettable
+import nebulosa.util.time.Stopwatch
 import retrofit2.Call
 import retrofit2.HttpException
 import java.time.LocalDateTime
@@ -90,30 +90,29 @@ abstract class ASCOMDevice : Device, Resettable {
             val body = response.body()
 
             return if (body == null) {
-                LOG.debug { "response has no body. device=%s, request=%s %s, response=%s".format(name, request.method, request.url, response) }
+                LOG.debug("response has no body. device={}, request={} {}, response={}", name, request.method, request.url, response)
                 null
             } else if (body.errorNumber != 0) {
                 val message = body.errorMessage
 
                 if (message.isNotEmpty()) {
-                    addMessageAndFireEvent("[%s]: %s".format(LocalDateTime.now(), message))
+                    addMessageAndFireEvent("[%s]: %s".format(LocalDateTime.now(SystemClock), message))
                 }
 
-                LOG.debug {
-                    "unsuccessful response. device=%s, request=%s %s, errorNumber=%s, message=%s".format(
-                        name, request.method, request.url, body.errorNumber, body.errorMessage
-                    )
-                }
+                LOG.debug(
+                    "unsuccessful response. device={}, request={} {}, errorNumber={}, message={}",
+                    name, request.method, request.url, body.errorNumber, body.errorMessage
+                )
 
                 null
             } else {
                 body
             }
         } catch (e: HttpException) {
-            LOG.error("unexpected response. device=$name", e)
+            LOG.error("unexpected response. device={}", name, e)
         } catch (e: Throwable) {
             sender.fireOnConnectionClosed()
-            LOG.error("unexpected error. device=$name", e)
+            LOG.error("unexpected error. device={}", name, e)
         }
 
         return null

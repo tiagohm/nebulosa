@@ -23,10 +23,10 @@ import nebulosa.skycatalog.SkyObjectType
 import nebulosa.test.HTTP_CLIENT
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.Executors
 
 class SkyAtlasServiceTest {
 
@@ -239,7 +239,7 @@ class SkyAtlasServiceTest {
             BOX_STORE.close()
         }
 
-        @JvmStatic private val THREAD_POOL_TASK_EXECUTOR = ThreadPoolTaskExecutor().also { it.initialize() }
+        @JvmStatic private val THREAD_POOL_TASK_EXECUTOR = Executors.newSingleThreadExecutor()
         @JvmStatic private val HORIZONS_SERVICE = HorizonsService(httpClient = HTTP_CLIENT)
         @JvmStatic private val HORIZONS_EPHEMERIS_PROVIDER = HorizonsEphemerisProvider(HORIZONS_SERVICE)
         @JvmStatic private val BODY_EPHEMERIS_PROVIDER = BodyEphemerisProvider(THREAD_POOL_TASK_EXECUTOR)
@@ -265,6 +265,7 @@ class SkyAtlasServiceTest {
         @JvmStatic private val SERVICE = SkyAtlasService(
             HORIZONS_EPHEMERIS_PROVIDER, BODY_EPHEMERIS_PROVIDER, SMALL_BODY_DATABASE_SERVICE,
             SATELLITE_REPOSITORY, SIMBAD_ENTITY_REPOSITORY, HTTP_CLIENT, OBJECT_MAPPER, MOON_PHASE_FINDER,
+            Executors.newSingleThreadScheduledExecutor(),
         )
 
         @JvmStatic private val LOCATION = Location("-19.846616".deg, "-43.96872".deg, 852.0.m, -180)

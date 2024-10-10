@@ -1,9 +1,7 @@
 package nebulosa.api.rotators
 
 import nebulosa.indi.device.rotator.Rotator
-import org.springframework.stereotype.Service
 
-@Service
 class RotatorService(private val rotatorEventHub: RotatorEventHub) {
 
     fun connect(rotator: Rotator) {

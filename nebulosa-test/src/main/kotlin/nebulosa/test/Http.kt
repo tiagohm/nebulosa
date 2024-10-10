@@ -1,5 +1,4 @@
 @file:JvmName("Http")
-@file:Suppress("NOTHING_TO_INLINE")
 
 package nebulosa.test
 

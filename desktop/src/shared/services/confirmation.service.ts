@@ -6,7 +6,7 @@ import { ApiService } from './api.service'
 
 @Injectable({ providedIn: 'root' })
 export class ConfirmationService {
-	private readonly keys = new Map<string, string>()
+	private readonly keys = new Set<string>()
 
 	constructor(
 		private readonly angularService: AngularService,
@@ -14,11 +14,7 @@ export class ConfirmationService {
 	) {}
 
 	register(key: string) {
-		this.keys.set(key, '')
-	}
-
-	unregister(key: string) {
-		this.keys.delete(key)
+		this.keys.add(key)
 	}
 
 	has(key: string) {
@@ -28,6 +24,5 @@ export class ConfirmationService {
 	async processConfirmationEvent(event: ConfirmationEvent) {
 		const response = await this.angularService.confirm(event.message)
 		await this.api.confirm(event.idempotencyKey, response === ConfirmEventType.ACCEPT)
-		this.unregister(event.idempotencyKey)
 	}
 }

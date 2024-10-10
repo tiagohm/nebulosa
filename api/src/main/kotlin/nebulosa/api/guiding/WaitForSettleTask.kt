@@ -1,19 +1,23 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.tasks.Task
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.guiding.Guider
+import nebulosa.job.manager.Job
+import nebulosa.job.manager.Task
+import nebulosa.log.debug
 import nebulosa.log.loggerFor
 
 data class WaitForSettleTask(
+    @JvmField val job: Job,
     @JvmField val guider: Guider?,
 ) : Task {
 
-    override fun execute(cancellationToken: CancellationToken) {
-        if (guider != null && guider.isSettling && !cancellationToken.isCancelled) {
-            LOG.info("Wait For Settle started")
-            guider.waitForSettle(cancellationToken)
-            LOG.info("Wait For Settle finished")
+    override fun run() {
+        if (guider != null && guider.isSettling && !job.isCancelled) {
+            LOG.debug { "Wait For Settle started" }
+            job.accept(WaitForSettleStarted(job, this))
+            guider.waitForSettle()
+            job.accept(WaitForSettleFinished(job, this))
+            LOG.debug { "Wait For Settle finished" }
         }
     }
 

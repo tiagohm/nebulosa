@@ -1,4 +1,4 @@
-import { cameraStartCaptureWithDefault, DEFAULT_CAMERA_START_CAPTURE, type CameraCaptureEvent, type CameraStartCapture } from './camera.types'
+import { cameraStartCaptureWithDefault, DEFAULT_CAMERA_START_CAPTURE, type Camera, type CameraCaptureEvent, type CameraStartCapture } from './camera.types'
 
 export type FlatWizardState = 'EXPOSURING' | 'CAPTURED' | 'FAILED'
 
@@ -15,9 +15,10 @@ export interface FlatWizardRequest {
 }
 
 export interface FlatWizardEvent {
+	camera: Camera
 	state: FlatWizardState
 	exposureTime: number
-	capture?: CameraCaptureEvent
+	capture?: Omit<CameraCaptureEvent, 'camera'>
 	savedPath?: string
 }
 

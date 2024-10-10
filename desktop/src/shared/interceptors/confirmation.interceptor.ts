@@ -1,6 +1,6 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { Observable, finalize } from 'rxjs'
+import { Observable } from 'rxjs'
 import { ConfirmationService } from '../services/confirmation.service'
 import { IdempotencyKeyInterceptor } from './idempotency-key.interceptor'
 
@@ -17,20 +17,8 @@ export class ConfirmationInterceptor implements HttpInterceptor {
 			if (idempotencyKey) {
 				this.confirmationService.register(idempotencyKey)
 			}
-
-			const res = next.handle(req)
-
-			if (idempotencyKey) {
-				return res.pipe(
-					finalize(() => {
-						this.confirmationService.unregister(idempotencyKey)
-					}),
-				)
-			}
-
-			return res
-		} else {
-			return next.handle(req)
 		}
+
+		return next.handle(req)
 	}
 }

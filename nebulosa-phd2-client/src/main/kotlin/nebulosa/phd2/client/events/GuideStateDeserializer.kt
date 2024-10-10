@@ -7,6 +7,8 @@ import nebulosa.guiding.GuideState
 
 data object GuideStateDeserializer : StdDeserializer<GuideState>(GuideState::class.java) {
 
+    private fun readResolve(): Any = GuideStateDeserializer
+
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): GuideState? {
         return p.valueAsString?.let(GUIDE_STATE_NAMES::get)
     }

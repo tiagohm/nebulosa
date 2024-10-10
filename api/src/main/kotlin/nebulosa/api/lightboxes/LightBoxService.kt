@@ -1,9 +1,7 @@
 package nebulosa.api.lightboxes
 
 import nebulosa.indi.device.lightbox.LightBox
-import org.springframework.stereotype.Service
 
-@Service
 class LightBoxService(private val lightBoxEventHub: LightBoxEventHub) {
 
     fun connect(lightBox: LightBox) {

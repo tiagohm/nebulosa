@@ -1,5 +1,6 @@
 package nebulosa.api.atlas
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import nebulosa.api.beans.converters.angle.DegreesDeserializer
@@ -18,5 +19,6 @@ data class Location(
     @JvmField val offsetInMinutes: Int = 0,
 ) : GeographicCoordinate, TimeZonedInSeconds {
 
-    override val offsetInSeconds = offsetInMinutes * 60
+    override val offsetInSeconds
+        @JsonIgnore get() = offsetInMinutes * 60
 }

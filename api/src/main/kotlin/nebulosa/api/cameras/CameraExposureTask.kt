@@ -1,44 +1,35 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.tasks.AbstractTask
-import nebulosa.common.concurrency.cancel.CancellationListener
-import nebulosa.common.concurrency.cancel.CancellationSource
-import nebulosa.common.concurrency.cancel.CancellationToken
-import nebulosa.common.concurrency.latch.CountUpDownLatch
 import nebulosa.fits.fits
 import nebulosa.image.format.ReadableHeader
 import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
+import nebulosa.job.manager.Job
+import nebulosa.job.manager.Task
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationSource
+import nebulosa.util.concurrency.latch.CountUpDownLatch
 import okio.sink
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.Duration
 import java.time.LocalDateTime
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.moveTo
 import kotlin.io.path.outputStream
+import kotlin.math.min
 
 data class CameraExposureTask(
+    @JvmField val job: Job,
     @JvmField val camera: Camera,
     @JvmField val request: CameraStartCaptureRequest,
-) : AbstractTask<CameraExposureEvent>(), CancellationListener, CameraEventAware {
+) : Task, CameraEventAware {
 
     private val latch = CountUpDownLatch()
-    private val aborted = AtomicBoolean()
-
-    @Volatile private var elapsedTime = Duration.ZERO
-    @Volatile private var remainingTime = Duration.ZERO
-    @Volatile private var progress = 0.0
-    @Volatile private var savedPath: Path? = null
-
     private val outputPath = Files.createTempFile(camera.name, ".fits")
     private val formatter = CameraCaptureNamingFormatter(camera)
 
-    val isAborted
-        get() = aborted.get()
+    @JvmField val exposureTimeInMicroseconds = request.exposureTime.toNanos() / 1000L
 
     override fun handleCameraEvent(event: CameraEvent) {
         if (event.device === camera) {
@@ -47,32 +38,29 @@ data class CameraExposureTask(
                     save(event)
                 }
                 is CameraExposureAborted,
-                is CameraExposureFailed,
+                is nebulosa.indi.device.camera.CameraExposureFailed,
                 is CameraDetached -> {
-                    aborted.set(true)
                     latch.reset()
+                    job.accept(CameraExposureFailed(job, this))
                 }
                 is CameraExposureProgressChanged -> {
-                    val exposureTime = request.exposureTime
-                    // minOf fix possible bug on SVBony exposure time?
-                    remainingTime = minOf(event.device.exposureTime, request.exposureTime)
-                    elapsedTime = exposureTime - remainingTime
-                    progress = elapsedTime.toNanos().toDouble() / exposureTime.toNanos()
-                    sendEvent(CameraExposureState.ELAPSED)
+                    // "min" fix possible bug on SVBony exposure time?
+                    val remainingTime = min(event.device.exposureTime, request.exposureTime.toNanos() / 1000L)
+                    val elapsedTime = exposureTimeInMicroseconds - remainingTime
+                    val progress = elapsedTime.toDouble() / exposureTimeInMicroseconds
+                    job.accept(CameraExposureElapsed(job, this@CameraExposureTask, elapsedTime, remainingTime, progress))
                 }
             }
         }
     }
 
-    override fun execute(cancellationToken: CancellationToken) {
-        if (camera.connected && !aborted.get()) {
-            LOG.info("Camera Exposure started. camera={}, request={}", camera, request)
-
-            cancellationToken.waitForPause()
+    override fun run() {
+        if (camera.connected) {
+            LOG.debug("Camera Exposure started. camera={}, request={}", camera, request)
 
             latch.countUp()
 
-            sendEvent(CameraExposureState.STARTED)
+            job.accept(CameraExposureStarted(job, this))
 
             with(camera) {
                 enableBlob()
@@ -86,35 +74,21 @@ data class CameraExposureTask(
                 bin(request.binX, request.binY)
                 gain(request.gain)
                 offset(request.offset)
-                startCapture(request.exposureTime)
+                startCapture(request.exposureTime.toNanos() / 1000L)
             }
 
-            try {
-                cancellationToken.listen(this)
-                latch.await()
-            } finally {
-                cancellationToken.unlisten(this)
-            }
+            latch.await()
 
-            LOG.info("Camera Exposure finished. aborted={}, camera={}, request={}", aborted.get(), camera, request)
+            LOG.debug("Camera Exposure finished. camera={}, request={}", camera, request)
         } else {
-            LOG.warn("camera not connected or aborted. aborted={}, camera={}, request={}", aborted.get(), camera, request)
+            LOG.warn("camera not connected. camera={}, request={}", camera, request)
         }
+
+        outputPath.deleteIfExists()
     }
 
     override fun onCancel(source: CancellationSource) {
         camera.abortCapture()
-    }
-
-    override fun reset() {
-        aborted.set(false)
-        latch.reset()
-    }
-
-    override fun close() {
-        onCancel(CancellationSource.Close)
-        outputPath.deleteIfExists()
-        super.close()
     }
 
     private fun save(event: CameraFrameCaptured) {
@@ -131,23 +105,16 @@ data class CameraExposureTask(
             }
 
             with(request.makeSavePath(header = header)) {
-                LOG.info("saving FITS image at {}", this)
+                LOG.debug("saving FITS image at {}", this)
                 createParentDirectories()
                 outputPath.moveTo(this, true)
-                savedPath = this
+                job.accept(CameraExposureFinished(job, this@CameraExposureTask, this))
             }
-
-            sendEvent(CameraExposureState.FINISHED)
         } catch (e: Throwable) {
             LOG.error("failed to save FITS image", e)
-            aborted.set(true)
         } finally {
             latch.countDown()
         }
-    }
-
-    private fun sendEvent(state: CameraExposureState) {
-        onNext(CameraExposureEvent(this, state, elapsedTime, remainingTime, progress, savedPath))
     }
 
     private fun CameraStartCaptureRequest.makeSavePath(

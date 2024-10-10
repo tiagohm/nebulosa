@@ -42,7 +42,7 @@ internal class GuideGraph(
 
         // Update counter for osc index.
         if (nr >= 1) {
-            if (offset.mount.x * last.ra > 0.0) {
+            if (offset.mount.x * last().ra > 0.0) {
                 raSameSides++
             }
 

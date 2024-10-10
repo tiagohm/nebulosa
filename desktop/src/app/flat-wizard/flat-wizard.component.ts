@@ -57,15 +57,18 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 
 		electronService.on('FLAT_WIZARD.ELAPSED', (event) => {
 			ngZone.run(() => {
-				if (event.state === 'EXPOSURING' && event.capture && event.capture.camera.id === this.camera?.id) {
+				if (event.state === 'EXPOSURING' && event.capture && event.camera.id === this.camera?.id) {
 					this.running = true
 					this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
-				} else if (event.state === 'CAPTURED') {
+				} else {
 					this.running = false
-					this.angularService.message('Flat frame captured')
-				} else if (event.state === 'FAILED') {
-					this.running = false
-					this.angularService.message('Failed to find an optimal exposure time from given parameters', 'error')
+					this.cameraExposure.reset()
+
+					if (event.state === 'CAPTURED') {
+						this.angularService.message('Flat frame captured')
+					} else if (event.state === 'FAILED') {
+						this.angularService.message('Failed to find an optimal exposure time from given parameters', 'error')
+					}
 				}
 			})
 		})

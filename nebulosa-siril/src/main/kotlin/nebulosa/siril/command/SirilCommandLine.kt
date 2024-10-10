@@ -1,11 +1,11 @@
 package nebulosa.siril.command
 
-import nebulosa.common.concurrency.cancel.CancellationListener
-import nebulosa.common.concurrency.cancel.CancellationSource
-import nebulosa.common.exec.CommandLineListener
-import nebulosa.common.exec.commandLine
 import nebulosa.log.debug
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationListener
+import nebulosa.util.concurrency.cancellation.CancellationSource
+import nebulosa.util.exec.CommandLineListener
+import nebulosa.util.exec.commandLine
 import java.nio.file.Path
 
 data class SirilCommandLine(private val executablePath: Path) : Runnable, CancellationListener, AutoCloseable {

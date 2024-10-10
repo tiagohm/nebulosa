@@ -1,20 +1,22 @@
 package nebulosa.api.focusers
 
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserEvent
+import nebulosa.job.manager.Job
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationSource
 
 /**
- * This decorator will wrap an absolute backlash [compensation] model around the [focuser].
+ * This task will wrap an absolute backlash [compensation] model around the [focuser].
  * On each move an absolute backlash compensation value will be applied, if the focuser changes its moving direction
  * The returned position will then accommodate for this backlash and simulating the position without backlash.
  */
 data class BacklashCompensationFocuserMoveTask(
+    @JvmField val job: Job,
     override val focuser: Focuser,
-    @JvmField @Volatile var position: Int,
+    @JvmField var position: Int,
     @JvmField val compensation: BacklashCompensation,
-) : FocuserMoveTask {
+) : FocuserTask {
 
     enum class OvershootDirection {
         NONE,
@@ -25,7 +27,7 @@ data class BacklashCompensationFocuserMoveTask(
     @Volatile private var offset = 0
     @Volatile private var lastDirection = OvershootDirection.NONE
 
-    private val task = FocuserMoveAbsoluteTask(focuser, 0)
+    private val task = FocuserMoveAbsoluteTask(job, focuser, 0)
 
     /**
      * Returns the adjusted position based on the amount of backlash compensation.
@@ -37,8 +39,16 @@ data class BacklashCompensationFocuserMoveTask(
         task.handleFocuserEvent(event)
     }
 
-    override fun execute(cancellationToken: CancellationToken) {
-        if (!cancellationToken.isCancelled && focuser.connected && !focuser.moving) {
+    override fun onCancel(source: CancellationSource) {
+        task.onCancel(source)
+    }
+
+    override fun onPause(paused: Boolean) {
+        task.onPause(paused)
+    }
+
+    override fun run() {
+        if (!job.isCancelled && focuser.connected && !focuser.moving) {
             val startPosition = focuser.position
 
             val newPosition = when (compensation.mode) {
@@ -68,9 +78,12 @@ data class BacklashCompensationFocuserMoveTask(
                         } else if (overshoot > focuser.maxPosition) {
                             LOG.warn("overshooting position is above maximum ${focuser.maxPosition}, skipping overshoot")
                         } else {
-                            LOG.info("overshooting from $startPosition to overshoot position $overshoot using a compensation of $backlashCompensation")
-                            moveFocuser(overshoot, cancellationToken)
-                            LOG.info("moving back to position $position")
+                            LOG.debug(
+                                "overshooting from {} to overshoot position {} using a compensation of {}. Moving back to position {}",
+                                startPosition, overshoot, backlashCompensation, position
+                            )
+
+                            moveFocuser(overshoot)
                         }
                     }
 
@@ -81,29 +94,18 @@ data class BacklashCompensationFocuserMoveTask(
                 }
             }
 
-            LOG.info("moving to position {} using {} backlash compensation", newPosition, compensation.mode)
+            LOG.debug("moving to position {} using {} backlash compensation", newPosition, compensation.mode)
 
-            moveFocuser(newPosition, cancellationToken)
+            moveFocuser(newPosition)
         }
     }
 
-    private fun moveFocuser(position: Int, cancellationToken: CancellationToken) {
+    private fun moveFocuser(position: Int) {
         if (position > 0 && position <= focuser.maxPosition) {
             lastDirection = determineMovingDirection(focuser.position, position)
             task.position = position
-            task.execute(cancellationToken)
+            task.run()
         }
-    }
-
-    override fun reset() {
-        task.reset()
-
-        offset = 0
-        lastDirection = OvershootDirection.NONE
-    }
-
-    override fun close() {
-        task.close()
     }
 
     private fun determineMovingDirection(prevPosition: Int, newPosition: Int): OvershootDirection {
@@ -116,10 +118,10 @@ data class BacklashCompensationFocuserMoveTask(
         val direction = determineMovingDirection(lastPosition, newPosition)
 
         return if (direction == OvershootDirection.IN && lastDirection == OvershootDirection.OUT) {
-            LOG.info("Focuser is reversing direction from outwards to inwards")
+            LOG.debug("Focuser is reversing direction from outwards to inwards")
             -compensation.backlashIn
         } else if (direction == OvershootDirection.OUT && lastDirection === OvershootDirection.IN) {
-            LOG.info("Focuser is reversing direction from inwards to outwards")
+            LOG.debug("Focuser is reversing direction from inwards to outwards")
             compensation.backlashOut
         } else {
             0

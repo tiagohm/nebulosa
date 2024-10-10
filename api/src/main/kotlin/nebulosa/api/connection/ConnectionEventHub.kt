@@ -19,9 +19,7 @@ import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
-import org.springframework.stereotype.Component
 
-@Component
 class ConnectionEventHub(
     private val cameraEventHub: CameraEventHub,
     private val mountEventHub: MountEventHub,

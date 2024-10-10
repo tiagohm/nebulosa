@@ -3,14 +3,10 @@ package nebulosa.api.dustcap
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.indi.device.dustcap.DustCap
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Lazy
-import org.springframework.stereotype.Component
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
-@Component
-class DustCapDeserializer : DeviceDeserializer<DustCap>(DustCap::class.java) {
+class DustCapDeserializer : DeviceDeserializer<DustCap>(DustCap::class.java), KoinComponent {
 
-    @Autowired @Lazy private lateinit var connectionService: ConnectionService
-
-    override fun deviceFor(name: String) = connectionService.dustCap(name)
+    override fun deviceFor(name: String) = get<ConnectionService>().dustCap(name)
 }

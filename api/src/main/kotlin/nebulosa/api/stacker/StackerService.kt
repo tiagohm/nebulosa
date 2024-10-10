@@ -1,21 +1,19 @@
 package nebulosa.api.stacker
 
 import nebulosa.api.message.MessageService
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.fits.fits
 import nebulosa.fits.isFits
 import nebulosa.image.format.ImageHdu
 import nebulosa.stacker.AutoStacker
 import nebulosa.stacker.AutoStackerListener
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
-import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 
-@Service
 class StackerService(private val messageService: MessageService?) {
 
     @Synchronized
@@ -134,7 +132,7 @@ class StackerService(private val messageService: MessageService?) {
         else if (path.isXisf()) path.xisf()
         else return null
 
-        return image.use { it.firstOrNull { it is ImageHdu }?.header }?.let(::AnalyzedTarget)
+        return image.use { it.firstOrNull { hdu -> hdu is ImageHdu }?.header }?.let(::AnalyzedTarget)
     }
 
     private inner class AutoStackerMessageHandler(

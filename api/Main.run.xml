@@ -1,19 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false"
-                   name="Main"
-                   type="JetRunConfigurationType">
-        <option name="MAIN_CLASS_NAME"
-                value="nebulosa.api.MainKt"/>
+    <configuration default="false" name="Main" type="JetRunConfigurationType">
+        <option name="MAIN_CLASS_NAME" value="nebulosa.api.MainKt"/>
         <module name="nebulosa.api.main"/>
-        <option name="PROGRAM_PARAMETERS"
-                value="--server.port=7000 --spring.jpa.show-sql=true --logging.level.nebulosa=DEBUG"/>
+        <option name="PROGRAM_PARAMETERS" value="--port=7000 --debug"/>
         <shortenClasspath name="NONE"/>
         <method v="2">
-            <option name="Gradle.BeforeRunTask"
-                    enabled="true"
-                    tasks="build"
-                    externalProjectPath="$PROJECT_DIR$/api"
-                    vmOptions=""
+            <option name="Gradle.BeforeRunTask" enabled="true" tasks="build" externalProjectPath="$PROJECT_DIR$/api" vmOptions=""
                     scriptParameters="-x test"/>
         </method>
     </configuration>

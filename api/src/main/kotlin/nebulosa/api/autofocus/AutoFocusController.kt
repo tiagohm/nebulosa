@@ -1,22 +1,38 @@
 package nebulosa.api.autofocus
 
-import nebulosa.indi.device.camera.Camera
-import nebulosa.indi.device.focuser.Focuser
-import org.springframework.web.bind.annotation.*
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.bodyAsClass
+import nebulosa.api.connection.ConnectionService
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.valid
 
-@RestController
-@RequestMapping("auto-focus")
-class AutoFocusController(private val autoFocusService: AutoFocusService) {
+class AutoFocusController(
+    app: Javalin,
+    private val autoFocusService: AutoFocusService,
+    private val connectionService: ConnectionService,
+) {
 
-    @PutMapping("{camera}/{focuser}/start")
-    fun start(
-        camera: Camera, focuser: Focuser,
-        @RequestBody body: AutoFocusRequest,
-    ) = autoFocusService.start(camera, focuser, body)
+    init {
+        app.put("auto-focus/{camera}/{focuser}/start", ::start)
+        app.put("auto-focus/{camera}/stop", ::stop)
+        app.get("auto-focus/{camera}/status", ::status)
+    }
 
-    @PutMapping("{camera}/stop")
-    fun stop(camera: Camera) = autoFocusService.stop(camera)
+    private fun start(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
+        val focuser = connectionService.focuser(ctx.pathParam("focuser")).notNull()
+        val body = ctx.bodyAsClass<AutoFocusRequest>().valid()
+        autoFocusService.start(camera, focuser, body)
+    }
 
-    @GetMapping("{camera}/status")
-    fun status(camera: Camera) = autoFocusService.status(camera)
+    private fun stop(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
+        autoFocusService.stop(camera)
+    }
+
+    private fun status(ctx: Context) {
+        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
+        autoFocusService.status(camera)?.also(ctx::json)
+    }
 }

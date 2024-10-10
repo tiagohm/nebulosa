@@ -1,71 +1,84 @@
 package nebulosa.api.guiding
 
-import jakarta.validation.Valid
-import org.springframework.web.bind.annotation.*
+import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.bodyAsClass
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.valid
+import kotlin.math.min
 
-@RestController
-@RequestMapping("guiding")
-class GuidingController(private val guidingService: GuidingService) {
+class GuidingController(
+    app: Javalin,
+    private val guidingService: GuidingService,
+) {
 
-    @PutMapping("connect")
-    fun connect(
-        @RequestParam(required = false, defaultValue = "localhost") host: String,
-        @RequestParam(required = false, defaultValue = "4400") port: Int,
-    ) {
+    init {
+        app.put("guiding/connect", ::connect)
+        app.put("guiding/disconnect", ::disconnect)
+        app.get("guiding/history", ::history)
+        app.get("guiding/history/latest", ::latestHistory)
+        app.put("guiding/history/clear", ::clearHistory)
+        app.put("guiding/loop", ::loop)
+        app.put("guiding/start", ::start)
+        app.get("guiding/status", ::status)
+        app.put("guiding/settle", ::settle)
+        app.put("guiding/dither", ::dither)
+        app.put("guiding/stop", ::stop)
+    }
+
+    private fun connect(ctx: Context) {
+        val host = ctx.queryParam("host")?.ifBlank { null } ?: "localhost"
+        val port = ctx.queryParam("port")?.toInt() ?: 4400
         guidingService.connect(host, port)
     }
 
-    @DeleteMapping("disconnect")
-    fun disconnect() {
+    @Suppress("UNUSED_PARAMETER")
+    private fun disconnect(ctx: Context) {
         guidingService.disconnect()
     }
 
-    @GetMapping("status")
-    fun status(): GuiderInfo {
-        return guidingService.status()
+    private fun status(ctx: Context) {
+        ctx.json(guidingService.status())
     }
 
-    @GetMapping("history")
-    fun history(@RequestParam(required = false, defaultValue = "100") maxLength: Int): List<HistoryStep> {
-        return guidingService.history(maxLength)
+    private fun history(ctx: Context) {
+        val maxLength = min(100, ctx.queryParam("maxLength")?.toInt() ?: 100)
+        ctx.json(guidingService.history(maxLength))
     }
 
-    @GetMapping("history/latest")
-    fun latestHistory(): HistoryStep? {
-        return guidingService.latestHistory()
+    private fun latestHistory(ctx: Context) {
+        guidingService.latestHistory()?.also(ctx::json)
     }
 
 
-    @PutMapping("history/clear")
-    fun clearHistory() {
+    @Suppress("UNUSED_PARAMETER")
+    private fun clearHistory(ctx: Context) {
         return guidingService.clearHistory()
     }
 
-    @PutMapping("loop")
-    fun loop(@RequestParam(required = false, defaultValue = "true") autoSelectGuideStar: Boolean) {
+    private fun loop(ctx: Context) {
+        val autoSelectGuideStar = ctx.queryParam("autoSelectGuideStar")?.toBoolean() ?: true
         guidingService.loop(autoSelectGuideStar)
     }
 
-    @PutMapping("start")
-    fun start(@RequestParam(required = false, defaultValue = "false") forceCalibration: Boolean) {
+    private fun start(ctx: Context) {
+        val forceCalibration = ctx.queryParam("forceCalibration")?.toBoolean() ?: false
         guidingService.start(forceCalibration)
     }
 
-    @PutMapping("settle")
-    fun settle(@RequestBody @Valid body: SettleInfo) {
+    private fun settle(ctx: Context) {
+        val body = ctx.bodyAsClass<SettleInfo>().valid()
         guidingService.settle(body)
     }
 
-    @PutMapping("dither")
-    fun dither(
-        @RequestParam amount: Double,
-        @RequestParam(required = false, defaultValue = "false") raOnly: Boolean,
-    ) {
+    private fun dither(ctx: Context) {
+        val amount = ctx.queryParam("amount").notNull().toDouble()
+        val raOnly = ctx.queryParam("raOnly")?.toBoolean() ?: false
         return guidingService.dither(amount, raOnly)
     }
 
-    @PutMapping("stop")
-    fun stop() {
+    @Suppress("UNUSED_PARAMETER")
+    private fun stop(ctx: Context) {
         guidingService.stop()
     }
 }

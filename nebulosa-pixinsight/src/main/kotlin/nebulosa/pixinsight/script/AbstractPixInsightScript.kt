@@ -2,10 +2,10 @@ package nebulosa.pixinsight.script
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
-import nebulosa.common.exec.CommandLine
-import nebulosa.common.exec.CommandLineListener
 import nebulosa.json.PathModule
 import nebulosa.log.loggerFor
+import nebulosa.util.exec.CommandLine
+import nebulosa.util.exec.CommandLineListener
 import org.apache.commons.codec.binary.Hex
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
@@ -28,13 +28,13 @@ abstract class AbstractPixInsightScript<T : PixInsightScript.Output> : PixInsigh
     final override fun startCommandLine(commandLine: CommandLine) {
         commandLine.whenComplete { exitCode, exception ->
             try {
-                LOG.info("{} script finished. done={}, exitCode={}", this::class.simpleName, isDone, exitCode, exception)
+                LOG.debug("{} script finished. done={}, exitCode={}", this::class.simpleName, isDone, exitCode, exception)
 
                 waitOnComplete()
 
                 if (isDone) return@whenComplete
                 else if (exception != null) completeExceptionally(exception)
-                else complete(processOnComplete(exitCode).also { LOG.info("{} script processed. output={}", this::class.simpleName, it) })
+                else complete(processOnComplete(exitCode).also { LOG.debug("{} script processed. output={}", this::class.simpleName, it) })
             } catch (e: Throwable) {
                 LOG.error("{} finished with fatal exception. message={}", this::class.simpleName, e.message)
                 completeExceptionally(e)

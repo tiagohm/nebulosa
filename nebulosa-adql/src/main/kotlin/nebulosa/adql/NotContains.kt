@@ -7,7 +7,7 @@ import adql.query.operand.NumericConstant
 import adql.query.operand.function.geometry.ContainsFunction
 import adql.query.operand.function.geometry.GeometryFunction
 
-data class NotContains internal constructor(override val constraint: ADQLConstraint) : WhereConstraint {
+data class NotContains(override val constraint: ADQLConstraint) : WhereConstraint {
 
     private constructor(left: GeometryFunction.GeometryValue<GeometryFunction>, right: GeometryFunction.GeometryValue<GeometryFunction>) : this(
         Comparison(ContainsFunction(left, right), ComparisonOperator.EQUAL, NumericConstant(0L))

@@ -1,9 +1,7 @@
 package nebulosa.api.focusers
 
 import nebulosa.indi.device.focuser.Focuser
-import org.springframework.stereotype.Service
 
-@Service
 class FocuserService(private val focuserEventHub: FocuserEventHub) {
 
     fun connect(focuser: Focuser) {

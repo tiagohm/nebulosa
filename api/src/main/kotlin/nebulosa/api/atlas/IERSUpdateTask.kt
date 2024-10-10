@@ -1,5 +1,6 @@
 package nebulosa.api.atlas
 
+import io.javalin.http.Header
 import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndClose
 import nebulosa.log.loggerFor
@@ -9,22 +10,23 @@ import nebulosa.time.IERSAB
 import nebulosa.time.IERSB
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.springframework.http.HttpHeaders
-import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
 import java.nio.file.Path
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
-@Component
 class IERSUpdateTask(
     private val dataPath: Path,
-    private val preferenceService: PreferenceService,
     private val httpClient: OkHttpClient,
+    private val preferenceService: PreferenceService,
+    scheduledExecutorService: ScheduledExecutorService,
 ) : Runnable {
 
-    @Scheduled(fixedDelay = Long.MAX_VALUE, timeUnit = TimeUnit.SECONDS)
+    init {
+        scheduledExecutorService.schedule(this, 0L, TimeUnit.SECONDS)
+    }
+
     override fun run() {
         val iersa = IERSA()
         val iersb = IERSB()
@@ -47,22 +49,22 @@ class IERSUpdateTask(
             var request = Request.Builder().head().url(url).build()
 
             var modifiedAt = httpClient.newCall(request).execute()
-                .use { it.headers.getDate(HttpHeaders.LAST_MODIFIED) }
+                .use { it.headers.getDate(Header.LAST_MODIFIED) }
 
             if (modifiedAt != null && "$modifiedAt" == preferenceService.getText(key)) {
-                LOG.info("$url is up to date. modifiedAt={}", modifiedAt)
+                LOG.info("{} is up to date. modifiedAt={}", url, modifiedAt)
                 return
             }
 
             request = request.newBuilder().get().build()
 
-            LOG.info("downloading $url")
+            LOG.debug("downloading {}", url)
 
             httpClient.newCall(request).execute().use {
                 it.body!!.byteStream().transferAndClose(outputStream())
-                modifiedAt = it.headers.getDate(HttpHeaders.LAST_MODIFIED)
+                modifiedAt = it.headers.getDate(Header.LAST_MODIFIED)
                 preferenceService.putText(key, "$modifiedAt")
-                LOG.info("$url downloaded. modifiedAt={}", modifiedAt)
+                LOG.debug("{} downloaded. modifiedAt={}", url, modifiedAt)
             }
         } catch (e: Throwable) {
             LOG.error("failed to download finals2000A.all", e)

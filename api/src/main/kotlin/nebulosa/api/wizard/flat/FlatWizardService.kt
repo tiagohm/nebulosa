@@ -1,12 +1,10 @@
 package nebulosa.api.wizard.flat
 
 import nebulosa.indi.device.camera.Camera
-import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 
-@Service
 class FlatWizardService(
     private val capturesPath: Path,
     private val flatWizardExecutor: FlatWizardExecutor,

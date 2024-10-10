@@ -1,11 +1,11 @@
 package nebulosa.pixinsight.script
 
 import com.sun.jna.Platform
-import nebulosa.common.concurrency.cancel.CancellationToken
 import nebulosa.io.resource
 import nebulosa.io.transferAndClose
 import nebulosa.math.Angle
 import nebulosa.math.toDegrees
+import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration

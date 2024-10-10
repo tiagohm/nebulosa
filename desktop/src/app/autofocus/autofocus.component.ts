@@ -305,22 +305,24 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 
 		electronService.on('AUTO_FOCUS.ELAPSED', (event) => {
 			ngZone.run(() => {
-				this.status = event.state
-				this.running = event.state !== 'FAILED' && event.state !== 'FINISHED'
+				const { state } = event
+
+				this.status = state
+				this.running = state !== 'FAILED' && state !== 'FINISHED' && state !== 'IDLE'
+				this.starCount = event.starCount
+				this.starHFD = event.starHFD
 
 				if (event.capture) {
 					this.cameraExposure.handleCameraCaptureEvent(event.capture, true)
 				}
 
-				if (event.state === 'CURVE_FITTED' && event.focusPoint) {
-					this.focusPoints.push(event.focusPoint)
-				} else if (event.state === 'ANALYSED') {
-					this.starCount = event.starCount
-					this.starHFD = event.starHFD
-				}
-
-				if (event.chart) {
-					this.updateChart(event.chart)
+				if (state === 'CURVE_FITTED') {
+					if (event.focusPoint) {
+						this.focusPoints.push(event.focusPoint)
+					}
+					if (event.chart) {
+						this.updateChart(event.chart)
+					}
 				}
 			})
 		})
@@ -362,6 +364,7 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 
 			const focuser = await this.api.focuser(this.focuser.id)
 			Object.assign(this.focuser, focuser)
+			this.loadPreference()
 		}
 	}
 
@@ -450,8 +453,8 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 	}
 
 	private loadPreference() {
-		if (this.camera?.id) {
-			Object.assign(this.preference, this.preferenceService.autoFocus(this.camera).get())
+		if (this.camera?.id && this.focuser?.id) {
+			Object.assign(this.preference, this.preferenceService.autoFocus(this.camera, this.focuser).get())
 			this.request = this.preference.request
 
 			if (this.camera.connected) {
@@ -461,8 +464,8 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 	}
 
 	protected savePreference() {
-		if (this.camera?.id) {
-			this.preferenceService.autoFocus(this.camera).set(this.preference)
+		if (this.camera?.id && this.focuser?.id) {
+			this.preferenceService.autoFocus(this.camera, this.focuser).set(this.preference)
 		}
 	}
 }

@@ -1,52 +1,65 @@
 package nebulosa.api.message
 
-import nebulosa.log.debug
+import io.javalin.Javalin
+import io.javalin.websocket.WsConfig
+import io.javalin.websocket.WsContext
 import nebulosa.log.loggerFor
-import org.springframework.context.event.EventListener
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor
-import org.springframework.messaging.simp.SimpMessagingTemplate
-import org.springframework.stereotype.Service
-import org.springframework.web.socket.messaging.SessionDisconnectEvent
-import org.springframework.web.socket.messaging.SessionSubscribeEvent
+import org.eclipse.jetty.websocket.api.Session
 import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Consumer
 
-@Service
-class MessageService(
-    private val simpleMessageTemplate: SimpMessagingTemplate,
-) {
+class MessageService(app: Javalin) : Consumer<WsConfig> {
 
-    private val connected = AtomicBoolean()
+    private val connected = AtomicReference<Session>()
+    private val context = AtomicReference<WsContext>()
     private val messageQueue = LinkedBlockingQueue<MessageEvent>()
 
-    @EventListener
-    private fun handleSessionSubscribe(event: SessionSubscribeEvent) {
-        val destination = SimpMessageHeaderAccessor.wrap(event.message).destination ?: return
+    init {
+        app.ws("/ws", this)
+    }
 
-        if (destination == DESTINATION && connected.compareAndSet(false, true)) {
-            while (messageQueue.isNotEmpty()) {
-                sendMessage(messageQueue.take())
+    override fun accept(ws: WsConfig) {
+        ws.onConnect {
+            if (connected.compareAndSet(null, it.session)) {
+                LOG.info("web socket session accepted. address={}", it.session.remoteAddress)
+
+                context.set(it)
+                it.enableAutomaticPings()
+
+                while (messageQueue.isNotEmpty()) {
+                    sendMessage(messageQueue.take())
+                }
+            } else {
+                LOG.warn("web socket session rejected. address={}", it.session.remoteAddress)
+
+                // Accepts only one connection.
+                it.closeSession()
+            }
+        }
+
+        ws.onClose {
+            if (connected.compareAndSet(it.session, null)) {
+                it.disableAutomaticPings()
+                context.set(null)
+                LOG.info("web socket session closed. address={}, status={}, reason={}", it.session.remoteAddress, it.status(), it.reason())
             }
         }
     }
 
-    @EventListener
-    private fun handleSessionDisconnect(event: SessionDisconnectEvent) {
-        connected.set(false)
-    }
-
     fun sendMessage(event: MessageEvent) {
-        if (connected.get()) {
-            simpleMessageTemplate.convertAndSend(DESTINATION, event)
+        val context = context.get()
+
+        if (context != null) {
+            LOG.debug("sending message. event={}", event)
+            context.send(event)
         } else if (event is QueueableEvent) {
-            LOG.debug { "queueing message. event=$event" }
+            LOG.debug("queueing message. event={}", event)
             messageQueue.offer(event)
         }
     }
 
     companion object {
-
-        const val DESTINATION = "NEBULOSA.EVENT"
 
         @JvmStatic private val LOG = loggerFor<MessageService>()
     }

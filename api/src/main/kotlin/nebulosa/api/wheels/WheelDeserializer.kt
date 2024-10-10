@@ -1,16 +1,12 @@
 package nebulosa.api.wheels
 
-import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.devices.DeviceDeserializer
 import nebulosa.indi.device.filterwheel.FilterWheel
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Lazy
-import org.springframework.stereotype.Component
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
-@Component
-class WheelDeserializer : DeviceDeserializer<FilterWheel>(FilterWheel::class.java) {
+class WheelDeserializer : DeviceDeserializer<FilterWheel>(FilterWheel::class.java), KoinComponent {
 
-    @Autowired @Lazy private lateinit var connectionService: ConnectionService
-
-    override fun deviceFor(name: String) = connectionService.wheel(name)
+    override fun deviceFor(name: String) = get<ConnectionService>().wheel(name)
 }

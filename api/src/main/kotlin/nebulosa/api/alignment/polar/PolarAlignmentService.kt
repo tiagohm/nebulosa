@@ -9,9 +9,7 @@ import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
 import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.indi.device.mount.Mount
-import org.springframework.stereotype.Service
 
-@Service
 class PolarAlignmentService(
     private val darvExecutor: DARVExecutor,
     private val tppaExecutor: TPPAExecutor,

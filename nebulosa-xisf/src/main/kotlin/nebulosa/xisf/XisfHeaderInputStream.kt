@@ -127,9 +127,9 @@ class XisfHeaderInputStream(source: InputStream) : AutoCloseable {
     }
 
     private fun parseProperty(): HeaderCard? {
-        val id = reader.attribute("id")!!
+        val id = reader.attribute("id") ?: return null
         val key = AstronomicalImageProperties[id] ?: return null
-        val propertyType = XisfPropertyType.fromTypeName(reader.attribute("type")!!) ?: return null
+        val propertyType = XisfPropertyType.fromTypeName(reader.attribute("type") ?: return null) ?: return null
         val value = reader.attribute("value") ?: reader.elementText.trim()
         return XisfHeaderCard(key.key, value, key.comment, propertyType)
     }

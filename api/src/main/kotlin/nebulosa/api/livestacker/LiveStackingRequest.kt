@@ -1,6 +1,8 @@
 package nebulosa.api.livestacker
 
-import jakarta.validation.constraints.NotNull
+import nebulosa.api.javalin.Validatable
+import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.positiveOrZero
 import nebulosa.livestacker.LiveStacker
 import nebulosa.pixinsight.livestacker.PixInsightLiveStacker
 import nebulosa.pixinsight.script.startPixInsight
@@ -10,14 +12,19 @@ import java.nio.file.Path
 data class LiveStackingRequest(
     @JvmField val enabled: Boolean = false,
     @JvmField val type: LiveStackerType = LiveStackerType.SIRIL,
-    @JvmField @field:NotNull val executablePath: Path? = null,
+    @JvmField val executablePath: Path? = null,
     @JvmField val darkPath: Path? = null,
     @JvmField val flatPath: Path? = null,
     @JvmField val biasPath: Path? = null,
     @JvmField val use32Bits: Boolean = false,
     @JvmField val slot: Int = 1,
     @JvmField val useCalibrationGroup: Boolean = false,
-) {
+) : Validatable {
+
+    override fun validate() {
+        executablePath.notNull()
+        slot.positiveOrZero()
+    }
 
     fun get(workingDirectory: Path): LiveStacker {
         return when (type) {
