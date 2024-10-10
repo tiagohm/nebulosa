@@ -4,6 +4,7 @@ import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.job.manager.Job
 import nebulosa.log.loggerFor
+import nebulosa.util.concurrency.cancellation.CancellationSource
 
 /**
  * This task will wrap an absolute backlash [compensation] model around the [focuser].
@@ -38,6 +39,14 @@ data class BacklashCompensationFocuserMoveTask(
         task.handleFocuserEvent(event)
     }
 
+    override fun onCancel(source: CancellationSource) {
+        task.onCancel(source)
+    }
+
+    override fun onPause(paused: Boolean) {
+        task.onPause(paused)
+    }
+
     override fun run() {
         if (!job.isCancelled && focuser.connected && !focuser.moving) {
             val startPosition = focuser.position
@@ -69,9 +78,12 @@ data class BacklashCompensationFocuserMoveTask(
                         } else if (overshoot > focuser.maxPosition) {
                             LOG.warn("overshooting position is above maximum ${focuser.maxPosition}, skipping overshoot")
                         } else {
-                            LOG.info("overshooting from $startPosition to overshoot position $overshoot using a compensation of $backlashCompensation")
+                            LOG.debug(
+                                "overshooting from {} to overshoot position {} using a compensation of {}. Moving back to position {}",
+                                startPosition, overshoot, backlashCompensation, position
+                            )
+
                             moveFocuser(overshoot)
-                            LOG.info("moving back to position $position")
                         }
                     }
 
@@ -82,7 +94,7 @@ data class BacklashCompensationFocuserMoveTask(
                 }
             }
 
-            LOG.info("moving to position {} using {} backlash compensation", newPosition, compensation.mode)
+            LOG.debug("moving to position {} using {} backlash compensation", newPosition, compensation.mode)
 
             moveFocuser(newPosition)
         }
@@ -106,10 +118,10 @@ data class BacklashCompensationFocuserMoveTask(
         val direction = determineMovingDirection(lastPosition, newPosition)
 
         return if (direction == OvershootDirection.IN && lastDirection == OvershootDirection.OUT) {
-            LOG.info("Focuser is reversing direction from outwards to inwards")
+            LOG.debug("Focuser is reversing direction from outwards to inwards")
             -compensation.backlashIn
         } else if (direction == OvershootDirection.OUT && lastDirection === OvershootDirection.IN) {
-            LOG.info("Focuser is reversing direction from inwards to outwards")
+            LOG.debug("Focuser is reversing direction from inwards to outwards")
             compensation.backlashOut
         } else {
             0

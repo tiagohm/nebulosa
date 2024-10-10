@@ -1,5 +1,6 @@
 package nebulosa.api
 
+import ch.qos.logback.classic.Level
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -14,6 +15,7 @@ import nebulosa.api.inject.*
 import nebulosa.json.PathModule
 import nebulosa.log.loggerFor
 import org.koin.core.context.startKoin
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 @Command(name = "nebulosa")
@@ -25,9 +27,18 @@ class Nebulosa : Runnable, AutoCloseable {
     @Option(name = ["-p", "--port"])
     private var port = 0
 
+    @Option(name = ["-d", "--debug"])
+    private var debug = false
+
     private lateinit var app: Javalin
 
     override fun run() {
+        if (debug) {
+            with(LoggerFactory.getLogger("nebulosa") as ch.qos.logback.classic.Logger) {
+                level = Level.DEBUG
+            }
+        }
+
         // Run the server.
         app = Javalin.create { config ->
             config.showJavalinBanner = false
@@ -53,16 +64,6 @@ class Nebulosa : Runnable, AutoCloseable {
 
     override fun close() {
         app.stop()
-    }
-
-    private data object LocationConverter : (String) -> Location? {
-
-        private val CACHED_LOCATION = ConcurrentHashMap<String, Location>(4)
-
-        override fun invoke(value: String): Location? {
-            return if (value.isBlank()) null
-            else CACHED_LOCATION.computeIfAbsent(value) { OBJECT_MAPPER.readValue(value, Location::class.java) }
-        }
     }
 
     companion object {

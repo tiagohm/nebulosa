@@ -38,7 +38,7 @@ data class AstapStarDetector(
 
         try {
             cmd.start()
-            LOG.info("astap exited. code={}", cmd.get())
+            LOG.debug("astap exited. code={}", cmd.get())
         } catch (e: Throwable) {
             LOG.error("astap failed", e)
             return emptyList()

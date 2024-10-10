@@ -11,4 +11,3 @@ inline fun Context.localDate(): LocalDate = localDateOrNull() ?: LocalDate.now(S
 inline fun Context.localDateOrNull() = queryParam("date")?.let(LocalDate::parse)
 inline fun Context.localTime(): LocalTime = localTimeOrNull() ?: LocalTime.now(SystemClock)
 inline fun Context.localTimeOrNull() = queryParam("time")?.let(LocalTime::parse)
-

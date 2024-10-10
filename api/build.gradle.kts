@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":nebulosa-astap"))
     implementation(project(":nebulosa-astrometrynet"))
     implementation(project(":nebulosa-alpaca-indi"))
+    implementation(project(":nebulosa-autofocus"))
     implementation(project(":nebulosa-curve-fitting"))
     implementation(project(":nebulosa-guiding-phd2"))
     implementation(project(":nebulosa-hips2fits"))

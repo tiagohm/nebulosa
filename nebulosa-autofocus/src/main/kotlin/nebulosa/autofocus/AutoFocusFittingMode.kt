@@ -1,4 +1,4 @@
-package nebulosa.api.autofocus
+package nebulosa.autofocus
 
 enum class AutoFocusFittingMode {
     TRENDLINES,

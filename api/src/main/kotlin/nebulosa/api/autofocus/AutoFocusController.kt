@@ -5,6 +5,7 @@ import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.javalin.notNull
+import nebulosa.api.javalin.valid
 
 class AutoFocusController(
     app: Javalin,
@@ -21,7 +22,7 @@ class AutoFocusController(
     private fun start(ctx: Context) {
         val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
         val focuser = connectionService.focuser(ctx.pathParam("focuser")).notNull()
-        val body = ctx.bodyAsClass<AutoFocusRequest>()
+        val body = ctx.bodyAsClass<AutoFocusRequest>().valid()
         autoFocusService.start(camera, focuser, body)
     }
 
