@@ -1,7 +1,7 @@
 package nebulosa.pixinsight.livestacker
 
 import nebulosa.livestacker.LiveStacker
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.pixinsight.script.PixInsightIsRunning
 import nebulosa.pixinsight.script.PixInsightScript
@@ -65,7 +65,7 @@ data class PixInsightLiveStacker(
             stacking.set(true)
 
             if (stacker.calibrate(targetPath, calibratedPath, darkPath, flatPath, biasPath)) {
-                LOG.debug { "live stacking calibrated. count=$stackCount, target=$targetPath, output=$calibratedPath" }
+                LOG.d("live stacking calibrated. count={}, target={}, output={}", stackCount, targetPath, calibratedPath)
                 targetPath = calibratedPath
             }
 
@@ -73,11 +73,11 @@ data class PixInsightLiveStacker(
 
             if (stackCount > 0) {
                 if (stacker.align(referencePath ?: this.referencePath, targetPath, alignedPath)) {
-                    LOG.debug { "live stacking aligned. count=$stackCount, target=$targetPath, output=$alignedPath" }
+                    LOG.d("live stacking aligned. count={}, target={}, output={}", stackCount, targetPath, alignedPath)
                     targetPath = alignedPath
 
                     if (stacker.integrate(stackCount, stackedPath!!, targetPath, stackedPath!!)) {
-                        LOG.debug { "live stacking integrated. count=$stackCount, target=$targetPath, output=$stackedPath" }
+                        LOG.d("live stacking integrated. count={}, target={}, output={}", stackCount, targetPath, stackedPath)
                     }
 
                     stackCount++

@@ -6,7 +6,9 @@ import nebulosa.api.stacker.StackerGroupType
 import nebulosa.fits.*
 import nebulosa.image.format.ImageHdu
 import nebulosa.livestacker.LiveStacker
+import nebulosa.log.e
 import nebulosa.log.loggerFor
+import nebulosa.log.w
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
 import java.nio.file.Files
@@ -39,7 +41,7 @@ data class CameraLiveStackingManager(
 
                 return true
             } catch (e: Throwable) {
-                LOG.error("failed to start live stacking. request={}", request.liveStacking, e)
+                LOG.e("failed to start live stacking. request={}", request.liveStacking, e)
             }
         }
 
@@ -119,10 +121,7 @@ data class CameraLiveStackingManager(
             val filter = header.filter
             val calibrationGroup = request.calibrationGroup
 
-            LOG.info(
-                "find calibration frames for live stacking. group={}, temperature={}, binX={}, binY={}. width={}, height={}, exposureTime={}, gain={}, filter={}",
-                calibrationGroup, temperature, binX, binY, width, height, exposureTime, gain, filter
-            )
+            LOG.w("find calibration frames for live stacking. group={}, temperature={}, binX={}, binY={}. width={}, height={}, exposureTime={}, gain={}, filter={}", calibrationGroup, temperature, binX, binY, width, height, exposureTime, gain, filter)
 
             val newDarkPath = (if (useCalibrationGroup) calibrationFrameProvider
                 .findBestDarkFrames(calibrationGroup, temperature, width, height, binX, binY, exposureTime, gain)
@@ -136,10 +135,7 @@ data class CameraLiveStackingManager(
                 .findBestBiasFrames(calibrationGroup, width, height, binX, binY)
                 .firstOrNull()?.path else biasPath)?.takeIf { it.isCalibrationFrame }
 
-            LOG.info(
-                "live stacking will use calibration frames. group={}, dark={}, flat={}, bias={}",
-                calibrationGroup, newDarkPath, newFlatPath, newBiasPath
-            )
+            LOG.w("live stacking will use calibration frames. group={}, dark={}, flat={}, bias={}", calibrationGroup, newDarkPath, newFlatPath, newBiasPath)
 
             copy(darkPath = newDarkPath, flatPath = newFlatPath, biasPath = newBiasPath)
         } else {

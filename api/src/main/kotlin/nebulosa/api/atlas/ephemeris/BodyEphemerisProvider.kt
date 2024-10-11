@@ -2,7 +2,7 @@ package nebulosa.api.atlas.ephemeris
 
 import nebulosa.horizons.HorizonsElement
 import nebulosa.horizons.HorizonsQuantity
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.math.normalized
 import nebulosa.math.toDegrees
@@ -81,7 +81,7 @@ class BodyEphemerisProvider(private val executor: ExecutorService) : CachedEphem
 
         val elapsedTime = measureTimeMillis { tasks.forEach { it.get() } }
 
-        LOG.debug { "elapsed $elapsedTime ms for computing body ephemeris" }
+        LOG.d("elapsed {} ms for computing body ephemeris", elapsedTime)
 
         return elementMap.values.toList()
     }

@@ -30,7 +30,7 @@ import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.GetProperties
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIConnection
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.util.*
 
@@ -95,7 +95,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun sendMessageToServer(message: INDIProtocol) {
-        LOG.debug { "sending message: $message" }
+        LOG.d("sending message: {}", message)
         connection.writeINDIProtocol(message)
     }
 

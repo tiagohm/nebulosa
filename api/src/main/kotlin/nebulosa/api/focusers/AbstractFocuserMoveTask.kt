@@ -3,8 +3,8 @@ package nebulosa.api.focusers
 import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.indi.device.focuser.FocuserMoveFailed
 import nebulosa.indi.device.focuser.FocuserMovingChanged
-import nebulosa.indi.device.focuser.FocuserPositionChanged
 import nebulosa.job.manager.Job
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.cancellation.CancellationListener
 import nebulosa.util.concurrency.cancellation.CancellationSource
@@ -34,12 +34,12 @@ sealed class AbstractFocuserMoveTask : FocuserTask, CancellationListener {
 
     override fun run() {
         if (!job.isCancelled && focuser.connected && !focuser.moving && canMove()) {
-            LOG.debug("Focuser move started. focuser={}", focuser)
+            LOG.d("Focuser move started. focuser={}", focuser)
             latch.countUp()
             move()
             latch.await()
             moving = false
-            LOG.debug("Focuser move finished. focuser={}", focuser)
+            LOG.d("Focuser move finished. focuser={}", focuser)
         }
     }
 

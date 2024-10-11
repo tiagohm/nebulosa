@@ -14,4 +14,5 @@ const val X_IDEMPOTENCY_HEADER_KEY = "X-Idempotency-Key"
 
 inline fun Context.location() =
     header(X_LOCATION_HEADER_KEY)?.let { value -> CACHED_LOCATION.computeIfAbsent(value) { jsonMapper().fromJsonString<Location>(it) } }
+
 inline fun Context.idempotencyKey() = header(X_IDEMPOTENCY_HEADER_KEY)

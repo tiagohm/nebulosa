@@ -2,6 +2,7 @@ package nebulosa.lx200.protocol
 
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
+import nebulosa.log.di
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.toDegrees
@@ -64,55 +65,55 @@ data class LX200ProtocolServer(
 
     @Synchronized
     override fun goTo(rightAscension: Angle, declination: Angle) {
-        LOG.info("going to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees)
+        LOG.di("going to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees)
         mountHandler.get()?.goTo(rightAscension, declination)
     }
 
     @Synchronized
     override fun syncTo(rightAscension: Angle, declination: Angle) {
-        LOG.info("syncing to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees)
+        LOG.di("syncing to. ra={}, dec={}", rightAscension.toHours, declination.toDegrees)
         mountHandler.get()?.syncTo(rightAscension, declination)
     }
 
     @Synchronized
     override fun moveNorth(enabled: Boolean) {
-        LOG.info("moving to north. enabled={}", enabled)
+        LOG.di("moving to north. enabled={}", enabled)
         mountHandler.get()?.moveNorth(enabled)
     }
 
     @Synchronized
     override fun moveSouth(enabled: Boolean) {
-        LOG.info("moving to south. enabled={}", enabled)
+        LOG.di("moving to south. enabled={}", enabled)
         mountHandler.get()?.moveSouth(enabled)
     }
 
     @Synchronized
     override fun moveWest(enabled: Boolean) {
-        LOG.info("moving to west. enabled={}", enabled)
+        LOG.di("moving to west. enabled={}", enabled)
         mountHandler.get()?.moveWest(enabled)
     }
 
     @Synchronized
     override fun moveEast(enabled: Boolean) {
-        LOG.info("moving to east. enabled={}", enabled)
+        LOG.di("moving to east. enabled={}", enabled)
         mountHandler.get()?.moveEast(enabled)
     }
 
     @Synchronized
     override fun time(time: OffsetDateTime) {
-        LOG.info("sending time. time={}", time)
+        LOG.di("sending time. time={}", time)
         mountHandler.get()?.time(time)
     }
 
     @Synchronized
     override fun coordinates(longitude: Angle, latitude: Angle) {
-        LOG.info("sending coordinates. longitude={}, latitude={}", longitude.toDegrees, latitude.toDegrees)
+        LOG.di("sending coordinates. longitude={}, latitude={}", longitude.toDegrees, latitude.toDegrees)
         mountHandler.get()?.coordinates(longitude, latitude)
     }
 
     @Synchronized
     override fun abort() {
-        LOG.info("aborting")
+        LOG.di("aborting")
         mountHandler.get()?.abort()
     }
 

@@ -1,5 +1,7 @@
 package nebulosa.indi.protocol.parser
 
+import nebulosa.log.di
+import nebulosa.log.e
 import nebulosa.log.loggerFor
 
 class INDIProtocolReader(
@@ -41,16 +43,15 @@ class INDIProtocolReader(
                 parser.handleMessage(message)
             }
 
-            LOG.info("protocol parser finished")
+            LOG.di("protocol parser finished")
             listeners.onEach { it.onConnectionClosed() }.clear()
             parser.close()
         } catch (_: InterruptedException) {
             running = false
-            LOG.error("protocol parser interrupted")
         } catch (e: Throwable) {
             running = false
             listeners.onEach { it.onConnectionClosed() }.clear()
-            LOG.error("protocol parser error", e)
+            LOG.e("protocol parser error", e)
             parser.close()
         }
     }

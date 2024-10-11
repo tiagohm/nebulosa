@@ -2,7 +2,7 @@ package nebulosa.job.manager.delay
 
 import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.time.Duration
 
@@ -17,7 +17,7 @@ data class DelayTask(
         var remainingTime = duration
 
         if (!job.isCancelled && remainingTime > 0L) {
-            LOG.debug { "Delay started. duration=$duration ms" }
+            LOG.d("Delay started. duration={} ms", duration)
 
             job.accept(DelayStarted(job, this))
 
@@ -36,7 +36,7 @@ data class DelayTask(
 
             job.accept(DelayFinished(job, this))
 
-            LOG.debug { "Delay finished. duration=$duration ms" }
+            LOG.d("Delay finished. duration={} ms", duration)
         }
     }
 

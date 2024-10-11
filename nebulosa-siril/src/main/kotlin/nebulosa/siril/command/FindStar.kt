@@ -1,7 +1,6 @@
 package nebulosa.siril.command
 
 import nebulosa.fits.height
-import nebulosa.log.debug
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarPoint
 import nebulosa.util.concurrency.latch.CountUpDownLatch
@@ -40,8 +39,6 @@ data class FindStar(
     private val latch = CountUpDownLatch(0)
 
     override fun onLineRead(line: String) {
-        LOG.debug { line }
-
         if (line.startsWith("log: The file") && line.endsWith("has been created.")) {
             latch.reset()
         }

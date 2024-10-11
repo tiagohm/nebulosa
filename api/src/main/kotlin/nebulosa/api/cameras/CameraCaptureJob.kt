@@ -19,7 +19,7 @@ import nebulosa.job.manager.SplitTask
 import nebulosa.job.manager.Task
 import nebulosa.job.manager.delay.DelayEvent
 import nebulosa.job.manager.delay.DelayTask
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.nio.file.Path
 
@@ -74,7 +74,7 @@ data class CameraCaptureJob(
     }
 
     override fun beforeStart() {
-        LOG.debug { "Camera Capture started. request=$request, camera=$camera, mount=$mount, wheel=$wheel, focuser=$focuser" }
+        LOG.d("Camera Capture started. request={}, camera={}, mount={}, wheel={}, focuser={}", request, camera, mount, wheel, focuser)
 
         camera.snoop(listOf(mount, wheel, focuser, rotator))
 
@@ -91,7 +91,7 @@ data class CameraCaptureJob(
 
         liveStackerManager?.stop(request)
 
-        LOG.debug { "Camera Capture finished. request=$request, status=$status, mount=$mount, wheel=$wheel, focuser=$focuser" }
+        LOG.d("Camera Capture finished. request={}, status={}, mount={}, wheel={}, focuser={}", request, status, mount, wheel, focuser)
     }
 
     override fun isLoop(): Boolean {

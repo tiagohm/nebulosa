@@ -5,7 +5,8 @@ import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsKeyword
 import nebulosa.fits.fits
 import nebulosa.image.Image
-import nebulosa.log.debug
+import nebulosa.log.d
+import nebulosa.log.di
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg
@@ -50,7 +51,7 @@ data class WatneyPlateSolver(
         val image = image ?: path!!.fits().use(Image::open)
         val stars = (starDetector ?: DEFAULT_STAR_DETECTOR).detect(image)
 
-        LOG.debug { "detected ${stars.size} stars from the image" }
+        LOG.d("detected {} stars from the image", stars.size)
 
         fun makeSuccessSolution(solution: ComputedPlateSolution): PlateSolution {
             return PlateSolution(
@@ -63,7 +64,7 @@ data class WatneyPlateSolver(
         if (stars.isEmpty()) return PlateSolution.NO_SOLUTION
 
         val (imageStarQuads, countInFirstPass) = formImageStarQuads(stars)
-        LOG.debug { "formed ${imageStarQuads.size} quads from the chosen stars" }
+        LOG.d("formed {} quads from the chosen stars", imageStarQuads.size)
 
         val strategy = if (radius.toDegrees >= 0.1) {
             val options = NearbySearchStrategyOptions(maxFieldRadius = radius, maxNegativeDensityOffset = 2, maxPositiveDensityOffset = 2)
@@ -72,8 +73,6 @@ data class WatneyPlateSolver(
             val options = BlindSearchStrategyOptions(maxNegativeDensityOffset = 2, maxPositiveDensityOffset = 2)
             BlindSearchStrategy(options)
         }
-
-        LOG.debug { "strategy: $strategy" }
 
         val searchQueue = strategy.searchQueue()
 
@@ -112,13 +111,13 @@ data class WatneyPlateSolver(
                     runsByRadius[rg].second.remove(potentialMatchQueue[m])
                 }
 
-                LOG.debug { "continue searching, potential matches to try: ${potentialMatchQueue.size}" }
+                LOG.d("continue searching, potential matches to try: {}", potentialMatchQueue.size)
 
                 for (searchRun in potentialMatchQueue) {
                     val solveResult = trySolve(image, searchRun, countInFirstPass, quadDatabase, 1, 0, imageStarQuads, iteration)
 
                     if (solveResult.success) {
-                        LOG.info("a successful result was found!")
+                        LOG.di("a successful result was found!")
                         return makeSuccessSolution(solveResult.solution!!)
                     }
                 }
@@ -234,7 +233,7 @@ data class WatneyPlateSolver(
             solveResult.numPotentialMatches = databaseQuads.size
 
             if (databaseQuads.isNotEmpty()) {
-                LOG.debug { "iteration $iterationCount [${searchRun.centerRA.toDegrees}, ${searchRun.centerDEC.toDegrees}] (${searchRun.radius.toDegrees}): ${databaseQuads.size} potential database matches" }
+                LOG.d("iteration {} [{}, {}] ({}): {} potential database matches", iterationCount, searchRun.centerRA.toDegrees, searchRun.centerDEC.toDegrees, searchRun.radius.toDegrees, databaseQuads.size)
             }
 
             if (databaseQuads.size < MIN_MATCHES) {
@@ -655,7 +654,7 @@ data class WatneyPlateSolver(
             return if (filtered.size >= 8) {
                 filtered
             } else {
-                LOG.info("not enough matches to perform filtering, with so few matches assuming they're good")
+                LOG.di("not enough matches to perform filtering, with so few matches assuming they're good")
                 matches
             }
         }

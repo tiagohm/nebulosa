@@ -1,6 +1,8 @@
 package nebulosa.astrometrynet.platesolver
 
 import nebulosa.image.Image
+import nebulosa.log.di
+import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.platesolver.PlateSolution
@@ -63,10 +65,10 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
             cancellationToken.listen(cmd)
             cmd.registerCommandLineListener(solution)
             cmd.start()
-            LOG.info("astrometry.net exited. code={}", cmd.get())
+            LOG.di("astrometry.net exited. code={}", cmd.get())
             return solution.get()
         } catch (e: Throwable) {
-            LOG.error("astronomy.net failed.", e)
+            LOG.e("astronomy.net failed.", e)
             return PlateSolution.NO_SOLUTION
         } finally {
             cancellationToken.unlisten(cmd)

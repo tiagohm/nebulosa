@@ -5,7 +5,7 @@ import nebulosa.image.algorithms.ComputationAlgorithm
 import nebulosa.image.algorithms.TransformAlgorithm
 import nebulosa.image.algorithms.computation.Median
 import nebulosa.image.algorithms.computation.MedianAbsoluteDeviation
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import kotlin.math.max
 import kotlin.math.min
@@ -36,7 +36,7 @@ data object AutoScreenTransformFunction : ComputationAlgorithm<ScreenTransformFu
             else -> ((m - 1) * x) / ((2 * m - 1) * x - m)
         }
 
-        LOG.debug { "STF auto stretch. midtone=$midtone, shadow=$shadow, highlight=$highlight" }
+        LOG.d("STF auto stretch. midtone={}, shadow={}, highlight={}", midtone, shadow, highlight)
 
         return ScreenTransformFunction.Parameters(midtone, shadow, highlight)
     }

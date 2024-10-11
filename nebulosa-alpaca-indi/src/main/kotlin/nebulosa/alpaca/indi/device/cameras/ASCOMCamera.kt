@@ -19,6 +19,9 @@ import nebulosa.indi.device.guider.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
+import nebulosa.log.d
+import nebulosa.log.dw
+import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.math.AngleFormatter
 import nebulosa.math.format
@@ -605,10 +608,10 @@ data class ASCOMCamera(
             val metadata = ImageMetadata.from(stream.readNBytes(44))
 
             if (metadata.errorNumber != 0) {
-                LOG.error("failed to read image. device={}, error={}", name, metadata.errorNumber)
+                LOG.e("failed to read image. device={}, error={}", name, metadata.errorNumber)
                 return
             } else {
-                LOG.debug("image read. metadata={}", metadata)
+                LOG.d("image read. metadata={}", metadata)
             }
 
             val width = metadata.dimension1
@@ -628,7 +631,7 @@ data class ASCOMCamera(
                                 Bitpix.BYTE -> (source.readByte().toLong() and 0xFF) / 255f
                                 Bitpix.SHORT -> (source.readShortLe().toLong() and 0xFFFF) / 65535f
                                 Bitpix.INTEGER -> ((source.readIntLe().toLong() and 0xFFFFFFFF) / 4294967295.0).toFloat()
-                                else -> return LOG.warn("invalid transmission element type: ${metadata.transmissionElementType}")
+                                else -> return LOG.dw("invalid transmission element type: ${metadata.transmissionElementType}")
                             }
                         }
                     }
@@ -698,7 +701,7 @@ data class ASCOMCamera(
             image.add(hdu)
 
             sender.fireOnEventReceived(CameraFrameCaptured(this, image = image))
-        } ?: LOG.error("image body is null. device={}", name)
+        } ?: LOG.e("image body is null. device={}", name)
     }
 
     override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
@@ -784,7 +787,7 @@ data class ASCOMCamera(
                             try {
                                 readImage(exposureTime)
                             } catch (e: Throwable) {
-                                LOG.error("failed to read image", e)
+                                LOG.e("failed to read image", e)
                             }
                         }
                     }

@@ -9,14 +9,13 @@ import com.github.rvesse.airline.annotations.Command
 import com.github.rvesse.airline.annotations.Option
 import io.javalin.Javalin
 import io.javalin.json.JavalinJackson
-import nebulosa.api.atlas.Location
 import nebulosa.api.beans.modules.DeviceModule
 import nebulosa.api.inject.*
 import nebulosa.json.PathModule
+import nebulosa.log.i
 import nebulosa.log.loggerFor
 import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
-import java.util.concurrent.ConcurrentHashMap
 
 @Command(name = "nebulosa")
 class Nebulosa : Runnable, AutoCloseable {
@@ -59,7 +58,7 @@ class Nebulosa : Runnable, AutoCloseable {
         koinApp.modules(controllersModule())
         startKoin(koinApp)
 
-        LOG.info("server is started at port: {}", app.port())
+        LOG.i("server is started at port: {}", app.port())
     }
 
     override fun close() {
@@ -68,7 +67,7 @@ class Nebulosa : Runnable, AutoCloseable {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<Nebulosa>()
+        @JvmStatic internal val LOG = loggerFor<Nebulosa>()
 
         @JvmStatic private val OBJECT_MAPPER = jsonMapper {
             addModule(JavaTimeModule())

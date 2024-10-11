@@ -16,8 +16,7 @@ import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.algorithms.transformation.*
 import nebulosa.image.format.ImageModifier
 import nebulosa.indi.device.camera.Camera
-import nebulosa.log.debug
-import nebulosa.log.loggerFor
+import nebulosa.log.*
 import nebulosa.math.*
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
@@ -108,7 +107,7 @@ class ImageService(
 
         ImageIO.write(transformedImage, format, output.outputStream)
 
-        LOG.debug { "image opened. path=$path" }
+        LOG.d("image opened. path={}", path)
     }
 
     private fun Image.transform(
@@ -169,7 +168,7 @@ class ImageService(
     @Synchronized
     fun closeImage(path: Path) {
         imageBucket.remove(path)
-        LOG.debug { "image closed. path=$path" }
+        LOG.d("image closed. path={}", path)
     }
 
     @Synchronized
@@ -183,7 +182,7 @@ class ImageService(
         val wcs = try {
             WCS(calibration)
         } catch (e: WCSException) {
-            LOG.error("unable to generate annotations for image. path={}", path, e)
+            LOG.e("unable to generate annotations for image. path={}", path, e)
             return emptyList()
         }
 
@@ -197,10 +196,7 @@ class ImageService(
                 val latitude = image.header.latitude ?: location?.latitude?.deg ?: 0.0
                 val longitude = image.header.longitude ?: location?.longitude?.deg ?: 0.0
 
-                LOG.info(
-                    "finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}",
-                    dateTime, latitude.formatSignedDMS(), longitude.formatSignedDMS(), calibration
-                )
+                LOG.di("finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}", dateTime, latitude.formatSignedDMS(), longitude.formatSignedDMS(), calibration)
 
                 val identifiedBody = smallBodyDatabaseService.identify(
                     dateTime, latitude, longitude, 0.0,
@@ -229,7 +225,7 @@ class ImageService(
                     }
                 }
 
-                LOG.info("found {} minor planets", count)
+                LOG.i("found {} minor planets", count)
             }, executorService)
                 .whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
@@ -237,7 +233,7 @@ class ImageService(
 
         if (request.starsAndDSOs) {
             CompletableFuture.runAsync({
-                LOG.info("finding star/DSO annotations. dateTime={}, useSimbad={}, calibration={}", dateTime, request.useSimbad, calibration)
+                LOG.di("finding star/DSO annotations. dateTime={}, useSimbad={}, calibration={}", dateTime, request.useSimbad, calibration)
 
                 val rightAscension = calibration.rightAscension
                 val declination = calibration.declination
@@ -267,7 +263,7 @@ class ImageService(
                     }
                 }
 
-                LOG.info("found {} stars/DSOs", count)
+                LOG.i("found {} stars/DSOs", count)
             }, executorService)
                 .whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
@@ -289,7 +285,7 @@ class ImageService(
         val (x, y, width, height) = save.subFrame.constrained(image.width, image.height)
 
         if (width > 0 && height > 0 && (x > 0 || y > 0 || width != image.width || height != image.height)) {
-            LOG.debug { "image subframed. x=$x, y=$y, width=$width, height=$height" }
+            LOG.d("image subframed. x={}, y={}, width={}, height={}", x, y, width, height)
             image = image.transform(SubFrame(x, y, width, height))
         }
 
@@ -324,7 +320,7 @@ class ImageService(
         val wcs = try {
             WCS(calibration)
         } catch (e: WCSException) {
-            LOG.error("unable to generate annotations for image. path={}", path, e)
+            LOG.e("unable to generate annotations for image. path={}", path, e)
             return null
         }
 

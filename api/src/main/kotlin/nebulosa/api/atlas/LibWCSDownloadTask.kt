@@ -3,6 +3,7 @@ package nebulosa.api.atlas
 import com.sun.jna.Platform
 import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndCloseOutput
+import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.wcs.LibWCS
 import okhttp3.OkHttpClient
@@ -35,7 +36,7 @@ class LibWCSDownloadTask(
                 val newestVersion = response.body!!.string()
 
                 if (newestVersion != preferenceService.getText(VERSION_KEY) || !libraryPath.exists()) {
-                    LOG.info("LibWCS is out of date. Downloading...")
+                    LOG.i("LibWCS is out of date. Downloading...")
 
                     request = Request.Builder().get().url(libraryUrl).build()
 
@@ -46,7 +47,7 @@ class LibWCSDownloadTask(
                         }
                     }
                 } else {
-                    LOG.info("LibWCS is up to date. version=$newestVersion")
+                    LOG.i("LibWCS is up to date. version={}", newestVersion)
                 }
             }
         }

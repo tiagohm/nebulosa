@@ -1,7 +1,7 @@
 package nebulosa.api.atlas.ephemeris
 
 import nebulosa.horizons.HorizonsElement
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.nova.position.GeographicPosition
 import java.time.LocalDateTime
@@ -29,7 +29,7 @@ abstract class CachedEphemerisProvider<T : Any> : EphemerisProvider<T> {
 
         val endTime = if (fully) startTime.plusDays(1L) else startTime.plusMinutes(1L)
 
-        LOG.debug { "computing ephemeris for $target from $startTime UTC to $endTime UTC" }
+        LOG.d("computing ephemeris for {} from {} UTC to {} UTC", target, startTime, endTime)
 
         val key = target to position
 
@@ -60,9 +60,9 @@ abstract class CachedEphemerisProvider<T : Any> : EphemerisProvider<T> {
         key: Pair<T, GeographicPosition>,
         startTime: LocalDateTime, endTime: LocalDateTime,
     ): List<HorizonsElement> {
-        LOG.debug { "retrieving ephemeris. target=${key.first}, position=${key.second}, startTime=$startTime, endTime=$endTime" }
+        LOG.d("retrieving ephemeris. target={}, position={}, startTime={}, endTime={}", key.first, key.second, startTime, endTime)
         val elements = compute(key.first, key.second, startTime, endTime)
-        LOG.debug { "retrieved ephemeris. size=${elements.size}, target=${key.first}, position=${key.second}, startTime=$startTime, endTime=$endTime" }
+        LOG.d("retrieved ephemeris. size={}, target={}, position={}, startTime={}, endTime={}", elements.size, key.first, key.second, startTime, endTime)
         val cachedElements = ephemeris.getOrPut(key) { HashMap(ChronoUnit.MINUTES.between(startTime, endTime).toInt() + 1) }
         elements.forEach { cachedElements[it.dateTime] = it }
         return elements

@@ -1,5 +1,6 @@
 package nebulosa.guiding.internal
 
+import nebulosa.log.di
 import nebulosa.log.loggerFor
 
 internal class DistanceChecker(private val guider: MultiStarGuider) {
@@ -16,7 +17,6 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
 
     fun activate() {
         if (state == State.GUIDING) {
-            LOG.info("activated")
             state = State.WAITING
             expires = System.currentTimeMillis() + WAIT_INTERVAL
             forceTolerance = 2.0
@@ -32,11 +32,7 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
         val threshold = tolerance * avgDist
 
         return if (distance > threshold) {
-            LOG.info(
-                "reject for large offset. distance={}, threshold={} avgDist={}, count={}",
-                distance, threshold, avgDist, guider.currentErrorFrameCount,
-            )
-
+            LOG.di("reject for large offset. distance={}, threshold={} avgDist={}, count={}", distance, threshold, avgDist, guider.currentErrorFrameCount)
             false
         } else {
             true
@@ -51,7 +47,6 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
                 if (smallOffset) {
                     true
                 } else {
-                    LOG.info("activated")
                     state = State.WAITING
                     expires = System.currentTimeMillis() + WAIT_INTERVAL
                     false
@@ -60,7 +55,6 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
 
             State.WAITING -> {
                 if (smallOffset) {
-                    LOG.info("deactivated")
                     state = State.GUIDING
                     forceTolerance = 0.0
                     true
@@ -73,7 +67,6 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
                     } else {
                         // Timed-out.
                         state = State.RECOVERING
-                        LOG.info("begin recovering")
                         true
                     }
                 }
@@ -81,7 +74,6 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
 
             State.RECOVERING -> {
                 if (smallOffset) {
-                    LOG.info("deactivated")
                     state = State.GUIDING
                 }
 

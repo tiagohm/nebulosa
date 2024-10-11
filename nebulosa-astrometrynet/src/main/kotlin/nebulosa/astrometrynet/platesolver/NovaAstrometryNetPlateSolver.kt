@@ -6,6 +6,8 @@ import nebulosa.astrometrynet.nova.Session
 import nebulosa.astrometrynet.nova.Upload
 import nebulosa.fits.FitsHeader
 import nebulosa.image.Image
+import nebulosa.log.di
+import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.toDegrees
@@ -79,7 +81,7 @@ data class NovaAstrometryNetPlateSolver(
                 ?: throw PlateSolverException("failed to retrieve submission status")
 
             if (status.solved && !cancellationToken.isCancelled) {
-                LOG.info("retrieving WCS from job. id={}", status.jobs[0])
+                LOG.di("retrieving WCS from job. id={}", status.jobs[0])
 
                 val body = service.wcs(status.jobs[0]).execute().body()
                     ?: throw PlateSolverException("failed to retrieve WCS file")
@@ -87,7 +89,7 @@ data class NovaAstrometryNetPlateSolver(
                 val header = FitsHeader.from(body)
                 val calibration = PlateSolution.from(header)
 
-                LOG.info("astrometry.net solved. calibration={}", calibration)
+                LOG.i("astrometry.net solved. calibration={}", calibration)
 
                 return calibration ?: PlateSolution.NO_SOLUTION
             }

@@ -4,6 +4,7 @@ import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
 import de.siegmar.fastcsv.reader.NamedCsvRecord
 import nebulosa.adql.*
+import nebulosa.log.di
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.retrofit.CSVRecordListConverterFactory
@@ -43,7 +44,7 @@ class SimbadService(
             .add("query", query)
             .build()
 
-        LOG.info("query={}", query)
+        LOG.di("query: {}", query)
 
         return service.query(body)
     }

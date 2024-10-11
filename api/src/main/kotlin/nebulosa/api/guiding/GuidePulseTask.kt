@@ -5,7 +5,7 @@ import nebulosa.indi.device.guider.GuideOutput
 import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
 import nebulosa.job.manager.delay.DelayTask
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.cancellation.CancellationSource
 import java.time.Duration
@@ -23,9 +23,9 @@ data class GuidePulseTask(
 
     override fun run() {
         if (!job.isCancelled && guideOutput.pulseGuide(request.duration, request.direction)) {
-            LOG.debug { "Guide Pulse started. guideOutput=$guideOutput, duration=$duration ms, direction=$direction" }
+            LOG.d("Guide Pulse started. guideOutput={}, duration={} ms, direction={}", guideOutput, guideOutput, direction)
             delayTask.run()
-            LOG.debug { "Guide Pulse finished. guideOutput=$guideOutput, duration=$duration ms, direction=$direction" }
+            LOG.d("Guide Pulse finished. guideOutput={}, duration={} ms, direction={}", guideOutput, guideOutput, direction)
         }
     }
 

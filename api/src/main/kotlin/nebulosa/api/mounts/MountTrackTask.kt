@@ -5,6 +5,7 @@ import nebulosa.indi.device.mount.MountEvent
 import nebulosa.indi.device.mount.MountTrackingChanged
 import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 
@@ -24,11 +25,11 @@ data class MountTrackTask(
 
     override fun run() {
         if (mount.connected && mount.tracking != enabled) {
-            LOG.debug("Mount Track started. mount={}, enabled={}", mount, enabled)
+            LOG.d("Mount Track started. mount={}, enabled={}", mount, enabled)
             trackingLatch.countUp()
             mount.tracking(enabled)
             trackingLatch.await()
-            LOG.debug("Mount Track finished. mount={}, enabled={}", mount, enabled)
+            LOG.d("Mount Track finished. mount={}, enabled={}", mount, enabled)
         }
     }
 

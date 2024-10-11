@@ -9,6 +9,7 @@ import nebulosa.indi.device.guider.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.*
 import nebulosa.indi.device.mount.PierSide
 import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.log.dw
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.position.ICRF
@@ -17,7 +18,6 @@ import nebulosa.time.SystemClock
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import kotlin.math.abs
 
 @Suppress("RedundantModalityModifier")
@@ -190,7 +190,7 @@ data class ASCOMMount(
     }
 
     private fun moveAxis(axisType: AxisType, negative: Boolean, enabled: Boolean) {
-        val rate = slewRate?.name?.let { axisRates[it] }?.second ?: return LOG.warn("axisRate is null")
+        val rate = slewRate?.name?.let { axisRates[it] }?.second ?: return LOG.dw("axisRate is null")
 
         if (enabled) {
             service.moveAxis(device.number, axisType, if (negative) -(rate.toDouble()) else rate.toDouble()).doRequest()

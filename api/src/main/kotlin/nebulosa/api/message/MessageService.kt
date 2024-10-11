@@ -3,7 +3,10 @@ package nebulosa.api.message
 import io.javalin.Javalin
 import io.javalin.websocket.WsConfig
 import io.javalin.websocket.WsContext
+import nebulosa.log.d
+import nebulosa.log.i
 import nebulosa.log.loggerFor
+import nebulosa.log.w
 import org.eclipse.jetty.websocket.api.Session
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicReference
@@ -22,7 +25,7 @@ class MessageService(app: Javalin) : Consumer<WsConfig> {
     override fun accept(ws: WsConfig) {
         ws.onConnect {
             if (connected.compareAndSet(null, it.session)) {
-                LOG.info("web socket session accepted. address={}", it.session.remoteAddress)
+                LOG.i("web socket session accepted. address={}", it.session.remoteAddress)
 
                 context.set(it)
                 it.enableAutomaticPings()
@@ -31,7 +34,7 @@ class MessageService(app: Javalin) : Consumer<WsConfig> {
                     sendMessage(messageQueue.take())
                 }
             } else {
-                LOG.warn("web socket session rejected. address={}", it.session.remoteAddress)
+                LOG.w("web socket session rejected. address={}", it.session.remoteAddress)
 
                 // Accepts only one connection.
                 it.closeSession()
@@ -42,7 +45,7 @@ class MessageService(app: Javalin) : Consumer<WsConfig> {
             if (connected.compareAndSet(it.session, null)) {
                 it.disableAutomaticPings()
                 context.set(null)
-                LOG.info("web socket session closed. address={}, status={}, reason={}", it.session.remoteAddress, it.status(), it.reason())
+                LOG.i("web socket session closed. address={}, status={}, reason={}", it.session.remoteAddress, it.status(), it.reason())
             }
         }
     }
@@ -51,10 +54,10 @@ class MessageService(app: Javalin) : Consumer<WsConfig> {
         val context = context.get()
 
         if (context != null) {
-            LOG.debug("sending message. event={}", event)
+            LOG.d("sending message. event={}", event)
             context.send(event)
         } else if (event is QueueableEvent) {
-            LOG.debug("queueing message. event={}", event)
+            LOG.d("queueing message. event={}", event)
             messageQueue.offer(event)
         }
     }

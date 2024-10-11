@@ -13,6 +13,7 @@ import nebulosa.job.manager.SplitTask
 import nebulosa.job.manager.Task
 import nebulosa.job.manager.delay.DelayEvent
 import nebulosa.job.manager.delay.DelayTask
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.nio.file.Files
 import java.time.Duration
@@ -78,7 +79,7 @@ data class DARVJob(
     }
 
     override fun beforeStart() {
-        LOG.debug("DARV started. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
+        LOG.d("DARV started. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
 
         status.capture.handleCameraCaptureStarted(cameraExposureTask.exposureTimeInMicroseconds)
     }
@@ -88,7 +89,7 @@ data class DARVJob(
         status.state = DARVState.IDLE
         status.send()
 
-        LOG.debug("DARV finished. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
+        LOG.d("DARV finished. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
     }
 
     @Suppress("NOTHING_TO_INLINE")

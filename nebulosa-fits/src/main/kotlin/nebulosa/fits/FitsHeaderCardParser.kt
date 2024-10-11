@@ -1,5 +1,6 @@
 package nebulosa.fits
 
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -34,14 +35,14 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
         // Check for space at the start of the keyword...
         if (endStem > 0 && rawStem.isNotEmpty()) {
             if (line[0].isWhitespace()) {
-                LOG.warn("[$rawStem] Non-standard starting with a space (trimming).")
+                LOG.d("[{}] Non-standard starting with a space (trimming)", rawStem)
             }
         }
 
         val stem = rawStem.uppercase()
 
         if (stem != rawStem) {
-            LOG.warn("[$rawStem] Non-standard lower-case letter(s) in base keyword.")
+            LOG.d("[{}] Non-standard lower-case letter(s) in base keyword", rawStem)
         }
 
         key = stem
@@ -57,7 +58,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
         }
 
         // Compose the hierarchical key...
-        val tokens = StringTokenizer(line.substring(stem.length, iEq), " \t\r\n.")
+        val tokens = StringTokenizer(line.substring(stem.length, iEq), " \t\r\n")
         val builder = StringBuilder(stem)
 
         while (tokens.hasMoreTokens()) {
@@ -73,7 +74,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
 
         if (FitsKeyword.HIERARCH.key == key) {
             // The key is only HIERARCH, without a hierarchical keyword after it...
-            LOG.warn("HIERARCH base keyword without HIERARCH-style long key after it.")
+            LOG.d("HIERARCH base keyword without HIERARCH-style long key after it")
             return
         }
 
@@ -107,7 +108,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
                 parsePos++
             } else {
                 // Junk after a string value -- interpret it as the start of the comment...
-                LOG.warn("[$key] junk after value (included in the comment).")
+                LOG.d("[{}] junk after value (included in the comment)", key)
             }
         }
 
@@ -125,19 +126,19 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
             parseValueBody()
         } else if (line[parsePos] == '=') {
             if (parsePos < FitsHeaderCard.MAX_KEYWORD_LENGTH) {
-                LOG.warn("[$key] assigmment before byte ${FitsHeaderCard.MAX_KEYWORD_LENGTH + 1} for key '$key'.")
+                LOG.d("[{}] assigmment before byte {}", key, FitsHeaderCard.MAX_KEYWORD_LENGTH + 1)
             }
 
             if (parsePos + 1 >= line.length) {
-                LOG.warn("[$key] record ends with '='.")
+                LOG.d("[{}] record ends with '='", key)
             } else if (line[parsePos + 1] != ' ') {
-                LOG.warn("[$key] missing required standard space after '='.")
+                LOG.d("[{}] missing required standard space after '='", key)
             }
 
             if (parsePos > FitsHeaderCard.MAX_KEYWORD_LENGTH) {
                 // equal sign = after the 9th char -- only supported with hierarch keys...
-                if (!key.startsWith(FitsKeyword.HIERARCH.key + ".")) {
-                    LOG.warn("[$key] possibly misplaced '=' (after byte 9).")
+                if (!key.startsWith(FitsKeyword.HIERARCH.key + "")) {
+                    LOG.d("[{}] possibly misplaced '=' (after byte 9)", key)
                     // It's not a HIERARCH key
                     return
                 }
@@ -215,13 +216,13 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
             parsePos++
         }
 
-        LOG.warn("[$key] ignored missing end quote (value parsed to end of record).")
+        LOG.d("[{}] ignored missing end quote (value parsed to end of record)", key)
         value = getNoTrailingSpaceString(buf)
     }
 
     private fun getInferredValueType(key: String, value: String): FitsHeaderCardType {
         if (value.isEmpty()) {
-            LOG.warn("[$key] null non-string value (defaulted to Boolean).")
+            LOG.d("[{}] null non-string value (defaulted to Boolean)", key)
             return FitsHeaderCardType.BOOLEAN
         }
 
@@ -240,7 +241,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
             return FitsHeaderCardType.COMPLEX
         }
 
-        LOG.warn("[$key] unrecognised non-string value type '$trimmedValue'.")
+        LOG.d("[{}] unrecognised non-string value type '{}'", key, trimmedValue)
 
         return FitsHeaderCardType.NONE
     }

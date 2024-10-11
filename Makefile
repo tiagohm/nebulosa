@@ -1,4 +1,4 @@
-.PHONY: api desktop build install
+.PHONY: api desktop build install all
 
 ifeq ($(OS),Windows_NT)
 api:
@@ -15,6 +15,8 @@ desktop:
 
 install:
 	sudo dpkg -i desktop/release/nebulosa_0.1.0_amd64.deb
+	
+all: build install
 endif
 
 build: api desktop

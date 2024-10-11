@@ -20,8 +20,9 @@ import nebulosa.indi.protocol.TextVector
 import nebulosa.indi.protocol.parser.CloseConnectionListener
 import nebulosa.indi.protocol.parser.INDIProtocolParser
 import nebulosa.indi.protocol.parser.INDIProtocolReader
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
+import nebulosa.log.w
 import java.util.concurrent.LinkedBlockingQueue
 
 abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), MessageSender, INDIProtocolParser, CloseConnectionListener {
@@ -256,7 +257,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     }
 
                     if (!registered) {
-                        LOG.warn("device is not registered. name={}, interface={}", message.device, interfaceType)
+                        LOG.w("device is not registered. name={}, interface={}", message.device, interfaceType)
                         notRegisteredDevices.add(message.device)
                     }
 
@@ -276,7 +277,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     device.forEach { it.handleMessage(message) }
                 }
 
-                LOG.debug { "message received: $message" }
+                LOG.d("message received: {}", message)
 
                 return
             }
@@ -316,7 +317,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
 
             messageReorderingQueue.remove(message)
 
-            LOG.debug { "message received: $message" }
+            LOG.d("message received: {}", message)
         } else {
             if (message in messageQueueCounter) {
                 val counter = messageQueueCounter[message]!!
@@ -326,7 +327,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     messageReorderingQueue.offer(message)
                 } else {
                     messageReorderingQueue.remove(message)
-                    LOG.warn("message looping detected: $message")
+                    LOG.w("message looping detected: {}", message)
                 }
             } else {
                 messageQueueCounter[message] = 1

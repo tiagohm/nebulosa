@@ -1,5 +1,7 @@
 package nebulosa.alpaca.discovery
 
+import nebulosa.log.e
+import nebulosa.log.i
 import nebulosa.log.loggerFor
 import java.io.IOException
 import java.net.*
@@ -50,14 +52,14 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
                         } catch (_: InterruptedException) {
                             break
                         } catch (e: IOException) {
-                            LOG.error("socket IPv4 send error", e)
+                            LOG.e("socket IPv4 send error", e)
                         }
                     }
                 }
             }
         } catch (_: InterruptedException) {
         } catch (e: SocketException) {
-            LOG.error("socket error", e)
+            LOG.e("socket error", e)
         }
 
         try {
@@ -65,7 +67,7 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
             socket.send(message)
         } catch (_: InterruptedException) {
         } catch (e: IOException) {
-            LOG.error("socket IPv6 send error", e)
+            LOG.e("socket IPv6 send error", e)
         }
 
         val responseBuffer = ByteArray(255)
@@ -78,13 +80,13 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
             } catch (_: InterruptedException) {
                 break
             } catch (e: IOException) {
-                LOG.error("socket receive error", e)
+                LOG.e("socket receive error", e)
                 break
             }
 
             val message = packet.data.decodeToString(0, packet.length)
             val port = ALPACA_PORT_REGEX.find(message)?.groupValues?.get(1)?.toIntOrNull() ?: continue
-            LOG.info("server found at {}:{}", packet.address, port)
+            LOG.i("server found at {}:{}", packet.address, port)
             listeners.forEach { it.onServerFound(packet.address, port) }
         }
     }
