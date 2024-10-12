@@ -9,7 +9,7 @@ import nebulosa.curve.fitting.TrendLineFitting
 import org.junit.jupiter.api.Test
 import kotlin.math.roundToInt
 
-class AutoFocusTest {
+class CurveFittingTest {
 
     // ASCOM Sky Simulator: The best focus is 8000.
 

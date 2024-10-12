@@ -1,9 +1,8 @@
 package nebulosa.curve.fitting
 
 import nebulosa.curve.fitting.Curve.Companion.curvePoints
-import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression
-import kotlin.math.max
-import kotlin.math.sqrt
+import nebulosa.log.loggerFor
+import nebulosa.log.w
 
 data class TrendLine(val points: List<CurvePoint>) : LinearCurve {
 
@@ -13,42 +12,25 @@ data class TrendLine(val points: List<CurvePoint>) : LinearCurve {
 
     constructor(vararg points: CurvePoint) : this(points.toList())
 
-    private val regression = OLSMultipleLinearRegression()
-
     override val slope: Double
     override val intercept: Double
     override val rSquared: Double
 
     init {
-        val expectedSize = max(3, points.size)
-        val y = ArrayList<Double>(expectedSize)
-        val x = ArrayList<DoubleArray>(expectedSize)
-
-        for (point in points) {
-            val weight = sqrt(point.weight)
-            y.add(weight * point.y)
-            x.add(doubleArrayOf(weight * point.x, weight))
+        val data = if (points.size <= 1) {
+            TrendLineRegression.RegressionParameters.ZERO
+        } else if (points.size == 2) {
+            TrendLineRegression.Simple.compute(points)
+        } else try {
+            TrendLineRegression.OLSMultipleLinear.compute(points)
+        } catch (e: Throwable) {
+            LOG.w("failed to compute regression using OLS Multiple Linear", e.message)
+            TrendLineRegression.Simple.compute(points)
         }
 
-        if (points.size == 2) {
-            y.add(1, (points[0].y + points[1].y) / 2.0)
-            x.add(1, doubleArrayOf((points[0].x + points[1].x) / 2.0, 1.0))
-        }
-
-        if (points.size >= 2) {
-            regression.isNoIntercept = true
-            regression.newSampleData(y.toDoubleArray(), x.toTypedArray())
-
-            val regressionParameters = regression.estimateRegressionParameters()
-
-            slope = regressionParameters[0].let { if (it.isFinite()) it else 0.0 }
-            intercept = regressionParameters[1].let { if (it.isFinite()) it else 0.0 }
-            rSquared = regression.calculateRSquared().let { if (it.isFinite()) it else 0.0 }
-        } else {
-            slope = 0.0
-            intercept = 0.0
-            rSquared = 0.0
-        }
+        slope = data.slope
+        intercept = data.intercept
+        rSquared = data.rSquared
     }
 
     override fun value(x: Double) = slope * x + intercept
@@ -56,5 +38,7 @@ data class TrendLine(val points: List<CurvePoint>) : LinearCurve {
     companion object {
 
         @JvmStatic val ZERO = TrendLine()
+
+        @JvmStatic private val LOG = loggerFor<TrendLine>()
     }
 }
