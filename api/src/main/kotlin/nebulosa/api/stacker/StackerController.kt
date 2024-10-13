@@ -3,17 +3,18 @@ package nebulosa.api.stacker
 import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
-import nebulosa.api.javalin.exists
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.path
-import nebulosa.api.javalin.valid
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.exists
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.path
+import nebulosa.api.validators.valid
 import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.util.concurrent.atomic.AtomicReference
 
 class StackerController(
-    app: Javalin,
+    override val app: Javalin,
     private val stackerService: StackerService,
-) {
+) : Controller {
 
     private val cancellationToken = AtomicReference<CancellationToken>()
 

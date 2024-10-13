@@ -1,8 +1,8 @@
 package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import nebulosa.api.beans.converters.angle.DeclinationSerializer
-import nebulosa.api.beans.converters.angle.RightAscensionSerializer
+import nebulosa.api.converters.angle.DeclinationSerializer
+import nebulosa.api.converters.angle.RightAscensionSerializer
 import nebulosa.math.Angle
 import nebulosa.math.Point2D
 import nebulosa.math.Velocity

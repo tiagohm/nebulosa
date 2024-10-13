@@ -3,15 +3,16 @@ package nebulosa.api.wheels
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.notBlank
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.positiveOrZero
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.notBlank
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.positiveOrZero
 
 class WheelController(
-    app: Javalin,
+    override val app: Javalin,
     private val connectionService: ConnectionService,
     private val wheelService: WheelService,
-) {
+) : Controller {
 
     init {
         app.get("wheels", ::wheels)

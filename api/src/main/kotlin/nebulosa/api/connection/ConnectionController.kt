@@ -2,14 +2,15 @@ package nebulosa.api.connection
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import nebulosa.api.javalin.notBlank
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.range
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.notBlank
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.range
 
 class ConnectionController(
-    app: Javalin,
+    override val app: Javalin,
     private val connectionService: ConnectionService,
-) {
+) : Controller {
 
     init {
         app.get("connection", ::statuses)

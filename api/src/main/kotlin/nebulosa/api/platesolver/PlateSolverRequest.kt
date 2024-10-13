@@ -1,14 +1,14 @@
 package nebulosa.api.platesolver
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import nebulosa.api.beans.converters.angle.DeclinationDeserializer
-import nebulosa.api.beans.converters.angle.DegreesDeserializer
-import nebulosa.api.beans.converters.angle.RightAscensionDeserializer
-import nebulosa.api.beans.converters.time.DurationUnit
+import nebulosa.api.converters.angle.DeclinationDeserializer
+import nebulosa.api.converters.angle.DegreesDeserializer
+import nebulosa.api.converters.angle.RightAscensionDeserializer
+import nebulosa.api.converters.time.DurationUnit
 import nebulosa.api.inject.Named
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.max
-import nebulosa.api.javalin.positiveOrZero
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.max
+import nebulosa.api.validators.positiveOrZero
 import nebulosa.astap.platesolver.AstapPlateSolver
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.platesolver.LocalAstrometryNetPlateSolver

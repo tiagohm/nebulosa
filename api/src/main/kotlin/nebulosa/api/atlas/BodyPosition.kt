@@ -1,10 +1,10 @@
 package nebulosa.api.atlas
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import nebulosa.api.beans.converters.angle.AzimuthSerializer
-import nebulosa.api.beans.converters.angle.DeclinationSerializer
-import nebulosa.api.beans.converters.angle.DegreesSerializer
-import nebulosa.api.beans.converters.angle.RightAscensionSerializer
+import nebulosa.api.converters.angle.AzimuthSerializer
+import nebulosa.api.converters.angle.DeclinationSerializer
+import nebulosa.api.converters.angle.DegreesSerializer
+import nebulosa.api.converters.angle.RightAscensionSerializer
 import nebulosa.constants.AU_KM
 import nebulosa.constants.SPEED_OF_LIGHT
 import nebulosa.horizons.HorizonsElement

@@ -1,8 +1,8 @@
 package nebulosa.api.stacker
 
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.exists
-import nebulosa.api.javalin.notNull
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.exists
+import nebulosa.api.validators.notNull
 import java.nio.file.Path
 
 data class StackingTarget(

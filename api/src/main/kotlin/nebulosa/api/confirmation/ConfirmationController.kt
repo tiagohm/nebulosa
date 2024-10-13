@@ -3,12 +3,13 @@ package nebulosa.api.confirmation
 import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.pathParamAsClass
-import nebulosa.api.javalin.notNull
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.notNull
 
 class ConfirmationController(
-    app: Javalin,
+    override val app: Javalin,
     private val confirmationService: ConfirmationService
-) {
+) : Controller {
 
     init {
         app.put("confirmation/{idempotencyKey}", ::confirm)

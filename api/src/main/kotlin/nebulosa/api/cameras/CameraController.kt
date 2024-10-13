@@ -4,15 +4,16 @@ import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.range
-import nebulosa.api.javalin.valid
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.range
+import nebulosa.api.validators.valid
 
 class CameraController(
-    app: Javalin,
+    override val app: Javalin,
     private val connectionService: ConnectionService,
     private val cameraService: CameraService,
-) {
+) : Controller {
 
     init {
         app.get("cameras", ::cameras)

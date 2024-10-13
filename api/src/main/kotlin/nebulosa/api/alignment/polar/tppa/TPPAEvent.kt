@@ -2,9 +2,9 @@ package nebulosa.api.alignment.polar.tppa
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import nebulosa.api.beans.converters.angle.DeclinationSerializer
-import nebulosa.api.beans.converters.angle.RightAscensionSerializer
 import nebulosa.api.cameras.CameraCaptureEvent
+import nebulosa.api.converters.angle.DeclinationSerializer
+import nebulosa.api.converters.angle.RightAscensionSerializer
 import nebulosa.api.message.MessageEvent
 import nebulosa.indi.device.camera.Camera
 import nebulosa.math.Angle

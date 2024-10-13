@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
-import nebulosa.api.beans.converters.database.ConstellationPropertyConverter
-import nebulosa.api.beans.converters.database.SkyObjectTypePropertyConverter
+import nebulosa.api.converters.database.ConstellationPropertyConverter
+import nebulosa.api.converters.database.SkyObjectTypePropertyConverter
 import nebulosa.api.database.BoxEntity
 import nebulosa.math.Angle
 import nebulosa.math.Velocity

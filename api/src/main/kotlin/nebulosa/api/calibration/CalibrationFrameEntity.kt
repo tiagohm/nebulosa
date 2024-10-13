@@ -4,12 +4,12 @@ import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
-import nebulosa.api.beans.converters.database.FrameTypePropertyConverter
-import nebulosa.api.beans.converters.database.PathPropertyConverter
+import nebulosa.api.converters.database.FrameTypePropertyConverter
+import nebulosa.api.converters.database.PathPropertyConverter
 import nebulosa.api.database.BoxEntity
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.positive
-import nebulosa.api.javalin.positiveOrZero
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.positive
+import nebulosa.api.validators.positiveOrZero
 import nebulosa.fits.INVALID_TEMPERATURE
 import nebulosa.indi.device.camera.FrameType
 import java.nio.file.Path

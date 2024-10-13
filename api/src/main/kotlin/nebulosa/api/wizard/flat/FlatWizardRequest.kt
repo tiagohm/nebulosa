@@ -1,12 +1,12 @@
 package nebulosa.api.wizard.flat
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import nebulosa.api.beans.converters.time.DurationUnit
 import nebulosa.api.cameras.CameraStartCaptureRequest
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.max
-import nebulosa.api.javalin.min
-import nebulosa.api.javalin.range
+import nebulosa.api.converters.time.DurationUnit
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.max
+import nebulosa.api.validators.min
+import nebulosa.api.validators.range
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit

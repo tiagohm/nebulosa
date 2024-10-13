@@ -152,3 +152,15 @@ inline fun Logger.di(message: String, a0: Any?, a1: Any?, a2: Any?) {
 inline fun Logger.di(message: String, a0: Any?, a1: Any?, a2: Any?, a3: Any?) {
     if (isDebugEnabled) info(message, a0, a1, a2, a3)
 }
+
+inline fun Logger.di(message: String, a0: Any?, a1: Any?, a2: Any?, a3: Any?, a4: Any?) {
+    if (isDebugEnabled) info(message, a0, a1, a2, a3, a4)
+}
+
+inline fun Logger.di(message: String, a0: Any?, a1: Any?, a2: Any?, a3: Any?, a4: Any?, a5: Any?) {
+    if (isDebugEnabled) info(message, a0, a1, a2, a3, a4, a5)
+}
+
+inline fun Logger.di(message: String, a0: Any?, a1: Any?, a2: Any?, a3: Any?, a4: Any?, a5: Any?, a6: Any?) {
+    if (isDebugEnabled) info(message, a0, a1, a2, a3, a4, a5, a6)
+}

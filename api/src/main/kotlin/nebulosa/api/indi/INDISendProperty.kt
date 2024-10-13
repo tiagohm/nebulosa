@@ -1,8 +1,8 @@
 package nebulosa.api.indi
 
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.notBlank
-import nebulosa.api.javalin.notEmpty
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.notBlank
+import nebulosa.api.validators.notEmpty
 import nebulosa.indi.protocol.PropertyType
 
 data class INDISendProperty(

@@ -1,7 +1,7 @@
 package nebulosa.api.alignment.polar.darv
 
 import nebulosa.api.cameras.CameraStartCaptureRequest
-import nebulosa.api.javalin.Validatable
+import nebulosa.api.validators.Validatable
 import nebulosa.guiding.GuideDirection
 
 data class DARVStartRequest(

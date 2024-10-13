@@ -3,17 +3,18 @@ package nebulosa.api.guiding
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.notBlank
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.range
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.notBlank
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.range
 import nebulosa.guiding.GuideDirection
 import java.time.Duration
 
 class GuideOutputController(
-    app: Javalin,
+    override val app: Javalin,
     private val connectionService: ConnectionService,
     private val guideOutputService: GuideOutputService,
-) {
+) : Controller {
 
     init {
         app.get("guide-outputs", ::guideOutputs)

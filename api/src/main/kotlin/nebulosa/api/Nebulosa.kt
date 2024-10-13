@@ -9,7 +9,7 @@ import com.github.rvesse.airline.annotations.Command
 import com.github.rvesse.airline.annotations.Option
 import io.javalin.Javalin
 import io.javalin.json.JavalinJackson
-import nebulosa.api.beans.modules.DeviceModule
+import nebulosa.api.converters.modules.DeviceModule
 import nebulosa.api.inject.*
 import nebulosa.json.PathModule
 import nebulosa.log.i

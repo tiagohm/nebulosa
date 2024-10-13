@@ -3,7 +3,11 @@ package nebulosa.api.atlas
 import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.queryParamsAsClass
-import nebulosa.api.javalin.*
+import nebulosa.api.core.*
+import nebulosa.api.validators.min
+import nebulosa.api.validators.notBlank
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.positive
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.nova.astrometry.Constellation
@@ -12,10 +16,10 @@ import nebulosa.skycatalog.SkyObjectType
 import java.time.LocalDateTime
 
 class SkyAtlasController(
-    app: Javalin,
+    override val app: Javalin,
     private val skyAtlasService: SkyAtlasService,
     private val satelliteRepository: SatelliteRepository,
-) {
+) : Controller {
 
     init {
         app.get("sky-atlas/sun/image", ::imageOfSun)

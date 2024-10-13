@@ -1,7 +1,7 @@
 package nebulosa.api.indi
 
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.notBlank
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.notBlank
 
 data class INDISendPropertyItem(
     @JvmField val name: String = "",

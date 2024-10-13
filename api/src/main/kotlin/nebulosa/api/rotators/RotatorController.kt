@@ -3,14 +3,15 @@ package nebulosa.api.rotators
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.range
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.range
 
 class RotatorController(
-    app: Javalin,
+    override val app: Javalin,
     private val connectionService: ConnectionService,
     private val rotatorService: RotatorService,
-) {
+) : Controller {
 
     init {
         app.get("rotators", ::rotators)

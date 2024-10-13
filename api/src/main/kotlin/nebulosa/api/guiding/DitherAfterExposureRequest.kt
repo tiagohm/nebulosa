@@ -1,7 +1,7 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.positive
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.positive
 
 data class DitherAfterExposureRequest(
     @JvmField val enabled: Boolean = true,

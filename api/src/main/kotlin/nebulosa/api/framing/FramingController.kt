@@ -2,18 +2,19 @@ package nebulosa.api.framing
 
 import io.javalin.Javalin
 import io.javalin.http.Context
+import nebulosa.api.core.Controller
 import nebulosa.api.image.ImageService
-import nebulosa.api.javalin.notBlank
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.range
+import nebulosa.api.validators.notBlank
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.range
 import nebulosa.math.deg
 import nebulosa.math.hours
 
 class FramingController(
-    app: Javalin,
+    override val app: Javalin,
     private val imageService: ImageService,
     private val framingService: FramingService,
-) {
+) : Controller {
 
     init {
         app.get("framing/hips-surveys", ::hipsSurveys)

@@ -3,7 +3,11 @@ package nebulosa.api.mounts
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.*
+import nebulosa.api.core.Controller
+import nebulosa.api.core.idempotencyKey
+import nebulosa.api.core.localDate
+import nebulosa.api.core.localTime
+import nebulosa.api.validators.*
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.TrackMode
 import nebulosa.math.deg
@@ -14,10 +18,10 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 class MountController(
-    app: Javalin,
+    override val app: Javalin,
     private val connectionService: ConnectionService,
     private val mountService: MountService,
-) {
+) : Controller {
 
     init {
         app.get("mounts", ::mounts)

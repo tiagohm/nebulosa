@@ -1,7 +1,7 @@
 package nebulosa.api.guiding
 
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.range
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.range
 
 data class SettleInfo(
     @JvmField val amount: Double = 1.5,

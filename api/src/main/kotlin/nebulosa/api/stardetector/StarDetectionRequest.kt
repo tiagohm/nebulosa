@@ -1,7 +1,7 @@
 package nebulosa.api.stardetector
 
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.positiveOrZero
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.positiveOrZero
 import nebulosa.astap.stardetector.AstapStarDetector
 import nebulosa.pixinsight.script.startPixInsight
 import nebulosa.pixinsight.stardetector.PixInsightStarDetector

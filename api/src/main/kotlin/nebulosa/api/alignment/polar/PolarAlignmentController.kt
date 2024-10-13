@@ -6,14 +6,15 @@ import io.javalin.http.bodyAsClass
 import nebulosa.api.alignment.polar.darv.DARVStartRequest
 import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.valid
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.valid
 
 class PolarAlignmentController(
-    app: Javalin,
+    override val app: Javalin,
     private val polarAlignmentService: PolarAlignmentService,
     private val connectionService: ConnectionService,
-) {
+) : Controller {
 
     init {
         app.put("polar-alignment/darv/{camera}/{guideOutput}/start", ::darvStart)

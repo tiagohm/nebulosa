@@ -4,14 +4,15 @@ import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.valid
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.valid
 
 class AutoFocusController(
-    app: Javalin,
+    override val app: Javalin,
     private val autoFocusService: AutoFocusService,
     private val connectionService: ConnectionService,
-) {
+) : Controller {
 
     init {
         app.put("auto-focus/{camera}/{focuser}/start", ::start)

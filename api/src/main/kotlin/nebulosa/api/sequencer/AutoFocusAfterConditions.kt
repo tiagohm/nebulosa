@@ -1,9 +1,9 @@
 package nebulosa.api.sequencer
 
-import nebulosa.api.beans.converters.time.DurationUnit
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.max
-import nebulosa.api.javalin.positiveOrZero
+import nebulosa.api.converters.time.DurationUnit
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.max
+import nebulosa.api.validators.positiveOrZero
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
