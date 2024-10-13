@@ -1,6 +1,5 @@
 package nebulosa.api.connection
 
-import io.javalin.http.InternalServerErrorResponse
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.api.message.MessageService
 import nebulosa.indi.client.INDIClient
@@ -81,7 +80,7 @@ class ConnectionService(
             return provider.id
         } catch (e: Throwable) {
             LOG.e("failed to connect", e)
-            throw InternalServerErrorResponse("Connection Failed")
+            throw e
         }
     }
 

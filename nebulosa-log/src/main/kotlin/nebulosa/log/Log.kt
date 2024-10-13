@@ -131,6 +131,10 @@ inline fun Logger.dw(message: String, a0: Any?, a1: Any?) {
     if (isDebugEnabled) warn(message, a0, a1)
 }
 
+inline fun Logger.dw(message: String, a0: Any?, a1: Any?, a2: Any?) {
+    if (isDebugEnabled) warn(message, a0, a1, a2)
+}
+
 // DEBUG INFO
 
 inline fun Logger.di(message: String) {

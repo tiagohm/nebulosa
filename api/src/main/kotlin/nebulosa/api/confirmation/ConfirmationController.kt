@@ -3,8 +3,8 @@ package nebulosa.api.confirmation
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.core.Controller
-import nebulosa.api.validators.notBlank
 import nebulosa.api.validators.notNull
+import nebulosa.api.validators.notNullOrBlank
 
 class ConfirmationController(
     override val app: Javalin,
@@ -16,7 +16,7 @@ class ConfirmationController(
     }
 
     private fun confirm(ctx: Context) {
-        val idempotencyKey = ctx.pathParam("idempotencyKey").notNull().notBlank()
+        val idempotencyKey = ctx.pathParam("idempotencyKey").notNullOrBlank()
         val accepted = ctx.queryParam("accepted").notNull().toBoolean()
         confirmationService.confirm(idempotencyKey, accepted)
     }

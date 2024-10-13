@@ -57,7 +57,7 @@ export class DeviceListMenuComponent {
 		return new Promise<Undefinable<T | 'NONE'>>((resolve) => {
 			if (devices.length <= 0) {
 				resolve(undefined)
-				this.angularService.message('Please connect your equipment first!', 'warn')
+				this.angularService.message('Please connect your equipment first!', 'warning')
 				return
 			}
 

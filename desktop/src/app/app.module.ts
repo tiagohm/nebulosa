@@ -64,6 +64,7 @@ import { NoDropdownDirective } from '../shared/directives/no-dropdown.directive'
 import { SpinnableNumberDirective } from '../shared/directives/spinnable-number.directive'
 import { StopPropagationDirective } from '../shared/directives/stop-propagation.directive'
 import { ConfirmationInterceptor } from '../shared/interceptors/confirmation.interceptor'
+import { ErrorInterceptor } from '../shared/interceptors/error.interceptor'
 import { IdempotencyKeyInterceptor } from '../shared/interceptors/idempotency-key.interceptor'
 import { LocationInterceptor } from '../shared/interceptors/location.interceptor'
 import { AnglePipe } from '../shared/pipes/angle.pipe'
@@ -224,6 +225,11 @@ import { StackerComponent } from './stacker/stacker.component'
 		{
 			provide: LOCALE_ID,
 			useValue: 'en-US',
+		},
+		{
+			provide: HTTP_INTERCEPTORS,
+			useClass: ErrorInterceptor,
+			multi: true,
 		},
 		{
 			provide: HTTP_INTERCEPTORS,

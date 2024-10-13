@@ -510,7 +510,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			this.minorPlanet.closeApproach.result = await this.api.closeApproachesOfMinorPlanets(this.minorPlanet.closeApproach.days, this.minorPlanet.closeApproach.lunarDistance, this.dateTimeAndLocation.dateTime)
 
 			if (!this.minorPlanet.closeApproach.result.length) {
-				this.angularService.message('No close approaches found for the given days and lunar distance', 'warn')
+				this.angularService.message('No close approaches found for the given days and lunar distance', 'warning')
 			}
 		} finally {
 			this.refresh.position = false

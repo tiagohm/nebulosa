@@ -1,7 +1,6 @@
 package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.javalin.http.NotFoundResponse
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.Location
 import nebulosa.api.atlas.SimbadEntityRepository
@@ -280,7 +279,7 @@ class ImageService(
         require(save.path != null)
 
         var (image) = imageBucket.open(path).image?.transform(save.shouldBeTransformed, save.transformation, ImageOperation.SAVE)
-            ?: throw NotFoundResponse("Image not found")
+            ?: throw IllegalArgumentException("image not found")
 
         val (x, y, width, height) = save.subFrame.constrained(image.width, image.height)
 

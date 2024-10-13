@@ -252,8 +252,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 					else await this.api.focuserMoveOut(this.focuser, offset)
 				}
 			}
-		} catch (e) {
-			console.error(e)
+		} catch {
 			this.moving = false
 		}
 	}
