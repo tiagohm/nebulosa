@@ -99,7 +99,7 @@ class ConnectionService(
     private fun sendConnectionClosedEvent(provider: INDIDeviceProvider) {
         LOG.di("client connection was closed. id={}", provider.id)
         providers.remove(provider.id)
-        messageService.sendMessage(ConnectionClosedWithClient(provider.id))
+        messageService.sendMessage(ClientConnectionClosed(provider.id))
     }
 
     override fun close() {

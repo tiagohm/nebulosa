@@ -5,8 +5,6 @@ import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.core.Controller
 import nebulosa.api.core.idempotencyKey
-import nebulosa.api.core.localDate
-import nebulosa.api.core.localTime
 import nebulosa.api.validators.*
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.TrackMode
@@ -165,7 +163,9 @@ class MountController(
     private fun dateTime(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val dateTime = LocalDateTime.of(ctx.localDate(), ctx.localTime())
+        val date = ctx.queryParam("date").notNull().localDate()
+        val time = ctx.queryParam("time").notNull().localTime()
+        val dateTime = LocalDateTime.of(date, time)
         val offsetInMinutes = ctx.queryParam("offsetInMinutes").notNull().toInt().range(-720, 720)
         mountService.dateTime(mount, OffsetDateTime.of(dateTime, ZoneOffset.ofTotalSeconds(offsetInMinutes * 60)))
     }

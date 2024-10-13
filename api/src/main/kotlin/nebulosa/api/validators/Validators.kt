@@ -2,8 +2,11 @@
 
 package nebulosa.api.validators
 
+import nebulosa.time.SystemClock
 import java.nio.file.Path
 import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.Path
 import kotlin.io.path.exists
@@ -68,6 +71,20 @@ inline fun Duration.max(duration: Long, unit: TimeUnit) =
 
 inline fun <T> Collection<T>.notEmpty() = validate(isNotEmpty()) { "must not be empty" }
 inline fun <T> Collection<T>.minSize(min: Int) = validate(size >= min) { "size must be greater than or equal to $min" }
+
+// DATE & TIME
+
+inline fun String.localDate(): LocalDate = LocalDate.parse(this)
+inline fun LocalDate.future() = validate(this > LocalDate.now(SystemClock)) { "must be a future date" }
+inline fun LocalDate.futureOrPresent() = validate(this >= LocalDate.now(SystemClock)) { "must be a date in the present or in the future" }
+inline fun LocalDate.past() = validate(this < LocalDate.now(SystemClock)) { "must be a past date" }
+inline fun LocalDate.pastOrPresent() = validate(this <= LocalDate.now(SystemClock)) { "must be a date in the past or in the present" }
+
+inline fun String.localTime(): LocalTime = LocalTime.parse(this)
+inline fun LocalTime.future() = validate(this > LocalTime.now(SystemClock)) { "must be a future time" }
+inline fun LocalTime.futureOrPresent() = validate(this >= LocalTime.now(SystemClock)) { "must be a time in the present or in the future" }
+inline fun LocalTime.past() = validate(this < LocalTime.now(SystemClock)) { "must be a past date" }
+inline fun LocalTime.pastOrPresent() = validate(this <= LocalTime.now(SystemClock)) { "must be a time in the past or in the present" }
 
 // BODY
 
