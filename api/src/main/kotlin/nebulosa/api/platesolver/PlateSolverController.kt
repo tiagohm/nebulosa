@@ -5,7 +5,7 @@ import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
 import nebulosa.api.core.Controller
 import nebulosa.api.validators.exists
-import nebulosa.api.validators.notNull
+import nebulosa.api.validators.notNullOrBlank
 import nebulosa.api.validators.path
 import nebulosa.api.validators.valid
 
@@ -20,7 +20,7 @@ class PlateSolverController(
     }
 
     private fun start(ctx: Context) {
-        val path = ctx.queryParam("path")?.path().notNull().exists()
+        val path = ctx.queryParam("path").notNullOrBlank().path().exists()
         val solver = ctx.bodyAsClass<PlateSolverRequest>().valid()
         ctx.json(plateSolverService.solveImage(solver, path))
     }

@@ -340,12 +340,8 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 	}
 
 	protected async startRemoteControl() {
-		try {
-			await this.api.mountRemoteControlStart(this.mount, this.remoteControl.protocol, this.remoteControl.host, this.remoteControl.port)
-			this.remoteControl.controls = await this.api.mountRemoteControlList(this.mount)
-		} catch {
-			this.angularService.message('Failed to start remote control', 'error')
-		}
+		await this.api.mountRemoteControlStart(this.mount, this.remoteControl.protocol, this.remoteControl.host, this.remoteControl.port)
+		this.remoteControl.controls = await this.api.mountRemoteControlList(this.mount)
 	}
 
 	protected async stopRemoteControl(protocol: MountRemoteControlProtocol) {

@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -26,7 +25,6 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 		private readonly browserWindowService: BrowserWindowService,
 		private readonly electronService: ElectronService,
 		private readonly preferenceService: PreferenceService,
-		private readonly angularService: AngularService,
 		ngZone: NgZone,
 	) {
 		app.title = 'Framing'
@@ -83,10 +81,6 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 			const title = `Framing ・ ${rightAscension} ・ ${declination}`
 
 			this.frameId = await this.browserWindowService.openImage({ path, source: 'FRAMING', id: 'framing', title })
-		} catch (e) {
-			console.error(e)
-
-			this.angularService.message('Failed to retrieve the image', 'error')
 		} finally {
 			this.loading = false
 		}

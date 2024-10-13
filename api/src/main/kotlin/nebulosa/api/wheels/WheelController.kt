@@ -4,8 +4,8 @@ import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.core.Controller
-import nebulosa.api.validators.notBlank
 import nebulosa.api.validators.notNull
+import nebulosa.api.validators.notNullOrBlank
 import nebulosa.api.validators.positiveOrZero
 
 class WheelController(
@@ -55,7 +55,7 @@ class WheelController(
     private fun sync(ctx: Context) {
         val id = ctx.pathParam("id")
         val wheel = connectionService.wheel(id) ?: return
-        val names = ctx.queryParam("names").notNull().notBlank()
+        val names = ctx.queryParam("names").notNullOrBlank()
         wheelService.sync(wheel, names.split(","))
     }
 

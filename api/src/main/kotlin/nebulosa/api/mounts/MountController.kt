@@ -79,8 +79,8 @@ class MountController(
     private fun sync(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val rightAscension = ctx.queryParam("rightAscension").notNull().notBlank()
-        val declination = ctx.queryParam("declination").notNull().notBlank()
+        val rightAscension = ctx.queryParam("rightAscension").notNullOrBlank()
+        val declination = ctx.queryParam("declination").notNullOrBlank()
         val j2000 = ctx.queryParam("j2000")?.toBoolean() ?: false
         mountService.sync(mount, rightAscension.hours, declination.deg, j2000)
     }
@@ -88,8 +88,8 @@ class MountController(
     private fun slew(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val rightAscension = ctx.queryParam("rightAscension").notNull().notBlank()
-        val declination = ctx.queryParam("declination").notNull().notBlank()
+        val rightAscension = ctx.queryParam("rightAscension").notNullOrBlank()
+        val declination = ctx.queryParam("declination").notNullOrBlank()
         val j2000 = ctx.queryParam("j2000")?.toBoolean() ?: false
         val idempotencyKey = ctx.idempotencyKey()
         mountService.slewTo(mount, rightAscension.hours, declination.deg, j2000, idempotencyKey)
@@ -98,8 +98,8 @@ class MountController(
     private fun goTo(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val rightAscension = ctx.queryParam("rightAscension").notNull().notBlank()
-        val declination = ctx.queryParam("declination").notNull().notBlank()
+        val rightAscension = ctx.queryParam("rightAscension").notNullOrBlank()
+        val declination = ctx.queryParam("declination").notNullOrBlank()
         val j2000 = ctx.queryParam("j2000")?.toBoolean() ?: false
         val idempotencyKey = ctx.idempotencyKey()
         mountService.goTo(mount, rightAscension.hours, declination.deg, j2000, idempotencyKey)
@@ -120,21 +120,21 @@ class MountController(
     private fun trackMode(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val mode = ctx.queryParam("mode").notNull().notBlank().let(TrackMode::valueOf)
+        val mode = ctx.queryParam("mode").notNullOrBlank().let(TrackMode::valueOf)
         mountService.trackMode(mount, mode)
     }
 
     private fun slewRate(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val rate = ctx.queryParam("rate").notNull().notBlank()
+        val rate = ctx.queryParam("rate").notNullOrBlank()
         mountService.slewRate(mount, mount.slewRates.first { it.name == rate })
     }
 
     private fun move(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val direction = ctx.queryParam("direction").notNull().notBlank().let(GuideDirection::valueOf)
+        val direction = ctx.queryParam("direction").notNullOrBlank().let(GuideDirection::valueOf)
         val enabled = ctx.queryParam("enabled").notNull().toBoolean()
         mountService.move(mount, direction, enabled)
     }
@@ -154,8 +154,8 @@ class MountController(
     private fun coordinates(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val longitude = ctx.queryParam("longitude").notNull().notBlank()
-        val latitude = ctx.queryParam("latitude").notNull().notBlank()
+        val longitude = ctx.queryParam("longitude").notNullOrBlank()
+        val latitude = ctx.queryParam("latitude").notNullOrBlank()
         val elevation = ctx.queryParam("elevation")?.toDouble() ?: 0.0
         mountService.coordinates(mount, longitude.deg, latitude.deg, elevation.m)
     }
@@ -173,7 +173,7 @@ class MountController(
     private fun celestialLocation(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val type = ctx.pathParam("type").notNull().notBlank().let(CelestialLocationType::valueOf)
+        val type = ctx.pathParam("type").notNullOrBlank().let(CelestialLocationType::valueOf)
 
         val location = when (type) {
             CelestialLocationType.ZENITH -> mountService.computeZenithLocation(mount)
@@ -191,8 +191,8 @@ class MountController(
     private fun location(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val rightAscension = ctx.queryParam("rightAscension").notNull().notBlank()
-        val declination = ctx.queryParam("declination").notNull().notBlank()
+        val rightAscension = ctx.queryParam("rightAscension").notNullOrBlank()
+        val declination = ctx.queryParam("declination").notNullOrBlank()
         val j2000 = ctx.queryParam("j2000")?.toBoolean() ?: false
         val equatorial = ctx.queryParam("equatorial")?.toBoolean() ?: true
         val horizontal = ctx.queryParam("horizontal")?.toBoolean() ?: true
@@ -212,7 +212,7 @@ class MountController(
     private fun remoteControlStart(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val protocol = ctx.queryParam("protocol").notNull().notBlank().let(MountRemoteControlProtocol::valueOf)
+        val protocol = ctx.queryParam("protocol").notNullOrBlank().let(MountRemoteControlProtocol::valueOf)
         val host = ctx.queryParam("host")?.ifBlank { null } ?: "0.0.0.0"
         val port = ctx.queryParam("port")?.toInt()?.positive() ?: 10001
         mountService.remoteControlStart(mount, protocol, host, port)
@@ -221,7 +221,7 @@ class MountController(
     private fun remoteControlStop(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val protocol = ctx.queryParam("protocol").notNull().notBlank().let(MountRemoteControlProtocol::valueOf)
+        val protocol = ctx.queryParam("protocol").notNullOrBlank().let(MountRemoteControlProtocol::valueOf)
         mountService.remoteControlStop(mount, protocol)
     }
 

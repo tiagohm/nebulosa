@@ -103,7 +103,7 @@ class SkyAtlasController(
     }
 
     private fun searchMinorPlanet(ctx: Context) {
-        val text = ctx.queryParam("text").notNull().notBlank()
+        val text = ctx.queryParam("text").notNullOrBlank()
         ctx.json(skyAtlasService.searchMinorPlanet(text))
     }
 

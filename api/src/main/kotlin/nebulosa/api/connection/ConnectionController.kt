@@ -3,8 +3,8 @@ package nebulosa.api.connection
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.core.Controller
-import nebulosa.api.validators.notBlank
 import nebulosa.api.validators.notNull
+import nebulosa.api.validators.notNullOrBlank
 import nebulosa.api.validators.range
 
 class ConnectionController(
@@ -20,7 +20,7 @@ class ConnectionController(
     }
 
     private fun connect(ctx: Context) {
-        val host = ctx.queryParam("host").notNull().notBlank()
+        val host = ctx.queryParam("host").notNullOrBlank()
         val port = ctx.queryParam("port").notNull().toInt().range(1, 65535)
         val type = ctx.queryParam("type").notNull().let(ConnectionType::valueOf)
 
