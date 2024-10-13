@@ -2,10 +2,10 @@ package nebulosa.api.mounts
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import nebulosa.api.beans.converters.angle.AzimuthSerializer
-import nebulosa.api.beans.converters.angle.DeclinationSerializer
-import nebulosa.api.beans.converters.angle.LSTSerializer
-import nebulosa.api.beans.converters.angle.RightAscensionSerializer
+import nebulosa.api.converters.angle.AzimuthSerializer
+import nebulosa.api.converters.angle.DeclinationSerializer
+import nebulosa.api.converters.angle.LSTSerializer
+import nebulosa.api.converters.angle.RightAscensionSerializer
 import nebulosa.indi.device.mount.PierSide
 import nebulosa.math.Angle
 import nebulosa.nova.astrometry.Constellation

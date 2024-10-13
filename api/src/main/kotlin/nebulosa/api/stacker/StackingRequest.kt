@@ -1,8 +1,8 @@
 package nebulosa.api.stacker
 
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.minSize
-import nebulosa.api.javalin.notNull
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.minSize
+import nebulosa.api.validators.notNull
 import nebulosa.pixinsight.script.startPixInsight
 import nebulosa.pixinsight.stacker.PixInsightAutoStacker
 import nebulosa.stacker.AutoStacker

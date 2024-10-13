@@ -3,7 +3,7 @@ package nebulosa.api.guiding
 import nebulosa.guiding.Guider
 import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 
 data class WaitForSettleTask(
@@ -13,11 +13,11 @@ data class WaitForSettleTask(
 
     override fun run() {
         if (guider != null && guider.isSettling && !job.isCancelled) {
-            LOG.debug { "Wait For Settle started" }
+            LOG.d("Wait For Settle started")
             job.accept(WaitForSettleStarted(job, this))
             guider.waitForSettle()
             job.accept(WaitForSettleFinished(job, this))
-            LOG.debug { "Wait For Settle finished" }
+            LOG.d("Wait For Settle finished")
         }
     }
 

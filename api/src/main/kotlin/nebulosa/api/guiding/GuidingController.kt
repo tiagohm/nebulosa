@@ -3,14 +3,15 @@ package nebulosa.api.guiding
 import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.valid
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.valid
 import kotlin.math.min
 
 class GuidingController(
-    app: Javalin,
+    override val app: Javalin,
     private val guidingService: GuidingService,
-) {
+) : Controller {
 
     init {
         app.put("guiding/connect", ::connect)

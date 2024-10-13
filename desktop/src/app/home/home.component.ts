@@ -4,7 +4,6 @@ import nebulosa from '../../assets/data/nebulosa.json'
 import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
-import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -167,7 +166,6 @@ export class HomeComponent implements AfterContentInit {
 		private readonly electronService: ElectronService,
 		private readonly browserWindowService: BrowserWindowService,
 		private readonly api: ApiService,
-		private readonly angularService: AngularService,
 		private readonly preferenceService: PreferenceService,
 		ngZone: NgZone,
 	) {
@@ -468,10 +466,6 @@ export class HomeComponent implements AfterContentInit {
 			if (this.connection && !this.connection.connected) {
 				this.connection.id = await this.api.connect(this.connection.host, this.connection.port, this.connection.type)
 			}
-		} catch (e) {
-			console.error(e)
-
-			this.angularService.message('Connection failed', 'error')
 		} finally {
 			await this.updateConnection()
 		}
@@ -482,8 +476,6 @@ export class HomeComponent implements AfterContentInit {
 			if (this.connection?.id && this.connection.connected) {
 				await this.api.disconnect(this.connection.id)
 			}
-		} catch (e) {
-			console.error(e)
 		} finally {
 			await this.updateConnection()
 		}

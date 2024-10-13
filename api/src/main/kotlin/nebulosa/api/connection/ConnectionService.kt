@@ -1,6 +1,5 @@
 package nebulosa.api.connection
 
-import io.javalin.http.InternalServerErrorResponse
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.api.message.MessageService
 import nebulosa.indi.client.INDIClient
@@ -17,7 +16,8 @@ import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.device.thermometer.Thermometer
-import nebulosa.log.error
+import nebulosa.log.di
+import nebulosa.log.e
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
@@ -79,8 +79,8 @@ class ConnectionService(
 
             return provider.id
         } catch (e: Throwable) {
-            LOG.error(e)
-            throw InternalServerErrorResponse("Connection Failed")
+            LOG.e("failed to connect", e)
+            throw e
         }
     }
 
@@ -96,9 +96,9 @@ class ConnectionService(
     }
 
     private fun sendConnectionClosedEvent(provider: INDIDeviceProvider) {
-        LOG.info("client connection was closed. id={}", provider.id)
+        LOG.di("client connection was closed. id={}", provider.id)
         providers.remove(provider.id)
-        messageService.sendMessage(ConnectionClosedWithClient(provider.id))
+        messageService.sendMessage(ClientConnectionClosed(provider.id))
     }
 
     override fun close() {

@@ -6,17 +6,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.image.algorithms.transformation.AutoScreenTransformFunction
 import nebulosa.pixinsight.livestacker.PixInsightLiveStacker
-import nebulosa.test.AbstractTest
-import nebulosa.test.NonGitHubOnly
-import nebulosa.test.PI_01_LIGHT
-import nebulosa.test.PI_02_LIGHT
-import nebulosa.test.PI_03_LIGHT
-import nebulosa.test.PI_04_LIGHT
-import nebulosa.test.PI_05_LIGHT
-import nebulosa.test.PI_06_LIGHT
-import nebulosa.test.PI_07_LIGHT
-import nebulosa.test.PI_08_LIGHT
-import nebulosa.test.save
+import nebulosa.test.*
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 

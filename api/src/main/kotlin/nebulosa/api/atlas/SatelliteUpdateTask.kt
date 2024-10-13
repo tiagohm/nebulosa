@@ -2,7 +2,9 @@ package nebulosa.api.atlas
 
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
+import nebulosa.log.i
 import nebulosa.log.loggerFor
+import nebulosa.log.w
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.CompletableFuture
@@ -32,15 +34,15 @@ class SatelliteUpdateTask(
 
     private fun checkIsOutOfDateAndUpdate() {
         if (isOutOfDate()) {
-            LOG.info("satellites is out of date")
+            LOG.i("satellites is out of date")
 
             if (updateTLEs()) {
                 preferenceService.putLong(UPDATED_AT_KEY, System.currentTimeMillis())
             } else {
-                LOG.warn("no satellites was updated")
+                LOG.w("no satellites was updated")
             }
         } else {
-            LOG.info("satellites is up to date")
+            LOG.i("satellites is up to date")
         }
     }
 
@@ -62,7 +64,7 @@ class SatelliteUpdateTask(
 
         return satelliteRepository
             .save(data.values)
-            .also { LOG.info("{} satellites updated", it.size) }
+            .also { LOG.i("{} satellites updated", it.size) }
             .also { messageService.sendMessage(SatelliteUpdateNotificationEvent.Finished(it.size)) }
             .isNotEmpty()
     }

@@ -9,6 +9,7 @@ import nebulosa.erfa.CartesianCoordinate
 import nebulosa.erfa.SphericalCoordinate
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.*
+import nebulosa.log.di
 import nebulosa.log.loggerFor
 import nebulosa.lx200.protocol.LX200ProtocolServer
 import nebulosa.math.*
@@ -283,10 +284,7 @@ class MountService(
             val (calibratedRA, calibratedDEC) = icrf.equatorialAtDate()
             val raOffset = mount.rightAscension - calibratedRA
             val decOffset = mount.declination - calibratedDEC
-            LOG.info(
-                "pointing mount adjusted. ra={}, dec={}, dx={}, dy={}", rightAscension.formatHMS(),
-                declination.formatSignedDMS(), raOffset.formatHMS(), decOffset.formatSignedDMS()
-            )
+            LOG.di("pointing mount adjusted. ra={}, dec={}, dx={}, dy={}", rightAscension.formatHMS(), declination.formatSignedDMS(), raOffset.formatHMS(), decOffset.formatSignedDMS())
             goTo(mount, rightAscension + raOffset, declination + decOffset, true)
         }
     }

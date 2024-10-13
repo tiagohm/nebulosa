@@ -1,14 +1,12 @@
 package nebulosa.api.platesolver
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import nebulosa.api.beans.converters.angle.DeclinationDeserializer
-import nebulosa.api.beans.converters.angle.DegreesDeserializer
-import nebulosa.api.beans.converters.angle.RightAscensionDeserializer
-import nebulosa.api.beans.converters.time.DurationUnit
+import nebulosa.api.converters.angle.DeclinationDeserializer
+import nebulosa.api.converters.angle.DegreesDeserializer
+import nebulosa.api.converters.angle.RightAscensionDeserializer
+import nebulosa.api.converters.time.DurationUnit
 import nebulosa.api.inject.Named
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.max
-import nebulosa.api.javalin.positiveOrZero
+import nebulosa.api.validators.*
 import nebulosa.astap.platesolver.AstapPlateSolver
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.platesolver.LocalAstrometryNetPlateSolver
@@ -44,6 +42,7 @@ data class PlateSolverRequest(
 ) : Validatable, KoinComponent, Supplier<PlateSolver> {
 
     override fun validate() {
+        executablePath.notNull(PLATE_SOLVER_IS_NOT_CONFIGURED).notBlank(PLATE_SOLVER_IS_NOT_CONFIGURED)
         timeout.positiveOrZero().max(5, TimeUnit.MINUTES)
         downsampleFactor.positiveOrZero()
         focalLength.positiveOrZero()
@@ -69,6 +68,8 @@ data class PlateSolverRequest(
     }
 
     companion object {
+
+        const val PLATE_SOLVER_IS_NOT_CONFIGURED = "plate solver is not configured"
 
         @JvmStatic val EMPTY = PlateSolverRequest()
         @JvmStatic private val NOVA_ASTROMETRY_NET_CACHE = HashMap<String, NovaAstrometryNetService>()

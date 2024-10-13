@@ -3,6 +3,9 @@ package nebulosa.api.atlas
 import io.javalin.http.Header
 import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndClose
+import nebulosa.log.d
+import nebulosa.log.e
+import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
@@ -52,22 +55,22 @@ class IERSUpdateTask(
                 .use { it.headers.getDate(Header.LAST_MODIFIED) }
 
             if (modifiedAt != null && "$modifiedAt" == preferenceService.getText(key)) {
-                LOG.info("{} is up to date. modifiedAt={}", url, modifiedAt)
+                LOG.i("{} is up to date. modifiedAt={}", url, modifiedAt)
                 return
             }
 
             request = request.newBuilder().get().build()
 
-            LOG.debug("downloading {}", url)
+            LOG.d("downloading {}", url)
 
             httpClient.newCall(request).execute().use {
                 it.body!!.byteStream().transferAndClose(outputStream())
                 modifiedAt = it.headers.getDate(Header.LAST_MODIFIED)
                 preferenceService.putText(key, "$modifiedAt")
-                LOG.debug("{} downloaded. modifiedAt={}", url, modifiedAt)
+                LOG.d("{} downloaded. modifiedAt={}", url, modifiedAt)
             }
         } catch (e: Throwable) {
-            LOG.error("failed to download finals2000A.all", e)
+            LOG.e("failed to download finals2000A.all", e)
         }
     }
 

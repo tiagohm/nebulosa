@@ -4,14 +4,15 @@ import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.valid
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.valid
 
 class INDIController(
-    app: Javalin,
+    override val app: Javalin,
     private val indiService: INDIService,
     private val connectionService: ConnectionService,
-) {
+) : Controller {
 
     init {
         app.get("indi/{device}", ::device)

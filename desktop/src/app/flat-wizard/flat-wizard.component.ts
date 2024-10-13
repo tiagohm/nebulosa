@@ -67,7 +67,7 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 					if (event.state === 'CAPTURED') {
 						this.angularService.message('Flat frame captured')
 					} else if (event.state === 'FAILED') {
-						this.angularService.message('Failed to find an optimal exposure time from given parameters', 'error')
+						this.angularService.message('Failed to find an optimal exposure time from given parameters', 'danger')
 					}
 				}
 			})

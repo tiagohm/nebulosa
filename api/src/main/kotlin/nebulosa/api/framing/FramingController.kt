@@ -2,18 +2,18 @@ package nebulosa.api.framing
 
 import io.javalin.Javalin
 import io.javalin.http.Context
+import nebulosa.api.core.Controller
 import nebulosa.api.image.ImageService
-import nebulosa.api.javalin.notBlank
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.range
+import nebulosa.api.validators.notNullOrBlank
+import nebulosa.api.validators.range
 import nebulosa.math.deg
 import nebulosa.math.hours
 
 class FramingController(
-    app: Javalin,
+    override val app: Javalin,
     private val imageService: ImageService,
     private val framingService: FramingService,
-) {
+) : Controller {
 
     init {
         app.get("framing/hips-surveys", ::hipsSurveys)
@@ -25,8 +25,8 @@ class FramingController(
     }
 
     private fun frame(ctx: Context) {
-        val rightAscension = ctx.queryParam("rightAscension").notNull().notBlank()
-        val declination = ctx.queryParam("declination").notNull().notBlank()
+        val rightAscension = ctx.queryParam("rightAscension").notNullOrBlank()
+        val declination = ctx.queryParam("declination").notNullOrBlank()
         val width = ctx.queryParam("width")?.toInt()?.range(1, 7680) ?: 1280
         val height = ctx.queryParam("height")?.toInt()?.range(1, 4320) ?: 720
         val fov = ctx.queryParam("fov")?.toDouble()?.range(0.0, 90.0) ?: 1.0

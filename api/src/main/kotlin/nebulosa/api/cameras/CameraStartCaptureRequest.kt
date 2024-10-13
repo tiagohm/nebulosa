@@ -1,10 +1,10 @@
 package nebulosa.api.cameras
 
-import nebulosa.api.beans.converters.time.DurationUnit
+import nebulosa.api.converters.time.DurationUnit
 import nebulosa.api.guiding.DitherAfterExposureRequest
-import nebulosa.api.javalin.*
 import nebulosa.api.livestacker.LiveStackingRequest
 import nebulosa.api.stacker.StackerGroupType
+import nebulosa.api.validators.*
 import nebulosa.indi.device.camera.FrameType
 import java.nio.file.Path
 import java.time.Duration

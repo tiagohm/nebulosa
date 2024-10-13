@@ -5,7 +5,7 @@ import nebulosa.indi.device.mount.Mount
 import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
 import nebulosa.job.manager.delay.DelayTask
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.util.Startable
 import nebulosa.util.Stoppable
@@ -21,7 +21,7 @@ data class MountMoveTask(
 
     override fun run() {
         if (!job.isCancelled && delayTask.duration > 0) {
-            LOG.debug { "Mount Move started. mount=$mount, request=$request" }
+            LOG.d("Mount Move started. mount={}, request={}", mount, request)
 
             mount.slewRates.takeIf { !request.speed.isNullOrBlank() }
                 ?.find { it.name == request.speed }
@@ -31,7 +31,7 @@ data class MountMoveTask(
             delayTask.run()
             stop()
 
-            LOG.debug { "Mount Move finished. mount=$mount, request=$request" }
+            LOG.d("Mount Move finished. mount={}, request={}", mount, request)
         }
     }
 

@@ -1,5 +1,6 @@
 package nebulosa.util.exec
 
+import nebulosa.log.dw
 import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.cancellation.CancellationListener
 import nebulosa.util.concurrency.cancellation.CancellationSource
@@ -181,9 +182,9 @@ class CommandLine internal constructor(
                     }
                 }
             } catch (e: InterruptedException) {
-                LOG.warn("command line interrupted")
+                LOG.dw("command line interrupted")
             } catch (e: Throwable) {
-                LOG.warn("command line exited: {}", e.message)
+                LOG.dw("command line exited: {}", e.message)
             } finally {
                 completable.complete(Unit)
                 reader.close()

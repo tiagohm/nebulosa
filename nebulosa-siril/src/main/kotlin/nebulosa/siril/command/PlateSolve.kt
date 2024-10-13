@@ -1,6 +1,6 @@
 package nebulosa.siril.command
 
-import nebulosa.log.debug
+import nebulosa.log.di
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.platesolver.Parity
@@ -58,8 +58,6 @@ data class PlateSolve(
     @Volatile private var imageCenterDEC: Angle = 0.0
 
     override fun onLineRead(line: String) {
-        LOG.debug { line }
-
         if (line.matchesOrientation() || line.matchesUndeterminatedOrientation() ||
             line.matchesResolution() || line.matchesFOV()
         ) {
@@ -73,14 +71,14 @@ data class PlateSolve(
     }
 
     override fun onExit(exitCode: Int, exception: Throwable?) {
-        LOG.info("plate solver finished. exitCode={}", exitCode, exception)
+        LOG.di("plate solver finished. exitCode={}", exitCode, exception)
         exited.set(true)
         latch.reset()
     }
 
     override fun write(commandLine: SirilCommandLine): PlateSolution {
         if (commandLine.execute(Load(path))) {
-            LOG.info("plate solver started. pid={}", commandLine.pid)
+            LOG.di("plate solver started. pid={}", commandLine.pid)
 
             try {
                 commandLine.registerCommandLineListener(this)
@@ -96,8 +94,6 @@ data class PlateSolve(
             if (success.get()) {
                 return PlateSolution(true, orientation, resolution, imageCenterRA, imageCenterDEC, fovWidth, fovHeight, parity)
             }
-        } else {
-            LOG.error("failed to load $path")
         }
 
         return PlateSolution.NO_SOLUTION

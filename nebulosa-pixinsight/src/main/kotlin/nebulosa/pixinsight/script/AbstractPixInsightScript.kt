@@ -3,6 +3,9 @@ package nebulosa.pixinsight.script
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import nebulosa.json.PathModule
+import nebulosa.log.d
+import nebulosa.log.di
+import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.util.exec.CommandLine
 import nebulosa.util.exec.CommandLineListener
@@ -28,15 +31,15 @@ abstract class AbstractPixInsightScript<T : PixInsightScript.Output> : PixInsigh
     final override fun startCommandLine(commandLine: CommandLine) {
         commandLine.whenComplete { exitCode, exception ->
             try {
-                LOG.debug("{} script finished. done={}, exitCode={}", this::class.simpleName, isDone, exitCode, exception)
+                LOG.d("{} script finished. done={}, exitCode={}", this::class.simpleName, isDone, exitCode, exception)
 
                 waitOnComplete()
 
                 if (isDone) return@whenComplete
                 else if (exception != null) completeExceptionally(exception)
-                else complete(processOnComplete(exitCode).also { LOG.debug("{} script processed. output={}", this::class.simpleName, it) })
+                else complete(processOnComplete(exitCode).also { LOG.d("{} script processed. output={}", this::class.simpleName, it) })
             } catch (e: Throwable) {
-                LOG.error("{} finished with fatal exception. message={}", this::class.simpleName, e.message)
+                LOG.e("{} finished with fatal exception. message={}", this::class.simpleName, e.message)
                 completeExceptionally(e)
             } finally {
                 commandLine.unregisterCommandLineListener(this)
@@ -62,7 +65,7 @@ abstract class AbstractPixInsightScript<T : PixInsightScript.Output> : PixInsigh
 
         @JvmStatic
         internal fun PixInsightScript<*>.execute(scriptPath: Path, data: Any?, slot: Int = this.slot): String {
-            LOG.info("{} will be executed. slot={}, script={}, data={}", this::class.simpleName, slot, scriptPath, data)
+            LOG.di("{} will be executed. slot={}, script={}, data={}", this::class.simpleName, slot, scriptPath, data)
 
             return buildString {
                 if (slot > 0) append("$slot:")

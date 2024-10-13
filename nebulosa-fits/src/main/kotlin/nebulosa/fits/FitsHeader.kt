@@ -5,6 +5,7 @@ import nebulosa.image.format.HeaderCard
 import nebulosa.image.format.HeaderKey
 import nebulosa.io.SeekableSource
 import nebulosa.io.source
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.util.*
 import java.util.function.Predicate
@@ -145,7 +146,7 @@ open class FitsHeader : AbstractHeader {
                     return true
                 }
 
-                LOG.debug("[{}] with unexpected value type. Expected {}, got {}", key.key, key.valueType, type)
+                LOG.d("[{}] with unexpected value type. Expected {}, got {}", key.key, key.valueType, type)
 
                 return false
             }

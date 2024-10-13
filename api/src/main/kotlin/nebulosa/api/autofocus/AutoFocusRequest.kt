@@ -2,11 +2,11 @@ package nebulosa.api.autofocus
 
 import nebulosa.api.cameras.CameraStartCaptureRequest
 import nebulosa.api.focusers.BacklashCompensation
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.max
-import nebulosa.api.javalin.positive
-import nebulosa.api.javalin.range
 import nebulosa.api.stardetector.StarDetectionRequest
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.max
+import nebulosa.api.validators.positive
+import nebulosa.api.validators.range
 import nebulosa.autofocus.AutoFocusFittingMode
 
 data class AutoFocusRequest(

@@ -2,6 +2,8 @@ package nebulosa.api.atlas
 
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
+import nebulosa.log.e
+import nebulosa.log.i
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -29,7 +31,7 @@ class SkyAtlasUpdateTask(
                 val newestVersion = response.body!!.string().trim()
 
                 if (newestVersion != preferenceService.getText(VERSION_KEY) || simbadEntityRepository.isEmpty()) {
-                    LOG.info("Sky Atlas database is out of date. Downloading...")
+                    LOG.i("Sky Atlas database is out of date. downloading...")
 
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Started)
 
@@ -55,7 +57,7 @@ class SkyAtlasUpdateTask(
                             } else {
                                 messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Failed)
 
-                                LOG.error("Failed to download. url={}, code={}", url, it.code)
+                                LOG.e("failed to download. url={}, code={}", url, it.code)
                                 return
                             }
                         }
@@ -64,9 +66,9 @@ class SkyAtlasUpdateTask(
                     preferenceService.putText(VERSION_KEY, newestVersion)
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Finished(newestVersion))
 
-                    LOG.info("Sky Atlas database was updated. version={}, size={}", newestVersion, simbadEntityRepository.size)
+                    LOG.i("Sky Atlas database was updated. version={}, size={}", newestVersion, simbadEntityRepository.size)
                 } else {
-                    LOG.info("Sky Atlas database is up to date. version={}, size={}", newestVersion, simbadEntityRepository.size)
+                    LOG.i("Sky Atlas database is up to date. version={}, size={}", newestVersion, simbadEntityRepository.size)
                 }
             }
         }

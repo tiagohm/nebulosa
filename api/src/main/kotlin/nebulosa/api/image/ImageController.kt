@@ -4,14 +4,19 @@ import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.javalin.*
+import nebulosa.api.core.Controller
+import nebulosa.api.core.location
+import nebulosa.api.validators.exists
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.path
+import nebulosa.api.validators.range
 import java.io.ByteArrayInputStream
 
 class ImageController(
-    app: Javalin,
+    override val app: Javalin,
     private val imageService: ImageService,
     private val connectionService: ConnectionService,
-) {
+) : Controller {
 
     init {
         app.post("image", ::openImage)

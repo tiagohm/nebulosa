@@ -3,6 +3,8 @@ package nebulosa.astap.platesolver
 import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsKeyword
 import nebulosa.image.Image
+import nebulosa.log.di
+import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.deg
@@ -58,14 +60,14 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
             putArg("-f", path)
         }
 
-        LOG.info("ASTAP solving. command={}", cmd.command)
+        LOG.di("astap solving. command={}", cmd.command)
 
         try {
             val timeoutOrDefault = timeout.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5)
             cancellationToken.listen(cmd)
             cmd.start(timeoutOrDefault)
 
-            LOG.info("astap exited. code={}", cmd.get())
+            LOG.di("astap exited. code={}", cmd.get())
 
             if (cancellationToken.isCancelled) return PlateSolution.NO_SOLUTION
 
@@ -117,7 +119,7 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
                     widthInPixels = widthInPixels, heightInPixels = heightInPixels, header = header
                 )
 
-                LOG.info("astap solved. calibration={}", solution)
+                LOG.i("astap solved. calibration={}", solution)
 
                 return solution
             } else {

@@ -2,6 +2,7 @@ package nebulosa.api.atlas.ephemeris
 
 import nebulosa.horizons.*
 import nebulosa.log.loggerFor
+import nebulosa.log.w
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.sbd.SmallBody
 import java.time.LocalDateTime
@@ -62,7 +63,7 @@ class HorizonsEphemerisProvider(private val horizonsService: HorizonsService) : 
                                 quantities = QUANTITIES,
                             ).execute()
                     } catch (e: NonUniqueObjectException) {
-                        LOG.warn("non unique object. target={}, matches={}", target, e.recordItems)
+                        LOG.w("non unique object. target={}, matches={}", target, e.recordItems)
 
                         horizonsService
                             .observer(

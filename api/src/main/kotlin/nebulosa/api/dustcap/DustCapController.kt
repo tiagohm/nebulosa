@@ -3,12 +3,13 @@ package nebulosa.api.dustcap
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.core.Controller
 
 class DustCapController(
-    app: Javalin,
+    override val app: Javalin,
     private val connectionService: ConnectionService,
     private val dustCapService: DustCapService,
-) {
+) : Controller {
 
     init {
         app.get("dust-caps", ::dustCaps)

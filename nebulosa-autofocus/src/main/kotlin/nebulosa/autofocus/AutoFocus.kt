@@ -5,7 +5,10 @@ import nebulosa.curve.fitting.CurvePoint.Companion.midPoint
 import nebulosa.curve.fitting.HyperbolicFitting
 import nebulosa.curve.fitting.QuadraticFitting
 import nebulosa.curve.fitting.TrendLineFitting
+import nebulosa.log.d
+import nebulosa.log.i
 import nebulosa.log.loggerFor
+import nebulosa.log.w
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
@@ -24,15 +27,14 @@ data class AutoFocus(
     private val focusMaxPosition: Int = Int.MAX_VALUE,
 ) {
 
-    // TODO: Usar sealed class e remover substate e algumas variáveis como moveFocuserToLeftmostOrRightmost.
-    private enum class State {
-        IDLE,
-        FOCUS_POINTS,
-        EVALUATE_TREND_LINE_POINTS,
-        MORE_POINTS_TO_THE_LEFT,
-        MORE_POINTS_TO_THE_RIGHT,
-        VERIFY_DATA_IS_ENOUGTH,
-        DETERMINATE_FINAL_FOCUS_POINT,
+    private sealed interface State {
+        data object Idle : State
+        data object FocusPoints : State
+        data object EvaluateTrendLinePoints : State
+        data class MorePointsToTheLeft(@JvmField var moveFocuser: Boolean) : State
+        data class MorePointsToTheRight(@JvmField var moveFocuser: Boolean) : State
+        data object VerifyDataIsEnougth : State
+        data object DeterminateFinalFocusPoint : State
     }
 
     private enum class SubState {
@@ -49,19 +51,13 @@ data class AutoFocus(
     private val listeners = ConcurrentHashMap.newKeySet<AutoFocusListener>(1)
 
     @Volatile private var subState = SubState.IDLE
-    @Volatile private var prevState = State.IDLE
-    @Volatile private var state = State.IDLE
-        private set(value) {
-            prevState = field
-            field = value
-        }
+    @Volatile private var state: State = State.Idle
 
     @Volatile private var measurement = MeasuredStars.EMPTY
     @Volatile private var exposureCount = 0
     @Volatile private var remainingSteps = 0
     @Volatile private var initialFocusPosition = 0
     @Volatile private var currentFocusPosition = 0
-    @Volatile private var moveFocuserToLeftmostOrRightmost = false
 
     @Volatile private var trendLineCurve: TrendLineFitting.Curve? = null
     @Volatile private var parabolicCurve: QuadraticFitting.Curve? = null
@@ -86,7 +82,7 @@ data class AutoFocus(
     fun add(path: Path) {
         if (exposureCount > 0) {
             exposureCount--
-            LOG.debug("added. path={}, exposureCount={}", path, exposureCount)
+            LOG.d("added. path={}, exposureCount={}", path, exposureCount)
             measurement = measureStars(path)
 
             if (exposureCount == 0) {
@@ -97,15 +93,13 @@ data class AutoFocus(
 
     fun reset() {
         subState = SubState.IDLE
-        state = State.IDLE
-        prevState = State.IDLE
+        state = State.Idle
 
         measurement = MeasuredStars.EMPTY
         exposureCount = 0
         remainingSteps = 0
         initialFocusPosition = 0
         currentFocusPosition = 0
-        moveFocuserToLeftmostOrRightmost = false
 
         trendLineCurve = null
         parabolicCurve = null
@@ -115,22 +109,24 @@ data class AutoFocus(
     }
 
     fun determinate(focusPosition: Int): AutoFocusResult {
-        LOG.debug("determinate. position={}, state={}, subState={}, prevState={}", focusPosition, state, subState, prevState)
+        val currentState = state
 
-        when (state) {
+        LOG.d("determinate. position={}, state={}, subState={}", focusPosition, currentState, subState)
+
+        when (currentState) {
             // Estado inicial.
-            State.IDLE -> {
+            State.Idle -> {
                 // Salva a posição inicial do focalizador, para que possa voltar caso algo dê errado.
                 initialFocusPosition = focusPosition
 
                 // Iniciar a coleta dos pontos de foco.
-                state = State.FOCUS_POINTS
+                state = State.FocusPoints
                 remainingSteps = numberOfSteps
                 // Próxima passo é mover o focalizador para a posição mais distante.
                 return moveFocuser(direction * initialOffsetSteps * stepSize, true)
             }
             // Estado para obter os pontos de foco e calcular a curva.
-            State.FOCUS_POINTS -> {
+            State.FocusPoints -> {
                 // Ainda não terminou de capturar todos os pontos de foco necessário.
                 if (remainingSteps > 0) {
                     // Terminou de mover o focalizador.
@@ -144,7 +140,7 @@ data class AutoFocus(
                     }
                     // Fim da captura.
                     else if (exposureCount == 0) {
-                        LOG.debug("HFD measured after exposures. hfd={}, stdDev={}", measurement.hfd, measurement.stdDev)
+                        LOG.d("HFD measured after exposures. hfd={}, stdDev={}", measurement.hfd, measurement.stdDev)
 
                         computeCurvePoint()
 
@@ -153,21 +149,21 @@ data class AutoFocus(
                             return moveFocuser(direction * -stepSize, true)
                         }
 
-                        state = State.EVALUATE_TREND_LINE_POINTS
+                        state = State.EvaluateTrendLinePoints
                         subState = SubState.IDLE
 
                         return AutoFocusResult.Determinate
                     }
                 }
             }
-            State.EVALUATE_TREND_LINE_POINTS -> {
+            State.EvaluateTrendLinePoints -> {
                 leftCount = trendLineCurve?.left?.points?.size ?: 0
                 rightCount = trendLineCurve?.right?.points?.size ?: 0
 
-                LOG.debug("trend line evaluated. left={}, right={}", leftCount, rightCount)
+                LOG.d("trend line evaluated. left={}, right={}", leftCount, rightCount)
 
                 if (leftCount == 0 && rightCount == 0) {
-                    LOG.warn("Not enought spreaded points")
+                    LOG.w("not enought spreaded points")
                     return AutoFocusResult.Failed(initialFocusPosition)
                 }
 
@@ -176,16 +172,16 @@ data class AutoFocus(
                 if (trendLineCurve!!.left.points.size < initialOffsetSteps
                     && focusPoints.count { it.x < trendLineCurve!!.minimum.x && it.y == 0.0 } < initialOffsetSteps
                 ) {
-                    LOG.debug("more data points needed to the left of the minimum")
-
-                    state = State.MORE_POINTS_TO_THE_LEFT
+                    LOG.d("more data points needed to the left of the minimum")
 
                     val firstX = focusPoints.first().x.roundToInt()
 
                     // Move to the leftmost point - this should never be necessary since we're already there, but just in case
                     if (focusPosition != firstX) {
-                        moveFocuserToLeftmostOrRightmost = true
+                        state = State.MorePointsToTheLeft(true)
                         return moveFocuser(firstX, false)
+                    } else {
+                        state = State.MorePointsToTheLeft(false)
                     }
 
                     // More points needed to the left.
@@ -194,29 +190,29 @@ data class AutoFocus(
                     && focusPoints.count { it.x > trendLineCurve!!.minimum.x && it.y == 0.0 } < initialOffsetSteps
                 ) {
                     // Now we can go to the right, if necessary.
-                    LOG.debug("more data points needed to the right of the minimum")
-
-                    state = State.MORE_POINTS_TO_THE_RIGHT
+                    LOG.d("more data points needed to the right of the minimum")
 
                     val lastX = focusPoints.last().x.roundToInt()
 
                     // More points needed to the right. Let's get to the rightmost point, and keep going right one point at a time.
                     if (focusPosition != lastX) {
-                        moveFocuserToLeftmostOrRightmost = true
+                        state = State.MorePointsToTheRight(true)
                         return moveFocuser(lastX, false)
+                    } else {
+                        state = State.MorePointsToTheRight(false)
                     }
 
                     // More points needed to the right.
                     return moveFocuser(direction * stepSize, true)
                 }
 
-                state = State.DETERMINATE_FINAL_FOCUS_POINT
+                state = State.DeterminateFinalFocusPoint
                 return AutoFocusResult.Determinate
             }
-            State.MORE_POINTS_TO_THE_LEFT -> {
+            is State.MorePointsToTheLeft -> {
                 // Terminou de mover o focalizador.
-                if (moveFocuserToLeftmostOrRightmost) {
-                    moveFocuserToLeftmostOrRightmost = false
+                if (currentState.moveFocuser) {
+                    currentState.moveFocuser = false
                     // More points needed to the left.
                     return moveFocuser(direction * -stepSize, true)
                 } else if (subState == SubState.MOVE_FOCUSER) {
@@ -229,14 +225,14 @@ data class AutoFocus(
                 }
                 // Fim da captura.
                 else if (exposureCount == 0) {
-                    state = State.VERIFY_DATA_IS_ENOUGTH
+                    state = State.VerifyDataIsEnougth
                     return AutoFocusResult.Determinate
                 }
             }
-            State.MORE_POINTS_TO_THE_RIGHT -> {
+            is State.MorePointsToTheRight -> {
                 // Terminou de mover o focalizador.
-                if (moveFocuserToLeftmostOrRightmost) {
-                    moveFocuserToLeftmostOrRightmost = false
+                if (currentState.moveFocuser) {
+                    currentState.moveFocuser = false
                     // More points needed to the right.
                     return moveFocuser(direction * stepSize, true)
                 } else if (subState == SubState.MOVE_FOCUSER) {
@@ -249,58 +245,58 @@ data class AutoFocus(
                 }
                 // Fim da captura.
                 else if (exposureCount == 0) {
-                    state = State.VERIFY_DATA_IS_ENOUGTH
+                    state = State.VerifyDataIsEnougth
                     return AutoFocusResult.Determinate
                 }
             }
-            State.VERIFY_DATA_IS_ENOUGTH -> {
-                LOG.debug("HFD measured after exposures. hfd={}, stdDev={}", measurement.hfd, measurement.stdDev)
+            State.VerifyDataIsEnougth -> {
+                LOG.d("HFD measured after exposures. hfd={}, stdDev={}", measurement.hfd, measurement.stdDev)
 
                 computeCurvePoint()
 
                 if (maximumFocusPoints < focusPoints.size) {
                     // Break out when the maximum limit of focus points is reached
-                    LOG.error("failed to complete. Maximum number of focus points exceeded ({}).", maximumFocusPoints)
+                    LOG.w("failed to complete. Maximum number of focus points exceeded ({}).", maximumFocusPoints)
                     return AutoFocusResult.Failed(initialFocusPosition)
                 }
 
                 if (focusPosition <= 0 || focusPosition >= focusMaxPosition) {
                     // Break out when the focuser hits the min/max position. It can't continue from there.
-                    LOG.error("failed to complete. position reached to min/max")
+                    LOG.w("failed to complete. position reached to min/max")
                     return AutoFocusResult.Failed(initialFocusPosition)
                 }
 
                 state = if (isDataPointsEnough) {
-                    State.DETERMINATE_FINAL_FOCUS_POINT
+                    State.DeterminateFinalFocusPoint
                 } else {
                     subState = SubState.IDLE
-                    State.EVALUATE_TREND_LINE_POINTS
+                    State.EvaluateTrendLinePoints
                 }
 
                 return AutoFocusResult.Determinate
             }
-            State.DETERMINATE_FINAL_FOCUS_POINT -> {
+            State.DeterminateFinalFocusPoint -> {
                 val finalFocusPoint = determineFinalFocusPoint()
 
                 return if (finalFocusPoint == null || !validateCalculatedFocusPosition(finalFocusPoint)) {
-                    LOG.warn("potentially bad auto-focus. Restoring original focus position")
+                    LOG.w("potentially bad auto-focus. Restoring original focus position")
                     AutoFocusResult.Failed(initialFocusPosition)
                 } else {
                     determinedFocusPoint = finalFocusPoint
-                    LOG.info("Auto Focus completed. x={}, y={}", finalFocusPoint.x, finalFocusPoint.y)
+                    LOG.i("Auto Focus completed. x={}, y={}", finalFocusPoint.x, finalFocusPoint.y)
                     AutoFocusResult.Completed(finalFocusPoint)
                 }
             }
         }
 
-        LOG.warn("invalid state. state={}, subState={}, exposureCount={}", state, subState, exposureCount)
+        LOG.w("invalid state. state={}, subState={}, exposureCount={}", state, subState, exposureCount)
 
         throw IllegalStateException("auto focus has reached an invalid state")
     }
 
     private fun moveFocuser(position: Int, relative: Boolean): AutoFocusResult {
         subState = SubState.MOVE_FOCUSER
-        LOG.debug("moving focuser. position={}, relative={}", position, relative)
+        LOG.d("moving focuser. position={}, relative={}", position, relative)
         return AutoFocusResult.MoveFocuser(position, relative)
     }
 
@@ -312,15 +308,15 @@ data class AutoFocus(
         }
 
         subState = SubState.TAKE_EXPOSURE
-        LOG.debug("taking exposure. exposureCount={}", exposureCount)
+        LOG.d("taking exposure. exposureCount={}", exposureCount)
         return AutoFocusResult.TakeExposure
     }
 
     private fun measureStars(path: Path): MeasuredStars {
         val detectedStars = starDetector.detect(path)
-        LOG.debug("detected {} stars", detectedStars.size)
+        LOG.d("detected {} stars", detectedStars.size)
         val measurement = detectedStars.measureDetectedStars()
-        LOG.debug("HFD measured. hfd={}, stdDev={}", measurement.hfd, measurement.stdDev)
+        LOG.d("HFD measured. hfd={}, stdDev={}", measurement.hfd, measurement.stdDev)
         measurements.add(measurement)
         listeners.forEach { it.onStarDetected(detectedStars.size, measurement.hfd, measurement.stdDev, false) }
         return measurement
@@ -339,14 +335,14 @@ data class AutoFocus(
 
     private fun computeCurvePoint(): CurvePoint? {
         return if (measurement.hfd == 0.0) {
-            LOG.warn("no stars detected in step")
+            LOG.w("no stars detected in step")
             null
         } else {
             val focusPoint = CurvePoint(currentFocusPosition.toDouble(), measurement.hfd, measurement.stdDev)
             focusPoints.add(focusPoint)
             focusPoints.sortBy { it.x }
 
-            LOG.debug("focus point added. remainingSteps={}, point={}", remainingSteps, focusPoint)
+            LOG.d("focus point added. remainingSteps={}, point={}", remainingSteps, focusPoint)
 
             computeCurveFittings()
 
@@ -385,7 +381,7 @@ data class AutoFocus(
     }
 
     private fun validateCalculatedFocusPosition(focusPoint: CurvePoint): Boolean {
-        LOG.debug("validating calculated focus position. threshold={}, x={}, y={}", rSquaredThreshold, focusPoint.x, focusPoint.y)
+        LOG.d("validating calculated focus position. threshold={}, x={}, y={}", rSquaredThreshold, focusPoint.x, focusPoint.y)
 
         if (rSquaredThreshold > 0.0) {
             fun isTrendLineBad() = trendLineCurve?.let { it.left.rSquared < rSquaredThreshold || it.right.rSquared < rSquaredThreshold } != false
@@ -401,7 +397,7 @@ data class AutoFocus(
             }
 
             if (isBad) {
-                LOG.error("coefficient of determination is below threshold")
+                LOG.w("coefficient of determination is below threshold")
                 return false
             }
         }
@@ -410,7 +406,7 @@ data class AutoFocus(
         val max = focusPoints.last().x
 
         if (focusPoint.x < min || focusPoint.x > max) {
-            LOG.error("determined focus point position is outside of the overall measurement points of the curve")
+            LOG.w("determined focus point position is outside of the overall measurement points of the curve")
             return false
         }
 

@@ -1,6 +1,6 @@
 package nebulosa.pixinsight.script
 
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 
 data class PixInsightIsRunning(override val slot: Int) : AbstractPixInsightScript<PixInsightScript.Output>() {
@@ -46,7 +46,7 @@ data class PixInsightIsRunning(override val slot: Int) : AbstractPixInsightScrip
             return
         }
 
-        LOG.debug { line }
+        LOG.d(line)
     }
 
     override fun processOnComplete(exitCode: Int) = Output.FAILED

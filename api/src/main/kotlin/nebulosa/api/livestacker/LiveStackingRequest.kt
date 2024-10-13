@@ -1,8 +1,8 @@
 package nebulosa.api.livestacker
 
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.positiveOrZero
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.positiveOrZero
 import nebulosa.livestacker.LiveStacker
 import nebulosa.pixinsight.livestacker.PixInsightLiveStacker
 import nebulosa.pixinsight.script.startPixInsight

@@ -2,6 +2,8 @@ package nebulosa.astap.stardetector
 
 import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
+import nebulosa.log.d
+import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
@@ -38,9 +40,9 @@ data class AstapStarDetector(
 
         try {
             cmd.start()
-            LOG.debug("astap exited. code={}", cmd.get())
+            LOG.d("astap exited. code={}", cmd.get())
         } catch (e: Throwable) {
-            LOG.error("astap failed", e)
+            LOG.e("astap failed", e)
             return emptyList()
         }
 

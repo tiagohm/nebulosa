@@ -8,15 +8,18 @@ import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.github.rvesse.airline.annotations.Command
 import com.github.rvesse.airline.annotations.Option
 import io.javalin.Javalin
+import io.javalin.http.Context
+import io.javalin.http.HttpStatus.BAD_REQUEST
 import io.javalin.json.JavalinJackson
-import nebulosa.api.atlas.Location
-import nebulosa.api.beans.modules.DeviceModule
+import nebulosa.api.converters.modules.DeviceModule
+import nebulosa.api.core.ErrorResponse
 import nebulosa.api.inject.*
 import nebulosa.json.PathModule
+import nebulosa.log.i
 import nebulosa.log.loggerFor
 import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
-import java.util.concurrent.ConcurrentHashMap
+import java.net.ConnectException
 
 @Command(name = "nebulosa")
 class Nebulosa : Runnable, AutoCloseable {
@@ -53,13 +56,25 @@ class Nebulosa : Runnable, AutoCloseable {
             }
         }.start(host, port)
 
+        app.exception(Exception::class.java, ::handleException)
+
         koinApp.modules(appModule(app))
         koinApp.modules(objectMapperModule(OBJECT_MAPPER))
         koinApp.modules(servicesModule())
         koinApp.modules(controllersModule())
         startKoin(koinApp)
 
-        LOG.info("server is started at port: {}", app.port())
+        LOG.i("server is started at port: {}", app.port())
+    }
+
+    private fun handleException(ex: Exception, ctx: Context) {
+        val message = when (ex) {
+            is ConnectException -> "connection refused"
+            is NumberFormatException -> "invalid number: ${ex.message}"
+            else -> ex.message!!
+        }
+
+        ctx.status(BAD_REQUEST).json(ErrorResponse.error(message.lowercase()))
     }
 
     override fun close() {
@@ -68,7 +83,7 @@ class Nebulosa : Runnable, AutoCloseable {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<Nebulosa>()
+        @JvmStatic internal val LOG = loggerFor<Nebulosa>()
 
         @JvmStatic private val OBJECT_MAPPER = jsonMapper {
             addModule(JavaTimeModule())

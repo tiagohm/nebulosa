@@ -2,14 +2,15 @@ package nebulosa.api.connection
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import nebulosa.api.javalin.notBlank
-import nebulosa.api.javalin.notNull
-import nebulosa.api.javalin.range
+import nebulosa.api.core.Controller
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.notNullOrBlank
+import nebulosa.api.validators.range
 
 class ConnectionController(
-    app: Javalin,
+    override val app: Javalin,
     private val connectionService: ConnectionService,
-) {
+) : Controller {
 
     init {
         app.get("connection", ::statuses)
@@ -19,7 +20,7 @@ class ConnectionController(
     }
 
     private fun connect(ctx: Context) {
-        val host = ctx.queryParam("host").notNull().notBlank()
+        val host = ctx.queryParam("host").notNullOrBlank()
         val port = ctx.queryParam("port").notNull().toInt().range(1, 65535)
         val type = ctx.queryParam("type").notNull().let(ConnectionType::valueOf)
 

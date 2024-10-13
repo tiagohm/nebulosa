@@ -3,10 +3,10 @@ package nebulosa.api.atlas
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import nebulosa.api.beans.converters.angle.DegreesDeserializer
-import nebulosa.api.beans.converters.angle.DegreesSerializer
-import nebulosa.api.beans.converters.distance.MetersDeserializer
-import nebulosa.api.beans.converters.distance.MetersSerializer
+import nebulosa.api.converters.angle.DegreesDeserializer
+import nebulosa.api.converters.angle.DegreesSerializer
+import nebulosa.api.converters.distance.MetersDeserializer
+import nebulosa.api.converters.distance.MetersSerializer
 import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.nova.position.GeographicCoordinate

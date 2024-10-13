@@ -3,8 +3,6 @@ package nebulosa.siril.command
 import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsHeaderCard
 import nebulosa.image.format.Header
-import nebulosa.log.debug
-import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 import nebulosa.util.exec.CommandLineListener
 import java.util.concurrent.TimeUnit
@@ -25,8 +23,6 @@ data class DumpHeader(private val header: Header = FitsHeader()) : SirilCommand<
             try {
                 with(FitsHeaderCard.from(card)) {
                     header.add(this)
-
-                    LOG.debug { line }
 
                     if (key == "END") {
                         finished.set(true)
@@ -49,10 +45,5 @@ data class DumpHeader(private val header: Header = FitsHeader()) : SirilCommand<
         } finally {
             commandLine.unregisterCommandLineListener(this)
         }
-    }
-
-    companion object {
-
-        @JvmStatic private val LOG = loggerFor<DumpHeader>()
     }
 }

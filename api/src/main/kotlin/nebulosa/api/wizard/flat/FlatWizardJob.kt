@@ -10,7 +10,9 @@ import nebulosa.indi.device.camera.CameraEvent
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.job.manager.AbstractJob
 import nebulosa.job.manager.Task
+import nebulosa.log.d
 import nebulosa.log.loggerFor
+import nebulosa.log.w
 import nebulosa.util.concurrency.cancellation.CancellationSource
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 import java.nio.file.Path
@@ -84,26 +86,26 @@ data class FlatWizardJob(
         val image = savedPath.fits().use { Image.open(it, false) }
         val statistics = STATISTICS.compute(image)
 
-        LOG.debug("flat frame computed. statistics={}", statistics)
+        LOG.d("flat frame computed. statistics={}", statistics)
 
         if (statistics.mean in meanRange) {
-            LOG.debug("found an optimal exposure time. exposureTime={}, path={}", status.exposureTime, savedPath)
+            LOG.d("found an optimal exposure time. exposureTime={}, path={}", status.exposureTime, savedPath)
             status.state = FlatWizardState.CAPTURED
             status.capture.state = CameraCaptureState.IDLE
             return true
         } else if (statistics.mean < meanRange.start) {
             exposureMin = cameraExposureTask.request.exposureTime.toNanos()
-            LOG.debug("captured frame is below mean range. exposureTime={}, path={}", exposureMin, savedPath)
+            LOG.d("captured frame is below mean range. exposureTime={}, path={}", exposureMin, savedPath)
         } else {
             exposureMax = cameraExposureTask.request.exposureTime.toNanos()
-            LOG.debug("captured frame is above mean range. exposureTime={}, path={}", exposureMax, savedPath)
+            LOG.d("captured frame is above mean range. exposureTime={}, path={}", exposureMax, savedPath)
         }
 
         val delta = exposureMax - exposureMin
 
         // 10ms
         if (delta < MIN_DELTA_TIME) {
-            LOG.warn("Failed to find an optimal exposure time. exposureMin={}, exposureMax={}", exposureMin, exposureMax)
+            LOG.w("failed to find an optimal exposure time. min={}, max={}", exposureMin, exposureMax)
             status.state = FlatWizardState.FAILED
             status.capture.state = CameraCaptureState.IDLE
             return true
@@ -113,7 +115,7 @@ data class FlatWizardJob(
     }
 
     override fun beforeStart() {
-        LOG.debug("Flat Wizard started. camera={}, request={}", camera, request)
+        LOG.d("Flat Wizard started. camera={}, request={}", camera, request)
 
         status.state = FlatWizardState.EXPOSURING
         status.send()
@@ -138,7 +140,7 @@ data class FlatWizardJob(
             status.send()
         }
 
-        LOG.debug("Flat Wizard finished. camera={}, request={}, exposureTime={} µs", camera, request, status.exposureTime)
+        LOG.d("Flat Wizard finished. camera={}, request={}, exposureTime={} µs", camera, request, status.exposureTime)
     }
 
     @Suppress("NOTHING_TO_INLINE")

@@ -6,7 +6,10 @@ import nebulosa.indi.device.camera.*
 import nebulosa.io.transferAndClose
 import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
+import nebulosa.log.d
+import nebulosa.log.e
 import nebulosa.log.loggerFor
+import nebulosa.log.w
 import nebulosa.util.concurrency.cancellation.CancellationSource
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 import okio.sink
@@ -56,7 +59,7 @@ data class CameraExposureTask(
 
     override fun run() {
         if (camera.connected) {
-            LOG.debug("Camera Exposure started. camera={}, request={}", camera, request)
+            LOG.d("Camera Exposure started. camera={}, request={}", camera, request)
 
             latch.countUp()
 
@@ -79,9 +82,9 @@ data class CameraExposureTask(
 
             latch.await()
 
-            LOG.debug("Camera Exposure finished. camera={}, request={}", camera, request)
+            LOG.d("Camera Exposure finished. camera={}, request={}", camera, request)
         } else {
-            LOG.warn("camera not connected. camera={}, request={}", camera, request)
+            LOG.w("camera not connected. camera={}, request={}", camera, request)
         }
 
         outputPath.deleteIfExists()
@@ -100,18 +103,18 @@ data class CameraExposureTask(
                 outputPath.sink().use(event.image!!::write)
                 event.image?.first()?.header
             } else {
-                LOG.warn("invalid event. event={}", event)
+                LOG.w("invalid event. event={}", event)
                 return
             }
 
             with(request.makeSavePath(header = header)) {
-                LOG.debug("saving FITS image at {}", this)
+                LOG.d("saving FITS image at {}", this)
                 createParentDirectories()
                 outputPath.moveTo(this, true)
                 job.accept(CameraExposureFinished(job, this@CameraExposureTask, this))
             }
         } catch (e: Throwable) {
-            LOG.error("failed to save FITS image", e)
+            LOG.e("failed to save FITS image", e)
         } finally {
             latch.countDown()
         }

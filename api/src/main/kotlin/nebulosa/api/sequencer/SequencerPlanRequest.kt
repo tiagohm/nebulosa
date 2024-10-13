@@ -1,15 +1,15 @@
 package nebulosa.api.sequencer
 
-import nebulosa.api.beans.converters.time.DurationUnit
 import nebulosa.api.cameras.AutoSubFolderMode
 import nebulosa.api.cameras.CameraCaptureNamingFormat
 import nebulosa.api.cameras.CameraStartCaptureRequest
+import nebulosa.api.converters.time.DurationUnit
 import nebulosa.api.guiding.DitherAfterExposureRequest
-import nebulosa.api.javalin.Validatable
-import nebulosa.api.javalin.max
-import nebulosa.api.javalin.notEmpty
-import nebulosa.api.javalin.positiveOrZero
 import nebulosa.api.livestacker.LiveStackingRequest
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.max
+import nebulosa.api.validators.notEmpty
+import nebulosa.api.validators.positiveOrZero
 import java.nio.file.Path
 import java.time.Duration
 import java.time.temporal.ChronoUnit

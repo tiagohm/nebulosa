@@ -19,6 +19,8 @@ import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.job.manager.AbstractJob
 import nebulosa.job.manager.Task
+import nebulosa.log.d
+import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarDetector
 import java.nio.file.Files
@@ -104,7 +106,7 @@ data class AutoFocusJob(
     }
 
     override fun beforeStart() {
-        LOG.debug("Auto Focus started. reverse={}, request={}, camera={}, focuser={}", reverse, request, camera, focuser)
+        LOG.d("Auto Focus started. reverse={}, request={}, camera={}, focuser={}", reverse, request, camera, focuser)
 
         autoFocus.registerAutoFocusListener(this)
         finished.set(false)
@@ -133,7 +135,7 @@ data class AutoFocusJob(
                         .determinate(focuser.position)
                         .also { it.handle() }
                 } catch (e: Throwable) {
-                    LOG.error("auto focus determination failed", e)
+                    LOG.e("auto focus determination failed", e)
 
                     status.state = AutoFocusState.FAILED
                     status.send()
@@ -169,7 +171,7 @@ data class AutoFocusJob(
             status.send()
         }
 
-        LOG.debug("Auto Focus finished. camera={}, focuser={}", camera, focuser)
+        LOG.d("Auto Focus finished. camera={}, focuser={}", camera, focuser)
     }
 
     override fun accept(event: Any) {

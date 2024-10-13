@@ -26,7 +26,7 @@ import nebulosa.job.manager.SplitTask
 import nebulosa.job.manager.Task
 import nebulosa.job.manager.delay.DelayEvent
 import nebulosa.job.manager.delay.DelayTask
-import nebulosa.log.debug
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.nio.file.Path
 
@@ -257,7 +257,7 @@ data class SequencerJob(
     }
 
     override fun beforeStart() {
-        LOG.debug("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan)
+        LOG.d("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan)
 
         status.state = SequencerState.RUNNING
         status.send()
@@ -287,7 +287,7 @@ data class SequencerJob(
         status.state = SequencerState.IDLE
         status.send()
 
-        LOG.debug("Sequencer finished. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan)
+        LOG.d("Sequencer finished. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan)
     }
 
     @Suppress("NOTHING_TO_INLINE")
@@ -304,7 +304,7 @@ data class SequencerJob(
     private inner class SequencerIdTask(@JvmField val id: Int) : Task {
 
         override fun run() {
-            LOG.debug { "Sequence in execution. id=$id" }
+            LOG.d("Sequence in execution. id={}", id)
             status.id = id
         }
     }

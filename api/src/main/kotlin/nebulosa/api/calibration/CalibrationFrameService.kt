@@ -8,7 +8,10 @@ import nebulosa.image.algorithms.transformation.correction.FlatCorrection
 import nebulosa.image.format.ImageHdu
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.camera.FrameType.Companion.frameType
+import nebulosa.log.e
+import nebulosa.log.i
 import nebulosa.log.loggerFor
+import nebulosa.log.w
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
 import java.nio.file.Path
@@ -42,47 +45,35 @@ class CalibrationFrameService(private val calibrationFrameRepository: Calibratio
                     // Subtract Master Bias from Flat Frames.
                     if (flatImage != null) {
                         flatImage = flatImage.transform(BiasSubtraction(biasImage))
-                        LOG.info("bias frame subtraction applied to flat frame. frame={}", biasFrame)
+                        LOG.i("bias frame subtraction applied to flat frame. frame={}", biasFrame)
                     }
 
                     // Subtract the Master Bias frame.
                     transformedImage = transformedImage.transform(BiasSubtraction(biasImage))
-                    LOG.info("bias frame subtraction applied. frame={}", biasFrame)
+                    LOG.i("bias frame subtraction applied. frame={}", biasFrame)
                 } else if (darkFrame == null) {
-                    LOG.info(
-                        "no bias frames found. width={}, height={}, bin={}, gain={}",
-                        image.width, image.height, image.header.binX, image.header.gain
-                    )
+                    LOG.w("no bias frames found. width={}, height={}, bin={}, gain={}", image.width, image.height, image.header.binX, image.header.gain)
                 }
 
                 // Subtract Master Dark frame.
                 if (darkImage != null) {
                     transformedImage = transformedImage.transform(DarkSubtraction(darkImage))
-                    LOG.info("dark frame subtraction applied. frame={}", darkFrame)
+                    LOG.i("dark frame subtraction applied. frame={}", darkFrame)
                 } else {
-                    LOG.info(
-                        "no dark frames found. width={}, height={}, bin={}, exposureTime={}, gain={}",
-                        image.width, image.height, image.header.binX, image.header.exposureTimeInMicroseconds, image.header.gain
-                    )
+                    LOG.w("no dark frames found. width={}, height={}, bin={}, exposureTime={}, gain={}", image.width, image.height, image.header.binX, image.header.exposureTimeInMicroseconds, image.header.gain)
                 }
 
                 // Divide the Dark-subtracted Light frame by the Master Flat frame to correct for variations in the optical path.
                 if (flatImage != null) {
                     transformedImage = transformedImage.transform(FlatCorrection(flatImage))
-                    LOG.info("flat frame correction applied. frame={}", flatFrame)
+                    LOG.i("flat frame correction applied. frame={}", flatFrame)
                 } else {
-                    LOG.info(
-                        "no flat frames found. filter={}, width={}, height={}, bin={}",
-                        image.header.filter, image.width, image.height, image.header.binX
-                    )
+                    LOG.w("no flat frames found. filter={}, width={}, height={}, bin={}", image.header.filter, image.width, image.height, image.header.binX)
                 }
 
                 transformedImage
             } else {
-                LOG.info(
-                    "no calibration frames found.  width={}, height={}, bin={}, gain={}, filter={}, exposureTime={}",
-                    image.width, image.height, image.header.binX, image.header.gain, image.header.filter, image.header.exposureTimeInMicroseconds
-                )
+                LOG.w("no calibration frames found.  width={}, height={}, bin={}, gain={}, filter={}, exposureTime={}", image.width, image.height, image.header.binX, image.header.gain, image.header.filter, image.header.exposureTimeInMicroseconds)
                 image
             }
         }
@@ -137,7 +128,7 @@ class CalibrationFrameService(private val calibrationFrameRepository: Calibratio
                         .also(frames::add)
                 }
             } catch (e: Throwable) {
-                LOG.error("cannot open FITS. path={}, message={}", file, e.message)
+                LOG.e("cannot open FITS. path={}, message={}", file, e.message)
             }
         }
 
