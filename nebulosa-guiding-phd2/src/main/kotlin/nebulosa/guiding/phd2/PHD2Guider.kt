@@ -236,6 +236,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         try {
             settling.await(settleTimeout)
         } catch (_: InterruptedException) {
+            Thread.currentThread().interrupt()
             LOG.dw("PHD2 did not send SettleDone message in expected time")
         } catch (e: Throwable) {
             LOG.e("an error occurrs while waiting for settle done", e)

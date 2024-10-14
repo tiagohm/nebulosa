@@ -141,7 +141,8 @@ class CommandLine internal constructor(
                     inputReader?.waitFor()
                     errorReader?.waitFor()
                 }
-            } catch (ignored: InterruptedException) {
+            } catch (_: InterruptedException) {
+                currentThread().interrupt()
             } finally {
                 if (process.isAlive) {
                     process.destroyForcibly()
@@ -160,10 +161,7 @@ class CommandLine internal constructor(
         }
     }
 
-    private inner class StreamLineReader(
-        stream: InputStream,
-        private val isError: Boolean,
-    ) : Thread("Command Line ${if (isError) "Error" else "Input"} Stream Line Reader") {
+    private inner class StreamLineReader(stream: InputStream, isError: Boolean) : Thread("Command Line ${if (isError) "Error" else "Input"} Stream Line Reader") {
 
         private val reader = stream.bufferedReader()
         private val completable = CompletableFuture<Unit>()
@@ -182,6 +180,7 @@ class CommandLine internal constructor(
                     }
                 }
             } catch (e: InterruptedException) {
+                currentThread().interrupt()
                 LOG.dw("command line interrupted")
             } catch (e: Throwable) {
                 LOG.dw("command line exited: {}", e.message)
