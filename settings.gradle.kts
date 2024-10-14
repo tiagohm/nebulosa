@@ -21,7 +21,7 @@ dependencyResolutionManagement {
             library("retrofit", "com.squareup.retrofit2:retrofit:2.11.0")
             library("retrofit-jackson", "com.squareup.retrofit2:converter-jackson:2.11.0")
             library("rx", "io.reactivex.rxjava3:rxjava:3.1.9")
-            library("logback", "ch.qos.logback:logback-classic:1.5.9")
+            library("logback", "ch.qos.logback:logback-classic:1.5.10")
             library("eventbus", "org.greenrobot:eventbus-java:3.3.1")
             library("netty-transport", "io.netty:netty-transport:4.1.114.Final")
             library("netty-codec", "io.netty:netty-codec:4.1.114.Final")
