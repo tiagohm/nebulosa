@@ -1,4 +1,4 @@
-package nebulosa.api.converters.modules
+package nebulosa.api.converters
 
 import com.fasterxml.jackson.databind.module.SimpleDeserializers
 import com.fasterxml.jackson.databind.module.SimpleModule

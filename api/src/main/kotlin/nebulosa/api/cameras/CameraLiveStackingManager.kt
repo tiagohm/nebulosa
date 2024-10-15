@@ -1,8 +1,8 @@
 package nebulosa.api.cameras
 
 import nebulosa.api.calibration.CalibrationFrameProvider
+import nebulosa.api.image.ImageFilterType
 import nebulosa.api.livestacker.LiveStackingRequest
-import nebulosa.api.stacker.StackerGroupType
 import nebulosa.fits.*
 import nebulosa.image.format.ImageHdu
 import nebulosa.livestacker.LiveStacker
@@ -20,7 +20,7 @@ data class CameraLiveStackingManager(
     private val calibrationFrameProvider: CalibrationFrameProvider? = null,
 ) : AutoCloseable {
 
-    private val liveStackers = EnumMap<StackerGroupType, LiveStacker>(StackerGroupType::class.java)
+    private val liveStackers = EnumMap<ImageFilterType, LiveStacker>(ImageFilterType::class.java)
     private val workingDirectories = HashSet<Path>()
 
     @Volatile private var referencePath: Path? = null
@@ -29,7 +29,7 @@ data class CameraLiveStackingManager(
     fun start(request: CameraStartCaptureRequest, path: Path): Boolean {
         if (request.stackerGroupType in liveStackers) {
             return true
-        } else if (request.stackerGroupType != StackerGroupType.NONE && request.liveStacking.enabled) {
+        } else if (request.stackerGroupType != ImageFilterType.NONE && request.liveStacking.enabled) {
             try {
                 val workingDirectory = Files.createTempDirectory("ls-${request.stackerGroupType}-")
                 workingDirectories.add(workingDirectory)
@@ -50,7 +50,7 @@ data class CameraLiveStackingManager(
 
     @Synchronized
     fun stack(request: CameraStartCaptureRequest, path: Path?): Path? {
-        if (path == null || request.stackerGroupType == StackerGroupType.NONE) return null
+        if (path == null || request.stackerGroupType == ImageFilterType.NONE) return null
 
         val stackerGroupType = request.stackerGroupType
         val liveStacker = liveStackers[stackerGroupType] ?: return null
@@ -65,10 +65,10 @@ data class CameraLiveStackingManager(
             }
 
             val combinedPath = Path.of("${path.parent}", "STACKED.fits")
-            val luminancePath = liveStackers[StackerGroupType.LUMINANCE]?.stackedPath
-            val redPath = liveStackers[StackerGroupType.RED]?.stackedPath
-            val greenPath = liveStackers[StackerGroupType.GREEN]?.stackedPath
-            val bluePath = liveStackers[StackerGroupType.BLUE]?.stackedPath
+            val luminancePath = liveStackers[ImageFilterType.LUMINANCE]?.stackedPath
+            val redPath = liveStackers[ImageFilterType.RED]?.stackedPath
+            val greenPath = liveStackers[ImageFilterType.GREEN]?.stackedPath
+            val bluePath = liveStackers[ImageFilterType.BLUE]?.stackedPath
 
             if (stackerGroupType.isLRGB && (luminancePath != null || redPath != null || greenPath != null || bluePath != null)) {
                 if (stacker.combineLRGB(combinedPath, luminancePath, redPath, greenPath, bluePath)) {
@@ -77,7 +77,7 @@ data class CameraLiveStackingManager(
             } else if (luminancePath != null) {
                 stacker.align(luminancePath, stackedPath, stackedPath)
 
-                if (stacker.combineLuminance(combinedPath, luminancePath, stackedPath, stackerGroupType == StackerGroupType.MONO)) {
+                if (stacker.combineLuminance(combinedPath, luminancePath, stackedPath, stackerGroupType == ImageFilterType.MONO)) {
                     stackedPath = combinedPath
                 }
             }

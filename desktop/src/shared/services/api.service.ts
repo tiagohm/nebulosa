@@ -12,13 +12,12 @@ import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
 import { ConnectionStatus, ConnectionType, GitHubRelease } from '../types/home.types'
-import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
+import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnalyzed, ImageAnnotation, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
 import { LightBox } from '../types/lightbox.types'
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, SlewRate, TrackMode } from '../types/mount.types'
 import { PlateSolverRequest } from '../types/platesolver.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerPlan } from '../types/sequencer.types'
-import { AnalyzedTarget, StackingRequest } from '../types/stacker.types'
 import { StarDetectionRequest } from '../types/stardetector.types'
 import { Wheel } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
@@ -623,6 +622,11 @@ export class ApiService {
 		return this.http.put<never>(`image/save-as?${query}`, save)
 	}
 
+	imageAnalyze(path: string) {
+		const query = this.http.query({ path })
+		return this.http.put<ImageAnalyzed | null>(`image/analyze?${query}`)
+	}
+
 	coordinateInterpolation(path: string) {
 		const query = this.http.query({ path })
 		return this.http.get<CoordinateInterpolation | null>(`image/coordinate-interpolation?${query}`)
@@ -758,27 +762,6 @@ export class ApiService {
 
 	autoFocusStop(camera: Camera) {
 		return this.http.put<never>(`auto-focus/${camera.id}/stop`)
-	}
-
-	// STACKER
-
-	stackerStart(request: StackingRequest, key: string) {
-		const query = this.http.query({ key })
-		return this.http.put<string | null>(`stacker/start?${query}`, request)
-	}
-
-	stackerIsRunning( key: string) {
-		const query = this.http.query({ key })
-		return this.http.get<boolean>(`stacker/running?${query}`)
-	}
-
-	stackerStop( key: string) {
-		const query = this.http.query({ key })
-		return this.http.put<never>(`stacker/stop?${query}`)
-	}
-
-	stackerAnalyze(path: string) {
-		return this.http.put<AnalyzedTarget | null>(`stacker/analyze?path=${path}`)
 	}
 
 	// CONFIRMATION

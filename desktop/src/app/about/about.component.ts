@@ -44,7 +44,6 @@ export class AboutComponent {
 		this.icons.push({ link: `${FLAT_ICON_URL}/picture_2659360`, name: 'Picture', author: 'Freepik - Flaticon' })
 		this.icons.push({ link: `${FLAT_ICON_URL}/calculator_7182540`, name: 'Calculator', author: 'Iconic Panda - Flaticon' })
 		this.icons.push({ link: `${FLAT_ICON_URL}/target_10542035`, name: 'Target', author: 'Arkinasi - Flaticon' })
-		this.icons.push({ link: `${FLAT_ICON_URL}/stack_3342239`, name: 'Stack', author: 'Pixel perfect - Flaticon' })
 		this.icons.push({ link: `${FLAT_ICON_URL}/blackhole_6704410`, name: 'Blackhole', author: 'Freepik - Flaticon' })
 		this.icons.push({ link: `${FLAT_ICON_URL}/calibration_2364169`, name: 'Calibration', author: 'Freepik - Flaticon' })
 		this.icons.push({ link: `${FLAT_ICON_URL}/idea_3351801`, name: 'Bulb', author: 'Good Ware - Flaticon' })

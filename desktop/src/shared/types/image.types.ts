@@ -10,7 +10,7 @@ export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
 
 export type SCNRProtectionMethod = 'MAXIMUM_MASK' | 'ADDITIVE_MASK' | 'AVERAGE_NEUTRAL' | 'MAXIMUM_NEUTRAL' | 'MINIMUM_NEUTRAL'
 
-export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD' | 'SEQUENCER' | 'ALIGNMENT' | 'AUTO_FOCUS' | 'STACKER'
+export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD' | 'SEQUENCER' | 'ALIGNMENT' | 'AUTO_FOCUS'
 
 export type ImageFormat = 'FITS' | 'XISF' | 'PNG' | 'JPG'
 
@@ -19,6 +19,8 @@ export type Bitpix = 'BYTE' | 'SHORT' | 'INTEGER' | 'LONG' | 'FLOAT' | 'DOUBLE'
 export type LiveStackingMode = 'NONE' | 'RAW' | 'STACKED'
 
 export type ImageCalibrationSource = 'CAMERA' | 'MENU'
+
+export type ImageFilterType = 'LUMINANCE' | 'RED' | 'GREEN' | 'BLUE' | 'MONO' | 'RGB' | 'NONE'
 
 export type ImageMousePosition = Point
 
@@ -274,6 +276,17 @@ export interface ImageAnnotationDialog {
 	selected?: ImageAnnotation
 	search: string
 	filtered: ImageAnnotation[]
+}
+
+export interface ImageAnalyzed {
+	width: number
+	height: number
+	binX: number
+	binY: number
+	gain: number
+	exposureTime: number
+	type: FrameType
+	filter: ImageFilterType
 }
 
 export interface ROISelected {

@@ -11,7 +11,7 @@ import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.HttpStatus.BAD_REQUEST
 import io.javalin.json.JavalinJackson
-import nebulosa.api.converters.modules.DeviceModule
+import nebulosa.api.converters.DeviceModule
 import nebulosa.api.core.ErrorResponse
 import nebulosa.api.inject.*
 import nebulosa.json.PathModule

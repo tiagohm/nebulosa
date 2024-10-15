@@ -13,6 +13,7 @@ import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Histogram
 import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.algorithms.transformation.*
+import nebulosa.image.format.ImageHdu
 import nebulosa.image.format.ImageModifier
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.*
@@ -31,6 +32,8 @@ import nebulosa.time.UTC
 import nebulosa.wcs.WCS
 import nebulosa.wcs.WCSException
 import nebulosa.xisf.XisfFormat
+import nebulosa.xisf.isXisf
+import nebulosa.xisf.xisf
 import okio.sink
 import java.net.URI
 import java.nio.file.Path
@@ -39,6 +42,8 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import javax.imageio.ImageIO
+import kotlin.io.path.exists
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.outputStream
 import kotlin.math.roundToInt
 
@@ -297,6 +302,17 @@ class ImageService(
             ImageExtension.PNG -> save.path.outputStream().use { ImageIO.write(image, "PNG", it) }
             ImageExtension.JPG -> save.path.outputStream().use { ImageIO.write(image, "JPEG", it) }
         }
+    }
+
+    fun analyze(path: Path): ImageAnalyzed? {
+        if (!path.exists() || !path.isRegularFile()) return null
+
+        val image = if (path.isFits()) path.fits()
+        else if (path.isXisf()) path.xisf()
+        else return null
+
+        return image.use { it.firstOrNull { hdu -> hdu is ImageHdu }?.header }
+            ?.let(::ImageAnalyzed)
     }
 
     fun frame(

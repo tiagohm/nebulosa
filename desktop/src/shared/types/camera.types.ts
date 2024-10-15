@@ -4,9 +4,9 @@ import type { CompanionDevice, Device, PropertyState } from './device.types'
 import { isCompanionDevice } from './device.types'
 import type { Focuser } from './focuser.types'
 import type { GuideOutput } from './guider.types'
+import type { ImageFilterType } from './image.types'
 import type { Mount } from './mount.types'
 import type { Rotator } from './rotator.types'
-import type { StackerGroupType } from './stacker.types'
 import type { Wheel } from './wheel.types'
 
 export type CameraMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD' | 'TPPA' | 'DARV' | 'AUTO_FOCUS'
@@ -114,7 +114,7 @@ export interface CameraStartCapture {
 	focusOffset: number
 	calibrationGroup?: string
 	liveStacking: LiveStackingRequest
-	stackerGroupType: StackerGroupType
+	stackerGroupType: ImageFilterType
 	namingFormat: CameraCaptureNamingFormat
 }
 
