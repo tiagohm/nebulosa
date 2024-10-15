@@ -1,11 +1,11 @@
 package nebulosa.siril.livestacker
 
+import nebulosa.commandline.CommandLineListener
 import nebulosa.livestacker.LiveStacker
 import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.siril.command.*
 import nebulosa.util.concurrency.latch.CountUpDownLatch
-import nebulosa.util.exec.CommandLineListener
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.listDirectoryEntries
@@ -39,7 +39,7 @@ data class SirilLiveStacker(
             commandLine.registerCommandLineListener(this)
             commandLine.run()
 
-            LOG.d("live stacking started. pid={}", commandLine.pid)
+            LOG.d("live stacking started")
 
             try {
                 check(commandLine.execute(Cd(workingDirectory))) { "failed to run cd command" }
@@ -72,7 +72,7 @@ data class SirilLiveStacker(
         workingDirectory.deleteStackingFiles()
     }
 
-    override fun onExit(exitCode: Int, exception: Throwable?) {
+    override fun onExited(exitCode: Int, exception: Throwable?) {
         LOG.d("live stacking finished. exitCode={}", exitCode, exception)
     }
 

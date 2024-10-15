@@ -1,10 +1,10 @@
 package nebulosa.siril.command
 
+import nebulosa.commandline.CommandLineListener
 import nebulosa.fits.height
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarPoint
 import nebulosa.util.concurrency.latch.CountUpDownLatch
-import nebulosa.util.exec.CommandLineListener
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -44,7 +44,7 @@ data class FindStar(
         }
     }
 
-    override fun onExit(exitCode: Int, exception: Throwable?) {
+    override fun onExited(exitCode: Int, exception: Throwable?) {
         latch.reset()
     }
 

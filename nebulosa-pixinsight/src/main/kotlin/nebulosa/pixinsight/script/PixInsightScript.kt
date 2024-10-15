@@ -1,29 +1,27 @@
 package nebulosa.pixinsight.script
 
-import nebulosa.util.exec.CommandLine
-import java.util.concurrent.Future
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
-sealed interface PixInsightScript<T : PixInsightScript.Output> : Future<T>, AutoCloseable {
+sealed interface PixInsightScript<T : PixInsightScriptOutput> : AutoCloseable {
 
     val slot: Int
 
-    sealed interface Output {
-
-        val success: Boolean
-
-        val errorMessage: String?
-    }
+    val name: String
 
     val arguments: Iterable<String>
 
-    fun startCommandLine(commandLine: CommandLine)
+    fun processOnStart(output: CompletableFuture<T>) = Unit
 
-    fun run(runner: PixInsightScriptRunner)
+    fun processLine(line: String, output: CompletableFuture<T>) = Unit
 
-    fun runSync(runner: PixInsightScriptRunner): T {
-        run(runner)
-        return get()
-    }
+    fun processOnExit(exitCode: Int, output: CompletableFuture<T>) = Unit
+
+    fun run(runner: PixInsightScriptRunner) = runner.run(this)
+
+    fun runSync(runner: PixInsightScriptRunner): T = run(runner).get()
+
+    fun runSync(runner: PixInsightScriptRunner, timeout: Long, unit: TimeUnit): T = run(runner).get(timeout, unit)
 
     companion object {
 

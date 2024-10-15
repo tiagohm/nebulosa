@@ -9,8 +9,6 @@ import nebulosa.pixinsight.script.PixInsightScript
 import nebulosa.pixinsight.script.PixInsightScriptRunner
 import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
-import nebulosa.util.concurrency.cancellation.CancellationListener
-import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.nio.file.Path
 import java.time.Duration
 
@@ -30,33 +28,26 @@ data class PixInsightPlateSolver(
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration,
-        cancellationToken: CancellationToken
     ): PlateSolution {
         require(path != null) { "path must be provided" }
 
-        val script = PixInsightImageSolver(slot, path, centerRA, centerDEC, pixelSize, resolution.toArcsec, focalLength, timeout, cancellationToken)
-        val cancellationListener = CancellationListener { runner.abort(script) }
+        val script = PixInsightImageSolver(slot, path, centerRA, centerDEC, pixelSize, resolution.toArcsec, focalLength, timeout)
 
-        val solver = try {
-            cancellationToken.listen(cancellationListener)
-            script.use { it.runSync(runner) }
-        } finally {
-            cancellationToken.unlisten(cancellationListener)
-        }
+        val solver = script.use { it.runSync(runner) }
 
-        if (solver.success) {
+        return if (solver.success) {
             val m = ROTATION_REGEX.find(solver.astrometricSolutionSummary)
             val rotation = m?.groupValues?.get(1)?.toDoubleOrNull()?.deg ?: 0.0
 
-            return PlateSolution(
+            PlateSolution(
                 true, rotation, solver.resolution,
                 solver.rightAscension, solver.declination,
                 solver.width, solver.height, widthInPixels = solver.imageWidth,
                 heightInPixels = solver.imageHeight,
             )
+        } else {
+            PlateSolution.NO_SOLUTION
         }
-
-        return PlateSolution.NO_SOLUTION
     }
 
     companion object {

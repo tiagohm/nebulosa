@@ -2,13 +2,14 @@ package nebulosa.pixinsight.script
 
 import nebulosa.log.d
 import nebulosa.log.loggerFor
+import java.util.concurrent.CompletableFuture
 
-data class PixInsightIsRunning(override val slot: Int) : AbstractPixInsightScript<PixInsightScript.Output>() {
+data class PixInsightIsRunning(override val slot: Int) : AbstractPixInsightScript<PixInsightIsRunning.Output>() {
 
     data class Output(
         override val success: Boolean,
         override val errorMessage: String? = null,
-    ) : PixInsightScript.Output {
+    ) : PixInsightScriptOutput {
 
         companion object {
 
@@ -23,25 +24,21 @@ data class PixInsightIsRunning(override val slot: Int) : AbstractPixInsightScrip
     private val slotCrashed = "The requested application instance #$slot has crashed"
     private val yieldedExecutionInstance = "$YIELDED_EXECUTION_INSTANCE$slot"
 
-    override fun onLineRead(line: String) {
-        processLine(line)
-    }
-
-    private fun processLine(line: String) {
-        if (isDone) return
+    override fun processLine(line: String, output: CompletableFuture<Output>) {
+        if (output.isDone) return
 
         if (slot > 0) {
             if (line.contains(slotIsNotRunning, true) || line.contains(slotCrashed, true)) {
-                complete(Output.FAILED)
+                output.complete(Output.FAILED)
             } else if (line.contains(yieldedExecutionInstance, true)) {
-                complete(Output.SUCCESS)
+                output.complete(Output.SUCCESS)
             } else {
                 return
             }
         } else if (line.contains(YIELDED_EXECUTION_INSTANCE, true)) {
-            complete(Output.SUCCESS)
+            output.complete(Output.SUCCESS)
         } else if (line.contains(NO_RUNNING_PROCESS, true)) {
-            complete(Output.FAILED)
+            output.complete(Output.FAILED)
         } else {
             return
         }
@@ -49,7 +46,9 @@ data class PixInsightIsRunning(override val slot: Int) : AbstractPixInsightScrip
         LOG.d(line)
     }
 
-    override fun processOnComplete(exitCode: Int) = Output.FAILED
+    override fun processOnExit(exitCode: Int, output: CompletableFuture<Output>) {
+        if (exitCode != 0) output.complete(Output.FAILED)
+    }
 
     override fun close() = Unit
 

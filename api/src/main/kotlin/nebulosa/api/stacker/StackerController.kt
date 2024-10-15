@@ -4,19 +4,12 @@ import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
 import nebulosa.api.core.Controller
-import nebulosa.api.validators.exists
-import nebulosa.api.validators.notNull
-import nebulosa.api.validators.path
-import nebulosa.api.validators.valid
-import nebulosa.util.concurrency.cancellation.CancellationToken
-import java.util.concurrent.atomic.AtomicReference
+import nebulosa.api.validators.*
 
 class StackerController(
     override val app: Javalin,
     private val stackerService: StackerService,
 ) : Controller {
-
-    private val cancellationToken = AtomicReference<CancellationToken>()
 
     init {
         app.put("stacker/start", ::start)
@@ -26,24 +19,19 @@ class StackerController(
     }
 
     private fun start(ctx: Context) {
+        val key = ctx.queryParam("key").notNullOrBlank()
         val body = ctx.bodyAsClass<StackingRequest>().valid()
-
-        if (cancellationToken.compareAndSet(null, CancellationToken())) {
-            try {
-                stackerService.stack(body, cancellationToken.get())?.also(ctx::json)
-            } finally {
-                cancellationToken.getAndSet(null)?.unlistenAll()
-            }
-        }
+        stackerService.stack(body, key)?.also(ctx::json)
     }
 
     private fun isRunning(ctx: Context) {
-        ctx.json(cancellationToken.get() != null)
+        val key = ctx.queryParam("key").notNullOrBlank()
+        ctx.json(stackerService.isRunning(key))
     }
 
-    @Suppress("UNUSED_PARAMETER")
     private fun stop(ctx: Context) {
-        cancellationToken.get()?.cancel()
+        val key = ctx.queryParam("key").notNullOrBlank()
+        stackerService.stop(key)
     }
 
     private fun analyze(ctx: Context) {

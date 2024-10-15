@@ -296,7 +296,7 @@ fun servicesModule() = module {
     single { CalibrationFrameService(get()) }
     single { FramingService(get(), get()) }
     single { ImageService(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    single { PlateSolverService(get()) }
+    single { PlateSolverService(get(), get()) }
     single { FlatWizardExecutor(get(), get(), get()) }
     single { FlatWizardService(get(Named.capturesDir), get()) }
     single { StarDetectionService() }

@@ -21,12 +21,12 @@ class PlateSolverController(
 
     private fun start(ctx: Context) {
         val path = ctx.queryParam("path").notNullOrBlank().path().exists()
+        val key = ctx.queryParam("key").notNullOrBlank()
         val solver = ctx.bodyAsClass<PlateSolverRequest>().valid()
-        ctx.json(plateSolverService.solveImage(solver, path))
+        ctx.json(plateSolverService.start(solver, path, key))
     }
 
-    @Suppress("UNUSED_PARAMETER")
     private fun stop(ctx: Context) {
-        plateSolverService.stopSolver()
+        plateSolverService.stop(ctx.queryParam("key").notNullOrBlank())
     }
 }

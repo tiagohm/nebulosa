@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, 
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
+import { nuid } from 'nuid'
 import createPanZoom from 'panzoom'
 import { basename, dirname, extname } from 'path'
 import { ContextMenu } from 'primeng/contextmenu'
@@ -516,6 +517,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		})
 
 		this.loadPreference()
+
+		this.solver.key = nuid.next()
 	}
 
 	async ngAfterViewInit() {
@@ -1125,9 +1128,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				const request: PlateSolverRequest = {
 					...this.solver.request,
 					...this.preferenceService.settings.get().plateSolver[this.solver.request.type],
+					type: this.solver.request.type,
 				}
 
-				const solved = await this.api.solverStart(request, path)
+				const solved = await this.api.solverStart(request, path, this.solver.key)
 
 				this.updateImageSolved(solved)
 			} catch {
@@ -1143,7 +1147,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	protected solverStop() {
-		return this.api.solverStop()
+		return this.api.solverStop(this.solver.key)
 	}
 
 	private updateImageSolved(solved?: ImageSolved) {

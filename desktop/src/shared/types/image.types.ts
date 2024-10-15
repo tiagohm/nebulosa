@@ -212,6 +212,7 @@ export interface ImageStretchDialog {
 
 export interface ImageSolverDialog {
 	showDialog: boolean
+	key: string
 	running: boolean
 	request: PlateSolverRequest
 	readonly solved: ImageSolved
@@ -381,6 +382,7 @@ export const DEFAULT_IMAGE_TRANSFORMATION: ImageTransformation = {
 
 export const DEFAULT_IMAGE_SOLVER_DIALOG: ImageSolverDialog = {
 	showDialog: false,
+	key: '',
 	running: false,
 	request: DEFAULT_PLATE_SOLVER_REQUEST,
 	solved: DEFAULT_IMAGE_SOLVED,

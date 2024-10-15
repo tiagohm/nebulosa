@@ -78,6 +78,8 @@ export class StackerComponent implements AfterViewInit, OnDestroy {
 		return !!this.request.outputDirectory && this.hasReference
 	}
 
+	private static readonly key = 'dE0qB9iGOm'
+
 	constructor(
 		app: AppComponent,
 		ngZone: NgZone,
@@ -98,7 +100,7 @@ export class StackerComponent implements AfterViewInit, OnDestroy {
 	async ngAfterViewInit() {
 		this.loadPreference()
 
-		this.running = await this.api.stackerIsRunning()
+		this.running = await this.api.stackerIsRunning(StackerComponent.key)
 
 		if (!this.running) {
 			await this.reanalyze()
@@ -186,7 +188,7 @@ export class StackerComponent implements AfterViewInit, OnDestroy {
 
 		try {
 			this.running = true
-			const path = await this.api.stackerStart(request)
+			const path = await this.api.stackerStart(request, StackerComponent.key)
 
 			if (path) {
 				await this.browserWindowService.openImage({ path, source: 'STACKER' })
@@ -197,7 +199,7 @@ export class StackerComponent implements AfterViewInit, OnDestroy {
 	}
 
 	protected stopStacking() {
-		return this.api.stackerStop()
+		return this.api.stackerStop(StackerComponent.key)
 	}
 
 	private async reanalyze() {

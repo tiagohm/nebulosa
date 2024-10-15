@@ -5,15 +5,14 @@ import nebulosa.io.resource
 import nebulosa.io.transferAndClose
 import nebulosa.math.Angle
 import nebulosa.math.toDegrees
-import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import java.util.concurrent.CompletableFuture
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 import kotlin.math.max
-import kotlin.math.min
 
 data class PixInsightImageSolver(
     override val slot: Int,
@@ -24,7 +23,6 @@ data class PixInsightImageSolver(
     private val resolution: Double = 0.0, // arcsec/px
     private val focalLength: Double = 0.0, // mm
     private val timeout: Duration = Duration.ZERO,
-    private val cancellationToken: CancellationToken = CancellationToken.NONE,
 ) : AbstractPixInsightScript<PixInsightImageSolver.Output>() {
 
     private data class Input(
@@ -51,7 +49,7 @@ data class PixInsightImageSolver(
         @JvmField val imageWidth: Double = 0.0,
         @JvmField val imageHeight: Double = 0.0,
         @JvmField val astrometricSolutionSummary: String = "",
-    ) : PixInsightScript.Output {
+    ) : PixInsightScriptOutput {
 
         companion object {
 
@@ -79,17 +77,19 @@ data class PixInsightImageSolver(
     private val input = Input(targetPath, statusPath, centerRA.toDegrees, centerDEC.toDegrees, pixelSize, resolution, focalLength)
     override val arguments = listOf("-x=${execute(scriptPath, input)}")
 
-    override fun processOnComplete(exitCode: Int): Output {
+    override fun processOnExit(exitCode: Int, output: CompletableFuture<Output>) {
         if (exitCode == 0) {
-            val seconds = timeout.toSeconds().toInt()
+            val count = max(60, timeout.toSeconds()).toInt()
 
-            repeat(max(30, min(seconds, 300))) {
-                if (cancellationToken.isCancelled) return@repeat
-                statusPath.parseStatus<Output>()?.also { return it } ?: Thread.sleep(1000)
+            repeat(count) {
+                if (output.isDone) return
+                Thread.sleep(1000)
+                val status = statusPath.parseStatus<Output>() ?: return@repeat
+                output.complete(status)
             }
         }
 
-        return Output.FAILED
+        output.complete(Output.FAILED)
     }
 
     override fun close() {

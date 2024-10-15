@@ -2,7 +2,9 @@ package nebulosa.pixinsight.script
 
 import nebulosa.io.resource
 import nebulosa.io.transferAndClose
+import nebulosa.pixinsight.script.PixInsightPixelMath.Output
 import java.nio.file.Files
+import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.timer
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
@@ -13,7 +15,7 @@ data class PixInsightStartup(override val slot: Int) : AbstractPixInsightScript<
     data class Output(
         override val success: Boolean,
         override val errorMessage: String? = null,
-    ) : PixInsightScript.Output {
+    ) : PixInsightScriptOutput {
 
         companion object {
 
@@ -31,23 +33,21 @@ data class PixInsightStartup(override val slot: Int) : AbstractPixInsightScript<
 
     override val arguments = listOf("-r=${execute(scriptPath, outputPath, 0)}", if (slot > 0) "-n=$slot" else "-n")
 
-    override fun beforeRun() {
+    override fun processOnStart(output: CompletableFuture<Output>) {
         var count = 0
 
         timer("PixInsight Startup Timer", true, 1000L, 500L) {
             if (outputPath.readText() == "STARTED") {
-                complete(Output.SUCCESS)
+                output.complete(Output.SUCCESS)
                 cancel()
-            } else if (count >= 60) {
-                complete(Output.FAILED)
+            } else if (count >= 120) {
+                output.complete(Output.FAILED)
                 cancel()
             }
 
             count++
         }
     }
-
-    override fun processOnComplete(exitCode: Int) = Output.FAILED
 
     override fun close() {
         scriptPath.deleteIfExists()

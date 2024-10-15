@@ -23,4 +23,9 @@ data class ImageSolved(
         solution.width.toArcmin, solution.height.toArcmin,
         solution.radius.toDegrees,
     )
+
+    companion object {
+
+        @JvmStatic val NO_SOLUTION = ImageSolved(PlateSolution.NO_SOLUTION)
+    }
 }

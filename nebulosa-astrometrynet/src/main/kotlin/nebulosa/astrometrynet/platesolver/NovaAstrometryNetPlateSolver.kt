@@ -14,7 +14,6 @@ import nebulosa.math.toDegrees
 import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
 import nebulosa.platesolver.PlateSolverException
-import nebulosa.util.concurrency.cancellation.CancellationToken
 import java.nio.file.Path
 import java.time.Duration
 
@@ -47,10 +46,7 @@ data class NovaAstrometryNetPlateSolver(
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration,
-        cancellationToken: CancellationToken,
     ): PlateSolution {
-        renewSession()
-
         val blind = radius.toDegrees < 0.1 || !centerRA.isFinite() || !centerDEC.isFinite()
 
         val upload = Upload(
@@ -61,6 +57,8 @@ data class NovaAstrometryNetPlateSolver(
             downsampleFactor = downsampleFactor,
             tweakOrder = 2,
         )
+
+        renewSession()
 
         val call = path?.let { service.uploadFromFile(it, upload) }
             ?: image?.let { service.uploadFromImage(it, upload) }
@@ -74,13 +72,13 @@ data class NovaAstrometryNetPlateSolver(
 
         var timeLeft = timeout.takeIf { it.toSeconds() > 0 }?.toMillis() ?: 300000L
 
-        while (timeLeft >= 0L && !cancellationToken.isCancelled) {
+        while (timeLeft >= 0L && !Thread.currentThread().isInterrupted) {
             val startTime = System.currentTimeMillis()
 
             val status = service.submissionStatus(submission.subId).execute().body()
                 ?: throw PlateSolverException("failed to retrieve submission status")
 
-            if (status.solved && !cancellationToken.isCancelled) {
+            if (status.solved && !Thread.currentThread().isInterrupted) {
                 LOG.di("retrieving WCS from job. id={}", status.jobs[0])
 
                 val body = service.wcs(status.jobs[0]).execute().body()
@@ -94,7 +92,7 @@ data class NovaAstrometryNetPlateSolver(
                 return calibration ?: PlateSolution.NO_SOLUTION
             }
 
-            if (!cancellationToken.isCancelled) {
+            if (!Thread.currentThread().isInterrupted) {
                 timeLeft -= System.currentTimeMillis() - startTime + 5000L
 
                 Thread.sleep(5000L)

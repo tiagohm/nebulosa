@@ -1,15 +1,16 @@
 package nebulosa.astrometrynet.platesolver
 
+import nebulosa.commandline.CommandLineListener
+import nebulosa.commandline.CommandLineListenerHandler
 import nebulosa.image.Image
 import nebulosa.log.di
-import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
-import nebulosa.util.concurrency.cancellation.CancellationToken
-import nebulosa.util.exec.CommandLineListener
-import nebulosa.util.exec.commandLine
+import org.apache.commons.exec.CommandLine
+import org.apache.commons.exec.DefaultExecutor
+import org.apache.commons.exec.ExecuteWatchdog
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -26,57 +27,54 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration,
-        cancellationToken: CancellationToken,
     ): PlateSolution {
         requireNotNull(path) { "path is required" }
 
         val outFolder = Files.createTempDirectory("localplatesolver")
 
-        val cmd = commandLine {
-            executablePath(executablePath)
-            workingDirectory(path.parent)
+        val commandLine = CommandLine.parse("$executablePath")
+            .addArgument("--out").addArgument(UUID.randomUUID().toString())
+            .addArgument("--overwrite")
+            .addArgument("--dir").addArgument("$outFolder")
+            .addArgument("--cpulimit").addArgument(timeout.takeIf { it.toSeconds() > 0 }?.toSeconds()?.toString() ?: "300")
+            .addArgument("--scale-units").addArgument("degwidth")
+            .addArgument("--guess-scale")
+            .addArgument("--crpix-center")
+            .addArgument("--downsample").addArgument("$downsampleFactor")
+            .addArgument("--no-verify")
+            .addArgument("--no-plots")
+        // .addArgument("--resort")
 
-            putArg("--out", UUID.randomUUID().toString())
-            putArg("--overwrite")
-
-            putArg("--dir", outFolder)
-
-            putArg("--cpulimit", timeout.takeIf { it.toSeconds() > 0 }?.toSeconds() ?: 300)
-            putArg("--scale-units", "degwidth")
-            putArg("--guess-scale")
-            putArg("--crpix-center")
-            putArg("--downsample", downsampleFactor)
-            putArg("--no-verify")
-            putArg("--no-plots")
-            // putArg("--resort")
-
-            if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
-                putArg("--ra", centerRA.toDegrees)
-                putArg("--dec", centerDEC.toDegrees)
-                putArg("--radius", radius.toDegrees)
-            }
-
-            putArg("$path")
+        if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
+            commandLine.addArgument("--ra").addArgument("${centerRA.toDegrees}")
+                .addArgument("--dec").addArgument("${centerDEC.toDegrees}")
+                .addArgument("--radius").addArgument("${radius.toDegrees}")
         }
 
         val solution = PlateSolutionLineReader()
+        val handler = CommandLineListenerHandler()
 
-        try {
-            cancellationToken.listen(cmd)
-            cmd.registerCommandLineListener(solution)
-            cmd.start()
-            LOG.di("astrometry.net exited. code={}", cmd.get())
-            return solution.get()
-        } catch (e: Throwable) {
-            LOG.e("astronomy.net failed.", e)
-            return PlateSolution.NO_SOLUTION
+        val executor = DefaultExecutor.builder()
+            .setWorkingDirectory(path.parent.toFile())
+            .setExecuteStreamHandler(handler)
+            .get()
+
+        executor.watchdog = ExecuteWatchdog.builder()
+            .setTimeout(timeout.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5))
+            .get()
+
+        commandLine.addArgument("$path")
+
+        return try {
+            handler.registerCommandLineListener(solution)
+            LOG.di("astrometry.net exited. code={}", executor.execute(commandLine, handler))
+            solution.get()
         } finally {
-            cancellationToken.unlisten(cmd)
             outFolder.deleteRecursively()
         }
     }
 
-    private class PlateSolutionLineReader : CommandLineListener.OnLineRead, Supplier<PlateSolution> {
+    private class PlateSolutionLineReader : CommandLineListener, Supplier<PlateSolution> {
 
         @Volatile private var fieldCenter: DoubleArray? = null
         @Volatile private var fieldRotation: Angle = 0.0

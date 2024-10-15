@@ -10,12 +10,17 @@ import nebulosa.image.algorithms.transformation.AutoScreenTransformFunction
 import nebulosa.math.*
 import nebulosa.pixinsight.script.*
 import nebulosa.pixinsight.script.PixInsightScript.Companion.UNSPECIFIED_SLOT
-import nebulosa.test.*
+import nebulosa.test.AbstractTest
+import nebulosa.test.NonGitHubOnly
+import nebulosa.test.download
+import nebulosa.test.fits.*
+import nebulosa.test.save
 import nebulosa.xisf.isXisf
 import nebulosa.xisf.xisf
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
+import java.time.Duration
 import kotlin.math.roundToInt
 
 @NonGitHubOnly
@@ -38,7 +43,7 @@ class PixInsightScriptTest : AbstractTest() {
     @Test
     fun calibrate() {
         val workingDirectory = tempDirectory("pi-")
-        PixInsightCalibrate(UNSPECIFIED_SLOT, workingDirectory, PI_01_LIGHT, PI_DARK, PI_FLAT, PI_BIAS)
+        PixInsightCalibrate(UNSPECIFIED_SLOT, workingDirectory, STACKING_LIGHT_MONO_01_FITS, STACKING_DARK_MONO_FITS, STACKING_FLAT_MONO_FITS, STACKING_BIAS_MONO_FITS)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-calibrate").second shouldBe "731562ee12f45bf7c1095f4773f70e71"
     }
@@ -46,33 +51,33 @@ class PixInsightScriptTest : AbstractTest() {
     @Test
     fun align() {
         val workingDirectory = tempDirectory("pi-")
-        PixInsightAlign(UNSPECIFIED_SLOT, workingDirectory, PI_01_LIGHT, PI_02_LIGHT)
+        PixInsightAlign(UNSPECIFIED_SLOT, workingDirectory, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_02_FITS)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-align").second shouldBe "483ebaf15afa5957fe099f3ee2beff78"
     }
 
     @Test
     fun detectStars() {
-        PixInsightDetectStars(UNSPECIFIED_SLOT, PI_FOCUS_0)
+        PixInsightDetectStars(UNSPECIFIED_SLOT, FOCUS_09_FITS)
             .use { it.runSync(RUNNER).stars }
             .map { it.hfd }
-            .average() shouldBe (8.43 plusOrMinus 1e-2)
+            .average() shouldBe (9.07 plusOrMinus 1e-2)
 
-        PixInsightDetectStars(UNSPECIFIED_SLOT, PI_FOCUS_30000)
+        PixInsightDetectStars(UNSPECIFIED_SLOT, FOCUS_14_FITS)
             .use { it.runSync(RUNNER).stars }
             .map { it.hfd }
-            .average() shouldBe (1.85 plusOrMinus 1e-2)
+            .average() shouldBe (2.92 plusOrMinus 1e-2)
 
-        PixInsightDetectStars(UNSPECIFIED_SLOT, PI_FOCUS_100000)
+        PixInsightDetectStars(UNSPECIFIED_SLOT, FOCUS_26_FITS)
             .use { it.runSync(RUNNER).stars }
             .map { it.hfd }
-            .average() shouldBe (18.35 plusOrMinus 1e-2)
+            .average() shouldBe (17.90 plusOrMinus 1e-2)
     }
 
     @Test
     fun pixelMath() {
         val outputPath = tempPath("pi-stacked-", ".fits")
-        PixInsightPixelMath(UNSPECIFIED_SLOT, listOf(PI_01_LIGHT, PI_02_LIGHT), outputPath, "{{0}} + {{1}}")
+        PixInsightPixelMath(UNSPECIFIED_SLOT, listOf(STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_02_FITS), outputPath, "{{0}} + {{1}}")
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-pixelmath").second shouldBe "cafc8138e2ce17614dcfa10edf410b07"
     }
@@ -80,7 +85,7 @@ class PixInsightScriptTest : AbstractTest() {
     @Test
     fun abe() {
         val outputPath = tempPath("pi-abe-", ".fits")
-        PixInsightAutomaticBackgroundExtractor(UNSPECIFIED_SLOT, PI_01_LIGHT, outputPath)
+        PixInsightAutomaticBackgroundExtractor(UNSPECIFIED_SLOT, STACKING_LIGHT_MONO_01_FITS, outputPath)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-abe").second shouldBe "bf62207dc17190009ba215da7c011297"
     }
@@ -88,48 +93,48 @@ class PixInsightScriptTest : AbstractTest() {
     @Test
     fun lrgbCombination() {
         val outputPath = tempPath("pi-lrgb-", ".fits")
-        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT)
+        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-lrgb").second shouldBe "99db35d78f7b360e7592217f4179b189"
 
         val weights = doubleArrayOf(1.0, 0.2470588, 0.31764705, 0.709803921) // LRGB #3F51B5
-        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT, weights)
+        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS, weights)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-weighted-lrgb").second shouldBe "1148ee222fbfb382ad2d708df5b0f79f"
 
-        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, PI_01_LIGHT, null, null)
+        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS, null, null)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-lr").second shouldBe "9100d3ce892f05f4b832b2fb5f35b5a1"
 
-        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, null, PI_01_LIGHT, null)
+        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, STACKING_LIGHT_MONO_01_FITS, null, STACKING_LIGHT_MONO_01_FITS, null)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-lg").second shouldBe "b4e8d8f7e289db60b41ba2bbe0035344"
 
-        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, null, null, PI_01_LIGHT)
+        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, STACKING_LIGHT_MONO_01_FITS, null, null, STACKING_LIGHT_MONO_01_FITS)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-lb").second shouldBe "1760e7cb1d139b63022dd975fe84897d"
 
-        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, null, PI_01_LIGHT, PI_01_LIGHT, null)
+        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, null, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS, null)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-rg").second shouldBe "8c59307b5943932aefdf2dedfe1c8178"
 
-        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, null, PI_01_LIGHT, null, PI_01_LIGHT)
+        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, null, STACKING_LIGHT_MONO_01_FITS, null, STACKING_LIGHT_MONO_01_FITS)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-rb").second shouldBe "1bdf9cada6a33f76dceaccdaacf30fef"
 
-        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, null, null, PI_01_LIGHT, PI_01_LIGHT)
+        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, null, null, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-bg").second shouldBe "4a9c81c71fd37546fd300d1037742fa2"
 
-        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, PI_01_LIGHT, PI_01_LIGHT, null)
+        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS, null)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-lrg").second shouldBe "06c32c8679d409302423baa3a07fb241"
 
-        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, PI_01_LIGHT, null, PI_01_LIGHT)
+        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS, null, STACKING_LIGHT_MONO_01_FITS)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-lrb").second shouldBe "f6d026cb63f7a58fc325e422c277ff89"
 
-        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, PI_01_LIGHT, null, PI_01_LIGHT, PI_01_LIGHT)
+        PixInsightLRGBCombination(UNSPECIFIED_SLOT, outputPath, STACKING_LIGHT_MONO_01_FITS, null, STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_01_FITS)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().openAsImage() }
             .transform(AutoScreenTransformFunction).save("pi-lbg").second shouldBe "67f961110fb4b9f0033b3b8dbc8b1638"
     }
@@ -137,7 +142,7 @@ class PixInsightScriptTest : AbstractTest() {
     @Test
     fun fileFormatConversion() {
         val xisfPath = tempPath("pi-ffc", ".xisf")
-        PixInsightFileFormatConversion(UNSPECIFIED_SLOT, PI_01_LIGHT, xisfPath)
+        PixInsightFileFormatConversion(UNSPECIFIED_SLOT, STACKING_LIGHT_MONO_01_FITS, xisfPath)
             .use { it.runSync(RUNNER).outputImage.shouldNotBeNull().isXisf().shouldBeTrue() }
 
         val fitsPath = tempPath("pi-ffc", ".fits")
@@ -157,7 +162,7 @@ class PixInsightScriptTest : AbstractTest() {
         val focalDistance = 200.0 // mm
         val pixelSize = 6.58
 
-        with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, resolution = resolution)
+        with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, resolution = resolution, timeout = Duration.ofMinutes(5))
             .use { it.runSync(RUNNER) }) {
             success.shouldBeTrue()
             this.focalLength shouldBe (200.355 plusOrMinus 1e-5)
@@ -171,7 +176,7 @@ class PixInsightScriptTest : AbstractTest() {
             imageHeight.roundToInt() shouldBeExactly 526
         }
 
-        with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, focalLength = focalDistance)
+        with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, focalLength = focalDistance, timeout = Duration.ofMinutes(5))
             .use { it.runSync(RUNNER) }) {
             success.shouldBeTrue()
             this.focalLength shouldBe (200.355 plusOrMinus 1e-5)

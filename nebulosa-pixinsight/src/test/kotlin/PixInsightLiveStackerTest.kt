@@ -6,14 +6,17 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.image.algorithms.transformation.AutoScreenTransformFunction
 import nebulosa.pixinsight.livestacker.PixInsightLiveStacker
-import nebulosa.test.*
+import nebulosa.test.AbstractTest
+import nebulosa.test.NonGitHubOnly
+import nebulosa.test.fits.*
+import nebulosa.test.save
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
 @NonGitHubOnly
 class PixInsightLiveStackerTest : AbstractTest() {
 
-    private val files = listOf(PI_01_LIGHT, PI_02_LIGHT, PI_03_LIGHT, PI_04_LIGHT, PI_05_LIGHT, PI_06_LIGHT, PI_07_LIGHT, PI_08_LIGHT)
+    private val files = listOf(STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_02_FITS, STACKING_LIGHT_MONO_03_FITS, STACKING_LIGHT_MONO_04_FITS, STACKING_LIGHT_MONO_05_FITS, STACKING_LIGHT_MONO_06_FITS, STACKING_LIGHT_MONO_07_FITS, STACKING_LIGHT_MONO_08_FITS)
 
     @Test
     fun stack() {
@@ -49,7 +52,7 @@ class PixInsightLiveStackerTest : AbstractTest() {
             it.isRunning.shouldBeTrue()
 
             for (file in files) {
-                outputPath = stacker.add(file, PI_04_LIGHT)
+                outputPath = stacker.add(file, STACKING_LIGHT_MONO_04_FITS)
             }
 
             outputPath.shouldNotBeNull().openAsImage().transform(AutoScreenTransformFunction)

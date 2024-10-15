@@ -1,4 +1,5 @@
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
@@ -9,7 +10,11 @@ import nebulosa.platesolver.Parity
 import nebulosa.siril.livestacker.SirilLiveStacker
 import nebulosa.siril.platesolver.SirilPlateSolver
 import nebulosa.siril.stardetector.SirilStarDetector
-import nebulosa.test.*
+import nebulosa.test.AbstractTest
+import nebulosa.test.NonGitHubOnly
+import nebulosa.test.concat
+import nebulosa.test.dataDirectory
+import nebulosa.test.fits.*
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.copyTo
@@ -27,10 +32,10 @@ class SirilTest : AbstractTest() {
 
             val inputDir = tempDirectory("ls-")
 
-            PI_01_LIGHT.copyTo(inputDir.concat("01.fits"))
-            PI_02_LIGHT.copyTo(inputDir.concat("02.fits"))
-            PI_03_LIGHT.copyTo(inputDir.concat("03.fits"))
-            PI_04_LIGHT.copyTo(inputDir.concat("04.fits"))
+            STACKING_LIGHT_MONO_01_FITS.copyTo(inputDir.concat("01.fits"))
+            STACKING_LIGHT_MONO_02_FITS.copyTo(inputDir.concat("02.fits"))
+            STACKING_LIGHT_MONO_03_FITS.copyTo(inputDir.concat("03.fits"))
+            STACKING_LIGHT_MONO_04_FITS.copyTo(inputDir.concat("04.fits"))
 
             for (fits in inputDir.listDirectoryEntries().shouldHaveSize(4).sorted()) {
                 it.add(fits).shouldNotBeNull()
@@ -39,13 +44,12 @@ class SirilTest : AbstractTest() {
             workingDirectory.listDirectoryEntries().shouldHaveSize(5)
         }
 
-        workingDirectory.listDirectoryEntries().shouldHaveSize(1)
+        workingDirectory.listDirectoryEntries().shouldBeEmpty()
     }
 
     @Test
     fun plateSolver() {
-        val solution = SOLVER.solve(PI_01_LIGHT, null)
-
+        val solution = SOLVER.solve(STACKING_LIGHT_MONO_01_FITS, null)
         solution.solved.shouldBeTrue()
         solution.orientation.toDegrees shouldBe (-90.02 plusOrMinus 1e-2)
         solution.rightAscension.formatHMS() shouldBe "00h06m46.0s"
@@ -61,21 +65,9 @@ class SirilTest : AbstractTest() {
     @Test
     fun starDetector() {
         val detector = SirilStarDetector(EXECUTABLE_PATH)
-
-        with(detector.detect(PI_FOCUS_0)) {
-            this shouldHaveSize 307
-            map { it.hfd }.average() shouldBe (7.9 plusOrMinus 1e-1)
-        }
-
-        with(detector.detect(PI_FOCUS_30000)) {
-            this shouldHaveSize 258
-            map { it.hfd }.average() shouldBe (1.1 plusOrMinus 1e-1)
-        }
-
-        with(detector.detect(PI_FOCUS_100000)) {
-            this shouldHaveSize 82
-            map { it.hfd }.average() shouldBe (22.4 plusOrMinus 1e-1)
-        }
+        val detectedStars = detector.detect(ASTROMETRY_GALACTIC_CENTER_FITS)
+        detectedStars shouldHaveSize 425
+        (detectedStars.sumOf { it.hfd } / detectedStars.size) shouldBe (2.1 plusOrMinus 0.1)
     }
 
     companion object {

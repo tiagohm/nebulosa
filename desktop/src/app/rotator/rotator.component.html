@@ -74,6 +74,7 @@
 				<p-inputNumber
 					[disabled]="!rotator.connected"
 					[step]="0.1"
+					[minFractionDigits]="1"
 					[min]="rotator.minAngle"
 					[max]="rotator.maxAngle"
 					[showButtons]="true"

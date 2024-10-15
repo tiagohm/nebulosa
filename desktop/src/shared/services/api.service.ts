@@ -589,8 +589,8 @@ export class ApiService {
 	}
 
 	twilight(dateTime: Date, location?: Location, fast: boolean = false) {
-		const date = extractDate(dateTime)
-		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<Twilight>(`sky-atlas/twilight?${query}`)
 	}
 
@@ -740,13 +740,14 @@ export class ApiService {
 
 	// SOLVER
 
-	solverStart(solver: PlateSolverRequest, path: string) {
-		const query = this.http.query({ path })
+	solverStart(solver: PlateSolverRequest, path: string, key: string) {
+		const query = this.http.query({ path, key })
 		return this.http.put<ImageSolved>(`plate-solver/start?${query}`, solver)
 	}
 
-	solverStop() {
-		return this.http.put<never>('plate-solver/stop')
+	solverStop(key: string) {
+		const query = this.http.query({ key })
+		return this.http.put<never>(`plate-solver/stop?${query}`)
 	}
 
 	// AUTO FOCUS
@@ -761,16 +762,19 @@ export class ApiService {
 
 	// STACKER
 
-	stackerStart(request: StackingRequest) {
-		return this.http.put<string | null>('stacker/start', request)
+	stackerStart(request: StackingRequest, key: string) {
+		const query = this.http.query({ key })
+		return this.http.put<string | null>(`stacker/start?${query}`, request)
 	}
 
-	stackerIsRunning() {
-		return this.http.get<boolean>('stacker/running')
+	stackerIsRunning( key: string) {
+		const query = this.http.query({ key })
+		return this.http.get<boolean>(`stacker/running?${query}`)
 	}
 
-	stackerStop() {
-		return this.http.put<never>('stacker/stop')
+	stackerStop( key: string) {
+		const query = this.http.query({ key })
+		return this.http.put<never>(`stacker/stop?${query}`)
 	}
 
 	stackerAnalyze(path: string) {

@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    api(project(":nebulosa-commandline"))
     api(project(":nebulosa-platesolver"))
     api(project(":nebulosa-stardetector"))
     api(project(":nebulosa-util"))

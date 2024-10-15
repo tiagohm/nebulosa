@@ -1,7 +1,7 @@
 package nebulosa.siril.command
 
+import nebulosa.commandline.CommandLineListener
 import nebulosa.util.concurrency.latch.CountUpDownLatch
-import nebulosa.util.exec.CommandLineListener
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -26,7 +26,7 @@ data class LiveStack(@JvmField val path: Path) : SirilCommand<Boolean>, CommandL
         latch.reset()
     }
 
-    override fun onExit(exitCode: Int, exception: Throwable?) {
+    override fun onExited(exitCode: Int, exception: Throwable?) {
         latch.reset()
     }
 

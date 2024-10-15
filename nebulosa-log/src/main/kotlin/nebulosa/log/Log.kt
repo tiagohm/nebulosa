@@ -29,6 +29,10 @@ inline fun Logger.i(message: String, a0: Any?, a1: Any?, a2: Any?) {
     if (isInfoEnabled) info(message, a0, a1, a2)
 }
 
+inline fun Logger.i(message: String, a0: Any?, a1: Any?, a2: Any?, a3: Any?) {
+    if (isInfoEnabled) info(message, a0, a1, a2, a3)
+}
+
 // WARN
 
 inline fun Logger.w(message: String) {
@@ -115,6 +119,10 @@ inline fun Logger.d(message: String, a0: Any?, a1: Any?, a2: Any?, a3: Any?, a4:
 
 inline fun Logger.de(message: String, a0: Any?) {
     if (isDebugEnabled) error(message, a0)
+}
+
+inline fun Logger.de(message: String, a0: Any?, a1: Any?) {
+    if (isDebugEnabled) error(message, a0, a1)
 }
 
 // DEBUG WARN

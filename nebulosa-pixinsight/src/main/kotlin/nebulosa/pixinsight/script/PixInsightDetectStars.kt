@@ -6,9 +6,9 @@ import nebulosa.stardetector.StarPoint
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import java.util.concurrent.CompletableFuture
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
-import kotlin.io.path.readText
 
 data class PixInsightDetectStars(
     override val slot: Int,
@@ -29,7 +29,7 @@ data class PixInsightDetectStars(
         override val success: Boolean = false,
         override val errorMessage: String? = null,
         @JvmField val stars: List<Star> = emptyList(),
-    ) : PixInsightScript.Output {
+    ) : PixInsightScriptOutput {
 
         override fun toString() = "Output(success=$success, errorMessage=$errorMessage, stars=${stars.size})"
 
@@ -64,28 +64,17 @@ data class PixInsightDetectStars(
 
     override val arguments = listOf("-x=${execute(scriptPath, Input(targetPath, statusPath, minSNR, invert))}")
 
-    override fun processOnComplete(exitCode: Int): Output {
-        val timeoutInMillis = timeout.toMillis()
-
+    override fun processOnExit(exitCode: Int, output: CompletableFuture<Output>) {
         if (exitCode == 0) {
-            val startTime = System.currentTimeMillis()
-
-            repeat(600) {
-                val text = statusPath.readText()
-
-                if (text.startsWith(START_FILE) && text.endsWith(END_FILE)) {
-                    return OBJECT_MAPPER.readValue(text.substring(1, text.length - 1), Output::class.java)
-                }
-
-                if (timeoutInMillis == 0L || System.currentTimeMillis() - startTime < timeoutInMillis) {
-                    Thread.sleep(500)
-                } else {
-                    return@repeat
-                }
+            repeat(60) {
+                if (output.isDone) return
+                Thread.sleep(1000)
+                val status = statusPath.parseStatus<Output>() ?: return@repeat
+                output.complete(status)
             }
         }
 
-        return Output.FAILED
+        output.complete(Output.FAILED)
     }
 
     override fun close() {
