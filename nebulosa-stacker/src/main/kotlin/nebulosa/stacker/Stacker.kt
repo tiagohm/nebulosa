@@ -13,6 +13,4 @@ interface Stacker {
     fun combineLRGB(outputPath: Path, luminancePath: Path? = null, redPath: Path? = null, greenPath: Path? = null, bluePath: Path? = null): Boolean
 
     fun combineLuminance(outputPath: Path, luminancePath: Path, targetPath: Path, mono: Boolean): Boolean
-
-    fun saveAs(inputPath: Path, outputPath: Path): Boolean
 }

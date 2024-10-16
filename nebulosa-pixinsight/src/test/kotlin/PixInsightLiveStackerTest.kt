@@ -16,7 +16,10 @@ import java.nio.file.Path
 @NonGitHubOnly
 class PixInsightLiveStackerTest : AbstractTest() {
 
-    private val files = listOf(STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_02_FITS, STACKING_LIGHT_MONO_03_FITS, STACKING_LIGHT_MONO_04_FITS, STACKING_LIGHT_MONO_05_FITS, STACKING_LIGHT_MONO_06_FITS, STACKING_LIGHT_MONO_07_FITS, STACKING_LIGHT_MONO_08_FITS)
+    private val files = listOf(
+        STACKING_LIGHT_MONO_01_FITS, STACKING_LIGHT_MONO_02_FITS, STACKING_LIGHT_MONO_03_FITS, STACKING_LIGHT_MONO_04_FITS,
+        STACKING_LIGHT_MONO_05_FITS, STACKING_LIGHT_MONO_06_FITS, STACKING_LIGHT_MONO_07_FITS, STACKING_LIGHT_MONO_08_FITS,
+    )
 
     @Test
     fun stack() {
@@ -34,7 +37,7 @@ class PixInsightLiveStackerTest : AbstractTest() {
             }
 
             outputPath.shouldNotBeNull().openAsImage().transform(AutoScreenTransformFunction)
-                .save("pi-live-stacked").second shouldBe "a107143dff3d43c4b56c872da869f89b"
+                .save("pi-live-stacked").second shouldBe "31d4773fbe75e7f38307a4a62127ad49"
         }
 
         stacker.isRunning.shouldBeFalse()

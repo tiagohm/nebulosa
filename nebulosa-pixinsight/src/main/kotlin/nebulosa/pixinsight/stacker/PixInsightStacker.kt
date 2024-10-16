@@ -3,6 +3,7 @@ package nebulosa.pixinsight.stacker
 import nebulosa.pixinsight.script.*
 import nebulosa.stacker.Stacker
 import java.nio.file.Path
+import kotlin.io.path.copyTo
 import kotlin.io.path.deleteIfExists
 
 data class PixInsightStacker(
@@ -16,14 +17,14 @@ data class PixInsightStacker(
         darkPath: Path?, flatPath: Path?, biasPath: Path?,
     ) = if (darkPath != null || flatPath != null || biasPath != null) {
         PixInsightCalibrate(slot, workingDirectory, targetPath, darkPath, flatPath, if (darkPath == null) biasPath else null)
-            .use { calibrate -> calibrate.runSync(runner).outputImage.saveAsAndDeleteIfExists(outputPath) }
+            .use { calibrate -> calibrate.runSync(runner).outputImage?.also { it.copyTo(outputPath, true); it.deleteIfExists() } != null }
     } else {
         false
     }
 
     override fun align(referencePath: Path, targetPath: Path, outputPath: Path): Boolean {
         return PixInsightAlign(slot, workingDirectory, referencePath, targetPath)
-            .use { align -> align.runSync(runner).outputImage.saveAsAndDeleteIfExists(outputPath) }
+            .use { align -> align.runSync(runner).outputImage?.also { it.copyTo(outputPath, true); it.deleteIfExists() } != null }
     }
 
     override fun integrate(stackCount: Int, stackedPath: Path, targetPath: Path, outputPath: Path): Boolean {
@@ -46,21 +47,6 @@ data class PixInsightStacker(
         } else {
             PixInsightLuminanceCombination(slot, outputPath, luminancePath, targetPath)
                 .use { it.runSync(runner).outputImage != null }
-        }
-    }
-
-    override fun saveAs(inputPath: Path, outputPath: Path): Boolean {
-        return PixInsightFileFormatConversion(slot, inputPath, outputPath)
-            .use { it.runSync(runner).outputImage != null }
-    }
-
-    private fun Path?.saveAsAndDeleteIfExists(outputPath: Path): Boolean {
-        return if (this == null) {
-            false
-        } else try {
-            saveAs(this, outputPath)
-        } finally {
-            deleteIfExists()
         }
     }
 }
