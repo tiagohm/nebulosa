@@ -66,10 +66,6 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ![](sequencer.png)
 
-## Stacker
-
-![](stacker.png)
-
 ## INDI
 
 ![](indi.png)

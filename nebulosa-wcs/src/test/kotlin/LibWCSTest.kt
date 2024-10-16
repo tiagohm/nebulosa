@@ -140,7 +140,7 @@ class LibWCSTest {
         @BeforeAll
         @JvmStatic
         fun loadLibWCS() {
-            val libPath = download("https://github.com/tiagohm/nebulosa.data/raw/main/wcs/linux-x86-64/libwcs.so")
+            val libPath = download("https://github.com/tiagohm/nebulosa.data/raw/main/libs/wcs/linux-x86-64/libwcs.so")
             System.setProperty(LibWCS.PATH, "$libPath")
         }
 

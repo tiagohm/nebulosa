@@ -2,6 +2,7 @@ package nebulosa.pixinsight.livestacker
 
 import nebulosa.livestacker.LiveStacker
 import nebulosa.log.d
+import nebulosa.log.dw
 import nebulosa.log.loggerFor
 import nebulosa.pixinsight.script.PixInsightIsRunning
 import nebulosa.pixinsight.script.PixInsightScript
@@ -10,7 +11,10 @@ import nebulosa.pixinsight.script.PixInsightStartup
 import nebulosa.pixinsight.stacker.PixInsightStacker
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.path.Path
+import kotlin.io.path.copyTo
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.extension
 
 data class PixInsightLiveStacker(
     private val runner: PixInsightScriptRunner,
@@ -24,10 +28,10 @@ data class PixInsightLiveStacker(
 
     private val running = AtomicBoolean()
     private val stacking = AtomicBoolean()
-    private val referencePath = Path.of("$workingDirectory", "reference.xisf")
     private val calibratedPath = Path.of("$workingDirectory", "calibrated.xisf")
     private val alignedPath = Path.of("$workingDirectory", "aligned.xisf")
 
+    @Volatile private var referencePath: Path? = null
     @Volatile private var stackCount = 0
 
     override val stacker = PixInsightStacker(runner, workingDirectory, slot)
@@ -38,12 +42,10 @@ data class PixInsightLiveStacker(
     override val isStacking
         get() = stacking.get()
 
-    override var stackedPath: Path? = null
-        private set
+    override val stackedPath: Path = Path.of("$workingDirectory", "stacked.xisf")
 
-    @Synchronized
     override fun start() {
-        if (!running.get()) {
+        if (running.compareAndSet(false, true)) {
             if (!PixInsightIsRunning(slot).use { it.runSync(runner).success }) {
                 try {
                     check(PixInsightStartup(slot).use { it.runSync(runner).success })
@@ -53,65 +55,58 @@ data class PixInsightLiveStacker(
             }
 
             stackCount = 0
-            running.set(true)
         }
     }
 
     @Synchronized
     override fun add(path: Path, referencePath: Path?): Path? {
-        var targetPath = path
+        try {
+            if (running.get()) {
+                stacking.set(true)
 
-        return if (running.get()) {
-            stacking.set(true)
+                var targetPath = path
 
-            if (stacker.calibrate(targetPath, calibratedPath, darkPath, flatPath, biasPath)) {
-                LOG.d("live stacking calibrated. count={}, target={}, output={}", stackCount, targetPath, calibratedPath)
-                targetPath = calibratedPath
-            }
-
-            // TODO: Debayer, Resample?
-
-            if (stackCount > 0) {
-                if (stacker.align(referencePath ?: this.referencePath, targetPath, alignedPath)) {
-                    LOG.d("live stacking aligned. count={}, target={}, output={}", stackCount, targetPath, alignedPath)
-                    targetPath = alignedPath
-
-                    if (stacker.integrate(stackCount, stackedPath!!, targetPath, stackedPath!!)) {
-                        LOG.d("live stacking integrated. count={}, target={}, output={}", stackCount, targetPath, stackedPath)
-                    }
-
-                    stackCount++
+                if (stacker.calibrate(targetPath, calibratedPath, darkPath, flatPath, biasPath)) {
+                    LOG.d("live stacking calibrated. count={}, target={}, output={}", stackCount, targetPath, calibratedPath)
+                    targetPath = calibratedPath
                 }
-            } else {
-                var saved = if (referencePath != null) stacker.saveAs(referencePath, this.referencePath)
-                else stacker.saveAs(targetPath, this.referencePath)
 
-                if (saved) {
-                    with(Path.of("$workingDirectory", "stacked.fits")) {
-                        saved = if (referencePath != null) {
-                            stacker.align(referencePath, targetPath, alignedPath)
-                            stacker.saveAs(alignedPath, this)
-                        } else {
-                            stacker.saveAs(targetPath, this)
-                        }
+                // TODO: Debayer, Resample?
 
-                        if (saved) {
-                            stackCount = 1
-                            stackedPath = this
+                if (stackCount > 0) {
+                    if (stacker.align(this.referencePath!!, targetPath, alignedPath)) {
+                        LOG.d("live stacking aligned. count={}, target={}, output={}", stackCount, targetPath, alignedPath)
+                        targetPath = alignedPath
+
+                        if (stacker.integrate(stackCount, stackedPath, targetPath, stackedPath)) {
+                            LOG.d("live stacking integrated. count={}, target={}, output={}", stackCount, targetPath, stackedPath)
+                            stackCount++
                         }
                     }
-                }
-            }
+                } else {
+                    if (this.referencePath == null) {
+                        this.referencePath = with(referencePath ?: targetPath) {
+                            Path("$workingDirectory", "reference.${extension}").also { copyTo(it, true) }
+                        }
+                    }
 
+                    if (!stacker.align(this.referencePath!!, targetPath, stackedPath)) {
+                        LOG.dw("alignment failed. reference={}, target={}", this.referencePath, targetPath)
+                        return null
+                    }
+
+                    stackCount = 1
+                }
+
+                return stackedPath
+            }
+        } finally {
             stacking.set(false)
-
-            stackedPath
-        } else {
-            targetPath
         }
+
+        return null
     }
 
-    @Synchronized
     override fun stop() {
         running.set(false)
         stackCount = 0
@@ -120,10 +115,10 @@ data class PixInsightLiveStacker(
     override fun close() {
         stop()
 
-        referencePath.deleteIfExists()
+        referencePath?.deleteIfExists()
         calibratedPath.deleteIfExists()
         alignedPath.deleteIfExists()
-        stackedPath?.deleteIfExists()
+        stackedPath.deleteIfExists()
     }
 
     companion object {

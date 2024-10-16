@@ -22,7 +22,6 @@ import { MountComponent } from './mount/mount.component'
 import { RotatorComponent } from './rotator/rotator.component'
 import { SequencerComponent } from './sequencer/sequencer.component'
 import { SettingsComponent } from './settings/settings.component'
-import { StackerComponent } from './stacker/stacker.component'
 
 const routes: Routes = [
 	{
@@ -101,10 +100,6 @@ const routes: Routes = [
 	{
 		path: 'auto-focus',
 		component: AutoFocusComponent,
-	},
-	{
-		path: 'stacker',
-		component: StackerComponent,
 	},
 	{
 		path: 'calculator',

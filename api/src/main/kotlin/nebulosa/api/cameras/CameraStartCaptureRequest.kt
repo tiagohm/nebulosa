@@ -2,8 +2,8 @@ package nebulosa.api.cameras
 
 import nebulosa.api.converters.time.DurationUnit
 import nebulosa.api.guiding.DitherAfterExposureRequest
+import nebulosa.api.image.ImageFilterType
 import nebulosa.api.livestacker.LiveStackingRequest
-import nebulosa.api.stacker.StackerGroupType
 import nebulosa.api.validators.*
 import nebulosa.indi.device.camera.FrameType
 import java.nio.file.Path
@@ -35,7 +35,7 @@ data class CameraStartCaptureRequest(
     @JvmField val dither: DitherAfterExposureRequest = DitherAfterExposureRequest.DISABLED,
     // Stacking.
     @JvmField val liveStacking: LiveStackingRequest = LiveStackingRequest.DISABLED,
-    @JvmField val stackerGroupType: StackerGroupType = StackerGroupType.MONO,
+    @JvmField val stackerGroupType: ImageFilterType = ImageFilterType.MONO,
     // Filter Wheel.
     @JvmField val filterPosition: Int = 0,
     @JvmField val shutterPosition: Int = 0,

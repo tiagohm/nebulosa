@@ -7,7 +7,8 @@ import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
-import nebulosa.util.exec.commandLine
+import org.apache.commons.exec.CommandLine
+import org.apache.commons.exec.DefaultExecutor
 import java.io.InputStreamReader
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
@@ -29,18 +30,17 @@ data class AstapStarDetector(
     ) : StarPoint
 
     override fun detect(input: Path): List<StarPoint> {
-        val cmd = commandLine {
-            executablePath(executablePath)
-            workingDirectory(input.parent)
-
-            putArg("-f", input)
-            putArg("-z", "0")
-            putArg("-extract", "$minSNR")
-        }
+        val commandline = CommandLine.parse("$executablePath")
+            .addArgument("-f").addArgument("$input")
+            .addArgument("-z").addArgument("0")
+            .addArgument("-extract").addArgument("$minSNR")
 
         try {
-            cmd.start()
-            LOG.d("astap exited. code={}", cmd.get())
+            val executor = DefaultExecutor.builder()
+                .setWorkingDirectory(input.parent.toFile())
+                .get()
+
+            LOG.d("astap exited. code={}", executor.execute(commandline))
         } catch (e: Throwable) {
             LOG.e("astap failed", e)
             return emptyList()

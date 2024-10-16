@@ -264,51 +264,6 @@
 	</div>
 	<div
 		class="col-12"
-		*ngIf="tab === 'STACKER'">
-		<div class="grid">
-			<div class="col-6">
-				<p-floatLabel class="w-full">
-					<p-dropdown
-						[options]="'STACKER' | dropdownOptions | enumDropdown"
-						optionsLabel="label"
-						optionsValue="value"
-						[(ngModel)]="stackerType"
-						styleClass="p-inputtext-sm border-0"
-						[autoDisplayFirst]="false" />
-					<label>Stacker</label>
-				</p-floatLabel>
-			</div>
-			<div class="col-12">
-				<neb-path-chooser
-					key="stackerExecutableFile"
-					[directory]="false"
-					class="w-full"
-					[(path)]="stacker.executablePath"
-					label="Executable path"
-					(pathChange)="savePreference()" />
-			</div>
-			<div
-				class="col-4"
-				*ngIf="stackerType === 'PIXINSIGHT'">
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="256"
-						[step]="1"
-						[showButtons]="true"
-						class="w-full"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="stacker.slot"
-						(ngModelChange)="savePreference()"
-						[allowEmpty]="false"
-						spinnableNumber />
-					<label>Slot</label>
-				</p-floatLabel>
-			</div>
-		</div>
-	</div>
-	<div
-		class="col-12"
 		*ngIf="tab === 'CAPTURE_NAMING_FORMAT'">
 		<div class="grid">
 			<div class="col-12 gap-1">

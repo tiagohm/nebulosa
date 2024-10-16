@@ -50,6 +50,7 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
                             val message = DatagramPacket(discoveryMessage, discoveryMessage.size, address.broadcast, 32227)
                             socket.send(message)
                         } catch (_: InterruptedException) {
+                            Thread.currentThread().interrupt()
                             break
                         } catch (e: IOException) {
                             LOG.e("socket IPv4 send error", e)
@@ -58,6 +59,7 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
                 }
             }
         } catch (_: InterruptedException) {
+            Thread.currentThread().interrupt()
         } catch (e: SocketException) {
             LOG.e("socket error", e)
         }
@@ -66,6 +68,7 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
             val message = DatagramPacket(discoveryMessage, discoveryMessage.size, InetAddress.getByName("ff12::00a1:9aca"), 32227)
             socket.send(message)
         } catch (_: InterruptedException) {
+            Thread.currentThread().interrupt()
         } catch (e: IOException) {
             LOG.e("socket IPv6 send error", e)
         }
@@ -78,6 +81,7 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
             try {
                 socket.receive(packet)
             } catch (_: InterruptedException) {
+                Thread.currentThread().interrupt()
                 break
             } catch (e: IOException) {
                 LOG.e("socket receive error", e)

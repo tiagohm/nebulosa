@@ -1,10 +1,10 @@
 package nebulosa.siril.command
 
+import nebulosa.commandline.CommandLineListener
 import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsHeaderCard
 import nebulosa.image.format.Header
 import nebulosa.util.concurrency.latch.CountUpDownLatch
-import nebulosa.util.exec.CommandLineListener
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -34,6 +34,10 @@ data class DumpHeader(private val header: Header = FitsHeader()) : SirilCommand<
         } else if (line.contains("FITS header for currently loaded image", true)) {
             started.set(true)
         }
+    }
+
+    override fun onExited(exitCode: Int, exception: Throwable?) {
+        latch.reset()
     }
 
     override fun write(commandLine: SirilCommandLine): Header {

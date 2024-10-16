@@ -1,12 +1,12 @@
 package nebulosa.siril.command
 
+import nebulosa.commandline.CommandLineListener
 import nebulosa.log.di
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.platesolver.Parity
 import nebulosa.platesolver.PlateSolution
 import nebulosa.util.concurrency.latch.CountUpDownLatch
-import nebulosa.util.exec.CommandLineListener
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
@@ -70,7 +70,7 @@ data class PlateSolve(
         }
     }
 
-    override fun onExit(exitCode: Int, exception: Throwable?) {
+    override fun onExited(exitCode: Int, exception: Throwable?) {
         LOG.di("plate solver finished. exitCode={}", exitCode, exception)
         exited.set(true)
         latch.reset()
@@ -78,7 +78,7 @@ data class PlateSolve(
 
     override fun write(commandLine: SirilCommandLine): PlateSolution {
         if (commandLine.execute(Load(path))) {
-            LOG.di("plate solver started. pid={}", commandLine.pid)
+            LOG.di("plate solver started")
 
             try {
                 commandLine.registerCommandLineListener(this)

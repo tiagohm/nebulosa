@@ -47,6 +47,7 @@ class INDIProtocolReader(
             listeners.onEach { it.onConnectionClosed() }.clear()
             parser.close()
         } catch (_: InterruptedException) {
+            currentThread().interrupt()
             running = false
         } catch (e: Throwable) {
             running = false

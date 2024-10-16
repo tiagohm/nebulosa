@@ -1,6 +1,7 @@
 package nebulosa.api.cameras
 
 import nebulosa.api.calibration.CalibrationFrameService
+import nebulosa.api.inject.Named
 import nebulosa.api.message.MessageService
 import nebulosa.api.wheels.WheelEventAware
 import nebulosa.guiding.Guider
@@ -14,6 +15,8 @@ import nebulosa.indi.device.rotator.Rotator
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
@@ -25,7 +28,7 @@ class CameraCaptureExecutor(
     private val guider: Guider,
     private val executorService: ExecutorService,
     eventBus: EventBus,
-) : Consumer<CameraCaptureEvent>, CameraEventAware, WheelEventAware, Executor by executorService {
+) : Consumer<CameraCaptureEvent>, CameraEventAware, WheelEventAware, KoinComponent, Executor by executorService {
 
     private val jobs = ConcurrentHashMap.newKeySet<CameraCaptureJob>(2)
 
@@ -55,7 +58,7 @@ class CameraCaptureExecutor(
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(jobs.none { it.camera === camera }) { "${camera.name} Camera Capture is already in progress" }
 
-        val liveStackingManager = CameraLiveStackingManager(calibrationFrameService)
+        val liveStackingManager = CameraLiveStackingManager(get(Named.liveStackingDir), calibrationFrameService)
 
         with(CameraCaptureJob(this, camera, request, guider, liveStackingManager, mount, wheel, focuser, rotator)) {
             val completable = runAsync(executorService)

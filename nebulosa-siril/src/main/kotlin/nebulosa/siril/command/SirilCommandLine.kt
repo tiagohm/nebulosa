@@ -1,42 +1,58 @@
 package nebulosa.siril.command
 
+import nebulosa.commandline.CommandLineListener
+import nebulosa.commandline.CommandLineListenerHandler
+import nebulosa.log.di
+import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.cancellation.CancellationListener
 import nebulosa.util.concurrency.cancellation.CancellationSource
-import nebulosa.util.exec.CommandLineListener
-import nebulosa.util.exec.commandLine
+import org.apache.commons.exec.CommandLine
+import org.apache.commons.exec.DefaultExecutor
+import org.apache.commons.exec.ExecuteWatchdog
 import java.nio.file.Path
 
-data class SirilCommandLine(private val executablePath: Path) : Runnable, CancellationListener, AutoCloseable {
+class SirilCommandLine(executablePath: Path) : Runnable, CancellationListener, AutoCloseable {
 
-    private val commandLine = commandLine {
-        executablePath(executablePath)
-        putArg("-s", "-")
+    private val handler = CommandLineListenerHandler()
+
+    private val executor = DefaultExecutor.builder()
+        .setExecuteStreamHandler(handler)
+        .get()
+
+    private val commandLine = CommandLine.parse("$executablePath")
+        .addArgument("-s").addArgument("-")
+
+    @Volatile private var started = false
+
+    init {
+        executor.watchdog = ExecuteWatchdog.builder()
+            .setTimeout(ExecuteWatchdog.INFINITE_TIMEOUT_DURATION)
+            .get()
     }
 
     val isRunning
-        get() = commandLine.isRunning
-
-    val pid
-        get() = commandLine.pid
+        get() = started && executor.watchdog.isWatching
 
     fun registerCommandLineListener(listener: CommandLineListener) {
-        commandLine.registerCommandLineListener(listener)
+        handler.registerCommandLineListener(listener)
     }
 
     fun unregisterCommandLineListener(listener: CommandLineListener) {
-        commandLine.unregisterCommandLineListener(listener)
+        handler.unregisterCommandLineListener(listener)
     }
 
     override fun run() {
-        if (!commandLine.isRunning) {
-            commandLine.start()
+        if (!isRunning) {
+            started = true
+            executor.execute(commandLine, handler)
             execute(Requires)
         }
     }
 
     internal fun write(command: String) {
-        if (commandLine.isRunning) {
-            commandLine.writer.println(command)
+        if (isRunning) {
+            LOG.di(command)
+            handler.write(command)
         }
     }
 
@@ -50,6 +66,14 @@ data class SirilCommandLine(private val executablePath: Path) : Runnable, Cancel
 
     override fun close() {
         execute(Exit)
-        commandLine.stop()
+
+        if (isRunning) {
+            executor.watchdog.destroyProcess()
+        }
+    }
+
+    companion object {
+
+        @JvmStatic private val LOG = loggerFor<SirilCommandLine>()
     }
 }

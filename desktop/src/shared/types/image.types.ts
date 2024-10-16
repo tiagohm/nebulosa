@@ -10,7 +10,7 @@ export type ImageChannel = 'RED' | 'GREEN' | 'BLUE' | 'GRAY'
 
 export type SCNRProtectionMethod = 'MAXIMUM_MASK' | 'ADDITIVE_MASK' | 'AVERAGE_NEUTRAL' | 'MAXIMUM_NEUTRAL' | 'MINIMUM_NEUTRAL'
 
-export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD' | 'SEQUENCER' | 'ALIGNMENT' | 'AUTO_FOCUS' | 'STACKER'
+export type ImageSource = 'FRAMING' | 'PATH' | 'CAMERA' | 'FLAT_WIZARD' | 'SEQUENCER' | 'ALIGNMENT' | 'AUTO_FOCUS'
 
 export type ImageFormat = 'FITS' | 'XISF' | 'PNG' | 'JPG'
 
@@ -19,6 +19,10 @@ export type Bitpix = 'BYTE' | 'SHORT' | 'INTEGER' | 'LONG' | 'FLOAT' | 'DOUBLE'
 export type LiveStackingMode = 'NONE' | 'RAW' | 'STACKED'
 
 export type ImageCalibrationSource = 'CAMERA' | 'MENU'
+
+export type ImageFilterType = 'LUMINANCE' | 'RED' | 'GREEN' | 'BLUE' | 'MONO' | 'RGB' | 'NONE'
+
+export type BayerPattern = 'RGGB' | 'BGGR' | 'GBRG' | 'GRBG' | 'GRGB' | 'GBGR' | 'RGBG' | 'BGRG'
 
 export type ImageMousePosition = Point
 
@@ -56,6 +60,7 @@ export interface ImageInfo {
 	width: number
 	height: number
 	mono: boolean
+	bayer?: BayerPattern
 	stretch: ImageStretch
 	rightAscension?: Angle
 	declination?: Angle
@@ -212,6 +217,7 @@ export interface ImageStretchDialog {
 
 export interface ImageSolverDialog {
 	showDialog: boolean
+	key: string
 	running: boolean
 	request: PlateSolverRequest
 	readonly solved: ImageSolved
@@ -273,6 +279,17 @@ export interface ImageAnnotationDialog {
 	selected?: ImageAnnotation
 	search: string
 	filtered: ImageAnnotation[]
+}
+
+export interface ImageAnalyzed {
+	width: number
+	height: number
+	binX: number
+	binY: number
+	gain: number
+	exposureTime: number
+	type: FrameType
+	filter: ImageFilterType
 }
 
 export interface ROISelected {
@@ -381,6 +398,7 @@ export const DEFAULT_IMAGE_TRANSFORMATION: ImageTransformation = {
 
 export const DEFAULT_IMAGE_SOLVER_DIALOG: ImageSolverDialog = {
 	showDialog: false,
+	key: '',
 	running: false,
 	request: DEFAULT_PLATE_SOLVER_REQUEST,
 	solved: DEFAULT_IMAGE_SOLVED,

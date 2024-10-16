@@ -57,14 +57,14 @@ class LibWCSDownloadTask(
 
     companion object {
 
-        const val VERSION_URL = "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/wcs/VERSION.txt"
+        const val VERSION_URL = "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/libs/wcs/VERSION.txt"
         const val VERSION_KEY = "LIBWCS.VERSION"
 
         @JvmStatic private val LOG = loggerFor<LibWCSDownloadTask>()
 
         @JvmStatic private val LIBRARY_URLS = mapOf(
-            "linux-x86-64" to "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/wcs/linux-x86-64/libwcs.so",
-            "win32-x86-64" to "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/wcs/win32-x86-64/libwcs.dll",
+            "linux-x86-64" to "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/libs/wcs/linux-x86-64/libwcs.so",
+            "win32-x86-64" to "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/libs/wcs/win32-x86-64/libwcs.dll",
         )
     }
 }

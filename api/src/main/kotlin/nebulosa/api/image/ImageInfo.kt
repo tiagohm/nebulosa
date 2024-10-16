@@ -6,6 +6,7 @@ import nebulosa.api.converters.angle.DeclinationSerializer
 import nebulosa.api.converters.angle.RightAscensionSerializer
 import nebulosa.fits.Bitpix
 import nebulosa.image.algorithms.computation.Statistics
+import nebulosa.image.algorithms.transformation.CfaPattern
 import nebulosa.indi.device.camera.Camera
 import java.nio.file.Path
 
@@ -14,6 +15,7 @@ data class ImageInfo(
     @JvmField val width: Int,
     @JvmField val height: Int,
     @JvmField val mono: Boolean,
+    @JvmField val bayer: CfaPattern?,
     @JvmField val stretch: ImageTransformation.Stretch,
     @field:JsonSerialize(using = RightAscensionSerializer::class) @JvmField val rightAscension: Double? = null,
     @field:JsonSerialize(using = DeclinationSerializer::class) @JvmField val declination: Double? = null,

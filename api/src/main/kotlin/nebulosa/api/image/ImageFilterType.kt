@@ -1,10 +1,10 @@
-package nebulosa.api.stacker
+package nebulosa.api.image
 
 import nebulosa.fits.filter
 import nebulosa.fits.naxis
 import nebulosa.image.format.ReadableHeader
 
-enum class StackerGroupType {
+enum class ImageFilterType {
     NONE,
     LUMINANCE,
     RED,

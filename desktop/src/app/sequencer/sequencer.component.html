@@ -141,7 +141,7 @@
 									<p-dropdown
 										*ngIf="plan.liveStacking.enabled"
 										[disabled]="running"
-										[options]="'STACKER_GROUP_TYPE' | dropdownOptions | enumDropdown"
+										[options]="'IMAGE_FILTER_TYPE' | dropdownOptions | enumDropdown"
 										[(ngModel)]="sequence.stackerGroupType"
 										styleClass="border-0 p-inputtext-sm"
 										[autoDisplayFirst]="false"

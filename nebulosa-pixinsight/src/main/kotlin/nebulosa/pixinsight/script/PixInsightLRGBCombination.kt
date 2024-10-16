@@ -4,6 +4,7 @@ import nebulosa.io.resource
 import nebulosa.io.transferAndClose
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.CompletableFuture
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 
@@ -33,7 +34,7 @@ data class PixInsightLRGBCombination(
         override val success: Boolean = false,
         override val errorMessage: String? = null,
         @JvmField val outputImage: Path? = null,
-    ) : PixInsightScript.Output {
+    ) : PixInsightScriptOutput {
 
         companion object {
 
@@ -52,14 +53,17 @@ data class PixInsightLRGBCombination(
     private val input = Input(outputPath, statusPath, luminancePath, redPath, greenPath, bluePath, weights)
     override val arguments = listOf("-x=${execute(scriptPath, input)}")
 
-    override fun processOnComplete(exitCode: Int): Output {
+    override fun processOnExit(exitCode: Int, output: CompletableFuture<Output>) {
         if (exitCode == 0) {
-            repeat(30) {
-                statusPath.parseStatus<Output>()?.also { return it } ?: Thread.sleep(1000)
+            repeat(60) {
+                if (output.isDone) return
+                Thread.sleep(1000)
+                val status = statusPath.parseStatus<Output>() ?: return@repeat
+                output.complete(status)
             }
         }
 
-        return Output.FAILED
+        output.complete(Output.FAILED)
     }
 
     override fun close() {

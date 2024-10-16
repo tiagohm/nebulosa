@@ -17,7 +17,6 @@ import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
-import nebulosa.util.concurrency.cancellation.CancellationToken
 import nebulosa.watney.platesolver.math.equatorialToStandardCoordinates
 import nebulosa.watney.platesolver.math.lerp
 import nebulosa.watney.platesolver.math.solveLeastSquares
@@ -46,7 +45,6 @@ data class WatneyPlateSolver(
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration,
-        cancellationToken: CancellationToken,
     ): PlateSolution {
         val image = image ?: path!!.fits().use(Image::open)
         val stars = (starDetector ?: DEFAULT_STAR_DETECTOR).detect(image)

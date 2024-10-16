@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, 
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
+import { nuid } from 'nuid'
 import createPanZoom from 'panzoom'
 import { basename, dirname, extname } from 'path'
 import { ContextMenu } from 'primeng/contextmenu'
@@ -139,6 +140,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		disabled: true,
 		command: () => {
 			this.scnr.showDialog = true
+		},
+	}
+
+	private readonly debayerMenuItem: MenuItem = {
+		label: 'Debayer',
+		icon: 'mdi mdi-collage',
+		selected: false,
+		command: () => {
+			this.transformation.debayer = !this.transformation.debayer
+			this.debayerMenuItem.selected = this.transformation.debayer
+			this.savePreference()
+			return this.loadImage()
 		},
 	}
 
@@ -299,6 +312,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.stretchMenuItem,
 		this.autoStretchMenuItem,
 		this.scnrMenuItem,
+		this.debayerMenuItem,
 		this.horizontalMirrorMenuItem,
 		this.verticalMirrorMenuItem,
 		this.invertMenuItem,
@@ -516,6 +530,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		})
 
 		this.loadPreference()
+
+		this.solver.key = nuid.next()
 	}
 
 	async ngAfterViewInit() {
@@ -852,6 +868,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 		this.imageInfo = info
 		this.scnrMenuItem.disabled = info.mono
+		this.debayerMenuItem.disabled = !info.bayer
 
 		if (info.rightAscension) this.solver.request.centerRA = info.rightAscension
 		if (info.declination) this.solver.request.centerDEC = info.declination
@@ -1125,9 +1142,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				const request: PlateSolverRequest = {
 					...this.solver.request,
 					...this.preferenceService.settings.get().plateSolver[this.solver.request.type],
+					type: this.solver.request.type,
 				}
 
-				const solved = await this.api.solverStart(request, path)
+				const solved = await this.api.solverStart(request, path, this.solver.key)
 
 				this.updateImageSolved(solved)
 			} catch {
@@ -1143,7 +1161,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	protected solverStop() {
-		return this.api.solverStop()
+		return this.api.solverStop(this.solver.key)
 	}
 
 	private updateImageSolved(solved?: ImageSolved) {
@@ -1347,6 +1365,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.fov.fovs = this.preference.fovs
 
 		this.autoStretchMenuItem.selected = this.transformation.stretch.auto
+		this.debayerMenuItem.selected = this.preference.transformation.debayer
 		this.invertMenuItem.selected = this.transformation.invert
 		this.horizontalMirrorMenuItem.selected = this.transformation.mirrorHorizontal
 		this.verticalMirrorMenuItem.selected = this.transformation.mirrorVertical

@@ -13,8 +13,9 @@ import nebulosa.math.toHours
 import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
 import nebulosa.platesolver.PlateSolverException
-import nebulosa.util.concurrency.cancellation.CancellationToken
-import nebulosa.util.exec.commandLine
+import org.apache.commons.exec.CommandLine
+import org.apache.commons.exec.DefaultExecutor
+import org.apache.commons.exec.ExecuteWatchdog
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -33,7 +34,6 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
         path: Path?, image: Image?,
         centerRA: Angle, centerDEC: Angle, radius: Angle,
         downsampleFactor: Int, timeout: Duration,
-        cancellationToken: CancellationToken,
     ): PlateSolution {
         requireNotNull(path) { "path is required" }
 
@@ -41,35 +41,33 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
         val baseName = UUID.randomUUID().toString()
         val outFile = Paths.get("$basePath", baseName)
 
-        val cmd = commandLine {
-            executablePath(executablePath)
-            workingDirectory(path.parent)
+        val commandline = CommandLine.parse("$executablePath")
+            .addArgument("-o").addArgument("$outFile")
+            .addArgument("-z").addArgument("$downsampleFactor")
+            .addArgument("-fov").addArgument("0") // auto
 
-            putArg("-o", outFile)
-            putArg("-z", downsampleFactor)
-            putArg("-fov", "0") // auto
-
-            if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
-                putArg("-ra", centerRA.toHours)
-                putArg("-spd", centerDEC.toDegrees + 90.0)
-                putArg("-r", ceil(radius.toDegrees))
-            } else {
-                putArg("-r", "180.0")
-            }
-
-            putArg("-f", path)
+        if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
+            commandline.addArgument("-ra").addArgument("${centerRA.toHours}")
+            commandline.addArgument("-spd").addArgument("${centerDEC.toDegrees + 90.0}")
+            commandline.addArgument("-r").addArgument("${ceil(radius.toDegrees)}")
+        } else {
+            commandline.addArgument("-r").addArgument("180.0")
         }
 
-        LOG.di("astap solving. command={}", cmd.command)
+        commandline.addArgument("-f").addArgument("$path")
+
+        LOG.di("astap solving. command={}", commandline)
+
+        val executor = DefaultExecutor.builder()
+            .setWorkingDirectory(path.parent.toFile())
+            .get()
 
         try {
-            val timeoutOrDefault = timeout.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5)
-            cancellationToken.listen(cmd)
-            cmd.start(timeoutOrDefault)
+            executor.watchdog = ExecuteWatchdog.builder()
+                .setTimeout(timeout.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5))
+                .get()
 
-            LOG.di("astap exited. code={}", cmd.get())
-
-            if (cancellationToken.isCancelled) return PlateSolution.NO_SOLUTION
+            LOG.di("astap exited. code={}", executor.execute(commandline))
 
             val ini = Properties()
             Paths.get("$basePath", "$baseName.ini").inputStream().use(ini::load)
@@ -123,13 +121,10 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
 
                 return solution
             } else {
-                val message = ini.getProperty("ERROR")
-                    ?: ini.getProperty("WARNING")
-                    ?: "plate solving failed"
+                val message = ini.getProperty("ERROR") ?: ini.getProperty("WARNING") ?: "plate solving failed"
                 throw PlateSolverException(message)
             }
         } finally {
-            cancellationToken.unlisten(cmd)
             basePath.deleteRecursively()
         }
     }

@@ -14,7 +14,6 @@ import { DEFAULT_MOUNT_PREFERENCE, Mount, MountPreference, mountPreferenceWithDe
 import { DEFAULT_ROTATOR_PREFERENCE, Rotator, RotatorPreference, rotatorPreferenceWithDefault } from '../types/rotator.types'
 import { DEFAULT_SEQUENCER_PREFERENCE, SequencerPreference, sequencerPreferenceWithDefault } from '../types/sequencer.types'
 import { DEFAULT_SETTINGS_PREFERENCE, SettingsPreference, settingsPreferenceWithDefault } from '../types/settings.types'
-import { DEFAULT_STACKER_PREFERENCE, StackerPreference, stackerPreferenceWithDefault } from '../types/stacker.types'
 import { DEFAULT_WHEEL_PREFERENCE, Wheel, WheelPreference, wheelPreferenceWithDefault } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 import { LocalStorageService } from './local-storage.service'
@@ -52,7 +51,6 @@ export class PreferenceService {
 	readonly skyAtlas: PreferenceData<SkyAtlasPreference>
 	readonly alignment: PreferenceData<AlignmentPreference>
 	readonly calibration: PreferenceData<CalibrationPreference>
-	readonly stacker: PreferenceData<StackerPreference>
 	readonly guider: PreferenceData<GuiderPreference>
 	readonly framing: PreferenceData<FramingPreference>
 	readonly settings: PreferenceData<SettingsPreference>
@@ -64,7 +62,6 @@ export class PreferenceService {
 		this.skyAtlas = this.create<SkyAtlasPreference>('atlas', () => structuredClone(DEFAULT_SKY_ATLAS_PREFERENCE), skyAtlasPreferenceWithDefault)
 		this.alignment = this.create<AlignmentPreference>('alignment', () => structuredClone(DEFAULT_ALIGNMENT_PREFERENCE), alignmentPreferenceWithDefault)
 		this.calibration = this.create<CalibrationPreference>('calibration', () => structuredClone(DEFAULT_CALIBRATION_PREFERENCE), calibrationPreferenceWithDefault)
-		this.stacker = this.create<StackerPreference>('stacker', () => structuredClone(DEFAULT_STACKER_PREFERENCE), stackerPreferenceWithDefault)
 		this.guider = this.create<GuiderPreference>('guider', () => structuredClone(DEFAULT_GUIDER_PREFERENCE), guiderPreferenceWithDefault)
 		this.framing = this.create<FramingPreference>('framing', () => structuredClone(DEFAULT_FRAMING_PREFERENCE), framingPreferenceWithDefault)
 		this.settings = this.create<SettingsPreference>('settings', () => structuredClone(DEFAULT_SETTINGS_PREFERENCE), settingsPreferenceWithDefault)

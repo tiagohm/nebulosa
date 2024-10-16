@@ -65,8 +65,6 @@ import nebulosa.api.rotators.RotatorService
 import nebulosa.api.sequencer.SequencerController
 import nebulosa.api.sequencer.SequencerExecutor
 import nebulosa.api.sequencer.SequencerService
-import nebulosa.api.stacker.StackerController
-import nebulosa.api.stacker.StackerService
 import nebulosa.api.stardetector.StarDetectionController
 import nebulosa.api.stardetector.StarDetectionService
 import nebulosa.api.wheels.WheelController
@@ -118,6 +116,7 @@ object Named {
     val sequencesDir = named("sequencesDir")
     val cacheDir = named("cacheDir")
     val libsDir = named("libsDir")
+    val liveStackingDir = named("liveStackingDir")
     val defaultHttpClient = named("defaultHttpClient")
     val alpacaHttpClient = named("alpacaHttpClient")
     val mainBoxStore = named("mainBoxStore")
@@ -156,6 +155,7 @@ fun pathModule(root: Path = Path(requireNotNull(System.getProperty(APP_DIR_KEY))
     single(Named.sequencesDir) { Path("$root", "sequences").createDirectories() }
     single(Named.cacheDir) { Path("$root", "cache").createDirectories() }
     single(Named.libsDir) { Path("$root", "libs").createDirectories() }
+    single(Named.liveStackingDir) { Path("$root", "live-stacking").createDirectories() }
 }
 
 // CORE
@@ -296,14 +296,13 @@ fun servicesModule() = module {
     single { CalibrationFrameService(get()) }
     single { FramingService(get(), get()) }
     single { ImageService(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    single { PlateSolverService(get()) }
+    single { PlateSolverService(get(), get()) }
     single { FlatWizardExecutor(get(), get(), get()) }
     single { FlatWizardService(get(Named.capturesDir), get()) }
     single { StarDetectionService() }
     single { AutoFocusExecutor(get(), get(), get()) }
     single { AutoFocusService(get()) }
     single { LiveStackingService() }
-    single { StackerService(get()) }
     single { FramingService(get(), get()) }
     single { INDIService(get()) }
     single { DARVExecutor(get(), get(), get()) }
@@ -341,7 +340,6 @@ fun controllersModule() = module(true) {
     single { StarDetectionController(get(), get()) }
     single { AutoFocusController(get(), get(), get()) }
     single { LiveStackingController(get(), get(), get()) }
-    single { StackerController(get(), get()) }
     single { FramingController(get(), get(), get()) }
     single { INDIController(get(), get(), get()) }
     single { PolarAlignmentController(get(), get(), get()) }

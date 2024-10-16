@@ -6,11 +6,10 @@ import { CameraCaptureState, ExposureMode, ExposureTimeUnit, FrameType, LiveStac
 import { DeviceType } from '../types/device.types'
 import { FlatWizardState } from '../types/flat-wizard.types'
 import { GuideDirection, GuideState, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
-import { Bitpix, ImageChannel, SCNRProtectionMethod } from '../types/image.types'
+import { Bitpix, ImageChannel, ImageFilterType, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlProtocol } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
 import { SequencerCaptureMode, SequencerState } from '../types/sequencer.types'
-import { StackerGroupType, StackerState, StackerType } from '../types/stacker.types'
 import { StarDetectorType } from '../types/stardetector.types'
 import { Undefinable } from '../utils/types'
 
@@ -39,13 +38,11 @@ export type EnumPipeKey =
 	| MountRemoteControlProtocol
 	| SequencerCaptureMode
 	| Bitpix
-	| StackerType
-	| StackerGroupType
+	| ImageFilterType
 	| SequencerState
 	| ExposureTimeUnit
 	| ImageChannel
 	| MoonPhaseName
-	| StackerState
 	| DeviceType
 	| 'ALL'
 
@@ -58,7 +55,6 @@ export class EnumPipe implements PipeTransform {
 		ACTIVE_GALAXY_NUCLEUS: 'Active Galaxy Nucleus',
 		ACTIVE: 'Active',
 		ADDITIVE_MASK: 'Additive Mask',
-		ALIGNING: 'ALIGNING',
 		ALL: 'All',
 		ALPHA2_CVN_VARIABLE: 'alpha2 CVn Variable',
 		AMATEUR: 'Amateur Radio',
@@ -243,7 +239,6 @@ export class EnumPipe implements PipeTransform {
 		INFRA_RED_SOURCE: 'Infra-Red Source',
 		INITIAL_PAUSE: 'Initial Pause',
 		INTEGER: 'Integer',
-		INTEGRATING: 'INTEGRATING',
 		INTELSAT: 'Intelsat',
 		INTERACTING_GALAXIES: 'Interacting Galaxies',
 		INTERLEAVED: 'Interleaved',

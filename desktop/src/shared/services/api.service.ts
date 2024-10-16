@@ -12,13 +12,12 @@ import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
 import { ConnectionStatus, ConnectionType, GitHubRelease } from '../types/home.types'
-import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnnotation, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
+import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnalyzed, ImageAnnotation, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
 import { LightBox } from '../types/lightbox.types'
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, SlewRate, TrackMode } from '../types/mount.types'
 import { PlateSolverRequest } from '../types/platesolver.types'
 import { Rotator } from '../types/rotator.types'
 import { SequencerPlan } from '../types/sequencer.types'
-import { AnalyzedTarget, StackingRequest } from '../types/stacker.types'
 import { StarDetectionRequest } from '../types/stardetector.types'
 import { Wheel } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
@@ -589,8 +588,8 @@ export class ApiService {
 	}
 
 	twilight(dateTime: Date, location?: Location, fast: boolean = false) {
-		const date = extractDate(dateTime)
-		const query = this.http.query({ date, fast, hasLocation: location?.id || true })
+		const [date, time] = extractDateTime(dateTime)
+		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
 		return this.http.get<Twilight>(`sky-atlas/twilight?${query}`)
 	}
 
@@ -621,6 +620,11 @@ export class ApiService {
 	saveImageAs(path: string, save: ImageSaveDialog, camera?: Camera) {
 		const query = this.http.query({ path, camera: camera?.id })
 		return this.http.put<never>(`image/save-as?${query}`, save)
+	}
+
+	imageAnalyze(path: string) {
+		const query = this.http.query({ path })
+		return this.http.put<ImageAnalyzed | null>(`image/analyze?${query}`)
 	}
 
 	coordinateInterpolation(path: string) {
@@ -740,13 +744,14 @@ export class ApiService {
 
 	// SOLVER
 
-	solverStart(solver: PlateSolverRequest, path: string) {
-		const query = this.http.query({ path })
+	solverStart(solver: PlateSolverRequest, path: string, key: string) {
+		const query = this.http.query({ path, key })
 		return this.http.put<ImageSolved>(`plate-solver/start?${query}`, solver)
 	}
 
-	solverStop() {
-		return this.http.put<never>('plate-solver/stop')
+	solverStop(key: string) {
+		const query = this.http.query({ key })
+		return this.http.put<never>(`plate-solver/stop?${query}`)
 	}
 
 	// AUTO FOCUS
@@ -757,24 +762,6 @@ export class ApiService {
 
 	autoFocusStop(camera: Camera) {
 		return this.http.put<never>(`auto-focus/${camera.id}/stop`)
-	}
-
-	// STACKER
-
-	stackerStart(request: StackingRequest) {
-		return this.http.put<string | null>('stacker/start', request)
-	}
-
-	stackerIsRunning() {
-		return this.http.get<boolean>('stacker/running')
-	}
-
-	stackerStop() {
-		return this.http.put<never>('stacker/stop')
-	}
-
-	stackerAnalyze(path: string) {
-		return this.http.put<AnalyzedTarget | null>(`stacker/analyze?path=${path}`)
 	}
 
 	// CONFIRMATION

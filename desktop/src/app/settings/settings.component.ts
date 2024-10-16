@@ -7,7 +7,6 @@ import { DEFAULT_LOCATION, Location } from '../../shared/types/atlas.types'
 import { DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT, FrameType, LiveStackerType } from '../../shared/types/camera.types'
 import { PlateSolverType } from '../../shared/types/platesolver.types'
 import { DEFAULT_SETTINGS_PREFERENCE, resetCameraCaptureNamingFormat, SettingsTab } from '../../shared/types/settings.types'
-import { StackerType } from '../../shared/types/stacker.types'
 import { StarDetectorType } from '../../shared/types/stardetector.types'
 import { AppComponent } from '../app.component'
 
@@ -23,7 +22,6 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 	protected plateSolverType: PlateSolverType = 'ASTAP'
 	protected starDetectorType: StarDetectorType = 'ASTAP'
 	protected liveStackerType: LiveStackerType = 'SIRIL'
-	protected stackerType: StackerType = 'PIXINSIGHT'
 
 	private readonly locationChangePublisher = new Subject<Location>()
 	private readonly locationChangeSubscription?: Subscription
@@ -48,13 +46,6 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 			label: 'Plate Solver',
 			command: (e) => {
 				this.showTab('PLATE_SOLVER', e.item?.label)
-			},
-		},
-		{
-			icon: 'mdi mdi-image-multiple',
-			label: 'Stacker',
-			command: (e) => {
-				this.showTab('STACKER', e.item?.label)
 			},
 		},
 		{
@@ -90,10 +81,6 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 
 	get liveStacker() {
 		return this.preference.liveStacker[this.liveStackerType]
-	}
-
-	get stacker() {
-		return this.preference.stacker[this.stackerType]
 	}
 
 	constructor(

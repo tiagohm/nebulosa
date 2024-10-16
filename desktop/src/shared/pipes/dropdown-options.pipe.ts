@@ -5,11 +5,10 @@ import { AutoFocusFittingMode, BacklashCompensationMode } from '../types/autofoc
 import { ExposureMode, FrameType, LiveStackerType } from '../types/camera.types'
 import { GuideDirection, GuiderPlotMode, GuiderYAxisUnit } from '../types/guider.types'
 import { ConnectionType } from '../types/home.types'
-import { Bitpix, IMAGE_STATISTICS_BIT_OPTIONS, ImageChannel, ImageFormat, ImageStatisticsBitOption, SCNRProtectionMethod } from '../types/image.types'
+import { Bitpix, IMAGE_STATISTICS_BIT_OPTIONS, ImageChannel, ImageFilterType, ImageFormat, ImageStatisticsBitOption, SCNRProtectionMethod } from '../types/image.types'
 import { MountRemoteControlProtocol } from '../types/mount.types'
 import { PlateSolverType } from '../types/platesolver.types'
 import { SequencerCaptureMode } from '../types/sequencer.types'
-import { StackerGroupType, StackerType } from '../types/stacker.types'
 import { StarDetectorType } from '../types/stardetector.types'
 
 export interface DropdownOptions {
@@ -32,8 +31,7 @@ export interface DropdownOptions {
 	GUIDER_PLOT_MODE: GuiderPlotMode[]
 	GUIDER_Y_AXIS_UNIT: GuiderYAxisUnit[]
 	SEQUENCE_CAPTURE_MODE: SequencerCaptureMode[]
-	STACKER: StackerType[]
-	STACKER_GROUP_TYPE: StackerGroupType[]
+	IMAGE_FILTER_TYPE: ImageFilterType[]
 	CONNECTION_TYPE: ConnectionType[]
 	IMAGE_STATISTICS_BIT_OPTION: ImageStatisticsBitOption[]
 	SATELLITE_GROUP_TYPE: SatelliteGroupType[]
@@ -84,9 +82,7 @@ export class DropdownOptionsPipe implements PipeTransform {
 				return ['ARCSEC', 'PIXEL'] as DropdownOptions[K]
 			case 'SEQUENCE_CAPTURE_MODE':
 				return ['FULLY', 'INTERLEAVED'] as DropdownOptions[K]
-			case 'STACKER':
-				return ['PIXINSIGHT'] as DropdownOptions[K]
-			case 'STACKER_GROUP_TYPE':
+			case 'IMAGE_FILTER_TYPE':
 				return ['LUMINANCE', 'RED', 'GREEN', 'BLUE', 'MONO', 'RGB', 'NONE'] as DropdownOptions[K]
 			case 'CONNECTION_TYPE':
 				return ['INDI', 'ALPACA'] as DropdownOptions[K]

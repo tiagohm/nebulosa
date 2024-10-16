@@ -22,6 +22,7 @@ class ImageController(
         app.post("image", ::openImage)
         app.delete("image", ::closeImage)
         app.put("image/save-as", ::saveImageAs)
+        app.put("image/analyze", ::analyze)
         app.put("image/annotations", ::annotations)
         app.get("image/coordinate-interpolation", ::coordinateInterpolation)
         app.get("image/histogram", ::histogram)
@@ -45,6 +46,11 @@ class ImageController(
         val path = ctx.queryParam("path").notNull().path()
         val save = ctx.bodyAsClass<SaveImage>()
         imageService.saveImageAs(path, save)
+    }
+
+    private fun analyze(ctx: Context) {
+        val path = ctx.queryParam("path").notNull().path().exists()
+        imageService.analyze(path)?.also(ctx::json)
     }
 
     private fun annotations(ctx: Context) {
