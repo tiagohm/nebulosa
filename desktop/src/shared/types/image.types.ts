@@ -22,6 +22,8 @@ export type ImageCalibrationSource = 'CAMERA' | 'MENU'
 
 export type ImageFilterType = 'LUMINANCE' | 'RED' | 'GREEN' | 'BLUE' | 'MONO' | 'RGB' | 'NONE'
 
+export type BayerPattern = 'RGGB' | 'BGGR' | 'GBRG' | 'GRBG' | 'GRGB' | 'GBGR' | 'RGBG' | 'BGRG'
+
 export type ImageMousePosition = Point
 
 export interface Image {
@@ -58,6 +60,7 @@ export interface ImageInfo {
 	width: number
 	height: number
 	mono: boolean
+	bayer?: BayerPattern
 	stretch: ImageStretch
 	rightAscension?: Angle
 	declination?: Angle

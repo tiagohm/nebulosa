@@ -91,7 +91,7 @@ class ImageService(
 
         val info = ImageInfo(
             path,
-            transformedImage.width, transformedImage.height, transformedImage.mono,
+            transformedImage.width, transformedImage.height, transformedImage.mono, CfaPattern.from(image.header),
             transformation.stretch.copy(
                 shadow = (stretchParameters!!.shadow * 65536f).roundToInt(),
                 highlight = (stretchParameters.highlight * 65536f).roundToInt(),

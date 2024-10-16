@@ -143,6 +143,18 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		},
 	}
 
+	private readonly debayerMenuItem: MenuItem = {
+		label: 'Debayer',
+		icon: 'mdi mdi-collage',
+		selected: false,
+		command: () => {
+			this.transformation.debayer = !this.transformation.debayer
+			this.debayerMenuItem.selected = this.transformation.debayer
+			this.savePreference()
+			return this.loadImage()
+		},
+	}
+
 	private readonly horizontalMirrorMenuItem: MenuItem = {
 		label: 'Horizontal mirror',
 		icon: 'mdi mdi-flip-horizontal',
@@ -300,6 +312,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.stretchMenuItem,
 		this.autoStretchMenuItem,
 		this.scnrMenuItem,
+		this.debayerMenuItem,
 		this.horizontalMirrorMenuItem,
 		this.verticalMirrorMenuItem,
 		this.invertMenuItem,
@@ -855,6 +868,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 		this.imageInfo = info
 		this.scnrMenuItem.disabled = info.mono
+		this.debayerMenuItem.disabled = !info.bayer
 
 		if (info.rightAscension) this.solver.request.centerRA = info.rightAscension
 		if (info.declination) this.solver.request.centerDEC = info.declination
@@ -1351,6 +1365,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.fov.fovs = this.preference.fovs
 
 		this.autoStretchMenuItem.selected = this.transformation.stretch.auto
+		this.debayerMenuItem.selected = this.preference.transformation.debayer
 		this.invertMenuItem.selected = this.transformation.invert
 		this.horizontalMirrorMenuItem.selected = this.transformation.mirrorHorizontal
 		this.verticalMirrorMenuItem.selected = this.transformation.mirrorVertical
