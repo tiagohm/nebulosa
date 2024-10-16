@@ -116,6 +116,7 @@ object Named {
     val sequencesDir = named("sequencesDir")
     val cacheDir = named("cacheDir")
     val libsDir = named("libsDir")
+    val liveStackingDir = named("liveStackingDir")
     val defaultHttpClient = named("defaultHttpClient")
     val alpacaHttpClient = named("alpacaHttpClient")
     val mainBoxStore = named("mainBoxStore")
@@ -154,6 +155,7 @@ fun pathModule(root: Path = Path(requireNotNull(System.getProperty(APP_DIR_KEY))
     single(Named.sequencesDir) { Path("$root", "sequences").createDirectories() }
     single(Named.cacheDir) { Path("$root", "cache").createDirectories() }
     single(Named.libsDir) { Path("$root", "libs").createDirectories() }
+    single(Named.liveStackingDir) { Path("$root", "live-stacking").createDirectories() }
 }
 
 // CORE

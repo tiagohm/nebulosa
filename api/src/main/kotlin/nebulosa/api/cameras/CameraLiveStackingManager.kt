@@ -17,6 +17,7 @@ import java.util.*
 import kotlin.io.path.*
 
 data class CameraLiveStackingManager(
+    private val liveStackingDir: Path,
     private val calibrationFrameProvider: CalibrationFrameProvider? = null,
 ) : AutoCloseable {
 
@@ -24,6 +25,7 @@ data class CameraLiveStackingManager(
     private val workingDirectories = HashSet<Path>()
 
     @Volatile private var referencePath: Path? = null
+    @Volatile private var stackedPath: Path? = null
 
     @Synchronized
     fun start(request: CameraStartCaptureRequest, path: Path): Boolean {
@@ -83,7 +85,13 @@ data class CameraLiveStackingManager(
             }
         }
 
-        return stackedPath ?: liveStacker.stackedPath
+        if (stackedPath != null && this.stackedPath == null) {
+            this.stackedPath = Path("$liveStackingDir", "${System.currentTimeMillis()}.${stackedPath.extension}")
+        }
+
+        this.stackedPath?.also { stackedPath?.copyTo(it, true) }
+
+        return this.stackedPath
     }
 
     fun stop(request: CameraStartCaptureRequest) {
@@ -147,7 +155,7 @@ data class CameraLiveStackingManager(
 
         @JvmStatic private val LOG = loggerFor<CameraLiveStackingManager>()
 
-        private inline val Path?.isCalibrationFrame
-            get() = this != null && exists() && isRegularFile() && (isFits() || isXisf())
+        private inline val Path.isCalibrationFrame
+            get() = exists() && isRegularFile() && (isFits() || isXisf())
     }
 }

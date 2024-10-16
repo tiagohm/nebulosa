@@ -39,13 +39,12 @@ data class SequencerJob(
     @JvmField val wheel: FilterWheel? = null,
     @JvmField val focuser: Focuser? = null,
     @JvmField val rotator: Rotator? = null,
-    private val calibrationFrameProvider: CalibrationFrameProvider? = null,
+    private val liveStackingManager: CameraLiveStackingManager? = null,
 ) : AbstractJob(), CameraEventAware, WheelEventAware, FocuserEventAware, RotatorEventAware {
 
     private val sequences = plan.sequences.filter { it.enabled }
     private val initialDelayTask = DelayTask(this, plan.initialDelay)
     private val waitForSettleTask = WaitForSettleTask(this, guider)
-    private val liveStackingManager = CameraLiveStackingManager(calibrationFrameProvider)
     private val cameraCaptureEvents =
         Array(plan.sequences.size + 1) { CameraCaptureEvent(camera, exposureAmount = plan.sequences.getOrNull(it - 1)?.exposureAmount ?: 0) }
 
@@ -173,7 +172,7 @@ data class SequencerJob(
     }
 
     private fun addFrameToLiveStacker(request: CameraStartCaptureRequest, path: Path?): Path? {
-        return if (path != null && liveStackingManager.start(request, path)) {
+        return if (path != null && liveStackingManager != null && liveStackingManager.start(request, path)) {
             try {
                 status.capture.state = CameraCaptureState.STACKING
                 status.send()
@@ -282,7 +281,7 @@ data class SequencerJob(
     }
 
     override fun afterFinish() {
-        liveStackingManager.close()
+        liveStackingManager?.close()
 
         status.state = SequencerState.IDLE
         status.send()

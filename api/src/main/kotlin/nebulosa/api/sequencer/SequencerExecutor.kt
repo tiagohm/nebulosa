@@ -2,7 +2,9 @@ package nebulosa.api.sequencer
 
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.cameras.CameraEventAware
+import nebulosa.api.cameras.CameraLiveStackingManager
 import nebulosa.api.focusers.FocuserEventAware
+import nebulosa.api.inject.Named
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.message.MessageService
 import nebulosa.api.rotators.RotatorEventAware
@@ -20,6 +22,8 @@ import nebulosa.indi.device.rotator.RotatorEvent
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
@@ -31,7 +35,7 @@ class SequencerExecutor(
     private val executorService: ExecutorService,
     private val calibrationFrameService: CalibrationFrameService,
     eventBus: EventBus,
-) : Consumer<MessageEvent>, CameraEventAware, WheelEventAware, FocuserEventAware, RotatorEventAware, Executor by executorService {
+) : Consumer<MessageEvent>, CameraEventAware, WheelEventAware, FocuserEventAware, RotatorEventAware, KoinComponent, Executor by executorService {
 
     private val jobs = ConcurrentHashMap.newKeySet<SequencerJob>(1)
 
@@ -82,7 +86,9 @@ class SequencerExecutor(
             check(jobs.none { it.rotator === rotator }) { "${camera.name} Sequencer Job is already in progress" }
         }
 
-        with(SequencerJob(this, camera, request, guider, mount, wheel, focuser, rotator, calibrationFrameService)) {
+        val liveStackingManager = CameraLiveStackingManager(get(Named.liveStackingDir), calibrationFrameService)
+
+        with(SequencerJob(this, camera, request, guider, mount, wheel, focuser, rotator, liveStackingManager)) {
             val completable = runAsync(executorService)
             jobs.add(this)
             completable.whenComplete { _, _ -> jobs.remove(this) }
