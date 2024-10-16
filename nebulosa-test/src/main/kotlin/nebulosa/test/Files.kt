@@ -7,7 +7,7 @@ import nebulosa.math.hours
 
 const val ASTROPY_PHOTOMETRY_URL = "https://www.astropy.org/astropy-data/photometry"
 const val GITHUB_FITS_URL = "https://github.com/tiagohm/nebulosa.data/raw/main/fits"
-const val GITHUB_XISF_URL = "https://github.com/tiagohm/nebulosa.data/raw/main/test/xisf"
+const val GITHUB_XISF_URL = "https://github.com/tiagohm/nebulosa.data/raw/main/xisf"
 
 val M82_MONO_8_LZ4_XISF by lazy { download("$GITHUB_XISF_URL/M82.Mono.8.LZ4.xisf") }
 val M82_MONO_8_LZ4_HC_XISF by lazy { download("$GITHUB_XISF_URL/M82.Mono.8.LZ4-HC.xisf") }
