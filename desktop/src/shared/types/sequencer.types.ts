@@ -1,3 +1,4 @@
+import { backlashCompensationWithDefault, DEFAULT_BACKLASH_COMPENSATION, type BacklashCompensation } from './autofocus.type'
 import type { Camera, LiveStackingRequest } from './camera.types'
 import {
 	cameraCaptureNamingFormatWithDefault,
@@ -53,6 +54,7 @@ export interface SequencerPlan {
 	autoFocus: AutoFocusAfterConditions
 	liveStacking: LiveStackingRequest
 	namingFormat: CameraCaptureNamingFormat
+	backlashCompensation: BacklashCompensation
 	camera?: Camera
 	mount?: Mount
 	wheel?: Wheel
@@ -115,6 +117,7 @@ export const DEFAULT_SEQUENCER_PLAN: SequencerPlan = {
 	autoFocus: DEFAULT_AUTO_FOCUS_AFTER_CONDITIONS,
 	liveStacking: DEFAULT_LIVE_STACKING_REQUEST,
 	namingFormat: DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT,
+	backlashCompensation: DEFAULT_BACKLASH_COMPENSATION,
 	sequences: [],
 }
 
@@ -184,6 +187,7 @@ export function sequencerPlanWithDefault(plan?: Partial<SequencerPlan>, source: 
 	plan.autoFocus = autoFocusAfterConditionsWithDefault(plan.autoFocus, source.autoFocus)
 	plan.liveStacking = liveStackingRequestWithDefault(plan.liveStacking, source.liveStacking)
 	plan.namingFormat = cameraCaptureNamingFormatWithDefault(plan.namingFormat, source.namingFormat)
+	plan.backlashCompensation = backlashCompensationWithDefault(plan.backlashCompensation, source.backlashCompensation)
 	return plan as SequencerPlan
 }
 

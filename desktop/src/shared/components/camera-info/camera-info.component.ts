@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core'
 import type { CameraStartCapture } from '../../types/camera.types'
+import type { Focuser } from '../../types/focuser.types'
 import type { Wheel } from '../../types/wheel.types'
 
 @Component({
@@ -13,6 +14,9 @@ export class CameraInfoComponent {
 
 	@Input()
 	protected readonly wheel?: Wheel
+
+	@Input()
+	protected readonly focuser?: Focuser
 
 	@Input()
 	protected readonly hasType: boolean = true

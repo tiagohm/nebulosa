@@ -641,6 +641,17 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 				this.cameraExposures.get(i)?.reset()
 			}
 
+			// FOCUS OFFSET
+			if (this.plan.wheel && this.plan.focuser) {
+				const offsets = this.preferenceService.focusOffsets(this.plan.wheel, this.plan.focuser).get()
+
+				for (const sequence of this.plan.sequences) {
+					if (sequence.filterPosition > 0) {
+						sequence.focusOffset = offsets[sequence.filterPosition - 1] || 0
+					}
+				}
+			}
+
 			Object.assign(this.plan.liveStacking, this.preferenceService.settings.get().liveStacker[this.plan.liveStacking.type])
 
 			await this.browserWindowService.openCameraImage(this.plan.camera, 'SEQUENCER')

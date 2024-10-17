@@ -3,6 +3,7 @@ package nebulosa.api.focusers
 import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.indi.device.focuser.FocuserMoveFailed
 import nebulosa.indi.device.focuser.FocuserMovingChanged
+import nebulosa.indi.device.focuser.FocuserPositionChanged
 import nebulosa.job.manager.Job
 import nebulosa.log.d
 import nebulosa.log.loggerFor
@@ -22,7 +23,7 @@ sealed class AbstractFocuserMoveTask : FocuserTask, CancellationListener {
         if (event.device === focuser) {
             when (event) {
                 is FocuserMovingChanged -> if (event.device.moving) moving = true else if (moving) latch.reset()
-                // is FocuserPositionChanged -> if (moving && !event.device.moving) latch.reset()
+                is FocuserPositionChanged -> if (moving && !event.device.moving) latch.reset()
                 is FocuserMoveFailed -> latch.reset()
             }
         }
@@ -36,6 +37,7 @@ sealed class AbstractFocuserMoveTask : FocuserTask, CancellationListener {
         if (!job.isCancelled && focuser.connected && !focuser.moving && canMove()) {
             LOG.d("Focuser move started. focuser={}", focuser)
             latch.countUp()
+            moving = true
             move()
             latch.await()
             moving = false

@@ -1,8 +1,10 @@
 package nebulosa.api.sequencer
 
-import nebulosa.api.calibration.CalibrationFrameProvider
 import nebulosa.api.cameras.*
+import nebulosa.api.focusers.BacklashCompensationFocuserMoveTask
+import nebulosa.api.focusers.BacklashCompensator
 import nebulosa.api.focusers.FocuserEventAware
+import nebulosa.api.focusers.FocuserTask
 import nebulosa.api.guiding.DitherAfterExposureEvent
 import nebulosa.api.guiding.DitherAfterExposureTask
 import nebulosa.api.guiding.WaitForSettleTask
@@ -45,9 +47,10 @@ data class SequencerJob(
     private val sequences = plan.sequences.filter { it.enabled }
     private val initialDelayTask = DelayTask(this, plan.initialDelay)
     private val waitForSettleTask = WaitForSettleTask(this, guider)
-    private val cameraCaptureEvents =
-        Array(plan.sequences.size + 1) { CameraCaptureEvent(camera, exposureAmount = plan.sequences.getOrNull(it - 1)?.exposureAmount ?: 0) }
+    private val cameraCaptureEvents = Array(plan.sequences.size + 1) { CameraCaptureEvent(camera, exposureAmount = plan.sequences.getOrNull(it - 1)?.exposureAmount ?: 0) }
+    private val backlashCompensator = BacklashCompensator(plan.backlashCompensation, focuser?.maxPosition ?: 0)
 
+    @Volatile private var initialFocuserPosition = 0
     @Volatile private var estimatedCaptureTime = initialDelayTask.duration * 1000L
     @Volatile private var captureStartElapsedTime = 0L
 
@@ -55,6 +58,8 @@ data class SequencerJob(
 
     init {
         require(sequences.isNotEmpty()) { "no entries found" }
+
+        initialFocuserPosition = focuser?.position ?: 0
 
         add(initialDelayTask)
 
@@ -70,7 +75,10 @@ data class SequencerJob(
                 add(SequencerIdTask(id))
 
                 // FILTER WHEEL.
-                request.wheelMoveTask()?.also(::add)
+                if (request.wheelMoveTask()?.also(::add) != null) {
+                    // FOCUSER.
+                    request.focuserMoveTask()?.also(::add)
+                }
 
                 // DELAY.
                 val delayTask = DelayTask(this, request.exposureDelay)
@@ -97,6 +105,7 @@ data class SequencerJob(
             val requests = sequences.map { it.map() }
             val sequenceIdTasks = sequences.map { req -> SequencerIdTask(plan.sequences.indexOfFirst { it === req } + 1) }
             val wheelMoveTasks = requests.map { it.wheelMoveTask() }
+            val focuserMoveTasks = requests.map { it.focuserMoveTask() }
             val cameraExposureTasks = requests.map { CameraExposureTask(this, camera, it) }
             val delayTasks = requests.map { DelayTask(this, it.exposureDelay) }
             val ditherAfterExposureTask = requests.map { DitherAfterExposureTask(this, guider, it.dither) }
@@ -113,7 +122,10 @@ data class SequencerJob(
                         add(sequenceIdTasks[i])
 
                         // FILTER WHEEL.
-                        wheelMoveTasks[i]?.also(::add)
+                        if (wheelMoveTasks[i]?.also(::add) != null) {
+                            // FOCUSER.
+                            focuserMoveTasks[i]?.also(::add)
+                        }
 
                         // DELAY.
                         if (!first) {
@@ -146,7 +158,9 @@ data class SequencerJob(
         (currentTask as? WheelEventAware)?.handleFilterWheelEvent(event)
     }
 
-    override fun handleFocuserEvent(event: FocuserEvent) = Unit
+    override fun handleFocuserEvent(event: FocuserEvent) {
+        (currentTask as? FocuserEventAware)?.handleFocuserEvent(event)
+    }
 
     override fun handleRotatorEvent(event: RotatorEvent) = Unit
 
@@ -161,10 +175,22 @@ data class SequencerJob(
 
     private fun CameraStartCaptureRequest.wheelMoveTask(): WheelMoveTask? {
         if (wheel != null) {
-            val filterPosition = if (frameType == FrameType.DARK) shutterPosition else filterPosition
+            val position = if (frameType == FrameType.DARK) shutterPosition else filterPosition
 
-            if (filterPosition in 1..wheel.count) {
-                return WheelMoveTask(this@SequencerJob, wheel, filterPosition)
+            if (position in 1..wheel.count) {
+                return WheelMoveTask(this@SequencerJob, wheel, position)
+            }
+        }
+
+        return null
+    }
+
+    private fun CameraStartCaptureRequest.focuserMoveTask(): FocuserTask? {
+        if (focuser != null && focusOffset != 0 && frameType != FrameType.DARK) {
+            val position = initialFocuserPosition + focusOffset
+
+            if (position in 0..focuser.maxPosition) {
+                return BacklashCompensationFocuserMoveTask(this@SequencerJob, focuser, position, backlashCompensator)
             }
         }
 

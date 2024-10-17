@@ -7,7 +7,7 @@ import kotlin.math.abs
 data class FocuserMoveAbsoluteTask(
     override val job: Job,
     override val focuser: Focuser,
-    @JvmField @Volatile var position: Int,
+    @JvmField val position: Int,
 ) : AbstractFocuserMoveTask() {
 
     override fun canMove() = position != focuser.position && position > 0 && position < focuser.maxPosition

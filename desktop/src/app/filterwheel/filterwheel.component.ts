@@ -369,9 +369,13 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 	}
 
 	private makeCameraStartCapture(): CameraStartCapture {
+		const filterPosition = this.filter?.position ?? 0
+		const focusOffset = this.filter ? this.focusOffsetForFilter(this.filter) : 0
+
 		return {
 			...this.request,
-			filterPosition: this.filter?.position ?? 0,
+			filterPosition,
+			focusOffset,
 		}
 	}
 

@@ -3,139 +3,54 @@ package nebulosa.api.focusers
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.focuser.FocuserEvent
 import nebulosa.job.manager.Job
-import nebulosa.log.d
-import nebulosa.log.loggerFor
-import nebulosa.log.w
 import nebulosa.util.concurrency.cancellation.CancellationSource
 
 /**
- * This task will wrap an absolute backlash [compensation] model around the [focuser].
+ * This task will wrap an absolute backlash [compensator] model around the [focuser].
  * On each move an absolute backlash compensation value will be applied, if the focuser changes its moving direction
  * The returned position will then accommodate for this backlash and simulating the position without backlash.
  */
 data class BacklashCompensationFocuserMoveTask(
     @JvmField val job: Job,
     override val focuser: Focuser,
-    @JvmField var position: Int,
-    @JvmField val compensation: BacklashCompensation,
+    @JvmField val position: Int,
+    @JvmField val compensator: BacklashCompensator,
 ) : FocuserTask {
 
-    enum class OvershootDirection {
-        NONE,
-        IN,
-        OUT,
-    }
-
-    @Volatile private var offset = 0
-    @Volatile private var lastDirection = OvershootDirection.NONE
-
-    private val task = FocuserMoveAbsoluteTask(job, focuser, 0)
+    @Volatile private var task: FocuserTask? = null
 
     /**
      * Returns the adjusted position based on the amount of backlash compensation.
      */
     val adjustedPosition
-        get() = focuser.position - offset
+        get() = compensator.adjustedPosition(focuser.position)
 
     override fun handleFocuserEvent(event: FocuserEvent) {
-        task.handleFocuserEvent(event)
+        task?.handleFocuserEvent(event)
     }
 
     override fun onCancel(source: CancellationSource) {
-        task.onCancel(source)
+        task?.onCancel(source)
     }
 
     override fun onPause(paused: Boolean) {
-        task.onPause(paused)
+        task?.onPause(paused)
     }
 
     override fun run() {
         if (!job.isCancelled && focuser.connected && !focuser.moving) {
-            val startPosition = focuser.position
+            val targetPositions = compensator.compute(position, focuser.position)
 
-            val newPosition = when (compensation.mode) {
-                BacklashCompensationMode.ABSOLUTE -> {
-                    val adjustedTargetPosition = position + offset
-
-                    if (adjustedTargetPosition < 0) {
-                        offset = 0
-                        0
-                    } else if (adjustedTargetPosition > focuser.maxPosition) {
-                        offset = 0
-                        focuser.maxPosition
-                    } else {
-                        val backlashCompensation = calculateAbsoluteBacklashCompensation(startPosition, adjustedTargetPosition)
-                        offset += backlashCompensation
-                        adjustedTargetPosition + backlashCompensation
-                    }
-                }
-                BacklashCompensationMode.OVERSHOOT -> {
-                    val backlashCompensation = calculateOvershootBacklashCompensation(startPosition, position)
-
-                    if (backlashCompensation != 0) {
-                        val overshoot = position + backlashCompensation
-
-                        if (overshoot < 0) {
-                            LOG.w("overshooting position is below minimum 0, skipping overshoot")
-                        } else if (overshoot > focuser.maxPosition) {
-                            LOG.w("overshooting position is above maximum {}, skipping overshoot", focuser.maxPosition)
-                        } else {
-                            LOG.d("overshooting from {} to overshoot position {} using a compensation of {}. Moving back to position {}", startPosition, overshoot, backlashCompensation, position)
-                            moveFocuser(overshoot)
-                        }
-                    }
-
-                    position
-                }
-                else -> {
-                    position
-                }
+            for (position in targetPositions) {
+                moveFocuser(position)
             }
-
-            LOG.d("moving to position {} using {} backlash compensation", newPosition, compensation.mode)
-
-            moveFocuser(newPosition)
         }
     }
 
     private fun moveFocuser(position: Int) {
-        if (position > 0 && position <= focuser.maxPosition) {
-            lastDirection = determineMovingDirection(focuser.position, position)
-            task.position = position
-            task.run()
+        if (!job.isCancelled && position in 0..focuser.maxPosition) {
+            task = FocuserMoveAbsoluteTask(job, focuser, position)
+            task!!.run()
         }
-    }
-
-    private fun determineMovingDirection(prevPosition: Int, newPosition: Int): OvershootDirection {
-        return if (newPosition > prevPosition) OvershootDirection.OUT
-        else if (newPosition < prevPosition) OvershootDirection.IN
-        else lastDirection
-    }
-
-    private fun calculateAbsoluteBacklashCompensation(lastPosition: Int, newPosition: Int): Int {
-        val direction = determineMovingDirection(lastPosition, newPosition)
-
-        return if (direction == OvershootDirection.IN && lastDirection == OvershootDirection.OUT) {
-            LOG.d("Focuser is reversing direction from outwards to inwards")
-            -compensation.backlashIn
-        } else if (direction == OvershootDirection.OUT && lastDirection === OvershootDirection.IN) {
-            LOG.d("Focuser is reversing direction from inwards to outwards")
-            compensation.backlashOut
-        } else {
-            0
-        }
-    }
-
-    private fun calculateOvershootBacklashCompensation(lastPosition: Int, newPosition: Int): Int {
-        val direction = determineMovingDirection(lastPosition, newPosition)
-
-        return if (direction == OvershootDirection.IN && compensation.backlashIn != 0) -compensation.backlashIn
-        else if (direction == OvershootDirection.OUT && compensation.backlashOut != 0) compensation.backlashOut
-        else 0
-    }
-
-    companion object {
-
-        @JvmStatic private val LOG = loggerFor<BacklashCompensationFocuserMoveTask>()
     }
 }

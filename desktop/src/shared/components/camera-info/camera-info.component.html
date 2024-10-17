@@ -61,4 +61,10 @@
 			tooltipPosition="bottom"
 			(click)="filterRemoved.emit()"></i>
 	</div>
+	<div
+		*ngIf="hasFilter && focuser && info.focusOffset"
+		class="flex flex-column align-items-center">
+		<label class="text-indigo-300 text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Focus Offset</label>
+		<span class="min-w-5rem text-center text-sm">{{ info.focusOffset }}</span>
+	</div>
 </div>
