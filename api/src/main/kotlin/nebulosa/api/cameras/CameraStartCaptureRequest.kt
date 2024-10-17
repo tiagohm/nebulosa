@@ -41,6 +41,8 @@ data class CameraStartCaptureRequest(
     @JvmField val shutterPosition: Int = 0,
     // Focuser.
     @JvmField val focusOffset: Int = 0,
+    // Rotator.
+    @JvmField val angle: Double = -1.0, // deg
     // Others.
     @JvmField val namingFormat: CameraCaptureNamingFormat = CameraCaptureNamingFormat.DEFAULT,
 ) : Validatable {

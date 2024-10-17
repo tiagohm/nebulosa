@@ -49,16 +49,38 @@
 	</div>
 	<div
 		*ngIf="hasFilter"
-		class="flex flex-row gap-1 align-items-center">
+		class="flex flex-row gap-1 align-items-center relative">
 		<div class="flex flex-column align-items-center">
 			<label class="text-teal-300 text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Filter</label>
 			<span class="min-w-3rem text-center text-sm">{{ filter }}</span>
 		</div>
 		<i
 			*ngIf="canRemoveFilter && !disabled"
-			class="mdi mdi-close cursor-pointer min-w-2rem min-h-2rem"
-			pTooltip="No Filter"
+			class="mdi mdi-close cursor-pointer min-w-2rem min-h-2rem absolute text-red-500"
+			style="bottom: -32px; left: 50%; transform: translate(-50%, -50%)"
+			pTooltip="No filter"
 			tooltipPosition="bottom"
 			(click)="filterRemoved.emit()"></i>
+	</div>
+	<div
+		*ngIf="hasFilter && focuser && info.focusOffset"
+		class="flex flex-column align-items-center">
+		<label class="text-indigo-300 text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Focus Offset</label>
+		<span class="min-w-5rem text-center text-sm">{{ info.focusOffset }}</span>
+	</div>
+	<div
+		*ngIf="rotator && info.angle >= 0"
+		class="flex flex-row gap-1 align-items-center relative">
+		<div class="flex flex-column align-items-center">
+			<label class="text-green-300 text-xs bg-black-alpha-40 p-2-4 mb-1px border-round-sm">Angle</label>
+			<span class="min-w-3rem text-center text-sm">{{ info.angle.toFixed(1) }}°</span>
+		</div>
+		<i
+			*ngIf="canRemoveAngle && !disabled"
+			class="mdi mdi-close cursor-pointer min-w-2rem min-h-2rem absolute text-red-500"
+			style="bottom: -32px; left: 50%; transform: translate(-50%, -50%)"
+			pTooltip="No rotation"
+			tooltipPosition="bottom"
+			(click)="angleRemoved.emit()"></i>
 	</div>
 </div>

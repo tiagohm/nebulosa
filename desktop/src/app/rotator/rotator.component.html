@@ -44,7 +44,7 @@
 		</div>
 		<div class="col-6 text-center align-items-center justify-content-between gap-2">
 			<p-button
-				[disabled]="!rotator.connected || !rotator.canAbort || !rotator.moving"
+				[disabled]="!rotator.connected || !rotator.moving || !canAbort"
 				icon="mdi mdi-stop"
 				[text]="true"
 				severity="danger"
@@ -53,7 +53,7 @@
 				tooltipPosition="bottom"
 				(onClick)="abort()" />
 			<p-button
-				[disabled]="!rotator.connected || !rotator.canHome || !rotator.moving"
+				[disabled]="!rotator.connected || !rotator.moving || !canHome"
 				icon="mdi mdi-home"
 				[text]="true"
 				severity="info"
@@ -64,7 +64,7 @@
 			<div class="flex flex-column align-items-center justify-content-center text-center gap-2">
 				<span class="text-xs text-gray-100">Reversed</span>
 				<p-inputSwitch
-					[disabled]="!rotator.connected || !rotator.canReverse || rotator.moving"
+					[disabled]="!rotator.connected || rotator.moving || !canReverse"
 					(onChange)="reverse($event.checked)"
 					[(ngModel)]="rotator.reversed" />
 			</div>
@@ -79,7 +79,7 @@
 					[max]="rotator.maxAngle"
 					[showButtons]="true"
 					styleClass="p-inputtext-sm border-0 max-w-full"
-					[(ngModel)]="preference.angle"
+					[(ngModel)]="angle"
 					(ngModelChange)="savePreference()"
 					[allowEmpty]="false"
 					locale="en"
@@ -87,7 +87,7 @@
 				<label>Move</label>
 			</p-floatLabel>
 			<p-button
-				[disabled]="!rotator.connected || !rotator.canSync || rotator.moving"
+				[disabled]="!rotator.connected || rotator.moving || !canSync"
 				(onClick)="sync()"
 				icon="mdi mdi-sync"
 				[text]="true"
@@ -96,7 +96,7 @@
 				pTooltip="Sync"
 				tooltipPosition="bottom" />
 			<p-button
-				[disabled]="!rotator.connected || rotator.moving || preference.angle === rotator.angle"
+				[disabled]="!rotator.connected || rotator.moving || preference.angle === rotator.angle || !canMove"
 				(onClick)="move()"
 				icon="mdi mdi-check"
 				[text]="true"
@@ -104,6 +104,19 @@
 				size="small"
 				pTooltip="Move"
 				tooltipPosition="bottom" />
+		</div>
+	</div>
+	<div
+		class="grid mt-2"
+		*ngIf="canApply">
+		<div class="col-12 flex justify-content-center gap-2">
+			<p-button
+				[disabled]="!rotator.connected"
+				label="Save"
+				(onClick)="apply()"
+				icon="mdi mdi-content-save"
+				severity="info"
+				size="small" />
 		</div>
 	</div>
 </div>

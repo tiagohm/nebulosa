@@ -1,4 +1,13 @@
+import type { CameraStartCapture } from './camera.types'
 import type { Device } from './device.types'
+
+export type RotatorDialogMode = 'CAPTURE' | 'SEQUENCER'
+
+export interface RotatorDialogInput {
+	mode: RotatorDialogMode
+	rotator: Rotator
+	request: CameraStartCapture
+}
 
 export interface Rotator extends Device {
 	moving: boolean

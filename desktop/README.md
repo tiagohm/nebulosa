@@ -77,7 +77,3 @@ The complete integrated solution for all of your astronomical imaging needs.
 ## Settings
 
 ![](settings.png)
-
-## Support me
-
-[![](src/assets/images/donate-with-paypal-blue.svg)](https://www.paypal.com/donate/?hosted_button_id=U8TGGJTKSZUCA)

@@ -112,6 +112,7 @@ export interface CameraStartCapture {
 	filterPosition: number
 	shutterPosition: number
 	focusOffset: number
+	angle: number
 	calibrationGroup?: string
 	liveStacking: LiveStackingRequest
 	stackerGroupType: ImageFilterType
@@ -317,6 +318,7 @@ export const DEFAULT_CAMERA_START_CAPTURE: CameraStartCapture = {
 	filterPosition: 0,
 	shutterPosition: 0,
 	focusOffset: 0,
+	angle: 0,
 	dither: DEFAULT_DITHER,
 	liveStacking: DEFAULT_LIVE_STACKING_REQUEST,
 	stackerGroupType: 'MONO',
@@ -359,6 +361,7 @@ export function cameraStartCaptureWithDefault(request?: Partial<CameraStartCaptu
 	request.filterPosition ??= source.filterPosition
 	request.shutterPosition ??= source.shutterPosition
 	request.focusOffset ??= source.focusOffset
+	request.angle ??= source.angle
 	request.calibrationGroup ||= source.calibrationGroup
 	request.stackerGroupType ||= source.stackerGroupType
 	request.dither = ditherWithDefault(request.dither, source.dither)

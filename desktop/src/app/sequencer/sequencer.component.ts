@@ -25,6 +25,7 @@ import { deviceComparator, textComparator } from '../../shared/utils/comparators
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
+import { RotatorComponent } from '../rotator/rotator.component'
 
 @Component({
 	selector: 'neb-sequencer',
@@ -478,7 +479,13 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 	}
 
 	protected async showWheelDialog(sequence: Sequence) {
-		if (this.plan.wheel && (await FilterWheelComponent.showAsDialog(this.browserWindowService, 'SEQUENCER', this.plan.wheel, sequence))) {
+		if (this.plan.wheel && (await FilterWheelComponent.showAsDialog(this.browserWindowService, 'SEQUENCER', this.plan.wheel, sequence, this.plan.focuser))) {
+			this.savePreference()
+		}
+	}
+
+	protected async showRotatorDialog(sequence: Sequence) {
+		if (this.plan.rotator && (await RotatorComponent.showAsDialog(this.browserWindowService, 'SEQUENCER', this.plan.rotator, sequence))) {
 			this.savePreference()
 		}
 	}
@@ -635,10 +642,26 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		this.savePreference()
 	}
 
+	protected angleRemoved(sequence: Sequence) {
+		sequence.angle = -1
+		this.savePreference()
+	}
+
 	protected async start() {
 		if (this.plan.camera) {
 			for (let i = 0; i < this.cameraExposures.length; i++) {
 				this.cameraExposures.get(i)?.reset()
+			}
+
+			// FOCUS OFFSET
+			if (this.plan.wheel && this.plan.focuser) {
+				const offsets = this.preferenceService.focusOffsets(this.plan.wheel, this.plan.focuser).get()
+
+				for (const sequence of this.plan.sequences) {
+					if (sequence.filterPosition > 0) {
+						sequence.focusOffset = offsets[sequence.filterPosition - 1] || 0
+					}
+				}
 			}
 
 			Object.assign(this.plan.liveStacking, this.preferenceService.settings.get().liveStacker[this.plan.liveStacking.type])

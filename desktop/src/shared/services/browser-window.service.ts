@@ -9,7 +9,7 @@ import { LoadFraming } from '../types/framing.types'
 import { ImageSource, OpenImage } from '../types/image.types'
 import { LightBox } from '../types/lightbox.types'
 import { Mount } from '../types/mount.types'
-import { Rotator } from '../types/rotator.types'
+import { Rotator, RotatorDialogInput } from '../types/rotator.types'
 import { Wheel, WheelDialogInput } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
 import { ElectronService } from './electron.service'
@@ -40,12 +40,7 @@ export class BrowserWindowService {
 
 	openCameraDialog(data: CameraDialogInput, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'camera', width: 400, height: 424 })
-		return this.openModal<CameraStartCapture>({
-			preference,
-			data,
-			id: `camera.${data.camera.name}.modal`,
-			path: 'camera',
-		})
+		return this.openModal<CameraStartCapture>({ preference, data, id: `camera.${data.camera.name}.modal`, path: 'camera' })
 	}
 
 	openFocuser(data: Focuser, preference: WindowPreference = {}) {
@@ -75,12 +70,12 @@ export class BrowserWindowService {
 
 	openWheelDialog(data: WheelDialogInput, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'filter-wheel', width: 300, height: 217 })
-		return this.openModal<CameraStartCapture>({
-			preference,
-			data,
-			id: `wheel.${data.wheel.name}.modal`,
-			path: 'wheel',
-		})
+		return this.openModal<CameraStartCapture>({ preference, data, id: `wheel.${data.wheel.name}.modal`, path: 'wheel' })
+	}
+
+	openRotatorDialog(data: RotatorDialogInput, preference: WindowPreference = {}) {
+		Object.assign(preference, { icon: 'rotate', width: 280, height: 210 })
+		return this.openModal<CameraStartCapture>({ preference, data, id: `rotator.${data.rotator.name}.modal`, path: 'rotator' })
 	}
 
 	openGuider(preference: WindowPreference = {}) {

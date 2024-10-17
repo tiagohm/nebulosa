@@ -628,6 +628,8 @@ export class HomeComponent implements AfterContentInit {
 						connection.id = status.id
 						connection.type = status.type
 						connection.connected = true
+						connection.connectedAt = Date.now()
+						this.savePreference()
 						this.connection = connection
 						break
 					}

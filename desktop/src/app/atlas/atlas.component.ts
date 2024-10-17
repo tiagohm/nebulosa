@@ -172,6 +172,16 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				pointRadius: 0,
 				pointHitRadius: 0,
 			},
+			// Now.
+			{
+				type: 'line',
+				fill: true,
+				backgroundColor: '#D50000',
+				borderColor: '#D50000',
+				data: [],
+				pointRadius: 0,
+				pointHitRadius: 0,
+			},
 			// Altitude.
 			{
 				type: 'line',
@@ -200,6 +210,15 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 					label: (context) => {
 						if (context.datasetIndex <= 7 && context.dataIndex === 1) {
 							return ''
+						}
+						if (context.datasetIndex === 9) {
+							if (this.dateTimeAndLocation.manual) {
+								const hour = TWO_DIGITS_FORMATTER.format(this.dateTimeAndLocation.dateTime.getHours())
+								const minute = TWO_DIGITS_FORMATTER.format(this.dateTimeAndLocation.dateTime.getMinutes())
+								return `${hour}:${minute}`
+							} else {
+								return 'now'
+							}
 						}
 
 						const hours = (context.parsed.x + 12) % 24
@@ -267,6 +286,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			},
 			x: {
 				type: 'linear',
+				position: 'bottom',
 				min: 0,
 				max: 24.0,
 				border: {
@@ -686,6 +706,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 		this.app.subTitle = `${location.name} · ${extractDate(dateTime)} ${extractTime(dateTime, false)}`
 
+		this.updateNow(dateTime)
+
 		try {
 			// Sun.
 			if (this.tab === BodyTabType.SUN) {
@@ -846,12 +868,22 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 	}
 
+	private updateNow(date: Date = new Date()) {
+		const hour = (date.getHours() + 12) % 24
+		const minute = date.getMinutes() / 60
+
+		this.altitudeData.datasets[9].data = [
+			[hour + minute - 0.0083333 * 4, 90.0],
+			[hour + minute + 0.0083333 * 4, 90.0],
+		]
+	}
+
 	private updateAltitudeDataPoints(points?: AltitudeDataPoint[]) {
 		if (points?.length) {
 			AtlasComponent.removePointsBelowZero(points)
-			this.altitudeData.datasets[9].data = points
+			this.altitudeData.datasets[10].data = points
 		} else {
-			this.altitudeData.datasets[9].data = []
+			this.altitudeData.datasets[10].data = []
 		}
 	}
 

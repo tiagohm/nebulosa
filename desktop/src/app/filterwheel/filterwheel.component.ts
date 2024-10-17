@@ -10,7 +10,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
 import { CameraStartCapture, DEFAULT_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { DEFAULT_WHEEL, DEFAULT_WHEEL_PREFERENCE, Filter, Wheel, WheelDialogInput, WheelMode, makeFilter } from '../../shared/types/wheel.types'
+import { DEFAULT_WHEEL, DEFAULT_WHEEL_PREFERENCE, Filter, Wheel, WheelDialogInput, WheelDialogMode, makeFilter } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -34,7 +34,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 	protected filters: Filter[] = []
 	protected filter?: Filter
 
-	protected mode: WheelMode = 'CAPTURE'
+	protected mode: WheelDialogMode = 'CAPTURE'
 
 	private readonly filterPublisher = new Subject<Filter>()
 	private readonly filterSubscription?: Subscription
@@ -44,6 +44,10 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 	}
 
 	get canMoveTo() {
+		return this.mode === 'CAPTURE'
+	}
+
+	get canChangeFocusOffset() {
 		return this.mode === 'CAPTURE'
 	}
 
@@ -98,7 +102,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 		})
 
 		electronService.on('FOCUSER.DETACHED', (event) => {
-			if (event.device.id === this.focuser?.id) {
+			if (this.mode === 'CAPTURE' && event.device.id === this.focuser?.id) {
 				ngZone.run(() => {
 					this.focuser = undefined
 					this.updateFocusOffset()
@@ -181,11 +185,13 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			this.ticker.register(this, 30000)
 		})
 
-		this.focusers = await this.api.focusers()
+		if (this.mode === 'CAPTURE') {
+			this.focusers = await this.api.focusers()
 
-		if (this.focusers.length === 1) {
-			this.focuser = this.focusers[0]
-			await this.focuserChanged()
+			if (this.focusers.length === 1 && !this.focuser) {
+				this.focuser = this.focusers[0]
+				await this.focuserChanged()
+			}
 		}
 	}
 
@@ -203,7 +209,14 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 	private async loadCameraStartCaptureForDialogMode(data?: WheelDialogInput) {
 		if (data) {
 			this.mode = data.mode
+			this.focuser = data.focuser
+
 			await this.wheelChanged(data.wheel)
+
+			if (this.focuser) {
+				await this.focuserChanged()
+			}
+
 			Object.assign(this.request, data.request)
 		}
 	}
@@ -369,18 +382,17 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 	}
 
 	private makeCameraStartCapture(): CameraStartCapture {
-		return {
-			...this.request,
-			filterPosition: this.filter?.position ?? 0,
-		}
+		const filterPosition = this.filter?.position ?? 0
+		const focusOffset = this.filter ? this.focusOffsetForFilter(this.filter) : 0
+		return { ...this.request, filterPosition, focusOffset }
 	}
 
 	protected apply() {
 		return this.app.close(this.makeCameraStartCapture())
 	}
 
-	static async showAsDialog(service: BrowserWindowService, mode: WheelMode, wheel: Wheel, request: CameraStartCapture) {
-		const result = await service.openWheelDialog({ mode, wheel, request })
+	static async showAsDialog(service: BrowserWindowService, mode: WheelDialogMode, wheel: Wheel, request: CameraStartCapture, focuser?: Focuser) {
+		const result = await service.openWheelDialog({ mode, wheel, request, focuser })
 
 		if (result) {
 			Object.assign(request, result)

@@ -1,9 +1,7 @@
 package nebulosa.api.autofocus
 
 import nebulosa.api.cameras.*
-import nebulosa.api.focusers.BacklashCompensationFocuserMoveTask
-import nebulosa.api.focusers.BacklashCompensationMode
-import nebulosa.api.focusers.FocuserEventAware
+import nebulosa.api.focusers.*
 import nebulosa.api.message.MessageEvent
 import nebulosa.autofocus.AutoFocus
 import nebulosa.autofocus.AutoFocusListener
@@ -46,7 +44,7 @@ data class AutoFocusJob(
     )
 
     private val cameraExposureTask = CameraExposureTask(this, camera, cameraRequest)
-    private val backlashCompensationFocuserMoveTask = BacklashCompensationFocuserMoveTask(this, focuser, 0, request.backlashCompensation)
+    private val backlashCompensator = BacklashCompensator(request.backlashCompensation, focuser.maxPosition)
     private val reverse = request.backlashCompensation.mode == BacklashCompensationMode.OVERSHOOT && request.backlashCompensation.backlashIn > 0
     private val finished = AtomicBoolean()
 
@@ -57,6 +55,7 @@ data class AutoFocusJob(
     )
 
     @Volatile private var initialFocusPosition = 0
+    @Volatile private var focuserTask: FocuserTask? = null
 
     @JvmField val status = AutoFocusEvent(camera)
 
@@ -74,8 +73,8 @@ data class AutoFocusJob(
                 add(cameraExposureTask)
             }
             is AutoFocusResult.MoveFocuser -> {
-                backlashCompensationFocuserMoveTask.position = if (relative) focuser.position + position else position
-                add(backlashCompensationFocuserMoveTask)
+                val position = if (relative) focuser.position + position else position
+                add(BacklashCompensationFocuserMoveTask(this@AutoFocusJob, focuser, position, backlashCompensator))
             }
             is AutoFocusResult.Completed -> {
                 status.determinedFocusPoint = determinedFocusPoint
@@ -102,7 +101,7 @@ data class AutoFocusJob(
     }
 
     override fun handleFocuserEvent(event: FocuserEvent) {
-        backlashCompensationFocuserMoveTask.handleFocuserEvent(event)
+        focuserTask?.handleFocuserEvent(event)
     }
 
     override fun beforeStart() {
@@ -115,10 +114,12 @@ data class AutoFocusJob(
     }
 
     override fun beforeTask(task: Task) {
-        if (task === backlashCompensationFocuserMoveTask) {
+        if (task is FocuserTask) {
+            focuserTask = task
             status.state = AutoFocusState.MOVING
             status.send()
         } else if (task === cameraExposureTask) {
+            focuserTask = null
             status.state = AutoFocusState.EXPOSURING
             status.send()
         }
@@ -201,15 +202,19 @@ data class AutoFocusJob(
 
     private fun restoringFocuserToInitialPosition() {
         finished.set(true)
-        backlashCompensationFocuserMoveTask.position = initialFocusPosition
-        backlashCompensationFocuserMoveTask.run()
+
+        focuserTask = BacklashCompensationFocuserMoveTask(this, focuser, initialFocusPosition, backlashCompensator)
+        focuserTask!!.run()
+
         cameraExposureTask.run()
     }
 
     private fun movingFocuserToDeterminedFocusPosition(position: CurvePoint) {
         finished.set(true)
-        backlashCompensationFocuserMoveTask.position = position.x.roundToInt()
-        backlashCompensationFocuserMoveTask.run()
+
+        focuserTask = BacklashCompensationFocuserMoveTask(this, focuser, position.x.roundToInt(), backlashCompensator)
+        focuserTask!!.run()
+
         cameraExposureTask.run()
     }
 
