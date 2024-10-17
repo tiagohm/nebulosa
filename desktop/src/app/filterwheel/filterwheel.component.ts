@@ -47,6 +47,10 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 		return this.mode === 'CAPTURE'
 	}
 
+	get canChangeFocusOffset() {
+		return this.mode === 'CAPTURE'
+	}
+
 	get canEdit() {
 		return this.mode === 'CAPTURE'
 	}
@@ -98,7 +102,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 		})
 
 		electronService.on('FOCUSER.DETACHED', (event) => {
-			if (event.device.id === this.focuser?.id) {
+			if (this.mode === 'CAPTURE' && event.device.id === this.focuser?.id) {
 				ngZone.run(() => {
 					this.focuser = undefined
 					this.updateFocusOffset()
@@ -181,11 +185,13 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			this.ticker.register(this, 30000)
 		})
 
-		this.focusers = await this.api.focusers()
+		if (this.mode === 'CAPTURE') {
+			this.focusers = await this.api.focusers()
 
-		if (this.focusers.length === 1) {
-			this.focuser = this.focusers[0]
-			await this.focuserChanged()
+			if (this.focusers.length === 1 && !this.focuser) {
+				this.focuser = this.focusers[0]
+				await this.focuserChanged()
+			}
 		}
 	}
 
@@ -203,7 +209,14 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 	private async loadCameraStartCaptureForDialogMode(data?: WheelDialogInput) {
 		if (data) {
 			this.mode = data.mode
+			this.focuser = data.focuser
+
 			await this.wheelChanged(data.wheel)
+
+			if (this.focuser) {
+				await this.focuserChanged()
+			}
+
 			Object.assign(this.request, data.request)
 		}
 	}
@@ -378,8 +391,8 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 		return this.app.close(this.makeCameraStartCapture())
 	}
 
-	static async showAsDialog(service: BrowserWindowService, mode: WheelDialogMode, wheel: Wheel, request: CameraStartCapture) {
-		const result = await service.openWheelDialog({ mode, wheel, request })
+	static async showAsDialog(service: BrowserWindowService, mode: WheelDialogMode, wheel: Wheel, request: CameraStartCapture, focuser?: Focuser) {
+		const result = await service.openWheelDialog({ mode, wheel, request, focuser })
 
 		if (result) {
 			Object.assign(request, result)

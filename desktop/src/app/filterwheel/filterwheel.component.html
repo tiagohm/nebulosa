@@ -128,11 +128,12 @@
 	</div>
 	<div
 		*ngIf="filter"
-		class="grid">
+		class="grid mt-1">
 		<div class="col-12 flex align-items-center justify-content-between gap-2">
 			<neb-device-chooser
 				title="FOCUSER"
 				icon="mdi mdi-image-filter-center-focus"
+				[disabled]="!canChangeFocusOffset"
 				[devices]="focusers"
 				[(device)]="focuser"
 				(deviceChange)="focuserChanged()"
@@ -140,7 +141,7 @@
 				style="max-width: 60%" />
 			<p-floatLabel>
 				<p-inputNumber
-					[disabled]="!wheel.connected || moving || !focuser?.connected"
+					[disabled]="!wheel.connected || moving || !focuser?.connected || !canChangeFocusOffset"
 					[(ngModel)]="focuserOffset"
 					[min]="focuserMinPosition"
 					[max]="focuserMaxPosition"

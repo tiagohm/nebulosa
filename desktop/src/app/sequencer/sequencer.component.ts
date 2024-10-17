@@ -479,7 +479,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 	}
 
 	protected async showWheelDialog(sequence: Sequence) {
-		if (this.plan.wheel && (await FilterWheelComponent.showAsDialog(this.browserWindowService, 'SEQUENCER', this.plan.wheel, sequence))) {
+		if (this.plan.wheel && (await FilterWheelComponent.showAsDialog(this.browserWindowService, 'SEQUENCER', this.plan.wheel, sequence, this.plan.focuser))) {
 			this.savePreference()
 		}
 	}

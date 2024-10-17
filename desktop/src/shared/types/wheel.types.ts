@@ -1,5 +1,6 @@
 import type { CameraStartCapture } from './camera.types'
 import type { Device } from './device.types'
+import type { Focuser } from './focuser.types'
 
 export type WheelDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD'
 
@@ -13,6 +14,7 @@ export interface Wheel extends Device {
 export interface WheelDialogInput {
 	mode: WheelDialogMode
 	wheel: Wheel
+	focuser?: Focuser
 	request: CameraStartCapture
 }
 
