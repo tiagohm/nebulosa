@@ -79,7 +79,7 @@ class CalibrationFrameService(private val calibrationFrameRepository: Calibratio
         }
     }
 
-    fun groups(): List<String> {
+    fun groups(): Collection<String> {
         return calibrationFrameRepository.groups()
     }
 

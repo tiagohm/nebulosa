@@ -29,6 +29,7 @@ import nebulosa.api.confirmation.ConfirmationService
 import nebulosa.api.connection.ConnectionController
 import nebulosa.api.connection.ConnectionEventHub
 import nebulosa.api.connection.ConnectionService
+import nebulosa.api.database.MainDatabaseMigrator
 import nebulosa.api.database.MyObjectBox
 import nebulosa.api.dustcap.DustCapController
 import nebulosa.api.dustcap.DustCapEventHub
@@ -88,6 +89,7 @@ import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.greenrobot.eventbus.EventBus
+import org.jetbrains.exposed.sql.Database
 import org.koin.core.qualifier.named
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
@@ -101,6 +103,7 @@ val koinApp = koinApplication {
     modules(pathModule())
     modules(coreModule())
     modules(httpModule())
+    modules(databaseModule())
     modules(eventBusModule())
     modules(boxStoreModule())
     modules(repositoriesModule())
@@ -119,6 +122,10 @@ object Named {
     val liveStackingDir = named("liveStackingDir")
     val defaultHttpClient = named("defaultHttpClient")
     val alpacaHttpClient = named("alpacaHttpClient")
+    val mainConnection = named("mainConnection")
+    val mainDatasourceUrl = named("mainDatasource")
+    val simbadConnection = named("simbadConnection")
+    val simbadDatasourceUrl = named("simbadDatasource")
     val mainBoxStore = named("mainBoxStore")
     val simbadBoxStore = named("simbadBoxStore")
     val calibrationFrameBox = named("calibrationFrameBox")
@@ -212,6 +219,14 @@ fun eventBusModule() = module {
     }
 }
 
+fun databaseModule() = module {
+    single(Named.mainDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/main" }
+    single(Named.simbadDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/simbad;ACCESS_MODE_DATA=r" }
+    single(Named.mainConnection) { Database.connect(get(Named.mainDatasourceUrl), driver = "org.h2.Driver", user = "root", password = "") }
+    single(Named.simbadConnection) { Database.connect(get(Named.simbadDatasourceUrl), driver = "org.h2.Driver", user = "root", password = "") }
+    single { MainDatabaseMigrator(get(Named.mainDatasourceUrl)) }
+}
+
 // BOX STORE
 
 fun boxStoreModule() = module {
@@ -249,7 +264,7 @@ fun phd2Module() = module {
 // REPOSITORIES
 
 fun repositoriesModule() = module {
-    single { CalibrationFrameRepository(get(Named.calibrationFrameBox)) }
+    single { CalibrationFrameRepository(get(Named.mainConnection)) }
     single { PreferenceRepository(get(Named.preferenceBox)) }
     single { SatelliteRepository(get(Named.satelliteBox)) }
     single { SimbadEntityRepository(get(Named.simbadBox)) }

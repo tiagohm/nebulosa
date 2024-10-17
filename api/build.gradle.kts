@@ -40,7 +40,9 @@ dependencies {
     implementation(libs.javalin)
     implementation(libs.koin)
     implementation(libs.airline)
-
+    implementation(libs.h2)
+    implementation(libs.bundles.exposed)
+    implementation(libs.flyway)
     testImplementation(project(":nebulosa-astrobin-api"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))

@@ -13,6 +13,7 @@ import io.javalin.http.HttpStatus.BAD_REQUEST
 import io.javalin.json.JavalinJackson
 import nebulosa.api.converters.DeviceModule
 import nebulosa.api.core.ErrorResponse
+import nebulosa.api.database.MainDatabaseMigrator
 import nebulosa.api.inject.*
 import nebulosa.json.PathModule
 import nebulosa.log.i
@@ -20,6 +21,7 @@ import nebulosa.log.loggerFor
 import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
 import java.net.ConnectException
+import java.util.concurrent.ExecutorService
 
 @Command(name = "nebulosa")
 class Nebulosa : Runnable, AutoCloseable {
@@ -65,6 +67,10 @@ class Nebulosa : Runnable, AutoCloseable {
         startKoin(koinApp)
 
         LOG.i("server is started at port: {}", app.port())
+
+        with(koinApp.koin) {
+            get<ExecutorService>().submit(get<MainDatabaseMigrator>())
+        }
     }
 
     private fun handleException(ex: Exception, ctx: Context) {

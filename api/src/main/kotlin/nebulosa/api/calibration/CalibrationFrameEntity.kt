@@ -12,7 +12,9 @@ import nebulosa.api.validators.positive
 import nebulosa.api.validators.positiveOrZero
 import nebulosa.fits.INVALID_TEMPERATURE
 import nebulosa.indi.device.camera.FrameType
+import org.jetbrains.exposed.sql.ResultRow
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 @Entity
 data class CalibrationFrameEntity(
@@ -61,5 +63,26 @@ data class CalibrationFrameEntity(
         else if (filter != null && other.filter != null) filter!!.compareTo(other.filter!!)
         else if (filter == null) -1
         else 1
+    }
+
+    companion object {
+
+        fun from(row: ResultRow): CalibrationFrameEntity {
+            return CalibrationFrameEntity(
+                row[CalibrationFrameTable.id],
+                row[CalibrationFrameTable.type],
+                row[CalibrationFrameTable.group],
+                row[CalibrationFrameTable.filter],
+                row[CalibrationFrameTable.exposureTime],
+                row[CalibrationFrameTable.temperature],
+                row[CalibrationFrameTable.width],
+                row[CalibrationFrameTable.height],
+                row[CalibrationFrameTable.binX],
+                row[CalibrationFrameTable.binY],
+                row[CalibrationFrameTable.gain],
+                Path(row[CalibrationFrameTable.path]),
+                row[CalibrationFrameTable.enabled],
+            )
+        }
     }
 }
