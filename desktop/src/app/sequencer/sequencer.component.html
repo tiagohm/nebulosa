@@ -130,14 +130,15 @@
 										[text]="true"
 										(onClick)="showWheelDialog(sequence)"
 										size="small" />
-									<!-- <p-button
-										[disabled]="running || !plan.focuser || !sequence.enabled"
-										icon="mdi mdi-image-filter-center-focus"
-										label="Focuser"
-										[severity]="plan.focuser?.connected ? 'success' : 'danger'"
+									<p-button
+										[disabled]="running || !plan.rotator || !sequence.enabled"
+										icon="mdi mdi-restore"
+										label="Rotator"
+										[severity]="plan.rotator?.connected ? 'success' : 'danger'"
 										styleClass="px-2"
-										(onClick)="showCameraDialog(sequence)"
-										size="small" /> -->
+										[text]="true"
+										(onClick)="showRotatorDialog(sequence)"
+										size="small" />
 									<p-dropdown
 										*ngIf="plan.liveStacking.enabled"
 										[disabled]="running"
@@ -202,8 +203,11 @@
 									[info]="sequence"
 									[wheel]="plan.wheel"
 									[focuser]="plan.focuser"
+									[rotator]="plan.rotator"
 									[canRemoveFilter]="sequence.enabled"
+									[canRemoveAngle]="sequence.enabled"
 									(filterRemoved)="filterRemoved(sequence)"
+									(angleRemoved)="angleRemoved(sequence)"
 									[disabled]="running" />
 							</div>
 							<div class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm">

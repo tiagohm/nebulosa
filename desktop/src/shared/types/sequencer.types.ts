@@ -2,6 +2,7 @@ import { backlashCompensationWithDefault, DEFAULT_BACKLASH_COMPENSATION, type Ba
 import type { Camera, LiveStackingRequest } from './camera.types'
 import {
 	cameraCaptureNamingFormatWithDefault,
+	cameraStartCaptureWithDefault,
 	DEFAULT_CAMERA_CAPTURE_NAMING_FORMAT,
 	DEFAULT_CAMERA_START_CAPTURE,
 	DEFAULT_DITHER,
@@ -188,6 +189,12 @@ export function sequencerPlanWithDefault(plan?: Partial<SequencerPlan>, source: 
 	plan.liveStacking = liveStackingRequestWithDefault(plan.liveStacking, source.liveStacking)
 	plan.namingFormat = cameraCaptureNamingFormatWithDefault(plan.namingFormat, source.namingFormat)
 	plan.backlashCompensation = backlashCompensationWithDefault(plan.backlashCompensation, source.backlashCompensation)
+	plan.sequences ??= source.sequences
+
+	for (let i = 0; i < plan.sequences.length; i++) {
+		plan.sequences[i] = cameraStartCaptureWithDefault(plan.sequences[i])
+	}
+
 	return plan as SequencerPlan
 }
 

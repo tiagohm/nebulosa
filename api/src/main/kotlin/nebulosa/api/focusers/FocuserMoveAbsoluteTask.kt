@@ -10,7 +10,7 @@ data class FocuserMoveAbsoluteTask(
     @JvmField val position: Int,
 ) : AbstractFocuserMoveTask() {
 
-    override fun canMove() = position != focuser.position && position > 0 && position < focuser.maxPosition
+    override fun canMove() = position != focuser.position && position in 0..focuser.maxPosition
 
     override fun move() {
         if (focuser.canAbsoluteMove) focuser.moveFocusTo(position)

@@ -10,7 +10,7 @@ import { PreferenceService } from '../../shared/services/preference.service'
 import { Tickable, Ticker } from '../../shared/services/ticker.service'
 import { CameraStartCapture, DEFAULT_CAMERA_START_CAPTURE } from '../../shared/types/camera.types'
 import { Focuser } from '../../shared/types/focuser.types'
-import { DEFAULT_WHEEL, DEFAULT_WHEEL_PREFERENCE, Filter, Wheel, WheelDialogInput, WheelMode, makeFilter } from '../../shared/types/wheel.types'
+import { DEFAULT_WHEEL, DEFAULT_WHEEL_PREFERENCE, Filter, Wheel, WheelDialogInput, WheelDialogMode, makeFilter } from '../../shared/types/wheel.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -34,7 +34,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 	protected filters: Filter[] = []
 	protected filter?: Filter
 
-	protected mode: WheelMode = 'CAPTURE'
+	protected mode: WheelDialogMode = 'CAPTURE'
 
 	private readonly filterPublisher = new Subject<Filter>()
 	private readonly filterSubscription?: Subscription
@@ -371,19 +371,14 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 	private makeCameraStartCapture(): CameraStartCapture {
 		const filterPosition = this.filter?.position ?? 0
 		const focusOffset = this.filter ? this.focusOffsetForFilter(this.filter) : 0
-
-		return {
-			...this.request,
-			filterPosition,
-			focusOffset,
-		}
+		return { ...this.request, filterPosition, focusOffset }
 	}
 
 	protected apply() {
 		return this.app.close(this.makeCameraStartCapture())
 	}
 
-	static async showAsDialog(service: BrowserWindowService, mode: WheelMode, wheel: Wheel, request: CameraStartCapture) {
+	static async showAsDialog(service: BrowserWindowService, mode: WheelDialogMode, wheel: Wheel, request: CameraStartCapture) {
 		const result = await service.openWheelDialog({ mode, wheel, request })
 
 		if (result) {

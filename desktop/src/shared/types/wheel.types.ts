@@ -1,7 +1,7 @@
 import type { CameraStartCapture } from './camera.types'
 import type { Device } from './device.types'
 
-export type WheelMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD'
+export type WheelDialogMode = 'CAPTURE' | 'SEQUENCER' | 'FLAT_WIZARD'
 
 export interface Wheel extends Device {
 	count: number
@@ -11,7 +11,7 @@ export interface Wheel extends Device {
 }
 
 export interface WheelDialogInput {
-	mode: WheelMode
+	mode: WheelDialogMode
 	wheel: Wheel
 	request: CameraStartCapture
 }

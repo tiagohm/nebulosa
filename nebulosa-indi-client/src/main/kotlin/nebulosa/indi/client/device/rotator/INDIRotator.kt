@@ -77,6 +77,10 @@ internal open class INDIRotator(
                             sender.fireOnEventReceived(RotatorMovingChanged(this))
                         }
 
+                        if (message.state == PropertyState.ALERT) {
+                            sender.fireOnEventReceived(RotatorMoveFailed(this))
+                        }
+
                         if (value != angle) {
                             angle = value
                             sender.fireOnEventReceived(RotatorAngleChanged(this))

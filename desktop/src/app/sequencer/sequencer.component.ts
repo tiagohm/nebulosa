@@ -25,6 +25,7 @@ import { deviceComparator, textComparator } from '../../shared/utils/comparators
 import { AppComponent } from '../app.component'
 import { CameraComponent } from '../camera/camera.component'
 import { FilterWheelComponent } from '../filterwheel/filterwheel.component'
+import { RotatorComponent } from '../rotator/rotator.component'
 
 @Component({
 	selector: 'neb-sequencer',
@@ -483,6 +484,12 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		}
 	}
 
+	protected async showRotatorDialog(sequence: Sequence) {
+		if (this.plan.rotator && (await RotatorComponent.showAsDialog(this.browserWindowService, 'SEQUENCER', this.plan.rotator, sequence))) {
+			this.savePreference()
+		}
+	}
+
 	private updateSequencesFromCamera(camera?: Camera) {
 		if (camera?.connected) {
 			for (const sequence of this.plan.sequences) {
@@ -632,6 +639,11 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 
 	protected filterRemoved(sequence: Sequence) {
 		sequence.filterPosition = 0
+		this.savePreference()
+	}
+
+	protected angleRemoved(sequence: Sequence) {
+		sequence.angle = -1
 		this.savePreference()
 	}
 

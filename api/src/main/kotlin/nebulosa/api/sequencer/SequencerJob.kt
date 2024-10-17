@@ -10,6 +10,7 @@ import nebulosa.api.guiding.DitherAfterExposureTask
 import nebulosa.api.guiding.WaitForSettleTask
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.rotators.RotatorEventAware
+import nebulosa.api.rotators.RotatorMoveTask
 import nebulosa.api.wheels.WheelEventAware
 import nebulosa.api.wheels.WheelMoveTask
 import nebulosa.guiding.Guider
@@ -80,6 +81,9 @@ data class SequencerJob(
                     request.focuserMoveTask()?.also(::add)
                 }
 
+                // ROTATOR.
+                request.rotatorMoveTask()?.also(::add)
+
                 // DELAY.
                 val delayTask = DelayTask(this, request.exposureDelay)
 
@@ -106,6 +110,7 @@ data class SequencerJob(
             val sequenceIdTasks = sequences.map { req -> SequencerIdTask(plan.sequences.indexOfFirst { it === req } + 1) }
             val wheelMoveTasks = requests.map { it.wheelMoveTask() }
             val focuserMoveTasks = requests.map { it.focuserMoveTask() }
+            val rotatorMoveTasks = requests.map { it.rotatorMoveTask() }
             val cameraExposureTasks = requests.map { CameraExposureTask(this, camera, it) }
             val delayTasks = requests.map { DelayTask(this, it.exposureDelay) }
             val ditherAfterExposureTask = requests.map { DitherAfterExposureTask(this, guider, it.dither) }
@@ -126,6 +131,9 @@ data class SequencerJob(
                             // FOCUSER.
                             focuserMoveTasks[i]?.also(::add)
                         }
+
+                        // ROTATOR.
+                        rotatorMoveTasks[i]?.also(::add)
 
                         // DELAY.
                         if (!first) {
@@ -162,7 +170,9 @@ data class SequencerJob(
         (currentTask as? FocuserEventAware)?.handleFocuserEvent(event)
     }
 
-    override fun handleRotatorEvent(event: RotatorEvent) = Unit
+    override fun handleRotatorEvent(event: RotatorEvent) {
+        (currentTask as? RotatorEventAware)?.handleRotatorEvent(event)
+    }
 
     private fun CameraStartCaptureRequest.map() = copy(
         savePath = plan.savePath,
@@ -192,6 +202,14 @@ data class SequencerJob(
             if (position in 0..focuser.maxPosition) {
                 return BacklashCompensationFocuserMoveTask(this@SequencerJob, focuser, position, backlashCompensator)
             }
+        }
+
+        return null
+    }
+
+    private fun CameraStartCaptureRequest.rotatorMoveTask(): RotatorMoveTask? {
+        if (rotator != null && angle.isFinite() && frameType != FrameType.DARK && angle in 0.0..rotator.maxAngle) {
+            return RotatorMoveTask(this@SequencerJob, rotator, angle)
         }
 
         return null
