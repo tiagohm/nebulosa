@@ -38,11 +38,16 @@ dependencyResolutionManagement {
             library("javalin", "io.javalin:javalin:6.3.0")
             library("koin", "io.insert-koin:koin-core:4.0.0")
             library("airline", "com.github.rvesse:airline:3.0.0")
+            library("h2", "com.h2database:h2:2.3.232")
+            library("flyway", "org.flywaydb:flyway-core:10.20.0")
+            library("exposed-core", "org.jetbrains.exposed:exposed-core:0.55.0")
+            library("exposed-jdbc", "org.jetbrains.exposed:exposed-jdbc:0.55.0")
             library("kotest", "io.kotest:kotest-assertions-core:5.9.1")
             library("junit-api", "org.junit.jupiter:junit-jupiter-api:5.11.2")
             library("junit-engine", "org.junit.jupiter:junit-jupiter-engine:5.11.2")
             bundle("netty", listOf("netty-transport", "netty-codec"))
             bundle("jackson", listOf("jackson-core", "jackson-jsr310", "jackson-kt"))
+            bundle("exposed", listOf("exposed-core", "exposed-jdbc"))
         }
     }
 }
