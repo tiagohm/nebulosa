@@ -79,7 +79,7 @@ class CalibrationFrameService(private val calibrationFrameRepository: Calibratio
         }
     }
 
-    fun groups(): List<String> {
+    fun groups(): Collection<String> {
         return calibrationFrameRepository.groups()
     }
 
@@ -124,7 +124,7 @@ class CalibrationFrameService(private val calibrationFrameRepository: Calibratio
                         gain, file,
                     )
 
-                    calibrationFrameRepository.save(frame)
+                    calibrationFrameRepository.add(frame)
                         .also(frames::add)
                 }
             } catch (e: Throwable) {
@@ -136,7 +136,8 @@ class CalibrationFrameService(private val calibrationFrameRepository: Calibratio
     }
 
     fun edit(frame: CalibrationFrameEntity): CalibrationFrameEntity {
-        return calibrationFrameRepository.save(frame)
+        check(calibrationFrameRepository.update(frame)) { "failed to update entity" }
+        return frame
     }
 
     fun delete(id: Long) {

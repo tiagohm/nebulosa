@@ -1,14 +1,23 @@
 package nebulosa.api.preference
 
-import io.objectbox.annotation.ConflictStrategy
-import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
-import io.objectbox.annotation.Unique
-import nebulosa.api.database.BoxEntity
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.statements.UpdateBuilder
 
-@Entity
 data class PreferenceEntity(
-    @Id override var id: Long = 0L,
-    @Unique(onConflict = ConflictStrategy.REPLACE) @JvmField var key: String = "",
+    @JvmField var key: String = "",
     @JvmField var value: String? = null,
-) : BoxEntity
+) {
+
+    fun mapTo(builder: UpdateBuilder<Int>, update: Boolean = false) {
+        if (!update) builder[PreferenceTable.key] = key
+        builder[PreferenceTable.value] = value
+    }
+
+    companion object {
+
+        fun from(row: ResultRow) = PreferenceEntity(
+            row[PreferenceTable.key],
+            row[PreferenceTable.value],
+        )
+    }
+}

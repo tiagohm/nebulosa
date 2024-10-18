@@ -10,7 +10,7 @@ import nebulosa.skycatalog.SpectralSkyObject
 
 data class HygEntry(
     override val id: Long = 0L,
-    override val name: String = "",
+    override val name: List<String> = emptyList(),
     override val magnitude: Double = SkyObject.UNKNOWN_MAGNITUDE,
     override val rightAscensionJ2000: Angle = 0.0,
     override val declinationJ2000: Angle = 0.0,

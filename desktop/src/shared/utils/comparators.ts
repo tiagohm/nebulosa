@@ -2,7 +2,7 @@ import type { Device } from '../types/device.types'
 
 export type Comparator<T = unknown> = (a: T, b: T) => number
 
-export const textComparator: Comparator<string> = (a: string, b: string) => a.localeCompare(b)
+export const textComparator: Comparator<string> = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: 'base' })
 export const numberComparator: Comparator<number> = (a: number, b: number) => a - b
 export const deviceComparator: Comparator<Device> = (a: Device, b: Device) => textComparator(a.name, b.name)
 export const numericTextComparator: Comparator<string> = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })

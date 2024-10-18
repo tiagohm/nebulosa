@@ -1,6 +1,7 @@
 package nebulosa.api.atlas
 
 import io.javalin.http.Header
+import nebulosa.api.database.MainDatabaseMigrator
 import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndClose
 import nebulosa.log.d
@@ -13,6 +14,8 @@ import nebulosa.time.IERSAB
 import nebulosa.time.IERSB
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import java.nio.file.Path
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -24,13 +27,15 @@ class IERSUpdateTask(
     private val httpClient: OkHttpClient,
     private val preferenceService: PreferenceService,
     scheduledExecutorService: ScheduledExecutorService,
-) : Runnable {
+) : Runnable, KoinComponent {
 
     init {
-        scheduledExecutorService.schedule(this, 0L, TimeUnit.SECONDS)
+        scheduledExecutorService.schedule(this, 5L, TimeUnit.SECONDS)
     }
 
     override fun run() {
+        get<MainDatabaseMigrator>().await()
+
         val iersa = IERSA()
         val iersb = IERSB()
 

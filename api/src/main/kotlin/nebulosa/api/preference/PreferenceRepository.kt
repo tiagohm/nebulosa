@@ -1,23 +1,47 @@
 package nebulosa.api.preference
 
-import io.objectbox.Box
-import io.objectbox.kotlin.equal
-import nebulosa.api.repositories.BoxRepository
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.transactions.transaction
 
-class PreferenceRepository(override val box: Box<PreferenceEntity>) : BoxRepository<PreferenceEntity>() {
+class PreferenceRepository(private val connection: Database) {
 
-    fun existsByKey(key: String): Boolean {
-        return box.query(PreferenceEntity_.key equal key)
-            .build().use { it.findUnique() != null }
+    operator fun contains(key: String) = transaction(connection) {
+        !PreferenceTable
+            .select(PreferenceTable.key)
+            .where { PreferenceTable.key eq key }
+            .empty()
     }
 
-    fun findByKey(key: String): PreferenceEntity? {
-        return box.query(PreferenceEntity_.key equal key)
-            .build().use { it.findUnique() }
+    operator fun get(key: String) = transaction(connection) {
+        PreferenceTable
+            .selectAll()
+            .where { PreferenceTable.key eq key }
+            .firstOrNull()
+            ?.let(PreferenceEntity::from)
     }
 
-    fun deleteByKey(key: String) {
-        return box.query(PreferenceEntity_.key equal key)
-            .build().use { it.remove() }
+    private val count = Count(PreferenceTable.key)
+
+    val size
+        get() = transaction(connection) { PreferenceTable.select(count).first()[count] }
+
+    fun add(entity: PreferenceEntity) = transaction(connection) {
+        PreferenceTable.insert { entity.mapTo(it) }
+        entity
+    }
+
+    fun update(entity: PreferenceEntity) = transaction(connection) {
+        PreferenceTable.update { entity.mapTo(it, true) }
+    }
+
+    fun delete(key: String) = transaction(connection) {
+        PreferenceTable
+            .deleteWhere { PreferenceTable.key eq key } == 1
+    }
+
+    fun clear() = transaction(connection) {
+        PreferenceTable
+            .deleteAll() > 0
     }
 }

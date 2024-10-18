@@ -6,7 +6,6 @@ import nebulosa.math.mas
 import nebulosa.math.rad
 import nebulosa.skycatalog.SkyCatalog
 import nebulosa.skycatalog.SkyObject
-import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
 import okio.BufferedSource
 import okio.Source
 import okio.buffer
@@ -113,8 +112,7 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
                 if (vdbha > 0) "VdBHA $vdbha".findNames()
 
                 val nebula = NebulaEntry(
-                    id,
-                    names.joinToString(NAME_SEPARATOR).trim(),
+                    id, names,
                     ra, dec, min(mB, mV),
                     NebulaType.entries[type].type,
                     majorAxis, minorAxis, orientation,

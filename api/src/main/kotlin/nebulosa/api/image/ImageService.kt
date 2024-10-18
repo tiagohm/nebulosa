@@ -3,7 +3,7 @@ package nebulosa.api.image
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.Location
-import nebulosa.api.atlas.SimbadEntityRepository
+import nebulosa.api.atlas.SkyObjectEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
@@ -52,7 +52,7 @@ class ImageService(
     private val framingService: FramingService,
     private val calibrationFrameService: CalibrationFrameService,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
-    private val simbadEntityRepository: SimbadEntityRepository,
+    private val skyObjectEntityRepository: SkyObjectEntityRepository,
     private val simbadService: SimbadService,
     private val imageBucket: ImageBucket,
     private val executorService: ExecutorService,
@@ -221,7 +221,7 @@ class ImageService(
 
                         if (x >= 0 && y >= 0 && x < image.width && y < image.height) {
                             val magnitude = it[6].replace(INVALID_MAG_CHARS, "").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE
-                            val minorPlanet = ImageAnnotation.MinorPlanet(0L, it[0], rightAscension, declination, magnitude)
+                            val minorPlanet = ImageAnnotation.MinorPlanet(0L, listOf(it[0]), rightAscension, declination, magnitude)
                             val annotation = ImageAnnotation(x, y, minorPlanet = minorPlanet)
                             annotations.add(annotation)
                             count++
@@ -246,7 +246,7 @@ class ImageService(
                 val catalog = if (request.useSimbad) {
                     simbadService.search(SimbadSearch.Builder().region(rightAscension, declination, radius).build())
                 } else {
-                    simbadEntityRepository.search(null, null, rightAscension, declination, radius)
+                    skyObjectEntityRepository.search(null, null, rightAscension, declination, radius)
                 }
 
                 var count = 0

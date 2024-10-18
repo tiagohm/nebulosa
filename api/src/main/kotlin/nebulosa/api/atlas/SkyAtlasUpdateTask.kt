@@ -1,5 +1,7 @@
 package nebulosa.api.atlas
 
+import nebulosa.api.database.MainDatabaseMigrator
+import nebulosa.api.database.SkyDatabaseMigrator
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
 import nebulosa.log.e
@@ -8,29 +10,36 @@ import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.source
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 class SkyAtlasUpdateTask(
     private val httpClient: OkHttpClient,
-    private val simbadEntityRepository: SimbadEntityRepository,
+    private val skyObjectEntityRepository: SkyObjectEntityRepository,
     private val preferenceService: PreferenceService,
     private val messageService: MessageService,
     scheduledExecutorService: ScheduledExecutorService,
-) : Runnable {
+) : Runnable, KoinComponent {
 
     init {
         scheduledExecutorService.schedule(this, 0L, TimeUnit.SECONDS)
     }
 
     override fun run() {
+        get<MainDatabaseMigrator>().await()
+        get<SkyDatabaseMigrator>().await()
+
         var request = Request.Builder().get().url(VERSION_URL).build()
 
         httpClient.newCall(request).execute().use { response ->
             if (response.isSuccessful) {
                 val newestVersion = response.body!!.string().trim()
 
-                if (newestVersion != preferenceService.getText(VERSION_KEY) || simbadEntityRepository.isEmpty()) {
+                if (newestVersion != preferenceService.getText(VERSION_KEY) || skyObjectEntityRepository.size == 0L) {
+                    skyObjectEntityRepository.clear()
+
                     LOG.i("Sky Atlas database is out of date. downloading...")
 
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Started)
@@ -46,9 +55,9 @@ class SkyAtlasUpdateTask(
                         httpClient.newCall(request).execute().use {
                             if (it.isSuccessful) {
                                 it.body!!.byteStream().source().use { source ->
-                                    SimbadDatabaseReader(source).use { reader ->
+                                    SkyDatabaseReader(source).use { reader ->
                                         for (entity in reader) {
-                                            simbadEntityRepository.save(entity)
+                                            skyObjectEntityRepository.add(entity)
                                         }
                                     }
                                 }
@@ -66,9 +75,9 @@ class SkyAtlasUpdateTask(
                     preferenceService.putText(VERSION_KEY, newestVersion)
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Finished(newestVersion))
 
-                    LOG.i("Sky Atlas database was updated. version={}, size={}", newestVersion, simbadEntityRepository.size)
+                    LOG.i("Sky Atlas database was updated. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
                 } else {
-                    LOG.i("Sky Atlas database is up to date. version={}, size={}", newestVersion, simbadEntityRepository.size)
+                    LOG.i("Sky Atlas database is up to date. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
                 }
             }
         }

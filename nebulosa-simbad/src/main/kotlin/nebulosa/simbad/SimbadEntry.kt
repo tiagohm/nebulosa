@@ -13,7 +13,7 @@ import nebulosa.time.InstantOfTime
 
 data class SimbadEntry(
     override var id: Long = 0L,
-    override var name: String = "",
+    override val name: List<String> = emptyList(),
     override var magnitude: Double = SkyObject.UNKNOWN_MAGNITUDE,
     override var rightAscensionJ2000: Angle = 0.0,
     override var declinationJ2000: Angle = 0.0,

@@ -85,6 +85,10 @@ inline fun LocalTime.futureOrPresent(message: String? = null) = validate(this >=
 inline fun LocalTime.past(message: String? = null) = validate(this < LocalTime.now(SystemClock)) { message ?: "must be a past date" }
 inline fun LocalTime.pastOrPresent(message: String? = null) = validate(this <= LocalTime.now(SystemClock)) { message ?: "must be a time in the past or in the present" }
 
+// ENUM
+
+inline fun <reified T : Enum<T>> String.enumOf() = enumValueOf<T>(this)
+
 // BODY
 
 inline fun <T : Validatable> T.valid() = apply(Validatable::validate)

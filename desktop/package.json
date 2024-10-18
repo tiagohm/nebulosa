@@ -36,7 +36,7 @@
 	},
 	"dependencies": {
 		"@angular/animations": "18.2.8",
-		"@angular/cdk": "18.2.8",
+		"@angular/cdk": "18.2.9",
 		"@angular/common": "18.2.8",
 		"@angular/compiler": "18.2.8",
 		"@angular/core": "18.2.8",
@@ -78,7 +78,7 @@
 		"prettier": "3.3.3",
 		"ts-node": "10.9.2",
 		"typescript": "5.5.4",
-		"typescript-eslint": "8.9.0",
+		"typescript-eslint": "8.10.0",
 		"wait-on": "8.0.1"
 	},
 	"engines": {

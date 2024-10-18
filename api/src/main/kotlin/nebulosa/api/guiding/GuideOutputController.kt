@@ -4,6 +4,7 @@ import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.core.Controller
+import nebulosa.api.validators.enumOf
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.notNullOrBlank
 import nebulosa.api.validators.range
@@ -49,7 +50,7 @@ class GuideOutputController(
     private fun pulse(ctx: Context) {
         val id = ctx.pathParam("id")
         val guideOutput = connectionService.guideOutput(id) ?: return
-        val direction = ctx.queryParam("direction").notNullOrBlank().let(GuideDirection::valueOf)
+        val direction = ctx.queryParam("direction").notNullOrBlank().enumOf<GuideDirection>()
         val duration = ctx.queryParam("duration").notNull().toLong().range(0L, 1800000000L).times(1000L).let(Duration::ofNanos)
         guideOutputService.pulse(guideOutput, direction, duration)
     }

@@ -547,7 +547,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 	protected async skyObjectChanged() {
 		if (this.skyObject.search.selected) {
-			this.skyObject.name = this.skyObject.search.selected.name.replaceAll('|', ' · ')
+			this.skyObject.name = this.skyObject.search.selected.name.join(' · ')
 			await this.refreshTab(false, true)
 		}
 	}

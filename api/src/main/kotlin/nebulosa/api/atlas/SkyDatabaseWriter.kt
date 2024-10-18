@@ -8,13 +8,13 @@ import okio.Sink
 import okio.buffer
 import okio.gzip
 
-class SimbadDatabaseWriter(sink: Sink) : AutoCloseable {
+class SkyDatabaseWriter(sink: Sink) : AutoCloseable {
 
     private val buffer = if (sink is BufferedSink) sink else sink.gzip().buffer()
 
-    fun write(entity: SimbadEntity) {
+    fun write(entity: SkyObjectEntity) {
         write(
-            entity.id, entity.name, entity.type,
+            entity.id, entity.name.joinToString(NAME_SEPARATOR), entity.type,
             entity.rightAscensionJ2000, entity.declinationJ2000,
             entity.magnitude, entity.pmRA, entity.pmDEC,
             entity.parallax, entity.radialVelocity, entity.redshift,
@@ -56,5 +56,10 @@ class SimbadDatabaseWriter(sink: Sink) : AutoCloseable {
     override fun close() {
         buffer.flush()
         buffer.close()
+    }
+
+    companion object {
+
+        const val NAME_SEPARATOR = "|"
     }
 }

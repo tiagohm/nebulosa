@@ -2,8 +2,8 @@ import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
 import de.siegmar.fastcsv.reader.NamedCsvRecord
 import nebulosa.adql.*
-import nebulosa.api.atlas.SimbadDatabaseWriter
-import nebulosa.api.atlas.SimbadEntity
+import nebulosa.api.atlas.SkyDatabaseWriter
+import nebulosa.api.atlas.SkyObjectEntity
 import nebulosa.io.resource
 import nebulosa.log.i
 import nebulosa.log.loggerFor
@@ -25,10 +25,10 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteRecursively
 import kotlin.math.min
 
-object SimbadDatabaseGenerator {
+object SkyDatabaseGenerator {
 
-    @JvmStatic private val SIMBAD_DATABASE_PATH = Path.of("data", "simbad")
-    @JvmStatic private val LOG = loggerFor<SimbadDatabaseGenerator>()
+    @JvmStatic private val SKY_DATABASE_PATH = Path.of("data", "sky")
+    @JvmStatic private val LOG = loggerFor<SkyDatabaseGenerator>()
 
     @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
         .connectTimeout(5L, TimeUnit.MINUTES)
@@ -105,8 +105,8 @@ object SimbadDatabaseGenerator {
     @JvmStatic private val ENTITY_IDS = ConcurrentHashMap.newKeySet<Long>(64000)
 
     @JvmStatic
-    fun SimbadEntity.generateNames(): Boolean {
-        val ids = name.split("|").toMutableList()
+    fun SkyObjectEntity.generateNames(): Boolean {
+        val ids = name.toMutableList()
         val names = LinkedHashSet<String>(ids.size)
         val moreNames = LinkedHashSet<String>(6)
 
@@ -151,20 +151,12 @@ object SimbadDatabaseGenerator {
             }
         }
 
-        name = buildString {
-            var i = 0
-
-            names.forEach {
-                if (i > 0) append(SkyObject.NAME_SEPARATOR)
-                append(it)
-                i++
-            }
+        name = ArrayList<String>(names.size + moreNames.size).apply {
+            addAll(names)
 
             moreNames.forEach { n ->
                 if (names.none { it.equals(n, true) }) {
-                    if (i > 0) append(SkyObject.NAME_SEPARATOR)
-                    append(n)
-                    i++
+                    add(n)
                 }
             }
         }
@@ -174,10 +166,10 @@ object SimbadDatabaseGenerator {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        SIMBAD_DATABASE_PATH.deleteRecursively()
-        SIMBAD_DATABASE_PATH.createDirectories()
+        SKY_DATABASE_PATH.deleteRecursively()
+        SKY_DATABASE_PATH.createDirectories()
 
-        val tasks = ArrayList<Future<List<SimbadEntity>>>()
+        val tasks = ArrayList<Future<List<SkyObjectEntity>>>()
 
         tasks.add(EXECUTOR_SERVICE.submit(NgcDownloadTask))
         tasks.add(EXECUTOR_SERVICE.submit(IcDownloadTask))
@@ -204,8 +196,8 @@ object SimbadDatabaseGenerator {
 
         var count = 0
         var index = 0
-        var writer: SimbadDatabaseWriter? = null
-        val entities = HashMap<Long, SimbadEntity>()
+        var writer: SkyDatabaseWriter? = null
+        val entities = HashMap<Long, SkyObjectEntity>()
 
         for (task in tasks) {
             with(task.get()) {
@@ -216,7 +208,7 @@ object SimbadDatabaseGenerator {
         for ((_, entity) in entities) {
             if (writer == null || count > 10000) {
                 writer?.close()
-                writer = SimbadDatabaseWriter(SIMBAD_DATABASE_PATH.concat("simbad.%02d.dat".format(index++)).sink())
+                writer = SkyDatabaseWriter(SKY_DATABASE_PATH.concat("simbad.%02d.dat".format(index++)).sink())
                 count = 0
             }
 
@@ -234,11 +226,11 @@ object SimbadDatabaseGenerator {
     }
 
     @JvmStatic
-    private fun List<NamedCsvRecord>.parse(entities: MutableList<SimbadEntity>): List<SimbadEntity> {
+    private fun List<NamedCsvRecord>.parse(entities: MutableList<SkyObjectEntity>): List<SkyObjectEntity> {
         var writeCount = 0
 
         for (row in this) {
-            val name = row.getField("ids")
+            val name = row.getField("ids").split("|")
             val id = row.getField("oid").toLong()
             val type = SkyObjectType.parse(row.getField("otype")) ?: continue
             // Save using the original units to optmize file size.
@@ -263,7 +255,7 @@ object SimbadDatabaseGenerator {
                 magnitude = min(magnitude, row.getField("K").toDoubleOrNull() ?: SkyObject.UNKNOWN_MAGNITUDE)
             }
 
-            val entity = SimbadEntity(
+            val entity = SkyObjectEntity(
                 id, name, type,
                 rightAscensionJ2000, declinationJ2000,
                 magnitude, pmRA, pmDEC,
@@ -284,7 +276,7 @@ object SimbadDatabaseGenerator {
     private sealed class DownloadTask(
         private val name: String,
         private val magnitudeMax: Double = Double.NaN,
-    ) : Callable<List<SimbadEntity>> {
+    ) : Callable<List<SkyObjectEntity>> {
 
         protected val log by lazy { LoggerFactory.getLogger(javaClass)!! }
 
@@ -314,8 +306,8 @@ object SimbadDatabaseGenerator {
             add(SortBy(IDENT_TABLE.column("oidref")))
         }
 
-        override fun call(): List<SimbadEntity> {
-            val entities = ArrayList<SimbadEntity>()
+        override fun call(): List<SkyObjectEntity> {
+            val entities = ArrayList<SkyObjectEntity>()
             var lastID = 0L
 
             log.info("Task started")
