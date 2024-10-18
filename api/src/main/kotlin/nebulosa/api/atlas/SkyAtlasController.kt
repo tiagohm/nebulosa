@@ -157,7 +157,7 @@ class SkyAtlasController(
     }
 
     private fun positionOfSatellite(ctx: Context) {
-        val satellite = satelliteRepository.find(ctx.pathParam("id").toLong().positive()) ?: return
+        val satellite = satelliteRepository[ctx.pathParam("id").toLong().positive()] ?: return
         val location = ctx.location().notNull()
         val date = ctx.queryParam("date").notNull().localDate()
         val time = ctx.queryParam("time").notNull().localTime()
@@ -166,7 +166,7 @@ class SkyAtlasController(
     }
 
     private fun altitudePointsOfSatellite(ctx: Context) {
-        val satellite = satelliteRepository.find(ctx.pathParam("id").toLong().positive()) ?: return
+        val satellite = satelliteRepository[ctx.pathParam("id").toLong().positive()] ?: return
         val location = ctx.location().notNull()
         val date = ctx.queryParam("date").notNull().localDate()
         val time = ctx.queryParam("time").notNull().localTime()

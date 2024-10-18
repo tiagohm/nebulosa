@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 class CalibrationFrameRepository(private val connection: Database) {
 
-    fun get(id: Long) = transaction(connection) {
+    operator fun get(id: Long) = transaction(connection) {
         CalibrationFrameTable
             .selectAll()
             .where { CalibrationFrameTable.id eq id }
@@ -79,40 +79,15 @@ class CalibrationFrameRepository(private val connection: Database) {
             .map(CalibrationFrameEntity::from)
     }
 
-    fun save(entity: CalibrationFrameEntity) = transaction(connection) {
-        if (entity.id == 0L) {
-            entity.id = CalibrationFrameTable.insert {
-                it[type] = entity.type
-                it[group] = entity.group
-                it[filter] = entity.filter
-                it[exposureTime] = entity.exposureTime
-                it[temperature] = entity.temperature
-                it[width] = entity.width
-                it[height] = entity.height
-                it[binX] = entity.binX
-                it[binY] = entity.binY
-                it[gain] = entity.gain
-                it[path] = "${entity.path}"
-                it[enabled] = entity.enabled
-            } get CalibrationFrameTable.id
-        } else {
-            CalibrationFrameTable.update({ CalibrationFrameTable.id eq entity.id }) {
-                it[type] = entity.type
-                it[group] = entity.group
-                it[filter] = entity.filter
-                it[exposureTime] = entity.exposureTime
-                it[temperature] = entity.temperature
-                it[width] = entity.width
-                it[height] = entity.height
-                it[binX] = entity.binX
-                it[binY] = entity.binY
-                it[gain] = entity.gain
-                it[path] = "${entity.path}"
-                it[enabled] = entity.enabled
-            }
-        }
-
+    fun add(entity: CalibrationFrameEntity) = transaction(connection) {
+        entity.id = CalibrationFrameTable
+            .insert { entity.mapTo(it) } get CalibrationFrameTable.id
         entity
+    }
+
+    fun update(entity: CalibrationFrameEntity) = transaction(connection) {
+        CalibrationFrameTable
+            .update({ CalibrationFrameTable.id eq entity.id }) { entity.mapTo(it) } == 1
     }
 
     fun delete(id: Long) = transaction(connection) {

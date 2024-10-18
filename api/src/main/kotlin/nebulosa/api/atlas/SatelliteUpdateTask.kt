@@ -47,7 +47,7 @@ class SatelliteUpdateTask(
     }
 
     private fun updateTLEs(): Boolean {
-        satelliteRepository.deleteAll()
+        satelliteRepository.clear()
 
         messageService.sendMessage(SatelliteUpdateNotificationEvent.Started)
 
@@ -63,7 +63,7 @@ class SatelliteUpdateTask(
         tasks.forEach(CompletableFuture<*>::get)
 
         return satelliteRepository
-            .save(data.values)
+            .add(data.values)
             .also { LOG.i("{} satellites updated", it.size) }
             .also { messageService.sendMessage(SatelliteUpdateNotificationEvent.Finished(it.size)) }
             .isNotEmpty()
@@ -93,11 +93,11 @@ class SatelliteUpdateTask(
 
                                 synchronized(data) {
                                     if (id in data) {
-                                        data[id]!!.groups.add(group.name)
+                                        (data[id]!!.groups as MutableList<SatelliteGroupType>).add(group)
                                     } else {
                                         val name = lines[0].trim()
                                         val tle = lines.joinToString("\n")
-                                        data[id] = SatelliteEntity(id, name, tle, mutableListOf(group.name))
+                                        data[id] = SatelliteEntity(id, name, tle, mutableListOf(group))
                                     }
                                 }
 

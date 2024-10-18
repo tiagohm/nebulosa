@@ -220,10 +220,10 @@ fun eventBusModule() = module {
 }
 
 fun databaseModule() = module {
-    single(Named.mainDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/main" }
-    single(Named.simbadDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/simbad;ACCESS_MODE_DATA=r" }
-    single(Named.mainConnection) { Database.connect(get(Named.mainDatasourceUrl), driver = "org.h2.Driver", user = "root", password = "") }
-    single(Named.simbadConnection) { Database.connect(get(Named.simbadDatasourceUrl), driver = "org.h2.Driver", user = "root", password = "") }
+    single(Named.mainDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/main;DB_CLOSE_DELAY=-1" }
+    single(Named.simbadDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/simbad;ACCESS_MODE_DATA=r;DB_CLOSE_DELAY=-1" }
+    single(Named.mainConnection) { Database.connect(get(Named.mainDatasourceUrl), user = "root", password = "") }
+    single(Named.simbadConnection) { Database.connect(get(Named.simbadDatasourceUrl), user = "root", password = "") }
     single { MainDatabaseMigrator(get(Named.mainDatasourceUrl)) }
 }
 

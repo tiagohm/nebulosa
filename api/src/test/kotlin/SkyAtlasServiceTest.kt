@@ -21,6 +21,7 @@ import nebulosa.nova.astrometry.Constellation
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.SkyObjectType
 import nebulosa.test.HTTP_CLIENT
+import org.jetbrains.exposed.sql.Database
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -229,9 +230,13 @@ class SkyAtlasServiceTest {
 
     companion object {
 
+        private const val DATASOURCE = "jdbc:h2:mem:sky;DB_CLOSE_DELAY=-1"
+
         @JvmStatic private val BOX_STORE = MyObjectBox.builder()
             .inMemory(UUID.randomUUID().toString())
             .build()
+
+        private val CONNECTION = Database.connect(DATASOURCE, user = "root", password = "")
 
         @AfterAll
         @JvmStatic
@@ -258,7 +263,7 @@ class SkyAtlasServiceTest {
             save("75 Tucanae", SkyObjectType.GLOBULAR_CLUSTER, Constellation.TUC, 6.58, "01 03 12".hours, "-70 50 39".deg)
         }
 
-        @JvmStatic private val SATELLITE_REPOSITORY = SatelliteRepository(SATELLITE_BOX).apply {
+        @JvmStatic private val SATELLITE_REPOSITORY = SatelliteRepository(CONNECTION).apply {
             save("ISS (ZARYA)", ISS_TLE, SatelliteGroupType.ACTIVE, SatelliteGroupType.EDUCATION)
         }
 

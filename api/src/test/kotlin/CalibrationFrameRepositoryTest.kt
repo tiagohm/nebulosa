@@ -8,6 +8,8 @@ import nebulosa.api.calibration.CalibrationFrameRepository
 import nebulosa.api.database.MainDatabaseMigrator
 import nebulosa.indi.device.camera.FrameType
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.transactions.TransactionManager
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 
 class CalibrationFrameRepositoryTest {
@@ -24,7 +26,7 @@ class CalibrationFrameRepositoryTest {
 
     @Test
     fun getById() {
-        with(REPOSITORY.get(1L).shouldNotBeNull()) {
+        with(REPOSITORY[1L].shouldNotBeNull()) {
             type shouldBe FrameType.DARK
             exposureTime shouldBeExactly 1L
         }
@@ -66,9 +68,15 @@ class CalibrationFrameRepositoryTest {
     companion object {
 
         private const val NAME = "CCD Simulator"
-        private const val DATASOURCE = "jdbc:h2:mem:main;DB_CLOSE_DELAY=-1"
+        private const val DATASOURCE = "jdbc:h2:mem:cf;DB_CLOSE_DELAY=-1"
 
-        private val CONNECTION = Database.connect(DATASOURCE, driver = "org.h2.Driver", user = "root", password = "")
+        private val CONNECTION = Database.connect(DATASOURCE, user = "root", password = "")
+
+        @AfterAll
+        @JvmStatic
+        fun closeConnection() {
+            TransactionManager.closeAndUnregister(CONNECTION)
+        }
 
         init {
             MainDatabaseMigrator(DATASOURCE).run()
@@ -94,11 +102,11 @@ class CalibrationFrameRepositoryTest {
             save(FrameType.FLAT, 0L, filter = null)
         }
 
-        internal fun CalibrationFrameRepository.save(
+        @Suppress("NOTHING_TO_INLINE")
+        internal inline fun CalibrationFrameRepository.save(
             type: FrameType, exposureTime: Long,
             temperature: Double = 25.0, width: Int = 1280, height: Int = 1024,
-            bin: Int = 1, gain: Double = 0.0,
-            filter: String? = null,
-        ) = save(CalibrationFrameEntity(0L, type, NAME, filter, exposureTime, temperature, width, height, bin, bin, gain))
+            bin: Int = 1, gain: Double = 0.0, filter: String? = null,
+        ) = add(CalibrationFrameEntity(0L, type, NAME, filter, exposureTime, temperature, width, height, bin, bin, gain))
     }
 }
