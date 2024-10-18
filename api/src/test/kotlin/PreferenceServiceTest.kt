@@ -7,18 +7,17 @@ import io.kotest.matchers.longs.shouldBeExactly
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.objectbox.kotlin.boxFor
 import nebulosa.api.atlas.Location
-import nebulosa.api.database.MyObjectBox
-import nebulosa.api.preference.PreferenceEntity
+import nebulosa.api.database.MainDatabaseMigrator
 import nebulosa.api.preference.PreferenceRepository
 import nebulosa.api.preference.PreferenceService
 import nebulosa.indi.device.camera.FrameType
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
-import java.util.*
 
-class PreferenceRepositoryTest {
+class PreferenceServiceTest {
 
     @Test
     fun boolean() {
@@ -28,7 +27,7 @@ class PreferenceRepositoryTest {
         SERVICE.getBoolean("b").shouldNotBeNull().shouldBeTrue()
         SERVICE.putBoolean("b", false)
         SERVICE.getBoolean("b").shouldNotBeNull().shouldBeFalse()
-        SERVICE.delete("b")
+        SERVICE.delete("b").shouldBeTrue()
         SERVICE.contains("b").shouldBeFalse()
         SERVICE.getBoolean("b").shouldBeNull()
     }
@@ -39,7 +38,7 @@ class PreferenceRepositoryTest {
         SERVICE.putInt("i", 22)
         SERVICE.contains("i").shouldBeTrue()
         SERVICE.getInt("i").shouldNotBeNull() shouldBeExactly 22
-        SERVICE.delete("i")
+        SERVICE.delete("i").shouldBeTrue()
         SERVICE.contains("i").shouldBeFalse()
         SERVICE.getInt("i").shouldBeNull()
     }
@@ -50,7 +49,7 @@ class PreferenceRepositoryTest {
         SERVICE.putLong("l", 22L)
         SERVICE.contains("l").shouldBeTrue()
         SERVICE.getLong("l").shouldNotBeNull() shouldBeExactly 22L
-        SERVICE.delete("l")
+        SERVICE.delete("l").shouldBeTrue()
         SERVICE.contains("l").shouldBeFalse()
         SERVICE.getLong("l").shouldBeNull()
     }
@@ -61,7 +60,7 @@ class PreferenceRepositoryTest {
         SERVICE.putDouble("d", 22.0)
         SERVICE.contains("d").shouldBeTrue()
         SERVICE.getDouble("d").shouldNotBeNull() shouldBeExactly 22.0
-        SERVICE.delete("d")
+        SERVICE.delete("d").shouldBeTrue()
         SERVICE.contains("d").shouldBeFalse()
         SERVICE.getDouble("d").shouldBeNull()
     }
@@ -72,7 +71,7 @@ class PreferenceRepositoryTest {
         SERVICE.putText("s", "Texto")
         SERVICE.contains("s").shouldBeTrue()
         SERVICE.getText("s").shouldNotBeNull() shouldBe "Texto"
-        SERVICE.delete("s")
+        SERVICE.delete("s").shouldBeTrue()
         SERVICE.contains("s").shouldBeFalse()
         SERVICE.getText("s").shouldBeNull()
     }
@@ -83,7 +82,7 @@ class PreferenceRepositoryTest {
         SERVICE.putEnum("e", FrameType.DARK)
         SERVICE.contains("e").shouldBeTrue()
         SERVICE.getEnum<FrameType>("e").shouldNotBeNull() shouldBe FrameType.DARK
-        SERVICE.delete("e")
+        SERVICE.delete("e").shouldBeTrue()
         SERVICE.contains("e").shouldBeFalse()
         SERVICE.getEnum<FrameType>("e").shouldBeNull()
     }
@@ -94,7 +93,7 @@ class PreferenceRepositoryTest {
         SERVICE.putJSON("j", Location(longitude = 123.456))
         SERVICE.contains("j").shouldBeTrue()
         SERVICE.getJSON<Location>("j").shouldNotBeNull() shouldBe Location(longitude = 123.456)
-        SERVICE.delete("j")
+        SERVICE.delete("j").shouldBeTrue()
         SERVICE.contains("j").shouldBeFalse()
         SERVICE.getJSON<Location>("j").shouldBeNull()
     }
@@ -108,23 +107,26 @@ class PreferenceRepositoryTest {
         SERVICE.putJSON("j", Location(longitude = 123.456))
         SERVICE.size shouldBeExactly 5
         SERVICE.clear()
-        SERVICE.isEmpty().shouldBeTrue()
+        SERVICE.size shouldBeExactly 0
     }
 
     companion object {
 
-        @JvmStatic private val BOX_STORE = MyObjectBox.builder()
-            .inMemory(UUID.randomUUID().toString())
-            .build()
+        private const val DATASOURCE = "jdbc:h2:mem:preference;DB_CLOSE_DELAY=-1"
+
+        private val CONNECTION = Database.connect(DATASOURCE, user = "root", password = "")
 
         @AfterAll
         @JvmStatic
-        fun closeBoxStore() {
-            BOX_STORE.close()
+        fun closeConnection() {
+            TransactionManager.closeAndUnregister(CONNECTION)
         }
 
-        @JvmStatic private val BOX = BOX_STORE.boxFor<PreferenceEntity>()
-        @JvmStatic private val REPOSITORY = PreferenceRepository(BOX)
+        init {
+            MainDatabaseMigrator(DATASOURCE).run()
+        }
+
+        @JvmStatic private val REPOSITORY = PreferenceRepository(CONNECTION)
         @JvmStatic private val SERVICE = PreferenceService(REPOSITORY, jsonMapper { })
     }
 }
