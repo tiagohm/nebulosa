@@ -1,5 +1,7 @@
 package nebulosa.api.atlas
 
+import nebulosa.api.database.MainDatabaseMigrator
+import nebulosa.api.database.SkyDatabaseMigrator
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
 import nebulosa.log.e
@@ -8,6 +10,8 @@ import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.source
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
@@ -17,13 +21,16 @@ class SkyAtlasUpdateTask(
     private val preferenceService: PreferenceService,
     private val messageService: MessageService,
     scheduledExecutorService: ScheduledExecutorService,
-) : Runnable {
+) : Runnable, KoinComponent {
 
     init {
         scheduledExecutorService.schedule(this, 0L, TimeUnit.SECONDS)
     }
 
     override fun run() {
+        get<MainDatabaseMigrator>().await()
+        get<SkyDatabaseMigrator>().await()
+
         var request = Request.Builder().get().url(VERSION_URL).build()
 
         httpClient.newCall(request).execute().use { response ->

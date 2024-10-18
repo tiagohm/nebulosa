@@ -14,6 +14,7 @@ import io.javalin.json.JavalinJackson
 import nebulosa.api.converters.DeviceModule
 import nebulosa.api.core.ErrorResponse
 import nebulosa.api.database.MainDatabaseMigrator
+import nebulosa.api.database.SkyDatabaseMigrator
 import nebulosa.api.inject.*
 import nebulosa.json.PathModule
 import nebulosa.log.i
@@ -69,7 +70,9 @@ class Nebulosa : Runnable, AutoCloseable {
         LOG.i("server is started at port: {}", app.port())
 
         with(koinApp.koin) {
-            get<ExecutorService>().submit(get<MainDatabaseMigrator>())
+            val executor = get<ExecutorService>()
+            executor.submit(get<MainDatabaseMigrator>())
+            executor.submit(get<SkyDatabaseMigrator>())
         }
     }
 

@@ -1,8 +1,11 @@
 package nebulosa.api.database
 
 import org.flywaydb.core.Flyway
+import java.util.concurrent.CountDownLatch
 
 data class MainDatabaseMigrator(private val dataSource: String) : Runnable {
+
+    private val latch = CountDownLatch(1)
 
     override fun run() {
         Flyway.configure()
@@ -13,5 +16,11 @@ data class MainDatabaseMigrator(private val dataSource: String) : Runnable {
             .locations("classpath:migrations/main")
             .load()
             .migrate()
+
+        latch.countDown()
+    }
+
+    fun await() {
+        latch.await()
     }
 }

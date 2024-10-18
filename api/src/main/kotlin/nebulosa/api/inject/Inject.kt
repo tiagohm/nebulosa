@@ -27,6 +27,7 @@ import nebulosa.api.connection.ConnectionController
 import nebulosa.api.connection.ConnectionEventHub
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.database.MainDatabaseMigrator
+import nebulosa.api.database.SkyDatabaseMigrator
 import nebulosa.api.dustcap.DustCapController
 import nebulosa.api.dustcap.DustCapEventHub
 import nebulosa.api.dustcap.DustCapService
@@ -209,10 +210,11 @@ fun eventBusModule() = module {
 
 fun databaseModule() = module {
     single(Named.mainDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/main;DB_CLOSE_DELAY=-1" }
-    single(Named.skyDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/sky;ACCESS_MODE_DATA=r;DB_CLOSE_DELAY=-1" }
+    single(Named.skyDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/sky;DB_CLOSE_DELAY=-1" }
     single(Named.mainConnection) { Database.connect(get(Named.mainDatasourceUrl), user = "root", password = "") }
     single(Named.skyConnection) { Database.connect(get(Named.skyDatasourceUrl), user = "root", password = "") }
     single { MainDatabaseMigrator(get(Named.mainDatasourceUrl)) }
+    single { SkyDatabaseMigrator(get(Named.skyDatasourceUrl)) }
 }
 
 // OBJECT MAPPER
@@ -233,7 +235,7 @@ fun phd2Module() = module {
 fun repositoriesModule() = module {
     single { CalibrationFrameRepository(get(Named.mainConnection)) }
     single { PreferenceRepository(get(Named.mainConnection)) }
-    single { SatelliteRepository(get(Named.mainConnection)) }
+    single { SatelliteRepository(get(Named.skyConnection)) }
     single { SkyObjectEntityRepository(get(Named.skyConnection)) }
 }
 
