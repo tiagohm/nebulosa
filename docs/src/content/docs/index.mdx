@@ -8,7 +8,7 @@ hero:
     file: ../../../../desktop/src/assets/icons/nebulosa-256.png
   actions:
     - text: Download
-      link: /guides/example/
+      link: https://github.com/tiagohm/nebulosa/releases/latest
       icon: down-caret
     - text: View on GitHub
       link: https://github.com/tiagohm/nebulosa
@@ -18,6 +18,8 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
+![GitHub Release](https://img.shields.io/github/v/release/tiagohm/nebulosa)
+
 ## Features
 
 <CardGrid stagger>
@@ -25,23 +27,106 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 		* INDI/ASCOM compatible CCD and CMOS cameras.
         * Cooler/dew heater control.
         * Flexible exposure time control.
+        * Single, fixed or loop capture.
         * Automatic preview after every exposure.
         * Auto image calibration.
+        * Subframe.
+        * Live Stacking using [PixInsight](https://pixinsight.com) or [Siril](https://siril.org).
+        * Customizable file naming format.
+        * Auto save for capture.
+        * Auto subfolder for noon/midnight.
 	</Card>
 	<Card title="Mount">
 		* INDI/ASCOM compatible mounts.
-        * Remote connection via Stellarium [desktop](https://stellarium.org) or [mobile](https://play.google.com/store/apps/details?id=com.noctuasoftware.stellarium_plus) applications.
+        * J2000/JNow slew, go to or sync.
+        * Azimuth/altitude for current or target coordinates.
+        * Manual slew in eight cardinal direction using nudge buttons.
+        * Various preset coordinates (zenith, galactic center, etc).
+        * Slew rate and tracking mode.
+        * Park and home buttons.
+        * Remote control via Stellarium [desktop](https://stellarium.org) or [mobile](https://play.google.com/store/apps/details?id=com.noctuasoftware.stellarium_plus) applications.
 	</Card>
 	<Card title="Filter Wheel">
 		* INDI/ASCOM compatible filter wheels.
+        * Editable filter names.
         * Choose a filter as shutter for dark frames.
-        * Custom focus offset.
+        * Focus offset.
 	</Card>
 	<Card title="Focuser">
 		* INDI/ASCOM compatible focusers.
         * Relative and absolute step controls.
+        * Sync support.
 	</Card>
 	<Card title="Rotator">
 		* INDI/ASCOM compatible rotators.
+        * Reversed mode.
+        * Sync support.
+	</Card>
+    <Card title="Light Box">
+		* INDI/ASCOM compatible light boxes.
+        * Light on/off control.
+        * Intensity control.
+	</Card>
+    <Card title="Dust Cap">
+		* INDI/ASCOM compatible dust caps.
+        * Close and open operation.
+	</Card>
+    <Card title="INDI Panel Control">
+		* Send INDI property messages.
+        * View INDI device's logs.
+	</Card>
+    <Card title="Image Viewer">
+        * Load FITS or XISF image formats.
+        * Save image as FITS, XISF, PNG or JPG formats.
+        * Zooming and panning.
+        * Auto debayer.
+        * STF (Screen Transfer Function) and SCNR (Subtractive Chromatic Noise Reduction).
+        * Auto stretching.
+        * Plate solver ([ASTAP](https://www.hnsky.org/astap.htm), [PixInsight](https://pixinsight.com), [Siril](https://siril.org), [Astrometry.net](https://nova.astrometry.net/))
+        * Annotation support (stars, DSOs and Minor Planets).
+        * Point telescope to any position over a solved image.
+        * Mouse coordinate over a solved image.
+        * ROI via mouse drag selection for Camera capture.
+        * Crosshair overlay.
+        * Star detection and HFR measurement.
+        * FOV rectangle overlay from custom telescope and camera parameters.
+        * FITS headers viewer.
+	</Card>
+    <Card title="Sky Atlas">
+        * Accurate ephemeris for Sun, Moon, Planets, Minor Planets and satellites provided by [JPL Horizons API](https://ssd.jpl.nasa.gov/horizons/app.html).
+        * Ephemeris for Stars and DSOs.
+        * Star/DSO catalog compiled from [Simbad](https://simbad.unistra.fr/simbad/) service.
+        * Real-time image of the Sun provided by [NASA/SDO](https://sdo.gsfc.nasa.gov/).
+        * Moon's phase info.
+        * Altitude chart.
+        * Bookmark any sky object for quick access.
+        * Custom date & time and location.
+	</Card>
+    <Card title="Framing">
+        * Sky survey image provided by [hips2fits](https://alasky.u-strasbg.fr/hips-image-services/hips2fits) service.
+	</Card>
+    <Card title="Guiding">
+        * [PHD2](https://openphdguiding.org) integration.
+        * Dithering.
+        * Manual pulse guiding.
+	</Card>
+    <Card title="Polar Alignment">
+        * Three-point polar alignment method.
+        * DARV (Drift Alignment by Robert Vice) method.
+	</Card>
+     <Card title="Sequencer">
+        * Customizable capture sequence.
+        * Fully or intercalated mode.
+        * Dithering and Auto Focus mode between captures.
+        * Pause and resume the sequencing.
+	</Card>
+    <Card title="Flat Wizard">
+        * Automatized Flat frame capture.
+	</Card>
+    <Card title="Auto Focus">
+        * Hyperbolic, Parabolic and Trendlines curve fitting.
+	</Card>
+    <Card title="Calculator">
+        * Useful telescope and camera formulas.
 	</Card>
 </CardGrid>

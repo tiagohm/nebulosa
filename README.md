@@ -2,6 +2,7 @@
 
 [![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
 [![CI](https://github.com/tiagohm/nebulosa/actions/workflows/ci.yml/badge.svg)](https://github.com/tiagohm/nebulosa/actions/workflows/ci.yml)
+![GitHub Release](https://img.shields.io/github/v/release/tiagohm/nebulosa)
 
 The complete integrated solution for all of your astronomical imaging needs.
 
@@ -14,7 +15,7 @@ The complete integrated solution for all of your astronomical imaging needs.
 
 ### Steps
 
-1. `./gradlew api:bootJar`
+1. `./gradlew api:shadowJar`
 2. `cd desktop`
 3. `npm i`
 
