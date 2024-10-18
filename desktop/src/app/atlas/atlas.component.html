@@ -80,7 +80,7 @@
 								<span class="font-bold">Position Angle</span>
 								<span>{{ moon.phase.current.posAngle }}°</span>
 							</div>
-							<div class="mt-2 text-xs">
+							<div class="mt-1 text-xs">
 								<a
 									target="_blank"
 									href="https://svs.gsfc.nasa.gov/5187/">
@@ -992,6 +992,6 @@
 <neb-dialog-menu
 	#ephemerisMenu
 	[model]="ephemerisModel"
-	[header]="body.name" />
+	[header]="body.name.split(' · ')[0]" />
 
 <neb-device-list-menu #deviceMenu />
