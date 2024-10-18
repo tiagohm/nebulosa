@@ -254,7 +254,7 @@ export interface MoonPhase {
 
 export interface AstronomicalObject extends EquatorialCoordinateJ2000 {
 	id: number
-	name: string
+	name: string[]
 	magnitude: number
 }
 
@@ -891,5 +891,5 @@ export function skyAtlasPreferenceWithDefault(preference?: Partial<SkyAtlasPrefe
 }
 
 export function filterAstronomicalObject(o: AstronomicalObject & { type?: SkyObjectType; constellation?: Constellation }, text: string) {
-	return o.name.toUpperCase().includes(text) || (!!o.type && o.type.includes(text)) || (!!o.constellation && o.constellation === text)
+	return o.name.findIndex((e) => e.toLocaleUpperCase().includes(text)) >= 0 || (!!o.type && o.type.includes(text)) || (!!o.constellation && o.constellation === text)
 }

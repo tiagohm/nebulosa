@@ -385,7 +385,7 @@
 							pTemplate="body"
 							let-item>
 							<tr [pSelectableRow]="item">
-								<td class="text-sm">{{ item | skyObject: 'name' }}</td>
+								<td class="text-sm">{{ item.name.join(' · ') }}</td>
 								<td class="text-sm">{{ item.type | enum }}</td>
 								<td class="text-sm text-center">{{ item.magnitude < 30 ? item.magnitude.toFixed(1) : '-' }}</td>
 								<td class="text-sm text-center">{{ item.constellation }}</td>

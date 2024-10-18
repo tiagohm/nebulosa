@@ -74,7 +74,6 @@ import { EnumPipe } from '../shared/pipes/enum.pipe'
 import { EnvPipe } from '../shared/pipes/env.pipe'
 import { ExposureTimePipe } from '../shared/pipes/exposureTime.pipe'
 import { PathPipe } from '../shared/pipes/path.pipe'
-import { SkyObjectPipe } from '../shared/pipes/skyObject.pipe'
 import { WinPipe } from '../shared/pipes/win.pipe'
 import { AboutComponent } from './about/about.component'
 import { AlignmentComponent } from './alignment/alignment.component'
@@ -155,7 +154,6 @@ import { SettingsComponent } from './settings/settings.component'
 		RotatorComponent,
 		SequencerComponent,
 		SettingsComponent,
-		SkyObjectPipe,
 		SlideMenuComponent,
 		StopPropagationDirective,
 		WinPipe,
@@ -217,7 +215,6 @@ import { SettingsComponent } from './settings/settings.component'
 		EnvPipe,
 		ExposureTimePipe,
 		MessageService,
-		SkyObjectPipe,
 		provideHttpClient(withInterceptorsFromDi()),
 		WinPipe,
 		{
