@@ -1,24 +1,19 @@
 package nebulosa.api.calibration
 
-import io.objectbox.annotation.Convert
-import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
-import io.objectbox.annotation.Index
-import nebulosa.api.converters.database.FrameTypePropertyConverter
-import nebulosa.api.converters.database.PathPropertyConverter
-import nebulosa.api.database.BoxEntity
 import nebulosa.api.validators.Validatable
 import nebulosa.api.validators.positive
 import nebulosa.api.validators.positiveOrZero
 import nebulosa.fits.INVALID_TEMPERATURE
 import nebulosa.indi.device.camera.FrameType
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import java.nio.file.Path
+import kotlin.io.path.Path
 
-@Entity
 data class CalibrationFrameEntity(
-    @Id override var id: Long = 0L,
-    @JvmField @Index @Convert(converter = FrameTypePropertyConverter::class, dbType = Int::class) var type: FrameType = FrameType.LIGHT,
-    @JvmField @Index var group: String = "",
+    @JvmField var id: Long = 0L,
+    @JvmField var type: FrameType = FrameType.LIGHT,
+    @JvmField var group: String = "",
     @JvmField var filter: String? = null,
     @JvmField var exposureTime: Long = 0L,
     @JvmField var temperature: Double = INVALID_TEMPERATURE,
@@ -27,9 +22,9 @@ data class CalibrationFrameEntity(
     @JvmField var binX: Int = 0,
     @JvmField var binY: Int = 0,
     @JvmField var gain: Double = 0.0,
-    @JvmField @Convert(converter = PathPropertyConverter::class, dbType = String::class) var path: Path? = null,
+    @JvmField var path: Path? = null,
     @JvmField var enabled: Boolean = true,
-) : BoxEntity, Comparable<CalibrationFrameEntity>, Validatable {
+) : Comparable<CalibrationFrameEntity>, Validatable {
 
     override fun validate() {
         id.positive()
@@ -39,6 +34,21 @@ data class CalibrationFrameEntity(
         binX.positive()
         binY.positive()
         gain.positiveOrZero()
+    }
+
+    fun mapTo(builder: UpdateBuilder<Int>) {
+        builder[CalibrationFrameTable.type] = type
+        builder[CalibrationFrameTable.group] = group
+        builder[CalibrationFrameTable.filter] = filter
+        builder[CalibrationFrameTable.exposureTime] = exposureTime
+        builder[CalibrationFrameTable.temperature] = temperature
+        builder[CalibrationFrameTable.width] = width
+        builder[CalibrationFrameTable.height] = height
+        builder[CalibrationFrameTable.binX] = binX
+        builder[CalibrationFrameTable.binY] = binY
+        builder[CalibrationFrameTable.gain] = gain
+        builder[CalibrationFrameTable.path] = "$path"
+        builder[CalibrationFrameTable.enabled] = enabled
     }
 
     override fun compareTo(other: CalibrationFrameEntity): Int {
@@ -61,5 +71,26 @@ data class CalibrationFrameEntity(
         else if (filter != null && other.filter != null) filter!!.compareTo(other.filter!!)
         else if (filter == null) -1
         else 1
+    }
+
+    companion object {
+
+        fun from(row: ResultRow): CalibrationFrameEntity {
+            return CalibrationFrameEntity(
+                row[CalibrationFrameTable.id],
+                row[CalibrationFrameTable.type],
+                row[CalibrationFrameTable.group],
+                row[CalibrationFrameTable.filter],
+                row[CalibrationFrameTable.exposureTime],
+                row[CalibrationFrameTable.temperature],
+                row[CalibrationFrameTable.width],
+                row[CalibrationFrameTable.height],
+                row[CalibrationFrameTable.binX],
+                row[CalibrationFrameTable.binY],
+                row[CalibrationFrameTable.gain],
+                Path(row[CalibrationFrameTable.path]),
+                row[CalibrationFrameTable.enabled],
+            )
+        }
     }
 }

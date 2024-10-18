@@ -120,7 +120,7 @@ class MountController(
     private fun trackMode(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val mode = ctx.queryParam("mode").notNullOrBlank().let(TrackMode::valueOf)
+        val mode = ctx.queryParam("mode").notNullOrBlank().enumOf<TrackMode>()
         mountService.trackMode(mount, mode)
     }
 
@@ -134,7 +134,7 @@ class MountController(
     private fun move(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val direction = ctx.queryParam("direction").notNullOrBlank().let(GuideDirection::valueOf)
+        val direction = ctx.queryParam("direction").notNullOrBlank().enumOf<GuideDirection>()
         val enabled = ctx.queryParam("enabled").notNull().toBoolean()
         mountService.move(mount, direction, enabled)
     }
@@ -173,7 +173,7 @@ class MountController(
     private fun celestialLocation(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val type = ctx.pathParam("type").notNullOrBlank().let(CelestialLocationType::valueOf)
+        val type = ctx.pathParam("type").notNullOrBlank().enumOf<CelestialLocationType>()
 
         val location = when (type) {
             CelestialLocationType.ZENITH -> mountService.computeZenithLocation(mount)
@@ -212,7 +212,7 @@ class MountController(
     private fun remoteControlStart(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val protocol = ctx.queryParam("protocol").notNullOrBlank().let(MountRemoteControlProtocol::valueOf)
+        val protocol = ctx.queryParam("protocol").notNullOrBlank().enumOf<MountRemoteControlProtocol>()
         val host = ctx.queryParam("host")?.ifBlank { null } ?: "0.0.0.0"
         val port = ctx.queryParam("port")?.toInt()?.positive() ?: 10001
         mountService.remoteControlStart(mount, protocol, host, port)
@@ -221,7 +221,7 @@ class MountController(
     private fun remoteControlStop(ctx: Context) {
         val id = ctx.pathParam("id")
         val mount = connectionService.mount(id) ?: return
-        val protocol = ctx.queryParam("protocol").notNullOrBlank().let(MountRemoteControlProtocol::valueOf)
+        val protocol = ctx.queryParam("protocol").notNullOrBlank().enumOf<MountRemoteControlProtocol>()
         mountService.remoteControlStop(mount, protocol)
     }
 

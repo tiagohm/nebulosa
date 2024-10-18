@@ -1,6 +1,7 @@
 package nebulosa.api.atlas
 
 import com.sun.jna.Platform
+import nebulosa.api.database.MainDatabaseMigrator
 import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndCloseOutput
 import nebulosa.log.e
@@ -10,6 +11,8 @@ import nebulosa.wcs.LibWCS
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.apache.commons.codec.digest.DigestUtils
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import java.nio.file.Path
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -22,13 +25,15 @@ class LibWCSDownloadTask(
     private val httpClient: OkHttpClient,
     private val preferenceService: PreferenceService,
     scheduledExecutorService: ScheduledExecutorService,
-) : Runnable {
+) : Runnable, KoinComponent {
 
     init {
         scheduledExecutorService.schedule(this, 5L, TimeUnit.SECONDS)
     }
 
     override fun run() {
+        get<MainDatabaseMigrator>().await()
+
         var request = Request.Builder().get().url(VERSION_URL).build()
 
         val libraryUrl = LIBRARY_URLS[Platform.RESOURCE_PREFIX]

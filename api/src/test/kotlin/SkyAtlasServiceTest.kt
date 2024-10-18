@@ -1,6 +1,6 @@
 import SatelliteEntityRepositoryTest.Companion.ISS_TLE
 import SatelliteEntityRepositoryTest.Companion.save
-import SimbadEntityRepositoryTest.Companion.save
+import SkyObjectEntityRepositoryTest.Companion.save
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import io.kotest.matchers.collections.shouldContainAll
@@ -10,22 +10,22 @@ import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import io.objectbox.kotlin.boxFor
 import nebulosa.api.atlas.*
 import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
-import nebulosa.api.database.MyObjectBox
+import nebulosa.api.database.SkyDatabaseMigrator
 import nebulosa.horizons.HorizonsService
 import nebulosa.math.*
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.skycatalog.SkyObjectType
 import nebulosa.test.HTTP_CLIENT
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
 import java.util.concurrent.Executors
 
 class SkyAtlasServiceTest {
@@ -229,14 +229,18 @@ class SkyAtlasServiceTest {
 
     companion object {
 
-        @JvmStatic private val BOX_STORE = MyObjectBox.builder()
-            .inMemory(UUID.randomUUID().toString())
-            .build()
+        private const val DATASOURCE = "jdbc:h2:mem:skyatlas;DB_CLOSE_DELAY=-1"
+
+        private val CONNECTION = Database.connect(DATASOURCE, user = "root", password = "")
 
         @AfterAll
         @JvmStatic
-        fun closeBoxStore() {
-            BOX_STORE.close()
+        fun closeConnection() {
+            TransactionManager.closeAndUnregister(CONNECTION)
+        }
+
+        init {
+            SkyDatabaseMigrator(DATASOURCE).run()
         }
 
         @JvmStatic private val THREAD_POOL_TASK_EXECUTOR = Executors.newSingleThreadExecutor()
@@ -244,8 +248,6 @@ class SkyAtlasServiceTest {
         @JvmStatic private val HORIZONS_EPHEMERIS_PROVIDER = HorizonsEphemerisProvider(HORIZONS_SERVICE)
         @JvmStatic private val BODY_EPHEMERIS_PROVIDER = BodyEphemerisProvider(THREAD_POOL_TASK_EXECUTOR)
         @JvmStatic private val SMALL_BODY_DATABASE_SERVICE = SmallBodyDatabaseService()
-        @JvmStatic private val SATELLITE_BOX = BOX_STORE.boxFor<SatelliteEntity>()
-        @JvmStatic private val SIMBAD_BOX = BOX_STORE.boxFor<SimbadEntity>()
         @JvmStatic private val MOON_PHASE_FINDER = MoonPhaseFinder(HORIZONS_SERVICE)
 
         @JvmStatic private val OBJECT_MAPPER = jsonMapper {
@@ -253,12 +255,12 @@ class SkyAtlasServiceTest {
             disable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
         }
 
-        @JvmStatic private val SIMBAD_ENTITY_REPOSITORY = SimbadEntityRepository(SIMBAD_BOX).apply {
+        @JvmStatic private val SIMBAD_ENTITY_REPOSITORY = SkyObjectEntityRepository(CONNECTION).apply {
             save("Sirius", SkyObjectType.STAR, Constellation.CMA, -1.45, "06 45 06".hours, "-16 43 33".deg)
             save("75 Tucanae", SkyObjectType.GLOBULAR_CLUSTER, Constellation.TUC, 6.58, "01 03 12".hours, "-70 50 39".deg)
         }
 
-        @JvmStatic private val SATELLITE_REPOSITORY = SatelliteRepository(SATELLITE_BOX).apply {
+        @JvmStatic private val SATELLITE_REPOSITORY = SatelliteRepository(CONNECTION).apply {
             save("ISS (ZARYA)", ISS_TLE, SatelliteGroupType.ACTIVE, SatelliteGroupType.EDUCATION)
         }
 

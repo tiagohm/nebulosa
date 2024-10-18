@@ -1,19 +1,35 @@
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
-import io.objectbox.kotlin.boxFor
+import io.kotest.matchers.longs.shouldBeExactly
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.calibration.CalibrationFrameRepository
-import nebulosa.api.database.MyObjectBox
+import nebulosa.api.database.MainDatabaseMigrator
 import nebulosa.indi.device.camera.FrameType
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
-import java.util.*
 
 class CalibrationFrameRepositoryTest {
 
     @Test
     fun findAll() {
         REPOSITORY.findAll().shouldHaveSize(17)
+    }
+
+    @Test
+    fun finalAllByGroup() {
+        REPOSITORY.findAll(NAME).shouldHaveSize(17)
+    }
+
+    @Test
+    fun getById() {
+        with(REPOSITORY[1L].shouldNotBeNull()) {
+            type shouldBe FrameType.DARK
+            exposureTime shouldBeExactly 1L
+        }
     }
 
     @Test
@@ -52,19 +68,21 @@ class CalibrationFrameRepositoryTest {
     companion object {
 
         private const val NAME = "CCD Simulator"
+        private const val DATASOURCE = "jdbc:h2:mem:cf;DB_CLOSE_DELAY=-1"
 
-        @JvmStatic private val BOX_STORE = MyObjectBox.builder()
-            .inMemory(UUID.randomUUID().toString())
-            .build()
+        private val CONNECTION = Database.connect(DATASOURCE, user = "root", password = "")
 
         @AfterAll
         @JvmStatic
-        fun closeBoxStore() {
-            BOX_STORE.close()
+        fun closeConnection() {
+            TransactionManager.closeAndUnregister(CONNECTION)
         }
 
-        @JvmStatic private val BOX = BOX_STORE.boxFor<CalibrationFrameEntity>()
-        @JvmStatic private val REPOSITORY = CalibrationFrameRepository(BOX).apply {
+        init {
+            MainDatabaseMigrator(DATASOURCE).run()
+        }
+
+        private val REPOSITORY = CalibrationFrameRepository(CONNECTION).apply {
             save(FrameType.DARK, 1L)
             save(FrameType.DARK, 2L)
             save(FrameType.DARK, 5L)
@@ -84,12 +102,11 @@ class CalibrationFrameRepositoryTest {
             save(FrameType.FLAT, 0L, filter = null)
         }
 
-        @JvmStatic
-        internal fun CalibrationFrameRepository.save(
+        @Suppress("NOTHING_TO_INLINE")
+        internal inline fun CalibrationFrameRepository.save(
             type: FrameType, exposureTime: Long,
             temperature: Double = 25.0, width: Int = 1280, height: Int = 1024,
-            bin: Int = 1, gain: Double = 0.0,
-            filter: String? = null,
-        ) = save(CalibrationFrameEntity(0L, type, NAME, filter, exposureTime, temperature, width, height, bin, bin, gain))
+            bin: Int = 1, gain: Double = 0.0, filter: String? = null,
+        ) = add(CalibrationFrameEntity(0L, type, NAME, filter, exposureTime, temperature, width, height, bin, bin, gain))
     }
 }

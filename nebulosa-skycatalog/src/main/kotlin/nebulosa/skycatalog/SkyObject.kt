@@ -11,7 +11,7 @@ interface SkyObject {
 
     val id: Long
 
-    val name: String
+    val name: List<String>
 
     val magnitude: Double
 
@@ -24,7 +24,6 @@ interface SkyObject {
         const val UNKNOWN_MAGNITUDE = 30.0
         const val MAGNITUDE_MIN = -UNKNOWN_MAGNITUDE
         const val MAGNITUDE_MAX = UNKNOWN_MAGNITUDE
-        const val NAME_SEPARATOR = "|"
 
         @JvmStatic val MAGNITUDE_RANGE = MAGNITUDE_MIN..MAGNITUDE_MAX
 

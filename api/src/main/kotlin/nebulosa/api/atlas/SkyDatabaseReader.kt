@@ -11,16 +11,16 @@ import okio.Source
 import okio.buffer
 import okio.gzip
 
-class SimbadDatabaseReader(source: Source) : Iterator<SimbadEntity>, AutoCloseable {
+class SkyDatabaseReader(source: Source) : Iterator<SkyObjectEntity>, AutoCloseable {
 
     private val buffer = if (source is BufferedSource) source else source.gzip().buffer()
 
     override fun hasNext() = !buffer.exhausted()
 
-    override fun next(): SimbadEntity {
+    override fun next(): SkyObjectEntity {
         val id = buffer.readLong()
         val byteCount = buffer.readShort().toLong() and 0xFFFF
-        val name = buffer.readString(byteCount, Charsets.UTF_8)
+        val name = buffer.readString(byteCount, Charsets.UTF_8).split(SkyDatabaseWriter.NAME_SEPARATOR)
         val type = SkyObjectType.entries[buffer.readByte().toInt() and 0xFF]
         val rightAscension = buffer.readFloat().toDouble().deg
         val declination = buffer.readFloat().toDouble().deg
@@ -33,7 +33,7 @@ class SimbadDatabaseReader(source: Source) : Iterator<SimbadEntity>, AutoCloseab
         // val constellation = Constellation.entries[buffer.readByte().toInt() and 0xFF]
         val constellation = SkyObject.constellationFor(rightAscension, declination)
 
-        return SimbadEntity(id, name, type, rightAscension, declination, magnitude, pmRA, pmDEC, parallax, radialVelocity, redshift, constellation)
+        return SkyObjectEntity(id, name, type, rightAscension, declination, magnitude, pmRA, pmDEC, parallax, radialVelocity, redshift, constellation)
     }
 
     override fun close() {

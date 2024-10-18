@@ -5,13 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper
 class PreferenceService(
     private val preferenceRepository: PreferenceRepository,
     private val objectMapper: ObjectMapper,
-) : Collection<PreferenceEntity> by preferenceRepository {
+) {
 
-    operator fun get(key: String) = preferenceRepository.findByKey(key)
+    operator fun get(key: String) = preferenceRepository[key]
 
-    fun put(entity: PreferenceEntity) = preferenceRepository.save(entity)
+    val size
+        get() = preferenceRepository.size
 
-    operator fun contains(key: String) = preferenceRepository.existsByKey(key)
+    fun put(entity: PreferenceEntity) {
+        if (entity.key in this) preferenceRepository.update(entity)
+        else preferenceRepository.add(entity)
+    }
+
+    operator fun contains(key: String) = key in preferenceRepository
 
     fun <T> getJSON(key: String, type: Class<out T>): T? = this[key]?.value?.let { objectMapper.readValue(it, type) }
 
@@ -29,7 +35,7 @@ class PreferenceService(
 
     fun getDouble(key: String) = getJSON(key, Double::class.java)
 
-    fun putJSON(key: String, value: Any?) = put(PreferenceEntity(0L, key, if (value == null) null else objectMapper.writeValueAsString(value)))
+    fun putJSON(key: String, value: Any?) = put(PreferenceEntity(key, if (value == null) null else objectMapper.writeValueAsString(value)))
 
     fun putBoolean(key: String, value: Boolean) = putJSON(key, value)
 
@@ -43,7 +49,7 @@ class PreferenceService(
 
     fun putDouble(key: String, value: Double) = putJSON(key, value)
 
-    fun clear() = preferenceRepository.deleteAll()
+    fun clear() = preferenceRepository.clear()
 
-    fun delete(key: String) = preferenceRepository.deleteByKey(key)
+    fun delete(key: String) = preferenceRepository.delete(key)
 }

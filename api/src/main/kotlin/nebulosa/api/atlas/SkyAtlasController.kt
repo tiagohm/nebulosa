@@ -34,7 +34,7 @@ class SkyAtlasController(
         app.get("sky-atlas/sky-objects/types", ::skyObjectTypes)
         app.get("sky-atlas/sky-objects/{id}/position", ::positionOfSkyObject)
         app.get("sky-atlas/sky-objects/{id}/altitude-points", ::altitudePointsOfSkyObject)
-        app.get("sky-atlas/satellites/", ::searchSatellites)
+        app.get("sky-atlas/satellites", ::searchSatellites)
         app.get("sky-atlas/satellites/{id}/position", ::positionOfSatellite)
         app.get("sky-atlas/satellites/{id}/altitude-points", ::altitudePointsOfSatellite)
     }
@@ -138,10 +138,10 @@ class SkyAtlasController(
         val rightAscension = ctx.queryParam("rightAscension") ?: ""
         val declination = ctx.queryParam("declination") ?: ""
         val radius = ctx.queryParam("radius")?.toDouble() ?: 0.0
-        val constellation = ctx.queryParam("constellation")?.let(Constellation::valueOf)
+        val constellation = ctx.queryParam("constellation")?.enumOf<Constellation>()
         val magnitudeMin = ctx.queryParam("magnitudeMin")?.toDouble() ?: SkyObject.MAGNITUDE_MIN
         val magnitudeMax = ctx.queryParam("magnitudeMax")?.toDouble() ?: SkyObject.MAGNITUDE_MAX
-        val type = ctx.queryParam("type")?.let(SkyObjectType::valueOf)
+        val type = ctx.queryParam("type")?.enumOf<SkyObjectType>()
         val id = ctx.queryParam("id")?.toLong() ?: 0L
 
         val result = skyAtlasService.searchSkyObject(
@@ -157,7 +157,7 @@ class SkyAtlasController(
     }
 
     private fun positionOfSatellite(ctx: Context) {
-        val satellite = satelliteRepository.find(ctx.pathParam("id").toLong().positive()) ?: return
+        val satellite = satelliteRepository[ctx.pathParam("id").toLong().positive()] ?: return
         val location = ctx.location().notNull()
         val date = ctx.queryParam("date").notNull().localDate()
         val time = ctx.queryParam("time").notNull().localTime()
@@ -166,7 +166,7 @@ class SkyAtlasController(
     }
 
     private fun altitudePointsOfSatellite(ctx: Context) {
-        val satellite = satelliteRepository.find(ctx.pathParam("id").toLong().positive()) ?: return
+        val satellite = satelliteRepository[ctx.pathParam("id").toLong().positive()] ?: return
         val location = ctx.location().notNull()
         val date = ctx.queryParam("date").notNull().localDate()
         val time = ctx.queryParam("time").notNull().localTime()
@@ -178,7 +178,7 @@ class SkyAtlasController(
     private fun searchSatellites(ctx: Context) {
         val text = ctx.queryParam("text") ?: ""
         val id = ctx.queryParam("id")?.toLong() ?: 0L
-        val groups = ctx.queryParams("groups").map(SatelliteGroupType::valueOf)
+        val groups = ctx.queryParams("group").map(SatelliteGroupType::valueOf)
         ctx.json(skyAtlasService.searchSatellites(text, groups, id))
     }
 

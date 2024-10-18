@@ -2,8 +2,6 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("jvm")
-    kotlin("kapt")
-    id("io.objectbox")
     id("com.gradleup.shadow")
 }
 
@@ -40,7 +38,9 @@ dependencies {
     implementation(libs.javalin)
     implementation(libs.koin)
     implementation(libs.airline)
-
+    implementation(libs.h2)
+    implementation(libs.bundles.exposed)
+    implementation(libs.flyway)
     testImplementation(project(":nebulosa-astrobin-api"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))
@@ -54,12 +54,5 @@ tasks.withType<ShadowJar> {
 
     manifest {
         attributes["Main-Class"] = "nebulosa.api.MainKt"
-    }
-}
-
-kapt {
-    arguments {
-        arg("objectbox.modelPath", "$projectDir/schemas/objectbox.json")
-        arg("objectbox.myObjectBoxPackage", "nebulosa.api.database")
     }
 }

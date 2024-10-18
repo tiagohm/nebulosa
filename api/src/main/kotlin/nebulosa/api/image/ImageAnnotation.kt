@@ -22,7 +22,7 @@ data class ImageAnnotation(
 
     data class StarDSO(
         override val id: Long = 0L,
-        override val name: String,
+        override val name: List<String> = emptyList(),
         override val type: SkyObjectType = SkyObjectType.STAR,
         @field:JsonSerialize(using = RightAscensionSerializer::class) override val rightAscensionJ2000: Angle = 0.0,
         @field:JsonSerialize(using = DeclinationSerializer::class) override val declinationJ2000: Angle = 0.0,
@@ -44,7 +44,7 @@ data class ImageAnnotation(
 
     data class MinorPlanet(
         override val id: Long = 0L,
-        override val name: String = "",
+        override val name: List<String> = emptyList(),
         @field:JsonSerialize(using = RightAscensionSerializer::class) override val rightAscensionJ2000: Angle = 0.0,
         @field:JsonSerialize(using = DeclinationSerializer::class) override val declinationJ2000: Angle = 0.0,
         override val magnitude: Double = SkyObject.UNKNOWN_MAGNITUDE,

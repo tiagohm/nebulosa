@@ -41,7 +41,7 @@
 				fill="#00897B"
 				style="font-size: 5px"
 				class="pointer-events-none select-none">
-				{{ a.star ?? a.dso ?? a.minorPlanet | skyObject: 'name' }}
+				{{ (a.star ?? a.dso ?? a.minorPlanet)?.name?.join(' · ') }}
 			</text>
 		</g>
 	</svg>
@@ -260,7 +260,7 @@
 							style="height: 36px"
 							(click)="annotationSelected(item)">
 							<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
-							<span class="text-xs overflow-hidden">{{ item.star ?? item.dso ?? item.minorPlanet | skyObject: 'name' }}</span>
+							<span class="text-xs overflow-hidden">{{ (item.star ?? item.dso ?? item.minorPlanet)?.name?.join(' · ') }}</span>
 						</div>
 					</ng-template>
 				</p-scroller>
@@ -291,7 +291,7 @@
 					<input
 						pInputText
 						readonly
-						[value]="astronomicalObject.info | skyObject: 'name'"
+						[value]="astronomicalObject.info.name.join(' · ')"
 						class="border-0 p-inputtext-sm" />
 					<label>Name</label>
 				</p-floatLabel>
@@ -370,7 +370,7 @@
 			*ngIf="astronomicalObject.info?.type">
 			<a
 				target="_blank"
-				href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + (astronomicalObject.info | skyObject: 'firstName') }}">
+				href="{{ 'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=' + astronomicalObject.info!.name[0] }}">
 				Simbad
 			</a>
 		</div>

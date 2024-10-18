@@ -44,7 +44,7 @@ class SkyAtlasService(
     private val bodyEphemerisProvider: BodyEphemerisProvider,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
     private val satelliteRepository: SatelliteRepository,
-    private val simbadEntityRepository: SimbadEntityRepository,
+    private val skyObjectEntityRepository: SkyObjectEntityRepository,
     private val httpClient: OkHttpClient,
     private val objectMapper: ObjectMapper,
     private val moonPhaseFinder: MoonPhaseFinder,
@@ -52,7 +52,7 @@ class SkyAtlasService(
 ) {
 
     private val positions = HashMap<GeographicCoordinate, GeographicPosition>()
-    private val cachedSimbadEntities = HashMap<Long, SimbadEntity>()
+    private val cachedSkyObjectEntities = HashMap<Long, SkyObjectEntity>()
     private val targetLocks = HashMap<Any, Any>()
     private val cachedMoonPhases = HashMap<LocalDate, List<MoonPhaseDateTime>>()
 
@@ -63,7 +63,7 @@ class SkyAtlasService(
         scheduledExecutorService.scheduleAtFixedRate(::refreshImageOfSun, 0L, 15L, TimeUnit.MINUTES)
     }
 
-    val objectTypes: Collection<SkyObjectType> by lazy { simbadEntityRepository.findAll().map { it.type }.toSortedSet() }
+    val objectTypes: Collection<SkyObjectType> by lazy { skyObjectEntityRepository.objectTypes }
 
     fun imageOfSun(output: HttpServletResponse) {
         output.contentType = "image/png"
@@ -84,8 +84,8 @@ class SkyAtlasService(
     }
 
     fun positionOfSkyObject(location: GeographicCoordinate, id: Long, dateTime: LocalDateTime): BodyPosition {
-        val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id) ?: throw NotFoundResponse("Cannot found sky object: [$id]")
-        cachedSimbadEntities[id] = target
+        val target = cachedSkyObjectEntities[id] ?: skyObjectEntityRepository[id] ?: throw NotFoundResponse("Cannot found sky object: [$id]")
+        cachedSkyObjectEntities[id] = target
         val distance = SkyObject.distanceFor(target.parallax.toMas)
         return positionOfBody(target, location, dateTime)!!
             .copy(magnitude = target.magnitude, constellation = target.constellation, distance = distance.toLightYears, distanceUnit = "ly")
@@ -177,8 +177,8 @@ class SkyAtlasService(
     }
 
     fun altitudePointsOfSkyObject(location: GeographicCoordinate, id: Long, dateTime: LocalDateTime, stepSize: Int): List<DoubleArray> {
-        val target = cachedSimbadEntities[id] ?: simbadEntityRepository.find(id) ?: throw NotFoundResponse("Cannot found sky object: [$id]")
-        cachedSimbadEntities[id] = target
+        val target = cachedSkyObjectEntities[id] ?: skyObjectEntityRepository[id] ?: throw NotFoundResponse("Cannot found sky object: [$id]")
+        cachedSkyObjectEntities[id] = target
         val ephemeris = bodyEphemeris(target, location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
     }
@@ -220,7 +220,7 @@ class SkyAtlasService(
         constellation: Constellation? = null,
         magnitudeMin: Double = SkyObject.MAGNITUDE_MIN, magnitudeMax: Double = SkyObject.MAGNITUDE_MAX,
         type: SkyObjectType? = null, id: Long = 0L,
-    ) = simbadEntityRepository.search(text, constellation, rightAscension, declination, radius, magnitudeMin, magnitudeMax, type, id)
+    ) = skyObjectEntityRepository.search(text, constellation, rightAscension, declination, radius, magnitudeMin, magnitudeMax, type, id)
 
     fun refreshImageOfSun() {
         val request = Request.Builder()

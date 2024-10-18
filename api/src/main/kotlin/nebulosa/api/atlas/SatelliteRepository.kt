@@ -1,18 +1,55 @@
 package nebulosa.api.atlas
 
-import io.objectbox.Box
-import io.objectbox.query.QueryBuilder.StringOrder.CASE_SENSITIVE
-import nebulosa.api.repositories.BoxRepository
+import nebulosa.api.database.contains
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
 
-class SatelliteRepository(override val box: Box<SatelliteEntity>) : BoxRepository<SatelliteEntity>() {
+class SatelliteRepository(private val connection: Database) {
 
-    fun search(text: String? = null, groups: Iterable<SatelliteGroupType> = emptyList(), id: Long = 0L): List<SatelliteEntity> {
-        val condition = and(
-            if (id > 0L) SatelliteEntity_.id.equal(id) else null,
-            if (text.isNullOrBlank()) null else SatelliteEntity_.name.containsInsensitive(text),
-            or(groups.map { SatelliteEntity_.groups.containsElement(it.name, CASE_SENSITIVE) }),
-        )
+    operator fun get(id: Long) = transaction(connection) {
+        SatelliteTable
+            .selectAll()
+            .where { SatelliteTable.id eq id }
+            .firstOrNull()
+            ?.let(SatelliteEntity::from)
+    }
 
-        return (condition?.let(box::query) ?: box.query()).build().use { it.findLazy() }
+    fun search(text: String? = null, groups: List<SatelliteGroupType> = emptyList(), id: Long = 0L) = transaction(connection) {
+        SatelliteTable
+            .selectAll()
+            .also { if (id > 0L) it.andWhere { SatelliteTable.id eq id } }
+            .also { if (!text.isNullOrBlank()) it.andWhere { SatelliteTable.name like "%$text%" } }
+            .also {
+                if (groups.isNotEmpty()) it.andWhere {
+                    var expr = SatelliteTable.groups contains groups[0].ordinal
+
+                    for (i in 1 until groups.size) {
+                        expr = expr or (SatelliteTable.groups contains groups[i].ordinal)
+                    }
+
+                    expr
+                }
+            }
+            .map(SatelliteEntity::from)
+    }
+
+    fun add(entity: SatelliteEntity) = transaction(connection) {
+        SatelliteTable
+            .insert { entity.mapTo(it) } get SatelliteTable.id
+        entity
+    }
+
+    fun update(entity: SatelliteEntity) = transaction(connection) {
+        SatelliteTable
+            .update({ SatelliteTable.id eq entity.id }) { entity.mapTo(it, true) }
+        entity
+    }
+
+    fun add(entities: Iterable<SatelliteEntity>) = transaction(connection) {
+        SatelliteTable.batchInsert(entities, false, false) { it.mapTo(this) }
+    }
+
+    fun clear() = transaction(connection) {
+        SatelliteTable.deleteAll() > 0
     }
 }
