@@ -41,7 +41,7 @@ class SaoCatalog : SkyCatalog<SaoEntry>(258997) {
                 val (rightAscensionJ2000, declinationJ2000) = icrf.equatorialAtDate()
 
                 val star = SaoEntry(
-                    id, "SAO $id",
+                    id, listOf("SAO $id"),
                     magnitude,
                     rightAscensionJ2000, declinationJ2000,
                     spType,

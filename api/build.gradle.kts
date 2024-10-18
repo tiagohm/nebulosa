@@ -2,8 +2,6 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("jvm")
-    kotlin("kapt")
-    id("io.objectbox")
     id("com.gradleup.shadow")
 }
 
@@ -56,12 +54,5 @@ tasks.withType<ShadowJar> {
 
     manifest {
         attributes["Main-Class"] = "nebulosa.api.MainKt"
-    }
-}
-
-kapt {
-    arguments {
-        arg("objectbox.modelPath", "$projectDir/schemas/objectbox.json")
-        arg("objectbox.myObjectBoxPackage", "nebulosa.api.database")
     }
 }

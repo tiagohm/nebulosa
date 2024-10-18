@@ -1,6 +1,5 @@
 package nebulosa.api.calibration
 
-import nebulosa.api.database.ilike
 import nebulosa.indi.device.camera.FrameType
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -75,7 +74,7 @@ class CalibrationFrameRepository(private val connection: Database) {
             .andWhere { CalibrationFrameTable.height eq height }
             .andWhere { CalibrationFrameTable.binX eq bin }
             .andWhere { CalibrationFrameTable.binY eq bin }
-            .also { it.andWhere { if (filter.isNullOrBlank()) CalibrationFrameTable.filter.isNull() else CalibrationFrameTable.filter ilike filter } }
+            .also { it.andWhere { if (filter.isNullOrBlank()) CalibrationFrameTable.filter.isNull() else CalibrationFrameTable.filter eq filter } }
             .map(CalibrationFrameEntity::from)
     }
 

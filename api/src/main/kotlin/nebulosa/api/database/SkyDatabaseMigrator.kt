@@ -2,7 +2,7 @@ package nebulosa.api.database
 
 import org.flywaydb.core.Flyway
 
-data class MainDatabaseMigrator(private val dataSource: String) : Runnable {
+data class SkyDatabaseMigrator(private val dataSource: String) : Runnable {
 
     override fun run() {
         Flyway.configure()
@@ -10,7 +10,7 @@ data class MainDatabaseMigrator(private val dataSource: String) : Runnable {
             .baselineOnMigrate(true)
             .table("MIGRATIONS")
             .dataSource(dataSource, "root", "")
-            .locations("classpath:migrations/main")
+            .locations("classpath:migrations/sky")
             .load()
             .migrate()
     }

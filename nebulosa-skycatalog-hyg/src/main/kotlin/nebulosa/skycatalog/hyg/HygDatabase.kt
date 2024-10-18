@@ -9,7 +9,6 @@ import nebulosa.math.mas
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.skycatalog.SkyCatalog
 import nebulosa.skycatalog.SkyObject
-import nebulosa.skycatalog.SkyObject.Companion.NAME_SEPARATOR
 import java.io.InputStream
 import java.io.InputStreamReader
 
@@ -62,7 +61,7 @@ class HygDatabase : SkyCatalog<HygEntry>(118005) {
             if (names.isEmpty()) continue
 
             val star = HygEntry(
-                id, names.joinToString(NAME_SEPARATOR).trim(),
+                id, names,
                 magnitude,
                 rightAscension, declination,
                 spType, pmRA, pmDEC,

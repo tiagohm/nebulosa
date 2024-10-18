@@ -3,7 +3,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import nebulosa.api.atlas.SatelliteEntity
 import nebulosa.api.atlas.SatelliteGroupType
 import nebulosa.api.atlas.SatelliteRepository
-import nebulosa.api.database.MainDatabaseMigrator
+import nebulosa.api.database.SkyDatabaseMigrator
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.junit.jupiter.api.AfterAll
@@ -59,7 +59,7 @@ class SatelliteEntityRepositoryTest {
         }
 
         init {
-            MainDatabaseMigrator(DATASOURCE).run()
+            SkyDatabaseMigrator(DATASOURCE).run()
         }
 
         private val REPOSITORY = SatelliteRepository(CONNECTION).apply {

@@ -1,7 +1,6 @@
 package nebulosa.api.atlas
 
 import nebulosa.api.database.contains
-import nebulosa.api.database.ilike
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -19,7 +18,7 @@ class SatelliteRepository(private val connection: Database) {
         SatelliteTable
             .selectAll()
             .also { if (id > 0L) it.andWhere { SatelliteTable.id eq id } }
-            .also { if (!text.isNullOrBlank()) it.andWhere { SatelliteTable.name ilike "%$text%" } }
+            .also { if (!text.isNullOrBlank()) it.andWhere { SatelliteTable.name like "%$text%" } }
             .also {
                 if (groups.isNotEmpty()) it.andWhere {
                     var expr = SatelliteTable.groups contains groups[0].ordinal

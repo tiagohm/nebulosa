@@ -182,11 +182,6 @@ gradle-app.setting
 ### Gradle Cache ###
 .cache
 
-### ObjectBox ###
-objectbox*.dll
-libobjectbox*.so
-libobjectbox*.dylib
-
 ### Kotlin ###
 .kotlin
 

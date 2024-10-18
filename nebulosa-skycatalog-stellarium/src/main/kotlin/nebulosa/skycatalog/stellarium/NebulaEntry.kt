@@ -10,7 +10,7 @@ import nebulosa.skycatalog.SkyObjectType
 
 data class NebulaEntry(
     override val id: Long = 0L,
-    override val name: String = "",
+    override val name: List<String> = emptyList(),
     override val rightAscensionJ2000: Angle = 0.0,
     override val declinationJ2000: Angle = 0.0,
     override val magnitude: Double = SkyObject.UNKNOWN_MAGNITUDE,

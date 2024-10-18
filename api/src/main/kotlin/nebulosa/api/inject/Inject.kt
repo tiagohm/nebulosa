@@ -2,8 +2,6 @@ package nebulosa.api.inject
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.javalin.Javalin
-import io.objectbox.BoxStore
-import io.objectbox.kotlin.boxFor
 import nebulosa.api.APP_DIR_KEY
 import nebulosa.api.Nebulosa
 import nebulosa.api.alignment.polar.PolarAlignmentController
@@ -17,7 +15,6 @@ import nebulosa.api.autofocus.AutoFocusController
 import nebulosa.api.autofocus.AutoFocusExecutor
 import nebulosa.api.autofocus.AutoFocusService
 import nebulosa.api.calibration.CalibrationFrameController
-import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.calibration.CalibrationFrameRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.cameras.CameraCaptureExecutor
@@ -30,7 +27,6 @@ import nebulosa.api.connection.ConnectionController
 import nebulosa.api.connection.ConnectionEventHub
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.database.MainDatabaseMigrator
-import nebulosa.api.database.MyObjectBox
 import nebulosa.api.dustcap.DustCapController
 import nebulosa.api.dustcap.DustCapEventHub
 import nebulosa.api.dustcap.DustCapService
@@ -57,7 +53,6 @@ import nebulosa.api.mounts.MountEventHub
 import nebulosa.api.mounts.MountService
 import nebulosa.api.platesolver.PlateSolverController
 import nebulosa.api.platesolver.PlateSolverService
-import nebulosa.api.preference.PreferenceEntity
 import nebulosa.api.preference.PreferenceRepository
 import nebulosa.api.preference.PreferenceService
 import nebulosa.api.rotators.RotatorController
@@ -105,7 +100,6 @@ val koinApp = koinApplication {
     modules(httpModule())
     modules(databaseModule())
     modules(eventBusModule())
-    modules(boxStoreModule())
     modules(repositoriesModule())
     modules(phd2Module())
 }
@@ -124,14 +118,8 @@ object Named {
     val alpacaHttpClient = named("alpacaHttpClient")
     val mainConnection = named("mainConnection")
     val mainDatasourceUrl = named("mainDatasource")
-    val simbadConnection = named("simbadConnection")
-    val simbadDatasourceUrl = named("simbadDatasource")
-    val mainBoxStore = named("mainBoxStore")
-    val simbadBoxStore = named("simbadBoxStore")
-    val calibrationFrameBox = named("calibrationFrameBox")
-    val preferenceBox = named("preferenceBox")
-    val satelliteBox = named("satelliteBox")
-    val simbadBox = named("simbadBox")
+    val skyConnection = named("skyConnection")
+    val skyDatasourceUrl = named("skyDatasource")
 }
 
 // PATH
@@ -221,31 +209,10 @@ fun eventBusModule() = module {
 
 fun databaseModule() = module {
     single(Named.mainDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/main;DB_CLOSE_DELAY=-1" }
-    single(Named.simbadDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/simbad;ACCESS_MODE_DATA=r;DB_CLOSE_DELAY=-1" }
+    single(Named.skyDatasourceUrl) { "jdbc:h2:${get<Path>(Named.dataDir)}/sky;ACCESS_MODE_DATA=r;DB_CLOSE_DELAY=-1" }
     single(Named.mainConnection) { Database.connect(get(Named.mainDatasourceUrl), user = "root", password = "") }
-    single(Named.simbadConnection) { Database.connect(get(Named.simbadDatasourceUrl), user = "root", password = "") }
+    single(Named.skyConnection) { Database.connect(get(Named.skyDatasourceUrl), user = "root", password = "") }
     single { MainDatabaseMigrator(get(Named.mainDatasourceUrl)) }
-}
-
-// BOX STORE
-
-fun boxStoreModule() = module {
-    single(Named.mainBoxStore) {
-        MyObjectBox.builder()
-            .baseDirectory(get<Path>(Named.dataDir).toFile())
-            .name("main")
-            .build()!!
-    }
-    single(Named.simbadBoxStore) {
-        MyObjectBox.builder()
-            .baseDirectory(get<Path>(Named.dataDir).toFile())
-            .name("simbad")
-            .build()!!
-    }
-    single(Named.calibrationFrameBox) { get<BoxStore>(Named.mainBoxStore).boxFor<CalibrationFrameEntity>() }
-    single(Named.preferenceBox) { get<BoxStore>(Named.mainBoxStore).boxFor<PreferenceEntity>() }
-    single(Named.satelliteBox) { get<BoxStore>(Named.mainBoxStore).boxFor<SatelliteEntity>() }
-    single(Named.simbadBox) { get<BoxStore>(Named.simbadBoxStore).boxFor<SimbadEntity>() }
 }
 
 // OBJECT MAPPER
@@ -265,9 +232,9 @@ fun phd2Module() = module {
 
 fun repositoriesModule() = module {
     single { CalibrationFrameRepository(get(Named.mainConnection)) }
-    single { PreferenceRepository(get(Named.preferenceBox)) }
-    single { SatelliteRepository(get(Named.satelliteBox)) }
-    single { SimbadEntityRepository(get(Named.simbadBox)) }
+    single { PreferenceRepository(get(Named.mainConnection)) }
+    single { SatelliteRepository(get(Named.mainConnection)) }
+    single { SkyObjectEntityRepository(get(Named.skyConnection)) }
 }
 
 // SERVICES

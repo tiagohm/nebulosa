@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 class SkyAtlasUpdateTask(
     private val httpClient: OkHttpClient,
-    private val simbadEntityRepository: SimbadEntityRepository,
+    private val skyObjectEntityRepository: SkyObjectEntityRepository,
     private val preferenceService: PreferenceService,
     private val messageService: MessageService,
     scheduledExecutorService: ScheduledExecutorService,
@@ -30,7 +30,9 @@ class SkyAtlasUpdateTask(
             if (response.isSuccessful) {
                 val newestVersion = response.body!!.string().trim()
 
-                if (newestVersion != preferenceService.getText(VERSION_KEY) || simbadEntityRepository.isEmpty()) {
+                if (newestVersion != preferenceService.getText(VERSION_KEY) || skyObjectEntityRepository.size == 0L) {
+                    skyObjectEntityRepository.clear()
+
                     LOG.i("Sky Atlas database is out of date. downloading...")
 
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Started)
@@ -46,9 +48,9 @@ class SkyAtlasUpdateTask(
                         httpClient.newCall(request).execute().use {
                             if (it.isSuccessful) {
                                 it.body!!.byteStream().source().use { source ->
-                                    SimbadDatabaseReader(source).use { reader ->
+                                    SkyDatabaseReader(source).use { reader ->
                                         for (entity in reader) {
-                                            simbadEntityRepository.save(entity)
+                                            skyObjectEntityRepository.add(entity)
                                         }
                                     }
                                 }
@@ -66,9 +68,9 @@ class SkyAtlasUpdateTask(
                     preferenceService.putText(VERSION_KEY, newestVersion)
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Finished(newestVersion))
 
-                    LOG.i("Sky Atlas database was updated. version={}, size={}", newestVersion, simbadEntityRepository.size)
+                    LOG.i("Sky Atlas database was updated. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
                 } else {
-                    LOG.i("Sky Atlas database is up to date. version={}, size={}", newestVersion, simbadEntityRepository.size)
+                    LOG.i("Sky Atlas database is up to date. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
                 }
             }
         }
