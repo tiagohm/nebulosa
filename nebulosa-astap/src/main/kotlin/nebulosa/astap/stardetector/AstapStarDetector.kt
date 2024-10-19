@@ -3,12 +3,14 @@ package nebulosa.astap.stardetector
 import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
 import nebulosa.log.d
+import nebulosa.log.de
 import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
 import org.apache.commons.exec.CommandLine
 import org.apache.commons.exec.DefaultExecutor
+import org.apache.commons.exec.ExecuteException
 import java.io.InputStreamReader
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
@@ -41,6 +43,9 @@ data class AstapStarDetector(
                 .get()
 
             LOG.d("astap exited. code={}", executor.execute(commandline))
+        } catch (e: ExecuteException) {
+            LOG.de("astap failed. code={}", e.exitValue)
+            return emptyList()
         } catch (e: Throwable) {
             LOG.e("astap failed", e)
             return emptyList()

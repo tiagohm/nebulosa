@@ -3,6 +3,7 @@ package nebulosa.astap.platesolver
 import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsKeyword
 import nebulosa.image.Image
+import nebulosa.log.de
 import nebulosa.log.di
 import nebulosa.log.i
 import nebulosa.log.loggerFor
@@ -15,6 +16,7 @@ import nebulosa.platesolver.PlateSolver
 import nebulosa.platesolver.PlateSolverException
 import org.apache.commons.exec.CommandLine
 import org.apache.commons.exec.DefaultExecutor
+import org.apache.commons.exec.ExecuteException
 import org.apache.commons.exec.ExecuteWatchdog
 import java.nio.file.Files
 import java.nio.file.Path
@@ -22,6 +24,7 @@ import java.nio.file.Paths
 import java.time.Duration
 import java.util.*
 import kotlin.io.path.deleteRecursively
+import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.math.ceil
 
@@ -67,10 +70,15 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
                 .setTimeout(timeout.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5))
                 .get()
 
-            LOG.di("astap exited. code={}", executor.execute(commandline))
+            try {
+                LOG.di("astap exited. code={}", executor.execute(commandline))
+            } catch (e: ExecuteException) {
+                LOG.de("astap failed. code={}", e.exitValue)
+                throw PlateSolverException(e.exitValue.messageFromExitCode())
+            }
 
             val ini = Properties()
-            Paths.get("$basePath", "$baseName.ini").inputStream().use(ini::load)
+            Paths.get("$basePath", "$baseName.ini").takeIf { it.exists() }?.inputStream()?.use(ini::load)
 
             val solved = ini.getProperty("PLTSOLVD").trim() == "T"
 
@@ -132,5 +140,15 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
     companion object {
 
         @JvmStatic private val LOG = loggerFor<AstapPlateSolver>()
+
+        private fun Int.messageFromExitCode() = when (this) {
+            1 -> "no solution found"
+            2 -> "not enough stars detected"
+            16 -> "error reading image file"
+            32 -> "no star database found"
+            33 -> "error reading star database"
+            34 -> "error updating input file"
+            else -> "plate solving failed"
+        }
     }
 }
