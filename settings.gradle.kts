@@ -5,7 +5,6 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 buildCache {
     local {
         directory = File(rootDir, ".cache")
-        removeUnusedEntriesAfterDays = 30
     }
 }
 
