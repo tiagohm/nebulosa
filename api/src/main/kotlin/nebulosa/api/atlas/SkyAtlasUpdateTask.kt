@@ -36,11 +36,12 @@ class SkyAtlasUpdateTask(
         httpClient.newCall(request).execute().use { response ->
             if (response.isSuccessful) {
                 val newestVersion = response.body!!.string().trim()
+                val currentVersion = preferenceService.getText(VERSION_KEY)
 
-                if (newestVersion != preferenceService.getText(VERSION_KEY) || skyObjectEntityRepository.size == 0L) {
+                if (newestVersion != currentVersion || skyObjectEntityRepository.size == 0L) {
                     skyObjectEntityRepository.clear()
 
-                    LOG.i("Sky Atlas database is out of date. downloading...")
+                    LOG.i("Sky Atlas database is out of date. current={}, newest={}", currentVersion, newestVersion)
 
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Started)
 
