@@ -12,6 +12,8 @@ import nebulosa.time.UTC
 import kotlin.math.abs
 import kotlin.math.hypot
 
+// https://bitbucket.org/Isbeorn/nina.plugin.polaralignment/src/master/PolarAlignment/TPAPAVM.cs
+
 internal data class PolarErrorDetermination(
     @JvmField val initialReferenceFrame: PlateSolution,
     @JvmField val firstPosition: Position,
@@ -67,28 +69,27 @@ internal data class PolarErrorDetermination(
     fun update(
         time: InstantOfTime,
         initialAzimuthError: Angle, initialAltitudeError: Angle,
-        referenceFrame: PlateSolution, compensateRefraction: Boolean = false
+        referenceFrame: PlateSolution,
     ): DoubleArray {
         currentReferenceFrame = referenceFrame
 
         val centerX = referenceFrame.widthInPixels / 2.0
         val centerY = referenceFrame.heightInPixels / 2.0
 
-        val originPixel =
-            doubleArrayOf(initialReferenceFrame.rightAscension, initialReferenceFrame.declination).stenographicProjection(referenceFrame)
+        val originPixel = doubleArrayOf(initialReferenceFrame.rightAscension, initialReferenceFrame.declination).stenographicProjection(referenceFrame)
         val pointShift = doubleArrayOf(centerX - originPixel[0], centerY - originPixel[1])
 
         originPixel[0] += pointShift[0] * 2.0
         originPixel[1] += pointShift[1] * 2.0
 
-        val destinationAltAz = destinationCoordinates(-initialAzimuthError, -initialAltitudeError, time, compensateRefraction)
+        val destinationAltAz = destinationCoordinates(-initialAzimuthError, -initialAltitudeError, time)
         val destinationPixel = doubleArrayOf(destinationAltAz[0], destinationAltAz[1]).stenographicProjection(referenceFrame)
 
         destinationPixel[0] += pointShift[0] * 2.0
         destinationPixel[1] += pointShift[1] * 2.0
 
         // Azimuth.
-        val originalAzimuthAltAz = destinationCoordinates(-initialAzimuthError, 0.0, time, compensateRefraction)
+        val originalAzimuthAltAz = destinationCoordinates(-initialAzimuthError, 0.0, time)
         val originalAzimuthPixel = doubleArrayOf(originalAzimuthAltAz[0], originalAzimuthAltAz[1]).stenographicProjection(referenceFrame)
 
         originalAzimuthPixel[0] += pointShift[0] * 2.0
@@ -102,7 +103,7 @@ internal data class PolarErrorDetermination(
         val originalAzimuthDistance = hypot(originalAzimuthPixel[0] - originPixel[0], originalAzimuthPixel[1] - originPixel[1])
 
         // Altitude.
-        val originalAltitudeAltAz = destinationCoordinates(0.0, -initialAltitudeError, time, compensateRefraction)
+        val originalAltitudeAltAz = destinationCoordinates(0.0, -initialAltitudeError, time)
         val originalAltitudePixel = doubleArrayOf(originalAltitudeAltAz[0], originalAltitudeAltAz[1]).stenographicProjection(referenceFrame)
 
         originalAltitudePixel[0] += pointShift[0] * 2.0
@@ -119,19 +120,16 @@ internal data class PolarErrorDetermination(
 
         // Azimuth.
         val originalAzimuthDirection = doubleArrayOf(destinationPixel[0] - originalAltitudePixel[0], destinationPixel[1] - originalAltitudePixel[1])
-        val correctedAzimuthDirection =
-            doubleArrayOf(destinationPixel[0] - correctedAltitudePixel[0], destinationPixel[1] - correctedAltitudePixel[1])
+        val correctedAzimuthDirection = doubleArrayOf(destinationPixel[0] - correctedAltitudePixel[0], destinationPixel[1] - correctedAltitudePixel[1])
         // When dot product is positive, the angle between both vectors is smaller than 90°.
-        val azimuthSameDirection =
-            (originalAzimuthDirection[0] * correctedAzimuthDirection[0] + originalAzimuthDirection[1] * correctedAzimuthDirection[1]) > 0
+        val azimuthSameDirection = (originalAzimuthDirection[0] * correctedAzimuthDirection[0] + originalAzimuthDirection[1] * correctedAzimuthDirection[1]) > 0
         val azSign = if (azimuthSameDirection) 1 else -1
 
         // Altitude.
         val originalAltitudeDirection = doubleArrayOf(destinationPixel[0] - originalAzimuthPixel[0], destinationPixel[1] - originalAzimuthPixel[1])
         val correctedAltitudeDirection = doubleArrayOf(destinationPixel[0] - correctedAzimuthPixel[0], destinationPixel[1] - correctedAzimuthPixel[1])
         // When dot product is positive, the angle between both vectors is smaller than 90°.
-        val altitudeSameDirection =
-            (originalAltitudeDirection[0] * correctedAltitudeDirection[0] + originalAltitudeDirection[1] * correctedAltitudeDirection[1]) > 0
+        val altitudeSameDirection = (originalAltitudeDirection[0] * correctedAltitudeDirection[0] + originalAltitudeDirection[1] * correctedAltitudeDirection[1]) > 0
         val altSign = if (altitudeSameDirection) 1 else -1
 
         // Error determination.
@@ -141,14 +139,14 @@ internal data class PolarErrorDetermination(
         return doubleArrayOf(currentAzimuthError, currentAltitudeError)
     }
 
-    fun destinationCoordinates(azimuth: Angle, altitude: Angle, time: InstantOfTime = UTC.now(), compensateRefraction: Boolean = false): DoubleArray {
+    fun destinationCoordinates(azimuth: Angle, altitude: Angle, time: InstantOfTime = UTC.now()): DoubleArray {
         val (_, _, _, rightAscension, declination) = initialReferenceFrame
-        val position = Position(rightAscension, declination, longitude, latitude, time, compensateRefraction)
+        val position = Position(rightAscension, declination, longitude, latitude, time)
         // First rotate by azimuth, then from the point at azimuth rotate further by altitude to get to the final position
         val azDest = Vector3D.rotateByRodrigues(position.vector, Vector3D.Z, azimuth)
         val rotatedAltAxis = Vector3D.rotateByRodrigues(Vector3D.Y, Vector3D.Z, azimuth)
         val finalDest = Vector3D.rotateByRodrigues(azDest, rotatedAltAxis, altitude)  // Combination of first az then applied alt.
-        return Position(finalDest, longitude, latitude).topocentric.transform(time, compensateRefraction)
+        return Position(finalDest, longitude, latitude).topocentric.transform(time)
     }
 
     companion object {

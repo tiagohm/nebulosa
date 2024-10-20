@@ -52,7 +52,6 @@ data class ThreePointPolarAlignment(
     fun align(
         path: Path,
         rightAscension: Angle, declination: Angle, radius: Angle = DEFAULT_RADIUS,
-        compensateRefraction: Boolean = false,
     ): ThreePointPolarAlignmentResult {
         val solution = try {
             solver.solve(path, null, rightAscension, declination, radius)
@@ -69,14 +68,13 @@ data class ThreePointPolarAlignment(
 
             when (state) {
                 State.CONTINUOUS_SOLVE -> {
-                    val (azimuth, altitude) = polarErrorDetermination
-                        .update(time, initialAzimuthError, initialAltitudeError, solution, compensateRefraction)
+                    val (azimuth, altitude) = polarErrorDetermination.update(time, initialAzimuthError, initialAltitudeError, solution)
                     currentAzimuthError = azimuth
                     currentAltitudeError = altitude
                     return Measured(solution.rightAscension, solution.declination, azimuth, altitude)
                 }
                 State.THIRD_POSITION -> {
-                    val position = solution.position(time, compensateRefraction)
+                    val position = solution.position(time)
                     polarErrorDetermination = PolarErrorDetermination(solution, firstPosition, secondPosition, position, longitude, latitude)
                     val (azimuth, altitude) = polarErrorDetermination.compute()
                     state = State.CONTINUOUS_SOLVE
@@ -85,11 +83,11 @@ data class ThreePointPolarAlignment(
                     return Measured(solution.rightAscension, solution.declination, azimuth, altitude)
                 }
                 State.SECOND_POSITION -> {
-                    secondPosition = solution.position(time, compensateRefraction)
+                    secondPosition = solution.position(time)
                     state = State.THIRD_POSITION
                 }
                 State.FIRST_POSITION -> {
-                    firstPosition = solution.position(time, compensateRefraction)
+                    firstPosition = solution.position(time)
                     state = State.SECOND_POSITION
                 }
             }
@@ -102,8 +100,8 @@ data class ThreePointPolarAlignment(
         state = State.FIRST_POSITION
     }
 
-    private fun PlateSolution.position(time: UTC, compensateRefraction: Boolean): Position {
-        return Position(rightAscension, declination, longitude, latitude, time, compensateRefraction)
+    private fun PlateSolution.position(time: UTC): Position {
+        return Position(rightAscension, declination, longitude, latitude, time)
     }
 
     companion object {

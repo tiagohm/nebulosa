@@ -8,17 +8,10 @@ data class TPPATask(
     @JvmField val alignment: ThreePointPolarAlignment,
 ) : Task {
 
-    private val mount = job.mount
-    private val request = job.request
-
     override fun run() {
+        val mount = job.mount
         val radius = ATTEMPT_RADIUS * (job.noSolutionAttempts + 1)
-
-        val result = alignment.align(
-            job.savedPath!!, mount.rightAscension, mount.declination, radius,
-            request.compensateRefraction // TODO: CANCELLATION TOKEN?
-        )
-
+        val result = alignment.align(job.savedPath!!, mount.rightAscension, mount.declination, radius)
         job.accept(result)
     }
 

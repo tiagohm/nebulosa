@@ -34,7 +34,6 @@ export interface TPPAStart {
 	capture: CameraStartCapture
 	plateSolver: PlateSolverRequest
 	startFromCurrentPosition: boolean
-	compensateRefraction: boolean
 	stopTrackingWhenDone: boolean
 	stepDirection: GuideDirection
 	stepDuration: number
@@ -78,7 +77,6 @@ export const DEFAULT_TPPA_START: TPPAStart = {
 	plateSolver: DEFAULT_PLATE_SOLVER_REQUEST,
 	startFromCurrentPosition: true,
 	stepDirection: 'EAST',
-	compensateRefraction: true,
 	stopTrackingWhenDone: true,
 	stepDuration: 5,
 }
@@ -128,7 +126,6 @@ export function tppaStartWithDefault(request?: Partial<TPPAStart>, source: TPPAS
 	request.plateSolver = plateSolverRequestWithDefault(request.plateSolver, source.plateSolver)
 	request.startFromCurrentPosition ??= source.startFromCurrentPosition
 	request.stepDirection ||= source.stepDirection
-	request.compensateRefraction ??= source.compensateRefraction
 	request.stopTrackingWhenDone ??= source.stopTrackingWhenDone
 	request.stepDuration ??= source.stepDuration
 	return request as TPPAStart
