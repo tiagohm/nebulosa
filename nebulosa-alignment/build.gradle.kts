@@ -8,6 +8,7 @@ dependencies {
     api(project(":nebulosa-time"))
     api(project(":nebulosa-platesolver"))
     implementation(project(":nebulosa-log"))
+    testImplementation(project(":nebulosa-nova"))
     testImplementation(project(":nebulosa-test"))
 }
 

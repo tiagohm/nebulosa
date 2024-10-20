@@ -1,17 +1,19 @@
 import io.kotest.matchers.doubles.plusOrMinus
-import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import nebulosa.alignment.polar.point.three.PolarErrorDetermination
 import nebulosa.alignment.polar.point.three.PolarErrorDetermination.Companion.stenographicProjection
 import nebulosa.alignment.polar.point.three.Position
-import nebulosa.math.arcsec
-import nebulosa.math.deg
-import nebulosa.math.hours
-import nebulosa.math.toArcsec
+import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment
+import nebulosa.erfa.SphericalCoordinate
+import nebulosa.math.*
+import nebulosa.nova.position.Geoid
+import nebulosa.nova.position.ICRF
 import nebulosa.platesolver.PlateSolution
 import nebulosa.time.TimeYMDHMS
 import nebulosa.time.UTC
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import kotlin.random.Random
 
 class ThreePointPolarAlignmentTest {
 
@@ -20,8 +22,8 @@ class ThreePointPolarAlignmentTest {
         val a = Position("04:14:08".hours, "-05 26 10".deg, LNG, SLAT, UTC(TimeYMDHMS(2024, 2, 10, 22, 59, 13.3739)))
         val b = Position(a.vector, LNG, SLAT)
 
-        a.topocentric.azimuth shouldBeExactly b.topocentric.azimuth
-        a.topocentric.altitude shouldBeExactly b.topocentric.altitude
+        a.topocentric.azimuth shouldBe (b.topocentric.azimuth plusOrMinus 1e-14)
+        a.topocentric.altitude shouldBe (b.topocentric.altitude plusOrMinus 1e-14)
     }
 
     @Test
@@ -34,65 +36,197 @@ class ThreePointPolarAlignmentTest {
 
     @Test
     fun destinationCoordinates() {
-        val position1 = Position("05 35 18".hours, "-05 23 26".deg, LNG, SLAT, UTC(TimeYMDHMS(2024, 2, 10, 22, 58, 42.4979)))
-        val position2 = Position("04 54 45".hours, "-05 24 50".deg, LNG, SLAT, UTC(TimeYMDHMS(2024, 2, 10, 22, 58, 58.1655)))
-        val position3 = Position("04 14 08".hours, "-05 26 10".deg, LNG, SLAT, UTC(TimeYMDHMS(2024, 2, 10, 22, 59, 13.3739)))
+        val now = UTC(TimeYMDHMS(2024, 2, 10, 22, 58, 42.4979))
+        val position1 = Position("05 35 18".hours, "-05 23 26".deg, LNG, SLAT, now)
+        val position2 = Position("04 54 45".hours, "-05 24 50".deg, LNG, SLAT, now)
+        val position3 = Position("04 14 08".hours, "-05 26 10".deg, LNG, SLAT, now)
         val initialFrame = PlateSolution(true, 0.0, 1.0.arcsec, "04 14 08".hours, "-05 26 10".deg, 1280.0, 1024.0)
         val pe = PolarErrorDetermination(initialFrame, position1, position2, position3, LNG, SLAT)
 
-        with(pe.destinationCoordinates(0.0, 0.0)) {
-            this[0] shouldBe ("04 14 08".hours plusOrMinus 1e-8)
-            this[1] shouldBe ("-05 26 10".deg plusOrMinus 1e-8)
+        with(pe.destinationCoordinates(0.0, 0.0, now)) {
+            this[0] shouldBe ("04 14 08".hours plusOrMinus 1e-11)
+            this[1] shouldBe ("-05 26 10".deg plusOrMinus 1e-11)
         }
     }
 
     @Test
     fun perfectlyAligned() {
-        val now = UTC(TimeYMDHMS(2024, 10, 20, 0, 34, 47.15))
-        val position1 = Position("23 24 57.1".hours, "-022 38 11.6".deg, LNG, SLAT, now)
-        val position2 = Position("22 24 53.6".hours, "-022 37 35.5".deg, LNG, SLAT, now)
-        val position3 = Position("21 24 50.6".hours, "-022 36 31.5".deg, LNG, SLAT, now)
-
-        val initialFrame = PlateSolution(true, 0.0, 1.0.arcsec, "21 24 50.6".hours, "-022 36 31.5".deg, 1280.0, 1024.0)
-        val pe = PolarErrorDetermination(initialFrame, position1, position2, position3, LNG, SLAT)
-        val (az, alt) = pe.compute()
-
-        az.toArcsec shouldBe (0.0 plusOrMinus 10.0)
-        alt.toArcsec shouldBe (0.0 plusOrMinus 65.0)
+        with(computePAE(LNG, SLAT, 0.arcmin, 0.arcmin).first) {
+            this[0].toArcsec shouldBe (0.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (0.0 plusOrMinus 30.0) // refraction error
+        }
     }
 
     @Test
     fun badSouthernPolarAligned() {
-        val now = UTC(TimeYMDHMS(2024, 10, 20, 0, 49, 0.0))
-        val position1 = Position("23 24 55.4".hours, "-022°52'13.7".deg, LNG, SLAT, now)
-        val position2 = Position("22 24 46.7".hours, "-022°47'14.9".deg, LNG, SLAT, now)
-        val position3 = Position("21 24 40.5".hours, "-022°41'05.4".deg, LNG, SLAT, now)
-        val initialFrame = PlateSolution(true, 0.0, 1.0.arcsec, "21 24 40.5".hours, "-022°41'05.4".deg, 1280.0, 1024.0)
-        val pe = PolarErrorDetermination(initialFrame, position1, position2, position3, LNG, SLAT)
-        val (az, alt) = pe.compute()
+        with(computePAE(LNG, SLAT, 8.arcmin, 8.arcmin).first) {
+            this[0].toArcsec shouldBe (480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (480.0 plusOrMinus 30.0)
+        }
 
-        az.toArcsec shouldBe (900.0 plusOrMinus 10.0)
-        alt.toArcsec shouldBe (900.0 plusOrMinus 60.0)
+        with(computePAE(LNG, SLAT, (-8).arcmin, 8.arcmin).first) {
+            this[0].toArcsec shouldBe (-480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (480.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, SLAT, (-8).arcmin, (-8).arcmin).first) {
+            this[0].toArcsec shouldBe (-480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (-480.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, SLAT, 8.arcmin, (-8).arcmin).first) {
+            this[0].toArcsec shouldBe (480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (-480.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, SLAT, 8.arcmin, 0.arcmin).first) {
+            this[0].toArcsec shouldBe (480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (0.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, SLAT, (-8).arcmin, 0.arcmin).first) {
+            this[0].toArcsec shouldBe (-480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (0.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, SLAT, 0.arcmin, (-8).arcmin).first) {
+            this[0].toArcsec shouldBe (0.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (-480.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, SLAT, 0.arcmin, (-8).arcmin).first) {
+            this[0].toArcsec shouldBe (0.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (-480.0 plusOrMinus 30.0)
+        }
     }
 
     @Test
     fun badNorthernPolarAligned() {
-        val now = UTC(TimeYMDHMS(2024, 10, 20, 0, 53, 0.0))
-        val position1 = Position("23 24 09.0".hours, "-022 51 56.0".deg, LNG, NLAT, now)
-        val position2 = Position("22 24 00.5".hours, "-022 46 54.1".deg, LNG, NLAT, now)
-        val position3 = Position("21 23 54.4".hours, "-022 40 42.4".deg, LNG, NLAT, now)
-        val initialFrame = PlateSolution(true, 0.0, 1.0.arcsec, "21 23 54.4".hours, "-022 40 42.4".deg, 1280.0, 1024.0)
-        val pe = PolarErrorDetermination(initialFrame, position1, position2, position3, LNG, NLAT)
-        val (az, alt) = pe.compute()
+        with(computePAE(LNG, NLAT, 8.arcmin, 8.arcmin).first) {
+            this[0].toArcsec shouldBe (480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (480.0 plusOrMinus 30.0)
+        }
 
-        az.toArcsec shouldBe (900.0 plusOrMinus 25.0)
-        alt.toArcsec shouldBe (900.0 plusOrMinus 90.0)
+        with(computePAE(LNG, NLAT, (-8).arcmin, 8.arcmin).first) {
+            this[0].toArcsec shouldBe (-480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (480.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, NLAT, (-8).arcmin, (-8).arcmin).first) {
+            this[0].toArcsec shouldBe (-480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (-480.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, NLAT, 8.arcmin, (-8).arcmin).first) {
+            this[0].toArcsec shouldBe (480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (-480.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, NLAT, 8.arcmin, 0.arcmin).first) {
+            this[0].toArcsec shouldBe (480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (0.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, NLAT, (-8).arcmin, 0.arcmin).first) {
+            this[0].toArcsec shouldBe (-480.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (0.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, NLAT, 0.arcmin, (-8).arcmin).first) {
+            this[0].toArcsec shouldBe (0.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (-480.0 plusOrMinus 30.0)
+        }
+
+        with(computePAE(LNG, NLAT, 0.arcmin, (-8).arcmin).first) {
+            this[0].toArcsec shouldBe (0.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (-480.0 plusOrMinus 30.0)
+        }
+    }
+
+    @Test
+    fun tooBadPolarAlignment() {
+        with(computePAE(LNG, SLAT, 1.0.deg, 1.0.deg).first) {
+            this[0].toArcsec shouldBe (3600.0 plusOrMinus 30.0)
+            this[1].toArcsec shouldBe (3600.0 plusOrMinus 90.0)
+        }
+    }
+
+    @Test
+    @Disabled
+    fun updateWithoutSeeing() {
+        val (pae, ped) = computePAE(LNG, NLAT, 0.arcmin, (-8).arcmin)
+
+        with(pae) {
+            this[0].toArcsec shouldBe (0.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (-480.0 plusOrMinus 30.0)
+        }
+
+        val rightAscension = ped.currentReferenceFrame.rightAscension
+        val declination = ped.currentReferenceFrame.declination
+        val referenceFrame = PlateSolution(true, 0.0, 1.0.arcsec, rightAscension, declination, 1280.0, 1024.0)
+
+        repeat(500) {
+            with(ped.update(PAE_TIME, pae[0], pae[1], referenceFrame)) {
+                this[0].toArcsec shouldBe (0.0 plusOrMinus 6.0)
+                this[1].toArcsec shouldBe (-480.0 plusOrMinus 30.0)
+            }
+        }
+    }
+
+    @Test
+    @Disabled
+    fun updateWithSeeing() {
+        val (pae, ped) = computePAE(LNG, NLAT, 0.arcmin, (-8).arcmin)
+
+        with(pae) {
+            this[0].toArcsec shouldBe (0.0 plusOrMinus 6.0)
+            this[1].toArcsec shouldBe (-480.0 plusOrMinus 30.0)
+        }
+
+        val currentReferenceFrame = ped.currentReferenceFrame
+        val (initialAzimuthError, initialAltitudeError) = pae
+
+        repeat(500) {
+            val seeing = Random.nextDouble(-1.0, 1.0).arcsec
+            val rightAscension = currentReferenceFrame.rightAscension + seeing
+            val declination = currentReferenceFrame.declination + seeing
+            val referenceFrame = PlateSolution(true, 0.0, 1.0.arcsec, rightAscension, declination, 1280.0, 1024.0)
+
+            with(ped.update(PAE_TIME, initialAzimuthError, initialAltitudeError, referenceFrame)) {
+                this[0].toArcsec shouldBe (0.0 plusOrMinus 65.0)
+                this[1].toArcsec shouldBe (-480.0 plusOrMinus 65.0)
+            }
+        }
     }
 
     companion object {
 
-        @JvmStatic private val SLAT = "-022 30 00".deg
-        @JvmStatic private val NLAT = "+022 30 00".deg
-        @JvmStatic private val LNG = "-045 30 00".deg
+        private val SLAT = (-22.0).deg
+        private val NLAT = 22.0.deg
+        private val LNG = (-45.5).deg
+
+        private val PAE_TIME = UTC(TimeYMDHMS(2024, 10, 20, 12, 0, 0.0))
+
+        private fun computePAE(longitude: Angle, latitude: Angle, azimuthError: Angle, altitudeError: Angle): Pair<DoubleArray, PolarErrorDetermination> {
+            val location = Geoid.IERS2010.lonLat(longitude, latitude)
+            val rightAscension = location.lstAt(PAE_TIME) // zenith
+            val declination = latitude
+
+            fun computePosition(raOffset: Angle): Pair<Position, SphericalCoordinate> {
+                val (dRA, dDEC) = ThreePointPolarAlignment.computePAE(-raOffset, declination, latitude, azimuthError, altitudeError)
+                val solver = ICRF.equatorial(rightAscension + raOffset + dRA, declination + dDEC, time = PAE_TIME, epoch = PAE_TIME, center = location).equatorial()
+                val position = Position(solver.longitude, solver.latitude, longitude, latitude, PAE_TIME)
+                return position to solver
+            }
+
+            val (position1) = computePosition((-1.0).hours)
+            val (position2) = computePosition(0.0.hours)
+            val (position3, solver3) = computePosition(1.0.hours)
+
+            val initialFrame = PlateSolution(true, 0.0, 1.0.arcsec, solver3.longitude, solver3.latitude, 1280.0, 1024.0)
+            val pe = PolarErrorDetermination(initialFrame, position1, position2, position3, longitude, latitude)
+
+            return pe.compute() to pe
+        }
     }
 }

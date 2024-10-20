@@ -9,6 +9,9 @@ import nebulosa.platesolver.PlateSolverException
 import nebulosa.time.UTC
 import nebulosa.util.Resettable
 import java.nio.file.Path
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.tan
 
 /**
  * Three Point Polar Alignment almost anywhere in the sky.
@@ -107,5 +110,37 @@ data class ThreePointPolarAlignment(
     companion object {
 
         const val DEFAULT_RADIUS: Angle = 5 * DEG2RAD
+
+        /**
+         * Returns the RA/DEC polar alignment error in radians, given
+         * the [hourAngle] and [declination] of current target,
+         * the [latitude] of current observation site and
+         * the [azimuthError], [altitudeError] alignment errors.
+         */
+        fun computePAE(
+            hourAngle: Angle, declination: Angle, latitude: Angle,
+            azimuthError: Angle, altitudeError: Angle
+        ): DoubleArray {
+            // Source: https://sourceforge.net/p/sky-simulator/code/ci/default/tree/sky_annotation.pas
+            // Polar error calculation based on two celestial reference points and the error of the telescope mount at these point(s).
+            // Based on formulas from Ralph Pass documented at https://rppass.com/align.pdf.
+            // They are based on the book “Telescope Control’ by Trueblood and Genet, p.111
+            // Ralph added sin(latitude) term in the equation for the error in RA.
+
+            // For one reference image the difference in RA and DEC caused by the misalignment of the polar axis, formula (3):
+            //    delta_ra:= de * TAN(dec)*SIN(h)  + da * (sin(lat)- COS(lat)*(TAN(dec1)*COS(h_1))
+            //    delta_dec:=de * COS(h)  + da * COS(lat)*SIN(h))}
+            //    raJnow0:=raJnow0-dRa;
+            //    decJnow0:=decJnow0+dDec;
+
+            val cosHA = cos(hourAngle)
+            val sinHA = sin(hourAngle)
+            val tanDEC = tan(declination)
+            val cosLat = cos(latitude)
+            val sinLat = sin(latitude)
+            val dRA = altitudeError * tanDEC * sinHA + azimuthError * (sinLat - cosLat * tanDEC * cosHA)
+            val dDEC = -altitudeError * cosHA + azimuthError * cosLat * sinHA
+            return doubleArrayOf(dRA, dDEC)
+        }
     }
 }
