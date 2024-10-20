@@ -100,10 +100,17 @@ class ErfaTest {
 
     @Test
     fun eraP2s() {
-        val (theta, phi, r) = eraP2s(100.0.au, (-50.0).au, 25.0.au)
-        theta shouldBe (-0.4636476090008061162 plusOrMinus 1e-12)
-        phi shouldBe (0.2199879773954594463 plusOrMinus 1e-12)
-        r shouldBe (114.5643923738960002 plusOrMinus 1e-9)
+        with(eraP2s(100.0.au, (-50.0).au, 25.0.au)) {
+            theta shouldBe (-0.4636476090008061162 plusOrMinus 1e-12)
+            phi shouldBe (0.2199879773954594463 plusOrMinus 1e-12)
+            distance shouldBe (114.5643923738960002 plusOrMinus 1e-9)
+        }
+
+        with(eraP2s(0.83016799, -0.46250588, -0.31130278)) {
+            theta shouldBe (5.774889651418495 - TAU plusOrMinus 1e-8)
+            phi shouldBe (-0.31656362869021987 plusOrMinus 1e-8)
+            distance shouldBe (1.0 plusOrMinus 1e-8)
+        }
     }
 
     @Test
