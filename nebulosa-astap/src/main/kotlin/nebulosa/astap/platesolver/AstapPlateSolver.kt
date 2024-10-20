@@ -1,10 +1,11 @@
 package nebulosa.astap.platesolver
 
+import nebulosa.commandline.CommandLine
 import nebulosa.fits.FitsHeader
 import nebulosa.fits.FitsKeyword
 import nebulosa.image.Image
-import nebulosa.log.de
 import nebulosa.log.di
+import nebulosa.log.e
 import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
@@ -14,16 +15,12 @@ import nebulosa.math.toHours
 import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
 import nebulosa.platesolver.PlateSolverException
-import org.apache.commons.exec.CommandLine
-import org.apache.commons.exec.DefaultExecutor
-import org.apache.commons.exec.ExecuteException
-import org.apache.commons.exec.ExecuteWatchdog
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.Duration
 import java.util.*
-import kotlin.io.path.deleteRecursively
+import java.util.concurrent.TimeUnit
+import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.math.ceil
@@ -40,45 +37,44 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
     ): PlateSolution {
         requireNotNull(path) { "path is required" }
 
-        val basePath = Files.createTempDirectory("astap")
-        val baseName = UUID.randomUUID().toString()
-        val outFile = Paths.get("$basePath", baseName)
+        val outFile = Files.createTempFile("astap-", ".ini")
 
-        val commandline = CommandLine.parse("$executablePath")
-            .addArgument("-o").addArgument("$outFile")
-            .addArgument("-z").addArgument("$downsampleFactor")
-            .addArgument("-fov").addArgument("0") // auto
+        val commands = mutableListOf(
+            "$executablePath",
+            "-o", "$outFile",
+            "-z", "$downsampleFactor",
+            "-fov", "0", // auto
+        )
 
         if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
-            commandline.addArgument("-ra").addArgument("${centerRA.toHours}")
-            commandline.addArgument("-spd").addArgument("${centerDEC.toDegrees + 90.0}")
-            commandline.addArgument("-r").addArgument("${ceil(radius.toDegrees)}")
+            commands.add("-ra")
+            commands.add("${centerRA.toHours}")
+            commands.add("-spd")
+            commands.add("${centerDEC.toDegrees + 90.0}")
+            commands.add("-r")
+            commands.add("${ceil(radius.toDegrees)}")
         } else {
-            commandline.addArgument("-r").addArgument("180.0")
+            commands.add("-r")
+            commands.add("180.0")
         }
 
-        commandline.addArgument("-f").addArgument("$path")
+        commands.add("-f")
+        commands.add("$path")
 
-        LOG.di("astap solving. command={}", commandline)
-
-        val executor = DefaultExecutor.builder()
-            .setWorkingDirectory(path.parent.toFile())
-            .get()
+        val commandLine = CommandLine(commands, path.parent)
 
         try {
-            executor.watchdog = ExecuteWatchdog.builder()
-                .setTimeout(timeout.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5))
-                .get()
+            val result = commandLine.execute(timeout = if (timeout.toSeconds() > 0) timeout.toSeconds() else 5 * 60L, unit = TimeUnit.SECONDS)
 
-            try {
-                LOG.di("astap exited. code={}", executor.execute(commandline))
-            } catch (e: ExecuteException) {
-                LOG.de("astap failed. code={}", e.exitValue)
-                throw PlateSolverException(e.exitValue.messageFromExitCode())
+            if (result.isSuccess) {
+                LOG.di("astap exited. code={}", result.exitCode)
+            } else {
+                LOG.e("astap failed. code={}", result.exitCode, result.exception)
+                throw PlateSolverException(result.exitCode.messageFromExitCode())
             }
 
             val ini = Properties()
-            Paths.get("$basePath", "$baseName.ini").takeIf { it.exists() }?.inputStream()?.use(ini::load)
+            outFile.takeIf { it.exists() }?.inputStream()?.use(ini::load)
 
             val solved = ini.getProperty("PLTSOLVD").trim() == "T"
 
@@ -133,7 +129,7 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
                 throw PlateSolverException(message)
             }
         } finally {
-            basePath.deleteRecursively()
+            outFile.deleteIfExists()
         }
     }
 

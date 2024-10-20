@@ -1,16 +1,15 @@
 package nebulosa.astrometrynet.platesolver
 
+import nebulosa.commandline.CommandLine
+import nebulosa.commandline.CommandLineHandler
 import nebulosa.commandline.CommandLineListener
-import nebulosa.commandline.CommandLineListenerHandler
 import nebulosa.image.Image
 import nebulosa.log.di
+import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.platesolver.PlateSolution
 import nebulosa.platesolver.PlateSolver
-import org.apache.commons.exec.CommandLine
-import org.apache.commons.exec.DefaultExecutor
-import org.apache.commons.exec.ExecuteWatchdog
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -32,43 +31,47 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
 
         val outFolder = Files.createTempDirectory("localplatesolver")
 
-        val commandLine = CommandLine.parse("$executablePath")
-            .addArgument("--out").addArgument(UUID.randomUUID().toString())
-            .addArgument("--overwrite")
-            .addArgument("--dir").addArgument("$outFolder")
-            .addArgument("--cpulimit").addArgument(timeout.takeIf { it.toSeconds() > 0 }?.toSeconds()?.toString() ?: "300")
-            .addArgument("--scale-units").addArgument("degwidth")
-            .addArgument("--guess-scale")
-            .addArgument("--crpix-center")
-            .addArgument("--downsample").addArgument("$downsampleFactor")
-            .addArgument("--no-verify")
-            .addArgument("--no-plots")
-        // .addArgument("--resort")
+        val commands = mutableListOf(
+            "$executablePath",
+            "--out", UUID.randomUUID().toString(),
+            "--overwrite",
+            "--dir", "$outFolder",
+            "--cpulimit", timeout.takeIf { it.toSeconds() > 0 }?.toSeconds()?.toString() ?: "300",
+            "--scale-units", "degwidth",
+            "--guess-scale",
+            "--crpix-center",
+            "--downsample", "$downsampleFactor",
+            "--no-verify",
+            "--no-plots",
+            // "--resort"
+        )
 
         if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
-            commandLine.addArgument("--ra").addArgument("${centerRA.toDegrees}")
-                .addArgument("--dec").addArgument("${centerDEC.toDegrees}")
-                .addArgument("--radius").addArgument("${radius.toDegrees}")
+            commands.add("--ra")
+            commands.add("${centerRA.toDegrees}")
+            commands.add("--dec")
+            commands.add("${centerDEC.toDegrees}")
+            commands.add("--radius")
+            commands.add("${radius.toDegrees}")
         }
 
+        commands.add("$path")
+
         val solution = PlateSolutionLineReader()
-        val handler = CommandLineListenerHandler()
-
-        val executor = DefaultExecutor.builder()
-            .setWorkingDirectory(path.parent.toFile())
-            .setExecuteStreamHandler(handler)
-            .get()
-
-        executor.watchdog = ExecuteWatchdog.builder()
-            .setTimeout(timeout.takeIf { it.toSeconds() > 0 } ?: Duration.ofMinutes(5))
-            .get()
-
-        commandLine.addArgument("$path")
+        val commandLine = CommandLine(commands, path.parent)
 
         return try {
+            val handler = CommandLineHandler()
             handler.registerCommandLineListener(solution)
-            LOG.di("astrometry.net exited. code={}", executor.execute(commandLine, handler))
-            solution.get()
+            val result = commandLine.execute(handler)
+
+            if (result.isSuccess) {
+                LOG.di("astrometry.net exited. code={}", result.exitCode)
+                solution.get()
+            } else {
+                LOG.e("astrometry.net failed. code={}", result.exitCode, result.exception)
+                PlateSolution.NO_SOLUTION
+            }
         } finally {
             outFolder.deleteRecursively()
         }

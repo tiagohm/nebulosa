@@ -35,7 +35,7 @@ data class SirilLiveStacker(
 
     @Synchronized
     override fun start() {
-        if (!commandLine.isRunning) {
+        if (!isRunning) {
             commandLine.registerCommandLineListener(this)
             commandLine.run()
 
@@ -53,7 +53,7 @@ data class SirilLiveStacker(
 
     @Synchronized
     override fun add(path: Path, referencePath: Path?): Path? {
-        if (commandLine.isRunning && commandLine.execute(LiveStack(path))) {
+        if (isRunning && commandLine.execute(LiveStack(path))) {
             stackedPath = Path.of("$workingDirectory", "live_stack_00001.fit")
         }
 

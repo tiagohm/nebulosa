@@ -2,15 +2,12 @@ package nebulosa.astap.stardetector
 
 import de.siegmar.fastcsv.reader.CommentStrategy
 import de.siegmar.fastcsv.reader.CsvReader
-import nebulosa.log.d
-import nebulosa.log.de
+import nebulosa.commandline.CommandLine
+import nebulosa.log.di
 import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.stardetector.StarDetector
 import nebulosa.stardetector.StarPoint
-import org.apache.commons.exec.CommandLine
-import org.apache.commons.exec.DefaultExecutor
-import org.apache.commons.exec.ExecuteException
 import java.io.InputStreamReader
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
@@ -32,22 +29,20 @@ data class AstapStarDetector(
     ) : StarPoint
 
     override fun detect(input: Path): List<StarPoint> {
-        val commandline = CommandLine.parse("$executablePath")
-            .addArgument("-f").addArgument("$input")
-            .addArgument("-z").addArgument("0")
-            .addArgument("-extract").addArgument("$minSNR")
+        val commands = mutableListOf(
+            "$executablePath",
+            "-f", "$input",
+            "-z", "0",
+            "-extract", "$minSNR"
+        )
 
-        try {
-            val executor = DefaultExecutor.builder()
-                .setWorkingDirectory(input.parent.toFile())
-                .get()
+        val commandline = CommandLine(commands, input.parent)
+        val result = commandline.execute()
 
-            LOG.d("astap exited. code={}", executor.execute(commandline))
-        } catch (e: ExecuteException) {
-            LOG.de("astap failed. code={}", e.exitValue)
-            return emptyList()
-        } catch (e: Throwable) {
-            LOG.e("astap failed", e)
+        if (result.isSuccess) {
+            LOG.di("astap exited. code={}", result.exitCode)
+        } else {
+            LOG.e("astap failed. code={}", result.exitCode)
             return emptyList()
         }
 

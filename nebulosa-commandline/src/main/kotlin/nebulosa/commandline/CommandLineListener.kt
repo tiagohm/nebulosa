@@ -2,7 +2,7 @@ package nebulosa.commandline
 
 interface CommandLineListener {
 
-    fun onStarted() = Unit
+    fun onStarted(pid: Long) = Unit
 
     fun onLineRead(line: String) = Unit
 
