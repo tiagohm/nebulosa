@@ -42,7 +42,7 @@ data class AngleFormatter(
         val s1 = if (separators.size > 1) separators[1] else if (!hasSeconds && s0.trim() == ":") "" else s0
         val k = if (secondsDecimalPlaces == 0) 1 else 0
         val d = if (c >= 59.0) BigDecimal.valueOf(c).setScale(secondsDecimalPlaces, RoundingMode.DOWN).toDouble() else c
-        val seconds = if (hasSeconds) secondsFormat.ifBlank { "%0${secondsDecimalPlaces + 3 - k}.${secondsDecimalPlaces}f" }.format(locale, d)
+        val seconds = if (hasSeconds) secondsFormat.ifBlank { "%0${secondsDecimalPlaces + 3 - k}.${secondsDecimalPlaces}f" }.format(locale, abs(d))
         else ""
         val s2 = if (separators.size > 2) separators[2] else ""
         val format0 = if (isHours) hoursFormat else degreesFormat
