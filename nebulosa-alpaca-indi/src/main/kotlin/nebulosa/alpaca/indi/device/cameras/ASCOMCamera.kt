@@ -17,6 +17,7 @@ import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
 import nebulosa.indi.device.guider.GuideOutputPulsingChanged
 import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
 import nebulosa.log.d
@@ -26,6 +27,7 @@ import nebulosa.log.loggerFor
 import nebulosa.math.AngleFormatter
 import nebulosa.math.format
 import nebulosa.math.normalized
+import nebulosa.math.toDegrees
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.time.CurrentTime
@@ -678,6 +680,9 @@ data class ASCOMCamera(
                 header.add(FitsKeyword.OBJCTDEC, raDec.latitude.format(DEC_FORMAT))
                 header.add(FitsKeyword.RA, raDec.longitude.normalized.format(RA_FORMAT))
                 header.add(FitsKeyword.DEC, raDec.latitude.format(DEC_FORMAT))
+                val altAz = icrf.horizontal()
+                header.add(FitsKeyword.OBJCTAZ, altAz.longitude.toDegrees)
+                header.add(FitsKeyword.OBJCTALT, altAz.latitude.toDegrees)
                 // header.add(FitsKeyword.PIERSIDE, it.pierSide.name)
                 header.add(FitsKeyword.EQUINOX, 2000)
             }
@@ -692,6 +697,12 @@ data class ASCOMCamera(
 
             wheel?.also {
                 header.add(FitsKeyword.FILTER, it.names.getOrNull(it.position) ?: "Filter #${it.position}")
+            }
+
+            val rotator = snoopedDevices.firstOrNull { it is Rotator } as? Rotator
+
+            rotator?.also {
+                header.add(FitsKeyword.ROTATANG, rotator.angle.toDegrees)
             }
 
             fitsKeywords.forEach(header::add)
