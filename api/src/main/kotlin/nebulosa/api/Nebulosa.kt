@@ -22,6 +22,7 @@ import nebulosa.log.loggerFor
 import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
 import java.net.ConnectException
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
 
 @Command(name = "nebulosa")
@@ -80,6 +81,7 @@ class Nebulosa : Runnable, AutoCloseable {
         val message = when (ex) {
             is ConnectException -> "connection refused"
             is NumberFormatException -> "invalid number: ${ex.message}"
+            is ExecutionException -> ex.cause!!.message!!
             else -> ex.message!!
         }
 

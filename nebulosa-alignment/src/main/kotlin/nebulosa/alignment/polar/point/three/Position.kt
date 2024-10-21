@@ -11,6 +11,8 @@ import nebulosa.time.InstantOfTime
 import kotlin.math.cos
 import kotlin.math.sin
 
+// https://bitbucket.org/Isbeorn/nina.plugin.polaralignment/src/master/PolarAlignment/TPAPAVM.cs
+
 internal data class Position(
     @JvmField val topocentric: Topocentric,
     @JvmField val vector: Vector3D,
@@ -22,15 +24,11 @@ internal data class Position(
             rightAscension: Angle, declination: Angle,
             longitude: Angle, latitude: Angle,
             time: InstantOfTime,
-            compensateRefraction: Boolean = false,
         ): Position {
             // SOFA.CelestialToTopocentric.
             val dut1 = IERS.delta(time)
             val (xp, yp) = IERS.pmAngles(time)
-            val pressure = if (compensateRefraction) ONE_ATM else 0.0
-            // @formatter:off
-            val (b) = eraAtco13(rightAscension, declination, 0.0, 0.0, 0.0, 0.0, time.utc.whole, time.utc.fraction, dut1, longitude, latitude, 0.0, xp, yp, pressure, 15.0, 0.5, 0.55)
-            // @formatter:on
+            val (b) = eraAtco13(rightAscension, declination, 0.0, 0.0, 0.0, 0.0, time.utc.whole, time.utc.fraction, dut1, longitude, latitude, 0.0, xp, yp, ONE_ATM, 15.0, 0.5, 0.55)
             val topocentric = Topocentric(b[0], PIOVERTWO - b[1], longitude, latitude)
             // val vector = CartesianCoordinate.of(-b[0], b[1], 1.0)
             val theta = -topocentric.azimuth

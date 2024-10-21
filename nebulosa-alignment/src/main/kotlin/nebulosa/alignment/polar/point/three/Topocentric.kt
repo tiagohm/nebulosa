@@ -13,12 +13,11 @@ data class Topocentric(
     @JvmField val longitude: Angle, @JvmField val latitude: Angle,
 ) {
 
-    fun transform(time: InstantOfTime = UTC.now(), compensateRefraction: Boolean = false): DoubleArray {
+    fun transform(time: InstantOfTime = UTC.now()): DoubleArray {
         val dut1 = IERS.delta(time)
         val (xp, yp) = IERS.pmAngles(time)
-        val pressure = if (compensateRefraction) ONE_ATM else 0.0
         val zd = PIOVERTWO - altitude // zenith distance
 
-        return eraAtoc13('A', azimuth, zd, time.utc.whole, time.utc.fraction, dut1, longitude, latitude, 0.0, xp, yp, pressure, 15.0, 0.5, 0.55)
+        return eraAtoc13('A', azimuth, zd, time.utc.whole, time.utc.fraction, dut1, longitude, latitude, 0.0, xp, yp, ONE_ATM, 15.0, 0.5, 0.55)
     }
 }

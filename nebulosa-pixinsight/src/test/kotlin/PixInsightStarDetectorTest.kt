@@ -10,7 +10,7 @@ class PixInsightStarDetectorTest {
 
     @Test
     fun detectStars() {
-        val detectedStars = PixInsightStarDetector(RUNNER, 0).detect(NGC3344_MONO_8_FITS)
+        val detectedStars = PixInsightStarDetector(RUNNER).detect(NGC3344_MONO_8_FITS)
         detectedStars shouldHaveSize 15
     }
 }

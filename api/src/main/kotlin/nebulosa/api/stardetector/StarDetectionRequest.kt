@@ -32,7 +32,7 @@ data class StarDetectionRequest(
         StarDetectorType.SIRIL -> SirilStarDetector(executablePath!!, maxStars)
         StarDetectorType.PIXINSIGHT -> {
             val runner = startPixInsight(executablePath!!, slot)
-            PixInsightStarDetector(runner, slot, minSNR, timeout)
+            PixInsightStarDetector(runner, minSNR, timeout, slot)
         }
     }
 

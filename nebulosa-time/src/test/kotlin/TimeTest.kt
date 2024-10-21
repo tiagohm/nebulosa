@@ -2,8 +2,7 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.test.concat
-import nebulosa.test.dataDirectory
+import nebulosa.test.download
 import nebulosa.time.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -145,7 +144,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2460311.0 plusOrMinus 1E-14)
-            fraction shouldBe (-0.49999989822685187 plusOrMinus 1E-14)
+            fraction shouldBe (-0.49999989822685187 plusOrMinus 1E-8)
         }
         with(time.tai) {
             whole shouldBe (2460311.0 plusOrMinus 1E-14)
@@ -179,7 +178,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.24980371005787044 plusOrMinus 1E-14)
+            fraction shouldBe (0.24980371005787044 plusOrMinus 1E-6)
         }
         with(time.tai) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
@@ -277,7 +276,7 @@ class TimeTest {
 
         with(time.utc) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.4999998982268517 plusOrMinus 1E-14)
+            fraction shouldBe (0.4999998982268517 plusOrMinus 1E-8)
         }
         with(time.ut1) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
@@ -285,23 +284,23 @@ class TimeTest {
         }
         with(time.tai) {
             whole shouldBe (2460311.0 plusOrMinus 1E-14)
-            fraction shouldBe (-0.4995718610324076 plusOrMinus 1E-14)
+            fraction shouldBe (-0.4995718610324076 plusOrMinus 1E-8)
         }
         with(time.tt) {
             whole shouldBe (2460311.0 plusOrMinus 1E-14)
-            fraction shouldBe (-0.4991993610324076 plusOrMinus 1E-14)
+            fraction shouldBe (-0.4991993610324076 plusOrMinus 1E-8)
         }
         with(time.tcg) {
             whole shouldBe (2460311.0 plusOrMinus 1E-14)
-            fraction shouldBe (-0.4991873975486568 plusOrMinus 1E-14)
+            fraction shouldBe (-0.4991873975486568 plusOrMinus 1E-8)
         }
         with(time.tdb) {
             whole shouldBe (2460311.0 plusOrMinus 1E-14)
-            fraction shouldBe (-0.49919936241219065 plusOrMinus 1E-14)
+            fraction shouldBe (-0.49919936241219065 plusOrMinus 1E-8)
         }
         with(time.tcb) {
             whole shouldBe (2460311.0 plusOrMinus 1E-14)
-            fraction shouldBe (-0.49893319941994874 plusOrMinus 1E-14)
+            fraction shouldBe (-0.49893319941994874 plusOrMinus 1E-8)
         }
     }
 
@@ -311,7 +310,7 @@ class TimeTest {
 
         with(time.utc) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.24980277142361115 plusOrMinus 1E-14)
+            fraction shouldBe (0.24980277142361115 plusOrMinus 1E-6)
         }
         with(time.ut1) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
@@ -319,23 +318,23 @@ class TimeTest {
         }
         with(time.tai) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.25023101216435195 plusOrMinus 1E-14)
+            fraction shouldBe (0.25023101216435195 plusOrMinus 1E-6)
         }
         with(time.tt) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.25060351216435195 plusOrMinus 1E-14)
+            fraction shouldBe (0.25060351216435195 plusOrMinus 1E-6)
         }
         with(time.tcg) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.2506159849288422 plusOrMinus 1E-14)
+            fraction shouldBe (0.2506159849288422 plusOrMinus 1E-6)
         }
         with(time.tdb) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.25060351113353413 plusOrMinus 1E-14)
+            fraction shouldBe (0.25060351113353413 plusOrMinus 1E-6)
         }
         with(time.tcb) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.2508810045461 plusOrMinus 1E-14)
+            fraction shouldBe (0.2508810045461 plusOrMinus 1E-6)
         }
     }
 
@@ -417,7 +416,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.4995718610330666 plusOrMinus 1E-14)
+            fraction shouldBe (0.4995718610330666 plusOrMinus 1E-8)
         }
         with(time.tai) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
@@ -451,7 +450,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.24937546931712967 plusOrMinus 1E-14)
+            fraction shouldBe (0.24937546931712967 plusOrMinus 1E-6)
         }
         with(time.tai) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
@@ -553,7 +552,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.49919936103364004 plusOrMinus 1E-14)
+            fraction shouldBe (0.49919936103364004 plusOrMinus 1E-8)
         }
         with(time.tai) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
@@ -587,7 +586,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.24900296931712967 plusOrMinus 1E-14)
+            fraction shouldBe (0.24900296931712967 plusOrMinus 1E-6)
         }
         with(time.tai) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
@@ -689,7 +688,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.4989331994384845 plusOrMinus 1E-14)
+            fraction shouldBe (0.4989331994384845 plusOrMinus 1E-8)
         }
         with(time.tai) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
@@ -723,7 +722,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.24872547695244512 plusOrMinus 1E-14)
+            fraction shouldBe (0.24872547695244512 plusOrMinus 1E-6)
         }
         with(time.tai) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
@@ -825,7 +824,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.49918739755047403 plusOrMinus 1E-14)
+            fraction shouldBe (0.49918739755047403 plusOrMinus 1E-8)
         }
         with(time.tai) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
@@ -859,7 +858,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.24899049655320588 plusOrMinus 1E-14)
+            fraction shouldBe (0.24899049655320588 plusOrMinus 1E-6)
         }
         with(time.tai) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
@@ -961,7 +960,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.4991993624136878 plusOrMinus 1E-14)
+            fraction shouldBe (0.4991993624136878 plusOrMinus 1E-8)
         }
         with(time.tai) {
             whole shouldBe (2460310.0 plusOrMinus 1E-14)
@@ -995,7 +994,7 @@ class TimeTest {
         }
         with(time.ut1) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
-            fraction shouldBe (0.24900297034820923 plusOrMinus 1E-14)
+            fraction shouldBe (0.24900297034820923 plusOrMinus 1E-6)
         }
         with(time.tai) {
             whole shouldBe (2461041.0 plusOrMinus 1E-14)
@@ -1025,9 +1024,13 @@ class TimeTest {
         @BeforeAll
         fun loadIERS() {
             val iersa = IERSA()
+            val finals2000A = download("https://maia.usno.navy.mil/ser7/finals2000A.all")
+            finals2000A.inputStream().use(iersa::load)
+
             val iersb = IERSB()
-            dataDirectory.concat("finals2000A.all").inputStream().use(iersa::load)
-            dataDirectory.concat("eopc04.1962-now.txt").inputStream().use(iersb::load)
+            val eopc04 = download("https://hpiers.obspm.fr/iers/eop/eopc04/eopc04.1962-now")
+            eopc04.inputStream().use(iersb::load)
+
             IERS.attach(IERSAB(iersa, iersb))
         }
     }

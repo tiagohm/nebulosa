@@ -74,6 +74,7 @@ internal open class INDICamera(
     @Volatile final override var hasThermometer = false
     @Volatile final override var temperature = 0.0
 
+    @Suppress("LeakingThis")
     private val guideOutput = INDIGuideOutputHandler(this)
 
     final override val canPulseGuide
@@ -86,7 +87,7 @@ internal open class INDICamera(
         private set
 
     override fun handleMessage(message: INDIProtocol) {
-        val isGuider = message.name[0] == 'G'
+        val isGuider = message.name.isNotEmpty() && message.name[0] == 'G'
         val isGuideHead = this is GuideHead
 
         when (message) {

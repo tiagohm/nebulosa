@@ -115,7 +115,7 @@ open class ICRF protected constructor(
         require(center is GeographicPosition) { "the center must be a GeographicPosition" }
 
         val r = ITRS.rotationAt(time)
-        val (sublongitude, dec, distance) = r * position
+        val (sublongitude, dec, distance) = SphericalCoordinate.of(r * position)
 
         val ha = (center.longitude - sublongitude).normalized
 
@@ -312,7 +312,7 @@ open class ICRF protected constructor(
         @JvmStatic
         fun equatorial(
             rightAscension: Angle, declination: Angle,
-            distance: Distance = ONE_GIGAPARSEC,
+            distance: Distance = 1.0.au,
             time: InstantOfTime = CurrentTime,
             epoch: InstantOfTime? = null,
             center: Number = Int.MIN_VALUE,

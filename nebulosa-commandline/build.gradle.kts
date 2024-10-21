@@ -4,7 +4,6 @@ plugins {
 }
 
 dependencies {
-    api(libs.apache.exec)
     implementation(project(":nebulosa-log"))
     testImplementation(project(":nebulosa-test"))
 }

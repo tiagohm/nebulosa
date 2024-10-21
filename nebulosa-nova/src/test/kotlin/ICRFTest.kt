@@ -3,8 +3,7 @@ import io.kotest.matchers.shouldBe
 import nebulosa.math.*
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
-import nebulosa.test.concat
-import nebulosa.test.dataDirectory
+import nebulosa.test.download
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import nebulosa.time.TT
@@ -52,13 +51,25 @@ class ICRFTest {
         azAlt.latitude.toDegrees shouldBe (44.3538 plusOrMinus 1e-1)
     }
 
+    @Test
+    fun hourAngle() {
+        val time = TimeYMDHMS(2024, 10, 20, 12)
+        val site = Geoid.IERS2010.lonLat((-45.0).deg, (-22.0).deg)
+        val icrf = ICRF.equatorial(12.0.hours, (-18.0).deg, time = time, center = site)
+        val (ha, dec, distance) = icrf.hourAngle()
+        ha.toHours shouldBe (24.0 - 1.0584536120036618 plusOrMinus 1e-4)
+        dec.toDegrees shouldBe (-18.137759871296097 plusOrMinus 1e-3)
+        distance shouldBe (1.0 plusOrMinus 1e-4)
+    }
+
     companion object {
 
         @JvmStatic
         @BeforeAll
         fun loadIERS() {
             val iersa = IERSA()
-            dataDirectory.concat("finals2000A.all").inputStream().use(iersa::load)
+            val finals2000A = download("https://maia.usno.navy.mil/ser7/finals2000A.all")
+            finals2000A.inputStream().use(iersa::load)
             IERS.attach(iersa)
         }
     }

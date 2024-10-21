@@ -322,6 +322,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				this.skyObject.search.filter.rightAscension = this.position.rightAscensionJ2000
 				this.skyObject.search.filter.declination = this.position.declinationJ2000
 				if (this.skyObject.search.filter.radius <= 0) this.skyObject.search.filter.radius = 4
+				this.skyObject.search.filter.text = ''
 
 				this.tab = BodyTabType.SKY_OBJECT
 

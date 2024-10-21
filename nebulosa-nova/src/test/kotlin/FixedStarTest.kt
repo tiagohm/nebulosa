@@ -5,8 +5,7 @@ import nebulosa.math.*
 import nebulosa.nova.astrometry.FixedStar
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
-import nebulosa.test.concat
-import nebulosa.test.dataDirectory
+import nebulosa.test.download
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import nebulosa.time.TimeYMDHMS
@@ -72,13 +71,13 @@ class FixedStarTest {
 
     companion object {
 
-        @JvmStatic private val IERSA = IERSA()
-
         @JvmStatic
         @BeforeAll
         fun loadIERS() {
-            dataDirectory.concat("finals2000A.all").inputStream().use(IERSA::load)
-            IERS.attach(IERSA)
+            val iersa = IERSA()
+            val finals2000A = download("https://maia.usno.navy.mil/ser7/finals2000A.all")
+            finals2000A.inputStream().use(iersa::load)
+            IERS.attach(iersa)
         }
     }
 }

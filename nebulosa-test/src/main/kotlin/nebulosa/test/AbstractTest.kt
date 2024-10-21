@@ -13,13 +13,17 @@ abstract class AbstractTest {
     private val deletablePaths = ArrayList<Path>(2)
 
     @AfterEach
-    fun closeResourcesAfterEach() {
+    open fun afterEach() {
+        closeResourcesAfterEach()
+        deletePathsAfterEach()
+    }
+
+    private fun closeResourcesAfterEach() {
         autoCloseables.forEach(AutoCloseable::close)
         autoCloseables.clear()
     }
 
-    @AfterEach
-    fun deletePathsAfterEach() {
+    private fun deletePathsAfterEach() {
         deletablePaths.forEach { it.deleteRecursivelyOrIfExists() }
         deletablePaths.clear()
     }

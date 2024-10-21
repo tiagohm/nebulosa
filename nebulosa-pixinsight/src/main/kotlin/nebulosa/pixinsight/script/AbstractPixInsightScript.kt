@@ -6,13 +6,10 @@ import nebulosa.json.PathModule
 import nebulosa.log.di
 import nebulosa.log.loggerFor
 import org.apache.commons.codec.binary.Hex
-import org.apache.commons.exec.DefaultExecutor
 import java.nio.file.Path
 import kotlin.io.path.readText
 
 abstract class AbstractPixInsightScript<T : PixInsightScriptOutput> : PixInsightScript<T> {
-
-    @Volatile private var executor: DefaultExecutor? = null
 
     override val name = this::class.simpleName!!
 

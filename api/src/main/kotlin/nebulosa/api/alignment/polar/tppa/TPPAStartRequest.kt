@@ -15,7 +15,6 @@ data class TPPAStartRequest(
     @JsonIgnoreProperties("camera", "focuser", "wheel") @JvmField val capture: CameraStartCaptureRequest = CameraStartCaptureRequest.EMPTY,
     @JvmField val plateSolver: PlateSolverRequest = PlateSolverRequest.EMPTY,
     @JvmField val startFromCurrentPosition: Boolean = true,
-    @JvmField val compensateRefraction: Boolean = false,
     @JvmField val stopTrackingWhenDone: Boolean = true,
     @JvmField val stepDirection: GuideDirection = GuideDirection.EAST,
     @field:DurationUnit(ChronoUnit.SECONDS) @JvmField val stepDuration: Duration = Duration.ZERO,

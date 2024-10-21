@@ -32,7 +32,7 @@ class PreferenceRepository(private val connection: Database) {
     }
 
     fun update(entity: PreferenceEntity) = transaction(connection) {
-        PreferenceTable.update { entity.mapTo(it, true) }
+        PreferenceTable.update({ PreferenceTable.key eq entity.key }) { entity.mapTo(it, true) }
     }
 
     fun delete(key: String) = transaction(connection) {
