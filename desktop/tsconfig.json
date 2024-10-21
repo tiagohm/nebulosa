@@ -20,6 +20,7 @@
 		"noFallthroughCasesInSwitch": true,
 		"allowJs": true,
 		"skipLibCheck": true,
+		"esModuleInterop": true,
 		"incremental": true,
 		"target": "ES2022",
 		"typeRoots": ["node_modules/@types"],
