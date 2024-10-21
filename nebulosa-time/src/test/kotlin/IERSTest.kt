@@ -1,7 +1,6 @@
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.test.concat
-import nebulosa.test.dataDirectory
+import nebulosa.test.download
 import nebulosa.time.*
 import org.junit.jupiter.api.Test
 import kotlin.io.path.inputStream
@@ -18,7 +17,7 @@ class IERSTest {
         }
         with(UTC(TimeYMDHMS(2026, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2461042.0 plusOrMinus 1E-18)
-            fraction shouldBe (4.693171296595673e-07 plusOrMinus 1E-18)
+            fraction shouldBe (1.1488645833633137E-6 plusOrMinus 1E-18)
         }
         with(UTC(TimeYMDHMS(1964, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2438396.0 plusOrMinus 1E-18)
@@ -36,7 +35,7 @@ class IERSTest {
         }
         with(UTC(TimeYMDHMS(2026, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2461042.0 plusOrMinus 1E-18)
-            fraction shouldBe (1.442650463262399e-07 plusOrMinus 1E-18)
+            fraction shouldBe (6.586666666966254E-7 plusOrMinus 1E-18)
         }
         with(UTC(TimeYMDHMS(1964, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2438396.0 plusOrMinus 1E-18)
@@ -55,7 +54,7 @@ class IERSTest {
         }
         with(UTC(TimeYMDHMS(2026, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2461042.0 plusOrMinus 1E-18)
-            fraction shouldBe (4.693171296595673e-07 plusOrMinus 1E-18)
+            fraction shouldBe (1.1488645833633137E-6 plusOrMinus 1E-18)
         }
         with(UTC(TimeYMDHMS(1964, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2438396.0 plusOrMinus 1E-18)
@@ -69,8 +68,11 @@ class IERSTest {
         @JvmStatic private val IERSB = IERSB()
 
         init {
-            dataDirectory.concat("finals2000A.all").inputStream().use(IERSA::load)
-            dataDirectory.concat("eopc04.1962-now.txt").inputStream().use(IERSB::load)
+            val finals2000A = download("https://maia.usno.navy.mil/ser7/finals2000A.all")
+            val eopc04 = download("https://hpiers.obspm.fr/iers/eop/eopc04/eopc04.1962-now")
+
+            finals2000A.inputStream().use(IERSA::load)
+            eopc04.inputStream().use(IERSB::load)
         }
     }
 }

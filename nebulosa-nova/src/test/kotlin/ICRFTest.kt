@@ -3,8 +3,7 @@ import io.kotest.matchers.shouldBe
 import nebulosa.math.*
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
-import nebulosa.test.concat
-import nebulosa.test.dataDirectory
+import nebulosa.test.download
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
 import nebulosa.time.TT
@@ -69,7 +68,8 @@ class ICRFTest {
         @BeforeAll
         fun loadIERS() {
             val iersa = IERSA()
-            dataDirectory.concat("finals2000A.all").inputStream().use(iersa::load)
+            val finals2000A = download("https://maia.usno.navy.mil/ser7/finals2000A.all")
+            finals2000A.inputStream().use(iersa::load)
             IERS.attach(iersa)
         }
     }
