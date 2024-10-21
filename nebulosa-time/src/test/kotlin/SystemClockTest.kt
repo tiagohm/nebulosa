@@ -1,3 +1,4 @@
+import io.kotest.matchers.longs.shouldBeExactly
 import io.kotest.matchers.longs.shouldBeLessThanOrEqual
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import nebulosa.time.SystemClock
@@ -11,12 +12,12 @@ class SystemClockTest {
 
     @Test
     fun systemDefault() {
-        ChronoUnit.MICROS.between(LocalDateTime.now(SystemClock), LocalDateTime.now()) shouldBeLessThanOrEqual 20000L
+        ChronoUnit.SECONDS.between(LocalDateTime.now(SystemClock), LocalDateTime.now()) shouldBeExactly 0L
         SystemClock.zone shouldBeSameInstanceAs ZoneId.systemDefault()
 
         TimeZone.setDefault(TimeZone.getTimeZone("America/Manaus"))
 
-        ChronoUnit.MICROS.between(LocalDateTime.now(SystemClock), LocalDateTime.now()) shouldBeLessThanOrEqual 20000L
+        ChronoUnit.SECONDS.between(LocalDateTime.now(SystemClock), LocalDateTime.now()) shouldBeExactly 0L
         SystemClock.zone shouldBeSameInstanceAs ZoneId.systemDefault()
     }
 }
