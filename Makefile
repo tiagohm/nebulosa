@@ -14,9 +14,6 @@ api:
 
 desktop:
 	cd desktop && npm run electron:build
-
-install:
-	sudo dpkg -i desktop/release/nebulosa_0.1.0_amd64.deb
 endif
 
 build: api desktop
