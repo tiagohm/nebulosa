@@ -273,7 +273,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                 if (device.isEmpty()) {
                     val text = "[%s]: %s\n".format(message.timestamp, message.message)
                     fireOnEventReceived(DeviceMessageReceived(null, text))
-                } else if (message.name.isNotEmpty()) {
+                } else {
                     device.forEach { it.handleMessage(message) }
                 }
 
@@ -298,6 +298,8 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                             is DustCap -> unregisterDustCap(device)
                         }
                     }
+
+                    LOG.d("message received: {}", message)
 
                     return
                 }
