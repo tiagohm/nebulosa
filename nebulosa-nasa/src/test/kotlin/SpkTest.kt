@@ -5,6 +5,7 @@ import nebulosa.math.toKilometers
 import nebulosa.math.toKilometersPerSecond
 import nebulosa.nasa.daf.RemoteDaf
 import nebulosa.nasa.daf.SourceDaf
+import nebulosa.nasa.spk.NAIF
 import nebulosa.nasa.spk.Spk
 import nebulosa.test.AbstractTest
 import nebulosa.test.concat
@@ -19,7 +20,7 @@ class SpkTest : AbstractTest() {
     @Test
     fun de421SsbEarthBarycenter() {
         val spk = Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp"))
-        val (p, v) = spk[0, 3]!!.compute(UTC(TimeYMDHMS(2022, 12, 8, 20, 7, 15.0)))
+        val (p, v) = spk[NAIF.SSB, NAIF.EARTH_BARYCENTER]!!.compute(UTC(TimeYMDHMS(2022, 12, 8, 20, 7, 15.0)))
 
         p[0] shouldBe (2.226291206593103E-01 plusOrMinus 1e-6)
         p[1] shouldBe (8.786267892743717E-01 plusOrMinus 1e-6)
@@ -32,7 +33,7 @@ class SpkTest : AbstractTest() {
     @Test
     fun de405SsbEarthBarycenter() {
         val spk = Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de405.bsp"))
-        val (p, v) = spk[0, 3]!!.compute(UTC(TimeYMDHMS(2022, 12, 8, 20, 7, 15.0)))
+        val (p, v) = spk[NAIF.SSB, NAIF.EARTH_BARYCENTER]!!.compute(UTC(TimeYMDHMS(2022, 12, 8, 20, 7, 15.0)))
 
         p[0] shouldBe (2.226291206593103E-01 plusOrMinus 1e-6)
         p[1] shouldBe (8.786267892743717E-01 plusOrMinus 1e-6)
@@ -45,7 +46,7 @@ class SpkTest : AbstractTest() {
     @Test
     fun type2165803Didymos() {
         val spk = Spk(SourceDaf(dataDirectory.concat("65803 Didymos.bsp").seekableSource().autoClose()))
-        val (p, v) = spk[10, 20065803]!!.compute(TDB(TimeYMDHMS(2022, 12, 8, 20, 7, 15.0)))
+        val (p, v) = spk[NAIF.SUN, NAIF.DIDYMOS_BARYCENTER]!!.compute(TDB(TimeYMDHMS(2022, 12, 8, 20, 7, 15.0)))
 
         // NASA JPL Horizons. Use "x-y axes of reference frame (equatorial or equatorial-aligned, inertial)" as reference plane.
         p[0].toKilometers shouldBe (1.977535053091079E+07 plusOrMinus 1e-7)

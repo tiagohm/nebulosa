@@ -7,6 +7,7 @@ import nebulosa.math.normalized
 import nebulosa.math.toDegrees
 import nebulosa.nasa.daf.RemoteDaf
 import nebulosa.nasa.daf.SourceDaf
+import nebulosa.nasa.spk.NAIF
 import nebulosa.nasa.spk.Spk
 import nebulosa.nova.astrometry.*
 import nebulosa.nova.position.Barycentric
@@ -102,7 +103,7 @@ class AstrometryTest {
 
     @Test
     fun ceresSPK() {
-        val ceres = KERNEL[2000001]
+        val ceres = KERNEL[NAIF.CERES]
         val astrometric = EARTH.at<Barycentric>(TIME).observe(ceres)
         val (ra, dec) = astrometric.equatorial()
         // https://ssd.jpl.nasa.gov/horizons/app.html#/
@@ -117,11 +118,11 @@ class AstrometryTest {
         @JvmStatic private val URA111 = Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/ura111.bsp"))
         @JvmStatic private val CERES = Spk(SourceDaf(dataDirectory.concat("1 Ceres.bsp").seekableSource()))
         @JvmStatic private val KERNEL = SpiceKernel(DE441, MAR097, URA111, CERES)
-        @JvmStatic private val SUN = KERNEL[10]
-        @JvmStatic private val MOON = KERNEL[301]
-        @JvmStatic private val EARTH = KERNEL[399]
-        @JvmStatic private val MARS = KERNEL[499]
-        @JvmStatic private val URANUS = KERNEL[799]
+        @JvmStatic private val SUN = KERNEL[NAIF.SUN]
+        @JvmStatic private val MOON = KERNEL[NAIF.MOON]
+        @JvmStatic private val EARTH = KERNEL[NAIF.EARTH]
+        @JvmStatic private val MARS = KERNEL[NAIF.MARS]
+        @JvmStatic private val URANUS = KERNEL[NAIF.URANUS]
         @JvmStatic private val TIME = UTC(TimeYMDHMS(2022, 12, 25, 0, 0, 0.0))
     }
 }
