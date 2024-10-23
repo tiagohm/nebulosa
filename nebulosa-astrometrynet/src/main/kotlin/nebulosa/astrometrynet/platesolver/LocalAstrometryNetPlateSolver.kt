@@ -64,7 +64,7 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
 
         commands.add("$path")
 
-        val commandLine = CommandLine(commands, path.parent)
+        val commandLine = CommandLine(commands)
 
         try {
             val handler = CommandLineHandler()

@@ -5,10 +5,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import nebulosa.astrometrynet.platesolver.*
 import nebulosa.test.NonGitHubOnly
-import nebulosa.test.concat
 import nebulosa.test.homeDirectory
 import org.junit.jupiter.api.Test
-import kotlin.io.path.listDirectoryEntries
 import kotlin.math.hypot
 import kotlin.math.ln
 import kotlin.math.min
@@ -52,14 +50,12 @@ class LibAstrometryNetTest : Solver.RecordMatchCallback {
 
     @Test
     fun loadIndex() {
-        for (i in 7..19) {
-            val index = LibAstrometryNet.INSTANCE.index_load("$INDEX_DIR/index-41%02d.fits".format(i), 0, null)
-            index.indexName shouldBe "$INDEX_DIR/index-41%02d.fits".format(i)
-            index.indexId shouldBeExactly 4100 + i
-            index.cutnsweep shouldBeExactly 10
-            LibAstrometryNet.INSTANCE.index_close(index)
-            LibAstrometryNet.INSTANCE.index_free(index)
-        }
+        val index = LibAstrometryNet.INSTANCE.index_load("/usr/local/astrometry/data/index-4119.fits", 0, null)
+        index.indexName shouldBe "/usr/local/astrometry/data/index-4119.fits"
+        index.indexId shouldBeExactly 4119
+        index.cutnsweep shouldBeExactly 10
+        LibAstrometryNet.INSTANCE.index_close(index)
+        LibAstrometryNet.INSTANCE.index_free(index)
     }
 
     @Test
@@ -86,12 +82,15 @@ class LibAstrometryNetTest : Solver.RecordMatchCallback {
 
         // https://github.com/dstndstn/astrometry.net/blob/main/solver/control-program.c
 
+        val imageW = 900.0
+        val imageH = 675.0
+
         solver.recordMatchCallback = this@LibAstrometryNetTest
-        solver.funitsLower = 0.1
-        solver.funitsUpper = 10.0
+        solver.funitsLower = (DEFAULT_ARCMIN_MIN / imageW) * 60.0 // arcmin -> arcsec
+        solver.funitsUpper = (DEFAULT_ARCMIN_MAX / imageW) * 60.0 // arcmin -> arcsec
         solver.distanceFromQuadBonus = 1
-        solver.quadSizeMin = 0.1 * min(719, 507) // image width, height
-        solver.quadSizeMax = hypot(719.0, 507.0)
+        solver.quadSizeMin = QSF_MIN * min(imageW, imageH)
+        solver.quadSizeMax = hypot(imageW, imageH)
         solver.doTweak = 1
         solver.tweakAbOrder = 1
         solver.tweakAbpOrder = 4
@@ -99,30 +98,28 @@ class LibAstrometryNetTest : Solver.RecordMatchCallback {
 
         LibAstrometryNet.INSTANCE.solver_set_keep_logodds(solver, ln(1e12))
 
-        INDEX_DIR.listDirectoryEntries("*.fits").sorted().forEach {
-            val index = LibAstrometryNet.INSTANCE.index_load("$it", 0, null)
-            println(it)
-            LibAstrometryNet.INSTANCE.solver_add_index(solver, index)
-        }
+        val index = LibAstrometryNet.INSTANCE.index_load("/usr/local/astrometry/data/index-4119.fits", 0, null)
+        LibAstrometryNet.INSTANCE.solver_add_index(solver, index)
 
-        val xyls = LibAstrometryNet.INSTANCE.xylist_open("$homeDirectory/Git/astrometry.net/solver/apod4.xy")
+        val xyls = LibAstrometryNet.INSTANCE.xylist_open("$homeDirectory/Git/astrometry.net/demo/apod5.xyls")
         val xy = LibAstrometryNet.INSTANCE.xylist_read_field(xyls, null)
         LibAstrometryNet.INSTANCE.solver_reset_counters(solver)
         LibAstrometryNet.INSTANCE.solver_reset_best_match(solver)
         LibAstrometryNet.INSTANCE.solver_set_field(solver, xy)
-        LibAstrometryNet.INSTANCE.solver_set_field_bounds(solver, 0.0, 719.0, 0.0, 507.0)
+        LibAstrometryNet.INSTANCE.solver_set_field_bounds(solver, 0.0, imageW, 0.0, imageH)
         LibAstrometryNet.INSTANCE.solver_preprocess_field(solver)
         solver.read()
-        println(solver)
+
         LibAstrometryNet.INSTANCE.solver_run(solver)
         solver.read()
-        println(solver)
 
-        LibAstrometryNet.INSTANCE.solver_did_solve(solver).shouldBeTrue()
-
-        LibAstrometryNet.INSTANCE.xylist_close(xyls)
-        LibAstrometryNet.INSTANCE.solver_free_field(solver)
-        LibAstrometryNet.INSTANCE.solver_free(solver)
+        try {
+            LibAstrometryNet.INSTANCE.solver_did_solve(solver).shouldBeTrue()
+        } finally {
+            LibAstrometryNet.INSTANCE.xylist_close(xyls)
+            LibAstrometryNet.INSTANCE.solver_free_field(solver)
+            LibAstrometryNet.INSTANCE.solver_free(solver)
+        }
     }
 
     override fun matchFound(matched: Matched.ByReference, userData: Pointer?): Byte {
@@ -132,7 +129,10 @@ class LibAstrometryNetTest : Solver.RecordMatchCallback {
 
     companion object {
 
-        // http://data.astrometry.net/
-        @JvmStatic private val INDEX_DIR = homeDirectory.concat("Downloads", "Index Files")
+        private const val QSF_MIN = 0.1
+        private const val DEFAULT_IMAGEW = 1024
+        private const val DEFAULT_IMAGEH = 1024
+        private const val DEFAULT_ARCMIN_MIN = 15.0
+        private const val DEFAULT_ARCMIN_MAX = 25.0
     }
 }
