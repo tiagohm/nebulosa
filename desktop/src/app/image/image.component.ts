@@ -870,8 +870,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.scnrMenuItem.disabled = info.mono
 		this.debayerMenuItem.disabled = !info.bayer
 
-		if (info.rightAscension) this.solver.request.centerRA = info.rightAscension
-		if (info.declination) this.solver.request.centerDEC = info.declination
+		this.solver.request.centerRA = info.rightAscension || ''
+		this.solver.request.centerDEC = info.declination || ''
 		this.solver.request.blind = !this.solver.request.centerRA || !this.solver.request.centerDEC
 
 		if (this.stretch.transformation.auto) {
@@ -987,10 +987,24 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	protected searchAnnotations() {
-		const search = this.annotation.search.toUpperCase()
+		const search = this.annotation.search.text.toUpperCase()
+		const magMin = Math.min(this.annotation.search.magnitudeMin, this.annotation.search.magnitudeMax)
+		const magMax = Math.max(this.annotation.search.magnitudeMin, this.annotation.search.magnitudeMax)
 
-		if (search) {
-			this.annotation.filtered = this.annotation.data.filter((e) => filterAstronomicalObject((e.star ?? e.dso ?? e.minorPlanet)!, search))
+		if (search || magMin > -30 || magMax < 30) {
+			let filtered = this.annotation.data
+
+			if (search) {
+				filtered = filtered.filter((e) => filterAstronomicalObject((e.star ?? e.dso ?? e.minorPlanet)!, search))
+			}
+			if (magMin > -30) {
+				filtered = filtered.filter((e) => (e.star ?? e.dso ?? e.minorPlanet)!.magnitude >= magMin)
+			}
+			if (magMax < 30) {
+				filtered = filtered.filter((e) => (e.star ?? e.dso ?? e.minorPlanet)!.magnitude <= magMax)
+			}
+
+			this.annotation.filtered = filtered
 		} else {
 			this.annotation.filtered = this.annotation.data
 		}
@@ -1152,6 +1166,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				this.updateImageSolved(this.imageInfo?.solved)
 			} finally {
 				this.solver.running = false
+
+				this.savePreference()
 
 				if (this.solver.solved.solved) {
 					await this.retrieveCoordinateInterpolation()

@@ -1,7 +1,7 @@
 import type { Point, Rectangle, Size } from 'electron'
 import type { PanZoom } from 'panzoom'
 import type { CoordinateInterpolator, InterpolatedCoordinate } from '../utils/coordinate-interpolation'
-import type { Angle, AstronomicalObject, Constellation, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
+import { DEFAULT_SKY_OBJECT_SEARCH_FILTER, type Angle, type AstronomicalObject, type Constellation, type DeepSkyObject, type EquatorialCoordinateJ2000, type SkyObjectSearchFilter, type Star } from './atlas.types'
 import type { Camera, CameraStartCapture, FrameType } from './camera.types'
 import { DEFAULT_PLATE_SOLVER_REQUEST, plateSolverRequestWithDefault, type PlateSolverRequest } from './platesolver.types'
 import { DEFAULT_STAR_DETECTION_REQUEST, starDetectionRequestWithDefault, type StarDetectionRequest } from './stardetector.types'
@@ -277,7 +277,8 @@ export interface ImageAnnotationDialog {
 	request: AnnotateImageRequest
 	data: ImageAnnotation[]
 	selected?: ImageAnnotation
-	search: string
+	search: SkyObjectSearchFilter
+	displayOnlyFiltered: boolean
 	filtered: ImageAnnotation[]
 }
 
@@ -482,7 +483,8 @@ export const DEFAULT_IMAGE_ANNOTATION_DIALOG: ImageAnnotationDialog = {
 	visible: false,
 	data: [],
 	request: DEFAULT_ANNOTATE_IMAGE_REQUEST,
-	search: '',
+	search: DEFAULT_SKY_OBJECT_SEARCH_FILTER,
+	displayOnlyFiltered: true,
 	filtered: [],
 }
 
