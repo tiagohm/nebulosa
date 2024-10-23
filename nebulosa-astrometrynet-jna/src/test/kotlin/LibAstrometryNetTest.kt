@@ -13,6 +13,12 @@ import kotlin.math.hypot
 import kotlin.math.ln
 import kotlin.math.min
 
+// git clone --depth=1 https://github.com/dstndstn/astrometry.net.git
+// cd astrometry.net
+// sudo apt install libcairo2-dev libnetpbm10-dev netpbm libpng-dev libjpeg-dev zlib1g-dev libbz2-dev libcfitsio-dev wcslib-dev
+// make
+// Use the generated shared library at "solver/libastrometry.so"
+
 @NonGitHubOnly
 class LibAstrometryNetTest : Solver.RecordMatchCallback {
 

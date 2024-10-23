@@ -9,6 +9,7 @@ import nebulosa.math.Angle
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
+import java.net.URI
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
@@ -23,8 +24,8 @@ val HTTP_CLIENT = OkHttpClient.Builder()
     .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
     .build()
 
-private val String.extensionFromUrl
-    get() = lastIndexOf('.').let { if (it >= 0) substring(it + 1) else this }
+val String.extensionFromUrl
+    get() = URI.create(this).path.let { it.lastIndexOf('.').let { i -> if (i >= 0) it.substring(i + 1) else this } }
 
 fun download(url: String, extension: String = url.extensionFromUrl): Path {
     require(extension.isNotBlank())

@@ -20,8 +20,8 @@ data class PlateSolution(
     @JvmField val height: Angle = 0.0,
     @JvmField val parity: Parity = Parity.NORMAL,
     @JvmField val radius: Angle = hypot(width, height).rad / 2.0,
-    @JvmField val widthInPixels: Double = truncate(width / scale),
-    @JvmField val heightInPixels: Double = truncate(height / scale),
+    @JvmField val widthInPixels: Double = if (scale == 0.0) 0.0 else truncate(width / scale),
+    @JvmField val heightInPixels: Double = if (scale == 0.0) 0.0 else truncate(height / scale),
     private val header: Collection<HeaderCard> = emptyList(),
 ) : FitsHeader.ReadOnly(header) {
 
