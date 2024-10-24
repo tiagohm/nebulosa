@@ -23,7 +23,13 @@ import kotlin.io.path.readBytes
 /**
  * @see <a href="http://astrometry.net/doc/readme.html">README</a>
  */
-data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : PlateSolver {
+data class LocalAstrometryNetPlateSolver(
+    private val executablePath: Path,
+    private val scale: Double = 0.0, // arcsec/pixel
+) : PlateSolver {
+
+    constructor(executablePath: Path, focalLength: Double, pixelSize: Double) :
+            this(executablePath, if (focalLength <= 0.0) 0.0 else (pixelSize / focalLength) * 206.265)
 
     override fun solve(
         path: Path?, image: Image?,
@@ -41,10 +47,8 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
             "--overwrite",
             "--dir", "$outFolder",
             "--cpulimit", timeout.takeIf { it.toSeconds() > 0 }?.toSeconds()?.toString() ?: "300",
-            "--scale-units", "degwidth",
-            "--guess-scale",
             "--crpix-center",
-            "--downsample", "$downsampleFactor",
+            "--downsample", "${if (downsampleFactor <= 0) 2 else downsampleFactor}",
             "--no-verify",
             "--no-plots",
             "--skip-solved",
@@ -52,6 +56,17 @@ data class LocalAstrometryNetPlateSolver(private val executablePath: Path) : Pla
             "--uniformize", "0",
             // "--resort"
         )
+
+        if (scale > 0.0) {
+            commands.add("--scale-units")
+            commands.add("arcsecperpix")
+            commands.add("--scale-low")
+            commands.add("${scale * 0.7}")
+            commands.add("--scale-high")
+            commands.add("${scale * 1.3}")
+        } else {
+            commands.add("--guess-scale")
+        }
 
         if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
             commands.add("--ra")

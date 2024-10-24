@@ -42,7 +42,10 @@ data class PlateSolverRequest(
 ) : Validatable, KoinComponent, Supplier<PlateSolver> {
 
     override fun validate() {
-        executablePath.notNull(PLATE_SOLVER_IS_NOT_CONFIGURED).notBlank(PLATE_SOLVER_IS_NOT_CONFIGURED)
+        if (type != PlateSolverType.ASTROMETRY_NET_ONLINE) {
+            executablePath.notNull(PLATE_SOLVER_IS_NOT_CONFIGURED).notBlank(PLATE_SOLVER_IS_NOT_CONFIGURED)
+        }
+
         timeout.positiveOrZero().max(5, TimeUnit.MINUTES)
         downsampleFactor.positiveOrZero()
         focalLength.positiveOrZero()
@@ -53,11 +56,11 @@ data class PlateSolverRequest(
     override fun get() = with(this) {
         when (type) {
             PlateSolverType.ASTAP -> AstapPlateSolver(executablePath!!)
-            PlateSolverType.ASTROMETRY_NET -> LocalAstrometryNetPlateSolver(executablePath!!)
+            PlateSolverType.ASTROMETRY_NET -> LocalAstrometryNetPlateSolver(executablePath!!, focalLength, pixelSize)
             PlateSolverType.ASTROMETRY_NET_ONLINE -> {
                 val httpClient = get<OkHttpClient>(Named.defaultHttpClient)
                 val service = NOVA_ASTROMETRY_NET_CACHE.getOrPut(apiUrl) { NovaAstrometryNetService(apiUrl, httpClient) }
-                NovaAstrometryNetPlateSolver(service, apiKey)
+                NovaAstrometryNetPlateSolver(service, apiKey, focalLength, pixelSize)
             }
             PlateSolverType.SIRIL -> SirilPlateSolver(executablePath!!, focalLength, pixelSize)
             PlateSolverType.PIXINSIGHT -> {

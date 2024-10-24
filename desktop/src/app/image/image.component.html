@@ -522,7 +522,7 @@
 				<label>Radius (°)</label>
 			</p-floatLabel>
 		</div>
-		@if (solver.request.type === 'SIRIL' || solver.request.type === 'PIXINSIGHT') {
+		@if (solver.request.type !== 'ASTAP') {
 			<div class="col-6 flex flex-row align-items-center">
 				<p-floatLabel>
 					<p-inputNumber
