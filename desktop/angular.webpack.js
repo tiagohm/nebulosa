@@ -20,7 +20,7 @@ module.exports = (config, options) => {
 	config.plugins = [
 		...config.plugins,
 		new NodePolyfillPlugin({
-			excludeAliases: ['console'],
+			onlyAliases: ['path'],
 		}),
 	]
 
