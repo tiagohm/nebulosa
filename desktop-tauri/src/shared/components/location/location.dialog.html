@@ -1,0 +1,94 @@
+<div class="grid pt-2">
+	<div class="col-12">
+		<p-floatLabel class="w-full">
+			<input
+				pInputText
+				class="p-inputtext-sm border-0 w-full"
+				[(ngModel)]="location.name"
+				(ngModelChange)="locationChanged()" />
+			<label>Name</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-6">
+		<p-floatLabel>
+			<p-inputNumber
+				locale="en"
+				type="number"
+				styleClass="p-inputtext-sm border-0 w-full"
+				[min]="-720"
+				[max]="720"
+				[(ngModel)]="location.offsetInMinutes"
+				(ngModelChange)="locationChanged()"
+				[showButtons]="true"
+				[allowEmpty]="false"
+				spinnableNumber />
+			<label>UTC Offset (min)</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-6">
+		<p-floatLabel>
+			<p-inputNumber
+				locale="en"
+				type="number"
+				styleClass="p-inputtext-sm border-0 w-full"
+				[min]="-1000"
+				[max]="10000"
+				[(ngModel)]="location.elevation"
+				(ngModelChange)="locationChanged()"
+				[showButtons]="true"
+				[allowEmpty]="false"
+				spinnableNumber />
+			<label>Elevation (m)</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-6">
+		<p-floatLabel>
+			<p-inputNumber
+				locale="en"
+				styleClass="p-inputtext-sm border-0 w-full"
+				[min]="-90"
+				[max]="90"
+				[maxFractionDigits]="5"
+				[(ngModel)]="location.latitude"
+				(ngModelChange)="locationChanged()"
+				[allowEmpty]="false"
+				spinnableNumber />
+			<label>Latitude</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-6">
+		<p-floatLabel>
+			<p-inputNumber
+				locale="en"
+				styleClass="p-inputtext-sm border-0 w-full"
+				[min]="-180"
+				[max]="180"
+				[maxFractionDigits]="5"
+				[(ngModel)]="location.longitude"
+				(ngModelChange)="locationChanged()"
+				[allowEmpty]="false"
+				spinnableNumber />
+			<label>Longitude</label>
+		</p-floatLabel>
+	</div>
+	<div class="col-12">
+		<neb-map
+			#map
+			[(latitude)]="location.latitude"
+			(latitudeChange)="locationChanged()"
+			[(longitude)]="location.longitude"
+			(longitudeChange)="locationChanged()" />
+	</div>
+</div>
+<div
+	*ngIf="isDialog"
+	class="p-dialog-footer px-0">
+	<p-button
+		[disabled]="!location.name"
+		icon="mdi mdi-check"
+		label="OK"
+		(onClick)="save()"
+		[text]="true"
+		severity="success"
+		size="small" />
+</div>

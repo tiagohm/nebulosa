@@ -1,34 +1,66 @@
-<main class="container">
-	<h1>Welcome to Tauri + Angular!</h1>
+<section
+	*ngIf="showTopBar"
+	id="titlebar"
+	class="flex flex-row align-items-center justify-content-end gap-2 sticky pr-1"
+	[style]="{ height: '42px', zIndex: '1000', backgroundColor: '#212121' }">
+	<span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
+		<div>{{ title }}</div>
+		<div class="text-xs text-gray-200 font-normal">{{ subTitle }}</div>
+	</span>
+	<neb-menu-bar
+		*ngIf="topMenu.length"
+		[model]="topMenu" />
+	<span
+		class="separator flex justify-content-center"
+		*ngIf="topMenu.length"></span>
+	<p-button
+		*ngIf="pinned && !modal"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-pin text-gray-200"
+		(onClick)="pin()"
+		pTooltip="Unpin Window"
+		tooltipPosition="bottom"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		*ngIf="!pinned && !modal"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-pin-off text-gray-200"
+		(onClick)="pin()"
+		pTooltip="Pin Window"
+		tooltipPosition="bottom"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		*ngIf="!modal"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-window-minimize text-gray-200"
+		(onClick)="minimize()"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		*ngIf="!modal && maximizable"
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-window-maximize text-gray-200"
+		(onClick)="maximize()"
+		styleClass="select-none cursor-pointer"></p-button>
+	<p-button
+		[text]="true"
+		[rounded]="true"
+		size="small"
+		icon="mdi mdi-window-close text-danger"
+		(onClick)="close()"
+		styleClass="select-none cursor-pointer mr-1"></p-button>
+</section>
 
-	<div class="row">
-		<a
-			href="https://tauri.app"
-			target="_blank">
-			<img
-				src="/assets/tauri.svg"
-				class="logo tauri"
-				alt="Tauri logo" />
-		</a>
-		<a
-			href="https://angular.io"
-			target="_blank">
-			<img
-				src="/assets/angular.svg"
-				class="logo angular"
-				alt="Angular logo" />
-		</a>
-	</div>
-	<p>Click on the logos to learn more about the frameworks</p>
+<section id="main">
+	<router-outlet></router-outlet>
+</section>
 
-	<form
-		class="row"
-		(submit)="greet($event, greetInput.value)">
-		<input
-			#greetInput
-			id="greet-input"
-			placeholder="Enter a name..." />
-		<button type="submit">Greet</button>
-	</form>
-	<p>{{ greetingMessage }}</p>
-</main>
+<p-toast position="bottom-center" />
+<p-confirmDialog [style]="{ minWidth: '320px', maxWidth: '80px' }" />

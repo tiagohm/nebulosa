@@ -9,7 +9,7 @@
 	"projects": {
 		"nebulosa": {
 			"projectType": "application",
-			"root": "",
+			"root": ".",
 			"sourceRoot": "src",
 			"prefix": "app",
 			"schematics": {
@@ -22,64 +22,40 @@
 			},
 			"architect": {
 				"build": {
-					"builder": "@angular-devkit/build-angular:application",
+					"builder": "@analogjs/platform:vite",
 					"options": {
-						"outputPath": "dist/nebulosa",
-						"index": "src/index.html",
-						"browser": "src/main.ts",
-						"polyfills": ["zone.js"],
-						"tsConfig": "tsconfig.app.json",
-						"inlineStyleLanguage": "scss",
-						"assets": ["src/assets"],
-						"styles": ["node_modules/leaflet/dist/leaflet.css", "node_modules/primeng/resources/primeng.min.css", "node_modules/primeflex/primeflex.css", "node_modules/primeicons/primeicons.css", "src/styles.scss"],
-						"scripts": ["node_modules/chart.js/dist/chart.umd.js"]
+						"configFile": "vite.config.ts",
+						"main": "src/main.ts",
+						"outputPath": "dist/client",
+						"tsConfig": "tsconfig.app.json"
 					},
+					"defaultConfiguration": "production",
 					"configurations": {
-						"production": {
-							"optimization": true,
-							"outputHashing": "all",
-							"sourceMap": false,
-							"namedChunks": false,
-							"aot": true,
-							"extractLicenses": true,
-							"fileReplacements": [
-								{
-									"replace": "src/environments/environment.ts",
-									"with": "src/environments/environment.prod.ts"
-								}
-							]
-						},
 						"development": {
-							"optimization": false,
-							"outputHashing": "none",
-							"sourceMap": true,
-							"namedChunks": false,
-							"aot": false,
-							"extractLicenses": false,
-							"fileReplacements": [
-								{
-									"replace": "src/environments/environment.ts",
-									"with": "src/environments/environment.dev.ts"
-								}
-							]
+							"mode": "development"
+						},
+						"production": {
+							"sourcemap": false,
+							"mode": "production"
 						}
-					},
-					"defaultConfiguration": "production"
+					}
 				},
 				"serve": {
-					"builder": "@angular-devkit/build-angular:dev-server",
+					"builder": "@analogjs/platform:vite-dev-server",
+					"defaultConfiguration": "development",
 					"options": {
+						"buildTarget": "nebulosa:build",
 						"port": 1420
 					},
 					"configurations": {
+						"development": {
+							"buildTarget": "nebulosa:build:development",
+							"hmr": true
+						},
 						"production": {
 							"buildTarget": "nebulosa:build:production"
-						},
-						"development": {
-							"buildTarget": "nebulosa:build:development"
 						}
-					},
-					"defaultConfiguration": "development"
+					}
 				}
 			}
 		}

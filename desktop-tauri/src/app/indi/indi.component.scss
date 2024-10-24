@@ -1,0 +1,16 @@
+neb-indi {
+	.properties {
+		height: calc(100vh - 100px);
+		overflow-y: auto;
+	}
+
+	.properties::-webkit-scrollbar {
+		display: none;
+	}
+
+	.p-listbox-filter.p-inputtext {
+		border: 0px;
+		border-radius: 4px;
+		background: #1a1a1a;
+	}
+}

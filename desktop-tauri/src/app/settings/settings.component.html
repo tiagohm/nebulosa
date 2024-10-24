@@ -1,0 +1,347 @@
+<div class="grid px-3 pb-2 pt-3 relative">
+	<div
+		class="col-12"
+		*ngIf="tab === 'GENERAL'">
+		<div class="grid">
+			<div class="col-12">
+				<p-checkbox
+					[binary]="true"
+					label="Check for new version on startup"
+					[(ngModel)]="preference.checkVersion"
+					(ngModelChange)="savePreference()" />
+			</div>
+		</div>
+	</div>
+	<div
+		class="col-12"
+		*ngIf="tab === 'LOCATION'">
+		<div class="grid">
+			<div class="col-12 gap-2">
+				<p-floatLabel class="w-full">
+					<p-dropdown
+						[options]="preference.locations"
+						[ngModel]="preference.location"
+						(ngModelChange)="locationChanged($event)"
+						optionLabel="name"
+						dataKey="id"
+						styleClass="p-inputtext-sm border-0"
+						emptyMessage="No location found"
+						[autoDisplayFirst]="false">
+						<ng-template pTemplate="selectedItem">
+							<div class="flex align-items-center gap-2">
+								<span>{{ preference.location.name || '?' }}</span>
+							</div>
+						</ng-template>
+					</p-dropdown>
+					<label>Location</label>
+				</p-floatLabel>
+				<div class="flex gap-1">
+					<p-button
+						icon="mdi mdi-plus"
+						size="small"
+						severity="success"
+						[text]="true"
+						pTooltip="New"
+						tooltipPosition="bottom"
+						(onClick)="addLocation()" />
+					<p-button
+						[disabled]="preference.locations.length <= 1"
+						icon="mdi mdi-delete"
+						size="small"
+						severity="danger"
+						[text]="true"
+						pTooltip="Delete"
+						tooltipPosition="bottom"
+						(onClick)="deleteLocation()" />
+				</div>
+			</div>
+			<div class="col-12">
+				<neb-location
+					[location]="preference.location"
+					(locationChange)="locationChanged($event)" />
+			</div>
+		</div>
+	</div>
+	<div
+		class="col-12"
+		*ngIf="tab === 'PLATE_SOLVER'">
+		<div class="grid">
+			<div class="col-8">
+				<p-floatLabel class="w-full">
+					<p-dropdown
+						[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
+						optionsLabel="label"
+						optionsValue="value"
+						[(ngModel)]="plateSolverType"
+						styleClass="p-inputtext-sm border-0"
+						[autoDisplayFirst]="false" />
+					<label>Solver</label>
+				</p-floatLabel>
+			</div>
+			<div
+				class="col-12"
+				*ngIf="plateSolverType !== 'ASTROMETRY_NET_ONLINE'">
+				<neb-path-chooser
+					key="plateSolverExecutableFile"
+					[directory]="false"
+					label="Executable path"
+					[(path)]="plateSolver.executablePath"
+					class="w-full"
+					(pathChange)="savePreference()" />
+			</div>
+			@if (plateSolverType === 'ASTROMETRY_NET_ONLINE') {
+				<div class="col-8">
+					<p-floatLabel class="w-full">
+						<input
+							pInputText
+							class="p-inputtext-sm border-0 w-full"
+							[(ngModel)]="plateSolver.apiUrl"
+							(ngModelChange)="savePreference()" />
+						<label>API URL</label>
+					</p-floatLabel>
+				</div>
+				<div class="col-4">
+					<p-floatLabel class="w-full">
+						<input
+							pInputText
+							class="p-inputtext-sm border-0 w-full"
+							[(ngModel)]="plateSolver.apiKey"
+							(ngModelChange)="savePreference()" />
+						<label>API Key</label>
+					</p-floatLabel>
+				</div>
+			}
+			@if (plateSolverType !== 'PIXINSIGHT') {
+				<div class="col-6">
+					<p-floatLabel>
+						<p-inputNumber
+							styleClass="p-inputtext-sm border-0 w-full"
+							[(ngModel)]="plateSolver.downsampleFactor"
+							(ngModelChange)="savePreference()"
+							[showButtons]="true"
+							[min]="0"
+							[max]="4"
+							spinnableNumber />
+						<label>Downsample factor</label>
+					</p-floatLabel>
+				</div>
+				<div class="col-6">
+					<p-floatLabel>
+						<p-inputNumber
+							styleClass="p-inputtext-sm border-0 w-full"
+							[(ngModel)]="plateSolver.timeout"
+							(ngModelChange)="savePreference()"
+							[showButtons]="true"
+							[min]="0"
+							[max]="300"
+							spinnableNumber />
+						<label>Timeout (s)</label>
+					</p-floatLabel>
+				</div>
+			}
+			@if (plateSolverType === 'PIXINSIGHT') {
+				<div class="col-4">
+					<p-floatLabel>
+						<p-inputNumber
+							[min]="0"
+							[max]="256"
+							[step]="1"
+							[showButtons]="true"
+							class="w-full"
+							styleClass="p-inputtext-sm border-0 w-full"
+							[(ngModel)]="plateSolver.slot"
+							(ngModelChange)="savePreference()"
+							[allowEmpty]="false"
+							spinnableNumber />
+						<label>Slot</label>
+					</p-floatLabel>
+				</div>
+			}
+		</div>
+	</div>
+	<div
+		class="col-12"
+		*ngIf="tab === 'STAR_DETECTOR'">
+		<div class="grid">
+			<div class="col-6">
+				<p-floatLabel class="w-full">
+					<p-dropdown
+						[options]="'STAR_DETECTOR' | dropdownOptions | enumDropdown"
+						optionsLabel="label"
+						optionsValue="value"
+						[(ngModel)]="starDetectorType"
+						styleClass="p-inputtext-sm border-0"
+						[autoDisplayFirst]="false" />
+					<label>Detector</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-12">
+				<neb-path-chooser
+					key="starDetectorExecutableFile"
+					[directory]="false"
+					label="Executable path"
+					[(path)]="starDetector.executablePath"
+					class="w-full"
+					(pathChange)="savePreference()" />
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<p-inputNumber
+						styleClass="p-inputtext-sm border-0 w-full"
+						[(ngModel)]="starDetector.timeout"
+						(ngModelChange)="savePreference()"
+						[showButtons]="true"
+						[min]="0"
+						[max]="300"
+						spinnableNumber />
+					<label>Timeout (s)</label>
+				</p-floatLabel>
+			</div>
+			<div
+				class="col-4"
+				*ngIf="starDetectorType === 'PIXINSIGHT'">
+				<p-floatLabel>
+					<p-inputNumber
+						[min]="0"
+						[max]="256"
+						[step]="1"
+						[showButtons]="true"
+						class="w-full"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[(ngModel)]="starDetector.slot"
+						(ngModelChange)="savePreference()"
+						[allowEmpty]="false"
+						spinnableNumber />
+					<label>Slot</label>
+				</p-floatLabel>
+			</div>
+		</div>
+	</div>
+	<div
+		class="col-12"
+		*ngIf="tab === 'LIVE_STACKER'">
+		<div class="grid">
+			<div class="col-6">
+				<p-floatLabel class="w-full">
+					<p-dropdown
+						[options]="'LIVE_STACKER' | dropdownOptions | enumDropdown"
+						optionsLabel="label"
+						optionsValue="value"
+						[(ngModel)]="liveStackerType"
+						styleClass="p-inputtext-sm border-0"
+						[autoDisplayFirst]="false" />
+					<label>Stacker</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-12">
+				<neb-path-chooser
+					key="liveStackerExecutableFile"
+					[directory]="false"
+					class="w-full"
+					[(path)]="liveStacker.executablePath"
+					label="Executable path"
+					(pathChange)="savePreference()" />
+			</div>
+			<div
+				class="col-4"
+				*ngIf="liveStackerType === 'PIXINSIGHT'">
+				<p-floatLabel>
+					<p-inputNumber
+						[min]="0"
+						[max]="256"
+						[step]="1"
+						[showButtons]="true"
+						class="w-full"
+						styleClass="p-inputtext-sm border-0 w-full"
+						[(ngModel)]="liveStacker.slot"
+						(ngModelChange)="savePreference()"
+						[allowEmpty]="false"
+						spinnableNumber />
+					<label>Slot</label>
+				</p-floatLabel>
+			</div>
+		</div>
+	</div>
+	<div
+		class="col-12"
+		*ngIf="tab === 'CAPTURE_NAMING_FORMAT'">
+		<div class="grid">
+			<div class="col-12 gap-1">
+				<p-floatLabel class="w-full">
+					<input
+						pInputText
+						class="p-inputtext-sm border-0"
+						[(ngModel)]="preference.namingFormat.light"
+						(ngModelChange)="savePreference()" />
+					<label>Light</label>
+				</p-floatLabel>
+				<p-button
+					[text]="true"
+					icon="mdi mdi-restore"
+					(onClick)="resetCameraCaptureNamingFormat('LIGHT')"
+					pTooltip="Reset"
+					tooltipPosition="bottom" />
+			</div>
+			<div class="col-12 gap-1">
+				<p-floatLabel class="w-full">
+					<input
+						pInputText
+						class="p-inputtext-sm border-0"
+						[(ngModel)]="preference.namingFormat.dark"
+						(ngModelChange)="savePreference()" />
+					<label>Dark</label>
+				</p-floatLabel>
+				<p-button
+					[text]="true"
+					icon="mdi mdi-restore"
+					(onClick)="resetCameraCaptureNamingFormat('DARK')"
+					pTooltip="Reset"
+					tooltipPosition="bottom" />
+			</div>
+			<div class="col-12 gap-1">
+				<p-floatLabel class="w-full">
+					<input
+						pInputText
+						class="p-inputtext-sm border-0"
+						[(ngModel)]="preference.namingFormat.flat"
+						(ngModelChange)="savePreference()" />
+					<label>Flat</label>
+				</p-floatLabel>
+				<p-button
+					[text]="true"
+					icon="mdi mdi-restore"
+					(onClick)="resetCameraCaptureNamingFormat('FLAT')"
+					pTooltip="Reset"
+					tooltipPosition="bottom" />
+			</div>
+			<div class="col-12 gap-1">
+				<p-floatLabel class="w-full">
+					<input
+						pInputText
+						class="p-inputtext-sm border-0"
+						[(ngModel)]="preference.namingFormat.bias"
+						(ngModelChange)="savePreference()" />
+					<label>Bias</label>
+				</p-floatLabel>
+				<p-button
+					[text]="true"
+					icon="mdi mdi-restore"
+					(onClick)="resetCameraCaptureNamingFormat('BIAS')"
+					pTooltip="Reset"
+					tooltipPosition="bottom" />
+			</div>
+		</div>
+	</div>
+</div>
+
+<p-sidebar
+	[(visible)]="showMenu"
+	[fullScreen]="true"
+	appendTo="body"
+	[modal]="false"
+	[dismissible]="true"
+	styleClass="bg-black-alpha-70">
+	<p-menu
+		[model]="menuModel"
+		styleClass="w-full border-0 px-2" />
+</p-sidebar>
