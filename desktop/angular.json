@@ -7,7 +7,7 @@
 	"version": 1,
 	"newProjectRoot": "projects",
 	"projects": {
-		"angular-electron": {
+		"nebulosa": {
 			"root": "",
 			"sourceRoot": "src",
 			"projectType": "application",
@@ -108,20 +108,20 @@
 				"serve": {
 					"builder": "@angular-builders/custom-webpack:dev-server",
 					"options": {
-						"buildTarget": "angular-electron:build"
+						"buildTarget": "nebulosa:build"
 					},
 					"configurations": {
 						"dev": {
-							"buildTarget": "angular-electron:build:dev"
+							"buildTarget": "nebulosa:build:dev"
 						},
 						"production": {
-							"buildTarget": "angular-electron:build:production"
+							"buildTarget": "nebulosa:build:production"
 						},
 						"web": {
-							"buildTarget": "angular-electron:build:web"
+							"buildTarget": "nebulosa:build:web"
 						},
 						"web-production": {
-							"buildTarget": "angular-electron:build:web-production"
+							"buildTarget": "nebulosa:build:web-production"
 						}
 					}
 				}
