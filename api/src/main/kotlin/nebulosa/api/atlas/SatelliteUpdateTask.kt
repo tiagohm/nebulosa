@@ -1,5 +1,6 @@
 package nebulosa.api.atlas
 
+import com.fasterxml.jackson.databind.JsonMappingException
 import nebulosa.api.database.MainDatabaseMigrator
 import nebulosa.api.database.SkyDatabaseMigrator
 import nebulosa.api.message.MessageService
@@ -35,8 +36,12 @@ class SatelliteUpdateTask(
     }
 
     private fun isOutOfDate(): Boolean {
-        val updatedAt = preferenceService.getLong(UPDATED_AT_KEY) ?: 0L
-        return System.currentTimeMillis() - updatedAt >= UPDATE_INTERVAL
+        try {
+            val updatedAt = preferenceService.getLong(UPDATED_AT_KEY) ?: 0L
+            return System.currentTimeMillis() - updatedAt >= UPDATE_INTERVAL
+        } catch (e: JsonMappingException) {
+            return true
+        }
     }
 
     private fun checkIsOutOfDateAndUpdate() {

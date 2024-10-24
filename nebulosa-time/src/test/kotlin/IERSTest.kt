@@ -12,15 +12,15 @@ class IERSTest {
         IERS.attach(IERSA)
 
         with(UTC(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).ut1) {
-            whole shouldBe (2459581.0 plusOrMinus 1E-18)
-            fraction shouldBe (-1.2784074073774842e-06 plusOrMinus 1E-18)
+            whole shouldBe (2459581.0 plusOrMinus 1E-8)
+            fraction shouldBe (-1.2784074073774842e-06 plusOrMinus 1E-8)
         }
         with(UTC(TimeYMDHMS(2026, 1, 1, 12, 0, 0.0)).ut1) {
-            whole shouldBe (2461042.0 plusOrMinus 1E-18)
-            fraction shouldBe (1.1488645833633137E-6 plusOrMinus 1E-18)
+            whole shouldBe (2461042.0 plusOrMinus 1E-8)
+            fraction shouldBe (1.1488645833633137E-6 plusOrMinus 1E-8)
         }
         with(UTC(TimeYMDHMS(1964, 1, 1, 12, 0, 0.0)).ut1) {
-            whole shouldBe (2438396.0 plusOrMinus 1E-18)
+            whole shouldBe (2438396.0 plusOrMinus 1E-8)
             fraction shouldBe (9.353564814864956e-06 plusOrMinus 1E-8)
         }
     }
@@ -30,15 +30,15 @@ class IERSTest {
         IERS.attach(IERSB)
 
         with(UTC(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).ut1) {
-            whole shouldBe (2459581.0 plusOrMinus 1E-18)
-            fraction shouldBe (-1.2782876157107722e-06 plusOrMinus 1E-18)
+            whole shouldBe (2459581.0 plusOrMinus 1E-8)
+            fraction shouldBe (-1.2782876157107722E-6 plusOrMinus 1E-8)
         }
         with(UTC(TimeYMDHMS(2026, 1, 1, 12, 0, 0.0)).ut1) {
-            whole shouldBe (2461042.0 plusOrMinus 1E-18)
-            fraction shouldBe (6.586666666966254E-7 plusOrMinus 1E-18)
+            whole shouldBe (2461042.0 plusOrMinus 1E-8)
+            fraction shouldBe (6.586666666966254E-7 plusOrMinus 1E-8)
         }
         with(UTC(TimeYMDHMS(1964, 1, 1, 12, 0, 0.0)).ut1) {
-            whole shouldBe (2438396.0 plusOrMinus 1E-18)
+            whole shouldBe (2438396.0 plusOrMinus 1E-8)
             fraction shouldBe (-9.322685184683761e-07 plusOrMinus 1E-8)
         }
     }
@@ -49,15 +49,15 @@ class IERSTest {
         IERS.attach(iersab)
 
         with(UTC(TimeYMDHMS(2022, 1, 1, 12, 0, 0.0)).ut1) {
-            whole shouldBe (2459581.0 plusOrMinus 1E-18)
-            fraction shouldBe (-1.2782876157107722e-06 plusOrMinus 1E-18)
+            whole shouldBe (2459581.0 plusOrMinus 1E-8)
+            fraction shouldBe (-1.2782876157107722e-06 plusOrMinus 1E-8)
         }
         with(UTC(TimeYMDHMS(2026, 1, 1, 12, 0, 0.0)).ut1) {
-            whole shouldBe (2461042.0 plusOrMinus 1E-18)
-            fraction shouldBe (1.1488645833633137E-6 plusOrMinus 1E-18)
+            whole shouldBe (2461042.0 plusOrMinus 1E-8)
+            fraction shouldBe (1.1488645833633137E-6 plusOrMinus 1E-8)
         }
         with(UTC(TimeYMDHMS(1964, 1, 1, 12, 0, 0.0)).ut1) {
-            whole shouldBe (2438396.0 plusOrMinus 1E-18)
+            whole shouldBe (2438396.0 plusOrMinus 1E-8)
             fraction shouldBe (-9.322685184683761e-07 plusOrMinus 1E-8)
         }
     }

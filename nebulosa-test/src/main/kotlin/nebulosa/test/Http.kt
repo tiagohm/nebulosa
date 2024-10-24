@@ -41,6 +41,8 @@ fun download(url: String, extension: String = url.extensionFromUrl): Path {
             call.execute().use {
                 it.body?.byteStream()?.transferAndCloseOutput(path.outputStream())
             }
+        } else {
+            println("$path is already downloaded")
         }
 
         path
