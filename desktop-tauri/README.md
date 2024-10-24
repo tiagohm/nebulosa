@@ -1,7 +1,79 @@
-# Tauri + Angular
+# ![](src/assets/icons/nebulosa.png) Nebulosa
 
-This template should help get you started developing with Tauri and Angular.
+The complete integrated solution for all of your astronomical imaging needs.
 
-## Recommended IDE Setup
+## Home
 
-[VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer) + [Angular Language Service](https://marketplace.visualstudio.com/items?itemName=Angular.ng-template).
+![](home.png)
+
+## Camera
+
+![](camera.png)
+
+## Mount
+
+![](mount.png)
+
+## Focuser
+
+![](focuser.png)
+
+## Filter Wheel
+
+![](filter-wheel.png)
+
+## Rotator
+
+![](rotator.png)
+
+## Light Box
+
+![](light-box.png)
+
+## Dust Cap
+
+![](dust-cap.png)
+
+## Guider
+
+![](guider.png)
+
+## Sky Atlas
+
+![](sky-atlas.png)
+
+## Image
+
+![](image.png)
+
+## Framing
+
+![](framing.png)
+
+## Alignment
+
+![](alignment.png)
+
+## Flat Wizard
+
+![](flat-wizard.png)
+
+## Auto Focus
+
+![](auto-focus.png)
+
+## Sequencer
+
+![](sequencer.png)
+
+## INDI
+
+![](indi.png)
+
+## Calculator
+
+![](calculator.png)
+
+## Settings
+
+![](settings.png)
