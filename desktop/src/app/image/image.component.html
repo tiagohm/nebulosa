@@ -522,40 +522,38 @@
 				<label>Radius (°)</label>
 			</p-floatLabel>
 		</div>
-		@if (solver.request.type !== 'ASTAP') {
-			<div class="col-6 flex flex-row align-items-center">
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="10000"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[showButtons]="true"
-						[(ngModel)]="solver.request.focalLength"
-						[allowEmpty]="false"
-						locale="en"
-						(ngModelChange)="savePreference()"
-						spinnableNumber />
-					<label>Focal length (mm)</label>
-				</p-floatLabel>
-			</div>
-			<div class="col-6 flex flex-row align-items-center">
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="100"
-						[step]="0.01"
-						[minFractionDigits]="1"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[showButtons]="true"
-						[(ngModel)]="solver.request.pixelSize"
-						[allowEmpty]="false"
-						locale="en"
-						(ngModelChange)="savePreference()"
-						spinnableNumber />
-					<label>Pixel size (µm)</label>
-				</p-floatLabel>
-			</div>
-		}
+		<div class="col-6 flex flex-row align-items-center">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="0"
+					[max]="10000"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[showButtons]="true"
+					[(ngModel)]="solver.request.focalLength"
+					[allowEmpty]="false"
+					locale="en"
+					(ngModelChange)="savePreference()"
+					spinnableNumber />
+				<label>Focal length (mm)</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-6 flex flex-row align-items-center">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="0"
+					[max]="100"
+					[step]="0.01"
+					[minFractionDigits]="1"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[showButtons]="true"
+					[(ngModel)]="solver.request.pixelSize"
+					[allowEmpty]="false"
+					locale="en"
+					(ngModelChange)="savePreference()"
+					spinnableNumber />
+				<label>Pixel size (µm)</label>
+			</p-floatLabel>
+		</div>
 	</div>
 	<ng-template pTemplate="footer">
 		<div class="grid pt-2">
@@ -767,7 +765,7 @@
 				severity="info"
 				(onClick)="restoreAutoStretchMeanBackground()"
 				pTooltip="Reset"
-				tooltipPosition="bottom"/>
+				tooltipPosition="bottom" />
 		</div>
 	</div>
 	<ng-template pTemplate="footer">

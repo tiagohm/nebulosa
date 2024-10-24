@@ -1171,6 +1171,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 					...this.solver.request,
 					...this.preferenceService.settings.get().plateSolver[this.solver.request.type],
 					type: this.solver.request.type,
+					width: this.imageInfo?.width ?? 0,
+					height: this.imageInfo?.height ?? 0,
 				}
 
 				const solved = await this.api.solverStart(request, path, this.solver.key)

@@ -23,7 +23,7 @@ data class NovaAstrometryNetPlateSolver(
     private val apiKey: String = "",
     private val focalLength: Double = 0.0, // mm
     private val pixelSize: Double = 0.0, // / µm
-    private val scale: Double = if (focalLength <= 0.0) 0.0 else (pixelSize / focalLength) * 206.265,
+    private val scale: Double = PlateSolver.computeFOV(focalLength, pixelSize),
 ) : PlateSolver {
 
     @Volatile private var session: Session? = null

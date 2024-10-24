@@ -29,7 +29,7 @@ data class LocalAstrometryNetPlateSolver(
 ) : PlateSolver {
 
     constructor(executablePath: Path, focalLength: Double, pixelSize: Double) :
-            this(executablePath, if (focalLength <= 0.0) 0.0 else (pixelSize / focalLength) * 206.265)
+            this(executablePath, PlateSolver.computeFOV(focalLength, pixelSize))
 
     override fun solve(
         path: Path?, image: Image?,

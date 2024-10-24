@@ -19,6 +19,8 @@ export interface PlateSolverRequest extends PlateSolverSettings {
 	radius: Angle
 	pixelSize: number
 	focalLength: number
+	width: number
+	height: number
 }
 
 export const NOVA_ASTROMETRY_NET_URL = 'https://nova.astrometry.net/'
@@ -41,6 +43,8 @@ export const DEFAULT_PLATE_SOLVER_REQUEST: PlateSolverRequest = {
 	radius: 4,
 	focalLength: 0,
 	pixelSize: 0,
+	width: 0,
+	height: 0,
 }
 
 export function plateSolverSettingsWithDefault(settings?: Partial<PlateSolverSettings>, source: PlateSolverSettings = DEFAULT_PLATE_SOLVER_SETTINGS) {
