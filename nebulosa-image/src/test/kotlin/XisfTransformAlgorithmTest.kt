@@ -311,7 +311,7 @@ class XisfTransformAlgorithmTest {
     fun colorAutoStf() {
         val mImage = M82_COLOR_32_XISF.xisf().asImage()
         mImage.transform(AutoScreenTransformFunction)
-        mImage.save("xisf-color-auto-stf").second shouldBe "b1460451ad0f0580802d3d6d3a6750ba"
+        mImage.save("xisf-color-auto-stf").second shouldBe "afe2fd8e21b042389ff5eb1d1abffb08"
     }
 
     @Test

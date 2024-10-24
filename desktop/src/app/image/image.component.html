@@ -737,6 +737,38 @@
 				[max]="65536"
 				[(ngModel)]="stretch.transformation.midtone" />
 		</div>
+		<div class="col-12 mt-2 flex align-items-center gap-1">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="0"
+					[max]="1"
+					[disabled]="!stretch.transformation.auto"
+					[showButtons]="true"
+					[step]="0.01"
+					[minFractionDigits]="2"
+					[maxFractionDigits]="2"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[(ngModel)]="stretch.transformation.meanBackground"
+					[allowEmpty]="false"
+					locale="en"
+					spinnableNumber />
+				<label>Auto Stretch Mean Background</label>
+			</p-floatLabel>
+			<p-button
+				[text]="true"
+				icon="mdi mdi-check"
+				severity="success"
+				(onClick)="applyAutoStretchMeanBackground()"
+				pTooltip="Apply"
+				tooltipPosition="bottom" />
+			<p-button
+				[text]="true"
+				icon="mdi mdi-restore"
+				severity="info"
+				(onClick)="restoreAutoStretchMeanBackground()"
+				pTooltip="Reset"
+				tooltipPosition="bottom"/>
+		</div>
 	</div>
 	<ng-template pTemplate="footer">
 		<p-button

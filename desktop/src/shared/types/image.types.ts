@@ -208,6 +208,7 @@ export interface ImageStretch {
 	shadow: number
 	highlight: number
 	midtone: number
+	meanBackground: number
 }
 
 export interface ImageStretchDialog {
@@ -369,6 +370,7 @@ export const DEFAULT_IMAGE_STRETCH: ImageStretch = {
 	shadow: 0,
 	highlight: 1,
 	midtone: 0.5,
+	meanBackground: 0.5,
 }
 
 export const DEFAULT_IMAGE_STRETCH_DIALOG: ImageStretchDialog = {
@@ -588,6 +590,7 @@ export function imageStretchWithDefault(stretch?: Partial<ImageStretch>, source:
 	stretch.shadow ??= source.shadow
 	stretch.highlight ??= source.highlight
 	stretch.midtone ??= source.midtone
+	stretch.meanBackground ??= source.meanBackground
 	return stretch as ImageStretch
 }
 

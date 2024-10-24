@@ -154,7 +154,7 @@ class ImageService(
 
         if (enabled) {
             if (autoStretch) {
-                stretchParams = AutoScreenTransformFunction.compute(transformedImage)
+                stretchParams = AdaptativeScreenTransformFunction(transformation.stretch.meanBackground).compute(transformedImage)
                 transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
             } else if (manualStretch) {
                 stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)

@@ -266,6 +266,7 @@ class Image internal constructor(
 
         private inline fun Image.debayer(bayer: CfaPattern? = CfaPattern.from(header)) {
             if (bayer != null) {
+                check(!mono) { "image must be color to be debayered" }
                 Debayer(bayer).transform(this)
             }
         }

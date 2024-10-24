@@ -310,7 +310,7 @@ class FitsTransformAlgorithmTest {
     fun colorAutoStf() {
         val mImage = NGC3344_COLOR_32_FITS.fits().asImage()
         mImage.transform(AutoScreenTransformFunction)
-        mImage.save("fits-color-auto-stf").second shouldBe "a9c3657d8597b927607eb438e666d3a0"
+        mImage.save("fits-color-auto-stf").second shouldBe "debc21729a90c0caed3ce43704297d90"
     }
 
     @Test
@@ -373,7 +373,7 @@ class FitsTransformAlgorithmTest {
     fun colorDebayer() {
         val mImage = DEBAYER_FITS.fits().asImage()
         val nImage = mImage.transform(AutoScreenTransformFunction)
-        nImage.save("fits-color-debayer").second shouldBe "86b5bdd67dfd6bbf5495afae4bf2bc04"
+        nImage.save("fits-color-debayer").second shouldBe "c89f709774f6714158c4961d59a0acf2"
     }
 
     @Test

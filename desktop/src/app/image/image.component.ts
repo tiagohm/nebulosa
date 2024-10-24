@@ -823,7 +823,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		ctx?.drawImage(this.image.nativeElement, star.x - 8, star.y - 8, 16, 16, 0, 0, canvas.width, canvas.height)
 	}
 
-	private async loadImage() {
+	protected async loadImage() {
 		const path = this.imagePath
 
 		if (path) {
@@ -1045,6 +1045,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.stretch.transformation.shadow = 0
 		this.stretch.transformation.highlight = 65536
 		this.stretch.transformation.midtone = 32768
+		// this.stretch.transformation.meanBackground = 0.5
 		this.savePreference()
 
 		if (load) {
@@ -1067,6 +1068,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	protected stretchImage() {
 		this.disableAutoStretch()
 		return this.loadImage()
+	}
+
+	protected applyAutoStretchMeanBackground() {
+		if (!this.stretch.transformation.auto) {
+			return this.toggleStretch()
+		} else {
+			return this.loadImage()
+		}
+	}
+
+	protected restoreAutoStretchMeanBackground() {
+		this.stretch.transformation.meanBackground = 0.5
+		return this.applyAutoStretchMeanBackground()
 	}
 
 	private invertImage() {
