@@ -24,6 +24,8 @@ export type ImageFilterType = 'LUMINANCE' | 'RED' | 'GREEN' | 'BLUE' | 'MONO' | 
 
 export type BayerPattern = 'RGGB' | 'BGGR' | 'GBRG' | 'GRBG' | 'GRGB' | 'GBGR' | 'RGBG' | 'BGRG'
 
+export type Parity = 'NORMAL' | 'FLIPPED'
+
 export type ImageMousePosition = Point
 
 export interface Image {
@@ -85,6 +87,7 @@ export interface ImageSolved extends EquatorialCoordinateJ2000 {
 	width: number
 	height: number
 	radius: number
+	parity: Parity
 }
 
 export interface CoordinateInterpolation {
@@ -363,6 +366,7 @@ export const DEFAULT_IMAGE_SOLVED: ImageSolved = {
 	radius: 0,
 	rightAscensionJ2000: '00h00m00s',
 	declinationJ2000: '+000°00\'00"',
+	parity: 'NORMAL',
 }
 
 export const DEFAULT_IMAGE_STRETCH: ImageStretch = {
