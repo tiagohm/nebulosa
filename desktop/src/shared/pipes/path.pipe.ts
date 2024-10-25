@@ -17,8 +17,6 @@ export class PathPipe implements PipeTransform {
 				return path.dirname(value)
 			case 'extname':
 				return path.extname(value)
-			case 'namespaced':
-				return path.toNamespacedPath(value)
 			default:
 				return value
 		}

@@ -10,24 +10,24 @@
 		"!package.json",
 		"!package-lock.json",
 		{
-			"from": "../dist",
+			"from": "../dist/browser",
 			"filter": ["**/*"]
 		}
 	],
 	"extraResources": ["api.jar"],
 	"win": {
-		"icon": "dist/assets/icons",
+		"icon": "dist/browser/assets/icons",
 		"target": ["portable"]
 	},
 	"portable": {
-		"splashImage": "dist/assets/images/splash.bmp"
+		"splashImage": "dist/browser/assets/images/splash.bmp"
 	},
 	"mac": {
-		"icon": "dist/assets/icons",
+		"icon": "dist/browser/assets/icons",
 		"target": ["dmg"]
 	},
 	"linux": {
-		"icon": "dist/assets/icons",
+		"icon": "dist/browser/assets/icons",
 		"category": "Science",
 		"target": ["AppImage", "deb", "rpm"]
 	},
