@@ -1,5 +1,7 @@
 import { Component, ElementRef, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
+import { PrimeNGConfig } from 'primeng/api'
+import { Aura } from 'primeng/themes/aura'
 import { APP_CONFIG } from '../environments/environment'
 import { MenuItem } from '../shared/components/menu-item/menu-item.component'
 import { ConfirmationService } from '../shared/services/confirmation.service'
@@ -32,6 +34,7 @@ export class AppComponent implements OnDestroy {
 	constructor(
 		private readonly windowTitle: Title,
 		private readonly electronService: ElectronService,
+		private readonly config: PrimeNGConfig,
 		confirmationService: ConfirmationService,
 		ngZone: NgZone,
 		hostElementRef: ElementRef<Element>,
@@ -43,6 +46,16 @@ export class AppComponent implements OnDestroy {
 		} else {
 			console.info('Run in browser', window.preference)
 		}
+
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+		this.config.theme.set({
+			preset: Aura,
+			options: {
+				prefix: 'p',
+				darkModeSelector: 'system',
+				cssLayer: false,
+			},
+		})
 
 		if (!window.preference.resizable && window.preference.autoResizable !== false) {
 			this.resizeObserver = new ResizeObserver((entries) => {

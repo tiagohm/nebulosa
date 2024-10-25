@@ -35,7 +35,6 @@ import { ProgressBarModule } from 'primeng/progressbar'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
 import { SelectButtonModule } from 'primeng/selectbutton'
 import { SidebarModule } from 'primeng/sidebar'
-import { SlideMenuModule } from 'primeng/slidemenu'
 import { SliderModule } from 'primeng/slider'
 import { SplitButtonModule } from 'primeng/splitbutton'
 import { TableModule } from 'primeng/table'
@@ -194,7 +193,6 @@ import { SettingsComponent } from './settings/settings.component'
 		ScrollPanelModule,
 		SelectButtonModule,
 		SidebarModule,
-		SlideMenuModule,
 		SliderModule,
 		SplitButtonModule,
 		TableModule,
