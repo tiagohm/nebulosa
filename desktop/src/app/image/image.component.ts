@@ -746,10 +746,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.histogram?.update([])
 	}
 
-	protected async computeStatistics() {
+	protected async computeStatistics(force: boolean = false) {
 		const path = this.imagePath
 
-		if (path) {
+		if (path && (force || !this.statistics.statistics)) {
 			const transformation = this.makeImageTransformation()
 			const statistics = await this.api.imageStatistics(path, transformation, this.statistics.channel, this.imageData.camera)
 			this.statistics.statistics = statistics
@@ -897,7 +897,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.headers.headers = info.headers
 
 		if (this.statistics.showDialog) {
-			void this.computeStatistics()
+			void this.computeStatistics(true)
 		} else {
 			this.statistics.statistics = undefined
 		}
