@@ -10,6 +10,7 @@
 	"trailingComma": "all",
 	"semi": false,
 	"endOfLine": "lf",
+	"plugins": ["prettier-plugin-tailwindcss"],
 	"overrides": [
 		{
 			"files": "*.html",

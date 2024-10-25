@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Component, ElementRef, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { PrimeNGConfig } from 'primeng/api'
-import { Aura } from 'primeng/themes/aura'
 import { APP_CONFIG } from '../environments/environment'
 import { MenuItem } from '../shared/components/menu-item/menu-item.component'
 import { ConfirmationService } from '../shared/services/confirmation.service'
 import { ElectronService } from '../shared/services/electron.service'
+import { AppPreset } from './app.theme'
 
 @Component({
 	selector: 'neb-root',
@@ -47,13 +48,15 @@ export class AppComponent implements OnDestroy {
 			console.info('Run in browser', window.preference)
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 		this.config.theme.set({
-			preset: Aura,
+			preset: AppPreset,
 			options: {
 				prefix: 'p',
-				darkModeSelector: 'system',
-				cssLayer: false,
+				darkModeSelector: '.dark-mode',
+				cssLayer: {
+					name: 'primeng',
+					order: 'tailwind-base, primeng, tailwind-utilities',
+				},
 			},
 		})
 

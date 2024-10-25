@@ -1,9 +1,16 @@
+@layer tailwind-base, primeng, tailwind-utilities;
+
+@layer tailwind-base {
+	@tailwind base;
+}
+
+@layer tailwind-utilities {
+	@tailwind components;
+	@tailwind utilities;
+}
+
 @import '@mdi/font/scss/materialdesignicons.scss';
 @import '@fontsource/roboto';
-
-* {
-	font-family: 'Roboto';
-}
 
 html,
 body {
@@ -17,6 +24,7 @@ body {
 
 body {
 	margin: 0;
+	font-family: 'Roboto';
 }
 
 a:any-link {
@@ -150,27 +158,6 @@ p-dropdown,
 	margin-left: auto;
 	margin-right: auto;
 	display: contents !important;
-}
-
-.grid {
-	min-width: 100%;
-	flex: 1;
-	height: fit-content;
-}
-
-.grid > .col,
-.grid > [class*='col'] {
-	display: inline-flex;
-
-	> p-selectbutton,
-	> p-splitbutton,
-	> p-table,
-	> p-tabview,
-	> p-listbox,
-	> p-chart,
-	> .p-float-label {
-		width: 100%;
-	}
 }
 
 .border-0,
@@ -338,10 +325,6 @@ p-tieredmenu *,
 
 .min-w-0 {
 	min-width: 0px !important;
-}
-
-.min-w-full {
-	min-width: 100% !important;
 }
 
 .min-w-screen {

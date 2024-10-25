@@ -11,11 +11,11 @@ neb-home {
 				img {
 					height: 32px;
 				}
-			}
 
-			&.p-disabled {
-				img {
-					filter: grayscale(1);
+				&:disabled {
+					img {
+						filter: grayscale(1);
+					}
 				}
 			}
 		}

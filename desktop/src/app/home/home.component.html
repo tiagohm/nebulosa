@@ -1,6 +1,6 @@
 <div class="container px-4 pt-4">
-	<div class="grid flex justify-content-center align-items-center">
-		<div class="col-12 px-2 gap-1">
+	<div class="justify-content-center align-items-center flex">
+		<div class="flex w-full gap-1 px-2">
 			<p-button
 				(onClick)="addConnection()"
 				size="small"
@@ -21,23 +21,23 @@
 					<ng-template
 						let-item
 						pTemplate="selectedItem">
-						<div class="flex flex-row justify-content-between gap-1">
+						<div class="justify-content-between flex flex-row gap-1">
 							<span>{{ connection?.name }}</span>
 						</div>
 					</ng-template>
 					<ng-template
 						let-item
 						pTemplate="item">
-						<div class="flex flex-row align-items-center justify-content-between gap-1 text-xs">
-							<div class="flex flex-column gap-1">
-								<span class="font-bold text-lg">{{ item.name }}</span>
+						<div class="align-items-center justify-content-between flex flex-row gap-1 text-xs">
+							<div class="flex-column flex gap-1">
+								<span class="text-lg font-bold">{{ item.name }}</span>
 								<span class="text-sm">{{ item.type }} | {{ item.host }}:{{ item.port }}</span>
-								<div class="flex flex-row align-items-center gap-1 text-xs">
+								<div class="align-items-center flex flex-row gap-1 text-xs">
 									<i class="mdi mdi-sm mdi-clock"></i>
 									<span>{{ (item.connectedAt | date: 'yyyy-MM-dd HH:mm:ss') ?? 'never' }}</span>
 								</div>
 							</div>
-							<div class="flex flex-column gap-3">
+							<div class="flex-column flex gap-3">
 								<i
 									class="mdi mdi-18px mdi-pencil"
 									pTooltip="Edit"
@@ -78,8 +78,8 @@
 		<div
 			*ngIf="newVersion"
 			class="col-12 py-0">
-			<div class="m-0 p-message p-message-info w-full flex align-items-center justify-content-between px-2">
-				<div class="flex align-items-center">
+			<div class="p-message p-message-info align-items-center justify-content-between m-0 flex w-full px-2">
+				<div class="align-items-center flex">
 					<span class="p-message-summary">New version:</span>
 					<span class="p-message-detail">{{ newVersion }}</span>
 				</div>
@@ -98,11 +98,11 @@
 		</div>
 	</div>
 	<div
-		class="buttons grid my-2 overflow-y-auto relative"
+		class="buttons relative my-2 grid grid-cols-3 overflow-y-auto"
 		style="height: calc(62px * 5)"
 		(scroll)="scrolled($event)">
 		<div
-			class="col-4 p-1 scroll-child"
+			class="scroll-child p-1"
 			scroll-page="0">
 			<p-button
 				[text]="true"
@@ -113,7 +113,7 @@
 				<div class="mt-1 text-sm">Camera</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				[disabled]="!connected || !hasMount"
@@ -123,7 +123,7 @@
 				<div class="mt-1 text-sm">Mount</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				[disabled]="!connected || !hasGuider"
@@ -133,7 +133,7 @@
 				<div class="mt-1 text-sm">Guider</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				[disabled]="!connected || !hasWheel"
@@ -143,7 +143,7 @@
 				<div class="mt-1 text-sm">Filter Wheel</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				[disabled]="!connected || !hasFocuser"
@@ -153,7 +153,7 @@
 				<div class="mt-1 text-sm">Focuser</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				[disabled]="!connected || !hasRotator"
@@ -163,7 +163,7 @@
 				<div class="mt-1 text-sm">Rotator</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				[disabled]="!connected || !hasDome"
@@ -172,7 +172,7 @@
 				<div class="mt-1 text-sm">Dome</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				[disabled]="!connected || !hasAuxiliary"
@@ -183,7 +183,7 @@
 			</p-button>
 		</div>
 		@if (preference.showAuxiliary && hasAuxiliary) {
-			<div class="col-4 p-1">
+			<div class="p-1">
 				<p-button
 					[text]="true"
 					[disabled]="!connected || !hasSwitch"
@@ -192,7 +192,7 @@
 					<div class="mt-1 text-sm">Switch</div>
 				</p-button>
 			</div>
-			<div class="col-4 p-1">
+			<div class="p-1">
 				<p-button
 					[text]="true"
 					[disabled]="!connected || !hasLightBox"
@@ -202,7 +202,7 @@
 					<div class="mt-1 text-sm">Light Box</div>
 				</p-button>
 			</div>
-			<div class="col-4 p-1">
+			<div class="p-1">
 				<p-button
 					[text]="true"
 					[disabled]="!connected || !hasDustCap"
@@ -213,7 +213,7 @@
 				</p-button>
 			</div>
 		}
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('SKY_ATLAS')"
@@ -222,7 +222,7 @@
 				<div class="mt-1 text-sm">Sky Atlas</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				[disabled]="!connected || !hasAlignment"
@@ -232,7 +232,7 @@
 				<div class="mt-1 text-sm">Alignment</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('SEQUENCER')"
@@ -242,7 +242,7 @@
 				<div class="mt-1 text-sm">Sequencer</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('IMAGE')"
@@ -251,7 +251,7 @@
 				<div class="mt-1 text-sm">Image Viewer</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('FRAMING')"
@@ -260,7 +260,7 @@
 				<div class="mt-1 text-sm">Framing</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('AUTO_FOCUS')"
@@ -270,7 +270,7 @@
 				<div class="mt-1 text-sm">Auto Focus</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('FLAT_WIZARD')"
@@ -280,7 +280,7 @@
 				<div class="mt-1 text-sm">Flat Wizard</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('CALIBRATION')"
@@ -289,7 +289,7 @@
 				<div class="mt-1 text-sm">Calibration</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				[disabled]="connection?.type !== 'INDI' || !connected || !hasINDI"
@@ -300,7 +300,7 @@
 			</p-button>
 		</div>
 		<div
-			class="col-4 p-1 scroll-child"
+			class="scroll-child p-1"
 			scroll-page="1">
 			<p-button
 				[text]="true"
@@ -310,7 +310,7 @@
 				<div class="mt-1 text-sm">Calculator</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('SETTINGS')"
@@ -319,7 +319,7 @@
 				<div class="mt-1 text-sm">Settings</div>
 			</p-button>
 		</div>
-		<div class="col-4 p-1">
+		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('ABOUT')"
@@ -328,7 +328,7 @@
 				<div class="mt-1 text-sm">About</div>
 			</p-button>
 		</div>
-		<div class="fixed flex flex-column align-items-center justify-content-center indicators">
+		<div class="flex-column align-items-center justify-content-center indicators fixed flex">
 			<span
 				class="indicator"
 				[class.selected]="page === 0"
@@ -352,7 +352,7 @@
 			<p-floatLabel class="w-full">
 				<input
 					pInputText
-					class="p-inputtext-sm border-0 w-full"
+					class="p-inputtext-sm w-full border-0"
 					[maxLength]="32"
 					[(ngModel)]="connectionDialog.connection.name" />
 				<label>Name</label>
@@ -362,7 +362,7 @@
 			<p-floatLabel class="w-full">
 				<input
 					pInputText
-					class="p-inputtext-sm border-0 w-full"
+					class="p-inputtext-sm w-full border-0"
 					[(ngModel)]="connectionDialog.connection.host" />
 				<label>Host</label>
 			</p-floatLabel>
