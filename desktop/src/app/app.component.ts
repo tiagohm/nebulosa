@@ -10,8 +10,8 @@ import { ElectronService } from '../shared/services/electron.service'
 	templateUrl: './app.component.html',
 })
 export class AppComponent implements OnDestroy {
-	readonly maximizable = !!window.preference.resizable
-	readonly modal = window.preference.modal ?? false
+	readonly maximizable = !!window.context.resizable
+	readonly modal = window.context.modal ?? false
 	readonly topMenu: MenuItem[] = []
 
 	subTitle? = ''
@@ -38,13 +38,7 @@ export class AppComponent implements OnDestroy {
 	) {
 		console.info('APP_CONFIG', APP_CONFIG)
 
-		if (electronService.isElectron) {
-			console.info('Run in electron', window.preference)
-		} else {
-			console.info('Run in browser', window.preference)
-		}
-
-		if (!window.preference.resizable && window.preference.autoResizable !== false) {
+		if (!window.context.resizable && window.context.autoResizable !== false) {
 			this.resizeObserver = new ResizeObserver((entries) => {
 				this.resizeWindowFromElement(entries[0].target)
 			})

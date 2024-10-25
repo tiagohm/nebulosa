@@ -1,5 +1,4 @@
 import { AfterViewInit, Component, HostListener, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
-import { dirname } from 'path'
 import { Listbox } from 'primeng/listbox'
 import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
@@ -191,7 +190,7 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 		const paths = await this.electronService.openImages({ defaultPath: this.preference.filePath })
 
 		if (paths && paths.length) {
-			this.preference.filePath = dirname(paths[0])
+			this.preference.filePath = window.path.dirname(paths[0])
 			this.savePreference()
 
 			for (const path of paths) {

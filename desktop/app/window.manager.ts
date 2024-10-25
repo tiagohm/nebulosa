@@ -139,7 +139,7 @@ export class WindowManager {
 			webPreferences: {
 				nodeIntegration: true,
 				allowRunningInsecureContent: this.args.serve,
-				contextIsolation: false,
+				contextIsolation: true,
 				additionalArguments: [`--host=${this.host}`, `--port=${this.port}`, `--id=${open.id}`, `--data=${encodedData}`, `--preference=${encodedPreference}`],
 				preload: join(__dirname, 'preload.js'),
 				devTools: this.args.serve,

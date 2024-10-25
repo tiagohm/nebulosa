@@ -1,7 +1,6 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { dirname } from 'path'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
 import { MenuItem, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
@@ -150,7 +149,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		icon: 'mdi mdi-folder-open',
 		label: 'Load',
 		command: async () => {
-			const defaultPath = this.preference.loadPath ? dirname(this.preference.loadPath) : undefined
+			const defaultPath = this.preference.loadPath ? window.path.dirname(this.preference.loadPath) : undefined
 			const file = await this.electronService.openJson<SequencerPlan>({ defaultPath })
 
 			if (file !== false) {
