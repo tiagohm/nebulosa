@@ -199,7 +199,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		label: 'Statistics',
 		command: () => {
 			this.statistics.showDialog = true
-			return this.computeHistogram()
+			return this.computeStatistics()
 		},
 	}
 
@@ -746,12 +746,21 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.histogram?.update([])
 	}
 
-	protected async computeHistogram() {
+	protected async computeStatistics() {
 		const path = this.imagePath
 
 		if (path) {
-			const data = await this.api.imageHistogram(path, this.statistics.bitOption.bitLength)
-			this.histogram?.update(data)
+			const transformation = this.makeImageTransformation()
+			const statistics = await this.api.imageStatistics(path, transformation, this.statistics.channel, this.imageData.camera)
+			this.statistics.statistics = statistics
+
+			if (this.histogram) {
+				this.histogram.update(statistics.histogram)
+			} else {
+				setTimeout(() => {
+					this.histogram?.update(statistics.histogram)
+				}, 1000)
+			}
 		}
 	}
 
@@ -857,11 +866,16 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.app.subTitle = text
 	}
 
+	protected makeImageTransformation() {
+		const transformation = structuredClone(this.transformation)
+		if (this.calibration.source === 'CAMERA' && this.liveStacking.mode !== 'NONE') transformation.calibrationGroup = this.imageData.capture?.calibrationGroup
+		return transformation
+	}
+
 	private async loadImageFromPath(path: string) {
 		const image = this.image.nativeElement
 
-		const transformation = structuredClone(this.transformation)
-		if (this.calibration.source === 'CAMERA' && this.liveStacking.mode !== 'NONE') transformation.calibrationGroup = this.imageData.capture?.calibrationGroup
+		const transformation = this.makeImageTransformation()
 		const { info, blob } = await this.api.openImage(path, transformation, this.imageData.camera)
 
 		if (!blob || !info) return
@@ -881,7 +895,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.updateImageSolved(info.solved)
 
 		this.headers.headers = info.headers
-		this.statistics.statistics = info.statistics
+
+		if (this.statistics.showDialog) {
+			void this.computeStatistics()
+		} else {
+			this.statistics.statistics = undefined
+		}
 
 		this.retrieveInfoFromImageHeaders(info.headers)
 

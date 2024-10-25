@@ -12,7 +12,7 @@ import { Focuser } from '../types/focuser.types'
 import { HipsSurvey } from '../types/framing.types'
 import { GuideDirection, GuideOutput, Guider, GuiderHistoryStep, SettleInfo } from '../types/guider.types'
 import { ConnectionStatus, ConnectionType, GitHubRelease } from '../types/home.types'
-import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnalyzed, ImageAnnotation, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageTransformation } from '../types/image.types'
+import { AnnotateImageRequest, CoordinateInterpolation, DetectedStar, FOVCamera, FOVTelescope, ImageAnalyzed, ImageAnnotation, ImageChannel, ImageInfo, ImageMousePosition, ImageSaveDialog, ImageSolved, ImageStatistics, ImageTransformation } from '../types/image.types'
 import { LightBox } from '../types/lightbox.types'
 import { CelestialLocationType, Mount, MountRemoteControl, MountRemoteControlProtocol, SlewRate, TrackMode } from '../types/mount.types'
 import { PlateSolverRequest } from '../types/platesolver.types'
@@ -637,9 +637,9 @@ export class ApiService {
 		return this.http.put<DetectedStar[]>(`star-detection?${query}`, starDetector)
 	}
 
-	imageHistogram(path: string, bitLength: number = 16) {
-		const query = this.http.query({ path, bitLength })
-		return this.http.get<number[]>(`image/histogram?${query}`)
+	imageStatistics(path: string, transformation: ImageTransformation, channel: ImageChannel = 'GRAY', camera?: Camera) {
+		const query = this.http.query({ path, channel, camera: camera?.id })
+		return this.http.post<ImageStatistics>(`image/statistics?${query}`, transformation)
 	}
 
 	fovCameras() {

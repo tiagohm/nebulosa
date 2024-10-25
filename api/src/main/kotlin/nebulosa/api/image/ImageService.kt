@@ -10,9 +10,9 @@ import nebulosa.api.framing.FramingService
 import nebulosa.api.image.ImageAnnotation.StarDSO
 import nebulosa.fits.*
 import nebulosa.image.Image
-import nebulosa.image.algorithms.computation.Histogram
 import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.algorithms.transformation.*
+import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ImageHdu
 import nebulosa.image.format.ImageModifier
 import nebulosa.indi.device.camera.Camera
@@ -62,11 +62,11 @@ class ImageService(
     private enum class ImageOperation {
         OPEN,
         SAVE,
+        STATISTICS,
     }
 
     private data class TransformedImage(
         @JvmField val image: Image,
-        @JvmField val statistics: Statistics.Data? = null,
         @JvmField val stretchParameters: ScreenTransformFunction.Parameters? = null,
         @JvmField val instrument: Camera? = null,
     )
@@ -87,7 +87,7 @@ class ImageService(
         output: HttpServletResponse,
     ) {
         val (image, calibration) = imageBucket.open(path, transformation.debayer, force = transformation.force)
-        val (transformedImage, statistics, stretchParameters, instrument) = image!!.transform(true, transformation, ImageOperation.OPEN, camera)
+        val (transformedImage, stretchParameters, instrument) = image!!.transform(true, transformation, ImageOperation.OPEN, camera)
 
         val info = ImageInfo(
             path,
@@ -101,7 +101,7 @@ class ImageService(
             transformedImage.header.declination.takeIf { it.isFinite() },
             calibration?.let(::ImageSolved),
             transformedImage.header.mapNotNull { if (it.isCommentStyle) null else ImageHeaderItem(it.key, it.value) },
-            transformedImage.header.bitpix, instrument, statistics,
+            transformedImage.header.bitpix, instrument,
         )
 
         val format = if (transformation.useJPEG) "jpeg" else "png"
@@ -147,12 +147,9 @@ class ImageService(
                 .transform(transformedImage)
         }
 
-        val statistics = if (operation == ImageOperation.OPEN) transformedImage.compute(Statistics.GRAY)
-        else null
-
         var stretchParams = ScreenTransformFunction.Parameters.DEFAULT
 
-        if (enabled) {
+        if (enabled && operation != ImageOperation.STATISTICS) {
             if (autoStretch) {
                 stretchParams = AdaptativeScreenTransformFunction(transformation.stretch.meanBackground).compute(transformedImage)
                 transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
@@ -166,7 +163,7 @@ class ImageService(
             transformedImage = Invert.transform(transformedImage)
         }
 
-        return TransformedImage(transformedImage, statistics, stretchParams, instrument)
+        return TransformedImage(transformedImage, stretchParams, instrument)
     }
 
     @Synchronized
@@ -361,8 +358,10 @@ class ImageService(
         return CoordinateInterpolation(ma, md, 0, 0, width, height, delta, image.header.observationDate)
     }
 
-    fun histogram(path: Path, bitLength: Int = 16): IntArray {
-        return imageBucket.open(path).image?.compute(Histogram(bitLength = bitLength)) ?: IntArray(0)
+    fun statistics(path: Path, transformation: ImageTransformation, channel: ImageChannel, camera: Camera?): Statistics.Data {
+        val (image) = imageBucket.open(path, transformation.debayer)
+        val (transformedImage) = image!!.transform(true, transformation, ImageOperation.STATISTICS, camera)
+        return transformedImage.compute(Statistics.CHANNELS[channel] ?: return Statistics.Data.EMPTY)
     }
 
     companion object {

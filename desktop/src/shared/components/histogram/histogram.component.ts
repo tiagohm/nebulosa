@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core'
+import { ImageHistrogram } from '../../types/image.types'
 
 @Component({
 	selector: 'neb-histogram',
@@ -15,7 +16,7 @@ export class HistogramComponent implements AfterViewInit {
 		this.ctx = this.canvas.nativeElement.getContext('2d')
 	}
 
-	update(data: number[], dontClear: boolean = false) {
+	update(data: ImageHistrogram, dontClear: boolean = false) {
 		const canvas = this.canvas.nativeElement
 
 		if (!dontClear || !data.length) {
@@ -27,11 +28,13 @@ export class HistogramComponent implements AfterViewInit {
 		}
 
 		const max = data.reduce((a, b) => Math.max(a, b))
+		const start = data.findIndex((e) => e != 0)
+		const end = data.findLastIndex((e) => e != 0)
 
-		this.drawColorGraph(max, data, '#FFF')
+		this.drawColorGraph(data, max, start, end, '#FFF')
 	}
 
-	private drawColorGraph(max: number, data: number[], color: string | CanvasGradient | CanvasPattern) {
+	private drawColorGraph(data: ImageHistrogram, max: number, start: number = 0, end: number = data.length - 1, color: string | CanvasGradient | CanvasPattern) {
 		if (this.ctx) {
 			const canvas = this.canvas.nativeElement
 
@@ -44,10 +47,12 @@ export class HistogramComponent implements AfterViewInit {
 			this.ctx.beginPath()
 			this.ctx.moveTo(graphX, graphHeight)
 
-			for (let i = 0; i < data.length; i++) {
-				const value = data[i]
+			const length = end - start + 1
+
+			for (let i = 0; i < length; i++) {
+				const value = data[start + i]
 				const drawHeight = Math.round((value / max) * graphHeight)
-				const drawX = graphX + (graphWidth / (data.length - 1)) * i
+				const drawX = graphX + (graphWidth / length) * i
 				this.ctx.lineTo(drawX, graphY - drawHeight)
 			}
 

@@ -892,109 +892,120 @@
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '336px' }"
 	class="pointer-events-none">
-	<div
-		class="grid p-2"
-		*ngIf="imageInfo">
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="statistics.statistics.count" />
-				<label>Count (px)</label>
-			</p-floatLabel>
+	@if (statistics.statistics && imageInfo) {
+		<div class="grid p-2">
+			<div class="col-12 flex align-items-center">
+				<p-selectButton
+					styleClass="border-0"
+					[disabled]="imageInfo.mono"
+					[options]="'IMAGE_CHANNEL' | dropdownOptions | enumDropdown"
+					optionLabel="label"
+					optionValue="value"
+					[(ngModel)]="statistics.channel"
+					(ngModelChange)="computeStatistics()"
+					[multiple]="false" />
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="statistics.statistics.count" />
+					<label>Count (px)</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.mean * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Mean</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.median * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Median</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.variance * statistics.bitOption.rangeMax * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Variance</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.avgDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Avg Dev</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.stdDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Std Dev</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-3">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.minimum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Minimum</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-3">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.maximum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Maximum</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-6">
+				<p-floatLabel class="w-full">
+					<p-dropdown
+						[options]="'IMAGE_STATISTICS_BIT_OPTION' | dropdownOptions"
+						[(ngModel)]="statistics.bitOption"
+						optionLabel="name"
+						[autoDisplayFirst]="true"
+						styleClass="p-inputtext-sm border-0"
+						appendTo="body"
+						(ngModelChange)="savePreference()" />
+					<label>Bits</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-12">
+				<neb-histogram
+					#histogram
+					class="w-full"
+					style="max-height: 94px" />
+			</div>
 		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.mean * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Mean</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.median * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Median</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.variance * statistics.bitOption.rangeMax * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Variance</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.avgDev * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Avg Dev</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.stdDev * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Std Dev</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.minimum * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Minimum</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.maximum * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Maximum</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-6">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[options]="'IMAGE_STATISTICS_BIT_OPTION' | dropdownOptions"
-					[(ngModel)]="statistics.bitOption"
-					optionLabel="name"
-					[autoDisplayFirst]="true"
-					styleClass="p-inputtext-sm border-0"
-					appendTo="body"
-					(ngModelChange)="savePreference()" />
-				<label>Bits</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-12">
-			<neb-histogram
-				#histogram
-				class="w-full"
-				style="max-height: 94px" />
-		</div>
-	</div>
+	}
 </p-dialog>
 
 <p-dialog

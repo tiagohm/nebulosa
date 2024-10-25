@@ -4,6 +4,7 @@ import nebulosa.image.Image
 import nebulosa.image.Image.Companion.forEach
 import nebulosa.image.algorithms.ComputationAlgorithm
 import nebulosa.image.format.ImageChannel
+import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -106,5 +107,12 @@ data class Statistics(
         @JvmStatic val RED = Statistics(ImageChannel.RED)
         @JvmStatic val GREEN = Statistics(ImageChannel.GREEN)
         @JvmStatic val BLUE = Statistics(ImageChannel.BLUE)
+
+        @JvmStatic val CHANNELS: Map<ImageChannel, Statistics> = EnumMap<ImageChannel, Statistics>(ImageChannel::class.java).also {
+            it[ImageChannel.RED] = RED
+            it[ImageChannel.GREEN] = GREEN
+            it[ImageChannel.BLUE] = BLUE
+            it[ImageChannel.GRAY] = GRAY
+        }
     }
 }

@@ -6,10 +6,11 @@ import io.javalin.http.bodyAsClass
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.core.Controller
 import nebulosa.api.core.location
+import nebulosa.api.validators.enumOf
 import nebulosa.api.validators.exists
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.path
-import nebulosa.api.validators.range
+import nebulosa.image.format.ImageChannel
 import java.io.ByteArrayInputStream
 
 class ImageController(
@@ -25,7 +26,7 @@ class ImageController(
         app.put("image/analyze", ::analyze)
         app.put("image/annotations", ::annotations)
         app.get("image/coordinate-interpolation", ::coordinateInterpolation)
-        app.get("image/histogram", ::histogram)
+        app.post("image/statistics", ::statistics)
         app.get("image/fov-cameras", ::fovCameras)
         app.get("image/fov-telescopes", ::fovTelescopes)
     }
@@ -65,10 +66,12 @@ class ImageController(
         imageService.coordinateInterpolation(path)?.also(ctx::json)
     }
 
-    private fun histogram(ctx: Context) {
+    private fun statistics(ctx: Context) {
         val path = ctx.queryParam("path").notNull().path().exists()
-        val bitLength = ctx.queryParam("bitLength")?.toInt()?.range(8, 16) ?: 16
-        ctx.json(imageService.histogram(path, bitLength))
+        val transformation = ctx.bodyAsClass<ImageTransformation>()
+        val channel = ctx.queryParam("channel")?.enumOf<ImageChannel>() ?: ImageChannel.GRAY
+        val camera = ctx.queryParam("camera")?.ifBlank { null }?.let(connectionService::camera)
+        ctx.json(imageService.statistics(path, transformation, channel, camera))
     }
 
     private fun fovCameras(ctx: Context) {

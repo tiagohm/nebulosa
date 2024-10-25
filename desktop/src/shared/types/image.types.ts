@@ -28,6 +28,8 @@ export type Parity = 'NORMAL' | 'FLIPPED'
 
 export type ImageMousePosition = Point
 
+export type ImageHistrogram = number[]
+
 export interface Image {
 	type: FrameType
 	width: number
@@ -69,7 +71,6 @@ export interface ImageInfo {
 	solved?: ImageSolved
 	headers: ImageHeaderItem[]
 	bitpix: Bitpix
-	statistics: ImageStatistics
 }
 
 export interface ImageAnnotation {
@@ -121,6 +122,7 @@ export interface ImageStatisticsBitOption {
 	name: string
 	rangeMax: number
 	bitLength: number
+	decimalPlaces: number
 }
 
 export interface ImageStatistics {
@@ -134,6 +136,7 @@ export interface ImageStatistics {
 	avgDev: number
 	minimum: number
 	maximum: number
+	histogram: ImageHistrogram
 }
 
 export interface OpenImage {
@@ -322,7 +325,8 @@ export interface AstronomicalObjectDialog {
 
 export interface ImageStatisticsDialog {
 	showDialog: boolean
-	statistics: ImageStatistics
+	statistics?: ImageStatistics
+	channel: ImageChannel
 	bitOption: ImageStatisticsBitOption
 }
 
@@ -412,13 +416,13 @@ export const DEFAULT_IMAGE_SOLVER_DIALOG: ImageSolverDialog = {
 }
 
 export const IMAGE_STATISTICS_BIT_OPTIONS: ImageStatisticsBitOption[] = [
-	{ name: 'Normalized: [0, 1]', rangeMax: 1, bitLength: 16 },
-	{ name: '8-bit: [0, 255]', rangeMax: 255, bitLength: 8 },
-	{ name: '9-bit: [0, 511]', rangeMax: 511, bitLength: 9 },
-	{ name: '10-bit: [0, 1023]', rangeMax: 1023, bitLength: 10 },
-	{ name: '12-bit: [0, 4095]', rangeMax: 4095, bitLength: 12 },
-	{ name: '14-bit: [0, 16383]', rangeMax: 16383, bitLength: 14 },
-	{ name: '16-bit: [0, 65535]', rangeMax: 65535, bitLength: 16 },
+	{ name: 'Normalized: [0, 1]', rangeMax: 1, bitLength: 16, decimalPlaces: 8 },
+	{ name: '8-bit: [0, 255]', rangeMax: 255, bitLength: 8, decimalPlaces: 5 },
+	{ name: '9-bit: [0, 511]', rangeMax: 511, bitLength: 9, decimalPlaces: 5 },
+	{ name: '10-bit: [0, 1023]', rangeMax: 1023, bitLength: 10, decimalPlaces: 4 },
+	{ name: '12-bit: [0, 4095]', rangeMax: 4095, bitLength: 12, decimalPlaces: 4 },
+	{ name: '14-bit: [0, 16383]', rangeMax: 16383, bitLength: 14, decimalPlaces: 3 },
+	{ name: '16-bit: [0, 65535]', rangeMax: 65535, bitLength: 16, decimalPlaces: 3 },
 ] as const
 
 export const DEFAULT_FOV: FOV = {
@@ -525,11 +529,12 @@ export const DEFAULT_IMAGE_STATISTICS: ImageStatistics = {
 	avgDev: 0,
 	minimum: 0,
 	maximum: 0,
+	histogram: [],
 }
 
 export const DEFAULT_IMAGE_STATISTICS_DIALOG: ImageStatisticsDialog = {
 	showDialog: false,
-	statistics: DEFAULT_IMAGE_STATISTICS,
+	channel: 'GRAY',
 	bitOption: IMAGE_STATISTICS_BIT_OPTIONS[0],
 }
 
