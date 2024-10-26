@@ -1,7 +1,7 @@
 package nebulosa.api.atlas
 
-import nebulosa.api.database.MainDatabaseMigrator
-import nebulosa.api.database.SkyDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
+import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
 import nebulosa.log.e

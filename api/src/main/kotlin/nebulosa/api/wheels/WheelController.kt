@@ -3,7 +3,7 @@ package nebulosa.api.wheels
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.core.Controller
+import nebulosa.api.http.Controller
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.notNullOrBlank
 import nebulosa.api.validators.positiveOrZero

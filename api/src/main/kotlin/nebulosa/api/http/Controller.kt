@@ -1,4 +1,4 @@
-package nebulosa.api.core
+package nebulosa.api.http
 
 import io.javalin.Javalin
 

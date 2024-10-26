@@ -1,7 +1,7 @@
 package nebulosa.api.atlas
 
 import io.javalin.http.Header
-import nebulosa.api.database.MainDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndClose
 import nebulosa.log.d

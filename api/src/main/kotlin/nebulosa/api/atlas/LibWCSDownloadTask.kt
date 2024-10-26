@@ -1,7 +1,7 @@
 package nebulosa.api.atlas
 
 import com.sun.jna.Platform
-import nebulosa.api.database.MainDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndCloseOutput
 import nebulosa.log.e

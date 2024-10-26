@@ -1,8 +1,8 @@
 package nebulosa.api.atlas
 
 import com.fasterxml.jackson.databind.JsonMappingException
-import nebulosa.api.database.MainDatabaseMigrator
-import nebulosa.api.database.SkyDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
+import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
 import nebulosa.log.i

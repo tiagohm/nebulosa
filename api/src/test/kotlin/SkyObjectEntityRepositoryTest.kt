@@ -4,7 +4,7 @@ import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import nebulosa.api.atlas.SkyObjectEntity
 import nebulosa.api.atlas.SkyObjectEntityRepository
-import nebulosa.api.database.SkyDatabaseMigrator
+import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.math.hours

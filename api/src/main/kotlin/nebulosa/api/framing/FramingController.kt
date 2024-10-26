@@ -2,7 +2,7 @@ package nebulosa.api.framing
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import nebulosa.api.core.Controller
+import nebulosa.api.http.Controller
 import nebulosa.api.image.ImageService
 import nebulosa.api.validators.notNullOrBlank
 import nebulosa.api.validators.range

@@ -6,7 +6,7 @@ import io.javalin.http.bodyAsClass
 import nebulosa.api.alignment.polar.darv.DARVStartRequest
 import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.core.Controller
+import nebulosa.api.http.Controller
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.valid
 

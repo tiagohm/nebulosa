@@ -12,9 +12,9 @@ import io.javalin.http.Context
 import io.javalin.http.HttpStatus.BAD_REQUEST
 import io.javalin.json.JavalinJackson
 import nebulosa.api.converters.DeviceModule
-import nebulosa.api.core.ErrorResponse
-import nebulosa.api.database.MainDatabaseMigrator
-import nebulosa.api.database.SkyDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
+import nebulosa.api.database.migration.SkyDatabaseMigrator
+import nebulosa.api.http.responses.ApiMessageResponse
 import nebulosa.api.inject.*
 import nebulosa.json.PathModule
 import nebulosa.log.i
@@ -85,7 +85,7 @@ class Nebulosa : Runnable, AutoCloseable {
             else -> ex.message!!
         }
 
-        ctx.status(BAD_REQUEST).json(ErrorResponse.error(message.lowercase()))
+        ctx.status(BAD_REQUEST).json(ApiMessageResponse.error(message.lowercase()))
     }
 
     override fun close() {

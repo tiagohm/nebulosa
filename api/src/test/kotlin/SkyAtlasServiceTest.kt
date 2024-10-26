@@ -13,7 +13,7 @@ import io.kotest.matchers.shouldBe
 import nebulosa.api.atlas.*
 import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
-import nebulosa.api.database.SkyDatabaseMigrator
+import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.horizons.HorizonsService
 import nebulosa.math.*
 import nebulosa.nova.astrometry.Constellation

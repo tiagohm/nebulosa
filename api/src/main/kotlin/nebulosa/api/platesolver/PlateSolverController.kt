@@ -3,7 +3,7 @@ package nebulosa.api.platesolver
 import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
-import nebulosa.api.core.Controller
+import nebulosa.api.http.Controller
 import nebulosa.api.validators.exists
 import nebulosa.api.validators.notNullOrBlank
 import nebulosa.api.validators.path

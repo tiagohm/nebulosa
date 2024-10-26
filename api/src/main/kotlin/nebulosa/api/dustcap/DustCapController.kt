@@ -3,7 +3,7 @@ package nebulosa.api.dustcap
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.core.Controller
+import nebulosa.api.http.Controller
 
 class DustCapController(
     override val app: Javalin,
