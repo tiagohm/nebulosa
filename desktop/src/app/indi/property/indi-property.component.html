@@ -1,11 +1,11 @@
-<div class="grid flex align-items-center m-0 px-4 py-2">
-	<div class="col-3 flex align-items-center font-bold">
+<div class="m-0 flex items-center px-4 py-2">
+	<div class="flex w-1/4 items-center font-bold">
 		<i class="mdi mdi-circle {{ property.state }}"></i>
 		<span class="ml-2">{{ property.label }}</span>
 	</div>
 	<div class="col-9">
 		<div
-			class="flex align-items-center gap-1"
+			class="flex items-center gap-1"
 			*ngIf="property.type === 'SWITCH' && property.rule === 'ONE_OF_MANY'">
 			<p-button
 				*ngFor="let item of property.items"
@@ -23,7 +23,7 @@
 			</p-button>
 		</div>
 		<div
-			class="flex align-items-center gap-1"
+			class="flex items-center gap-1"
 			*ngIf="property.type === 'SWITCH' && property.rule === 'AT_MOST_ONE'">
 			<p-button
 				*ngFor="let item of property.items"
@@ -35,7 +35,7 @@
 				[text]="true" />
 		</div>
 		<div
-			class="flex align-items-center gap-1"
+			class="flex items-center gap-1"
 			*ngIf="property.type === 'SWITCH' && property.rule === 'ANY_OF_MANY'">
 			<p-button
 				*ngFor="let item of property.items"
@@ -53,38 +53,38 @@
 			</p-button>
 		</div>
 		<div
-			class="grid flex align-items-center"
+			class="flex items-center"
 			*ngIf="property.type === 'NUMBER'">
-			<div class="col-9 flex-column">
+			<div class="col-9 flex-col">
 				<div
 					*ngFor="let item of property.items"
-					class="grid my-0 flex align-items-center">
+					class="my-0 flex items-center">
 					<div
-						class="col-6"
+						class="w-1/2"
 						*ngIf="property.perm !== 'WO'">
 						<p-floatLabel class="w-full">
 							<input
 								pInputText
 								readonly
-								class="p-inputtext-sm border-0 min-w-full max-w-0"
+								class="p-inputtext-sm min-w-full max-w-0 border-0"
 								[value]="item.value" />
 							<label>{{ item.label }}</label>
 						</p-floatLabel>
 					</div>
 					<div
-						class="col-6"
+						class="w-1/2"
 						*ngIf="property.perm !== 'RO'">
 						<p-floatLabel class="w-full">
 							<input
 								pInputText
-								class="p-inputtext-sm border-0 min-w-full max-w-0"
+								class="p-inputtext-sm min-w-full max-w-0 border-0"
 								[(ngModel)]="item.valueToSend" />
 							<label>{{ item.label }}</label>
 						</p-floatLabel>
 					</div>
 				</div>
 			</div>
-			<div class="col-3 text-center">
+			<div class="w-1/4 text-center">
 				<p-button
 					[disabled]="disabled"
 					*ngIf="property.perm !== 'RO'"
@@ -96,38 +96,38 @@
 			</div>
 		</div>
 		<div
-			class="grid flex align-items-center"
+			class="flex items-center"
 			*ngIf="property.type === 'TEXT'">
-			<div class="col-9 flex-column">
+			<div class="col-9 flex-col">
 				<div
 					*ngFor="let item of property.items"
-					class="grid my-0 flex align-items-center">
+					class="my-0 flex items-center">
 					<div
-						class="col-6"
+						class="w-1/2"
 						*ngIf="property.perm !== 'WO'">
 						<p-floatLabel class="w-full">
 							<input
 								pInputText
 								readonly
-								class="p-inputtext-sm border-0 min-w-full max-w-0"
+								class="p-inputtext-sm min-w-full max-w-0 border-0"
 								[value]="item.value" />
 							<label>{{ item.label }}</label>
 						</p-floatLabel>
 					</div>
 					<div
-						class="col-6"
+						class="w-1/2"
 						*ngIf="property.perm !== 'RO'">
 						<p-floatLabel class="w-full">
 							<input
 								pInputText
-								class="p-inputtext-sm border-0 min-w-full max-w-0"
+								class="p-inputtext-sm min-w-full max-w-0 border-0"
 								[(ngModel)]="item.valueToSend" />
 							<label>{{ item.label }}</label>
 						</p-floatLabel>
 					</div>
 				</div>
 			</div>
-			<div class="col-3 text-center">
+			<div class="w-1/4 text-center">
 				<p-button
 					[disabled]="disabled"
 					*ngIf="property.perm !== 'RO'"

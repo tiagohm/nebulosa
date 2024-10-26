@@ -1,6 +1,6 @@
 <div class="container px-4 py-3">
-	<div class="grid flex align-items-center">
-		<div class="col-12 sm:col-4">
+	<div class="flex items-center">
+		<div class="sm:col-4 w-full">
 			<p-floatLabel class="w-full">
 				<p-dropdown
 					[options]="devices"
@@ -13,7 +13,7 @@
 				<label>Device</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-12 sm:col-8 flex flex-row align-items-center gap-1">
+		<div class="flex w-full flex-row items-center gap-1 sm:w-8/12">
 			<p-splitButton
 				[label]="group"
 				icon="mdi mdi-sitemap"
@@ -30,8 +30,8 @@
 				size="small" />
 		</div>
 	</div>
-	<div class="grid properties mt-2">
-		<div class="col-12 flex-column">
+	<div class="properties mt-2 grid">
+		<div class="w-full flex-col">
 			<div *ngFor="let property of properties">
 				<neb-indi-property
 					*ngIf="!showLog && property.group === group"
@@ -39,7 +39,7 @@
 					(onSend)="send($event)" />
 			</div>
 			<div
-				class="col-12 flex flex-column text-gray-200 h-full"
+				class="flex h-full w-full flex-col text-gray-200"
 				*ngIf="showLog">
 				<p-listbox
 					#listbox

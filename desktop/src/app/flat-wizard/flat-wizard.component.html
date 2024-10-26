@@ -1,6 +1,6 @@
 <div class="container px-4 py-3">
 	<div class="grid">
-		<div class="col-12 align-items-center justify-content-center gap-2">
+		<div class="w-full items-center justify-center gap-2">
 			<neb-device-chooser
 				title="CAMERA"
 				icon="mdi mdi-camera-iris"
@@ -22,18 +22,18 @@
 				[(device)]="wheel"
 				(deviceChange)="wheelChanged()" />
 		</div>
-		<div class="col-12 justify-content-center align-items-center">
+		<div class="w-full items-center justify-center">
 			<neb-camera-info
 				[info]="request.capture"
 				[hasExposure]="false"
 				[hasType]="false" />
 		</div>
-		<div class="col-12 pt-0 pb-1 text-sm text-gray-400 flex-column flex align-items-center my-1 gap-1 text-center text-xs">
+		<div class="my-1 flex w-full flex-col items-center gap-1 pb-1 pt-0 text-center text-sm text-xs text-gray-400">
 			<neb-camera-exposure #cameraExposure />
 		</div>
 	</div>
-	<div class="grid mt-2">
-		<div class="col-12">
+	<div class="mt-2 grid">
+		<div class="w-full">
 			<neb-path-chooser
 				key="flatWizardSaveFile"
 				[disabled]="!camera?.connected || running"
@@ -42,7 +42,7 @@
 				(pathChange)="savePreference()"
 				class="w-full" />
 		</div>
-		<div class="col-6">
+		<div class="w-1/2">
 			<p-floatLabel>
 				<p-inputNumber
 					[disabled]="!camera?.connected || running"
@@ -60,7 +60,7 @@
 				<label>Min Exposure (ms)</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-6">
+		<div class="w-1/2">
 			<p-floatLabel>
 				<p-inputNumber
 					[disabled]="!camera?.connected || running"
@@ -78,7 +78,7 @@
 				<label>Max Exposure (ms)</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-6">
+		<div class="w-1/2">
 			<p-floatLabel>
 				<p-inputNumber
 					[disabled]="!camera?.connected || running"
@@ -96,7 +96,7 @@
 				<label>Mean Target ({{ meanTargetMin }} - {{ meanTargetMax }})</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-6">
+		<div class="w-1/2">
 			<p-floatLabel>
 				<p-inputNumber
 					[disabled]="!camera?.connected || running"
@@ -114,7 +114,7 @@
 				<label>Mean Tolerance (%)</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-12">
+		<div class="w-full">
 			<p-floatLabel class="w-full">
 				<p-multiSelect
 					[disabled]="!wheel?.connected || filters.length <= 0"
@@ -133,8 +133,8 @@
 			</p-floatLabel>
 		</div>
 	</div>
-	<div class="grid mt-1">
-		<div class="col-12 flex align-items-center justify-content-center gap-1">
+	<div class="mt-1 grid">
+		<div class="flex w-full items-center justify-center gap-1">
 			<p-button
 				[disabled]="!camera?.connected || !request.capture.savePath || running"
 				label="Start"

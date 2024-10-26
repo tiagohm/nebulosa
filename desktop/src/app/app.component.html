@@ -1,17 +1,17 @@
 <section
 	*ngIf="showTopBar"
 	id="titlebar"
-	class="flex flex-row align-items-center justify-content-end gap-2 sticky pr-1"
+	class="sticky flex flex-row items-center justify-end gap-2 pr-1"
 	[style]="{ height: '42px', zIndex: '1000', backgroundColor: '#212121' }">
-	<span class="align-items-center draggable-region flex flex-column flex-1 font-bold justify-content-center min-h-full text-center">
+	<span class="draggable-region flex min-h-full flex-1 flex-col items-center justify-center text-center font-bold">
 		<div>{{ title }}</div>
-		<div class="text-xs text-gray-200 font-normal">{{ subTitle }}</div>
+		<div class="text-xs font-normal text-gray-200">{{ subTitle }}</div>
 	</span>
 	<neb-menu-bar
 		*ngIf="topMenu.length"
 		[model]="topMenu" />
 	<span
-		class="separator flex justify-content-center"
+		class="separator flex justify-center"
 		*ngIf="topMenu.length"></span>
 	<p-button
 		*ngIf="pinned && !modal"

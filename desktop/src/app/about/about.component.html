@@ -1,81 +1,83 @@
-<div class="grid p-3">
-	<div class="col-3 align-items-center flex-column gap-2">
-		<img
-			src="assets/icons/nebulosa.png"
-			style="height: 72px" />
-		<a
-			target="_blank"
-			href="https://github.com/tiagohm/nebulosa">
+<div class="flex flex-col p-3">
+	<div class="flex flex-row">
+		<div class="flex w-1/4 flex-col items-center gap-2">
 			<img
-				style="height: 18px"
-				src="https://img.shields.io/github/stars/tiagohm/nebulosa?style=flat&label=GitHub&color=%231a1e23" />
-		</a>
-	</div>
-	<div class="col-9 flex-column">
-		<p class="align-items-center flex font-bold gap-2 mb-0 mt-2 text-5xl">
-			Nebulosa
-			<p-tag
-				class="flex"
-				styleClass="text-lg"
-				[value]="version" />
-			<p-tag
-				class="flex"
-				styleClass="text-lg"
-				[value]="codename"
-				severity="success" />
-		</p>
-		<p class="text-sm mt-0">
-			{{ description }}
-		</p>
-		<p class="text-sm text-gray-400 mt-0">
-			© 2022-2024 Tiago Melo
-			<img
-				src="assets/icons/brazil.png"
-				class="mx-1"
-				style="width: 16px" />
-			All rights reserved
-		</p>
-		<div style="height: 128px">
-			<p-tabView>
-				<p-tabPanel header="Disclaimer">
-					<p class="mt-2">This software is WIP, comes with absolutely no warranty and the copyright holder is not liable or responsible for anything.</p>
-				</p-tabPanel>
-				<p-tabPanel header="Build">
-					<div class="py-2 flex flex-column white-space-nowrap">
-						<span>COMMIT: {{ commit }}</span>
-						<span>DATE: {{ date }}</span>
-					</div>
-				</p-tabPanel>
-				<p-tabPanel header="Icons">
-					<div
-						class="w-full flex flex-column overflow-y-auto py-2 gap-1"
-						style="height: 100px">
-						@for (icon of icons; track $index) {
-							<a
-								target="_blank"
-								[attr.href]="icon.link">
-								{{ icon.name }} icon by {{ icon.author }}
-							</a>
-						}
-					</div>
-				</p-tabPanel>
-				<p-tabPanel header="Dependencies">
-					<div
-						class="w-full flex flex-column overflow-y-auto py-2 gap-1"
-						style="height: 100px">
-						@for (dep of dependencies; track $index) {
-							<a
-								target="_blank"
-								[attr.href]="dep.link">
-								{{ dep.name }} ({{ dep.version }})
-							</a>
-						}
-					</div>
-				</p-tabPanel>
-			</p-tabView>
+				src="assets/icons/nebulosa.png"
+				style="height: 72px" />
+			<a
+				target="_blank"
+				href="https://github.com/tiagohm/nebulosa">
+				<img
+					style="height: 18px"
+					src="https://img.shields.io/github/stars/tiagohm/nebulosa?style=flat&label=GitHub&color=%231a1e23" />
+			</a>
+		</div>
+		<div class="flex w-3/4 flex-col">
+			<p class="mb-0 mt-2 flex items-center gap-2 text-5xl font-bold">
+				Nebulosa
+				<p-tag
+					class="flex"
+					styleClass="text-lg"
+					[value]="version" />
+				<p-tag
+					class="flex"
+					styleClass="text-lg"
+					[value]="codename"
+					severity="success" />
+			</p>
+			<p class="mt-0 text-sm">
+				{{ description }}
+			</p>
+			<p class="mt-0 flex flex-row items-center gap-1 text-sm text-gray-400">
+				© 2022-2024 Tiago Melo
+				<img
+					src="assets/icons/brazil.png"
+					class="mx-1"
+					style="width: 16px" />
+				All rights reserved
+			</p>
+			<div style="height: 128px">
+				<p-tabView>
+					<p-tabPanel header="Disclaimer">
+						<p class="mt-2">This software is WIP, comes with absolutely no warranty and the copyright holder is not liable or responsible for anything.</p>
+					</p-tabPanel>
+					<p-tabPanel header="Build">
+						<div class="flex flex-col whitespace-nowrap py-2">
+							<span>COMMIT: {{ commit }}</span>
+							<span>DATE: {{ date }}</span>
+						</div>
+					</p-tabPanel>
+					<p-tabPanel header="Icons">
+						<div
+							class="flex w-full flex-col gap-1 overflow-y-auto py-2"
+							style="height: 100px">
+							@for (icon of icons; track $index) {
+								<a
+									target="_blank"
+									[attr.href]="icon.link">
+									{{ icon.name }} icon by {{ icon.author }}
+								</a>
+							}
+						</div>
+					</p-tabPanel>
+					<p-tabPanel header="Dependencies">
+						<div
+							class="flex w-full flex-col gap-1 overflow-y-auto py-2"
+							style="height: 100px">
+							@for (dep of dependencies; track $index) {
+								<a
+									target="_blank"
+									[attr.href]="dep.link">
+									{{ dep.name }} ({{ dep.version }})
+								</a>
+							}
+						</div>
+					</p-tabPanel>
+				</p-tabView>
+			</div>
 		</div>
 	</div>
-	<div class="col-12 flex align-items-center justify-content-center gap-2 flex-wrap">
+	<div class="mt-3 flex w-full flex-wrap items-center justify-center gap-2">
 		<a
 			target="_blank"
 			href="https://www.paypal.com/donate/?hosted_button_id=U8TGGJTKSZUCA">

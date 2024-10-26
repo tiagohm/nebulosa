@@ -4,10 +4,10 @@
 	severity="success"
 	size="small"
 	[disabled]="disabled">
-	<div class="flex align-items-center gap-1">
+	<div class="flex items-center gap-1">
 		<i [class]="icon"></i>
-		<div class="flex flex-column text-left gap-1px">
-			<span class="font-bold text-sm">{{ title }}</span>
+		<div class="gap-1px flex flex-col text-left">
+			<span class="text-sm font-bold">{{ title }}</span>
 			@if (device && device.id) {
 				<span class="text-xs font-normal">{{ device.name }}</span>
 			} @else {

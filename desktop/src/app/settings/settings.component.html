@@ -1,9 +1,9 @@
-<div class="grid px-3 pb-2 pt-3 relative">
+<div class="relative grid px-3 pb-2 pt-3">
 	<div
-		class="col-12"
+		class="w-full"
 		*ngIf="tab === 'GENERAL'">
 		<div class="grid">
-			<div class="col-12">
+			<div class="w-full">
 				<p-checkbox
 					[binary]="true"
 					label="Check for new version on startup"
@@ -13,10 +13,10 @@
 		</div>
 	</div>
 	<div
-		class="col-12"
+		class="w-full"
 		*ngIf="tab === 'LOCATION'">
 		<div class="grid">
-			<div class="col-12 gap-2">
+			<div class="w-full gap-2">
 				<p-floatLabel class="w-full">
 					<p-dropdown
 						[options]="preference.locations"
@@ -28,7 +28,7 @@
 						emptyMessage="No location found"
 						[autoDisplayFirst]="false">
 						<ng-template pTemplate="selectedItem">
-							<div class="flex align-items-center gap-2">
+							<div class="flex items-center gap-2">
 								<span>{{ preference.location.name || '?' }}</span>
 							</div>
 						</ng-template>
@@ -55,7 +55,7 @@
 						(onClick)="deleteLocation()" />
 				</div>
 			</div>
-			<div class="col-12">
+			<div class="w-full">
 				<neb-location
 					[location]="preference.location"
 					(locationChange)="locationChanged($event)" />
@@ -63,10 +63,10 @@
 		</div>
 	</div>
 	<div
-		class="col-12"
+		class="w-full"
 		*ngIf="tab === 'PLATE_SOLVER'">
 		<div class="grid">
-			<div class="col-8">
+			<div class="w-8/12">
 				<p-floatLabel class="w-full">
 					<p-dropdown
 						[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
@@ -79,7 +79,7 @@
 				</p-floatLabel>
 			</div>
 			<div
-				class="col-12"
+				class="w-full"
 				*ngIf="plateSolverType !== 'ASTROMETRY_NET_ONLINE'">
 				<neb-path-chooser
 					key="plateSolverExecutableFile"
@@ -90,11 +90,11 @@
 					(pathChange)="savePreference()" />
 			</div>
 			@if (plateSolverType === 'ASTROMETRY_NET_ONLINE') {
-				<div class="col-8">
+				<div class="w-8/12">
 					<p-floatLabel class="w-full">
 						<input
 							pInputText
-							class="p-inputtext-sm border-0 w-full"
+							class="p-inputtext-sm w-full border-0"
 							[(ngModel)]="plateSolver.apiUrl"
 							(ngModelChange)="savePreference()" />
 						<label>API URL</label>
@@ -104,7 +104,7 @@
 					<p-floatLabel class="w-full">
 						<input
 							pInputText
-							class="p-inputtext-sm border-0 w-full"
+							class="p-inputtext-sm w-full border-0"
 							[(ngModel)]="plateSolver.apiKey"
 							(ngModelChange)="savePreference()" />
 						<label>API Key</label>
@@ -112,7 +112,7 @@
 				</div>
 			}
 			@if (plateSolverType !== 'PIXINSIGHT') {
-				<div class="col-6">
+				<div class="w-1/2">
 					<p-floatLabel>
 						<p-inputNumber
 							styleClass="p-inputtext-sm border-0 w-full"
@@ -125,7 +125,7 @@
 						<label>Downsample factor</label>
 					</p-floatLabel>
 				</div>
-				<div class="col-6">
+				<div class="w-1/2">
 					<p-floatLabel>
 						<p-inputNumber
 							styleClass="p-inputtext-sm border-0 w-full"
@@ -160,10 +160,10 @@
 		</div>
 	</div>
 	<div
-		class="col-12"
+		class="w-full"
 		*ngIf="tab === 'STAR_DETECTOR'">
 		<div class="grid">
-			<div class="col-6">
+			<div class="w-1/2">
 				<p-floatLabel class="w-full">
 					<p-dropdown
 						[options]="'STAR_DETECTOR' | dropdownOptions | enumDropdown"
@@ -175,7 +175,7 @@
 					<label>Detector</label>
 				</p-floatLabel>
 			</div>
-			<div class="col-12">
+			<div class="w-full">
 				<neb-path-chooser
 					key="starDetectorExecutableFile"
 					[directory]="false"
@@ -218,10 +218,10 @@
 		</div>
 	</div>
 	<div
-		class="col-12"
+		class="w-full"
 		*ngIf="tab === 'LIVE_STACKER'">
 		<div class="grid">
-			<div class="col-6">
+			<div class="w-1/2">
 				<p-floatLabel class="w-full">
 					<p-dropdown
 						[options]="'LIVE_STACKER' | dropdownOptions | enumDropdown"
@@ -233,7 +233,7 @@
 					<label>Stacker</label>
 				</p-floatLabel>
 			</div>
-			<div class="col-12">
+			<div class="w-full">
 				<neb-path-chooser
 					key="liveStackerExecutableFile"
 					[directory]="false"
@@ -263,10 +263,10 @@
 		</div>
 	</div>
 	<div
-		class="col-12"
+		class="w-full"
 		*ngIf="tab === 'CAPTURE_NAMING_FORMAT'">
 		<div class="grid">
-			<div class="col-12 gap-1">
+			<div class="w-full gap-1">
 				<p-floatLabel class="w-full">
 					<input
 						pInputText
@@ -282,7 +282,7 @@
 					pTooltip="Reset"
 					tooltipPosition="bottom" />
 			</div>
-			<div class="col-12 gap-1">
+			<div class="w-full gap-1">
 				<p-floatLabel class="w-full">
 					<input
 						pInputText
@@ -298,7 +298,7 @@
 					pTooltip="Reset"
 					tooltipPosition="bottom" />
 			</div>
-			<div class="col-12 gap-1">
+			<div class="w-full gap-1">
 				<p-floatLabel class="w-full">
 					<input
 						pInputText
@@ -314,7 +314,7 @@
 					pTooltip="Reset"
 					tooltipPosition="bottom" />
 			</div>
-			<div class="col-12 gap-1">
+			<div class="w-full gap-1">
 				<p-floatLabel class="w-full">
 					<input
 						pInputText

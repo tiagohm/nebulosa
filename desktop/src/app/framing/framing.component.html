@@ -1,25 +1,25 @@
-<div class="grid px-4 py-2 mt-1">
-	<div class="col-6">
+<div class="mt-1 grid px-4 py-2">
+	<div class="w-1/2">
 		<p-floatLabel>
 			<input
 				pInputText
-				class="p-inputtext-sm border-0 w-full"
+				class="p-inputtext-sm w-full border-0"
 				[(ngModel)]="preference.rightAscension"
 				(ngModelChange)="savePreference()" />
 			<label>RA (J2000)</label>
 		</p-floatLabel>
 	</div>
-	<div class="col-6">
+	<div class="w-1/2">
 		<p-floatLabel>
 			<input
 				pInputText
-				class="p-inputtext-sm border-0 w-full"
+				class="p-inputtext-sm w-full border-0"
 				[(ngModel)]="preference.declination"
 				(ngModelChange)="savePreference()" />
 			<label>DEC (J2000)</label>
 		</p-floatLabel>
 	</div>
-	<div class="col-6">
+	<div class="w-1/2">
 		<p-floatLabel>
 			<p-inputNumber
 				[min]="1"
@@ -34,7 +34,7 @@
 			<label>Width</label>
 		</p-floatLabel>
 	</div>
-	<div class="col-6">
+	<div class="w-1/2">
 		<p-floatLabel>
 			<p-inputNumber
 				[min]="1"
@@ -49,7 +49,7 @@
 			<label>Height</label>
 		</p-floatLabel>
 	</div>
-	<div class="col-6">
+	<div class="w-1/2">
 		<p-floatLabel>
 			<p-inputNumber
 				[min]="0.1"
@@ -66,7 +66,7 @@
 			<label>FOV (°)</label>
 		</p-floatLabel>
 	</div>
-	<div class="col-6">
+	<div class="w-1/2">
 		<p-floatLabel>
 			<p-inputNumber
 				[min]="-360"
@@ -83,7 +83,7 @@
 			<label>Rotation (°)</label>
 		</p-floatLabel>
 	</div>
-	<div class="col-12">
+	<div class="w-full">
 		<p-floatLabel class="w-full">
 			<p-dropdown
 				[options]="hipsSurveys"
@@ -95,7 +95,7 @@
 				<ng-template
 					let-item
 					pTemplate="selectedItem">
-					<div class="flex flex-column">
+					<div class="flex flex-col">
 						<span class="text-xs">{{ item?.regime }} ({{ item?.skyFraction | percent: '1.1-1' }})</span>
 						<span>{{ item?.id }}</span>
 					</div>
@@ -103,7 +103,7 @@
 				<ng-template
 					let-item
 					pTemplate="item">
-					<div class="flex flex-column">
+					<div class="flex flex-col">
 						<span class="text-xs">{{ item.regime }} ({{ item?.skyFraction | percent: '1.1-1' }})</span>
 						<span>{{ item.id }}</span>
 					</div>
@@ -112,7 +112,7 @@
 			<label>HiPS Survey</label>
 		</p-floatLabel>
 	</div>
-	<div class="col-12 justify-content-center mt-2">
+	<div class="mt-2 w-full justify-center">
 		<p-button
 			[disabled]="!preference.hipsSurvey || loading"
 			icon="mdi mdi-download"
@@ -121,7 +121,7 @@
 			[text]="true"
 			size="small" />
 	</div>
-	<div class="col-12 justify-content-center">
+	<div class="w-full justify-center">
 		<span class="text-sm text-gray-700">
 			Made use of
 			<a

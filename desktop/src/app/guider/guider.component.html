@@ -1,23 +1,23 @@
 <div class="grid">
-	<div class="col-12">
+	<div class="w-full">
 		<p-tabView>
 			<p-tabPanel
 				header="PHD2"
 				leftIcon="mdi mdi-target">
-				<div class="grid mt-3 px-4 flex align-items-center">
-					<div class="col-6 px-0">
+				<div class="mt-3 flex items-center px-4">
+					<div class="w-1/2 px-0">
 						<p-floatLabel class="w-full">
 							<input
 								pInputText
 								[disabled]="guider.connected"
-								class="border-0 p-inputtext-sm w-full"
+								class="p-inputtext-sm w-full border-0"
 								placeholder="localhost"
 								[(ngModel)]="preference.host"
 								(ngModelChange)="savePreference()" />
 							<label>Host</label>
 						</p-floatLabel>
 					</div>
-					<div class="col-3 pr-0">
+					<div class="w-1/4 pr-0">
 						<p-floatLabel>
 							<p-inputNumber
 								[disabled]="guider.connected"
@@ -31,7 +31,7 @@
 							<label>Port</label>
 						</p-floatLabel>
 					</div>
-					<div class="col-2 text-center pr-0">
+					<div class="w-2/12 pr-0 text-center">
 						<p-button
 							*ngIf="guider.connected"
 							(onClick)="guidingConnect()"
@@ -52,78 +52,78 @@
 							tooltipPosition="bottom" />
 					</div>
 					<div
-						class="col-12 pt-0 text-sm text-gray-400 flex align-items-center my-1 gap-1 text-center text-sm"
+						class="my-1 flex w-full items-center gap-1 pt-0 text-center text-sm text-gray-400"
 						style="min-height: 25px">
 						<i class="mdi mdi-information text-info"></i>
 						<span
 							style="min-width: 44px"
-							class="text-left mr-2">
+							class="mr-2 text-left">
 							{{ guider.state | enum | lowercase }}
 						</span>
 						<span class="text-left">{{ guider.message }}</span>
 					</div>
-					<div class="col-12 align-items-center">
+					<div class="w-full items-center">
 						<p-tabView class="relative">
 							<p-tabPanel
 								header="Chart"
 								leftIcon="mdi mdi-chart-bell-curve">
-								<div class="grid mt-2">
-									<div class="col-3">
+								<div class="mt-2 grid">
+									<div class="w-1/4">
 										<p-floatLabel>
 											<input
 												pInputText
 												readonly
-												class="p-inputtext-sm border-0 w-full"
+												class="p-inputtext-sm w-full border-0"
 												value="{{ chartInfo.rmsRA.toFixed(2) + ' (' + (chartInfo.rmsRA * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 											<label>RMS RA</label>
 										</p-floatLabel>
 									</div>
-									<div class="col-3">
+									<div class="w-1/4">
 										<p-floatLabel>
 											<input
 												pInputText
 												readonly
-												class="p-inputtext-sm border-0 w-full"
+												class="p-inputtext-sm w-full border-0"
 												value="{{ chartInfo.rmsDEC.toFixed(2) + ' (' + (chartInfo.rmsDEC * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 											<label>RMS DEC</label>
 										</p-floatLabel>
 									</div>
-									<div class="col-3">
+									<div class="w-1/4">
 										<p-floatLabel>
 											<input
 												pInputText
 												readonly
-												class="p-inputtext-sm border-0 w-full"
+												class="p-inputtext-sm w-full border-0"
 												value="{{ chartInfo.rmsTotal.toFixed(2) + ' (' + (chartInfo.rmsTotal * chartInfo.pixelScale).toFixed(2) + '&quot; )' }}" />
 											<label>RMS Total</label>
 										</p-floatLabel>
 									</div>
-									<div class="col-3">
+									<div class="w-1/4">
 										<p-floatLabel>
 											<input
 												pInputText
 												readonly
-												class="p-inputtext-sm border-0 w-full"
+												class="p-inputtext-sm w-full border-0"
 												[value]="guider.step?.starMass ?? 0" />
 											<label>Star mass</label>
 										</p-floatLabel>
 									</div>
-									<div class="col-2">
+									<div class="w-2/12">
 										<p-floatLabel>
 											<input
 												pInputText
 												readonly
-												class="p-inputtext-sm border-0 w-full"
+												class="p-inputtext-sm w-full border-0"
 												[value]="guider.step?.hfd ?? 0" />
 											<label>HFD</label>
 										</p-floatLabel>
 									</div>
-									<div class="col-2">
+									<div class="w-2/12">
 										<p-floatLabel>
 											<input
 												pInputText
 												readonly
-												class="p-inputtext-sm border-0 w-full"
+												class="p-inputtext-sm w-full border-0"
 												[value]="guider.step?.snr ?? 0" />
 											<label>SNR</label>
 										</p-floatLabel>
@@ -155,8 +155,8 @@
 										</p-floatLabel>
 									</div>
 								</div>
-								<div class="grid relative">
-									<div class="col-12">
+								<div class="relative grid">
+									<div class="w-full">
 										<p-chart
 											#chart
 											width="100%"
@@ -166,12 +166,12 @@
 											[options]="chartOptions" />
 									</div>
 									<span
-										class="absolute right-0 text-info"
+										class="text-info absolute right-0"
 										style="top: 16px">
 										North
 									</span>
 									<span
-										class="absolute right-0 text-danger"
+										class="text-danger absolute right-0"
 										style="bottom: 26px">
 										East
 									</span>
@@ -180,8 +180,8 @@
 							<p-tabPanel
 								header="Settings"
 								leftIcon="mdi mdi-cog">
-								<div class="grid mt-3">
-									<div class="col-6">
+								<div class="mt-3 grid">
+									<div class="w-1/2">
 										<p-floatLabel class="w-full">
 											<p-inputNumber
 												[disabled]="guider.connected"
@@ -198,7 +198,7 @@
 											<label>Settle tolerance (px)</label>
 										</p-floatLabel>
 									</div>
-									<div class="col-6">
+									<div class="w-1/2">
 										<p-floatLabel class="w-full">
 											<p-inputNumber
 												[disabled]="guider.connected"
@@ -213,7 +213,7 @@
 											<label>Min settle time (s)</label>
 										</p-floatLabel>
 									</div>
-									<div class="col-6">
+									<div class="w-1/2">
 										<p-floatLabel class="w-full">
 											<p-inputNumber
 												[disabled]="guider.connected"
@@ -231,9 +231,9 @@
 								</div>
 							</p-tabPanel>
 							<div
-								class="mt-1 absolute"
+								class="absolute mt-1"
 								style="top: -12px; right: 10px">
-								<div class="flex align-items-center justify-content-center gap-1">
+								<div class="flex items-center justify-center gap-1">
 									<!-- <p-button [disabled]="!connected || guiding || looping" label="Start" (onClick)="guidingStart($event)"
                                           icon="mdi mdi-play" severity="success" size="small" [text]="true" /> -->
 									<p-button
@@ -261,8 +261,8 @@
 			<p-tabPanel
 				header="Guide pulse"
 				leftIcon="mdi mdi-pulse">
-				<div class="grid mt-1 px-4">
-					<div class="col-12 mb-2 flex flex-row align-items-center justify-content-center gap-2">
+				<div class="mt-1 grid px-4">
+					<div class="mb-2 flex w-full flex-row items-center justify-center gap-2">
 						<neb-device-chooser
 							title="GUIDE OUTPUT"
 							icon="mdi mdi-target"
@@ -272,7 +272,7 @@
 							[disabled]="guideOutput?.pulseGuiding" />
 					</div>
 					<div class="col-4"></div>
-					<div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
+					<div class="col-4 flex flex-col items-center justify-center gap-2">
 						<p-floatLabel>
 							<p-inputNumber
 								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
@@ -289,10 +289,10 @@
 						</p-floatLabel>
 					</div>
 					<div class="col-4"></div>
-					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
+					<div class="col-4 flex flex-row items-center justify-center gap-2">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!guideOutput ||!guideOutput.connected || guideOutput.pulseGuiding"
+								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
 								[(ngModel)]="preference.pulseDuration.west"
 								(ngModelChange)="savePreference()"
 								[step]="1"
@@ -307,7 +307,7 @@
 					</div>
 					<div class="col-4">
 						<div class="grid">
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<p-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('NORTH', 'WEST')"
@@ -315,7 +315,7 @@
 									[text]="true"
 									styleClass="w-4rem" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<p-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('NORTH')"
@@ -323,7 +323,7 @@
 									[text]="true"
 									styleClass="w-4rem" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<p-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('NORTH', 'EAST')"
@@ -331,7 +331,7 @@
 									[text]="true"
 									styleClass="w-4rem" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<p-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('WEST')"
@@ -339,7 +339,7 @@
 									[text]="true"
 									styleClass="w-4rem" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<p-button
 									[disabled]="!guideOutput?.connected || !guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStop()"
@@ -348,7 +348,7 @@
 									severity="danger"
 									styleClass="w-full" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<p-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('EAST')"
@@ -356,7 +356,7 @@
 									[text]="true"
 									styleClass="w-4rem" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<p-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('SOUTH', 'WEST')"
@@ -364,7 +364,7 @@
 									[text]="true"
 									styleClass="w-4rem" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<p-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('SOUTH')"
@@ -372,7 +372,7 @@
 									[text]="true"
 									styleClass="w-4rem" />
 							</div>
-							<div class="col-4 flex align-items-center justify-content-center">
+							<div class="col-4 flex items-center justify-center">
 								<p-button
 									[disabled]="!guideOutput?.connected || guideOutput?.pulseGuiding"
 									(onClick)="guidePulseStart('SOUTH', 'EAST')"
@@ -382,10 +382,10 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
+					<div class="col-4 flex flex-row items-center justify-center gap-2">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!guideOutput ||!guideOutput.connected || guideOutput.pulseGuiding"
+								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
 								(onClick)="guidePulseStart('EAST')"
 								[(ngModel)]="preference.pulseDuration.east"
 								(ngModelChange)="savePreference()"
@@ -400,10 +400,10 @@
 						</p-floatLabel>
 					</div>
 					<div class="col-4"></div>
-					<div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
+					<div class="col-4 flex flex-col items-center justify-center gap-2">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!guideOutput ||!guideOutput.connected || guideOutput.pulseGuiding"
+								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
 								(onClick)="guidePulseStart('SOUTH')"
 								[(ngModel)]="preference.pulseDuration.south"
 								(ngModelChange)="savePreference()"

@@ -1,4 +1,4 @@
-<div class="flex align-items-center justify-content-center gap-1">
+<div class="flex items-center justify-center gap-1">
 	<span
 		class="relative"
 		*ngFor="let item of model; let i = index">
@@ -6,7 +6,7 @@
 			@if (item.toggleable) {
 				<div
 					*ngIf="item.visible"
-					class="flex flex-column align-items-center justify-content-center gap-1">
+					class="flex flex-col items-center justify-center gap-1">
 					<span class="text-xs">{{ item.label }}</span>
 					<p-inputSwitch
 						[disabled]="item.disabled ?? false"
@@ -16,7 +16,7 @@
 			} @else if (item.checkable) {
 				<div
 					*ngIf="item.visible"
-					class="flex flex-column align-items-center justify-content-center gap-1">
+					class="flex flex-col items-center justify-center gap-1">
 					<span class="text-xs">{{ item.label }}</span>
 					<p-checkbox
 						[binary]="true"
@@ -41,7 +41,7 @@
 					*ngIf="item.badge"
 					[severity]="item.badgeSeverity ?? 'danger'"
 					[value]="item.badge"
-					styleClass="absolute flex justify-content-center align-items-center top-0"
+					styleClass="absolute flex justify-center items-center top-0"
 					[style]="{ width: '14px', minWidth: '14px', height: '14px', minHeight: '14px', right: '-2px' }" />
 				<p-button
 					[text]="true"

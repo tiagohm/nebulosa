@@ -1,38 +1,38 @@
-<div class="flex flex-column align-items-start justify-content-center gap-1">
-	<span class="text-left flex align-items-center gap-1">
+<div class="flex flex-col items-start justify-center gap-1">
+	<span class="flex items-center gap-1 text-left">
 		<i class="mdi mdi-information text-info"></i>
 		{{ info || state || 'IDLE' | enum | lowercase }}
 	</span>
 
-	<span class="flex flex-row gap-1px">
-		<span class="bg-warning state counter flex align-items-center gap-1 justify-content-center text-gray-900">
+	<span class="gap-1px flex flex-row">
+		<span class="bg-warning state counter flex items-center justify-center gap-1 text-gray-900">
 			<i class="mdi mdi-counter"></i>
 			{{ capture.count }}
 			<span *ngIf="!capture.looping">/ {{ capture.amount }}</span>
 		</span>
 		@if (!capture.looping) {
-			<span class="bg-success state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
+			<span class="bg-success state percentage flex items-center justify-center gap-1 text-gray-900">
 				<i class="mdi mdi-percent"></i>
 				{{ capture.progress * 100 | number: '1.1-1' }}
 			</span>
 		}
 		@if (capture.looping) {
-			<span class="bg-info state time flex align-items-center gap-1 justify-content-center text-gray-900">
+			<span class="bg-info state time flex items-center justify-center gap-1 text-gray-900">
 				<i class="mdi mdi-timer-sand-complete"></i>
 				{{ capture.elapsedTime | exposureTime }}
 			</span>
 		} @else {
 			<span
-				class="bg-info state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
+				class="bg-info state time flex cursor-pointer items-center justify-center gap-1 text-gray-900"
 				(click)="showRemainingTime = !showRemainingTime">
 				<span
-					class="flex align-items-center gap-1"
+					class="flex items-center gap-1"
 					*ngIf="showRemainingTime">
 					<i class="mdi mdi-timer-sand"></i>
 					{{ capture.remainingTime | exposureTime }}
 				</span>
 				<span
-					class="flex align-items-center gap-1"
+					class="flex items-center gap-1"
 					*ngIf="!showRemainingTime">
 					<i class="mdi mdi-timer-sand-complete"></i>
 					{{ capture.elapsedTime | exposureTime }}
@@ -42,22 +42,22 @@
 
 		@if (capture.amount !== 1 && (state === 'EXPOSURING' || state === 'WAITING')) {
 			<span
-				class="bg-cyan-300 state time flex align-items-center gap-1 justify-content-center text-gray-900 cursor-pointer"
+				class="state time flex cursor-pointer items-center justify-center gap-1 bg-cyan-300 text-gray-900"
 				(click)="showRemainingTime = !showRemainingTime">
 				<span
-					class="flex align-items-center gap-1"
+					class="flex items-center gap-1"
 					*ngIf="showRemainingTime">
 					<i class="mdi mdi-timer-sand"></i>
 					{{ step.remainingTime | exposureTime }}
 				</span>
 				<span
-					class="flex align-items-center gap-1"
+					class="flex items-center gap-1"
 					*ngIf="!showRemainingTime">
 					<i class="mdi mdi-timer-sand-complete"></i>
 					{{ step.elapsedTime | exposureTime }}
 				</span>
 			</span>
-			<span class="bg-cyan-300 state percentage flex align-items-center gap-1 justify-content-center text-gray-900">
+			<span class="state percentage flex items-center justify-center gap-1 bg-cyan-300 text-gray-900">
 				<i class="mdi mdi-percent"></i>
 				{{ step.progress * 100 | number: '1.1-1' }}
 			</span>

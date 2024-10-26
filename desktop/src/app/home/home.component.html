@@ -1,5 +1,5 @@
 <div class="container px-4 pt-4">
-	<div class="justify-content-center align-items-center flex">
+	<div class="flex items-center justify-center">
 		<div class="flex w-full gap-1 px-2">
 			<p-button
 				(onClick)="addConnection()"
@@ -21,30 +21,30 @@
 					<ng-template
 						let-item
 						pTemplate="selectedItem">
-						<div class="justify-content-between flex flex-row gap-1">
+						<div class="flex flex-row justify-between gap-1">
 							<span>{{ connection?.name }}</span>
 						</div>
 					</ng-template>
 					<ng-template
 						let-item
 						pTemplate="item">
-						<div class="align-items-center justify-content-between flex flex-row gap-1 text-xs">
-							<div class="flex-column flex gap-1">
+						<div class="flex w-full flex-row items-center justify-between gap-1 text-xs">
+							<div class="flex flex-col gap-1">
 								<span class="text-lg font-bold">{{ item.name }}</span>
 								<span class="text-sm">{{ item.type }} | {{ item.host }}:{{ item.port }}</span>
-								<div class="align-items-center flex flex-row gap-1 text-xs">
+								<div class="flex flex-row items-center gap-1 text-xs">
 									<i class="mdi mdi-sm mdi-clock"></i>
 									<span>{{ (item.connectedAt | date: 'yyyy-MM-dd HH:mm:ss') ?? 'never' }}</span>
 								</div>
 							</div>
-							<div class="flex-column flex gap-3">
+							<div class="flex flex-col gap-3">
 								<i
 									class="mdi mdi-18px mdi-pencil"
 									pTooltip="Edit"
 									tooltipPosition="bottom"
 									(click)="editConnection(item, $event)"></i>
 								<i
-									class="mdi mdi-18px mdi-close"
+									class="mdi mdi-18px mdi-close text-danger"
 									pTooltip="Remove"
 									tooltipPosition="bottom"
 									(click)="deleteConnection(item, $event)"></i>
@@ -77,9 +77,9 @@
 		</div>
 		<div
 			*ngIf="newVersion"
-			class="col-12 py-0">
-			<div class="p-message p-message-info align-items-center justify-content-between m-0 flex w-full px-2">
-				<div class="align-items-center flex">
+			class="w-full py-0">
+			<div class="p-message p-message-info m-0 flex w-full items-center justify-between px-2">
+				<div class="flex items-center">
 					<span class="p-message-summary">New version:</span>
 					<span class="p-message-detail">{{ newVersion }}</span>
 				</div>
@@ -108,9 +108,9 @@
 				[text]="true"
 				[disabled]="!connected || !hasCamera"
 				(onClick)="open('CAMERA')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/camera.png" />
-				<div class="mt-1 text-sm">Camera</div>
+				<div class="text-sm">Camera</div>
 			</p-button>
 		</div>
 		<div class="p-1">
@@ -118,9 +118,9 @@
 				[text]="true"
 				[disabled]="!connected || !hasMount"
 				(onClick)="open('MOUNT')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/telescope.png" />
-				<div class="mt-1 text-sm">Mount</div>
+				<div class="text-sm">Mount</div>
 			</p-button>
 		</div>
 		<div class="p-1">
@@ -128,9 +128,9 @@
 				[text]="true"
 				[disabled]="!connected || !hasGuider"
 				(onClick)="open('GUIDER')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/guider.png" />
-				<div class="mt-1 text-sm">Guider</div>
+				<div class="text-sm">Guider</div>
 			</p-button>
 		</div>
 		<div class="p-1">
@@ -138,9 +138,9 @@
 				[text]="true"
 				[disabled]="!connected || !hasWheel"
 				(onClick)="open('WHEEL')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/filter-wheel.png" />
-				<div class="mt-1 text-sm">Filter Wheel</div>
+				<div class="text-sm">Filter Wheel</div>
 			</p-button>
 		</div>
 		<div class="p-1">
@@ -148,9 +148,9 @@
 				[text]="true"
 				[disabled]="!connected || !hasFocuser"
 				(onClick)="open('FOCUSER')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/focus.png" />
-				<div class="mt-1 text-sm">Focuser</div>
+				<div class="text-sm">Focuser</div>
 			</p-button>
 		</div>
 		<div class="p-1">
@@ -158,18 +158,18 @@
 				[text]="true"
 				[disabled]="!connected || !hasRotator"
 				(onClick)="open('ROTATOR')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/rotate.png" />
-				<div class="mt-1 text-sm">Rotator</div>
+				<div class="text-sm">Rotator</div>
 			</p-button>
 		</div>
 		<div class="p-1">
 			<p-button
 				[text]="true"
 				[disabled]="!connected || !hasDome"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/observatory.png" />
-				<div class="mt-1 text-sm">Dome</div>
+				<div class="text-sm">Dome</div>
 			</p-button>
 		</div>
 		<div class="p-1">
@@ -177,9 +177,9 @@
 				[text]="true"
 				[disabled]="!connected || !hasAuxiliary"
 				(onClick)="toggleAuxiliary()"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/toolkit.png" />
-				<div class="mt-1 text-sm">Auxiliary</div>
+				<div class="text-sm">Auxiliary</div>
 			</p-button>
 		</div>
 		@if (preference.showAuxiliary && hasAuxiliary) {
@@ -187,9 +187,9 @@
 				<p-button
 					[text]="true"
 					[disabled]="!connected || !hasSwitch"
-					styleClass="min-w-full w-full px-1 py-2 flex-column">
+					styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 					<img src="assets/icons/switch.png" />
-					<div class="mt-1 text-sm">Switch</div>
+					<div class="text-sm">Switch</div>
 				</p-button>
 			</div>
 			<div class="p-1">
@@ -197,9 +197,9 @@
 					[text]="true"
 					[disabled]="!connected || !hasLightBox"
 					(onClick)="open('LIGHT_BOX')"
-					styleClass="min-w-full w-full px-1 py-2 flex-column">
+					styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 					<img src="assets/icons/light.png" />
-					<div class="mt-1 text-sm">Light Box</div>
+					<div class="text-sm">Light Box</div>
 				</p-button>
 			</div>
 			<div class="p-1">
@@ -207,9 +207,9 @@
 					[text]="true"
 					[disabled]="!connected || !hasDustCap"
 					(onClick)="open('DUST_CAP')"
-					styleClass="min-w-full w-full px-1 py-2 flex-column">
+					styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 					<img src="assets/icons/lid.png" />
-					<div class="mt-1 text-sm">Dust Cap</div>
+					<div class="text-sm">Dust Cap</div>
 				</p-button>
 			</div>
 		}
@@ -217,9 +217,9 @@
 			<p-button
 				[text]="true"
 				(onClick)="open('SKY_ATLAS')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/atlas.png" />
-				<div class="mt-1 text-sm">Sky Atlas</div>
+				<div class="text-sm">Sky Atlas</div>
 			</p-button>
 		</div>
 		<div class="p-1">
@@ -227,9 +227,9 @@
 				[text]="true"
 				[disabled]="!connected || !hasAlignment"
 				(onClick)="open('ALIGNMENT')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/star.png" />
-				<div class="mt-1 text-sm">Alignment</div>
+				<div class="text-sm">Alignment</div>
 			</p-button>
 		</div>
 		<div class="p-1">
@@ -237,27 +237,27 @@
 				[text]="true"
 				(onClick)="open('SEQUENCER')"
 				[disabled]="!connected || !hasSequencer"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/sequencer.png" />
-				<div class="mt-1 text-sm">Sequencer</div>
+				<div class="text-sm">Sequencer</div>
 			</p-button>
 		</div>
 		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('IMAGE')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/image.png" />
-				<div class="mt-1 text-sm">Image Viewer</div>
+				<div class="text-sm">Image Viewer</div>
 			</p-button>
 		</div>
 		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('FRAMING')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/framing.png" />
-				<div class="mt-1 text-sm">Framing</div>
+				<div class="text-sm">Framing</div>
 			</p-button>
 		</div>
 		<div class="p-1">
@@ -265,9 +265,9 @@
 				[text]="true"
 				(onClick)="open('AUTO_FOCUS')"
 				[disabled]="!connected || !hasAutoFocus"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/auto-focus.png" />
-				<div class="mt-1 text-sm">Auto Focus</div>
+				<div class="text-sm">Auto Focus</div>
 			</p-button>
 		</div>
 		<div class="p-1">
@@ -275,18 +275,18 @@
 				[text]="true"
 				(onClick)="open('FLAT_WIZARD')"
 				[disabled]="!connected || !hasFlatWizard"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/flat-wizard.png" />
-				<div class="mt-1 text-sm">Flat Wizard</div>
+				<div class="text-sm">Flat Wizard</div>
 			</p-button>
 		</div>
 		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('CALIBRATION')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/calibration.png" />
-				<div class="mt-1 text-sm">Calibration</div>
+				<div class="text-sm">Calibration</div>
 			</p-button>
 		</div>
 		<div class="p-1">
@@ -294,9 +294,9 @@
 				[text]="true"
 				[disabled]="connection?.type !== 'INDI' || !connected || !hasINDI"
 				(onClick)="open('INDI')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/indi.png" />
-				<div class="mt-1 text-sm">INDI</div>
+				<div class="text-sm">INDI</div>
 			</p-button>
 		</div>
 		<div
@@ -305,30 +305,30 @@
 			<p-button
 				[text]="true"
 				(onClick)="open('CALCULATOR')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/calculator.png" />
-				<div class="mt-1 text-sm">Calculator</div>
+				<div class="text-sm">Calculator</div>
 			</p-button>
 		</div>
 		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('SETTINGS')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/settings.png" />
-				<div class="mt-1 text-sm">Settings</div>
+				<div class="text-sm">Settings</div>
 			</p-button>
 		</div>
 		<div class="p-1">
 			<p-button
 				[text]="true"
 				(onClick)="open('ABOUT')"
-				styleClass="min-w-full w-full px-1 py-2 flex-column">
+				styleClass="flex flex-col gap-0 w-full px-1 py-0 justify-center items-center gap-1">
 				<img src="assets/icons/about.png" />
-				<div class="mt-1 text-sm">About</div>
+				<div class="text-sm">About</div>
 			</p-button>
 		</div>
-		<div class="flex-column align-items-center justify-content-center indicators fixed flex">
+		<div class="indicators fixed flex flex-col items-center justify-center">
 			<span
 				class="indicator"
 				[class.selected]="page === 0"
@@ -348,7 +348,7 @@
 	[(visible)]="connectionDialog.showDialog"
 	[style]="{ width: '90vw' }">
 	<div class="grid p-2">
-		<div class="col-12">
+		<div class="w-full">
 			<p-floatLabel class="w-full">
 				<input
 					pInputText
@@ -358,7 +358,7 @@
 				<label>Name</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-12">
+		<div class="w-full">
 			<p-floatLabel class="w-full">
 				<input
 					pInputText
@@ -381,7 +381,7 @@
 				<label>Port</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-8">
+		<div class="w-8/12">
 			<p-selectButton
 				[options]="'CONNECTION_TYPE' | dropdownOptions"
 				[(ngModel)]="connectionDialog.connection.type"

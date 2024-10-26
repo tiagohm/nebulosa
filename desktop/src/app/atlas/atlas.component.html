@@ -1,5 +1,5 @@
 <div class="grid flex-1">
-	<div class="col-12">
+	<div class="w-full">
 		<p-tabView
 			[(activeIndex)]="tab"
 			(activeIndexChange)="tabChanged()">
@@ -16,14 +16,14 @@
 					</div>
 				</ng-template>
 				<div
-					class="relative grid flex flex-column align-items-center justify-content-center"
+					class="relative flex flex-col items-center justify-center"
 					[class.invisible]="!sun.image"
 					style="height: 225px">
 					<img
 						[src]="sun.image"
 						style="width: 223px" />
 					<a
-						class="text-sm absolute"
+						class="absolute text-sm"
 						style="bottom: -8px"
 						target="_blank"
 						href="https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg">
@@ -44,7 +44,7 @@
 					</div>
 				</ng-template>
 				<div
-					class="grid flex align-items-center justify-content-center relative"
+					class="relative flex items-center justify-center"
 					style="height: 225px">
 					<neb-moon
 						[width]="200"
@@ -53,30 +53,30 @@
 						[waning]="moon.position.leading" />
 					<div
 						*ngIf="moon.phase"
-						class="absolute w-full text-sm left-0 top-0 p-4 flex flex-row align-items-start justify-content-between">
-						<div class="flex flex-column gap-2">
-							<div class="flex flex-column">
+						class="absolute left-0 top-0 flex w-full flex-row items-start justify-between p-4 text-sm">
+						<div class="flex flex-col gap-2">
+							<div class="flex flex-col">
 								<span class="font-bold">Diameter</span>
 								<span>{{ moon.phase.current.diameter }} arcsec</span>
 								<span>{{ (moon.phase.current.diameter / 60).toFixed(2) }} arcmin</span>
 							</div>
-							<div class="flex flex-column">
+							<div class="flex flex-col">
 								<span class="font-bold">Age</span>
 								<span>{{ moon.phase.current.age }} d</span>
 							</div>
-							<div class="flex flex-column">
+							<div class="flex flex-col">
 								<span class="font-bold">Lunation</span>
 								<span>{{ moon.phase.current.lunation }}</span>
 							</div>
-							<div class="flex flex-column">
+							<div class="flex flex-col">
 								<span class="font-bold">Sub-Solar Lon / Lat</span>
 								<span>{{ moon.phase.current.subSolarLon }}° / {{ moon.phase.current.subSolarLat }}°</span>
 							</div>
-							<div class="flex flex-column">
+							<div class="flex flex-col">
 								<span class="font-bold">Sub-Earth Lon / Lat</span>
 								<span>{{ moon.phase.current.subEarthLon }}° / {{ moon.phase.current.subEarthLat }}°</span>
 							</div>
-							<div class="flex flex-column">
+							<div class="flex flex-col">
 								<span class="font-bold">Position Angle</span>
 								<span>{{ moon.phase.current.posAngle }}°</span>
 							</div>
@@ -88,10 +88,10 @@
 								</a>
 							</div>
 						</div>
-						<div class="flex flex-column gap-2">
+						<div class="flex flex-col gap-2">
 							@for (phase of moon.phase.phases; track $index) {
-								<div class="flex flex-column gap-1">
-									<span class="font-bold flex align-items-center gap-1 text-sm">
+								<div class="flex flex-col gap-1">
+									<span class="flex items-center gap-1 text-sm font-bold">
 										@let phaseIcon = phase.name === 'NEW_MOON' ? 'new' : phase.name === 'FIRST_QUARTER' ? 'first-quarter' : phase.name === 'FULL_MOON' ? 'full' : 'last-quarter';
 										<i class="mdi mdi-moon-{{ phaseIcon }}"></i>
 										{{ phase.name | enum | uppercase }}
@@ -115,7 +115,7 @@
 						<img src="assets/icons/jupiter.png" />
 					</div>
 				</ng-template>
-				<div class="flex align-items-center justify-content-center px-1">
+				<div class="flex items-center justify-center px-1">
 					<p-table
 						[value]="planet.planets"
 						class="planet"
@@ -155,12 +155,12 @@
 				</ng-template>
 				<p-tabView [(activeIndex)]="minorPlanet.tab">
 					<p-tabPanel header="Search">
-						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
-							<div class="flex w-full align-items-center px-4 gap-2">
+						<div class="relative mt-3 flex flex-col items-center justify-center">
+							<div class="flex w-full items-center gap-2 px-4">
 								<p-floatLabel class="w-full">
 									<input
 										pInputText
-										class="p-inputtext-sm border-0 w-full"
+										class="p-inputtext-sm w-full border-0"
 										[(ngModel)]="minorPlanet.search.text"
 										pTooltip="Enter the IAU number, designation, name or SPK-ID for the object of interest."
 										tooltipPosition="bottom" />
@@ -175,7 +175,7 @@
 									[text]="true" />
 							</div>
 							<span
-								class="text-xs absolute text-gray-500"
+								class="absolute text-xs text-gray-500"
 								style="top: -30px; right: 64px">
 								<a
 									target="_blank"
@@ -184,7 +184,7 @@
 								</a>
 							</span>
 						</div>
-						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
+						<div class="mt-2 flex flex-col items-center justify-center px-1">
 							<p-table
 								[value]="minorPlanet.search.result?.parameters ?? []"
 								class="minorPlanet"
@@ -209,8 +209,8 @@
 						</div>
 					</p-tabPanel>
 					<p-tabPanel header="Close Approaches">
-						<div class="relative flex mt-3 flex-column align-items-center justify-content-center">
-							<div class="flex w-full align-items-center px-4 gap-2">
+						<div class="relative mt-3 flex flex-col items-center justify-center">
+							<div class="flex w-full items-center gap-2 px-4">
 								<p-floatLabel>
 									<p-inputNumber
 										[min]="1"
@@ -246,7 +246,7 @@
 									[text]="true" />
 							</div>
 							<span
-								class="text-xs absolute text-gray-500"
+								class="absolute text-xs text-gray-500"
 								style="top: -30px; right: 46px">
 								<a
 									target="_blank"
@@ -255,7 +255,7 @@
 								</a>
 							</span>
 						</div>
-						<div class="flex flex-column align-items-center justify-content-center mt-2 px-1">
+						<div class="mt-2 flex flex-col items-center justify-center px-1">
 							<p-table
 								[value]="minorPlanet.closeApproach.result"
 								class="minorPlanet"
@@ -308,12 +308,12 @@
 						<img src="assets/icons/blackhole.png" />
 					</div>
 				</ng-template>
-				<div class="flex mt-2 align-items-center justify-content-center">
-					<div class="flex w-full align-items-center px-4 gap-2">
+				<div class="mt-2 flex items-center justify-center">
+					<div class="flex w-full items-center gap-2 px-4">
 						<p-floatLabel class="w-full">
 							<input
 								pInputText
-								class="p-inputtext-sm border-0 w-full"
+								class="p-inputtext-sm w-full border-0"
 								[(ngModel)]="skyObject.search.filter.text" />
 							<label>Search</label>
 						</p-floatLabel>
@@ -338,7 +338,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="flex align-items-center justify-content-center mt-2 px-1">
+				<div class="mt-2 flex items-center justify-center px-1">
 					<p-table
 						[value]="skyObject.search.result"
 						class="skyObject"
@@ -387,8 +387,8 @@
 							<tr [pSelectableRow]="item">
 								<td class="text-sm">{{ item.name.join(' · ') }}</td>
 								<td class="text-sm">{{ item.type | enum }}</td>
-								<td class="text-sm text-center">{{ item.magnitude < 30 ? item.magnitude.toFixed(1) : '-' }}</td>
-								<td class="text-sm text-center">{{ item.constellation }}</td>
+								<td class="text-center text-sm">{{ item.magnitude < 30 ? item.magnitude.toFixed(1) : '-' }}</td>
+								<td class="text-center text-sm">{{ item.constellation }}</td>
 							</tr>
 						</ng-template>
 					</p-table>
@@ -406,12 +406,12 @@
 						<img src="assets/icons/satellite.png" />
 					</div>
 				</ng-template>
-				<div class="flex mt-2 flex-column align-items-center justify-content-center">
-					<div class="flex w-full align-items-center px-4 gap-2">
+				<div class="mt-2 flex flex-col items-center justify-center">
+					<div class="flex w-full items-center gap-2 px-4">
 						<p-floatLabel class="w-full">
 							<input
 								pInputText
-								class="p-inputtext-sm border-0 w-full"
+								class="p-inputtext-sm w-full border-0"
 								[(ngModel)]="satellite.search.filter.text" />
 							<label>Search</label>
 						</p-floatLabel>
@@ -436,7 +436,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="flex align-items-center justify-content-center mt-2 px-1">
+				<div class="mt-2 flex items-center justify-center px-1">
 					<p-table
 						[value]="satellite.search.result"
 						class="satellite"
@@ -474,7 +474,7 @@
 							<tr [pSelectableRow]="item">
 								<td class="w-8rem">{{ item.id }}</td>
 								<td>{{ item.name }}</td>
-								<td class="flex flex-row flex-wrap gap-1 max-w-16rem">
+								<td class="max-w-16rem flex flex-row flex-wrap gap-1">
 									<p-tag
 										*ngFor="let item of item.groups"
 										severity="success"
@@ -489,121 +489,121 @@
 	</div>
 </div>
 <div
-	class="grid px-2 fixed bottom-0"
+	class="fixed bottom-0 grid px-2"
 	style="height: 212px">
 	<p-tabView
 		[style]="{ height: '258px', width: '100vw' }"
 		styleClass="info">
 		<p-tabPanel leftIcon="mdi mdi-information">
-			<div class="relative grid pt-3 px-3 flex-row justify-content-center">
-				<div class="col-12 pb-0">
-					<div class="grid">
-						<div class="col-3">
+			<div class="relative grid flex-row justify-center px-3 pt-3">
+				<div class="w-full pb-0">
+					<div class="grid grid-cols-4">
+						<div class="col-span-1">
 							<p-floatLabel>
 								<input
 									pInputText
 									readonly
-									class="p-inputtext-sm border-0 w-full"
+									class="p-inputtext-sm w-full border-0"
 									[value]="position.rightAscensionJ2000" />
 								<label>RA (J2000)</label>
 							</p-floatLabel>
 						</div>
-						<div class="col-3">
+						<div class="col-span-1">
 							<p-floatLabel>
 								<input
 									pInputText
 									readonly
-									class="p-inputtext-sm border-0 w-full"
+									class="p-inputtext-sm w-full border-0"
 									[value]="position.declinationJ2000" />
 								<label>DEC (J2000)</label>
 							</p-floatLabel>
 						</div>
-						<div class="col-3">
+						<div class="col-span-1">
 							<p-floatLabel>
 								<input
 									pInputText
 									readonly
-									class="p-inputtext-sm border-0 w-full"
+									class="p-inputtext-sm w-full border-0"
 									[value]="position.rightAscension" />
 								<label>RA</label>
 							</p-floatLabel>
 						</div>
-						<div class="col-3">
+						<div class="col-span-1">
 							<p-floatLabel>
 								<input
 									pInputText
 									readonly
-									class="p-inputtext-sm border-0 w-full"
+									class="p-inputtext-sm w-full border-0"
 									[value]="position.declination" />
 								<label>DEC</label>
 							</p-floatLabel>
 						</div>
-						<div class="col-3">
+						<div class="col-span-1">
 							<p-floatLabel>
 								<input
 									pInputText
 									readonly
-									class="p-inputtext-sm border-0 w-full"
+									class="p-inputtext-sm w-full border-0"
 									[value]="position.azimuth" />
 								<label>Azimuth</label>
 							</p-floatLabel>
 						</div>
-						<div class="col-3">
+						<div class="col-span-1">
 							<p-floatLabel>
 								<input
 									pInputText
 									readonly
-									class="p-inputtext-sm border-0 w-full"
+									class="p-inputtext-sm w-full border-0"
 									[value]="position.altitude" />
 								<label>Altitude</label>
 							</p-floatLabel>
 						</div>
-						<div class="col-3">
+						<div class="col-span-1">
 							<p-floatLabel>
 								<input
 									pInputText
 									readonly
-									class="p-inputtext-sm border-0 w-full"
+									class="p-inputtext-sm w-full border-0"
 									[value]="position.magnitude < 30 ? position.magnitude.toFixed(2) : '-'" />
 								<label>Magnitude</label>
 							</p-floatLabel>
 						</div>
-						<div class="col-3">
+						<div class="col-span-1">
 							<p-floatLabel>
 								<input
 									pInputText
 									readonly
-									class="p-inputtext-sm border-0 w-full"
+									class="p-inputtext-sm w-full border-0"
 									[value]="position.constellation" />
 								<label>Constellation</label>
 							</p-floatLabel>
 						</div>
-						<div class="col-3">
+						<div class="col-span-1">
 							<p-floatLabel>
 								<input
 									pInputText
 									readonly
-									class="p-inputtext-sm border-0 w-full"
+									class="p-inputtext-sm w-full border-0"
 									[value]="position.distance.toFixed(3)" />
 								<label>Distance ({{ position.distanceUnit }})</label>
 							</p-floatLabel>
 						</div>
-						<div class="col-3">
+						<div class="col-span-1">
 							<p-floatLabel>
 								<input
 									pInputText
 									readonly
-									class="p-inputtext-sm border-0 w-full"
+									class="p-inputtext-sm w-full border-0"
 									[value]="position.illuminated.toFixed(3)" />
 								<label>Illuminated (%)</label>
 							</p-floatLabel>
 						</div>
-						<div class="col-3">
+						<div class="col-span-1">
 							<p-floatLabel>
 								<input
 									pInputText
 									readonly
-									class="p-inputtext-sm border-0 w-full"
+									class="p-inputtext-sm w-full border-0"
 									[value]="position.elongation.toFixed(3)" />
 								<label>Elongation (°)</label>
 							</p-floatLabel>
@@ -612,14 +612,14 @@
 				</div>
 				<div
 					[class.invisible]="tab === 4"
-					class="col-12 justify-content-center pt-0 text-xs">
+					class="w-full justify-center pt-0 text-xs">
 					<a
 						target="_blank"
 						href="https://ssd.jpl.nasa.gov/horizons/">
 						JPL Horizons
 					</a>
 				</div>
-				<div class="col-12 pt-0 flex justify-content-center">
+				<div class="flex w-full justify-center pt-0">
 					<p-button
 						[disabled]="!body.name || refresh.position"
 						[text]="true"
@@ -667,7 +667,7 @@
 		</p-tabPanel>
 	</p-tabView>
 	<div
-		class="col-9 flex align-items-center justify-content-between absolute gap-1 overflow-hidden"
+		class="col-9 absolute flex items-center justify-between gap-1 overflow-hidden"
 		style="height: 32px; left: 95px; top: 2px; padding-right: 70px">
 		<p-button
 			[disabled]="!body.name || refreshing"
@@ -685,7 +685,7 @@
 				(onClick)="favorite()" />
 		}
 		<span
-			class="flex w-full align-items-center gap-1 justify-content-center"
+			class="flex w-full items-center justify-center gap-1"
 			style="min-width: -webkit-fill-available">
 			<span class="text-overflow-scroll font-bold">{{ body.name }}</span>
 			<p-tag
@@ -719,13 +719,13 @@
 	[(visible)]="skyObject.search.showDialog"
 	[modal]="true"
 	[style]="{ width: '80vw' }">
-	<div class="grid mt-2">
+	<div class="mt-2 grid">
 		<div class="col-4">
 			<p-floatLabel>
 				<input
 					pInputText
 					[disabled]="skyObject.search.filter.radius <= 0"
-					class="p-inputtext-sm border-0 w-full"
+					class="p-inputtext-sm w-full border-0"
 					[value]="skyObject.search.filter.rightAscension" />
 				<label>RA (h)</label>
 			</p-floatLabel>
@@ -735,7 +735,7 @@
 				<input
 					pInputText
 					[disabled]="skyObject.search.filter.radius <= 0"
-					class="p-inputtext-sm border-0 w-full"
+					class="p-inputtext-sm w-full border-0"
 					[value]="skyObject.search.filter.declination" />
 				<label>DEC (°)</label>
 			</p-floatLabel>
@@ -757,7 +757,7 @@
 				<label>Radius (°)</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-6">
+		<div class="w-1/2">
 			<p-floatLabel class="w-full">
 				@let constellations = ['ALL'].concat('CONSTELLATION' | dropdownOptions);
 				<p-dropdown
@@ -772,7 +772,7 @@
 				<label>Constellation</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-6">
+		<div class="w-1/2">
 			<p-floatLabel class="w-full">
 				@let skyObjectTypes = ['ALL'].concat('SKY_OBJECT_TYPE' | dropdownOptions);
 				<p-dropdown
@@ -839,8 +839,8 @@
 	[(visible)]="satellite.search.showDialog"
 	[modal]="true"
 	[style]="{ width: '80vw' }">
-	<div class="grid mt-2">
-		<div class="col-12 flex flex-column gap-1 align-items-start flex-wrap">
+	<div class="mt-2 grid">
+		<div class="flex w-full flex-col flex-wrap items-start gap-1">
 			@let groups = 'SATELLITE_GROUP_TYPE' | dropdownOptions;
 
 			@for (group of groups; track $index) {
@@ -878,7 +878,7 @@
 	appendTo="body">
 	<ng-template pTemplate="content">
 		<div class="grid">
-			<div class="col-7 flex-column gap-2">
+			<div class="col-7 flex-col gap-2">
 				<p-calendar
 					[disabled]="refreshing || !dateTimeAndLocation.manual"
 					[ngModel]="dateTimeAndLocation.dateTime"
@@ -890,16 +890,16 @@
 					dateFormat="yy-mm-dd"
 					styleClass="w-full" />
 			</div>
-			<div class="col-5 flex-column gap-3 align-items-center justify-content-start gap-1">
-				<div class="flex flex-column justify-content-center align-items-center gap-1">
+			<div class="w-5/12 flex-col items-center justify-start gap-3">
+				<div class="flex flex-col items-center justify-center gap-1">
 					<span>Date Time</span>
 					<p-inputSwitch
 						[disabled]="refreshing"
 						[(ngModel)]="dateTimeAndLocation.manual"
 						(ngModelChange)="manualDateTimeChanged()" />
 				</div>
-				<div class="flex flex-column align-items-center gap-3">
-					<div class="flex align-items-center justify-content-center gap-2">
+				<div class="flex flex-col items-center gap-3">
+					<div class="flex items-center justify-center gap-2">
 						<p-floatLabel class="w-full">
 							<p-inputNumber
 								[disabled]="refreshing || !dateTimeAndLocation.manual"
@@ -968,7 +968,7 @@
 				<ng-template
 					let-item
 					pTemplate="item">
-					<div class="flex align-items-center justify-content-between gap-1 w-full">
+					<div class="flex w-full items-center justify-between gap-1">
 						<span class="text-sm">
 							<span class="font-bold">{{ item.type | enum }}</span>
 							<span class="ml-1">{{ item.name }}</span>

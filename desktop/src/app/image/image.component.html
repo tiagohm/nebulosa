@@ -1,11 +1,11 @@
 <span
-	class="bg-black-alpha-20 border-round-sm fixed pointer-events-none px-3 py-2 select-none z-1"
+	class="bg-black-alpha-20 border-round-sm z-1 pointer-events-none fixed select-none px-3 py-2"
 	style="top: 48px; left: 6px">
 	{{ zoom.scale.toFixed(1) }}x
 </span>
 
 <div
-	class="inline-block relative"
+	class="relative inline-block"
 	style="backface-visibility: hidden">
 	<img
 		#image
@@ -23,7 +23,7 @@
 
 	<svg
 		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible"
-		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+		class="pointer-events-none absolute left-0 top-0 h-full w-full select-none">
 		<g
 			*ngFor="let a of annotation.displayOnlyFiltered ? annotation.filtered : annotation.data"
 			(dblclick)="showAnnotationInfo(a)"
@@ -48,7 +48,7 @@
 
 	<svg
 		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetector.visible"
-		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
+		class="pointer-events-none absolute left-0 top-0 h-full w-full select-none">
 		<g
 			*ngFor="let s of starDetector.stars"
 			class="pointer-events-auto cursor-pointer">
@@ -73,7 +73,7 @@
 
 	<svg
 		*ngIf="imageInfo"
-		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible">
+		class="fov pointer-events-none absolute left-0 top-0 h-full w-full select-none overflow-visible">
 		@for (item of fov.fovs; track $index) {
 			@if (item.enabled && item.computed) {
 				<rect
@@ -109,7 +109,7 @@
 
 <div
 	*ngIf="imageROI.show"
-	class="roi-coordinates fixed flex flex-row align-items-center gap-2">
+	class="roi-coordinates fixed flex flex-row items-center gap-2">
 	<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
 	<p-button
 		[text]="true"
@@ -139,7 +139,7 @@
 	<p-tabView>
 		<p-tabPanel header="Stars & DSOs">
 			<ng-template pTemplate="header">
-				<div class="flex gap-2 align-items-center">
+				<div class="flex items-center gap-2">
 					<span>Stars & DSOs</span>
 					<p-checkbox
 						[(ngModel)]="annotation.request.starsAndDSOs"
@@ -149,8 +149,8 @@
 						[binary]="true" />
 				</div>
 			</ng-template>
-			<div class="grid mt-2">
-				<div class="col-12">
+			<div class="mt-2 grid">
+				<div class="w-full">
 					<p-checkbox
 						[disabled]="!annotation.request.starsAndDSOs"
 						[(ngModel)]="annotation.request.useSimbad"
@@ -159,8 +159,8 @@
 						[binary]="true"
 						label="Search on SIMBAD Database Service" />
 				</div>
-				<div class="col-12 mt-2">
-					<p class="w-full m-0 p-3 text-gray-400 text-xs text-center">
+				<div class="mt-2 w-full">
+					<p class="m-0 w-full p-3 text-center text-xs text-gray-400">
 						<a
 							target="_blank"
 							href="https://simbad.cds.unistra.fr/simbad/">
@@ -172,7 +172,7 @@
 		</p-tabPanel>
 		<p-tabPanel header="Minor Planets">
 			<ng-template pTemplate="header">
-				<div class="flex gap-2 align-items-center">
+				<div class="flex items-center gap-2">
 					<span>Minor Planets</span>
 					<p-checkbox
 						[(ngModel)]="annotation.request.minorPlanets"
@@ -182,8 +182,8 @@
 						[binary]="true" />
 				</div>
 			</ng-template>
-			<div class="grid mt-2">
-				<div class="col-5">
+			<div class="mt-2 grid">
+				<div class="w-5/12">
 					<p-floatLabel class="w-full">
 						<p-inputNumber
 							[disabled]="!annotation.request.minorPlanets"
@@ -210,13 +210,13 @@
 						label="Include objects without magnitude" />
 				</div>
 				@if (annotation.request.minorPlanetsMagLimit >= 20 || annotation.request.includeMinorPlanetsWithoutMagnitude) {
-					<div class="col-12 pt-0 text-sm text-gray-300 justify-content-center">
+					<div class="w-full justify-center pt-0 text-sm text-gray-300">
 						<i class="mdi mdi-alert mdi-sm text-warning mr-1"></i>
 						Can take a long time
 					</div>
 				}
-				<div class="col-12 mt-2">
-					<p class="w-full m-0 p-3 text-gray-400 text-xs text-center">
+				<div class="mt-2 w-full">
+					<p class="m-0 w-full p-3 text-center text-xs text-gray-400">
 						<a
 							target="_blank"
 							href="https://ssd-api.jpl.nasa.gov/doc/sb_ident.html">
@@ -228,19 +228,19 @@
 		</p-tabPanel>
 		<p-tabPanel [disabled]="!annotation.data.length">
 			<ng-template pTemplate="header">
-				<div class="flex gap-2 align-items-center">
+				<div class="flex items-center gap-2">
 					<span>Objects</span>
 					<p-badge
 						severity="success"
 						[value]="annotation.filtered.length" />
 				</div>
 			</ng-template>
-			<div class="mt-3 flex flex-column align-items-center justify-content-center gap-2">
-				<div class="flex align-items-center justify-content-center gap-1">
+			<div class="mt-3 flex flex-col items-center justify-center gap-2">
+				<div class="flex items-center justify-center gap-1">
 					<p-floatLabel class="w-full">
 						<input
 							pInputText
-							class="p-inputtext-sm border-0 w-full"
+							class="p-inputtext-sm w-full border-0"
 							[(ngModel)]="annotation.search.text"
 							(ngModelChange)="searchAnnotations()"
 							tooltipPosition="bottom" />
@@ -281,7 +281,7 @@
 						<label>Mag. max</label>
 					</p-floatLabel>
 				</div>
-				<div class="flex align-items-center w-full justify-content-center">
+				<div class="flex w-full items-center justify-center">
 					<p-checkbox
 						[binary]="true"
 						label="Display only filtered annotations"
@@ -291,18 +291,18 @@
 					[items]="annotation.filtered"
 					[itemSize]="36"
 					scrollHeight="180px"
-					class="w-full mt-1"
+					class="mt-1 w-full"
 					[style]="{ width: '100%', height: '180px' }">
 					<ng-template
 						pTemplate="item"
 						let-item>
 						<div
-							class="cursor-pointer hover:surface-hover border-round flex flex-column align-items-start justfiy-content-center p-2 gap-1"
+							class="hover:surface-hover border-round justfiy-content-center flex cursor-pointer flex-col items-start gap-1 p-2"
 							[class.surface-card]="annotation.selected === item"
 							style="height: 36px"
 							(click)="annotationSelected(item)">
 							<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
-							<span class="text-xs overflow-hidden">{{ (item.star ?? item.dso ?? item.minorPlanet)?.name?.join(' · ') }}</span>
+							<span class="overflow-hidden text-xs">{{ (item.star ?? item.dso ?? item.minorPlanet)?.name?.join(' · ') }}</span>
 						</div>
 					</ng-template>
 				</p-scroller>
@@ -326,15 +326,15 @@
 	[(visible)]="astronomicalObject.showDialog"
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '325px' }">
-	<div class="grid mt-2">
+	<div class="mt-2 grid">
 		<ng-container *ngIf="astronomicalObject.info">
-			<div class="col-12">
+			<div class="w-full">
 				<p-floatLabel class="w-full">
 					<input
 						pInputText
 						readonly
 						[value]="astronomicalObject.info.name.join(' · ')"
-						class="border-0 p-inputtext-sm" />
+						class="p-inputtext-sm border-0" />
 					<label>Name</label>
 				</p-floatLabel>
 			</div>
@@ -344,7 +344,7 @@
 						pInputText
 						readonly
 						[value]="astronomicalObject.info.rightAscensionJ2000 | angle: true : 24"
-						class="border-0 p-inputtext-sm" />
+						class="p-inputtext-sm border-0" />
 					<label>RA (J2000)</label>
 				</p-floatLabel>
 			</div>
@@ -354,7 +354,7 @@
 						pInputText
 						readonly
 						[value]="astronomicalObject.info.declinationJ2000 | angle: true : 360"
-						class="border-0 p-inputtext-sm" />
+						class="p-inputtext-sm border-0" />
 					<label>DEC (J2000)</label>
 				</p-floatLabel>
 			</div>
@@ -366,49 +366,49 @@
 						pInputText
 						readonly
 						value="{{ astronomicalObject.info.constellation }} | {{ astronomicalObject.info.constellation | enum }}"
-						class="border-0 p-inputtext-sm" />
+						class="p-inputtext-sm border-0" />
 					<label>Constellation</label>
 				</p-floatLabel>
 			</div>
 			<div
-				class="col-3"
+				class="w-1/4"
 				*ngIf="astronomicalObject.info.magnitude">
 				<p-floatLabel class="w-full">
 					<input
 						pInputText
 						readonly
 						value="{{ astronomicalObject.info.magnitude < 30.0 ? astronomicalObject.info.magnitude.toFixed(2) : '-' }}"
-						class="border-0 p-inputtext-sm" />
+						class="p-inputtext-sm border-0" />
 					<label>Magnitude</label>
 				</p-floatLabel>
 			</div>
 			<div
-				class="col-6"
+				class="w-1/2"
 				*ngIf="astronomicalObject.info.type">
 				<p-floatLabel class="w-full">
 					<input
 						pInputText
 						readonly
 						value="{{ astronomicalObject.info.type | enum }}"
-						class="border-0 p-inputtext-sm" />
+						class="p-inputtext-sm border-0" />
 					<label>Type</label>
 				</p-floatLabel>
 			</div>
 			<div
-				class="col-3"
+				class="w-1/4"
 				*ngIf="astronomicalObject.info.distance">
 				<p-floatLabel class="w-full">
 					<input
 						pInputText
 						readonly
 						value="{{ astronomicalObject.info.distance <= 0 ? '-' : astronomicalObject.info.distance.toFixed(3) }}"
-						class="border-0 p-inputtext-sm" />
+						class="p-inputtext-sm border-0" />
 					<label>Dist. (ly)</label>
 				</p-floatLabel>
 			</div>
 		</ng-container>
 		<div
-			class="col-12 justify-content-center text-sm"
+			class="w-full justify-center text-sm"
 			*ngIf="astronomicalObject.info?.type">
 			<a
 				target="_blank"
@@ -418,7 +418,7 @@
 		</div>
 	</div>
 	<ng-template pTemplate="footer">
-		<div class="col-12 flex justify-content-center">
+		<div class="flex w-full justify-center">
 			<p-button
 				[disabled]="!astronomicalObject.info"
 				(onClick)="mountSync(astronomicalObject.info!)"
@@ -462,7 +462,7 @@
 	[style]="{ width: 'min-content', minWidth: '340px' }"
 	class="pointer-events-none">
 	<div class="grid pt-2">
-		<div class="col-12 gap-2 align-items-center">
+		<div class="w-full items-center gap-2">
 			<p-floatLabel class="w-full">
 				<p-dropdown
 					[options]="'PLATE_SOLVER' | dropdownOptions | enumDropdown"
@@ -482,25 +482,25 @@
 				[(ngModel)]="solver.request.blind"
 				(ngModelChange)="savePreference()" />
 		</div>
-		<div class="col-8">
+		<div class="w-8/12">
 			<div class="grid">
-				<div class="col-6">
+				<div class="w-1/2">
 					<p-floatLabel>
 						<input
 							pInputText
 							[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
-							class="p-inputtext-sm border-0 w-full"
+							class="p-inputtext-sm w-full border-0"
 							[(ngModel)]="solver.request.centerRA"
 							(ngModelChange)="savePreference()" />
 						<label>Center RA (h)</label>
 					</p-floatLabel>
 				</div>
-				<div class="col-6">
+				<div class="w-1/2">
 					<p-floatLabel>
 						<input
 							pInputText
 							[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
-							class="p-inputtext-sm border-0 w-full"
+							class="p-inputtext-sm w-full border-0"
 							[(ngModel)]="solver.request.centerDEC"
 							(ngModelChange)="savePreference()" />
 						<label>Center DEC (°)</label>
@@ -508,7 +508,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-4 flex flex-row align-items-center">
+		<div class="col-4 flex flex-row items-center">
 			<p-floatLabel>
 				<p-inputNumber
 					[disabled]="(solver.request.blind && solver.request.type !== 'SIRIL') || solver.request.type === 'PIXINSIGHT'"
@@ -522,7 +522,7 @@
 				<label>Radius (°)</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-6 flex flex-row align-items-center">
+		<div class="flex w-1/2 flex-row items-center">
 			<p-floatLabel>
 				<p-inputNumber
 					[min]="0"
@@ -537,7 +537,7 @@
 				<label>Focal length (mm)</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-6 flex flex-row align-items-center">
+		<div class="flex w-1/2 flex-row items-center">
 			<p-floatLabel>
 				<p-inputNumber
 					[min]="0"
@@ -562,7 +562,7 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="solver.solved.rightAscensionJ2000" />
 					<label>RA (J2000)</label>
 				</p-floatLabel>
@@ -572,7 +572,7 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="solver.solved.declinationJ2000" />
 					<label>DEC (J2000)</label>
 				</p-floatLabel>
@@ -582,7 +582,7 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="solver.solved.orientation.toFixed(4)" />
 					<label>Orientation (°)</label>
 				</p-floatLabel>
@@ -592,7 +592,7 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="solver.solved.scale.toFixed(4)" />
 					<label>Scale (arcsec/px)</label>
 				</p-floatLabel>
@@ -602,7 +602,7 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="solver.solved.width.toFixed(2) + ' x ' + solver.solved.height.toFixed(2)" />
 					<label>Field size (arcmin)</label>
 				</p-floatLabel>
@@ -612,14 +612,14 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="solver.solved.radius.toFixed(4)" />
 					<label>Radius (°)</label>
 				</p-floatLabel>
 			</div>
 		</div>
-		<div class="grid mb-2 mt-2">
-			<div class="col-12 flex justify-content-center">
+		<div class="mb-2 mt-2 grid">
+			<div class="flex w-full justify-center">
 				<p-button
 					[disabled]="solver.running || !solver.solved.solved"
 					(onClick)="mountSync(solver.solved)"
@@ -680,8 +680,8 @@
 	[style]="{ width: 'min-content', minWidth: '320px' }"
 	class="pointer-events-none">
 	<div class="grid px-2 pt-2">
-		<div class="col-8 flex flex-column">
-			<div class="flex flex-row gap-2 align-items-center justify-content-between">
+		<div class="flex w-8/12 flex-col">
+			<div class="flex flex-row items-center justify-between gap-2">
 				<p-floatLabel>
 					<p-inputNumber
 						[min]="0"
@@ -714,8 +714,8 @@
 				(ngModelChange)="stretch.transformation.shadow = $event[0]; stretch.transformation.highlight = $event[1]"
 				[range]="true" />
 		</div>
-		<div class="col-4 flex flex-column">
-			<div class="text-center w-full">
+		<div class="col-4 flex flex-col">
+			<div class="w-full text-center">
 				<p-floatLabel>
 					<p-inputNumber
 						[min]="0"
@@ -735,7 +735,7 @@
 				[max]="65536"
 				[(ngModel)]="stretch.transformation.midtone" />
 		</div>
-		<div class="col-12 mt-2 flex align-items-center gap-1">
+		<div class="mt-2 flex w-full items-center gap-1">
 			<p-floatLabel>
 				<p-inputNumber
 					[min]="0"
@@ -800,7 +800,7 @@
 	[style]="{ width: '270px' }"
 	class="pointer-events-none">
 	<div class="grid px-2">
-		<div class="col-12 flex align-items-center">
+		<div class="flex w-full items-center">
 			<p-selectButton
 				class="w-full"
 				styleClass="border-0"
@@ -811,7 +811,7 @@
 				(ngModelChange)="scnr.transformation.channel = $event === 'NONE' ? undefined : $event"
 				[multiple]="false" />
 		</div>
-		<div class="col-7 flex align-items-center">
+		<div class="col-7 flex items-center">
 			<p-floatLabel class="w-full">
 				<p-dropdown
 					[disabled]="!scnr.transformation.channel"
@@ -825,7 +825,7 @@
 				<label>Protection Method</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-5 flex align-items-center">
+		<div class="flex w-5/12 items-center">
 			<p-floatLabel>
 				<p-inputNumber
 					[disabled]="!scnr.transformation.channel || !scnr.transformation.method.endsWith('MASK')"
@@ -894,7 +894,7 @@
 	class="pointer-events-none">
 	@if (statistics.statistics && imageInfo) {
 		<div class="grid p-2">
-			<div class="col-12 flex align-items-center">
+			<div class="flex w-full items-center">
 				<p-selectButton
 					styleClass="border-0"
 					[disabled]="imageInfo.mono"
@@ -910,7 +910,7 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="statistics.statistics.count" />
 					<label>Count (px)</label>
 				</p-floatLabel>
@@ -920,7 +920,7 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="(statistics.statistics.mean * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 					<label>Mean</label>
 				</p-floatLabel>
@@ -930,7 +930,7 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="(statistics.statistics.median * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 					<label>Median</label>
 				</p-floatLabel>
@@ -940,7 +940,7 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="(statistics.statistics.variance * statistics.bitOption.rangeMax * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 					<label>Variance</label>
 				</p-floatLabel>
@@ -950,7 +950,7 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="(statistics.statistics.avgDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 					<label>Avg Dev</label>
 				</p-floatLabel>
@@ -960,32 +960,32 @@
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="(statistics.statistics.stdDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 					<label>Std Dev</label>
 				</p-floatLabel>
 			</div>
-			<div class="col-3">
+			<div class="w-1/4">
 				<p-floatLabel>
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="(statistics.statistics.minimum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 					<label>Minimum</label>
 				</p-floatLabel>
 			</div>
-			<div class="col-3">
+			<div class="w-1/4">
 				<p-floatLabel>
 					<input
 						pInputText
 						readonly
-						class="p-inputtext-sm border-0 w-full"
+						class="p-inputtext-sm w-full border-0"
 						[value]="(statistics.statistics.maximum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
 					<label>Maximum</label>
 				</p-floatLabel>
 			</div>
-			<div class="col-6">
+			<div class="w-1/2">
 				<p-floatLabel class="w-full">
 					<p-dropdown
 						[options]="'IMAGE_STATISTICS_BIT_OPTION' | dropdownOptions"
@@ -998,7 +998,7 @@
 					<label>Bits</label>
 				</p-floatLabel>
 			</div>
-			<div class="col-12">
+			<div class="w-full">
 				<neb-histogram
 					#histogram
 					class="w-full"
@@ -1015,8 +1015,8 @@
 	[modal]="false"
 	[style]="{ width: '360px' }"
 	class="pointer-events-none">
-	<div class="grid mt-2">
-		<div class="col-7 flex align-items-center">
+	<div class="mt-2 grid">
+		<div class="col-7 flex items-center">
 			<p-floatLabel class="w-full">
 				<p-dropdown
 					appendTo="body"
@@ -1030,7 +1030,7 @@
 			</p-floatLabel>
 		</div>
 		<div
-			class="col-5 align-items-center"
+			class="w-5/12 items-center"
 			*ngIf="starDetector.request.type !== 'SIRIL'">
 			<p-floatLabel>
 				<p-inputNumber
@@ -1048,7 +1048,7 @@
 			</p-floatLabel>
 		</div>
 		<div
-			class="col-5 align-items-center"
+			class="w-5/12 items-center"
 			*ngIf="starDetector.request.type === 'SIRIL'">
 			<p-floatLabel>
 				<p-inputNumber
@@ -1065,95 +1065,95 @@
 				<label>Max Stars</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-12 mt-1">
-			<span class="font-bold text-sm">COMPUTED</span>
+		<div class="mt-1 w-full">
+			<span class="text-sm font-bold">COMPUTED</span>
 		</div>
-		<div class="col-2 align-items-center">
+		<div class="w-2/12 items-center">
 			<p-floatLabel>
 				<input
 					pInputText
 					readonly
-					class="p-inputtext-sm border-0 w-full"
+					class="p-inputtext-sm w-full border-0"
 					[value]="starDetector.stars.length" />
 				<label>Stars</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-4 align-items-center">
+		<div class="col-4 items-center">
 			<p-floatLabel>
 				<input
 					pInputText
 					readonly
-					class="p-inputtext-sm border-0 w-full"
+					class="p-inputtext-sm w-full border-0"
 					value="{{ starDetector.computed.hfd.toFixed(2) }} | {{ starDetector.computed.stdDev.toFixed(4) }}" />
 				<label>HFD (Std Dev)</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-2 align-items-center">
+		<div class="w-2/12 items-center">
 			<p-floatLabel>
 				<input
 					pInputText
 					readonly
-					class="p-inputtext-sm border-0 w-full"
+					class="p-inputtext-sm w-full border-0"
 					[value]="starDetector.computed.snr.toFixed(1)" />
 				<label>SNR</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-4 align-items-center">
+		<div class="col-4 items-center">
 			<p-floatLabel>
 				<input
 					pInputText
 					readonly
-					class="p-inputtext-sm border-0 w-full"
+					class="p-inputtext-sm w-full border-0"
 					value="{{ starDetector.computed.fluxMin.toFixed(0) }} | {{ starDetector.computed.fluxMax.toFixed(0) }}" />
 				<label>Flux (min | max)</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-12 mt-1">
-			<span class="font-bold text-sm">SELECTED</span>
+		<div class="mt-1 w-full">
+			<span class="text-sm font-bold">SELECTED</span>
 		</div>
-		<div class="col-5">
+		<div class="w-5/12">
 			<canvas
 				#detectedStarCanvas
 				class="detected-star"></canvas>
 		</div>
 		<div class="col-7">
 			<div class="grid">
-				<div class="col-6 align-items-center">
+				<div class="w-1/2 items-center">
 					<p-floatLabel>
 						<input
 							pInputText
 							readonly
-							class="p-inputtext-sm border-0 w-full"
+							class="p-inputtext-sm w-full border-0"
 							value="{{ starDetector.selected.x.toFixed(0) }} | {{ starDetector.selected.y.toFixed(0) }}" />
 						<label>Coordinates</label>
 					</p-floatLabel>
 				</div>
-				<div class="col-6 align-items-center">
+				<div class="w-1/2 items-center">
 					<p-floatLabel>
 						<input
 							pInputText
 							readonly
-							class="p-inputtext-sm border-0 w-full"
+							class="p-inputtext-sm w-full border-0"
 							[value]="starDetector.selected.flux.toFixed(0)" />
 						<label>Flux</label>
 					</p-floatLabel>
 				</div>
-				<div class="col-6 align-items-center">
+				<div class="w-1/2 items-center">
 					<p-floatLabel>
 						<input
 							pInputText
 							readonly
-							class="p-inputtext-sm border-0 w-full"
+							class="p-inputtext-sm w-full border-0"
 							[value]="starDetector.selected.hfd.toFixed(2)" />
 						<label>HFD</label>
 					</p-floatLabel>
 				</div>
-				<div class="col-6 align-items-center">
+				<div class="w-1/2 items-center">
 					<p-floatLabel>
 						<input
 							pInputText
 							readonly
-							class="p-inputtext-sm border-0 w-full"
+							class="p-inputtext-sm w-full border-0"
 							[value]="starDetector.selected.snr.toFixed(1)" />
 						<label>SNR</label>
 					</p-floatLabel>
@@ -1180,7 +1180,7 @@
 	[style]="{ width: '390px' }"
 	class="pointer-events-none">
 	<div class="grid p-2">
-		<div class="col-2 align-items-center justify-content-center gap-2">
+		<div class="w-2/12 items-center justify-center gap-2">
 			<p-colorPicker
 				[(ngModel)]="fov.selected.color"
 				(ngModelChange)="saveFOV(false)"
@@ -1188,7 +1188,7 @@
 				[autofocus]="false"
 				[style]="{ width: '23px', height: '23px' }" />
 		</div>
-		<div class="col-6 align-items-center justify-content-start gap-2">
+		<div class="w-1/2 items-center justify-start gap-2">
 			<p-button
 				[text]="true"
 				icon="mdi mdi-telescope"
@@ -1216,8 +1216,8 @@
 				<label>Aperture (mm)</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-4 justify-content-center align-items-center">Resolution (px)</div>
-		<div class="col-4 justify-content-center align-items-center gap-2">
+		<div class="col-4 items-center justify-center">Resolution (px)</div>
+		<div class="col-4 items-center justify-center gap-2">
 			<p-button
 				[text]="true"
 				icon="mdi mdi-camera-iris"
@@ -1225,8 +1225,8 @@
 				pTooltip="Choose camera"
 				tooltipPosition="bottom" />
 		</div>
-		<div class="col-4 justify-content-center align-items-center">Pixel Size (µm)</div>
-		<div class="col-3">
+		<div class="col-4 items-center justify-center">Pixel Size (µm)</div>
+		<div class="w-1/4">
 			<p-floatLabel>
 				<p-inputNumber
 					styleClass="p-inputtext-sm border-0"
@@ -1239,7 +1239,7 @@
 				<label>Width</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-3">
+		<div class="w-1/4">
 			<p-floatLabel>
 				<p-inputNumber
 					styleClass="p-inputtext-sm border-0"
@@ -1252,7 +1252,7 @@
 				<label>Height</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-3">
+		<div class="w-1/4">
 			<p-floatLabel>
 				<p-inputNumber
 					styleClass="p-inputtext-sm border-0"
@@ -1269,7 +1269,7 @@
 				<label>Width</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-3">
+		<div class="w-1/4">
 			<p-floatLabel>
 				<p-inputNumber
 					styleClass="p-inputtext-sm border-0"
@@ -1303,7 +1303,7 @@
 				<label>Barlow/Reducer</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-3">
+		<div class="w-1/4">
 			<p-floatLabel>
 				<p-inputNumber
 					styleClass="p-inputtext-sm border-0"
@@ -1333,7 +1333,7 @@
 				<label>Rotation (°)</label>
 			</p-floatLabel>
 		</div> -->
-		<div class="col-1 flex align-items-center justify-content-center gap-2">
+		<div class="flex w-1/12 items-center justify-center gap-2">
 			<p-button
 				[disabled]="!canAddFOV"
 				[text]="true"
@@ -1345,22 +1345,22 @@
 				(onClick)="addFOV()" />
 		</div>
 		<div
-			class="col-12 p-0 flex-column overflow-auto mt-2 gap-1"
+			class="mt-2 w-full flex-col gap-1 overflow-auto p-0"
 			*ngIf="fov.fovs.length"
 			style="max-height: 112px">
 			@for (item of fov.fovs; track $index) {
 				<div
-					class="flex align-items-center gap-2 border-left-3 p-2 border-round cursor-pointer"
+					class="border-left-3 border-round flex cursor-pointer items-center gap-2 p-2"
 					[class.bg-blue-900]="fov.selected === item"
 					[style.border-color]="item.color"
 					(click)="selectFOV(item)">
-					<div class="flex align-items-center justify-content-center">
+					<div class="flex items-center justify-center">
 						<p-checkbox
 							[binary]="true"
 							[(ngModel)]="item.enabled"
 							(onChange)="$event.originalEvent?.stopImmediatePropagation()" />
 					</div>
-					<div class="flex align-items-center flex-wrap gap-1">
+					<div class="flex flex-wrap items-center gap-1">
 						<p-tag
 							severity="info"
 							value="FL: {{ item.focalLength }} mm" />
@@ -1394,7 +1394,7 @@
 								value="FOV: {{ item.computed.fieldSize.width.toFixed(2) }}°x{{ item.computed.fieldSize.height.toFixed(2) }}°" />
 						}
 					</div>
-					<div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
+					<div class="flex flex-col items-center justify-between gap-0 px-1">
 						<p-button
 							[text]="true"
 							severity="danger"
@@ -1417,7 +1417,7 @@
 	[style]="{ width: '300px' }"
 	class="pointer-events-none">
 	<div class="grid">
-		<div class="col-12">
+		<div class="w-full">
 			<p-listbox
 				[options]="fov.cameras"
 				[(ngModel)]="fov.camera"
@@ -1433,9 +1433,9 @@
 				<ng-template
 					let-item
 					pTemplate="item">
-					<div class="flex flex-column justify-content-center">
-						<span class="font-bold white-space-nowrap">{{ item.name }}</span>
-						<span class="font-italic text-sm white-space-nowrap">{{ item.sensor }}</span>
+					<div class="flex flex-col justify-center">
+						<span class="white-space-nowrap font-bold">{{ item.name }}</span>
+						<span class="font-italic white-space-nowrap text-sm">{{ item.sensor }}</span>
 						<span class="text-sm">{{ item.width }}x{{ item.height }} / {{ item.pixelSize }}µm</span>
 					</div>
 				</ng-template>
@@ -1461,7 +1461,7 @@
 	[style]="{ width: '300px' }"
 	class="pointer-events-none">
 	<div class="grid">
-		<div class="col-12">
+		<div class="w-full">
 			<p-listbox
 				[options]="fov.telescopes"
 				[(ngModel)]="fov.telescope"
@@ -1477,8 +1477,8 @@
 				<ng-template
 					let-item
 					pTemplate="item">
-					<div class="flex flex-column justify-content-center">
-						<span class="font-bold white-space-nowrap">{{ item.name }}</span>
+					<div class="flex flex-col justify-center">
+						<span class="white-space-nowrap font-bold">{{ item.name }}</span>
 						<span class="text-sm">{{ item.aperture }}mm / {{ item.focalLength }}mm</span>
 					</div>
 				</ng-template>
@@ -1503,8 +1503,8 @@
 	[modal]="false"
 	[style]="{ width: '260px' }"
 	class="pointer-events-none">
-	<div class="grid mt-2">
-		<div class="col-12">
+	<div class="mt-2 grid">
+		<div class="w-full">
 			<neb-path-chooser
 				key="imageSaveAs"
 				[directory]="false"
@@ -1513,7 +1513,7 @@
 				(pathChange)="pathChangedForSaveAs()"
 				class="w-full" />
 		</div>
-		<div class="col-12 flex align-items-center justify-content-center">
+		<div class="flex w-full items-center justify-center">
 			<p-selectButton
 				class="w-full"
 				styleClass="border-0"
@@ -1522,7 +1522,7 @@
 				[multiple]="false" />
 		</div>
 		@if (imageInfo) {
-			<div class="col-2">
+			<div class="w-2/12">
 				<p-button
 					[disabled]="!imageROI.show"
 					[text]="true"
@@ -1532,7 +1532,7 @@
 					tooltipPosition="bottom"
 					(onClick)="useROIAreaForSaveAs()" />
 			</div>
-			<div class="col-5">
+			<div class="w-5/12">
 				<p-floatLabel class="w-full">
 					<p-inputNumber
 						[min]="0"
@@ -1545,7 +1545,7 @@
 					<label>X</label>
 				</p-floatLabel>
 			</div>
-			<div class="col-5">
+			<div class="w-5/12">
 				<p-floatLabel class="w-full">
 					<p-inputNumber
 						[min]="0"
@@ -1558,7 +1558,7 @@
 					<label>Y</label>
 				</p-floatLabel>
 			</div>
-			<div class="col-2">
+			<div class="w-2/12">
 				<p-button
 					[text]="true"
 					icon="mdi mdi-restore"
@@ -1567,7 +1567,7 @@
 					tooltipPosition="bottom"
 					(onClick)="useImageAreaForSaveAs()" />
 			</div>
-			<div class="col-5">
+			<div class="w-5/12">
 				<p-floatLabel class="w-full">
 					<p-inputNumber
 						[min]="0"
@@ -1580,7 +1580,7 @@
 					<label>Width</label>
 				</p-floatLabel>
 			</div>
-			<div class="col-5">
+			<div class="w-5/12">
 				<p-floatLabel class="w-full">
 					<p-inputNumber
 						[min]="0"
@@ -1594,7 +1594,7 @@
 				</p-floatLabel>
 			</div>
 		}
-		<div class="col-7 align-items-center justify-content-center">
+		<div class="col-7 items-center justify-center">
 			<p-floatLabel class="w-full">
 				<p-dropdown
 					[disabled]="saveAs.format !== 'FITS' && saveAs.format !== 'XISF'"
@@ -1608,7 +1608,7 @@
 				<label>Format</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-5 flex-column align-items-center justify-content-center gap-1">
+		<div class="w-5/12 flex-col items-center justify-center gap-1">
 			<span class="text-sm">Transformed</span>
 			<p-checkbox
 				[binary]="true"
@@ -1633,7 +1633,7 @@
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '338px' }">
 	<div class="grid">
-		<div class="col-12 flex-column gap-2">
+		<div class="w-full flex-col gap-2">
 			<p-checkbox
 				[binary]="true"
 				[(ngModel)]="settings.preference.transformation.useJPEG"
@@ -1649,15 +1649,15 @@
 </p-dialog>
 
 <div
-	class="fixed p-3 text-sm coordinates monospaced"
+	class="coordinates monospaced fixed p-3 text-sm"
 	*ngIf="mouseCoordinate && isMouseCoordinateVisible">
-	<div class="grid m-0">
-		<div class="col-6 m-0 p-0">X: {{ mouseCoordinate.x }}</div>
-		<div class="col-6 m-0 p-0">Y: {{ mouseCoordinate.y }}</div>
-		<div class="col-6 m-0 p-0">α: {{ mouseCoordinate.alpha }}</div>
-		<div class="col-6 m-0 p-0">δ: {{ mouseCoordinate.delta }}</div>
-		<div class="col-6 m-0 p-0">l: {{ mouseCoordinate.l }}</div>
-		<div class="col-6 m-0 p-0">b: {{ mouseCoordinate.b }}</div>
+	<div class="m-0 grid">
+		<div class="m-0 w-1/2 p-0">X: {{ mouseCoordinate.x }}</div>
+		<div class="m-0 w-1/2 p-0">Y: {{ mouseCoordinate.y }}</div>
+		<div class="m-0 w-1/2 p-0">α: {{ mouseCoordinate.alpha }}</div>
+		<div class="m-0 w-1/2 p-0">δ: {{ mouseCoordinate.delta }}</div>
+		<div class="m-0 w-1/2 p-0">l: {{ mouseCoordinate.l }}</div>
+		<div class="m-0 w-1/2 p-0">b: {{ mouseCoordinate.b }}</div>
 	</div>
 </div>
 

@@ -1,15 +1,13 @@
 neb-home {
 	.buttons {
 		p-button {
-			display: contents;
-
 			> button {
 				min-height: 56px;
 				max-height: 56px;
-				display: flex;
 
 				img {
 					height: 32px;
+					margin-top: 4px;
 				}
 
 				&:disabled {

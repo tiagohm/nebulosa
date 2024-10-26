@@ -1,5 +1,5 @@
 <div class="grid p-4">
-	<div class="col-12">
+	<div class="w-full">
 		<p-dropdown
 			[options]="formulae"
 			[(ngModel)]="formula"
@@ -9,21 +9,21 @@
 			<ng-template
 				let-item
 				pTemplate="selectedItem">
-				<div class="flex align-items-center gap-2">
+				<div class="flex items-center gap-2">
 					<span>{{ item?.formula?.title }}</span>
 				</div>
 			</ng-template>
 			<ng-template
 				let-item
 				pTemplate="item">
-				<div class="flex flex-column">
+				<div class="flex flex-col">
 					<span class="text-bold">{{ item.formula.title }}</span>
-					<span class="text-sm white-space-normal">{{ item.formula.description }}</span>
+					<span class="white-space-normal text-sm">{{ item.formula.description }}</span>
 				</div>
 			</ng-template>
 		</p-dropdown>
 	</div>
-	<div class="col-12">
+	<div class="w-full">
 		<ng-container *ngComponentOutlet="formula.component; inputs: { formula: formula.formula }" />
 	</div>
 </div>
