@@ -13,6 +13,6 @@ data class ArrayResponse<T>(
 
     companion object {
 
-        @JvmStatic internal val EMPTY_ARRAY = arrayOfNulls<Any?>(0)
+        internal val EMPTY_ARRAY = arrayOfNulls<Any?>(0)
     }
 }

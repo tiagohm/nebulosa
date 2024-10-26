@@ -55,6 +55,6 @@ data class WheelMoveTask(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<WheelMoveTask>()
+        private val LOG = loggerFor<WheelMoveTask>()
     }
 }

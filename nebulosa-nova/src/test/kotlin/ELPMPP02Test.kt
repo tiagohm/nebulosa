@@ -20,6 +20,6 @@ class ELPMPP02Test {
 
     companion object {
 
-        @JvmStatic private val TIME = TDB(TimeJD(2459938.0, 0.5))
+        private val TIME = TDB(TimeJD(2459938.0, 0.5))
     }
 }

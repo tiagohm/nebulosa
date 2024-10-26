@@ -94,9 +94,9 @@ class Nebulosa : Runnable, AutoCloseable {
 
     companion object {
 
-        @JvmStatic internal val LOG = loggerFor<Nebulosa>()
+        internal val LOG = loggerFor<Nebulosa>()
 
-        @JvmStatic private val OBJECT_MAPPER = jsonMapper {
+        private val OBJECT_MAPPER = jsonMapper {
             addModule(JavaTimeModule())
             addModule(PathModule())
             addModule(DeviceModule())

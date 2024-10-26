@@ -77,7 +77,7 @@ class HygDatabase : SkyCatalog<HygEntry>(118005) {
 
     companion object {
 
-        @JvmStatic private val CSV_READER = CsvReader.builder()
+        private val CSV_READER = CsvReader.builder()
             .fieldSeparator(',')
             .quoteCharacter('"')
             .commentCharacter('#')

@@ -44,6 +44,6 @@ data class DelayTask(
 
         const val DELAY_INTERVAL = 500L
 
-        @JvmStatic private val LOG = loggerFor<DelayTask>()
+        private val LOG = loggerFor<DelayTask>()
     }
 }

@@ -84,6 +84,6 @@ class IERSUpdateTask(
         const val IERSA_UPDATED_AT_KEY = "IERSA.UPDATED_AT"
         const val IERSB_UPDATED_AT_KEY = "IERSB.UPDATED_AT"
 
-        @JvmStatic private val LOG = loggerFor<IERSUpdateTask>()
+        private val LOG = loggerFor<IERSUpdateTask>()
     }
 }

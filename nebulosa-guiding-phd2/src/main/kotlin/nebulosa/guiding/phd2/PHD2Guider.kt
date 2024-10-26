@@ -380,6 +380,6 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<PHD2Guider>()
+        private val LOG = loggerFor<PHD2Guider>()
     }
 }

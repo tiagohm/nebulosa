@@ -71,9 +71,9 @@ class LX200ProtocolEncoder : MessageToByteEncoder<LX200ProtocolMessage>() {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<LX200ProtocolEncoder>()
+        private val LOG = loggerFor<LX200ProtocolEncoder>()
 
-        @JvmStatic internal val CALENDAR_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yy")
-        @JvmStatic internal val CALENDAR_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
+        internal val CALENDAR_DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yy")
+        internal val CALENDAR_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
 }

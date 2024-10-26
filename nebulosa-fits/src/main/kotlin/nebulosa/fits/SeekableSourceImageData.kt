@@ -142,6 +142,6 @@ internal data class SeekableSourceImageData(
 
         const val PIXEL_COUNT = 64
 
-        @JvmStatic private val LOG = loggerFor<SeekableSourceImageData>()
+        private val LOG = loggerFor<SeekableSourceImageData>()
     }
 }

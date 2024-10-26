@@ -43,6 +43,6 @@ internal class StellariumProtocolHandler(private val server: StellariumProtocolS
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<StellariumProtocolHandler>()
+        private val LOG = loggerFor<StellariumProtocolHandler>()
     }
 }

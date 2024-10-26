@@ -13,7 +13,7 @@ data object GuideStateDeserializer : StdDeserializer<GuideState>(GuideState::cla
         return p.valueAsString?.let(GUIDE_STATE_NAMES::get)
     }
 
-    @JvmStatic private val GUIDE_STATE_NAMES = mapOf(
+    private val GUIDE_STATE_NAMES = mapOf(
         "Stopped" to GuideState.STOPPED,
         "Selected" to GuideState.SELECTED,
         "Calibrating" to GuideState.CALIBRATING,

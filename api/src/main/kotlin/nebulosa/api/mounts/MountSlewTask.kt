@@ -89,7 +89,7 @@ data class MountSlewTask(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<MountSlewTask>()
-        @JvmStatic private val SETTLE_DURATION: Duration = Duration.ofSeconds(5)
+        private val LOG = loggerFor<MountSlewTask>()
+        private val SETTLE_DURATION: Duration = Duration.ofSeconds(5)
     }
 }

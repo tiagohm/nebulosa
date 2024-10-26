@@ -321,27 +321,26 @@ enum class GUST86(override val target: Int) : Body {
 
     companion object {
 
-        @JvmStatic private val FQN = doubleArrayOf(4445190.550e-06, 2492952.519e-06, 1516148.111e-06, 721718.509e-06, 466692.120e-06)
-        @JvmStatic private val FQE = doubleArrayOf(20.082 * DEG2RAD, 6.217 * DEG2RAD, 2.865 * DEG2RAD, 2.078 * DEG2RAD, 0.386 * DEG2RAD)
-        @JvmStatic private val FQI = doubleArrayOf(-20.309 * DEG2RAD, -6.288 * DEG2RAD, -2.836 * DEG2RAD, -1.843 * DEG2RAD, -0.259 * DEG2RAD)
-        @JvmStatic private val PHN = doubleArrayOf(-238051.0e-06, 3098046.0e-06, 2285402.0e-06, 856359.0e-06, -915592.0e-06)
-        @JvmStatic private val PHE = doubleArrayOf(0.611392, 2.408974, 2.067774, 0.735131, 0.426767)
-        @JvmStatic private val PHI = doubleArrayOf(5.702313, 0.395757, 0.589326, 1.746237, 4.206896)
+        private val FQN = doubleArrayOf(4445190.550e-06, 2492952.519e-06, 1516148.111e-06, 721718.509e-06, 466692.120e-06)
+        private val FQE = doubleArrayOf(20.082 * DEG2RAD, 6.217 * DEG2RAD, 2.865 * DEG2RAD, 2.078 * DEG2RAD, 0.386 * DEG2RAD)
+        private val FQI = doubleArrayOf(-20.309 * DEG2RAD, -6.288 * DEG2RAD, -2.836 * DEG2RAD, -1.843 * DEG2RAD, -0.259 * DEG2RAD)
+        private val PHN = doubleArrayOf(-238051.0e-06, 3098046.0e-06, 2285402.0e-06, 856359.0e-06, -915592.0e-06)
+        private val PHE = doubleArrayOf(0.611392, 2.408974, 2.067774, 0.735131, 0.426767)
+        private val PHI = doubleArrayOf(5.702313, 0.395757, 0.589326, 1.746237, 4.206896)
 
         private const val GMU = 5794950.5
-        @JvmStatic private val GMS = doubleArrayOf(4.4, 86.1, 84.0, 230.0, 200.0)
+        private val GMS = doubleArrayOf(4.4, 86.1, 84.0, 230.0, 200.0)
 
         // private const val ALF = 76.60666666666667 * DEG2RAD
         // private const val DEL = 15.03222222222222 * DEG2RAD
 
         @Suppress("FloatingPointLiteralPrecision")
-        @JvmStatic private val REFERENCE_FRAME = Matrix3D(
+        private val REFERENCE_FRAME = Matrix3D(
             0.975320689787805506, 0.061943212277559903, 0.211925908266559604,
             -0.220742291478488117, 0.252990568240833158, 0.941949368633859696,
             0.004732113777988428, -0.965483718541726765, 0.260420422133248453,
         )
 
-        @JvmStatic
         private fun keplkh(rl: Double, rk: Double, rh: Double): Double {
             if (rl == 0.0) return 0.0
 

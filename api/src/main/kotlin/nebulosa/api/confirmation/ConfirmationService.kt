@@ -28,6 +28,6 @@ class ConfirmationService(private val messageService: MessageService) {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<ConfirmationService>()
+        private val LOG = loggerFor<ConfirmationService>()
     }
 }

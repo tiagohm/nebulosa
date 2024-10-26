@@ -366,8 +366,8 @@ class ImageService(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<ImageService>()
-        @JvmStatic private val INVALID_MAG_CHARS = "[^.\\-+0-9]+".toRegex()
+        private val LOG = loggerFor<ImageService>()
+        private val INVALID_MAG_CHARS = "[^.\\-+0-9]+".toRegex()
 
         private const val IMAGE_INFO_HEADER = "X-Image-Info"
         private const val COORDINATE_INTERPOLATION_DELTA = 24

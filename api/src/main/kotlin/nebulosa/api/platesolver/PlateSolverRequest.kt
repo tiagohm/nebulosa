@@ -77,7 +77,7 @@ data class PlateSolverRequest(
 
         const val PLATE_SOLVER_IS_NOT_CONFIGURED = "plate solver is not configured"
 
-        @JvmStatic val EMPTY = PlateSolverRequest()
-        @JvmStatic private val NOVA_ASTROMETRY_NET_CACHE = HashMap<String, NovaAstrometryNetService>()
+        val EMPTY = PlateSolverRequest()
+        private val NOVA_ASTROMETRY_NET_CACHE = HashMap<String, NovaAstrometryNetService>()
     }
 }

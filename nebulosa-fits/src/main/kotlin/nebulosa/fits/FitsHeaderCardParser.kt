@@ -289,11 +289,11 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
         const val MIN_VALID_CHAR = 0x20.toChar()
         const val MAX_VALID_CHAR = 0x7e.toChar()
 
-        @JvmStatic private val LOG = loggerFor<FitsHeaderCardParser>()
+        private val LOG = loggerFor<FitsHeaderCardParser>()
 
-        @JvmStatic private val DECIMAL_REGEX = Regex("[+-]?\\d+(\\.\\d*)?([dDeE][+-]?\\d+)?")
-        @JvmStatic private val COMPLEX_REGEX = Regex("\\(\\s*$DECIMAL_REGEX\\s*,\\s*$DECIMAL_REGEX\\s*\\)")
-        @JvmStatic private val INT_REGEX = Regex("[+-]?\\d+")
+        private val DECIMAL_REGEX = Regex("[+-]?\\d+(\\.\\d*)?([dDeE][+-]?\\d+)?")
+        private val COMPLEX_REGEX = Regex("\\(\\s*$DECIMAL_REGEX\\s*,\\s*$DECIMAL_REGEX\\s*\\)")
+        private val INT_REGEX = Regex("[+-]?\\d+")
 
         @JvmStatic
         fun isValidChar(c: Char): Boolean {

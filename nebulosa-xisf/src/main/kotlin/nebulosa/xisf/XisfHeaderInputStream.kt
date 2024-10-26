@@ -144,6 +144,6 @@ class XisfHeaderInputStream(source: InputStream) : AutoCloseable {
 
     companion object {
 
-        @JvmStatic private val XML_INPUT_FACTORY = InputFactoryImpl()
+        private val XML_INPUT_FACTORY = InputFactoryImpl()
     }
 }

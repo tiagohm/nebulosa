@@ -101,6 +101,6 @@ class ImageBucket(scheduledExecutorService: ScheduledExecutorService) {
 
         private const val IMAGE_TIMEOUT = 1000 * 60 * 5L // 5 min
 
-        @JvmStatic private val LOG = loggerFor<ImageBucket>()
+        private val LOG = loggerFor<ImageBucket>()
     }
 }

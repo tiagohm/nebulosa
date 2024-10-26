@@ -69,14 +69,14 @@ class PHD2Client : NettyClient() {
 
         const val DEFAULT_PORT = 4400
 
-        @JvmStatic private val LOG = loggerFor<PHD2Client>()
+        private val LOG = loggerFor<PHD2Client>()
 
-        @JvmStatic private val MODULE = with(kotlinModule()) {
+        private val MODULE = with(kotlinModule()) {
             addDeserializer(GuideState::class.java, GuideStateDeserializer)
             addSerializer(GuideStateSerializer)
         }
 
-        @JvmStatic private val JSON_MAPPER = jsonMapper {
+        private val JSON_MAPPER = jsonMapper {
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
             serializationInclusion(JsonInclude.Include.NON_NULL)

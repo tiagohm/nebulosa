@@ -51,9 +51,9 @@ abstract class RetrofitService(
 
     companion object {
 
-        @JvmStatic private val CONNECTION_POOL = ConnectionPool(32, 5L, TimeUnit.MINUTES)
+        private val CONNECTION_POOL = ConnectionPool(32, 5L, TimeUnit.MINUTES)
 
-        @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
+        private val HTTP_CLIENT = OkHttpClient.Builder()
             .connectionPool(CONNECTION_POOL)
             .readTimeout(60L, TimeUnit.SECONDS)
             .writeTimeout(60L, TimeUnit.SECONDS)
@@ -61,7 +61,7 @@ abstract class RetrofitService(
             .callTimeout(60L, TimeUnit.SECONDS)
             .build()
 
-        @JvmStatic private val DEFAULT_MAPPER = jsonMapper {
+        private val DEFAULT_MAPPER = jsonMapper {
             addModule(PathModule())
             addModule(JavaTimeModule())
             enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)

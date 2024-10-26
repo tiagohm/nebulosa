@@ -38,7 +38,6 @@ data class KeplerOrbit(
         /**
          * Creates a [KeplerOrbit] from orbital elements using mean anomaly.
          */
-        @JvmStatic
         internal fun meanAnomaly(
             semilatusRectum: Distance,
             eccentricity: Double,
@@ -75,7 +74,6 @@ data class KeplerOrbit(
         /**
          * Creates a [KeplerOrbit] from orbital elements using true anomaly.
          */
-        @JvmStatic
         internal fun trueAnomaly(
             semilatusRectum: Distance,
             eccentricity: Double,
@@ -216,7 +214,6 @@ data class KeplerOrbit(
          * @param t1 [InstantOfTime] to propagate to.
          * @param mu Gravitational parameter in units that match the other arguments.
          */
-        @JvmStatic
         private fun propagate(
             position: Vector3D, velocity: Vector3D,
             t0: InstantOfTime, t1: InstantOfTime,
@@ -317,7 +314,6 @@ data class KeplerOrbit(
             return PositionAndVelocity(pos, vel)
         }
 
-        @JvmStatic
         private val ODD_FACTORIALS = doubleArrayOf(
             6.0,
             120.0,
@@ -330,7 +326,6 @@ data class KeplerOrbit(
             121645100408832000.0,
         )
 
-        @JvmStatic
         private val EVEN_FACTORIALS = doubleArrayOf(
             2.0,
             24.0,
@@ -348,7 +343,6 @@ data class KeplerOrbit(
          *
          * Based on the function toolkit/src/spicelib/stmp03.f from the SPICE toolkit.
          */
-        @JvmStatic
         private fun stumpff(x: Double): DoubleArray {
             val z = sqrt(abs(x))
 

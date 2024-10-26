@@ -280,34 +280,29 @@ class SkyAtlasService(
         private const val SUN = "10"
         private const val MOON = "301"
 
-        @JvmStatic private val FAST_MOON = VSOP87E.EARTH + ELPMPP02
-        @JvmStatic private val MOON_PHASE_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00")
+        private val FAST_MOON = VSOP87E.EARTH + ELPMPP02
+        private val MOON_PHASE_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00")
 
-        @JvmStatic
         private fun GeographicCoordinate.geographicPosition() = when (this) {
             is GeographicPosition -> this
             else -> Geoid.IERS2010.lonLat(this)
         }
 
-        @JvmStatic
         private fun GeographicCoordinate.offsetInSeconds() = when (this) {
             is TimeZonedInSeconds -> offsetInSeconds
             else -> 0
         }
 
-        @JvmStatic
         private fun GeographicCoordinate.offsetInMinutes() = when (this) {
             is Location -> offsetInMinutes
             else -> offsetInSeconds() / 60
         }
 
-        @JvmStatic
         private fun List<HorizonsElement>.withLocationAndDateTime(location: GeographicCoordinate, dateTime: LocalDateTime): HorizonsElement? {
             val offsetInMinutes = location.offsetInMinutes().toLong()
             return let { HorizonsElement.of(it, dateTime.minusMinutes(offsetInMinutes)) }
         }
 
-        @JvmStatic
         private fun BufferedImage.removeBackground(): BufferedImage {
             val output = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
 

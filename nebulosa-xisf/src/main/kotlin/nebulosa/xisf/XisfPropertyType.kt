@@ -59,7 +59,7 @@ enum class XisfPropertyType(@JvmField val typeName: String) : HeaderCardType {
 
     companion object {
 
-        @JvmStatic private val MAPPED = entries.associateBy { it.typeName }
+        private val MAPPED = entries.associateBy { it.typeName }
 
         @JvmStatic
         fun fromTypeName(typeName: String) = MAPPED[typeName]

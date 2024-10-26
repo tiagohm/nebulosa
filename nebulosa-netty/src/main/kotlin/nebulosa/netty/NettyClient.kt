@@ -53,6 +53,6 @@ abstract class NettyClient : AutoCloseable {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<NettyClient>()
+        private val LOG = loggerFor<NettyClient>()
     }
 }

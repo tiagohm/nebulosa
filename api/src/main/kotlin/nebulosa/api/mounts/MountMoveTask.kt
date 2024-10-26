@@ -50,9 +50,8 @@ data class MountMoveTask(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<MountMoveTask>()
+        private val LOG = loggerFor<MountMoveTask>()
 
-        @JvmStatic
         private fun Mount.move(direction: GuideDirection, enabled: Boolean) {
             when (direction) {
                 GuideDirection.NORTH -> moveNorth(enabled)

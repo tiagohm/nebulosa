@@ -45,6 +45,6 @@ class WatneyStarDetectorTest {
 
     companion object {
 
-        @JvmStatic private val DETECTOR = WatneyStarDetector(computeHFD = true)
+        private val DETECTOR = WatneyStarDetector(computeHFD = true)
     }
 }

@@ -64,8 +64,8 @@ class IERSTest {
 
     companion object {
 
-        @JvmStatic private val IERSA = IERSA()
-        @JvmStatic private val IERSB = IERSB()
+        private val IERSA = IERSA()
+        private val IERSB = IERSB()
 
         init {
             val finals2000A = download("https://maia.usno.navy.mil/ser7/finals2000A.all")

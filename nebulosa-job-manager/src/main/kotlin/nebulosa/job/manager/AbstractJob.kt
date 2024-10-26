@@ -232,7 +232,7 @@ abstract class AbstractJob : JobTask, CancellationListener, PauseListener {
 
     companion object {
 
-        @JvmStatic private val EXECUTOR = ForkJoinPool.commonPool()
-        @JvmStatic private val LOG = loggerFor<AbstractJob>()
+        private val EXECUTOR = ForkJoinPool.commonPool()
+        private val LOG = loggerFor<AbstractJob>()
     }
 }

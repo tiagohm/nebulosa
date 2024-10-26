@@ -54,6 +54,6 @@ data class FileLocker(private val appDir: Path) {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<FileLocker>()
+        private val LOG = loggerFor<FileLocker>()
     }
 }

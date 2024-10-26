@@ -87,10 +87,10 @@ data class CameraCaptureNamingFormatter(
 
     companion object {
 
-        @JvmStatic private val REGEX = Regex("\\[(\\w+)(?::(\\w+))*]")
-        @JvmStatic private val ILLEGAL_CHARS_REGEX = Regex("[/\\\\:*?\"<>|]+")
-        @JvmStatic private val RA_FORMAT = AngleFormatter.HMS.newBuilder().secondsDecimalPlaces(0).build()
-        @JvmStatic private val DEC_FORMAT = AngleFormatter.SIGNED_DMS.newBuilder().secondsDecimalPlaces(0).separators("d", "m", "s").build()
+        private val REGEX = Regex("\\[(\\w+)(?::(\\w+))*]")
+        private val ILLEGAL_CHARS_REGEX = Regex("[/\\\\:*?\"<>|]+")
+        private val RA_FORMAT = AngleFormatter.HMS.newBuilder().secondsDecimalPlaces(0).build()
+        private val DEC_FORMAT = AngleFormatter.SIGNED_DMS.newBuilder().secondsDecimalPlaces(0).separators("d", "m", "s").build()
 
         const val FLAT_FORMAT = "[camera]_[type]_[filter]_[width]_[height]_[bin]"
         const val DARK_FORMAT = "[camera]_[type]_[width]_[height]_[exp]_[bin]_[gain]"

@@ -38,9 +38,8 @@ data class MinorPlanet(
 
     companion object {
 
-        @JvmStatic val EMPTY = MinorPlanet()
+        val EMPTY = MinorPlanet()
 
-        @JvmStatic
         fun of(body: SmallBody): MinorPlanet {
             if (body.orbit != null) {
                 val items = arrayListOf<OrbitalPhysicalParameter>()

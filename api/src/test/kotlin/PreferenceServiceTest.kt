@@ -126,7 +126,7 @@ class PreferenceServiceTest {
             MainDatabaseMigrator(DATASOURCE).run()
         }
 
-        @JvmStatic private val REPOSITORY = PreferenceRepository(CONNECTION)
-        @JvmStatic private val SERVICE = PreferenceService(REPOSITORY, jsonMapper { })
+        private val REPOSITORY = PreferenceRepository(CONNECTION)
+        private val SERVICE = PreferenceService(REPOSITORY, jsonMapper { })
     }
 }

@@ -49,9 +49,9 @@ class QuadDatabaseTest {
 
     companion object {
 
-        @JvmStatic private val QUAD_DIR = homeDirectory.concat("Downloads", "watneyqdb")
+        private val QUAD_DIR = homeDirectory.concat("Downloads", "watneyqdb")
 
-        @JvmStatic private val STAR_QUADS = listOf(
+        private val STAR_QUADS = listOf(
             CellStarQuad(doubleArrayOf(0.48065594, 0.5005079, 0.52168995, 0.59679097, 0.9971423), 259.138, 1933.375, 135.125),
             CellStarQuad(doubleArrayOf(0.1827525, 0.2504689, 0.40770558, 0.81601685, 0.97027695), 150.899, 1103.0, 59.0),
             CellStarQuad(doubleArrayOf(0.24997889, 0.31904277, 0.41539806, 0.6946494, 0.76320595), 410.8096, 1655.125, 109.25),

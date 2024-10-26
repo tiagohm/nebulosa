@@ -34,6 +34,6 @@ internal class StellariumProtocolDecoder : ByteToMessageDecoder() {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<StellariumProtocolDecoder>()
+        private val LOG = loggerFor<StellariumProtocolDecoder>()
     }
 }

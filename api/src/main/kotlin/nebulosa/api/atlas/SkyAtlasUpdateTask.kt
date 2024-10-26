@@ -92,6 +92,6 @@ class SkyAtlasUpdateTask(
         const val DATA_URL = "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/simbad/simbad.%02d.dat"
         const val MAX_DATA_COUNT = 100
 
-        @JvmStatic private val LOG = loggerFor<SkyAtlasUpdateTask>()
+        private val LOG = loggerFor<SkyAtlasUpdateTask>()
     }
 }

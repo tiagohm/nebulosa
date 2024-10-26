@@ -243,34 +243,34 @@ class SkyAtlasServiceTest {
             SkyDatabaseMigrator(DATASOURCE).run()
         }
 
-        @JvmStatic private val THREAD_POOL_TASK_EXECUTOR = Executors.newSingleThreadExecutor()
-        @JvmStatic private val HORIZONS_SERVICE = HorizonsService(httpClient = HTTP_CLIENT)
-        @JvmStatic private val HORIZONS_EPHEMERIS_PROVIDER = HorizonsEphemerisProvider(HORIZONS_SERVICE)
-        @JvmStatic private val BODY_EPHEMERIS_PROVIDER = BodyEphemerisProvider(THREAD_POOL_TASK_EXECUTOR)
-        @JvmStatic private val SMALL_BODY_DATABASE_SERVICE = SmallBodyDatabaseService()
-        @JvmStatic private val MOON_PHASE_FINDER = MoonPhaseFinder(HORIZONS_SERVICE)
+        private val THREAD_POOL_TASK_EXECUTOR = Executors.newSingleThreadExecutor()
+        private val HORIZONS_SERVICE = HorizonsService(httpClient = HTTP_CLIENT)
+        private val HORIZONS_EPHEMERIS_PROVIDER = HorizonsEphemerisProvider(HORIZONS_SERVICE)
+        private val BODY_EPHEMERIS_PROVIDER = BodyEphemerisProvider(THREAD_POOL_TASK_EXECUTOR)
+        private val SMALL_BODY_DATABASE_SERVICE = SmallBodyDatabaseService()
+        private val MOON_PHASE_FINDER = MoonPhaseFinder(HORIZONS_SERVICE)
 
-        @JvmStatic private val OBJECT_MAPPER = jsonMapper {
+        private val OBJECT_MAPPER = jsonMapper {
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             disable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
         }
 
-        @JvmStatic private val SIMBAD_ENTITY_REPOSITORY = SkyObjectEntityRepository(CONNECTION).apply {
+        private val SIMBAD_ENTITY_REPOSITORY = SkyObjectEntityRepository(CONNECTION).apply {
             save("Sirius", SkyObjectType.STAR, Constellation.CMA, -1.45, "06 45 06".hours, "-16 43 33".deg)
             save("75 Tucanae", SkyObjectType.GLOBULAR_CLUSTER, Constellation.TUC, 6.58, "01 03 12".hours, "-70 50 39".deg)
         }
 
-        @JvmStatic private val SATELLITE_REPOSITORY = SatelliteRepository(CONNECTION).apply {
+        private val SATELLITE_REPOSITORY = SatelliteRepository(CONNECTION).apply {
             save("ISS (ZARYA)", ISS_TLE, SatelliteGroupType.ACTIVE, SatelliteGroupType.EDUCATION)
         }
 
-        @JvmStatic private val SERVICE = SkyAtlasService(
+        private val SERVICE = SkyAtlasService(
             HORIZONS_EPHEMERIS_PROVIDER, BODY_EPHEMERIS_PROVIDER, SMALL_BODY_DATABASE_SERVICE,
             SATELLITE_REPOSITORY, SIMBAD_ENTITY_REPOSITORY, HTTP_CLIENT, OBJECT_MAPPER, MOON_PHASE_FINDER,
             Executors.newSingleThreadScheduledExecutor(),
         )
 
-        @JvmStatic private val LOCATION = Location("-19.846616".deg, "-43.96872".deg, 852.0.m, -180)
-        @JvmStatic private val DATE_TIME = LocalDateTime.of(2024, 6, 30, 9, 50, 0)
+        private val LOCATION = Location("-19.846616".deg, "-43.96872".deg, 852.0.m, -180)
+        private val DATE_TIME = LocalDateTime.of(2024, 6, 30, 9, 50, 0)
     }
 }

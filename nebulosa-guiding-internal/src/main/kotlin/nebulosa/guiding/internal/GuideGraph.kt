@@ -94,7 +94,6 @@ internal class GuideGraph(
 
     companion object {
 
-        @JvmStatic
         private fun TrendLineAccum.update(nr: Int, maxNR: Int, value: Double, prevValue: Double) {
             if (nr < maxNR) {
                 // Number of items is increasing, increment sums.
@@ -110,13 +109,11 @@ internal class GuideGraph(
             }
         }
 
-        @JvmStatic
         private fun TrendLineAccum.rms(nr: Int): Double {
             if (nr == 0) return 0.0
             return sqrt(nr * sumY2 - sumY * sumY) / nr
         }
 
-        @JvmStatic
         private fun TrendLineAccum.reset() {
             sumY = 0.0
             sumXY = 0.0

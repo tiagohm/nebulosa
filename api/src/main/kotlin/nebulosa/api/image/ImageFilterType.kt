@@ -21,7 +21,6 @@ enum class ImageFilterType {
 
     companion object {
 
-        @JvmStatic
         fun from(header: ReadableHeader) = header.filter?.let {
             if (it.contains("RED", true) || it.equals("R", true)) RED
             else if (it.contains("GREEN", true) || it.equals("G", true)) GREEN

@@ -27,6 +27,6 @@ class VizierServiceTest {
 
     companion object {
 
-        @JvmStatic private val SERVICE = VizierTAPService()
+        private val SERVICE = VizierTAPService()
     }
 }

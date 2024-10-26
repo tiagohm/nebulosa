@@ -195,7 +195,6 @@ class PixInsightScriptTest : AbstractTest() {
 
         @JvmStatic val RUNNER = PixInsightScriptRunner(Path.of("PixInsight"))
 
-        @JvmStatic
         internal fun Path.openAsImage() = if (isFits()) fits().asImage()
         else if (isXisf()) xisf().asImage()
         else throw IllegalArgumentException("the path at $this is not an image")

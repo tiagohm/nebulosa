@@ -23,6 +23,6 @@ data class WaitForSettleTask(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<WaitForSettleTask>()
+        private val LOG = loggerFor<WaitForSettleTask>()
     }
 }

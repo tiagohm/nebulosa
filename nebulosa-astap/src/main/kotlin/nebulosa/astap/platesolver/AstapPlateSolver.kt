@@ -138,7 +138,7 @@ data class AstapPlateSolver(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<AstapPlateSolver>()
+        private val LOG = loggerFor<AstapPlateSolver>()
 
         private fun Int.messageFromExitCode() = when (this) {
             1 -> "no solution found"

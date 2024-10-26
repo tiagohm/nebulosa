@@ -23,7 +23,7 @@ data class ImageTransformation(
 
         companion object {
 
-            @JvmStatic val EMPTY = SCNR()
+            val EMPTY = SCNR()
         }
     }
 
@@ -37,12 +37,12 @@ data class ImageTransformation(
 
         companion object {
 
-            @JvmStatic val EMPTY = Stretch()
+            val EMPTY = Stretch()
         }
     }
 
     companion object {
 
-        @JvmStatic val EMPTY = ImageTransformation()
+        val EMPTY = ImageTransformation()
     }
 }

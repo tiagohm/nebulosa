@@ -39,7 +39,7 @@ class VizierTAPService(url: String = "") : RetrofitService(url.ifBlank { URL }) 
 
         const val URL = "http://tapvizier.cds.unistra.fr/"
 
-        @JvmStatic private val CSV_READER = CsvReader.builder()
+        private val CSV_READER = CsvReader.builder()
             .fieldSeparator(',')
             .quoteCharacter('"')
             .commentCharacter('#')

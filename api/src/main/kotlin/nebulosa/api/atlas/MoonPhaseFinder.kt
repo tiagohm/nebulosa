@@ -77,7 +77,7 @@ class MoonPhaseFinder(private val horizonsService: HorizonsService) {
 
     companion object {
 
-        @JvmStatic private val QUANTITIES = arrayOf(HorizonsQuantity.OBSERVER_ECLIPTIC_LONGITUDE)
+        private val QUANTITIES = arrayOf(HorizonsQuantity.OBSERVER_ECLIPTIC_LONGITUDE)
 
         private fun HorizonsElement.eclipticLongitude(): Double {
             return this[HorizonsQuantity.OBSERVER_ECLIPTIC_LONGITUDE]!!.toDouble().deg

@@ -36,7 +36,7 @@ internal data class QuadDatabaseCellFileDescriptor(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<QuadDatabaseCellFileDescriptor>()
+        private val LOG = loggerFor<QuadDatabaseCellFileDescriptor>()
 
         @JvmStatic
         fun read(buffer: BufferedSource, indexDirectory: Path, byteOrder: ByteOrder): QuadDatabaseCellFileDescriptor {

@@ -28,7 +28,7 @@ class Asteroid(
 
     companion object {
 
-        @JvmStatic private val MPC_COLUMNS = mapOf(
+        private val MPC_COLUMNS = mapOf(
             // "designation_packed" to 0..6,
             // "magnitude_H" to 8..12,
             // "magnitude_G" to 14..18,

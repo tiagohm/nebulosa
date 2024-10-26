@@ -130,7 +130,7 @@ class Nebula : SkyCatalog<NebulaEntry>(94661) {
 
     companion object {
 
-        @JvmStatic private val DSO_NAME_REGEX = Regex("_\\(\"(.*?)\"\\)")
+        private val DSO_NAME_REGEX = Regex("_\\(\"(.*?)\"\\)")
 
         @Suppress("NOTHING_TO_INLINE")
         private inline fun BufferedSource.readString(): String {

@@ -278,6 +278,6 @@ class ConnectionService(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<ConnectionService>()
+        private val LOG = loggerFor<ConnectionService>()
     }
 }

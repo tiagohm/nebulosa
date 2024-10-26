@@ -41,6 +41,6 @@ data class RotatorMoveTask(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<RotatorMoveTask>()
+        private val LOG = loggerFor<RotatorMoveTask>()
     }
 }

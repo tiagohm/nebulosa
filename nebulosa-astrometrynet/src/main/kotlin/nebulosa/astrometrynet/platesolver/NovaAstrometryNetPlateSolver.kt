@@ -115,6 +115,6 @@ data class NovaAstrometryNetPlateSolver(
 
         private const val SESSION_EXPIRATION_TIME = 1000L * 60 * 15
 
-        @JvmStatic private val LOG = loggerFor<NovaAstrometryNetService>()
+        private val LOG = loggerFor<NovaAstrometryNetService>()
     }
 }

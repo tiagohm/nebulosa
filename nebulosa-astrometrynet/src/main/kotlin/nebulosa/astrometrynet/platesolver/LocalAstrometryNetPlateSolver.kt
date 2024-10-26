@@ -106,6 +106,6 @@ data class LocalAstrometryNetPlateSolver(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<LocalAstrometryNetPlateSolver>()
+        private val LOG = loggerFor<LocalAstrometryNetPlateSolver>()
     }
 }

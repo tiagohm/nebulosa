@@ -64,7 +64,7 @@ class SpiceKernelTest {
 
     companion object {
 
-        @JvmStatic private val TIME = TDB(TimeYMDHMS(2022, 11, 27, 22, 30, 0.0))
-        @JvmStatic private val MAR097 = SpiceKernel(Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/mar097.bsp")))
+        private val TIME = TDB(TimeYMDHMS(2022, 11, 27, 22, 30, 0.0))
+        private val MAR097 = SpiceKernel(Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/mar097.bsp")))
     }
 }

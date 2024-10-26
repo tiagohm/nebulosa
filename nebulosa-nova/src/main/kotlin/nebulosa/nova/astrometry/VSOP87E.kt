@@ -98,7 +98,7 @@ enum class VSOP87E(override val target: Int) : Body {
          * are given in the inertial frame defined by the dynamical equinox and ecliptic
          * J2000 (JD2451545.0).
          */
-        @JvmStatic private val REFERENCE_FRAME = Matrix3D(
+        private val REFERENCE_FRAME = Matrix3D(
             1.000000000000, 0.000000440360, -0.000000190919,
             -0.000000479966, 0.917482137087, -0.397776982902,
             0.000000000000, 0.397776982902, 0.917482137087,

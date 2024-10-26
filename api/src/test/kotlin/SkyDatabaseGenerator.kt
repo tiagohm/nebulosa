@@ -27,84 +27,83 @@ import kotlin.math.min
 
 object SkyDatabaseGenerator {
 
-    @JvmStatic private val SKY_DATABASE_PATH = Path.of("data", "sky")
-    @JvmStatic private val LOG = loggerFor<SkyDatabaseGenerator>()
+    private val SKY_DATABASE_PATH = Path.of("data", "sky")
+    private val LOG = loggerFor<SkyDatabaseGenerator>()
 
-    @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
+    private val HTTP_CLIENT = OkHttpClient.Builder()
         .connectTimeout(5L, TimeUnit.MINUTES)
         .writeTimeout(5L, TimeUnit.MINUTES)
         .readTimeout(5L, TimeUnit.MINUTES)
         .callTimeout(5L, TimeUnit.MINUTES)
         .build()
 
-    @JvmStatic private val SIMBAD_SERVICE = SimbadService(httpClient = HTTP_CLIENT)
-    @JvmStatic private val EXECUTOR_SERVICE = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+    private val SIMBAD_SERVICE = SimbadService(httpClient = HTTP_CLIENT)
+    private val EXECUTOR_SERVICE = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
-    @JvmStatic private val CSV_READER = CsvReader.builder()
+    private val CSV_READER = CsvReader.builder()
         .fieldSeparator(',')
         .quoteCharacter('"')
         .commentCharacter('#')
         .commentStrategy(CommentStrategy.SKIP)
 
-    @JvmStatic private val MELOTTE = resource("MELOTTE.csv")!!
+    private val MELOTTE = resource("MELOTTE.csv")!!
         .use { stream ->
             CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1) to it.getField(0) }
         }
 
-    @JvmStatic private val CALDWELL = resource("CALDWELL.csv")!!
+    private val CALDWELL = resource("CALDWELL.csv")!!
         .use { stream ->
             CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1).ifEmpty { it.getField(2) } to it.getField(0) }
         }
 
-    @JvmStatic private val BENNETT = resource("BENNETT.csv")!!
+    private val BENNETT = resource("BENNETT.csv")!!
         .use { stream ->
             CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1) to it.getField(0) }
         }
 
-    @JvmStatic private val DUNLOP = resource("DUNLOP.csv")!!
+    private val DUNLOP = resource("DUNLOP.csv")!!
         .use { stream ->
             CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1) to it.getField(0) }
         }
 
-    @JvmStatic private val HERSHEL = resource("HERSHEL.csv")!!
+    private val HERSHEL = resource("HERSHEL.csv")!!
         .use { stream ->
             CSV_READER.ofCsvRecord(InputStreamReader(stream, Charsets.UTF_8))
                 .associate { it.getField(1) to it.getField(0) }
         }
 
-    @JvmStatic private val BASIC_TABLE = From("basic").alias("b")
-    @JvmStatic private val IDS_TABLE = From("ids").alias("i")
-    @JvmStatic private val IDENT_TABLE = From("ident").alias("id")
-    @JvmStatic private val FLUX_TABLE = From("allfluxes").alias("f")
-    @JvmStatic private val IDS = IDS_TABLE.column("ids")
-    @JvmStatic private val ID = IDENT_TABLE.column("id")
-    @JvmStatic private val OID = BASIC_TABLE.column("oid")
-    @JvmStatic private val MAIN_ID = BASIC_TABLE.column("main_id")
-    @JvmStatic private val OTYPE = BASIC_TABLE.column("otype")
-    @JvmStatic private val RA = BASIC_TABLE.column("ra")
-    @JvmStatic private val DEC = BASIC_TABLE.column("dec")
-    @JvmStatic private val PM_RA = BASIC_TABLE.column("pmra")
-    @JvmStatic private val PM_DEC = BASIC_TABLE.column("pmdec")
-    @JvmStatic private val PLX = BASIC_TABLE.column("plx_value")
-    @JvmStatic private val RAD_VEL = BASIC_TABLE.column("rvz_radvel")
-    @JvmStatic private val REDSHIFT = BASIC_TABLE.column("rvz_redshift")
-    @JvmStatic private val MAG_V = FLUX_TABLE.column("V")
-    @JvmStatic private val MAG_B = FLUX_TABLE.column("B")
-    @JvmStatic private val MAG_U = FLUX_TABLE.column("U")
-    @JvmStatic private val MAG_R = FLUX_TABLE.column("R")
-    @JvmStatic private val MAG_I = FLUX_TABLE.column("I")
-    @JvmStatic private val MAG_J = FLUX_TABLE.column("J")
-    @JvmStatic private val MAG_H = FLUX_TABLE.column("H")
-    @JvmStatic private val MAG_K = FLUX_TABLE.column("K")
+    private val BASIC_TABLE = From("basic").alias("b")
+    private val IDS_TABLE = From("ids").alias("i")
+    private val IDENT_TABLE = From("ident").alias("id")
+    private val FLUX_TABLE = From("allfluxes").alias("f")
+    private val IDS = IDS_TABLE.column("ids")
+    private val ID = IDENT_TABLE.column("id")
+    private val OID = BASIC_TABLE.column("oid")
+    private val MAIN_ID = BASIC_TABLE.column("main_id")
+    private val OTYPE = BASIC_TABLE.column("otype")
+    private val RA = BASIC_TABLE.column("ra")
+    private val DEC = BASIC_TABLE.column("dec")
+    private val PM_RA = BASIC_TABLE.column("pmra")
+    private val PM_DEC = BASIC_TABLE.column("pmdec")
+    private val PLX = BASIC_TABLE.column("plx_value")
+    private val RAD_VEL = BASIC_TABLE.column("rvz_radvel")
+    private val REDSHIFT = BASIC_TABLE.column("rvz_redshift")
+    private val MAG_V = FLUX_TABLE.column("V")
+    private val MAG_B = FLUX_TABLE.column("B")
+    private val MAG_U = FLUX_TABLE.column("U")
+    private val MAG_R = FLUX_TABLE.column("R")
+    private val MAG_I = FLUX_TABLE.column("I")
+    private val MAG_J = FLUX_TABLE.column("J")
+    private val MAG_H = FLUX_TABLE.column("H")
+    private val MAG_K = FLUX_TABLE.column("K")
 
-    @JvmStatic private val STELLARIUM_NAMES = Path.of("data", "names.dat").source().use(Nebula::namesFor).toMutableList()
-    @JvmStatic private val ENTITY_IDS = ConcurrentHashMap.newKeySet<Long>(64000)
+    private val STELLARIUM_NAMES = Path.of("data", "names.dat").source().use(Nebula::namesFor).toMutableList()
+    private val ENTITY_IDS = ConcurrentHashMap.newKeySet<Long>(64000)
 
-    @JvmStatic
     fun SkyObjectEntity.generateNames(): Boolean {
         val ids = name.toMutableList()
         val names = LinkedHashSet<String>(ids.size)
@@ -225,7 +224,6 @@ object SkyDatabaseGenerator {
         EXECUTOR_SERVICE.shutdownNow()
     }
 
-    @JvmStatic
     private fun List<NamedCsvRecord>.parse(entities: MutableList<SkyObjectEntity>): List<SkyObjectEntity> {
         var writeCount = 0
 

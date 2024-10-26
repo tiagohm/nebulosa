@@ -672,9 +672,8 @@ internal class GuideCalibrator(private val guider: MultiStarGuider) {
         private const val MAX_NUDGES = 3
         private const val NUDGE_TOLERANCE = 2.0
 
-        @JvmStatic private val LOG = loggerFor<GuideCalibrator>()
+        private val LOG = loggerFor<GuideCalibrator>()
 
-        @JvmStatic
         private fun mountCoords(camera: Point, x: Angle, y: Angle): Point {
             val length = camera.length
             val cameraTheta = camera.angle

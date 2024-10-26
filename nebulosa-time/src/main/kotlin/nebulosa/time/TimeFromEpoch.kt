@@ -14,7 +14,6 @@ sealed class TimeFromEpoch(
 
     companion object {
 
-        @JvmStatic
         private fun compute(
             epoch: Double, unit: Double,
             epochStartWhole: Double, epochStartFraction: Double,

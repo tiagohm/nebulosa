@@ -92,6 +92,6 @@ data class ResistSwitchGuideAlgorithm(
         const val DEFAULT_MIN_MOVE = 0.2
         const val DEFAULT_AGGRESSION = 1.0
 
-        @JvmStatic private val LOG = loggerFor<ResistSwitchGuideAlgorithm>()
+        private val LOG = loggerFor<ResistSwitchGuideAlgorithm>()
     }
 }

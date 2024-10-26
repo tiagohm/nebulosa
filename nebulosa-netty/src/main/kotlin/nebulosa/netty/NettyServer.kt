@@ -61,6 +61,6 @@ abstract class NettyServer : Runnable, AutoCloseable {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<NettyServer>()
+        private val LOG = loggerFor<NettyServer>()
     }
 }
