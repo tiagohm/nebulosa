@@ -1,9 +1,8 @@
 package nebulosa.skycatalog
 
 import nebulosa.math.Vector3D
-import kotlin.math.sqrt
 
-class GeodesicGrid(val maxLevel: Int) {
+data class GeodesicGrid(val maxLevel: Int) {
 
     fun interface Traverser {
 
@@ -127,12 +126,12 @@ class GeodesicGrid(val maxLevel: Int) {
         }
     }
 
+    @Suppress("FloatingPointLiteralPrecision")
     companion object {
 
-        // TODO: Convert to const val.
-        private val ICOSAHEDRON_G = 0.5 * (1.0 + sqrt(5.0))
-        private val ICOSAHEDRON_B = 1.0 / sqrt(1.0 + ICOSAHEDRON_G * ICOSAHEDRON_G)
-        private val ICOSAHEDRON_A = ICOSAHEDRON_B * ICOSAHEDRON_G
+        private const val ICOSAHEDRON_G = 1.61803398874989484820458683436564 // 0.5 * (1.0 + sqrt(5.0))
+        private const val ICOSAHEDRON_B = 0.52573111211913360602566908484788 // 1.0 / sqrt(1.0 + ICOSAHEDRON_G * ICOSAHEDRON_G)
+        private const val ICOSAHEDRON_A = ICOSAHEDRON_B * ICOSAHEDRON_G
 
         private val ICOSAHEDRON_CORNERS = arrayOf(
             Vector3D(ICOSAHEDRON_A, -ICOSAHEDRON_B, 0.0),

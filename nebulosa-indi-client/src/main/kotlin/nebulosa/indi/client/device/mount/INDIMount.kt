@@ -45,6 +45,7 @@ internal open class INDIMount(
     @Volatile final override var rightAscension = 0.0
     @Volatile final override var declination = 0.0
 
+    @Suppress("LeakingThis")
     private val guideOutput = INDIGuideOutputHandler(this)
 
     final override val canPulseGuide
