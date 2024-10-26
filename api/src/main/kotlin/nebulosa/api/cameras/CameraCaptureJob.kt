@@ -171,6 +171,6 @@ data class CameraCaptureJob(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<CameraCaptureJob>()
+        private val LOG = loggerFor<CameraCaptureJob>()
     }
 }

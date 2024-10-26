@@ -317,9 +317,9 @@ class MountService(
 
         private const val SIDEREAL_TIME_DIFF = 0.06552777 * PI / 12.0
 
-        @JvmStatic private val GALACTIC_CENTER_RA = "17 45 40.04".hours
-        @JvmStatic private val GALACTIC_CENTER_DEC = "-29 00 28.1".deg
+        private val GALACTIC_CENTER_RA = "17 45 40.04".hours
+        private val GALACTIC_CENTER_DEC = "-29 00 28.1".deg
 
-        @JvmStatic private val LOG = loggerFor<MountService>()
+        private val LOG = loggerFor<MountService>()
     }
 }

@@ -2,11 +2,13 @@ package nebulosa.api
 
 import com.github.rvesse.airline.SingleCommand
 import com.sun.jna.Platform
+import nebulosa.api.core.FileLocker
 import java.nio.file.Path
 import java.util.*
 import javax.swing.filechooser.FileSystemView
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
+import kotlin.system.exitProcess
 
 const val APP_DIR_KEY = "app.dir"
 
@@ -23,7 +25,13 @@ fun initAppDirectory(): Path {
 }
 
 fun main(args: Array<String>) {
-    initAppDirectory()
+    with(initAppDirectory()) {
+        val locker = FileLocker(this)
+
+        if (!locker.tryLock()) {
+            exitProcess(1)
+        }
+    }
 
     // Sets default locale to en_US.
     Locale.setDefault(Locale.ENGLISH)

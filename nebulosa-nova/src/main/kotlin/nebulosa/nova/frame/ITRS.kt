@@ -18,7 +18,7 @@ import nebulosa.time.InstantOfTime
  */
 data object ITRS : Frame {
 
-    @JvmStatic private val EARTH_ANGULAR_VELOCITY_MATRIX = Matrix3D(
+    private val EARTH_ANGULAR_VELOCITY_MATRIX = Matrix3D(
         0.0, DAYSEC * ANGULAR_VELOCITY, 0.0,
         -DAYSEC * ANGULAR_VELOCITY, 0.0, 0.0,
         0.0, 0.0, 0.0,

@@ -126,6 +126,6 @@ class HorizonsServiceTest {
 
     companion object {
 
-        @JvmStatic private val SERVICE = HorizonsService(httpClient = HTTP_CLIENT)
+        private val SERVICE = HorizonsService(httpClient = HTTP_CLIENT)
     }
 }

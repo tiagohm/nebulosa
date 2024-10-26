@@ -146,11 +146,11 @@ class WatnetPlateSolverTest {
 
     companion object {
 
-        @JvmStatic private val QUAD_DIR = homeDirectory.concat("Downloads", "watneyqdb")
-        @JvmStatic private val QUAD_DATABASE = CompactQuadDatabase(QUAD_DIR)
-        @JvmStatic private val SOLVER = WatneyPlateSolver(QUAD_DATABASE)
+        private val QUAD_DIR = homeDirectory.concat("Downloads", "watneyqdb")
+        private val QUAD_DATABASE = CompactQuadDatabase(QUAD_DIR)
+        private val SOLVER = WatneyPlateSolver(QUAD_DATABASE)
 
-        @JvmStatic private val M31_STARS = listOf(
+        private val M31_STARS = listOf(
             Star(358.5, 0.5), Star(530.0, 3.0), Star(957.0, 3.5),
             Star(971.5, 6.5), Star(399.5, 58.5), Star(487.5, 108.0),
             Star(514.5, 110.0), Star(697.0, 111.5), Star(371.5, 164.0),

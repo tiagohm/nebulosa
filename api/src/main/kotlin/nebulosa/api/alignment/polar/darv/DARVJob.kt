@@ -112,7 +112,7 @@ data class DARVJob(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<DARVJob>()
-        @JvmStatic private val CAPTURE_SAVE_PATH = Files.createTempDirectory("darv-")
+        private val LOG = loggerFor<DARVJob>()
+        private val CAPTURE_SAVE_PATH = Files.createTempDirectory("darv-")
     }
 }

@@ -488,7 +488,7 @@ data class ASCOMMount(
 
         private const val EPSILON = 1 / 36000.0 * DEG2RAD
 
-        @JvmStatic private val LOG = loggerFor<ASCOMMount>()
-        @JvmStatic private val SLEW_RATE_INCREMENT = BigDecimal("0.1")
+        private val LOG = loggerFor<ASCOMMount>()
+        private val SLEW_RATE_INCREMENT = BigDecimal("0.1")
     }
 }

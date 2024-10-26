@@ -155,7 +155,6 @@ internal data class PolarErrorDetermination(
          * Generates a Point with relative X/Y values for centering the current coordinates relative
          * to a given point using steonographic projection.
          */
-        @JvmStatic
         internal fun DoubleArray.stenographicProjection(
             solution: PlateSolution,
             centerRA: Angle = solution.rightAscension,
@@ -165,7 +164,6 @@ internal data class PolarErrorDetermination(
             solution.widthInPixels / 2.0, solution.heightInPixels / 2.0, solution.scale, solution.orientation
         )
 
-        @JvmStatic
         internal fun DoubleArray.stenographicProjection(
             centerRA: Angle, centerDEC: Angle,
             centerX: Double, centerY: Double, scale: Angle, orientation: Angle

@@ -40,9 +40,8 @@ data class GuidePulseTask(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<GuidePulseTask>()
+        private val LOG = loggerFor<GuidePulseTask>()
 
-        @JvmStatic
         internal fun GuideOutput.pulseGuide(duration: Duration, direction: GuideDirection): Boolean {
             when (direction) {
                 GuideDirection.NORTH -> guideNorth(duration)

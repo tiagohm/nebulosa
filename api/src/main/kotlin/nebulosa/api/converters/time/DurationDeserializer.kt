@@ -27,6 +27,6 @@ class DurationDeserializer(private val unit: ChronoUnit? = null) : StdDeserializ
 
     companion object {
 
-        @JvmStatic private val DESERIALIZERS = mutableMapOf<ChronoUnit, DurationDeserializer>()
+        private val DESERIALIZERS = mutableMapOf<ChronoUnit, DurationDeserializer>()
     }
 }

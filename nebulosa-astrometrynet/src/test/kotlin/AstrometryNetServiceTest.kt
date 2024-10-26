@@ -91,6 +91,6 @@ class AstrometryNetServiceTest {
 
     companion object {
 
-        @JvmStatic private val SERVICE = NovaAstrometryNetService()
+        private val SERVICE = NovaAstrometryNetService()
     }
 }

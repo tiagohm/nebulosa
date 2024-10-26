@@ -31,6 +31,6 @@ data class SplitTask(
 
     companion object {
 
-        @JvmStatic private val EXECUTOR = ForkJoinPool.commonPool()
+        private val EXECUTOR = ForkJoinPool.commonPool()
     }
 }

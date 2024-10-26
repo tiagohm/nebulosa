@@ -86,7 +86,6 @@ internal class DistanceChecker(private val guider: MultiStarGuider) {
 
         private const val WAIT_INTERVAL = 5000L
 
-        @JvmStatic
         private val LOG = loggerFor<DistanceChecker>()
     }
 }

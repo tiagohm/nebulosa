@@ -72,7 +72,7 @@ class SirilTest : AbstractTest() {
 
     companion object {
 
-        @JvmStatic private val EXECUTABLE_PATH = Path.of("siril-cli")
-        @JvmStatic private val SOLVER = SirilPlateSolver(EXECUTABLE_PATH)
+        private val EXECUTABLE_PATH = Path.of("siril-cli")
+        private val SOLVER = SirilPlateSolver(EXECUTABLE_PATH)
     }
 }

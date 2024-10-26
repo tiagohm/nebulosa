@@ -135,7 +135,22 @@ open class ICRF protected constructor(
         //             "try calling apparent() first to get an apparent position"
         // }
 
-        return horizontal(this, temperature, pressure)
+        val r = centerBarycentric?.horizontalRotation
+            ?: (center as? Frame)?.rotationAt(time)
+            ?: throw IllegalArgumentException(
+                "to compute an altazimuth position, you must observe from " +
+                        "a specific Earth location or from a position on another body loaded from a set " +
+                        "of planetary constants"
+            )
+
+        val coordinate = SphericalCoordinate.of(r * position)
+
+        return if (center is GeographicPosition) {
+            val refracted = center.refract(coordinate.latitude, temperature, pressure)
+            coordinate.copy(phi = refracted)
+        } else {
+            coordinate
+        }
     }
 
     /**
@@ -244,30 +259,6 @@ open class ICRF protected constructor(
             type === Geometric::class.java || center is GeographicPosition -> Geometric(position, velocity, time, center, target)
             type === Geocentric::class.java || center.toInt() == 399 -> Geocentric(position, velocity, time, center, target)
             else -> ICRF(position, velocity, time, center, target)
-        }
-
-        @JvmStatic
-        internal fun horizontal(
-            position: ICRF,
-            temperature: Temperature = 15.0.celsius,
-            pressure: Pressure = ONE_ATM,
-        ): SphericalCoordinate {
-            val r = position.centerBarycentric?.horizontalRotation
-                ?: (position.center as? Frame)?.rotationAt(position.time)
-                ?: throw IllegalArgumentException(
-                    "to compute an altazimuth position, you must observe from " +
-                            "a specific Earth location or from a position on another body loaded from a set " +
-                            "of planetary constants"
-                )
-
-            val coordinate = SphericalCoordinate.of(r * position.position)
-
-            return if (position.center is GeographicPosition) {
-                val refracted = position.center.refract(coordinate.latitude, temperature, pressure)
-                coordinate.copy(phi = refracted)
-            } else {
-                coordinate
-            }
         }
 
         /**

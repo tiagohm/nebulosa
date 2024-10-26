@@ -28,7 +28,7 @@ class SkySegmentSphereTest {
 
     companion object {
 
-        @JvmStatic internal val CELLS = listOf(
+        internal val CELLS = listOf(
             doubleArrayOf(0.0, 0.0, 8.5385, 9.8625, 0.0, 120.0, 80.1375, 90.0),
             doubleArrayOf(0.0, 1.0, 8.5385, 9.8625, 120.0, 240.0, 80.1375, 90.0),
             doubleArrayOf(0.0, 2.0, 8.5385, 9.8625, 240.0, 360.0, 80.1375, 90.0),

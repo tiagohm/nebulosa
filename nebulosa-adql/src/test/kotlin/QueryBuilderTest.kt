@@ -736,10 +736,10 @@ class QueryBuilderTest {
 
     companion object {
 
-        @JvmStatic private val OID = Column("b.oid")
-        @JvmStatic private val RA = Column("b.ra")
-        @JvmStatic private val DEC = Column("b.dec")
-        @JvmStatic private val MAG = Column("f.V")
-        @JvmStatic private val NAME = Column("ident.id")
+        private val OID = Column("b.oid")
+        private val RA = Column("b.ra")
+        private val DEC = Column("b.dec")
+        private val MAG = Column("f.V")
+        private val NAME = Column("ident.id")
     }
 }

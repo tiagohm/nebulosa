@@ -4,7 +4,7 @@ import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import nebulosa.api.atlas.SkyObjectEntity
 import nebulosa.api.atlas.SkyObjectEntityRepository
-import nebulosa.api.database.SkyDatabaseMigrator
+import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.math.hours
@@ -78,14 +78,13 @@ class SkyObjectEntityRepositoryTest {
             SkyDatabaseMigrator(DATASOURCE).run()
         }
 
-        @JvmStatic private val REPOSITORY = SkyObjectEntityRepository(CONNECTION).apply {
+        private val REPOSITORY = SkyObjectEntityRepository(CONNECTION).apply {
             save("Sirius", SkyObjectType.STAR, Constellation.CMA, -1.45, "06 45 06".hours, "-16 43 33".deg)
             save("Dolphin Nebula", SkyObjectType.NEBULA, Constellation.CMA, 6.91, "06 54 11".hours, "-23 55 47".deg)
             save("75 Tucanae", SkyObjectType.GLOBULAR_CLUSTER, Constellation.TUC, 6.58, "01 03 12".hours, "-70 50 39".deg)
             save("Car Nebula", SkyObjectType.NEBULA, Constellation.CAR, 5.0, "10 45 15".hours, "-59 43 35".deg)
         }
 
-        @JvmStatic
         internal fun SkyObjectEntityRepository.save(
             name: String, type: SkyObjectType, constellation: Constellation,
             magnitude: Double, rightAscension: Angle, declination: Angle,

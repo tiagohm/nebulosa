@@ -39,7 +39,6 @@ data class Spk(@JvmField internal val daf: Daf) : AutoCloseable, Collection<SpkS
 
     companion object {
 
-        @JvmStatic
         private fun Summary.makeSegment(spk: Spk): SpkSegment {
             val start = doubleAt(0)
             val end = doubleAt(1)

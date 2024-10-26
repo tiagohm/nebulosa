@@ -20,5 +20,5 @@ data object QuadraticFitting : CurveFitting<QuadraticFitting.Curve> {
         Curve(this, minimum, rSquared)
     }
 
-    @JvmStatic private val FITTER = PolynomialCurveFitter.create(2)
+    private val FITTER = PolynomialCurveFitter.create(2)
 }

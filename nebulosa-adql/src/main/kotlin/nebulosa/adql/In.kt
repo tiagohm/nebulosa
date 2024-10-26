@@ -15,14 +15,12 @@ data class In(override val constraint: ADQLConstraint) : WhereConstraint {
 
     companion object {
 
-        @JvmStatic
         private fun Array<out Operand<*>>.list(): ClauseADQL<ADQLOperand> {
             val clause = ClauseADQL<ADQLOperand>()
             forEach { clause.add(it.operand) }
             return clause
         }
 
-        @JvmStatic
         private fun Iterable<Operand<*>>.list(): ClauseADQL<ADQLOperand> {
             val clause = ClauseADQL<ADQLOperand>()
             forEach { clause.add(it.operand) }

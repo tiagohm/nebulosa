@@ -29,6 +29,6 @@ data class ImageSolved(
 
     companion object {
 
-        @JvmStatic val NO_SOLUTION = ImageSolved(PlateSolution.NO_SOLUTION)
+        val NO_SOLUTION = ImageSolved(PlateSolution.NO_SOLUTION)
     }
 }

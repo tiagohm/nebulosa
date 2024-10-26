@@ -11,6 +11,6 @@ data class GuiderInfo(
 
     companion object {
 
-        @JvmStatic val DISCONNECTED = GuiderInfo()
+        val DISCONNECTED = GuiderInfo()
     }
 }

@@ -85,6 +85,6 @@ data class AlpacaClient(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<AlpacaClient>()
+        private val LOG = loggerFor<AlpacaClient>()
     }
 }

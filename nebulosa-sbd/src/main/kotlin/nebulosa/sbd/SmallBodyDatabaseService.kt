@@ -54,10 +54,10 @@ class SmallBodyDatabaseService(
 
     companion object {
 
-        @JvmStatic private val DEFAULT_FOV = 1.0.deg
-        @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss")
+        private val DEFAULT_FOV = 1.0.deg
+        private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss")
 
-        @JvmStatic private val RA_FORMAT = AngleFormatter.Builder()
+        private val RA_FORMAT = AngleFormatter.Builder()
             .hours()
             .separators("-")
             .minusSign("M")
@@ -65,7 +65,7 @@ class SmallBodyDatabaseService(
             .secondsDecimalPlaces(2)
             .build()
 
-        @JvmStatic private val DEC_FORMAT = AngleFormatter.Builder()
+        private val DEC_FORMAT = AngleFormatter.Builder()
             .separators("-")
             .degreesFormat("%02d")
             .minusSign("M")

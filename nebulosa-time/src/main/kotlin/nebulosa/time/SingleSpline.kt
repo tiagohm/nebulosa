@@ -50,7 +50,6 @@ class SingleSpline(private val data: DoubleArray) : Spline<Double> {
 
     companion object {
 
-        @JvmStatic
         private val N = doubleArrayOf(0.0)
 
         @JvmStatic

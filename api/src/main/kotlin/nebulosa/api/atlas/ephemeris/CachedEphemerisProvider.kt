@@ -70,7 +70,7 @@ abstract class CachedEphemerisProvider<T : Any> : EphemerisProvider<T> {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<CachedEphemerisProvider<*>>()
-        @JvmStatic private val NOON = LocalTime.of(12, 0, 0, 0)
+        private val LOG = loggerFor<CachedEphemerisProvider<*>>()
+        private val NOON = LocalTime.of(12, 0, 0, 0)
     }
 }

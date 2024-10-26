@@ -85,6 +85,6 @@ abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(deviceType: Device
 
         const val SEND_UPDATE_INTERVAL = 60000 // 1 min.
 
-        @JvmStatic private val LOG = loggerFor<DeviceEventHub<*, *>>()
+        private val LOG = loggerFor<DeviceEventHub<*, *>>()
     }
 }

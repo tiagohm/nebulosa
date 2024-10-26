@@ -39,6 +39,6 @@ class Hips2FitsServiceTest {
 
     companion object {
 
-        @JvmStatic private val SERVICE = Hips2FitsService(httpClient = HTTP_CLIENT)
+        private val SERVICE = Hips2FitsService(httpClient = HTTP_CLIENT)
     }
 }

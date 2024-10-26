@@ -7,10 +7,20 @@ import kotlin.random.Random
 class Base64InputStreamTest {
 
     @Test
-    fun read() {
-        repeat(100) {
-            val bytes = Random.nextBytes(Random.nextInt(10, 100))
+    fun random() {
+        repeat(1000) {
+            val bytes = Random.nextBytes(Random.nextInt(1, 1000))
             val encoded = Base64.getEncoder().encodeToString(bytes)
+            val stream = Base64InputStream(encoded)
+            stream.readAllBytes() shouldBe bytes
+        }
+    }
+
+    @Test
+    fun randomUrlSafe() {
+        repeat(1000) {
+            val bytes = Random.nextBytes(Random.nextInt(1, 1000))
+            val encoded = Base64.getUrlEncoder().encodeToString(bytes)
             val stream = Base64InputStream(encoded)
             stream.readAllBytes() shouldBe bytes
         }

@@ -113,6 +113,6 @@ data class BacklashCompensator(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<BacklashCompensator>()
+        private val LOG = loggerFor<BacklashCompensator>()
     }
 }

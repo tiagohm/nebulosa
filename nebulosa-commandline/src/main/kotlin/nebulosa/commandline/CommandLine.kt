@@ -66,6 +66,6 @@ data class CommandLine(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<CommandLine>()
+        private val LOG = loggerFor<CommandLine>()
     }
 }

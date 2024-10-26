@@ -111,7 +111,7 @@ class HorizonsService(
 
         const val URL = "https://ssd.jpl.nasa.gov/api/"
 
-        @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
         @Suppress("NOTHING_TO_INLINE")
         private inline fun wrapNull(o: Any?) = if (o == null) null else "'$o'"

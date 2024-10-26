@@ -36,8 +36,8 @@ class NovaAstrometryNetPlateSolverTest {
 
     companion object {
 
-        @JvmStatic private val FILE = dataDirectory.concat("ldn673s_block1123.jpg")
-        @JvmStatic private val SERVICE = NovaAstrometryNetService()
-        @JvmStatic private val SOLVER = NovaAstrometryNetPlateSolver(SERVICE)
+        private val FILE = dataDirectory.concat("ldn673s_block1123.jpg")
+        private val SERVICE = NovaAstrometryNetService()
+        private val SOLVER = NovaAstrometryNetPlateSolver(SERVICE)
     }
 }

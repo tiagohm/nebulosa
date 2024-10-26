@@ -38,6 +38,6 @@ data class StarDetectionRequest(
 
     companion object {
 
-        @JvmStatic val EMPTY = StarDetectionRequest()
+        val EMPTY = StarDetectionRequest()
     }
 }

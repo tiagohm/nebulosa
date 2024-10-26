@@ -64,6 +64,6 @@ class MessageService(app: Javalin) : Consumer<WsConfig> {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<MessageService>()
+        private val LOG = loggerFor<MessageService>()
     }
 }

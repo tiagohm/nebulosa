@@ -69,7 +69,6 @@ class IERSA : IERS() {
 
         const val URL = "https://datacenter.iers.org/data/9/finals2000A.all"
 
-        @JvmStatic
         private fun IERS.compute(a: IERS.Column, b: IERS.Column, index: Int): Double {
             return this[index, b].toDoubleOrNull() ?: this[index, a].toDoubleOrNull() ?: 0.0
         }

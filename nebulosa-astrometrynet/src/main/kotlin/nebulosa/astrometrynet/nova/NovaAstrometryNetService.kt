@@ -88,7 +88,7 @@ class NovaAstrometryNetService(
         const val URL = "https://nova.astrometry.net/"
         const val ANONYMOUS_API_KEY = "XXXXXXXX"
 
-        @JvmStatic private val TEXT_PLAIN_MEDIA_TYPE = "text/plain".toMediaType()
-        @JvmStatic private val OCTET_STREAM_MEDIA_TYPE = "application/octet-stream".toMediaType()
+        private val TEXT_PLAIN_MEDIA_TYPE = "text/plain".toMediaType()
+        private val OCTET_STREAM_MEDIA_TYPE = "application/octet-stream".toMediaType()
     }
 }

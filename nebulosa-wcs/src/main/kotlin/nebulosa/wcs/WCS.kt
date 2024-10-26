@@ -84,25 +84,25 @@ class WCS(header: ReadableHeader) : AutoCloseable {
 
     companion object {
 
-        @JvmStatic private val CUNIT = "CUNIT[1-2]".toRegex()
-        @JvmStatic private val CTYPE = "CTYPE[1-2]".toRegex()
-        @JvmStatic private val CRPIX = "CRPIX[1-2]".toRegex()
-        @JvmStatic private val CRVAL = "CRVAL[1-2]".toRegex()
-        @JvmStatic private val PS = "PS\\d_\\d".toRegex()
-        @JvmStatic private val CD = "CD\\d_\\d".toRegex()
-        @JvmStatic private val CDELT = "CDELT[1-2]".toRegex()
-        @JvmStatic private val CROTA = "CROTA[1-2]".toRegex()
-        @JvmStatic private val SIP_ABP = "[AB]P?_\\d_\\d".toRegex()
-        @JvmStatic private val SIP_ABP_ORDER = "[AB]P?_ORDER".toRegex()
-        @JvmStatic private val SIP_AB_DMAX = "[AB]_DMAX".toRegex()
+        private val CUNIT = "CUNIT[1-2]".toRegex()
+        private val CTYPE = "CTYPE[1-2]".toRegex()
+        private val CRPIX = "CRPIX[1-2]".toRegex()
+        private val CRVAL = "CRVAL[1-2]".toRegex()
+        private val PS = "PS\\d_\\d".toRegex()
+        private val CD = "CD\\d_\\d".toRegex()
+        private val CDELT = "CDELT[1-2]".toRegex()
+        private val CROTA = "CROTA[1-2]".toRegex()
+        private val SIP_ABP = "[AB]P?_\\d_\\d".toRegex()
+        private val SIP_ABP_ORDER = "[AB]P?_ORDER".toRegex()
+        private val SIP_AB_DMAX = "[AB]_DMAX".toRegex()
 
-        @JvmStatic private val KEYWORDS_REGEX =
+        private val KEYWORDS_REGEX =
             arrayOf(CUNIT, CTYPE, CRPIX, CRVAL, PS, CD, CDELT, CROTA)
 
-        @JvmStatic private val SIP_KEYWORDS_REGEX =
+        private val SIP_KEYWORDS_REGEX =
             arrayOf(SIP_ABP_ORDER, SIP_ABP, SIP_AB_DMAX)
 
-        @JvmStatic private val KEYWORDS =
+        private val KEYWORDS =
             arrayOf("LONGPOLE", "LATPOLE", "RADESYS", "EQUINOX")
 
         @JvmStatic

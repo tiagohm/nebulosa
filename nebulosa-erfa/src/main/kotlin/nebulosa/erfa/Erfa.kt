@@ -11,10 +11,6 @@ import okio.BufferedSource
 import kotlin.math.*
 import kotlin.math.PI
 
-inline fun eraPdp(a: DoubleArray, b: DoubleArray): Double {
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-}
-
 /**
  * P-vector to spherical polar coordinates.
  *
@@ -3452,6 +3448,7 @@ fun eraAtco13(
  *
  * @return ICRS astrometric RA,Dec (radians)
  */
+@OptIn(Unsafe::class)
 fun eraAticq(rightAscension: Angle, declination: Angle, astrom: AstrometryParameters): DoubleArray {
     // CIRS RA,Dec to Cartesian.
     val pi = eraS2c(rightAscension, declination)
@@ -3599,6 +3596,7 @@ fun eraS2pv(
  *
  * @return pv-vector (au, au/day).
  */
+@OptIn(Unsafe::class)
 fun eraStarpv(
     rightAscension: Angle, declination: Angle,
     pmRA: Angle, pmDEC: Angle, parallax: Angle, rv: Velocity,
@@ -3812,7 +3810,7 @@ fun eraAtoc13(
     phpa: Pressure, tc: Temperature, rh: Double, wl: Double
 ): DoubleArray {
     // Star-independent astrometry parameters.
-    val (astrom, eo) = eraApco13(utc1, utc2, dut1, elong, phi, hm, xp, yp, phpa, tc, rh, wl)
+    val (astrom) = eraApco13(utc1, utc2, dut1, elong, phi, hm, xp, yp, phpa, tc, rh, wl)
     // Transform observed to CIRS.
     val (ri, di) = eraAtoiq(type, obs1, obs2, astrom)
     // Transform CIRS to ICRS.

@@ -110,9 +110,9 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<INDIClient>()
+        private val LOG = loggerFor<INDIClient>()
 
-        @JvmStatic private val CAMERAS = mapOf(
+        private val CAMERAS = mapOf(
             "indi_asi_ccd" to AsiCamera::class.java,
             "indi_asi_single_ccd" to AsiCamera::class.java,
             "indi_svbony_ccd" to SVBonyCamera::class.java,
@@ -121,7 +121,6 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
             "indi_simulator_guide" to SimCamera::class.java,
         )
 
-        @JvmStatic
         private fun <T : Device> Class<out T>.create(handler: INDIClient, driverInfo: DriverInfo): T {
             return getConstructor(INDIClient::class.java, DriverInfo::class.java)
                 .newInstance(handler, driverInfo)

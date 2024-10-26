@@ -3,8 +3,8 @@ package nebulosa.api.mounts
 import io.javalin.Javalin
 import io.javalin.http.Context
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.core.Controller
-import nebulosa.api.core.idempotencyKey
+import nebulosa.api.http.Controller
+import nebulosa.api.http.idempotencyKey
 import nebulosa.api.validators.*
 import nebulosa.guiding.GuideDirection
 import nebulosa.indi.device.mount.TrackMode

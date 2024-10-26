@@ -1,7 +1,7 @@
 package nebulosa.api.atlas
 
 import io.javalin.http.Header
-import nebulosa.api.database.MainDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndClose
 import nebulosa.log.d
@@ -84,6 +84,6 @@ class IERSUpdateTask(
         const val IERSA_UPDATED_AT_KEY = "IERSA.UPDATED_AT"
         const val IERSB_UPDATED_AT_KEY = "IERSB.UPDATED_AT"
 
-        @JvmStatic private val LOG = loggerFor<IERSUpdateTask>()
+        private val LOG = loggerFor<IERSUpdateTask>()
     }
 }

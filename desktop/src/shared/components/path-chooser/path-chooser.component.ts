@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core'
-import { dirname } from 'path'
 import { ElectronService } from '../../services/electron.service'
 import { PreferenceService } from '../../services/preference.service'
 
@@ -43,7 +42,7 @@ export class PathChooserComponent {
 	protected async choosePath() {
 		const preference = this.preferenceService.pathChooser.get()
 		const lastPath = preference[this.key] || undefined
-		const defaultPath = lastPath && !this.directory ? dirname(lastPath) : lastPath
+		const defaultPath = lastPath && !this.directory ? window.path.dirname(lastPath) : lastPath
 
 		const path = await (this.directory ? this.electronService.openDirectory({ defaultPath })
 		: this.save ? this.electronService.saveFile({ defaultPath })

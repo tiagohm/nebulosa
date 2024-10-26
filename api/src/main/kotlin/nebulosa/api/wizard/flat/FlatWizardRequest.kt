@@ -29,7 +29,7 @@ data class FlatWizardRequest(
 
     companion object {
 
-        @JvmStatic val MIN_EXPOSURE = Duration.ofMillis(1)!!
-        @JvmStatic val MAX_EXPOSURE = Duration.ofSeconds(2)!!
+        val MIN_EXPOSURE = Duration.ofMillis(1)!!
+        val MAX_EXPOSURE = Duration.ofSeconds(2)!!
     }
 }

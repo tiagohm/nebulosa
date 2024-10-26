@@ -500,8 +500,8 @@ internal open class INDICamera(
         private const val GUIDE_HEAD_SUFFIX = "(Guide Head)"
         private const val MICROS_TO_SECONDS = 1_000_000L
 
-        @JvmStatic private val COMPRESSION_FORMATS = arrayOf(".fz", ".gz")
-        @JvmStatic private val LOG = loggerFor<INDICamera>()
-        @JvmStatic private val INDI_CLEAR = FitsHeaderCard.create("INDI_CLEAR", "", "")
+        private val COMPRESSION_FORMATS = arrayOf(".fz", ".gz")
+        private val LOG = loggerFor<INDICamera>()
+        private val INDI_CLEAR = FitsHeaderCard.create("INDI_CLEAR", "", "")
     }
 }

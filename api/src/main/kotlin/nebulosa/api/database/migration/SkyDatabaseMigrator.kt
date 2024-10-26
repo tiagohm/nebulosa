@@ -1,9 +1,9 @@
-package nebulosa.api.database
+package nebulosa.api.database.migration
 
 import org.flywaydb.core.Flyway
 import java.util.concurrent.CountDownLatch
 
-data class MainDatabaseMigrator(private val dataSource: String) : Runnable {
+data class SkyDatabaseMigrator(private val dataSource: String) : Runnable {
 
     private val latch = CountDownLatch(1)
 
@@ -13,7 +13,7 @@ data class MainDatabaseMigrator(private val dataSource: String) : Runnable {
             .baselineOnMigrate(true)
             .table("MIGRATIONS")
             .dataSource(dataSource, "root", "")
-            .locations("classpath:migrations/main")
+            .locations("classpath:migrations/sky")
             .load()
             .migrate()
 

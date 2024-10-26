@@ -4,7 +4,6 @@ import hotkeys from 'hotkeys-js'
 import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
 import { nuid } from 'nuid'
 import createPanZoom from 'panzoom'
-import { basename, dirname, extname } from 'path'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
@@ -850,7 +849,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		} else if (this.imageData.camera) {
 			text = this.imageData.camera.name
 		} else if (this.imageData.path) {
-			text = basename(this.imageData.path)
+			text = window.path.basename(this.imageData.path)
 		} else {
 			return
 		}
@@ -953,11 +952,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	protected pathChangedForSaveAs() {
 		if (this.saveAs.path) {
-			const extension = extname(this.saveAs.path).toLowerCase()
+			const extension = window.path.extname(this.saveAs.path).toLowerCase()
 			this.saveAs.format = imageFormatFromExtension(extension)
 			this.saveAs.bitpix = this.imageInfo?.bitpix ?? 'BYTE'
 
-			this.preference.savePath = dirname(this.saveAs.path)
+			this.preference.savePath = window.path.dirname(this.saveAs.path)
 			this.savePreference()
 		}
 	}

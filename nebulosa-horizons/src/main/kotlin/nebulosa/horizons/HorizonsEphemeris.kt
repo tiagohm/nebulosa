@@ -25,16 +25,14 @@ data class HorizonsEphemeris(private val elements: MutableList<HorizonsElement>)
 
     companion object {
 
-        @JvmStatic private val WHITESPACE_REGEX = Regex("\\s+")
-        @JvmStatic private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MMM-dd", Locale.ENGLISH)
-        @JvmStatic private val TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
+        private val WHITESPACE_REGEX = Regex("\\s+")
+        private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MMM-dd", Locale.ENGLISH)
+        private val TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 
-        @JvmStatic
         internal fun parse(stream: InputStream): HorizonsEphemeris {
             return parse(stream.bufferedReader().lines())
         }
 
-        @JvmStatic
         internal fun parse(lines: Stream<String?>): HorizonsEphemeris {
             var start = false
             var first = false

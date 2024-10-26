@@ -56,7 +56,7 @@ data class PixInsightScriptRunner(private val executablePath: Path) {
 
     companion object {
 
-        @JvmStatic private val DEFAULT_ARGS = arrayOf("--automation-mode", "--no-startup-scripts")
-        @JvmStatic private val LOG = loggerFor<PixInsightScriptRunner>()
+        private val DEFAULT_ARGS = arrayOf("--automation-mode", "--no-startup-scripts")
+        private val LOG = loggerFor<PixInsightScriptRunner>()
     }
 }

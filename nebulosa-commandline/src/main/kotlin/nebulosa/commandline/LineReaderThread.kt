@@ -23,6 +23,6 @@ internal data class LineReaderThread(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<LineReaderThread>()
+        private val LOG = loggerFor<LineReaderThread>()
     }
 }

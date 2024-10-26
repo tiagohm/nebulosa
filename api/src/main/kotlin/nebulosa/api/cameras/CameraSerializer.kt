@@ -73,7 +73,6 @@ class CameraSerializer : DeviceSerializer<Camera>(Camera::class.java), KoinCompo
 
     companion object {
 
-        @JvmStatic
         private fun JsonGenerator.writeMainOrGuideHead(camera: Camera, fieldName: String) {
             writeObjectFieldStart(fieldName)
             writeStringField("type", camera.type.name)

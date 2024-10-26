@@ -95,7 +95,7 @@ class RemoteDaf(
 
     companion object {
 
-        @JvmStatic private val HTTP_CLIENT = OkHttpClient.Builder()
+        private val HTTP_CLIENT = OkHttpClient.Builder()
             .connectTimeout(1, TimeUnit.MINUTES)
             .readTimeout(1, TimeUnit.MINUTES)
             .writeTimeout(1, TimeUnit.MINUTES)

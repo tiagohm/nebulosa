@@ -52,6 +52,6 @@ sealed class AbstractFocuserMoveTask : FocuserTask, CancellationListener {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<AbstractFocuserMoveTask>()
+        private val LOG = loggerFor<AbstractFocuserMoveTask>()
     }
 }

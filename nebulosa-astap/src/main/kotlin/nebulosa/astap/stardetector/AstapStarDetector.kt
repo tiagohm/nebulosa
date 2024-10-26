@@ -73,9 +73,9 @@ data class AstapStarDetector(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<AstapStarDetector>()
+        private val LOG = loggerFor<AstapStarDetector>()
 
-        @JvmStatic private val CSV_READER = CsvReader.builder()
+        private val CSV_READER = CsvReader.builder()
             .fieldSeparator(',')
             .quoteCharacter('"')
             .commentCharacter('#')

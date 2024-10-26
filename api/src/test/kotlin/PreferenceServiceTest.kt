@@ -8,7 +8,7 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.api.atlas.Location
-import nebulosa.api.database.MainDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.preference.PreferenceRepository
 import nebulosa.api.preference.PreferenceService
 import nebulosa.indi.device.camera.FrameType
@@ -126,7 +126,7 @@ class PreferenceServiceTest {
             MainDatabaseMigrator(DATASOURCE).run()
         }
 
-        @JvmStatic private val REPOSITORY = PreferenceRepository(CONNECTION)
-        @JvmStatic private val SERVICE = PreferenceService(REPOSITORY, jsonMapper { })
+        private val REPOSITORY = PreferenceRepository(CONNECTION)
+        private val SERVICE = PreferenceService(REPOSITORY, jsonMapper { })
     }
 }

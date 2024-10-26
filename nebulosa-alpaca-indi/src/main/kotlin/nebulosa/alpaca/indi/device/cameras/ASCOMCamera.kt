@@ -830,9 +830,9 @@ data class ASCOMCamera(
 
         private const val MICROS_TO_SECONDS = 1_000_000L
 
-        @JvmStatic private val LOG = loggerFor<ASCOMCamera>()
-        @JvmStatic private val DATE_OBS_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
-        @JvmStatic private val RA_FORMAT = AngleFormatter.HMS.newBuilder().secondsDecimalPlaces(3).separators(" ").build()
-        @JvmStatic private val DEC_FORMAT = AngleFormatter.SIGNED_DMS.newBuilder().secondsDecimalPlaces(3).separators(" ").build()
+        private val LOG = loggerFor<ASCOMCamera>()
+        private val DATE_OBS_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+        private val RA_FORMAT = AngleFormatter.HMS.newBuilder().secondsDecimalPlaces(3).separators(" ").build()
+        private val DEC_FORMAT = AngleFormatter.SIGNED_DMS.newBuilder().secondsDecimalPlaces(3).separators(" ").build()
     }
 }

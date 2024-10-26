@@ -354,6 +354,6 @@ data class SequencerJob(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<SequencerJob>()
+        private val LOG = loggerFor<SequencerJob>()
     }
 }

@@ -83,6 +83,6 @@ class AstrobinServiceTest {
 
     companion object {
 
-        @JvmStatic private val SERVICE = AstrobinService()
+        private val SERVICE = AstrobinService()
     }
 }

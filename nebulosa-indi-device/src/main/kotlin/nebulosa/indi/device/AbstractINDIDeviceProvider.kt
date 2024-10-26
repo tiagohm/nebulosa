@@ -304,6 +304,6 @@ abstract class AbstractINDIDeviceProvider : INDIDeviceProvider {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<AbstractINDIDeviceProvider>()
+        private val LOG = loggerFor<AbstractINDIDeviceProvider>()
     }
 }

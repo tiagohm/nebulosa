@@ -1,5 +1,4 @@
 import { AfterContentInit, Component, NgZone, ViewChild, ViewEncapsulation } from '@angular/core'
-import { dirname } from 'path'
 import nebulosa from '../../assets/data/nebulosa.json'
 import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
@@ -538,7 +537,7 @@ export class HomeComponent implements AfterContentInit {
 		const path = await this.electronService.openImage({ defaultPath: this.preference.imagePath })
 
 		if (path) {
-			this.preference.imagePath = dirname(path)
+			this.preference.imagePath = window.path.dirname(path)
 			this.savePreference()
 
 			await this.browserWindowService.openImage({ path, source: 'PATH' })

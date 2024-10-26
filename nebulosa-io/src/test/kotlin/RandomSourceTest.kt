@@ -29,7 +29,6 @@ class RandomSourceTest {
 
     companion object {
 
-        @JvmStatic
         private fun ByteArray.isRandom(): Boolean {
             val counter = IntArray(256)
 

@@ -51,6 +51,6 @@ data class INDISocketConnection(private val socket: Socket) : INDIConnection {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<INDISocketConnection>()
+        private val LOG = loggerFor<INDISocketConnection>()
     }
 }

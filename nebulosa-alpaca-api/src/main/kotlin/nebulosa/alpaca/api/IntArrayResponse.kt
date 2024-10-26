@@ -13,6 +13,6 @@ data class IntArrayResponse(
 
     companion object {
 
-        @JvmStatic private val EMPTY_ARRAY = IntArray(0)
+        private val EMPTY_ARRAY = IntArray(0)
     }
 }

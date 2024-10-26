@@ -18,14 +18,13 @@ abstract class AbstractPixInsightScript<T : PixInsightScriptOutput> : PixInsight
         internal const val START_FILE = "@"
         internal const val END_FILE = "#"
 
-        @JvmStatic private val LOG = loggerFor<AbstractPixInsightScript<*>>()
+        private val LOG = loggerFor<AbstractPixInsightScript<*>>()
 
-        @JvmStatic internal val OBJECT_MAPPER = jsonMapper {
+        internal val OBJECT_MAPPER = jsonMapper {
             addModule(PathModule())
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         }
 
-        @JvmStatic
         internal fun PixInsightScript<*>.execute(scriptPath: Path, data: Any?, slot: Int = this.slot): String {
             LOG.di("{} will be executed. slot={}, script={}, data={}", name, slot, scriptPath, data)
 
@@ -45,7 +44,6 @@ abstract class AbstractPixInsightScript<T : PixInsightScriptOutput> : PixInsight
             }
         }
 
-        @JvmStatic
         internal fun <T : PixInsightScriptOutput> Path.parseStatus(type: Class<T>): T? {
             val text = readText()
 

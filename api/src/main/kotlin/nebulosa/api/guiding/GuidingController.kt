@@ -3,7 +3,7 @@ package nebulosa.api.guiding
 import io.javalin.Javalin
 import io.javalin.http.Context
 import io.javalin.http.bodyAsClass
-import nebulosa.api.core.Controller
+import nebulosa.api.http.Controller
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.valid
 import kotlin.math.min

@@ -39,6 +39,6 @@ data class TrendLine(val points: List<CurvePoint>) : LinearCurve {
 
         @JvmStatic val ZERO = TrendLine()
 
-        @JvmStatic private val LOG = loggerFor<TrendLine>()
+        private val LOG = loggerFor<TrendLine>()
     }
 }

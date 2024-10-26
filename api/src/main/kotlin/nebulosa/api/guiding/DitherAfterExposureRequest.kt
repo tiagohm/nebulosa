@@ -17,6 +17,6 @@ data class DitherAfterExposureRequest(
 
     companion object {
 
-        @JvmStatic val DISABLED = DitherAfterExposureRequest(false)
+        val DISABLED = DitherAfterExposureRequest(false)
     }
 }

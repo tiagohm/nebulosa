@@ -71,7 +71,7 @@ sealed interface XisfMonolithicFileHeader {
 
         companion object {
 
-            @JvmStatic private val MAPPED = entries.associateBy { it.value }
+            private val MAPPED = entries.associateBy { it.value }
 
             @JvmStatic
             fun parse(text: String) = MAPPED[text]

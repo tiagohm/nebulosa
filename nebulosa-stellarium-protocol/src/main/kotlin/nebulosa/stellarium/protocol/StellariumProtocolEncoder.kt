@@ -22,9 +22,8 @@ class StellariumProtocolEncoder : MessageToByteEncoder<StellariumProtocolMessage
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<StellariumProtocolEncoder>()
+        private val LOG = loggerFor<StellariumProtocolEncoder>()
 
-        @JvmStatic
         private fun ByteBuf.sendCurrentPosition(message: StellariumProtocolMessage.CurrentPosition) {
             writeShortLE(24) // LENGTH
             writeShortLE(0) // TYPE

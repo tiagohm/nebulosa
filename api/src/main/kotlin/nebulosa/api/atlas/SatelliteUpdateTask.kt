@@ -1,8 +1,8 @@
 package nebulosa.api.atlas
 
 import com.fasterxml.jackson.databind.JsonMappingException
-import nebulosa.api.database.MainDatabaseMigrator
-import nebulosa.api.database.SkyDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
+import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
 import nebulosa.log.i
@@ -126,6 +126,6 @@ class SatelliteUpdateTask(
         const val UPDATE_INTERVAL = 1000L * 60 * 60 * 24 * 2 // 2 days in ms
         const val UPDATED_AT_KEY = "SATELLITES.UPDATED_AT"
 
-        @JvmStatic private val LOG = loggerFor<SatelliteUpdateTask>()
+        private val LOG = loggerFor<SatelliteUpdateTask>()
     }
 }

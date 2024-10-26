@@ -6,7 +6,9 @@ import nebulosa.image.format.HeaderCard
 import nebulosa.image.format.ReadableHeader
 import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.deg
+import nebulosa.math.rad
 import nebulosa.wcs.computeCdMatrix
 import kotlin.math.*
 
@@ -31,7 +33,7 @@ data class PlateSolution(
 
         @JvmStatic val NO_SOLUTION = PlateSolution()
 
-        @JvmStatic private val LOG = loggerFor<PlateSolution>()
+        private val LOG = loggerFor<PlateSolution>()
 
         @JvmStatic
         fun from(header: ReadableHeader): PlateSolution? {

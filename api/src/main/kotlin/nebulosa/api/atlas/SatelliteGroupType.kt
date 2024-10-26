@@ -59,7 +59,6 @@ enum class SatelliteGroupType(
 
     companion object {
 
-        @JvmStatic
         fun codeOf(entries: List<SatelliteGroupType>): Long {
             return entries.fold(0L) { a, b -> a or (1L shl b.ordinal) }
         }

@@ -340,6 +340,6 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<INDIDeviceProtocolHandler>()
+        private val LOG = loggerFor<INDIDeviceProtocolHandler>()
     }
 }

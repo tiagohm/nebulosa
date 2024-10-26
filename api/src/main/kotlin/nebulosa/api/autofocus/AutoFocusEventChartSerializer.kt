@@ -51,7 +51,6 @@ class AutoFocusEventChartSerializer : StdSerializer<AutoFocusEvent.Chart>(AutoFo
             }
         }
 
-        @JvmStatic
         private fun TrendLineFitting.Curve?.serialize(gen: JsonGenerator, points: DoubleArray) {
             serializeAsFittedCurve(gen, "trendLine") {
                 it.left.serialize(gen, "left", points)
@@ -60,7 +59,6 @@ class AutoFocusEventChartSerializer : StdSerializer<AutoFocusEvent.Chart>(AutoFo
             }
         }
 
-        @JvmStatic
         private fun TrendLine.serialize(gen: JsonGenerator, fieldName: String, points: DoubleArray) {
             gen.writeObjectFieldStart(fieldName)
             gen.writeNumberField("slope", slope)
@@ -74,7 +72,6 @@ class AutoFocusEventChartSerializer : StdSerializer<AutoFocusEvent.Chart>(AutoFo
             gen.writeEndObject()
         }
 
-        @JvmStatic
         private fun QuadraticFitting.Curve?.serialize(gen: JsonGenerator, points: DoubleArray) {
             serializeAsFittedCurve(gen, "parabolic") {
                 if (it.rSquared.isRSquaredValid()) {
@@ -83,7 +80,6 @@ class AutoFocusEventChartSerializer : StdSerializer<AutoFocusEvent.Chart>(AutoFo
             }
         }
 
-        @JvmStatic
         private fun HyperbolicFitting.Curve?.serialize(gen: JsonGenerator, points: DoubleArray) {
             serializeAsFittedCurve(gen, "hyperbolic") {
                 gen.writeNumberField("a", it.a)
@@ -96,7 +92,6 @@ class AutoFocusEventChartSerializer : StdSerializer<AutoFocusEvent.Chart>(AutoFo
             }
         }
 
-        @JvmStatic
         private fun Curve.makePoints(gen: JsonGenerator, points: DoubleArray) {
             gen.writeArrayFieldStart("points")
 

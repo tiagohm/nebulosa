@@ -32,7 +32,6 @@ data class BodyPosition(
 
     companion object {
 
-        @JvmStatic
         fun of(element: HorizonsElement): BodyPosition {
             val lightTime = element.asDouble(HorizonsQuantity.ONE_WAY_LIGHT_TIME)
             var distance = lightTime * (SPEED_OF_LIGHT * 0.06) // km

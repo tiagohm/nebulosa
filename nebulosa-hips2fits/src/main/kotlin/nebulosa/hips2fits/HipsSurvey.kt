@@ -20,6 +20,6 @@ data class HipsSurvey(
 
     companion object {
 
-        @JvmStatic private val REGIME_SORT_ORDER = arrayOf("Optical", "Infrared", "UV", "Radio", "X-ray", "Gamma-ray")
+        private val REGIME_SORT_ORDER = arrayOf("Optical", "Infrared", "UV", "Radio", "X-ray", "Gamma-ray")
     }
 }

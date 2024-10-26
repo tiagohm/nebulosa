@@ -1139,16 +1139,15 @@ class MultiStarGuider : InternalGuider {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<MultiStarGuider>()
-        @JvmStatic internal val ZERO_OFFSET = GuiderOffset(Point(), Point())
-        @JvmStatic internal val GUIDE_STEP = listOf(MountMoveOption.ALGORITHM_RESULT, MountMoveOption.USE_BACKSLASH_COMPENSATION)
-        @JvmStatic internal val DEDUCED_MOVE = listOf(MountMoveOption.ALGORITHM_DEDUCE, MountMoveOption.USE_BACKSLASH_COMPENSATION)
-        @JvmStatic internal val RECOVERY_MOVE = listOf(MountMoveOption.USE_BACKSLASH_COMPENSATION)
+        private val LOG = loggerFor<MultiStarGuider>()
+        internal val ZERO_OFFSET = GuiderOffset(Point(), Point())
+        internal val GUIDE_STEP = listOf(MountMoveOption.ALGORITHM_RESULT, MountMoveOption.USE_BACKSLASH_COMPENSATION)
+        internal val DEDUCED_MOVE = listOf(MountMoveOption.ALGORITHM_DEDUCE, MountMoveOption.USE_BACKSLASH_COMPENSATION)
+        internal val RECOVERY_MOVE = listOf(MountMoveOption.USE_BACKSLASH_COMPENSATION)
 
         const val DEFAULT_MAX_STAR_COUNT = 9
         const val DEFAULT_STABILITY_SIGMAX = 5f
 
-        @JvmStatic
         private fun currentError(starFoundTimestamp: Long, avgDist: Double): Double {
             if (starFoundTimestamp == 0L) return 100.0
             if (System.currentTimeMillis() - starFoundTimestamp > 20000L) return 100.0

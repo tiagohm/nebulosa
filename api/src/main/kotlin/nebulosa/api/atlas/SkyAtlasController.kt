@@ -2,8 +2,8 @@ package nebulosa.api.atlas
 
 import io.javalin.Javalin
 import io.javalin.http.Context
-import nebulosa.api.core.Controller
-import nebulosa.api.core.location
+import nebulosa.api.http.Controller
+import nebulosa.api.http.location
 import nebulosa.api.validators.*
 import nebulosa.math.deg
 import nebulosa.math.hours

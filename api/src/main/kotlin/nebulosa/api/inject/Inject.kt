@@ -26,8 +26,8 @@ import nebulosa.api.confirmation.ConfirmationService
 import nebulosa.api.connection.ConnectionController
 import nebulosa.api.connection.ConnectionEventHub
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.database.MainDatabaseMigrator
-import nebulosa.api.database.SkyDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
+import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.dustcap.DustCapController
 import nebulosa.api.dustcap.DustCapEventHub
 import nebulosa.api.dustcap.DustCapService

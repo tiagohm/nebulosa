@@ -80,9 +80,8 @@ data class FindStar(
 
         const val FWHM = 1.1774100225154747 // sqrt(2 * ln(2))
 
-        @JvmStatic private val LOG = loggerFor<FindStar>()
+        private val LOG = loggerFor<FindStar>()
 
-        @JvmStatic
         private fun Path.parseStars(height: Int): List<Star> {
             val stars = ArrayList<Star>(256)
 

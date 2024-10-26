@@ -124,7 +124,7 @@ data object ELPMPP02 : Body {
         return PositionAndVelocity(REFERENCE_FRAME * Vector3D(v), REFERENCE_FRAME * Vector3D(v, 3))
     }
 
-    @JvmStatic private val REFERENCE_FRAME = Matrix3D(
+    private val REFERENCE_FRAME = Matrix3D(
         1.000000000000, 0.000000440360, -0.000000190919,
         -0.000000479966, 0.917482137087, -0.397776982902,
         0.000000000000, 0.397776982902, 0.917482137087,
@@ -146,7 +146,7 @@ data object ELPMPP02 : Body {
     private const val BP51 = 0.50928e-4
     private const val BP52 = -0.37342e-4
 
-    // @JvmStatic private val BP = arrayOf(BP00, BP01, BP10, BP11, BP20, BP21, BP30, BP31, BP40, BP41)
+    // private val BP = arrayOf(BP00, BP01, BP10, BP11, BP20, BP21, BP30, BP31, BP40, BP41)
 
     // Constants for the evaluation of the partial derivatives.
     private const val AM = 0.074801329 // Ratio of the mean motions (EMB / Moon)

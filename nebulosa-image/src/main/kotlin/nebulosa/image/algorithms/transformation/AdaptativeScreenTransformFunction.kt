@@ -60,6 +60,6 @@ data class AdaptativeScreenTransformFunction(
         const val DEFAULT_MEAN_BACKGROUND = 0.25f
         const val DEFAULT_CLIPPING_POINT = -2.8f
 
-        @JvmStatic private val LOG = loggerFor<AdaptativeScreenTransformFunction>()
+        private val LOG = loggerFor<AdaptativeScreenTransformFunction>()
     }
 }

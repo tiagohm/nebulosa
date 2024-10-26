@@ -88,9 +88,9 @@ class BodyEphemerisProvider(private val executor: ExecutorService) : CachedEphem
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<BodyEphemerisProvider>()
+        private val LOG = loggerFor<BodyEphemerisProvider>()
 
         private const val SUN_ILLUMINATED = 100.0
-        @JvmStatic private val SUN_ELONGATION = 0.0 to true
+        private val SUN_ELONGATION = 0.0 to true
     }
 }

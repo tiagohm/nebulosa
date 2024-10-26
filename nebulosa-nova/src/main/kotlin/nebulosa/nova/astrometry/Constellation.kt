@@ -458,10 +458,10 @@ enum class Constellation(
 
     companion object {
 
-        @JvmStatic private val RA: DoubleArray
-        @JvmStatic private val DEC: DoubleArray
-        @JvmStatic private val RA_TO_INDEX: ByteArray
-        @JvmStatic private val EPOCH = TT(TimeBesselianEpoch.B1875)
+        private val RA: DoubleArray
+        private val DEC: DoubleArray
+        private val RA_TO_INDEX: ByteArray
+        private val EPOCH = TT(TimeBesselianEpoch.B1875)
 
         init {
             bufferedResource("CONSTELLATIONS.dat")!!.use {

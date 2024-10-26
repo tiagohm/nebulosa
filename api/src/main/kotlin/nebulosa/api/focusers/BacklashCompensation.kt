@@ -8,6 +8,6 @@ data class BacklashCompensation(
 
     companion object {
 
-        @JvmStatic val EMPTY = BacklashCompensation()
+        val EMPTY = BacklashCompensation()
     }
 }

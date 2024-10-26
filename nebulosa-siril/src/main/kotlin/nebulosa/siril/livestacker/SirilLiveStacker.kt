@@ -78,10 +78,10 @@ data class SirilLiveStacker(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<SirilLiveStacker>()
+        private val LOG = loggerFor<SirilLiveStacker>()
 
-        @JvmStatic private val LIVE_STACK_FIT_REGEX = Regex("live_stack_\\d+.fit")
-        @JvmStatic private val LIVE_STACK_SEQ_REGEX = Regex("live_stack_\\d*.seq")
+        private val LIVE_STACK_FIT_REGEX = Regex("live_stack_\\d+.fit")
+        private val LIVE_STACK_SEQ_REGEX = Regex("live_stack_\\d*.seq")
 
         @JvmStatic
         fun Path.deleteStackingFiles() {

@@ -242,8 +242,8 @@ data class AutoFocusJob(
 
     companion object {
 
-        @JvmStatic private val MIN_EXPOSURE_TIME = Duration.ofSeconds(1L)
-        @JvmStatic private val CAPTURE_SAVE_PATH = Files.createTempDirectory("af-")
-        @JvmStatic private val LOG = loggerFor<AutoFocusJob>()
+        private val MIN_EXPOSURE_TIME = Duration.ofSeconds(1L)
+        private val CAPTURE_SAVE_PATH = Files.createTempDirectory("af-")
+        private val LOG = loggerFor<AutoFocusJob>()
     }
 }

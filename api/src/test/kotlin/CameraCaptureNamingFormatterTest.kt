@@ -477,7 +477,7 @@ class CameraCaptureNamingFormatterTest {
 
     companion object {
 
-        @JvmStatic private val CLOCK = Clock.fixed(Instant.ofEpochSecond(1720114656, 369000000), ZoneOffset.UTC)
-        @JvmStatic private val FORMATTER = CameraCaptureNamingFormatter(CameraSim, MountSim, WheelSim, FocuserSim, RotatorSim, CLOCK)
+        private val CLOCK = Clock.fixed(Instant.ofEpochSecond(1720114656, 369000000), ZoneOffset.UTC)
+        private val FORMATTER = CameraCaptureNamingFormatter(CameraSim, MountSim, WheelSim, FocuserSim, RotatorSim, CLOCK)
     }
 }
