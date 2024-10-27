@@ -2,7 +2,6 @@ import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, 
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
-import { nuid } from 'nuid'
 import createPanZoom from 'panzoom'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
@@ -52,6 +51,7 @@ import { Mount } from '../../shared/types/mount.types'
 import { PlateSolverRequest } from '../../shared/types/platesolver.types'
 import { StarDetectionRequest } from '../../shared/types/stardetector.types'
 import { CoordinateInterpolator } from '../../shared/utils/coordinate-interpolation'
+import { uid } from '../../shared/utils/random'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -530,7 +530,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 		this.loadPreference()
 
-		this.solver.key = nuid.next()
+		this.solver.key = uid()
 	}
 
 	async ngAfterViewInit() {
