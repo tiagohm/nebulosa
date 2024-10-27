@@ -60,7 +60,6 @@
 		"zone.js": "0.14.10"
 	},
 	"devDependencies": {
-		"@angular-builders/custom-esbuild": "18.0.0",
 		"@angular-devkit/build-angular": "18.2.10",
 		"@angular/cli": "18.2.10",
 		"@angular/compiler-cli": "18.2.9",
