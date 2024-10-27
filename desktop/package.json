@@ -50,7 +50,6 @@
 		"hotkeys-js": "3.13.7",
 		"leaflet": "1.9.4",
 		"ngx-moveable": "0.50.0",
-		"nuid": "2.0.1-2",
 		"panzoom": "9.4.3",
 		"primeicons": "7.0.0",
 		"primeng": "18.0.0-beta.3",
@@ -59,7 +58,6 @@
 		"zone.js": "0.14.10"
 	},
 	"devDependencies": {
-		"@angular-builders/custom-esbuild": "18.0.0",
 		"@angular-devkit/build-angular": "18.2.10",
 		"@angular/cli": "18.2.10",
 		"@angular/compiler-cli": "18.2.9",
