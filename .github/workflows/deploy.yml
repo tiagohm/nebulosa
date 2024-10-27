@@ -79,5 +79,6 @@ jobs:
             desktop/release/nebulosa*.deb
             desktop/release/nebulosa*.rpm
             desktop/release/nebulosa*.exe
+            desktop/release/nebulosa*.msi
             desktop/release/nebulosa*.dmg
           retention-days: 3

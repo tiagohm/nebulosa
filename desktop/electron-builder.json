@@ -1,5 +1,7 @@
 {
 	"asar": true,
+	"appId": "dev.tiagohm.nebulosa",
+	"productName": "Nebulosa",
 	"directories": {
 		"output": "release/"
 	},
@@ -7,6 +9,9 @@
 		"**/*",
 		"!**/*.ts",
 		"!*.map",
+		"!**/*.bmp",
+		"!**/*.ico",
+		"!**/*.icns",
 		"!package.json",
 		"!package-lock.json",
 		{
@@ -16,18 +21,22 @@
 	],
 	"extraResources": ["api.jar"],
 	"win": {
-		"icon": "dist/browser/assets/icons",
-		"target": ["portable"]
+		"icon": "dist/browser/assets/icons/nebulosa.ico",
+		"target": ["portable", "msi"]
 	},
 	"portable": {
 		"splashImage": "dist/browser/assets/images/splash.bmp"
 	},
+	"msi": {
+		"oneClick": false,
+		"runAfterFinish": false
+	},
 	"mac": {
-		"icon": "dist/browser/assets/icons",
+		"icon": "dist/browser/assets/icons/nebulosa.icns",
 		"target": ["dmg"]
 	},
 	"linux": {
-		"icon": "dist/browser/assets/icons",
+		"icon": "dist/browser/assets/icons/nebulosa.png",
 		"category": "Science",
 		"target": ["AppImage", "deb", "rpm"]
 	},

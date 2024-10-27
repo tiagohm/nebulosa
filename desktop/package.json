@@ -28,6 +28,8 @@
 		"electron:build:deb": "npm run electron:build -- --linux deb",
 		"electron:build:rpm": "npm run electron:build -- --linux rpm",
 		"electron:build:app": "npm run electron:build -- --linux AppImage",
+		"electron:build:portable": "npm run electron:build -- --win portable",
+		"electron:build:msi": "npm run electron:build -- --win msi",
 		"lint": "npx eslint .",
 		"prettier:ts": "npx prettier '**/*.ts' --write",
 		"prettier:html": "npx prettier '**/*.html' --write",
