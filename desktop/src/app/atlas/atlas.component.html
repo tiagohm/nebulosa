@@ -846,10 +846,11 @@
 			@for (group of groups; track $index) {
 				<p-checkbox
 					[binary]="true"
+					inputId="satellite-filter-{{ group }}"
 					[(ngModel)]="satellite.search.filter.groups[group]"
 					(ngModelChange)="savePreference()"
-					[label]="group | enum"
 					class="white-space-nowrap" />
+				<label for="satellite-filter-{{ group }}">{{ group | enum }}</label>
 			}
 		</div>
 	</div>
@@ -872,8 +873,8 @@
 	</ng-template>
 </p-dialog>
 
-<p-overlayPanel
-	#dateTimeAndLocationPanel
+<p-popover
+	#dateTimeAndLocationPopover
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
 	appendTo="body">
 	<ng-template pTemplate="content">
@@ -945,10 +946,10 @@
 			</div>
 		</div>
 	</ng-template>
-</p-overlayPanel>
+</p-popover>
 
-<p-overlayPanel
-	#favoritesPanel
+<p-popover
+	#favoritesPopover
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"
 	appendTo="body">
 	<ng-template pTemplate="content">
@@ -956,7 +957,7 @@
 			<p-listbox
 				[options]="preference.favorites"
 				[ngModel]="favorited"
-				(ngModelChange)="selectFavorite($event); favoritesPanel.hide()"
+				(ngModelChange)="selectFavorite($event); favoritesPopover.hide()"
 				class="w-full"
 				styleClass="border-0 w-full"
 				[metaKeySelection]="false"
@@ -987,7 +988,7 @@
 			</p-listbox>
 		</div>
 	</ng-template>
-</p-overlayPanel>
+</p-popover>
 
 <neb-dialog-menu
 	#ephemerisMenu

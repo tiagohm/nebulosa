@@ -1,26 +1,26 @@
-<div class="mt-1 grid px-4 py-2">
-	<div class="w-1/2">
-		<p-floatLabel>
+<div class="mt-1 grid w-full grid-cols-2 gap-1 px-4 py-2">
+	<div class="col-spans-1">
+		<p-floatLabel class="w-full">
 			<input
 				pInputText
-				class="p-inputtext-sm w-full border-0"
+				class="p-inputtext-sm border-0"
 				[(ngModel)]="preference.rightAscension"
 				(ngModelChange)="savePreference()" />
 			<label>RA (J2000)</label>
 		</p-floatLabel>
 	</div>
-	<div class="w-1/2">
-		<p-floatLabel>
+	<div class="col-spans-1">
+		<p-floatLabel class="w-full">
 			<input
 				pInputText
-				class="p-inputtext-sm w-full border-0"
+				class="p-inputtext-sm border-0"
 				[(ngModel)]="preference.declination"
 				(ngModelChange)="savePreference()" />
 			<label>DEC (J2000)</label>
 		</p-floatLabel>
 	</div>
-	<div class="w-1/2">
-		<p-floatLabel>
+	<div class="col-spans-1">
+		<p-floatLabel class="w-full">
 			<p-inputNumber
 				[min]="1"
 				[max]="7680"
@@ -34,8 +34,8 @@
 			<label>Width</label>
 		</p-floatLabel>
 	</div>
-	<div class="w-1/2">
-		<p-floatLabel>
+	<div class="col-spans-1">
+		<p-floatLabel class="w-full">
 			<p-inputNumber
 				[min]="1"
 				[max]="4320"
@@ -49,8 +49,8 @@
 			<label>Height</label>
 		</p-floatLabel>
 	</div>
-	<div class="w-1/2">
-		<p-floatLabel>
+	<div class="col-spans-1">
+		<p-floatLabel class="w-full">
 			<p-inputNumber
 				[min]="0.1"
 				[max]="90"
@@ -66,8 +66,8 @@
 			<label>FOV (°)</label>
 		</p-floatLabel>
 	</div>
-	<div class="w-1/2">
-		<p-floatLabel>
+	<div class="col-spans-1">
+		<p-floatLabel class="w-full">
 			<p-inputNumber
 				[min]="-360"
 				[max]="360"
@@ -83,7 +83,7 @@
 			<label>Rotation (°)</label>
 		</p-floatLabel>
 	</div>
-	<div class="w-full">
+	<div class="col-spans-2">
 		<p-floatLabel class="w-full">
 			<p-dropdown
 				[options]="hipsSurveys"

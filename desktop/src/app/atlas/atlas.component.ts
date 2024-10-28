@@ -4,7 +4,7 @@ import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { UIChart } from 'primeng/chart'
 import { ListboxChangeEvent } from 'primeng/listbox'
-import { OverlayPanel } from 'primeng/overlaypanel'
+import { Popover } from 'primeng/popover'
 import { timer } from 'rxjs'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
@@ -335,11 +335,11 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	@ViewChild('deviceMenu')
 	private readonly deviceMenu!: DeviceListMenuComponent
 
-	@ViewChild('dateTimeAndLocationPanel')
-	private readonly dateTimeAndLocationPanel!: OverlayPanel
+	@ViewChild('dateTimeAndLocationPopover')
+	private readonly dateTimeAndLocationPopover!: Popover
 
-	@ViewChild('favoritesPanel')
-	private readonly favoritesPanel!: OverlayPanel
+	@ViewChild('favoritesPopover')
+	private readonly favoritesPopover!: Popover
 
 	@ViewChild('chart')
 	private readonly chart!: UIChart
@@ -401,7 +401,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			icon: 'mdi mdi-bookmark',
 			tooltip: 'Favorites',
 			command: (e) => {
-				this.favoritesPanel.toggle(e.originalEvent)
+				this.favoritesPopover.toggle(e.originalEvent)
 			},
 		})
 
@@ -409,7 +409,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			icon: 'mdi mdi-calendar',
 			tooltip: 'Date Time and Location',
 			command: (e) => {
-				this.dateTimeAndLocationPanel.toggle(e.originalEvent)
+				this.dateTimeAndLocationPopover.toggle(e.originalEvent)
 			},
 		})
 
@@ -504,7 +504,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 				// if (minorPlanet.kind) tags.push({ label: minorPlanet.kind, severity: 'success' })
 				if (minorPlanet.orbitType) tags.push({ label: minorPlanet.orbitType, severity: 'success' })
 				if (minorPlanet.pha) tags.push({ label: 'PHA', severity: 'danger' })
-				if (minorPlanet.neo) tags.push({ label: 'NEO', severity: 'warning' })
+				if (minorPlanet.neo) tags.push({ label: 'NEO', severity: 'warn' })
 				this.minorPlanet.tags = tags
 
 				await this.refreshTab(false, true)
@@ -531,7 +531,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			this.minorPlanet.closeApproach.result = await this.api.closeApproachesOfMinorPlanets(this.minorPlanet.closeApproach.days, this.minorPlanet.closeApproach.lunarDistance, this.dateTimeAndLocation.dateTime)
 
 			if (!this.minorPlanet.closeApproach.result.length) {
-				this.angularService.message('No close approaches found for the given days and lunar distance', 'warning')
+				this.angularService.message('No close approaches found for the given days and lunar distance', 'warn')
 			}
 		} finally {
 			this.refresh.position = false

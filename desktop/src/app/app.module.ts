@@ -30,7 +30,7 @@ import { ListboxModule } from 'primeng/listbox'
 import { MenuModule } from 'primeng/menu'
 import { MessageModule } from 'primeng/message'
 import { MultiSelectModule } from 'primeng/multiselect'
-import { OverlayPanelModule } from 'primeng/overlaypanel'
+import { PopoverModule } from 'primeng/popover'
 import { ProgressBarModule } from 'primeng/progressbar'
 import { ScrollPanelModule } from 'primeng/scrollpanel'
 import { SelectButtonModule } from 'primeng/selectbutton'
@@ -186,7 +186,7 @@ import { SettingsComponent } from './settings/settings.component'
 		MessageModule,
 		MultiSelectModule,
 		NgxMoveableModule,
-		OverlayPanelModule,
+		PopoverModule,
 		ProgressBarModule,
 		ScrollPanelModule,
 		SelectButtonModule,

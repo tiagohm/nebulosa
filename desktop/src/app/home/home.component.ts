@@ -416,7 +416,7 @@ export class HomeComponent implements AfterContentInit {
 		}
 	}
 
-	protected addConnection() {
+	protected newConnection() {
 		this.connectionDialog.edited = false
 		this.connectionDialog.connection = structuredClone(DEFAULT_CONNECTION_DETAILS)
 		this.connectionDialog.showDialog = true

@@ -24,6 +24,10 @@ export const AppPreset = definePreset(Aura, {
 					hoverColor: '{zinc.100}',
 					activeColor: '{zinc.200}',
 				},
+				surface: {
+					800: '#212121',
+					900: '#202020',
+				},
 				highlight: {
 					background: 'rgba(250, 250, 250, .16)',
 					focusBackground: 'rgba(250, 250, 250, .24)',
@@ -36,8 +40,21 @@ export const AppPreset = definePreset(Aura, {
 	components: {
 		select: {
 			root: {
-				background: '{surface.900}',
+				background: '{surface.800}',
+				borderColor: 'transparent',
+				hoverBorderColor: 'transparent',
+				focusBorderColor: 'transparent',
 			},
+		},
+		floatlabel: {
+			over: {
+				active: {
+					top: '-0.2rem',
+				},
+			},
+		},
+		inputnumber: {
+			root: {},
 		},
 	},
 } as typeof Aura)
