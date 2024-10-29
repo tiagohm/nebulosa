@@ -31,14 +31,25 @@ process.on('beforeExit', () => {
 
 function createApiProcess(port: number = parsedArgs.port) {
 	const apiJar = join(process.resourcesPath, 'api.jar')
-	const apiProcess = spawn('java', ['-jar', apiJar, `--port=${port}`])
 
-	apiProcess.on('close', (code) => {
-		console.warn(`api process exited with code: ${code}`)
-		process.exit(code ?? 0)
-	})
+	try {
+		const apiProcess = spawn('java', ['-jar', apiJar, `--port=${port}`])
 
-	return apiProcess
+		apiProcess.on('close', (code) => {
+			console.warn(`api process exited with code: ${code}`)
+			process.exit(code ?? 0)
+		})
+
+		apiProcess.on('error', () => {
+			console.error(`unable to start api. do you have Java 17+ installed?`)
+			process.exit(1)
+		})
+
+		return apiProcess
+	} catch {
+		console.error('unable to start api. do you have Java 17+ installed?')
+		return process.exit(1)
+	}
 }
 
 let started = false
