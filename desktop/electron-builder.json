@@ -38,7 +38,7 @@
 	"linux": {
 		"icon": "dist/browser/assets/icons/nebulosa.png",
 		"category": "Science",
-		"target": ["AppImage", "deb", "rpm"]
+		"target": ["AppImage", "deb", "rpm", "pacman"]
 	},
 	"rpm": {
 		"depends": ["/usr/lib64/libuuid.so.1"]

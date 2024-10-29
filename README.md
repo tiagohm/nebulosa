@@ -22,14 +22,18 @@ The complete integrated solution for all of your astronomical imaging needs.
 #### On Linux
 
 4. `npm run electron:build:deb` to build `.deb` package.
-5. `npm run electron:build:app` to build `AppImage`.
+5. `npm run electron:build:app` to build `AppImage` package.
 6. `npm run electron:build:rpm` to build `RPM` package.
+7. `npm run electron:build:pacman` to build `.pacman` package.
 
-Before build a `RPM` package, run `sudo apt install rpm`.
+> Before build a `RPM` package, run `sudo apt install rpm`.
+
+> Before build a `pacman` package on Ubuntu, run `sudo apt install libarchive-tools`.
 
 #### On Windows
 
-4. `npm run electron:build` to build the `.exe`.
+4. `npm run electron:build:portable` to build the portable `.exe`.
+5. `npm run electron:build:msi` to build the `.msi` Installer.
 
 #### On Linux ARM (Raspberry PI)
 
@@ -41,3 +45,5 @@ run these commands before:
 4. `USE_SYSTEM_FPM=true npm run electron:build:deb` to build `.deb` package.
 
 > Look at `release` subdirectory for the generated build.
+
+> Alternatively, you can run `npm run electron:build` for build all package formats.
