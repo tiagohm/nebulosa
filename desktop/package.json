@@ -47,7 +47,7 @@
 		"@angular/platform-browser-dynamic": "18.2.9",
 		"@angular/router": "18.2.9",
 		"@mdi/font": "7.4.47",
-		"chart.js": "4.4.5",
+		"chart.js": "4.4.6",
 		"chartjs-plugin-zoom": "2.0.1",
 		"hotkeys-js": "3.13.7",
 		"leaflet": "1.9.4",
