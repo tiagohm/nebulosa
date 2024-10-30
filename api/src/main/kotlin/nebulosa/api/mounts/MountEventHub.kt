@@ -2,6 +2,7 @@ package nebulosa.api.mounts
 
 import nebulosa.api.devices.DeviceEventHub
 import nebulosa.api.message.MessageService
+import nebulosa.api.notification.SystemNotificationManager
 import nebulosa.indi.device.DeviceType
 import nebulosa.indi.device.PropertyChangedEvent
 import nebulosa.indi.device.mount.Mount
@@ -14,6 +15,7 @@ import org.greenrobot.eventbus.ThreadMode
 
 class MountEventHub(
     private val messageService: MessageService,
+    private val systemNotificationManager: SystemNotificationManager,
     eventBus: EventBus,
 ) : DeviceEventHub<Mount, MountEvent>(DeviceType.MOUNT), MountEventAware {
 
@@ -25,7 +27,10 @@ class MountEventHub(
     override fun handleMountEvent(event: MountEvent) {
         if (event.device.type == DeviceType.MOUNT) {
             when (event) {
-                is PropertyChangedEvent -> onNext(event)
+                is PropertyChangedEvent -> {
+                    onNext(event)
+                    systemNotificationManager.handleMountEvent(event)
+                }
                 is MountAttached -> onAttached(event.device)
                 is MountDetached -> onDetached(event.device)
             }

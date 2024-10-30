@@ -52,6 +52,7 @@ import nebulosa.api.message.MessageService
 import nebulosa.api.mounts.MountController
 import nebulosa.api.mounts.MountEventHub
 import nebulosa.api.mounts.MountService
+import nebulosa.api.notification.SystemNotificationManager
 import nebulosa.api.platesolver.PlateSolverController
 import nebulosa.api.platesolver.PlateSolverService
 import nebulosa.api.preference.PreferenceRepository
@@ -243,7 +244,8 @@ fun repositoriesModule() = module {
 
 fun eventHandlerModule() = module(true) {
     single { CameraEventHub(get(), get()) }
-    single { MountEventHub(get(), get()) }
+    single { SystemNotificationManager(get()) }
+    single { MountEventHub(get(), get(), get()) }
     single { FocuserEventHub(get(), get()) }
     single { WheelEventHub(get(), get()) }
     single { GuideOutputEventHub(get(), get()) }
