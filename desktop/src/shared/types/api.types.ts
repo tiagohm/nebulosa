@@ -1,3 +1,4 @@
+import type { Severity } from './angular.types'
 import type { Device } from './device.types'
 
 export type ApiEventType = (typeof API_EVENT_TYPES)[number]
@@ -6,8 +7,24 @@ export interface MessageEvent {
 	eventName: string
 }
 
-export interface DeviceMessageEvent<T extends Device> {
+export interface OpenImageEvent extends MessageEvent {
+	path: string
+}
+
+export interface DeviceMessageEvent<T extends Device> extends MessageEvent {
 	device: T
+}
+
+export interface NotificationEvent extends MessageEvent {
+	target?: string
+	severity: Severity
+	title?: string
+	body: string
+}
+
+export interface ConfirmationEvent extends MessageEvent {
+	message: string
+	idempotencyKey: string
 }
 
 export const API_EVENT_TYPES = [
@@ -55,3 +72,11 @@ export const API_EVENT_TYPES = [
 	// Auto Focus.
 	'AUTO_FOCUS.ELAPSED',
 ] as const
+
+export function isNotificationEvent(event: MessageEvent): event is NotificationEvent {
+	return event.eventName === 'NOTIFICATION'
+}
+
+export function isConfirmationEvent(event: MessageEvent): event is ConfirmationEvent {
+	return event.eventName === 'CONFIRMATION'
+}

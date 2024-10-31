@@ -1,11 +1,12 @@
 import type { Rectangle } from 'electron'
-import { BrowserWindow, Notification, dialog, screen, shell } from 'electron'
+import { BrowserWindow, Notification, app, dialog, screen, shell } from 'electron'
 import Store from 'electron-store'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
+import { existsSync, statSync } from 'node:fs'
 import { join } from 'path'
 import { WebSocket } from 'ws'
-import type { MessageEvent } from '../src/shared/types/api.types'
-import type { CloseWindow, ConfirmationEvent, FullscreenWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, ResizeWindow, WindowCommand } from '../src/shared/types/app.types'
+import type { ConfirmationEvent, MessageEvent, NotificationEvent } from '../src/shared/types/api.types'
+import type { CloseWindow, FullscreenWindow, OpenDirectory, OpenFile, OpenWindow, ResizeWindow, WindowCommand } from '../src/shared/types/app.types'
 import type { Nullable } from '../src/shared/utils/types'
 import type { ParsedArgument } from './argument.parser'
 
@@ -66,6 +67,10 @@ export class ApplicationWindow {
 
 	sendMessage(event: MessageEvent) {
 		this.browserWindow.webContents.send(event.eventName, event)
+	}
+
+	openImage(path: string) {
+		this.sendMessage({ eventName: 'IMAGE.OPEN', path } as never)
 	}
 }
 
@@ -257,6 +262,15 @@ export class WindowManager {
 		this.createWebSocket(host, port, (webSocket) => (appWindow.webSocket = webSocket))
 
 		appWindow.apiProcess = apiProcess
+
+		if (app.isPackaged) {
+			for (const path of this.args.paths) {
+				if (path !== '.' && existsSync(path) && statSync(path).isFile()) {
+					console.info('opening image at', path)
+					appWindow.openImage(path)
+				}
+			}
+		}
 	}
 
 	async createSplashWindow() {
