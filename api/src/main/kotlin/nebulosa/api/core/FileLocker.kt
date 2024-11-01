@@ -3,16 +3,17 @@ package nebulosa.api.core
 import nebulosa.log.e
 import nebulosa.log.i
 import nebulosa.log.loggerFor
+import java.io.RandomAccessFile
+import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.channels.FileLock
-import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.Path
 import kotlin.io.path.deleteIfExists
 
-data class FileLocker(private val appDir: Path) {
+object FileLocker {
 
-    private val lockPath = Path("$appDir", "nebulosa.lock")
+    private val lockPath = Path(System.getProperty("java.io.tmpdir"), "nebulosa.lock")
 
     @Volatile private var lock: FileLock? = null
 
@@ -23,9 +24,9 @@ data class FileLocker(private val appDir: Path) {
         }
 
         try {
-            val channel = FileChannel.open(lockPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
+            val channel = FileChannel.open(lockPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.READ)
             // Attempt to acquire an exclusive lock
-            lock = channel.tryLock()
+            lock = channel.tryLock(0, 1, false)
 
             if (lock == null) {
                 LOG.i("another instance of the application is already running")
@@ -52,8 +53,26 @@ data class FileLocker(private val appDir: Path) {
         }
     }
 
-    companion object {
-
-        private val LOG = loggerFor<FileLocker>()
+    fun write(text: String) {
+        lock?.also {
+            val buffer = ByteBuffer.wrap(text.encodeToByteArray())
+            it.channel().write(buffer, 1)
+        }
     }
+
+    fun read(): String {
+        return RandomAccessFile(lockPath.toFile(), "r").use {
+            val length = it.length().toInt() - 1
+
+            if (length > 0) {
+                val buffer = ByteArray(length)
+                it.seek(1L)
+                String(buffer, 0, it.read(buffer))
+            } else {
+                ""
+            }
+        }
+    }
+
+    private val LOG = loggerFor<FileLocker>()
 }

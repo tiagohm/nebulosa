@@ -8,6 +8,7 @@ import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.image.ImageAnnotation.StarDSO
+import nebulosa.api.message.MessageService
 import nebulosa.fits.*
 import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Statistics
@@ -57,6 +58,7 @@ class ImageService(
     private val imageBucket: ImageBucket,
     private val executorService: ExecutorService,
     private val connectionService: ConnectionService,
+    private val messageService: MessageService,
 ) {
 
     private enum class ImageOperation {
@@ -164,6 +166,10 @@ class ImageService(
         }
 
         return TransformedImage(transformedImage, stretchParams, instrument)
+    }
+
+    fun openImageOnDesktop(paths: Iterable<Path>) {
+        paths.forEach { messageService.sendMessage(OpenImageEvent(it)) }
     }
 
     @Synchronized

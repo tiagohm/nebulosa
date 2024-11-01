@@ -1024,11 +1024,11 @@ class TimeTest {
         @BeforeAll
         fun loadIERS() {
             val iersa = IERSA()
-            val finals2000A = download("https://maia.usno.navy.mil/ser7/finals2000A.all")
+            val finals2000A = download("https://github.com/tiagohm/nebulosa.data/raw/main/finals2000A.all.txt")
             finals2000A.inputStream().use(iersa::load)
 
             val iersb = IERSB()
-            val eopc04 = download("https://hpiers.obspm.fr/iers/eop/eopc04/eopc04.1962-now")
+            val eopc04 = download("https://github.com/tiagohm/nebulosa.data/raw/main/eopc04.1962-now.txt")
             eopc04.inputStream().use(iersb::load)
 
             IERS.attach(IERSAB(iersa, iersb))

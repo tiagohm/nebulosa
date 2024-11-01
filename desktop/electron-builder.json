@@ -1,4 +1,5 @@
 {
+	"$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/refs/heads/master/packages/app-builder-lib/scheme.json",
 	"asar": true,
 	"appId": "dev.tiagohm.nebulosa",
 	"productName": "Nebulosa",
@@ -20,6 +21,14 @@
 		}
 	],
 	"extraResources": ["api.jar"],
+	"fileAssociations": [
+		{
+			"ext": ["fit", "fits", "xisf"],
+			"name": "Astronomical Image",
+			"role": "Viewer",
+			"description": "Nebulosa"
+		}
+	],
 	"win": {
 		"icon": "dist/browser/assets/icons/nebulosa.ico",
 		"target": ["portable", "msi"]
@@ -38,7 +47,8 @@
 	"linux": {
 		"icon": "dist/browser/assets/icons/nebulosa.png",
 		"category": "Science",
-		"target": ["AppImage", "deb", "rpm", "pacman"]
+		"target": ["AppImage", "deb", "rpm", "pacman"],
+		"mimeTypes": ["application/fits", "image/fits", "image/x-xisf"]
 	},
 	"rpm": {
 		"depends": ["/usr/lib64/libuuid.so.1"]

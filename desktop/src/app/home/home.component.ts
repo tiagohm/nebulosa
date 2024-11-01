@@ -305,6 +305,12 @@ export class HomeComponent implements AfterContentInit {
 				})
 			}
 		})
+
+		electronService.on('IMAGE.OPEN', (event) => {
+			return ngZone.run(() => {
+				return this.browserWindowService.openImage({ path: event.path, source: 'PATH' })
+			})
+		})
 	}
 
 	async ngAfterContentInit() {

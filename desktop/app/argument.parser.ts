@@ -8,6 +8,7 @@ export class ParsedArgument {
 		readonly mode: ApplicationMode,
 		readonly host: string,
 		readonly port: number,
+		readonly files: string[],
 	) {}
 
 	get uiMode() {
@@ -56,6 +57,6 @@ export class ArgumentParser {
 		const host = parsed.values.host || 'localhost'
 		const port = parseInt(parsed.values.port || '0') || (serve ? 7000 : 0)
 
-		return new ParsedArgument(serve, mode, host, port)
+		return new ParsedArgument(serve, mode, host, port, parsed.positionals)
 	}
 }

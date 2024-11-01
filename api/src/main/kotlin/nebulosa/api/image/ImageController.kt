@@ -12,6 +12,8 @@ import nebulosa.api.validators.notNull
 import nebulosa.api.validators.path
 import nebulosa.image.format.ImageChannel
 import java.io.ByteArrayInputStream
+import java.nio.file.Path
+import java.util.*
 
 class ImageController(
     override val app: Javalin,
@@ -21,6 +23,7 @@ class ImageController(
 
     init {
         app.post("image", ::openImage)
+        app.post("image/open-on-desktop", ::openImagesOnDesktop)
         app.delete("image", ::closeImage)
         app.put("image/save-as", ::saveImageAs)
         app.put("image/analyze", ::analyze)
@@ -36,6 +39,11 @@ class ImageController(
         val camera = ctx.queryParam("camera")?.ifBlank { null }?.let(connectionService::camera)
         val transformation = ctx.bodyAsClass<ImageTransformation>()
         imageService.openImage(path, camera, transformation, ctx.res())
+    }
+
+    private fun openImagesOnDesktop(ctx: Context) {
+        val paths = ctx.queryParams("path").map { Base64.getUrlDecoder().decode(it).decodeToString() }.map(Path::of)
+        imageService.openImageOnDesktop(paths)
     }
 
     private fun closeImage(ctx: Context) {

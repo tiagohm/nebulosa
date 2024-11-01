@@ -5,8 +5,8 @@ import { Injectable } from '@angular/core'
 // look as if you never imported the module at all.
 
 import { DARVEvent, TPPAEvent } from '../types/alignment.types'
-import { DeviceMessageEvent } from '../types/api.types'
-import { CloseWindow, ConfirmationEvent, FullscreenWindow, JsonFile, NotificationEvent, OpenDirectory, OpenFile, ResizeWindow, SaveJson, WindowCommand } from '../types/app.types'
+import { ConfirmationEvent, DeviceMessageEvent, NotificationEvent, OpenImageEvent } from '../types/api.types'
+import { CloseWindow, FullscreenWindow, JsonFile, OpenDirectory, OpenFile, ResizeWindow, SaveJson, WindowCommand } from '../types/app.types'
 import { Location } from '../types/atlas.types'
 import { AutoFocusEvent } from '../types/autofocus.type'
 import { Camera, CameraCaptureEvent } from '../types/camera.types'
@@ -95,6 +95,7 @@ export interface EventMap {
 	'WHEEL.RENAMED': WheelRenamed
 	'ROI.SELECTED': ROISelected
 	'AUTO_FOCUS.ELAPSED': AutoFocusEvent
+	'IMAGE.OPEN': OpenImageEvent
 }
 
 @Injectable({ providedIn: 'root' })

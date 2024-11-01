@@ -12,18 +12,27 @@ import io.javalin.http.Context
 import io.javalin.http.HttpStatus.BAD_REQUEST
 import io.javalin.json.JavalinJackson
 import nebulosa.api.converters.DeviceModule
+import nebulosa.api.core.FileLocker
 import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.http.responses.ApiMessageResponse
 import nebulosa.api.inject.*
 import nebulosa.json.PathModule
-import nebulosa.log.i
+import nebulosa.log.di
 import nebulosa.log.loggerFor
 import org.koin.core.context.startKoin
 import org.slf4j.LoggerFactory
 import java.net.ConnectException
+import java.net.HttpURLConnection
+import java.net.URL
+import java.nio.file.Path
+import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
+import kotlin.io.path.exists
+import kotlin.io.path.fileSize
+import kotlin.io.path.isRegularFile
+import kotlin.system.exitProcess
 
 @Command(name = "nebulosa")
 class Nebulosa : Runnable, AutoCloseable {
@@ -37,12 +46,29 @@ class Nebulosa : Runnable, AutoCloseable {
     @Option(name = ["-d", "--debug"])
     private var debug = false
 
+    @Option(name = ["-f", "--files"])
+    private val files = mutableListOf<String>()
+
     private lateinit var app: Javalin
 
     override fun run() {
         if (debug) {
             with(LoggerFactory.getLogger("nebulosa") as ch.qos.logback.classic.Logger) {
                 level = Level.DEBUG
+            }
+        }
+
+        // is running simultaneously!
+        if (!FileLocker.tryLock()) {
+            try {
+                files.map(Path::of)
+                    .filter { it.exists() && it.isRegularFile() && it.fileSize() > 0L }
+                    .takeIf { it.isNotEmpty() }
+                    ?.also(::requestToOpenImagesOnDesktop)
+            } catch (e: Throwable) {
+                LOG.error("failed to request to open images on desktop", e)
+            } finally {
+                exitProcess(1)
             }
         }
 
@@ -68,7 +94,10 @@ class Nebulosa : Runnable, AutoCloseable {
         koinApp.modules(controllersModule())
         startKoin(koinApp)
 
-        LOG.i("server is started at port: {}", app.port())
+        with(app.port()) {
+            println("server is started at port: $this")
+            FileLocker.write("$this")
+        }
 
         with(koinApp.koin) {
             val executor = get<ExecutorService>()
@@ -90,6 +119,17 @@ class Nebulosa : Runnable, AutoCloseable {
 
     override fun close() {
         app.stop()
+    }
+
+    private fun requestToOpenImagesOnDesktop(paths: Iterable<Path>) {
+        val port = FileLocker.read().toIntOrNull() ?: return
+        LOG.di("requesting to open images on desktop. port={}, paths={}", port, paths)
+        val query = paths.map { "$it".encodeToByteArray() }.joinToString("&") { "path=${Base64.getUrlEncoder().encodeToString(it)}" }
+        val url = URL("http://localhost:$port/image/open-on-desktop?$query")
+        val connection = url.openConnection() as HttpURLConnection
+        connection.setRequestMethod("POST")
+        LOG.di("response from opening images on desktop. url={}, code={}", url, connection.responseCode)
+        connection.disconnect()
     }
 
     companion object {

@@ -1,6 +1,6 @@
 package nebulosa.indi.client
 
-import nebulosa.indi.client.connection.INDIProccessConnection
+import nebulosa.indi.client.connection.INDIProcessConnection
 import nebulosa.indi.client.connection.INDISocketConnection
 import nebulosa.indi.client.device.DriverInfo
 import nebulosa.indi.client.device.INDIDeviceProtocolHandler
@@ -43,7 +43,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
 
     constructor(
         process: Process,
-    ) : this(INDIProccessConnection(process))
+    ) : this(INDIProcessConnection(process))
 
     override val id = UUID.randomUUID().toString()
 
