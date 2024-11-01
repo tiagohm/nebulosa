@@ -25,7 +25,8 @@
 		{
 			"ext": ["fit", "fits", "xisf"],
 			"name": "Astronomical Image",
-			"role": "Viewer"
+			"role": "Viewer",
+			"description": "Nebulosa"
 		}
 	],
 	"win": {
