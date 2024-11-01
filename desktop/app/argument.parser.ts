@@ -8,7 +8,7 @@ export class ParsedArgument {
 		readonly mode: ApplicationMode,
 		readonly host: string,
 		readonly port: number,
-		readonly paths: string[],
+		readonly files: string[],
 	) {}
 
 	get uiMode() {

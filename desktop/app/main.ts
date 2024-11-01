@@ -33,7 +33,8 @@ function createApiProcess(port: number = parsedArgs.port) {
 	const apiJar = join(process.resourcesPath, 'api.jar')
 
 	try {
-		const apiProcess = spawn('java', ['-jar', apiJar, `--port=${port}`])
+		const files = parsedArgs.files.map((e) => ['-f', e]).flat()
+		const apiProcess = spawn('java', ['-jar', apiJar, `-p`, `${port}`, ...files])
 
 		apiProcess.on('close', (code) => {
 			console.warn(`api process exited with code: ${code}`)
@@ -70,13 +71,12 @@ async function startApp() {
 
 				apiProcess = createApiProcess()
 
+				const regex = /server is started at port: (\d+)/i
+
 				apiProcess.stdout.on('data', (data: Buffer) => {
 					const text = data.toString('utf-8')
 
-					console.info(text)
-
 					if (text) {
-						const regex = /server is started at port: (\d+)/i
 						const match = regex.exec(text)
 
 						if (match) {

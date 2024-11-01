@@ -264,7 +264,7 @@ export class WindowManager {
 		appWindow.apiProcess = apiProcess
 
 		if (app.isPackaged) {
-			for (const path of this.args.paths) {
+			for (const path of this.args.files) {
 				if (path !== '.' && existsSync(path) && statSync(path).isFile()) {
 					console.info('opening image at', path)
 					appWindow.openImage(path)

@@ -3,16 +3,17 @@ package nebulosa.api.core
 import nebulosa.log.e
 import nebulosa.log.i
 import nebulosa.log.loggerFor
+import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.channels.FileLock
-import java.nio.file.Path
+import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.Path
 import kotlin.io.path.deleteIfExists
 
-data class FileLocker(private val appDir: Path) {
+object FileLocker {
 
-    private val lockPath = Path("$appDir", "nebulosa.lock")
+    private val lockPath = Path(System.getProperty("java.io.tmpdir"), "nebulosa.lock")
 
     @Volatile private var lock: FileLock? = null
 
@@ -52,8 +53,13 @@ data class FileLocker(private val appDir: Path) {
         }
     }
 
-    companion object {
-
-        private val LOG = loggerFor<FileLocker>()
+    fun write(text: String) {
+        lock?.channel()?.write(ByteBuffer.wrap(text.encodeToByteArray()), 0)
     }
+
+    fun read(): String {
+        return Files.readString(lockPath)
+    }
+
+    private val LOG = loggerFor<FileLocker>()
 }
