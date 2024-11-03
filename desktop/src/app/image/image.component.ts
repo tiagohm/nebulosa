@@ -26,6 +26,7 @@ import {
 	DEFAULT_IMAGE_MOUSE_POSITION,
 	DEFAULT_IMAGE_PREFERENCE,
 	DEFAULT_IMAGE_ROI,
+	DEFAULT_IMAGE_ROTATION_DIALOG,
 	DEFAULT_IMAGE_SAVE_DIALOG,
 	DEFAULT_IMAGE_SETTINGS_DIALOG,
 	DEFAULT_IMAGE_SOLVED,
@@ -72,6 +73,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	protected readonly mouseCoordinate = structuredClone(DEFAULT_IMAGE_MOUSE_COORDINATES)
 	protected readonly liveStacking = structuredClone(DEFAULT_IMAGE_LIVE_STACKING)
 	protected readonly zoom = structuredClone(DEFAULT_IMAGE_ZOOM)
+	protected readonly rotation = structuredClone(DEFAULT_IMAGE_ROTATION_DIALOG)
 	protected readonly settings = structuredClone(DEFAULT_IMAGE_SETTINGS_DIALOG)
 	private readonly calibration = structuredClone(DEFAULT_IMAGE_CALIBRATION)
 	private readonly mouseMountCoordinate = structuredClone(DEFAULT_IMAGE_MOUSE_POSITION)
@@ -184,6 +186,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		selected: false,
 		command: () => {
 			return this.invertImage()
+		},
+	}
+
+	private readonly rotateMenuItem: MenuItem = {
+		label: 'Rotate',
+		icon: 'mdi mdi-rotate-right',
+		selected: false,
+		command: () => {
+			this.rotation.showDialog = true
 		},
 	}
 
@@ -315,6 +326,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.horizontalMirrorMenuItem,
 		this.verticalMirrorMenuItem,
 		this.invertMenuItem,
+		this.rotateMenuItem,
 		this.calibrationMenuItem,
 		SEPARATOR_MENU_ITEM,
 		this.overlayMenuItem,
@@ -1157,6 +1169,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
+	protected rotate(angle: number) {
+		this.rotation.transformation.angle = angle
+		this.savePreference()
+	}
+
 	private async enterFullscreen() {
 		this.app.showTopBar = !(await this.electronService.fullscreenWindow(true))
 	}
@@ -1418,6 +1435,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.settings.preference = this.preference
 		this.transformation = this.preference.transformation
 		this.saveAs.transformation = this.transformation
+		this.rotation.transformation = this.transformation
 		this.stretch.transformation = this.transformation.stretch
 		this.scnr.transformation = this.transformation.scnr
 		this.annotation.request = this.preference.annotation

@@ -13,19 +13,19 @@
 		(click)="imageClicked($event, false)"
 		(contextmenu)="imageClicked($event, true)"
 		class="select-none"
-		[style]="'vertical-align: bottom; transform: rotate(' + zoom.angle + 'deg)'"
+		[style]="'vertical-align: bottom; transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		[class.pixelated]="settings.preference.pixelated"
 		(mousemove)="imageMouseMoved($event)"
 		[class.cursor-crosshair]="isMouseCoordinateVisible" />
 
 	<neb-crosshair
 		*ngIf="preference.crossHair && zoom.panZoom"
-		[style]="'transform: rotate(' + zoom.angle + 'deg)'"
+		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="absolute left-0 top-0" />
 
 	<svg
 		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible"
-		[style]="'transform: rotate(' + zoom.angle + 'deg)'"
+		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
 		<g
 			*ngFor="let a of annotation.displayOnlyFiltered ? annotation.filtered : annotation.data"
@@ -42,7 +42,7 @@
 				[attr.x]="a.x"
 				[attr.y]="a.y"
 				fill="#00897B"
-				[style]="'font-size: 5px; transform: rotate(-' + zoom.angle + 'deg); transform-origin: ' + (a.x - 0.5) + 'px ' + (a.y - 0.5) + 'px 0px'"
+				[style]="'font-size: 5px; transform: rotate(' + -rotation.transformation.angle + 'deg); transform-origin: ' + (a.x - 0.5) + 'px ' + (a.y - 0.5) + 'px 0px'"
 				class="pointer-events-none select-none">
 				{{ (a.star ?? a.dso ?? a.minorPlanet)?.name?.join(' · ') }}
 			</text>
@@ -51,7 +51,7 @@
 
 	<svg
 		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetector.visible"
-		[style]="'transform: rotate(' + zoom.angle + 'deg)'"
+		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
 		<g
 			*ngFor="let s of starDetector.stars"
@@ -68,7 +68,7 @@
 				[attr.x]="s.x"
 				[attr.y]="s.y"
 				fill="#00897B"
-				[style]="'font-size: 5px; transform: rotate(-' + zoom.angle + 'deg); transform-origin: ' + (s.x - 0.5) + 'px ' + (s.y - 0.5) + 'px 0px'"
+				[style]="'font-size: 5px; transform: rotate(-' + rotation.transformation.angle + 'deg); transform-origin: ' + (s.x - 0.5) + 'px ' + (s.y - 0.5) + 'px 0px'"
 				class="pointer-events-none select-none">
 				{{ s.hfd.toFixed(1) }}
 			</text>
@@ -77,7 +77,7 @@
 
 	<svg
 		*ngIf="imageInfo"
-		[style]="'transform: rotate(' + zoom.angle + 'deg)'"
+		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible">
 		@for (item of fov.fovs; track $index) {
 			@if (item.enabled && item.computed) {
@@ -95,7 +95,7 @@
 	<div
 		#roi
 		[class.hidden]="!imageROI.show"
-		[style]="'transform: rotate(' + zoom.angle + 'deg)'"
+		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="roi absolute left-0 top-0"
 		(contextmenu)="imageClicked($event, true)"></div>
 	<ngx-moveable
@@ -1653,6 +1653,60 @@
 				[(ngModel)]="settings.preference.pixelated"
 				(ngModelChange)="savePreference()"
 				label="Pixelated (scaling algorithm)" />
+		</div>
+	</div>
+</p-dialog>
+
+<p-dialog
+	header="Rotation"
+	[draggable]="true"
+	[(visible)]="rotation.showDialog"
+	[modal]="false"
+	[style]="{ width: 'min-content', minWidth: '230px' }">
+	<div class="grid">
+		<div class="col-12 flex-row align-items-center justify-content-center relative gap-2">
+			<p-knob
+				[min]="0"
+				[max]="720"
+				[step]="1"
+				[showValue]="false"
+				[size]="170"
+				[ngModel]="rotation.transformation.angle + 360"
+				(ngModelChange)="rotate($event - 360)"
+				spinnableNumber />
+			<p-floatLabel class="absolute max-w-8rem">
+				<p-inputNumber
+					[min]="-360"
+					[max]="360"
+					[showButtons]="true"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[step]="1"
+					[(ngModel)]="rotation.transformation.angle"
+					(ngModelChange)="savePreference()"
+					[minFractionDigits]="2"
+					[maxFractionDigits]="2"
+					locale="en"
+					spinnableNumber />
+				<label>Angle (deg)</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-12 flex-row align-items-center justify-content-center gap-1">
+			<p-button
+				label="0°"
+				[text]="true"
+				(onClick)="rotate(0)" />
+			<p-button
+				label="90°"
+				[text]="true"
+				(onClick)="rotate(90)" />
+			<p-button
+				label="180°"
+				[text]="true"
+				(onClick)="rotate(180)" />
+			<p-button
+				label="270°"
+				[text]="true"
+				(onClick)="rotate(270)" />
 		</div>
 	</div>
 </p-dialog>

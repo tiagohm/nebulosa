@@ -267,6 +267,12 @@ export interface ImageTransformation {
 	invert: boolean
 	scnr: ImageSCNR
 	useJPEG: boolean
+	angle: number
+}
+
+export interface ImageRotationDialog {
+	showDialog: boolean
+	transformation: ImageTransformation
 }
 
 export interface AnnotateImageRequest {
@@ -346,7 +352,6 @@ export interface ImageLiveStacking {
 
 export interface ImageZoom {
 	scale: number
-	angle: number
 	panZoom?: PanZoom
 }
 
@@ -406,6 +411,7 @@ export const DEFAULT_IMAGE_TRANSFORMATION: ImageTransformation = {
 	invert: false,
 	scnr: DEFAULT_IMAGE_SCNR,
 	useJPEG: true,
+	angle: 0,
 }
 
 export const DEFAULT_IMAGE_SOLVER_DIALOG: ImageSolverDialog = {
@@ -568,7 +574,11 @@ export const DEFAULT_IMAGE_LIVE_STACKING: ImageLiveStacking = {
 
 export const DEFAULT_IMAGE_ZOOM: ImageZoom = {
 	scale: 1,
-	angle: 0,
+}
+
+export const DEFAULT_IMAGE_ROTATION_DIALOG: ImageRotationDialog = {
+	showDialog: false,
+	transformation: DEFAULT_IMAGE_TRANSFORMATION,
 }
 
 export const DEFAULT_IMAGE_PREFERENCE: ImagePreference = {
