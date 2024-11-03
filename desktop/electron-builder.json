@@ -23,7 +23,19 @@
 	"extraResources": ["api.jar"],
 	"fileAssociations": [
 		{
-			"ext": ["fit", "fits", "xisf"],
+			"ext": "fit",
+			"name": "Astronomical Image",
+			"role": "Viewer",
+			"description": "Nebulosa"
+		},
+		{
+			"ext": "fits",
+			"name": "Astronomical Image",
+			"role": "Viewer",
+			"description": "Nebulosa"
+		},
+		{
+			"ext": "xisf",
 			"name": "Astronomical Image",
 			"role": "Viewer",
 			"description": "Nebulosa"
