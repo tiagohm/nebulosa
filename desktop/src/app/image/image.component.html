@@ -1,7 +1,10 @@
 <span
-	class="bg-black-alpha-20 border-round-sm fixed pointer-events-none px-3 py-2 select-none z-1"
+	class="bg-black-alpha-20 border-round-sm fixed pointer-events-none px-3 py-2 select-none z-1 flex flex-row align-items-center gap-1"
 	style="top: 48px; left: 6px">
-	{{ zoom.scale.toFixed(2) }}x
+	<span>{{ zoom.scale.toFixed(2) }}x</span>
+	@if (rotation.transformation.angle) {
+		<span>| {{ rotation.transformation.angle.toFixed(2) }}°</span>
+	}
 </span>
 
 <div
