@@ -101,7 +101,7 @@
 					[attr.x]="item.computed.svg.x"
 					[attr.y]="item.computed.svg.y"
 					[attr.stroke]="item.color"
-					style="transform: translate(-50%, -50%)" />
+					[style]="'transform-box: fill-box; transform-origin: center; transform: translate(-50%, -50%) rotate(' + item.rotation + 'deg)'" />
 			}
 		}
 	</svg>
@@ -1339,23 +1339,23 @@
 				<label>Bin</label>
 			</p-floatLabel>
 		</div>
-		<!-- <div class="col-4">
+		<div class="col-4">
 			<p-floatLabel>
 				<p-inputNumber
 					styleClass="p-inputtext-sm border-0"
 					[showButtons]="true"
 					[min]="0"
 					[max]="360"
-					[step]="0.01"
-					[minFractionDigits]="1"
+					[step]="1"
+					[minFractionDigits]="2"
 					[maxFractionDigits]="2"
-					[(ngModel)]="fov.rotation"
+					[(ngModel)]="fov.selected.rotation"
 					(ngModelChange)="saveFOV(false)"
 					locale="en"
 					spinnableNumber />
 				<label>Rotation (°)</label>
 			</p-floatLabel>
-		</div> -->
+		</div>
 		<div class="col-1 flex align-items-center justify-content-center gap-2">
 			<p-button
 				[disabled]="!canAddFOV"

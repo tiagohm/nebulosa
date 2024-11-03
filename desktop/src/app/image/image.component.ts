@@ -1405,9 +1405,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				height: fov.cameraSize.height * (resolution.height / this.solver.solved.scale),
 			}
 
-			svg.x += (this.imageInfo.width - svg.width) / 2
-			svg.y += (this.imageInfo.height - svg.height) / 2
-
 			fov.computed = {
 				cameraResolution: {
 					width: resolution.width * fov.bin,
