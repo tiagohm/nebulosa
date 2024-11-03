@@ -1174,6 +1174,14 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.savePreference()
 	}
 
+	protected rotateWithWheel(event: WheelEvent) {
+		// Normalize to deltaX in case shift modifier is used on Mac
+		const delta = event.deltaY === 0 && event.deltaX ? event.deltaX : event.deltaY
+		const wheel = delta < 0 ? 1 : -1
+		const angle = this.rotation.transformation.angle + wheel
+		this.rotate(((angle % 360) + 360) % 360)
+	}
+
 	private async enterFullscreen() {
 		this.app.showTopBar = !(await this.electronService.fullscreenWindow(true))
 	}
@@ -1297,8 +1305,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			const panZoom = new PanZoom(wrapper, options)
 
 			wrapper.addEventListener('wheel', (e) => {
-				if (e.target === owner || e.target === wrapper || e.target === image || e.target === this.roi.nativeElement || (e.target as HTMLElement).tagName === 'circle') {
-					panZoom.zoomWithWheel(e)
+				if (e.shiftKey) {
+					this.rotateWithWheel(e)
+				} else {
+					if (e.target === owner || e.target === wrapper || e.target === image || e.target === this.roi.nativeElement || (e.target as HTMLElement).tagName === 'circle') {
+						panZoom.zoomWithWheel(e)
+					}
 				}
 			})
 			panZoom.addListener('panzoomzoom', (e: PanZoomEventDetail) => {
