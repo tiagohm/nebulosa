@@ -299,7 +299,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		selected: false,
 		command: () => {
 			this.imageROI.show = !this.imageROI.show
-			this.roiMenuItem.selected = this.imageROI.show
+			this.roiMenuItem.selected = this.hasROI
 		},
 	}
 
@@ -402,6 +402,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	get canAddFOV() {
 		const fov = this.fov.selected
 		return fov.aperture && fov.focalLength && fov.cameraSize.width && fov.cameraSize.height && fov.pixelSize.width && fov.pixelSize.height && fov.bin
+	}
+
+	get hasROI() {
+		return this.imageROI.show && (this.rotation.transformation.angle % 360 === 0)
 	}
 
 	constructor(
