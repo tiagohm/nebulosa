@@ -3,6 +3,7 @@
 	"asar": true,
 	"appId": "dev.tiagohm.nebulosa",
 	"productName": "Nebulosa",
+	"artifactName": "${name}-${version}-${os}-${arch}.${ext}",
 	"directories": {
 		"output": "release/"
 	},
@@ -46,7 +47,8 @@
 		"target": ["portable", "msi"]
 	},
 	"portable": {
-		"splashImage": "dist/browser/assets/images/splash.bmp"
+		"splashImage": "dist/browser/assets/images/splash.bmp",
+		"artifactName": "${name}-${version}-${os}-${arch}-portable.${ext}"
 	},
 	"msi": {
 		"oneClick": false,
