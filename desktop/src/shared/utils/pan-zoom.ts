@@ -387,7 +387,7 @@ export class PanZoom extends EventEmitter {
 
 	private readonly handleDown = (event: MouseEvent) => {
 		// Don't handle this event if the target is excluded
-		if (isExcluded(event.target as Element, this.options)) {
+		if (event.button !== 0 || isExcluded(event.target as Element, this.options)) {
 			return
 		}
 
