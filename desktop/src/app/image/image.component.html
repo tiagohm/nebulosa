@@ -13,17 +13,19 @@
 		(click)="imageClicked($event, false)"
 		(contextmenu)="imageClicked($event, true)"
 		class="select-none"
-		style="vertical-align: bottom"
+		[style]="'vertical-align: bottom; transform: rotate(' + zoom.angle + 'deg)'"
 		[class.pixelated]="settings.preference.pixelated"
 		(mousemove)="imageMouseMoved($event)"
 		[class.cursor-crosshair]="isMouseCoordinateVisible" />
 
 	<neb-crosshair
 		*ngIf="preference.crossHair && zoom.panZoom"
+		[style]="'transform: rotate(' + zoom.angle + 'deg)'"
 		class="absolute left-0 top-0" />
 
 	<svg
 		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible"
+		[style]="'transform: rotate(' + zoom.angle + 'deg)'"
 		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
 		<g
 			*ngFor="let a of annotation.displayOnlyFiltered ? annotation.filtered : annotation.data"
@@ -40,7 +42,7 @@
 				[attr.x]="a.x"
 				[attr.y]="a.y"
 				fill="#00897B"
-				style="font-size: 5px"
+				[style]="'font-size: 5px; transform: rotate(-' + zoom.angle + 'deg); transform-origin: ' + (a.x - 0.5) + 'px ' + (a.y - 0.5) + 'px 0px'"
 				class="pointer-events-none select-none">
 				{{ (a.star ?? a.dso ?? a.minorPlanet)?.name?.join(' · ') }}
 			</text>
@@ -49,13 +51,14 @@
 
 	<svg
 		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetector.visible"
+		[style]="'transform: rotate(' + zoom.angle + 'deg)'"
 		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
 		<g
 			*ngFor="let s of starDetector.stars"
 			class="pointer-events-auto cursor-pointer">
 			<circle
-				[attr.cx]="s.x"
-				[attr.cy]="s.y"
+				[attr.cx]="s.x - 0.5"
+				[attr.cy]="s.y - 0.5"
 				r="4"
 				stroke="#FDD835"
 				stroke-width="1"
@@ -65,7 +68,7 @@
 				[attr.x]="s.x"
 				[attr.y]="s.y"
 				fill="#00897B"
-				style="font-size: 5px"
+				[style]="'font-size: 5px; transform: rotate(-' + zoom.angle + 'deg); transform-origin: ' + (s.x - 0.5) + 'px ' + (s.y - 0.5) + 'px 0px'"
 				class="pointer-events-none select-none">
 				{{ s.hfd.toFixed(1) }}
 			</text>
@@ -74,6 +77,7 @@
 
 	<svg
 		*ngIf="imageInfo"
+		[style]="'transform: rotate(' + zoom.angle + 'deg)'"
 		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible">
 		@for (item of fov.fovs; track $index) {
 			@if (item.enabled && item.computed) {
@@ -91,6 +95,7 @@
 	<div
 		#roi
 		[class.hidden]="!imageROI.show"
+		[style]="'transform: rotate(' + zoom.angle + 'deg)'"
 		class="roi absolute left-0 top-0"
 		(contextmenu)="imageClicked($event, true)"></div>
 	<ngx-moveable

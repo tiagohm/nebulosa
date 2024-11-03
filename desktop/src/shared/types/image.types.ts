@@ -346,6 +346,7 @@ export interface ImageLiveStacking {
 
 export interface ImageZoom {
 	scale: number
+	angle: number
 	panZoom?: PanZoom
 }
 
@@ -567,6 +568,7 @@ export const DEFAULT_IMAGE_LIVE_STACKING: ImageLiveStacking = {
 
 export const DEFAULT_IMAGE_ZOOM: ImageZoom = {
 	scale: 1,
+	angle: 0,
 }
 
 export const DEFAULT_IMAGE_PREFERENCE: ImagePreference = {
