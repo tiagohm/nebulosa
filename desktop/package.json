@@ -16,7 +16,7 @@
 		"ng": "ng",
 		"scripts": "node --no-warnings scripts/nebulosa.mjs",
 		"start": "npm-run-all -p electron:serve ng:serve",
-		"ng:serve": "ng serve -c dev --hmr",
+		"ng:serve": "ng serve -c dev --hmr --no-live-reload",
 		"build": "npm run scripts && npm run electron:serve-tsc && ng build --base-href ./",
 		"build:dev": "npm run build -- -c dev",
 		"build:prod": "npm run build -- -c production",

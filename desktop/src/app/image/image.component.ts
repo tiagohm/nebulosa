@@ -26,6 +26,7 @@ import {
 	DEFAULT_IMAGE_MOUSE_POSITION,
 	DEFAULT_IMAGE_PREFERENCE,
 	DEFAULT_IMAGE_ROI,
+	DEFAULT_IMAGE_ROTATION_DIALOG,
 	DEFAULT_IMAGE_SAVE_DIALOG,
 	DEFAULT_IMAGE_SETTINGS_DIALOG,
 	DEFAULT_IMAGE_SOLVED,
@@ -72,6 +73,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	protected readonly mouseCoordinate = structuredClone(DEFAULT_IMAGE_MOUSE_COORDINATES)
 	protected readonly liveStacking = structuredClone(DEFAULT_IMAGE_LIVE_STACKING)
 	protected readonly zoom = structuredClone(DEFAULT_IMAGE_ZOOM)
+	protected readonly rotation = structuredClone(DEFAULT_IMAGE_ROTATION_DIALOG)
 	protected readonly settings = structuredClone(DEFAULT_IMAGE_SETTINGS_DIALOG)
 	private readonly calibration = structuredClone(DEFAULT_IMAGE_CALIBRATION)
 	private readonly mouseMountCoordinate = structuredClone(DEFAULT_IMAGE_MOUSE_POSITION)
@@ -187,6 +189,22 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		},
 	}
 
+	private readonly rotateMenuItem: MenuItem = {
+		label: 'Rotate',
+		icon: 'mdi mdi-rotate-right',
+		selected: false,
+		command: () => {
+			this.rotation.showDialog = true
+		},
+	}
+
+	private readonly imageTransformationMenuItem: MenuItem = {
+		label: 'Transformation',
+		icon: 'mdi mdi-image-edit',
+		selected: false,
+		items: [this.horizontalMirrorMenuItem, this.verticalMirrorMenuItem, this.invertMenuItem, this.rotateMenuItem],
+	}
+
 	private readonly calibrationMenuItem: MenuItem = {
 		label: 'Calibration',
 		icon: 'mdi mdi-wrench',
@@ -281,7 +299,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		selected: false,
 		command: () => {
 			this.imageROI.show = !this.imageROI.show
-			this.roiMenuItem.selected = this.imageROI.show
+			this.roiMenuItem.selected = this.hasROI
 		},
 	}
 
@@ -312,9 +330,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.autoStretchMenuItem,
 		this.scnrMenuItem,
 		this.debayerMenuItem,
-		this.horizontalMirrorMenuItem,
-		this.verticalMirrorMenuItem,
-		this.invertMenuItem,
+		this.imageTransformationMenuItem,
 		this.calibrationMenuItem,
 		SEPARATOR_MENU_ITEM,
 		this.overlayMenuItem,
@@ -386,6 +402,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	get canAddFOV() {
 		const fov = this.fov.selected
 		return fov.aperture && fov.focalLength && fov.cameraSize.width && fov.cameraSize.height && fov.pixelSize.width && fov.pixelSize.height && fov.bin
+	}
+
+	get hasROI() {
+		return this.imageROI.show && (this.rotation.transformation.angle % 360 === 0)
 	}
 
 	constructor(
@@ -1157,6 +1177,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
+	protected rotate(angle: number) {
+		this.rotation.transformation.angle = angle
+		this.savePreference()
+	}
+
+	protected rotateWithWheel(event: WheelEvent) {
+		// Normalize to deltaX in case shift modifier is used on Mac
+		const delta = event.deltaY === 0 && event.deltaX ? event.deltaX : event.deltaY
+		const wheel = (delta < 0 ? 1 : -1) * (event.ctrlKey ? 0.1 : 1)
+		const angle = this.rotation.transformation.angle + wheel
+		this.rotate(((angle % 360) + 360) % 360)
+	}
+
 	private async enterFullscreen() {
 		this.app.showTopBar = !(await this.electronService.fullscreenWindow(true))
 	}
@@ -1280,8 +1313,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			const panZoom = new PanZoom(wrapper, options)
 
 			wrapper.addEventListener('wheel', (e) => {
-				if (e.target === owner || e.target === wrapper || e.target === image || e.target === this.roi.nativeElement || (e.target as HTMLElement).tagName === 'circle') {
-					panZoom.zoomWithWheel(e)
+				if (e.shiftKey) {
+					this.rotateWithWheel(e)
+				} else {
+					if (e.target === owner || e.target === wrapper || e.target === image || e.target === this.roi.nativeElement || (e.target as HTMLElement).tagName === 'circle') {
+						panZoom.zoomWithWheel(e)
+					}
 				}
 			})
 			panZoom.addListener('panzoomzoom', (e: PanZoomEventDetail) => {
@@ -1376,9 +1413,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				height: fov.cameraSize.height * (resolution.height / this.solver.solved.scale),
 			}
 
-			svg.x += (this.imageInfo.width - svg.width) / 2
-			svg.y += (this.imageInfo.height - svg.height) / 2
-
 			fov.computed = {
 				cameraResolution: {
 					width: resolution.width * fov.bin,
@@ -1418,6 +1452,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.settings.preference = this.preference
 		this.transformation = this.preference.transformation
 		this.saveAs.transformation = this.transformation
+		this.rotation.transformation = this.transformation
 		this.stretch.transformation = this.transformation.stretch
 		this.scnr.transformation = this.transformation.scnr
 		this.annotation.request = this.preference.annotation

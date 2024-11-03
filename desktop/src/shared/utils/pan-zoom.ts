@@ -9,7 +9,6 @@ export type PanZoomOriginalEvent = PointerEvent | TouchEvent | MouseEvent
 
 export interface PanZoomTransformation extends Point {
 	scale: number
-	angle: number
 }
 
 export interface PanZoomEventDetail {
@@ -53,15 +52,8 @@ export type PanZoomPanOptions = PanZoomMiscOptions & PanZoomPanOnlyOptions
 export type PanZoomZoomOptions = PanZoomMiscOptions & PanZoomZoomOnlyOptions
 export type PanZoomOptions = PanZoomPanOptions & PanZoomZoomOptions & PanZoomMiscOptions
 
-export interface PanzoomTransformation {
-	x: number
-	y: number
-	scale: number
-	angle: number
-}
-
-export function setTransform(elem: HTMLElement | SVGElement, { x, y, scale, angle }: PanzoomTransformation) {
-	elem.style.transform = `scale(${scale}) translate(${x}px, ${y}px) rotate(${angle}deg)`
+export function setTransform(elem: HTMLElement | SVGElement, { x, y, scale }: PanZoomTransformation) {
+	elem.style.transform = `scale(${scale}) translate(${x}px, ${y}px)`
 }
 
 export const DEFAULT_OPTIONS: PanZoomOptions = {
@@ -96,7 +88,6 @@ export class PanZoom extends EventEmitter {
 	private x = 0
 	private y = 0
 	private scale = 1
-	private readonly angle = 0
 	private isPanning = false
 	private origX?: number
 	private origY?: number
@@ -131,7 +122,7 @@ export class PanZoom extends EventEmitter {
 	}
 
 	get transformation(): PanZoomTransformation {
-		return { x: this.x, y: this.y, scale: this.scale, angle: this.angle }
+		return { x: this.x, y: this.y, scale: this.scale }
 	}
 
 	bind() {
