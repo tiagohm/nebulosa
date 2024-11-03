@@ -198,6 +198,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		},
 	}
 
+	private readonly imageTransformationMenuItem: MenuItem = {
+		label: 'Transformation',
+		icon: 'mdi mdi-image-edit',
+		selected: false,
+		items: [this.horizontalMirrorMenuItem, this.verticalMirrorMenuItem, this.invertMenuItem, this.rotateMenuItem],
+	}
+
 	private readonly calibrationMenuItem: MenuItem = {
 		label: 'Calibration',
 		icon: 'mdi mdi-wrench',
@@ -323,10 +330,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.autoStretchMenuItem,
 		this.scnrMenuItem,
 		this.debayerMenuItem,
-		this.horizontalMirrorMenuItem,
-		this.verticalMirrorMenuItem,
-		this.invertMenuItem,
-		this.rotateMenuItem,
+		this.imageTransformationMenuItem,
 		this.calibrationMenuItem,
 		SEPARATOR_MENU_ITEM,
 		this.overlayMenuItem,
