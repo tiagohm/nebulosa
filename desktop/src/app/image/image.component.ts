@@ -1177,7 +1177,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	protected rotateWithWheel(event: WheelEvent) {
 		// Normalize to deltaX in case shift modifier is used on Mac
 		const delta = event.deltaY === 0 && event.deltaX ? event.deltaX : event.deltaY
-		const wheel = delta < 0 ? 1 : -1
+		const wheel = (delta < 0 ? 1 : -1) * (event.ctrlKey ? 0.1 : 1)
 		const angle = this.rotation.transformation.angle + wheel
 		this.rotate(((angle % 360) + 360) % 360)
 	}

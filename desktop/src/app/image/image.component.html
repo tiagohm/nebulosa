@@ -1,10 +1,21 @@
 <span
-	class="bg-black-alpha-20 border-round-sm fixed pointer-events-none px-3 py-2 select-none z-1 flex flex-row align-items-center gap-1"
+	class="bg-black-alpha-20 border-round-sm fixed px-3 py-2 select-none z-1 flex flex-row align-items-center gap-1"
 	style="top: 48px; left: 6px">
-	<span>{{ zoom.scale.toFixed(2) }}x</span>
-	@if (rotation.transformation.angle) {
-		<span>| {{ rotation.transformation.angle.toFixed(2) }}°</span>
-	}
+	<span
+		pTooltip="Zoom"
+		tooltipPosition="bottom"
+		[positionTop]="8">
+		{{ zoom.scale.toFixed(2) }}x
+	</span>
+	<span
+		class="cursor-pointer"
+		pTooltip="Rotation"
+		tooltipPosition="bottom"
+		[positionTop]="8"
+		(wheel)="rotateWithWheel($event)"
+		(click)="rotation.showDialog = true">
+		| {{ rotation.transformation.angle.toFixed(2) }}°
+	</span>
 </span>
 
 <div
