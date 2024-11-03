@@ -636,6 +636,7 @@ export function imageTransformationWithDefault(transformation?: Partial<ImageTra
 	transformation.invert ??= source.invert
 	transformation.scnr ??= source.scnr
 	transformation.useJPEG ??= source.useJPEG
+	transformation.angle ??= source.angle
 	return transformation as ImageTransformation
 }
 
