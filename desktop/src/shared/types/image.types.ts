@@ -1,6 +1,6 @@
 import type { Point, Rectangle, Size } from 'electron'
-import type { PanZoom } from 'panzoom'
 import type { CoordinateInterpolator, InterpolatedCoordinate } from '../utils/coordinate-interpolation'
+import type { PanZoom } from '../utils/pan-zoom'
 import { DEFAULT_SKY_OBJECT_SEARCH_FILTER, type Angle, type AstronomicalObject, type Constellation, type DeepSkyObject, type EquatorialCoordinateJ2000, type SkyObjectSearchFilter, type Star } from './atlas.types'
 import type { Camera, CameraStartCapture, FrameType } from './camera.types'
 import { DEFAULT_PLATE_SOLVER_REQUEST, plateSolverRequestWithDefault, type PlateSolverRequest } from './platesolver.types'

@@ -2,7 +2,6 @@ import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, 
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
-import createPanZoom from 'panzoom'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
@@ -51,6 +50,7 @@ import { Mount } from '../../shared/types/mount.types'
 import { PlateSolverRequest } from '../../shared/types/platesolver.types'
 import { StarDetectionRequest } from '../../shared/types/stardetector.types'
 import { CoordinateInterpolator } from '../../shared/utils/coordinate-interpolation'
+import { PanZoom, PanZoomEventDetail, PanZoomOptions } from '../../shared/utils/pan-zoom'
 import { uid } from '../../shared/utils/random'
 import { AppComponent } from '../app.component'
 
@@ -544,7 +544,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	@HostListener('window:unload')
 	ngOnDestroy() {
-		this.zoom.panZoom?.dispose()
+		this.zoom.panZoom?.destroy()
 		void this.closeImage()
 	}
 
@@ -1032,9 +1032,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.annotation.selected = selected
 
 		if (selected && this.zoom.panZoom) {
-			const { scale } = this.zoom.panZoom.getTransform()
-			const { clientWidth: pw, clientHeight: ph } = this.image.nativeElement.parentElement!.parentElement!
-			this.zoom.panZoom.smoothMoveTo(pw / 2 - selected.x * scale, (ph + 42) / 2 - selected.y * scale)
+			this.zoom.panZoom.focusAt(selected.x, selected.y)
 		}
 	}
 
@@ -1119,33 +1117,43 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private zoomIn() {
-		if (!this.zoom.panZoom) return
-		const { scale } = this.zoom.panZoom.getTransform()
-		this.zoom.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, scale * 1.1)
+		if (this.zoom.panZoom) {
+			const { innerWidth, innerHeight } = window
+			const { offsetTop, offsetLeft } = this.image.nativeElement.parentElement!.parentElement!
+			this.zoom.panZoom.zoomIn({ clientX: innerWidth / 2 + offsetLeft / 2, clientY: innerHeight / 2 + offsetTop / 2 })
+		}
 	}
 
 	private zoomOut() {
-		if (!this.zoom.panZoom) return
-		const { scale } = this.zoom.panZoom.getTransform()
-		this.zoom.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, scale * 0.9)
+		if (this.zoom.panZoom) {
+			const { innerWidth, innerHeight } = window
+			const { offsetTop, offsetLeft } = this.image.nativeElement.parentElement!.parentElement!
+			this.zoom.panZoom.zoomOut({ clientX: innerWidth / 2 + offsetLeft / 2, clientY: innerHeight / 2 + offsetTop / 2 })
+		}
 	}
 
 	private center() {
-		const { width, height } = this.image.nativeElement.getBoundingClientRect()
-		this.zoom.panZoom?.moveTo(window.innerWidth / 2 - width / 2, (window.innerHeight - 42) / 2 - height / 2)
+		if (this.zoom.panZoom) {
+			this.zoom.panZoom.centerAt(window.innerWidth / 2, window.innerHeight / 2)
+		}
 	}
 
 	private resetZoom(fitToScreen: boolean = false, center: boolean = true) {
-		if (fitToScreen) {
-			const { width, height } = this.image.nativeElement
-			const factor = Math.min(window.innerWidth, window.innerHeight - 42) / Math.min(width, height)
-			this.zoom.panZoom?.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, factor)
-		} else {
-			this.zoom.panZoom?.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, 1.0)
-		}
+		if (this.zoom.panZoom) {
+			if (fitToScreen) {
+				const { width: iw, height: ih } = this.image.nativeElement
+				const { clientWidth: cw, clientHeight: ch } = this.image.nativeElement.parentElement!.parentElement!
+				const { offsetTop } = this.image.nativeElement.parentElement!.parentElement!
+				const factor = Math.min(cw / iw, (ch - offsetTop) / ih)
+				this.zoom.panZoom.zoom(factor)
+			} else {
+				this.zoom.panZoom.reset()
+				this.zoom.scale = 1
+			}
 
-		if (center) {
-			this.center()
+			if (center) {
+				this.center()
+			}
 		}
 	}
 
@@ -1256,34 +1264,35 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	protected imageLoaded() {
 		const image = this.image.nativeElement
-		const imageWrapper = image.parentElement
+		const wrapper = image.parentElement
+		const owner = wrapper?.parentElement
 
 		URL.revokeObjectURL(image.src)
 
-		if (!this.zoom.panZoom && imageWrapper) {
-			const panZoom = createPanZoom(imageWrapper, {
-				minZoom: 0.1,
-				maxZoom: 500.0,
-				autocenter: true,
-				zoomDoubleClickSpeed: 1,
-				zoomSpeed: 1,
-				filterKey: () => {
-					return true
+		if (!this.zoom.panZoom && wrapper && owner) {
+			const options: Partial<PanZoomOptions> = {
+				maxScale: 500,
+				canExclude: (e) => {
+					return !!e.tagName && (e.classList.contains('roi') || e.classList.contains('moveable-control'))
 				},
-				beforeWheel: (e) => {
-					return e.target !== this.image.nativeElement && e.target !== this.roi.nativeElement && (e.target as HTMLElement).tagName !== 'circle'
-				},
-				beforeMouseDown: (e) => {
-					return e.target !== this.image.nativeElement && (e.target as HTMLElement).tagName !== 'circle'
-				},
-			})
+			}
 
-			panZoom.on('transform', () => {
-				const { scale } = panZoom.getTransform()
-				this.zoom.scale = scale
+			const panZoom = new PanZoom(wrapper, options)
+
+			wrapper.addEventListener('wheel', (e) => {
+				if (e.target === owner || e.target === wrapper || e.target === image || e.target === this.roi.nativeElement || (e.target as HTMLElement).tagName === 'circle') {
+					panZoom.zoomWithWheel(e)
+				}
+			})
+			panZoom.addListener('panzoomzoom', (e: PanZoomEventDetail) => {
+				this.zoom.scale = e.transformation.scale
 			})
 
 			this.zoom.panZoom = panZoom
+
+			setTimeout(() => {
+				this.resetZoom(true)
+			})
 		}
 	}
 

@@ -1,11 +1,11 @@
 <span
 	class="bg-black-alpha-20 border-round-sm fixed pointer-events-none px-3 py-2 select-none z-1"
 	style="top: 48px; left: 6px">
-	{{ zoom.scale.toFixed(1) }}x
+	{{ zoom.scale.toFixed(2) }}x
 </span>
 
 <div
-	class="inline-block relative"
+	class="inline-block"
 	style="backface-visibility: hidden">
 	<img
 		#image
@@ -13,12 +13,13 @@
 		(click)="imageClicked($event, false)"
 		(contextmenu)="imageClicked($event, true)"
 		class="select-none"
+		style="vertical-align: bottom"
 		[class.pixelated]="settings.preference.pixelated"
 		(mousemove)="imageMouseMoved($event)"
 		[class.cursor-crosshair]="isMouseCoordinateVisible" />
 
 	<neb-crosshair
-		*ngIf="preference.crossHair"
+		*ngIf="preference.crossHair && zoom.panZoom"
 		class="absolute left-0 top-0" />
 
 	<svg
@@ -301,7 +302,10 @@
 							[class.surface-card]="annotation.selected === item"
 							style="height: 36px"
 							(click)="annotationSelected(item)">
-							<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
+							<div class="w-full flex flex-row align-items-center justify-content-between">
+								<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
+								<span class="text-xs font-bold monospaced">{{ item.x.toFixed(0).padStart(5, '&nbsp;') }} | {{ item.y.toFixed(0).padStart(5, '&nbsp;') }}</span>
+							</div>
 							<span class="text-xs overflow-hidden">{{ (item.star ?? item.dso ?? item.minorPlanet)?.name?.join(' · ') }}</span>
 						</div>
 					</ng-template>
