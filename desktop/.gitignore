@@ -25,3 +25,5 @@ npm-debug.log
 testem.log
 /typings
 *.tsbuildinfo
+
+**/package-lock.json
