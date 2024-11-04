@@ -1,4 +1,4 @@
-import { Menu, app, ipcMain } from 'electron'
+import { type BrowserWindow, Menu, app, dialog, ipcMain } from 'electron'
 import * as fs from 'fs'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { spawn } from 'node:child_process'
@@ -29,7 +29,11 @@ process.on('beforeExit', () => {
 	apiProcess?.kill()
 })
 
-function createApiProcess(port: number = parsedArgs.port) {
+function showErrorBox(title: string, message: string) {
+	dialog.showMessageBoxSync({ message, title, type: 'error' })
+}
+
+function createApiProcess(splashWindow?: BrowserWindow, port: number = parsedArgs.port) {
 	const apiJar = join(process.resourcesPath, 'api.jar')
 
 	try {
@@ -37,18 +41,28 @@ function createApiProcess(port: number = parsedArgs.port) {
 		const apiProcess = spawn('java', ['-jar', apiJar, `-p`, `${port}`, ...files])
 
 		apiProcess.on('close', (code) => {
+			if (code === 129) {
+				splashWindow?.hide()
+				showErrorBox('Failed to start', 'There is already an instance running!')
+			} else {
+				splashWindow?.hide()
+				showErrorBox('Failed to start', `API exited with code ${code}`)
+			}
+
 			console.warn(`api process exited with code: ${code}`)
 			process.exit(code ?? 0)
 		})
 
 		apiProcess.on('error', () => {
-			console.error(`unable to start api. do you have Java 17+ installed?`)
+			splashWindow?.hide()
+			showErrorBox('Failed to start', 'Do you have Java 17+ installed?')
 			process.exit(1)
 		})
 
 		return apiProcess
 	} catch {
-		console.error('unable to start api. do you have Java 17+ installed?')
+		splashWindow?.hide()
+		showErrorBox('Failed to start', 'Do you have Java 17+ installed?')
 		return process.exit(1)
 	}
 }
@@ -69,7 +83,7 @@ async function startApp() {
 			} else {
 				const splashWindow = await windowManager.createSplashWindow()
 
-				apiProcess = createApiProcess()
+				apiProcess = createApiProcess(splashWindow)
 
 				const regex = /server is started at port: (\d+)/i
 
@@ -93,6 +107,7 @@ async function startApp() {
 			console.error(e)
 
 			apiProcess?.kill()
+			showErrorBox('Failed to start', `${e}`)
 			process.exit(0)
 		}
 	}

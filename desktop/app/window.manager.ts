@@ -275,7 +275,7 @@ export class WindowManager {
 	}
 
 	async createSplashWindow() {
-		if (!this.args.serve && !this.windows.has('splash')) {
+		if (!this.args.serve) {
 			const browserWindow = new BrowserWindow({
 				width: 512,
 				height: 512,
@@ -302,9 +302,6 @@ export class WindowManager {
 	}
 
 	close() {
-		const splashWindow = this.windows.get('splash')
-		splashWindow?.close()
-
 		const homeWindow = this.windows.get('home')
 		homeWindow?.close()
 	}

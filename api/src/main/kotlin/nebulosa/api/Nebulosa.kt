@@ -68,7 +68,7 @@ class Nebulosa : Runnable, AutoCloseable {
             } catch (e: Throwable) {
                 LOG.error("failed to request to open images on desktop", e)
             } finally {
-                exitProcess(1)
+                exitProcess(129)
             }
         }
 
