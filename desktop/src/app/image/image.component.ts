@@ -405,7 +405,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	get hasROI() {
-		return this.imageROI.show && (this.rotation.transformation.angle % 360 === 0)
+		return this.imageROI.show && this.rotation.transformation.angle % 360 === 0
 	}
 
 	constructor(
