@@ -92,6 +92,7 @@ export interface EventMap {
 	'WINDOW.MAXIMIZE': WindowCommand
 	'WINDOW.FULLSCREEN': FullscreenWindow
 	'WINDOW.CLOSE': CloseWindow
+	'WINDOW.OPEN_DEV_TOOLS': WindowCommand
 	'WHEEL.RENAMED': WheelRenamed
 	'ROI.SELECTED': ROISelected
 	'AUTO_FOCUS.ELAPSED': AutoFocusEvent
@@ -204,6 +205,10 @@ export class ElectronService {
 
 	closeWindow<T = unknown>(data?: unknown, id?: string): Promise<T> {
 		return this.send('WINDOW.CLOSE', { data, windowId: id ?? window.id })
+	}
+
+	openDevTools() {
+		return this.send('WINDOW.OPEN_DEV_TOOLS', { windowId: window.id })
 	}
 
 	calibrationChanged() {

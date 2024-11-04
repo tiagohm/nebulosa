@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
+import hotkeys from 'hotkeys-js'
 import { APP_CONFIG } from '../environments/environment'
 import { MenuItem } from '../shared/components/menu-item/menu-item.component'
 import { ConfirmationService } from '../shared/services/confirmation.service'
@@ -59,6 +60,11 @@ export class AppComponent implements OnDestroy {
 					return confirmationService.processConfirmationEvent(event)
 				})
 			}
+		})
+
+		hotkeys('ctrl+alt+shift+d', (event) => {
+			event.preventDefault()
+			void electronService.openDevTools()
 		})
 	}
 

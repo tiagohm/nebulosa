@@ -147,7 +147,7 @@ export class WindowManager {
 				contextIsolation: true,
 				additionalArguments: [`--host=${this.host}`, `--port=${this.port}`, `--id=${open.id}`, `--data=${encodedData}`, `--preference=${encodedPreference}`],
 				preload: join(__dirname, 'preload.js'),
-				devTools: this.args.serve,
+				devTools: true,
 				spellcheck: false,
 			},
 		})
@@ -464,6 +464,12 @@ export class WindowManager {
 		}
 
 		return !!window && window.browserWindow.isFullScreen()
+	}
+
+	handleWindowOpenDevTools(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
+		const window = this.findWindowWith(command, event.sender)
+		window?.browserWindow.webContents.openDevTools({ mode: 'detach' })
+		return !!window
 	}
 
 	showNotification(event: NotificationEvent) {
