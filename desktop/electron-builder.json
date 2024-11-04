@@ -4,6 +4,7 @@
 	"appId": "dev.tiagohm.nebulosa",
 	"productName": "Nebulosa",
 	"artifactName": "${name}-${version}-${os}-${arch}.${ext}",
+	"electronLanguages": ["en-US"],
 	"directories": {
 		"output": "release/"
 	},
