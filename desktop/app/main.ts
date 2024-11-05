@@ -11,6 +11,7 @@ const argParser = new ArgumentParser()
 const parsedArgs = argParser.parse(process.argv.slice(1))
 
 app.commandLine.appendSwitch('disable-http-cache')
+app.commandLine.appendSwitch('lang', 'en-US')
 
 if (parsedArgs.apiMode) {
 	// https://github.com/electron/electron/issues/32760#issuecomment-2227575986
