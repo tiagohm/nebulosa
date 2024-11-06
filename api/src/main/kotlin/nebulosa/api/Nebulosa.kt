@@ -61,15 +61,16 @@ class Nebulosa : Runnable, AutoCloseable {
         // is running simultaneously!
         if (!FileLocker.tryLock()) {
             try {
-                files.map(Path::of)
-                    .filter { it.exists() && it.isRegularFile() && it.fileSize() > 0L }
-                    .takeIf { it.isNotEmpty() }
-                    ?.also(::requestToOpenImagesOnDesktop)
+                if (files.map(Path::of)
+                        .filter { it.exists() && it.isRegularFile() && it.fileSize() > 0L }
+                        .takeIf { it.isNotEmpty() }
+                        ?.let(::requestToOpenImagesOnDesktop) == true
+                ) exitProcess(1)
             } catch (e: Throwable) {
                 LOG.error("failed to request to open images on desktop", e)
-            } finally {
-                exitProcess(129)
             }
+
+            exitProcess(129)
         }
 
         // Run the server.
@@ -121,8 +122,8 @@ class Nebulosa : Runnable, AutoCloseable {
         app.stop()
     }
 
-    private fun requestToOpenImagesOnDesktop(paths: Iterable<Path>) {
-        val port = FileLocker.read().toIntOrNull() ?: return
+    private fun requestToOpenImagesOnDesktop(paths: Iterable<Path>): Boolean {
+        val port = FileLocker.read().toIntOrNull() ?: return false
         LOG.di("requesting to open images on desktop. port={}, paths={}", port, paths)
         val query = paths.map { "$it".encodeToByteArray() }.joinToString("&") { "path=${Base64.getUrlEncoder().encodeToString(it)}" }
         val url = URL("http://localhost:$port/image/open-on-desktop?$query")
@@ -130,6 +131,7 @@ class Nebulosa : Runnable, AutoCloseable {
         connection.setRequestMethod("POST")
         LOG.di("response from opening images on desktop. url={}, code={}", url, connection.responseCode)
         connection.disconnect()
+        return true
     }
 
     companion object {

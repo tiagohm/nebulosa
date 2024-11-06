@@ -47,7 +47,6 @@ function createApiProcess(splashWindow?: BrowserWindow, port: number = parsedArg
 				showErrorBox('Failed to start', 'There is already an instance running!')
 			} else {
 				splashWindow?.hide()
-				showErrorBox('Failed to start', `API exited with code ${code}`)
 			}
 
 			console.warn(`api process exited with code: ${code}`)
