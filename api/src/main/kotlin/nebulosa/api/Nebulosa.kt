@@ -29,22 +29,32 @@ import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
+import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.fileSize
+import kotlin.io.path.inputStream
 import kotlin.io.path.isRegularFile
 import kotlin.system.exitProcess
 
 @Command(name = "nebulosa")
 class Nebulosa : Runnable, AutoCloseable {
 
+    private val properties = Properties(3)
+
+    init {
+        Path(System.getProperty(APP_DIR_KEY), PROPERTIES_FILENAME)
+            .takeIf { it.exists() && it.isRegularFile() }
+            ?.also { it.inputStream().use(properties::load) }
+    }
+
     @Option(name = ["-h", "--host"])
-    private var host = "0.0.0.0"
+    private var host = properties.getProperty("host")?.ifBlank { null } ?: DEFAULT_HOST
 
     @Option(name = ["-p", "--port"])
-    private var port = 0
+    private var port = properties.getProperty("port")?.ifBlank { null }?.toIntOrNull() ?: DEFAULT_PORT
 
     @Option(name = ["-d", "--debug"])
-    private var debug = false
+    private var debug = properties.getProperty("debug")?.toBoolean() == true
 
     @Option(name = ["-f", "--files"])
     private val files = mutableListOf<String>()
@@ -137,6 +147,10 @@ class Nebulosa : Runnable, AutoCloseable {
     companion object {
 
         internal val LOG = loggerFor<Nebulosa>()
+
+        const val PROPERTIES_FILENAME = "nebulosa.properties"
+        const val DEFAULT_HOST = "0.0.0.0"
+        const val DEFAULT_PORT = 0
 
         private val OBJECT_MAPPER = jsonMapper {
             addModule(JavaTimeModule())
