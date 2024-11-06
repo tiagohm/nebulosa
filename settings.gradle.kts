@@ -25,7 +25,7 @@ dependencyResolutionManagement {
             library("netty-transport", "io.netty:netty-transport:4.1.114.Final")
             library("netty-codec", "io.netty:netty-codec:4.1.114.Final")
             library("xml", "com.fasterxml:aalto-xml:1.3.3")
-            library("csv", "de.siegmar:fastcsv:3.3.1")
+            library("csv", "de.siegmar:fastcsv:3.4.0")
             library("apache-lang3", "org.apache.commons:commons-lang3:3.17.0")
             library("apache-codec", "commons-codec:commons-codec:1.17.1")
             library("apache-collections", "org.apache.commons:commons-collections4:4.4")
