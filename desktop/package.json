@@ -21,7 +21,7 @@
 		"build:dev": "npm run build -- -c dev",
 		"build:prod": "npm run build -- -c production",
 		"electron": "electron",
-		"electron:serve-swc": "swc app --ignore '**/node_modules,**/*.js' -d .",
+		"electron:serve-swc": "swc app --ignore \"**/*.js,**/node_modules\" -d .",
 		"electron:serve": "wait-on tcp:4200 && npm run electron:serve-swc && electron . --serve",
 		"electron:local": "npm run build:prod && electron .",
 		"electron:build": "npm run build:prod && electron-builder build --publish=never",
@@ -32,9 +32,9 @@
 		"electron:build:portable": "npm run electron:build -- --win portable",
 		"electron:build:msi": "npm run electron:build -- --win msi",
 		"lint": "eslint .",
-		"prettier:ts": "prettier '**/*.ts' --write",
-		"prettier:html": "prettier '**/*.html' --write",
-		"prettier:scss": "prettier '**/*.scss' --write"
+		"prettier:ts": "prettier \"**/*.ts\" --write",
+		"prettier:html": "prettier \"**/*.html\" --write",
+		"prettier:scss": "prettier \"**/*.scss\" --write"
 	},
 	"dependencies": {
 		"@angular/animations": "18.2.10",
