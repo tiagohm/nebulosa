@@ -22,36 +22,7 @@ enum class VSOP87E(override val target: Int) : Body {
     NEPTUNE(899);
 
     // Exponent, XYZ, terms.
-    private val terms = Array(6) { Array(3) { DoubleArray(0) } }
-
-    init {
-        val buffer = bufferedResource("VSOP87E_$name.txt")!!
-
-        var xyz = 0
-        var exp = 0
-
-        buffer.use {
-            while (!buffer.exhausted()) {
-                val line = buffer.readUtf8Line()?.trimStart() ?: break
-
-                if (line.startsWith("VSOP87")) {
-                    xyz = line[40].code - 49
-                    exp = line[58].code - 48
-                    val size = line.substring(59..65).trim().toInt()
-                    terms[exp][xyz] = DoubleArray(size * 3)
-                    continue
-                }
-
-                val index = (line.substring(4..8).trim().toInt() - 1) * 3
-                val a = line.substring(78..95).trim().toDouble()
-                val b = line.substring(96..109).trim().toDouble()
-                val c = line.substring(110..129).trim().toDouble()
-                terms[exp][xyz][index] = a
-                terms[exp][xyz][index + 1] = b
-                terms[exp][xyz][index + 2] = c
-            }
-        }
-    }
+    private val terms by lazy { bufferedResource("VSOP87E_$name.dat")!!.use(VSOP87EReader::readBinaryFormat) }
 
     override val center = 0 // SSB.
 
@@ -64,11 +35,13 @@ enum class VSOP87E(override val target: Int) : Body {
         val p = DoubleArray(3)
         val v = DoubleArray(3)
 
+        val data = terms
+
         for (k in 0..2) {
             for (e in 0..5) {
                 var psum = 0.0
 
-                val terms = terms[e][k]
+                val terms = data[e][k]
 
                 for (i in terms.indices step 3) {
                     val a = terms[i]
