@@ -11,6 +11,7 @@ import io.ktor.websocket.close
 import kotlinx.coroutines.runBlocking
 import nebulosa.log.d
 import nebulosa.log.di
+import nebulosa.log.e
 import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.log.w
@@ -42,9 +43,12 @@ class MessageService(
                             for (frame in incoming) {
                                 LOG.di("frame received: {}", frame)
                             }
-                        } catch (_: Throwable) {
-                            session.set(null)
+
                             LOG.i("session closed. address={}:{}, reason={}", local.remoteHost, local.remotePort, closeReason.await())
+                        } catch (e: Throwable) {
+                            LOG.e("session closed. address={}:{}, reason={}", local.remoteHost, local.remotePort, closeReason.await(), e)
+                        } finally {
+                            session.set(null)
                         }
                     } else {
                         LOG.w("session rejected. address={}", this)
