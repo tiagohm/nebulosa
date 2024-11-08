@@ -5,38 +5,35 @@ import io.ktor.server.application.Application
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.WebSocketServerSession
 import io.ktor.server.websocket.webSocket
-import io.ktor.websocket.CloseReason
-import io.ktor.websocket.Frame
-import io.ktor.websocket.close
+import io.ktor.websocket.send
 import kotlinx.coroutines.runBlocking
 import nebulosa.log.d
 import nebulosa.log.di
 import nebulosa.log.e
 import nebulosa.log.i
 import nebulosa.log.loggerFor
-import nebulosa.log.w
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.atomic.AtomicReference
 
 class MessageService(
     app: Application,
     private val mapper: ObjectMapper,
 ) {
 
-    private val session = AtomicReference<WebSocketServerSession>()
+    private val sessions = ConcurrentHashMap.newKeySet<WebSocketServerSession>()
     private val messageQueue = LinkedBlockingQueue<MessageEvent>()
 
     init {
         with(app) {
             routing {
                 webSocket("/ws") {
-                    if (session.compareAndSet(null, this)) {
+                    if (sessions.add(this)) {
                         val local = call.request.local
 
                         LOG.i("session accepted. address={}:{}", local.remoteHost, local.remotePort)
 
                         while (messageQueue.isNotEmpty()) {
-                            sendMessage(messageQueue.take())
+                            send(mapper.writeValueAsString(messageQueue.take()))
                         }
 
                         try {
@@ -48,13 +45,8 @@ class MessageService(
                         } catch (e: Throwable) {
                             LOG.e("session closed. address={}:{}, reason={}", local.remoteHost, local.remotePort, closeReason.await(), e)
                         } finally {
-                            session.set(null)
+                            sessions.remove(this)
                         }
-                    } else {
-                        LOG.w("session rejected. address={}", this)
-
-                        // Accepts only one connection.
-                        close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Too many connections"))
                     }
                 }
             }
@@ -62,12 +54,10 @@ class MessageService(
     }
 
     fun sendMessage(event: MessageEvent) {
-        val context = session.get()
-
-        if (context != null) {
+        if (sessions.isNotEmpty()) {
             LOG.d("sending message. event={}", event)
             val text = mapper.writeValueAsString(event)
-            runBlocking { context.send(Frame.Text(text)) }
+            runBlocking { sessions.forEach { it.send(text) } }
         } else if (event is QueueableEvent) {
             LOG.d("queueing message. event={}", event)
             messageQueue.offer(event)
