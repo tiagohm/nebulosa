@@ -83,7 +83,7 @@ internal data class SeekableSourceImageData(
 
                 val size = source.read(buffer, byteCount)
 
-                if (size == 0L) break
+                if (size <= 0L) break
 
                 // require(size % bitpix.byteLength == 0L)
                 n = (size / bitpix.byteLength).toInt()
