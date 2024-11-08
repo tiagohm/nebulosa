@@ -737,10 +737,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			this.markCalibrationGroupItem()
 		}
 
-		if (data.source === 'FRAMING') {
-			this.disableAutoStretch()
-			await this.resetStretch(false)
-		} else if (data.source === 'FLAT_WIZARD') {
+		if (data.source === 'FLAT_WIZARD') {
 			this.disableCalibration(false)
 		}
 
