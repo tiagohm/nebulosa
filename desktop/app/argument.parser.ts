@@ -5,6 +5,7 @@ export type ApplicationMode = 'UI' | 'API' | 'FULL'
 export class ParsedArgument {
 	constructor(
 		readonly serve: boolean,
+		readonly devTools: boolean,
 		readonly mode: ApplicationMode,
 		readonly host: string,
 		readonly port: number,
@@ -37,6 +38,9 @@ export class ArgumentParser {
 				serve: {
 					type: 'boolean',
 				},
+				devtools: {
+					type: 'boolean',
+				},
 				mode: {
 					type: 'string',
 				},
@@ -50,6 +54,7 @@ export class ArgumentParser {
 		})
 
 		const serve = parsed.values.serve ?? false
+		const devTools = parsed.values.devtools ?? false
 		const mode: ApplicationMode =
 			parsed.values.mode === 'ui' ? 'UI'
 			: parsed.values.mode === 'api' ? 'API'
@@ -57,6 +62,6 @@ export class ArgumentParser {
 		const host = parsed.values.host || 'localhost'
 		const port = parseInt(parsed.values.port || '0') || (serve ? 7000 : 0)
 
-		return new ParsedArgument(serve, mode, host, port, parsed.positionals)
+		return new ParsedArgument(serve, devTools, mode, host, port, parsed.positionals)
 	}
 }

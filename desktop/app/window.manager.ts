@@ -147,10 +147,14 @@ export class WindowManager {
 				contextIsolation: true,
 				additionalArguments: [`--host=${this.host}`, `--port=${this.port}`, `--id=${open.id}`, `--data=${encodedData}`, `--preference=${encodedPreference}`],
 				preload: join(__dirname, 'preload.js'),
-				devTools: true,
+				devTools: this.args.serve || this.args.devTools,
 				spellcheck: false,
 			},
 		})
+
+		if (this.args.devTools) {
+			browserWindow.webContents.openDevTools({ mode: 'detach' })
+		}
 
 		browserWindow.on('ready-to-show', () => {
 			browserWindow.show()
