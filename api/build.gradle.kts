@@ -3,6 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     kotlin("jvm")
     id("com.gradleup.shadow")
+    application
 }
 
 dependencies {
@@ -35,22 +36,26 @@ dependencies {
     implementation(libs.eventbus)
     implementation(libs.okhttp)
     implementation(libs.oshi)
-    implementation(libs.javalin)
     implementation(libs.koin)
     implementation(libs.airline)
     implementation(libs.h2)
     implementation(libs.bundles.exposed)
     implementation(libs.flyway)
+    implementation(libs.bundles.ktor)
     testImplementation(project(":nebulosa-astrobin-api"))
     testImplementation(project(":nebulosa-skycatalog-stellarium"))
     testImplementation(project(":nebulosa-test"))
 }
 
+application {
+    mainClass = "nebulosa.api.MainKt"
+}
+
 tasks.withType<ShadowJar> {
     isZip64 = true
 
-    archiveFileName.set("api.jar")
-    destinationDirectory.set(file("../desktop"))
+    archiveFileName = "api.jar"
+    destinationDirectory = file("../desktop")
 
     manifest {
         attributes["Main-Class"] = "nebulosa.api.MainKt"

@@ -1,9 +1,14 @@
 package nebulosa.api.guiding
 
-import io.javalin.Javalin
-import io.javalin.http.Context
+import io.ktor.server.application.Application
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondNullable
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.get
+import io.ktor.server.routing.put
+import io.ktor.server.routing.routing
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.http.Controller
+import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.enumOf
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.notNullOrBlank
@@ -12,57 +17,61 @@ import nebulosa.guiding.GuideDirection
 import java.time.Duration
 
 class GuideOutputController(
-    override val app: Javalin,
+    override val server: Application,
     private val connectionService: ConnectionService,
     private val guideOutputService: GuideOutputService,
 ) : Controller {
 
     init {
-        app.get("guide-outputs", ::guideOutputs)
-        app.get("guide-outputs/{id}", ::guideOutput)
-        app.put("guide-outputs/{id}/connect", ::connect)
-        app.put("guide-outputs/{id}/disconnect", ::disconnect)
-        app.put("guide-outputs/{id}/pulse", ::pulse)
-        app.put("guide-outputs/{id}/listen", ::listen)
+        with(server) {
+            routing {
+                get("/guide-outputs", ::guideOutputs)
+                get("/guide-outputs/{id}", ::guideOutput)
+                put("/guide-outputs/{id}/connect", ::connect)
+                put("/guide-outputs/{id}/disconnect", ::disconnect)
+                put("/guide-outputs/{id}/pulse", ::pulse)
+                put("/guide-outputs/{id}/listen", ::listen)
+            }
+        }
     }
 
-    private fun guideOutputs(ctx: Context) {
-        ctx.json(connectionService.guideOutputs().sorted())
+    private suspend fun guideOutputs(ctx: RoutingContext) = with(ctx.call) {
+        respond(connectionService.guideOutputs().sorted())
     }
 
-    private fun guideOutput(ctx: Context) {
-        val id = ctx.pathParam("id")
-        connectionService.guideOutput(id)?.also(ctx::json)
+    private suspend fun guideOutput(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
+        respondNullable(connectionService.guideOutput(id))
     }
 
-    private fun connect(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun connect(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val guideOutput = connectionService.guideOutput(id) ?: return
         guideOutputService.connect(guideOutput)
     }
 
-    private fun disconnect(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun disconnect(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val guideOutput = connectionService.guideOutput(id) ?: return
         guideOutputService.disconnect(guideOutput)
     }
 
-    private fun pulse(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun pulse(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val guideOutput = connectionService.guideOutput(id) ?: return
-        val direction = ctx.queryParam("direction").notNullOrBlank().enumOf<GuideDirection>()
-        val duration = ctx.queryParam("duration").notNull().toLong().range(0L, 1800000000L).times(1000L).let(Duration::ofNanos)
+        val direction = queryParameters["direction"].notNullOrBlank().enumOf<GuideDirection>()
+        val duration = queryParameters["duration"].notNull().toLong().range(0L, 1800000000L).times(1000L).let(Duration::ofNanos)
         guideOutputService.pulse(guideOutput, direction, duration)
     }
 
-    private fun listen(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun listen(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val guideOutput = connectionService.guideOutput(id) ?: return
         guideOutputService.listen(guideOutput)
     }
 
     companion object {
 
-        private val PULSE_DURATION_RANGE = 0L..1800000000L
+        private const val ID = "id"
     }
 }

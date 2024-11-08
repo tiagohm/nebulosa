@@ -1,13 +1,16 @@
 package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import jakarta.servlet.http.HttpServletResponse
+import io.ktor.http.ContentType
+import io.ktor.server.response.respondOutputStream
+import io.ktor.server.routing.RoutingCall
 import nebulosa.api.atlas.Location
 import nebulosa.api.atlas.SkyObjectEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.image.ImageAnnotation.StarDSO
+import nebulosa.api.ktor.responseHeaders
 import nebulosa.api.message.MessageService
 import nebulosa.fits.*
 import nebulosa.image.Image
@@ -49,7 +52,7 @@ import kotlin.io.path.outputStream
 import kotlin.math.roundToInt
 
 class ImageService(
-    private val objectMapper: ObjectMapper,
+    private val mapper: ObjectMapper,
     private val framingService: FramingService,
     private val calibrationFrameService: CalibrationFrameService,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
@@ -83,11 +86,7 @@ class ImageService(
             .toURL().openConnection().getInputStream().readAllBytes()
     }
 
-    @Synchronized
-    fun openImage(
-        path: Path, camera: Camera?, transformation: ImageTransformation,
-        output: HttpServletResponse,
-    ) {
+    suspend fun openImage(path: Path, camera: Camera?, transformation: ImageTransformation, output: RoutingCall) {
         val (image, calibration) = imageBucket.open(path, transformation.debayer, force = transformation.force)
         val (transformedImage, stretchParameters, instrument) = image!!.transform(true, transformation, ImageOperation.OPEN, camera)
 
@@ -107,11 +106,11 @@ class ImageService(
         )
 
         val format = if (transformation.useJPEG) "jpeg" else "png"
+        val contentType = if (transformation.useJPEG) ContentType.Image.JPEG else ContentType.Image.PNG
 
-        output.addHeader(IMAGE_INFO_HEADER, objectMapper.writeValueAsString(info))
-        output.contentType = "image/$format"
+        output.responseHeaders.append(X_IMAGE_INFO_HEADER_KEY, mapper.writeValueAsString(info))
 
-        ImageIO.write(transformedImage, format, output.outputStream)
+        output.respondOutputStream(contentType) { ImageIO.write(transformedImage, format, this) }
 
         LOG.d("image opened. path={}", path)
     }
@@ -375,7 +374,7 @@ class ImageService(
         private val LOG = loggerFor<ImageService>()
         private val INVALID_MAG_CHARS = "[^.\\-+0-9]+".toRegex()
 
-        private const val IMAGE_INFO_HEADER = "X-Image-Info"
-        private const val COORDINATE_INTERPOLATION_DELTA = 24
+        const val X_IMAGE_INFO_HEADER_KEY = "X-Image-Info"
+        const val COORDINATE_INTERPOLATION_DELTA = 24
     }
 }

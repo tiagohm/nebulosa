@@ -1,38 +1,51 @@
 package nebulosa.api.wizard.flat
 
-import io.javalin.Javalin
-import io.javalin.http.Context
-import io.javalin.http.bodyAsClass
+import io.ktor.server.application.Application
+import io.ktor.server.request.receive
+import io.ktor.server.response.respondNullable
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.get
+import io.ktor.server.routing.put
+import io.ktor.server.routing.routing
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.http.Controller
+import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.valid
 
 class FlatWizardController(
-    override val app: Javalin,
+    override val server: Application,
     private val flatWizardService: FlatWizardService,
     private val connectionService: ConnectionService,
 ) : Controller {
 
     init {
-        app.put("flat-wizard/{camera}/start", ::start)
-        app.put("flat-wizard/{camera}/stop", ::stop)
-        app.get("flat-wizard/{camera}/status", ::status)
+        with(server) {
+            routing {
+                put("/flat-wizard/{camera}/start", ::start)
+                put("/flat-wizard/{camera}/stop", ::stop)
+                get("/flat-wizard/{camera}/status", ::status)
+            }
+        }
     }
 
-    private fun start(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
-        val body = ctx.bodyAsClass<FlatWizardRequest>().valid()
+    private suspend fun start(ctx: RoutingContext) = with(ctx.call) {
+        val camera = connectionService.camera(pathParameters[CAMERA].notNull()).notNull()
+        val body = receive<FlatWizardRequest>().valid()
         flatWizardService.start(camera, body)
     }
 
-    private fun stop(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
+    private fun stop(ctx: RoutingContext) = with(ctx.call) {
+        val camera = connectionService.camera(pathParameters[CAMERA].notNull()).notNull()
         flatWizardService.stop(camera)
     }
 
-    private fun status(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
-        flatWizardService.status(camera)?.also(ctx::json)
+    private suspend fun status(ctx: RoutingContext) = with(ctx.call) {
+        val camera = connectionService.camera(pathParameters[CAMERA].notNull()).notNull()
+        respondNullable(flatWizardService.status(camera))
+    }
+
+    companion object {
+
+        private const val CAMERA = "camera"
     }
 }

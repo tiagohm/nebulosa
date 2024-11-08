@@ -35,19 +35,19 @@ export class ApiService {
 
 	connect(host: string, port: number, type: ConnectionType) {
 		const query = this.http.query({ host, port, type })
-		return this.http.put<string>(`connection?${query}`)
+		return this.http.put<string>(`connections?${query}`)
 	}
 
 	disconnect(id: string) {
-		return this.http.delete<never>(`connection/${id}`)
+		return this.http.delete<never>(`connections/${id}`)
 	}
 
 	connectionStatuses() {
-		return this.http.get<ConnectionStatus[]>(`connection`)
+		return this.http.get<ConnectionStatus[]>(`connections`)
 	}
 
 	connectionStatus(id: string) {
-		return this.http.get<Undefinable<ConnectionStatus>>(`connection/${id}`)
+		return this.http.get<Undefinable<ConnectionStatus>>(`connections/${id}`)
 	}
 
 	// CAMERA

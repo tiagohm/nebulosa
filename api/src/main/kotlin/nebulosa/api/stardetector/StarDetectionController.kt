@@ -1,26 +1,33 @@
 package nebulosa.api.stardetector
 
-import io.javalin.Javalin
-import io.javalin.http.Context
-import io.javalin.http.bodyAsClass
-import nebulosa.api.http.Controller
+import io.ktor.server.application.Application
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.put
+import io.ktor.server.routing.routing
+import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.exists
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.path
 import nebulosa.api.validators.valid
 
 class StarDetectionController(
-    override val app: Javalin,
+    override val server: Application,
     private val starDetectionService: StarDetectionService,
 ) : Controller {
 
     init {
-        app.put("star-detection", ::detectStars)
+        with(server) {
+            routing {
+                put("/star-detection", ::detectStars)
+            }
+        }
     }
 
-    private fun detectStars(ctx: Context) {
-        val path = ctx.queryParam("path").notNull().path().exists()
-        val body = ctx.bodyAsClass<StarDetectionRequest>().valid()
-        ctx.json(starDetectionService.detectStars(path, body))
+    private suspend fun detectStars(ctx: RoutingContext) = with(ctx.call) {
+        val path = queryParameters["path"].notNull().path().exists()
+        val body = receive<StarDetectionRequest>().valid()
+        respond(starDetectionService.detectStars(path, body))
     }
 }

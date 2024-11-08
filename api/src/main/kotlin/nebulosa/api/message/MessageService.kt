@@ -1,61 +1,69 @@
 package nebulosa.api.message
 
-import io.javalin.Javalin
-import io.javalin.websocket.WsConfig
-import io.javalin.websocket.WsContext
+import com.fasterxml.jackson.databind.ObjectMapper
+import io.ktor.server.application.Application
+import io.ktor.server.routing.routing
+import io.ktor.server.websocket.WebSocketServerSession
+import io.ktor.server.websocket.webSocket
+import io.ktor.websocket.CloseReason
+import io.ktor.websocket.Frame
+import io.ktor.websocket.close
+import kotlinx.coroutines.runBlocking
 import nebulosa.log.d
+import nebulosa.log.di
 import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.log.w
-import org.eclipse.jetty.websocket.api.Session
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 
-class MessageService(app: Javalin) : Consumer<WsConfig> {
+class MessageService(
+    app: Application,
+    private val mapper: ObjectMapper,
+) {
 
-    private val connected = AtomicReference<Session>()
-    private val context = AtomicReference<WsContext>()
+    private val session = AtomicReference<WebSocketServerSession>()
     private val messageQueue = LinkedBlockingQueue<MessageEvent>()
 
     init {
-        app.ws("/ws", this)
-    }
+        with(app) {
+            routing {
+                webSocket("/ws") {
+                    if (session.compareAndSet(null, this)) {
+                        val local = call.request.local
 
-    override fun accept(ws: WsConfig) {
-        ws.onConnect {
-            if (connected.compareAndSet(null, it.session)) {
-                LOG.i("web socket session accepted. address={}", it.session.remoteAddress)
+                        LOG.i("session accepted. address={}:{}", local.remoteHost, local.remotePort)
 
-                context.set(it)
-                it.enableAutomaticPings()
+                        while (messageQueue.isNotEmpty()) {
+                            sendMessage(messageQueue.take())
+                        }
 
-                while (messageQueue.isNotEmpty()) {
-                    sendMessage(messageQueue.take())
+                        try {
+                            for (frame in incoming) {
+                                LOG.di("frame received: {}", frame)
+                            }
+                        } catch (_: Throwable) {
+                            session.set(null)
+                            LOG.i("session closed. address={}:{}, reason={}", local.remoteHost, local.remotePort, closeReason.await())
+                        }
+                    } else {
+                        LOG.w("session rejected. address={}", this)
+
+                        // Accepts only one connection.
+                        close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Too many connections"))
+                    }
                 }
-            } else {
-                LOG.w("web socket session rejected. address={}", it.session.remoteAddress)
-
-                // Accepts only one connection.
-                it.closeSession()
-            }
-        }
-
-        ws.onClose {
-            if (connected.compareAndSet(it.session, null)) {
-                it.disableAutomaticPings()
-                context.set(null)
-                LOG.i("web socket session closed. address={}, status={}, reason={}", it.session.remoteAddress, it.status(), it.reason())
             }
         }
     }
 
     fun sendMessage(event: MessageEvent) {
-        val context = context.get()
+        val context = session.get()
 
         if (context != null) {
             LOG.d("sending message. event={}", event)
-            context.send(event)
+            val text = mapper.writeValueAsString(event)
+            runBlocking { context.send(Frame.Text(text)) }
         } else if (event is QueueableEvent) {
             LOG.d("queueing message. event={}", event)
             messageQueue.offer(event)
