@@ -140,7 +140,7 @@ internal data class SeekableSourceImageData(
 
     companion object {
 
-        const val PIXEL_COUNT = 64
+        const val PIXEL_COUNT = 1024
 
         private val LOG = loggerFor<SeekableSourceImageData>()
     }

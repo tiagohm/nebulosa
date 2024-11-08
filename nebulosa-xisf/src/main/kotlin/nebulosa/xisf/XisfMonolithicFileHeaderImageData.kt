@@ -161,6 +161,6 @@ internal data class XisfMonolithicFileHeaderImageData(
 
     companion object {
 
-        const val PIXEL_COUNT = 64
+        const val PIXEL_COUNT = 1024
     }
 }
