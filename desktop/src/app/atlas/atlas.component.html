@@ -5,7 +5,6 @@
 			(activeIndexChange)="tabChanged()">
 			<p-tabPanel
 				header="Sun"
-				[disabled]="refreshing"
 				headerStyleClass="main">
 				<ng-template pTemplate="header">
 					<div
@@ -33,7 +32,6 @@
 			</p-tabPanel>
 			<p-tabPanel
 				header="Moon"
-				[disabled]="refreshing"
 				headerStyleClass="main">
 				<ng-template pTemplate="header">
 					<div
@@ -105,7 +103,6 @@
 			</p-tabPanel>
 			<p-tabPanel
 				header="Planets"
-				[disabled]="refreshing"
 				headerStyleClass="main">
 				<ng-template pTemplate="header">
 					<div
@@ -143,7 +140,6 @@
 			</p-tabPanel>
 			<p-tabPanel
 				header="Minor Planets"
-				[disabled]="refreshing"
 				headerStyleClass="main">
 				<ng-template pTemplate="header">
 					<div
@@ -167,7 +163,7 @@
 									<label>Search</label>
 								</p-floatLabel>
 								<p-button
-									[disabled]="minorPlanet.search.text.length < 3 || refreshing"
+									[disabled]="minorPlanet.search.text.length < 3"
 									(onClick)="searchMinorPlanet()"
 									icon="mdi mdi-magnify"
 									severity="info"
@@ -238,7 +234,6 @@
 									<label>Distance (LD)</label>
 								</p-floatLabel>
 								<p-button
-									[disabled]="refreshing"
 									(onClick)="closeApproachesOfMinorPlanets()"
 									icon="mdi mdi-magnify"
 									severity="info"
@@ -298,7 +293,6 @@
 			</p-tabPanel>
 			<p-tabPanel
 				header="Stars & DSOs"
-				[disabled]="refreshing"
 				headerStyleClass="main">
 				<ng-template pTemplate="header">
 					<div
@@ -319,7 +313,6 @@
 						</p-floatLabel>
 						<div class="flex flex-row gap-1">
 							<p-button
-								[disabled]="refreshing"
 								(onClick)="searchSkyObject()"
 								icon="mdi mdi-magnify"
 								size="small"
@@ -328,7 +321,6 @@
 								pTooltip="Search"
 								tooltipPosition="bottom" />
 							<p-button
-								[disabled]="refreshing"
 								(onClick)="skyObject.search.showDialog = true"
 								icon="mdi mdi-filter"
 								size="small"
@@ -396,7 +388,6 @@
 			</p-tabPanel>
 			<p-tabPanel
 				header="TLEs"
-				[disabled]="refreshing"
 				headerStyleClass="main">
 				<ng-template pTemplate="header">
 					<div
@@ -417,7 +408,6 @@
 						</p-floatLabel>
 						<div class="flex flex-row gap-1">
 							<p-button
-								[disabled]="refreshing"
 								(onClick)="searchSatellite()"
 								icon="mdi mdi-magnify"
 								size="small"
@@ -426,7 +416,6 @@
 								pTooltip="Search"
 								tooltipPosition="bottom" />
 							<p-button
-								[disabled]="refreshing"
 								(onClick)="satellite.search.showDialog = true"
 								icon="mdi mdi-filter"
 								size="small"
@@ -621,7 +610,7 @@
 				</div>
 				<div class="col-12 pt-0 flex justify-content-center">
 					<p-button
-						[disabled]="!body.name || refresh.position"
+						[disabled]="!body.name"
 						[text]="true"
 						severity="info"
 						(onClick)="mountSync()"
@@ -629,7 +618,7 @@
 						label="Sync"
 						size="small" />
 					<p-button
-						[disabled]="!body.name || refresh.position"
+						[disabled]="!body.name"
 						[text]="true"
 						severity="success"
 						(onClick)="mountGoTo()"
@@ -637,7 +626,7 @@
 						label="Go To"
 						size="small" />
 					<p-button
-						[disabled]="!body.name || refresh.position"
+						[disabled]="!body.name"
 						[text]="true"
 						severity="success"
 						(onClick)="mountSlew()"
@@ -645,7 +634,7 @@
 						label="Slew"
 						size="small" />
 					<p-button
-						[disabled]="!body.name || refresh.position"
+						[disabled]="!body.name"
 						[text]="true"
 						(onClick)="frame()"
 						icon="mdi mdi-image"
@@ -670,7 +659,7 @@
 		class="col-9 flex align-items-center justify-content-between absolute gap-1 overflow-hidden"
 		style="height: 32px; left: 95px; top: 2px; padding-right: 70px">
 		<p-button
-			[disabled]="!body.name || refreshing"
+			[disabled]="!body.name"
 			[text]="true"
 			[rounded]="true"
 			icon="mdi mdi-md mdi-dots-vertical"
@@ -824,7 +813,6 @@
 	</div>
 	<ng-template pTemplate="footer">
 		<p-button
-			[disabled]="refreshing"
 			[text]="true"
 			icon="mdi mdi-filter"
 			label="Filter"
@@ -855,7 +843,6 @@
 	</div>
 	<ng-template pTemplate="footer">
 		<p-button
-			[disabled]="refreshing"
 			[text]="true"
 			severity="danger"
 			icon="mdi mdi-restore"
@@ -863,7 +850,6 @@
 			size="small"
 			(onClick)="resetSatelliteSearchGroups()" />
 		<p-button
-			[disabled]="refreshing"
 			[text]="true"
 			icon="mdi mdi-filter"
 			label="Filter"
@@ -880,7 +866,7 @@
 		<div class="grid">
 			<div class="col-7 flex-column gap-2">
 				<p-calendar
-					[disabled]="refreshing || !dateTimeAndLocation.manual"
+					[disabled]="!dateTimeAndLocation.manual"
 					[ngModel]="dateTimeAndLocation.dateTime"
 					(ngModelChange)="dateTimeChanged(true, $event)"
 					[inline]="true"
@@ -894,7 +880,6 @@
 				<div class="flex flex-column justify-content-center align-items-center gap-1">
 					<span>Date Time</span>
 					<p-inputSwitch
-						[disabled]="refreshing"
 						[(ngModel)]="dateTimeAndLocation.manual"
 						(ngModelChange)="manualDateTimeChanged()" />
 				</div>
@@ -902,7 +887,7 @@
 					<div class="flex align-items-center justify-content-center gap-2">
 						<p-floatLabel class="w-full">
 							<p-inputNumber
-								[disabled]="refreshing || !dateTimeAndLocation.manual"
+								[disabled]="!dateTimeAndLocation.manual"
 								[ngModel]="dateTimeAndLocation.dateTime.getHours()"
 								(ngModelChange)="dateTimeAndLocation.dateTime.setHours($event); dateTimeChanged(false)"
 								[showButtons]="true"
@@ -916,7 +901,7 @@
 						</p-floatLabel>
 						<p-floatLabel class="w-full">
 							<p-inputNumber
-								[disabled]="refreshing || !dateTimeAndLocation.manual"
+								[disabled]="!dateTimeAndLocation.manual"
 								[ngModel]="dateTimeAndLocation.dateTime.getMinutes()"
 								(ngModelChange)="dateTimeAndLocation.dateTime.setMinutes($event); dateTimeChanged(false)"
 								[showButtons]="true"
