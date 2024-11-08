@@ -13,13 +13,13 @@ import nebulosa.api.validators.notNull
 import nebulosa.api.validators.valid
 
 class FlatWizardController(
-    override val server: Application,
+    override val app: Application,
     private val flatWizardService: FlatWizardService,
     private val connectionService: ConnectionService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 put("/flat-wizard/{camera}/start", ::start)
                 put("/flat-wizard/{camera}/stop", ::stop)

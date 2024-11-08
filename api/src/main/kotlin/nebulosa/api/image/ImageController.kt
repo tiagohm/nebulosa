@@ -26,14 +26,14 @@ import java.nio.file.Path
 import java.util.*
 
 class ImageController(
-    override val server: Application,
+    override val app: Application,
     private val imageService: ImageService,
     private val connectionService: ConnectionService,
     private val mapper: ObjectMapper,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 post("/image", ::openImage)
                 post("/image/open-on-desktop", ::openImagesOnDesktop)

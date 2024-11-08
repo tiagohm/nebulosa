@@ -9,12 +9,12 @@ import nebulosa.api.validators.notNull
 import nebulosa.api.validators.notNullOrBlank
 
 class ConfirmationController(
-    override val server: Application,
+    override val app: Application,
     private val confirmationService: ConfirmationService
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 put("/confirmation/{idempotencyKey}", ::confirm)
             }

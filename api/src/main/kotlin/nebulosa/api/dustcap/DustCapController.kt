@@ -12,13 +12,13 @@ import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.notNull
 
 class DustCapController(
-    override val server: Application,
+    override val app: Application,
     private val connectionService: ConnectionService,
     private val dustCapService: DustCapService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/dust-caps", ::dustCaps)
                 get("/dust-caps/{id}", ::dustCap)

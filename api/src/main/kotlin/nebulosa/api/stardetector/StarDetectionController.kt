@@ -13,12 +13,12 @@ import nebulosa.api.validators.path
 import nebulosa.api.validators.valid
 
 class StarDetectionController(
-    override val server: Application,
+    override val app: Application,
     private val starDetectionService: StarDetectionService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 put("/star-detection", ::detectStars)
             }

@@ -13,13 +13,13 @@ import nebulosa.api.validators.notNull
 import nebulosa.api.validators.range
 
 class RotatorController(
-    override val server: Application,
+    override val app: Application,
     private val connectionService: ConnectionService,
     private val rotatorService: RotatorService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/rotators", ::rotators)
                 get("/rotators/{id}", ::rotator)

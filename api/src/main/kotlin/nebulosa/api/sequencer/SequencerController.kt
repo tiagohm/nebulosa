@@ -13,13 +13,13 @@ import nebulosa.api.validators.notNull
 import nebulosa.api.validators.valid
 
 class SequencerController(
-    override val server: Application,
+    override val app: Application,
     private val sequencerService: SequencerService,
     private val connectionService: ConnectionService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 put("/sequencer/{camera}/start", ::start)
                 put("/sequencer/{camera}/stop", ::stop)

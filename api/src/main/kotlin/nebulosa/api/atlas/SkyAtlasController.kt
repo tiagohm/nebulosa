@@ -20,14 +20,14 @@ import nebulosa.skycatalog.SkyObjectType
 import java.time.LocalDateTime
 
 class SkyAtlasController(
-    override val server: Application,
+    override val app: Application,
     private val skyAtlasService: SkyAtlasService,
     private val satelliteRepository: SatelliteRepository,
     private val mapper: ObjectMapper,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/sky-atlas/sun/image", ::imageOfSun)
                 get("/sky-atlas/sun/position", ::positionOfSun)

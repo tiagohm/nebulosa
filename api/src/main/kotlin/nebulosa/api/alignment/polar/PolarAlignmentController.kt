@@ -15,13 +15,13 @@ import nebulosa.api.validators.notNull
 import nebulosa.api.validators.valid
 
 class PolarAlignmentController(
-    override val server: Application,
+    override val app: Application,
     private val polarAlignmentService: PolarAlignmentService,
     private val connectionService: ConnectionService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 put("/polar-alignment/darv/{camera}/{guideOutput}/start", ::darvStart)
                 put("/polar-alignment/darv/{camera}/stop", ::darvStop)

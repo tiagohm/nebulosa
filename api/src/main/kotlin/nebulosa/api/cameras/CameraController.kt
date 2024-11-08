@@ -15,13 +15,13 @@ import nebulosa.api.validators.range
 import nebulosa.api.validators.valid
 
 class CameraController(
-    override val server: Application,
+    override val app: Application,
     private val connectionService: ConnectionService,
     private val cameraService: CameraService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/cameras", ::cameras)
                 get("/cameras/{id}", ::camera)

@@ -14,13 +14,13 @@ import nebulosa.math.deg
 import nebulosa.math.hours
 
 class FramingController(
-    override val server: Application,
+    override val app: Application,
     private val imageService: ImageService,
     private val framingService: FramingService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/framing/hips-surveys", ::hipsSurveys)
                 put("/framing", ::frame)

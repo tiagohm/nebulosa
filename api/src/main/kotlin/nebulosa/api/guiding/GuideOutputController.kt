@@ -17,13 +17,13 @@ import nebulosa.guiding.GuideDirection
 import java.time.Duration
 
 class GuideOutputController(
-    override val server: Application,
+    override val app: Application,
     private val connectionService: ConnectionService,
     private val guideOutputService: GuideOutputService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/guide-outputs", ::guideOutputs)
                 get("/guide-outputs/{id}", ::guideOutput)

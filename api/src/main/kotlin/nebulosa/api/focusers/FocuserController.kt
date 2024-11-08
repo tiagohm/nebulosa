@@ -12,13 +12,13 @@ import nebulosa.api.validators.notNull
 import nebulosa.api.validators.positiveOrZero
 
 class FocuserController(
-    override val server: Application,
+    override val app: Application,
     private val connectionService: ConnectionService,
     private val focuserService: FocuserService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/focusers", ::focusers)
                 get("/focusers/{id}", ::focuser)

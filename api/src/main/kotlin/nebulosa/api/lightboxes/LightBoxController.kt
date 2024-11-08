@@ -13,13 +13,13 @@ import nebulosa.api.validators.notNull
 import nebulosa.api.validators.positiveOrZero
 
 class LightBoxController(
-    override val server: Application,
+    override val app: Application,
     private val connectionService: ConnectionService,
     private val lightBoxService: LightBoxService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/light-boxes", ::lightBoxes)
                 get("/light-boxes/{id}", ::lightBox)

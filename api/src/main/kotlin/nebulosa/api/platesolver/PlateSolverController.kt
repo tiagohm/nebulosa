@@ -13,12 +13,12 @@ import nebulosa.api.validators.path
 import nebulosa.api.validators.valid
 
 class PlateSolverController(
-    override val server: Application,
+    override val app: Application,
     private val plateSolverService: PlateSolverService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 put("/plate-solver/start", ::start)
                 put("/plate-solver/stop", ::stop)

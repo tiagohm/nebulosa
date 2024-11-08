@@ -16,12 +16,12 @@ import nebulosa.api.validators.path
 import nebulosa.api.validators.valid
 
 class CalibrationFrameController(
-    override val server: Application,
+    override val app: Application,
     private val calibrationFrameService: CalibrationFrameService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/calibration-frames", ::groups)
                 get("/calibration-frames/{group}", ::frames)

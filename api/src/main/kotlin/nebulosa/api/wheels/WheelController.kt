@@ -14,13 +14,13 @@ import nebulosa.api.validators.notNullOrBlank
 import nebulosa.api.validators.positiveOrZero
 
 class WheelController(
-    override val server: Application,
+    override val app: Application,
     private val connectionService: ConnectionService,
     private val wheelService: WheelService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/wheels", ::wheels)
                 get("/wheels/{id}", ::wheel)

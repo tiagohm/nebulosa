@@ -13,13 +13,13 @@ import nebulosa.api.validators.notNull
 import nebulosa.api.validators.valid
 
 class AutoFocusController(
-    override val server: Application,
+    override val app: Application,
     private val autoFocusService: AutoFocusService,
     private val connectionService: ConnectionService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 put("/auto-focus/{camera}/{focuser}/start", ::start)
                 put("/auto-focus/{camera}/stop", ::stop)

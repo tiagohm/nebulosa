@@ -21,13 +21,13 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 class MountController(
-    override val server: Application,
+    override val app: Application,
     private val connectionService: ConnectionService,
     private val mountService: MountService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/mounts", ::mounts)
                 get("/mounts/{id}", ::mount)

@@ -14,13 +14,13 @@ import nebulosa.api.validators.path
 import nebulosa.api.validators.valid
 
 class LiveStackingController(
-    override val server: Application,
+    override val app: Application,
     private val liveStackingService: LiveStackingService,
     private val connectionService: ConnectionService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 put("/live-stacking/{camera}/start", ::start)
                 put("/live-stacking/{camera}/add", ::add)

@@ -15,12 +15,12 @@ import nebulosa.api.validators.notNullOrBlank
 import nebulosa.api.validators.range
 
 class ConnectionController(
-    override val server: Application,
+    override val app: Application,
     private val connectionService: ConnectionService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/connections", ::statuses)
                 get("/connections/{id}", ::status)

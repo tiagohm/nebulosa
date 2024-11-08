@@ -14,12 +14,12 @@ import nebulosa.api.validators.valid
 import kotlin.math.min
 
 class GuidingController(
-    override val server: Application,
+    override val app: Application,
     private val guidingService: GuidingService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 put("/guiding/connect", ::connect)
                 put("/guiding/disconnect", ::disconnect)

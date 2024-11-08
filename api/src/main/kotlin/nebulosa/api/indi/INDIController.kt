@@ -13,13 +13,13 @@ import nebulosa.api.validators.notNull
 import nebulosa.api.validators.valid
 
 class INDIController(
-    override val server: Application,
+    override val app: Application,
     private val indiService: INDIService,
     private val connectionService: ConnectionService,
 ) : Controller {
 
     init {
-        with(server) {
+        with(app) {
             routing {
                 get("/indi/{device}", ::device)
                 put("/indi/{device}/connect", ::connect)
