@@ -142,7 +142,7 @@ export class ExposureTimeComponent implements AfterViewInit, OnChanges {
 
 		this.current.min = Math.max(1, Math.trunc(((this.min || 1) * b) / 60000000))
 		this.current.max = Math.max(1, Math.trunc(((this.max || 600000000) * b) / 60000000))
-		this.current.exposureTime = Math.max(this.current.min, Math.min(Math.trunc((value * b) / a), this.current.max))
+		this.current.exposureTime = Math.trunc((value * b) / a)
 
 		const exposureTimeInMicroseconds = Math.trunc((this.current.exposureTime * 60000000) / b)
 
