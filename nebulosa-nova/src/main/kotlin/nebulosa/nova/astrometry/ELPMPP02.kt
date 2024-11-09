@@ -297,7 +297,7 @@ data object ELPMPP02 : Body {
     private const val Q5 = -0.320334e-14
 
     private fun readMainProblemFile(type: Int): Pair<DoubleArray, Array<DoubleArray>> {
-        val buffer = bufferedResource("ELP_MAIN.S$type.txt")!!
+        val buffer = bufferedResource("ELP_MAIN.S$type.dat")!!
 
         val del = arrayOf(
             doubleArrayOf(DEL10, DEL11, DEL12, DEL13, DEL14),
@@ -307,40 +307,29 @@ data object ELPMPP02 : Body {
         )
 
         return buffer.use {
-            var line = buffer.readUtf8LineStrict()
+            val data = ELPMPP02Reader.readMainProblemBinaryFormat(it)
 
-            val n = line.substring(24..34).trim().toInt()
+            val n = data.size
             val cmpb = DoubleArray(n)
             val fmpb = Array(n) { DoubleArray(5) }
             var idx = 0
 
-            while (idx < n && !buffer.exhausted()) {
-                line = buffer.readUtf8LineStrict()
-
-                val i0 = line.substring(0..2).trim().toInt()
-                val i1 = line.substring(3..5).trim().toInt()
-                val i2 = line.substring(6..8).trim().toInt()
-                val i3 = line.substring(9..11).trim().toInt()
-                var a = line.substring(14..26).trim().toDouble()
-                val b0 = line.substring(27..38).trim().toDouble()
-                val b1 = line.substring(39..50).trim().toDouble()
-                val b2 = line.substring(51..62).trim().toDouble()
-                val b3 = line.substring(63..74).trim().toDouble()
-                val b4 = line.substring(75..86).trim().toDouble()
-
-                val tgv = b0 + DTASM * b4
+            repeat(n) {
+                val elem = data[idx]
+                var a = elem.a
+                val tgv = elem.b0 + DTASM * elem.b4
 
                 if (type == 3) {
                     a -= 2.0 * a * DELNU / 3.0
                 }
 
-                cmpb[idx] = a + tgv * (DELNP - AM * DELNU) + b1 * DELG + b2 * DELE + b3 * DELEP
+                cmpb[idx] = a + tgv * (DELNP - AM * DELNU) + elem.b1 * DELG + elem.b2 * DELE + elem.b3 * DELEP
 
                 for (k in 0..4) {
-                    fmpb[idx][k] += i0 * del[0][k]
-                    fmpb[idx][k] += i1 * del[1][k]
-                    fmpb[idx][k] += i2 * del[2][k]
-                    fmpb[idx][k] += i3 * del[3][k]
+                    fmpb[idx][k] += elem.i0 * del[0][k]
+                    fmpb[idx][k] += elem.i1 * del[1][k]
+                    fmpb[idx][k] += elem.i2 * del[2][k]
+                    fmpb[idx][k] += elem.i3 * del[3][k]
                 }
 
                 if (type == 3) {
@@ -355,8 +344,7 @@ data object ELPMPP02 : Body {
     }
 
     private fun readPertubationFile(type: Int): Array<Pair<DoubleArray, Array<DoubleArray>>> {
-        val buffer = bufferedResource("ELP_PERT.S$type.txt")!!
-
+        val buffer = bufferedResource("ELP_PERT.S$type.dat")!!
         val res = ArrayList<Pair<DoubleArray, Array<DoubleArray>>>(4)
 
         val zeta = doubleArrayOf(ZETA0, ZETA1, ZETA2, ZETA3, ZETA4)
@@ -380,42 +368,38 @@ data object ELPMPP02 : Body {
         )
 
         buffer.use {
-            while (!buffer.exhausted()) {
-                var line = buffer.readUtf8LineStrict()
-                val n = line.substring(25..34).trim().toInt()
+            val data = ELPMPP02Reader.readPertubationBinaryFormat(it)
+
+            for (item in data) {
+                val n = item.size
                 val cper = DoubleArray(n)
                 val fper = Array(n) { DoubleArray(5) }
-                var idx = 0
 
-                while (idx < n && !buffer.exhausted()) {
-                    line = buffer.readUtf8LineStrict()
+                repeat(n) {
+                    val s = item[it].s
+                    val c = item[it].c
+                    val i = item[it].i
 
-                    val s = line.substring(5..24).trim().replace('D', 'E').toDouble()
-                    val c = line.substring(25..44).trim().replace('D', 'E').toDouble()
-                    val ifi = IntArray(13) { line.substring((45 + it * 3)..(47 + it * 3)).trim().toInt() }
-
-                    cper[idx] = sqrt(c * c + s * s)
-                    fper[idx][0] = atan2(c, s).normalized
+                    cper[it] = sqrt(c * c + s * s)
+                    fper[it][0] = atan2(c, s).normalized
 
                     for (k in 0..4) {
-                        fper[idx][k] += ifi[0] * del[0][k]
-                        fper[idx][k] += ifi[1] * del[1][k]
-                        fper[idx][k] += ifi[2] * del[2][k]
-                        fper[idx][k] += ifi[3] * del[3][k]
+                        fper[it][k] += i[0] * del[0][k]
+                        fper[it][k] += i[1] * del[1][k]
+                        fper[it][k] += i[2] * del[2][k]
+                        fper[it][k] += i[3] * del[3][k]
 
-                        fper[idx][k] += ifi[4] * p[0][k]
-                        fper[idx][k] += ifi[5] * p[1][k]
-                        fper[idx][k] += ifi[6] * p[2][k]
-                        fper[idx][k] += ifi[7] * p[3][k]
-                        fper[idx][k] += ifi[8] * p[4][k]
-                        fper[idx][k] += ifi[9] * p[5][k]
-                        fper[idx][k] += ifi[10] * p[6][k]
-                        fper[idx][k] += ifi[11] * p[7][k]
+                        fper[it][k] += i[4] * p[0][k]
+                        fper[it][k] += i[5] * p[1][k]
+                        fper[it][k] += i[6] * p[2][k]
+                        fper[it][k] += i[7] * p[3][k]
+                        fper[it][k] += i[8] * p[4][k]
+                        fper[it][k] += i[9] * p[5][k]
+                        fper[it][k] += i[10] * p[6][k]
+                        fper[it][k] += i[11] * p[7][k]
 
-                        fper[idx][k] += ifi[12] * zeta[k]
+                        fper[it][k] += i[12] * zeta[k]
                     }
-
-                    idx++
                 }
 
                 if (n > 0) res.add(cper to fper)

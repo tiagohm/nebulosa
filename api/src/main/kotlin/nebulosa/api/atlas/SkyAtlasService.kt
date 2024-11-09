@@ -277,7 +277,7 @@ class SkyAtlasService(
         private const val SUN = "10"
         private const val MOON = "301"
 
-        private val FAST_MOON = VSOP87E.EARTH + ELPMPP02
+        private val FAST_MOON by lazy { VSOP87E.EARTH + ELPMPP02 }
         private val MOON_PHASE_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00")
 
         private fun GeographicCoordinate.geographicPosition() = when (this) {

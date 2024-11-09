@@ -6,6 +6,7 @@ import nebulosa.erfa.PositionAndVelocity
 import nebulosa.io.bufferedResource
 import nebulosa.math.Matrix3D
 import nebulosa.math.Vector3D
+import nebulosa.nova.frame.EclipticJ2000
 import nebulosa.time.InstantOfTime
 import kotlin.math.cos
 import kotlin.math.sin
