@@ -90,6 +90,7 @@ class WCS(header: ReadableHeader) : AutoCloseable {
         private val CRVAL = "CRVAL[1-2]".toRegex()
         private val PS = "PS\\d_\\d".toRegex()
         private val CD = "CD\\d_\\d".toRegex()
+        private val PC = "PC\\d_\\d".toRegex()
         private val CDELT = "CDELT[1-2]".toRegex()
         private val CROTA = "CROTA[1-2]".toRegex()
         private val SIP_ABP = "[AB]P?_\\d_\\d".toRegex()
@@ -97,13 +98,13 @@ class WCS(header: ReadableHeader) : AutoCloseable {
         private val SIP_AB_DMAX = "[AB]_DMAX".toRegex()
 
         private val KEYWORDS_REGEX =
-            arrayOf(CUNIT, CTYPE, CRPIX, CRVAL, PS, CD, CDELT, CROTA)
+            arrayOf(CUNIT, CTYPE, CRPIX, CRVAL, PS, CD, PC, CDELT, CROTA)
 
         private val SIP_KEYWORDS_REGEX =
             arrayOf(SIP_ABP_ORDER, SIP_ABP, SIP_AB_DMAX)
 
         private val KEYWORDS =
-            arrayOf("LONGPOLE", "LATPOLE", "RADESYS", "EQUINOX")
+            arrayOf("LONPOLE", "LATPOLE", "RADESYS", "EQUINOX")
 
         @JvmStatic
         fun isKeywordValid(key: String): Boolean {
