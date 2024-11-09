@@ -1159,9 +1159,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		if (this.zoom.panZoom) {
 			if (fitToScreen) {
 				const { width: iw, height: ih } = this.image.nativeElement
+				const angle = this.rotation.transformation.angle * (Math.PI / 180.0)
+				const nw = Math.abs(iw * Math.cos(angle)) + Math.abs(ih * Math.sin(angle))
+				const nh = Math.abs(iw * Math.sin(angle)) + Math.abs(ih * Math.cos(angle))
 				const { clientWidth: cw, clientHeight: ch } = this.image.nativeElement.parentElement!.parentElement!
 				const { offsetTop } = this.image.nativeElement.parentElement!.parentElement!
-				const factor = Math.min(cw / iw, (ch - offsetTop) / ih)
+				const factor = Math.min(cw / nw, (ch - offsetTop) / nh)
 				this.zoom.panZoom.zoom(factor)
 			} else {
 				this.zoom.panZoom.reset()
