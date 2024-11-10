@@ -1,85 +1,94 @@
 package nebulosa.api.guiding
 
-import io.javalin.Javalin
-import io.javalin.http.Context
-import io.javalin.http.bodyAsClass
-import nebulosa.api.core.Controller
+import io.ktor.server.application.Application
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondNullable
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.get
+import io.ktor.server.routing.put
+import io.ktor.server.routing.routing
+import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.valid
 import kotlin.math.min
 
 class GuidingController(
-    override val app: Javalin,
+    override val app: Application,
     private val guidingService: GuidingService,
 ) : Controller {
 
     init {
-        app.put("guiding/connect", ::connect)
-        app.put("guiding/disconnect", ::disconnect)
-        app.get("guiding/history", ::history)
-        app.get("guiding/history/latest", ::latestHistory)
-        app.put("guiding/history/clear", ::clearHistory)
-        app.put("guiding/loop", ::loop)
-        app.put("guiding/start", ::start)
-        app.get("guiding/status", ::status)
-        app.put("guiding/settle", ::settle)
-        app.put("guiding/dither", ::dither)
-        app.put("guiding/stop", ::stop)
+        with(app) {
+            routing {
+                put("/guiding/connect", ::connect)
+                put("/guiding/disconnect", ::disconnect)
+                get("/guiding/history", ::history)
+                get("/guiding/history/latest", ::latestHistory)
+                put("/guiding/history/clear", ::clearHistory)
+                put("/guiding/loop", ::loop)
+                put("/guiding/start", ::start)
+                get("/guiding/status", ::status)
+                put("/guiding/settle", ::settle)
+                put("/guiding/dither", ::dither)
+                put("/guiding/stop", ::stop)
+            }
+        }
     }
 
-    private fun connect(ctx: Context) {
-        val host = ctx.queryParam("host")?.ifBlank { null } ?: "localhost"
-        val port = ctx.queryParam("port")?.toInt() ?: 4400
+    private fun connect(ctx: RoutingContext) = with(ctx.call) {
+        val host = queryParameters["host"]?.ifBlank { null } ?: "localhost"
+        val port = queryParameters["port"]?.toInt() ?: 4400
         guidingService.connect(host, port)
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun disconnect(ctx: Context) {
+    private fun disconnect(ctx: RoutingContext) = with(ctx.call) {
         guidingService.disconnect()
     }
 
-    private fun status(ctx: Context) {
-        ctx.json(guidingService.status())
+    private suspend fun status(ctx: RoutingContext) = with(ctx.call) {
+        respond(guidingService.status())
     }
 
-    private fun history(ctx: Context) {
-        val maxLength = min(100, ctx.queryParam("maxLength")?.toInt() ?: 100)
-        ctx.json(guidingService.history(maxLength))
+    private suspend fun history(ctx: RoutingContext) = with(ctx.call) {
+        val maxLength = min(100, queryParameters["maxLength"]?.toInt() ?: 100)
+        respond(guidingService.history(maxLength))
     }
 
-    private fun latestHistory(ctx: Context) {
-        guidingService.latestHistory()?.also(ctx::json)
+    private suspend fun latestHistory(ctx: RoutingContext) = with(ctx.call) {
+        respondNullable(guidingService.latestHistory())
     }
 
 
     @Suppress("UNUSED_PARAMETER")
-    private fun clearHistory(ctx: Context) {
-        return guidingService.clearHistory()
+    private fun clearHistory(ctx: RoutingContext) = with(ctx.call) {
+        guidingService.clearHistory()
     }
 
-    private fun loop(ctx: Context) {
-        val autoSelectGuideStar = ctx.queryParam("autoSelectGuideStar")?.toBoolean() ?: true
+    private fun loop(ctx: RoutingContext) = with(ctx.call) {
+        val autoSelectGuideStar = queryParameters["autoSelectGuideStar"]?.toBoolean() != false
         guidingService.loop(autoSelectGuideStar)
     }
 
-    private fun start(ctx: Context) {
-        val forceCalibration = ctx.queryParam("forceCalibration")?.toBoolean() ?: false
+    private fun start(ctx: RoutingContext) = with(ctx.call) {
+        val forceCalibration = queryParameters["forceCalibration"]?.toBoolean() == true
         guidingService.start(forceCalibration)
     }
 
-    private fun settle(ctx: Context) {
-        val body = ctx.bodyAsClass<SettleInfo>().valid()
+    private suspend fun settle(ctx: RoutingContext) = with(ctx.call) {
+        val body = receive<SettleInfo>().valid()
         guidingService.settle(body)
     }
 
-    private fun dither(ctx: Context) {
-        val amount = ctx.queryParam("amount").notNull().toDouble()
-        val raOnly = ctx.queryParam("raOnly")?.toBoolean() ?: false
-        return guidingService.dither(amount, raOnly)
+    private fun dither(ctx: RoutingContext) = with(ctx.call) {
+        val amount = queryParameters["amount"].notNull().toDouble()
+        val raOnly = queryParameters["raOnly"]?.toBoolean() == true
+        guidingService.dither(amount, raOnly)
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun stop(ctx: Context) {
+    private fun stop(ctx: RoutingContext) = with(ctx.call) {
         guidingService.stop()
     }
 }

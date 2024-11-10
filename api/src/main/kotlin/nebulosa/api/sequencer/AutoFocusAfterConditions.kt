@@ -31,6 +31,6 @@ data class AutoFocusAfterConditions(
 
     companion object {
 
-        @JvmStatic val DISABLED = AutoFocusAfterConditions()
+        val DISABLED = AutoFocusAfterConditions()
     }
 }

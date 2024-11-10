@@ -52,6 +52,6 @@ data class DitherAfterExposureTask(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<DitherAfterExposureTask>()
+        private val LOG = loggerFor<DitherAfterExposureTask>()
     }
 }

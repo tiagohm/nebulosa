@@ -1,49 +1,66 @@
 package nebulosa.api.calibration
 
-import io.javalin.Javalin
-import io.javalin.http.Context
-import io.javalin.http.bodyAsClass
-import nebulosa.api.core.Controller
+import io.ktor.server.application.Application
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.delete
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.put
+import io.ktor.server.routing.routing
+import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.exists
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.path
 import nebulosa.api.validators.valid
 
 class CalibrationFrameController(
-    override val app: Javalin,
+    override val app: Application,
     private val calibrationFrameService: CalibrationFrameService,
 ) : Controller {
 
     init {
-        app.get("calibration-frames", ::groups)
-        app.get("calibration-frames/{group}", ::frames)
-        app.put("calibration-frames/{group}", ::upload)
-        app.post("calibration-frames", ::update)
-        app.delete("calibration-frames/{id}", ::delete)
+        with(app) {
+            routing {
+                get("/calibration-frames", ::groups)
+                get("/calibration-frames/{group}", ::frames)
+                put("/calibration-frames/{group}", ::upload)
+                post("/calibration-frames", ::update)
+                delete("/calibration-frames/{id}", ::delete)
+            }
+        }
     }
 
-    private fun groups(ctx: Context) {
-        ctx.json(calibrationFrameService.groups())
+    private suspend fun groups(ctx: RoutingContext) = with(ctx.call) {
+        respond(calibrationFrameService.groups())
     }
 
-    private fun frames(ctx: Context) {
-        val group = ctx.pathParam("group")
-        ctx.json(calibrationFrameService.frames(group).sorted())
+    private suspend fun frames(ctx: RoutingContext) = with(ctx.call) {
+        val group = pathParameters[GROUP].notNull()
+        respond(calibrationFrameService.frames(group).sorted())
     }
 
-    private fun upload(ctx: Context) {
-        val group = ctx.pathParam("group")
-        val path = ctx.queryParam("path").notNull().path().exists()
-        ctx.json(calibrationFrameService.upload(group, path))
+    private suspend fun upload(ctx: RoutingContext) = with(ctx.call) {
+        val group = pathParameters[GROUP].notNull()
+        val path = queryParameters[PATH].notNull().path().exists()
+        respond(calibrationFrameService.upload(group, path))
     }
 
-    private fun update(ctx: Context) {
-        val body = ctx.bodyAsClass<CalibrationFrameEntity>().valid()
-        ctx.json(calibrationFrameService.edit(body))
+    private suspend fun update(ctx: RoutingContext) = with(ctx.call) {
+        val body = receive<CalibrationFrameEntity>().valid()
+        respond(calibrationFrameService.edit(body))
     }
 
-    private fun delete(ctx: Context) {
-        val id = ctx.pathParam("id").notNull().toLong()
+    private fun delete(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull().toLong()
         calibrationFrameService.delete(id)
+    }
+
+    companion object {
+
+        private const val ID = "id"
+        private const val PATH = "path"
+        private const val GROUP = "group"
     }
 }

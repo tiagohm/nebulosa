@@ -5,7 +5,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import nebulosa.api.calibration.CalibrationFrameEntity
 import nebulosa.api.calibration.CalibrationFrameRepository
-import nebulosa.api.database.MainDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.indi.device.camera.FrameType
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.TransactionManager

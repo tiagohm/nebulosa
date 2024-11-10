@@ -73,6 +73,6 @@ data class PixInsightLRGBCombination(
 
     companion object {
 
-        @JvmStatic private val DEFAULT_CHANNEL_WEIGHTS = doubleArrayOf(1.0, 1.0, 1.0, 1.0)
+        private val DEFAULT_CHANNEL_WEIGHTS = doubleArrayOf(1.0, 1.0, 1.0, 1.0)
     }
 }

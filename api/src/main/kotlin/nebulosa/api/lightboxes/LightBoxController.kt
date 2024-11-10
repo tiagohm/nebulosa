@@ -1,72 +1,86 @@
 package nebulosa.api.lightboxes
 
-import io.javalin.Javalin
-import io.javalin.http.Context
+import io.ktor.server.application.Application
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondNullable
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.get
+import io.ktor.server.routing.put
+import io.ktor.server.routing.routing
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.core.Controller
+import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.positiveOrZero
 
 class LightBoxController(
-    override val app: Javalin,
+    override val app: Application,
     private val connectionService: ConnectionService,
     private val lightBoxService: LightBoxService,
 ) : Controller {
 
     init {
-        app.get("light-boxes", ::lightBoxes)
-        app.get("light-boxes/{id}", ::lightBox)
-        app.put("light-boxes/{id}/connect", ::connect)
-        app.put("light-boxes/{id}/disconnect", ::disconnect)
-        app.put("light-boxes/{id}/enable", ::enable)
-        app.put("light-boxes/{id}/disable", ::disable)
-        app.put("light-boxes/{id}/brightness", ::brightness)
-        app.put("light-boxes/{id}/listen", ::listen)
+        with(app) {
+            routing {
+                get("/light-boxes", ::lightBoxes)
+                get("/light-boxes/{id}", ::lightBox)
+                put("/light-boxes/{id}/connect", ::connect)
+                put("/light-boxes/{id}/disconnect", ::disconnect)
+                put("/light-boxes/{id}/enable", ::enable)
+                put("/light-boxes/{id}/disable", ::disable)
+                put("/light-boxes/{id}/brightness", ::brightness)
+                put("/light-boxes/{id}/listen", ::listen)
+            }
+        }
     }
 
-    private fun lightBoxes(ctx: Context) {
-        ctx.json(connectionService.lightBoxes().sorted())
+    private suspend fun lightBoxes(ctx: RoutingContext) = with(ctx.call) {
+        respond(connectionService.lightBoxes().sorted())
     }
 
-    private fun lightBox(ctx: Context) {
-        val id = ctx.pathParam("id")
-        connectionService.lightBox(id)?.also(ctx::json)
+    private suspend fun lightBox(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
+        respondNullable(connectionService.lightBox(id))
     }
 
-    private fun connect(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun connect(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.connect(lightBox)
     }
 
-    private fun disconnect(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun disconnect(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.disconnect(lightBox)
     }
 
-    private fun enable(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun enable(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.enable(lightBox)
     }
 
-    private fun disable(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun disable(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.disable(lightBox)
     }
 
-    private fun brightness(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun brightness(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val lightBox = connectionService.lightBox(id) ?: return
-        val intensity = ctx.queryParam("intensity").notNull().toDouble().positiveOrZero()
+        val intensity = queryParameters["intensity"].notNull().toDouble().positiveOrZero()
         lightBoxService.brightness(lightBox, intensity)
     }
 
-    private fun listen(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun listen(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val lightBox = connectionService.lightBox(id) ?: return
         lightBoxService.listen(lightBox)
+    }
+
+    companion object {
+
+        private const val ID = "id"
     }
 }

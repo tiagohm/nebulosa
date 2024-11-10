@@ -57,6 +57,6 @@ data class PixInsightIsRunning(override val slot: Int) : AbstractPixInsightScrip
         private const val NO_RUNNING_PROCESS = "There is no running (and alive) instance of the PixInsight"
         private const val YIELDED_EXECUTION_INSTANCE = "Yielded execution to running application instance #"
 
-        @JvmStatic private val LOG = loggerFor<PixInsightIsRunning>()
+        private val LOG = loggerFor<PixInsightIsRunning>()
     }
 }

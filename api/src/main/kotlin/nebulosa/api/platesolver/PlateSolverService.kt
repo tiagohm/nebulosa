@@ -18,6 +18,8 @@ class PlateSolverService(
             solve(request, path, key).get()
         } catch (e: CancellationException) {
             return ImageSolved.NO_SOLUTION
+        } catch (e: Throwable) {
+            throw RuntimeException(e.message)
         }
 
         imageBucket.put(path, calibration)

@@ -28,7 +28,10 @@ import kotlin.math.ceil
 /**
  * @see <a href="https://www.hnsky.org/astap.htm#astap_command_line">README</a>
  */
-data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
+data class AstapPlateSolver(
+    private val executablePath: Path,
+    private val fov: Angle = 0.0,
+) : PlateSolver {
 
     override fun solve(
         path: Path?, image: Image?,
@@ -43,7 +46,7 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
             "$executablePath",
             "-o", "$outFile",
             "-z", "$downsampleFactor",
-            "-fov", "0", // auto
+            "-fov", if (fov <= 0.0) "0" else "${fov.toDegrees}",
         )
 
         if (radius.toDegrees >= 0.1 && centerRA.isFinite() && centerDEC.isFinite()) {
@@ -135,7 +138,7 @@ data class AstapPlateSolver(private val executablePath: Path) : PlateSolver {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<AstapPlateSolver>()
+        private val LOG = loggerFor<AstapPlateSolver>()
 
         private fun Int.messageFromExitCode() = when (this) {
             1 -> "no solution found"

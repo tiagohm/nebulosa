@@ -17,7 +17,7 @@ class IERSTest {
         }
         with(UTC(TimeYMDHMS(2026, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2461042.0 plusOrMinus 1E-8)
-            fraction shouldBe (1.1488645833633137E-6 plusOrMinus 1E-8)
+            fraction shouldBe (1.111424768548443E-6 plusOrMinus 1E-8)
         }
         with(UTC(TimeYMDHMS(1964, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2438396.0 plusOrMinus 1E-8)
@@ -35,7 +35,7 @@ class IERSTest {
         }
         with(UTC(TimeYMDHMS(2026, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2461042.0 plusOrMinus 1E-8)
-            fraction shouldBe (6.586666666966254E-7 plusOrMinus 1E-8)
+            fraction shouldBe (6.832025463261943E-7 plusOrMinus 1E-8)
         }
         with(UTC(TimeYMDHMS(1964, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2438396.0 plusOrMinus 1E-8)
@@ -54,7 +54,7 @@ class IERSTest {
         }
         with(UTC(TimeYMDHMS(2026, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2461042.0 plusOrMinus 1E-8)
-            fraction shouldBe (1.1488645833633137E-6 plusOrMinus 1E-8)
+            fraction shouldBe (1.111424768548443E-6 plusOrMinus 1E-8)
         }
         with(UTC(TimeYMDHMS(1964, 1, 1, 12, 0, 0.0)).ut1) {
             whole shouldBe (2438396.0 plusOrMinus 1E-8)
@@ -64,12 +64,12 @@ class IERSTest {
 
     companion object {
 
-        @JvmStatic private val IERSA = IERSA()
-        @JvmStatic private val IERSB = IERSB()
+        private val IERSA = IERSA()
+        private val IERSB = IERSB()
 
         init {
-            val finals2000A = download("https://maia.usno.navy.mil/ser7/finals2000A.all")
-            val eopc04 = download("https://hpiers.obspm.fr/iers/eop/eopc04/eopc04.1962-now")
+            val finals2000A = download("https://github.com/tiagohm/nebulosa.data/raw/main/finals2000A.all.txt")
+            val eopc04 = download("https://github.com/tiagohm/nebulosa.data/raw/main/eopc04.1962-now.txt")
 
             finals2000A.inputStream().use(IERSA::load)
             eopc04.inputStream().use(IERSB::load)

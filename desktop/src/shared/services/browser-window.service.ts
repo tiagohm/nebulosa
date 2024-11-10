@@ -12,20 +12,17 @@ import { Mount } from '../types/mount.types'
 import { Rotator, RotatorDialogInput } from '../types/rotator.types'
 import { Wheel, WheelDialogInput } from '../types/wheel.types'
 import { Undefinable } from '../utils/types'
-import { ElectronService } from './electron.service'
 
 @Injectable({ providedIn: 'root' })
 export class BrowserWindowService {
-	constructor(private readonly electronService: ElectronService) {}
-
 	openWindow(open: OpenWindow): Promise<boolean> {
 		open.preference.modal = false
-		return this.electronService.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
+		return window.electron.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}
 
 	openModal<R = unknown>(open: OpenWindow): Promise<Undefinable<R>> {
 		open.preference.modal = true
-		return this.electronService.ipcRenderer.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
+		return window.electron.invoke('WINDOW.OPEN', { ...open, windowId: window.id })
 	}
 
 	openMount(data: Mount, preference: WindowPreference = {}) {

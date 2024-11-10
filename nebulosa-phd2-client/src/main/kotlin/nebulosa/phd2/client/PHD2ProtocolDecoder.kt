@@ -83,9 +83,9 @@ class PHD2ProtocolDecoder(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<PHD2ProtocolDecoder>()
+        private val LOG = loggerFor<PHD2ProtocolDecoder>()
 
-        @JvmStatic private val EVENT_TYPES = mapOf(
+        private val EVENT_TYPES = mapOf(
             "Alert" to (AlertEvent::class.java to null),
             "AppState" to (AppStateEvent::class.java to null),
             "Calibrating" to (CalibratingEvent::class.java to null),

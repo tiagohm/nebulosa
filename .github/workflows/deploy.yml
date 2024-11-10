@@ -65,7 +65,7 @@ jobs:
 
       - name: Install Linux Build Dependencies
         if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: sudo apt-get install -y rpm
+        run: sudo apt-get install -y rpm libarchive-tools
 
       - name: Build
         run: npm run electron:build
@@ -78,6 +78,8 @@ jobs:
             desktop/release/nebulosa*.AppImage
             desktop/release/nebulosa*.deb
             desktop/release/nebulosa*.rpm
+            desktop/release/nebulosa*.pacman
             desktop/release/nebulosa*.exe
+            desktop/release/nebulosa*.msi
             desktop/release/nebulosa*.dmg
-          retention-days: 3
+          retention-days: 1

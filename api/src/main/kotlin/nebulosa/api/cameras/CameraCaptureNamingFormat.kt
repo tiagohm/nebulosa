@@ -22,7 +22,7 @@ data class CameraCaptureNamingFormat(
 
     companion object {
 
-        @JvmStatic val EMPTY = CameraCaptureNamingFormat()
-        @JvmStatic val DEFAULT = CameraCaptureNamingFormat(LIGHT_FORMAT, DARK_FORMAT, FLAT_FORMAT, BIAS_FORMAT)
+        val EMPTY = CameraCaptureNamingFormat()
+        val DEFAULT = CameraCaptureNamingFormat(LIGHT_FORMAT, DARK_FORMAT, FLAT_FORMAT, BIAS_FORMAT)
     }
 }

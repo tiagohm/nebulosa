@@ -40,7 +40,7 @@ class CalibrationFrameService(private val calibrationFrameRepository: Calibratio
             if (darkImage != null || biasImage != null || flatImage != null) {
                 var transformedImage = if (createNew) image.clone() else image
 
-                //  If not using dark frames.
+                // If not using dark frames.
                 if (biasImage != null) {
                     // Subtract Master Bias from Flat Frames.
                     if (flatImage != null) {
@@ -205,6 +205,6 @@ class CalibrationFrameService(private val calibrationFrameRepository: Calibratio
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<CalibrationFrameService>()
+        private val LOG = loggerFor<CalibrationFrameService>()
     }
 }

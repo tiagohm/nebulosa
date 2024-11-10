@@ -57,6 +57,6 @@ class SirilCommandLine(executablePath: Path) : Runnable, CancellationListener, A
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<SirilCommandLine>()
+        private val LOG = loggerFor<SirilCommandLine>()
     }
 }

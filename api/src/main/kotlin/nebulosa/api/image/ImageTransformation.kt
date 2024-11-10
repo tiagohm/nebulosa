@@ -23,7 +23,7 @@ data class ImageTransformation(
 
         companion object {
 
-            @JvmStatic val EMPTY = SCNR()
+            val EMPTY = SCNR()
         }
     }
 
@@ -32,16 +32,17 @@ data class ImageTransformation(
         @JvmField val shadow: Int = 0,
         @JvmField val highlight: Int = 32768,
         @JvmField val midtone: Int = 65536,
+        @JvmField val meanBackground: Float = 0.5f,
     ) {
 
         companion object {
 
-            @JvmStatic val EMPTY = Stretch()
+            val EMPTY = Stretch()
         }
     }
 
     companion object {
 
-        @JvmStatic val EMPTY = ImageTransformation()
+        val EMPTY = ImageTransformation()
     }
 }

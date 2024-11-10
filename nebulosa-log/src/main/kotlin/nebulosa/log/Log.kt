@@ -85,6 +85,14 @@ inline fun Logger.e(message: String, a0: Any?, a1: Any?) {
     if (isErrorEnabled) error(message, a0, a1)
 }
 
+inline fun Logger.e(message: String, a0: Any?, a1: Any?, a2: Any?) {
+    if (isErrorEnabled) error(message, a0, a1, a2)
+}
+
+inline fun Logger.e(message: String, a0: Any?, a1: Any?, a2: Any?, a3: Any?) {
+    if (isErrorEnabled) error(message, a0, a1, a2, a3)
+}
+
 // DEBUG
 
 inline fun Logger.d(message: String) {

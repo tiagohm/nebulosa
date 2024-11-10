@@ -12,4 +12,14 @@ interface PlateSolver {
         centerRA: Angle = 0.0, centerDEC: Angle = 0.0, radius: Angle = 0.0,
         downsampleFactor: Int = 0, timeout: Duration = Duration.ZERO,
     ): PlateSolution
+
+    companion object {
+
+        /**
+         * Computes the FOV in arcsec/pixel from [focalLength] in mm and [pixelSize] in µm.
+         */
+        fun computeFOV(focalLength: Double, pixelSize: Double): Double {
+            return if (focalLength <= 0.0) 0.0 else (pixelSize / focalLength) * 206.265
+        }
+    }
 }

@@ -1,10 +1,16 @@
-* text eol=lf
+* text=auto
 
 # Linux start script should use lf
 /gradlew        text eol=lf
 
 # These are Windows script files and should use crlf
 *.bat           text eol=crlf
+
+# Ensure shell scripts and other executable text files retain their executable flag
+*.sh eol=lf
+
+# Disable diffing for certain file types
+*.lock -diff
 
 *.dat           binary
 *.bsp           binary
@@ -16,6 +22,7 @@
 *.ttf           binary
 *.xcf           binary
 *.png           binary
+*.icns          binary
 *.db            binary
 *.gz            binary
 *.dll           binary

@@ -305,7 +305,7 @@ class INDIXmlInputStream(source: InputStream) : INDIInputStream {
 
     companion object {
 
-        @JvmStatic private val XML_INPUT_FACTORY = InputFactoryImpl()
+        private val XML_INPUT_FACTORY = InputFactoryImpl()
 
         private const val DEF_SWITCH_VECTOR_NAME = "defSwitchVector"
         private const val DEF_NUMBER_VECTOR_NAME = "defNumberVector"

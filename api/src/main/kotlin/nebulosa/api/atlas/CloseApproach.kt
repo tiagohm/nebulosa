@@ -17,11 +17,10 @@ data class CloseApproach(
 
     companion object {
 
-        @JvmStatic val EMPTY = CloseApproach()
+        val EMPTY = CloseApproach()
 
-        @JvmStatic private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-LLL-dd HH:mm", Locale.ENGLISH)
+        private val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-LLL-dd HH:mm", Locale.ENGLISH)
 
-        @JvmStatic
         fun of(body: SmallBodyIdentified): List<CloseApproach> {
             val data = ArrayList<CloseApproach>(body.count)
 

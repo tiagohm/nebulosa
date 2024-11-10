@@ -415,7 +415,7 @@ data class AutoFocus(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<AutoFocus>()
+        private val LOG = loggerFor<AutoFocus>()
 
         private fun List<StarPoint>.measureDetectedStars(): MeasuredStars {
             if (isEmpty()) return MeasuredStars.EMPTY

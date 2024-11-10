@@ -5,104 +5,154 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jsonMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.rvesse.airline.annotations.Command
 import com.github.rvesse.airline.annotations.Option
-import io.javalin.Javalin
-import io.javalin.http.Context
-import io.javalin.http.HttpStatus.BAD_REQUEST
-import io.javalin.json.JavalinJackson
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import kotlinx.coroutines.runBlocking
 import nebulosa.api.converters.DeviceModule
-import nebulosa.api.core.ErrorResponse
-import nebulosa.api.database.MainDatabaseMigrator
-import nebulosa.api.database.SkyDatabaseMigrator
+import nebulosa.api.core.FileLocker
+import nebulosa.api.database.migration.MainDatabaseMigrator
+import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.inject.*
+import nebulosa.api.ktor.configureHTTP
+import nebulosa.api.ktor.configureMonitoring
+import nebulosa.api.ktor.configureRouting
+import nebulosa.api.ktor.configureSerialization
+import nebulosa.api.ktor.configureSockets
 import nebulosa.json.PathModule
-import nebulosa.log.i
+import nebulosa.log.di
 import nebulosa.log.loggerFor
 import org.koin.core.context.startKoin
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.ConnectException
-import java.util.concurrent.ExecutionException
+import java.net.HttpURLConnection
+import java.net.URL
+import java.nio.file.Path
+import java.util.*
 import java.util.concurrent.ExecutorService
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.fileSize
+import kotlin.io.path.inputStream
+import kotlin.io.path.isRegularFile
+import kotlin.system.exitProcess
+import ch.qos.logback.classic.Logger as LogbackLogger
 
 @Command(name = "nebulosa")
-class Nebulosa : Runnable, AutoCloseable {
+class Nebulosa : Runnable {
+
+    private val properties = Properties(3)
+
+    init {
+        Path(System.getProperty(APP_DIR_KEY), PROPERTIES_FILENAME)
+            .takeIf { it.exists() && it.isRegularFile() }
+            ?.also { it.inputStream().use(properties::load) }
+    }
 
     @Option(name = ["-h", "--host"])
-    private var host = "0.0.0.0"
+    private var host = properties.getProperty("host")?.ifBlank { null } ?: DEFAULT_HOST
 
     @Option(name = ["-p", "--port"])
-    private var port = 0
+    private var port = properties.getProperty("port")?.ifBlank { null }?.toIntOrNull() ?: DEFAULT_PORT
 
     @Option(name = ["-d", "--debug"])
-    private var debug = false
+    private var debug = properties.getProperty("debug")?.toBoolean() == true
 
-    private lateinit var app: Javalin
+    @Option(name = ["-t", "--trace"])
+    private var trace = properties.getProperty("trace")?.toBoolean() == true
+
+    @Option(name = ["-f", "--files"])
+    private val files = mutableListOf<String>()
 
     override fun run() {
         if (debug) {
-            with(LoggerFactory.getLogger("nebulosa") as ch.qos.logback.classic.Logger) {
+            with(LoggerFactory.getLogger("nebulosa") as LogbackLogger) {
                 level = Level.DEBUG
+            }
+
+            if (trace) {
+                with(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as LogbackLogger) {
+                    level = Level.TRACE
+                }
             }
         }
 
-        // Run the server.
-        app = Javalin.create { config ->
-            config.showJavalinBanner = false
-            // JACKSON
-            config.jsonMapper(JavalinJackson(OBJECT_MAPPER))
-            // CORS
-            config.bundledPlugins.enableCors { cors ->
-                cors.addRule {
-                    it.anyHost()
-                    it.exposeHeader("X-Image-Info")
-                }
+        // is running simultaneously!
+        if (!FileLocker.tryLock()) {
+            try {
+                if (files.map(Path::of)
+                        .filter { it.exists() && it.isRegularFile() && it.fileSize() > 0L }
+                        .takeIf { it.isNotEmpty() }
+                        ?.let(::requestToOpenImagesOnDesktop) == true
+                ) exitProcess(1)
+            } catch (e: Throwable) {
+                LOG.error("failed to request to open images on desktop", e)
             }
-        }.start(host, port)
 
-        app.exception(Exception::class.java, ::handleException)
+            exitProcess(129)
+        }
 
-        koinApp.modules(appModule(app))
+        // Run the server.
+        // https://start.ktor.io/settings?name=ktor-sample&website=example.com&artifact=com.example.ktor-sample&kotlinVersion=2.0.21&ktorVersion=3.0.1&buildSystem=GRADLE_KTS&engine=NETTY&configurationIn=CODE&addSampleCode=true&plugins=routing%2Cktor-websockets%2Ccontent-negotiation%2Cktor-jackson%2Ccall-logging%2Ccors%2Ccompression%2Cstatic-content%2Cresources
+        val server = embeddedServer(Netty, port = port, host = host) {
+            configureHTTP()
+            configureSerialization(OBJECT_MAPPER)
+            configureSockets()
+            configureRouting()
+            configureMonitoring(debug)
+        }.start(false)
+
+        // app.exception(Exception::class.java, ::handleException)
+
+        koinApp.modules(serverModule(server))
         koinApp.modules(objectMapperModule(OBJECT_MAPPER))
         koinApp.modules(servicesModule())
         koinApp.modules(controllersModule())
         startKoin(koinApp)
 
-        LOG.i("server is started at port: {}", app.port())
+        with(runBlocking { server.engine.resolvedConnectors().first().port }) {
+            println("server is started at port: $this")
+            FileLocker.write("$this")
+        }
 
         with(koinApp.koin) {
             val executor = get<ExecutorService>()
             executor.submit(get<MainDatabaseMigrator>())
             executor.submit(get<SkyDatabaseMigrator>())
         }
+
+        Thread.currentThread().join()
     }
 
-    private fun handleException(ex: Exception, ctx: Context) {
-        val message = when (ex) {
-            is ConnectException -> "connection refused"
-            is NumberFormatException -> "invalid number: ${ex.message}"
-            is ExecutionException -> ex.cause!!.message!!
-            else -> ex.message!!
-        }
-
-        ctx.status(BAD_REQUEST).json(ErrorResponse.error(message.lowercase()))
-    }
-
-    override fun close() {
-        app.stop()
+    private fun requestToOpenImagesOnDesktop(paths: Iterable<Path>): Boolean {
+        val port = FileLocker.read().toIntOrNull() ?: return false
+        LOG.di("requesting to open images on desktop. port={}, paths={}", port, paths)
+        val query = paths.map { "$it".encodeToByteArray() }.joinToString("&") { "path=${Base64.getUrlEncoder().encodeToString(it)}" }
+        val url = URL("http://localhost:$port/image/open-on-desktop?$query")
+        val connection = url.openConnection() as HttpURLConnection
+        connection.setRequestMethod("POST")
+        LOG.di("response from opening images on desktop. url={}, code={}", url, connection.responseCode)
+        connection.disconnect()
+        return true
     }
 
     companion object {
 
-        @JvmStatic internal val LOG = loggerFor<Nebulosa>()
+        internal val LOG = loggerFor<Nebulosa>()
 
-        @JvmStatic private val OBJECT_MAPPER = jsonMapper {
+        const val PROPERTIES_FILENAME = "nebulosa.properties"
+        const val DEFAULT_HOST = "0.0.0.0"
+        const val DEFAULT_PORT = 0
+
+        private val OBJECT_MAPPER = jsonMapper {
             addModule(JavaTimeModule())
             addModule(PathModule())
             addModule(DeviceModule())
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
             disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        }
+        }.registerKotlinModule()
     }
 }

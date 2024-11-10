@@ -56,6 +56,6 @@ class SmallBodyCloseApprochServiceTest {
 
     companion object {
 
-        @JvmStatic private val SERVICE = SmallBodyDatabaseService(httpClient = HTTP_CLIENT)
+        private val SERVICE = SmallBodyDatabaseService(httpClient = HTTP_CLIENT)
     }
 }

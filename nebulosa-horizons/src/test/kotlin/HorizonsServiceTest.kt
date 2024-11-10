@@ -11,6 +11,7 @@ import nebulosa.math.deg
 import nebulosa.math.km
 import nebulosa.math.m
 import nebulosa.nasa.daf.SourceDaf
+import nebulosa.nasa.spk.NAIF
 import nebulosa.nasa.spk.Spk
 import nebulosa.test.HTTP_CLIENT
 import okio.ByteString.Companion.decodeBase64
@@ -31,12 +32,13 @@ class HorizonsServiceTest {
     fun spk() {
         val start = LocalDateTime.of(2023, 1, 1, 0, 0)
         val end = LocalDateTime.of(2023, 12, 31, 23, 59)
-        val spkFile = SERVICE.spk(1003517, start, end).execute().body().shouldNotBeNull()
-        spkFile.id shouldBeExactly 1003517
+        val spkId = NAIF.extendedPermanentAsteroidNumber(3517)
+        val spkFile = SERVICE.spk(spkId, start, end).execute().body().shouldNotBeNull()
+        spkFile.id shouldBeExactly spkId
         val spkBytes = spkFile.spk.decodeBase64()
         val spk = Spk(SourceDaf(spkBytes!!.asByteBuffer().source()))
         spk.shouldHaveSize(1)
-        spk[10, 1003517].shouldNotBeNull()
+        spk[NAIF.SUN, spkId].shouldNotBeNull()
     }
 
     @Test
@@ -124,6 +126,6 @@ class HorizonsServiceTest {
 
     companion object {
 
-        @JvmStatic private val SERVICE = HorizonsService(httpClient = HTTP_CLIENT)
+        private val SERVICE = HorizonsService(httpClient = HTTP_CLIENT)
     }
 }

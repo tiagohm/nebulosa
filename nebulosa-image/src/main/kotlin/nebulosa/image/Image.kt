@@ -225,13 +225,13 @@ class Image internal constructor(
         fun <T> T.asImage(debayer: Boolean = true) where T : ImageRepresentation, T : AutoCloseable = use { open(it, debayer) }
 
         @JvmStatic
-        internal fun colorModel(mono: Boolean): ColorModel {
+        fun colorModel(mono: Boolean): ColorModel {
             val space = ColorSpace.getInstance(if (mono) ColorSpace.CS_GRAY else ColorSpace.CS_sRGB)
             return ComponentColorModel(space, false, false, OPAQUE, DataBuffer.TYPE_BYTE)
         }
 
         @JvmStatic
-        internal fun raster(width: Int, height: Int, mono: Boolean, red: FloatArray, green: FloatArray, blue: FloatArray): WritableRaster {
+        fun raster(width: Int, height: Int, mono: Boolean, red: FloatArray, green: FloatArray, blue: FloatArray): WritableRaster {
             val pixelStride = if (mono) 1 else 3
             val bandOffsets = if (mono) intArrayOf(0) else intArrayOf(0, 1, 2)
             val sampleModel = PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, width, height, pixelStride, width * pixelStride, bandOffsets)
@@ -240,7 +240,7 @@ class Image internal constructor(
         }
 
         @JvmStatic
-        internal fun raster(hdu: ImageHdu, mono: Boolean): WritableRaster {
+        fun raster(hdu: ImageHdu, mono: Boolean): WritableRaster {
             return if (mono || hdu.data.numberOfChannels >= 3) {
                 raster(hdu.width, hdu.height, mono, hdu.data.red, hdu.data.green, hdu.data.blue)
             } else {
@@ -264,8 +264,9 @@ class Image internal constructor(
             return image
         }
 
-        private inline fun Image.debayer(bayer: CfaPattern? = CfaPattern.from(header)) {
+        private fun Image.debayer(bayer: CfaPattern? = CfaPattern.from(header)) {
             if (bayer != null) {
+                check(!mono) { "image must be color to be debayered" }
                 Debayer(bayer).transform(this)
             }
         }

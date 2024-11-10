@@ -42,13 +42,13 @@ data class LiveStack(@JvmField val path: Path) : SirilCommand<Boolean>, CommandL
 
     companion object {
 
-        @JvmStatic private val SUCCESSFUL_LOGS = arrayOf(
+        private val SUCCESSFUL_LOGS = arrayOf(
             "log: Waiting for second image",
             "log: Stacked image",
             "log: Live stacking waiting for files"
         )
 
-        @JvmStatic private val FAILED_LOGS = arrayOf(
+        private val FAILED_LOGS = arrayOf(
             "Not enough stars",
             "Sequence processing partially succeeded",
             "Script execution failed",

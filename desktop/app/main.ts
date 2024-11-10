@@ -1,4 +1,4 @@
-import { Menu, app, ipcMain } from 'electron'
+import { type BrowserWindow, Menu, app, dialog, ipcMain } from 'electron'
 import * as fs from 'fs'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { spawn } from 'node:child_process'
@@ -11,6 +11,7 @@ const argParser = new ArgumentParser()
 const parsedArgs = argParser.parse(process.argv.slice(1))
 
 app.commandLine.appendSwitch('disable-http-cache')
+app.commandLine.appendSwitch('lang', 'en-US')
 
 if (parsedArgs.apiMode) {
 	// https://github.com/electron/electron/issues/32760#issuecomment-2227575986
@@ -29,16 +30,41 @@ process.on('beforeExit', () => {
 	apiProcess?.kill()
 })
 
-function createApiProcess(port: number = parsedArgs.port) {
+function showErrorBox(title: string, message: string) {
+	dialog.showMessageBoxSync({ message, title, type: 'error' })
+}
+
+function createApiProcess(splashWindow?: BrowserWindow, port: number = parsedArgs.port) {
 	const apiJar = join(process.resourcesPath, 'api.jar')
-	const apiProcess = spawn('java', ['-jar', apiJar, `--port=${port}`])
 
-	apiProcess.on('close', (code) => {
-		console.warn(`api process exited with code: ${code}`)
-		process.exit(code ?? 0)
-	})
+	try {
+		const files = parsedArgs.files.map((e) => ['-f', e]).flat()
+		const apiProcess = spawn('java', ['-jar', apiJar, `-p`, `${port}`, ...files])
 
-	return apiProcess
+		apiProcess.on('close', (code) => {
+			if (code === 129) {
+				splashWindow?.hide()
+				showErrorBox('Failed to start', 'There is already an instance running!')
+			} else {
+				splashWindow?.hide()
+			}
+
+			console.warn(`api process exited with code: ${code}`)
+			process.exit(code ?? 0)
+		})
+
+		apiProcess.on('error', () => {
+			splashWindow?.hide()
+			showErrorBox('Failed to start', 'Do you have Java 17+ installed?')
+			process.exit(1)
+		})
+
+		return apiProcess
+	} catch {
+		splashWindow?.hide()
+		showErrorBox('Failed to start', 'Do you have Java 17+ installed?')
+		return process.exit(1)
+	}
 }
 
 let started = false
@@ -57,15 +83,14 @@ async function startApp() {
 			} else {
 				const splashWindow = await windowManager.createSplashWindow()
 
-				apiProcess = createApiProcess()
+				apiProcess = createApiProcess(splashWindow)
+
+				const regex = /server is started at port: (\d+)/i
 
 				apiProcess.stdout.on('data', (data: Buffer) => {
 					const text = data.toString('utf-8')
 
-					console.info(text)
-
 					if (text) {
-						const regex = /server is started at port: (\d+)/i
 						const match = regex.exec(text)
 
 						if (match) {
@@ -82,6 +107,7 @@ async function startApp() {
 			console.error(e)
 
 			apiProcess?.kill()
+			showErrorBox('Failed to start', `${e}`)
 			process.exit(0)
 		}
 	}
@@ -148,6 +174,7 @@ try {
 	ipcMain.handle('WINDOW.RESIZE', (e, command) => windowManager.handleWindowResize(e, command))
 	ipcMain.handle('WINDOW.FULLSCREEN', (e, command) => windowManager.handleWindowFullscreen(e, command))
 	ipcMain.handle('WINDOW.CLOSE', (e, command) => windowManager.handleWindowClose(e, command))
+	ipcMain.handle('WINDOW.OPEN_DEV_TOOLS', (e, command) => windowManager.handleWindowOpenDevTools(e, command))
 
 	const events: InternalEventType[] = ['WHEEL.RENAMED', 'LOCATION.CHANGED', 'CALIBRATION.CHANGED', 'ROI.SELECTED']
 

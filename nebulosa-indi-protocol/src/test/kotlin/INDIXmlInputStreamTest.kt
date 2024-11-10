@@ -321,7 +321,6 @@ class INDIXmlInputStreamTest {
 
     companion object {
 
-        @JvmStatic
         private fun INDIProtocol.toInputStream(): InputStream {
             val baos = ByteArrayOutputStream(256)
             writeTo(PrintStream(baos))

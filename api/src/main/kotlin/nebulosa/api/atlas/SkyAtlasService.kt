@@ -1,8 +1,6 @@
 package nebulosa.api.atlas
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.javalin.http.NotFoundResponse
-import jakarta.servlet.http.HttpServletResponse
 import nebulosa.api.atlas.ephemeris.BodyEphemerisProvider
 import nebulosa.api.atlas.ephemeris.HorizonsEphemerisProvider
 import nebulosa.horizons.HorizonsElement
@@ -65,9 +63,8 @@ class SkyAtlasService(
 
     val objectTypes: Collection<SkyObjectType> by lazy { skyObjectEntityRepository.objectTypes }
 
-    fun imageOfSun(output: HttpServletResponse) {
-        output.contentType = "image/png"
-        output.outputStream.write(sunImage)
+    fun imageOfSun(): ByteArray {
+        return sunImage
     }
 
     fun positionOfSun(location: GeographicCoordinate, dateTime: LocalDateTime, fast: Boolean = false): BodyPosition {
@@ -84,7 +81,7 @@ class SkyAtlasService(
     }
 
     fun positionOfSkyObject(location: GeographicCoordinate, id: Long, dateTime: LocalDateTime): BodyPosition {
-        val target = cachedSkyObjectEntities[id] ?: skyObjectEntityRepository[id] ?: throw NotFoundResponse("Cannot found sky object: [$id]")
+        val target = requireNotNull(cachedSkyObjectEntities[id] ?: skyObjectEntityRepository[id]) { "cannot found sky object: [$id]" }
         cachedSkyObjectEntities[id] = target
         val distance = SkyObject.distanceFor(target.parallax.toMas)
         return positionOfBody(target, location, dateTime)!!
@@ -177,7 +174,7 @@ class SkyAtlasService(
     }
 
     fun altitudePointsOfSkyObject(location: GeographicCoordinate, id: Long, dateTime: LocalDateTime, stepSize: Int): List<DoubleArray> {
-        val target = cachedSkyObjectEntities[id] ?: skyObjectEntityRepository[id] ?: throw NotFoundResponse("Cannot found sky object: [$id]")
+        val target = requireNotNull(cachedSkyObjectEntities[id] ?: skyObjectEntityRepository[id]) { "cannot found sky object: [$id]" }
         cachedSkyObjectEntities[id] = target
         val ephemeris = bodyEphemeris(target, location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)
@@ -280,34 +277,29 @@ class SkyAtlasService(
         private const val SUN = "10"
         private const val MOON = "301"
 
-        @JvmStatic private val FAST_MOON = VSOP87E.EARTH + ELPMPP02
-        @JvmStatic private val MOON_PHASE_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00")
+        private val FAST_MOON by lazy { VSOP87E.EARTH + ELPMPP02 }
+        private val MOON_PHASE_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00")
 
-        @JvmStatic
         private fun GeographicCoordinate.geographicPosition() = when (this) {
             is GeographicPosition -> this
             else -> Geoid.IERS2010.lonLat(this)
         }
 
-        @JvmStatic
         private fun GeographicCoordinate.offsetInSeconds() = when (this) {
             is TimeZonedInSeconds -> offsetInSeconds
             else -> 0
         }
 
-        @JvmStatic
         private fun GeographicCoordinate.offsetInMinutes() = when (this) {
             is Location -> offsetInMinutes
             else -> offsetInSeconds() / 60
         }
 
-        @JvmStatic
         private fun List<HorizonsElement>.withLocationAndDateTime(location: GeographicCoordinate, dateTime: LocalDateTime): HorizonsElement? {
             val offsetInMinutes = location.offsetInMinutes().toLong()
             return let { HorizonsElement.of(it, dateTime.minusMinutes(offsetInMinutes)) }
         }
 
-        @JvmStatic
         private fun BufferedImage.removeBackground(): BufferedImage {
             val output = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
 

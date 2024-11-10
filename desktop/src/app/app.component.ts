@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, NgZone, OnDestroy } from '@angular/core'
 import { Title } from '@angular/platform-browser'
+import hotkeys from 'hotkeys-js'
 import { APP_CONFIG } from '../environments/environment'
 import { MenuItem } from '../shared/components/menu-item/menu-item.component'
 import { ConfirmationService } from '../shared/services/confirmation.service'
@@ -10,8 +11,8 @@ import { ElectronService } from '../shared/services/electron.service'
 	templateUrl: './app.component.html',
 })
 export class AppComponent implements OnDestroy {
-	readonly maximizable = !!window.preference.resizable
-	readonly modal = window.preference.modal ?? false
+	readonly maximizable = !!window.context.resizable
+	readonly modal = window.context.modal ?? false
 	readonly topMenu: MenuItem[] = []
 
 	subTitle? = ''
@@ -38,13 +39,7 @@ export class AppComponent implements OnDestroy {
 	) {
 		console.info('APP_CONFIG', APP_CONFIG)
 
-		if (electronService.isElectron) {
-			console.info('Run in electron', window.preference)
-		} else {
-			console.info('Run in browser', window.preference)
-		}
-
-		if (!window.preference.resizable && window.preference.autoResizable !== false) {
+		if (!window.context.resizable && window.context.autoResizable !== false) {
 			this.resizeObserver = new ResizeObserver((entries) => {
 				this.resizeWindowFromElement(entries[0].target)
 			})
@@ -65,6 +60,11 @@ export class AppComponent implements OnDestroy {
 					return confirmationService.processConfirmationEvent(event)
 				})
 			}
+		})
+
+		hotkeys('ctrl+alt+shift+d', (event) => {
+			event.preventDefault()
+			void electronService.openDevTools()
 		})
 	}
 

@@ -107,7 +107,7 @@ internal data class XisfMonolithicFileHeaderImageData(
 
                     val size = compressedSource.read(buffer, byteCount)
 
-                    if (size == 0L) break
+                    if (size <= 0L) break
 
                     // require(size % image.sampleFormat.byteLength == 0L)
                     n = (size / image.sampleFormat.byteLength).toInt()
@@ -161,6 +161,6 @@ internal data class XisfMonolithicFileHeaderImageData(
 
     companion object {
 
-        const val PIXEL_COUNT = 64
+        const val PIXEL_COUNT = 1024
     }
 }

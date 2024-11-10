@@ -105,7 +105,7 @@ class AlpacaDiscoveryProtocol : Runnable, AutoCloseable {
 
         private const val ALPACA_DISCOVERY_MESSAGE = "alpacadiscovery1"
 
-        @JvmStatic private val ALPACA_PORT_REGEX = Regex("\\{\"AlpacaPort\":(\\d+)}")
-        @JvmStatic private val LOG = loggerFor<AlpacaDiscoveryProtocol>()
+        private val ALPACA_PORT_REGEX = Regex("\\{\"AlpacaPort\":(\\d+)}")
+        private val LOG = loggerFor<AlpacaDiscoveryProtocol>()
     }
 }

@@ -129,10 +129,9 @@ data class WatneyPlateSolver(
 
         private const val MIN_MATCHES = 5
 
-        @JvmStatic private val LOG = loggerFor<WatneyPlateSolver>()
-        @JvmStatic private val DEFAULT_STAR_DETECTOR = WatneyStarDetector()
+        private val LOG = loggerFor<WatneyPlateSolver>()
+        private val DEFAULT_STAR_DETECTOR = WatneyStarDetector()
 
-        @JvmStatic
         internal fun formImageStarQuads(starsFound: List<StarPoint>): Pair<List<ImageStarQuad>, Int> {
             val quads = ArrayList<ImageStarQuad>()
             var countInFirstPass = 0
@@ -201,7 +200,6 @@ data class WatneyPlateSolver(
             return quadsArray to countInFirstPass
         }
 
-        @JvmStatic
         private fun trySolve(
             image: Image, searchRun: SearchRun, countInFirstPass: Int,
             quadDatabase: QuadDatabase, numSubSets: Int, subSetIndex: Int,
@@ -281,13 +279,11 @@ data class WatneyPlateSolver(
             return solveResult
         }
 
-        @JvmStatic
         private fun isValidSolution(solution: ComputedPlateSolution?): Boolean {
             return solution != null && solution.centerRA.isFinite() && solution.centerDEC.isFinite()
                     && solution.orientation.isFinite() && solution.plateConstants.isValid
         }
 
-        @JvmStatic
         private fun performAccuracyImprovementForSolution(
             image: Image, solution: ComputedPlateSolution,
             pixelAngularSearchFieldSizeRatio: Double, quadDatabase: QuadDatabase,
@@ -304,7 +300,6 @@ data class WatneyPlateSolver(
             else null
         }
 
-        @JvmStatic
         private fun solvePlateConstants(matches: List<StarQuadMatch>, centerRA: Angle, centerDEC: Angle): PlateConstants {
             val equationInputs = matches.map {
                 val (x, y) = equatorialToStandardCoordinates(it.catalogQuad.midPointX, it.catalogQuad.midPointY, centerRA, centerDEC)
@@ -317,7 +312,6 @@ data class WatneyPlateSolver(
             return PlateConstants(a, b, c, d, e, f)
         }
 
-        @JvmStatic
         private fun calculateSolution(
             image: Image,
             matches: List<StarQuadMatch>,
@@ -409,7 +403,6 @@ data class WatneyPlateSolver(
             ) to acceptedMatches
         }
 
-        @JvmStatic
         private fun calculatePixelsPerDegree(matches: List<StarQuadMatch>): Double {
             val pixelsPerDegree = ArrayList<Double>()
 
@@ -434,7 +427,6 @@ data class WatneyPlateSolver(
             return pixelsPerDegree.average()
         }
 
-        @JvmStatic
         private fun getMatchedAndUnmatchedSearchRuns(results: List<SolveResult>): Pair<List<SolveResult>, List<SolveResult>> {
             val withMatches = ArrayList<SolveResult>(results.size)
             val withoutMatches = ArrayList<SolveResult>(results.size)
@@ -449,7 +441,6 @@ data class WatneyPlateSolver(
             return withMatches to withoutMatches
         }
 
-        @JvmStatic
         private fun findMatches(
             pixelToAngleRatio: Double, imageQuads: List<ImageStarQuad>,
             dbQuads: MutableList<StarQuad>,

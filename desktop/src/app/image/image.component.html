@@ -1,11 +1,25 @@
 <span
-	class="bg-black-alpha-20 border-round-sm fixed pointer-events-none px-3 py-2 select-none z-1"
+	class="bg-black-alpha-20 border-round-sm fixed px-3 py-2 select-none z-1 flex flex-row align-items-center gap-1"
 	style="top: 48px; left: 6px">
-	{{ zoom.scale.toFixed(1) }}x
+	<span
+		pTooltip="Zoom"
+		tooltipPosition="bottom"
+		[positionTop]="8">
+		{{ zoom.scale.toFixed(2) }}x
+	</span>
+	<span
+		class="cursor-pointer"
+		pTooltip="Rotation"
+		tooltipPosition="bottom"
+		[positionTop]="8"
+		(wheel)="rotateWithWheel($event)"
+		(click)="rotation.showDialog = true">
+		| {{ rotation.transformation.angle.toFixed(2) }}°
+	</span>
 </span>
 
 <div
-	class="inline-block relative"
+	class="inline-block"
 	style="backface-visibility: hidden">
 	<img
 		#image
@@ -13,24 +27,27 @@
 		(click)="imageClicked($event, false)"
 		(contextmenu)="imageClicked($event, true)"
 		class="select-none"
+		[style]="'vertical-align: bottom; transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		[class.pixelated]="settings.preference.pixelated"
 		(mousemove)="imageMouseMoved($event)"
 		[class.cursor-crosshair]="isMouseCoordinateVisible" />
 
 	<neb-crosshair
-		*ngIf="preference.crossHair"
+		*ngIf="preference.crossHair && zoom.panZoom"
+		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="absolute left-0 top-0" />
 
 	<svg
 		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && annotation.visible"
+		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
 		<g
-			*ngFor="let a of annotation.data"
+			*ngFor="let a of annotation.displayOnlyFiltered ? annotation.filtered : annotation.data"
 			(dblclick)="showAnnotationInfo(a)"
 			class="pointer-events-auto cursor-pointer">
 			<circle
-				[attr.cx]="a.x"
-				[attr.cy]="a.y"
+				[attr.cx]="a.x - 0.5"
+				[attr.cy]="a.y - 0.5"
 				r="4"
 				stroke="#FDD835"
 				stroke-width="1"
@@ -39,7 +56,7 @@
 				[attr.x]="a.x"
 				[attr.y]="a.y"
 				fill="#00897B"
-				style="font-size: 5px"
+				[style]="'font-size: 5px; transform: rotate(' + -rotation.transformation.angle + 'deg); transform-origin: ' + (a.x - 0.5) + 'px ' + (a.y - 0.5) + 'px 0px'"
 				class="pointer-events-none select-none">
 				{{ (a.star ?? a.dso ?? a.minorPlanet)?.name?.join(' · ') }}
 			</text>
@@ -48,13 +65,14 @@
 
 	<svg
 		*ngIf="!transformation.mirrorHorizontal && !transformation.mirrorVertical && starDetector.visible"
+		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none">
 		<g
 			*ngFor="let s of starDetector.stars"
 			class="pointer-events-auto cursor-pointer">
 			<circle
-				[attr.cx]="s.x"
-				[attr.cy]="s.y"
+				[attr.cx]="s.x - 0.5"
+				[attr.cy]="s.y - 0.5"
 				r="4"
 				stroke="#FDD835"
 				stroke-width="1"
@@ -64,7 +82,7 @@
 				[attr.x]="s.x"
 				[attr.y]="s.y"
 				fill="#00897B"
-				style="font-size: 5px"
+				[style]="'font-size: 5px; transform: rotate(-' + rotation.transformation.angle + 'deg); transform-origin: ' + (s.x - 0.5) + 'px ' + (s.y - 0.5) + 'px 0px'"
 				class="pointer-events-none select-none">
 				{{ s.hfd.toFixed(1) }}
 			</text>
@@ -73,6 +91,7 @@
 
 	<svg
 		*ngIf="imageInfo"
+		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="absolute left-0 top-0 w-full h-full pointer-events-none select-none fov overflow-visible">
 		@for (item of fov.fovs; track $index) {
 			@if (item.enabled && item.computed) {
@@ -82,21 +101,22 @@
 					[attr.x]="item.computed.svg.x"
 					[attr.y]="item.computed.svg.y"
 					[attr.stroke]="item.color"
-					style="transform: translate(-50%, -50%)" />
+					[style]="'transform-box: fill-box; transform-origin: center; transform: translate(-50%, -50%) rotate(' + item.rotation + 'deg)'" />
 			}
 		}
 	</svg>
 
 	<div
 		#roi
-		[class.hidden]="!imageROI.show"
+		[class.hidden]="!hasROI"
+		[style]="'transform: rotate(' + rotation.transformation.angle + 'deg)'"
 		class="roi absolute left-0 top-0"
 		(contextmenu)="imageClicked($event, true)"></div>
 	<ngx-moveable
 		#moveable
 		[target]="roi"
 		[origin]="true"
-		*ngIf="imageROI.show"
+		*ngIf="hasROI"
 		[draggable]="true"
 		[resizable]="true"
 		[rotatable]="false"
@@ -108,7 +128,7 @@
 </div>
 
 <div
-	*ngIf="imageROI.show"
+	*ngIf="hasROI"
 	class="roi-coordinates fixed flex flex-row align-items-center gap-2">
 	<span>X: {{ imageROI.area.x.toFixed(0) }} Y: {{ imageROI.area.y.toFixed(0) }} W: {{ imageROI.area.width.toFixed(0) }} H: {{ imageROI.area.height.toFixed(0) }}</span>
 	<p-button
@@ -135,7 +155,7 @@
 	[draggable]="true"
 	[(visible)]="annotation.showDialog"
 	[modal]="false"
-	[style]="{ width: '375px' }">
+	[style]="{ width: '385px' }">
 	<p-tabView>
 		<p-tabPanel header="Stars & DSOs">
 			<ng-template pTemplate="header">
@@ -232,24 +252,66 @@
 					<span>Objects</span>
 					<p-badge
 						severity="success"
-						[value]="annotation.data.length" />
+						[value]="annotation.filtered.length" />
 				</div>
 			</ng-template>
-			<div class="mt-1 flex flex-column align-items-center justify-content-center gap-2">
-				<p-floatLabel class="w-full">
-					<input
-						pInputText
-						class="p-inputtext-sm border-0 w-full"
-						[(ngModel)]="annotation.search"
-						(ngModelChange)="searchAnnotations()"
-						tooltipPosition="bottom" />
-					<label>Search</label>
-				</p-floatLabel>
+			<div class="mt-3 flex flex-column align-items-center justify-content-center gap-2">
+				<div class="flex align-items-center justify-content-center gap-1">
+					<p-floatLabel class="w-full">
+						<input
+							pInputText
+							class="p-inputtext-sm border-0 w-full"
+							[(ngModel)]="annotation.search.text"
+							(ngModelChange)="searchAnnotations()"
+							tooltipPosition="bottom" />
+						<label>Search</label>
+					</p-floatLabel>
+					<p-floatLabel>
+						<p-inputNumber
+							[min]="-30"
+							[max]="30"
+							class="w-full"
+							[step]="0.1"
+							[minFractionDigits]="1"
+							[maxFractionDigits]="1"
+							[showButtons]="true"
+							inputStyleClass="p-inputtext-sm border-0 w-full"
+							locale="en"
+							[allowEmpty]="false"
+							[(ngModel)]="annotation.search.magnitudeMin"
+							(ngModelChange)="searchAnnotations()"
+							spinnableNumber />
+						<label>Mag. min</label>
+					</p-floatLabel>
+					<p-floatLabel>
+						<p-inputNumber
+							[min]="-30"
+							[max]="30"
+							class="w-full"
+							[step]="0.1"
+							[minFractionDigits]="1"
+							[maxFractionDigits]="1"
+							[showButtons]="true"
+							inputStyleClass="p-inputtext-sm border-0 w-full"
+							locale="en"
+							[allowEmpty]="false"
+							[(ngModel)]="annotation.search.magnitudeMax"
+							(ngModelChange)="searchAnnotations()"
+							spinnableNumber />
+						<label>Mag. max</label>
+					</p-floatLabel>
+				</div>
+				<div class="flex align-items-center w-full justify-content-center">
+					<p-checkbox
+						[binary]="true"
+						label="Display only filtered annotations"
+						[(ngModel)]="annotation.displayOnlyFiltered" />
+				</div>
 				<p-scroller
 					[items]="annotation.filtered"
 					[itemSize]="36"
 					scrollHeight="180px"
-					class="w-full"
+					class="w-full mt-1"
 					[style]="{ width: '100%', height: '180px' }">
 					<ng-template
 						pTemplate="item"
@@ -259,7 +321,10 @@
 							[class.surface-card]="annotation.selected === item"
 							style="height: 36px"
 							(click)="annotationSelected(item)">
-							<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
+							<div class="w-full flex flex-row align-items-center justify-content-between">
+								<span class="text-sm font-bold">{{ item.star?.type ?? item.dso?.type }}</span>
+								<span class="text-xs font-bold monospaced">{{ item.x.toFixed(0).padStart(5, '&nbsp;') }} | {{ item.y.toFixed(0).padStart(5, '&nbsp;') }}</span>
+							</div>
 							<span class="text-xs overflow-hidden">{{ (item.star ?? item.dso ?? item.minorPlanet)?.name?.join(' · ') }}</span>
 						</div>
 					</ng-template>
@@ -429,6 +494,7 @@
 					optionsValue="value"
 					styleClass="p-inputtext-sm border-0"
 					[autoDisplayFirst]="false"
+					(ngModelChange)="savePreference()"
 					appendTo="body" />
 				<label>Solver</label>
 			</p-floatLabel>
@@ -436,7 +502,8 @@
 				[binary]="true"
 				[disabled]="solver.request.type === 'SIRIL' || solver.request.type === 'PIXINSIGHT'"
 				label="Blind"
-				[(ngModel)]="solver.request.blind" />
+				[(ngModel)]="solver.request.blind"
+				(ngModelChange)="savePreference()" />
 		</div>
 		<div class="col-8">
 			<div class="grid">
@@ -446,7 +513,8 @@
 							pInputText
 							[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
 							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="solver.request.centerRA" />
+							[(ngModel)]="solver.request.centerRA"
+							(ngModelChange)="savePreference()" />
 						<label>Center RA (h)</label>
 					</p-floatLabel>
 				</div>
@@ -456,7 +524,8 @@
 							pInputText
 							[disabled]="solver.request.blind && solver.request.type !== 'SIRIL'"
 							class="p-inputtext-sm border-0 w-full"
-							[(ngModel)]="solver.request.centerDEC" />
+							[(ngModel)]="solver.request.centerDEC"
+							(ngModelChange)="savePreference()" />
 						<label>Center DEC (°)</label>
 					</p-floatLabel>
 				</div>
@@ -471,42 +540,43 @@
 					styleClass="p-inputtext-sm border-0 w-full"
 					[showButtons]="true"
 					[(ngModel)]="solver.request.radius"
+					(ngModelChange)="savePreference()"
 					spinnableNumber />
 				<label>Radius (°)</label>
 			</p-floatLabel>
 		</div>
-		@if (solver.request.type === 'SIRIL' || solver.request.type === 'PIXINSIGHT') {
-			<div class="col-6 flex flex-row align-items-center">
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="10000"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[showButtons]="true"
-						[(ngModel)]="solver.request.focalLength"
-						[allowEmpty]="false"
-						locale="en"
-						spinnableNumber />
-					<label>Focal length (mm)</label>
-				</p-floatLabel>
-			</div>
-			<div class="col-6 flex flex-row align-items-center">
-				<p-floatLabel>
-					<p-inputNumber
-						[min]="0"
-						[max]="100"
-						[step]="0.01"
-						[minFractionDigits]="1"
-						styleClass="p-inputtext-sm border-0 w-full"
-						[showButtons]="true"
-						[(ngModel)]="solver.request.pixelSize"
-						[allowEmpty]="false"
-						locale="en"
-						spinnableNumber />
-					<label>Pixel size (µm)</label>
-				</p-floatLabel>
-			</div>
-		}
+		<div class="col-6 flex flex-row align-items-center">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="0"
+					[max]="10000"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[showButtons]="true"
+					[(ngModel)]="solver.request.focalLength"
+					[allowEmpty]="false"
+					locale="en"
+					(ngModelChange)="savePreference()"
+					spinnableNumber />
+				<label>Focal length (mm)</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-6 flex flex-row align-items-center">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="0"
+					[max]="100"
+					[step]="0.01"
+					[minFractionDigits]="1"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[showButtons]="true"
+					[(ngModel)]="solver.request.pixelSize"
+					[allowEmpty]="false"
+					locale="en"
+					(ngModelChange)="savePreference()"
+					spinnableNumber />
+				<label>Pixel size (µm)</label>
+			</p-floatLabel>
+		</div>
 	</div>
 	<ng-template pTemplate="footer">
 		<div class="grid pt-2">
@@ -688,6 +758,38 @@
 				[max]="65536"
 				[(ngModel)]="stretch.transformation.midtone" />
 		</div>
+		<div class="col-12 mt-2 flex align-items-center gap-1">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="0"
+					[max]="1"
+					[disabled]="!stretch.transformation.auto"
+					[showButtons]="true"
+					[step]="0.01"
+					[minFractionDigits]="2"
+					[maxFractionDigits]="2"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[(ngModel)]="stretch.transformation.meanBackground"
+					[allowEmpty]="false"
+					locale="en"
+					spinnableNumber />
+				<label>Auto Stretch Mean Background</label>
+			</p-floatLabel>
+			<p-button
+				[text]="true"
+				icon="mdi mdi-check"
+				severity="success"
+				(onClick)="applyAutoStretchMeanBackground()"
+				pTooltip="Apply"
+				tooltipPosition="bottom" />
+			<p-button
+				[text]="true"
+				icon="mdi mdi-restore"
+				severity="info"
+				(onClick)="restoreAutoStretchMeanBackground()"
+				pTooltip="Reset"
+				tooltipPosition="bottom" />
+		</div>
 	</div>
 	<ng-template pTemplate="footer">
 		<p-button
@@ -813,109 +915,120 @@
 	[modal]="false"
 	[style]="{ width: 'min-content', minWidth: '336px' }"
 	class="pointer-events-none">
-	<div
-		class="grid p-2"
-		*ngIf="imageInfo">
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="statistics.statistics.count" />
-				<label>Count (px)</label>
-			</p-floatLabel>
+	@if (statistics.statistics && imageInfo) {
+		<div class="grid p-2">
+			<div class="col-12 flex align-items-center">
+				<p-selectButton
+					styleClass="border-0"
+					[disabled]="imageInfo.mono"
+					[options]="'IMAGE_CHANNEL' | dropdownOptions | enumDropdown"
+					optionLabel="label"
+					optionValue="value"
+					[(ngModel)]="statistics.channel"
+					(ngModelChange)="computeStatistics(true)"
+					[multiple]="false" />
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="statistics.statistics.count" />
+					<label>Count (px)</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.mean * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Mean</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.median * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Median</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.variance * statistics.bitOption.rangeMax * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Variance</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.avgDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Avg Dev</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-4">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.stdDev * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Std Dev</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-3">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.minimum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Minimum</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-3">
+				<p-floatLabel>
+					<input
+						pInputText
+						readonly
+						class="p-inputtext-sm border-0 w-full"
+						[value]="(statistics.statistics.maximum * statistics.bitOption.rangeMax).toFixed(statistics.bitOption.decimalPlaces)" />
+					<label>Maximum</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-6">
+				<p-floatLabel class="w-full">
+					<p-dropdown
+						[options]="'IMAGE_STATISTICS_BIT_OPTION' | dropdownOptions"
+						[(ngModel)]="statistics.bitOption"
+						optionLabel="name"
+						[autoDisplayFirst]="true"
+						styleClass="p-inputtext-sm border-0"
+						appendTo="body"
+						(ngModelChange)="savePreference()" />
+					<label>Bits</label>
+				</p-floatLabel>
+			</div>
+			<div class="col-12">
+				<neb-histogram
+					#histogram
+					class="w-full"
+					style="max-height: 94px" />
+			</div>
 		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.mean * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Mean</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.median * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Median</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.variance * statistics.bitOption.rangeMax * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Variance</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.avgDev * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Avg Dev</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-4">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.stdDev * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Std Dev</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.minimum * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Minimum</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-3">
-			<p-floatLabel>
-				<input
-					pInputText
-					readonly
-					class="p-inputtext-sm border-0 w-full"
-					[value]="(statistics.statistics.maximum * statistics.bitOption.rangeMax).toFixed(8)" />
-				<label>Maximum</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-6">
-			<p-floatLabel class="w-full">
-				<p-dropdown
-					[options]="'IMAGE_STATISTICS_BIT_OPTION' | dropdownOptions"
-					[(ngModel)]="statistics.bitOption"
-					optionLabel="name"
-					[autoDisplayFirst]="true"
-					styleClass="p-inputtext-sm border-0"
-					appendTo="body"
-					(ngModelChange)="savePreference()" />
-				<label>Bits</label>
-			</p-floatLabel>
-		</div>
-		<div class="col-12">
-			<neb-histogram
-				#histogram
-				class="w-full"
-				style="max-height: 94px" />
-		</div>
-	</div>
+	}
 </p-dialog>
 
 <p-dialog
@@ -1226,23 +1339,23 @@
 				<label>Bin</label>
 			</p-floatLabel>
 		</div>
-		<!-- <div class="col-4">
+		<div class="col-4">
 			<p-floatLabel>
 				<p-inputNumber
 					styleClass="p-inputtext-sm border-0"
 					[showButtons]="true"
 					[min]="0"
 					[max]="360"
-					[step]="0.01"
-					[minFractionDigits]="1"
+					[step]="1"
+					[minFractionDigits]="2"
 					[maxFractionDigits]="2"
-					[(ngModel)]="fov.rotation"
+					[(ngModel)]="fov.selected.rotation"
 					(ngModelChange)="saveFOV(false)"
 					locale="en"
 					spinnableNumber />
 				<label>Rotation (°)</label>
 			</p-floatLabel>
-		</div> -->
+		</div>
 		<div class="col-1 flex align-items-center justify-content-center gap-2">
 			<p-button
 				[disabled]="!canAddFOV"
@@ -1434,7 +1547,7 @@
 		@if (imageInfo) {
 			<div class="col-2">
 				<p-button
-					[disabled]="!imageROI.show"
+					[disabled]="!hasROI"
 					[text]="true"
 					icon="mdi mdi-artboard"
 					size="small"
@@ -1554,6 +1667,60 @@
 				[(ngModel)]="settings.preference.pixelated"
 				(ngModelChange)="savePreference()"
 				label="Pixelated (scaling algorithm)" />
+		</div>
+	</div>
+</p-dialog>
+
+<p-dialog
+	header="Rotation"
+	[draggable]="true"
+	[(visible)]="rotation.showDialog"
+	[modal]="false"
+	[style]="{ width: 'min-content', minWidth: '230px' }">
+	<div class="grid">
+		<div class="col-12 flex-row align-items-center justify-content-center relative gap-2">
+			<p-knob
+				[min]="0"
+				[max]="720"
+				[step]="1"
+				[showValue]="false"
+				[size]="170"
+				[ngModel]="rotation.transformation.angle + 360"
+				(ngModelChange)="rotate($event - 360)"
+				spinnableNumber />
+			<p-floatLabel class="absolute max-w-8rem">
+				<p-inputNumber
+					[min]="-360"
+					[max]="360"
+					[showButtons]="true"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[step]="1"
+					[(ngModel)]="rotation.transformation.angle"
+					(ngModelChange)="savePreference()"
+					[minFractionDigits]="2"
+					[maxFractionDigits]="2"
+					locale="en"
+					spinnableNumber />
+				<label>Angle (deg)</label>
+			</p-floatLabel>
+		</div>
+		<div class="col-12 flex-row align-items-center justify-content-center gap-1">
+			<p-button
+				label="0°"
+				[text]="true"
+				(onClick)="rotate(0)" />
+			<p-button
+				label="90°"
+				[text]="true"
+				(onClick)="rotate(90)" />
+			<p-button
+				label="180°"
+				[text]="true"
+				(onClick)="rotate(180)" />
+			<p-button
+				label="270°"
+				[text]="true"
+				(onClick)="rotate(270)" />
 		</div>
 	</div>
 </p-dialog>

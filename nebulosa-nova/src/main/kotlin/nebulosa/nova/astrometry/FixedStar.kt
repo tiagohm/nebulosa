@@ -62,9 +62,8 @@ data class FixedStar(
 
     companion object {
 
-        @JvmStatic private val MIN_PARALLAX = 1.0E-6 * MILLIASEC2RAD
+        private const val MIN_PARALLAX = 1.0E-6 * MILLIASEC2RAD
 
-        @JvmStatic
         private fun computePositionAndVelocity(
             ra: Angle, dec: Angle,
             pmRA: Angle = 0.0, pmDEC: Angle = 0.0,

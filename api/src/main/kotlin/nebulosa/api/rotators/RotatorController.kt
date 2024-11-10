@@ -1,88 +1,102 @@
 package nebulosa.api.rotators
 
-import io.javalin.Javalin
-import io.javalin.http.Context
+import io.ktor.server.application.Application
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondNullable
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.get
+import io.ktor.server.routing.put
+import io.ktor.server.routing.routing
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.core.Controller
+import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.range
 
 class RotatorController(
-    override val app: Javalin,
+    override val app: Application,
     private val connectionService: ConnectionService,
     private val rotatorService: RotatorService,
 ) : Controller {
 
     init {
-        app.get("rotators", ::rotators)
-        app.get("rotators/{id}", ::rotator)
-        app.put("rotators/{id}/connect", ::connect)
-        app.put("rotators/{id}/disconnect", ::disconnect)
-        app.put("rotators/{id}/reverse", ::reverse)
-        app.put("rotators/{id}/move", ::move)
-        app.put("rotators/{id}/abort", ::abort)
-        app.put("rotators/{id}/home", ::home)
-        app.put("rotators/{id}/sync", ::sync)
-        app.put("rotators/{id}/listen", ::listen)
+        with(app) {
+            routing {
+                get("/rotators", ::rotators)
+                get("/rotators/{id}", ::rotator)
+                put("/rotators/{id}/connect", ::connect)
+                put("/rotators/{id}/disconnect", ::disconnect)
+                put("/rotators/{id}/reverse", ::reverse)
+                put("/rotators/{id}/move", ::move)
+                put("/rotators/{id}/abort", ::abort)
+                put("/rotators/{id}/home", ::home)
+                put("/rotators/{id}/sync", ::sync)
+                put("/rotators/{id}/listen", ::listen)
+            }
+        }
     }
 
-    private fun rotators(ctx: Context) {
-        ctx.json(connectionService.rotators().sorted())
+    private suspend fun rotators(ctx: RoutingContext) = with(ctx.call) {
+        respond(connectionService.rotators().sorted())
     }
 
-    private fun rotator(ctx: Context) {
-        val id = ctx.pathParam("id")
-        connectionService.rotator(id)?.also(ctx::json)
+    private suspend fun rotator(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
+        respondNullable(connectionService.rotator(id))
     }
 
-    private fun connect(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun connect(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val rotator = connectionService.rotator(id) ?: return
         rotatorService.connect(rotator)
     }
 
-    private fun disconnect(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun disconnect(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val rotator = connectionService.rotator(id) ?: return
         rotatorService.disconnect(rotator)
     }
 
-    private fun reverse(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun reverse(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val rotator = connectionService.rotator(id) ?: return
-        val enabled = ctx.queryParam("enabled").notNull().toBoolean()
+        val enabled = queryParameters["enabled"].notNull().toBoolean()
         rotatorService.reverse(rotator, enabled)
     }
 
-    private fun move(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun move(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val rotator = connectionService.rotator(id) ?: return
-        val angle = ctx.queryParam("angle").notNull().toDouble().range(0.0, 360.0)
+        val angle = queryParameters["angle"].notNull().toDouble().range(0.0, 360.0)
         rotatorService.move(rotator, angle)
     }
 
-    private fun abort(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun abort(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val rotator = connectionService.rotator(id) ?: return
         rotatorService.abort(rotator)
     }
 
-    private fun home(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun home(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val rotator = connectionService.rotator(id) ?: return
         rotatorService.home(rotator)
     }
 
-    private fun sync(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun sync(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val rotator = connectionService.rotator(id) ?: return
-        val angle = ctx.queryParam("angle").notNull().toDouble().range(0.0, 360.0)
+        val angle = queryParameters["angle"].notNull().toDouble().range(0.0, 360.0)
         rotatorService.sync(rotator, angle)
     }
 
-    private fun listen(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun listen(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val rotator = connectionService.rotator(id) ?: return
         rotatorService.listen(rotator)
+    }
+
+    companion object {
+
+        private const val ID = "id"
     }
 }

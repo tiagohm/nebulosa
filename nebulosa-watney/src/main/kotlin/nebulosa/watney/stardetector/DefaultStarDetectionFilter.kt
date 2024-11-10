@@ -24,7 +24,7 @@ data object DefaultStarDetectionFilter : StarDetectionFilter {
         }
 
         // TODO: Additional boxing of each star, create profile, detect sharp edges
-        //  and reject bad profiles.
+        // and reject bad profiles.
     }
 
     /**

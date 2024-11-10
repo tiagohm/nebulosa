@@ -52,7 +52,7 @@ class FramingService(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<FramingService>()
-        @JvmStatic private val DEFAULT_PATH = Files.createTempFile("framing", ".fits")
+        private val LOG = loggerFor<FramingService>()
+        private val DEFAULT_PATH = Files.createTempFile("framing", ".fits")
     }
 }

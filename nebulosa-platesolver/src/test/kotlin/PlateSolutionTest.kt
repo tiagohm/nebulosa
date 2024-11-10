@@ -26,7 +26,7 @@ class PlateSolutionTest {
     companion object {
 
         // Don't have CDELT and CROTA
-        @JvmStatic private val ASTROMETRY_NET_FITS_HEADER = "SIMPLE  =                    T / Standard FITS file                             " +
+        private val ASTROMETRY_NET_FITS_HEADER = "SIMPLE  =                    T / Standard FITS file                             " +
                 "BITPIX  =                    8 / ASCII or bytes array                           " +
                 "NAXIS   =                    0 / Minimal header                                 " +
                 "EXTEND  =                    T / There may be FITS ext                          " +

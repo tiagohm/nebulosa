@@ -14,6 +14,7 @@ import java.io.IOException
  * @see <a href="https://github.com/whiskie14142/spktype21/blob/master/package/spktype21/spktype21.py">Python Module</a>
  * @see <a href="https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN_PC_Linux_IFORT_64bit.html">Fortran Toolkit</a>
  * @see <a href="https://www.imcce.fr/inpop/calceph">CALCEPH</a>
+ * @see <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html#Type%2021:%20Extended%20Modified%20Difference%20Arrays">SPK TYPE 21 REFERENCE</a>
  */
 internal data class Type21Segment(
     override val spk: Spk,
@@ -123,13 +124,7 @@ internal data class Type21Segment(
         refVel[2] = mdaRecord[maxdim + 6]
 
         // val dt = mdaRecord.sliceArray(maxdim + 7 until 4 * maxdim + 7)
-        val dt = Array(maxdim) { DoubleArray(3) }
-
-        for (p in 0 until maxdim) {
-            for (k in 0..2) {
-                dt[p][k] = mdaRecord[maxdim + 7 + k * maxdim + p]
-            }
-        }
+        val dt = Array(maxdim) { p -> DoubleArray(3) { mdaRecord[maxdim + 7 + it * maxdim + p] } }
 
         // Initializing the difference table.
         val kq = IntArray(3)
@@ -169,16 +164,16 @@ internal data class Type21Segment(
 
         fc[0] = 1.0
 
-        for (j in 0 until mpq2) {
-            fc[j + 1] = tp / c.g[j]
-            wc[j] = delta / c.g[j]
-            tp = delta + c.g[j]
+        repeat(mpq2) {
+            fc[it + 1] = tp / c.g[it]
+            wc[it] = delta / c.g[it]
+            tp = delta + c.g[it]
         }
 
         // Collect KQMAX1 reciprocals.
 
-        for (j in 0..c.kqmax1) {
-            w[j] = 1.0 / (j + 1)
+        repeat(c.kqmax1) {
+            w[it] = 1.0 / (it + 1)
         }
 
         // Compute the W(K) terms needed for the position interpolation
@@ -190,8 +185,8 @@ internal data class Type21Segment(
         while (ks >= 2) {
             jx++
 
-            for (j in 0 until jx) {
-                w[j + ks] = fc[j + 1] * w[j + ks - 1] - wc[j] * w[j + ks]
+            repeat(jx) {
+                w[it + ks] = fc[it + 1] * w[it + ks - 1] - wc[it] * w[it + ks]
             }
 
             ks--
@@ -201,37 +196,37 @@ internal data class Type21Segment(
         // We don't know much more than that.)
         val state = DoubleArray(6)
 
-        for (i in 0..2) {
-            val kqq = c.kq[i]
+        repeat(3) {
+            val kqq = c.kq[it]
             var sum = 0.0
 
             for (j in kqq - 1 downTo 0) {
-                sum += c.dt[j][i] * w[j + ks]
+                sum += c.dt[j][it] * w[j + ks]
             }
 
-            state[i] = (c.refPos[i] + delta * (c.refVel[i] + delta * sum)) / AU_KM
+            state[it] = (c.refPos[it] + delta * (c.refVel[it] + delta * sum)) / AU_KM
         }
 
         // Again we need to compute the W(K) coefficients that are
         // going to be used in the velocity interpolation.
         // (Note, at this point, KS = 1, KS1 = 0.)
 
-        for (j in 0 until jx) {
-            w[j + ks] = fc[j + 1] * w[j + ks - 1] - wc[j] * w[j + ks]
+        repeat(jx) {
+            w[it + ks] = fc[it + 1] * w[it + ks - 1] - wc[it] * w[it + ks]
         }
 
         ks--
 
         // Perform velocity interpolation.
-        for (i in 0..2) {
-            val kqq = c.kq[i]
+        repeat(3) {
+            val kqq = c.kq[it]
             var sum = 0.0
 
             for (j in kqq - 1 downTo 0) {
-                sum += c.dt[j][i] * w[j + ks]
+                sum += c.dt[j][it] * w[j + ks]
             }
 
-            state[i + 3] = (c.refVel[i] + delta * sum) * DAYSEC / AU_KM
+            state[it + 3] = (c.refVel[it] + delta * sum) * DAYSEC / AU_KM
         }
 
         return PositionAndVelocity(Vector3D(state), Vector3D(state, 3))

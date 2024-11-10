@@ -152,7 +152,7 @@ data class FlatWizardJob(
 
         private const val MIN_DELTA_TIME = 10000000 // 10ms
 
-        @JvmStatic private val LOG = loggerFor<FlatWizardJob>()
-        @JvmStatic private val STATISTICS = Statistics(noMedian = true, noDeviation = true)
+        private val LOG = loggerFor<FlatWizardJob>()
+        private val STATISTICS = Statistics(noMedian = true, noDeviation = true)
     }
 }

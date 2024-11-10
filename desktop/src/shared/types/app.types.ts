@@ -1,21 +1,6 @@
-import type { Severity } from './angular.types'
-import type { MessageEvent } from './api.types'
-
 export type InternalEventType = (typeof INTERNAL_EVENT_TYPES)[number]
 
 export type SaveJson<T = unknown> = OpenFile & JsonFile<T>
-
-export interface NotificationEvent extends MessageEvent {
-	target?: string
-	severity: Severity
-	title?: string
-	body: string
-}
-
-export interface ConfirmationEvent extends MessageEvent {
-	message: string
-	idempotencyKey: string
-}
 
 export interface WindowPreference {
 	modal?: boolean
@@ -73,6 +58,7 @@ export const INTERNAL_EVENT_TYPES = [
 	'FILE.SAVE',
 	'WINDOW.OPEN',
 	'WINDOW.CLOSE',
+	'WINDOW.OPEN_DEV_TOOLS',
 	'WINDOW.PIN',
 	'WINDOW.UNPIN',
 	'WINDOW.MINIMIZE',

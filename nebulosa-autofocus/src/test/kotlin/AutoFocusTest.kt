@@ -85,7 +85,6 @@ class AutoFocusTest : AbstractTest() {
             FOCUS_26_FITS,
         )
 
-        @JvmStatic
         private fun executeAutoFocus(
             initialFocusPosition: Int = 1000,
             exposureAmount: Int = 1,

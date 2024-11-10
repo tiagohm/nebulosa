@@ -1,7 +1,7 @@
 import type { Point, Rectangle, Size } from 'electron'
-import type { PanZoom } from 'panzoom'
 import type { CoordinateInterpolator, InterpolatedCoordinate } from '../utils/coordinate-interpolation'
-import type { Angle, AstronomicalObject, Constellation, DeepSkyObject, EquatorialCoordinateJ2000, Star } from './atlas.types'
+import type { PanZoom } from '../utils/pan-zoom'
+import { DEFAULT_SKY_OBJECT_SEARCH_FILTER, type Angle, type AstronomicalObject, type Constellation, type DeepSkyObject, type EquatorialCoordinateJ2000, type SkyObjectSearchFilter, type Star } from './atlas.types'
 import type { Camera, CameraStartCapture, FrameType } from './camera.types'
 import { DEFAULT_PLATE_SOLVER_REQUEST, plateSolverRequestWithDefault, type PlateSolverRequest } from './platesolver.types'
 import { DEFAULT_STAR_DETECTION_REQUEST, starDetectionRequestWithDefault, type StarDetectionRequest } from './stardetector.types'
@@ -24,7 +24,11 @@ export type ImageFilterType = 'LUMINANCE' | 'RED' | 'GREEN' | 'BLUE' | 'MONO' | 
 
 export type BayerPattern = 'RGGB' | 'BGGR' | 'GBRG' | 'GRBG' | 'GRGB' | 'GBGR' | 'RGBG' | 'BGRG'
 
+export type Parity = 'NORMAL' | 'FLIPPED'
+
 export type ImageMousePosition = Point
+
+export type ImageHistrogram = number[]
 
 export interface Image {
 	type: FrameType
@@ -67,7 +71,6 @@ export interface ImageInfo {
 	solved?: ImageSolved
 	headers: ImageHeaderItem[]
 	bitpix: Bitpix
-	statistics: ImageStatistics
 }
 
 export interface ImageAnnotation {
@@ -85,6 +88,7 @@ export interface ImageSolved extends EquatorialCoordinateJ2000 {
 	width: number
 	height: number
 	radius: number
+	parity: Parity
 }
 
 export interface CoordinateInterpolation {
@@ -118,6 +122,7 @@ export interface ImageStatisticsBitOption {
 	name: string
 	rangeMax: number
 	bitLength: number
+	decimalPlaces: number
 }
 
 export interface ImageStatistics {
@@ -131,6 +136,7 @@ export interface ImageStatistics {
 	avgDev: number
 	minimum: number
 	maximum: number
+	histogram: ImageHistrogram
 }
 
 export interface OpenImage {
@@ -208,6 +214,7 @@ export interface ImageStretch {
 	shadow: number
 	highlight: number
 	midtone: number
+	meanBackground: number
 }
 
 export interface ImageStretchDialog {
@@ -260,6 +267,12 @@ export interface ImageTransformation {
 	invert: boolean
 	scnr: ImageSCNR
 	useJPEG: boolean
+	angle: number
+}
+
+export interface ImageRotationDialog {
+	showDialog: boolean
+	transformation: ImageTransformation
 }
 
 export interface AnnotateImageRequest {
@@ -277,7 +290,8 @@ export interface ImageAnnotationDialog {
 	request: AnnotateImageRequest
 	data: ImageAnnotation[]
 	selected?: ImageAnnotation
-	search: string
+	search: SkyObjectSearchFilter
+	displayOnlyFiltered: boolean
 	filtered: ImageAnnotation[]
 }
 
@@ -317,7 +331,8 @@ export interface AstronomicalObjectDialog {
 
 export interface ImageStatisticsDialog {
 	showDialog: boolean
-	statistics: ImageStatistics
+	statistics?: ImageStatistics
+	channel: ImageChannel
 	bitOption: ImageStatisticsBitOption
 }
 
@@ -361,6 +376,7 @@ export const DEFAULT_IMAGE_SOLVED: ImageSolved = {
 	radius: 0,
 	rightAscensionJ2000: '00h00m00s',
 	declinationJ2000: '+000°00\'00"',
+	parity: 'NORMAL',
 }
 
 export const DEFAULT_IMAGE_STRETCH: ImageStretch = {
@@ -368,6 +384,7 @@ export const DEFAULT_IMAGE_STRETCH: ImageStretch = {
 	shadow: 0,
 	highlight: 1,
 	midtone: 0.5,
+	meanBackground: 0.5,
 }
 
 export const DEFAULT_IMAGE_STRETCH_DIALOG: ImageStretchDialog = {
@@ -394,6 +411,7 @@ export const DEFAULT_IMAGE_TRANSFORMATION: ImageTransformation = {
 	invert: false,
 	scnr: DEFAULT_IMAGE_SCNR,
 	useJPEG: true,
+	angle: 0,
 }
 
 export const DEFAULT_IMAGE_SOLVER_DIALOG: ImageSolverDialog = {
@@ -405,13 +423,13 @@ export const DEFAULT_IMAGE_SOLVER_DIALOG: ImageSolverDialog = {
 }
 
 export const IMAGE_STATISTICS_BIT_OPTIONS: ImageStatisticsBitOption[] = [
-	{ name: 'Normalized: [0, 1]', rangeMax: 1, bitLength: 16 },
-	{ name: '8-bit: [0, 255]', rangeMax: 255, bitLength: 8 },
-	{ name: '9-bit: [0, 511]', rangeMax: 511, bitLength: 9 },
-	{ name: '10-bit: [0, 1023]', rangeMax: 1023, bitLength: 10 },
-	{ name: '12-bit: [0, 4095]', rangeMax: 4095, bitLength: 12 },
-	{ name: '14-bit: [0, 16383]', rangeMax: 16383, bitLength: 14 },
-	{ name: '16-bit: [0, 65535]', rangeMax: 65535, bitLength: 16 },
+	{ name: 'Normalized: [0, 1]', rangeMax: 1, bitLength: 16, decimalPlaces: 8 },
+	{ name: '8-bit: [0, 255]', rangeMax: 255, bitLength: 8, decimalPlaces: 5 },
+	{ name: '9-bit: [0, 511]', rangeMax: 511, bitLength: 9, decimalPlaces: 5 },
+	{ name: '10-bit: [0, 1023]', rangeMax: 1023, bitLength: 10, decimalPlaces: 4 },
+	{ name: '12-bit: [0, 4095]', rangeMax: 4095, bitLength: 12, decimalPlaces: 4 },
+	{ name: '14-bit: [0, 16383]', rangeMax: 16383, bitLength: 14, decimalPlaces: 3 },
+	{ name: '16-bit: [0, 65535]', rangeMax: 65535, bitLength: 16, decimalPlaces: 3 },
 ] as const
 
 export const DEFAULT_FOV: FOV = {
@@ -482,7 +500,8 @@ export const DEFAULT_IMAGE_ANNOTATION_DIALOG: ImageAnnotationDialog = {
 	visible: false,
 	data: [],
 	request: DEFAULT_ANNOTATE_IMAGE_REQUEST,
-	search: '',
+	search: DEFAULT_SKY_OBJECT_SEARCH_FILTER,
+	displayOnlyFiltered: true,
 	filtered: [],
 }
 
@@ -517,11 +536,12 @@ export const DEFAULT_IMAGE_STATISTICS: ImageStatistics = {
 	avgDev: 0,
 	minimum: 0,
 	maximum: 0,
+	histogram: [],
 }
 
 export const DEFAULT_IMAGE_STATISTICS_DIALOG: ImageStatisticsDialog = {
 	showDialog: false,
-	statistics: DEFAULT_IMAGE_STATISTICS,
+	channel: 'GRAY',
 	bitOption: IMAGE_STATISTICS_BIT_OPTIONS[0],
 }
 
@@ -556,6 +576,11 @@ export const DEFAULT_IMAGE_ZOOM: ImageZoom = {
 	scale: 1,
 }
 
+export const DEFAULT_IMAGE_ROTATION_DIALOG: ImageRotationDialog = {
+	showDialog: false,
+	transformation: DEFAULT_IMAGE_TRANSFORMATION,
+}
+
 export const DEFAULT_IMAGE_PREFERENCE: ImagePreference = {
 	crossHair: false,
 	transformation: DEFAULT_IMAGE_TRANSFORMATION,
@@ -586,6 +611,7 @@ export function imageStretchWithDefault(stretch?: Partial<ImageStretch>, source:
 	stretch.shadow ??= source.shadow
 	stretch.highlight ??= source.highlight
 	stretch.midtone ??= source.midtone
+	stretch.meanBackground ??= source.meanBackground
 	return stretch as ImageStretch
 }
 
@@ -610,6 +636,7 @@ export function imageTransformationWithDefault(transformation?: Partial<ImageTra
 	transformation.invert ??= source.invert
 	transformation.scnr ??= source.scnr
 	transformation.useJPEG ??= source.useJPEG
+	transformation.angle ??= source.angle
 	return transformation as ImageTransformation
 }
 

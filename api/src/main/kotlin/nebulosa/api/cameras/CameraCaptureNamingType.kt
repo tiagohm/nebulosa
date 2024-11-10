@@ -27,7 +27,6 @@ enum class CameraCaptureNamingType(private vararg val alias: String) {
 
     companion object {
 
-        @JvmStatic
         fun find(text: String): CameraCaptureNamingType? {
             return entries.firstOrNull { it.name.equals(text, true) }
                 ?: entries.firstOrNull { e -> e.alias.isNotEmpty() && e.alias.any { it.equals(text, true) } }

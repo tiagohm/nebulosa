@@ -125,6 +125,6 @@ data class LX200ProtocolServer(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<LX200ProtocolServer>()
+        private val LOG = loggerFor<LX200ProtocolServer>()
     }
 }

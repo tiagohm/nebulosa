@@ -190,5 +190,5 @@ data object FitsFormat : ImageFormat {
         writeString(card.formatted(), Charsets.US_ASCII)
     }
 
-    @JvmStatic private val LOG = loggerFor<FitsFormat>()
+    private val LOG = loggerFor<FitsFormat>()
 }

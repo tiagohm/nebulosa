@@ -18,7 +18,7 @@ export type SatelliteGroupType = (typeof SATELLITE_GROUPS)[number]
 
 export type PlanetType = 'PLANET' | 'DWARF_PLANET' | 'MOON_OF_MARS' | 'MOON_OF_JUPITER' | 'MOON_OF_SATURN' | 'MOON_OF_URANUS' | 'MOON_OF_NEPTUNE' | 'MOON_OF_PLUTO' | 'ASTEROID'
 
-export type AltitudeDataPoint = [number, number]
+export type AltitudePoint = [number, number]
 
 export type SatelliteSearchGroups = Record<SatelliteGroupType, boolean>
 
@@ -40,6 +40,7 @@ export interface BodyTag {
 
 export interface BodyTab {
 	position: BodyPosition
+	altitude: AltitudePoint[]
 	name: string
 	tags: BodyTag[]
 }
@@ -164,8 +165,6 @@ export interface SatelliteTab extends BodyTab {
 export interface BodyTabRefresh {
 	count: number
 	timer?: Subscription
-	position: boolean
-	chart: boolean
 }
 
 export interface DateTimeAndLocation {
@@ -313,6 +312,7 @@ export const DEFAULT_BODY_POSITION: BodyPosition = {
 export const DEFAULT_SUN: SunTab = {
 	name: 'Sun',
 	position: DEFAULT_BODY_POSITION,
+	altitude: [],
 	tags: [],
 	image: '',
 }
@@ -320,6 +320,7 @@ export const DEFAULT_SUN: SunTab = {
 export const DEFAULT_MOON: MoonTab = {
 	name: 'Moon',
 	position: DEFAULT_BODY_POSITION,
+	altitude: [],
 	tags: [],
 }
 
@@ -364,6 +365,7 @@ export const DEFAULT_PLANET_ITEMS: PlanetItem[] = [
 export const DEFAULT_PLANET: PlanetTab = {
 	name: '',
 	position: DEFAULT_BODY_POSITION,
+	altitude: [],
 	tags: [],
 	planets: DEFAULT_PLANET_ITEMS,
 }
@@ -372,6 +374,7 @@ export const DEFAULT_MINOR_PLANET: MinorPlanetTab = {
 	tab: 0,
 	name: '',
 	position: DEFAULT_BODY_POSITION,
+	altitude: [],
 	tags: [],
 	search: {
 		text: '',
@@ -411,6 +414,7 @@ export const DEFAULT_SKY_OBJECT: SkyObjectTab = {
 		result: [],
 	},
 	position: DEFAULT_BODY_POSITION,
+	altitude: [],
 	tags: [],
 }
 
@@ -487,6 +491,7 @@ export const DEFAULT_SATELLITE: SatelliteTab = {
 		result: [],
 	},
 	position: DEFAULT_BODY_POSITION,
+	altitude: [],
 	tags: [],
 }
 
@@ -515,8 +520,6 @@ export const DEFAULT_LOCATION: Location = {
 
 export const DEFAULT_BODY_TAB_REFRESH: BodyTabRefresh = {
 	count: 0,
-	position: false,
-	chart: false,
 }
 
 export const DEFAULT_DATE_TIME_AND_LOCATION: DateTimeAndLocation = {

@@ -151,7 +151,7 @@ data class FitsHeaderCard(
         }
 
         @JvmStatic
-        internal fun isHierarchKey(key: String): Boolean {
+        fun isHierarchKey(key: String): Boolean {
             return key.uppercase().startsWith(HIERARCH_WITH_DOT)
         }
 
@@ -167,7 +167,6 @@ data class FitsHeaderCard(
             return data.concatToString()
         }
 
-        @JvmStatic
         private fun spaceForValue(key: String): Int {
             return if (key.length > MAX_KEYWORD_LENGTH) {
                 // HierarchFormater.extraSpaceRequired = 1

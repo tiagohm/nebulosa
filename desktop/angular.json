@@ -7,7 +7,7 @@
 	"version": 1,
 	"newProjectRoot": "projects",
 	"projects": {
-		"angular-electron": {
+		"nebulosa": {
 			"root": "",
 			"sourceRoot": "src",
 			"projectType": "application",
@@ -22,21 +22,18 @@
 			"prefix": "app",
 			"architect": {
 				"build": {
-					"builder": "@angular-builders/custom-webpack:browser",
+					"builder": "@angular-devkit/build-angular:application",
 					"options": {
+						"poll": 2400,
 						"outputPath": "dist",
 						"index": "src/index.html",
-						"main": "src/main.ts",
+						"browser": "src/main.ts",
 						"tsConfig": "src/tsconfig.app.json",
-						"polyfills": "src/polyfills.ts",
+						"polyfills": ["src/polyfills.ts"],
 						"inlineStyleLanguage": "scss",
 						"assets": ["src/favicon.ico", "src/assets"],
 						"styles": ["node_modules/leaflet/dist/leaflet.css", "node_modules/primeng/resources/primeng.min.css", "node_modules/primeflex/primeflex.css", "node_modules/primeicons/primeicons.css", "src/styles.scss"],
-						"scripts": ["node_modules/chart.js/dist/chart.umd.js"],
-						"customWebpackConfig": {
-							"path": "./angular.webpack.js",
-							"replaceDuplicatePlugins": true
-						}
+						"scripts": ["node_modules/chart.js/dist/chart.umd.js"]
 					},
 					"configurations": {
 						"dev": {
@@ -45,15 +42,7 @@
 							"sourceMap": true,
 							"namedChunks": false,
 							"aot": false,
-							"extractLicenses": true,
-							"vendorChunk": false,
-							"buildOptimizer": false,
-							"fileReplacements": [
-								{
-									"replace": "src/environments/environment.ts",
-									"with": "src/environments/environment.dev.ts"
-								}
-							]
+							"extractLicenses": true
 						},
 						"production": {
 							"optimization": true,
@@ -62,66 +51,26 @@
 							"namedChunks": false,
 							"aot": true,
 							"extractLicenses": true,
-							"vendorChunk": false,
-							"buildOptimizer": true,
 							"fileReplacements": [
 								{
 									"replace": "src/environments/environment.ts",
 									"with": "src/environments/environment.prod.ts"
 								}
 							]
-						},
-						"web": {
-							"optimization": false,
-							"outputHashing": "none",
-							"sourceMap": true,
-							"namedChunks": false,
-							"aot": false,
-							"extractLicenses": true,
-							"vendorChunk": false,
-							"buildOptimizer": false,
-							"fileReplacements": [
-								{
-									"replace": "src/environments/environment.ts",
-									"with": "src/environments/environment.web.ts"
-								}
-							]
-						},
-						"web-production": {
-							"optimization": true,
-							"outputHashing": "all",
-							"sourceMap": false,
-							"namedChunks": false,
-							"aot": true,
-							"extractLicenses": true,
-							"vendorChunk": false,
-							"buildOptimizer": true,
-							"fileReplacements": [
-								{
-									"replace": "src/environments/environment.ts",
-									"with": "src/environments/environment.web.prod.ts"
-								}
-							]
 						}
 					}
 				},
 				"serve": {
-					"builder": "@angular-builders/custom-webpack:dev-server",
+					"builder": "@angular-devkit/build-angular:dev-server",
 					"options": {
-						"buildTarget": "angular-electron:build"
+						"buildTarget": "nebulosa:build"
 					},
 					"configurations": {
 						"dev": {
-							"buildTarget": "angular-electron:build:dev"
+							"buildTarget": "nebulosa:build:dev"
 						},
 						"production": {
-							"buildTarget": "angular-electron:build:production"
-						},
-						"web": {
-							"buildTarget": "angular-electron:build:web"
-						},
-						"web-production": {
-							"buildTarget": "angular-electron:build:web-production"
+							"buildTarget": "nebulosa:build:production"
 						}
 					}
 				}

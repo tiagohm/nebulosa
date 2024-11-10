@@ -21,7 +21,6 @@ internal data class RandomSource(
 
     companion object {
 
-        @JvmStatic
         private fun Random.nextBytes(bytes: ByteArray, offset: Int = 0, byteCount: Int = bytes.size - offset) {
             var i = 0
 

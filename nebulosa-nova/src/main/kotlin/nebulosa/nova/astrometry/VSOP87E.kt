@@ -6,6 +6,7 @@ import nebulosa.erfa.PositionAndVelocity
 import nebulosa.io.bufferedResource
 import nebulosa.math.Matrix3D
 import nebulosa.math.Vector3D
+import nebulosa.nova.frame.EclipticJ2000
 import nebulosa.time.InstantOfTime
 import kotlin.math.cos
 import kotlin.math.sin
@@ -22,36 +23,7 @@ enum class VSOP87E(override val target: Int) : Body {
     NEPTUNE(899);
 
     // Exponent, XYZ, terms.
-    private val terms = Array(6) { Array(3) { DoubleArray(0) } }
-
-    init {
-        val buffer = bufferedResource("VSOP87E_$name.txt")!!
-
-        var xyz = 0
-        var exp = 0
-
-        buffer.use {
-            while (!buffer.exhausted()) {
-                val line = buffer.readUtf8Line()?.trimStart() ?: break
-
-                if (line.startsWith("VSOP87")) {
-                    xyz = line[40].code - 49
-                    exp = line[58].code - 48
-                    val size = line.substring(59..65).trim().toInt()
-                    terms[exp][xyz] = DoubleArray(size * 3)
-                    continue
-                }
-
-                val index = (line.substring(4..8).trim().toInt() - 1) * 3
-                val a = line.substring(78..95).trim().toDouble()
-                val b = line.substring(96..109).trim().toDouble()
-                val c = line.substring(110..129).trim().toDouble()
-                terms[exp][xyz][index] = a
-                terms[exp][xyz][index + 1] = b
-                terms[exp][xyz][index + 2] = c
-            }
-        }
-    }
+    private val terms by lazy { bufferedResource("VSOP87E_$name.dat")!!.use(VSOP87EReader::readBinaryFormat) }
 
     override val center = 0 // SSB.
 
@@ -64,11 +36,13 @@ enum class VSOP87E(override val target: Int) : Body {
         val p = DoubleArray(3)
         val v = DoubleArray(3)
 
+        val data = terms
+
         for (k in 0..2) {
             for (e in 0..5) {
                 var psum = 0.0
 
-                val terms = terms[e][k]
+                val terms = data[e][k]
 
                 for (i in terms.indices step 3) {
                     val a = terms[i]
@@ -98,7 +72,7 @@ enum class VSOP87E(override val target: Int) : Body {
          * are given in the inertial frame defined by the dynamical equinox and ecliptic
          * J2000 (JD2451545.0).
          */
-        @JvmStatic private val REFERENCE_FRAME = Matrix3D(
+        private val REFERENCE_FRAME = Matrix3D(
             1.000000000000, 0.000000440360, -0.000000190919,
             -0.000000479966, 0.917482137087, -0.397776982902,
             0.000000000000, 0.397776982902, 0.917482137087,

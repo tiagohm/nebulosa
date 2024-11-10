@@ -153,7 +153,7 @@ data class CameraLiveStackingManager(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<CameraLiveStackingManager>()
+        private val LOG = loggerFor<CameraLiveStackingManager>()
 
         private inline val Path.isCalibrationFrame
             get() = exists() && isRegularFile() && (isFits() || isXisf())

@@ -22,9 +22,8 @@ data class ROI(
 
     companion object {
 
-        @JvmStatic val EMPTY = ROI()
+        val EMPTY = ROI()
 
-        @JvmStatic
         internal fun Int.contraintTo(max: Int): Int {
             return if (this < 0) 0 else if (this >= max) max - 1 else this
         }

@@ -1,90 +1,103 @@
 package nebulosa.api.focusers
 
-import io.javalin.Javalin
-import io.javalin.http.Context
+import io.ktor.server.application.Application
+import io.ktor.server.response.respond
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.get
+import io.ktor.server.routing.put
+import io.ktor.server.routing.routing
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.core.Controller
+import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.positiveOrZero
 
 class FocuserController(
-    override val app: Javalin,
+    override val app: Application,
     private val connectionService: ConnectionService,
     private val focuserService: FocuserService,
 ) : Controller {
 
     init {
-        app.get("focusers", ::focusers)
-        app.get("focusers/{id}", ::focuser)
-        app.put("focusers/{id}/connect", ::connect)
-        app.put("focusers/{id}/disconnect", ::disconnect)
-        app.put("focusers/{id}/move-in", ::moveIn)
-        app.put("focusers/{id}/move-out", ::moveOut)
-        app.put("focusers/{id}/move-to", ::moveTo)
-        app.put("focusers/{id}/abort", ::abort)
-        app.put("focusers/{id}/sync", ::sync)
-        app.put("focusers/{id}/listen", ::listen)
+        with(app) {
+            routing {
+                get("/focusers", ::focusers)
+                get("/focusers/{id}", ::focuser)
+                put("/focusers/{id}/connect", ::connect)
+                put("/focusers/{id}/disconnect", ::disconnect)
+                put("/focusers/{id}/move-in", ::moveIn)
+                put("/focusers/{id}/move-out", ::moveOut)
+                put("/focusers/{id}/move-to", ::moveTo)
+                put("/focusers/{id}/abort", ::abort)
+                put("/focusers/{id}/sync", ::sync)
+                put("/focusers/{id}/listen", ::listen)
+            }
+        }
     }
 
-    private fun focusers(ctx: Context) {
-        ctx.json(connectionService.focusers().sorted())
+    private suspend fun focusers(ctx: RoutingContext) = with(ctx.call) {
+        respond(connectionService.focusers().sorted())
     }
 
-    private fun focuser(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private suspend fun focuser(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val focuser = connectionService.focuser(id) ?: return
-        ctx.json(focuser)
+        respond(focuser)
     }
 
-    private fun connect(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun connect(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val focuser = connectionService.focuser(id) ?: return
         focuserService.connect(focuser)
     }
 
-    private fun disconnect(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun disconnect(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val focuser = connectionService.focuser(id) ?: return
         focuserService.disconnect(focuser)
     }
 
-    private fun moveIn(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun moveIn(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val focuser = connectionService.focuser(id) ?: return
-        val steps = ctx.queryParam("steps").notNull().toInt().positiveOrZero()
+        val steps = queryParameters["steps"].notNull().toInt().positiveOrZero()
         focuserService.moveIn(focuser, steps)
     }
 
-    private fun moveOut(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun moveOut(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val focuser = connectionService.focuser(id) ?: return
-        val steps = ctx.queryParam("steps").notNull().toInt().positiveOrZero()
+        val steps = queryParameters["steps"].notNull().toInt().positiveOrZero()
         focuserService.moveOut(focuser, steps)
     }
 
-    private fun moveTo(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun moveTo(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val focuser = connectionService.focuser(id) ?: return
-        val steps = ctx.queryParam("steps").notNull().toInt().positiveOrZero()
+        val steps = queryParameters["steps"].notNull().toInt().positiveOrZero()
         focuserService.moveTo(focuser, steps)
     }
 
-    private fun abort(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun abort(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val focuser = connectionService.focuser(id) ?: return
         focuserService.abort(focuser)
     }
 
-    private fun sync(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun sync(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val focuser = connectionService.focuser(id) ?: return
-        val steps = ctx.queryParam("steps").notNull().toInt().positiveOrZero()
+        val steps = queryParameters["steps"].notNull().toInt().positiveOrZero()
         focuserService.sync(focuser, steps)
     }
 
-    private fun listen(ctx: Context) {
-        val id = ctx.pathParam("id")
+    private fun listen(ctx: RoutingContext) = with(ctx.call) {
+        val id = pathParameters[ID].notNull()
         val focuser = connectionService.focuser(id) ?: return
         focuserService.listen(focuser)
+    }
+
+    companion object {
+
+        private const val ID = "id"
     }
 }

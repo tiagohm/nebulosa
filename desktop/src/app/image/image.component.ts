@@ -2,9 +2,6 @@ import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, 
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
-import { nuid } from 'nuid'
-import createPanZoom from 'panzoom'
-import { basename, dirname, extname } from 'path'
 import { ContextMenu } from 'primeng/contextmenu'
 import { DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
 import { HistogramComponent } from '../../shared/components/histogram/histogram.component'
@@ -29,6 +26,7 @@ import {
 	DEFAULT_IMAGE_MOUSE_POSITION,
 	DEFAULT_IMAGE_PREFERENCE,
 	DEFAULT_IMAGE_ROI,
+	DEFAULT_IMAGE_ROTATION_DIALOG,
 	DEFAULT_IMAGE_SAVE_DIALOG,
 	DEFAULT_IMAGE_SETTINGS_DIALOG,
 	DEFAULT_IMAGE_SOLVED,
@@ -53,6 +51,8 @@ import { Mount } from '../../shared/types/mount.types'
 import { PlateSolverRequest } from '../../shared/types/platesolver.types'
 import { StarDetectionRequest } from '../../shared/types/stardetector.types'
 import { CoordinateInterpolator } from '../../shared/utils/coordinate-interpolation'
+import { PanZoom, PanZoomEventDetail, PanZoomOptions } from '../../shared/utils/pan-zoom'
+import { uid } from '../../shared/utils/random'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -73,6 +73,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	protected readonly mouseCoordinate = structuredClone(DEFAULT_IMAGE_MOUSE_COORDINATES)
 	protected readonly liveStacking = structuredClone(DEFAULT_IMAGE_LIVE_STACKING)
 	protected readonly zoom = structuredClone(DEFAULT_IMAGE_ZOOM)
+	protected readonly rotation = structuredClone(DEFAULT_IMAGE_ROTATION_DIALOG)
 	protected readonly settings = structuredClone(DEFAULT_IMAGE_SETTINGS_DIALOG)
 	private readonly calibration = structuredClone(DEFAULT_IMAGE_CALIBRATION)
 	private readonly mouseMountCoordinate = structuredClone(DEFAULT_IMAGE_MOUSE_POSITION)
@@ -188,6 +189,22 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		},
 	}
 
+	private readonly rotateMenuItem: MenuItem = {
+		label: 'Rotate',
+		icon: 'mdi mdi-rotate-right',
+		selected: false,
+		command: () => {
+			this.rotation.showDialog = true
+		},
+	}
+
+	private readonly imageTransformationMenuItem: MenuItem = {
+		label: 'Transformation',
+		icon: 'mdi mdi-image-edit',
+		selected: false,
+		items: [this.horizontalMirrorMenuItem, this.verticalMirrorMenuItem, this.invertMenuItem, this.rotateMenuItem],
+	}
+
 	private readonly calibrationMenuItem: MenuItem = {
 		label: 'Calibration',
 		icon: 'mdi mdi-wrench',
@@ -199,7 +216,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		label: 'Statistics',
 		command: () => {
 			this.statistics.showDialog = true
-			return this.computeHistogram()
+			return this.computeStatistics()
 		},
 	}
 
@@ -282,7 +299,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		selected: false,
 		command: () => {
 			this.imageROI.show = !this.imageROI.show
-			this.roiMenuItem.selected = this.imageROI.show
+			this.roiMenuItem.selected = this.hasROI
 		},
 	}
 
@@ -313,9 +330,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.autoStretchMenuItem,
 		this.scnrMenuItem,
 		this.debayerMenuItem,
-		this.horizontalMirrorMenuItem,
-		this.verticalMirrorMenuItem,
-		this.invertMenuItem,
+		this.imageTransformationMenuItem,
 		this.calibrationMenuItem,
 		SEPARATOR_MENU_ITEM,
 		this.overlayMenuItem,
@@ -387,6 +402,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	get canAddFOV() {
 		const fov = this.fov.selected
 		return fov.aperture && fov.focalLength && fov.cameraSize.width && fov.cameraSize.height && fov.pixelSize.width && fov.pixelSize.height && fov.bin
+	}
+
+	get hasROI() {
+		return this.imageROI.show && this.rotation.transformation.angle % 360 === 0
 	}
 
 	constructor(
@@ -531,7 +550,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 		this.loadPreference()
 
-		this.solver.key = nuid.next()
+		this.solver.key = uid()
 	}
 
 	async ngAfterViewInit() {
@@ -545,7 +564,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	@HostListener('window:unload')
 	ngOnDestroy() {
-		this.zoom.panZoom?.dispose()
+		this.zoom.panZoom?.destroy()
 		void this.closeImage()
 	}
 
@@ -718,10 +737,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			this.markCalibrationGroupItem()
 		}
 
-		if (data.source === 'FRAMING') {
-			this.disableAutoStretch()
-			await this.resetStretch(false)
-		} else if (data.source === 'FLAT_WIZARD') {
+		if (data.source === 'FLAT_WIZARD') {
 			this.disableCalibration(false)
 		}
 
@@ -746,12 +762,21 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.histogram?.update([])
 	}
 
-	protected async computeHistogram() {
+	protected async computeStatistics(force: boolean = false) {
 		const path = this.imagePath
 
-		if (path) {
-			const data = await this.api.imageHistogram(path, this.statistics.bitOption.bitLength)
-			this.histogram?.update(data)
+		if (path && (force || !this.statistics.statistics)) {
+			const transformation = this.makeImageTransformation()
+			const statistics = await this.api.imageStatistics(path, transformation, this.statistics.channel, this.imageData.camera)
+			this.statistics.statistics = statistics
+
+			if (this.histogram) {
+				this.histogram.update(statistics.histogram)
+			} else {
+				setTimeout(() => {
+					this.histogram?.update(statistics.histogram)
+				}, 1000)
+			}
 		}
 	}
 
@@ -823,7 +848,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		ctx?.drawImage(this.image.nativeElement, star.x - 8, star.y - 8, 16, 16, 0, 0, canvas.width, canvas.height)
 	}
 
-	private async loadImage() {
+	protected async loadImage() {
 		const path = this.imagePath
 
 		if (path) {
@@ -841,7 +866,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		} else if (this.imageData.camera) {
 			text = this.imageData.camera.name
 		} else if (this.imageData.path) {
-			text = basename(this.imageData.path)
+			text = window.path.basename(this.imageData.path)
 		} else {
 			return
 		}
@@ -857,11 +882,16 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.app.subTitle = text
 	}
 
+	protected makeImageTransformation() {
+		const transformation = structuredClone(this.transformation)
+		if (this.calibration.source === 'CAMERA' && this.liveStacking.mode !== 'NONE') transformation.calibrationGroup = this.imageData.capture?.calibrationGroup
+		return transformation
+	}
+
 	private async loadImageFromPath(path: string) {
 		const image = this.image.nativeElement
 
-		const transformation = structuredClone(this.transformation)
-		if (this.calibration.source === 'CAMERA' && this.liveStacking.mode !== 'NONE') transformation.calibrationGroup = this.imageData.capture?.calibrationGroup
+		const transformation = this.makeImageTransformation()
 		const { info, blob } = await this.api.openImage(path, transformation, this.imageData.camera)
 
 		if (!blob || !info) return
@@ -870,8 +900,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.scnrMenuItem.disabled = info.mono
 		this.debayerMenuItem.disabled = !info.bayer
 
-		if (info.rightAscension) this.solver.request.centerRA = info.rightAscension
-		if (info.declination) this.solver.request.centerDEC = info.declination
+		this.solver.request.centerRA = info.rightAscension || ''
+		this.solver.request.centerDEC = info.declination || ''
 		this.solver.request.blind = !this.solver.request.centerRA || !this.solver.request.centerDEC
 
 		if (this.stretch.transformation.auto) {
@@ -881,7 +911,12 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.updateImageSolved(info.solved)
 
 		this.headers.headers = info.headers
-		this.statistics.statistics = info.statistics
+
+		if (this.statistics.showDialog) {
+			void this.computeStatistics(true)
+		} else {
+			this.statistics.statistics = undefined
+		}
 
 		this.retrieveInfoFromImageHeaders(info.headers)
 
@@ -934,11 +969,11 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	protected pathChangedForSaveAs() {
 		if (this.saveAs.path) {
-			const extension = extname(this.saveAs.path).toLowerCase()
+			const extension = window.path.extname(this.saveAs.path).toLowerCase()
 			this.saveAs.format = imageFormatFromExtension(extension)
 			this.saveAs.bitpix = this.imageInfo?.bitpix ?? 'BYTE'
 
-			this.preference.savePath = dirname(this.saveAs.path)
+			this.preference.savePath = window.path.dirname(this.saveAs.path)
 			this.savePreference()
 		}
 	}
@@ -987,10 +1022,24 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	protected searchAnnotations() {
-		const search = this.annotation.search.toUpperCase()
+		const search = this.annotation.search.text.toUpperCase()
+		const magMin = Math.min(this.annotation.search.magnitudeMin, this.annotation.search.magnitudeMax)
+		const magMax = Math.max(this.annotation.search.magnitudeMin, this.annotation.search.magnitudeMax)
 
-		if (search) {
-			this.annotation.filtered = this.annotation.data.filter((e) => filterAstronomicalObject((e.star ?? e.dso ?? e.minorPlanet)!, search))
+		if (search || magMin > -30 || magMax < 30) {
+			let filtered = this.annotation.data
+
+			if (search) {
+				filtered = filtered.filter((e) => filterAstronomicalObject((e.star ?? e.dso ?? e.minorPlanet)!, search))
+			}
+			if (magMin > -30) {
+				filtered = filtered.filter((e) => (e.star ?? e.dso ?? e.minorPlanet)!.magnitude >= magMin)
+			}
+			if (magMax < 30) {
+				filtered = filtered.filter((e) => (e.star ?? e.dso ?? e.minorPlanet)!.magnitude <= magMax)
+			}
+
+			this.annotation.filtered = filtered
 		} else {
 			this.annotation.filtered = this.annotation.data
 		}
@@ -1000,9 +1049,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.annotation.selected = selected
 
 		if (selected && this.zoom.panZoom) {
-			const { scale } = this.zoom.panZoom.getTransform()
-			const { clientWidth: pw, clientHeight: ph } = this.image.nativeElement.parentElement!.parentElement!
-			this.zoom.panZoom.smoothMoveTo(pw / 2 - selected.x * scale, (ph + 42) / 2 - selected.y * scale)
+			this.zoom.panZoom.focusAt(selected.x, selected.y)
 		}
 	}
 
@@ -1031,6 +1078,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.stretch.transformation.shadow = 0
 		this.stretch.transformation.highlight = 65536
 		this.stretch.transformation.midtone = 32768
+		// this.stretch.transformation.meanBackground = 0.5
 		this.savePreference()
 
 		if (load) {
@@ -1055,6 +1103,19 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		return this.loadImage()
 	}
 
+	protected applyAutoStretchMeanBackground() {
+		if (!this.stretch.transformation.auto) {
+			return this.toggleStretch()
+		} else {
+			return this.loadImage()
+		}
+	}
+
+	protected restoreAutoStretchMeanBackground() {
+		this.stretch.transformation.meanBackground = 0.5
+		return this.applyAutoStretchMeanBackground()
+	}
+
 	private invertImage() {
 		this.transformation.invert = !this.transformation.invert
 		this.invertMenuItem.selected = this.transformation.invert
@@ -1073,34 +1134,60 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 	}
 
 	private zoomIn() {
-		if (!this.zoom.panZoom) return
-		const { scale } = this.zoom.panZoom.getTransform()
-		this.zoom.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, scale * 1.1)
+		if (this.zoom.panZoom) {
+			const { innerWidth, innerHeight } = window
+			const { offsetTop, offsetLeft } = this.image.nativeElement.parentElement!.parentElement!
+			this.zoom.panZoom.zoomIn({ clientX: innerWidth / 2 + offsetLeft / 2, clientY: innerHeight / 2 + offsetTop / 2 })
+		}
 	}
 
 	private zoomOut() {
-		if (!this.zoom.panZoom) return
-		const { scale } = this.zoom.panZoom.getTransform()
-		this.zoom.panZoom.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, scale * 0.9)
+		if (this.zoom.panZoom) {
+			const { innerWidth, innerHeight } = window
+			const { offsetTop, offsetLeft } = this.image.nativeElement.parentElement!.parentElement!
+			this.zoom.panZoom.zoomOut({ clientX: innerWidth / 2 + offsetLeft / 2, clientY: innerHeight / 2 + offsetTop / 2 })
+		}
 	}
 
 	private center() {
-		const { width, height } = this.image.nativeElement.getBoundingClientRect()
-		this.zoom.panZoom?.moveTo(window.innerWidth / 2 - width / 2, (window.innerHeight - 42) / 2 - height / 2)
+		if (this.zoom.panZoom) {
+			this.zoom.panZoom.centerAt(window.innerWidth / 2, window.innerHeight / 2)
+		}
 	}
 
 	private resetZoom(fitToScreen: boolean = false, center: boolean = true) {
-		if (fitToScreen) {
-			const { width, height } = this.image.nativeElement
-			const factor = Math.min(window.innerWidth, window.innerHeight - 42) / Math.min(width, height)
-			this.zoom.panZoom?.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, factor)
-		} else {
-			this.zoom.panZoom?.smoothZoomAbs(window.innerWidth / 2, window.innerHeight / 2, 1.0)
-		}
+		if (this.zoom.panZoom) {
+			if (fitToScreen) {
+				const { width: iw, height: ih } = this.image.nativeElement
+				const angle = this.rotation.transformation.angle * (Math.PI / 180.0)
+				const nw = Math.abs(iw * Math.cos(angle)) + Math.abs(ih * Math.sin(angle))
+				const nh = Math.abs(iw * Math.sin(angle)) + Math.abs(ih * Math.cos(angle))
+				const { clientWidth: cw, clientHeight: ch } = this.image.nativeElement.parentElement!.parentElement!
+				const { offsetTop } = this.image.nativeElement.parentElement!.parentElement!
+				const factor = Math.min(cw / nw, (ch - offsetTop) / nh)
+				this.zoom.panZoom.zoom(factor)
+			} else {
+				this.zoom.panZoom.reset()
+				this.zoom.scale = 1
+			}
 
-		if (center) {
-			this.center()
+			if (center) {
+				this.center()
+			}
 		}
+	}
+
+	protected rotate(angle: number) {
+		this.rotation.transformation.angle = angle
+		this.savePreference()
+	}
+
+	protected rotateWithWheel(event: WheelEvent) {
+		// Normalize to deltaX in case shift modifier is used on Mac
+		const delta = event.deltaY === 0 && event.deltaX ? event.deltaX : event.deltaY
+		const wheel = (delta < 0 ? 1 : -1) * (event.ctrlKey ? 0.1 : 1)
+		const angle = this.rotation.transformation.angle + wheel
+		this.rotate(((angle % 360) + 360) % 360)
 	}
 
 	private async enterFullscreen() {
@@ -1143,6 +1230,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 					...this.solver.request,
 					...this.preferenceService.settings.get().plateSolver[this.solver.request.type],
 					type: this.solver.request.type,
+					width: this.imageInfo?.width ?? 0,
+					height: this.imageInfo?.height ?? 0,
 				}
 
 				const solved = await this.api.solverStart(request, path, this.solver.key)
@@ -1152,6 +1241,8 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				this.updateImageSolved(this.imageInfo?.solved)
 			} finally {
 				this.solver.running = false
+
+				this.savePreference()
 
 				if (this.solver.solved.solved) {
 					await this.retrieveCoordinateInterpolation()
@@ -1206,34 +1297,39 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 
 	protected imageLoaded() {
 		const image = this.image.nativeElement
-		const imageWrapper = image.parentElement
+		const wrapper = image.parentElement
+		const owner = wrapper?.parentElement
 
 		URL.revokeObjectURL(image.src)
 
-		if (!this.zoom.panZoom && imageWrapper) {
-			const panZoom = createPanZoom(imageWrapper, {
-				minZoom: 0.1,
-				maxZoom: 500.0,
-				autocenter: true,
-				zoomDoubleClickSpeed: 1,
-				zoomSpeed: 1,
-				filterKey: () => {
-					return true
+		if (!this.zoom.panZoom && wrapper && owner) {
+			const options: Partial<PanZoomOptions> = {
+				maxScale: 500,
+				canExclude: (e) => {
+					return !!e.tagName && (e.classList.contains('roi') || e.classList.contains('moveable-control'))
 				},
-				beforeWheel: (e) => {
-					return e.target !== this.image.nativeElement && e.target !== this.roi.nativeElement && (e.target as HTMLElement).tagName !== 'circle'
-				},
-				beforeMouseDown: (e) => {
-					return e.target !== this.image.nativeElement && (e.target as HTMLElement).tagName !== 'circle'
-				},
-			})
+			}
 
-			panZoom.on('transform', () => {
-				const { scale } = panZoom.getTransform()
-				this.zoom.scale = scale
+			const panZoom = new PanZoom(wrapper, options)
+
+			wrapper.addEventListener('wheel', (e) => {
+				if (e.shiftKey) {
+					this.rotateWithWheel(e)
+				} else {
+					if (e.target === owner || e.target === wrapper || e.target === image || e.target === this.roi.nativeElement || (e.target as HTMLElement).tagName === 'circle') {
+						panZoom.zoomWithWheel(e)
+					}
+				}
+			})
+			panZoom.addListener('panzoomzoom', (e: PanZoomEventDetail) => {
+				this.zoom.scale = e.transformation.scale
 			})
 
 			this.zoom.panZoom = panZoom
+
+			setTimeout(() => {
+				this.resetZoom(true)
+			})
 		}
 	}
 
@@ -1317,9 +1413,6 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 				height: fov.cameraSize.height * (resolution.height / this.solver.solved.scale),
 			}
 
-			svg.x += (this.imageInfo.width - svg.width) / 2
-			svg.y += (this.imageInfo.height - svg.height) / 2
-
 			fov.computed = {
 				cameraResolution: {
 					width: resolution.width * fov.bin,
@@ -1359,6 +1452,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		this.settings.preference = this.preference
 		this.transformation = this.preference.transformation
 		this.saveAs.transformation = this.transformation
+		this.rotation.transformation = this.transformation
 		this.stretch.transformation = this.transformation.stretch
 		this.scnr.transformation = this.transformation.scnr
 		this.annotation.request = this.preference.annotation

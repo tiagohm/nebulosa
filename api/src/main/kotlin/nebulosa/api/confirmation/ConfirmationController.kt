@@ -1,23 +1,29 @@
 package nebulosa.api.confirmation
 
-import io.javalin.Javalin
-import io.javalin.http.Context
-import nebulosa.api.core.Controller
+import io.ktor.server.application.Application
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.put
+import io.ktor.server.routing.routing
+import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.notNullOrBlank
 
 class ConfirmationController(
-    override val app: Javalin,
+    override val app: Application,
     private val confirmationService: ConfirmationService
 ) : Controller {
 
     init {
-        app.put("confirmation/{idempotencyKey}", ::confirm)
+        with(app) {
+            routing {
+                put("/confirmation/{idempotencyKey}", ::confirm)
+            }
+        }
     }
 
-    private fun confirm(ctx: Context) {
-        val idempotencyKey = ctx.pathParam("idempotencyKey").notNullOrBlank()
-        val accepted = ctx.queryParam("accepted").notNull().toBoolean()
+    private fun confirm(ctx: RoutingContext) = with(ctx.call) {
+        val idempotencyKey = pathParameters["idempotencyKey"].notNullOrBlank()
+        val accepted = queryParameters["accepted"].notNull().toBoolean()
         confirmationService.confirm(idempotencyKey, accepted)
     }
 }

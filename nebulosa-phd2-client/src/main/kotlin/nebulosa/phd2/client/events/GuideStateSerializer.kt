@@ -12,7 +12,7 @@ data object GuideStateSerializer : StdSerializer<GuideState>(GuideState::class.j
         gen.writeString(GUIDE_STATES[value])
     }
 
-    @JvmStatic private val GUIDE_STATES = EnumMap<GuideState, String>(GuideState::class.java).also {
+    private val GUIDE_STATES = EnumMap<GuideState, String>(GuideState::class.java).also {
         it[GuideState.STOPPED] = "Stopped"
         it[GuideState.SELECTED] = "Selected"
         it[GuideState.CALIBRATING] = "Calibrating"

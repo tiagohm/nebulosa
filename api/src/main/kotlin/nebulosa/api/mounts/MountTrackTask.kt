@@ -35,6 +35,6 @@ data class MountTrackTask(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<MountTrackTask>()
+        private val LOG = loggerFor<MountTrackTask>()
     }
 }

@@ -12,6 +12,7 @@ import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.platesolver.LocalAstrometryNetPlateSolver
 import nebulosa.astrometrynet.platesolver.NovaAstrometryNetPlateSolver
 import nebulosa.math.Angle
+import nebulosa.math.arcsec
 import nebulosa.pixinsight.platesolver.PixInsightPlateSolver
 import nebulosa.pixinsight.script.startPixInsight
 import nebulosa.platesolver.PlateSolver
@@ -39,10 +40,15 @@ data class PlateSolverRequest(
     @field:JsonDeserialize(using = RightAscensionDeserializer::class) @JvmField val centerRA: Angle = 0.0,
     @field:JsonDeserialize(using = DeclinationDeserializer::class) @JvmField val centerDEC: Angle = 0.0,
     @field:JsonDeserialize(using = DegreesDeserializer::class) @JvmField val radius: Angle = if (blind) 0.0 else 4.0,
+    @JvmField val width: Int = 0,
+    @JvmField val height: Int = 0,
 ) : Validatable, KoinComponent, Supplier<PlateSolver> {
 
     override fun validate() {
-        executablePath.notNull(PLATE_SOLVER_IS_NOT_CONFIGURED).notBlank(PLATE_SOLVER_IS_NOT_CONFIGURED)
+        if (type != PlateSolverType.ASTROMETRY_NET_ONLINE) {
+            executablePath.notNull(PLATE_SOLVER_IS_NOT_CONFIGURED).notBlank(PLATE_SOLVER_IS_NOT_CONFIGURED)
+        }
+
         timeout.positiveOrZero().max(5, TimeUnit.MINUTES)
         downsampleFactor.positiveOrZero()
         focalLength.positiveOrZero()
@@ -52,12 +58,12 @@ data class PlateSolverRequest(
 
     override fun get() = with(this) {
         when (type) {
-            PlateSolverType.ASTAP -> AstapPlateSolver(executablePath!!)
-            PlateSolverType.ASTROMETRY_NET -> LocalAstrometryNetPlateSolver(executablePath!!)
+            PlateSolverType.ASTAP -> AstapPlateSolver(executablePath!!, height * PlateSolver.computeFOV(focalLength, pixelSize).arcsec)
+            PlateSolverType.ASTROMETRY_NET -> LocalAstrometryNetPlateSolver(executablePath!!, focalLength, pixelSize)
             PlateSolverType.ASTROMETRY_NET_ONLINE -> {
                 val httpClient = get<OkHttpClient>(Named.defaultHttpClient)
                 val service = NOVA_ASTROMETRY_NET_CACHE.getOrPut(apiUrl) { NovaAstrometryNetService(apiUrl, httpClient) }
-                NovaAstrometryNetPlateSolver(service, apiKey)
+                NovaAstrometryNetPlateSolver(service, apiKey, focalLength, pixelSize)
             }
             PlateSolverType.SIRIL -> SirilPlateSolver(executablePath!!, focalLength, pixelSize)
             PlateSolverType.PIXINSIGHT -> {
@@ -71,7 +77,7 @@ data class PlateSolverRequest(
 
         const val PLATE_SOLVER_IS_NOT_CONFIGURED = "plate solver is not configured"
 
-        @JvmStatic val EMPTY = PlateSolverRequest()
-        @JvmStatic private val NOVA_ASTROMETRY_NET_CACHE = HashMap<String, NovaAstrometryNetService>()
+        val EMPTY = PlateSolverRequest()
+        private val NOVA_ASTROMETRY_NET_CACHE = HashMap<String, NovaAstrometryNetService>()
     }
 }

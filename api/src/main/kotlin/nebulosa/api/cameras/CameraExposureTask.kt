@@ -139,6 +139,6 @@ data class CameraExposureTask(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<CameraExposureTask>()
+        private val LOG = loggerFor<CameraExposureTask>()
     }
 }

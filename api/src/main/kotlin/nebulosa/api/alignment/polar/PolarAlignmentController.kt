@@ -1,73 +1,88 @@
 package nebulosa.api.alignment.polar
 
-import io.javalin.Javalin
-import io.javalin.http.Context
-import io.javalin.http.bodyAsClass
+import io.ktor.server.application.Application
+import io.ktor.server.request.receive
+import io.ktor.server.response.respondNullable
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.get
+import io.ktor.server.routing.put
+import io.ktor.server.routing.routing
 import nebulosa.api.alignment.polar.darv.DARVStartRequest
 import nebulosa.api.alignment.polar.tppa.TPPAStartRequest
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.core.Controller
+import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.notNull
 import nebulosa.api.validators.valid
 
 class PolarAlignmentController(
-    override val app: Javalin,
+    override val app: Application,
     private val polarAlignmentService: PolarAlignmentService,
     private val connectionService: ConnectionService,
 ) : Controller {
 
     init {
-        app.put("polar-alignment/darv/{camera}/{guideOutput}/start", ::darvStart)
-        app.put("polar-alignment/darv/{camera}/stop", ::darvStop)
-        app.get("polar-alignment/darv/{camera}/status", ::darvStatus)
-        app.put("polar-alignment/tppa/{camera}/{mount}/start", ::tppaStart)
-        app.put("polar-alignment/tppa/{camera}/stop", ::tppaStop)
-        app.put("polar-alignment/tppa/{camera}/pause", ::tppaPause)
-        app.put("polar-alignment/tppa/{camera}/unpause", ::tppaUnpause)
-        app.get("polar-alignment/tppa/{camera}/status", ::tppaStatus)
+        with(app) {
+            routing {
+                put("/polar-alignment/darv/{camera}/{guideOutput}/start", ::darvStart)
+                put("/polar-alignment/darv/{camera}/stop", ::darvStop)
+                get("/polar-alignment/darv/{camera}/status", ::darvStatus)
+                put("/polar-alignment/tppa/{camera}/{mount}/start", ::tppaStart)
+                put("/polar-alignment/tppa/{camera}/stop", ::tppaStop)
+                put("/polar-alignment/tppa/{camera}/pause", ::tppaPause)
+                put("/polar-alignment/tppa/{camera}/unpause", ::tppaUnpause)
+                get("/polar-alignment/tppa/{camera}/status", ::tppaStatus)
+            }
+        }
     }
 
-    private fun darvStart(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
-        val guideOutput = connectionService.guideOutput(ctx.pathParam("guideOutput")).notNull()
-        val body = ctx.bodyAsClass<DARVStartRequest>().valid()
+    private suspend fun darvStart(ctx: RoutingContext) = with(ctx.call) {
+        val camera = connectionService.camera(pathParameters[CAMERA].notNull()).notNull()
+        val guideOutput = connectionService.guideOutput(pathParameters[GUIDE_OUTPUT].notNull()).notNull()
+        val body = receive<DARVStartRequest>().valid()
         polarAlignmentService.darvStart(camera, guideOutput, body)
     }
 
-    private fun darvStop(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera")) ?: return
+    private fun darvStop(ctx: RoutingContext) = with(ctx.call) {
+        val camera = connectionService.camera(pathParameters[CAMERA].notNull()) ?: return
         polarAlignmentService.darvStop(camera)
     }
 
-    private fun darvStatus(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
-        polarAlignmentService.darvStatus(camera)?.also(ctx::json)
+    private suspend fun darvStatus(ctx: RoutingContext) = with(ctx.call) {
+        val camera = connectionService.camera(pathParameters[CAMERA].notNull()).notNull()
+        respondNullable(polarAlignmentService.darvStatus(camera))
     }
 
-    private fun tppaStart(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
-        val mount = connectionService.mount(ctx.pathParam("mount")).notNull()
-        val body = ctx.bodyAsClass<TPPAStartRequest>().valid()
+    private suspend fun tppaStart(ctx: RoutingContext) = with(ctx.call) {
+        val camera = connectionService.camera(pathParameters[CAMERA].notNull()).notNull()
+        val mount = connectionService.mount(pathParameters[MOUNT].notNull()).notNull()
+        val body = receive<TPPAStartRequest>().valid()
         polarAlignmentService.tppaStart(camera, mount, body)
     }
 
-    private fun tppaStop(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera")) ?: return
+    private fun tppaStop(ctx: RoutingContext) = with(ctx.call) {
+        val camera = connectionService.camera(pathParameters[CAMERA].notNull()) ?: return
         polarAlignmentService.tppaStop(camera)
     }
 
-    private fun tppaPause(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera")) ?: return
+    private fun tppaPause(ctx: RoutingContext) = with(ctx.call) {
+        val camera = connectionService.camera(pathParameters[CAMERA].notNull()) ?: return
         polarAlignmentService.tppaPause(camera)
     }
 
-    private fun tppaUnpause(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera")) ?: return
+    private fun tppaUnpause(ctx: RoutingContext) = with(ctx.call) {
+        val camera = connectionService.camera(pathParameters[CAMERA].notNull()) ?: return
         polarAlignmentService.tppaUnpause(camera)
     }
 
-    private fun tppaStatus(ctx: Context) {
-        val camera = connectionService.camera(ctx.pathParam("camera")).notNull()
-        polarAlignmentService.tppaStatus(camera)?.also(ctx::json)
+    private suspend fun tppaStatus(ctx: RoutingContext) = with(ctx.call) {
+        val camera = connectionService.camera(pathParameters[CAMERA].notNull()).notNull()
+        respondNullable(polarAlignmentService.tppaStatus(camera))
+    }
+
+    companion object {
+
+        private const val CAMERA = "camera"
+        private const val MOUNT = "mount"
+        private const val GUIDE_OUTPUT = "guideOutput"
     }
 }

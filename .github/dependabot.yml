@@ -39,6 +39,9 @@ updates:
       apache:
         patterns:
           - "org.apache*"
+      ktor:
+        patterns:
+          - "io.ktor*"
       junit:
         patterns:
           - "org.junit*"

@@ -138,6 +138,6 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<LX200ProtocolHandler>()
+        private val LOG = loggerFor<LX200ProtocolHandler>()
     }
 }

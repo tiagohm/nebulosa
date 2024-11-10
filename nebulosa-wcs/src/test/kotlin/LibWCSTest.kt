@@ -144,7 +144,6 @@ class LibWCSTest {
             System.setProperty(LibWCS.PATH, "$libPath")
         }
 
-        @JvmStatic
         private fun pixToSky(projectionName: String, width: Int, height: Int) {
             val data = Array(2048) { intArrayOf(Random.nextInt(width), Random.nextInt(height)) }
 
@@ -170,7 +169,6 @@ class LibWCSTest {
             }
         }
 
-        @JvmStatic
         private fun readHeaderFromFits(name: String): ReadableHeader {
             return Path.of("src/test/resources/$name.fits").fits().use { it.first().header }
         }

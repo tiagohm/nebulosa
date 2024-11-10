@@ -68,6 +68,6 @@ class INDIProtocolReader(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<INDIProtocolReader>()
+        private val LOG = loggerFor<INDIProtocolReader>()
     }
 }

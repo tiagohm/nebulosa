@@ -1,7 +1,8 @@
 package nebulosa.api.inject
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.javalin.Javalin
+import io.ktor.server.engine.EmbeddedServer
+import io.ktor.server.netty.NettyApplicationEngine
 import nebulosa.api.APP_DIR_KEY
 import nebulosa.api.Nebulosa
 import nebulosa.api.alignment.polar.PolarAlignmentController
@@ -26,8 +27,8 @@ import nebulosa.api.confirmation.ConfirmationService
 import nebulosa.api.connection.ConnectionController
 import nebulosa.api.connection.ConnectionEventHub
 import nebulosa.api.connection.ConnectionService
-import nebulosa.api.database.MainDatabaseMigrator
-import nebulosa.api.database.SkyDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
+import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.dustcap.DustCapController
 import nebulosa.api.dustcap.DustCapEventHub
 import nebulosa.api.dustcap.DustCapService
@@ -266,7 +267,7 @@ fun servicesModule() = module {
     single { SimbadService(httpClient = get(Named.defaultHttpClient)) }
     single { SmallBodyDatabaseService(httpClient = get(Named.defaultHttpClient)) }
     single { Hips2FitsService(httpClient = get(Named.defaultHttpClient)) }
-    single(createdAtStart = true) { MessageService(get()) }
+    single(createdAtStart = true) { MessageService(get(), get()) }
     includes(eventHandlerModule())
     single(createdAtStart = true) { ConnectionService(get(), get(Named.alpacaHttpClient), get(), get()) }
     single { ConfirmationService(get()) }
@@ -279,7 +280,7 @@ fun servicesModule() = module {
     single { ImageBucket(get()) }
     single { CalibrationFrameService(get()) }
     single { FramingService(get(), get()) }
-    single { ImageService(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { ImageService(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     single { PlateSolverService(get(), get()) }
     single { FlatWizardExecutor(get(), get(), get()) }
     single { FlatWizardService(get(Named.capturesDir), get()) }
@@ -318,7 +319,7 @@ fun controllersModule() = module(true) {
     single { LightBoxController(get(), get(), get()) }
     single { DustCapController(get(), get(), get()) }
     single { CalibrationFrameController(get(), get()) }
-    single { ImageController(get(), get(), get()) }
+    single { ImageController(get(), get(), get(), get()) }
     single { PlateSolverController(get(), get()) }
     single { FlatWizardController(get(), get(), get()) }
     single { StarDetectionController(get(), get()) }
@@ -329,13 +330,14 @@ fun controllersModule() = module(true) {
     single { PolarAlignmentController(get(), get(), get()) }
     single { GuidingController(get(), get()) }
     single { SequencerController(get(), get(), get()) }
-    single { SkyAtlasController(get(), get(), get()) }
+    single { SkyAtlasController(get(), get(), get(), get()) }
     single { MountController(get(), get(), get()) }
     single { CameraController(get(), get(), get()) }
 }
 
-// APP
+// SERVER
 
-fun appModule(app: Javalin) = module(true) {
-    single { app }
+fun serverModule(server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>) = module(true) {
+    single { server }
+    single { server.application }
 }

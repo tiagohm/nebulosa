@@ -40,7 +40,7 @@ class GeographicPositionTest {
         @BeforeAll
         fun loadIERS() {
             val iersa = IERSA()
-            val finals2000A = download("https://maia.usno.navy.mil/ser7/finals2000A.all")
+            val finals2000A = download("https://github.com/tiagohm/nebulosa.data/raw/main/finals2000A.all.txt")
             finals2000A.inputStream().use(iersa::load)
             IERS.attach(iersa)
         }

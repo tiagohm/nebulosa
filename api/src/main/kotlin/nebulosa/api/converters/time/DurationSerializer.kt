@@ -25,6 +25,6 @@ class DurationSerializer(private val unit: ChronoUnit? = null) : StdSerializer<D
 
     companion object {
 
-        @JvmStatic private val SERIALIZERS = mutableMapOf<ChronoUnit, DurationSerializer>()
+        private val SERIALIZERS = mutableMapOf<ChronoUnit, DurationSerializer>()
     }
 }

@@ -9,8 +9,7 @@ class VSOP87ETest {
 
     @Test
     fun sun() {
-        val time = TDB(TimeJD(2459938.0, 0.5))
-        val (p, v) = VSOP87E.SUN.compute(time)
+        val (p, v) = VSOP87E.SUN.compute(TIME)
         // https://ssd.jpl.nasa.gov/horizons/app.html#/
         p[0] shouldBe (-9.061436632282236E-03 plusOrMinus 1e-5)
         p[1] shouldBe (6.152584183942633E-05 plusOrMinus 1e-6)
@@ -22,8 +21,7 @@ class VSOP87ETest {
 
     @Test
     fun mercury() {
-        val time = TDB(TimeJD(2459938.0, 0.5))
-        val (p, v) = VSOP87E.MERCURY.compute(time)
+        val (p, v) = VSOP87E.MERCURY.compute(TIME)
         // https://ssd.jpl.nasa.gov/horizons/app.html#/
         p[0] shouldBe (2.917749477051785E-01 plusOrMinus 1e-5)
         p[1] shouldBe (1.307753573063683E-01 plusOrMinus 1e-5)
@@ -35,8 +33,7 @@ class VSOP87ETest {
 
     @Test
     fun venus() {
-        val time = TDB(TimeJD(2459938.0, 0.5))
-        val (p, v) = VSOP87E.VENUS.compute(time)
+        val (p, v) = VSOP87E.VENUS.compute(TIME)
         // https://ssd.jpl.nasa.gov/horizons/app.html#/
         p[0] shouldBe (4.530231016612877E-01 plusOrMinus 1e-5)
         p[1] shouldBe (-5.016891998928698E-01 plusOrMinus 1e-5)
@@ -48,8 +45,7 @@ class VSOP87ETest {
 
     @Test
     fun earth() {
-        val time = TDB(TimeJD(2459938.0, 0.5))
-        val (p, v) = VSOP87E.EARTH.compute(time)
+        val (p, v) = VSOP87E.EARTH.compute(TIME)
         // https://ssd.jpl.nasa.gov/horizons/app.html#/
         p[0] shouldBe (-5.774546457978428E-02 plusOrMinus 1e-5)
         p[1] shouldBe (9.014209322230198E-01 plusOrMinus 1e-5)
@@ -61,8 +57,7 @@ class VSOP87ETest {
 
     @Test
     fun mars() {
-        val time = TDB(TimeJD(2459938.0, 0.5))
-        val (p, v) = VSOP87E.MARS.compute(time)
+        val (p, v) = VSOP87E.MARS.compute(TIME)
         // https://ssd.jpl.nasa.gov/horizons/app.html#/
         p[0] shouldBe (1.458124773200954E-01 plusOrMinus 1e-5)
         p[1] shouldBe (1.408612236938829E+00 plusOrMinus 1e-5)
@@ -74,8 +69,7 @@ class VSOP87ETest {
 
     @Test
     fun jupiter() {
-        val time = TDB(TimeJD(2459938.0, 0.5))
-        val (p, v) = VSOP87E.JUPITER.compute(time)
+        val (p, v) = VSOP87E.JUPITER.compute(TIME)
         // https://ssd.jpl.nasa.gov/horizons/app.html#/
         p[0] shouldBe (4.840655361543647E+00 plusOrMinus 1e-5)
         p[1] shouldBe (9.540894823613197E-01 plusOrMinus 1e-5)
@@ -87,8 +81,7 @@ class VSOP87ETest {
 
     @Test
     fun saturn() {
-        val time = TDB(TimeJD(2459938.0, 0.5))
-        val (p, v) = VSOP87E.SATURN.compute(time)
+        val (p, v) = VSOP87E.SATURN.compute(TIME)
         // https://ssd.jpl.nasa.gov/horizons/app.html#/
         p[0] shouldBe (8.118575220877252E+00 plusOrMinus 1e-5)
         p[1] shouldBe (-4.990053770638640E+00 plusOrMinus 1e-5)
@@ -100,8 +93,7 @@ class VSOP87ETest {
 
     @Test
     fun uranus() {
-        val time = TDB(TimeJD(2459938.0, 0.5))
-        val (p, v) = VSOP87E.URANUS.compute(time)
+        val (p, v) = VSOP87E.URANUS.compute(TIME)
         // https://ssd.jpl.nasa.gov/horizons/app.html#/
         p[0] shouldBe (1.338107802611238E+01 plusOrMinus 1e-4)
         p[1] shouldBe (1.326832905623722E+01 plusOrMinus 1e-4)
@@ -113,8 +105,7 @@ class VSOP87ETest {
 
     @Test
     fun neptune() {
-        val time = TDB(TimeJD(2459938.0, 0.5))
-        val (p, v) = VSOP87E.NEPTUNE.compute(time)
+        val (p, v) = VSOP87E.NEPTUNE.compute(TIME)
         // https://ssd.jpl.nasa.gov/horizons/app.html#/
         p[0] shouldBe (2.974978125776706E+01 plusOrMinus 1e-4)
         p[1] shouldBe (-2.471636747869995E+00 plusOrMinus 1e-3)
@@ -122,5 +113,10 @@ class VSOP87ETest {
         v[0] shouldBe (2.908617762745452E-04 plusOrMinus 1e-6)
         v[1] shouldBe (2.911615062634410E-03 plusOrMinus 1e-6)
         v[2] shouldBe (1.184401587981311E-03 plusOrMinus 1e-6)
+    }
+
+    companion object {
+
+        private val TIME = TDB(TimeJD(2459938.0, 0.5))
     }
 }

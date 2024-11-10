@@ -19,6 +19,6 @@ data class MoonPhase(
 
     companion object {
 
-        @JvmStatic val EMPTY = MoonPhase()
+        val EMPTY = MoonPhase()
     }
 }

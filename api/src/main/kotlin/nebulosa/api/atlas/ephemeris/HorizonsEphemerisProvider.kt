@@ -82,9 +82,9 @@ class HorizonsEphemerisProvider(private val horizonsService: HorizonsService) : 
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<HorizonsEphemerisProvider>()
+        private val LOG = loggerFor<HorizonsEphemerisProvider>()
 
-        @JvmStatic private val QUANTITIES = arrayOf(
+        private val QUANTITIES = arrayOf(
             HorizonsQuantity.ASTROMETRIC_RA, HorizonsQuantity.ASTROMETRIC_DEC,
             HorizonsQuantity.APPARENT_RA, HorizonsQuantity.APPARENT_DEC,
             HorizonsQuantity.APPARENT_AZ, HorizonsQuantity.APPARENT_ALT,

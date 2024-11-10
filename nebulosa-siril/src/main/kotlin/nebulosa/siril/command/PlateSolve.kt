@@ -139,8 +139,8 @@ data class PlateSolve(
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<PlateSolve>()
-        @JvmStatic private val MIN_TIMEOUT = Duration.ofSeconds(30)
+        private val LOG = loggerFor<PlateSolve>()
+        private val MIN_TIMEOUT = Duration.ofSeconds(30)
 
         private const val INT_REGEX = "\\d+"
         private const val SIGNED_INT_REGEX = "[-+]?$INT_REGEX"
@@ -148,13 +148,12 @@ data class PlateSolve(
 
         // https://gitlab.com/free-astro/siril/-/blob/master/src/algos/astrometry_solver.c
 
-        @JvmStatic private val ORIENTATION_REGEX = "log: Up is ($FLOAT_REGEX) deg ClockWise wrt. N( \\(flipped\\))?".toRegex()
+        private val ORIENTATION_REGEX = "log: Up is ($FLOAT_REGEX) deg ClockWise wrt. N( \\(flipped\\))?".toRegex()
         private const val UNDETERMINED_ORIENTATION_REGEX = "log: Up position wrt. N is undetermined"
-        @JvmStatic private val RESOLUTION_REGEX = "log: Resolution:\\s*($FLOAT_REGEX) arcsec/px".toRegex()
-        @JvmStatic private val FOV_REGEX = "log: Field of view:\\s*(.*) x (.*)".toRegex()
-        @JvmStatic private val IMAGE_CENTER_REGEX = "log: Image center: alpha: (.*), delta: (.*)".toRegex()
+        private val RESOLUTION_REGEX = "log: Resolution:\\s*($FLOAT_REGEX) arcsec/px".toRegex()
+        private val FOV_REGEX = "log: Field of view:\\s*(.*) x (.*)".toRegex()
+        private val IMAGE_CENTER_REGEX = "log: Image center: alpha: (.*), delta: (.*)".toRegex()
 
-        @JvmStatic
         private fun String.parseFovInDHMS(): Angle {
             val parts = split(" ")
 

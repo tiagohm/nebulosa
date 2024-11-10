@@ -166,6 +166,6 @@ abstract class ASCOMDevice : Device, Resettable {
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<ASCOMDevice>()
+        private val LOG = loggerFor<ASCOMDevice>()
     }
 }

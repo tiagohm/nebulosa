@@ -1,7 +1,7 @@
 package nebulosa.api.atlas
 
-import nebulosa.api.database.MainDatabaseMigrator
-import nebulosa.api.database.SkyDatabaseMigrator
+import nebulosa.api.database.migration.MainDatabaseMigrator
+import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
 import nebulosa.log.e
@@ -92,6 +92,6 @@ class SkyAtlasUpdateTask(
         const val DATA_URL = "https://raw.githubusercontent.com/tiagohm/nebulosa.data/main/simbad/simbad.%02d.dat"
         const val MAX_DATA_COUNT = 100
 
-        @JvmStatic private val LOG = loggerFor<SkyAtlasUpdateTask>()
+        private val LOG = loggerFor<SkyAtlasUpdateTask>()
     }
 }

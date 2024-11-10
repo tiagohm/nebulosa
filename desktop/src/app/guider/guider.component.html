@@ -292,7 +292,7 @@
 					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!guideOutput ||!guideOutput.connected || guideOutput.pulseGuiding"
+								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
 								[(ngModel)]="preference.pulseDuration.west"
 								(ngModelChange)="savePreference()"
 								[step]="1"
@@ -385,7 +385,7 @@
 					<div class="col-4 flex flex-row gap-2 align-items-center justify-content-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!guideOutput ||!guideOutput.connected || guideOutput.pulseGuiding"
+								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
 								(onClick)="guidePulseStart('EAST')"
 								[(ngModel)]="preference.pulseDuration.east"
 								(ngModelChange)="savePreference()"
@@ -403,7 +403,7 @@
 					<div class="col-4 flex flex-column gap-2 align-items-center justify-content-center">
 						<p-floatLabel>
 							<p-inputNumber
-								[disabled]="!guideOutput ||!guideOutput.connected || guideOutput.pulseGuiding"
+								[disabled]="!guideOutput || !guideOutput.connected || guideOutput.pulseGuiding"
 								(onClick)="guidePulseStart('SOUTH')"
 								[(ngModel)]="preference.pulseDuration.south"
 								(ngModelChange)="savePreference()"

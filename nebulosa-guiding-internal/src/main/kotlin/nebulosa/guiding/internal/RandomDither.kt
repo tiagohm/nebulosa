@@ -14,6 +14,6 @@ class RandomDither(private val random: Random = Random.Default) : Dither {
 
     companion object {
 
-        @JvmStatic private val MAX_RANDOM = Int.MAX_VALUE.toDouble()
+        private val MAX_RANDOM = Int.MAX_VALUE.toDouble()
     }
 }

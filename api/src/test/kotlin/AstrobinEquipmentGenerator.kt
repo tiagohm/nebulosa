@@ -13,14 +13,15 @@ import kotlin.math.max
 
 object AstrobinEquipmentGenerator {
 
-    @JvmStatic private val SENSORS = ConcurrentHashMap<Long, Sensor>(1024)
-    @JvmStatic private val CAMERAS = ConcurrentHashMap<Long, Camera>(4092)
-    @JvmStatic private val TELESCOPES = ConcurrentHashMap<Long, Telescope>(4092)
-    @JvmStatic private val OBJECT_MAPPER = ObjectMapper()
-    @JvmStatic private val CAMERA_PATH = Path.of("data", "astrobin", "cameras.json")
-    @JvmStatic private val TELESCOPE_PATH = Path.of("data", "astrobin", "telescopes.json")
-    @JvmStatic private val EXECUTOR_SERVICE = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
-    @JvmStatic private val LOG = loggerFor<AstrobinEquipmentGenerator>()
+    private val LOG = loggerFor<AstrobinEquipmentGenerator>()
+
+    private val SENSORS = ConcurrentHashMap<Long, Sensor>(1024)
+    private val CAMERAS = ConcurrentHashMap<Long, Camera>(4092)
+    private val TELESCOPES = ConcurrentHashMap<Long, Telescope>(4092)
+    private val OBJECT_MAPPER = ObjectMapper()
+    private val CAMERA_PATH = Path.of("data", "astrobin", "cameras.json")
+    private val TELESCOPE_PATH = Path.of("data", "astrobin", "telescopes.json")
+    private val EXECUTOR_SERVICE = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
     data class CameraEquipment(
         val id: Long, val name: String, val sensor: String,

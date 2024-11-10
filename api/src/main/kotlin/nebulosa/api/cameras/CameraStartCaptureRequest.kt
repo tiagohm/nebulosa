@@ -69,6 +69,6 @@ data class CameraStartCaptureRequest(
 
         const val MAX_EXPOSURE_AMOUNT = 10000
 
-        @JvmStatic val EMPTY = CameraStartCaptureRequest()
+        val EMPTY = CameraStartCaptureRequest()
     }
 }

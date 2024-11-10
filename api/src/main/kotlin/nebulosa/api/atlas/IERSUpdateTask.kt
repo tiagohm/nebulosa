@@ -1,7 +1,7 @@
 package nebulosa.api.atlas
 
-import io.javalin.http.Header
-import nebulosa.api.database.MainDatabaseMigrator
+import io.ktor.http.HttpHeaders
+import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndClose
 import nebulosa.log.d
@@ -57,7 +57,7 @@ class IERSUpdateTask(
             var request = Request.Builder().head().url(url).build()
 
             var modifiedAt = httpClient.newCall(request).execute()
-                .use { it.headers.getDate(Header.LAST_MODIFIED) }
+                .use { it.headers.getDate(HttpHeaders.LastModified) }
 
             if (modifiedAt != null && "$modifiedAt" == preferenceService.getText(key)) {
                 LOG.i("{} is up to date. modifiedAt={}", url, modifiedAt)
@@ -70,7 +70,7 @@ class IERSUpdateTask(
 
             httpClient.newCall(request).execute().use {
                 it.body!!.byteStream().transferAndClose(outputStream())
-                modifiedAt = it.headers.getDate(Header.LAST_MODIFIED)
+                modifiedAt = it.headers.getDate(HttpHeaders.LastModified)
                 preferenceService.putText(key, "$modifiedAt")
                 LOG.d("{} downloaded. modifiedAt={}", url, modifiedAt)
             }
@@ -84,6 +84,6 @@ class IERSUpdateTask(
         const val IERSA_UPDATED_AT_KEY = "IERSA.UPDATED_AT"
         const val IERSB_UPDATED_AT_KEY = "IERSB.UPDATED_AT"
 
-        @JvmStatic private val LOG = loggerFor<IERSUpdateTask>()
+        private val LOG = loggerFor<IERSUpdateTask>()
     }
 }

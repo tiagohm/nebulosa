@@ -7,6 +7,7 @@ import nebulosa.math.normalized
 import nebulosa.math.toDegrees
 import nebulosa.nasa.daf.RemoteDaf
 import nebulosa.nasa.daf.SourceDaf
+import nebulosa.nasa.spk.NAIF
 import nebulosa.nasa.spk.Spk
 import nebulosa.nova.astrometry.*
 import nebulosa.nova.position.Barycentric
@@ -102,7 +103,7 @@ class AstrometryTest {
 
     @Test
     fun ceresSPK() {
-        val ceres = KERNEL[2000001]
+        val ceres = KERNEL[NAIF.CERES]
         val astrometric = EARTH.at<Barycentric>(TIME).observe(ceres)
         val (ra, dec) = astrometric.equatorial()
         // https://ssd.jpl.nasa.gov/horizons/app.html#/
@@ -112,16 +113,16 @@ class AstrometryTest {
 
     companion object {
 
-        @JvmStatic private val DE441 = Spk(RemoteDaf("https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp"))
-        @JvmStatic private val MAR097 = Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/mar097.bsp"))
-        @JvmStatic private val URA111 = Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/ura111.bsp"))
-        @JvmStatic private val CERES = Spk(SourceDaf(dataDirectory.concat("1 Ceres.bsp").seekableSource()))
-        @JvmStatic private val KERNEL = SpiceKernel(DE441, MAR097, URA111, CERES)
-        @JvmStatic private val SUN = KERNEL[10]
-        @JvmStatic private val MOON = KERNEL[301]
-        @JvmStatic private val EARTH = KERNEL[399]
-        @JvmStatic private val MARS = KERNEL[499]
-        @JvmStatic private val URANUS = KERNEL[799]
-        @JvmStatic private val TIME = UTC(TimeYMDHMS(2022, 12, 25, 0, 0, 0.0))
+        private val DE441 = Spk(RemoteDaf("https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp"))
+        private val MAR097 = Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/mar097.bsp"))
+        private val URA111 = Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/ura111.bsp"))
+        private val CERES = Spk(SourceDaf(dataDirectory.concat("1 Ceres.bsp").seekableSource()))
+        private val KERNEL = SpiceKernel(DE441, MAR097, URA111, CERES)
+        private val SUN = KERNEL[NAIF.SUN]
+        private val MOON = KERNEL[NAIF.MOON]
+        private val EARTH = KERNEL[NAIF.EARTH]
+        private val MARS = KERNEL[NAIF.MARS]
+        private val URANUS = KERNEL[NAIF.URANUS]
+        private val TIME = UTC(TimeYMDHMS(2022, 12, 25, 0, 0, 0.0))
     }
 }

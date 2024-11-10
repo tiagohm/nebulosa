@@ -1,18 +1,22 @@
 package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import jakarta.servlet.http.HttpServletResponse
+import io.ktor.http.ContentType
+import io.ktor.server.response.respondOutputStream
+import io.ktor.server.routing.RoutingCall
 import nebulosa.api.atlas.Location
 import nebulosa.api.atlas.SkyObjectEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
 import nebulosa.api.connection.ConnectionService
 import nebulosa.api.framing.FramingService
 import nebulosa.api.image.ImageAnnotation.StarDSO
+import nebulosa.api.ktor.responseHeaders
+import nebulosa.api.message.MessageService
 import nebulosa.fits.*
 import nebulosa.image.Image
-import nebulosa.image.algorithms.computation.Histogram
 import nebulosa.image.algorithms.computation.Statistics
 import nebulosa.image.algorithms.transformation.*
+import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ImageHdu
 import nebulosa.image.format.ImageModifier
 import nebulosa.indi.device.camera.Camera
@@ -48,7 +52,7 @@ import kotlin.io.path.outputStream
 import kotlin.math.roundToInt
 
 class ImageService(
-    private val objectMapper: ObjectMapper,
+    private val mapper: ObjectMapper,
     private val framingService: FramingService,
     private val calibrationFrameService: CalibrationFrameService,
     private val smallBodyDatabaseService: SmallBodyDatabaseService,
@@ -57,16 +61,17 @@ class ImageService(
     private val imageBucket: ImageBucket,
     private val executorService: ExecutorService,
     private val connectionService: ConnectionService,
+    private val messageService: MessageService,
 ) {
 
     private enum class ImageOperation {
         OPEN,
         SAVE,
+        STATISTICS,
     }
 
     private data class TransformedImage(
         @JvmField val image: Image,
-        @JvmField val statistics: Statistics.Data? = null,
         @JvmField val stretchParameters: ScreenTransformFunction.Parameters? = null,
         @JvmField val instrument: Camera? = null,
     )
@@ -81,13 +86,9 @@ class ImageService(
             .toURL().openConnection().getInputStream().readAllBytes()
     }
 
-    @Synchronized
-    fun openImage(
-        path: Path, camera: Camera?, transformation: ImageTransformation,
-        output: HttpServletResponse,
-    ) {
+    suspend fun openImage(path: Path, camera: Camera?, transformation: ImageTransformation, output: RoutingCall) {
         val (image, calibration) = imageBucket.open(path, transformation.debayer, force = transformation.force)
-        val (transformedImage, statistics, stretchParameters, instrument) = image!!.transform(true, transformation, ImageOperation.OPEN, camera)
+        val (transformedImage, stretchParameters, instrument) = image!!.transform(true, transformation, ImageOperation.OPEN, camera)
 
         val info = ImageInfo(
             path,
@@ -101,15 +102,15 @@ class ImageService(
             transformedImage.header.declination.takeIf { it.isFinite() },
             calibration?.let(::ImageSolved),
             transformedImage.header.mapNotNull { if (it.isCommentStyle) null else ImageHeaderItem(it.key, it.value) },
-            transformedImage.header.bitpix, instrument, statistics,
+            transformedImage.header.bitpix, instrument,
         )
 
         val format = if (transformation.useJPEG) "jpeg" else "png"
+        val contentType = if (transformation.useJPEG) ContentType.Image.JPEG else ContentType.Image.PNG
 
-        output.addHeader(IMAGE_INFO_HEADER, objectMapper.writeValueAsString(info))
-        output.contentType = "image/$format"
+        output.responseHeaders.append(X_IMAGE_INFO_HEADER_KEY, mapper.writeValueAsString(info))
 
-        ImageIO.write(transformedImage, format, output.outputStream)
+        output.respondOutputStream(contentType) { ImageIO.write(transformedImage, format, this) }
 
         LOG.d("image opened. path={}", path)
     }
@@ -147,14 +148,11 @@ class ImageService(
                 .transform(transformedImage)
         }
 
-        val statistics = if (operation == ImageOperation.OPEN) transformedImage.compute(Statistics.GRAY)
-        else null
-
         var stretchParams = ScreenTransformFunction.Parameters.DEFAULT
 
-        if (enabled) {
+        if (enabled && operation != ImageOperation.STATISTICS) {
             if (autoStretch) {
-                stretchParams = AutoScreenTransformFunction.compute(transformedImage)
+                stretchParams = AdaptativeScreenTransformFunction(transformation.stretch.meanBackground).compute(transformedImage)
                 transformedImage = ScreenTransformFunction(stretchParams).transform(transformedImage)
             } else if (manualStretch) {
                 stretchParams = ScreenTransformFunction.Parameters(midtone, shadow, highlight)
@@ -166,7 +164,11 @@ class ImageService(
             transformedImage = Invert.transform(transformedImage)
         }
 
-        return TransformedImage(transformedImage, statistics, stretchParams, instrument)
+        return TransformedImage(transformedImage, stretchParams, instrument)
+    }
+
+    fun openImageOnDesktop(paths: Iterable<Path>) {
+        paths.forEach { messageService.sendMessage(OpenImageEvent(it)) }
     }
 
     @Synchronized
@@ -361,16 +363,18 @@ class ImageService(
         return CoordinateInterpolation(ma, md, 0, 0, width, height, delta, image.header.observationDate)
     }
 
-    fun histogram(path: Path, bitLength: Int = 16): IntArray {
-        return imageBucket.open(path).image?.compute(Histogram(bitLength = bitLength)) ?: IntArray(0)
+    fun statistics(path: Path, transformation: ImageTransformation, channel: ImageChannel, camera: Camera?): Statistics.Data {
+        val (image) = imageBucket.open(path, transformation.debayer)
+        val (transformedImage) = image!!.transform(true, transformation, ImageOperation.STATISTICS, camera)
+        return transformedImage.compute(Statistics.CHANNELS[channel] ?: return Statistics.Data.EMPTY)
     }
 
     companion object {
 
-        @JvmStatic private val LOG = loggerFor<ImageService>()
-        @JvmStatic private val INVALID_MAG_CHARS = "[^.\\-+0-9]+".toRegex()
+        private val LOG = loggerFor<ImageService>()
+        private val INVALID_MAG_CHARS = "[^.\\-+0-9]+".toRegex()
 
-        private const val IMAGE_INFO_HEADER = "X-Image-Info"
-        private const val COORDINATE_INTERPOLATION_DELTA = 24
+        const val X_IMAGE_INFO_HEADER_KEY = "X-Image-Info"
+        const val COORDINATE_INTERPOLATION_DELTA = 24
     }
 }

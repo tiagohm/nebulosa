@@ -17,6 +17,6 @@ data class SettleInfo(
 
     companion object {
 
-        @JvmStatic val EMPTY = SettleInfo()
+        val EMPTY = SettleInfo()
     }
 }

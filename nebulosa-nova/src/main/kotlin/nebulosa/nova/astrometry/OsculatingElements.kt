@@ -117,47 +117,35 @@ data class OsculatingElements(
 
     companion object {
 
-        @JvmStatic private val INFINITY_DISTANCE = Double.POSITIVE_INFINITY.au
+        private val INFINITY_DISTANCE = Double.POSITIVE_INFINITY.au
 
-        @JvmStatic
         private fun eccentricityVector(position: Vector3D, velocity: Vector3D, mu: Double) =
             ((position * (velocity.length.squared - mu / position.length)) - (velocity * position.dot(velocity))) / mu
 
-        @JvmStatic
         private fun nodeVector(h: Vector3D) = Vector3D(-h[1], h[0], 0.0).normalized
 
-        @JvmStatic
         private fun meanMotion(a: Distance, mu: Double) = sqrt(mu / abs(a).cubic)
 
-        @JvmStatic
         private fun inclination(h: Vector3D) = h.angle(Vector3D.Z)
 
-        @JvmStatic
         private fun longitudeOfAscendingNode(i: Angle, h: Vector3D) = if (i == 0.0) i else atan2(h[0], -h[1]).rad.normalized
 
-        @JvmStatic
         private fun semiLatusRectum(h: Vector3D, mu: Double) = h.length.squared / mu
 
-        @JvmStatic
         private fun semiMajorAxis(p: Distance, e: Double) = if (e == 1.0) INFINITY_DISTANCE else p / (1.0 - e * e)
 
-        @JvmStatic
         private fun semiMinorAxis(p: Distance, e: Double) = when {
             e < 1.0 -> p / sqrt(1 - e * e)
             e > 1.0 -> p * sqrt(e * e - 1) / (1 - e * e)
             else -> INFINITY_DISTANCE
         }
 
-        @JvmStatic
         private fun period(a: Distance, mu: Double) = TAU * sqrt(a.cubic / mu)
 
-        @JvmStatic
         private fun periapsisDistance(p: Distance, e: Double) = if (e == 1.0) p / 2.0 else p * (1.0 - e) / (1.0 - e * e)
 
-        @JvmStatic
         private fun apoapsisDistance(p: Distance, e: Double) = if (e >= 1.0) INFINITY_DISTANCE else p * (1.0 + e) / (1.0 - e * e)
 
-        @JvmStatic
         private fun argumentOfPeriapsis(
             n: Vector3D,
             e: Vector3D,
@@ -182,7 +170,6 @@ data class OsculatingElements(
             return if (e.length <= 1.0) v else v.normalized
         }
 
-        @JvmStatic
         private fun trueAnomaly(
             n: Vector3D,
             e: Vector3D,
@@ -206,7 +193,6 @@ data class OsculatingElements(
             }
         }
 
-        @JvmStatic
         private fun eccentricAnomaly(
             v: Angle,
             e: Double,
@@ -256,7 +242,7 @@ data class OsculatingElements(
         // All values are in km³/s²
         // Source: ftp://ssd.jpl.nasa.gov/pub/xfr/gm_Horizons.pck
         @Suppress("FloatingPointLiteralPrecision")
-        @JvmStatic private val GM_TABLE = mapOf(
+        private val GM_TABLE = mapOf(
             1 to 2.2031780000000021E+04,
             2 to 3.2485859200000006E+05,
             3 to 4.0350323550225981E+05,

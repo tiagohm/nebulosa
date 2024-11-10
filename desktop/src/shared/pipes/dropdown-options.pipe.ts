@@ -47,7 +47,7 @@ export class DropdownOptionsPipe implements PipeTransform {
 			case 'STAR_DETECTOR':
 				return ['ASTAP', 'PIXINSIGHT', 'SIRIL'] as DropdownOptions[K]
 			case 'PLATE_SOLVER':
-				return ['ASTAP', 'ASTROMETRY_NET_ONLINE', 'SIRIL', 'PIXINSIGHT'] as DropdownOptions[K]
+				return ['ASTAP', 'ASTROMETRY_NET_ONLINE', 'ASTROMETRY_NET', 'SIRIL', 'PIXINSIGHT'] as DropdownOptions[K]
 			case 'CURVE_FITTING_MODE':
 				return ['TRENDLINES', 'PARABOLIC', 'TREND_PARABOLIC', 'HYPERBOLIC', 'TREND_HYPERBOLIC'] as DropdownOptions[K]
 			case 'BACKLASH_COMPENSATION_MODE':

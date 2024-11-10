@@ -103,6 +103,6 @@ data class PixInsightImageSolver(
         private const val WINDOWS_SCRIPTS_DIR = "C:\\Program Files\\PixInsight\\src\\scripts"
         private const val LINUX_SCRIPTS_DIR = "/opt/PixInsight/src/scripts"
 
-        @JvmStatic private val INCLUDE_PATHS = listOf("Projections.js", "WCSmetadata.jsh", "AstronomicalCatalogs.jsh")
+        private val INCLUDE_PATHS = listOf("Projections.js", "WCSmetadata.jsh", "AstronomicalCatalogs.jsh")
     }
 }

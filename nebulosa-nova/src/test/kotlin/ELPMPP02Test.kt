@@ -1,5 +1,7 @@
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
+import nebulosa.math.toKilometers
+import nebulosa.math.toKilometersPerSecond
 import nebulosa.nova.astrometry.ELPMPP02
 import nebulosa.time.TDB
 import nebulosa.time.TimeJD
@@ -10,16 +12,17 @@ class ELPMPP02Test {
     @Test
     fun moon() {
         val (p, v) = ELPMPP02.compute(TIME)
-        p[0] shouldBe (1.013355885727306E-03 plusOrMinus 1e-9)
-        p[1] shouldBe (-1.903485709903833E-03 plusOrMinus 1e-9)
-        p[2] shouldBe (-1.047798412089101E-03 plusOrMinus 1e-9)
-        v[0] shouldBe (5.762732121285166E-04 plusOrMinus 1e-9)
-        v[1] shouldBe (2.476878261262097E-04 plusOrMinus 1e-9)
-        v[2] shouldBe (8.902329774047208E-05 plusOrMinus 1e-9)
+        // https://ssd.jpl.nasa.gov/horizons/app.html#/ -> Moon, Geocentric, Start=2022-12-25 00:00:00 TDB, x-y axes
+        p[0].toKilometers shouldBe (1.515958827661175E+05 plusOrMinus 1e-1)
+        p[1].toKilometers shouldBe (-2.847574091094912E+05 plusOrMinus 1e-1)
+        p[2].toKilometers shouldBe (-1.567484113713706E+05 plusOrMinus 1e-1)
+        v[0].toKilometersPerSecond shouldBe (9.977921930078181E-01 plusOrMinus 1e-4)
+        v[1].toKilometersPerSecond shouldBe (4.288607799397314E-01 plusOrMinus 1e-4)
+        v[2].toKilometersPerSecond shouldBe (1.541399975077169E-01 plusOrMinus 1e-4)
     }
 
     companion object {
 
-        @JvmStatic private val TIME = TDB(TimeJD(2459938.0, 0.5))
+        private val TIME = TDB(TimeJD(2459938.0, 0.5))
     }
 }

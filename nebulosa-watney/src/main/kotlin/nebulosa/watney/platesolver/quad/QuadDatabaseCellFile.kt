@@ -102,7 +102,6 @@ internal data class QuadDatabaseCellFile(@JvmField val descriptor: QuadDatabaseC
         private const val TEN_BITS = 1.0 / 1023
         private const val NINE_BITS = 1.0 / 511
 
-        @JvmStatic
         private fun bytesToQuadNew(
             buffer: Buffer,
             byteOrder: ByteOrder,

@@ -246,9 +246,9 @@ data class TPPAJob(
 
         const val MAX_ATTEMPTS = 30
 
-        @JvmStatic private val MIN_EXPOSURE_TIME = Duration.ofSeconds(1L)
-        @JvmStatic private val SETTLE_TIME = Duration.ofSeconds(5)
-        @JvmStatic private val CAPTURE_SAVE_PATH = Files.createTempDirectory("tppa-")
-        @JvmStatic private val LOG = loggerFor<TPPAJob>()
+        private val MIN_EXPOSURE_TIME = Duration.ofSeconds(1L)
+        private val SETTLE_TIME = Duration.ofSeconds(5)
+        private val CAPTURE_SAVE_PATH = Files.createTempDirectory("tppa-")
+        private val LOG = loggerFor<TPPAJob>()
     }
 }

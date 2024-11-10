@@ -1,11 +1,12 @@
 import type { Rectangle } from 'electron'
-import { BrowserWindow, Notification, dialog, screen, shell } from 'electron'
+import { BrowserWindow, Notification, app, dialog, screen, shell } from 'electron'
 import Store from 'electron-store'
 import type { ChildProcessWithoutNullStreams } from 'node:child_process'
+import { existsSync, statSync } from 'node:fs'
 import { join } from 'path'
 import { WebSocket } from 'ws'
-import type { MessageEvent } from '../src/shared/types/api.types'
-import type { CloseWindow, ConfirmationEvent, FullscreenWindow, NotificationEvent, OpenDirectory, OpenFile, OpenWindow, ResizeWindow, WindowCommand } from '../src/shared/types/app.types'
+import type { ConfirmationEvent, MessageEvent, NotificationEvent } from '../src/shared/types/api.types'
+import type { CloseWindow, FullscreenWindow, OpenDirectory, OpenFile, OpenWindow, ResizeWindow, WindowCommand } from '../src/shared/types/app.types'
 import type { Nullable } from '../src/shared/utils/types'
 import type { ParsedArgument } from './argument.parser'
 
@@ -66,6 +67,10 @@ export class ApplicationWindow {
 
 	sendMessage(event: MessageEvent) {
 		this.browserWindow.webContents.send(event.eventName, event)
+	}
+
+	openImage(path: string) {
+		this.sendMessage({ eventName: 'IMAGE.OPEN', path } as never)
 	}
 }
 
@@ -139,12 +144,17 @@ export class WindowManager {
 			webPreferences: {
 				nodeIntegration: true,
 				allowRunningInsecureContent: this.args.serve,
-				contextIsolation: false,
+				contextIsolation: true,
 				additionalArguments: [`--host=${this.host}`, `--port=${this.port}`, `--id=${open.id}`, `--data=${encodedData}`, `--preference=${encodedPreference}`],
 				preload: join(__dirname, 'preload.js'),
-				devTools: this.args.serve,
+				devTools: this.args.serve || this.args.devTools,
+				spellcheck: false,
 			},
 		})
+
+		if (this.args.devTools) {
+			browserWindow.webContents.openDevTools({ mode: 'detach' })
+		}
 
 		browserWindow.on('ready-to-show', () => {
 			browserWindow.show()
@@ -257,10 +267,19 @@ export class WindowManager {
 		this.createWebSocket(host, port, (webSocket) => (appWindow.webSocket = webSocket))
 
 		appWindow.apiProcess = apiProcess
+
+		if (app.isPackaged) {
+			for (const path of this.args.files) {
+				if (path !== '.' && existsSync(path) && statSync(path).isFile()) {
+					console.info('opening image at', path)
+					appWindow.openImage(path)
+				}
+			}
+		}
 	}
 
 	async createSplashWindow() {
-		if (!this.args.serve && !this.windows.has('splash')) {
+		if (!this.args.serve) {
 			const browserWindow = new BrowserWindow({
 				width: 512,
 				height: 512,
@@ -287,9 +306,6 @@ export class WindowManager {
 	}
 
 	close() {
-		const splashWindow = this.windows.get('splash')
-		splashWindow?.close()
-
 		const homeWindow = this.windows.get('home')
 		homeWindow?.close()
 	}
@@ -449,6 +465,12 @@ export class WindowManager {
 		}
 
 		return !!window && window.browserWindow.isFullScreen()
+	}
+
+	handleWindowOpenDevTools(event: Electron.IpcMainInvokeEvent, command: WindowCommand) {
+		const window = this.findWindowWith(command, event.sender)
+		window?.browserWindow.webContents.openDevTools({ mode: 'detach' })
+		return !!window
 	}
 
 	showNotification(event: NotificationEvent) {

@@ -1,6 +1,7 @@
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import nebulosa.nasa.daf.RemoteDaf
+import nebulosa.nasa.spk.NAIF
 import nebulosa.nasa.spk.Spk
 import nebulosa.nova.astrometry.SpiceKernel
 import nebulosa.nova.position.Barycentric
@@ -13,7 +14,7 @@ class SpiceKernelTest {
 
     @Test
     fun ssbMarsBarycenter() {
-        val mars = MAR097[4]
+        val mars = MAR097[NAIF.MARS_BARYCENTER]
         val barycentric = mars.at<Barycentric>(TIME)
         barycentric.position[0] shouldBe (0.5001501370337544 plusOrMinus 1e-13)
         barycentric.position[1] shouldBe (1.3081776387439241 plusOrMinus 1e-13)
@@ -25,7 +26,7 @@ class SpiceKernelTest {
 
     @Test
     fun marsBarycenterMars() {
-        val mars = MAR097[499] - MAR097[4]
+        val mars = MAR097[NAIF.MARS] - MAR097[NAIF.MARS_BARYCENTER]
         val icrf = mars.at<ICRF>(TIME)
         icrf.position[0] shouldBe (-6.973204561568923e-13 plusOrMinus 1e-13)
         icrf.position[1] shouldBe (-1.0364158902365925e-12 plusOrMinus 1e-13)
@@ -37,7 +38,7 @@ class SpiceKernelTest {
 
     @Test
     fun positionOfMars() {
-        val mars = MAR097[499]
+        val mars = MAR097[NAIF.MARS]
         val barycentric = mars.at<Barycentric>(TIME)
         barycentric.position[0] shouldBe (0.5001501370330571 plusOrMinus 1e-13)
         barycentric.position[1] shouldBe (1.3081776387428876 plusOrMinus 1e-13)
@@ -49,8 +50,8 @@ class SpiceKernelTest {
 
     @Test
     fun positionOfMarsViewedFromEarth() {
-        val earth = MAR097[399]
-        val mars = MAR097[499]
+        val earth = MAR097[NAIF.EARTH]
+        val mars = MAR097[NAIF.MARS]
         val barycentric = earth.at<Barycentric>(TIME)
         val astrometric = barycentric.observe(mars)
         astrometric.position[0] shouldBe (0.09761625675629965 plusOrMinus 1e-13)
@@ -63,7 +64,7 @@ class SpiceKernelTest {
 
     companion object {
 
-        @JvmStatic private val TIME = TDB(TimeYMDHMS(2022, 11, 27, 22, 30, 0.0))
-        @JvmStatic private val MAR097 = SpiceKernel(Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/mar097.bsp")))
+        private val TIME = TDB(TimeYMDHMS(2022, 11, 27, 22, 30, 0.0))
+        private val MAR097 = SpiceKernel(Spk(RemoteDaf("https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/mar097.bsp")))
     }
 }

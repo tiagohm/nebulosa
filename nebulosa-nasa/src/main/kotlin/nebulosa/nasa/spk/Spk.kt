@@ -10,7 +10,7 @@ import java.io.IOException
  * @see <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html">SPK Reference</a>
  * @see <a href="https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/">SPK Files</a>
  */
-data class Spk(val daf: Daf) : AutoCloseable, Collection<SpkSegment> {
+data class Spk(@JvmField internal val daf: Daf) : AutoCloseable, Collection<SpkSegment> {
 
     init {
         daf.read()
@@ -39,7 +39,6 @@ data class Spk(val daf: Daf) : AutoCloseable, Collection<SpkSegment> {
 
     companion object {
 
-        @JvmStatic
         private fun Summary.makeSegment(spk: Spk): SpkSegment {
             val start = doubleAt(0)
             val end = doubleAt(1)
@@ -54,7 +53,7 @@ data class Spk(val daf: Daf) : AutoCloseable, Collection<SpkSegment> {
                 9 -> Type9Segment(spk, name, start, end, center, target, frame, type, startIndex, endIndex)
                 2, 3 -> Type2And3Segment(spk, name, start, end, center, target, frame, type, startIndex, endIndex)
                 21 -> Type21Segment(spk, name, start, end, center, target, frame, type, startIndex, endIndex)
-                else -> throw IOException("Only binary SPK data types 2, 3 and 9 are supported")
+                else -> throw IOException("Only binary SPK data types 2, 3, 9 and 21 are supported")
             }
         }
     }
