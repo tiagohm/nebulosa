@@ -1,0 +1,84 @@
+{% extends "juice/templates/index.html" %}
+{% block hero %}
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
+<style>
+    .welcome {
+        animation: welcome-animation 1s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+        animation-delay: 0.25s;
+    }
+
+    .explore-more,
+    .logo,
+    nav {
+        animation: fade-in-animation 1.5s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+        animation-delay: 0.5s;
+    }
+
+    @keyframes fade-in-animation {
+        0% {
+            filter: blur(10px);
+            opacity: 0;
+        }
+
+        30% {
+            filter: blur(0);
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes welcome-animation {
+        0% {
+            transform: translateY(60%);
+            filter: blur(10px);
+            opacity: 0;
+        }
+
+        100% {
+            transform: translateY(0);
+            filter: blur(0);
+            opacity: 1;
+        }
+    }
+
+    .hero section {
+        padding: 0 5rem;
+    }
+
+    @media screen and (max-width: 768px) {
+        .hero section {
+            padding: 0 2rem;
+        }
+
+        .hero-image {
+            display: none;
+        }
+    }
+</style>
+<section class="text-center welcome">
+    <h1 class="heading-text" style="font-size: 50px">Nebulosa</h1>
+    <h3 class="title-text">
+        The complete integrated solution for all of your astronomical imaging needs.
+    </h3>
+    <p>
+        <a class="github-button" href="https://github.com/tiagohm/nebulosa" data-size="large" data-show-count="true" aria-label="Star tiagohm/nebulosa on GitHub">Star</a>
+        <a class="github-button" href="https://github.com/sponsors/tiagohm" data-size="large" data-icon="octicon-heart" aria-label="Sponsor @tiagohm on GitHub">Sponsor</a>
+    </p>
+</section>
+
+<img class="hero-image" style="width: 35%" src="{{ get_url(path="nebulosa.webp") }}">
+
+<div class="explore-more text" onclick="document.getElementById('features').scrollIntoView({behavior: 'smooth'})">Learn More ⇣</div>
+{% endblock %}
+
+{% block footer %}
+<footer>
+    <span> Created by Tiago Melo</span>
+    <span><a href="https://github.com/tiagohm/nebulosa">Github</a></span>
+    <span><a href="https://github.com/tiagohm/nebulosa/issues">Issues</a></span>
+</footer>
+{% endblock footer %}

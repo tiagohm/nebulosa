@@ -1,0 +1,23 @@
+theme = "juice"
+
+# The URL the site will be built for
+base_url = "https://tiagohm.github.io/nebulosa"
+
+# Whether to automatically compile all Sass files in the sass directory
+compile_sass = true
+
+# Whether to build a search index to be used later on by a JavaScript library
+build_search_index = false
+
+[markdown]
+# Whether to do syntax highlighting
+# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
+highlight_code = true
+
+[extra]
+juice_logo_name = "Nebulosa"
+juice_logo_path = "nebulosa.webp"
+juice_extra_menu = [
+    { title = "Github", link = "https://github.com/tiagohm/nebulosa"}
+]
+repository_url = "https://github.com/tiagohm/nebulosa"

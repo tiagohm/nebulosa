@@ -1,4 +1,7 @@
-.PHONY: upgrade
+.PHONY: run build
 
-upgrade:
-	npx @astrojs/upgrade
+run:
+	zola serve
+
+build:
+	zola build
