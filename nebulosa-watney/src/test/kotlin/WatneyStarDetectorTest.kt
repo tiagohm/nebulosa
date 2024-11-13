@@ -22,17 +22,17 @@ class WatneyStarDetectorTest {
         var image = NGC3344_COLOR_32_FITS.fits().asImage()
         var stars = DETECTOR.detect(image.transform(Mean))
         stars shouldHaveSize 1
-        image.transform(ImageStarsDraw(stars)).save("color-detected-stars-1")
+        image.transform(StarPointDraw(stars)).save("color-detected-stars-1")
             .second shouldBe "bb237ce03f7cc9e44e69a5354b7a6fd1"
 
         image = M6707HH.fits().asImage()
         stars = DETECTOR.detect(image.transform(Mean))
         stars shouldHaveSize 870
-        image.transform(ImageStarsDraw(stars)).save("color-detected-stars-870")
+        image.transform(StarPointDraw(stars)).save("color-detected-stars-870")
             .second shouldBe "004e4d2b4d9725c5367f6865986f6756"
     }
 
-    private data class ImageStarsDraw(private val stars: List<StarPoint>) : Draw() {
+    private data class StarPointDraw(private val stars: List<StarPoint>) : Draw() {
 
         override fun draw(source: Image, graphics: Graphics2D) {
             graphics.color = Color.YELLOW

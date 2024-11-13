@@ -10,17 +10,10 @@ class StarPixelBin {
 
     @JvmField internal val pixelRows = HashMap<Int, MutableList<StarPixel>>()
 
-    var left = Int.MAX_VALUE
-        private set
-
-    var right = Int.MIN_VALUE
-        private set
-
-    var top = Int.MAX_VALUE
-        private set
-
-    var bottom = Int.MIN_VALUE
-        private set
+    @JvmField internal var left = Int.MAX_VALUE
+    @JvmField internal var right = Int.MIN_VALUE
+    @JvmField internal var top = Int.MAX_VALUE
+    @JvmField internal var bottom = Int.MIN_VALUE
 
     val pixelCount
         get() = pixelRows.values.sumOf { it.size }
@@ -56,7 +49,7 @@ class StarPixelBin {
     }
 
     // https://www.gaia.ac.uk/sites/default/files/resources/Calculating_Magnitudes.pdf
-    fun computeCenterPixelPosAndRelativeBrightness(): Star {
+    internal fun computeCenterPixelPosAndRelativeBrightness(output: DoubleArray) {
         // Center coordinate in small stars is generally the brightest pixel in the bin.
         // When there are more pixels of the same or almost the same brightness, we will calculate
         // their center point.
@@ -65,13 +58,12 @@ class StarPixelBin {
 
         val starPixelHeight = bottom - top
         val starPixelWidth = right - left
-        val starSize = hypot(starPixelHeight.toDouble(), starPixelWidth.toDouble())
+        output[2] = hypot(starPixelHeight.toDouble(), starPixelWidth.toDouble())
 
         // With small stars just settle with the center of the canvas.
         if (pCount <= 9) {
-            val starPosY = top + 0.5 * (bottom - top)
-            val starPosX = left + 0.5 * (right - left)
-            return Star(starPosX, starPosY, starSize)
+            output[1] = top + 0.5 * (bottom - top)
+            output[0] = left + 0.5 * (right - left)
         }
 
         var l = Int.MAX_VALUE
@@ -90,10 +82,8 @@ class StarPixelBin {
             }
         }
 
-        val starPosY = t + 0.5 * (b - t)
-        val starPosX = l + 0.5 * (r - l)
-
-        return Star(starPosX, starPosY, starSize)
+        output[1] = t + 0.5 * (b - t)
+        output[0] = l + 0.5 * (r - l)
     }
 
     override fun equals(other: Any?): Boolean {
