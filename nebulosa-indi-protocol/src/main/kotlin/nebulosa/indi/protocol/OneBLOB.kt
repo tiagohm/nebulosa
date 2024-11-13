@@ -16,5 +16,7 @@ data class OneBLOB(
         "format", format,
         "size", size,
     )
+
+    override fun toString() = "OneBLOB(name=$name, format=$format, size=$size)"
 }
 

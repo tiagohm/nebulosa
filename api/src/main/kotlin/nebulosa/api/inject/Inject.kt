@@ -1,8 +1,8 @@
 package nebulosa.api.inject
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.ktor.server.engine.EmbeddedServer
-import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 import nebulosa.api.APP_DIR_KEY
 import nebulosa.api.Nebulosa
 import nebulosa.api.alignment.polar.PolarAlignmentController
@@ -158,10 +158,8 @@ fun pathModule(root: Path = Path(requireNotNull(System.getProperty(APP_DIR_KEY))
 // CORE
 
 fun coreModule() = module {
-    val numberOfCores = Runtime.getRuntime().availableProcessors()
-
-    single<ExecutorService> { ThreadPoolExecutor(numberOfCores, 32, 60L, TimeUnit.SECONDS, SynchronousQueue(), DaemonThreadFactory) }
-    single<ScheduledExecutorService> { Executors.newScheduledThreadPool(numberOfCores, DaemonThreadFactory) }
+    single<ExecutorService> { ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Int.MAX_VALUE, 60L, TimeUnit.SECONDS, SynchronousQueue(), DaemonThreadFactory("Pooled")) }
+    single<ScheduledExecutorService> { Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory("Scheduled")) }
 }
 
 // HTTP
@@ -204,7 +202,7 @@ fun eventBusModule() = module {
             .throwSubscriberException(false)
             .logNoSubscriberMessages(false)
             .logSubscriberExceptions(false)
-            .executorService(get())
+            .executorService(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), DaemonThreadFactory("Bused")))
             .build()
     }
 }
