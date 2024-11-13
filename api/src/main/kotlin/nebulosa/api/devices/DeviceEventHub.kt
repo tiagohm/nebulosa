@@ -1,14 +1,14 @@
 package nebulosa.api.devices
 
-import io.reactivex.rxjava3.functions.Consumer
-import io.reactivex.rxjava3.subjects.PublishSubject
 import nebulosa.indi.device.Device
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceType
 import nebulosa.log.loggerFor
 import nebulosa.log.w
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Consumer
+import kotlin.concurrent.timer
 
 abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(deviceType: DeviceType) : Consumer<E>, AutoCloseable {
 
@@ -19,20 +19,20 @@ abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(deviceType: Device
     private val attachedEventName = "$deviceType.ATTACHED"
     private val detachedEventName = "$deviceType.DETACHED"
 
-    abstract fun sendMessage(eventName: String, device: D)
+    protected abstract fun sendMessage(eventName: String, device: D)
 
     open fun sendUpdate(device: D) {
         sendMessage(updateEventName, device)
     }
 
     open fun onAttached(device: D) {
-        throttlers.computeIfAbsent(device) { Throttler() }
+        throttlers.computeIfAbsent(device, ::Throttler)
         sendMessage(attachedEventName, device)
     }
 
     open fun onDetached(device: D) {
         sendMessage(detachedEventName, device)
-        throttlers.remove(device)?.onComplete()
+        throttlers.remove(device)?.close()
     }
 
     open fun onConnectionChanged(device: D) {
@@ -41,11 +41,11 @@ abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(deviceType: Device
 
     protected open fun onNext(event: E) {
         val device = event.device ?: return
-        throttlers[device]?.onNext(event)
+        throttlers[device]?.accept(event)
     }
 
-    fun listen(device: D): Boolean {
-        return listenable.put(device, System.currentTimeMillis()) != null
+    fun listen(device: D) {
+        listenable.put(device, System.currentTimeMillis())
     }
 
     override fun accept(event: E) {
@@ -62,23 +62,29 @@ abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(deviceType: Device
     }
 
     override fun close() {
-        throttlers.values.forEach { it.onComplete() }
+        throttlers.values.forEach(AutoCloseable::close)
         throttlers.clear()
     }
 
-    private inner class Throttler {
+    private inner class Throttler(
+        device: Device,
+        private val period: Long = 1000, // 1s
+    ) : Consumer<E>, AutoCloseable {
 
-        private val subject = PublishSubject.create<E>()
+        private val store = AtomicReference<E>()
 
-        init {
-            subject
-                .throttleLast(1000, TimeUnit.MILLISECONDS)
-                .subscribe(this@DeviceEventHub)
+        private val timer = timer("${device.name} Throttler Timer", true, period = period) {
+            store.getAndSet(null)?.also(this@DeviceEventHub::accept)
         }
 
-        fun onNext(event: E) = subject.onNext(event)
+        override fun accept(event: E) {
+            store.set(event)
+        }
 
-        fun onComplete() = subject.onComplete()
+        override fun close() {
+            store.set(null)
+            timer.cancel()
+        }
     }
 
     companion object {

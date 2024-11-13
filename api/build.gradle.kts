@@ -30,7 +30,6 @@ dependencies {
     implementation(project(":nebulosa-util"))
     implementation(project(":nebulosa-wcs"))
     implementation(project(":nebulosa-xisf"))
-    implementation(libs.rx)
     implementation(libs.apache.codec)
     implementation(libs.csv)
     implementation(libs.eventbus)
