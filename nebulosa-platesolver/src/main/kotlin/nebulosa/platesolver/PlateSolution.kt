@@ -48,7 +48,7 @@ data class PlateSolution(
             val height = header.getIntOrNull(FitsKeyword.NAXIS2) ?: header.getInt("IMAGEH", 0)
             val parity = if ((cd11 * cd22 - cd12 * cd21) >= 0.0) Parity.NORMAL else Parity.FLIPPED
 
-            LOG.d("solution from {}: ORIE={}, SCALE={}, RA={}, DEC={}, PARITY={}", header, crota2, cdelt2, crval1, crval2, parity)
+            LOG.d { debug("solution from {}: ORIE={}, SCALE={}, RA={}, DEC={}, PARITY={}", header, crota2, cdelt2, crval1, crval2, parity) }
 
             return PlateSolution(
                 true, crota2, cdelt2, crval1, crval2, abs(cdelt1 * width), abs(cdelt2 * height), parity,

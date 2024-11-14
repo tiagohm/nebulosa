@@ -4,7 +4,6 @@ import nebulosa.indi.device.Device
 import nebulosa.indi.device.DeviceEvent
 import nebulosa.indi.device.DeviceType
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
@@ -57,7 +56,7 @@ abstract class DeviceEventHub<D : Device, E : DeviceEvent<D>>(deviceType: Device
             sendUpdate(device)
         } else {
             listenable.remove(device)
-            LOG.w("device {} ({}) is no longer listenable", device.name, device.id)
+            LOG.warn("device {} ({}) is no longer listenable", device.name, device.id)
         }
     }
 

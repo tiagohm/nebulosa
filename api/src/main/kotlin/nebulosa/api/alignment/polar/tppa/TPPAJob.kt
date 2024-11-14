@@ -20,7 +20,6 @@ import nebulosa.job.manager.delay.DelayStarted
 import nebulosa.job.manager.delay.DelayTask
 import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import nebulosa.math.Angle
 import nebulosa.math.formatSignedDMS
 import nebulosa.platesolver.PlateSolver
@@ -181,7 +180,7 @@ data class TPPAJob(
                 status.send()
 
                 if (noSolutionAttempts >= MAX_ATTEMPTS) {
-                    LOG.w("exhausted all attempts to plate solve")
+                    LOG.warn("exhausted all attempts to plate solve")
                     stop()
                 }
             }
@@ -206,7 +205,7 @@ data class TPPAJob(
                     else -> ""
                 }
 
-                LOG.d("TPPA aligned. azimuthError={}, altitudeError={}", status.azimuthError.formatSignedDMS(), status.altitudeError.formatSignedDMS())
+                LOG.d { debug("TPPA aligned. azimuthError={}, altitudeError={}", status.azimuthError.formatSignedDMS(), status.altitudeError.formatSignedDMS()) }
 
                 status.state = TPPAState.COMPUTED
                 status.send()
@@ -215,7 +214,7 @@ data class TPPAJob(
     }
 
     override fun beforeStart() {
-        LOG.d("TPPA started. longitude={}, latitude={}, camera={}, mount={}, request={}", longitude, latitude, camera, mount, request)
+        LOG.d { debug("TPPA started. longitude={}, latitude={}, camera={}, mount={}, request={}", longitude, latitude, camera, mount, request) }
 
         status.rightAscension = mount.rightAscension
         status.declination = mount.declination
@@ -224,7 +223,7 @@ data class TPPAJob(
     }
 
     override fun afterFinish() {
-        LOG.d("TPPA finished. camera={}, mount={}, request={}", camera, mount, request)
+        LOG.d { debug("TPPA finished. camera={}, mount={}, request={}", camera, mount, request) }
 
         stopwatch.stop()
 

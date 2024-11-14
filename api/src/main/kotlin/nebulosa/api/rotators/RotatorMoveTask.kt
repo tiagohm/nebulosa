@@ -29,13 +29,13 @@ data class RotatorMoveTask(
         if (!job.isCancelled && rotator.connected && !rotator.moving &&
             angle != rotator.angle && angle in 0.0..rotator.maxAngle
         ) {
-            LOG.d("Rotator move started. rotator={}", rotator)
+            LOG.d { debug("Rotator move started. rotator={}", rotator) }
             latch.countUp()
             moving = true
             rotator.moveRotator(angle)
             latch.await()
             moving = false
-            LOG.d("Rotator move finished. rotator={}", rotator)
+            LOG.d { debug("Rotator move finished. rotator={}", rotator) }
         }
     }
 

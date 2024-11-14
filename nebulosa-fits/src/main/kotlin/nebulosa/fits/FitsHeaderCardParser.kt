@@ -35,14 +35,14 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
         // Check for space at the start of the keyword...
         if (endStem > 0 && rawStem.isNotEmpty()) {
             if (line[0].isWhitespace()) {
-                LOG.d("[{}] Non-standard starting with a space (trimming)", rawStem)
+                LOG.d { debug("[{}] Non-standard starting with a space (trimming)", rawStem) }
             }
         }
 
         val stem = rawStem.uppercase()
 
         if (stem != rawStem) {
-            LOG.d("[{}] Non-standard lower-case letter(s) in base keyword", rawStem)
+            LOG.d { debug("[{}] Non-standard lower-case letter(s) in base keyword", rawStem) }
         }
 
         key = stem
@@ -74,7 +74,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
 
         if (FitsKeyword.HIERARCH.key == key) {
             // The key is only HIERARCH, without a hierarchical keyword after it...
-            LOG.d("HIERARCH base keyword without HIERARCH-style long key after it")
+            LOG.debug("HIERARCH base keyword without HIERARCH-style long key after it")
             return
         }
 
@@ -108,7 +108,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
                 parsePos++
             } else {
                 // Junk after a string value -- interpret it as the start of the comment...
-                LOG.d("[{}] junk after value (included in the comment)", key)
+                LOG.d { debug("[{}] junk after value (included in the comment)", key) }
             }
         }
 
@@ -126,19 +126,19 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
             parseValueBody()
         } else if (line[parsePos] == '=') {
             if (parsePos < FitsHeaderCard.MAX_KEYWORD_LENGTH) {
-                LOG.d("[{}] assigmment before byte {}", key, FitsHeaderCard.MAX_KEYWORD_LENGTH + 1)
+                LOG.d { debug("[{}] assigmment before byte {}", key, FitsHeaderCard.MAX_KEYWORD_LENGTH + 1) }
             }
 
             if (parsePos + 1 >= line.length) {
-                LOG.d("[{}] record ends with '='", key)
+                LOG.d { debug("[{}] record ends with '='", key) }
             } else if (line[parsePos + 1] != ' ') {
-                LOG.d("[{}] missing required standard space after '='", key)
+                LOG.d { debug("[{}] missing required standard space after '='", key) }
             }
 
             if (parsePos > FitsHeaderCard.MAX_KEYWORD_LENGTH) {
                 // equal sign = after the 9th char -- only supported with hierarch keys...
                 if (!key.startsWith(FitsKeyword.HIERARCH.key + "")) {
-                    LOG.d("[{}] possibly misplaced '=' (after byte 9)", key)
+                    LOG.d { debug("[{}] possibly misplaced '=' (after byte 9)", key) }
                     // It's not a HIERARCH key
                     return
                 }
@@ -216,13 +216,13 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
             parsePos++
         }
 
-        LOG.d("[{}] ignored missing end quote (value parsed to end of record)", key)
+        LOG.d { debug("[{}] ignored missing end quote (value parsed to end of record)", key) }
         value = getNoTrailingSpaceString(buf)
     }
 
     private fun getInferredValueType(key: String, value: String): FitsHeaderCardType {
         if (value.isEmpty()) {
-            LOG.d("[{}] null non-string value (defaulted to Boolean)", key)
+            LOG.d { debug("[{}] null non-string value (defaulted to Boolean)", key) }
             return FitsHeaderCardType.BOOLEAN
         }
 
@@ -241,7 +241,7 @@ internal data class FitsHeaderCardParser(private val line: CharSequence) {
             return FitsHeaderCardType.COMPLEX
         }
 
-        LOG.d("[{}] unrecognised non-string value type '{}'", key, trimmedValue)
+        LOG.d { debug("[{}] unrecognised non-string value type '{}'", key, trimmedValue) }
 
         return FitsHeaderCardType.NONE
     }

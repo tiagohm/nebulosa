@@ -79,7 +79,7 @@ data class DARVJob(
     }
 
     override fun beforeStart() {
-        LOG.d("DARV started. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
+        LOG.d { debug("DARV started. camera={}, guideOutput={}, request={}", camera, guideOutput, request) }
 
         status.capture.handleCameraCaptureStarted(cameraExposureTask.exposureTimeInMicroseconds)
     }
@@ -89,7 +89,7 @@ data class DARVJob(
         status.state = DARVState.IDLE
         status.send()
 
-        LOG.d("DARV finished. camera={}, guideOutput={}, request={}", camera, guideOutput, request)
+        LOG.d { debug("DARV finished. camera={}, guideOutput={}, request={}", camera, guideOutput, request) }
     }
 
     @Suppress("NOTHING_TO_INLINE")

@@ -24,7 +24,7 @@ data class DitherAfterExposureTask(
             && guider.state == GuideState.GUIDING
             && !job.isCancelled
         ) {
-            LOG.d("Dither started. request={}", request)
+            LOG.d { debug("Dither started. request={}", request) }
 
             guider.registerGuiderListener(this)
             ditherLatch.countUp()
@@ -32,13 +32,13 @@ data class DitherAfterExposureTask(
             ditherLatch.await()
             guider.unregisterGuiderListener(this)
 
-            LOG.d("Dither finished. request={}", request)
+            LOG.d { debug("Dither finished. request={}", request) }
         }
     }
 
     override fun onDithered(dx: Double, dy: Double) {
         job.accept(DitherAfterExposureDithered(job, this, dx, dy))
-        LOG.d("dithered. dx={}, dy={}", dx, dy)
+        LOG.d { debug("dithered. dx={}, dy={}", dx, dy) }
         ditherLatch.reset()
     }
 

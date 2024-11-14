@@ -4,8 +4,6 @@ import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
-import nebulosa.log.e
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -41,7 +39,7 @@ class SkyAtlasUpdateTask(
                 if (newestVersion != currentVersion || skyObjectEntityRepository.size == 0L) {
                     skyObjectEntityRepository.clear()
 
-                    LOG.i("Sky Atlas database is out of date. current={}, newest={}", currentVersion, newestVersion)
+                    LOG.info("Sky Atlas database is out of date. current={}, newest={}", currentVersion, newestVersion)
 
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Started)
 
@@ -67,7 +65,7 @@ class SkyAtlasUpdateTask(
                             } else {
                                 messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Failed)
 
-                                LOG.e("failed to download. url={}, code={}", url, it.code)
+                                LOG.error("failed to download. url={}, code={}", url, it.code)
                                 return
                             }
                         }
@@ -76,9 +74,9 @@ class SkyAtlasUpdateTask(
                     preferenceService.putText(VERSION_KEY, newestVersion)
                     messageService.sendMessage(SkyAtlasUpdateNotificationEvent.Finished(newestVersion))
 
-                    LOG.i("Sky Atlas database was updated. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
+                    LOG.info("Sky Atlas database was updated. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
                 } else {
-                    LOG.i("Sky Atlas database is up to date. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
+                    LOG.info("Sky Atlas database is up to date. version={}, size={}", newestVersion, skyObjectEntityRepository.size)
                 }
             }
         }

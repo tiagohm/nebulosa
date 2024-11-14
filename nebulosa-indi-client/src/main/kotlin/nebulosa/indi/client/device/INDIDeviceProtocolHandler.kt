@@ -22,7 +22,6 @@ import nebulosa.indi.protocol.parser.INDIProtocolParser
 import nebulosa.indi.protocol.parser.INDIProtocolReader
 import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import java.util.concurrent.LinkedBlockingQueue
 
 abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), MessageSender, INDIProtocolParser, CloseConnectionListener {
@@ -257,7 +256,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     }
 
                     if (!registered) {
-                        LOG.w("device is not registered. name={}, interface={}", message.device, interfaceType)
+                        LOG.warn("device is not registered. name={}, interface={}", message.device, interfaceType)
                         notRegisteredDevices.add(message.device)
                     }
 
@@ -277,7 +276,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     device.forEach { it.handleMessage(message) }
                 }
 
-                LOG.d("message received: {}", message)
+                LOG.d { debug("message received: {}", message) }
 
                 return
             }
@@ -299,7 +298,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                         }
                     }
 
-                    LOG.d("message received: {}", message)
+                    LOG.d { debug("message received: {}", message) }
 
                     return
                 }
@@ -319,7 +318,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
 
             messageReorderingQueue.remove(message)
 
-            LOG.d("message received: {}", message)
+            LOG.d { debug("message received: {}", message) }
         } else {
             if (message in messageQueueCounter) {
                 val counter = messageQueueCounter[message]!!
@@ -329,7 +328,7 @@ abstract class INDIDeviceProtocolHandler : AbstractINDIDeviceProvider(), Message
                     messageReorderingQueue.offer(message)
                 } else {
                     messageReorderingQueue.remove(message)
-                    LOG.w("message looping detected: {}", message)
+                    LOG.warn("message looping detected: {}", message)
                 }
             } else {
                 messageQueueCounter[message] = 1

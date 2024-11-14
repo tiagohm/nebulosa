@@ -75,7 +75,7 @@ import nebulosa.guiding.Guider
 import nebulosa.guiding.phd2.PHD2Guider
 import nebulosa.hips2fits.Hips2FitsService
 import nebulosa.horizons.HorizonsService
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.phd2.client.PHD2Client
 import nebulosa.sbd.SmallBodyDatabaseService
 import nebulosa.simbad.SimbadService
@@ -169,7 +169,7 @@ private const val MAX_CACHE_SIZE = 1024L * 1024L * 32L // 32MB
 fun httpModule() = module {
     single { ConnectionPool(32, 5L, TimeUnit.MINUTES) }
     single { Cache(get<Path>(Named.cacheDir).toFile(), MAX_CACHE_SIZE) }
-    single { HttpLoggingInterceptor.Logger { Nebulosa.LOG.di(it) } }
+    single { HttpLoggingInterceptor.Logger { Nebulosa.LOG.d { info(it) } } }
     single(Named.defaultHttpClient) {
         OkHttpClient.Builder()
             .connectionPool(get())

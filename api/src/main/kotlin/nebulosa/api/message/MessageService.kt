@@ -1,16 +1,12 @@
 package nebulosa.api.message
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.ktor.server.application.Application
-import io.ktor.server.routing.routing
-import io.ktor.server.websocket.WebSocketServerSession
-import io.ktor.server.websocket.webSocket
-import io.ktor.websocket.send
+import io.ktor.server.application.*
+import io.ktor.server.routing.*
+import io.ktor.server.websocket.*
+import io.ktor.websocket.*
 import kotlinx.coroutines.runBlocking
 import nebulosa.log.d
-import nebulosa.log.di
-import nebulosa.log.e
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingQueue
@@ -30,7 +26,7 @@ class MessageService(
                     if (sessions.add(this)) {
                         val local = call.request.local
 
-                        LOG.i("session accepted. address={}:{}", local.remoteHost, local.remotePort)
+                        LOG.info("session accepted. address={}:{}", local.remoteHost, local.remotePort)
 
                         while (messageQueue.isNotEmpty()) {
                             send(mapper.writeValueAsString(messageQueue.take()))
@@ -38,12 +34,12 @@ class MessageService(
 
                         try {
                             for (frame in incoming) {
-                                LOG.di("frame received: {}", frame)
+                                LOG.d { info("frame received: {}", frame) }
                             }
 
-                            LOG.i("session closed. address={}:{}, reason={}", local.remoteHost, local.remotePort, closeReason.await())
+                            LOG.info("session closed. address={}:{}, reason={}", local.remoteHost, local.remotePort, closeReason.await())
                         } catch (e: Throwable) {
-                            LOG.e("session closed. address={}:{}, reason={}", local.remoteHost, local.remotePort, closeReason.await(), e)
+                            LOG.error("session closed. address={}:{}, reason={}", local.remoteHost, local.remotePort, closeReason.await(), e)
                         } finally {
                             sessions.remove(this)
                         }
@@ -55,11 +51,11 @@ class MessageService(
 
     fun sendMessage(event: MessageEvent) {
         if (sessions.isNotEmpty()) {
-            LOG.d("sending message. event={}", event)
+            LOG.d { debug("sending message. event={}", event) }
             val text = mapper.writeValueAsString(event)
             runBlocking { sessions.forEach { it.send(text) } }
         } else if (event is QueueableEvent) {
-            LOG.d("queueing message. event={}", event)
+            LOG.d { debug("queueing message. event={}", event) }
             messageQueue.offer(event)
         }
     }

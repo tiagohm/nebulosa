@@ -1,6 +1,5 @@
 package nebulosa.pixinsight.script
 
-import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.util.concurrent.CompletableFuture
 
@@ -43,7 +42,7 @@ data class PixInsightIsRunning(override val slot: Int) : AbstractPixInsightScrip
             return
         }
 
-        LOG.d(line)
+        LOG.debug(line)
     }
 
     override fun processOnExit(exitCode: Int, output: CompletableFuture<Output>) {

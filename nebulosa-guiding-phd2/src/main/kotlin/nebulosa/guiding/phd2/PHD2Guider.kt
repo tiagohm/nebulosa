@@ -1,7 +1,8 @@
 package nebulosa.guiding.phd2
 
 import nebulosa.guiding.*
-import nebulosa.log.*
+import nebulosa.log.d
+import nebulosa.log.loggerFor
 import nebulosa.math.arcsec
 import nebulosa.math.toArcsec
 import nebulosa.phd2.client.PHD2Client
@@ -82,17 +83,17 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         val state = client.sendCommandSync(GetAppState)
 
         if (state == GuideState.GUIDING) {
-            LOG.di("app is already guiding. skipping start guiding")
+            LOG.d { info("app is already guiding. skipping start guiding") }
             return
         }
 
         if (state == GuideState.LOST_LOCK) {
-            LOG.di("app lost guide star and needs to stop before starting guiding again")
+            LOG.d { info("app lost guide star and needs to stop before starting guiding again") }
             stopGuiding()
         }
 
         if (state == GuideState.CALIBRATING) {
-            LOG.di("app is already calibrating. waiting for calibration to finish")
+            LOG.d { info("app is already calibrating. waiting for calibration to finish") }
             waitForCalibrationFinished()
         }
 
@@ -226,7 +227,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
             shiftRateAxis = shiftParams.axes
             shiftEnabled = true
 
-            LOG.di("shift lock params refreshed. rate={}, axes={}", shiftRate, shiftRateAxis)
+            LOG.d { info("shift lock params refreshed. rate={}, axes={}", shiftRate, shiftRateAxis) }
         } else {
             shiftEnabled = false
         }
@@ -237,9 +238,9 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
             settling.await(settleTimeout)
         } catch (_: InterruptedException) {
             Thread.currentThread().interrupt()
-            LOG.dw("PHD2 did not send SettleDone message in expected time")
+            LOG.d { warn("PHD2 did not send SettleDone message in expected time") }
         } catch (e: Throwable) {
-            LOG.e("an error occurrs while waiting for settle done", e)
+            LOG.error("an error occurrs while waiting for settle done", e)
         } finally {
             settling.reset()
         }
@@ -262,7 +263,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         val raArcsecPerHour = shiftTrackingRate.raPerHour.toArcsec
         val decArcsecPerHour = shiftTrackingRate.decPerHour.toArcsec
 
-        LOG.di("setting shift rate. ra={}, dec={}", raArcsecPerHour, decArcsecPerHour)
+        LOG.d { info("setting shift rate. ra={}, dec={}", raArcsecPerHour, decArcsecPerHour) }
 
         val command = SetLockShiftParams(raArcsecPerHour, decArcsecPerHour, ShiftAxesType.RADEC, RateUnit.ARCSEC_HOUR)
         client.sendCommandSync(command)
@@ -278,7 +279,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
     }
 
     override fun onEventReceived(event: PHD2Event) {
-        LOG.d("event received: {}", event)
+        LOG.d { debug("event received: {}", event) }
 
         when (event) {
             is AlertEvent -> Unit
@@ -295,7 +296,7 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
                 fireMessage { "calibration failed. ${event.reason}" }
             }
             ConfigurationChangeEvent -> client.sendCommand(GetPixelScale)
-            is GuideParamChangeEvent -> LOG.di("guide param changed: {} = {}", event.name, event.value)
+            is GuideParamChangeEvent -> LOG.d { info("guide param changed: {} = {}", event.name, event.value) }
             is GuideStepEvent -> {
                 state = GuideState.GUIDING
 
@@ -364,11 +365,11 @@ class PHD2Guider(private val client: PHD2Client) : Guider, PHD2EventListener {
         if (result != null) {
             if (command is GetPixelScale) {
                 pixelScale = result as Double
-                LOG.d("pixel scale: {}", pixelScale)
+                LOG.d { debug("pixel scale: {}", pixelScale) }
                 listeners.forEach { it.onStateChanged(state, pixelScale) }
             }
         } else if (error != null) {
-            LOG.e("command error. command={}, message={}", command.methodName, error)
+            LOG.error("command error. command={}, message={}", command.methodName, error)
         }
     }
 

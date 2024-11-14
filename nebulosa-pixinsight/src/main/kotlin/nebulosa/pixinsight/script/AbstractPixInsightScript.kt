@@ -3,7 +3,7 @@ package nebulosa.pixinsight.script
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import nebulosa.json.PathModule
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import org.apache.commons.codec.binary.Hex
 import java.nio.file.Path
@@ -26,7 +26,7 @@ abstract class AbstractPixInsightScript<T : PixInsightScriptOutput> : PixInsight
         }
 
         internal fun PixInsightScript<*>.execute(scriptPath: Path, data: Any?, slot: Int = this.slot): String {
-            LOG.di("{} will be executed. slot={}, script={}, data={}", name, slot, scriptPath, data)
+            LOG.d { info("{} will be executed. slot={}, script={}, data={}", name, slot, scriptPath, data) }
 
             return buildString {
                 if (slot > 0) append("$slot:")

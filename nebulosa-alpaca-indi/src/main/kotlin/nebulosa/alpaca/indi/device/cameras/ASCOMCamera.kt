@@ -21,8 +21,6 @@ import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
 import nebulosa.log.d
-import nebulosa.log.dw
-import nebulosa.log.e
 import nebulosa.log.loggerFor
 import nebulosa.math.AngleFormatter
 import nebulosa.math.format
@@ -610,10 +608,10 @@ data class ASCOMCamera(
             val metadata = ImageMetadata.from(stream.readNBytes(44))
 
             if (metadata.errorNumber != 0) {
-                LOG.e("failed to read image. device={}, error={}", name, metadata.errorNumber)
+                LOG.error("failed to read image. device={}, error={}", name, metadata.errorNumber)
                 return
             } else {
-                LOG.d("image read. metadata={}", metadata)
+                LOG.d { debug("image read. metadata={}", metadata) }
             }
 
             val width = metadata.dimension1
@@ -633,7 +631,7 @@ data class ASCOMCamera(
                                 Bitpix.BYTE -> (source.readByte().toLong() and 0xFF) / 255f
                                 Bitpix.SHORT -> (source.readShortLe().toLong() and 0xFFFF) / 65535f
                                 Bitpix.INTEGER -> ((source.readIntLe().toLong() and 0xFFFFFFFF) / 4294967295.0).toFloat()
-                                else -> return LOG.dw("invalid transmission element type: ${metadata.transmissionElementType}")
+                                else -> return LOG.d { warn("invalid transmission element type: ${metadata.transmissionElementType}") }
                             }
                         }
                     }
@@ -712,7 +710,7 @@ data class ASCOMCamera(
             image.add(hdu)
 
             sender.fireOnEventReceived(CameraFrameCaptured(this, image = image))
-        } ?: LOG.e("image body is null. device={}", name)
+        } ?: LOG.error("image body is null. device={}", name)
     }
 
     override fun toString() = "Camera(name=$name, connected=$connected, exposuring=$exposuring," +
@@ -798,7 +796,7 @@ data class ASCOMCamera(
                             try {
                                 readImage(exposureTime)
                             } catch (e: Throwable) {
-                                LOG.e("failed to read image", e)
+                                LOG.error("failed to read image", e)
                             }
                         }
                     }

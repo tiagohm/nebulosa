@@ -1,7 +1,7 @@
 package nebulosa.api.confirmation
 
 import nebulosa.api.message.MessageService
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 
 class ConfirmationService(private val messageService: MessageService) {
@@ -10,7 +10,7 @@ class ConfirmationService(private val messageService: MessageService) {
 
     @Synchronized
     fun confirm(idempotencyKey: String, accepted: Boolean) {
-        LOG.di("confirmed. idempotencyKey={}, accepted={}", idempotencyKey, accepted)
+        LOG.d { info("confirmed. idempotencyKey={}, accepted={}", idempotencyKey, accepted) }
         confirmations[idempotencyKey]?.confirm(accepted)
         confirmations.remove(idempotencyKey)
     }
@@ -21,7 +21,7 @@ class ConfirmationService(private val messageService: MessageService) {
 
         return ConfirmationLatch().also {
             confirmations[idempotencyKey] = it
-            LOG.di("asking for confirmation. idempotencyKey={}, event={}", idempotencyKey, event::class.simpleName)
+            LOG.d { info("asking for confirmation. idempotencyKey={}, event={}", idempotencyKey, event::class.simpleName) }
             messageService.sendMessage(event)
         }
     }

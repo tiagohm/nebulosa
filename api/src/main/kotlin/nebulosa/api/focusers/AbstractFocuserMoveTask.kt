@@ -35,13 +35,13 @@ sealed class AbstractFocuserMoveTask : FocuserTask, CancellationListener {
 
     override fun run() {
         if (!job.isCancelled && focuser.connected && !focuser.moving && canMove()) {
-            LOG.d("Focuser move started. focuser={}", focuser)
+            LOG.d { debug("Focuser move started. focuser={}", focuser) }
             latch.countUp()
             moving = true
             move()
             latch.await()
             moving = false
-            LOG.d("Focuser move finished. focuser={}", focuser)
+            LOG.d { debug("Focuser move finished. focuser={}", focuser) }
         }
     }
 

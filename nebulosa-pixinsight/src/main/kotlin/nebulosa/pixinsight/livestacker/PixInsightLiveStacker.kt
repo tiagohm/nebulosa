@@ -2,7 +2,6 @@ package nebulosa.pixinsight.livestacker
 
 import nebulosa.livestacker.LiveStacker
 import nebulosa.log.d
-import nebulosa.log.dw
 import nebulosa.log.loggerFor
 import nebulosa.pixinsight.script.PixInsightIsRunning
 import nebulosa.pixinsight.script.PixInsightScript
@@ -67,7 +66,7 @@ data class PixInsightLiveStacker(
                 var targetPath = path
 
                 if (stacker.calibrate(targetPath, calibratedPath, darkPath, flatPath, biasPath)) {
-                    LOG.d("live stacking calibrated. count={}, target={}, output={}", stackCount, targetPath, calibratedPath)
+                    LOG.d { debug("live stacking calibrated. count={}, target={}, output={}", stackCount, targetPath, calibratedPath) }
                     targetPath = calibratedPath
                 }
 
@@ -75,11 +74,11 @@ data class PixInsightLiveStacker(
 
                 if (stackCount > 0) {
                     if (stacker.align(this.referencePath!!, targetPath, alignedPath)) {
-                        LOG.d("live stacking aligned. count={}, target={}, output={}", stackCount, targetPath, alignedPath)
+                        LOG.d { debug("live stacking aligned. count={}, target={}, output={}", stackCount, targetPath, alignedPath) }
                         targetPath = alignedPath
 
                         if (stacker.integrate(stackCount, stackedPath, targetPath, stackedPath)) {
-                            LOG.d("live stacking integrated. count={}, target={}, output={}", stackCount, targetPath, stackedPath)
+                            LOG.d { debug("live stacking integrated. count={}, target={}, output={}", stackCount, targetPath, stackedPath) }
                             stackCount++
                         }
                     }
@@ -91,7 +90,7 @@ data class PixInsightLiveStacker(
                     }
 
                     if (!stacker.align(this.referencePath!!, targetPath, stackedPath)) {
-                        LOG.dw("alignment failed. reference={}, target={}", this.referencePath, targetPath)
+                        LOG.d { warn("alignment failed. reference={}, target={}", this@PixInsightLiveStacker.referencePath, targetPath) }
                         return null
                     }
 

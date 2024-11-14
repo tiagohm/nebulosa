@@ -1,6 +1,6 @@
 package nebulosa.util.concurrency
 
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
@@ -12,7 +12,7 @@ data class DaemonThreadFactory(private val name: String) : ThreadFactory {
     override fun newThread(task: Runnable): Thread {
         val thread = Thread(task, "$name Thread ${counter.getAndIncrement()}")
         thread.isDaemon = true
-        LOG.di("new thread. name={}, id={}", thread.name, thread.id)
+        LOG.d { info("new thread. name={}, id={}", thread.name, thread.id) }
         return thread
     }
 

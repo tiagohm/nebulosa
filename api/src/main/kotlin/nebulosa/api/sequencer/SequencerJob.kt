@@ -300,7 +300,7 @@ data class SequencerJob(
     }
 
     override fun beforeStart() {
-        LOG.d("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan)
+        LOG.d { debug("Sequencer started. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan) }
 
         status.state = SequencerState.RUNNING
         status.send()
@@ -330,7 +330,7 @@ data class SequencerJob(
         status.state = SequencerState.IDLE
         status.send()
 
-        LOG.d("Sequencer finished. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan)
+        LOG.d { debug("Sequencer finished. camera={}, mount={}, wheel={}, focuser={}, rotator={}, plan={}", camera, mount, wheel, focuser, rotator, plan) }
     }
 
     @Suppress("NOTHING_TO_INLINE")
@@ -347,7 +347,7 @@ data class SequencerJob(
     private inner class SequencerIdTask(@JvmField val id: Int) : Task {
 
         override fun run() {
-            LOG.d("Sequence in execution. id={}", id)
+            LOG.d { debug("Sequence in execution. id={}", id) }
             status.id = id
         }
     }

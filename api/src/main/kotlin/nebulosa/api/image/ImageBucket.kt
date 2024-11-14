@@ -2,7 +2,7 @@ package nebulosa.api.image
 
 import nebulosa.fits.fits
 import nebulosa.image.Image
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.platesolver.PlateSolution
 import nebulosa.xisf.xisf
@@ -91,7 +91,7 @@ class ImageBucket(scheduledExecutorService: ScheduledExecutorService) {
             for ((path, image) in bucket) {
                 if (image.image != null && currentTime - image.openedAt >= IMAGE_TIMEOUT) {
                     image.image = null
-                    LOG.di("image at {} has been disposed", path)
+                    LOG.d { info("image at {} has been disposed", path) }
                 }
             }
         }

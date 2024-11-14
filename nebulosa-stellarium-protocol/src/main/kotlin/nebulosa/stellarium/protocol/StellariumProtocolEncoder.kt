@@ -32,7 +32,7 @@ class StellariumProtocolEncoder : MessageToByteEncoder<StellariumProtocolMessage
             writeIntLE((message.declination / PI * 0x80000000).toInt()) // DEC
             writeIntLE(0) // STATUS=OK
 
-            LOG.d("MessageCurrentPosition: ra={}, dec={}", message.rightAscension.toHours, message.declination.toDegrees)
+            LOG.d { debug("MessageCurrentPosition: ra={}, dec={}", message.rightAscension.toHours, message.declination.toDegrees) }
         }
     }
 }

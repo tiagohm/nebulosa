@@ -29,7 +29,7 @@ abstract class CachedEphemerisProvider<T : Any> : EphemerisProvider<T> {
 
         val endTime = if (fully) startTime.plusDays(1L) else startTime.plusMinutes(1L)
 
-        LOG.d("computing ephemeris for {} from {} UTC to {} UTC", target, startTime, endTime)
+        LOG.d { debug("computing ephemeris for {} from {} UTC to {} UTC", target, startTime, endTime) }
 
         val key = target to position
 
@@ -60,9 +60,9 @@ abstract class CachedEphemerisProvider<T : Any> : EphemerisProvider<T> {
         key: Pair<T, GeographicPosition>,
         startTime: LocalDateTime, endTime: LocalDateTime,
     ): List<HorizonsElement> {
-        LOG.d("retrieving ephemeris. target={}, position={}, startTime={}, endTime={}", key.first, key.second, startTime, endTime)
+        LOG.d { debug("retrieving ephemeris. target={}, position={}, startTime={}, endTime={}", key.first, key.second, startTime, endTime) }
         val elements = compute(key.first, key.second, startTime, endTime)
-        LOG.d("retrieved ephemeris. size={}, target={}, position={}, startTime={}, endTime={}", elements.size, key.first, key.second, startTime, endTime)
+        LOG.d { debug("retrieved ephemeris. size={}, target={}, position={}, startTime={}, endTime={}", elements.size, key.first, key.second, startTime, endTime) }
         val cachedElements = ephemeris.getOrPut(key) { HashMap(ChronoUnit.MINUTES.between(startTime, endTime).toInt() + 1) }
         elements.forEach { cachedElements[it.dateTime] = it }
         return elements

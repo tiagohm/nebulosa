@@ -19,7 +19,7 @@ class LX200ProtocolEncoder : MessageToByteEncoder<LX200ProtocolMessage>() {
         msg: LX200ProtocolMessage,
         output: ByteBuf,
     ) {
-        LOG.d("sending message: {}", msg)
+        LOG.d { debug("sending message: {}", msg) }
 
         when (msg) {
             LX200ProtocolMessage.Ack -> output.writeByte(71)

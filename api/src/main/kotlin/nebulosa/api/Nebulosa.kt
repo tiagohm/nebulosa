@@ -8,37 +8,27 @@ import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.rvesse.airline.annotations.Command
 import com.github.rvesse.airline.annotations.Option
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 import kotlinx.coroutines.runBlocking
 import nebulosa.api.converters.DeviceModule
 import nebulosa.api.core.FileLocker
 import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.inject.*
-import nebulosa.api.ktor.configureHTTP
-import nebulosa.api.ktor.configureMonitoring
-import nebulosa.api.ktor.configureRouting
-import nebulosa.api.ktor.configureSerialization
-import nebulosa.api.ktor.configureSockets
+import nebulosa.api.ktor.*
 import nebulosa.json.PathModule
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import org.koin.core.context.startKoin
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.ExecutorService
-import kotlin.io.path.Path
-import kotlin.io.path.exists
-import kotlin.io.path.fileSize
-import kotlin.io.path.inputStream
-import kotlin.io.path.isRegularFile
+import kotlin.io.path.*
 import kotlin.system.exitProcess
-import ch.qos.logback.classic.Logger as LogbackLogger
 
 @Command(name = "nebulosa")
 class Nebulosa : Runnable {
@@ -68,12 +58,12 @@ class Nebulosa : Runnable {
 
     override fun run() {
         if (debug) {
-            with(LoggerFactory.getLogger("nebulosa") as LogbackLogger) {
+            with(loggerFor("nebulosa")) {
                 level = Level.DEBUG
             }
 
             if (trace) {
-                with(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as LogbackLogger) {
+                with(loggerFor(Logger.ROOT_LOGGER_NAME)) {
                     level = Level.TRACE
                 }
             }
@@ -128,12 +118,12 @@ class Nebulosa : Runnable {
 
     private fun requestToOpenImagesOnDesktop(paths: Iterable<Path>): Boolean {
         val port = FileLocker.read().toIntOrNull() ?: return false
-        LOG.di("requesting to open images on desktop. port={}, paths={}", port, paths)
+        LOG.d { info("requesting to open images on desktop. port={}, paths={}", port, paths) }
         val query = paths.map { "$it".encodeToByteArray() }.joinToString("&") { "path=${Base64.getUrlEncoder().encodeToString(it)}" }
         val url = URL("http://localhost:$port/image/open-on-desktop?$query")
         val connection = url.openConnection() as HttpURLConnection
         connection.setRequestMethod("POST")
-        LOG.di("response from opening images on desktop. url={}, code={}", url, connection.responseCode)
+        LOG.d { info("response from opening images on desktop. url={}, code={}", url, connection.responseCode) }
         connection.disconnect()
         return true
     }

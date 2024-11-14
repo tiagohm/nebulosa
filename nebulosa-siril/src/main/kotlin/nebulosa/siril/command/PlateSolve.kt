@@ -1,7 +1,7 @@
 package nebulosa.siril.command
 
 import nebulosa.commandline.CommandLineListener
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.platesolver.Parity
@@ -71,14 +71,14 @@ data class PlateSolve(
     }
 
     override fun onExited(exitCode: Int, exception: Throwable?) {
-        LOG.di("plate solver finished. exitCode={}", exitCode, exception)
+        LOG.d { info("plate solver finished. exitCode={}", exitCode, exception) }
         exited.set(true)
         latch.reset()
     }
 
     override fun write(commandLine: SirilCommandLine): PlateSolution {
         if (commandLine.execute(Load(path))) {
-            LOG.di("plate solver started")
+            LOG.d { info("plate solver started") }
 
             try {
                 commandLine.registerCommandLineListener(this)

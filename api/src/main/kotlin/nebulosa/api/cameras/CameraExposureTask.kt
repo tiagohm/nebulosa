@@ -7,9 +7,7 @@ import nebulosa.io.transferAndClose
 import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
 import nebulosa.log.d
-import nebulosa.log.e
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import nebulosa.util.concurrency.cancellation.CancellationSource
 import nebulosa.util.concurrency.latch.CountUpDownLatch
 import okio.sink
@@ -59,7 +57,7 @@ data class CameraExposureTask(
 
     override fun run() {
         if (camera.connected) {
-            LOG.d("Camera Exposure started. camera={}, request={}", camera, request)
+            LOG.d { debug("Camera Exposure started. camera={}, request={}", camera, request) }
 
             latch.countUp()
 
@@ -82,9 +80,9 @@ data class CameraExposureTask(
 
             latch.await()
 
-            LOG.d("Camera Exposure finished. camera={}, request={}", camera, request)
+            LOG.d { debug("Camera Exposure finished. camera={}, request={}", camera, request) }
         } else {
-            LOG.w("camera not connected. camera={}, request={}", camera, request)
+            LOG.warn("camera not connected. camera={}, request={}", camera, request)
         }
 
         outputPath.deleteIfExists()
@@ -103,18 +101,18 @@ data class CameraExposureTask(
                 outputPath.sink().use(event.image!!::write)
                 event.image?.first()?.header
             } else {
-                LOG.w("invalid event. event={}", event)
+                LOG.warn("invalid event. event={}", event)
                 return
             }
 
             with(request.makeSavePath(header = header)) {
-                LOG.d("saving FITS image at {}", this)
+                LOG.d { debug("saving FITS image at {}", this) }
                 createParentDirectories()
                 outputPath.moveTo(this, true)
                 job.accept(CameraExposureFinished(job, this@CameraExposureTask, this))
             }
         } catch (e: Throwable) {
-            LOG.e("failed to save FITS image", e)
+            LOG.error("failed to save FITS image", e)
         } finally {
             latch.countDown()
         }

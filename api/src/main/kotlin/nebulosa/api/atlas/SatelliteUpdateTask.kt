@@ -5,9 +5,7 @@ import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.database.migration.SkyDatabaseMigrator
 import nebulosa.api.message.MessageService
 import nebulosa.api.preference.PreferenceService
-import nebulosa.log.i
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.koin.core.component.KoinComponent
@@ -46,15 +44,15 @@ class SatelliteUpdateTask(
 
     private fun checkIsOutOfDateAndUpdate() {
         if (isOutOfDate()) {
-            LOG.i("satellites is out of date")
+            LOG.info("satellites is out of date")
 
             if (updateTLEs()) {
                 preferenceService.putLong(UPDATED_AT_KEY, System.currentTimeMillis())
             } else {
-                LOG.w("no satellites was updated")
+                LOG.warn("no satellites was updated")
             }
         } else {
-            LOG.i("satellites is up to date")
+            LOG.info("satellites is up to date")
         }
     }
 
@@ -76,7 +74,7 @@ class SatelliteUpdateTask(
 
         return satelliteRepository
             .add(data.values)
-            .also { LOG.i("{} satellites updated", it.size) }
+            .also { LOG.info("{} satellites updated", it.size) }
             .also { messageService.sendMessage(SatelliteUpdateNotificationEvent.Finished(it.size)) }
             .isNotEmpty()
     }

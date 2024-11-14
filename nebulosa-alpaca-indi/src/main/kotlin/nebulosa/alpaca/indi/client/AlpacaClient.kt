@@ -9,7 +9,7 @@ import nebulosa.alpaca.indi.device.rotators.ASCOMRotator
 import nebulosa.alpaca.indi.device.wheels.ASCOMFilterWheel
 import nebulosa.indi.device.AbstractINDIDeviceProvider
 import nebulosa.indi.protocol.INDIProtocol
-import nebulosa.log.dw
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import java.util.*
@@ -78,7 +78,7 @@ data class AlpacaClient(
             }
         } else {
             val body = response.errorBody()
-            LOG.dw("unsuccessful response. code={}, body={}", response.code(), body?.string())
+            LOG.d { warn("unsuccessful response. code={}, body={}", response.code(), body?.string()) }
             body?.close()
         }
     }

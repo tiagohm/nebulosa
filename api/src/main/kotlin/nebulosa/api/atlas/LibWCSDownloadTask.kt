@@ -4,8 +4,6 @@ import com.sun.jna.Platform
 import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndCloseOutput
-import nebulosa.log.e
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.wcs.LibWCS
 import okhttp3.OkHttpClient
@@ -39,7 +37,7 @@ class LibWCSDownloadTask(
         val libraryUrl = LIBRARY_URLS[Platform.RESOURCE_PREFIX]
 
         if (libraryUrl.isNullOrBlank()) {
-            LOG.e("unable to download for arch {}", Platform.RESOURCE_PREFIX)
+            LOG.error("unable to download for arch {}", Platform.RESOURCE_PREFIX)
             return
         }
 
@@ -50,7 +48,7 @@ class LibWCSDownloadTask(
                 val newestVersion = response.body!!.string()
 
                 if (newestVersion != preferenceService.getText(VERSION_KEY) || !libraryPath.exists()) {
-                    LOG.i("libwcs is out of date. Downloading...")
+                    LOG.info("libwcs is out of date. Downloading...")
 
                     request = Request.Builder().get().url(libraryUrl).build()
 
@@ -61,7 +59,7 @@ class LibWCSDownloadTask(
                         }
                     }
                 } else {
-                    LOG.i("libwcs is up to date. version={}", newestVersion)
+                    LOG.info("libwcs is up to date. version={}", newestVersion)
                 }
             }
         }
@@ -69,10 +67,10 @@ class LibWCSDownloadTask(
         val checksum = libraryPath.inputStream().use { DigestUtils.sha256Hex(it) }
 
         if (checksum == LIBRARY_CHECKSUM[Platform.RESOURCE_PREFIX]) {
-            LOG.i("libwcs checksum is valid!")
+            LOG.info("libwcs checksum is valid!")
             System.setProperty(LibWCS.PATH, "$libraryPath")
         } else {
-            LOG.e("failed to validate checksum. expected {}, got {}", LIBRARY_CHECKSUM[Platform.RESOURCE_PREFIX], checksum)
+            LOG.error("failed to validate checksum. expected {}, got {}", LIBRARY_CHECKSUM[Platform.RESOURCE_PREFIX], checksum)
         }
     }
 

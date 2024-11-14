@@ -1,6 +1,6 @@
 package nebulosa.commandline
 
-import nebulosa.log.di
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -18,7 +18,7 @@ data class CommandLine(
         val commands = commands.filter { !it.isNullOrEmpty() }.toTypedArray()
 
         with(ProcessBuilder(*commands).directory(workingDirectory?.toFile()).also { it.environment().putAll(environment) }.start()) {
-            LOG.di("executing command: {}. pid={}", commands, pid())
+            LOG.d { info("executing command: {}. pid={}", commands, pid()) }
 
             process = this
 

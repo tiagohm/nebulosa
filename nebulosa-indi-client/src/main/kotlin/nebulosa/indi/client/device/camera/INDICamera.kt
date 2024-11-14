@@ -17,7 +17,6 @@ import nebulosa.indi.protocol.*
 import nebulosa.indi.protocol.DefVector.Companion.isNotReadOnly
 import nebulosa.io.Base64InputStream
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import java.time.Duration
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indiccd.cpp
@@ -266,7 +265,7 @@ internal open class INDICamera(
                             val camera = if (message.name == "CCD2") guideHead!! else this
                             sender.fireOnEventReceived(CameraFrameCaptured(camera, stream = stream))
                         } else {
-                            LOG.w("compressed FITS is not supported yet")
+                            LOG.warn("compressed FITS is not supported yet")
                         }
                     }
 

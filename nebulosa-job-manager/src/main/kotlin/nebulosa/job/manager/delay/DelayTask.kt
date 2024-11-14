@@ -17,7 +17,7 @@ data class DelayTask(
         var remainingTime = duration
 
         if (!job.isCancelled && remainingTime > 0L) {
-            LOG.d("Delay started. duration={} ms", duration)
+            LOG.d { debug("Delay started. duration={} ms", duration) }
 
             job.accept(DelayStarted(job, this))
 
@@ -36,7 +36,7 @@ data class DelayTask(
 
             job.accept(DelayFinished(job, this))
 
-            LOG.d("Delay finished. duration={} ms", duration)
+            LOG.d { debug("Delay finished. duration={} ms", duration) }
         }
     }
 

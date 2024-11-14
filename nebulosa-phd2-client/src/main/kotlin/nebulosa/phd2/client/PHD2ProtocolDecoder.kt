@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
-import nebulosa.log.dw
-import nebulosa.log.e
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.phd2.client.commands.CompletableCommand
 import nebulosa.phd2.client.commands.PHD2CommandFailedException
@@ -39,7 +38,7 @@ class PHD2ProtocolDecoder(
                         processEvent(eventTree, out)
                     }
                 } catch (e: Throwable) {
-                    LOG.e("failed to process PHD2 message", e)
+                    LOG.error("failed to process PHD2 message", e)
                 } finally {
                     data.reset()
                 }
@@ -55,7 +54,7 @@ class PHD2ProtocolDecoder(
         val command = client.commands.remove(id) as? CompletableCommand<Any>
 
         if (command == null) {
-            LOG.dw("command not found. id={}", id)
+            LOG.d { warn("command not found. id={}", id) }
         } else if (node.has("error")) {
             val message = node.get("error").get("message").textValue()
             client.listeners.forEach { it.onCommandProcessed(command.command, null, message) }

@@ -74,7 +74,7 @@ data class CameraCaptureJob(
     }
 
     override fun beforeStart() {
-        LOG.d("Camera Capture started. request={}, camera={}, mount={}, wheel={}, focuser={}", request, camera, mount, wheel, focuser)
+        LOG.d { debug("Camera Capture started. request={}, camera={}, mount={}, wheel={}, focuser={}", request, camera, mount, wheel, focuser) }
 
         camera.snoop(listOf(mount, wheel, focuser, rotator))
 
@@ -91,7 +91,7 @@ data class CameraCaptureJob(
 
         liveStackerManager?.stop(request)
 
-        LOG.d("Camera Capture finished. request={}, status={}, mount={}, wheel={}, focuser={}", request, status, mount, wheel, focuser)
+        LOG.d { debug("Camera Capture finished. request={}, status={}, mount={}, wheel={}, focuser={}", request, status, mount, wheel, focuser) }
     }
 
     override fun isLoop(): Boolean {

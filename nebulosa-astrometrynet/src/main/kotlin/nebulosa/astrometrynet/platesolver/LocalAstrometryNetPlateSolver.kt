@@ -5,8 +5,7 @@ import nebulosa.commandline.CommandLineHandler
 import nebulosa.fits.FitsHeader
 import nebulosa.image.Image
 import nebulosa.io.seekableSource
-import nebulosa.log.di
-import nebulosa.log.e
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.math.Angle
 import nebulosa.math.toDegrees
@@ -86,7 +85,7 @@ data class LocalAstrometryNetPlateSolver(
             val result = commandLine.execute(handler)
 
             if (result.isSuccess) {
-                LOG.di("astrometry.net exited. code={}", result.exitCode)
+                LOG.d { info("astrometry.net exited. code={}", result.exitCode) }
                 val solved = Path.of("$outFolder", "$outName.solved").takeIf { it.exists() }?.readBytes()?.takeIf { it.size == 1 }?.get(0)?.toInt() == 1
 
                 if (solved) {
@@ -95,7 +94,7 @@ data class LocalAstrometryNetPlateSolver(
                     return PlateSolution.from(header)!!
                 }
             } else {
-                LOG.e("astrometry.net failed. code={}", result.exitCode, result.exception)
+                LOG.error("astrometry.net failed. code={}", result.exitCode, result.exception)
             }
 
             return PlateSolution.NO_SOLUTION

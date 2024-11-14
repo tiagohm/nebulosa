@@ -39,7 +39,7 @@ data class SirilLiveStacker(
             commandLine.registerCommandLineListener(this)
             commandLine.run()
 
-            LOG.d("live stacking started")
+            LOG.debug("live stacking started")
 
             try {
                 check(commandLine.execute(Cd(workingDirectory))) { "failed to run cd command" }
@@ -73,7 +73,7 @@ data class SirilLiveStacker(
     }
 
     override fun onExited(exitCode: Int, exception: Throwable?) {
-        LOG.d("live stacking finished. exitCode={}", exitCode, exception)
+        LOG.d { debug("live stacking finished. exitCode={}", exitCode, exception) }
     }
 
     companion object {

@@ -3,9 +3,7 @@ package nebulosa.fits
 import nebulosa.fits.FitsHeader.Companion.isFirstCard
 import nebulosa.image.format.*
 import nebulosa.io.*
-import nebulosa.log.e
 import nebulosa.log.loggerFor
-import nebulosa.log.w
 import okio.Buffer
 import okio.BufferedSource
 import okio.Sink
@@ -88,14 +86,14 @@ data object FitsFormat : ImageFormat {
             val header = try {
                 readHeader(source)
             } catch (e: Throwable) {
-                LOG.e("failed to read FITS header", e)
+                LOG.error("failed to read FITS header", e)
                 break
             }
 
             val hdu = when {
                 isImageHdu(header) -> BasicImageHdu(header.width, header.height, header.numberOfChannels, header, readImageData(header, source))
                 else -> {
-                    LOG.w("unsupported FITS header: {}", header)
+                    LOG.warn("unsupported FITS header: {}", header)
                     continue
                 }
             }

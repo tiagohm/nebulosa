@@ -1,12 +1,10 @@
 package nebulosa.api.atlas
 
-import io.ktor.http.HttpHeaders
+import io.ktor.http.*
 import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.preference.PreferenceService
 import nebulosa.io.transferAndClose
 import nebulosa.log.d
-import nebulosa.log.e
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.time.IERS
 import nebulosa.time.IERSA
@@ -60,22 +58,22 @@ class IERSUpdateTask(
                 .use { it.headers.getDate(HttpHeaders.LastModified) }
 
             if (modifiedAt != null && "$modifiedAt" == preferenceService.getText(key)) {
-                LOG.i("{} is up to date. modifiedAt={}", url, modifiedAt)
+                LOG.info("{} is up to date. modifiedAt={}", url, modifiedAt)
                 return
             }
 
             request = request.newBuilder().get().build()
 
-            LOG.d("downloading {}", url)
+            LOG.d { debug("downloading {}", url) }
 
             httpClient.newCall(request).execute().use {
                 it.body!!.byteStream().transferAndClose(outputStream())
                 modifiedAt = it.headers.getDate(HttpHeaders.LastModified)
                 preferenceService.putText(key, "$modifiedAt")
-                LOG.d("{} downloaded. modifiedAt={}", url, modifiedAt)
+                LOG.d { debug("{} downloaded. modifiedAt={}", url, modifiedAt) }
             }
         } catch (e: Throwable) {
-            LOG.e("failed to download finals2000A.all", e)
+            LOG.error("failed to download finals2000A.all", e)
         }
     }
 

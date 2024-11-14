@@ -1,6 +1,5 @@
 package nebulosa.commandline
 
-import nebulosa.log.d
 import nebulosa.log.loggerFor
 import java.io.BufferedReader
 
@@ -16,7 +15,7 @@ internal data class LineReaderThread(
     override fun run() {
         while (true) {
             val line = reader.readLine() ?: break
-            LOG.d(line)
+            LOG.debug(line)
             listeners.forEach { it.onLineRead(line) }
         }
     }

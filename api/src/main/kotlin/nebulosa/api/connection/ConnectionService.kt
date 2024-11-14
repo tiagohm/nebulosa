@@ -16,12 +16,10 @@ import nebulosa.indi.device.lightbox.LightBox
 import nebulosa.indi.device.mount.Mount
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.device.thermometer.Thermometer
-import nebulosa.log.di
-import nebulosa.log.e
+import nebulosa.log.d
 import nebulosa.log.loggerFor
 import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
-import kotlin.collections.set
 
 class ConnectionService(
     private val eventBus: EventBus,
@@ -79,7 +77,7 @@ class ConnectionService(
 
             return provider.id
         } catch (e: Throwable) {
-            LOG.e("failed to connect", e)
+            LOG.error("failed to connect", e)
             throw e
         }
     }
@@ -96,7 +94,7 @@ class ConnectionService(
     }
 
     private fun sendConnectionClosedEvent(provider: INDIDeviceProvider) {
-        LOG.di("client connection was closed. id={}", provider.id)
+        LOG.d { info("client connection was closed. id={}", provider.id) }
         providers.remove(provider.id)
         messageService.sendMessage(ClientConnectionClosed(provider.id))
     }

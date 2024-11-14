@@ -5,7 +5,6 @@ import nebulosa.adql.*
 import nebulosa.api.atlas.SkyDatabaseWriter
 import nebulosa.api.atlas.SkyObjectEntity
 import nebulosa.io.resource
-import nebulosa.log.i
 import nebulosa.log.loggerFor
 import nebulosa.nova.astrometry.Constellation
 import nebulosa.simbad.SimbadCatalogType
@@ -212,14 +211,14 @@ object SkyDatabaseGenerator {
             }
 
             writer.write(entity)
-            LOG.i("entity: {}", entity)
+            LOG.info("entity: {}", entity)
             count++
         }
 
         writer?.close()
 
-        LOG.i("recorded {} entities", entities.size)
-        LOG.i("remaining names. count={}, stellarium={}", STELLARIUM_NAMES.size, STELLARIUM_NAMES)
+        LOG.info("recorded {} entities", entities.size)
+        LOG.info("remaining names. count={}, stellarium={}", STELLARIUM_NAMES.size, STELLARIUM_NAMES)
 
         EXECUTOR_SERVICE.shutdownNow()
     }

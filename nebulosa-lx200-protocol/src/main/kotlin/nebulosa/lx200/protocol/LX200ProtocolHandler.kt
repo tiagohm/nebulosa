@@ -3,7 +3,8 @@ package nebulosa.lx200.protocol
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
-import nebulosa.log.*
+import nebulosa.log.d
+import nebulosa.log.loggerFor
 import nebulosa.math.deg
 import nebulosa.math.hours
 import nebulosa.time.SystemClock
@@ -21,11 +22,11 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
     @Volatile private var offset = SystemClock.zone.rules.getOffset(Instant.now())
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {
-        LOG.i("client connected. address={}", ctx.channel().remoteAddress())
+        LOG.info("client connected. address={}", ctx.channel().remoteAddress())
     }
 
     override fun handlerRemoved(ctx: ChannelHandlerContext) {
-        LOG.i("client disconnected. address={}", ctx.channel().remoteAddress())
+        LOG.info("client disconnected. address={}", ctx.channel().remoteAddress())
     }
 
     private fun ChannelHandlerContext.updateRA(text: String) {
@@ -45,7 +46,7 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
 
         val command = input.toString(Charsets.US_ASCII)
 
-        LOG.d("command received: {}", command)
+        LOG.d { debug("command received: {}", command) }
 
         if (started.get()) {
             when (command) {
@@ -121,7 +122,7 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
                         }
                         command.startsWith("#:Sr") -> ctx.updateRA(command.substring(4))
                         command.startsWith("#:Sd") -> ctx.updateDEC(command.substring(4))
-                        else -> LOG.dw("received unknown command. command={}", command)
+                        else -> LOG.d { warn("received unknown command. command={}", command) }
                     }
                 }
             }
@@ -129,7 +130,7 @@ class LX200ProtocolHandler(private val server: LX200ProtocolServer) : ChannelInb
             if (command == "#\u0006") {
                 ctx.writeAndFlush(LX200ProtocolMessage.Ack)
                 started.set(true)
-                LOG.di("LX200 protocol handling started")
+                LOG.d { info("LX200 protocol handling started") }
             }
         }
 

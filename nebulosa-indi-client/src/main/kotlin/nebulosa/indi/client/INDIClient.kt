@@ -95,7 +95,7 @@ data class INDIClient(val connection: INDIConnection) : INDIDeviceProtocolHandle
     }
 
     override fun sendMessageToServer(message: INDIProtocol) {
-        LOG.d("sending message: {}", message)
+        LOG.d { debug("sending message: {}", message) }
         connection.writeINDIProtocol(message)
     }
 

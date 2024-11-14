@@ -1,9 +1,9 @@
 package nebulosa.api.image
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.ktor.http.ContentType
-import io.ktor.server.response.respondOutputStream
-import io.ktor.server.routing.RoutingCall
+import io.ktor.http.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import nebulosa.api.atlas.Location
 import nebulosa.api.atlas.SkyObjectEntityRepository
 import nebulosa.api.calibration.CalibrationFrameService
@@ -20,7 +20,8 @@ import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ImageHdu
 import nebulosa.image.format.ImageModifier
 import nebulosa.indi.device.camera.Camera
-import nebulosa.log.*
+import nebulosa.log.d
+import nebulosa.log.loggerFor
 import nebulosa.math.*
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
@@ -112,7 +113,7 @@ class ImageService(
 
         output.respondOutputStream(contentType) { ImageIO.write(transformedImage, format, this) }
 
-        LOG.d("image opened. path={}", path)
+        LOG.d { debug("image opened. path={}", path) }
     }
 
     private fun Image.transform(
@@ -174,7 +175,7 @@ class ImageService(
     @Synchronized
     fun closeImage(path: Path) {
         imageBucket.remove(path)
-        LOG.d("image closed. path={}", path)
+        LOG.d { debug("image closed. path={}", path) }
     }
 
     @Synchronized
@@ -188,7 +189,7 @@ class ImageService(
         val wcs = try {
             WCS(calibration)
         } catch (e: WCSException) {
-            LOG.e("unable to generate annotations for image. path={}", path, e)
+            LOG.error("unable to generate annotations for image. path={}", path, e)
             return emptyList()
         }
 
@@ -202,7 +203,7 @@ class ImageService(
                 val latitude = image.header.latitude ?: location?.latitude?.deg ?: 0.0
                 val longitude = image.header.longitude ?: location?.longitude?.deg ?: 0.0
 
-                LOG.di("finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}", dateTime, latitude.formatSignedDMS(), longitude.formatSignedDMS(), calibration)
+                LOG.d { info("finding minor planet annotations. dateTime={}, latitude={}, longitude={}, calibration={}", dateTime, latitude.formatSignedDMS(), longitude.formatSignedDMS(), calibration) }
 
                 val identifiedBody = smallBodyDatabaseService.identify(
                     dateTime, latitude, longitude, 0.0,
@@ -231,7 +232,7 @@ class ImageService(
                     }
                 }
 
-                LOG.i("found {} minor planets", count)
+                LOG.info("found {} minor planets", count)
             }, executorService)
                 .whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
@@ -239,7 +240,7 @@ class ImageService(
 
         if (request.starsAndDSOs) {
             CompletableFuture.runAsync({
-                LOG.di("finding star/DSO annotations. dateTime={}, useSimbad={}, calibration={}", dateTime, request.useSimbad, calibration)
+                LOG.d { info("finding star/DSO annotations. dateTime={}, useSimbad={}, calibration={}", dateTime, request.useSimbad, calibration) }
 
                 val rightAscension = calibration.rightAscension
                 val declination = calibration.declination
@@ -269,7 +270,7 @@ class ImageService(
                     }
                 }
 
-                LOG.i("found {} stars/DSOs", count)
+                LOG.info("found {} stars/DSOs", count)
             }, executorService)
                 .whenComplete { _, e -> e?.printStackTrace() }
                 .also(tasks::add)
@@ -291,7 +292,7 @@ class ImageService(
         val (x, y, width, height) = save.subFrame.constrained(image.width, image.height)
 
         if (width > 0 && height > 0 && (x > 0 || y > 0 || width != image.width || height != image.height)) {
-            LOG.d("image subframed. x={}, y={}, width={}, height={}", x, y, width, height)
+            LOG.d { debug("image subframed. x={}, y={}, width={}, height={}", x, y, width, height) }
             image = image.transform(SubFrame(x, y, width, height))
         }
 
@@ -337,7 +338,7 @@ class ImageService(
         val wcs = try {
             WCS(calibration)
         } catch (e: WCSException) {
-            LOG.e("unable to generate annotations for image. path={}", path, e)
+            LOG.error("unable to generate annotations for image. path={}", path, e)
             return null
         }
 

@@ -21,7 +21,7 @@ data class MountMoveTask(
 
     override fun run() {
         if (!job.isCancelled && delayTask.duration > 0) {
-            LOG.d("Mount Move started. mount={}, request={}", mount, request)
+            LOG.d { debug("Mount Move started. mount={}, request={}", mount, request) }
 
             mount.slewRates.takeIf { !request.speed.isNullOrBlank() }
                 ?.find { it.name == request.speed }
@@ -31,7 +31,7 @@ data class MountMoveTask(
             delayTask.run()
             stop()
 
-            LOG.d("Mount Move finished. mount={}, request={}", mount, request)
+            LOG.d { debug("Mount Move finished. mount={}, request={}", mount, request) }
         }
     }
 

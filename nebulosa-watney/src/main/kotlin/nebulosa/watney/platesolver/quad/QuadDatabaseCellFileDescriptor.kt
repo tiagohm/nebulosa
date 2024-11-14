@@ -44,7 +44,7 @@ internal data class QuadDatabaseCellFileDescriptor(
             val band = buffer.readInt(byteOrder)
             val cell = buffer.readInt(byteOrder)
             val passCount = buffer.readInt(byteOrder)
-            // LOG.d("quad database index. filename={}, band={}, cell={}, passCount={}", filename, band, cell, passCount)
+            // LOG.d { debug("quad database index. filename={}, band={}, cell={}, passCount={}", filename, band, cell, passCount) }
             val cellReference = SkySegmentSphere[band, cell]
             val passes = ArrayList<Pass>(passCount)
 

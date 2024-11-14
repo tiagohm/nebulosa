@@ -81,7 +81,7 @@ class BodyEphemerisProvider(private val executor: ExecutorService) : CachedEphem
 
         val elapsedTime = measureTimeMillis { tasks.forEach { it.get() } }
 
-        LOG.d("elapsed {} ms for computing body ephemeris", elapsedTime)
+        LOG.d { debug("elapsed {} ms for computing body ephemeris", elapsedTime) }
 
         return elementMap.values.toList()
     }

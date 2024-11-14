@@ -3,7 +3,6 @@ package nebulosa.siril.command
 import nebulosa.commandline.CommandLine
 import nebulosa.commandline.CommandLineHandler
 import nebulosa.commandline.CommandLineListener
-import nebulosa.log.di
 import nebulosa.log.loggerFor
 import nebulosa.util.concurrency.cancellation.CancellationListener
 import nebulosa.util.concurrency.cancellation.CancellationSource
@@ -37,7 +36,7 @@ class SirilCommandLine(executablePath: Path) : Runnable, CancellationListener, A
 
     internal fun write(command: String) {
         if (started.get()) {
-            LOG.di(command)
+            LOG.debug(command)
             handler.write(command)
         }
     }

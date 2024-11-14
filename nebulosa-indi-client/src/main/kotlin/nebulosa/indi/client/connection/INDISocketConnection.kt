@@ -3,7 +3,6 @@ package nebulosa.indi.client.connection
 import nebulosa.indi.client.io.INDIProtocolFactory
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.io.INDIConnection
-import nebulosa.log.e
 import nebulosa.log.loggerFor
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -45,7 +44,7 @@ data class INDISocketConnection(private val socket: Socket) : INDIConnection {
         try {
             socket.close()
         } catch (e: Throwable) {
-            LOG.e("socket close error", e)
+            LOG.error("socket close error", e)
         }
     }
 
