@@ -2,13 +2,7 @@ package nebulosa.nova.astrometry
 
 import nebulosa.io.readDoubleArray
 import nebulosa.io.writeDouble
-import okio.BufferedSink
-import okio.BufferedSource
-import okio.Sink
-import okio.Source
-import okio.buffer
-import okio.sink
-import okio.source
+import okio.*
 import kotlin.io.path.Path
 
 // Exponent, XYZ axis, terms

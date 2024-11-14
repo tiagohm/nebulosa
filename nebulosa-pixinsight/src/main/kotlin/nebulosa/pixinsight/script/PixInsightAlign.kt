@@ -2,7 +2,6 @@ package nebulosa.pixinsight.script
 
 import nebulosa.io.resource
 import nebulosa.io.transferAndClose
-import nebulosa.pixinsight.script.PixInsightLRGBCombination.Output
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture

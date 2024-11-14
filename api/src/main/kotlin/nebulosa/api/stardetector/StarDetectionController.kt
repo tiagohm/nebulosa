@@ -1,11 +1,9 @@
 package nebulosa.api.stardetector
 
-import io.ktor.server.application.Application
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
-import io.ktor.server.routing.RoutingContext
-import io.ktor.server.routing.put
-import io.ktor.server.routing.routing
+import io.ktor.server.application.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import nebulosa.api.ktor.Controller
 import nebulosa.api.validators.exists
 import nebulosa.api.validators.notNull

@@ -9,7 +9,6 @@ import nebulosa.io.readDoubleLe
 import nebulosa.math.*
 import okio.BufferedSource
 import kotlin.math.*
-import kotlin.math.PI
 
 /**
  * P-vector to spherical polar coordinates.

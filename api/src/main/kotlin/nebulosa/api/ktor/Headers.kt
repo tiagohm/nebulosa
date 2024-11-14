@@ -3,7 +3,7 @@
 package nebulosa.api.ktor
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.ktor.server.routing.RoutingCall
+import io.ktor.server.routing.*
 import nebulosa.api.atlas.Location
 import java.util.concurrent.ConcurrentHashMap
 

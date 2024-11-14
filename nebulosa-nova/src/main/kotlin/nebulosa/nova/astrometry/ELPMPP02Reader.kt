@@ -2,15 +2,8 @@ package nebulosa.nova.astrometry
 
 import nebulosa.io.readDouble
 import nebulosa.io.writeDouble
-import okio.BufferedSink
-import okio.BufferedSource
-import okio.Sink
-import okio.Source
-import okio.buffer
-import okio.sink
-import okio.source
+import okio.*
 import kotlin.io.path.Path
-import kotlin.text.trim
 
 object ELPMPP02Reader {
 

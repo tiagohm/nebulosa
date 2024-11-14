@@ -162,8 +162,7 @@ class PixInsightScriptTest : AbstractTest() {
         val focalDistance = 200.0 // mm
         val pixelSize = 6.58
 
-        with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, resolution = resolution, timeout = Duration.ofMinutes(5))
-            .use { it.runSync(RUNNER) }) {
+        with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, resolution = resolution, timeout = Duration.ofMinutes(5)).use { it.runSync(RUNNER) }) {
             success.shouldBeTrue()
             this.focalLength shouldBe (200.355 plusOrMinus 1e-5)
             this.pixelSize shouldBe (6.58 plusOrMinus 1e-2)
@@ -176,8 +175,7 @@ class PixInsightScriptTest : AbstractTest() {
             imageHeight.roundToInt() shouldBeExactly 526
         }
 
-        with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, focalLength = focalDistance, timeout = Duration.ofMinutes(5))
-            .use { it.runSync(RUNNER) }) {
+        with(PixInsightImageSolver(UNSPECIFIED_SLOT, path, centerRA, centerDEC, pixelSize = pixelSize, focalLength = focalDistance, timeout = Duration.ofMinutes(5)).use { it.runSync(RUNNER) }) {
             success.shouldBeTrue()
             this.focalLength shouldBe (200.355 plusOrMinus 1e-5)
             this.pixelSize shouldBe (6.58 plusOrMinus 1e-2)
