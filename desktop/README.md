@@ -1,6 +1,7 @@
-# ![](src/assets/icons/nebulosa.png) Nebulosa
+<p align="center"><img src="src/assets/icons/nebulosa.png"></p>
+<h1><p align="center">Nebulosa</p></h1>
+<p align="center">The complete integrated solution for all of your astronomical imaging needs.</p>
 
-The complete integrated solution for all of your astronomical imaging needs.
 
 ## Home
 
