@@ -4,7 +4,11 @@ import nebulosa.alpaca.api.AlpacaDeviceService
 import nebulosa.alpaca.api.AlpacaResponse
 import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.indi.client.AlpacaClient
-import nebulosa.indi.device.*
+import nebulosa.indi.device.Device
+import nebulosa.indi.device.DeviceConnected
+import nebulosa.indi.device.DeviceDisconnected
+import nebulosa.indi.device.DeviceMessageReceived
+import nebulosa.indi.device.PropertyVector
 import nebulosa.log.d
 import nebulosa.log.loggerFor
 import nebulosa.time.SystemClock

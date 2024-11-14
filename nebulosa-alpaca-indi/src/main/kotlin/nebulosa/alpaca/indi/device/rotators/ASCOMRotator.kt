@@ -5,7 +5,11 @@ import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.indi.device.Device
-import nebulosa.indi.device.rotator.*
+import nebulosa.indi.device.rotator.Rotator
+import nebulosa.indi.device.rotator.RotatorAngleChanged
+import nebulosa.indi.device.rotator.RotatorCanReverseChanged
+import nebulosa.indi.device.rotator.RotatorMovingChanged
+import nebulosa.indi.device.rotator.RotatorReversedChanged
 import nebulosa.indi.protocol.INDIProtocol
 
 @Suppress("RedundantModalityModifier")

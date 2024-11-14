@@ -15,14 +15,26 @@ import nebulosa.indi.device.camera.Camera
 import nebulosa.indi.device.camera.FrameType
 import nebulosa.indi.device.filterwheel.FilterWheel
 import nebulosa.indi.device.focuser.Focuser
-import nebulosa.indi.device.mount.*
+import nebulosa.indi.device.mount.Mount
+import nebulosa.indi.device.mount.MountType
+import nebulosa.indi.device.mount.PierSide
+import nebulosa.indi.device.mount.SlewRate
+import nebulosa.indi.device.mount.TrackMode
 import nebulosa.indi.device.rotator.Rotator
 import nebulosa.indi.protocol.INDIProtocol
 import nebulosa.indi.protocol.PropertyState
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.deg
+import nebulosa.math.hours
+import nebulosa.math.toDegrees
 import nebulosa.time.SystemClock
 import org.junit.jupiter.api.Test
-import java.time.*
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.*
 
 class CameraCaptureNamingFormatterTest {

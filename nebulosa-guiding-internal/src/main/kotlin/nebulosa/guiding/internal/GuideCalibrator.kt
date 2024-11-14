@@ -5,8 +5,18 @@ import nebulosa.constants.PIOVERTWO
 import nebulosa.guiding.GuideDirection
 import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.math.*
-import kotlin.math.*
+import nebulosa.math.Angle
+import nebulosa.math.cos
+import nebulosa.math.normalized
+import nebulosa.math.rad
+import nebulosa.math.sin
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
+import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 
 internal class GuideCalibrator(private val guider: MultiStarGuider) {
 

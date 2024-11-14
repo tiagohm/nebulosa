@@ -3,7 +3,14 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import nebulosa.astrometrynet.platesolver.*
+import nebulosa.astrometrynet.platesolver.Index
+import nebulosa.astrometrynet.platesolver.LibAstrometryNet
+import nebulosa.astrometrynet.platesolver.Matched
+import nebulosa.astrometrynet.platesolver.Sip
+import nebulosa.astrometrynet.platesolver.Solver
+import nebulosa.astrometrynet.platesolver.StarXY
+import nebulosa.astrometrynet.platesolver.Tan
+import nebulosa.astrometrynet.platesolver.XYList
 import nebulosa.test.NonGitHubOnly
 import nebulosa.test.homeDirectory
 import org.junit.jupiter.api.Test

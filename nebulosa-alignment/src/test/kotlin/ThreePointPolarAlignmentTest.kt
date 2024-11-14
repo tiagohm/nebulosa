@@ -5,7 +5,12 @@ import nebulosa.alignment.polar.point.three.PolarErrorDetermination.Companion.st
 import nebulosa.alignment.polar.point.three.Position
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment
 import nebulosa.erfa.SphericalCoordinate
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.arcmin
+import nebulosa.math.arcsec
+import nebulosa.math.deg
+import nebulosa.math.hours
+import nebulosa.math.toArcsec
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.platesolver.PlateSolution

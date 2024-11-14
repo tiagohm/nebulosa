@@ -8,7 +8,11 @@ import nebulosa.erfa.PositionAndVelocity
 import nebulosa.math.Matrix3D
 import nebulosa.math.Vector3D
 import nebulosa.time.InstantOfTime
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.cbrt
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 enum class GUST86(override val target: Int) : Body {
     ARIEL(701) {

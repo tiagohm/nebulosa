@@ -1,6 +1,13 @@
 package nebulosa.sbd
 
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.AngleFormatter
+import nebulosa.math.Distance
+import nebulosa.math.deg
+import nebulosa.math.format
+import nebulosa.math.m
+import nebulosa.math.toDegrees
+import nebulosa.math.toKilometers
 import nebulosa.retrofit.RetrofitService
 import okhttp3.OkHttpClient
 import retrofit2.create

@@ -53,7 +53,7 @@ class CameraCaptureExecutor(
     @Synchronized
     fun execute(
         camera: Camera, request: CameraStartCaptureRequest,
-        mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null, rotator: Rotator? = null
+        mount: Mount? = null, wheel: FilterWheel? = null, focuser: Focuser? = null, rotator: Rotator? = null,
     ) {
         check(camera.connected) { "${camera.name} Camera is not connected" }
         check(jobs.none { it.camera === camera }) { "${camera.name} Camera Capture is already in progress" }

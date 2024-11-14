@@ -2,7 +2,12 @@ package nebulosa.alpaca.api
 
 import okhttp3.ResponseBody
 import retrofit2.Call
-import retrofit2.http.*
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
+import retrofit2.http.Headers
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface AlpacaCameraService : AlpacaGuideOutputService {
 
@@ -232,7 +237,7 @@ interface AlpacaCameraService : AlpacaGuideOutputService {
     override fun pulseGuide(
         @Path("id") id: Int,
         @Field("Direction") direction: PulseGuideDirection,
-        @Field("Duration") durationInMilliseconds: Long
+        @Field("Duration") durationInMilliseconds: Long,
     ): Call<NoneResponse>
 
     @FormUrlEncoded

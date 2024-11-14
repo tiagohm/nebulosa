@@ -15,8 +15,16 @@ import nebulosa.api.converters.DeviceModule
 import nebulosa.api.core.FileLocker
 import nebulosa.api.database.migration.MainDatabaseMigrator
 import nebulosa.api.database.migration.SkyDatabaseMigrator
-import nebulosa.api.inject.*
-import nebulosa.api.ktor.*
+import nebulosa.api.inject.controllersModule
+import nebulosa.api.inject.koinApp
+import nebulosa.api.inject.objectMapperModule
+import nebulosa.api.inject.serverModule
+import nebulosa.api.inject.servicesModule
+import nebulosa.api.ktor.configureHTTP
+import nebulosa.api.ktor.configureMonitoring
+import nebulosa.api.ktor.configureRouting
+import nebulosa.api.ktor.configureSerialization
+import nebulosa.api.ktor.configureSockets
 import nebulosa.json.PathModule
 import nebulosa.log.d
 import nebulosa.log.loggerFor
@@ -27,7 +35,11 @@ import java.net.URL
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.ExecutorService
-import kotlin.io.path.*
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.fileSize
+import kotlin.io.path.inputStream
+import kotlin.io.path.isRegularFile
 import kotlin.system.exitProcess
 
 @Command(name = "nebulosa")

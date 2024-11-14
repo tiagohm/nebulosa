@@ -1,6 +1,12 @@
 package nebulosa.nasa.daf
 
-import nebulosa.io.*
+import nebulosa.io.ByteOrder
+import nebulosa.io.SeekableSource
+import nebulosa.io.read
+import nebulosa.io.readAscii
+import nebulosa.io.readDouble
+import nebulosa.io.readInt
+import nebulosa.io.readLatin1
 import okio.Buffer
 import okio.BufferedSource
 import java.io.IOException

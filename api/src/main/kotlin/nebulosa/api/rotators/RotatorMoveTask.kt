@@ -1,6 +1,10 @@
 package nebulosa.api.rotators
 
-import nebulosa.indi.device.rotator.*
+import nebulosa.indi.device.rotator.Rotator
+import nebulosa.indi.device.rotator.RotatorAngleChanged
+import nebulosa.indi.device.rotator.RotatorEvent
+import nebulosa.indi.device.rotator.RotatorMoveFailed
+import nebulosa.indi.device.rotator.RotatorMovingChanged
 import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task
 import nebulosa.log.d

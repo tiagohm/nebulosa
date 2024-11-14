@@ -42,7 +42,7 @@ class ImageBucket(scheduledExecutorService: ScheduledExecutorService) {
     @Synchronized
     fun open(
         path: Path, debayer: Boolean = this[path]?.debayer != false,
-        solution: PlateSolution? = null, force: Boolean = false
+        solution: PlateSolution? = null, force: Boolean = false,
     ): OpenedImage {
         val openedImage = this[path]
 

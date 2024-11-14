@@ -2,7 +2,12 @@ package nebulosa.alpaca.discovery
 
 import nebulosa.log.loggerFor
 import java.io.IOException
-import java.net.*
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.Inet4Address
+import java.net.InetAddress
+import java.net.NetworkInterface
+import java.net.SocketException
 
 /**
  * Discoveries Windows COM based drivers through ASCOM's registry-based Chooser capability.

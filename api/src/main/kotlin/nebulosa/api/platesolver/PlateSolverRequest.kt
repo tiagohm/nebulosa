@@ -6,7 +6,11 @@ import nebulosa.api.converters.angle.DegreesDeserializer
 import nebulosa.api.converters.angle.RightAscensionDeserializer
 import nebulosa.api.converters.time.DurationUnit
 import nebulosa.api.inject.Named
-import nebulosa.api.validators.*
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.max
+import nebulosa.api.validators.notBlank
+import nebulosa.api.validators.notNull
+import nebulosa.api.validators.positiveOrZero
 import nebulosa.astap.platesolver.AstapPlateSolver
 import nebulosa.astrometrynet.nova.NovaAstrometryNetService
 import nebulosa.astrometrynet.platesolver.LocalAstrometryNetPlateSolver

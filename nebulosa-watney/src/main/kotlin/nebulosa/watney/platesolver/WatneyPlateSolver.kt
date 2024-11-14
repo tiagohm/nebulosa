@@ -315,7 +315,7 @@ data class WatneyPlateSolver(
             image: Image,
             matches: List<StarQuadMatch>,
             scopeCoordsRA: Angle,
-            scopeCoordsDEC: Angle
+            scopeCoordsDEC: Angle,
         ): Pair<ComputedPlateSolution, List<StarQuadMatch>> {
             var pc = solvePlateConstants(matches, scopeCoordsRA, scopeCoordsDEC)
 

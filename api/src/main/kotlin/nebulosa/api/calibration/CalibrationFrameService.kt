@@ -1,6 +1,16 @@
 package nebulosa.api.calibration
 
-import nebulosa.fits.*
+import nebulosa.fits.INVALID_TEMPERATURE
+import nebulosa.fits.binX
+import nebulosa.fits.binY
+import nebulosa.fits.exposureTimeInMicroseconds
+import nebulosa.fits.filter
+import nebulosa.fits.fits
+import nebulosa.fits.gain
+import nebulosa.fits.height
+import nebulosa.fits.isFits
+import nebulosa.fits.temperature
+import nebulosa.fits.width
 import nebulosa.image.Image
 import nebulosa.image.algorithms.transformation.correction.BiasSubtraction
 import nebulosa.image.algorithms.transformation.correction.DarkSubtraction
@@ -170,7 +180,7 @@ class CalibrationFrameService(private val calibrationFrameRepository: Calibratio
 
     override fun findBestFlatFrames(
         group: String, width: Int, height: Int,
-        binX: Int, binY: Int, filter: String?
+        binX: Int, binY: Int, filter: String?,
     ): List<CalibrationFrameEntity> {
         // TODO: Generate master from matched frames. (Subtract the master bias frame from each flat frame)
         return calibrationFrameRepository

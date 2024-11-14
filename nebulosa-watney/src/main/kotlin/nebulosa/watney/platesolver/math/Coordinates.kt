@@ -1,7 +1,11 @@
 package nebulosa.watney.platesolver.math
 
 import nebulosa.math.Angle
-import kotlin.math.*
+import kotlin.math.asin
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * Transforms the [ra], [dec] coords to standard coordinates

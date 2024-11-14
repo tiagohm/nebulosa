@@ -5,7 +5,11 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import nebulosa.math.*
+import nebulosa.math.formatDMS
+import nebulosa.math.formatHMS
+import nebulosa.math.formatSignedDMS
+import nebulosa.math.toArcsec
+import nebulosa.math.toDegrees
 import nebulosa.platesolver.Parity
 import nebulosa.siril.livestacker.SirilLiveStacker
 import nebulosa.siril.platesolver.SirilPlateSolver
@@ -14,7 +18,11 @@ import nebulosa.test.AbstractTest
 import nebulosa.test.NonGitHubOnly
 import nebulosa.test.concat
 import nebulosa.test.dataDirectory
-import nebulosa.test.fits.*
+import nebulosa.test.fits.ASTROMETRY_GALACTIC_CENTER_FITS
+import nebulosa.test.fits.STACKING_LIGHT_MONO_01_FITS
+import nebulosa.test.fits.STACKING_LIGHT_MONO_02_FITS
+import nebulosa.test.fits.STACKING_LIGHT_MONO_03_FITS
+import nebulosa.test.fits.STACKING_LIGHT_MONO_04_FITS
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.copyTo

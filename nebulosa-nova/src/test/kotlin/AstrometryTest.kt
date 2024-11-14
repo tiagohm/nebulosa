@@ -9,7 +9,11 @@ import nebulosa.nasa.daf.RemoteDaf
 import nebulosa.nasa.daf.SourceDaf
 import nebulosa.nasa.spk.NAIF
 import nebulosa.nasa.spk.Spk
-import nebulosa.nova.astrometry.*
+import nebulosa.nova.astrometry.Asteroid
+import nebulosa.nova.astrometry.ELPMPP02
+import nebulosa.nova.astrometry.GUST86
+import nebulosa.nova.astrometry.SpiceKernel
+import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
 import nebulosa.test.concat
 import nebulosa.test.dataDirectory

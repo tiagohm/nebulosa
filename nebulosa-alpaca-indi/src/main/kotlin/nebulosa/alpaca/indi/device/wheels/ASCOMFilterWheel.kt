@@ -5,7 +5,11 @@ import nebulosa.alpaca.api.ConfiguredDevice
 import nebulosa.alpaca.indi.client.AlpacaClient
 import nebulosa.alpaca.indi.device.ASCOMDevice
 import nebulosa.indi.device.Device
-import nebulosa.indi.device.filterwheel.*
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheelCountChanged
+import nebulosa.indi.device.filterwheel.FilterWheelMovingChanged
+import nebulosa.indi.device.filterwheel.FilterWheelNamesChanged
+import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
 import nebulosa.indi.protocol.INDIProtocol
 
 @Suppress("RedundantModalityModifier")

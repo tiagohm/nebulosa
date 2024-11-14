@@ -8,7 +8,7 @@ import nebulosa.api.validators.notNullOrBlank
 
 class ConfirmationController(
     override val app: Application,
-    private val confirmationService: ConfirmationService
+    private val confirmationService: ConfirmationService,
 ) : Controller {
 
     init {

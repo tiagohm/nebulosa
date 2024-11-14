@@ -166,7 +166,7 @@ class SkyAtlasService(
 
     fun altitudePointsOfPlanet(
         location: GeographicCoordinate, code: String, dateTime: LocalDateTime,
-        stepSize: Int, fast: Boolean = false
+        stepSize: Int, fast: Boolean = false,
     ): List<DoubleArray> {
         val target: Any = VSOP87E.entries.takeIf { fast }?.find { "${it.target}" == code } ?: code
         val ephemeris = bodyEphemeris(target, location, dateTime, true)
@@ -184,7 +184,7 @@ class SkyAtlasService(
         location: GeographicCoordinate,
         satellite: SatelliteEntity,
         dateTime: LocalDateTime,
-        stepSize: Int
+        stepSize: Int,
     ): List<DoubleArray> {
         val ephemeris = bodyEphemeris("TLE@${satellite.tle}", location, dateTime, true)
         return altitudePointsOfBody(ephemeris, stepSize)

@@ -1,7 +1,12 @@
 package nebulosa.alpaca.api
 
 import retrofit2.Call
-import retrofit2.http.*
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
+import retrofit2.http.PUT
+import retrofit2.http.Path
+import retrofit2.http.Query
 import java.time.Instant
 
 interface AlpacaTelescopeService : AlpacaGuideOutputService {
@@ -238,7 +243,7 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
     override fun pulseGuide(
         @Path("id") id: Int,
         @Field("Direction") direction: PulseGuideDirection,
-        @Field("Duration") durationInMilliseconds: Long
+        @Field("Duration") durationInMilliseconds: Long,
     ): Call<NoneResponse>
 
     @PUT("api/v1/telescope/{id}/setpark")
@@ -257,7 +262,7 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
     fun slewToCoordinates(
         @Path("id") id: Int,
         @Field("RightAscension") rightAscension: Double,
-        @Field("Declination") declination: Double
+        @Field("Declination") declination: Double,
     ): Call<NoneResponse>
 
     @FormUrlEncoded
@@ -265,7 +270,7 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
     fun slewToCoordinatesAsync(
         @Path("id") id: Int,
         @Field("RightAscension") rightAscension: Double,
-        @Field("Declination") declination: Double
+        @Field("Declination") declination: Double,
     ): Call<NoneResponse>
 
     @PUT("api/v1/telescope/{id}/slewtotarget")
@@ -283,7 +288,7 @@ interface AlpacaTelescopeService : AlpacaGuideOutputService {
     fun syncToCoordinates(
         @Path("id") id: Int,
         @Field("RightAscension") rightAscension: Double,
-        @Field("Declination") declination: Double
+        @Field("Declination") declination: Double,
     ): Call<NoneResponse>
 
     @PUT("api/v1/telescope/{id}/synctotarget")

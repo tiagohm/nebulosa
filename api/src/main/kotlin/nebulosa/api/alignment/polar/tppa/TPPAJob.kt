@@ -2,7 +2,12 @@ package nebulosa.api.alignment.polar.tppa
 
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignment
 import nebulosa.alignment.polar.point.three.ThreePointPolarAlignmentResult
-import nebulosa.api.cameras.*
+import nebulosa.api.cameras.AutoSubFolderMode
+import nebulosa.api.cameras.CameraEventAware
+import nebulosa.api.cameras.CameraExposureEvent
+import nebulosa.api.cameras.CameraExposureFinished
+import nebulosa.api.cameras.CameraExposureStarted
+import nebulosa.api.cameras.CameraExposureTask
 import nebulosa.api.message.MessageEvent
 import nebulosa.api.mounts.MountEventAware
 import nebulosa.api.mounts.MountMoveRequest

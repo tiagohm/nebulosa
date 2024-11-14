@@ -1,6 +1,10 @@
 package nebulosa.erfa
 
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.Vector3D
+import nebulosa.math.cos
+import nebulosa.math.sin
 
 class CartesianCoordinate : Vector3D {
 

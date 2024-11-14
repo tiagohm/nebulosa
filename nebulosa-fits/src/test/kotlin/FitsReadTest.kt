@@ -4,7 +4,16 @@ import nebulosa.fits.Bitpix
 import nebulosa.fits.bitpix
 import nebulosa.fits.fits
 import nebulosa.image.format.ImageHdu
-import nebulosa.test.*
+import nebulosa.test.NGC3344_COLOR_16_FITS
+import nebulosa.test.NGC3344_COLOR_32_FITS
+import nebulosa.test.NGC3344_COLOR_8_FITS
+import nebulosa.test.NGC3344_COLOR_F32_FITS
+import nebulosa.test.NGC3344_COLOR_F64_FITS
+import nebulosa.test.NGC3344_MONO_16_FITS
+import nebulosa.test.NGC3344_MONO_32_FITS
+import nebulosa.test.NGC3344_MONO_8_FITS
+import nebulosa.test.NGC3344_MONO_F32_FITS
+import nebulosa.test.NGC3344_MONO_F64_FITS
 import org.junit.jupiter.api.Test
 
 class FitsReadTest {

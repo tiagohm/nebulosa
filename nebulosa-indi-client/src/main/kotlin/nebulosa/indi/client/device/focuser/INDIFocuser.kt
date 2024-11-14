@@ -4,8 +4,24 @@ import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.DriverInfo
 import nebulosa.indi.client.device.INDIDevice
 import nebulosa.indi.device.firstOnSwitch
-import nebulosa.indi.device.focuser.*
-import nebulosa.indi.protocol.*
+import nebulosa.indi.device.focuser.Focuser
+import nebulosa.indi.device.focuser.FocuserCanAbortChanged
+import nebulosa.indi.device.focuser.FocuserCanAbsoluteMoveChanged
+import nebulosa.indi.device.focuser.FocuserCanRelativeMoveChanged
+import nebulosa.indi.device.focuser.FocuserCanReverseChanged
+import nebulosa.indi.device.focuser.FocuserCanSyncChanged
+import nebulosa.indi.device.focuser.FocuserMaxPositionChanged
+import nebulosa.indi.device.focuser.FocuserMoveFailed
+import nebulosa.indi.device.focuser.FocuserMovingChanged
+import nebulosa.indi.device.focuser.FocuserPositionChanged
+import nebulosa.indi.device.focuser.FocuserReverseChanged
+import nebulosa.indi.device.focuser.FocuserTemperatureChanged
+import nebulosa.indi.protocol.DefNumberVector
+import nebulosa.indi.protocol.DefSwitchVector
+import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.NumberVector
+import nebulosa.indi.protocol.PropertyState
+import nebulosa.indi.protocol.SwitchVector
 import nebulosa.indi.protocol.Vector.Companion.isBusy
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indifocuser.cpp

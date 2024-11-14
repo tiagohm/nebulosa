@@ -5,7 +5,11 @@ import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
-import nebulosa.horizons.*
+import nebulosa.horizons.HorizonsQuantity
+import nebulosa.horizons.HorizonsService
+import nebulosa.horizons.NoMatchesFoundException
+import nebulosa.horizons.NonUniqueObjectException
+import nebulosa.horizons.ObservingSite
 import nebulosa.io.source
 import nebulosa.math.deg
 import nebulosa.math.km

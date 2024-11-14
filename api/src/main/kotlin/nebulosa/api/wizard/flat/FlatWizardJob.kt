@@ -1,6 +1,11 @@
 package nebulosa.api.wizard.flat
 
-import nebulosa.api.cameras.*
+import nebulosa.api.cameras.AutoSubFolderMode
+import nebulosa.api.cameras.CameraCaptureState
+import nebulosa.api.cameras.CameraEventAware
+import nebulosa.api.cameras.CameraExposureEvent
+import nebulosa.api.cameras.CameraExposureFinished
+import nebulosa.api.cameras.CameraExposureTask
 import nebulosa.api.message.MessageEvent
 import nebulosa.fits.fits
 import nebulosa.image.Image

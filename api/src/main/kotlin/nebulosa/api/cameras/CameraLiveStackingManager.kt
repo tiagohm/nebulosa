@@ -3,7 +3,16 @@ package nebulosa.api.cameras
 import nebulosa.api.calibration.CalibrationFrameProvider
 import nebulosa.api.image.ImageFilterType
 import nebulosa.api.livestacker.LiveStackingRequest
-import nebulosa.fits.*
+import nebulosa.fits.binX
+import nebulosa.fits.binY
+import nebulosa.fits.exposureTimeInMicroseconds
+import nebulosa.fits.filter
+import nebulosa.fits.fits
+import nebulosa.fits.gain
+import nebulosa.fits.height
+import nebulosa.fits.isFits
+import nebulosa.fits.temperature
+import nebulosa.fits.width
 import nebulosa.image.format.ImageHdu
 import nebulosa.livestacker.LiveStacker
 import nebulosa.log.loggerFor
@@ -12,7 +21,13 @@ import nebulosa.xisf.xisf
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
-import kotlin.io.path.*
+import kotlin.io.path.Path
+import kotlin.io.path.copyTo
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.deleteRecursively
+import kotlin.io.path.exists
+import kotlin.io.path.extension
+import kotlin.io.path.isRegularFile
 
 data class CameraLiveStackingManager(
     private val liveStackingDir: Path,

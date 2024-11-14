@@ -2,12 +2,28 @@ package nebulosa.nova.astrometry
 
 import nebulosa.constants.MU_KM3_S2_TO_AU3_D2
 import nebulosa.constants.TAU
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.Matrix3D
+import nebulosa.math.Vector3D
+import nebulosa.math.au
+import nebulosa.math.cubic
+import nebulosa.math.normalized
+import nebulosa.math.rad
+import nebulosa.math.squared
 import nebulosa.nova.frame.InertialFrame
 import nebulosa.nova.position.ICRF
 import nebulosa.time.InstantOfTime
 import nebulosa.time.TDB
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.atan
+import kotlin.math.atan2
+import kotlin.math.atanh
+import kotlin.math.sin
+import kotlin.math.sinh
+import kotlin.math.sqrt
+import kotlin.math.tan
 
 /**
  * Osculating orbital elements.

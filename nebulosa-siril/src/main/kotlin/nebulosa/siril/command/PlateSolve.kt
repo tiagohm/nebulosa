@@ -3,7 +3,12 @@ package nebulosa.siril.command
 import nebulosa.commandline.CommandLineListener
 import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.arcsec
+import nebulosa.math.deg
+import nebulosa.math.hours
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
 import nebulosa.platesolver.Parity
 import nebulosa.platesolver.PlateSolution
 import nebulosa.util.concurrency.latch.CountUpDownLatch

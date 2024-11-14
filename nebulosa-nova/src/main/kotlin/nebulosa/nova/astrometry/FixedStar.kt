@@ -1,6 +1,11 @@
 package nebulosa.nova.astrometry
 
-import nebulosa.constants.*
+import nebulosa.constants.AU_M
+import nebulosa.constants.DAYSEC
+import nebulosa.constants.DAYSPERJY
+import nebulosa.constants.MILLIASEC2RAD
+import nebulosa.constants.SPEED_OF_LIGHT
+import nebulosa.constants.SPEED_OF_LIGHT_AU_DAY
 import nebulosa.erfa.PositionAndVelocity
 import nebulosa.math.Angle
 import nebulosa.math.Vector3D

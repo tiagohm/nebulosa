@@ -1,7 +1,12 @@
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.math.*
+import nebulosa.math.deg
+import nebulosa.math.dms
+import nebulosa.math.hms
+import nebulosa.math.kms
+import nebulosa.math.mas
+import nebulosa.math.normalized
 import nebulosa.nova.astrometry.FixedStar
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric

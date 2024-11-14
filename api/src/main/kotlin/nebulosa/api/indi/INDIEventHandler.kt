@@ -1,7 +1,13 @@
 package nebulosa.api.indi
 
 import nebulosa.api.message.MessageService
-import nebulosa.indi.device.*
+import nebulosa.indi.device.Device
+import nebulosa.indi.device.DeviceDetached
+import nebulosa.indi.device.DeviceEvent
+import nebulosa.indi.device.DeviceMessageReceived
+import nebulosa.indi.device.DevicePropertyChanged
+import nebulosa.indi.device.DevicePropertyDeleted
+import nebulosa.indi.device.DevicePropertyEvent
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode

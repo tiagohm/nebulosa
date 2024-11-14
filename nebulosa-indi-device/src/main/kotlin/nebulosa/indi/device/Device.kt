@@ -1,6 +1,15 @@
 package nebulosa.indi.device
 
-import nebulosa.indi.protocol.*
+import nebulosa.indi.protocol.BLOBEnable
+import nebulosa.indi.protocol.EnableBLOB
+import nebulosa.indi.protocol.GetProperties
+import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.NewNumberVector
+import nebulosa.indi.protocol.NewSwitchVector
+import nebulosa.indi.protocol.NewTextVector
+import nebulosa.indi.protocol.OneNumber
+import nebulosa.indi.protocol.OneSwitch
+import nebulosa.indi.protocol.OneText
 import nebulosa.indi.protocol.parser.INDIProtocolHandler
 
 interface Device : INDIProtocolHandler, AutoCloseable, Comparable<Device> {

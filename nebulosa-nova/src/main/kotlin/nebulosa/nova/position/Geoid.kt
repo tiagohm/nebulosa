@@ -1,9 +1,21 @@
 package nebulosa.nova.position
 
 import nebulosa.constants.TAU
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.Distance
+import nebulosa.math.Vector3D
+import nebulosa.math.au
+import nebulosa.math.cos
+import nebulosa.math.m
+import nebulosa.math.rad
+import nebulosa.math.sin
+import nebulosa.math.squared
 import nebulosa.nova.frame.ITRS
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * An Earth ellipsoid.

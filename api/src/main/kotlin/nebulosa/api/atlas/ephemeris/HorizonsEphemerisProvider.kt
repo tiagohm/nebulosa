@@ -1,6 +1,10 @@
 package nebulosa.api.atlas.ephemeris
 
-import nebulosa.horizons.*
+import nebulosa.horizons.HorizonsElement
+import nebulosa.horizons.HorizonsQuantity
+import nebulosa.horizons.HorizonsService
+import nebulosa.horizons.NonUniqueObjectException
+import nebulosa.horizons.ObservingSite
 import nebulosa.log.loggerFor
 import nebulosa.nova.position.GeographicPosition
 import nebulosa.sbd.SmallBody

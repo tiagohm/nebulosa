@@ -3,7 +3,12 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import nebulosa.astrometrynet.platesolver.LocalAstrometryNetPlateSolver
-import nebulosa.math.*
+import nebulosa.math.deg
+import nebulosa.math.formatHMS
+import nebulosa.math.formatSignedDMS
+import nebulosa.math.hours
+import nebulosa.math.toArcsec
+import nebulosa.math.toDegrees
 import nebulosa.platesolver.Parity
 import nebulosa.test.NonGitHubOnly
 import nebulosa.test.download

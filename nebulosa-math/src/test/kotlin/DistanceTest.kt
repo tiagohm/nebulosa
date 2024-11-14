@@ -1,7 +1,11 @@
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.math.*
+import nebulosa.math.au
+import nebulosa.math.km
+import nebulosa.math.toKilometers
+import nebulosa.math.toLightYears
+import nebulosa.math.toMeters
 import org.junit.jupiter.api.Test
 
 class DistanceTest {

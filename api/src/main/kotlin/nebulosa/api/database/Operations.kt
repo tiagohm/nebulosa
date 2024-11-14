@@ -2,8 +2,18 @@
 
 package nebulosa.api.database
 
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.BooleanColumnType
+import org.jetbrains.exposed.sql.ComparisonOp
+import org.jetbrains.exposed.sql.CustomFunction
+import org.jetbrains.exposed.sql.Expression
+import org.jetbrains.exposed.sql.ExpressionWithColumnType
+import org.jetbrains.exposed.sql.InternalApi
+import org.jetbrains.exposed.sql.Op
+import org.jetbrains.exposed.sql.QueryParameter
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.arrayParam
+import org.jetbrains.exposed.sql.resolveColumnType
+import org.jetbrains.exposed.sql.stringParam
 
 @PublishedApi
 internal class ILikeOp(a: Expression<*>, b: Expression<*>) : ComparisonOp(a, b, "ILIKE")

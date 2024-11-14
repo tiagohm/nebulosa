@@ -1,6 +1,12 @@
 package nebulosa.nova.frame
 
-import nebulosa.erfa.*
+import nebulosa.erfa.eraC2tcio
+import nebulosa.erfa.eraEra00
+import nebulosa.erfa.eraGst06
+import nebulosa.erfa.eraGst06a
+import nebulosa.erfa.eraPnm06a
+import nebulosa.erfa.eraPom00
+import nebulosa.erfa.eraSp00
 import nebulosa.math.Matrix3D
 import nebulosa.time.IERS
 import nebulosa.time.InstantOfTime

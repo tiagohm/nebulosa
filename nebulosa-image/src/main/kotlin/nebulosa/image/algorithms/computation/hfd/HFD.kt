@@ -2,7 +2,11 @@ package nebulosa.image.algorithms.computation.hfd
 
 import nebulosa.image.Image
 import nebulosa.image.algorithms.ComputationAlgorithm
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 /**
  * Half Flux Diameter.

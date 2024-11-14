@@ -2,7 +2,22 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.math.*
+import nebulosa.math.AngleFormatter
+import nebulosa.math.CIRCLE
+import nebulosa.math.DMS
+import nebulosa.math.Radians
+import nebulosa.math.arcmin
+import nebulosa.math.arcsec
+import nebulosa.math.deg
+import nebulosa.math.formatHMS
+import nebulosa.math.hours
+import nebulosa.math.mas
+import nebulosa.math.rad
+import nebulosa.math.toArcmin
+import nebulosa.math.toArcsec
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
+import nebulosa.math.toMas
 import org.junit.jupiter.api.Test
 import java.util.*
 

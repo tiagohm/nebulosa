@@ -4,7 +4,12 @@ import nebulosa.api.converters.time.DurationUnit
 import nebulosa.api.guiding.DitherAfterExposureRequest
 import nebulosa.api.image.ImageFilterType
 import nebulosa.api.livestacker.LiveStackingRequest
-import nebulosa.api.validators.*
+import nebulosa.api.validators.Validatable
+import nebulosa.api.validators.max
+import nebulosa.api.validators.min
+import nebulosa.api.validators.positive
+import nebulosa.api.validators.positiveOrZero
+import nebulosa.api.validators.range
 import nebulosa.indi.device.camera.FrameType
 import java.nio.file.Path
 import java.time.Duration

@@ -12,17 +12,39 @@ import nebulosa.api.framing.FramingService
 import nebulosa.api.image.ImageAnnotation.StarDSO
 import nebulosa.api.ktor.responseHeaders
 import nebulosa.api.message.MessageService
-import nebulosa.fits.*
+import nebulosa.fits.FitsFormat
+import nebulosa.fits.bitpix
+import nebulosa.fits.declination
+import nebulosa.fits.fits
+import nebulosa.fits.instrument
+import nebulosa.fits.isFits
+import nebulosa.fits.latitude
+import nebulosa.fits.longitude
+import nebulosa.fits.observationDate
+import nebulosa.fits.rightAscension
 import nebulosa.image.Image
 import nebulosa.image.algorithms.computation.Statistics
-import nebulosa.image.algorithms.transformation.*
+import nebulosa.image.algorithms.transformation.AdaptativeScreenTransformFunction
+import nebulosa.image.algorithms.transformation.CfaPattern
+import nebulosa.image.algorithms.transformation.HorizontalFlip
+import nebulosa.image.algorithms.transformation.Invert
+import nebulosa.image.algorithms.transformation.ScreenTransformFunction
+import nebulosa.image.algorithms.transformation.SubFrame
+import nebulosa.image.algorithms.transformation.SubtractiveChromaticNoiseReduction
+import nebulosa.image.algorithms.transformation.VerticalFlip
 import nebulosa.image.format.ImageChannel
 import nebulosa.image.format.ImageHdu
 import nebulosa.image.format.ImageModifier
 import nebulosa.indi.device.camera.Camera
 import nebulosa.log.d
 import nebulosa.log.loggerFor
-import nebulosa.math.*
+import nebulosa.math.Angle
+import nebulosa.math.deg
+import nebulosa.math.formatSignedDMS
+import nebulosa.math.hours
+import nebulosa.math.normalized
+import nebulosa.math.toArcsec
+import nebulosa.math.toDegrees
 import nebulosa.nova.astrometry.VSOP87E
 import nebulosa.nova.position.Barycentric
 import nebulosa.sbd.SmallBodyDatabaseService
@@ -118,7 +140,7 @@ class ImageService(
 
     private fun Image.transform(
         enabled: Boolean, transformation: ImageTransformation,
-        operation: ImageOperation, camera: Camera? = null
+        operation: ImageOperation, camera: Camera? = null,
     ): TransformedImage {
         val instrument = camera ?: header.instrument?.let(connectionService::camera)
 

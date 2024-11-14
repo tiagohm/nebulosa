@@ -2,7 +2,14 @@
 
 package nebulosa.math
 
-import nebulosa.constants.*
+import nebulosa.constants.AMIN2RAD
+import nebulosa.constants.ASEC2RAD
+import nebulosa.constants.DEG2RAD
+import nebulosa.constants.MILLIASEC2RAD
+import nebulosa.constants.PI
+import nebulosa.constants.PIOVERTWO
+import nebulosa.constants.RAD2DEG
+import nebulosa.constants.TAU
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.cos

@@ -2,7 +2,12 @@ package nebulosa.api.cameras
 
 import nebulosa.fits.fits
 import nebulosa.image.format.ReadableHeader
-import nebulosa.indi.device.camera.*
+import nebulosa.indi.device.camera.Camera
+import nebulosa.indi.device.camera.CameraDetached
+import nebulosa.indi.device.camera.CameraEvent
+import nebulosa.indi.device.camera.CameraExposureAborted
+import nebulosa.indi.device.camera.CameraExposureProgressChanged
+import nebulosa.indi.device.camera.CameraFrameCaptured
 import nebulosa.io.transferAndClose
 import nebulosa.job.manager.Job
 import nebulosa.job.manager.Task

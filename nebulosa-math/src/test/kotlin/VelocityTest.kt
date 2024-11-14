@@ -1,7 +1,11 @@
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.math.*
+import nebulosa.math.auDay
+import nebulosa.math.kms
+import nebulosa.math.ms
+import nebulosa.math.toKilometersPerSecond
+import nebulosa.math.toMetersPerSecond
 import org.junit.jupiter.api.Test
 
 class VelocityTest {

@@ -2,7 +2,13 @@ import PixInsightScriptTest.Companion.RUNNER
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
-import nebulosa.math.*
+import nebulosa.math.arcsec
+import nebulosa.math.deg
+import nebulosa.math.formatHMS
+import nebulosa.math.formatSignedDMS
+import nebulosa.math.hours
+import nebulosa.math.toArcmin
+import nebulosa.math.toArcsec
 import nebulosa.pixinsight.platesolver.PixInsightPlateSolver
 import nebulosa.test.AbstractTest
 import nebulosa.test.NonGitHubOnly

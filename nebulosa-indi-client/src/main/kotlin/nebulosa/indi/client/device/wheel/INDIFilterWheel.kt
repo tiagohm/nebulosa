@@ -3,8 +3,17 @@ package nebulosa.indi.client.device.wheel
 import nebulosa.indi.client.INDIClient
 import nebulosa.indi.client.device.DriverInfo
 import nebulosa.indi.client.device.INDIDevice
-import nebulosa.indi.device.filterwheel.*
-import nebulosa.indi.protocol.*
+import nebulosa.indi.device.filterwheel.FilterWheel
+import nebulosa.indi.device.filterwheel.FilterWheelCountChanged
+import nebulosa.indi.device.filterwheel.FilterWheelMoveFailed
+import nebulosa.indi.device.filterwheel.FilterWheelMovingChanged
+import nebulosa.indi.device.filterwheel.FilterWheelNamesChanged
+import nebulosa.indi.device.filterwheel.FilterWheelPositionChanged
+import nebulosa.indi.protocol.DefNumberVector
+import nebulosa.indi.protocol.INDIProtocol
+import nebulosa.indi.protocol.NumberVector
+import nebulosa.indi.protocol.PropertyState
+import nebulosa.indi.protocol.TextVector
 import nebulosa.indi.protocol.Vector.Companion.isBusy
 
 // https://github.com/indilib/indi/blob/master/libs/indibase/indifilterwheel.cpp

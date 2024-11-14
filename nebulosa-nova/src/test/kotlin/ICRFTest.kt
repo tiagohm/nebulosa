@@ -1,6 +1,11 @@
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
-import nebulosa.math.*
+import nebulosa.math.deg
+import nebulosa.math.hours
+import nebulosa.math.m
+import nebulosa.math.normalized
+import nebulosa.math.toDegrees
+import nebulosa.math.toHours
 import nebulosa.nova.position.Geoid
 import nebulosa.nova.position.ICRF
 import nebulosa.test.download

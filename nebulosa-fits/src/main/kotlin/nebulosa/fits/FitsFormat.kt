@@ -1,8 +1,19 @@
 package nebulosa.fits
 
 import nebulosa.fits.FitsHeader.Companion.isFirstCard
-import nebulosa.image.format.*
-import nebulosa.io.*
+import nebulosa.image.format.BasicImageHdu
+import nebulosa.image.format.Hdu
+import nebulosa.image.format.HeaderCard
+import nebulosa.image.format.ImageData
+import nebulosa.image.format.ImageFormat
+import nebulosa.image.format.ImageHdu
+import nebulosa.image.format.ImageModifier
+import nebulosa.image.format.ReadableHeader
+import nebulosa.io.SeekableSource
+import nebulosa.io.readDouble
+import nebulosa.io.readFloat
+import nebulosa.io.writeDouble
+import nebulosa.io.writeFloat
 import nebulosa.log.loggerFor
 import okio.Buffer
 import okio.BufferedSource

@@ -119,7 +119,7 @@ data class ThreePointPolarAlignment(
          */
         fun computePAE(
             hourAngle: Angle, declination: Angle, latitude: Angle,
-            azimuthError: Angle, altitudeError: Angle
+            azimuthError: Angle, altitudeError: Angle,
         ): DoubleArray {
             // Source: https://sourceforge.net/p/sky-simulator/code/ci/default/tree/sky_annotation.pas
             // Polar error calculation based on two celestial reference points and the error of the telescope mount at these point(s).

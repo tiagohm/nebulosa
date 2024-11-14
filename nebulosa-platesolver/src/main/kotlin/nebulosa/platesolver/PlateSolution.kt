@@ -10,7 +10,11 @@ import nebulosa.math.Angle
 import nebulosa.math.deg
 import nebulosa.math.rad
 import nebulosa.wcs.computeCdMatrix
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.hypot
+import kotlin.math.truncate
 
 data class PlateSolution(
     @JvmField val solved: Boolean = false,
