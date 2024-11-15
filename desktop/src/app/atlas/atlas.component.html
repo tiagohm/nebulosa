@@ -889,7 +889,7 @@
 				<p-calendar
 					[disabled]="!dateTimeAndLocation.manual"
 					[ngModel]="dateTimeAndLocation.dateTime"
-					(ngModelChange)="dateTimeChanged(true, $event)"
+					(ngModelChange)="dateChanged($event)"
 					[inline]="true"
 					[showIcon]="true"
 					[showWeek]="true"
@@ -910,7 +910,7 @@
 							<p-inputNumber
 								[disabled]="!dateTimeAndLocation.manual"
 								[ngModel]="dateTimeAndLocation.dateTime.getHours()"
-								(ngModelChange)="dateTimeAndLocation.dateTime.setHours($event); dateTimeChanged(false)"
+								(ngModelChange)="timeChanged($event, undefined)"
 								[showButtons]="true"
 								[min]="0"
 								[max]="23"
@@ -924,7 +924,7 @@
 							<p-inputNumber
 								[disabled]="!dateTimeAndLocation.manual"
 								[ngModel]="dateTimeAndLocation.dateTime.getMinutes()"
-								(ngModelChange)="dateTimeAndLocation.dateTime.setMinutes($event); dateTimeChanged(false)"
+								(ngModelChange)="timeChanged(undefined, $event)"
 								[showButtons]="true"
 								[min]="0"
 								[max]="59"

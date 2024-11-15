@@ -639,7 +639,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 	}
 
-	protected dateTimeChanged(dateChanged: boolean, date?: Date) {
+	protected dateChanged(date?: Date) {
 		if (date) {
 			this.dateTimeAndLocation.dateTime.setFullYear(date.getFullYear())
 			this.dateTimeAndLocation.dateTime.setMonth(date.getMonth())
@@ -647,7 +647,23 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 
 		this.savePreference()
-		this.refreshTab(dateChanged, true)
+		this.refreshTab(true, true)
+	}
+
+	protected timeChanged(hour?: number, minute?: number) {
+		let refresh = false
+
+		if (hour !== undefined) {
+			const prev = this.dateTimeAndLocation.dateTime.getHours()
+			refresh = prev !== hour && ((hour >= 12 && prev < 12) || (hour < 12 && prev >= 12))
+			this.dateTimeAndLocation.dateTime.setHours(hour)
+		}
+		if (minute !== undefined) {
+			this.dateTimeAndLocation.dateTime.setMinutes(minute)
+		}
+
+		this.savePreference()
+		this.refreshTab(refresh, refresh)
 	}
 
 	protected manualDateTimeChanged() {
@@ -700,7 +716,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		this.refresh.count++
 
 		if (!this.dateTimeAndLocation.manual) {
+			const prev = this.dateTimeAndLocation.dateTime.getHours()
 			this.dateTimeAndLocation.dateTime = new Date()
+			const now = this.dateTimeAndLocation.dateTime.getHours()
+
+			if (prev !== now && ((now >= 12 && prev < 12) || (now < 12 && prev >= 12))) {
+				refreshTwilight = true
+				refreshChart = true
+			}
 		}
 
 		const { dateTime, location } = this.dateTimeAndLocation
