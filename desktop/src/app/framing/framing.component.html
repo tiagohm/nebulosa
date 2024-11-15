@@ -28,7 +28,7 @@
 				[showButtons]="true"
 				styleClass="p-inputtext-sm border-0 w-full"
 				[(ngModel)]="preference.width"
-				(ngModelChange)="savePreference()"
+				(ngModelChange)="savePreference(); computeFOV()"
 				locale="en"
 				spinnableNumber />
 			<label>Width</label>
@@ -43,13 +43,13 @@
 				[showButtons]="true"
 				styleClass="p-inputtext-sm border-0 w-full"
 				[(ngModel)]="preference.height"
-				(ngModelChange)="savePreference()"
+				(ngModelChange)="savePreference(); computeFOV()"
 				locale="en"
 				spinnableNumber />
 			<label>Height</label>
 		</p-floatLabel>
 	</div>
-	<div class="col-6">
+	<div class="col-6 flex-row gap-1">
 		<p-floatLabel>
 			<p-inputNumber
 				[min]="0.1"
@@ -61,10 +61,19 @@
 				[(ngModel)]="preference.fov"
 				(ngModelChange)="savePreference()"
 				locale="en"
+				mode="decimal"
 				[minFractionDigits]="1"
 				spinnableNumber />
 			<label>FOV (°)</label>
 		</p-floatLabel>
+		<p-button
+			[text]="true"
+			[rounded]="true"
+			icon="mdi mdi-calculator"
+			size="small"
+			(onClick)="fov.showDialog = true"
+			pTooltip="Calculate"
+			tooltipPosition="bottom" />
 	</div>
 	<div class="col-6">
 		<p-floatLabel>
@@ -78,6 +87,7 @@
 				[(ngModel)]="preference.rotation"
 				(ngModelChange)="savePreference()"
 				locale="en"
+				mode="decimal"
 				[minFractionDigits]="1"
 				spinnableNumber />
 			<label>Rotation (°)</label>
@@ -122,7 +132,7 @@
 			size="small" />
 	</div>
 	<div class="col-12 justify-content-center">
-		<span class="text-sm text-gray-700">
+		<span class="text-sm text-gray-500">
 			Made use of
 			<a
 				target="_blank"
@@ -133,3 +143,60 @@
 		</span>
 	</div>
 </div>
+
+<p-dialog
+	header="FOV"
+	[draggable]="false"
+	[(visible)]="fov.showDialog"
+	[modal]="false"
+	[style]="{ width: '80vw' }">
+	<div class="grid mt-1">
+		<div class="col-12 flex-column gap-3">
+			<p-floatLabel>
+				<p-inputNumber
+					[min]="0"
+					[max]="10000"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[showButtons]="true"
+					[(ngModel)]="preference.focalLength"
+					[allowEmpty]="false"
+					locale="en"
+					(ngModelChange)="computeFOV(false)"
+					spinnableNumber />
+				<label>Focal length (mm)</label>
+			</p-floatLabel>
+			<p-floatLabel class="w-full">
+				<p-inputNumber
+					[min]="0"
+					[max]="100"
+					[step]="0.01"
+					[minFractionDigits]="1"
+					styleClass="p-inputtext-sm border-0 w-full"
+					[showButtons]="true"
+					[(ngModel)]="preference.pixelSize"
+					[allowEmpty]="false"
+					locale="en"
+					mode="decimal"
+					(ngModelChange)="computeFOV(false)"
+					spinnableNumber />
+				<label>Pixel size (µm)</label>
+			</p-floatLabel>
+			<p-checkbox
+				[binary]="true"
+				[(ngModel)]="preference.updateFovOnChange"
+				label="Update FOV on width/height change"
+				(ngModelChange)="savePreference()" />
+		</div>
+	</div>
+	<ng-template pTemplate="footer">
+		<div class="w-full flex justify-content-between align-items-center">
+			<span class="flex-1 text-center font-bold text-lg">{{ fov.computed.toFixed(3) }}°</span>
+			<p-button
+				[text]="true"
+				icon="mdi mdi-check"
+				label="OK"
+				size="small"
+				(onClick)="computeFOV(true)" />
+		</div>
+	</ng-template>
+</p-dialog>

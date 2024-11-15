@@ -216,6 +216,7 @@
 							(ngModelChange)="savePreference()"
 							[minFractionDigits]="1"
 							locale="en"
+							mode="decimal"
 							spinnableNumber />
 						<label>Mag. Limit</label>
 					</p-floatLabel>
@@ -278,6 +279,7 @@
 							inputStyleClass="p-inputtext-sm border-0 w-full"
 							locale="en"
 							[allowEmpty]="false"
+							mode="decimal"
 							[(ngModel)]="annotation.search.magnitudeMin"
 							(ngModelChange)="searchAnnotations()"
 							spinnableNumber />
@@ -295,6 +297,7 @@
 							inputStyleClass="p-inputtext-sm border-0 w-full"
 							locale="en"
 							[allowEmpty]="false"
+							mode="decimal"
 							[(ngModel)]="annotation.search.magnitudeMax"
 							(ngModelChange)="searchAnnotations()"
 							spinnableNumber />
@@ -572,6 +575,7 @@
 					[(ngModel)]="solver.request.pixelSize"
 					[allowEmpty]="false"
 					locale="en"
+					mode="decimal"
 					(ngModelChange)="savePreference()"
 					spinnableNumber />
 				<label>Pixel size (µm)</label>
@@ -771,6 +775,7 @@
 					styleClass="p-inputtext-sm border-0 w-full"
 					[(ngModel)]="stretch.transformation.meanBackground"
 					[allowEmpty]="false"
+					mode="decimal"
 					locale="en"
 					spinnableNumber />
 				<label>Auto Stretch Mean Background</label>
@@ -860,6 +865,7 @@
 					styleClass="p-inputtext-sm border-0 w-full"
 					[minFractionDigits]="1"
 					[(ngModel)]="scnr.transformation.amount"
+					mode="decimal"
 					locale="en"
 					[allowEmpty]="false"
 					spinnableNumber />
@@ -1286,6 +1292,7 @@
 					[minFractionDigits]="1"
 					[maxFractionDigits]="2"
 					[(ngModel)]="fov.selected.pixelSize.width"
+					mode="decimal"
 					(ngModelChange)="saveFOV()"
 					locale="en"
 					spinnableNumber />
@@ -1303,6 +1310,7 @@
 					[minFractionDigits]="1"
 					[maxFractionDigits]="2"
 					[(ngModel)]="fov.selected.pixelSize.height"
+					mode="decimal"
 					(ngModelChange)="saveFOV()"
 					locale="en"
 					spinnableNumber />
@@ -1320,6 +1328,7 @@
 					[minFractionDigits]="1"
 					[maxFractionDigits]="2"
 					[(ngModel)]="fov.selected.barlowReducer"
+					mode="decimal"
 					(ngModelChange)="saveFOV()"
 					locale="en"
 					spinnableNumber />
@@ -1352,6 +1361,7 @@
 					[(ngModel)]="fov.selected.rotation"
 					(ngModelChange)="saveFOV(false)"
 					locale="en"
+					mode="decimal"
 					spinnableNumber />
 				<label>Rotation (°)</label>
 			</p-floatLabel>
@@ -1699,6 +1709,7 @@
 					(ngModelChange)="savePreference()"
 					[minFractionDigits]="2"
 					[maxFractionDigits]="2"
+					mode="decimal"
 					locale="en"
 					spinnableNumber />
 				<label>Angle (deg)</label>

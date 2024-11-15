@@ -4,7 +4,7 @@ import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
 import { ElectronService } from '../../shared/services/electron.service'
 import { PreferenceService } from '../../shared/services/preference.service'
-import { DEFAULT_FRAMING_PREFERENCE, HipsSurvey, LoadFraming } from '../../shared/types/framing.types'
+import { DEFAULT_FRAMING_FOV_DIALOG, DEFAULT_FRAMING_PREFERENCE, FramingRequest, HipsSurvey } from '../../shared/types/framing.types'
 import { AppComponent } from '../app.component'
 
 @Component({
@@ -13,6 +13,7 @@ import { AppComponent } from '../app.component'
 })
 export class FramingComponent implements AfterViewInit, OnDestroy {
 	protected readonly preference = structuredClone(DEFAULT_FRAMING_PREFERENCE)
+	protected readonly fov = structuredClone(DEFAULT_FRAMING_FOV_DIALOG)
 	protected hipsSurveys: HipsSurvey[] = []
 	protected loading = false
 
@@ -29,7 +30,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 	) {
 		app.title = 'Framing'
 
-		electronService.on('DATA.CHANGED', (event: LoadFraming) => {
+		electronService.on('DATA.CHANGED', (event: FramingRequest) => {
 			return ngZone.run(() => this.frameFromData(event))
 		})
 	}
@@ -39,13 +40,13 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 
 		try {
 			this.hipsSurveys = await this.api.hipsSurveys()
-			this.loadPreference()
 		} finally {
+			this.loadPreference()
 			this.loading = false
 		}
 
 		this.route.queryParams.subscribe((e) => {
-			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as LoadFraming
+			const data = JSON.parse(decodeURIComponent(e['data'] as string)) as FramingRequest
 			return this.frameFromData(data)
 		})
 	}
@@ -55,18 +56,32 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 		void this.closeImageWindow()
 	}
 
-	private async frameFromData(data: LoadFraming) {
-		this.preference.rightAscension = data.rightAscension || this.preference.rightAscension
-		this.preference.declination = data.declination || this.preference.declination
-		this.preference.width = data.width || this.preference.width
-		this.preference.height = data.height || this.preference.height
-		this.preference.fov = data.fov || this.preference.fov
-		if (data.rotation === 0 || data.rotation) this.preference.rotation = data.rotation
+	private async frameFromData(data?: Partial<FramingRequest>) {
+		if (data) {
+			this.preference.rightAscension = data.rightAscension || this.preference.rightAscension
+			this.preference.declination = data.declination || this.preference.declination
+			this.preference.width = data.width || this.preference.width
+			this.preference.height = data.height || this.preference.height
+			this.preference.fov = data.fov || this.preference.fov
+			this.preference.updateFovOnChange = !data.fov && this.preference.updateFovOnChange
+			if (data.rotation === 0 || data.rotation) this.preference.rotation = data.rotation
 
-		this.savePreference()
+			this.savePreference()
 
-		if (data.rightAscension && data.declination) {
-			await this.frame()
+			if (data.rightAscension && data.declination) {
+				await this.frame()
+			}
+		}
+	}
+
+	protected computeFOV(apply: boolean = this.preference.updateFovOnChange) {
+		const scale = (this.preference.pixelSize / this.preference.focalLength) * 206.265
+		this.fov.computed = (scale * Math.max(this.preference.width, this.preference.height)) / 3600
+
+		if (apply) {
+			this.preference.fov = this.fov.computed
+			this.fov.showDialog = false
+			this.savePreference()
 		}
 	}
 
@@ -89,6 +104,7 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 	private loadPreference() {
 		Object.assign(this.preference, this.preferenceService.framing.get())
 		this.preference.hipsSurvey = this.hipsSurveys.find((e) => e.id === this.preference.hipsSurvey?.id) ?? this.hipsSurveys[0]
+		this.computeFOV()
 	}
 
 	protected savePreference() {

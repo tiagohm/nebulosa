@@ -20,6 +20,7 @@
 						[min]="item.min ?? 0"
 						[showButtons]="true"
 						styleClass="border-0 p-inputtext-sm"
+						mode="decimal"
 						locale="en"
 						spinnableNumber />
 					<label>{{ item.label }}</label>
@@ -40,6 +41,7 @@
 			[ngModel]="formula.result.value"
 			[minFractionDigits]="formula.result.minFractionDigits ?? 0"
 			[maxFractionDigits]="formula.result.maxFractionDigits ?? 4"
+			mode="decimal"
 			styleClass="border-0 p-inputtext-sm"
 			locale="en" />
 		<label>{{ formula.result.label }}</label>

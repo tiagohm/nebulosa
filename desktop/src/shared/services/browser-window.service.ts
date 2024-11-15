@@ -5,7 +5,7 @@ import { Camera, CameraDialogInput, CameraStartCapture } from '../types/camera.t
 import { Device } from '../types/device.types'
 import { DustCap } from '../types/dustcap.types'
 import { Focuser } from '../types/focuser.types'
-import { LoadFraming } from '../types/framing.types'
+import { FramingRequest } from '../types/framing.types'
 import { ImageSource, OpenImage } from '../types/image.types'
 import { LightBox } from '../types/lightbox.types'
 import { Mount } from '../types/mount.types'
@@ -107,7 +107,7 @@ export class BrowserWindowService {
 		return this.openWindow({ preference, data, id: 'atlas', path: 'atlas' })
 	}
 
-	openFraming(data?: LoadFraming, preference: WindowPreference = {}) {
+	openFraming(data?: Partial<FramingRequest>, preference: WindowPreference = {}) {
 		Object.assign(preference, { icon: 'framing', width: 280, height: 303 })
 		return this.openWindow({ preference, data, id: 'framing', path: 'framing' })
 	}
