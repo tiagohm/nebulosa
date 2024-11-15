@@ -30,11 +30,9 @@ import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
-import kotlin.math.abs
 import kotlin.math.hypot
 
 class SkyAtlasService(
@@ -52,10 +50,10 @@ class SkyAtlasService(
     private val positions = HashMap<GeographicCoordinate, GeographicPosition>()
     private val cachedSkyObjectEntities = HashMap<Long, SkyObjectEntity>()
     private val targetLocks = HashMap<Any, Any>()
-    private val cachedMoonPhases = HashMap<LocalDate, List<MoonPhaseDateTime>>()
+    private val moonPhaseDateTime = HashMap<Pair<LocalDate, Boolean>, List<MoonPhaseDateTime>>()
+    private val moonPhaseInfo = HashMap<LocalDateTime, MoonPhaseInfo>()
 
     @Volatile private var sunImage = ByteArray(0)
-    @Volatile private var moonPhase: Pair<LocalDateTime, MoonPhase>? = null
 
     init {
         scheduledExecutorService.scheduleAtFixedRate(::refreshImageOfSun, 0L, 15L, TimeUnit.MINUTES)
@@ -236,8 +234,10 @@ class SkyAtlasService(
     }
 
     @Synchronized
-    fun moonPhase(location: GeographicCoordinate, dateTime: LocalDateTime): Map<String, Any?>? {
-        if (moonPhase == null || abs(ChronoUnit.HOURS.between(moonPhase!!.first, dateTime)) >= 1) {
+    fun moonPhase(location: GeographicCoordinate, dateTime: LocalDateTime, topocentric: Boolean = false): Map<String, Any?>? {
+        val hour = dateTime.withMinute(0).withSecond(0).withNano(0)
+
+        if (hour !in moonPhaseInfo) {
             val request = Request.Builder()
                 .url(MOON_PHASE_URL.format(dateTime.minusMinutes(location.offsetInMinutes().toLong()).format(MOON_PHASE_DATE_TIME_FORMAT)))
                 .build()
@@ -245,26 +245,33 @@ class SkyAtlasService(
             val body = try {
                 httpClient.newCall(request).execute()
                     .body?.byteStream()
-                    ?.use { objectMapper.readValue(it, MoonPhase::class.java) }
+                    ?.use { objectMapper.readValue(it, MoonPhaseInfo::class.java) }
             } catch (_: Throwable) {
                 null
             }
 
-            moonPhase = dateTime.withMinute(0).withSecond(0).withNano(0) to (body ?: return null)
+            moonPhaseInfo[hour] = (body ?: return null)
         }
 
-        moonPhase?.second?.lunation = TimeYMDHMS(dateTime).lunation()
+        moonPhaseInfo[hour]?.lunation = TimeYMDHMS(dateTime).lunation()
 
-        val date = dateTime.toLocalDate().withDayOfMonth(1)
-        val phases = if (date in cachedMoonPhases) {
-            cachedMoonPhases[date]!!
+        val firstDayOfMounth = dateTime.toLocalDate().withDayOfMonth(1)
+        val key = firstDayOfMounth to topocentric
+
+        val phases = if (key in moonPhaseDateTime) {
+            moonPhaseDateTime[key]!!
         } else {
             val offsetInMinutes = location.offsetInMinutes().toLong()
-            moonPhaseFinder.find(date, offsetInMinutes).also { cachedMoonPhases[date] = it }
+
+            if (topocentric) {
+                moonPhaseFinder.find(firstDayOfMounth, location, offsetInMinutes)
+            } else {
+                moonPhaseFinder.find(firstDayOfMounth, offsetInMinutes)
+            }.also { moonPhaseDateTime[key] = it }
         }
 
         return mapOf(
-            "current" to moonPhase?.second,
+            "current" to moonPhaseInfo[hour],
             "phases" to phases,
         )
     }

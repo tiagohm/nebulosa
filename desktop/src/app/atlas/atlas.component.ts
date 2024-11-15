@@ -27,6 +27,7 @@ import {
 	DEFAULT_PLANET,
 	DEFAULT_SATELLITE,
 	DEFAULT_SKY_ATLAS_PREFERENCE,
+	DEFAULT_SKY_ATLAS_SETTINGS_DIALOG,
 	DEFAULT_SKY_OBJECT,
 	DEFAULT_SKY_OBJECT_SEARCH_FILTER,
 	DEFAULT_SUN,
@@ -35,6 +36,7 @@ import {
 	MinorPlanetListItem,
 	SATELLITE_GROUPS,
 	SkyAtlasInput,
+	SkyAtlasSettings,
 	resetSatelliteSearchGroup,
 	skyObjectSearchFilterWithDefault,
 } from '../../shared/types/atlas.types'
@@ -57,6 +59,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 	protected readonly preference = structuredClone(DEFAULT_SKY_ATLAS_PREFERENCE)
 	protected readonly refresh = structuredClone(DEFAULT_BODY_TAB_REFRESH)
 	protected readonly dateTimeAndLocation = structuredClone(DEFAULT_DATE_TIME_AND_LOCATION)
+	protected readonly settings = structuredClone(DEFAULT_SKY_ATLAS_SETTINGS_DIALOG)
 
 	protected tab = BodyTabType.SUN
 	protected locations: Location[] = [structuredClone(DEFAULT_LOCATION)]
@@ -413,6 +416,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			},
 		})
 
+		app.topMenu.push({
+			icon: 'mdi mdi-cog',
+			tooltip: 'Settings',
+			command: () => {
+				this.settings.showDialog = true
+			},
+		})
+
 		electronService.on('LOCATION.CHANGED', (location) => {
 			ngZone.run(() => {
 				this.loadLocations()
@@ -652,6 +663,14 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		this.refreshTab(true, true)
 	}
 
+	protected settingsChanged(name: keyof SkyAtlasSettings) {
+		this.savePreference()
+
+		if (name === 'useTopocentricForMoonPhases' && this.tab === BodyTabType.MOON) {
+			this.refreshTab()
+		}
+	}
+
 	protected mountGoTo() {
 		return this.executeMount((mount) => {
 			return this.api.mountGoTo(mount, this.position.rightAscension, this.position.declination, false)
@@ -708,7 +727,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		}
 		// Moon.
 		else if (this.tab === BodyTabType.MOON) {
-			void this.api.moonPhase(dateTime).then((res) => (this.moon.phase = res))
+			void this.api.moonPhase(dateTime, location, this.preference.settings.useTopocentricForMoonPhases).then((phase) => (this.moon.phase = phase))
 			const position = await this.api.positionOfMoon(dateTime, location)
 			Object.assign(this.moon.position, position)
 		}

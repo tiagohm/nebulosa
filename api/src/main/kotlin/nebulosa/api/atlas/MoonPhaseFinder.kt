@@ -9,6 +9,7 @@ import nebulosa.math.Angle
 import nebulosa.math.Distance
 import nebulosa.math.deg
 import nebulosa.nova.almanac.computeDiffAndReduceToIndices
+import nebulosa.nova.position.GeographicCoordinate
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -21,8 +22,10 @@ class MoonPhaseFinder(private val horizonsService: HorizonsService) {
         date: LocalDate,
         longitude: Angle, latitude: Angle, elevation: Distance = 0.0,
         offsetInMinutes: Long = 0L,
-    ): List<MoonPhaseDateTime> {
-        return find(date, ObservingSite.Geographic(longitude, latitude, elevation), offsetInMinutes)
+    ) = find(date, ObservingSite.Geographic(longitude, latitude, elevation), offsetInMinutes)
+
+    fun find(date: LocalDate, location: GeographicCoordinate, offsetInMinutes: Long = 0L): List<MoonPhaseDateTime> {
+        return find(date, ObservingSite.Geographic(location.longitude, location.latitude, location.elevation), offsetInMinutes)
     }
 
     fun find(date: LocalDate, offsetInMinutes: Long = 0L): List<MoonPhaseDateTime> {

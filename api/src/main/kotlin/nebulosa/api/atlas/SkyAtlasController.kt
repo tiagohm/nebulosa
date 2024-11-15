@@ -209,8 +209,9 @@ class SkyAtlasController(
         val location = location(mapper).notNull()
         val date = queryParameters[DATE].notNull().localDate()
         val time = queryParameters[TIME].notNull().localTime()
+        val topocentric = queryParameters["topocentric"]?.toBoolean() == true
         val dateTime = LocalDateTime.of(date, time)
-        respondNullable(skyAtlasService.moonPhase(location, dateTime))
+        respondNullable(skyAtlasService.moonPhase(location, dateTime, topocentric))
     }
 
     companion object {

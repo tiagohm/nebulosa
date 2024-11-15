@@ -3,7 +3,7 @@ package nebulosa.api.atlas
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class MoonPhase(
+data class MoonPhaseInfo(
     @field:JsonProperty("phase") @JvmField val phase: Double = 0.0,
     @field:JsonProperty("obscuration") @JvmField val obscuration: Double = 0.0,
     @field:JsonProperty("age") @JvmField val age: Double = 0.0,
@@ -19,6 +19,6 @@ data class MoonPhase(
 
     companion object {
 
-        val EMPTY = MoonPhase()
+        val EMPTY = MoonPhaseInfo()
     }
 }

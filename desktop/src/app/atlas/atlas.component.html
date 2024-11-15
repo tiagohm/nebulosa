@@ -862,6 +862,23 @@
 	</ng-template>
 </p-dialog>
 
+<p-dialog
+	header="Settings"
+	[draggable]="false"
+	[(visible)]="settings.showDialog"
+	[modal]="false"
+	[style]="{ width: '80vw' }">
+	<div class="grid">
+		<div class="col-12 flex-column gap-2">
+			<p-checkbox
+				[binary]="true"
+				[(ngModel)]="preference.settings.useTopocentricForMoonPhases"
+				(ngModelChange)="settingsChanged('useTopocentricForMoonPhases')"
+				label="Use topocentric coordinates for Moon phases" />
+		</div>
+	</div>
+</p-dialog>
+
 <p-overlayPanel
 	#dateTimeAndLocationPanel
 	[style]="{ width: 'calc(100% - 8px)', marginLeft: '4px' }"

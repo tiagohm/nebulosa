@@ -604,9 +604,9 @@ export class ApiService {
 		return this.http.get<CloseApproach[]>(`sky-atlas/minor-planets/close-approaches?${query}`)
 	}
 
-	moonPhase(dateTime: Date, location?: Location) {
+	moonPhase(dateTime: Date, location?: Location, topocentric: boolean = false) {
 		const [date, time] = extractDateTime(dateTime)
-		const query = this.http.query({ date, time, hasLocation: location?.id || true })
+		const query = this.http.query({ date, time, topocentric, hasLocation: location?.id || true })
 		return this.http.get<MoonPhase | undefined>(`sky-atlas/moon/phase?${query}`)
 	}
 
