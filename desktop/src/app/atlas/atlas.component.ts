@@ -652,10 +652,33 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 
 	protected timeChanged(hour?: number, minute?: number) {
 		let refresh = false
+		let dateChanged = false
+
+		const loop = minute === -1 || minute === 60 || hour === -1 || hour === 24
+
+		if (loop) {
+			if (minute === -1) {
+				minute = 59
+				hour = this.dateTimeAndLocation.dateTime.getHours() - 1
+			} else if (minute === 60) {
+				minute = 0
+				hour = this.dateTimeAndLocation.dateTime.getHours() + 1
+			}
+
+			if (hour === -1) {
+				hour = 23
+				this.dateTimeAndLocation.dateTime.setDate(this.dateTimeAndLocation.dateTime.getDate() - 1)
+				dateChanged = true
+			} else if (hour === 24) {
+				hour = 0
+				this.dateTimeAndLocation.dateTime.setDate(this.dateTimeAndLocation.dateTime.getDate() + 1)
+				dateChanged = true
+			}
+		}
 
 		if (hour !== undefined) {
 			const prev = this.dateTimeAndLocation.dateTime.getHours()
-			refresh = prev !== hour && ((hour >= 12 && prev < 12) || (hour < 12 && prev >= 12))
+			refresh = !dateChanged && prev !== hour && ((hour >= 12 && prev < 12) || (hour < 12 && prev >= 12))
 			this.dateTimeAndLocation.dateTime.setHours(hour)
 		}
 		if (minute !== undefined) {
