@@ -1348,7 +1348,7 @@
 				<label>Bin</label>
 			</p-floatLabel>
 		</div>
-		<div class="col-4">
+		<div class="col-4 flex-row gap-1">
 			<p-floatLabel>
 				<p-inputNumber
 					styleClass="p-inputtext-sm border-0"
@@ -1430,8 +1430,18 @@
 					<div class="flex px-1 flex-column gap-0 align-items-center justify-content-between">
 						<p-button
 							[text]="true"
+							[rounded]="true"
+							(onClick)="frameFOV(item); $event.stopImmediatePropagation()"
+							icon="mdi mdi-image"
+							size="small"
+							pTooltip="Frame"
+							tooltipPosition="bottom" />
+						<p-button
+							[text]="true"
+							[rounded]="true"
 							severity="danger"
 							icon="mdi mdi-delete"
+							size="small"
 							pTooltip="Remove"
 							tooltipPosition="bottom"
 							(onClick)="deleteFOV(item); $event.stopImmediatePropagation()" />

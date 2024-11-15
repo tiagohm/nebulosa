@@ -1432,6 +1432,15 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		}
 	}
 
+	protected frameFOV(fov: FOV) {
+		if (this.imageInfo && this.solver.solved.scale > 0 && fov.computed) {
+			const { rightAscensionJ2000: rightAscension, declinationJ2000: declination } = this.solver.solved
+			const fieldSize = fov.computed.fieldSize
+			const { width, height } = fov.cameraSize
+			void this.browserWindowService.openFraming({ rightAscension, declination, width, height, fov: Math.max(fieldSize.width, fieldSize.height) })
+		}
+	}
+
 	protected deleteFOV(fov: FOV) {
 		const index = this.fov.fovs.indexOf(fov)
 
