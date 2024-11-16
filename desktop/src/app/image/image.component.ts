@@ -745,6 +745,10 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			this.clearOverlay()
 			await this.loadImage()
 		}
+
+		if (data.source === 'FRAMING') {
+			this.center()
+		}
 	}
 
 	private clearOverlay() {
