@@ -143,7 +143,7 @@ fun Angle(
     if (decimalInput != null) return if (decimalIsHours) decimalInput.hours
     else decimalInput.deg
 
-    val tokenizer = StringTokenizer(trimmedInput, " \t\n\rhms°'\":*#")
+    val tokenizer = StringTokenizer(trimmedInput, " \t\n\rhms°'\":*#′″")
     val res = DoubleArray(3)
     var idx = 0
     var sign = 1.0
