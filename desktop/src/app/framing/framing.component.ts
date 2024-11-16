@@ -63,7 +63,6 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 			this.preference.width = data.width || this.preference.width
 			this.preference.height = data.height || this.preference.height
 			this.preference.fov = data.fov || this.preference.fov
-			this.preference.updateFovOnChange = !data.fov && this.preference.updateFovOnChange
 			if (data.rotation === 0 || data.rotation) this.preference.rotation = data.rotation
 
 			this.savePreference()
