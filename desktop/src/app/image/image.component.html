@@ -51,6 +51,7 @@
 				r="4"
 				stroke="#FDD835"
 				stroke-width="1"
+				(contextmenu)="imageClicked($event, true)"
 				fill="transparent"></circle>
 			<text
 				[attr.x]="a.x"
@@ -77,7 +78,8 @@
 				stroke="#FDD835"
 				stroke-width="1"
 				fill="transparent"
-				(click)="drawDetectedStar(s)"></circle>
+				(click)="drawDetectedStar(s)"
+				(contextmenu)="imageClicked($event, true)"></circle>
 			<text
 				[attr.x]="s.x"
 				[attr.y]="s.y"
