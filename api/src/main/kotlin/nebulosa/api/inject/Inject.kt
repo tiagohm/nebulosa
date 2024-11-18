@@ -9,6 +9,7 @@ import nebulosa.api.alignment.polar.PolarAlignmentController
 import nebulosa.api.alignment.polar.PolarAlignmentService
 import nebulosa.api.alignment.polar.darv.DARVExecutor
 import nebulosa.api.alignment.polar.tppa.TPPAExecutor
+import nebulosa.api.atlas.EarthSeasonFinder
 import nebulosa.api.atlas.IERSUpdateTask
 import nebulosa.api.atlas.LibWCSDownloadTask
 import nebulosa.api.atlas.MoonPhaseFinder
@@ -317,9 +318,10 @@ fun servicesModule() = module {
     single { SequencerExecutor(get(), get(), get(), get(), get()) }
     single { SequencerService(get(Named.sequencesDir), get()) }
     single { MoonPhaseFinder(get()) }
+    single { EarthSeasonFinder(get()) }
     single { HorizonsEphemerisProvider(get()) }
     single { BodyEphemerisProvider(get()) }
-    single { SkyAtlasService(get(), get(), get(), get(), get(), get(Named.defaultHttpClient), get(), get(), get()) }
+    single { SkyAtlasService(get(), get(), get(), get(), get(), get(Named.defaultHttpClient), get(), get(), get(), get()) }
     single { MountService(get(), get(), get(), get(), get()) }
     single { CameraCaptureExecutor(get(), get(), get(), get(), get()) }
     single { CameraService(get(Named.capturesDir), get(), get()) }

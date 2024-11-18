@@ -31,6 +31,8 @@ import {
 	DEFAULT_SKY_OBJECT,
 	DEFAULT_SKY_OBJECT_SEARCH_FILTER,
 	DEFAULT_SUN,
+	EARTH_SEASONS,
+	EarthSeason,
 	FavoritedSkyBody,
 	Location,
 	MinorPlanetListItem,
@@ -768,12 +770,13 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		// Sun.
 		if (this.tab === BodyTabType.SUN) {
 			this.sun.image = `${this.api.baseUrl}/sky-atlas/sun/image`
+			void this.api.earthSeasons(dateTime, location).then((seasons) => (this.sun.seasons = seasons))
 			const position = await this.api.positionOfSun(dateTime, location)
 			Object.assign(this.sun.position, position)
 		}
 		// Moon.
 		else if (this.tab === BodyTabType.MOON) {
-			void this.api.moonPhase(dateTime, location, this.preference.settings.useTopocentricForMoonPhases).then((phase) => (this.moon.phase = phase))
+			void this.api.moonPhases(dateTime, location, this.preference.settings.useTopocentricForMoonPhases).then((phases) => (this.moon.phases = phases))
 			const position = await this.api.positionOfMoon(dateTime, location)
 			Object.assign(this.moon.position, position)
 		}
@@ -934,6 +937,23 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		this.dateTimeAndLocation.location = this.preference.location
 
 		this.loadLocations()
+	}
+
+	private static readonly EARTH_SEASON_ICONS = ['flower', 'weather-sunny', 'leaf', 'snowflake']
+	private static readonly EARTH_SEASON_NAMES = ['spring', 'summer', 'autumn/fall', 'winter']
+
+	private seasonIndex(season: EarthSeason) {
+		const offset = this.dateTimeAndLocation.location.latitude < 0 ? 2 : 0
+		const index = EARTH_SEASONS.indexOf(season)
+		return (index + offset) % 4
+	}
+
+	protected seasonIcon(season: EarthSeason) {
+		return AtlasComponent.EARTH_SEASON_ICONS[this.seasonIndex(season)]
+	}
+
+	protected seasonName(season: EarthSeason) {
+		return AtlasComponent.EARTH_SEASON_NAMES[this.seasonIndex(season)]
 	}
 
 	protected savePreference() {

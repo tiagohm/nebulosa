@@ -34,9 +34,10 @@ class SkyAtlasController(
                 get("/sky-atlas/sun/image", ::imageOfSun)
                 get("/sky-atlas/sun/position", ::positionOfSun)
                 get("/sky-atlas/sun/altitude-points", ::altitudePointsOfSun)
+                get("/sky-atlas/earth/seasons", ::earthSeasons)
                 get("/sky-atlas/moon/position", ::positionOfMoon)
                 get("/sky-atlas/moon/altitude-points", ::altitudePointsOfMoon)
-                get("/sky-atlas/moon/phase", ::moonPhase)
+                get("/sky-atlas/moon/phases", ::moonPhases)
                 get("/sky-atlas/twilight", ::twilight)
                 get("/sky-atlas/planets/{code}/position", ::positionOfPlanet)
                 get("/sky-atlas/planets/{code}/altitude-points", ::altitudePointsOfPlanet)
@@ -205,13 +206,19 @@ class SkyAtlasController(
         respond(skyAtlasService.twilight(location, dateTime, fast))
     }
 
-    private suspend fun moonPhase(ctx: RoutingContext) = with(ctx.call) {
+    private suspend fun moonPhases(ctx: RoutingContext) = with(ctx.call) {
         val location = location(mapper).notNull()
         val date = queryParameters[DATE].notNull().localDate()
         val time = queryParameters[TIME].notNull().localTime()
-        val topocentric = queryParameters["topocentric"]?.toBoolean() == true
+        val topocentric = queryParameters[TOPOCENTRIC]?.toBoolean() == true
         val dateTime = LocalDateTime.of(date, time)
-        respondNullable(skyAtlasService.moonPhase(location, dateTime, topocentric))
+        respondNullable(skyAtlasService.moonPhases(location, dateTime, topocentric))
+    }
+
+    private suspend fun earthSeasons(ctx: RoutingContext) = with(ctx.call) {
+        val location = location(mapper).notNull()
+        val date = queryParameters[DATE].notNull().localDate()
+        respondNullable(skyAtlasService.earthSeasons(location, date.year))
     }
 
     companion object {
@@ -227,5 +234,6 @@ class SkyAtlasController(
         private const val GROUP = "group"
         private const val DISTANCE = "distance"
         private const val STEP_SIZE = "stepSize"
+        private const val TOPOCENTRIC = "topocentric"
     }
 }

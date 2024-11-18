@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core'
 import { DARVState, Hemisphere, TPPAState } from '../types/alignment.types'
-import { Constellation, MoonPhaseName, SatelliteGroupType, SkyObjectType } from '../types/atlas.types'
+import { Constellation, MoonPhase, SatelliteGroupType, SkyObjectType } from '../types/atlas.types'
 import { AutoFocusFittingMode, AutoFocusState, BacklashCompensationMode } from '../types/autofocus.type'
 import { CameraCaptureState, ExposureMode, ExposureTimeUnit, FrameType, LiveStackerType } from '../types/camera.types'
 import { DeviceType } from '../types/device.types'
@@ -42,7 +42,7 @@ export type EnumPipeKey =
 	| SequencerState
 	| ExposureTimeUnit
 	| ImageChannel
-	| MoonPhaseName
+	| MoonPhase
 	| DeviceType
 	| 'ALL'
 

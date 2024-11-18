@@ -63,7 +63,7 @@ class MoonPhaseFinder(private val horizonsService: HorizonsService) {
         val indices = phases.computeDiffAndReduceToIndices()
 
         if (stepSizeInMinutes == 1) {
-            return indices.map { MoonPhaseDateTime(moon[it].dateTime.plusMinutes(offsetInMinutes), MoonPhaseName.entries[phases[it + 1]]) }
+            return indices.map { MoonPhaseDateTime(moon[it].dateTime.plusMinutes(offsetInMinutes), MoonPhase.entries[phases[it + 1]]) }
         } else {
             val res = ArrayList<MoonPhaseDateTime>(5)
 

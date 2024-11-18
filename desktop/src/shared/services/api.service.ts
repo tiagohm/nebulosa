@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { extractDate, extractDateTime } from '../types/angular.types'
-import { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, Location, MinorPlanet, MoonPhase, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
+import { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, EarthSeasonDateTime, Location, MinorPlanet, MoonPhases, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
 import { AutoFocusRequest } from '../types/autofocus.type'
 import { CalibrationFrame } from '../types/calibration.types'
 import { Camera, CameraStartCapture } from '../types/camera.types'
@@ -523,6 +523,12 @@ export class ApiService {
 		return this.http.get<[number, number][]>(`sky-atlas/sun/altitude-points?${query}`)
 	}
 
+	earthSeasons(dateTime: Date, location?: Location) {
+		const date = extractDate(dateTime)
+		const query = this.http.query({ date, hasLocation: location?.id || true })
+		return this.http.get<EarthSeasonDateTime[]>(`sky-atlas/earth/seasons?${query}`)
+	}
+
 	positionOfMoon(dateTime: Date, location?: Location, fast: boolean = false) {
 		const [date, time] = extractDateTime(dateTime)
 		const query = this.http.query({ date, time, fast, hasLocation: location?.id || true })
@@ -604,10 +610,10 @@ export class ApiService {
 		return this.http.get<CloseApproach[]>(`sky-atlas/minor-planets/close-approaches?${query}`)
 	}
 
-	moonPhase(dateTime: Date, location?: Location, topocentric: boolean = false) {
+	moonPhases(dateTime: Date, location?: Location, topocentric: boolean = false) {
 		const [date, time] = extractDateTime(dateTime)
 		const query = this.http.query({ date, time, topocentric, hasLocation: location?.id || true })
-		return this.http.get<MoonPhase | undefined>(`sky-atlas/moon/phase?${query}`)
+		return this.http.get<MoonPhases | undefined>(`sky-atlas/moon/phases?${query}`)
 	}
 
 	// IMAGE

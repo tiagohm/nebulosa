@@ -22,7 +22,9 @@ export type AltitudePoint = [number, number]
 
 export type SatelliteSearchGroups = Record<SatelliteGroupType, boolean>
 
-export type MoonPhaseName = 'NEW_MOON' | 'FIRST_QUARTER' | 'FULL_MOON' | 'LAST_QUARTER'
+export type EarthSeason = (typeof EARTH_SEASONS)[number]
+
+export type MoonPhase = 'NEW_MOON' | 'FIRST_QUARTER' | 'FULL_MOON' | 'LAST_QUARTER'
 
 export enum BodyTabType {
 	SUN,
@@ -47,10 +49,11 @@ export interface BodyTab {
 
 export interface SunTab extends BodyTab {
 	image: string
+	seasons: EarthSeasonDateTime[]
 }
 
 export interface MoonTab extends BodyTab {
-	phase?: MoonPhase
+	phases?: MoonPhases
 }
 
 export interface PlanetItem {
@@ -238,12 +241,17 @@ export interface Twilight {
 	civilDawn: number[]
 }
 
-export interface MoonPhaseDateTime {
+export interface EarthSeasonDateTime {
 	dateTime: number
-	name: MoonPhaseName
+	name: EarthSeason
 }
 
-export interface MoonPhase {
+export interface MoonPhaseDateTime {
+	dateTime: number
+	name: MoonPhase
+}
+
+export interface MoonPhases {
 	current: {
 		phase: number
 		obscuration: number
@@ -324,6 +332,7 @@ export const DEFAULT_SUN: SunTab = {
 	altitude: [],
 	tags: [],
 	image: '',
+	seasons: [],
 }
 
 export const DEFAULT_MOON: MoonTab = {
@@ -552,6 +561,8 @@ export const DEFAULT_SKY_ATLAS_PREFERENCE: SkyAtlasPreference = {
 export const DEFAULT_SKY_ATLAS_SETTINGS_DIALOG: SkyAtlasSettingsDialog = {
 	showDialog: false,
 }
+
+export const EARTH_SEASONS = ['MARCH_EQUINOX', 'JUNE_SOLSTICE', 'SEPTEMBER_EQUINOX', 'DECEMBER_SOLSTICE'] as const
 
 export const CLASSIFICATION_TYPES = ['STAR', 'SET_OF_STARS', 'INTERSTELLAR_MEDIUM', 'GALAXY', 'SET_OF_GALAXIES', 'GRAVITATION', 'SPECTRAL', 'OTHER'] as const
 

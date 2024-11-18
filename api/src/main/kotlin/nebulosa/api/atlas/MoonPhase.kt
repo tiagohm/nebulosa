@@ -1,6 +1,6 @@
 package nebulosa.api.atlas
 
-enum class MoonPhaseName {
+enum class MoonPhase {
     NEW_MOON,
     FIRST_QUARTER,
     FULL_MOON,

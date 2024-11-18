@@ -44,6 +44,7 @@ class SkyAtlasService(
     private val httpClient: OkHttpClient,
     private val objectMapper: ObjectMapper,
     private val moonPhaseFinder: MoonPhaseFinder,
+    private val earthSeasonFinder: EarthSeasonFinder,
     scheduledExecutorService: ScheduledExecutorService,
 ) {
 
@@ -51,6 +52,7 @@ class SkyAtlasService(
     private val cachedSkyObjectEntities = HashMap<Long, SkyObjectEntity>()
     private val targetLocks = HashMap<Any, Any>()
     private val moonPhaseDateTime = HashMap<Pair<LocalDate, Boolean>, List<MoonPhaseDateTime>>()
+    private val earthSeasonDateTime = HashMap<Int, List<EarthSeasonDateTime>>()
     private val moonPhaseInfo = HashMap<LocalDateTime, MoonPhaseInfo>()
 
     @Volatile private var sunImage = ByteArray(0)
@@ -131,20 +133,20 @@ class SkyAtlasService(
         val range = evenlySpacedNumbers(0.0, (ephemeris.size - 1).toDouble(), ephemeris.size)
         val result = findDiscrete(range, TwilightDiscreteFunction(ephemeris), 1.0)
 
-        civilDusk[0] = result.x(0) / 60.0
-        civilDusk[1] = result.x(1) / 60.0
-        nauticalDusk[0] = result.x(1) / 60.0
-        nauticalDusk[1] = result.x(2) / 60.0
-        astronomicalDusk[0] = result.x(2) / 60.0
-        astronomicalDusk[1] = result.x(3) / 60.0
-        night[0] = result.x(3) / 60.0
-        night[1] = result.x(4) / 60.0
-        astronomicalDawn[0] = result.x(4) / 60.0
-        astronomicalDawn[1] = result.x(5) / 60.0
-        nauticalDawn[0] = result.x(5) / 60.0
-        nauticalDawn[1] = result.x(6) / 60.0
-        civilDawn[0] = result.x(6) / 60.0
-        civilDawn[1] = result.x(7) / 60.0
+        civilDusk[0] = result.x[0] / 60.0
+        civilDusk[1] = result.x[1] / 60.0
+        nauticalDusk[0] = result.x[1] / 60.0
+        nauticalDusk[1] = result.x[2] / 60.0
+        astronomicalDusk[0] = result.x[2] / 60.0
+        astronomicalDusk[1] = result.x[3] / 60.0
+        night[0] = result.x[3] / 60.0
+        night[1] = result.x[4] / 60.0
+        astronomicalDawn[0] = result.x[4] / 60.0
+        astronomicalDawn[1] = result.x[5] / 60.0
+        nauticalDawn[0] = result.x[5] / 60.0
+        nauticalDawn[1] = result.x[6] / 60.0
+        civilDawn[0] = result.x[6] / 60.0
+        civilDawn[1] = result.x[7] / 60.0
 
         return Twilight(
             civilDusk, nauticalDusk, astronomicalDusk, night,
@@ -233,47 +235,61 @@ class SkyAtlasService(
         sunImage = bytes.toByteArray()
     }
 
-    @Synchronized
-    fun moonPhase(location: GeographicCoordinate, dateTime: LocalDateTime, topocentric: Boolean = false): Map<String, Any?>? {
+    fun moonPhases(location: GeographicCoordinate, dateTime: LocalDateTime, topocentric: Boolean = false): Map<String, Any?>? {
         val hour = dateTime.withMinute(0).withSecond(0).withNano(0)
 
-        if (hour !in moonPhaseInfo) {
-            val request = Request.Builder()
-                .url(MOON_PHASE_URL.format(dateTime.minusMinutes(location.offsetInMinutes().toLong()).format(MOON_PHASE_DATE_TIME_FORMAT)))
-                .build()
+        synchronized(moonPhaseInfo) {
+            if (hour !in moonPhaseInfo) {
+                val request = Request.Builder()
+                    .url(MOON_PHASE_URL.format(dateTime.minusMinutes(location.offsetInMinutes().toLong()).format(MOON_PHASE_DATE_TIME_FORMAT)))
+                    .build()
 
-            val body = try {
-                httpClient.newCall(request).execute()
-                    .body?.byteStream()
-                    ?.use { objectMapper.readValue(it, MoonPhaseInfo::class.java) }
-            } catch (_: Throwable) {
-                null
+                val body = try {
+                    httpClient.newCall(request).execute()
+                        .body?.byteStream()
+                        ?.use { objectMapper.readValue(it, MoonPhaseInfo::class.java) }
+                } catch (_: Throwable) {
+                    null
+                }
+
+                moonPhaseInfo[hour] = (body ?: return null)
             }
 
-            moonPhaseInfo[hour] = (body ?: return null)
+            moonPhaseInfo[hour]?.lunation = TimeYMDHMS(dateTime).lunation()
         }
 
-        moonPhaseInfo[hour]?.lunation = TimeYMDHMS(dateTime).lunation()
+        synchronized(moonPhaseDateTime) {
+            val firstDayOfMounth = hour.toLocalDate().withDayOfMonth(1)
+            val key = firstDayOfMounth to topocentric
 
-        val firstDayOfMounth = dateTime.toLocalDate().withDayOfMonth(1)
-        val key = firstDayOfMounth to topocentric
-
-        val phases = if (key in moonPhaseDateTime) {
-            moonPhaseDateTime[key]!!
-        } else {
-            val offsetInMinutes = location.offsetInMinutes().toLong()
-
-            if (topocentric) {
-                moonPhaseFinder.find(firstDayOfMounth, location, offsetInMinutes)
+            val phases = if (key in moonPhaseDateTime) {
+                moonPhaseDateTime[key]!!
             } else {
-                moonPhaseFinder.find(firstDayOfMounth, offsetInMinutes)
-            }.also { moonPhaseDateTime[key] = it }
-        }
+                val offsetInMinutes = location.offsetInMinutes().toLong()
 
-        return mapOf(
-            "current" to moonPhaseInfo[hour],
-            "phases" to phases,
-        )
+                if (topocentric) {
+                    moonPhaseFinder.find(firstDayOfMounth, location, offsetInMinutes)
+                } else {
+                    moonPhaseFinder.find(firstDayOfMounth, offsetInMinutes)
+                }.also { moonPhaseDateTime[key] = it }
+            }
+
+            return mapOf(
+                "current" to moonPhaseInfo[hour],
+                "phases" to phases,
+            )
+        }
+    }
+
+    fun earthSeasons(location: GeographicCoordinate, year: Int): List<EarthSeasonDateTime> {
+        return synchronized(earthSeasonDateTime) {
+            if (year in earthSeasonDateTime) {
+                earthSeasonDateTime[year]!!
+            } else {
+                val offsetInMinutes = location.offsetInMinutes().toLong()
+                earthSeasonFinder.find(year, offsetInMinutes).also { earthSeasonDateTime[year] = it }
+            }
+        }
     }
 
     companion object {
