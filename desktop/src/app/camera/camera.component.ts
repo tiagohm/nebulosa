@@ -338,6 +338,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 					this.request.y = event.y
 					this.request.width = event.width
 					this.request.height = event.height
+					this.preference.subFrame = true
 				})
 			}
 		})
