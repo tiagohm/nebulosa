@@ -1,7 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
-import { LOCALE_ID, NgModule } from '@angular/core'
+import { LOCALE_ID, NgModule, provideExperimentalZonelessChangeDetection } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
@@ -214,6 +214,7 @@ import { SettingsComponent } from './settings/settings.component'
 		ExposureTimePipe,
 		MessageService,
 		provideHttpClient(withInterceptorsFromDi()),
+		provideExperimentalZonelessChangeDetection(),
 		WinPipe,
 		{
 			provide: LOCALE_ID,
