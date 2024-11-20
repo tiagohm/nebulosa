@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, inject } from '@angular/core'
 import { ChartData, ChartOptions } from 'chart.js'
 import { Point } from 'electron'
 import { UIChart } from 'primeng/chart'
@@ -20,6 +20,11 @@ import { CameraComponent } from '../camera/camera.component'
 	templateUrl: './autofocus.component.html',
 })
 export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly ticker = inject(Ticker)
+
 	protected cameras: Camera[] = []
 	protected camera?: Camera
 
@@ -230,15 +235,11 @@ export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 		return this.chartData.datasets[5]
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly preferenceService: PreferenceService,
-		private readonly ticker: Ticker,
-		electronService: ElectronService,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
 		app.title = 'Auto Focus'
 
 		electronService.on('CAMERA.UPDATED', (event) => {

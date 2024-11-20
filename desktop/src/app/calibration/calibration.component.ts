@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
+import { AfterViewInit, Component, HostListener, OnDestroy, QueryList, ViewChildren, ViewEncapsulation, inject } from '@angular/core'
 import { Listbox } from 'primeng/listbox'
 import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { SEPARATOR_MENU_ITEM } from '../../shared/constants'
@@ -16,6 +16,11 @@ import { AppComponent } from '../app.component'
 	encapsulation: ViewEncapsulation.None,
 })
 export class CalibrationComponent implements AfterViewInit, OnDestroy {
+	private readonly api = inject(ApiService)
+	private readonly electronService = inject(ElectronService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly preferenceService = inject(PreferenceService)
+
 	protected readonly frames = new Map<string, CalibrationFrame[]>()
 	protected readonly preference = structuredClone(DEFAULT_CALIBRATION_PREFERENCE)
 	protected readonly groupDialog = structuredClone(DEFAULT_CALIBRATION_GROUP_DIALOG)
@@ -141,13 +146,9 @@ export class CalibrationComponent implements AfterViewInit, OnDestroy {
 		return this.frames.get(this.activeGroup) ?? []
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly api: ApiService,
-		private readonly electronService: ElectronService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly preferenceService: PreferenceService,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+
 		app.title = 'Calibration'
 
 		app.topMenu.push({

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, Input, Optional, Output, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, EventEmitter, Input, Output, ViewChild, inject } from '@angular/core'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import type { Location } from '../../types/atlas.types'
 import { DEFAULT_LOCATION } from '../../types/atlas.types'
@@ -9,6 +9,8 @@ import { MapComponent } from '../map/map.component'
 	templateUrl: './location.dialog.html',
 })
 export class LocationComponent implements AfterViewInit {
+	private readonly dialogRef = inject(DynamicDialogRef, { optional: true })
+
 	@ViewChild('map')
 	private readonly map?: MapComponent
 
@@ -22,10 +24,9 @@ export class LocationComponent implements AfterViewInit {
 		return !!this.dialogRef
 	}
 
-	constructor(
-		@Optional() private readonly dialogRef?: DynamicDialogRef,
-		@Optional() config?: DynamicDialogConfig<Location>,
-	) {
+	constructor() {
+		const config = inject<DynamicDialogConfig<Location>>(DynamicDialogConfig, { optional: true })
+
 		if (config) {
 			this.location = config.data ?? structuredClone(DEFAULT_LOCATION)
 		}

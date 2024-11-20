@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -14,6 +14,12 @@ import { AppComponent } from '../app.component'
 	templateUrl: './rotator.component.html',
 })
 export class RotatorComponent implements AfterViewInit, OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly route = inject(ActivatedRoute)
+	private readonly ticker = inject(Ticker)
+
 	protected readonly rotator = structuredClone(DEFAULT_ROTATOR)
 	protected readonly request = structuredClone(DEFAULT_CAMERA_START_CAPTURE)
 	protected readonly preference = structuredClone(DEFAULT_ROTATOR_PREFERENCE)
@@ -45,16 +51,11 @@ export class RotatorComponent implements AfterViewInit, OnDestroy, Tickable {
 		return this.mode !== 'CAPTURE'
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly route: ActivatedRoute,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Rotator'
+	constructor() {
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
+		this.app.title = 'Rotator'
 
 		electronService.on('ROTATOR.UPDATED', (event) => {
 			if (event.device.id === this.rotator.id) {

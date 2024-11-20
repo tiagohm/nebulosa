@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, NgZone, ViewChild, ViewEncapsulation } from '@angular/core'
+import { AfterContentInit, Component, inject, NgZone, ViewChild, ViewEncapsulation } from '@angular/core'
 import nebulosa from '../../assets/data/nebulosa.json'
 import { DeviceChooserComponent } from '../../shared/components/device-chooser/device-chooser.component'
 import { DeviceConnectionCommandEvent, DeviceListMenuComponent } from '../../shared/components/device-list-menu/device-list-menu.component'
@@ -30,6 +30,11 @@ function scrollPageOf(element: Element) {
 	encapsulation: ViewEncapsulation.None,
 })
 export class HomeComponent implements AfterContentInit {
+	private readonly electronService = inject(ElectronService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly api = inject(ApiService)
+	private readonly preferenceService = inject(PreferenceService)
+
 	protected readonly preference = structuredClone(DEFAULT_HOME_PREFERENCE)
 	protected connection?: ConnectionDetails
 	protected readonly connectionDialog = structuredClone(DEFAULT_HOME_CONNECTION_DIALOG)
@@ -160,145 +165,141 @@ export class HomeComponent implements AfterContentInit {
 		return this.connection?.type === 'ALPACA' && this.hasDevices
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly electronService: ElectronService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly api: ApiService,
-		private readonly preferenceService: PreferenceService,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const ngZone = inject(NgZone)
+
 		app.title = 'Nebulosa'
 
-		electronService.on('CAMERA.ATTACHED', (event) => {
+		this.electronService.on('CAMERA.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`CAMERA.DETACHED`, (event) => {
+		this.electronService.on(`CAMERA.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`CAMERA.UPDATED`, (event) => {
+		this.electronService.on(`CAMERA.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('MOUNT.ATTACHED', (event) => {
+		this.electronService.on('MOUNT.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`MOUNT.DETACHED`, (event) => {
+		this.electronService.on(`MOUNT.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`MOUNT.UPDATED`, (event) => {
+		this.electronService.on(`MOUNT.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('FOCUSER.ATTACHED', (event) => {
+		this.electronService.on('FOCUSER.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`FOCUSER.DETACHED`, (event) => {
+		this.electronService.on(`FOCUSER.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`FOCUSER.UPDATED`, (event) => {
+		this.electronService.on(`FOCUSER.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('WHEEL.ATTACHED', (event) => {
+		this.electronService.on('WHEEL.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`WHEEL.DETACHED`, (event) => {
+		this.electronService.on(`WHEEL.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`WHEEL.UPDATED`, (event) => {
+		this.electronService.on(`WHEEL.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('ROTATOR.ATTACHED', (event) => {
+		this.electronService.on('ROTATOR.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`ROTATOR.DETACHED`, (event) => {
+		this.electronService.on(`ROTATOR.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`ROTATOR.UPDATED`, (event) => {
+		this.electronService.on(`ROTATOR.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('GUIDE_OUTPUT.ATTACHED', (event) => {
+		this.electronService.on('GUIDE_OUTPUT.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`GUIDE_OUTPUT.DETACHED`, (event) => {
+		this.electronService.on(`GUIDE_OUTPUT.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`GUIDE_OUTPUT.UPDATED`, (event) => {
+		this.electronService.on(`GUIDE_OUTPUT.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('LIGHT_BOX.ATTACHED', (event) => {
+		this.electronService.on('LIGHT_BOX.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`LIGHT_BOX.DETACHED`, (event) => {
+		this.electronService.on(`LIGHT_BOX.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`LIGHT_BOX.UPDATED`, (event) => {
+		this.electronService.on(`LIGHT_BOX.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('DUST_CAP.ATTACHED', (event) => {
+		this.electronService.on('DUST_CAP.ATTACHED', (event) => {
 			ngZone.run(() => {
 				this.deviceAdded(event.device)
 			})
 		})
-		electronService.on(`DUST_CAP.DETACHED`, (event) => {
+		this.electronService.on(`DUST_CAP.DETACHED`, (event) => {
 			ngZone.run(() => {
 				this.deviceRemoved(event.device)
 			})
 		})
-		electronService.on(`DUST_CAP.UPDATED`, (event) => {
+		this.electronService.on(`DUST_CAP.UPDATED`, (event) => {
 			ngZone.run(() => {
 				this.deviceUpdated(event.device)
 			})
 		})
 
-		electronService.on('CONNECTION.CLOSED', async (event) => {
+		this.electronService.on('CONNECTION.CLOSED', async (event) => {
 			if (this.connection?.id === event.id) {
 				await ngZone.run(() => {
 					return this.updateConnection()
@@ -306,7 +307,7 @@ export class HomeComponent implements AfterContentInit {
 			}
 		})
 
-		electronService.on('IMAGE.OPEN', (event) => {
+		this.electronService.on('IMAGE.OPEN', (event) => {
 			return ngZone.run(() => {
 				return this.browserWindowService.openImage({ path: event.path, source: 'PATH' })
 			})

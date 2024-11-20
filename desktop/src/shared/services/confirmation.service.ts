@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { ConfirmEventType } from 'primeng/api'
 import { ConfirmationEvent } from '../types/api.types'
 import { AngularService } from './angular.service'
@@ -6,12 +6,10 @@ import { ApiService } from './api.service'
 
 @Injectable({ providedIn: 'root' })
 export class ConfirmationService {
-	private readonly keys = new Set<string>()
+	private readonly angularService = inject(AngularService)
+	private readonly api = inject(ApiService)
 
-	constructor(
-		private readonly angularService: AngularService,
-		private readonly api: ApiService,
-	) {}
+	private readonly keys = new Set<string>()
 
 	register(key: string) {
 		this.keys.add(key)

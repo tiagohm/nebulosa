@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { DARVStart, TPPAStart } from '../types/alignment.types'
 import { extractDate, extractDateTime } from '../types/angular.types'
 import { Angle, BodyPosition, CloseApproach, ComputedLocation, DeepSkyObject, EarthSeasonDateTime, Location, MinorPlanet, MoonPhases, Satellite, SatelliteGroupType, SkyObjectSearchFilter, SkyObjectType, Twilight } from '../types/atlas.types'
@@ -25,11 +25,11 @@ import { HttpService } from './http.service'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
+	private readonly http = inject(HttpService)
+
 	get baseUrl() {
 		return this.http.baseUrl
 	}
-
-	constructor(private readonly http: HttpService) {}
 
 	// CONNECTION
 

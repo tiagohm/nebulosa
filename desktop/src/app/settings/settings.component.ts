@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, inject, OnDestroy } from '@angular/core'
 import { debounceTime, Subject, Subscription } from 'rxjs'
 import { MenuItem } from '../../shared/components/menu-item/menu-item.component'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -15,6 +15,10 @@ import { AppComponent } from '../app.component'
 	templateUrl: './settings.component.html',
 })
 export class SettingsComponent implements AfterViewInit, OnDestroy {
+	private readonly app = inject(AppComponent)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly electronService = inject(ElectronService)
+
 	protected tab: SettingsTab = 'LOCATION'
 	protected showMenu = false
 	protected readonly preference = structuredClone(DEFAULT_SETTINGS_PREFERENCE)
@@ -83,15 +87,11 @@ export class SettingsComponent implements AfterViewInit, OnDestroy {
 		return this.preference.liveStacker[this.liveStackerType]
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly preferenceService: PreferenceService,
-		private readonly electronService: ElectronService,
-	) {
-		app.title = 'Settings'
-		app.subTitle = 'Location'
+	constructor() {
+		this.app.title = 'Settings'
+		this.app.subTitle = 'Location'
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-menu',
 			label: 'Menu',
 			command: () => {

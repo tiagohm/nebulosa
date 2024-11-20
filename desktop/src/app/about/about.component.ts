@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import nebulosa from '../../assets/data/nebulosa.json'
 import { DependencyItem, FLAT_ICON_URL, IconItem } from '../../shared/types/about.types'
 import { AppComponent } from '../app.component'
@@ -16,7 +16,9 @@ export class AboutComponent {
 	protected readonly icons: IconItem[] = []
 	protected readonly dependencies: DependencyItem[] = []
 
-	constructor(app: AppComponent) {
+	constructor() {
+		const app = inject(AppComponent)
+
 		app.title = 'About'
 
 		this.mapDependencies()

@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { Subject, Subscription, interval, throttleTime } from 'rxjs'
@@ -19,6 +19,14 @@ import { AppComponent } from '../app.component'
 	templateUrl: './mount.component.html',
 })
 export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly route = inject(ActivatedRoute)
+	private readonly angularService = inject(AngularService)
+	private readonly ticker = inject(Ticker)
+
 	protected readonly mount = structuredClone(DEFAULT_MOUNT)
 	protected readonly remoteControl = structuredClone(DEFAULT_MOUNT_REMOTE_CONTROL_DIALOG)
 	protected readonly preference = structuredClone(DEFAULT_MOUNT_PREFERENCE)
@@ -203,18 +211,11 @@ export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 
 	protected targetCoordinateCommand = this.targetCoordinateModel[0]
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly route: ActivatedRoute,
-		private readonly angularService: AngularService,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Mount'
+	constructor() {
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
+		this.app.title = 'Mount'
 
 		electronService.on('MOUNT.UPDATED', async (event) => {
 			if (event.device.id === this.mount.id) {

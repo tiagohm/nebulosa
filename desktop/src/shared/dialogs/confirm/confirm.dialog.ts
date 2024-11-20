@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { ConfirmEventType, Confirmation } from 'primeng/api'
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { AngularService } from '../../services/angular.service'
@@ -7,13 +7,14 @@ import { AngularService } from '../../services/angular.service'
 	templateUrl: './confirm.dialog.html',
 })
 export class ConfirmDialog {
+	private readonly dialogRef = inject(DynamicDialogRef)
+
 	readonly header: string
 	readonly message: string
 
-	constructor(
-		private readonly dialogRef: DynamicDialogRef,
-		config: DynamicDialogConfig<Confirmation>,
-	) {
+	constructor() {
+		const config = inject<DynamicDialogConfig<Confirmation>>(DynamicDialogConfig)
+
 		this.header = config.data?.header ?? config.header ?? 'Confirmation'
 		this.message = config.data?.message ?? 'Are you sure that you want to proceed?'
 	}

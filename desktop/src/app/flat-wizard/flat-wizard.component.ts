@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, inject } from '@angular/core'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { AngularService } from '../../shared/services/angular.service'
 import { ApiService } from '../../shared/services/api.service'
@@ -18,6 +18,12 @@ import { CameraComponent } from '../camera/camera.component'
 	templateUrl: './flat-wizard.component.html',
 })
 export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly angularService = inject(AngularService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly ticker = inject(Ticker)
+
 	protected cameras: Camera[] = []
 	protected camera?: Camera
 
@@ -43,16 +49,11 @@ export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 		return Math.floor(this.request.meanTarget + (this.request.meanTolerance * this.request.meanTarget) / 100)
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly api: ApiService,
-		electronService: ElectronService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly angularService: AngularService,
-		private readonly preferenceService: PreferenceService,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
 		app.title = 'Flat Wizard'
 
 		electronService.on('FLAT_WIZARD.ELAPSED', (event) => {

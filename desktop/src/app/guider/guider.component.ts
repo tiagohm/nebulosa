@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewChild, inject } from '@angular/core'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
 import { UIChart } from 'primeng/chart'
@@ -14,6 +14,10 @@ import { AppComponent } from '../app.component'
 	templateUrl: './guider.component.html',
 })
 export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickable {
+	private readonly api = inject(ApiService)
+	private readonly ticker = inject(Ticker)
+	private readonly preferenceService = inject(PreferenceService)
+
 	protected guideOutputs: GuideOutput[] = []
 	protected guideOutput?: GuideOutput
 
@@ -193,14 +197,11 @@ export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickab
 		},
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly api: ApiService,
-		private readonly ticker: Ticker,
-		private readonly preferenceService: PreferenceService,
-		electronService: ElectronService,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
 		app.title = 'Guider'
 
 		electronService.on('GUIDE_OUTPUT.UPDATED', (event) => {

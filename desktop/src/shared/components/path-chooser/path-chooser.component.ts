@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core'
 import { ElectronService } from '../../services/electron.service'
 import { PreferenceService } from '../../services/preference.service'
 
@@ -7,6 +7,9 @@ import { PreferenceService } from '../../services/preference.service'
 	templateUrl: './path-chooser.component.html',
 })
 export class PathChooserComponent {
+	private readonly electronService = inject(ElectronService)
+	private readonly preferenceService = inject(PreferenceService)
+
 	@Input({ required: true })
 	protected readonly key!: string
 
@@ -33,11 +36,6 @@ export class PathChooserComponent {
 
 	@Output()
 	readonly pathChange = new EventEmitter<string>()
-
-	constructor(
-		private readonly electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-	) {}
 
 	protected async choosePath() {
 		const preference = this.preferenceService.pathChooser.get()

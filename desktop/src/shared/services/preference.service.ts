@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { inject, Injectable } from '@angular/core'
 import { AlignmentPreference, alignmentPreferenceWithDefault, DEFAULT_ALIGNMENT_PREFERENCE } from '../types/alignment.types'
 import { DEFAULT_SKY_ATLAS_PREFERENCE, SkyAtlasPreference, skyAtlasPreferenceWithDefault } from '../types/atlas.types'
 import { AutoFocusPreference, autoFocusPreferenceWithDefault, DEFAULT_AUTO_FOCUS_PREFERENCE } from '../types/autofocus.type'
@@ -46,6 +46,8 @@ export class PreferenceData<T> {
 
 @Injectable({ providedIn: 'root' })
 export class PreferenceService {
+	private readonly storage = inject(LocalStorageService)
+
 	readonly home: PreferenceData<HomePreference>
 	readonly image: PreferenceData<ImagePreference>
 	readonly skyAtlas: PreferenceData<SkyAtlasPreference>
@@ -56,7 +58,7 @@ export class PreferenceService {
 	readonly settings: PreferenceData<SettingsPreference>
 	readonly pathChooser: PreferenceData<Record<string, string | undefined>>
 
-	constructor(private readonly storage: LocalStorageService) {
+	constructor() {
 		this.home = this.create<HomePreference>('home', () => structuredClone(DEFAULT_HOME_PREFERENCE), homePreferenceWithDefault)
 		this.image = this.create<ImagePreference>('image', () => structuredClone(DEFAULT_IMAGE_PREFERENCE), imagePreferenceWithDefault)
 		this.skyAtlas = this.create<SkyAtlasPreference>('atlas', () => structuredClone(DEFAULT_SKY_ATLAS_PREFERENCE), skyAtlasPreferenceWithDefault)

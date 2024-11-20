@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { CheckboxChangeEvent } from 'primeng/checkbox'
@@ -19,6 +19,13 @@ import { AppComponent } from '../app.component'
 	styleUrls: ['./filterwheel.component.scss'],
 })
 export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly electronService = inject(ElectronService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly route = inject(ActivatedRoute)
+	private readonly ticker = inject(Ticker)
+
 	protected readonly wheel = structuredClone(DEFAULT_WHEEL)
 	protected readonly request = structuredClone(DEFAULT_CAMERA_START_CAPTURE)
 	protected readonly preference = structuredClone(DEFAULT_WHEEL_PREFERENCE)
@@ -63,18 +70,12 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 		return this.filters[this.position - 1]
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		private readonly electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly route: ActivatedRoute,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Filter Wheel'
+	constructor() {
+		const ngZone = inject(NgZone)
 
-		electronService.on('WHEEL.UPDATED', (event) => {
+		this.app.title = 'Filter Wheel'
+
+		this.electronService.on('WHEEL.UPDATED', (event) => {
 			if (event.device.id === this.wheel.id) {
 				ngZone.run(() => {
 					Object.assign(this.wheel, event.device)
@@ -83,7 +84,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			}
 		})
 
-		electronService.on('WHEEL.DETACHED', (event) => {
+		this.electronService.on('WHEEL.DETACHED', (event) => {
 			if (event.device.id === this.wheel.id) {
 				ngZone.run(() => {
 					Object.assign(this.wheel, DEFAULT_WHEEL)
@@ -91,7 +92,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			}
 		})
 
-		electronService.on('FOCUSER.UPDATED', (event) => {
+		this.electronService.on('FOCUSER.UPDATED', (event) => {
 			if (event.device.id === this.focuser?.id) {
 				ngZone.run(() => {
 					if (this.focuser) {
@@ -101,7 +102,7 @@ export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickab
 			}
 		})
 
-		electronService.on('FOCUSER.DETACHED', (event) => {
+		this.electronService.on('FOCUSER.DETACHED', (event) => {
 			if (this.mode === 'CAPTURE' && event.device.id === this.focuser?.id) {
 				ngZone.run(() => {
 					this.focuser = undefined

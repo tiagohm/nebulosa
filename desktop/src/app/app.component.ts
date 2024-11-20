@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { Component, ElementRef, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import hotkeys from 'hotkeys-js'
 import { APP_CONFIG } from '../environments/environment'
@@ -11,6 +11,9 @@ import { ElectronService } from '../shared/services/electron.service'
 	templateUrl: './app.component.html',
 })
 export class AppComponent implements OnDestroy {
+	private readonly windowTitle = inject(Title)
+	private readonly electronService = inject(ElectronService)
+
 	readonly maximizable = !!window.context.resizable
 	readonly modal = window.context.modal ?? false
 	readonly topMenu: MenuItem[] = []
@@ -30,13 +33,11 @@ export class AppComponent implements OnDestroy {
 		this.windowTitle.setTitle(value)
 	}
 
-	constructor(
-		private readonly windowTitle: Title,
-		private readonly electronService: ElectronService,
-		confirmationService: ConfirmationService,
-		ngZone: NgZone,
-		hostElementRef: ElementRef<Element>,
-	) {
+	constructor() {
+		const confirmationService = inject(ConfirmationService)
+		const ngZone = inject(NgZone)
+		const hostElementRef = inject<ElementRef<Element>>(ElementRef)
+
 		console.info('APP_CONFIG', APP_CONFIG)
 
 		if (!window.context.resizable && window.context.autoResizable !== false) {
@@ -54,7 +55,7 @@ export class AppComponent implements OnDestroy {
 			this.resizeObserver = undefined
 		}
 
-		electronService.on('CONFIRMATION', (event) => {
+		this.electronService.on('CONFIRMATION', (event) => {
 			if (confirmationService.has(event.idempotencyKey)) {
 				void ngZone.run(() => {
 					return confirmationService.processConfirmationEvent(event)
@@ -64,7 +65,7 @@ export class AppComponent implements OnDestroy {
 
 		hotkeys('ctrl+alt+shift+d', (event) => {
 			event.preventDefault()
-			void electronService.openDevTools()
+			void this.electronService.openDevTools()
 		})
 	}
 

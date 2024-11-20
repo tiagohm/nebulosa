@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core'
+import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation, inject } from '@angular/core'
 import { SEPARATOR_MENU_ITEM } from '../../constants'
 import { AngularService } from '../../services/angular.service'
 import { isGuideHead } from '../../types/camera.types'
@@ -20,6 +20,8 @@ export interface DeviceConnectionCommandEvent {
 	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceListMenuComponent {
+	private readonly angularService = inject(AngularService)
+
 	@Input()
 	protected readonly model: SlideMenuItem[] = []
 
@@ -46,8 +48,6 @@ export class DeviceListMenuComponent {
 
 	@ViewChild('menu')
 	private readonly menu!: DialogMenuComponent
-
-	constructor(private readonly angularService: AngularService) {}
 
 	show<T extends Device>(devices: T[], selected?: NoInfer<T>, header?: string) {
 		const model: SlideMenuItem[] = []

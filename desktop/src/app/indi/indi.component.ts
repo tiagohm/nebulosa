@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, ViewEncapsulation, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { MenuItem } from 'primeng/api'
 import { Listbox } from 'primeng/listbox'
@@ -15,6 +15,9 @@ import { AppComponent } from '../app.component'
 	encapsulation: ViewEncapsulation.None,
 })
 export class INDIComponent implements AfterViewInit, OnDestroy {
+	private readonly route = inject(ActivatedRoute)
+	private readonly api = inject(ApiService)
+
 	protected devices: Device[] = []
 	protected properties: INDIProperty[] = []
 	protected groups: MenuItem[] = []
@@ -27,13 +30,11 @@ export class INDIComponent implements AfterViewInit, OnDestroy {
 	@ViewChild('listbox')
 	protected readonly messageBox!: Listbox
 
-	constructor(
-		app: AppComponent,
-		private readonly route: ActivatedRoute,
-		private readonly api: ApiService,
-		electronService: ElectronService,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
 		app.title = 'INDI'
 
 		electronService.on('DEVICE.PROPERTY_CHANGED', (event) => {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core'
+import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation, inject } from '@angular/core'
 import { ApiService } from '../../services/api.service'
 import { Device } from '../../types/device.types'
 import { Undefinable } from '../../utils/types'
@@ -11,6 +11,8 @@ import { MenuItem } from '../menu-item/menu-item.component'
 	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceChooserComponent<T extends Device = Device> {
+	private readonly api = inject(ApiService)
+
 	@Input({ required: true })
 	protected readonly title!: string
 
@@ -43,8 +45,6 @@ export class DeviceChooserComponent<T extends Device = Device> {
 
 	@ViewChild('deviceMenu')
 	private readonly deviceMenu!: DeviceListMenuComponent
-
-	constructor(private readonly api: ApiService) {}
 
 	async show() {
 		const device = await this.deviceMenu.show(this.devices, this.device)

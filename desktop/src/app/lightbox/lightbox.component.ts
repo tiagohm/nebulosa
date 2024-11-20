@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, inject, NgZone, OnDestroy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { debounceTime, Subject, Subscription } from 'rxjs'
 import { ApiService } from '../../shared/services/api.service'
@@ -12,20 +12,21 @@ import { AppComponent } from '../app.component'
 	templateUrl: './lightbox.component.html',
 })
 export class LightBoxComponent implements AfterViewInit, OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly route = inject(ActivatedRoute)
+	private readonly ticker = inject(Ticker)
+
 	protected readonly lightBox = structuredClone(DEFAULT_LIGHT_BOX)
 
 	private readonly brightnessPublisher = new Subject<number>()
 	private readonly brightnessSubscription?: Subscription
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		electronService: ElectronService,
-		private readonly route: ActivatedRoute,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Light Box'
+	constructor() {
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
+		this.app.title = 'Light Box'
 
 		electronService.on('LIGHT_BOX.UPDATED', (event) => {
 			if (event.device.id === this.lightBox.id) {

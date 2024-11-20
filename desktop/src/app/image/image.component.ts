@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { NgxLegacyMoveableComponent, OnDrag, OnResize, OnRotate } from 'ngx-moveable'
@@ -61,6 +61,14 @@ import { AppComponent } from '../app.component'
 	styleUrls: ['./image.component.scss'],
 })
 export class ImageComponent implements AfterViewInit, OnDestroy {
+	private readonly app = inject(AppComponent)
+	private readonly route = inject(ActivatedRoute)
+	private readonly api = inject(ApiService)
+	private readonly electronService = inject(ElectronService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly angularService = inject(AngularService)
+
 	protected readonly preference = structuredClone(DEFAULT_IMAGE_PREFERENCE)
 	protected readonly solver = structuredClone(DEFAULT_IMAGE_SOLVER_DIALOG)
 	protected readonly starDetector = structuredClone(DEFAULT_STAR_DETECTOR_DIALOG)
@@ -408,27 +416,20 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 		return this.imageROI.show && this.rotation.transformation.angle % 360 === 0
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly route: ActivatedRoute,
-		private readonly api: ApiService,
-		private readonly electronService: ElectronService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly preferenceService: PreferenceService,
-		private readonly angularService: AngularService,
-		ngZone: NgZone,
-	) {
-		app.title = 'Image'
+	constructor() {
+		const ngZone = inject(NgZone)
 
-		app.topMenu.push(this.liveStackingMenuItem)
+		this.app.title = 'Image'
 
-		app.topMenu.push({
+		this.app.topMenu.push(this.liveStackingMenuItem)
+
+		this.app.topMenu.push({
 			icon: 'mdi mdi-fullscreen',
 			label: 'Fullscreen',
 			command: () => this.enterFullscreen(),
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-minus',
 			label: 'Zoom Out',
 			command: () => {
@@ -436,7 +437,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			},
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-plus',
 			label: 'Zoom In',
 			command: () => {
@@ -444,7 +445,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			},
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-numeric-0',
 			label: 'Reset Zoom',
 			command: () => {
@@ -452,7 +453,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			},
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-fit-to-screen',
 			label: 'Fit to Screen',
 			command: () => {
@@ -460,7 +461,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			},
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-cog',
 			label: 'Settings',
 			command: () => {
@@ -468,7 +469,7 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			},
 		})
 
-		electronService.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
+		this.electronService.on('CAMERA.CAPTURE_ELAPSED', async (event) => {
 			if (event.state === 'EXPOSURE_FINISHED' && event.camera.id === this.imageData.camera?.id) {
 				await ngZone.run(async () => {
 					if (this.liveStacking.mode === 'NONE') {
@@ -492,13 +493,13 @@ export class ImageComponent implements AfterViewInit, OnDestroy {
 			}
 		})
 
-		electronService.on('DATA.CHANGED', (event: OpenImage) => {
+		this.electronService.on('DATA.CHANGED', (event: OpenImage) => {
 			return ngZone.run(() => {
 				return this.loadImageFromOpenImage(event)
 			})
 		})
 
-		electronService.on('CALIBRATION.CHANGED', async () => {
+		this.electronService.on('CALIBRATION.CHANGED', async () => {
 			return ngZone.run(() => {
 				return this.loadCalibrationGroups()
 			})

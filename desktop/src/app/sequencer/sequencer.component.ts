@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
+import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, QueryList, ViewChildren, ViewEncapsulation } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { DialogMenuComponent } from '../../shared/components/dialog-menu/dialog-menu.component'
@@ -33,6 +33,15 @@ import { RotatorComponent } from '../rotator/rotator.component'
 	encapsulation: ViewEncapsulation.None,
 })
 export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly electronService = inject(ElectronService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly angularService = inject(AngularService)
+	private readonly ticker = inject(Ticker)
+	private readonly route = inject(ActivatedRoute)
+
 	protected cameras: Camera[] = []
 	protected mounts: Mount[] = []
 	protected wheels: Wheel[] = []
@@ -183,33 +192,25 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 		return { time, frames }
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly angularService: AngularService,
-		private readonly ticker: Ticker,
-		private readonly route: ActivatedRoute,
-		ngZone: NgZone,
-	) {
-		app.title = 'Sequencer'
+	constructor() {
+		const ngZone = inject(NgZone)
 
-		app.topMenu.push(this.createNewMenuItem)
-		app.topMenu.push(this.saveMenuItem)
-		app.topMenu.push(this.saveAsMenuItem)
-		app.topMenu.push(this.loadMenuItem)
+		this.app.title = 'Sequencer'
 
-		app.beforeClose = async () => {
+		this.app.topMenu.push(this.createNewMenuItem)
+		this.app.topMenu.push(this.saveMenuItem)
+		this.app.topMenu.push(this.saveAsMenuItem)
+		this.app.topMenu.push(this.loadMenuItem)
+
+		this.app.beforeClose = async () => {
 			if (this.path && !this.saveMenuItem.disabled) {
-				return !(await angularService.confirm('Are you sure you want to close the window? Please make sure to save before exiting to avoid losing any important changes.'))
+				return !(await this.angularService.confirm('Are you sure you want to close the window? Please make sure to save before exiting to avoid losing any important changes.'))
 			} else {
 				return true
 			}
 		}
 
-		electronService.on('CAMERA.UPDATED', (event) => {
+		this.electronService.on('CAMERA.UPDATED', (event) => {
 			const camera = this.cameras.find((e) => e.id === event.device.id)
 
 			if (camera) {
@@ -220,7 +221,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electronService.on('MOUNT.UPDATED', (event) => {
+		this.electronService.on('MOUNT.UPDATED', (event) => {
 			const mount = this.mounts.find((e) => e.id === event.device.id)
 
 			if (mount) {
@@ -230,7 +231,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electronService.on('WHEEL.UPDATED', (event) => {
+		this.electronService.on('WHEEL.UPDATED', (event) => {
 			const wheel = this.wheels.find((e) => e.id === event.device.id)
 
 			if (wheel) {
@@ -240,7 +241,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electronService.on('FOCUSER.UPDATED', (event) => {
+		this.electronService.on('FOCUSER.UPDATED', (event) => {
 			const focuser = this.focusers.find((e) => e.id === event.device.id)
 
 			if (focuser) {
@@ -250,7 +251,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electronService.on('ROTATOR.UPDATED', (event) => {
+		this.electronService.on('ROTATOR.UPDATED', (event) => {
 			const rotator = this.rotators.find((e) => e.id === event.device.id)
 
 			if (rotator) {
@@ -260,7 +261,7 @@ export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable
 			}
 		})
 
-		electronService.on('SEQUENCER.ELAPSED', (event) => {
+		this.electronService.on('SEQUENCER.ELAPSED', (event) => {
 			ngZone.run(() => {
 				if (this.running !== (event.state !== 'IDLE')) {
 					this.enableOrDisableTopbarMenu(this.running)

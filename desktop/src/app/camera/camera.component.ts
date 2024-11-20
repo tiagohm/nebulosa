@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { AfterContentInit, Component, HostListener, inject, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { MenuItemCommandEvent, SlideMenuItem } from '../../shared/components/menu-item/menu-item.component'
@@ -35,6 +35,14 @@ import { AppComponent } from '../app.component'
 	templateUrl: './camera.component.html',
 })
 export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly electronService = inject(ElectronService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly route = inject(ActivatedRoute)
+	private readonly ticker = inject(Ticker)
+
 	protected readonly camera = structuredClone(DEFAULT_CAMERA)
 	protected calibrationModel: SlideMenuItem[] = []
 
@@ -186,19 +194,12 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 		return this.preference.wheel?.names[this.preference.wheel.position - 1]
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly route: ActivatedRoute,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Camera'
+	constructor() {
+		const ngZone = inject(NgZone)
 
-		electronService.on('CAMERA.UPDATED', (event) => {
+		this.app.title = 'Camera'
+
+		this.electronService.on('CAMERA.UPDATED', (event) => {
 			if (event.device.id === this.camera.id) {
 				ngZone.run(() => {
 					Object.assign(this.camera, event.device)
@@ -207,7 +208,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('CAMERA.DETACHED', (event) => {
+		this.electronService.on('CAMERA.DETACHED', (event) => {
 			if (event.device.id === this.camera.id) {
 				ngZone.run(() => {
 					Object.assign(this.camera, DEFAULT_CAMERA)
@@ -215,7 +216,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('CAMERA.CAPTURE_ELAPSED', (event) => {
+		this.electronService.on('CAMERA.CAPTURE_ELAPSED', (event) => {
 			if (event.camera.id === this.camera.id) {
 				ngZone.run(() => {
 					this.running = this.cameraExposure?.handleCameraCaptureEvent(event) ?? false
@@ -223,7 +224,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('MOUNT.UPDATED', (event) => {
+		this.electronService.on('MOUNT.UPDATED', (event) => {
 			if (this.mode === 'CAPTURE' && event.device.id === this.preference.mount?.id) {
 				ngZone.run(() => {
 					if (this.preference.mount) {
@@ -233,7 +234,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('MOUNT.ATTACHED', () => {
+		this.electronService.on('MOUNT.ATTACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('MOUNT')
@@ -241,7 +242,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('MOUNT.DETACHED', () => {
+		this.electronService.on('MOUNT.DETACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('MOUNT')
@@ -249,7 +250,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('WHEEL.UPDATED', (event) => {
+		this.electronService.on('WHEEL.UPDATED', (event) => {
 			if (this.mode === 'CAPTURE' && event.device.id === this.preference.wheel?.id) {
 				ngZone.run(() => {
 					if (this.preference.wheel) {
@@ -259,7 +260,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('WHEEL.ATTACHED', () => {
+		this.electronService.on('WHEEL.ATTACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('WHEEL')
@@ -267,7 +268,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('WHEEL.DETACHED', () => {
+		this.electronService.on('WHEEL.DETACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('WHEEL')
@@ -275,7 +276,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('FOCUSER.UPDATED', (event) => {
+		this.electronService.on('FOCUSER.UPDATED', (event) => {
 			if (this.mode === 'CAPTURE' && event.device.id === this.preference.focuser?.id) {
 				ngZone.run(() => {
 					if (this.preference.focuser) {
@@ -285,7 +286,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('FOCUSER.ATTACHED', () => {
+		this.electronService.on('FOCUSER.ATTACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('FOCUSER')
@@ -293,7 +294,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('FOCUSER.DETACHED', () => {
+		this.electronService.on('FOCUSER.DETACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('FOCUSER')
@@ -301,7 +302,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('ROTATOR.UPDATED', (event) => {
+		this.electronService.on('ROTATOR.UPDATED', (event) => {
 			if (this.mode === 'CAPTURE' && event.device.id === this.preference.rotator?.id) {
 				ngZone.run(() => {
 					if (this.preference.rotator) {
@@ -311,7 +312,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('ROTATOR.ATTACHED', () => {
+		this.electronService.on('ROTATOR.ATTACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('ROTATOR')
@@ -319,7 +320,7 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('ROTATOR.DETACHED', () => {
+		this.electronService.on('ROTATOR.DETACHED', () => {
 			if (this.mode === 'CAPTURE') {
 				void ngZone.run(() => {
 					return this.loadEquipment('ROTATOR')
@@ -327,11 +328,11 @@ export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 			}
 		})
 
-		electronService.on('CALIBRATION.CHANGED', () => {
+		this.electronService.on('CALIBRATION.CHANGED', () => {
 			void ngZone.run(() => this.loadCalibrationGroups())
 		})
 
-		electronService.on('ROI.SELECTED', (event) => {
+		this.electronService.on('ROI.SELECTED', (event) => {
 			if (event.camera.id === this.camera.id) {
 				ngZone.run(() => {
 					this.request.x = event.x

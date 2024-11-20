@@ -1,4 +1,4 @@
-import { AfterContentInit, AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core'
+import { AfterContentInit, AfterViewInit, Component, HostListener, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { Chart, ChartData, ChartOptions } from 'chart.js'
 import zoomPlugin from 'chartjs-plugin-zoom'
@@ -52,6 +52,13 @@ import { AppComponent } from '../app.component'
 	encapsulation: ViewEncapsulation.None,
 })
 export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, OnDestroy {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly route = inject(ActivatedRoute)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly angularService = inject(AngularService)
+
 	protected readonly sun = structuredClone(DEFAULT_SUN)
 	protected readonly moon = structuredClone(DEFAULT_MOON)
 	protected readonly planet = structuredClone(DEFAULT_PLANET)
@@ -390,19 +397,13 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		return this.preference.favorites.find((e) => e.tab === this.tab && e.id === id)
 	}
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly route: ActivatedRoute,
-		electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly angularService: AngularService,
-		ngZone: NgZone,
-	) {
-		app.title = 'Sky Atlas'
+	constructor() {
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
 
-		app.topMenu.push({
+		this.app.title = 'Sky Atlas'
+
+		this.app.topMenu.push({
 			icon: 'mdi mdi-bookmark',
 			tooltip: 'Favorites',
 			command: (e) => {
@@ -410,7 +411,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			},
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-calendar',
 			tooltip: 'Date Time and Location',
 			command: (e) => {
@@ -418,7 +419,7 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 			},
 		})
 
-		app.topMenu.push({
+		this.app.topMenu.push({
 			icon: 'mdi mdi-cog',
 			tooltip: 'Settings',
 			command: () => {

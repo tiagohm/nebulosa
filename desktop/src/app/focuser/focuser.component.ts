@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import hotkeys from 'hotkeys-js'
 import { ApiService } from '../../shared/services/api.service'
@@ -13,19 +13,20 @@ import { AppComponent } from '../app.component'
 	templateUrl: './focuser.component.html',
 })
 export class FocuserComponent implements AfterViewInit, OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly route = inject(ActivatedRoute)
+	private readonly ticker = inject(Ticker)
+
 	protected readonly focuser = structuredClone(DEFAULT_FOCUSER)
 	protected readonly preference = structuredClone(DEFAULT_FOCUSER_PREFERENCE)
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		private readonly route: ActivatedRoute,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Focuser'
+	constructor() {
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
+		this.app.title = 'Focuser'
 
 		electronService.on('FOCUSER.UPDATED', (event) => {
 			if (event.device.id === this.focuser.id) {

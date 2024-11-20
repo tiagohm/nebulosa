@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { ElectronService } from '../../shared/services/electron.service'
@@ -11,17 +11,18 @@ import { AppComponent } from '../app.component'
 	templateUrl: './dustcap.component.html',
 })
 export class DustCapComponent implements AfterViewInit, OnDestroy, Tickable {
+	private readonly app = inject(AppComponent)
+	private readonly api = inject(ApiService)
+	private readonly route = inject(ActivatedRoute)
+	private readonly ticker = inject(Ticker)
+
 	protected readonly dustCap = structuredClone(DEFAULT_DUST_CAP)
 
-	constructor(
-		private readonly app: AppComponent,
-		private readonly api: ApiService,
-		electronService: ElectronService,
-		private readonly route: ActivatedRoute,
-		private readonly ticker: Ticker,
-		ngZone: NgZone,
-	) {
-		app.title = 'Dust Cap'
+	constructor() {
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
+		this.app.title = 'Dust Cap'
 
 		electronService.on('DUST_CAP.UPDATED', (event) => {
 			if (event.device.id === this.dustCap.id) {

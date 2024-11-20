@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, ViewChild, inject } from '@angular/core'
 import { CameraExposureComponent } from '../../shared/components/camera-exposure/camera-exposure.component'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -18,6 +18,11 @@ import { CameraComponent } from '../camera/camera.component'
 	templateUrl: './alignment.component.html',
 })
 export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly preferenceService = inject(PreferenceService)
+	private readonly ticker = inject(Ticker)
+
 	protected cameras: Camera[] = []
 	protected camera?: Camera
 
@@ -49,15 +54,11 @@ export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 		return this.tab === 1 ? this.darvRequest.capture : this.tppaRequest.capture
 	}
 
-	constructor(
-		app: AppComponent,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly preferenceService: PreferenceService,
-		private readonly ticker: Ticker,
-		electronService: ElectronService,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const electronService = inject(ElectronService)
+		const ngZone = inject(NgZone)
+
 		app.title = 'Alignment'
 
 		electronService.on('CAMERA.UPDATED', (event) => {

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, NgZone, OnDestroy } from '@angular/core'
+import { AfterViewInit, Component, HostListener, NgZone, OnDestroy, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { ApiService } from '../../shared/services/api.service'
 import { BrowserWindowService } from '../../shared/services/browser-window.service'
@@ -12,6 +12,12 @@ import { AppComponent } from '../app.component'
 	templateUrl: './framing.component.html',
 })
 export class FramingComponent implements AfterViewInit, OnDestroy {
+	private readonly route = inject(ActivatedRoute)
+	private readonly api = inject(ApiService)
+	private readonly browserWindowService = inject(BrowserWindowService)
+	private readonly electronService = inject(ElectronService)
+	private readonly preferenceService = inject(PreferenceService)
+
 	protected readonly preference = structuredClone(DEFAULT_FRAMING_PREFERENCE)
 	protected readonly fov = structuredClone(DEFAULT_FRAMING_FOV_DIALOG)
 	protected hipsSurveys: HipsSurvey[] = []
@@ -19,18 +25,13 @@ export class FramingComponent implements AfterViewInit, OnDestroy {
 
 	private frameId = ''
 
-	constructor(
-		app: AppComponent,
-		private readonly route: ActivatedRoute,
-		private readonly api: ApiService,
-		private readonly browserWindowService: BrowserWindowService,
-		private readonly electronService: ElectronService,
-		private readonly preferenceService: PreferenceService,
-		ngZone: NgZone,
-	) {
+	constructor() {
+		const app = inject(AppComponent)
+		const ngZone = inject(NgZone)
+
 		app.title = 'Framing'
 
-		electronService.on('DATA.CHANGED', (event: FramingRequest) => {
+		this.electronService.on('DATA.CHANGED', (event: FramingRequest) => {
 			return ngZone.run(() => this.frameFromData(event))
 		})
 	}

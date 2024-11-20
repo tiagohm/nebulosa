@@ -1,4 +1,4 @@
-import { Component, Type } from '@angular/core'
+import { Component, Type, inject } from '@angular/core'
 import { CalculatorFormula } from '../../shared/types/calculator.types'
 import { AppComponent } from '../app.component'
 import { FormulaComponent } from './formula/formula.component'
@@ -213,7 +213,9 @@ export class CalculatorComponent {
 
 	protected formula = this.formulae[0]
 
-	constructor(app: AppComponent) {
+	constructor() {
+		const app = inject(AppComponent)
+
 		app.title = 'Calculator'
 	}
 }
