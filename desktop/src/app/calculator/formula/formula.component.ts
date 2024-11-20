@@ -3,8 +3,8 @@ import type { CalculatorFormula } from '../../../shared/types/calculator.types'
 
 @Component({
 	selector: 'neb-formula',
-	templateUrl: './formula.component.html',
-	styleUrls: ['./formula.component.scss'],
+	templateUrl: 'formula.component.html',
+	styleUrls: ['formula.component.scss'],
 })
 export class FormulaComponent {
 	@Input({ required: true })

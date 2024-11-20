@@ -4,7 +4,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog'
 import { AngularService } from '../../services/angular.service'
 
 @Component({
-	templateUrl: './confirm.dialog.html',
+	templateUrl: 'confirm.dialog.html',
 })
 export class ConfirmDialog {
 	private readonly dialogRef = inject(DynamicDialogRef)

@@ -15,7 +15,7 @@ import { CameraComponent } from '../camera/camera.component'
 
 @Component({
 	selector: 'neb-flat-wizard',
-	templateUrl: './flat-wizard.component.html',
+	templateUrl: 'flat-wizard.component.html',
 })
 export class FlatWizardComponent implements AfterViewInit, OnDestroy, Tickable {
 	private readonly api = inject(ApiService)

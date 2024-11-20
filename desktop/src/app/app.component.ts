@@ -8,7 +8,7 @@ import { ElectronService } from '../shared/services/electron.service'
 
 @Component({
 	selector: 'neb-root',
-	templateUrl: './app.component.html',
+	templateUrl: 'app.component.html',
 })
 export class AppComponent implements OnDestroy {
 	private readonly windowTitle = inject(Title)

@@ -32,7 +32,7 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-camera',
-	templateUrl: './camera.component.html',
+	templateUrl: 'camera.component.html',
 })
 export class CameraComponent implements AfterContentInit, OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)

@@ -47,8 +47,8 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-atlas',
-	templateUrl: './atlas.component.html',
-	styleUrls: ['./atlas.component.scss'],
+	templateUrl: 'atlas.component.html',
+	styleUrls: ['atlas.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
 export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, OnDestroy {

@@ -5,7 +5,7 @@ import { FormulaComponent } from './formula/formula.component'
 
 @Component({
 	selector: 'neb-calculator',
-	templateUrl: './calculator.component.html',
+	templateUrl: 'calculator.component.html',
 })
 export class CalculatorComponent {
 	protected readonly formulae: { component: Type<unknown>; formula: CalculatorFormula }[] = [

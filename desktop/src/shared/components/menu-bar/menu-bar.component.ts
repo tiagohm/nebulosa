@@ -8,7 +8,7 @@ export interface SplitButtonClickEvent {
 
 @Component({
 	selector: 'neb-menu-bar',
-	templateUrl: './menu-bar.component.html',
+	templateUrl: 'menu-bar.component.html',
 })
 export class MenuBarComponent {
 	@Input({ required: true })

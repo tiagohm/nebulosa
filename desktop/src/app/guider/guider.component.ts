@@ -11,7 +11,7 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-guider',
-	templateUrl: './guider.component.html',
+	templateUrl: 'guider.component.html',
 })
 export class GuiderComponent implements OnInit, AfterViewInit, OnDestroy, Tickable {
 	private readonly api = inject(ApiService)

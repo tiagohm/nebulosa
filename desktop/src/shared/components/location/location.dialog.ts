@@ -6,7 +6,7 @@ import { MapComponent } from '../map/map.component'
 
 @Component({
 	selector: 'neb-location',
-	templateUrl: './location.dialog.html',
+	templateUrl: 'location.dialog.html',
 })
 export class LocationComponent implements AfterViewInit {
 	private readonly dialogRef = inject(DynamicDialogRef, { optional: true })

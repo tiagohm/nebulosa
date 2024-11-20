@@ -15,8 +15,8 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-filterwheel',
-	templateUrl: './filterwheel.component.html',
-	styleUrls: ['./filterwheel.component.scss'],
+	templateUrl: 'filterwheel.component.html',
+	styleUrls: ['filterwheel.component.scss'],
 })
 export class FilterWheelComponent implements AfterContentInit, OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)

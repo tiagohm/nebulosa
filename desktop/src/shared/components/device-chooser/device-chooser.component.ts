@@ -7,7 +7,7 @@ import { MenuItem } from '../menu-item/menu-item.component'
 
 @Component({
 	selector: 'neb-device-chooser',
-	templateUrl: './device-chooser.component.html',
+	templateUrl: 'device-chooser.component.html',
 	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceChooserComponent<T extends Device = Device> {

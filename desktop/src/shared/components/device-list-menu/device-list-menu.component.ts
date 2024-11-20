@@ -15,8 +15,8 @@ export interface DeviceConnectionCommandEvent {
 
 @Component({
 	selector: 'neb-device-list-menu',
-	templateUrl: './device-list-menu.component.html',
-	styleUrls: ['./device-list-menu.component.scss'],
+	templateUrl: 'device-list-menu.component.html',
+	styleUrls: ['device-list-menu.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
 export class DeviceListMenuComponent {

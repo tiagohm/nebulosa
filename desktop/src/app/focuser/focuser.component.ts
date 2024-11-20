@@ -10,7 +10,7 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-focuser',
-	templateUrl: './focuser.component.html',
+	templateUrl: 'focuser.component.html',
 })
 export class FocuserComponent implements AfterViewInit, OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)

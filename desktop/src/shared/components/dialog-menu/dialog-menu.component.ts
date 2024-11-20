@@ -4,8 +4,8 @@ import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.comp
 
 @Component({
 	selector: 'neb-dialog-menu',
-	templateUrl: './dialog-menu.component.html',
-	styleUrls: ['./dialog-menu.component.scss'],
+	templateUrl: 'dialog-menu.component.html',
+	styleUrls: ['dialog-menu.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
 export class DialogMenuComponent implements OnChanges {

@@ -12,7 +12,7 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-calibration',
-	templateUrl: './calibration.component.html',
+	templateUrl: 'calibration.component.html',
 	encapsulation: ViewEncapsulation.None,
 })
 export class CalibrationComponent implements AfterViewInit, OnDestroy {

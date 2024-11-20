@@ -28,8 +28,8 @@ import { RotatorComponent } from '../rotator/rotator.component'
 
 @Component({
 	selector: 'neb-sequencer',
-	templateUrl: './sequencer.component.html',
-	styleUrls: ['./sequencer.component.scss'],
+	templateUrl: 'sequencer.component.html',
+	styleUrls: ['sequencer.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
 export class SequencerComponent implements AfterContentInit, OnDestroy, Tickable {

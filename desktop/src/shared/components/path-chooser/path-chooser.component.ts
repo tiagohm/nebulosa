@@ -4,7 +4,7 @@ import { PreferenceService } from '../../services/preference.service'
 
 @Component({
 	selector: 'neb-path-chooser',
-	templateUrl: './path-chooser.component.html',
+	templateUrl: 'path-chooser.component.html',
 })
 export class PathChooserComponent {
 	private readonly electronService = inject(ElectronService)

@@ -3,8 +3,8 @@ import { CameraCaptureEvent, CameraCaptureState, DEFAULT_CAMERA_CAPTURE_INFO, DE
 
 @Component({
 	selector: 'neb-camera-exposure',
-	templateUrl: './camera-exposure.component.html',
-	styleUrls: ['./camera-exposure.component.scss'],
+	templateUrl: 'camera-exposure.component.html',
+	styleUrls: ['camera-exposure.component.scss'],
 })
 export class CameraExposureComponent {
 	@Input()

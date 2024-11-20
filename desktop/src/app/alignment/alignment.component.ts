@@ -15,7 +15,7 @@ import { CameraComponent } from '../camera/camera.component'
 
 @Component({
 	selector: 'neb-alignment',
-	templateUrl: './alignment.component.html',
+	templateUrl: 'alignment.component.html',
 })
 export class AlignmentComponent implements AfterViewInit, OnDestroy, Tickable {
 	private readonly api = inject(ApiService)

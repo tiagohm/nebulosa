@@ -4,7 +4,7 @@ import { MenuItemCommandEvent, SlideMenuItem } from '../menu-item/menu-item.comp
 
 @Component({
 	selector: 'neb-slide-menu',
-	templateUrl: './slide-menu.component.html',
+	templateUrl: 'slide-menu.component.html',
 	encapsulation: ViewEncapsulation.None,
 })
 export class SlideMenuComponent implements OnInit {

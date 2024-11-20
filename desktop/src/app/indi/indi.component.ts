@@ -10,8 +10,8 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-indi',
-	templateUrl: './indi.component.html',
-	styleUrls: ['./indi.component.scss'],
+	templateUrl: 'indi.component.html',
+	styleUrls: ['indi.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
 export class INDIComponent implements AfterViewInit, OnDestroy {

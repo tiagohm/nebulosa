@@ -6,7 +6,7 @@ import type { Wheel } from '../../types/wheel.types'
 
 @Component({
 	selector: 'neb-camera-info',
-	templateUrl: './camera-info.component.html',
+	templateUrl: 'camera-info.component.html',
 	encapsulation: ViewEncapsulation.None,
 })
 export class CameraInfoComponent {

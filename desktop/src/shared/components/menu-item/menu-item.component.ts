@@ -55,7 +55,7 @@ export interface SlideMenuItem extends MenuItem {
 
 @Component({
 	selector: 'neb-menu-item',
-	templateUrl: './menu-item.component.html',
+	templateUrl: 'menu-item.component.html',
 	encapsulation: ViewEncapsulation.None,
 })
 export class MenuItemComponent {

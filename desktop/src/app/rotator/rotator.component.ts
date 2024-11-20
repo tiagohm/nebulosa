@@ -11,7 +11,7 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-rotator',
-	templateUrl: './rotator.component.html',
+	templateUrl: 'rotator.component.html',
 })
 export class RotatorComponent implements AfterViewInit, OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)

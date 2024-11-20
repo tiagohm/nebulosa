@@ -3,8 +3,8 @@ import * as L from 'leaflet'
 
 @Component({
 	selector: 'neb-map',
-	templateUrl: './map.component.html',
-	styleUrls: ['./map.component.scss'],
+	templateUrl: 'map.component.html',
+	styleUrls: ['map.component.scss'],
 })
 export class MapComponent implements AfterViewInit, OnChanges {
 	@Input()

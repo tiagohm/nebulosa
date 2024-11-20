@@ -3,7 +3,7 @@ import { ImageHistrogram } from '../../types/image.types'
 
 @Component({
 	selector: 'neb-histogram',
-	templateUrl: './histogram.component.html',
+	templateUrl: 'histogram.component.html',
 	encapsulation: ViewEncapsulation.None,
 })
 export class HistogramComponent implements AfterViewInit {

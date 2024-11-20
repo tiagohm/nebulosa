@@ -3,8 +3,8 @@ import type { INDIProperty, INDIPropertyItem, INDISendProperty, INDISendProperty
 
 @Component({
 	selector: 'neb-indi-property',
-	templateUrl: './indi-property.component.html',
-	styleUrls: ['./indi-property.component.scss'],
+	templateUrl: 'indi-property.component.html',
+	styleUrls: ['indi-property.component.scss'],
 	encapsulation: ViewEncapsulation.None,
 })
 export class INDIPropertyComponent implements AfterContentInit {

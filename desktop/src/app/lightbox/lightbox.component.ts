@@ -9,7 +9,7 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-lightbox',
-	templateUrl: './lightbox.component.html',
+	templateUrl: 'lightbox.component.html',
 })
 export class LightBoxComponent implements AfterViewInit, OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)

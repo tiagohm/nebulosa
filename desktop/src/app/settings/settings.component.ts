@@ -12,7 +12,7 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-settings',
-	templateUrl: './settings.component.html',
+	templateUrl: 'settings.component.html',
 })
 export class SettingsComponent implements AfterViewInit, OnDestroy {
 	private readonly app = inject(AppComponent)

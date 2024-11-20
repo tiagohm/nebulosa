@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, Input, OnChanges, ViewChild, View
 
 @Component({
 	selector: 'neb-moon',
-	templateUrl: './moon.component.html',
+	templateUrl: 'moon.component.html',
 	encapsulation: ViewEncapsulation.None,
 })
 export class MoonComponent implements AfterViewInit, OnChanges {

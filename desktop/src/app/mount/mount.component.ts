@@ -16,7 +16,7 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-mount',
-	templateUrl: './mount.component.html',
+	templateUrl: 'mount.component.html',
 })
 export class MountComponent implements AfterContentInit, OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)

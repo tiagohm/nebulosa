@@ -8,7 +8,7 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-dustcap',
-	templateUrl: './dustcap.component.html',
+	templateUrl: 'dustcap.component.html',
 })
 export class DustCapComponent implements AfterViewInit, OnDestroy, Tickable {
 	private readonly app = inject(AppComponent)

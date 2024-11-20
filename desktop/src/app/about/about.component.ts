@@ -5,7 +5,7 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-about',
-	templateUrl: './about.component.html',
+	templateUrl: 'about.component.html',
 })
 export class AboutComponent {
 	protected readonly codename = nebulosa.codename

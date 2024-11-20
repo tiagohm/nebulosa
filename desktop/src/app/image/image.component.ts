@@ -57,8 +57,8 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-image',
-	templateUrl: './image.component.html',
-	styleUrls: ['./image.component.scss'],
+	templateUrl: 'image.component.html',
+	styleUrls: ['image.component.scss'],
 })
 export class ImageComponent implements AfterViewInit, OnDestroy {
 	private readonly app = inject(AppComponent)

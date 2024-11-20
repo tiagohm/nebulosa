@@ -4,7 +4,7 @@ import type { ExposureTimeUnit } from '../../shared/types/camera.types'
 
 @Component({
 	selector: 'neb-exposure-time',
-	templateUrl: './exposure-time.component.html',
+	templateUrl: 'exposure-time.component.html',
 	encapsulation: ViewEncapsulation.None,
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })

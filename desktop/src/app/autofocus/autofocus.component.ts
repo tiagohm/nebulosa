@@ -17,7 +17,7 @@ import { CameraComponent } from '../camera/camera.component'
 
 @Component({
 	selector: 'neb-autofocus',
-	templateUrl: './autofocus.component.html',
+	templateUrl: 'autofocus.component.html',
 })
 export class AutoFocusComponent implements AfterViewInit, OnDestroy, Tickable {
 	private readonly api = inject(ApiService)

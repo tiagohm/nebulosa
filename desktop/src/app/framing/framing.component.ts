@@ -9,7 +9,7 @@ import { AppComponent } from '../app.component'
 
 @Component({
 	selector: 'neb-framing',
-	templateUrl: './framing.component.html',
+	templateUrl: 'framing.component.html',
 })
 export class FramingComponent implements AfterViewInit, OnDestroy {
 	private readonly route = inject(ActivatedRoute)
