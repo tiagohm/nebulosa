@@ -522,6 +522,8 @@ export class AtlasComponent implements OnInit, AfterContentInit, AfterViewInit, 
 		} else if (minorPlanet.list.length) {
 			this.minorPlanet.list.items = minorPlanet.list
 			this.minorPlanet.list.showDialog = true
+		} else {
+			this.angularService.message('specified object was not found', 'error')
 		}
 	}
 
